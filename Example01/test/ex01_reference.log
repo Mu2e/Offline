@@ -1,0 +1,339 @@
+ $Id: ex01_reference.log,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+ $Author: kutschke $
+ $Date: 2009/09/30 22:57:47 $
+
+---- Reference log file starts after next blank line ----
+
+10-Mar-2009 11:36:21 CDT  Initiating request to open file ExampleData/ex01Input_1.root
+10-Mar-2009 11:36:22 CDT  Successfully opened file ExampleData/ex01Input_1.root
+%MSG-i ToyHitInfo:  AfterModuleConstruction 10-Mar-2009 11:36:22 CDT pre-events
+Hello, world!
+%MSG
+Hello, again, world!
+%MSG-i ToyHitInfo:  10-Mar-2009 11:36:22 CDT BeforeEvents
+Starting a new run: 1
+%MSG
+%MSG-i ToyHitInfo:  10-Mar-2009 11:36:22 CDT BeforeEvents
+Starting a new lumi block: 1
+%MSG
+Begin processing the 1st record. Run 1, Event 1, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 1. Number of hits: 7.
+Event: 1  | Hit #: 0  | Position: (5,1.22773e-12,-2.87917) | Pulse Height: 7.59833
+Event: 1  | Hit #: 1  | Position: (10,2.45546e-12,-5.75835) | Pulse Height: 9.57106
+Event: 1  | Hit #: 2  | Position: (15,3.68319e-12,-8.63752) | Pulse Height: 9.76611
+Event: 1  | Hit #: 3  | Position: (20,4.91092e-12,-11.5167) | Pulse Height: 9.53356
+Event: 1  | Hit #: 4  | Position: (25,6.13865e-12,-14.3959) | Pulse Height: 12.2262
+Event: 1  | Hit #: 5  | Position: (30,7.36638e-12,-17.275) | Pulse Height: 8.79752
+Event: 1  | Hit #: 6  | Position: (35,8.59411e-12,-20.1542) | Pulse Height: 13.3826
+Begin processing the 2nd record. Run 1, Event 3, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 3. Number of hits: 8.
+Event: 3  | Hit #: 0  | Position: (-0.760778,4.94178,-2.5566) | Pulse Height: 11.095
+Event: 3  | Hit #: 1  | Position: (-1.52156,9.88357,-5.11319) | Pulse Height: 9.5087
+Event: 3  | Hit #: 2  | Position: (-2.28234,14.8253,-7.66979) | Pulse Height: 7.86837
+Event: 3  | Hit #: 3  | Position: (-3.04311,19.7671,-10.2264) | Pulse Height: 10.2152
+Event: 3  | Hit #: 4  | Position: (-3.80389,24.7089,-12.783) | Pulse Height: 7.54314
+Event: 3  | Hit #: 5  | Position: (-4.56467,29.6507,-15.3396) | Pulse Height: 9.28436
+Event: 3  | Hit #: 6  | Position: (-5.32545,34.5925,-17.8962) | Pulse Height: 7.55293
+Event: 3  | Hit #: 7  | Position: (-6.08623,39.5343,-20.4528) | Pulse Height: 9.05849
+Begin processing the 3rd record. Run 1, Event 5, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 5. Number of hits: 7.
+Event: 5  | Hit #: 0  | Position: (-4.9646,0.593903,-0.429676) | Pulse Height: 7.86369
+Event: 5  | Hit #: 1  | Position: (-9.92921,1.18781,-0.859352) | Pulse Height: 10.1934
+Event: 5  | Hit #: 2  | Position: (-14.8938,1.78171,-1.28903) | Pulse Height: 6.85763
+Event: 5  | Hit #: 3  | Position: (-19.8584,2.37561,-1.7187) | Pulse Height: 9.95739
+Event: 5  | Hit #: 4  | Position: (-24.823,2.96951,-2.14838) | Pulse Height: 11.3031
+Event: 5  | Hit #: 5  | Position: (-29.7876,3.56342,-2.57806) | Pulse Height: 8.7203
+Event: 5  | Hit #: 6  | Position: (-39.7168,4.75122,-3.43741) | Pulse Height: 10.0522
+Begin processing the 4th record. Run 1, Event 7, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 7. Number of hits: 7.
+Event: 7  | Hit #: 0  | Position: (4.8728,1.12062,1.61287) | Pulse Height: 11.5222
+Event: 7  | Hit #: 1  | Position: (9.74561,2.24123,3.22573) | Pulse Height: 10.7929
+Event: 7  | Hit #: 2  | Position: (19.4912,4.48246,6.45147) | Pulse Height: 9.55911
+Event: 7  | Hit #: 3  | Position: (24.364,5.60308,8.06434) | Pulse Height: 11.1986
+Event: 7  | Hit #: 4  | Position: (29.2368,6.72369,9.6772) | Pulse Height: 7.87393
+Event: 7  | Hit #: 5  | Position: (34.1096,7.84431,11.2901) | Pulse Height: 9.86605
+Event: 7  | Hit #: 6  | Position: (38.9824,8.96492,12.9029) | Pulse Height: 10.3978
+Begin processing the 5th record. Run 1, Event 9, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 9. Number of hits: 8.
+Event: 9  | Hit #: 0  | Position: (-2.81321,-4.1335,-1.5615) | Pulse Height: 10.1343
+Event: 9  | Hit #: 1  | Position: (-5.62642,-8.26701,-3.123) | Pulse Height: 10.007
+Event: 9  | Hit #: 2  | Position: (-8.43963,-12.4005,-4.6845) | Pulse Height: 10.0861
+Event: 9  | Hit #: 3  | Position: (-11.2528,-16.534,-6.246) | Pulse Height: 12.9248
+Event: 9  | Hit #: 4  | Position: (-14.066,-20.6675,-7.8075) | Pulse Height: 10.6947
+Event: 9  | Hit #: 5  | Position: (-16.8793,-24.801,-9.369) | Pulse Height: 9.21513
+Event: 9  | Hit #: 6  | Position: (-19.6925,-28.9345,-10.9305) | Pulse Height: 9.15874
+Event: 9  | Hit #: 7  | Position: (-22.5057,-33.068,-12.492) | Pulse Height: 14.8365
+Analyzing event #: 11. Number of hits: 8.
+Event: 11  | Hit #: 0  | Position: (4.0967,2.86654,-0.688071) | Pulse Height: 13.3908
+Event: 11  | Hit #: 1  | Position: (8.1934,5.73308,-1.37614) | Pulse Height: 7.82476
+Event: 11  | Hit #: 2  | Position: (12.2901,8.59962,-2.06421) | Pulse Height: 10.475
+Event: 11  | Hit #: 3  | Position: (16.3868,11.4662,-2.75228) | Pulse Height: 9.49259
+Event: 11  | Hit #: 4  | Position: (20.4835,14.3327,-3.44035) | Pulse Height: 9.13862
+Event: 11  | Hit #: 5  | Position: (24.5802,17.1992,-4.12843) | Pulse Height: 11.9974
+Event: 11  | Hit #: 6  | Position: (28.6769,20.0658,-4.8165) | Pulse Height: 10.5041
+Event: 11  | Hit #: 7  | Position: (32.7736,22.9323,-5.50457) | Pulse Height: 8.12511
+Analyzing event #: 13. Number of hits: 7.
+Event: 13  | Hit #: 0  | Position: (-3.66054,3.40594,2.47896) | Pulse Height: 12.8989
+Event: 13  | Hit #: 1  | Position: (-10.9816,10.2178,7.43689) | Pulse Height: 8.44013
+Event: 13  | Hit #: 2  | Position: (-14.6422,13.6238,9.91585) | Pulse Height: 11.6023
+Event: 13  | Hit #: 3  | Position: (-18.3027,17.0297,12.3948) | Pulse Height: 10.5893
+Event: 13  | Hit #: 4  | Position: (-21.9632,20.4357,14.8738) | Pulse Height: 10.5477
+Event: 13  | Hit #: 5  | Position: (-25.6238,23.8416,17.3527) | Pulse Height: 12.2596
+Event: 13  | Hit #: 6  | Position: (-29.2843,27.2475,19.8317) | Pulse Height: 8.33896
+Analyzing event #: 15. Number of hits: 7.
+Event: 15  | Hit #: 0  | Position: (4.20949,-2.69819,2.43582) | Pulse Height: 7.99211
+Event: 15  | Hit #: 1  | Position: (8.41898,-5.39637,4.87164) | Pulse Height: 11.5057
+Event: 15  | Hit #: 2  | Position: (12.6285,-8.09456,7.30746) | Pulse Height: 6.78783
+Event: 15  | Hit #: 3  | Position: (16.838,-10.7927,9.74328) | Pulse Height: 10.8591
+Event: 15  | Hit #: 4  | Position: (21.0474,-13.4909,12.1791) | Pulse Height: 10.4894
+Event: 15  | Hit #: 5  | Position: (25.2569,-16.1891,14.6149) | Pulse Height: 8.38016
+Event: 15  | Hit #: 6  | Position: (29.4664,-18.8873,17.0507) | Pulse Height: 9.72901
+Analyzing event #: 17. Number of hits: 8.
+Event: 17  | Hit #: 0  | Position: (-4.58501,-1.9944,0.575203) | Pulse Height: 7.51866
+Event: 17  | Hit #: 1  | Position: (-9.17003,-3.98881,1.15041) | Pulse Height: 15.0826
+Event: 17  | Hit #: 2  | Position: (-13.755,-5.98321,1.72561) | Pulse Height: 10.0915
+Event: 17  | Hit #: 3  | Position: (-18.3401,-7.97762,2.30081) | Pulse Height: 10.0609
+Event: 17  | Hit #: 4  | Position: (-22.9251,-9.97202,2.87602) | Pulse Height: 9.37345
+Event: 17  | Hit #: 5  | Position: (-27.5101,-11.9664,3.45122) | Pulse Height: 9.5555
+Event: 17  | Hit #: 6  | Position: (-32.0951,-13.9608,4.02642) | Pulse Height: 8.52234
+Event: 17  | Hit #: 7  | Position: (-36.6801,-15.9552,4.60163) | Pulse Height: 9.41104
+Begin processing the 10th record. Run 1, Event 19, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 19. Number of hits: 8.
+Event: 19  | Hit #: 0  | Position: (-4.94852,-0.715626,-1.5815) | Pulse Height: 10.61
+Event: 19  | Hit #: 1  | Position: (-9.89705,-1.43125,-3.163) | Pulse Height: 11.8263
+Event: 19  | Hit #: 2  | Position: (-14.8456,-2.14688,-4.7445) | Pulse Height: 8.03024
+Event: 19  | Hit #: 3  | Position: (-19.7941,-2.8625,-6.32599) | Pulse Height: 7.92619
+Event: 19  | Hit #: 4  | Position: (-24.7426,-3.57813,-7.90749) | Pulse Height: 12.8524
+Event: 19  | Hit #: 5  | Position: (-29.6911,-4.29376,-9.48899) | Pulse Height: 9.91039
+Event: 19  | Hit #: 6  | Position: (-34.6397,-5.00938,-11.0705) | Pulse Height: 11.349
+Event: 19  | Hit #: 7  | Position: (-39.5882,-5.72501,-12.652) | Pulse Height: 10.4621
+Analyzing event #: 21. Number of hits: 7.
+Analyzing event #: 23. Number of hits: 8.
+Analyzing event #: 25. Number of hits: 8.
+Analyzing event #: 27. Number of hits: 8.
+Begin processing the 15th record. Run 1, Event 29, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 29. Number of hits: 8.
+Analyzing event #: 31. Number of hits: 8.
+Analyzing event #: 33. Number of hits: 8.
+Analyzing event #: 35. Number of hits: 8.
+Analyzing event #: 37. Number of hits: 8.
+Analyzing event #: 39. Number of hits: 8.
+Analyzing event #: 41. Number of hits: 8.
+Analyzing event #: 43. Number of hits: 7.
+Analyzing event #: 45. Number of hits: 8.
+Analyzing event #: 47. Number of hits: 8.
+Begin processing the 25th record. Run 1, Event 49, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 49. Number of hits: 7.
+Analyzing event #: 51. Number of hits: 7.
+Analyzing event #: 53. Number of hits: 7.
+Analyzing event #: 55. Number of hits: 8.
+Analyzing event #: 57. Number of hits: 8.
+Analyzing event #: 59. Number of hits: 8.
+Analyzing event #: 61. Number of hits: 8.
+Analyzing event #: 63. Number of hits: 8.
+Analyzing event #: 65. Number of hits: 8.
+Analyzing event #: 67. Number of hits: 8.
+Analyzing event #: 69. Number of hits: 7.
+Analyzing event #: 71. Number of hits: 8.
+Analyzing event #: 73. Number of hits: 7.
+Analyzing event #: 75. Number of hits: 7.
+Analyzing event #: 77. Number of hits: 7.
+Analyzing event #: 79. Number of hits: 8.
+Analyzing event #: 81. Number of hits: 8.
+Analyzing event #: 83. Number of hits: 8.
+Analyzing event #: 85. Number of hits: 7.
+Analyzing event #: 87. Number of hits: 8.
+Begin processing the 45th record. Run 1, Event 89, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 89. Number of hits: 8.
+Analyzing event #: 91. Number of hits: 8.
+Analyzing event #: 93. Number of hits: 8.
+Analyzing event #: 95. Number of hits: 8.
+Analyzing event #: 97. Number of hits: 8.
+Analyzing event #: 99. Number of hits: 8.
+Analyzing event #: 101. Number of hits: 7.
+Analyzing event #: 103. Number of hits: 8.
+Analyzing event #: 105. Number of hits: 8.
+Analyzing event #: 107. Number of hits: 8.
+Analyzing event #: 109. Number of hits: 8.
+Analyzing event #: 111. Number of hits: 8.
+Analyzing event #: 113. Number of hits: 8.
+Analyzing event #: 115. Number of hits: 7.
+Analyzing event #: 117. Number of hits: 7.
+Analyzing event #: 119. Number of hits: 7.
+Analyzing event #: 121. Number of hits: 8.
+Analyzing event #: 123. Number of hits: 7.
+Analyzing event #: 125. Number of hits: 7.
+Analyzing event #: 127. Number of hits: 8.
+Analyzing event #: 129. Number of hits: 8.
+Analyzing event #: 131. Number of hits: 8.
+Analyzing event #: 133. Number of hits: 7.
+Analyzing event #: 135. Number of hits: 8.
+Analyzing event #: 137. Number of hits: 8.
+Analyzing event #: 139. Number of hits: 8.
+Analyzing event #: 141. Number of hits: 8.
+Analyzing event #: 143. Number of hits: 8.
+Analyzing event #: 145. Number of hits: 7.
+Analyzing event #: 147. Number of hits: 8.
+Analyzing event #: 149. Number of hits: 8.
+Analyzing event #: 151. Number of hits: 8.
+Analyzing event #: 153. Number of hits: 7.
+Analyzing event #: 155. Number of hits: 8.
+Analyzing event #: 157. Number of hits: 8.
+Analyzing event #: 159. Number of hits: 8.
+Analyzing event #: 161. Number of hits: 8.
+Analyzing event #: 163. Number of hits: 8.
+Analyzing event #: 165. Number of hits: 7.
+Analyzing event #: 167. Number of hits: 6.
+Begin processing the 85th record. Run 1, Event 169, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 169. Number of hits: 8.
+Analyzing event #: 171. Number of hits: 7.
+Analyzing event #: 173. Number of hits: 7.
+Analyzing event #: 175. Number of hits: 8.
+Analyzing event #: 177. Number of hits: 8.
+Analyzing event #: 179. Number of hits: 8.
+Analyzing event #: 181. Number of hits: 8.
+Analyzing event #: 183. Number of hits: 7.
+Analyzing event #: 185. Number of hits: 8.
+Analyzing event #: 187. Number of hits: 8.
+Analyzing event #: 189. Number of hits: 7.
+Analyzing event #: 191. Number of hits: 8.
+Analyzing event #: 193. Number of hits: 7.
+Analyzing event #: 195. Number of hits: 8.
+Analyzing event #: 197. Number of hits: 8.
+Analyzing event #: 199. Number of hits: 8.
+Analyzing event #: 201. Number of hits: 7.
+Analyzing event #: 203. Number of hits: 8.
+Analyzing event #: 205. Number of hits: 8.
+Analyzing event #: 207. Number of hits: 7.
+Analyzing event #: 209. Number of hits: 8.
+Analyzing event #: 211. Number of hits: 7.
+Analyzing event #: 213. Number of hits: 8.
+Analyzing event #: 215. Number of hits: 7.
+Analyzing event #: 217. Number of hits: 7.
+Analyzing event #: 219. Number of hits: 6.
+Analyzing event #: 221. Number of hits: 8.
+Analyzing event #: 223. Number of hits: 7.
+Analyzing event #: 225. Number of hits: 8.
+Analyzing event #: 227. Number of hits: 8.
+Analyzing event #: 229. Number of hits: 8.
+Analyzing event #: 231. Number of hits: 7.
+Analyzing event #: 233. Number of hits: 8.
+Analyzing event #: 235. Number of hits: 8.
+Analyzing event #: 237. Number of hits: 7.
+Analyzing event #: 239. Number of hits: 8.
+Analyzing event #: 241. Number of hits: 8.
+Analyzing event #: 243. Number of hits: 8.
+Analyzing event #: 245. Number of hits: 8.
+Analyzing event #: 247. Number of hits: 7.
+Analyzing event #: 249. Number of hits: 8.
+Analyzing event #: 251. Number of hits: 8.
+Analyzing event #: 253. Number of hits: 8.
+Analyzing event #: 255. Number of hits: 8.
+Analyzing event #: 257. Number of hits: 7.
+Analyzing event #: 259. Number of hits: 6.
+Analyzing event #: 261. Number of hits: 8.
+Analyzing event #: 263. Number of hits: 7.
+Analyzing event #: 265. Number of hits: 8.
+Analyzing event #: 267. Number of hits: 8.
+Analyzing event #: 269. Number of hits: 8.
+Analyzing event #: 271. Number of hits: 8.
+Analyzing event #: 273. Number of hits: 8.
+Analyzing event #: 275. Number of hits: 7.
+Analyzing event #: 277. Number of hits: 8.
+Analyzing event #: 279. Number of hits: 8.
+Analyzing event #: 281. Number of hits: 8.
+Analyzing event #: 283. Number of hits: 8.
+Analyzing event #: 285. Number of hits: 8.
+Analyzing event #: 287. Number of hits: 8.
+Analyzing event #: 289. Number of hits: 8.
+Analyzing event #: 291. Number of hits: 8.
+Analyzing event #: 293. Number of hits: 7.
+Analyzing event #: 295. Number of hits: 8.
+Analyzing event #: 297. Number of hits: 8.
+Analyzing event #: 299. Number of hits: 8.
+Analyzing event #: 301. Number of hits: 8.
+Analyzing event #: 303. Number of hits: 8.
+Analyzing event #: 305. Number of hits: 8.
+Analyzing event #: 307. Number of hits: 8.
+Analyzing event #: 309. Number of hits: 8.
+Analyzing event #: 311. Number of hits: 8.
+Analyzing event #: 313. Number of hits: 8.
+Analyzing event #: 315. Number of hits: 7.
+Analyzing event #: 317. Number of hits: 6.
+Analyzing event #: 319. Number of hits: 8.
+Analyzing event #: 321. Number of hits: 8.
+Analyzing event #: 323. Number of hits: 8.
+Analyzing event #: 325. Number of hits: 7.
+Analyzing event #: 327. Number of hits: 7.
+Begin processing the 165th record. Run 1, Event 329, LumiSection 1 at 10-Mar-2009 11:36:22 CDT
+Analyzing event #: 329. Number of hits: 8.
+Analyzing event #: 331. Number of hits: 8.
+Analyzing event #: 333. Number of hits: 8.
+Analyzing event #: 335. Number of hits: 8.
+Analyzing event #: 337. Number of hits: 7.
+Analyzing event #: 339. Number of hits: 7.
+Analyzing event #: 341. Number of hits: 7.
+Analyzing event #: 343. Number of hits: 7.
+Analyzing event #: 345. Number of hits: 8.
+Analyzing event #: 347. Number of hits: 8.
+Analyzing event #: 349. Number of hits: 7.
+Analyzing event #: 351. Number of hits: 8.
+Analyzing event #: 353. Number of hits: 8.
+Analyzing event #: 355. Number of hits: 8.
+Analyzing event #: 357. Number of hits: 8.
+Analyzing event #: 359. Number of hits: 8.
+Analyzing event #: 361. Number of hits: 8.
+Analyzing event #: 363. Number of hits: 8.
+Analyzing event #: 365. Number of hits: 8.
+Analyzing event #: 367. Number of hits: 8.
+Analyzing event #: 369. Number of hits: 8.
+Analyzing event #: 371. Number of hits: 7.
+Analyzing event #: 373. Number of hits: 8.
+Analyzing event #: 375. Number of hits: 8.
+Analyzing event #: 377. Number of hits: 8.
+Analyzing event #: 379. Number of hits: 8.
+Analyzing event #: 381. Number of hits: 8.
+Analyzing event #: 383. Number of hits: 7.
+Analyzing event #: 385. Number of hits: 8.
+Analyzing event #: 387. Number of hits: 5.
+Analyzing event #: 389. Number of hits: 8.
+Analyzing event #: 391. Number of hits: 8.
+Analyzing event #: 393. Number of hits: 8.
+Analyzing event #: 395. Number of hits: 7.
+Analyzing event #: 397. Number of hits: 8.
+Analyzing event #: 399. Number of hits: 7.
+10-Mar-2009 11:36:22 CDT  Closed file ExampleData/ex01Input_1.root
+%MSG-i ToyHitInfo:  PostModule 10-Mar-2009 11:36:22 CDT Run: 1 Event: 399
+Number of histogram entries: 1534
+%MSG
+
+=============================================
+
+MessageLogger Summary
+
+ type     category        sev    module        subroutine        count    total
+ ---- -------------------- -- ---------------- ----------------  -----    -----
+    1 FwkReport            -i PostSource                           200*     200
+    2 ToyHitInfo           -i                                        2        2
+    3 ToyHitInfo           -i AfterModuleConst                       2        2
+    4 ToyHitInfo           -i Ex01InspectHits:                     200      200
+    5 ToyHitInfo           -i PostModule                             1        1
+    6 fileAction           -s PoolSource:sourc                       2        2
+    7 fileAction           -s PostModule                             1        1
+
+* Some occurrences of this message were suppressed in all logs, due to limits.
+
+ type    category    Examples: run/evt        run/evt          run/evt
+ ---- -------------------- ---------------- ---------------- ----------------
+    1 FwkReport            BeforeEvents     1/1              1/397
+    2 ToyHitInfo           BeforeEvents     BeforeEvents     
+    3 ToyHitInfo           pre-events       pre-events       
+    4 ToyHitInfo           1/1              1/3              1/399
+    5 ToyHitInfo           1/399                             
+    6 fileAction           pre-events       pre-events       
+    7 fileAction           1/399                             
+
+Severity    # Occurrences   Total Occurrences
+--------    -------------   -----------------
+Info                  405                 405
+System                  3                   3

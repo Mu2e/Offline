@@ -1,0 +1,32 @@
+//
+// Root script to make some plots directly from the ntuple made in 
+// the ReadBack plugin.
+// 
+// $Id: g4test_03.cint,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2009/09/30 22:57:47 $
+// 
+// Original author Rob Kutschke
+//
+{
+
+  // With this you can reinvoke the script without exiting root.
+  gROOT->Reset();
+
+  // Get rid of grey background on print out.
+  gROOT->SetStyle("Plain");
+
+  // Open the input file that contains Mu2e event data.
+  TFile* file = new TFile("g4test_03.root");
+
+  // Fill a pointer to the event tree.
+  TNtuple* nt; file->GetObject("checkhits/ntup",nt);
+
+  // Open window on the screen.
+  TCanvas*c = new TCanvas("c", "Test", 0, 0, 900, 900 );
+
+  // Make a y vs x scatter plot.
+  nt->Draw( "hx:hy","","");
+
+
+ }
