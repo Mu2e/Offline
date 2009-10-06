@@ -1,17 +1,15 @@
 //
-// A class to hold hits created by G4 in straw detectors.
-// These hits are made by the sensitive detector class for straws, StrawSD.
+// A class to hold hits created by G4 in most sensitive detectors.
 // 
-// $Id: StrawG4Hit.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: StepPointG4.cc,v 1.1 2009/10/06 23:19:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2009/10/06 23:19:59 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e incldues
-#include "Mu2eG4/inc/StrawG4Hit.hh"
-
+#include "Mu2eG4/inc/StepPointG4.hh"
 
 // G4 includes 
 #include "G4UnitsTable.hh"
@@ -20,21 +18,18 @@
 #include "G4Colour.hh"
 #include "G4VisAttributes.hh"
 
-
-
 namespace mu2e {
 
-  G4Allocator<StrawG4Hit> StrawG4HitAllocator;
+  G4Allocator<StepPointG4> StepPointG4Allocator;
 
-  // I don't like this but that is the way G4 requires it to be defined.
-  // Should compare equality of content not if they have the same address.
-  G4int StrawG4Hit::operator==(const StrawG4Hit& right) const
+  // G4 defines this operator to compare by address, not to compare content.
+  G4int StepPointG4::operator==(const StepPointG4& right) const
   {
     return (this==&right) ? 1 : 0;
   }
   
 
-  void StrawG4Hit::Draw(){
+  void StepPointG4::Draw(){
     G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
     if(pVVisManager)
       {
@@ -48,13 +43,13 @@ namespace mu2e {
       }
   }
 
-  void StrawG4Hit::Print(){
+  void StepPointG4::Print(){
 
     if ( _hit.trackId() != 1 ){
 
       // There is no units category for momentum, so use energy.
       G4cout << "  trackId: "        << _hit.trackId()
-	     << "  strawIndex: "     << _hit.strawIndex()
+	     << "  volumeId: "       << _hit.volumeId()
 	     << "  energy deposit: " << G4BestUnit(_hit.eDep(),"Energy")
 	     << "  position: "       << G4BestUnit(_hit.position(),"Length") 
 	     << "  momentum: "       << G4BestUnit(_hit.momentum(),"Energy") 

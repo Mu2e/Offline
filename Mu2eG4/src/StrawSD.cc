@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: StrawSD.cc,v 1.2 2009/10/06 23:19:59 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/06 23:19:59 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,7 @@ namespace mu2e {
 
   StrawSD::StrawSD(G4String name) :G4VSensitiveDetector(name){
     G4String HCname;
-    collectionName.insert(HCname="StrawG4HitCollection");
+    collectionName.insert(HCname="StepPointG4Collection");
   }
 
 
@@ -43,7 +43,7 @@ namespace mu2e {
 
   void StrawSD::Initialize(G4HCofThisEvent* HCE){
 
-    _collection = new StrawG4HitsCollection
+    _collection = new StepPointG4Collection
       (SensitiveDetectorName,collectionName[0]); 
     static G4int HCID = -1;
     if(HCID<0){ 
@@ -71,14 +71,14 @@ namespace mu2e {
 
     G4ThreeVector preMomWorld = aStep->GetPreStepPoint()->GetMomentum();
 
-    StrawG4Hit* newHit = 
-      new StrawG4Hit(aStep->GetTrack()->GetTrackID(),
-		     aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
-		     edep,
-		     prePosTracker,
-		     preMomWorld,
-		     aStep->GetPreStepPoint()->GetGlobalTime()
-		     );
+    StepPointG4* newHit = 
+      new StepPointG4(aStep->GetTrack()->GetTrackID(),
+		      aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
+		      edep,
+		      prePosTracker,
+		      preMomWorld,
+		      aStep->GetPreStepPoint()->GetGlobalTime()
+		      );
     
     // The collection takes ownership of the hit. 
     _collection->insert( newHit );

@@ -4,15 +4,15 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: StrawSD.hh,v 1.2 2009/10/06 23:19:59 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/06 23:19:59 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/StrawG4Hit.hh"
+#include "Mu2eG4/inc/StepPointG4.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"
@@ -33,7 +33,7 @@ namespace mu2e {
     void EndOfEvent(G4HCofThisEvent*);
   
   private:
-    StrawG4HitsCollection* _collection;
+    StepPointG4Collection* _collection;
     
   };
 

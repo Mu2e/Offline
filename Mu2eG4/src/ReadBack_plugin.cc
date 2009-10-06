@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_plugin.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: ReadBack_plugin.cc,v 1.2 2009/10/06 23:19:59 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/06 23:19:59 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,7 @@
 
 // Mu2e includes.
 #include "LTrackerGeom/inc/LTracker.hh"
-#include "ToyDP/inc/StrawMCHitCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using namespace std;
@@ -97,7 +97,7 @@ namespace mu2e {
 
     // A helper function.
     int countHitNeighbours( Straw const& straw, 
-			    edm::Handle<StrawMCHitCollection>& hits );
+			    edm::Handle<StepPointMCCollection>& hits );
 
 
   };
@@ -160,7 +160,7 @@ namespace mu2e {
     static const string creatorName("g4run");
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StrawMCHitCollection> hits;
+    edm::Handle<StepPointMCCollection> hits;
     evt.getByLabel(creatorName,hits);
     
     // Fill histogram with number of hits per event.
@@ -171,17 +171,17 @@ namespace mu2e {
 
     // Loop over all hits.
     int n(0);
-    StrawMCHitCollection::const_iterator i = hits->begin();
-    StrawMCHitCollection::const_iterator e = hits->end();
+    StepPointMCCollection::const_iterator i = hits->begin();
+    StepPointMCCollection::const_iterator e = hits->end();
     for ( ; i!=e; ++i){
       
       // Aliases, used for readability.
-      const StrawMCHit& hit = *i;
+      const StepPointMC& hit = *i;
       const Hep3Vector& pos = hit.position();
       const Hep3Vector& mom = hit.momentum();
       
       // Get the straw information.
-      Straw const& straw = ltracker->getStraw( hit.strawIndex() );
+      Straw const& straw = ltracker->getStraw( hit.volumeId() );
       Hep3Vector mid = straw.getMidPoint();
       Hep3Vector w   = straw.getDirection();
 
@@ -215,7 +215,7 @@ namespace mu2e {
       // Fill the ntuple.
       nt[0]  = evt.id().event();
       nt[1]  = hit.trackId();
-      nt[2]  = hit.strawIndex();
+      nt[2]  = hit.volumeId();
       nt[3]  = pos.x();
       nt[4]  = pos.y();
       nt[5]  = pos.z();
@@ -235,7 +235,7 @@ namespace mu2e {
 	     << evt.id().event()
 	     << n++ <<  " "
 	     << hit.trackId()    << "   "
-	     << hit.strawIndex() << " | "
+	     << hit.volumeId() << " | "
 	     << pca.dca()   << " "
 	     << pos  << " "
 	     << mom  << " "
@@ -251,7 +251,7 @@ namespace mu2e {
   // If we have enough hits per event, it will make sense to make
   // a class to let us direct index into a list of which straws have hits.
   int ReadBack::countHitNeighbours( Straw const& straw, 
-				    edm::Handle<StrawMCHitCollection>& hits ){
+				    edm::Handle<StepPointMCCollection>& hits ){
     
     int count(0);
     vector<int> const& nearest = straw.nearestNeighboursByIndex();
@@ -260,11 +260,11 @@ namespace mu2e {
 
       int idx = nearest[ihit];
 
-      for( StrawMCHitCollection::const_iterator 
+      for( StepPointMCCollection::const_iterator 
 	     i = hits->begin(),
 	     e = hits->end(); i!=e ; ++i ) {
-	const StrawMCHit& hit = *i;
-	if ( hit.strawIndex() == idx ){
+	const StepPointMC& hit = *i;
+	if ( hit.volumeId() == idx ){
 	  ++count;
 	  break;
 	}

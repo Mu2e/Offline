@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.2 2009/10/06 23:19:59 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/06 23:19:59 $
 //
 // Original author Rob Kutschke
 //
@@ -41,7 +41,7 @@
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "Mu2eG4/inc/StrawG4Hit.hh"
+#include "Mu2eG4/inc/StepPointG4.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -58,7 +58,7 @@
 // This is just a placeholder for now: we need to produce something.
 #include "ToyDP/inc/ToyHitCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/StrawMCHitCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -76,7 +76,7 @@ namespace mu2e {
       _UI(0){
 
       // A place holder.
-      produces<StrawMCHitCollection>();
+      produces<StepPointMCCollection>();
     }
     virtual ~G4() { 
       // Must not delete the pointers handed to G4.
@@ -186,7 +186,7 @@ namespace mu2e {
   void G4::produce(edm::Event& evt, edm::EventSetup const&) {
 
     // Create an empty output collection.
-    auto_ptr<StrawMCHitCollection> outputHits(new StrawMCHitCollection);
+    auto_ptr<StepPointMCCollection> outputHits(new StepPointMCCollection);
     
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<ToyGenParticleCollection> handle;
@@ -208,14 +208,14 @@ namespace mu2e {
 
     // Get the collection ID for the straw hits.
     G4SDManager* SDman   = G4SDManager::GetSDMpointer();
-    G4int colId          = SDman->GetCollectionID("StrawG4HitCollection");
+    G4int colId          = SDman->GetCollectionID("StepPointG4Collection");
 
     if ( colId >= 0 && hce != 0 ){
-      StrawG4HitsCollection* hits = static_cast<StrawG4HitsCollection*>(hce->GetHC(colId));
+      StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
       G4int nHits = hits->entries();
 
       for (G4int i=0;i<nHits;i++) {
-	StrawG4Hit* h = (*hits)[i];
+	StepPointG4* h = (*hits)[i];
 	outputHits->push_back( h->hit() );
       }
 
