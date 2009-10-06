@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.1 2009/10/06 23:19:59 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.2 2009/10/06 23:23:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/06 23:19:59 $
+// $Date: 2009/10/06 23:23:05 $
 //
 // Original author Rob Kutschke
 //
@@ -39,13 +39,13 @@ namespace mu2e {
     }
     
     inline
-    StepPointMC( int trackId,
-		  int volumeId,
-		  double edep,
-		  double time,
-		  CLHEP::Hep3Vector const& position,
-		  CLHEP::Hep3Vector const& momentum
-		  ):
+    StepPointMC( int                      trackId,
+		 VolumeId_type            volumeId,
+		 double                   edep,
+		 double                   time,
+		 CLHEP::Hep3Vector const& position,
+		 CLHEP::Hep3Vector const& momentum
+		 ):
       _trackId(trackId),
       _volumeId(volumeId),
       _edep(edep),
