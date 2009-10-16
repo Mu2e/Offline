@@ -1,25 +1,30 @@
 #ifndef PiCapture_HH
 #define PiCapture_HH
+
 //
 //
-// A really, really, stupid model of photons from pi-
-// capture on the targets.
-//
-// $Id: PiCapture.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
-//
-// Original author Rob Kutschke
+// Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
+// $Id: PiCapture.hh,v 1.2 2009/10/16 04:20:52 shanahan Exp $
+// $Author: shanahan $ 
+// $Date: 2009/10/16 04:20:52 $
+//
+// Original author Rob Kutschke, P. Shanahan
+// 
+
 
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "CLHEP/Random/RandGeneral.h"
+
+using CLHEP::RandGeneral;
 
 class TH1D;
 
 namespace edm{
   class Run;
 }
+
 
 namespace mu2e {
 
@@ -36,10 +41,20 @@ namespace mu2e {
 
   private:
 
-    TH1D* _piCaptureMultiplicity;
-    RandomUnitSphere _randomUnitSphere;
+    const double EPhotFunc(const double x);
 
-    double _mean;
+    TH1D* _piCaptureMultiplicity;
+    TH1D* _piCaptureEPhot;
+    TH1D* _piCaptureEPhotZ;
+
+    RandomUnitSphere _randomUnitSphere;
+    RandGeneral* _funcGen;
+
+    double _mean; //< mean per event
+    double _elow; //< lower photon energy 
+    double _ehi; //< upper photon energy 
+    double _bindE; //< energy bin width for generator
+    int _nbins; //< number of bins in photon energy pdf
 
   };
 

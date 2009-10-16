@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-  $Author: kutschke $ 
-  $Date: 2009/09/30 22:57:47 $
+  $Id: EventGenerator_plugin.cc,v 1.2 2009/10/16 04:20:52 shanahan Exp $
+  $Author: shanahan $
+  $Date: 2009/10/16 04:20:52 $
 
   Original author Rob Kutschke
 

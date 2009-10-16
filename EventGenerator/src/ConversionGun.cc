@@ -3,15 +3,14 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: ConversionGun.cc,v 1.2 2009/10/16 04:20:52 shanahan Exp $ 
+// $Author: shanahan $
+// $Date: 2009/10/16 04:20:52 $
 //
 // Original author Rob Kutschke
 // 
 
 #include <iostream>
-
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
@@ -43,6 +42,7 @@ namespace mu2e {
   ConversionGun::ConversionGun( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
 
+    _doConvs = config.getBool("conversionGun.do",1);
     _p      = config.getDouble("conversionGun.p", 104.9);
 
     _czmin  = config.getDouble("conversionGun.czmin", 0.3);
@@ -62,6 +62,8 @@ namespace mu2e {
   }
 
   void ConversionGun::generate( ToyGenParticleCollection& genParts ){
+
+    if (!_doConvs) return;
 
     // Get access to the geometry system.
     GeomHandle<Target> target;

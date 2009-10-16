@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: CosmicToy.cc,v 1.2 2009/10/16 04:20:52 shanahan Exp $
+// $Author: shanahan $
+// $Date: 2009/10/16 04:20:52 $
 //
 // Original author Rob Kutschke
 //
@@ -61,13 +61,16 @@ namespace mu2e {
 
   void CosmicToy::generate( ToyGenParticleCollection& genParts ){
 
-    if ( _mean <= 0. ) return;
+    if ( _mean <= -99999. ) return;
 
     // Should get the numbers here from the config file or from the
     // geometry manager.
 
     // Pick a number of muons from a Poisson distribution.
-    long n = RandPoisson::shoot(_mean);
+    long n;
+    if (_mean<=0) n=(long)-_mean;
+    else          n = RandPoisson::shoot(_mean);
+
     _cosmicMultiplicity->Fill(n);
 
     for ( int i=0; i<n; ++i ){

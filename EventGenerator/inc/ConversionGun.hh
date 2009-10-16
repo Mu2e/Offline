@@ -6,12 +6,10 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: ConversionGun.hh,v 1.2 2009/10/16 04:20:52 shanahan Exp $
+// $Author: shanahan $ 
+// $Date: 2009/10/16 04:20:52 $
 //
-// Original author Rob Kutschke
-// 
 // For now this is limited to:
 //  - Uniform over the targets.
 //  - Uniform in time during the requested interval.
@@ -38,6 +36,9 @@ namespace mu2e {
     virtual void generate( ToyGenParticleCollection&  );
 
   private:
+
+    // simulation conversions?
+    bool _doConvs;
 
     // Conversion momentum.
     double _p;
