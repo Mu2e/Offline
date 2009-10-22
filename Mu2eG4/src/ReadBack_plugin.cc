@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_plugin.cc,v 1.3 2009/10/22 16:27:58 kutschke Exp $
+// $Id: ReadBack_plugin.cc,v 1.4 2009/10/22 19:54:10 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/22 16:27:58 $
+// $Date: 2009/10/22 19:54:10 $
 //
 // Original author Rob Kutschke
 //
@@ -171,9 +171,10 @@ namespace mu2e {
 
     // Loop over all hits.
     int n(0);
-    StepPointMCCollection::const_iterator i = hits->begin();
-    StepPointMCCollection::const_iterator e = hits->end();
-    for ( ; i!=e; ++i){
+    
+    for ( StepPointMCCollection::const_iterator 
+	    i = hits->begin(), e = hits->end();
+	  i!=e; ++i){
       
       // Aliases, used for readability.
       const StepPointMC& hit = *i;
@@ -181,7 +182,7 @@ namespace mu2e {
       const Hep3Vector& mom = hit.momentum();
       
       // Get the straw information.
-      Straw const& straw = ltracker->getStraw( StrawIndex::fromInt(hit.volumeId()) );
+      Straw const& straw = ltracker->getStraw( hit.strawIndex() );
       Hep3Vector mid = straw.getMidPoint();
       Hep3Vector w   = straw.getDirection();
 
@@ -255,7 +256,7 @@ namespace mu2e {
     
     int count(0);
     vector<StrawIndex> const& nearest = straw.nearestNeighboursByIndex();
-    for ( vector<int>::size_type ihit =0;
+    for ( vector<int>::size_type ihit = 0;
 	  ihit<nearest.size(); ++ihit ){
 
       StrawIndex idx = nearest[ihit];
@@ -264,7 +265,7 @@ namespace mu2e {
 	     i = hits->begin(),
 	     e = hits->end(); i!=e ; ++i ) {
 	const StepPointMC& hit = *i;
-	if ( hit.volumeId() == idx.asInt() ){
+	if ( hit.strawIndex() == idx ){
 	  ++count;
 	  break;
 	}
