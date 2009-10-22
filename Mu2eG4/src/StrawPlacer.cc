@@ -1,9 +1,9 @@
 //
 // Class to place one straw within the tracker mother volume.
 //
-// $Id: StrawPlacer.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: StrawPlacer.cc,v 1.2 2009/10/22 16:27:59 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/22 16:27:59 $
 //
 // Original author Rob Kutschke
 //
@@ -42,7 +42,7 @@ namespace mu2e {
   void StrawPlacer::operator() ( const Straw& s ) {
 
     // Copy number of this volume.
-    int copyNo = s.Index();
+    int copyNo = s.Index().asInt();
 
     // Name sfor the volume.
     ostringstream os;

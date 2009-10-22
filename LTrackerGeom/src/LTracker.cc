@@ -2,9 +2,9 @@
 // Geometry and identifier info about an LTracker.
 //
 //
-// $Id: LTracker.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: LTracker.cc,v 1.2 2009/10/22 16:27:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/22 16:27:58 $
 //
 // Original author Rob Kutschke
 //
@@ -52,7 +52,7 @@ void LTracker::FillPointers1(){
 	for ( vector<StrawIndex>::iterator istr = ilay->_indices.begin(),
 		estr = ilay->_indices.end();
 	      istr != estr ; ++istr ){
-	  const Straw& str = _allStraws[*istr];
+	  const Straw& str = _allStraws[(*istr).asInt()];
 	  ilay->_straws.push_back( &str );
 	}
       }

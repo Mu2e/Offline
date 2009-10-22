@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.2 2009/10/22 16:27:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/22 16:27:58 $
 //
 // Original author Rob Kutschke
 //
@@ -326,7 +326,7 @@ void devicePrinter( const Device& d){
 	  Hep3Vector p = origin + is*delta;
 
 	  // Index into master container.
-	  StrawIndex index = allStraws.size();
+	  StrawIndex index = StrawIndex::fromInt(allStraws.size());
 	  
 	  // Final position with rotation and translation.
 	  Hep3Vector q = RZ*(RY*p) + sectorOffset;
@@ -416,7 +416,7 @@ void LTrackerMaker::MakeVanes(){
       
       for ( int is=0; is<linfo._nStraws; ++is ){
 	Hep3Vector p = origin + is*delta;
-	StrawIndex index = allStraws.size();
+	StrawIndex index = StrawIndex::fromInt(allStraws.size());
 
 	Hep3Vector q = RZ*(RY*p + _vaneOffset);
 
@@ -590,7 +590,7 @@ void LTrackerMaker::FillPointersAndIndices(){
 	for ( vector<StrawIndex>::iterator istr = ilay->_indices.begin(),
 		estr = ilay->_indices.end();
 	      istr != estr ; ++istr ){
-	  const Straw& str = _ltt->_allStraws[*istr];
+	  const Straw& str = _ltt->_allStraws[(*istr).asInt()];
 	  ilay->_straws.push_back( &str );
 	}
       }

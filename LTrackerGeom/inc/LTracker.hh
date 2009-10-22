@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: LTracker.hh,v 1.2 2009/10/22 16:27:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/22 16:27:58 $
 //
 // Original author Rob Kutschke
 //
@@ -116,8 +116,8 @@ namespace mu2e {
       return _devices.at(sid.getDevice()).getStraw(sid);
     }
 
-    const Straw& getStraw ( int i ) const{
-      return _allStraws.at(i);
+    const Straw& getStraw ( StrawIndex i ) const{
+      return _allStraws.at(i.asInt());
     }
 
     const std::deque<Straw>& getAllStraws() const {return _allStraws;}

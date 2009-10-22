@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_plugin.cc,v 1.2 2009/10/06 23:19:59 kutschke Exp $
+// $Id: ReadBack_plugin.cc,v 1.3 2009/10/22 16:27:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/06 23:19:59 $
+// $Date: 2009/10/22 16:27:58 $
 //
 // Original author Rob Kutschke
 //
@@ -181,7 +181,7 @@ namespace mu2e {
       const Hep3Vector& mom = hit.momentum();
       
       // Get the straw information.
-      Straw const& straw = ltracker->getStraw( hit.volumeId() );
+      Straw const& straw = ltracker->getStraw( StrawIndex::fromInt(hit.volumeId()) );
       Hep3Vector mid = straw.getMidPoint();
       Hep3Vector w   = straw.getDirection();
 
@@ -254,17 +254,17 @@ namespace mu2e {
 				    edm::Handle<StepPointMCCollection>& hits ){
     
     int count(0);
-    vector<int> const& nearest = straw.nearestNeighboursByIndex();
+    vector<StrawIndex> const& nearest = straw.nearestNeighboursByIndex();
     for ( vector<int>::size_type ihit =0;
 	  ihit<nearest.size(); ++ihit ){
 
-      int idx = nearest[ihit];
+      StrawIndex idx = nearest[ihit];
 
       for( StepPointMCCollection::const_iterator 
 	     i = hits->begin(),
 	     e = hits->end(); i!=e ; ++i ) {
 	const StepPointMC& hit = *i;
-	if ( hit.volumeId() == idx ){
+	if ( hit.volumeId() == idx.asInt() ){
 	  ++count;
 	  break;
 	}
