@@ -1,8 +1,9 @@
+
 # Configuration file for Readback
 #
-# $Id: makehits.py,v 1.1 2009/10/09 13:31:32 kutschke Exp $
+# $Id: makehits.py,v 1.2 2009/10/22 21:15:55 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/10/09 13:31:32 $
+# $Date: 2009/10/22 21:15:55 $
 #
 # Original author Rob Kutschke
 #
@@ -43,27 +44,26 @@ process.GeometryService = mu2e.Service("GeometryService",
 # Define and configure some modules to do work on each event.
 # Modules are just defined for now, the are scheduled later.
 
-# Read events from a file (made by example 3)
+# Read events from a file (made by Mu2eG4 example g4test_03.py)
 process.source = mu2e.Source("PoolSource",
    fileNames = mu2e.untracked.vstring("data_03.root")
 )
 
-# Look at the hits from G4.
-process.makehits = mu2e.EDAnalyzer(
+# Form CrudeStrawHits (CSH).
+process.makeCSH = mu2e.EDProducer(
     "MakeCrudeStrawHit",
-    maxFullPrint = mu2e.untracked.int32(10)
+    diagLevel    = mu2e.untracked.int32(3),
+    maxFullPrint = mu2e.untracked.int32(5)
+)
+
+# Check the crudeStrawHits.
+process.testCSH = mu2e.EDAnalyzer("MCSH_Test",
+    diagLevel    = mu2e.untracked.int32(3),
+    maxFullPrint = mu2e.untracked.int32(5)
 )
 
 # End of the section that defines and configures modules.
 
-
-# Adjust configuration of message logger.
-# Enable debug printout from the module instance "hitinspect".
-# Print unlimited messages with category ToyHitInfo.
-process.MessageLogger.cerr.threshold = mu2e.untracked.string('DEBUG')
-process.MessageLogger.categories.append("ToyHitInfo")
-process.MessageLogger.categories.append("GEOM")
-
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.makehits );
+process.output = mu2e.EndPath(  process.makeCSH*process.testCSH );
 
