@@ -8,15 +8,20 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.3 2009/10/22 16:34:30 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.4 2009/10/22 19:56:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 16:34:30 $
+// $Date: 2009/10/22 19:56:10 $
 //
 // Original author Rob Kutschke
 //
 
+// C++ includes
 #include <ostream>
 
+// Mu2e includes
+#include "LTrackerGeom/inc/StrawIndex.hh"
+
+// CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e { 
@@ -66,6 +71,10 @@ namespace mu2e {
     VolumeId_type            volumeId() const { return _volumeId; }
     CLHEP::Hep3Vector const& position() const { return _position; }
     CLHEP::Hep3Vector const& momentum() const { return _momentum; }
+
+    // If the volume is a straw, then return the volumeId as a StrawIndex.
+    // It's the user's job to know if this is a reasonable thing to do.
+    StrawIndex strawIndex() const { return StrawIndex::fromInt(_volumeId); }
 
   private:
   
