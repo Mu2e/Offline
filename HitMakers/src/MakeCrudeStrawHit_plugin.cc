@@ -1,10 +1,10 @@
 //
 // An EDProducer Module that reads StepPointMC objects and turns them into
-// crude straw hit objects.
+// CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.1 2009/10/09 13:31:32 kutschke Exp $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.2 2009/10/22 19:52:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/09 13:31:32 $
+// $Date: 2009/10/22 19:52:53 $
 //
 // Original author Rob Kutschke
 //
@@ -36,8 +36,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
+#include "LTrackerGeom/inc/CrudeStrawHitCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/CrudeStrawHitCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 // Other includes.
@@ -45,6 +45,7 @@
 
 
 using namespace std;
+using edm::Event;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
@@ -55,16 +56,15 @@ namespace mu2e {
   class MakeCrudeStrawHit : public edm::EDProducer {
   public:
     explicit MakeCrudeStrawHit(edm::ParameterSet const& pset) : 
-      _diagLevel(0),
+      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _hRadius(0),
       _hTime(0),
-      _hMultiplicity(0),
       _hDriftDist(0),
+      _hCheckPointRadius(0),
       _messageCategory("HitMaker"){
 
       // A place holder.
-      produces<CrudeStrawHitCollection>();
+      produces<CrudeStrawHitPData>();
 
     }
     virtual ~MakeCrudeStrawHit() { }
@@ -75,61 +75,34 @@ namespace mu2e {
 
   private:
     
-
     // Diagnostics level.
     int _diagLevel;
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
-    // Pointers to histograms to be filled.
-    TH1F* _hRadius;
+    // Pointers to diagnostic histograms.
     TH1F* _hTime;
-    TH1F* _hMultiplicity;
     TH1F* _hDriftDist;
-    TH1F* _hxHit;
-    TH1F* _hyHit;
-    TH1F* _hzHit;
-    TH1F* _hHitNeighbours;
     TH1F* _hCheckPointRadius;
-
-    TNtuple* _ntup;
 
     // A category for the error logger.
     const std::string _messageCategory;
-
-    // A helper function.
-    int countHitNeighbours( Straw const& straw, 
-			    edm::Handle<StepPointMCCollection>& hits );
 
   };
 
   void MakeCrudeStrawHit::beginJob(edm::EventSetup const& ){
 
-    // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    // Create histograms if diagnostics are enabled.
+    if ( _diagLevel > 0 ){
 
-    // Create some 1D histograms.
-    _hRadius       = tfs->make<TH1F>( "hRadius", "Radius of Hits;(mm)",          100,  0., 1000. );
-    _hTime         = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  100. );
-    _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",         100,  0.,  100. );
-    _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)", 100,  0.,   3.  );
-    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(mm)",                 
-				      100,  -1000.,  1000. );
-    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(mm)",                 
-				      100,  -1000.,  1000. );
-    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of Hit;(mm)",                 
-				      100,  -1400.,  1400. );
+      edm::Service<edm::TFileService> tfs;
 
-    _hHitNeighbours    = tfs->make<TH1F>( "hHitNeighbours",  "Number of hit neighbours",
-					  10, 0., 10. );
-
-    _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
-					  100, 2.25, 2.75 );
-
-    // Create an ntuple.
-    _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
-					  "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec");
+      _hTime      = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  100. );
+      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)", 100,  0.,   3.  );
+      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
+					    100, 2.25, 2.75 );
+    }
 
   }
 
@@ -139,42 +112,35 @@ namespace mu2e {
     static int ncalls(0);
     ++ncalls;
 
-    // Master geometry for the LTracker.
+    // Geometry for the LTracker.
     GeomHandle<LTracker> ltracker;
 
-    // Hold the output hits.
-    auto_ptr<CrudeStrawHitCollection> crudeHits(new CrudeStrawHitCollection);
+    // A container to hold the output hits.
+    auto_ptr<CrudeStrawHitPData> crudeHits(new CrudeStrawHitPData);
 
     // Instance name of the module that created the hits of interest;
     static const string creatorName("g4run");
 
-    // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hits;
-    evt.getByLabel(creatorName,hits);
-    
-    // Fill histogram with number of hits per event.
-    _hMultiplicity->Fill(hits->size());
+    // Ask the event to give us a handle to the requested hits.
+    edm::Handle<StepPointMCCollection> points;
+    evt.getByLabel(creatorName,points);
 
-    // ntuple buffer.
-    float nt[13];
+    // Product Id of the input points.
+    edm::ProductID const& id(points.id());
 
-
-    for ( int i=0; i<hits->size(); ++i){
+    for ( int i=0; i<points->size(); ++i){
       
-      // Aliases, used for readability.
-      StepPointMC const& hit = (*hits)[i];
+      // Aliases (references), used for readability.
+      StepPointMC const& hit = (*points)[i];
       Hep3Vector  const& pos = hit.position();
       Hep3Vector  const& mom = hit.momentum();
       
-      // Get the straw information.
-      Straw const&      straw = ltracker->getStraw( hit.volumeId() );
+      // Get the straw information, also by reference.
+      Straw const&      straw = ltracker->getStraw(hit.strawIndex());
       Hep3Vector const& mid   = straw.getMidPoint();
       Hep3Vector const& w     = straw.getDirection();
 
-      // Count how many nearest neighbours are also hit.
-      int nNeighbours = countHitNeighbours( straw, hits );
-
-      // Compute an estimate of the drift distance.
+      // Compute straight line approximation of the drift distance.
       TwoLinePCA pca( mid, w, pos, mom);
       double dcaTrue = pca.dca();
 
@@ -186,106 +152,49 @@ namespace mu2e {
       double time = dcaTrue/driftVelocity;
       double dca  = dcaTrue + RandGauss::shoot(0.,sigma);
 
+      // Add to the output collection.
       crudeHits->push_back( CrudeStrawHit( straw.Index(), 
 					   dca, 
 					   time, 
 					   sigma, 
 					   hit.eDep(), 
-					   i, 
+					   CrudeStrawHit::stepPointMC,
+					   DPIndex(id,i),
 					   dcaTrue)
 			    );
 
-      // Check that the radius of the reference point in the local
-      // coordinates of the straw.  Should be 2.5 mm.
-      double s = w.dot(pos-mid);
-      Hep3Vector point = pos - (mid + s*w);
+      // Fill diagnostic histograms.
+      if ( _diagLevel > 0 ) {
 
-      // I don't understand the distribution of the time variable.
-      // I want it to be the time from the start of the spill.
-      // It appears to be the time since start of tracking.
+	// Check the radius of the reference point in the local
+	// coordinates of the straw.  It should be 2.5 mm.
+	double s = w.dot(pos-mid);
+	Hep3Vector point = pos - (mid + s*w);
 
-      // Fill some histograms
-      _hRadius->Fill(pos.perp());
-      _hTime->Fill(hit.time());
-      _hHitNeighbours->Fill(nNeighbours);
-      _hCheckPointRadius->Fill(point.mag());
+	// I don't understand the distribution of the time variable.
+	// I want it to be the time from the start of the spill.
+	// It appears to be the time since start of tracking.
 
-      _hxHit->Fill(pos.x());
-      _hyHit->Fill(pos.y());
-      _hzHit->Fill(pos.z());
-
-      _hDriftDist->Fill(pca.dca());
-
-      // Fill the ntuple.
-      nt[0]  = evt.id().event();
-      nt[1]  = hit.trackId();
-      nt[2]  = hit.volumeId();
-      nt[3]  = pos.x();
-      nt[4]  = pos.y();
-      nt[5]  = pos.z();
-      nt[6]  = mid.x();
-      nt[7]  = mid.y();
-      nt[8]  = mid.z();
-      nt[9]  = pca.dca();
-      nt[10] = hit.time();
-      nt[11] = straw.Id().getDevice();
-      nt[12] = straw.Id().getSector();
-
-      _ntup->Fill(nt);
-
-      // Print out limited to the first few events.
-      if ( ncalls < _maxFullPrint && _diagLevel > 0){
-	cout << "Readback hit: "
-	     << evt.id().event() << " "
-	     << i                <<  " "
-	     << hit.trackId()  << "   "
-	     << hit.volumeId() << " | "
-	     << pca.dca()      << " "
-	     << pos  << " "
-	     << mom  << " "
-	     << point.mag()  << " " 
-	     << point.z()
-	     << endl;
-
+	_hTime->Fill(hit.time());
+	_hCheckPointRadius->Fill(point.mag());
+	_hDriftDist->Fill(pca.dca());
       }
 
-    } // end loop over hits.
 
-    for ( unsigned int i=0; i<crudeHits->size(); ++i){
-      cout << evt.id().event() << " | "   << (*crudeHits)[i] << endl;
+    } // end loop over StepPointMC's
+
+    // Diagnostic printout.
+    if ( ncalls < _maxFullPrint && _diagLevel > 2){
+      for ( unsigned int i=0; i<crudeHits->size(); ++i){
+	cout << evt.id().event() << " | "   << (*crudeHits)[i] << endl;
+      }
     }
 
+    // All done.  Add the output to the event.
     evt.put(crudeHits);
+
     
   } // end of ::analyze.
-
-
-  // Count how many of this straw's nearest neighbours are hit.
-  // If we have enough hits per event, it will make sense to make
-  // a class to let us direct index into a list of which straws have hits.
-  int MakeCrudeStrawHit::countHitNeighbours( Straw const& straw, 
-				    edm::Handle<StepPointMCCollection>& hits ){
-    
-    int count(0);
-    vector<int> const& nearest = straw.nearestNeighboursByIndex();
-    for ( vector<int>::size_type ihit =0;
-	  ihit<nearest.size(); ++ihit ){
-
-      int idx = nearest[ihit];
-
-      for( StepPointMCCollection::const_iterator 
-	     i = hits->begin(),
-	     e = hits->end(); i!=e ; ++i ) {
-	const StepPointMC& hit = *i;
-	if ( hit.volumeId() == idx ){
-	  ++count;
-	  break;
-	}
-      }
-
-    }
-    return count;
-  }
   
 }
 
