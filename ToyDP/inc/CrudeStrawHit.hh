@@ -10,39 +10,53 @@
 // Notes:
 // 1) About precurors:
 //    a) For data from the experiment, this hit will arise from the
-//       processing of exactly 1 unpacked digitized waveform.  An index to that
-//       waveform is stored in precursor.
+//       processing of exactly 1 unpacked digitized waveform.
 //
 //    b) For MC events that have been through the full MC chain, including
-//       creation of digis, the precursor will also index to exactly 1 unpacked
-//       digitized waveform.
+//       creation of digis, this hit will arise from the processing of 
+//       exactly 1 unpacked digitized waveform.
 //
-//    c) For MC events for which there was no simulation of digis, the precursor
-//       will be -1 and the alternate precursor, altPrecursor, will point back to 
-//       one or more StepPointMC objects.
+//    c) For MC events for which there was no simulation of digis, this
+//       event can arise from several different sources.  One example
+//       is that it could come directly from StepPointMC objects. In
+//       this case there hit could come from more than 1 precursor objects.
 //
-//    d) One can also imagine middle fidelty MC for which the precursor will be -1
-//       and altPrecursor will point back to 1 or more objects that are 
-//       intermediate between StepPointMC and unpacked digitized waveforms.
+//    To represent the above information there are two data members.
+//       precursor_type precursorType;
+//       std::vector<DPIndex> precursorIndices;
+//
+//    The first tells us something about how these hits were made;
+//    see the enum precursor_type for possible values.
+//    The second is vector of DPIndex objects.  A DPIndex specifies
+//    a data product by its product ID and an index into that data product.
+//
 //
 // 2) For the LTracker this is a dense index 0...(N-1).  For the others it is
 //    to be defined.
 // 
 // 
-// $Id: CrudeStrawHit.hh,v 1.1 2009/10/09 13:31:32 kutschke Exp $
+// $Id: CrudeStrawHit.hh,v 1.2 2009/10/22 16:31:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/09 13:31:32 $
+// $Date: 2009/10/22 16:31:08 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes
-#include <iostream>
+#include <ostream>
 #include <vector>
 #include <string>
 
 // Mu2e includes
 #include "LTrackerGeom/inc/StrawIndex.hh"
+#include "ToyDP/inc/DPIndex.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "Mu2eUtilities/inc/resolveDPIndices.hh"
+
+// Forward declarations
+namespace edm{
+  class Event;
+}
 
 namespace mu2e { 
 
@@ -50,39 +64,55 @@ namespace mu2e {
 
   public:
 
+    enum precursor_type { undefined, unpackedDigi, stepPointMC};
+
+    // Data members:
+    precursor_type precursorType; // See note 1.
+    StrawIndex     strawIdx;      // See note 2.
+    float          driftDistance; // (mm)
+    float          driftTime;     // (ns)
+    float          sigmaD;        // (mm)
+    float          energy;        // ( TBD: keV, MIP ?)
+
+    // Data members for objects created in MC processing.
+    std::vector<DPIndex> precursorIndices;  // See note 1.
+    float                trueDriftDistance; // (mm)
+
+
     // Root requires us to have a default c'tor.
     CrudeStrawHit();
 
-    // Constructor for a hit either from data or from the
-    // full MC chain.
-    CrudeStrawHit( int        precursor_,
-		   StrawIndex strawIdx_,
-		   float      driftDistance_,
-		   float      driftTime_,
-		   float      sigmaD_,
-		   float      energy_
+    // Constructor for a hit that came from an unpacked digi, either 
+    // from data or from the full MC chain.
+    CrudeStrawHit( StrawIndex     strawIdx_,
+		   float          driftDistance_,
+		   float          driftTime_,
+		   float          sigmaD_,
+		   float          energy_,
+		   DPIndex const& precursorIndex_
 		   );
 
 
-    // Constructor from an MC without digis.
-    CrudeStrawHit( StrawIndex               strawIdx_,
-		   float                    driftDistance_,
-		   float                    driftTime_,
-		   float                    sigmaD_,
-		   float                    energy_,
-		   std::vector<int> const & altPrecursor_,
-		   float                    trueDriftDistance_
+    // Constructor from MC.
+    CrudeStrawHit( StrawIndex                  strawIdx_,
+		   float                       driftDistance_,
+		   float                       driftTime_,
+		   float                       sigmaD_,
+		   float                       energy_,
+		   precursor_type              precursorType_,
+		   std::vector<DPIndex> const& precursorIndices_,
+		   float                       trueDriftDistance_
 		   );
 
-    // A special case of the previous c'tor when there is only one 
-    // altPrecursor.
-    CrudeStrawHit( StrawIndex  strawIdx_,
-		   float       driftDistance_,
-		   float       driftTime_,
-		   float       sigmaD_,
-		   float       energy_,
-                   int         altPrecursor_,
-		   float       trueDriftDistance_
+    // A special case of the previous c'tor when there is only one  altPrecursor.
+    CrudeStrawHit( StrawIndex       strawIdx_,
+		   float            driftDistance_,
+		   float            driftTime_,
+		   float            sigmaD_,
+		   float            energy_,
+		   precursor_type   precursorType_,
+		   DPIndex const&   precursorIndex_,
+		   float            trueDriftDistance_
 		   );
     
     // Accept compiler generated versions of:
@@ -90,35 +120,23 @@ namespace mu2e {
     //   copy c'tor 
     //   assignment operator
 
-    // Formatted information as a string as a printed to a stream.
-    std::string toString() const;
+    void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
-    void print( std::ostream& ost ) const;
-
-    inline void print() const { 
-      print(std::cout); 
+    // Fill a std::vector with (pointers to const) of the precursors of this hit.
+    void getStepPointMC( edm::Event const&    event, 
+			 std::vector<StepPointMC const*>& v ) const{
+      resolveDPIndices<StepPointMCCollection>( event, precursorIndices, v);
     }
 
-    // Data members:
-    int        precursor;     // See note 1.
-    StrawIndex strawIdx;      // See note 2.
-    float      driftDistance; // (mm)
-    float      driftTime;     // (ns)
-    float      sigmaD;        // (mm)
-    float      energy;        // ( TBD: keV, MIP ?)
-
-    // Data members for objects created in MC processing.
-    std::vector<int>  altPrecursor;      // See note 1.
-    float             trueDriftDistance; // (mm)
 
   private:
-    std::string formatAltPrecursors() const;
+    void formatPrecursorIndices( std::ostream& ost ) const;
     
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
 				   CrudeStrawHit const& hit){
-    ost << hit.toString();
+    hit.print(ost,false);
     return ost;
   }
   
