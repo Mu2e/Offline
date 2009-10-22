@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+ * $Id: SimpleConfig.hh,v 1.2 2009/10/22 16:14:59 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2009/09/30 22:57:47 $
+ * $Date: 2009/10/22 16:14:59 $
  *
  * Original author Rob Kutschke
  *
@@ -23,14 +23,14 @@
  * 2) Does not escape new lines within a string properly.
  *
  *@author $Author: kutschke $
- *@version $Id: SimpleConfig.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+ *@version $Id: SimpleConfig.hh,v 1.2 2009/10/22 16:14:59 kutschke Exp $
  *
  * Date $Date%
  *
  */
 
 // C++ includes
-#include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 #include <map>
