@@ -6,9 +6,9 @@
 // collection of DPIndex's into pointers to the objects
 // that they describe.
 //
-// $Id: resolveDPIndices.hh,v 1.1 2009/10/22 15:52:07 kutschke Exp $
+// $Id: resolveDPIndices.hh,v 1.2 2009/10/22 21:54:48 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 15:52:07 $
+// $Date: 2009/10/22 21:54:48 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,7 @@
 
 namespace mu2e {
 
+  // Resolve a single DPIndex.
   template<typename T>
   typename T::value_type const * resolveDPIndex( edm::Event const& event,
 						 DPIndex const&    dpi ){
@@ -34,6 +35,8 @@ namespace mu2e {
     return &handle->at(dpi.index);
   }
 
+  // Resolve a vector of DPIndices.
+  // Assume that ProductIDs may be different from one DPIndex to the other.
   template<typename T>
   void resolveDPIndices( edm::Event const&                  event,
 			 std::vector<DPIndex> const&        indices,
@@ -45,13 +48,29 @@ namespace mu2e {
 	    e = indices.end();
 	  i!=e; ++i ){
      
-      // Get a handle to a collection described by a ProductID.
-      // edm::Handle<T> handle;
-      //event.get( i->id, handle);
-      
-      //vout.push_back( &handle->at(i->index) );
-      //DPIndex const& idx(*i);
       vout.push_back( resolveDPIndex<T>(event,*i) );
+      
+    }
+    
+  }
+
+  // Resolve multiple objects within a single ProductID.
+  template<typename T>
+  void resolveDPIndices( edm::Event const&                  event,
+			 edm::ProductID const&              id,
+			 std::vector<int> const&            indices,
+			 std::vector<typename T::value_type const*>& vout
+			 ){
+    
+    edm::Handle<T> handle;
+    event.get( id, handle);
+
+    for ( std::vector<int>::const_iterator 
+	    i = indices.begin(),
+	    e = indices.end();
+	  i!=e; ++i ){
+     
+      vout.push_back( &handle->at(*i) );
       
     }
     
