@@ -7,14 +7,14 @@
 
 //
 //
-// $Id: SectorId.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: SectorId.hh,v 1.2 2009/10/22 16:43:11 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/22 16:43:11 $
 //
 // Original author Rob Kutschke
 //
 
-#include <iostream>
+#include <ostream>
 #include "LTrackerGeom/inc/DeviceId.hh"
 
 namespace mu2e { 
@@ -49,8 +49,12 @@ public:
     return _did;
   }
 
-  bool operator==(const SectorId s) const{
-    return ( _did == s._did && _sector == s._sector );
+  bool operator==(SectorId const& rhs) const{
+    return ( _did == rhs._did && _sector == rhs._sector );
+  }
+
+  bool operator!=(SectorId const& rhs) const{
+    return !( *this == rhs);
   }
   
   DeviceId _did;

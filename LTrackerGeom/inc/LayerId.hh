@@ -6,14 +6,14 @@
 //
 
 //
-// $Id: LayerId.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: LayerId.hh,v 1.2 2009/10/22 16:43:11 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/22 16:43:11 $
 //
 // Original author Rob Kutschke
 //
 
-#include <iostream>
+#include <ostream>
 
 #include "LTrackerGeom/inc/SectorId.hh"
 
@@ -65,8 +65,12 @@ public:
     return _layer;
   }
 
-  bool operator==(const LayerId l) const{
-    return ( _sid == l._sid && _layer == l._layer );
+  bool operator==(LayerId const& rhs) const{
+    return ( _sid == rhs._sid && _layer == rhs._layer );
+  }
+
+  bool operator!=(LayerId const& rhs) const{
+    return !( *this == rhs);
   }
 
   
