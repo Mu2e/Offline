@@ -1,9 +1,9 @@
 //
 // A crudely calibrated hit in a straw. See header for full details.
 //
-// $Id: CrudeStrawHit.cc,v 1.2 2009/10/22 16:31:08 kutschke Exp $
+// $Id: CrudeStrawHit.cc,v 1.3 2009/10/22 21:12:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 16:31:08 $
+// $Date: 2009/10/22 21:12:17 $
 //
 // Original author Rob Kutschke
 
@@ -24,7 +24,7 @@ namespace mu2e {
 
   CrudeStrawHit::CrudeStrawHit():
     precursorType(undefined),
-    strawIdx(StrawIndex::fromInt(0)),
+    strawIndex(StrawIndex::fromInt(0)),
     driftDistance(0.),
     driftTime(0.),
     sigmaD(0.),
@@ -35,7 +35,7 @@ namespace mu2e {
   }
 
 
-  CrudeStrawHit::CrudeStrawHit( StrawIndex     strawIdx_,
+  CrudeStrawHit::CrudeStrawHit( StrawIndex     strawIndex_,
                                 float          driftDistance_,
                                 float          driftTime_,
                                 float          sigmaD_,
@@ -43,7 +43,7 @@ namespace mu2e {
 				DPIndex const& precursorIndex_
                                 ):
     precursorType(unpackedDigi),
-    strawIdx(strawIdx_),
+    strawIndex(strawIndex_),
     driftDistance(driftDistance_),
     driftTime(driftTime_),
     sigmaD(sigmaD_),
@@ -53,7 +53,7 @@ namespace mu2e {
   {
   }
 
-  CrudeStrawHit::CrudeStrawHit( StrawIndex                  strawIdx_,
+  CrudeStrawHit::CrudeStrawHit( StrawIndex                  strawIndex_,
                                 float                       driftDistance_,
                                 float                       driftTime_,
                                 float                       sigmaD_,
@@ -63,7 +63,7 @@ namespace mu2e {
                                 float                       trueDriftDistance_
                                 ):
     precursorType(precursorType_),
-    strawIdx(strawIdx_),
+    strawIndex(strawIndex_),
     driftDistance(driftDistance_),
     driftTime(driftTime_),
     sigmaD(sigmaD_),
@@ -73,7 +73,7 @@ namespace mu2e {
   {
   }
 
-  CrudeStrawHit::CrudeStrawHit( StrawIndex       strawIdx_,
+  CrudeStrawHit::CrudeStrawHit( StrawIndex       strawIndex_,
                                 float            driftDistance_,
                                 float            driftTime_,
                                 float            sigmaD_,
@@ -83,7 +83,7 @@ namespace mu2e {
                                 float            trueDriftDistance_
                                 ):
     precursorType(precursorType_),
-    strawIdx(strawIdx_),
+    strawIndex(strawIndex_),
     driftDistance(driftDistance_),
     driftTime(driftTime_),
     sigmaD(sigmaD_),
@@ -97,7 +97,7 @@ namespace mu2e {
 
     ost << "CrudeStraw Hit:"
 	<< " pretyp: "    << precursorType
-        << " id: "        << strawIdx
+        << " id: "        << strawIndex
         << " d: "         << driftDistance
         << " t: "         << driftTime
         << " s: "         << sigmaD

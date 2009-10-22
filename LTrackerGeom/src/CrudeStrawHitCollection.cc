@@ -45,7 +45,7 @@ namespace mu2e{
     _index.assign( nChannels, StrawIndex::fromInt(-1) );
     for ( int i=0; i<_hits.size(); ++i){
       CrudeStrawHit const& hit = _hits[i];
-      StrawIndex idx = hit.strawIdx;
+      StrawIndex idx = hit.strawIndex;
       _index[idx.asInt()] = StrawIndex::fromInt(i);
     }
   }

@@ -35,9 +35,9 @@
 //    to be defined.
 // 
 // 
-// $Id: CrudeStrawHit.hh,v 1.2 2009/10/22 16:31:08 kutschke Exp $
+// $Id: CrudeStrawHit.hh,v 1.3 2009/10/22 21:12:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 16:31:08 $
+// $Date: 2009/10/22 21:12:17 $
 //
 // Original author Rob Kutschke
 //
@@ -68,7 +68,7 @@ namespace mu2e {
 
     // Data members:
     precursor_type precursorType; // See note 1.
-    StrawIndex     strawIdx;      // See note 2.
+    StrawIndex     strawIndex;    // See note 2.
     float          driftDistance; // (mm)
     float          driftTime;     // (ns)
     float          sigmaD;        // (mm)
@@ -84,7 +84,7 @@ namespace mu2e {
 
     // Constructor for a hit that came from an unpacked digi, either 
     // from data or from the full MC chain.
-    CrudeStrawHit( StrawIndex     strawIdx_,
+    CrudeStrawHit( StrawIndex     strawIndex_,
 		   float          driftDistance_,
 		   float          driftTime_,
 		   float          sigmaD_,
@@ -94,7 +94,7 @@ namespace mu2e {
 
 
     // Constructor from MC.
-    CrudeStrawHit( StrawIndex                  strawIdx_,
+    CrudeStrawHit( StrawIndex                  strawIndex_,
 		   float                       driftDistance_,
 		   float                       driftTime_,
 		   float                       sigmaD_,
@@ -105,7 +105,7 @@ namespace mu2e {
 		   );
 
     // A special case of the previous c'tor when there is only one  altPrecursor.
-    CrudeStrawHit( StrawIndex       strawIdx_,
+    CrudeStrawHit( StrawIndex       strawIndex_,
 		   float            driftDistance_,
 		   float            driftTime_,
 		   float            sigmaD_,
