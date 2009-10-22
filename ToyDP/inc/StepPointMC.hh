@@ -8,14 +8,14 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.2 2009/10/06 23:23:05 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.3 2009/10/22 16:34:30 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/06 23:23:05 $
+// $Date: 2009/10/22 16:34:30 $
 //
 // Original author Rob Kutschke
 //
 
-#include <iostream>
+#include <ostream>
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -28,7 +28,6 @@ namespace mu2e {
     // This might change some day.
     typedef unsigned long VolumeId_type;
 
-    inline
     StepPointMC():
       _trackId(-1),
       _volumeId(0),
@@ -38,7 +37,6 @@ namespace mu2e {
       _momentum(){
     }
     
-    inline
     StepPointMC( int                      trackId,
 		 VolumeId_type            volumeId,
 		 double                   edep,
@@ -59,15 +57,15 @@ namespace mu2e {
     //  copy c'tor 
     //  assignment operator
     
-    void print( std::ostream& ost ) const;
-    inline void print() const { print(std::cout); }
+    void print( std::ostream& ost, bool doEndl = true ) const;
+    void print() const { print(std::cout); }
 
-    inline int                      trackId()  const { return _trackId; }
-    inline double                   eDep()     const { return _edep;    } 
-    inline double                   time()     const { return _time;    }
-    inline VolumeId_type            volumeId() const { return _volumeId; }
-    inline CLHEP::Hep3Vector const& position() const { return _position; }
-    inline CLHEP::Hep3Vector const& momentum() const { return _momentum; }
+    int                      trackId()  const { return _trackId; }
+    double                   eDep()     const { return _edep;    } 
+    double                   time()     const { return _time;    }
+    VolumeId_type            volumeId() const { return _volumeId; }
+    CLHEP::Hep3Vector const& position() const { return _position; }
+    CLHEP::Hep3Vector const& momentum() const { return _momentum; }
 
   private:
   
@@ -82,7 +80,7 @@ namespace mu2e {
 
   inline std::ostream& operator<<( std::ostream& ost,
 				   StepPointMC const& h){
-    h.print(ost);
+    h.print(ost, false);
     return ost;
   }
   
