@@ -17,8 +17,8 @@ namespace mu2e{
   CrudeStrawHitCollection::
   CrudeStrawHitCollection( edm::Event const& event,
 			   edm::Handle<CrudeStrawHitPData> const& hits ):
-    _event(event),
-    _hits(*hits),
+    _event(&event),
+    _hits(&(*hits)),
     _index()
   {
     FillIndex();
@@ -27,8 +27,8 @@ namespace mu2e{
   CrudeStrawHitCollection::
   CrudeStrawHitCollection( edm::Event const& event,
 			   CrudeStrawHitPData const& hits ):
-    _event(event),
-    _hits(hits),
+    _event(&event),
+    _hits(&hits),
     _index()
   {
     FillIndex();
@@ -42,22 +42,19 @@ namespace mu2e{
     int nChannels = ltracker->getAllStraws().size();
     
     // Fill the fast indexing array.
-    _index.assign( nChannels, StrawIndex::fromInt(-1) );
-    for ( int i=0; i<_hits.size(); ++i){
-      CrudeStrawHit const& hit = _hits[i];
+    _index.assign( nChannels, -1 );
+    for ( int i=0; i<_hits->size(); ++i){
+      CrudeStrawHit const& hit = (*_hits)[i];
       StrawIndex idx = hit.strawIndex;
-      _index[idx.asInt()] = StrawIndex::fromInt(i);
+      _index[idx.asInt()] = i;
     }
   }
-
-  CrudeStrawHitCollection::
-  ~CrudeStrawHitCollection(){}
 
   void CrudeStrawHitCollection::getStepPointMC( int i,
 						vector<StepPointMC const*>& v ) const{
 
     // The requested hit.
-    CrudeStrawHit const& hit = _hits.at(i);
+    CrudeStrawHit const& hit = _hits->at(i);
 
     // In future, change this to check to see if an indirect path
     // to the StepPointMC is available.  If so, navigate through
@@ -71,7 +68,7 @@ namespace mu2e{
     }
 
     // Fill the return argument.
-    hit.getStepPointMC( _event, v);
+    hit.getStepPointMC( *_event, v);
 
   }
 
