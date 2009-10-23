@@ -1,8 +1,8 @@
 # Configuration file for Example/02
 #
-# $Id: ex02.py,v 1.2 2009/10/23 16:34:23 kutschke Exp $
+# $Id: ex02.py,v 1.3 2009/10/23 22:15:30 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/10/23 16:34:23 $
+# $Date: 2009/10/23 22:15:30 $
 #
 # Original author Rob Kutschke
 #
@@ -27,6 +27,11 @@ process.load("Config/MessageLogger_cfi")
 process.TFileService = mu2e.Service("TFileService",
                        fileName = mu2e.string("ex02histo.root"),
                        closeFileFast = mu2e.untracked.bool(False)
+)
+
+# Initialize the random number sequences.
+process.RandomNumberService = mu2e.Service("RandomNumberService",
+                            globalSeed=mu2e.untracked.int32(9877),
 )
 
 # Define the geometry.
