@@ -1,9 +1,9 @@
 
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.2 2009/10/16 04:20:52 shanahan Exp $
+// $Id: PiCapture.cc,v 1.3 2009/10/23 21:39:53 shanahan Exp $
 // $Author: shanahan $ 
-// $Date: 2009/10/16 04:20:52 $
+// $Date: 2009/10/23 21:39:53 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -57,23 +57,23 @@ namespace mu2e {
     _piCaptureMultiplicity(0),
     _piCaptureEPhot(0),
     _randomUnitSphere(),
-    _funcGen(0){
+    _funcGen(){
 
     _mean = config.getDouble("picapture.mean",0.);
-    cout << "Pi capture mean: " << _mean << endl;
+    edm::LogInfo("Pi capture mean: ") << _mean ;
     _elow = config.getDouble("picapture.elow",38.2);
-    cout << "Pi capture E Low: " << _elow << endl;
+    edm::LogInfo("Pi capture E Low: ") << _elow ;
     _ehi = config.getDouble("picapture.ehi",emax);
-    cout << "Pi capture E High: " << _ehi << endl;
+    edm::LogInfo("Pi capture E High: ") << _ehi ;
     _nbins = config.getInt("picapture.nbins",1000);
-    cout << "Pi capture N Bins: " << _nbins << endl;
+    edm::LogInfo("Pi capture N Bins: ") << _nbins ;
 
     // set up the generator function
     if (_nbins>0) _bindE = (_ehi - _elow) / _nbins;
     else {
        // I'm sure this isn't the right way to do this...
-       std::cout<<"Rubbish picapture.nbins = "<<_nbins<<std::endl;
-       assert(0);
+       throw cms::Exception("RANGE") <<"Nonsense picapture.nbins requested="<<
+            _nbins<<"\n";
     }
 
     
@@ -83,7 +83,7 @@ namespace mu2e {
        double x = _elow+(ib+0.5) * _bindE;
        YFunc[ib] = EPhotFunc(x);
     }
-    _funcGen = new RandGeneral(YFunc,_nbins);
+    _funcGen = auto_ptr<RandGeneral>(new RandGeneral(YFunc,_nbins));
 
     // Book histograms.
     edm::Service<edm::TFileService> tfs;
