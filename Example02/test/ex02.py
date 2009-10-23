@@ -1,8 +1,8 @@
 # Configuration file for Example/02
 #
-# $Id: ex02.py,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+# $Id: ex02.py,v 1.2 2009/10/23 16:34:23 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/09/30 22:57:47 $
+# $Date: 2009/10/23 16:34:23 $
 #
 # Original author Rob Kutschke
 #
@@ -31,7 +31,7 @@ process.TFileService = mu2e.Service("TFileService",
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
-       inputfile=cms.untracked.string("Example02/test/ex02geom.txt")
+       inputfile=mu2e.untracked.string("Example02/test/ex02geom.txt")
 )
 
 # Define and configure some modules to do work on each event.
@@ -43,19 +43,19 @@ process.source = mu2e.Source("EmptySource")
 # Make some hits and add them to the event.
 process.ex02hitmaker = mu2e.EDProducer(
     "Ex02MakeHits",
-    minPulseHeight=cms.double(6.5)
+    minPulseHeight=mu2e.double(6.5)
     )
 
 # Filter to select events with an odd event number.
 process.oddfilter = mu2e.EDFilter(
     "Ex02SelectEvents",
-    keepOddOrEven=cms.untracked.int32(1)
+    keepOddOrEven=mu2e.untracked.int32(1)
     )
 
 # Filter to select events with an odd event number.
 process.evenfilter = mu2e.EDFilter(
     "Ex02SelectEvents",
-    keepOddOrEven=cms.untracked.int32(2)
+    keepOddOrEven=mu2e.untracked.int32(2)
     )
 
 # Get the hits out of the event and look at them.  Make histograms.
@@ -67,18 +67,18 @@ process.hitinspect = mu2e.EDAnalyzer(
 # Write the odd numbered events to one output file.
 process.outputodd = mu2e.OutputModule(
     "PoolOutputModule",
-    fileName = cms.untracked.string('file:ex02outputodd.root'),
-    SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('podd')
+    fileName = mu2e.untracked.string('file:ex02outputodd.root'),
+    SelectEvents = mu2e.untracked.PSet(
+        SelectEvents = mu2e.vstring('podd')
     )
 )
 
 # Write the even numbered event to a different output file.
 process.outputeven = mu2e.OutputModule(
     "PoolOutputModule",
-    fileName = cms.untracked.string('file:ex02outputeven.root'),
-    SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('peven')
+    fileName = mu2e.untracked.string('file:ex02outputeven.root'),
+    SelectEvents = mu2e.untracked.PSet(
+        SelectEvents = mu2e.vstring('peven')
     )
 )
 

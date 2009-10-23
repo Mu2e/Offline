@@ -1,9 +1,9 @@
 
 # Configuration file for Readback
 #
-# $Id: makehits.py,v 1.2 2009/10/22 21:15:55 kutschke Exp $
+# $Id: makehits.py,v 1.3 2009/10/23 16:34:23 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/10/22 21:15:55 $
+# $Date: 2009/10/23 16:34:23 $
 #
 # Original author Rob Kutschke
 #
@@ -38,7 +38,7 @@ process.RandomNumberService = mu2e.Service("RandomNumberService",
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
-       inputfile=cms.untracked.string("Mu2eG4/test/geom_03.txt")
+       inputfile=mu2e.untracked.string("Mu2eG4/test/geom_03.txt")
 )
 
 # Define and configure some modules to do work on each event.

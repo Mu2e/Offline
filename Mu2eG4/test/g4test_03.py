@@ -1,8 +1,8 @@
 # Configuration file for G4Test03
 #
-# $Id: g4test_03.py,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+# $Id: g4test_03.py,v 1.2 2009/10/23 16:34:23 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/09/30 22:57:47 $
+# $Date: 2009/10/23 16:34:23 $
 #
 # Original author Rob Kutschke
 #
@@ -37,7 +37,7 @@ process.RandomNumberService = mu2e.Service("RandomNumberService",
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
-       inputfile=cms.untracked.string("Mu2eG4/test/geom_03.txt")
+       inputfile=mu2e.untracked.string("Mu2eG4/test/geom_03.txt")
 )
 
 # Define and configure some modules to do work on each event.
@@ -59,7 +59,7 @@ process.g4run = mu2e.EDProducer(
 
 process.outfile = mu2e.OutputModule(
     "PoolOutputModule",
-    fileName = cms.untracked.string('file:data_03.root'),
+    fileName = mu2e.untracked.string('file:data_03.root'),
 )
 
 # Look at the hits from G4.
