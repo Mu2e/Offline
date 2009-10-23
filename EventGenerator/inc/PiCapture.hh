@@ -5,9 +5,9 @@
 //
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
-// $Id: PiCapture.hh,v 1.2 2009/10/16 04:20:52 shanahan Exp $
+// $Id: PiCapture.hh,v 1.3 2009/10/23 21:40:45 shanahan Exp $
 // $Author: shanahan $ 
-// $Date: 2009/10/16 04:20:52 $
+// $Date: 2009/10/23 21:40:45 $
 //
 // Original author Rob Kutschke, P. Shanahan
 // 
@@ -48,7 +48,7 @@ namespace mu2e {
     TH1D* _piCaptureEPhotZ;
 
     RandomUnitSphere _randomUnitSphere;
-    RandGeneral* _funcGen;
+    std::auto_ptr<RandGeneral> _funcGen;
 
     double _mean; //< mean per event
     double _elow; //< lower photon energy 
