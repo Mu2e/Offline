@@ -2,9 +2,9 @@
 
   Look at some overly simplified hits that are in the event.
 
-  $Id: Ex01InspectHits_plugin.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+  $Id: Ex01InspectHits_plugin.cc,v 1.2 2009/10/23 22:17:49 kutschke Exp $
   $Author: kutschke $
-  $Date: 2009/09/30 22:57:47 $
+  $Date: 2009/10/23 22:17:49 $
    
   Original author Rob Kutschke
 
@@ -135,9 +135,8 @@ namespace mu2e {
 
   }
 
-
   void
-  Ex01InspectHits::analyze(const edm::Event& evt, edm::EventSetup const&) {
+  Ex01InspectHits::analyze(const edm::Event& event, edm::EventSetup const&) {
 
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
@@ -145,43 +144,47 @@ namespace mu2e {
     // Instance name of the module that created the hits of interest;
     static const string creatorName("ex02hitmaker");
 
-    // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<ToyHitCollection> handle;
-    evt.getByLabel(creatorName,handle);
+    // Get the ToyHitCollection from the event.
+    edm::Handle<ToyHitCollection> hitsHandle;
+    event.getByLabel(creatorName,hitsHandle);
+
+    // The & is important here: it makes a reference not a copy.
+    // This step has no run time cost in CPU or memory.
+    ToyHitCollection const& hits(*hitsHandle);
     
-    // Some printout.
+    // Some printout.  This time keep the variable log around for future use.
     edm::LogVerbatim log(_messageCategory);
     log << "Analyzing event #: " 
-	<< evt.id().event() << ". Number of hits: "
-	<< handle->size() << ".";
+	<< event.id() << ". Number of hits: "
+	<< hits.size() << ".";
 
     // Fill histogram with number of hits per event.
-    _hist4->Fill(handle->size());
+    _hist4->Fill(hits.size());
     
     // Loop over all hits.
-    int n(0);
-    ToyHitCollection::const_iterator b = handle->begin();
-    ToyHitCollection::const_iterator e = handle->end();
-    for ( ; b!=e; ++b){
-      
-      // These are like aliases.  Used for readability.
-      const ToyHit& hit = *b;
+    for ( ToyHitCollection::size_type i=0; 
+	  i<hits.size(); 
+	  ++i){
+
+      // References are like aliases and are used for readability.
+      // No run time costs in CPU time or memory.
+      const ToyHit& hit     = hits[i];
       const Hep3Vector& pos = hit._position;
       
       // Fill the histograms
-      float radius = pos.perp();  
+      float radius = pos.perp();
       _hist1->Fill(radius);
       _hist2->Fill(pos.z(),radius);
-      _hist3->Fill(hit._pulseheight);     
+      _hist3->Fill(hit._pulseheight);
       
       // Limit verbose printout.
       if ( _nAnalyzed <= _maxFullPrint ) {
 
 	// We do need the newline here!
 	log << "\nEvent: "
-	    << evt.id().event() 
+	    << event.id().event() 
 	    << "  | Hit #: "
-	    << n++ << "  | Position: "
+	    << i << "  | Position: "
 	    << pos
 	    << " | Pulse Height: "
 	    << hit._pulseheight;

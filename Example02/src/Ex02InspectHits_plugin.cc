@@ -2,9 +2,9 @@
 
   Look at some overly simplified hits that are in the event.
 
-  $Id: Ex02InspectHits_plugin.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+  $Id: Ex02InspectHits_plugin.cc,v 1.2 2009/10/23 22:16:43 kutschke Exp $
   $Author: kutschke $
-  $Date: 2009/09/30 22:57:47 $
+  $Date: 2009/10/23 22:16:43 $
    
   Original author Rob Kutschke
 
@@ -136,14 +136,14 @@ namespace mu2e {
     // Fill histogram with number of hits per event.
     _hist4->Fill(handle->size());
     
-    // Loop overall all hits.
+    // Loop overall all hits.  
+    // Compare to the same loop in Ex01InspectHits.
     int n(0);
-    ToyHitCollection::const_iterator b = handle->begin();
-    ToyHitCollection::const_iterator e = handle->end();
-    for ( ; b!=e; ++b){
+    for ( ToyHitCollection::const_iterator i(handle->begin()), e(handle->end()); 
+	  i!=e; ++i){
       
       // These are essentially aliases.  Used for readability.
-      const ToyHit& hit = *b;
+      const ToyHit& hit     = *i;
       const Hep3Vector& pos = hit._position;
       
       // Fill the histograms
