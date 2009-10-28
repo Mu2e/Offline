@@ -2,9 +2,9 @@
 // Hold information about one Straw.
 //
 //
-// $Id: Straw.cc,v 1.2 2009/10/22 16:27:58 kutschke Exp $
+// $Id: Straw.cc,v 1.3 2009/10/28 13:40:47 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/22 16:27:58 $
+// $Date: 2009/10/28 13:40:47 $
 //
 // Original author Rob Kutschke
 //
@@ -13,6 +13,7 @@
 
 #ifndef __CINT__ 
 
+using std::vector;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
@@ -63,6 +64,18 @@ Straw::Straw( const StrawId& id,
 
 Straw::~Straw (){
 }
+
+bool Straw::isNearestNeighbour( StrawIndex idx ) const{
+
+  for ( vector<StrawIndex>::const_iterator i=_nearestByIndex.begin(),
+	  e=_nearestByIndex.end(); 
+	i<e; ++i ){
+    if ( *i == idx ) return true;
+  }
+  
+  return false;
+}
+
 
 } // namespace mu2e
 

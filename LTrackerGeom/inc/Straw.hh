@@ -4,9 +4,9 @@
 // Hold information about one straw in a tracker.
 //
 //
-// $Id: Straw.hh,v 1.2 2009/10/22 16:27:58 kutschke Exp $
+// $Id: Straw.hh,v 1.3 2009/10/28 13:40:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/22 16:27:58 $
+// $Date: 2009/10/28 13:40:46 $
 //
 // Original author Rob Kutschke
 //
@@ -67,6 +67,9 @@ public:
   const std::vector<const Straw*>& nearestNeighbours() const{
     return _nearest;
   }
+
+  // Return true if the argument is one of the nearest neighbours of this straw.
+  bool isNearestNeighbour( StrawIndex idx ) const;
 
   const std::vector<StrawIndex>& nearestNeighboursByIndex() const{
     return _nearestByIndex;
