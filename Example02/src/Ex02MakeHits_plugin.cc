@@ -3,9 +3,9 @@
   A producer module that makes a collection of overly simplified "hits"
   and adds them to the event.
 
-  $Id: Ex02MakeHits_plugin.cc,v 1.2 2009/10/23 22:16:03 kutschke Exp $
+  $Id: Ex02MakeHits_plugin.cc,v 1.3 2009/10/28 13:35:43 kutschke Exp $
   $Author: kutschke $
-  $Date: 2009/10/23 22:16:03 $
+  $Date: 2009/10/28 13:35:43 $
    
   Original author Rob Kutschke
 
@@ -66,11 +66,6 @@ namespace mu2e {
 
     virtual void produce(edm::Event& e, edm::EventSetup const& c);
     
-    static void fillDescription(edm::ParameterSetDescription& iDesc,
-                                string const& moduleLabel) {
-      iDesc.setAllowAnything();
-    }
-    
   private:
 
     // Parameters from run time configuration.
@@ -79,13 +74,13 @@ namespace mu2e {
   };
 
   void
-  Ex02MakeHits::produce(edm::Event& e, edm::EventSetup const&) {
+  Ex02MakeHits::produce(edm::Event& event, edm::EventSetup const&) {
 
     // Geometry information about the CTracker.
     GeomHandle<CTracker> ctracker;
 
     // Extract the event number from the event.
-    int eventNumber = e.id().event();
+    int eventNumber = event.id().event();
 
     // Make the collection to hold the hits that we will make.
     auto_ptr<ToyHitCollection> p(new ToyHitCollection);
@@ -123,23 +118,21 @@ namespace mu2e {
       }
     }
 
-    // How many hits were generated?
-    int nhits(p->size());
+    // Put the generated hits into the event.
+    //event.put(p);
 
-    // Put the hits into the event.  You may no longer use p.
-    // Return value is a "read only pointer" to the hits.
-    edm::OrphanHandle<ToyHitCollection> q = e.put(p);
+    // At this point p is no longer usable.  If you try to
+    // use p it will generate a run time error.
 
-    // A silly example to show that you can use q.
-    if ( q->size() != nhits ){
-      edm::LogError("InconsistentData")
-	<< "Number of hits changed after I put them into the event.  "
-	<< "  Before: " << nhits
-	<< "  After: " << q->size();
-    }
+    // There is an alternative syntax for put.
+    // Comment out the call to put and uncomment the following lines:
+    //
+    // Return value is a "read only pointer" to the data product.
+    
+    edm::OrphanHandle<ToyHitCollection> q = event.put(p);
+    edm::LogInfo("Hits") << "Number of hits: " 
+			 << q->size();
 
-    // If you do not need q, there is an simpler syntax to put p into the event.
-    //e.put(p);
 
   }
 
