@@ -1,9 +1,9 @@
 
 # Configuration file for Readback
 #
-# $Id: makehits.py,v 1.3 2009/10/23 16:34:23 kutschke Exp $
+# $Id: makehits.py,v 1.4 2009/10/28 13:36:17 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/10/23 16:34:23 $
+# $Date: 2009/10/28 13:36:17 $
 #
 # Original author Rob Kutschke
 #
@@ -52,12 +52,18 @@ process.source = mu2e.Source("PoolSource",
 # Form CrudeStrawHits (CSH).
 process.makeCSH = mu2e.EDProducer(
     "MakeCrudeStrawHit",
-    diagLevel    = mu2e.untracked.int32(3),
-    maxFullPrint = mu2e.untracked.int32(5)
+    diagLevel    = mu2e.untracked.int32(1),
+    maxFullPrint = mu2e.untracked.int32(0)
 )
 
 # Check the crudeStrawHits.
 process.testCSH = mu2e.EDAnalyzer("MCSH_Test",
+    diagLevel    = mu2e.untracked.int32(1),
+    maxFullPrint = mu2e.untracked.int32(0)
+)
+
+# Check the crudeStrawHits.
+process.clustertest = mu2e.EDAnalyzer("ClusterHackv00",
     diagLevel    = mu2e.untracked.int32(3),
     maxFullPrint = mu2e.untracked.int32(5)
 )
@@ -65,5 +71,5 @@ process.testCSH = mu2e.EDAnalyzer("MCSH_Test",
 # End of the section that defines and configures modules.
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.makeCSH*process.testCSH );
+process.output = mu2e.EndPath(  process.makeCSH*process.testCSH*process.clustertest );
 
