@@ -6,9 +6,9 @@
 // The CTracker is a toy detector that exists to illustrate
 // the framework.
 //
-// $Id: ToyHit.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: ToyHit.hh,v 1.2 2009/10/28 13:41:16 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/10/28 13:41:16 $
 //
 // Original author Rob Kutschke
 //
@@ -28,6 +28,6 @@ namespace mu2e {
     double _pulseheight;
   };
 
-}
+} // end namespace mu2e
 
 #endif
