@@ -7,9 +7,9 @@
 //   - it provides a view to return a hit by StrawIndex.
 //   - it provides a convenience method getStepPointMC().
 //
-// $Id: CrudeStrawHitCollection.hh,v 1.2 2009/10/22 22:28:44 kutschke Exp $
+// $Id: CrudeStrawHitCollection.hh,v 1.3 2009/10/28 13:36:50 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 22:28:44 $
+// $Date: 2009/10/28 13:36:50 $
 //
 // Original author Rob Kutschke
 //
@@ -60,6 +60,11 @@ namespace mu2e {
     // Accessor via StrawIndex.
     CrudeStrawHit const& getByStrawIndex( StrawIndex idx ) const{
       return _hits->at( _index[idx.asInt()] );
+    }
+
+    // Return hit index in this container, addressed by straw index.
+    int indexByStrawIndex( StrawIndex idx ) const{
+      return _index[idx.asInt()];
     }
 
     // Access the persistent data directly.
