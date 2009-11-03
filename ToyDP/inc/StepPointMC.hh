@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.4 2009/10/22 19:56:10 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.5 2009/11/03 19:59:46 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 19:56:10 $
+// $Date: 2009/11/03 19:59:46 $
 //
 // Original author Rob Kutschke
 //
@@ -72,9 +72,9 @@ namespace mu2e {
     CLHEP::Hep3Vector const& position() const { return _position; }
     CLHEP::Hep3Vector const& momentum() const { return _momentum; }
 
-    // If the volume is a straw, then return the volumeId as a StrawIndex.
+    // Return the volumeId as a StrawIndex.
     // It's the user's job to know if this is a reasonable thing to do.
-    StrawIndex strawIndex() const { return StrawIndex::fromInt(_volumeId); }
+    StrawIndex strawIndex() const { return StrawIndex(_volumeId); }
 
   private:
   

@@ -1,9 +1,9 @@
 //
 // A crudely calibrated hit in a straw. See header for full details.
 //
-// $Id: CrudeStrawHit.cc,v 1.3 2009/10/22 21:12:17 kutschke Exp $
+// $Id: CrudeStrawHit.cc,v 1.4 2009/11/03 19:59:46 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 21:12:17 $
+// $Date: 2009/11/03 19:59:46 $
 //
 // Original author Rob Kutschke
 
@@ -24,7 +24,7 @@ namespace mu2e {
 
   CrudeStrawHit::CrudeStrawHit():
     precursorType(undefined),
-    strawIndex(StrawIndex::fromInt(0)),
+    strawIndex(StrawIndex(0)),
     driftDistance(0.),
     driftTime(0.),
     sigmaD(0.),

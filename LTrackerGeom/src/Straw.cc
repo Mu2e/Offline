@@ -2,9 +2,9 @@
 // Hold information about one Straw.
 //
 //
-// $Id: Straw.cc,v 1.3 2009/10/28 13:40:47 kutschke Exp $
+// $Id: Straw.cc,v 1.4 2009/11/03 19:59:45 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/28 13:40:47 $
+// $Date: 2009/11/03 19:59:45 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@ namespace mu2e {
 
 Straw::Straw():
   _id(StrawId()),
-  _index(StrawIndex::fromInt(0)),
+  _index(StrawIndex(0)),
   _c(Hep3Vector(0.,0.,0.)),
   _detail(0),
   _detailIndex(0),
