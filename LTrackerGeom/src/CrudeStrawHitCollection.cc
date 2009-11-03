@@ -72,6 +72,20 @@ namespace mu2e{
 
   }
 
+  int CrudeStrawHitCollection::strawIndexToHitIndexOrThrow( StrawIndex idx ) const{
+
+    int ihit(_index[idx.asInt()]);
+
+    if ( ihit == -1 ) {
+      throw cms::Exception("RANGE")
+	<< "There is no hit for this StrawIndex: "
+	<< idx
+	<< "\n";
+    }
+
+    return ihit;
+  }
+  
 
 }
 

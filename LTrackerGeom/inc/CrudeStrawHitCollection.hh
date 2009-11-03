@@ -7,11 +7,14 @@
 //   - it provides a view to return a hit by StrawIndex.
 //   - it provides a convenience method getStepPointMC().
 //
-// $Id: CrudeStrawHitCollection.hh,v 1.3 2009/10/28 13:36:50 kutschke Exp $
+// $Id: CrudeStrawHitCollection.hh,v 1.4 2009/11/03 20:00:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/28 13:36:50 $
+// $Date: 2009/11/03 20:00:39 $
 //
 // Original author Rob Kutschke
+//
+// For all methods for which it makes sense, there is an accessor
+// via StrawIndex and an accessor via hit index within the container.
 //
 
 // C++ includes.
@@ -51,6 +54,10 @@ namespace mu2e {
     CrudeStrawHit const& get( int i ) const{
       return _hits->at(i);
     }
+    CrudeStrawHit const& operator[]( int i ) const{
+      return _hits->at(i);
+    }
+
 
     // Test if StrawIndex has a hit.
     bool hasHitByStrawIndex( StrawIndex idx ) const{
@@ -76,6 +83,9 @@ namespace mu2e {
     // to the precursors of the specified hit.
     void getStepPointMC( int i,
 			 std::vector<StepPointMC const*>& v ) const;
+
+    // Safe version of the previous.
+    int strawIndexToHitIndexOrThrow( StrawIndex idx ) const;
 
   private:
 
