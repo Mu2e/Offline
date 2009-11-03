@@ -5,9 +5,9 @@
 // A persistable index into another data product.
 //
 //
-// $Id: DPIndex.hh,v 1.1 2009/10/22 15:54:58 kutschke Exp $
+// $Id: DPIndex.hh,v 1.2 2009/11/03 20:00:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 15:54:58 $
+// $Date: 2009/11/03 20:00:08 $
 //
 
 // Framework includes.
@@ -29,7 +29,7 @@ namespace mu2e {
     DPIndex( ProductID const& id_, int index_):
       id(id_),
       index(index_){
-    }
+    } 
 
     // Compiler generated versions are OK for:
     // destructor, copy c'tor, assignment operator.
@@ -46,6 +46,7 @@ namespace mu2e {
     return !(lhs==rhs);
   }
 
+  // Sort first on ProductID and then on index.
   inline bool operator<(const DPIndex& lhs, 
 			const DPIndex& rhs){
     return ( lhs.id < rhs.id ) || 
@@ -58,7 +59,7 @@ namespace mu2e {
 
   inline std::ostream& operator<<( std::ostream& ost,
 				   DPIndex const& dpi ){
-    ost << "( " << dpi.id 
+    ost << "(" << dpi.id 
 	<< ","  << dpi.index 
 	<< ")";
     return ost;
