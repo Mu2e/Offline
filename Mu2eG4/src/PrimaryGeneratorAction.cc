@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: PrimaryGeneratorAction.cc,v 1.2 2009/11/05 00:14:09 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2009/11/05 00:14:09 $
 //
 // Original author Rob Kutschke
 //
@@ -125,7 +125,7 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event){
     HepLorentzVector const& p4(genpart._momentum);
     
     // Create a new vertex 
-    G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,0.);
+    G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
     
     // Create a particle.
     G4PrimaryParticle* particle = 
