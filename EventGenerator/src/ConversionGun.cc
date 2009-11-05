@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.2 2009/10/16 04:20:52 shanahan Exp $ 
-// $Author: shanahan $
-// $Date: 2009/10/16 04:20:52 $
+// $Id: ConversionGun.cc,v 1.3 2009/11/05 00:12:54 rhbob Exp $ 
+// $Author: rhbob $
+// $Date: 2009/11/05 00:12:54 $
 //
 // Original author Rob Kutschke
 // 
@@ -49,7 +49,7 @@ namespace mu2e {
     _czmax  = config.getDouble("conversionGun.czmax", 0.6);
     _phimin = config.getDouble("conversionGun.phimin", 0.);
     _phimax = config.getDouble("conversionGun.phimax", 2.*M_PI);
-    _tmin   = config.getDouble("conversionGun.tmax",   700. );
+    _tmin   = config.getDouble("conversionGun.tmin",   700. );
     _tmax   = config.getDouble("conversionGun.tmax",  tcycle );
 
     _dcz  = (  _czmax -  _czmin);
