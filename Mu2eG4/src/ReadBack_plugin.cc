@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_plugin.cc,v 1.4 2009/10/22 19:54:10 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/10/22 19:54:10 $
+// $Id: ReadBack_plugin.cc,v 1.5 2009/11/05 14:38:40 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2009/11/05 14:38:40 $
 //
 // Original author Rob Kutschke
 //
@@ -109,7 +109,7 @@ namespace mu2e {
 
     // Create some 1D histograms.
     _hRadius       = tfs->make<TH1F>( "hRadius", "Radius of Hits;(mm)",          100,  0., 1000. );
-    _hTime         = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  100. );
+    _hTime         = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0., 2000. );
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",         100,  0.,  100. );
     _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)", 100,  0.,   3.  );
     _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(mm)",                 
