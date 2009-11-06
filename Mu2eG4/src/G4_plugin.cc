@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.2 2009/10/06 23:19:59 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.3 2009/11/06 16:21:38 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/06 23:19:59 $
+// $Date: 2009/11/06 16:21:38 $
 //
 // Original author Rob Kutschke
 //
@@ -73,11 +73,11 @@ namespace mu2e {
       _genAction(0),
       _session(0),
       _visManager(0),
-      _UI(0){
-
-      // A place holder.
+      _UI(0),
+      _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")){
       produces<StepPointMCCollection>();
     }
+
     virtual ~G4() { 
       // Must not delete the pointers handed to G4.
       // G4 takes over the lifetime of these objects.
@@ -107,7 +107,7 @@ namespace mu2e {
 
     Hep3Vector _mu2eDetectorOrigin;
 
-    // 
+    // Name of a macro file for visualization.
     string _visMacro;
     
 
@@ -126,8 +126,6 @@ namespace mu2e {
 
     edm::Service<GeometryService> geom;
     SimpleConfig const& config = geom->config();
-
-    _visMacro = config.getString("graphics.macrofile","");
 
     static int ncalls(0);
     
@@ -164,7 +162,7 @@ namespace mu2e {
     _mu2eDetectorOrigin = world->getMu2eDetectorOrigin();
 
     // Setup the graphics if requested.
-    if ( _visMacro.size() > 0 ) {
+    if ( !_visMacro.empty() ) {
       
       _UI = G4UImanager::GetUIpointer();
 
