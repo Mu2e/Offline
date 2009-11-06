@@ -2,9 +2,9 @@
   
            Release notes for Mu2e Offline software, v0_0_4
 
-  $Id: v0_0_4.txt,v 1.6 2009/11/06 16:34:35 kutschke Exp $
+  $Id: v0_0_4.txt,v 1.7 2009/11/06 16:47:49 kutschke Exp $
   $Author: kutschke $
-  $Date: 2009/11/06 16:34:35 $
+  $Date: 2009/11/06 16:47:49 $
 
 1) Changes to Example01 and Example02.
    Make the loop in Example01 more friendly to novice
@@ -71,5 +71,7 @@
     Mu2eG4/test/geom_03.txt
     Previously the name of the visualizaiton macro file was 
     defined in the geometry file.  It is now defined as
-    an untracked parameter of the G4_plugin module.
+    an untracked parameter of the G4_plugin module, 
+    passed in via the pSet mechanism.
+
 
