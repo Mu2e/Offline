@@ -1,9 +1,9 @@
 //
 // A crudely calibrated hit in a straw. See header for full details.
 //
-// $Id: CrudeStrawHit.cc,v 1.5 2009/11/07 01:09:25 kutschke Exp $
+// $Id: CrudeStrawHit.cc,v 1.6 2009/11/07 17:04:15 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/07 01:09:25 $
+// $Date: 2009/11/07 17:04:15 $
 //
 // Original author Rob Kutschke
 
@@ -22,12 +22,13 @@ using namespace std;
 
 namespace mu2e {
 
-  CrudeStrawHit::CrudeStrawHit( StrawIndex     strawIndex_,
-                                float          driftDistance_,
-                                float          driftTime_,
-                                float          sigmaD_,
-                                float          energy_,
-				DPIndex const& precursorIndex_
+  CrudeStrawHit::CrudeStrawHit( StrawIndex        strawIndex_,
+                                float             driftDistance_,
+                                float             driftTime_,
+                                float             sigmaD_,
+                                float             energy_,
+				DPIndex const&    precursorIndex_,
+				edm::Event const* event_
                                 ):
     precursorType(unpackedDigi),
     strawIndex(strawIndex_),
@@ -40,6 +41,9 @@ namespace mu2e {
     stepPointMCPointersValid(false),
     stepPointMCPointers()
   {
+    if ( event_){
+      resolveTransients( *event_ );
+    }
   }
 
   CrudeStrawHit::CrudeStrawHit( StrawIndex                  strawIndex_,
@@ -49,7 +53,8 @@ namespace mu2e {
                                 float                       energy_,
 				precursor_type              precursorType_,
 				std::vector<DPIndex> const& precursorIndices_,
-                                float                       trueDriftDistance_
+                                float                       trueDriftDistance_,
+				edm::Event const*           event_
                                 ):
     precursorType(precursorType_),
     strawIndex(strawIndex_),
@@ -62,16 +67,20 @@ namespace mu2e {
     stepPointMCPointersValid(false),
     stepPointMCPointers()
   {
+    if ( event_){
+      resolveTransients( *event_ );
+    }
   }
 
-  CrudeStrawHit::CrudeStrawHit( StrawIndex       strawIndex_,
-                                float            driftDistance_,
-                                float            driftTime_,
-                                float            sigmaD_,
-                                float            energy_,
-				precursor_type   precursorType_,
-				DPIndex  const&  precursorIndex_,
-                                float            trueDriftDistance_
+  CrudeStrawHit::CrudeStrawHit( StrawIndex        strawIndex_,
+                                float             driftDistance_,
+                                float             driftTime_,
+                                float             sigmaD_,
+                                float             energy_,
+				precursor_type    precursorType_,
+				DPIndex  const&   precursorIndex_,
+                                float             trueDriftDistance_,
+				edm::Event const* event_
                                 ):
     precursorType(precursorType_),
     strawIndex(strawIndex_),
@@ -84,12 +93,16 @@ namespace mu2e {
     stepPointMCPointersValid(false),
     stepPointMCPointers()
   {
+    if ( event_){
+      resolveTransients( *event_ );
+    }
+
   }
 
   // Return the pointers to the precursors of this hit.
-  // Throw if they are not available.
-  std::vector<StepPointMC const *> const& CrudeStrawHit::getStepPointMC() const{
-    if ( stepPointMCPointersValid ) {
+  // Throw if they are not available or if we have overridden the safety check.
+  std::vector<StepPointMC const *> const& CrudeStrawHit::getStepPointMCs( bool override ) const{
+    if ( stepPointMCPointersValid || override ) {
       return stepPointMCPointers;
     }
     throw cms::Exception("ProductNotFound")
@@ -97,6 +110,7 @@ namespace mu2e {
   }  
 
   // Populate the transient data members.
+  // This will get more complicated as different sorts of precursors become available.
   void CrudeStrawHit::resolveTransients( edm::Event const& event) const{
 
     if (stepPointMCPointersValid ) return;
