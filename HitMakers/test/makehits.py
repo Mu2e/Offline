@@ -1,9 +1,9 @@
 
 # Configuration file for Readback
 #
-# $Id: makehits.py,v 1.4 2009/10/28 13:36:17 kutschke Exp $
+# $Id: makehits.py,v 1.5 2009/11/07 01:11:10 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/10/28 13:36:17 $
+# $Date: 2009/11/07 01:11:10 $
 #
 # Original author Rob Kutschke
 #
@@ -13,7 +13,7 @@
 import FWCore.ParameterSet.python.Config as mu2e
 
 # Give this job a name.  
-process = mu2e.Process("ReadBack01")
+process = mu2e.Process("HitTest01")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
@@ -58,18 +58,26 @@ process.makeCSH = mu2e.EDProducer(
 
 # Check the crudeStrawHits.
 process.testCSH = mu2e.EDAnalyzer("MCSH_Test",
-    diagLevel    = mu2e.untracked.int32(1),
-    maxFullPrint = mu2e.untracked.int32(0)
+    diagLevel    = mu2e.untracked.int32(3),
+    maxFullPrint = mu2e.untracked.int32(5)
 )
 
-# Check the crudeStrawHits.
+# Make some clusters.
 process.clustertest = mu2e.EDAnalyzer("ClusterHackv00",
     diagLevel    = mu2e.untracked.int32(3),
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
+# Write an output file.
+process.outfile = mu2e.OutputModule(
+    "PoolOutputModule",
+    fileName = mu2e.untracked.string('file:hits_03.root'),
+    fastCloning = cms.untracked.bool(False),
+)
+
+
 # End of the section that defines and configures modules.
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.makeCSH*process.testCSH*process.clustertest );
+process.output = mu2e.EndPath(  process.makeCSH*process.testCSH*process.clustertest*process.outfile );
 

@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_plugin.cc,v 1.1 2009/10/22 21:55:13 kutschke Exp $
+// $Id: MCSH_Test_plugin.cc,v 1.2 2009/11/07 01:11:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 21:55:13 $
+// $Date: 2009/11/07 01:11:10 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +39,7 @@
 #include "LTrackerGeom/inc/CrudeStrawHitCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
+#include "Mu2eUtilities/inc/resolveTransients.hh"
 
 // Other includes.
 #include "CLHEP/Random/RandGauss.h"
@@ -114,15 +114,43 @@ namespace mu2e {
     edm::Handle<CrudeStrawHitPData> pdata;
     evt.getByLabel(creatorName,pdata);
 
+    if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
+      for ( std::size_t i=0; i<pdata->size(); ++i){
+	cout << "Before pdata: " 
+	     << evt.id().event() <<  " " 
+	     << i << " " 
+	     << pdata->at(i).checkValid() << " "
+	     << pdata->at(i).checkPointers().size() << " "
+	     << pdata->at(i).checkPointers().capacity() << " "
+	     << endl;
+      }
+    }
+
     // Form a fully functional collection of these hits.
-    CrudeStrawHitCollection crudeHits(evt, pdata);
+    //    CrudeStrawHitCollection crudeHits(evt, pdata);
+    //crudeHits.resolveTransients(evt);
+
+    resolveTransients<CrudeStrawHitPData>( *pdata, evt); 
+
+    if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
+      for ( std::size_t i=0; i<pdata->size(); ++i){
+	cout << "After pdata: " 
+	     << evt.id().event() <<  " " 
+	     << i << " " 
+	     << pdata->at(i).checkValid() << " "
+	     << pdata->at(i).checkPointers().size() << " "
+	     << pdata->at(i).checkPointers().capacity() << " "
+	     << endl;
+      }
+    }
+
 
     for ( vector<CrudeStrawHit>::size_type i=0; 
-	  i<crudeHits.getPData().size(); 
+	  i<pdata->size(); 
 	  ++i){
 
       // Aliases for readability.
-      CrudeStrawHit const&      hit(crudeHits.get(i));
+      CrudeStrawHit const&      hit(pdata->at(i));
       Straw const&              straw(ltracker->getStraw(hit.strawIndex));
 
       // The list of nearest neighbours of this straw.
@@ -140,7 +168,8 @@ namespace mu2e {
 	cout << "Hit neighbours : " 
 	     << setw(4) << i <<  " : "
 	     << setw(4) << straw.Id() << " : ";
-	
+
+	/*
 	for ( vector<StrawIndex>::size_type j=0;
 	      j<nearest.size(); 
 	      ++j ){
@@ -151,12 +180,13 @@ namespace mu2e {
 	  }
 
 	}
+	*/
 	cout << endl;
 
 	// Get pointers back to precursors of this hit.
 	vector<StepPointMC const*> v;
-	crudeHits.getStepPointMC( i, v);
-
+	pdata->at(i).getStepPointMC(evt, v);
+	
 	cout << "Roundtrip Id Check for straw: "
 	     << hit.strawIndex << " | #points: "
 	     << v.size() << " | points: ";
