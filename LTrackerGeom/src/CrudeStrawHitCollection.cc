@@ -86,6 +86,14 @@ namespace mu2e{
     return ihit;
   }
   
+  void CrudeStrawHitCollection::resolveTransients(edm::Event const& event ){
+    for ( int i=0; i<_hits->size(); ++i){
+      CrudeStrawHit const& hit = (*_hits)[i];
+      hit.resetTransients();
+      hit.resolveTransients( event );
+    }
+    
+  }
 
 }
 

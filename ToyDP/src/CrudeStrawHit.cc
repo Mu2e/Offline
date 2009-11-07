@@ -1,9 +1,9 @@
 //
 // A crudely calibrated hit in a straw. See header for full details.
 //
-// $Id: CrudeStrawHit.cc,v 1.4 2009/11/03 19:59:46 kutschke Exp $
+// $Id: CrudeStrawHit.cc,v 1.5 2009/11/07 01:09:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/03 19:59:46 $
+// $Date: 2009/11/07 01:09:25 $
 //
 // Original author Rob Kutschke
 
@@ -12,6 +12,7 @@
 
 // Framework includes.
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e includes
 #include "ToyDP/inc/CrudeStrawHit.hh"
@@ -20,20 +21,6 @@
 using namespace std;
 
 namespace mu2e {
-
-
-  CrudeStrawHit::CrudeStrawHit():
-    precursorType(undefined),
-    strawIndex(StrawIndex(0)),
-    driftDistance(0.),
-    driftTime(0.),
-    sigmaD(0.),
-    energy(0.),
-    precursorIndices(),
-    trueDriftDistance(0.)
-  {
-  }
-
 
   CrudeStrawHit::CrudeStrawHit( StrawIndex     strawIndex_,
                                 float          driftDistance_,
@@ -49,7 +36,9 @@ namespace mu2e {
     sigmaD(sigmaD_),
     energy(energy_),
     precursorIndices(1,precursorIndex_),
-    trueDriftDistance(0.)
+    trueDriftDistance(0.),
+    stepPointMCPointersValid(false),
+    stepPointMCPointers()
   {
   }
 
@@ -69,7 +58,9 @@ namespace mu2e {
     sigmaD(sigmaD_),
     energy(energy_),
     precursorIndices(precursorIndices_),
-    trueDriftDistance(trueDriftDistance_)
+    trueDriftDistance(trueDriftDistance_),
+    stepPointMCPointersValid(false),
+    stepPointMCPointers()
   {
   }
 
@@ -89,9 +80,37 @@ namespace mu2e {
     sigmaD(sigmaD_),
     energy(energy_),
     precursorIndices(1,precursorIndex_),
-    trueDriftDistance(trueDriftDistance_)
+    trueDriftDistance(trueDriftDistance_),
+    stepPointMCPointersValid(false),
+    stepPointMCPointers()
   {
   }
+
+  // Return the pointers to the precursors of this hit.
+  // Throw if they are not available.
+  std::vector<StepPointMC const *> const& CrudeStrawHit::getStepPointMC() const{
+    if ( stepPointMCPointersValid ) {
+      return stepPointMCPointers;
+    }
+    throw cms::Exception("ProductNotFound")
+      << "Cannot compute pointers to StepPointMC without an event being supplied.";
+  }  
+
+  // Populate the transient data members.
+  void CrudeStrawHit::resolveTransients( edm::Event const& event) const{
+
+    if (stepPointMCPointersValid ) return;
+
+    if ( precursorType != stepPointMC ) {
+      throw cms::Exception("ProductNotFound")
+	<< "Cannot compute pointers to StepPointMC from a precursor of type: "
+	<< precursorType;
+    }
+
+    resolveDPIndices<StepPointMCCollection>( event, precursorIndices, stepPointMCPointers);
+    stepPointMCPointersValid = true;
+  }
+
 
   void CrudeStrawHit::print( ostream& ost, bool doEndl ) const {
 

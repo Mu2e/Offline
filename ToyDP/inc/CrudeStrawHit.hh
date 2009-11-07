@@ -35,15 +35,15 @@
 //    to be defined.
 // 
 // 
-// $Id: CrudeStrawHit.hh,v 1.3 2009/10/22 21:12:17 kutschke Exp $
+// $Id: CrudeStrawHit.hh,v 1.4 2009/11/07 01:09:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 21:12:17 $
+// $Date: 2009/11/07 01:09:25 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes
-#include <ostream>
+#include <iosfwd>
 #include <vector>
 #include <string>
 
@@ -78,9 +78,19 @@ namespace mu2e {
     std::vector<DPIndex> precursorIndices;  // See note 1.
     float                trueDriftDistance; // (mm)
 
-
     // Root requires us to have a default c'tor.
-    CrudeStrawHit();
+    // Use the BOOST_STATIC_ASSERT to make this visible only to GenReflex.
+    CrudeStrawHit():
+      precursorType(undefined),
+      strawIndex(StrawIndex(-1)),
+      driftDistance(0.),
+      driftTime(0.),
+      sigmaD(0.),
+      energy(0.),
+      precursorIndices(),
+      trueDriftDistance(0.){
+    }
+
 
     // Constructor for a hit that came from an unpacked digi, either 
     // from data or from the full MC chain.
@@ -120,16 +130,52 @@ namespace mu2e {
     //   copy c'tor 
     //   assignment operator
 
+    // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
+
+    // Return the pointers to the precursors of this hit.
+    std::vector<StepPointMC const *> const& getStepPointMC( edm::Event const& event) const{
+      resolveTransients(event);
+      return stepPointMCPointers;
+    }
 
     // Fill a std::vector with (pointers to const) of the precursors of this hit.
     void getStepPointMC( edm::Event const&    event, 
 			 std::vector<StepPointMC const*>& v ) const{
-      resolveDPIndices<StepPointMCCollection>( event, precursorIndices, v);
+      resolveTransients(event);
+      v.insert(v.end(), stepPointMCPointers.begin(), stepPointMCPointers.end());
+    }
+
+    // Return the pointers to the precursors of this hit.
+    // This will throw if the pointers are not valid.
+    std::vector<StepPointMC const *> const& getStepPointMC() const;
+
+    // Resolve all of the transient information in this object.
+    void resolveTransients( edm::Event const& event) const;
+
+    // Call this after readback to ensure that the object is in a safe state.
+    // In a future release of root, this will not be necessary.
+    void resetTransients() const{
+      stepPointMCPointers.clear();
+      stepPointMCPointersValid = false;
+    }
+
+    bool checkValid() const { return stepPointMCPointersValid;}
+    std::vector<StepPointMC const*> const& checkPointers() const {
+      return stepPointMCPointers;
     }
 
 
   private:
+
+    // Private data is not persistable and needs to be recomputed from the
+    // persistent data after read in.  Use the bool to do lazy evaluation when
+    // possible.
+
+    mutable bool stepPointMCPointersValid;
+    mutable std::vector<StepPointMC const *> stepPointMCPointers;
+
+    // Helper function to aid in printing.
     void formatPrecursorIndices( std::ostream& ost ) const;
     
   };

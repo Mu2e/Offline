@@ -7,9 +7,9 @@
 //   - it provides a view to return a hit by StrawIndex.
 //   - it provides a convenience method getStepPointMC().
 //
-// $Id: CrudeStrawHitCollection.hh,v 1.4 2009/11/03 20:00:39 kutschke Exp $
+// $Id: CrudeStrawHitCollection.hh,v 1.5 2009/11/07 01:10:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/03 20:00:39 $
+// $Date: 2009/11/07 01:10:39 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,9 @@ namespace mu2e {
 
     // Compiler generated versions of the following will be OK:
     //   destructor, copy constructor, assignment operator.
+
+    // For now, this must be called to fix transients lost in persistency.
+    void resolveTransients(edm::Event const& event );
 
     // Accessor via index in the persistent container.
     CrudeStrawHit const& get( int i ) const{
