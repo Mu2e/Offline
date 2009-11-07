@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_plugin.cc,v 1.2 2009/11/07 01:11:10 kutschke Exp $
+// $Id: MCSH_Test_plugin.cc,v 1.3 2009/11/07 17:05:15 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/07 01:11:10 $
+// $Date: 2009/11/07 17:05:15 $
 //
 // Original author Rob Kutschke
 //
@@ -119,9 +119,9 @@ namespace mu2e {
 	cout << "Before pdata: " 
 	     << evt.id().event() <<  " " 
 	     << i << " " 
-	     << pdata->at(i).checkValid() << " "
-	     << pdata->at(i).checkPointers().size() << " "
-	     << pdata->at(i).checkPointers().capacity() << " "
+	     << pdata->at(i).stepPointMCsValid() << " "
+	     << pdata->at(i).getStepPointMCs(true).size() << " "
+	     << pdata->at(i).getStepPointMCs(true).capacity() << " "
 	     << endl;
       }
     }
@@ -137,9 +137,9 @@ namespace mu2e {
 	cout << "After pdata: " 
 	     << evt.id().event() <<  " " 
 	     << i << " " 
-	     << pdata->at(i).checkValid() << " "
-	     << pdata->at(i).checkPointers().size() << " "
-	     << pdata->at(i).checkPointers().capacity() << " "
+	     << pdata->at(i).stepPointMCsValid() << " "
+	     << pdata->at(i).getStepPointMCs().size() << " "
+	     << pdata->at(i).getStepPointMCs().capacity() << " "
 	     << endl;
       }
     }

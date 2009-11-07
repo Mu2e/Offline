@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.3 2009/11/06 16:20:54 kutschke Exp $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.4 2009/11/07 17:05:15 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/06 16:20:54 $
+// $Date: 2009/11/07 17:05:15 $
 //
 // Original author Rob Kutschke
 //
@@ -107,7 +107,7 @@ namespace mu2e {
   }
 
   void
-  MakeCrudeStrawHit::produce(edm::Event& evt, edm::EventSetup const&) {
+  MakeCrudeStrawHit::produce(edm::Event& event, edm::EventSetup const&) {
 
     static int ncalls(0);
     ++ncalls;
@@ -123,7 +123,7 @@ namespace mu2e {
 
     // Ask the event to give us a handle to the requested hits.
     edm::Handle<StepPointMCCollection> points;
-    evt.getByLabel(creatorName,points);
+    event.getByLabel(creatorName,points);
 
     // Product Id of the input points.
     edm::ProductID const& id(points.id());
@@ -160,7 +160,8 @@ namespace mu2e {
 					   hit.eDep(), 
 					   CrudeStrawHit::stepPointMC,
 					   DPIndex(id,i),
-					   dcaTrue)
+					   dcaTrue,
+					   &event)
 			    );
 
       // Fill diagnostic histograms.
@@ -186,12 +187,12 @@ namespace mu2e {
     // Diagnostic printout.
     if ( ncalls < _maxFullPrint && _diagLevel > 2){
       for ( unsigned int i=0; i<crudeHits->size(); ++i){
-	cout << evt.id().event() << " | "   << (*crudeHits)[i] << endl;
+	cout << event.id().event() << " | "   << (*crudeHits)[i] << endl;
       }
     }
 
     // All done.  Add the output to the event.
-    evt.put(crudeHits);
+    event.put(crudeHits);
 
     
   } // end of ::analyze.

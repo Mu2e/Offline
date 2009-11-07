@@ -9,6 +9,7 @@
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "LTrackerGeom/inc/CrudeStrawHitCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
+#include "Mu2eUtilities/inc/resolveTransients.hh"
 
 using namespace std;
 
@@ -87,12 +88,7 @@ namespace mu2e{
   }
   
   void CrudeStrawHitCollection::resolveTransients(edm::Event const& event ){
-    for ( int i=0; i<_hits->size(); ++i){
-      CrudeStrawHit const& hit = (*_hits)[i];
-      hit.resetTransients();
-      hit.resolveTransients( event );
-    }
-    
+    //    resolveTransients<CrudeStrawHitPData>(*_hits, event);
   }
 
 }
