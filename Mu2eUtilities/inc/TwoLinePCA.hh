@@ -5,9 +5,9 @@
 // approach between the two lines.  The lines are 
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: TwoLinePCA.hh,v 1.2 2009/11/11 15:00:52 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/11 15:00:52 $
 //
 // Original author Rob Kutschke
 //
@@ -49,8 +49,8 @@ namespace mu2e {
     double dca2d() const { return _dca2d; }
 
     // Accessors for the endpoints on the line-segment of closest approach.
-    CLHEP::Hep3Vector point1() const { return _pca1; }
-    CLHEP::Hep3Vector point2() const { return _pca2; }
+    CLHEP::Hep3Vector const& point1() const { return _pca1; }
+    CLHEP::Hep3Vector const& point2() const { return _pca2; }
 
     bool closeToParallel() const { return _closeToParallel; }
 
