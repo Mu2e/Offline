@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.2 2009/11/11 14:55:40 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/11 14:55:40 $
 //
 // Original author Rob Kutschke
 //
@@ -47,6 +47,7 @@
 #include "LTrackerGeom/inc/LTracker.hh"
 
 // G4 includes
+#include "G4AssemblyVolume.hh"
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4LogicalVolumeStore.hh"
@@ -88,7 +89,10 @@ namespace mu2e {
        _exactHelix(),
        _chordFinder(),
        _fieldMgr(),
-       _stepLimit(){
+       _stepLimit(),
+       _lTrackerWedgeAssembly(),
+       _lTrackerVaneAssembly(),
+       _lTrackerAssemblyVols(){
   }
   
   Mu2eWorld::~Mu2eWorld(){
@@ -97,6 +101,20 @@ namespace mu2e {
     // G4 looks after that itself.
 
   }
+
+  void printPhys() {
+    G4PhysicalVolumeStore* pstore = G4PhysicalVolumeStore::GetInstance();
+    int n(0);
+    for ( std::vector<G4VPhysicalVolume*>::const_iterator i=pstore->begin(); i!=pstore->end(); i++){
+      cout << "Physical Volume: "
+	   << setw(5) << n++
+	   << (*i)->GetName()
+	   << endl;
+      if ( n > 25 ) break;
+    }
+
+  }
+
 
   // This is the callback used by G4.
   WorldInfo const* Mu2eWorld::construct(){
@@ -162,11 +180,12 @@ namespace mu2e {
 				yOriginHeight + yFloor,
 				_config->getDouble("world.mu2eOrigin.zoffset")*mm
 				);
-    cout << "Mu2e Origin: " << _mu2eOrigin << endl;
+    edm::LogInfo log("GEOM");
+    log << "Mu2e Origin: " << _mu2eOrigin << "\n";
 
     // Origin used to construct the MECO detector.
     _mu2eDetectorOrigin = _mu2eOrigin + G4ThreeVector( -3904., 0., 12000.);
-    cout << "Mu2e Detector Origin: " << _mu2eDetectorOrigin << endl;
+    log << "Mu2e Detector Origin: " << _mu2eDetectorOrigin << "\n";
 
     // Bottom of the ceiling in G4 world coordinates.
     double yCeilingInSide = yFloor + 2.*hallInHLen[1];
@@ -214,7 +233,7 @@ namespace mu2e {
 
     // Build the reference points that others will use.
     _cosmicReferencePoint = G4ThreeVector( 0., yEverest, 0.);
-    cout << "Cosmic Ref: " << _cosmicReferencePoint << endl;
+    log << "Cosmic Ref: " << _cosmicReferencePoint << "\n";
 
     // Construct the cap.
     string dirtCapName("DirtCap");
@@ -480,9 +499,18 @@ namespace mu2e {
     //trackerInfo.solid   = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
     //trackerInfo.logical = new G4LogicalVolume( info.solid, material, name); 
 
-
     if( _config->getBool("hasLTracker",false) ){
-      trackerInfo = constructLTracker( detSolVacInfo.logical, dsz0 );
+      int ver = _config->getInt("LTrackerVersion",2);
+      log << "LTracker version: " << ver << "\n";
+      if ( ver == 0 ){
+	trackerInfo = constructLTracker( detSolVacInfo.logical, dsz0 );
+      }
+      else if ( ver == 1 ) {
+	trackerInfo = constructLTrackerv2( detSolVacInfo.logical, dsz0 );
+      } else {
+	trackerInfo = constructLTrackerv3( detSolVacInfo.logical, dsz0 );
+      }
+      printPhys();
 
     } else{
 
@@ -550,6 +578,16 @@ namespace mu2e {
     _chordFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolBField.get(), stepMinimum, _exactHelix.get() ));
     _fieldMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolBField.get(), _chordFinder.get(), true));
 
+    double oldDeltaI = _fieldMgr->GetDeltaIntersection();
+    double newDeltaI = 0.00001;
+    _fieldMgr->SetDeltaIntersection(newDeltaI);
+
+    log << "Setting Delta Intersection: "  
+	<< "Old value: " << oldDeltaI
+	<< "  New value: " 
+	<< _fieldMgr->GetDeltaIntersection() 
+	<< "\n";
+    
     // Attach the field manager to the detSol volume.
     detSolVacInfo.logical->SetFieldManager( _fieldMgr.get(), true);
     
@@ -585,6 +623,10 @@ namespace mu2e {
 	 << endl;
   }
 
+  // Option 1:
+  // Build LTracker with no substructure.  
+  // Place each straw in the tracker mother volume.
+  //
   VolumeInfo Mu2eWorld::constructLTracker( G4LogicalVolume* mother, double zOff ){
 
     // Master geometry for the LTracker.
@@ -670,6 +712,308 @@ namespace mu2e {
     StrawPlacer placer( "StrawPhys", strawInfo.logical, trackerInfo.logical );
     ltracker->forAllStraws( placer);
 
+    return trackerInfo;
+
+  }
+
+  // Option 2:
+  // Build LTracker from assembly volumes.
+  // 1) Make one assembly volume for the octant sides and one for the vanes.
+  // 2) Use imprint to make 8 copies of each and put each in the right location.
+  //
+  VolumeInfo Mu2eWorld::constructLTrackerv2( G4LogicalVolume* mother, double zOff ){
+    //    VolumeInfo trackerInfo;
+
+    // Master geometry for the LTracker.
+    GeomHandle<LTracker> ltracker;
+
+    double rOut  = mm * ltracker->rOut();
+    double zHalf = mm * ltracker->zHalfLength();
+    double z0    = mm * ltracker->z0();
+
+    VolumeInfo trackerInfo;
+
+    // Make the mother volume for the LTracker.
+    string trackerName("LTrackerMother");
+    G4Material* fillMaterial = findMaterialOrThrow(ltracker->fillMaterial());
+    G4ThreeVector trackerOffset(0.,0.,z0-zOff);
+
+
+    /*
+    cout << "Tracker Offset: z0, zOff, z0-zOff: " 
+	 << z0 << " "
+	 << zOff << " "
+	 << z0-zOff << " "
+	 << endl;
+    */
+
+    trackerInfo.solid  = new G4Tubs( trackerName,
+				     0., rOut, zHalf, 0., 2.*M_PI );
+    
+    trackerInfo.logical = new G4LogicalVolume( trackerInfo.solid, fillMaterial, trackerName); 
+    
+    trackerInfo.physical =  new G4PVPlacement( 0, 
+					       trackerOffset, 
+					       trackerInfo.logical, 
+					       trackerName, 
+					       mother, 
+					       0, 
+					       0);
+
+    // Visualization attributes of the the mother volume.
+    {
+      G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Green() );
+      visAtt->SetForceSolid(true);
+      visAtt->SetForceAuxEdgeVisible (false);
+      visAtt->SetVisibility(true);
+      trackerInfo.logical->SetVisAttributes(visAtt);
+    }
+
+    Straw const& straw        = ltracker->getStraw( StrawId( LTracker::wedge, 0, 0, 0) );
+    StrawDetail const& detail = straw.getDetail();
+
+    // Build logical volume for a straw.
+    string strawName("Straw");
+    VolumeInfo strawInfo;
+      
+    G4Material* strawMaterial = findMaterialOrThrow( detail.materialName(1) );
+    strawInfo.solid  = new G4Tubs(strawName
+				  ,0.
+				  ,detail.outerRadius() * mm
+				  ,detail.halfLength()  * mm
+				  ,0.
+				  ,CLHEP::twopi*radian
+				  );
+    
+    strawInfo.logical = new G4LogicalVolume( strawInfo.solid
+					     , strawMaterial
+					     , strawName
+					     );
+
+    if ( ltracker->getDevices().size() != ndevices ){
+      throw cms::Exception("GEOM")
+        << "Unexpected number of devices in the LTracker: "
+        << ltracker->getDevices().size()
+        << "\n";
+    }
+
+    // Build an assembly volume for each of the octants and vanes.
+    for ( std::size_t idev=0; idev<ltracker->getDevices().size(); ++idev ){
+
+      // Assume all sectors are the same as sector 0.
+      Sector const& sec = ltracker->getSector(SectorId(idev,0));
+	
+      _lTrackerAssemblyVols[idev] = auto_ptr<G4AssemblyVolume> (new G4AssemblyVolume());
+
+      for ( std::size_t ilay =0; ilay<sec.getLayers().size(); ++ilay){
+	Layer const& lay = sec.getLayer(ilay);
+	Hep3Vector const& origin = sec.getBasePosition().at(ilay);
+	Hep3Vector const& delta  = sec.getBaseDelta();
+
+	StrawId id(idev,0,ilay,0);
+	
+	for ( std::size_t istr = 0; istr<lay.nStraws(); ++istr ){
+	  Hep3Vector position = origin + istr*delta;
+	  _lTrackerAssemblyVols[idev]->AddPlacedVolume( strawInfo.logical, position, 0); 
+	}
+      }
+      
+    }
+
+    // Imprint the assembly volumes.
+    for ( std::size_t idev = 0; idev<ltracker->getDevices().size(); ++idev){
+      Device const& device = ltracker->getDevice(idev);
+
+      for ( std::size_t isec =0; isec<device.getSectors().size(); ++isec){
+	Sector const& sector = device.getSector(isec);
+
+	HepRotationY RY(sector.boxRyAngle());
+	HepRotationZ RZ(sector.boxRzAngle());
+     
+	// Need to understand if this causes memory leak.
+	G4RotationMatrix* rot = new G4RotationMatrix( RZ*RY);
+
+	// MakeImprint requires non-const argument.
+	G4ThreeVector offset = sector.boxOffset();
+
+
+	// Copy numbers start at base+1
+	StrawId id(idev,isec,0,0);
+	int baseCopyNumber = ltracker->getStraw(id).Index().asInt()-1;
+
+	_lTrackerAssemblyVols[idev]->MakeImprint( trackerInfo.logical, offset, rot, baseCopyNumber); 
+
+      }
+    }
+
+    G4SDManager* SDman   = G4SDManager::GetSDMpointer();
+    G4String strawSDname = "StrawGasVolume";
+    StrawSD* strawSD     = new StrawSD( strawSDname );
+    SDman->AddNewDetector( strawSD );
+    strawInfo.logical->SetSensitiveDetector( strawSD );
+
+
+    // Does this leak strawVisAtt ??
+    {
+      G4VisAttributes* strawVisAtt = new G4VisAttributes(true, G4Colour::Green() );
+      strawVisAtt->SetForceSolid(false);
+      strawVisAtt->SetForceAuxEdgeVisible (false);
+      strawVisAtt->SetVisibility(false);
+      strawInfo.logical->SetVisAttributes(strawVisAtt);
+    }
+    
+    return trackerInfo;
+
+  }
+
+  // Version 3 of LTracker.
+  // Make boxes to bound each sector.
+  // Place straws within each box.
+  VolumeInfo Mu2eWorld::constructLTrackerv3( G4LogicalVolume* mother, double zOff ){
+
+    // Master geometry for the LTracker.
+    GeomHandle<LTracker> ltracker;
+
+    double rOut  = mm * ltracker->rOut();
+    double zHalf = mm * ltracker->zHalfLength();
+    double z0    = mm * ltracker->z0();
+
+    VolumeInfo trackerInfo;
+
+    // Make the mother volume for the LTracker.
+    string trackerName("LTrackerMother");
+    G4Material* fillMaterial = findMaterialOrThrow(ltracker->fillMaterial());
+    G4ThreeVector trackerOffset(0.,0.,z0-zOff);
+
+    /*
+    cout << "Tracker Offset: z0, zOff, z0-zOff: " 
+	 << z0 << " "
+	 << zOff << " "
+	 << z0-zOff << " "
+	 << endl;
+    */
+
+    trackerInfo.solid  = new G4Tubs( trackerName,
+				     0., rOut, zHalf, 0., 2.*M_PI );
+    
+    trackerInfo.logical = new G4LogicalVolume( trackerInfo.solid, fillMaterial, trackerName); 
+    
+    trackerInfo.physical =  new G4PVPlacement( 0, 
+					       trackerOffset, 
+					       trackerInfo.logical, 
+					       trackerName, 
+					       mother, 
+					       0, 
+					       0);
+
+    // Visualization attributes of the the mother volume.
+    {
+      G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Green() );
+      visAtt->SetForceSolid(true);
+      visAtt->SetForceAuxEdgeVisible (false);
+      visAtt->SetVisibility(true);
+      trackerInfo.logical->SetVisAttributes(visAtt);
+    }
+
+    Straw const& straw        = ltracker->getStraw( StrawId( LTracker::wedge, 0, 0, 0) );
+    StrawDetail const& detail = straw.getDetail();
+
+    // Build logical volume for a straw.
+    string strawName("Straw");
+    VolumeInfo strawInfo;
+      
+    G4Material* strawMaterial = findMaterialOrThrow( detail.materialName(1) );
+    strawInfo.solid  = new G4Tubs(strawName
+				  ,0.
+				  ,detail.outerRadius() * mm
+				  ,detail.halfLength()  * mm
+				  ,0.
+				  ,CLHEP::twopi*radian
+				  );
+    
+    strawInfo.logical = new G4LogicalVolume( strawInfo.solid
+					     , strawMaterial
+					     , strawName
+					     );
+
+    vector<VolumeInfo> vinfo;
+
+    for ( std::size_t idev = 0; idev<ltracker->getDevices().size(); ++idev){
+      Device const& device = ltracker->getDevice(idev);
+
+      for ( std::size_t isec =0; isec<device.getSectors().size(); ++isec){
+	Sector const& sector = device.getSector(isec);
+
+	// Name of this sector as string.
+	string name = sector.name("LTrackerSector_");
+
+	// Construct the rotation.  
+	// This rotation is the inverse of the one in v2.
+	// Note the sign and the reversed order : active/passive  confusion.
+	// Need to understand if this causes memory leak.
+	HepRotationY RY(-sector.boxRyAngle());
+	HepRotationZ RZ(-sector.boxRzAngle());
+	G4RotationMatrix* rot = new G4RotationMatrix( RY*RZ);
+
+	// Make a physical volume for this sector.  Same material as the 
+	// main LTracker volume ( some sort of vacuum ).
+	VolumeInfo tmp = nestBox( name,
+				  sector.boxHalfLengths(),
+				  fillMaterial,
+				  rot,
+				  sector.boxOffset(),
+				  trackerInfo.logical,
+				  0);
+	vinfo.push_back(tmp);
+	VolumeInfo const& sectorBoxInfo = vinfo.back();
+
+	Hep3Vector const& delta  = sector.getBaseDelta();
+
+	for ( std::size_t ilay =0; ilay<sector.getLayers().size(); ++ilay){
+	  Layer const& layer = sector.getLayer(ilay);
+
+	  Hep3Vector const& origin = sector.getBasePosition().at(ilay);
+
+	  for ( std::size_t istr =0; istr<layer.nStraws(); ++istr){
+	    Straw const& straw = layer.getStraw(istr);
+
+	    // Position within the sector box.
+	    Hep3Vector position = origin + istr*delta;
+
+	    // Name of this physical volume.
+	    string sname = straw.name( "LTrackerStraw_");
+
+	    G4VPhysicalVolume* phys = new G4PVPlacement( 0, 
+							 position,
+							 strawInfo.logical,
+							 sname, 
+							 sectorBoxInfo.logical, 
+							 0, 
+							 straw.Index().asInt()
+							 );
+	    
+	  } // loop over straws
+	}   // loop over layers
+	
+      } // loop over sectors
+    }   // loop over devices
+
+    G4SDManager* SDman   = G4SDManager::GetSDMpointer();
+    G4String strawSDname = "StrawGasVolume";
+    StrawSD* strawSD     = new StrawSD( strawSDname );
+    SDman->AddNewDetector( strawSD );
+    strawInfo.logical->SetSensitiveDetector( strawSD );
+
+
+    // Does this leak strawVisAtt ??
+    {
+      G4VisAttributes* strawVisAtt = new G4VisAttributes(true, G4Colour::Green() );
+      strawVisAtt->SetForceSolid(false);
+      strawVisAtt->SetForceAuxEdgeVisible (false);
+      strawVisAtt->SetVisibility(false);
+      strawInfo.logical->SetVisAttributes(strawVisAtt);
+    }
+    
     return trackerInfo;
 
   }
