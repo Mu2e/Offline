@@ -1,9 +1,9 @@
 
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.3 2009/10/23 21:39:53 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2009/10/23 21:39:53 $
+// $Id: PiCapture.cc,v 1.4 2009/11/11 14:14:42 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2009/11/11 14:14:42 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -59,14 +59,15 @@ namespace mu2e {
     _randomUnitSphere(),
     _funcGen(){
 
+    edm::LogInfo log("GENCONFIG");
     _mean = config.getDouble("picapture.mean",0.);
-    edm::LogInfo("Pi capture mean: ") << _mean ;
+    log << "Pi capture mean: " << _mean << "\n";
     _elow = config.getDouble("picapture.elow",38.2);
-    edm::LogInfo("Pi capture E Low: ") << _elow ;
+    log << "Pi capture E Low: " << _elow << "\n";
     _ehi = config.getDouble("picapture.ehi",emax);
-    edm::LogInfo("Pi capture E High: ") << _ehi ;
+    log << "Pi capture E High: " << _ehi << "\n";
     _nbins = config.getInt("picapture.nbins",1000);
-    edm::LogInfo("Pi capture N Bins: ") << _nbins ;
+    log << "Pi capture N Bins: " << _nbins << "\n";
 
     // set up the generator function
     if (_nbins>0) _bindE = (_ehi - _elow) / _nbins;
