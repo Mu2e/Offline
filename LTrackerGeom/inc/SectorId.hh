@@ -7,9 +7,9 @@
 
 //
 //
-// $Id: SectorId.hh,v 1.2 2009/10/22 16:43:11 kutschke Exp $
+// $Id: SectorId.hh,v 1.3 2009/11/11 14:35:45 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/22 16:43:11 $
+// $Date: 2009/11/11 14:35:45 $
 //
 // Original author Rob Kutschke
 //
@@ -47,6 +47,10 @@ public:
 
   const int getDevice() const {
     return _did;
+  }
+
+  const int getSector() const {
+    return _sector;
   }
 
   bool operator==(SectorId const& rhs) const{
