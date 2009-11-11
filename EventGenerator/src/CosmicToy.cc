@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.2 2009/10/16 04:20:52 shanahan Exp $
-// $Author: shanahan $
-// $Date: 2009/10/16 04:20:52 $
+// $Id: CosmicToy.cc,v 1.3 2009/11/11 14:14:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2009/11/11 14:14:59 $
 //
 // Original author Rob Kutschke
 //
@@ -48,7 +48,6 @@ namespace mu2e {
     GeneratorBase(){
 
     _mean = config.getDouble("cosmictoy.mean",0.);
-    cout << "Cosmic mean: " << endl;
 
     // Book histograms.
     edm::Service<edm::TFileService> tfs;
