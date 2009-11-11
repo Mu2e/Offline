@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 // 
-// $Id: nestBox.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: nestBox.hh,v 1.2 2009/11/11 14:36:41 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/11 14:36:41 $
 //
 // Original author Rob Kutschke
 //
@@ -27,7 +27,7 @@ class G4CSGSolid;
 namespace mu2e {
 
   VolumeInfo nestBox ( std::string const& name,
-		       double halfDim[3],
+		       double const halfDim[3],
 		       G4Material* material,
 		       G4RotationMatrix* rot,
 		       G4ThreeVector const& offset,
@@ -40,12 +40,11 @@ namespace mu2e {
 
 
   // Alternate argument list, using a vector for the half dimensions.
-  //
   inline VolumeInfo nestBox ( std::string const& name,
-			      std::vector<double>&  halfDim,
+			      std::vector<double> const&  halfDim,
 			      G4Material* material,
 			      G4RotationMatrix* rot,
-			      G4ThreeVector& offset,
+			      G4ThreeVector const& offset,
 			      G4LogicalVolume* parent,
 			      int copyNo,
 			      G4Colour color = G4Colour::Black(),
