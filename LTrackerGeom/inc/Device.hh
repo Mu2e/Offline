@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: Device.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: Device.hh,v 1.2 2009/11/11 14:35:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/11 14:35:05 $
 //
 // Original author Rob Kutschke
 //
@@ -58,6 +58,10 @@ public:
   const Straw& getStraw ( const StrawId& sid ) const{
     return _sectors.at(sid.getSector()).getStraw(sid);
   }
+
+  // Formatted string embedding the id of the sector.
+  std::string name( std::string const& base ) const;
+
 
 #ifndef __CINT__
 

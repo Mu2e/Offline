@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: Sector.hh,v 1.2 2009/11/11 14:35:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/11 14:35:05 $
 //
 // Original author Rob Kutschke
 //
@@ -32,9 +32,6 @@ class Sector{
   friend class LTrackerMaker;
 
 public:
-
-  // A free function, returning void, that takes a const Sector& as an argument.
-  typedef void (*SectorFunction)( const Sector& s);
 
   Sector():_id(SectorId(-1,-1)){};
   Sector( const SectorId& id ):_id(id){};
@@ -65,6 +62,22 @@ public:
     return _layers.at(sid.getLayer()).getStraw(sid);
   }
 
+  // Formatted string embedding the id of the sector.
+  std::string name( std::string const& base ) const;
+
+  const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
+
+  const double         boxRyAngle()     const { return _boxRyAngle;     }
+  const double         boxRzAngle()     const { return _boxRzAngle;     }
+  const Hep3Vector&    boxOffset()      const { return _boxOffset;      }
+
+  std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
+    return _basePosition;
+  }
+
+  CLHEP::Hep3Vector const& getBaseDelta() const{
+    return _baseDelta;
+  }
 
 #ifndef __CINT__
 
@@ -108,6 +121,21 @@ protected:
 
   // Vertices of enclosing polygon.
   std::vector<CLHEP::Hep3Vector> corners;
+
+  // Properties of the enclosing logical volume (box).
+
+  // Half lengths of the logical box.
+  std::vector<double> _boxHalfLengths;
+
+  std::vector<CLHEP::Hep3Vector> _basePosition;
+  CLHEP::Hep3Vector _baseDelta;
+
+  // Rotations and offsets to place the logical box.
+  // placedshape = ( offset + RZ*RY*shape );
+  //
+  double _boxRyAngle;
+  double _boxRzAngle;
+  CLHEP::Hep3Vector _boxOffset;
 
 };
 

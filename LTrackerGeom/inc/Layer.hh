@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Layer.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: Layer.hh,v 1.2 2009/11/11 14:35:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/11 14:35:05 $
 //
 // Original author Rob Kutschke
 //
@@ -66,6 +66,9 @@ public:
   const std::vector<const Straw*>& getStraws() const { 
     return _straws;
   }
+
+  // Formatted string embedding the id of the layer.
+  std::string name( std::string const& base ) const;
 
   // Return Id of the last straw in the layer.
   // Return an illegal id if there are no straws.

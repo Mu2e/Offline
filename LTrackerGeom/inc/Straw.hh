@@ -4,9 +4,9 @@
 // Hold information about one straw in a tracker.
 //
 //
-// $Id: Straw.hh,v 1.3 2009/10/28 13:40:46 kutschke Exp $
+// $Id: Straw.hh,v 1.4 2009/11/11 14:35:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/28 13:40:46 $
+// $Date: 2009/11/11 14:35:05 $
 //
 // Original author Rob Kutschke
 //
@@ -74,6 +74,9 @@ public:
   const std::vector<StrawIndex>& nearestNeighboursByIndex() const{
     return _nearestByIndex;
   }
+
+  // Formatted string embedding the id of the straw.
+  std::string name( std::string const& base ) const;
   
   // Compiler generated copy and assignment constructors
   // should be OK.
@@ -81,6 +84,7 @@ public:
   const CLHEP::Hep3Vector& getMidPoint() const {return _c;}
 
   const CLHEP::Hep3Vector& getDirection() const { return _w;}
+
 
   int hack;
   

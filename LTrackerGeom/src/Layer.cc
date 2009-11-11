@@ -2,12 +2,14 @@
 // Hold information about one Layer in a tracker.
 //
 //
-// $Id: Layer.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: Layer.cc,v 1.2 2009/11/11 14:35:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/11 14:35:05 $
 //
 // Original author Rob Kutschke
 //
+
+#include <sstream>
 
 #include "LTrackerGeom/inc/Layer.hh"
 
@@ -45,6 +47,17 @@ namespace mu2e {
   }
   
   Layer::~Layer(){}
+
+  std::string Layer::name( std::string const& base ) const{
+    std::ostringstream os;
+
+    os << base
+       << _id.getDevice() << "_"
+       << _id.getSector() << "_"
+       << _id.getLayer();
+    return os.str();
+  }
+
   
 } // namespace mu2e 
 

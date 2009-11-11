@@ -2,13 +2,14 @@
 // Hold information about one Straw.
 //
 //
-// $Id: Straw.cc,v 1.4 2009/11/03 19:59:45 kutschke Exp $
+// $Id: Straw.cc,v 1.5 2009/11/11 14:35:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/03 19:59:45 $
+// $Date: 2009/11/11 14:35:05 $
 //
 // Original author Rob Kutschke
 //
 
+#include <sstream>
 #include "LTrackerGeom/inc/Straw.hh"
 
 #ifndef __CINT__ 
@@ -76,6 +77,17 @@ bool Straw::isNearestNeighbour( StrawIndex idx ) const{
   return false;
 }
 
+
+std::string Straw::name( std::string const& base ) const{
+  std::ostringstream os;
+
+  os << base
+     << _id.getDevice() << "_"
+     << _id.getSector() << "_"
+     << _id.getLayer()  << "_"
+     << _id.getStraw();
+  return os.str();
+}
 
 } // namespace mu2e
 
