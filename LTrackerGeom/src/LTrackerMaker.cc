@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.3 2009/11/03 19:59:45 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.4 2009/11/11 15:00:12 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/03 19:59:45 $
+// $Date: 2009/11/11 15:00:12 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,7 @@
 
 // Mu2e includes
 #include "LTrackerGeom/inc/LTrackerMaker.hh"
+#include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
 #include "LTrackerGeom/inc/LTracker.hh"
@@ -30,41 +31,39 @@
 
 #ifndef __CINT__ 
 
-using CLHEP::Hep3Vector;
-using CLHEP::HepRotationY;
-using CLHEP::HepRotationZ;
+using namespace CLHEP;
 
 using namespace std;
 
 namespace mu2e {
 
-void strawPrinter( const Straw& s){
-  cout << s.Id() << endl;
-}
+  void strawPrinter( const Straw& s){
+    cout << s.Id() << endl;
+  }
 
-void strawPrinter2( const Straw* s, int& i){
-  cout << s->Id() <<  " | " 
-       << s->hack << " " 
-       << ++i << endl;
-}
+  void strawPrinter2( const Straw* s, int& i){
+    cout << s->Id() <<  " | " 
+	 << s->hack << " " 
+	 << ++i << endl;
+  }
 
-void strawHacker( Straw* s, int& i){
-  s->hack = 2;
-}
-
-void layerPrinter( const Layer& l){
-  cout << "    Layer: " << l.Id() << endl;
-}
-
-void sectorPrinter( const Sector& s){
-  cout << "  Sector: " << s.Id() << endl;
-}
-
-void devicePrinter( const Device& d){
-  cout << "  Device: " << d.Id() << endl;
-}
-
-
+  void strawHacker( Straw* s, int& i){
+    s->hack = 2;
+  }
+  
+  void layerPrinter( const Layer& l){
+    cout << "    Layer: " << l.Id() << endl;
+  }
+  
+  void sectorPrinter( const Sector& s){
+    cout << "  Sector: " << s.Id() << endl;
+  }
+  
+  void devicePrinter( const Device& d){
+    cout << "  Device: " << d.Id() << endl;
+  }
+  
+  
   LTrackerMaker::LTrackerMaker(int nSides,
 			       std::vector<LayerInfo> sideInfo,
 			       std::vector<LayerInfo> vaneInfo,
@@ -277,7 +276,7 @@ void devicePrinter( const Device& d){
     for ( int isec=0; isec<_nSides; ++isec ){
 
       sectors.push_back(Sector(SectorId(LTracker::wedge,isec)));
-      Sector& sec = sectors[isec];
+      Sector& sec = sectors.back();
       
       vector<Layer>& layers = sec._layers;
       layers.reserve(nlayers);
@@ -295,11 +294,15 @@ void devicePrinter( const Device& d){
     
       SectorId secId(LTracker::wedge,isec);
 
+      int maxStrawsThisSector(0);
+
       for ( vector<LayerInfo>::size_type j=0; 
 	    j<nlayers; ++j ){
 	
 	LayerInfo& linfo = _sideInfo[j];
 	int n = linfo._nStraws;
+
+	maxStrawsThisSector = ( n > maxStrawsThisSector ) ? n : maxStrawsThisSector;
 	
 	// For a sector centered at the origin, compute location of wire 0 
 	// and offset between wires within this layer.
@@ -319,7 +322,10 @@ void devicePrinter( const Device& d){
 
 	int detailIndex = linfo._strawType;
 	StrawDetail* detail = &_ltt->_strawDetail[detailIndex];
-      
+
+	// Save the base position of straw 0 in the sector.
+	sec._basePosition.push_back(origin);
+
 	for ( int is=0; is<linfo._nStraws; ++is ){
 
 	  // Position in sector centered at the origin.
@@ -339,12 +345,31 @@ void devicePrinter( const Device& d){
 	  
 	  //This is why two lines back must not invalidate pointers.
 	  //straws.push_back( &allStraws[index] );
-	}
-      }
 
-    }
+	} // end loop over straws
 
-  }
+      } // end loop over layers
+
+      // Offset between wires in base position.
+      sec._baseDelta = Hep3Vector( -2.*_strawRadius, 0., 0.);
+
+      // Scale the box to be slightly larger than it needs to be
+      const double fac = 1.0001;
+
+      // Half-dimensions of a box that holds this layer.
+      sec._boxHalfLengths.push_back( fac * (maxStrawsThisSector   * _strawRadius) );
+      sec._boxHalfLengths.push_back( fac * (1.+0.5*(nlayers-1)*root3)* _strawRadius );
+      sec._boxHalfLengths.push_back( fac * _halfLength );
+
+      // Descriptions of the rotations and placement of the sector.
+      sec._boxRyAngle = -_tilt;
+      sec._boxRzAngle = angle;
+      sec._boxOffset  = sectorOffset;
+
+
+    } // end loop over sectors
+
+  } // end make sides.
 
 
 void LTrackerMaker::MakeVanes(){
@@ -371,7 +396,7 @@ void LTrackerMaker::MakeVanes(){
   for ( int isec=0; isec<_nSides; ++isec ){
 
     sectors.push_back(Sector(SectorId(LTracker::vane,isec)));
-    Sector& sec = sectors[isec];
+    Sector& sec = sectors.back();
    
     vector<Layer>& layers = sec._layers;
     layers.reserve(nlayers);
@@ -384,6 +409,8 @@ void LTrackerMaker::MakeVanes(){
     Hep3Vector wireDir = RZ*(RY*baseWire);
     
     SectorId secId(LTracker::vane,isec);
+
+    int maxStrawsThisSector(0);
     
     for ( vector<LayerInfo>::size_type j=0; 
 	  j<nlayers; ++j ){
@@ -391,6 +418,8 @@ void LTrackerMaker::MakeVanes(){
       LayerInfo& linfo = _vaneInfo[j];
       
       int n = linfo._nStraws;
+
+      maxStrawsThisSector = ( n > maxStrawsThisSector ) ? n : maxStrawsThisSector;
       
       // Center of first wire in this layer.
       double x0 = -(n-1)*_strawRadius;
@@ -413,7 +442,10 @@ void LTrackerMaker::MakeVanes(){
       
       int detailIndex = linfo._strawType;
       StrawDetail* detail = &_ltt->_strawDetail[detailIndex];
-      
+
+      // Save the base position of straw 0 in the sector.
+      sec._basePosition.push_back(origin);
+
       for ( int is=0; is<linfo._nStraws; ++is ){
 	Hep3Vector p = origin + is*delta;
 	StrawIndex index = StrawIndex(allStraws.size());
@@ -428,10 +460,24 @@ void LTrackerMaker::MakeVanes(){
 	
 	// This is why two lines back must not invalidate pointers.
 	//straws.push_back( &allStraws[index] );
-      }
+      } // end loop over straws
       
-    }
-  }
+    } // end loop over layers
+
+    // Offset for constructing straw positions.
+    sec._baseDelta = Hep3Vector( 2.*_strawRadius, 0., 0.);
+
+    // Half-dimensions of a box that holds this layer.
+    sec._boxHalfLengths.push_back( maxStrawsThisSector   * _strawRadius );
+    sec._boxHalfLengths.push_back( (1.+0.5*(nlayers-1)*root3)* _strawRadius );
+    sec._boxHalfLengths.push_back( _halfLength );
+
+    // Descriptions of the rotations and placement of the sector.
+    sec._boxRyAngle = -_tilt;
+    sec._boxRzAngle = angle;
+    sec._boxOffset  = RZ*_vaneOffset;
+
+  } // end loop over sectors
 
 }
 
