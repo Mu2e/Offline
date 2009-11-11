@@ -2,21 +2,26 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.2 2009/10/06 23:19:59 kutschke Exp $
+// $Id: StrawSD.cc,v 1.3 2009/11/11 14:39:00 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/06 23:19:59 $
+// $Date: 2009/11/11 14:39:00 $
 //
 // Original author Rob Kutschke
 //
 
+#include <cstdio>
+
 // Mu2e incldues
 #include "Mu2eG4/inc/StrawSD.hh"
+#include "Mu2eG4/inc/EventNumberList.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/LinePointPCA.hh"
 
 // G4 includes
+#include "G4RunManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
 #include "G4ThreeVector.hh"
@@ -56,6 +61,8 @@ namespace mu2e {
 
   G4bool StrawSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
+    G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
+
     G4double edep = aStep->GetTotalEnergyDeposit();
 
     // Eventually we will want this but not now.
@@ -83,8 +90,11 @@ namespace mu2e {
     // The collection takes ownership of the hit. 
     _collection->insert( newHit );
 
-    /*
-      // Some debugging tests.
+    // Some debugging tests.
+
+    //
+    EventNumberList list;
+    if ( !list.inList() ) return true;
 
     // Transformations between world to local coordinate systems.
     G4AffineTransform const& toLocal = aStep->GetPreStepPoint()->GetTouchableHandle()->GetHistory()->GetTopTransform();
@@ -120,8 +130,26 @@ namespace mu2e {
 
     G4ThreeVector localZUnit(0.,0.,1.);
     G4ThreeVector worldZUnit = toWorld.TransformAxis(localZUnit);
-    
+
+    int copy = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
+
+    int eventNo = event->GetEventID();
+
+    /*
+    G4cout << "Addhit: "
+	   << setw(4) << eventNo << " "
+	   << setw(4) << _collection->entries() << " " 
+	   << setw(6) << copy <<  "  | "
+	   << std::setprecision(6)
+	   << prePosTracker << " | "
+	   << preMomWorld 
+	   << std::setprecision(6)
+	   << endl;
+    */
+ 
+    /*
     G4cout << "Add hit: "
+	   << std::setprecision(8)
 	   << _collection->entries() << " "
 	   << aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber() << " "
 	   << aStep->GetTrack()->GetTrackID() << " "
@@ -141,14 +169,15 @@ namespace mu2e {
 	   << preMomLocal.unit().y()    << " "
 	   << worldOrigin.x() << " "
 	   << worldOrigin.y() << " "
+	   << std::setprecision(6)
 	   << endl;
+    */
 
 
-    int copy = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
 
     // Reco Geometry for the LTracker.
     GeomHandle<LTracker> ltracker;
-    Straw const& straw = ltracker->getStraw( copy );
+    Straw const& straw = ltracker->getStraw( StrawIndex(copy) );
     G4ThreeVector mid = straw.getMidPoint();
     G4ThreeVector w   = straw.getDirection();
 
@@ -156,11 +185,30 @@ namespace mu2e {
     // Straight line approximation.
     TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);
 
+    
+    // Point on the wire that is closest to the step point.
+    LinePointPCA lppca( mid, w, prePosTracker);
+    double ddd = lppca.unit().cosTheta(preMomWorld);
+
+    double ttt = lppca.unit().cosTheta(w);
+
+    printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f\n",
+	     eventNo,  _collection->entries(), copy,
+	     aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
+	     prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
+	     preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt  );
+    fflush(stdout);
+
+
+
+
+    /*
     G4cout << "Measurement: "
 	   << aStep->GetTrack()->GetTrackID() << " "
 	   << pca.dca()  << " "
 	   << pca.dca2d()  << " "
 	   << endl;
+    */
 
     // This works.  uvw.perp() is always 2.500000000xxxx or 2.499999999xxxx
     // Note that uhat and vhat are not the same as the local (xhat, yhat)
@@ -175,7 +223,7 @@ namespace mu2e {
     G4ThreeVector uvw(u0, v0, w0);
 
     
-    */  
+
     // End of debug section.
 
     //newHit->Print();

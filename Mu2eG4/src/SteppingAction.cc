@@ -1,21 +1,30 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.2 2009/11/11 14:38:54 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/11 14:38:54 $
 //
 // Original author Rob Kutschke
 //
 
+// C++ includes
 #include <cstdio>
 #include <cmath>
 
+// Mu2e includes
+#include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/SteppingAction.hh"
+
+// G4 includes
+#include "G4RunManager.hh"
 #include "G4SteppingManager.hh"
 #include "G4EventManager.hh"
 #include "G4Event.hh"
 #include "G4String.hh"
+
+
+using namespace std;
 
 namespace mu2e {
 
@@ -40,7 +49,27 @@ void printit( G4String const& s,
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {  
+
+  G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
+  int eventNo = event->GetEventID();
+
+
+  // Build list of interesting events.
   /*
+  static int const nadded(12);
+  static int const nmissing(4);
+  static int const added[nadded]     = {  0, 15, 34,  49, 61, 66, 74, 99, 128, 142, 164, 172};
+  static int const missing[nmissing] = { 25, 41, 63, 144 };
+  static EventNumberList  add( nadded,   added  );
+  static EventNumberList miss( nmissing, missing);
+  */
+  static EventNumberList  add;
+  static EventNumberList miss;
+
+  // Skip uninteresting events.
+  bool inList = ( add.inList() || miss.inList() );
+  if ( !inList ) return;
+
   // Pre and post stepping points.
   G4StepPoint const* prept  = step->GetPreStepPoint();
   G4StepPoint const* postpt = step->GetPostStepPoint();
@@ -79,8 +108,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     _lastMomentum = prept->GetMomentum();
   }
 
-  if ( save   ) G4cout << "Save point: " << G4endl;
-  if ( report ) G4cout << "Report point: " << G4endl;
+  //  if ( save   ) G4cout << "Save point: " << G4endl;
+  //if ( report ) G4cout << "Report point: " << G4endl;
 
   // Status report.
   G4Track* track = step->GetTrack();
@@ -104,8 +133,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 	    postpt->GetMomentum()
 	    );
 
+  cout << "Pre  Volume and copy: " << preVolume  << " " << preCopy  << endl;
+  cout << "Post Volume and copy: " << postVolume << " " << postCopy << endl;
+
   printf ( "\n");
-  */
 
 }
 
