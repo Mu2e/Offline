@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.1 2009/11/12 00:51:08 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.2 2009/11/12 01:35:50 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/12 00:51:08 $
+// $Date: 2009/11/12 01:35:50 $
 //
 // Original author Rob Kutschke
 //
@@ -76,8 +76,9 @@ namespace mu2e {
     
     template <typename ENTITY> friend class ConditionsHandle;
     
+    // For now the key and version arguments are ignored.
     template <class ENTITY>
-    ENTITY* getElement()
+    ENTITY* getElement( std::string const& key, std::string const& version)
     {
       if(_run_count==0) 
 	throw cms::Exception("GEOM")
