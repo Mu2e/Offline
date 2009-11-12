@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_plugin.cc,v 1.3 2009/11/07 17:05:15 kutschke Exp $
+// $Id: MCSH_Test_plugin.cc,v 1.4 2009/11/12 20:59:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/07 17:05:15 $
+// $Date: 2009/11/12 20:59:17 $
 //
 // Original author Rob Kutschke
 //
@@ -111,8 +111,9 @@ namespace mu2e {
     GeomHandle<LTracker> ltracker;
 
     // Get the persistent data about the CrudeStrawHits.
-    edm::Handle<CrudeStrawHitPData> pdata;
-    evt.getByLabel(creatorName,pdata);
+    edm::Handle<CrudeStrawHitPData> pdataHandle;
+    evt.getByLabel(creatorName,pdataHandle);
+    CrudeStrawHitPData const* pdata = pdataHandle.product();
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
       for ( std::size_t i=0; i<pdata->size(); ++i){
