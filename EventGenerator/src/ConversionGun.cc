@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.4 2009/11/12 00:53:13 kutschke Exp $ 
+// $Id: ConversionGun.cc,v 1.5 2009/11/12 01:36:18 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2009/11/12 00:53:13 $
+// $Date: 2009/11/12 01:36:18 $
 //
 // Original author Rob Kutschke
 // 
@@ -63,11 +63,13 @@ namespace mu2e {
     _dphi = ( _phimax - _phimin);
     _dt   = (   _tmax -   _tmin);
 
-    // Test the conditions service:
-    ConditionsHandle<LiveWindowEvtGen> lw;
-    cout << "Test for LiveWindowEvtGen: "
-	 << lw->t0 << " "
-	 << lw->tend 
+    // Test accessing the conditions service.
+    // The argument to the constructor is ignored for now.  It will be a
+    // data base key.  There is a second argument that I have let take its
+    // default value of "current"; it will be used to specify a version number.
+    ConditionsHandle<LiveWindowEvtGen> lw("key");
+    cout << "Test getting LiveWindowEvtGen from the ConditionsService: "
+	 << *lw
 	 << endl;
 
   }
