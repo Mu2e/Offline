@@ -3,23 +3,30 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.3 2009/11/05 00:12:54 rhbob Exp $ 
-// $Author: rhbob $
-// $Date: 2009/11/05 00:12:54 $
+// $Id: ConversionGun.cc,v 1.4 2009/11/12 00:53:13 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2009/11/12 00:53:13 $
 //
 // Original author Rob Kutschke
 // 
 
+// C++ incldues.
 #include <iostream>
+
+// Framework includes
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
+// Mu2e includes
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/LiveWindowEvtGen.hh"
 #include "TargetGeom/inc/Target.hh"
 
+// Other external includes.
 #include "CLHEP/Random/RandFlat.h"
 
 using namespace std;
@@ -55,6 +62,13 @@ namespace mu2e {
     _dcz  = (  _czmax -  _czmin);
     _dphi = ( _phimax - _phimin);
     _dt   = (   _tmax -   _tmin);
+
+    // Test the conditions service:
+    ConditionsHandle<LiveWindowEvtGen> lw;
+    cout << "Test for LiveWindowEvtGen: "
+	 << lw->t0 << " "
+	 << lw->tend 
+	 << endl;
 
   }
 
