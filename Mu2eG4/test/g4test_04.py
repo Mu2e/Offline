@@ -1,8 +1,8 @@
 # Configuration file for G4Test04
 #
-# $Id: g4test_04.py,v 1.1 2009/11/12 00:54:08 kutschke Exp $
+# $Id: g4test_04.py,v 1.2 2009/11/12 21:01:17 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/11/12 00:54:08 $
+# $Date: 2009/11/12 21:01:17 $
 #
 # Original author Rob Kutschke
 #
@@ -37,7 +37,7 @@ process.RandomNumberService = mu2e.Service("RandomNumberService",
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
-       inputfile=mu2e.untracked.string("Mu2eG4/test/geom_02.txt")
+       inputfile=mu2e.untracked.string("Mu2eG4/test/geom_01.txt")
 )
 
 # Access the conditions data.
