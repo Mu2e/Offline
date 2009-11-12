@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.2 2009/11/12 01:35:50 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.3 2009/11/12 20:58:26 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/12 01:35:50 $
+// $Date: 2009/11/12 20:58:26 $
 //
 // Original author Rob Kutschke
 //
@@ -29,8 +29,11 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
+// Mu2e include files.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "ConditionsService/inc/ConditionsEntity.hh"
+
+// Other external include files.
 #include "boost/shared_ptr.hpp"
 
 namespace mu2e {
@@ -45,22 +48,8 @@ namespace mu2e {
     
     void preBeginRun( edm::RunID const& id, edm::Timestamp const& ts);
     
-
-    // There are two types of accessors.
-    // For
+    // Not sure if we really want this.  It might be abused more than used?
     SimpleConfig const& config() const { return *_config;}
-
-    bool getBool ( std::string const& key){
-      return _config->getBool(key);
-    }
-
-    int getInt( std::string const& key){
-      return _config->getInt(key);
-    }
-
-    double getDouble( std::string const& key){
-      return _config->getDouble(key);
-    }
 
   private:
     
