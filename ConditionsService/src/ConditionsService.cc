@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.cc,v 1.1 2009/11/12 00:51:08 kutschke Exp $
+// $Id: ConditionsService.cc,v 1.2 2009/11/13 23:11:42 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/12 00:51:08 $
+// $Date: 2009/11/13 23:11:42 $
 //
 // Original author Rob Kutschke
 //
@@ -28,6 +28,8 @@
 // Calibration entities.
 // Would like to break the coupling to these.
 #include "ConditionsService/inc/LiveWindowEvtGen.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/DAQParams.hh"
 
 using namespace std;
 
@@ -60,13 +62,14 @@ namespace mu2e {
     _config = auto_ptr<SimpleConfig>(new SimpleConfig(_conditionsFile));
 
     if ( _config->getBool("printConfig",false) ){
-      log << *_config;
+      log << "\n" << *_config;
     }
 
     checkConsistency();
 
     // Can we break the coupling to the entities?
-    addEntity( std::auto_ptr<LiveWindowEvtGen>(new LiveWindowEvtGen(*_config)) );
+    addEntity( std::auto_ptr<AcceleratorParams>( new AcceleratorParams(*_config)) );
+    addEntity( std::auto_ptr<DAQParams>        ( new DAQParams        (*_config)) );
 
   }
 
