@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.cc,v 1.2 2009/11/13 23:11:42 kutschke Exp $
+// $Id: ConditionsService.cc,v 1.3 2009/11/13 23:51:19 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/13 23:11:42 $
+// $Date: 2009/11/13 23:51:19 $
 //
 // Original author Rob Kutschke
 //
@@ -27,7 +27,6 @@
 
 // Calibration entities.
 // Would like to break the coupling to these.
-#include "ConditionsService/inc/LiveWindowEvtGen.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 
