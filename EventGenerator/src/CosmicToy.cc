@@ -2,25 +2,33 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.3 2009/11/11 14:14:59 kutschke Exp $
+// $Id: CosmicToy.cc,v 1.4 2009/11/13 23:29:19 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/11 14:14:59 $
+// $Date: 2009/11/13 23:29:19 $
 //
 // Original author Rob Kutschke
 //
+
+// C++ includes.
 #include <iostream>
 
+// Framework includes.
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Services/interface/TFileService.h"
 #include "FWCore/Framework/interface/TFileDirectory.h"
 
+// Mu2e includes.
 #include "EventGenerator/inc/CosmicToy.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/DAQParams.hh"
 
 // From CLHEP
 #include "CLHEP/Random/RandFlat.h"
@@ -39,15 +47,27 @@ using CLHEP::RandFlat;
 
 namespace mu2e {
 
-  // Need a home for these.  Can we use the root version?
-  static const int  pdg_electron = 11;
-  static const int  pdg_muon     = 13;
+  // Mass of the muon, in GeV.
+  // Once we have the HepPDT package installed, get the mass from there.
   static const double m = 0.1056584;
 
   CosmicToy::CosmicToy( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
 
     _mean = config.getDouble("cosmictoy.mean",0.);
+
+    // Access conditions data.
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    ConditionsHandle<DAQParams>         daqPar("ignored");
+
+    // Start time for generation is a little before the start time
+    // of the DAQ system.
+    double offset = 100.;
+
+    // Start and end times for generation.
+    _tmin = (daqPar->t0 > offset)? daqPar->t0-offset : 0.;
+    _tmax = accPar->deBuncherPeriod;
+    _dt   = _tmax - _tmin;
 
     // Book histograms.
     edm::Service<edm::TFileService> tfs;
@@ -89,22 +109,22 @@ namespace mu2e {
       double e = sqrt(p*p +m*m);
       HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), e);
 
-      // Toy footprint is 5m in diameter.
-      double range = 5000.;
+      // Footprint of this toy model is 10m on each side.
+      double halfLength = 5000.;
 
       // Position in a reference plane that is just above the ground.
       // We can worry later about the exact meaning of the height.
       // The G4 interface code ( PrimaryGeneratorAction) will put it
       // at the right height.
-      double x = (1.-2.*RandFlat::shoot())*range;
+      double x = (1.-2.*RandFlat::shoot())*halfLength;
       double y = 0.;
-      double z = (1.-2.*RandFlat::shoot())*range;
+      double z = (1.-2.*RandFlat::shoot())*halfLength;
       Hep3Vector pos( x, y, z );
 
-      double time = 1694*+RandFlat::shoot();
+      double time = _tmin + _dt*RandFlat::shoot();
 
       // Pick a random charge.
-      int pid = (RandFlat::shoot() >0.5) ? pdg_muon : -pdg_muon;
+      PDGCode::type pid = (RandFlat::shoot() >0.5) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
       // Add the cosmic to  the list.
       genParts.push_back( ToyGenParticle( pid, GenId::cosmicToy, pos, mom, time));
