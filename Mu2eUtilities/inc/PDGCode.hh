@@ -5,9 +5,9 @@
 // A convenience class to allow compile time access
 // to the PDG identifier codes for various particles.  
 //
-// $Id: PDGCode.hh,v 1.1 2009/11/13 23:09:54 kutschke Exp $
+// $Id: PDGCode.hh,v 1.2 2009/11/13 23:35:35 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/13 23:09:54 $
+// $Date: 2009/11/13 23:35:35 $
 //
 // This file is taken directly from BaBar's pdt/PdtPdg.hh
 //
@@ -27,7 +27,13 @@
 // written in pseudo-TeX, "e^-", for example; this means
 // that some HepPDT names are not legal C++ names.
 //
-
+// It should be rare that it is necessary to make a variable
+// of type PDGCode::type by explicitly converting an int.
+// When it is necessary, the syntax is:
+// int iGamma=22;
+// PDGCode::type pid = static_cast<PDGCode::type>(iGamma);
+//
+//
 namespace mu2e {
 
   class PDGCode
