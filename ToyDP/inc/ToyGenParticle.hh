@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: ToyGenParticle.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: ToyGenParticle.hh,v 1.2 2009/11/13 23:13:14 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2009/11/13 23:13:14 $
 //
 // Original author Rob Kutschke
 //
@@ -18,8 +18,11 @@
 // In the mean time this class should be good enough.
 //
 
+// Mu2e includes
 #include "ToyDP/inc/GenId.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
 
+// Includes from external packages.
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 
@@ -31,7 +34,7 @@ namespace mu2e {
     // This c'tor is required for ROOT.
     ToyGenParticle(){};
 
-    ToyGenParticle( int pdgId,
+    ToyGenParticle( PDGCode::type pdgId,
 		    GenId generatorId,
 		    CLHEP::Hep3Vector const&       position,
 		    CLHEP::HepLorentzVector const& momentum,
@@ -44,7 +47,7 @@ namespace mu2e {
     }
 
     // Differs only in the type of second argument.
-    ToyGenParticle( int pdgId,
+    ToyGenParticle( PDGCode::type pdgId,
 		    GenId::enum_type generatorId,
 		    CLHEP::Hep3Vector const&       position,
 		    CLHEP::HepLorentzVector const& momentum,
@@ -60,7 +63,7 @@ namespace mu2e {
     virtual ~ToyGenParticle(){};
 
     // PDG particle ID code.
-    int _pdgId;
+    PDGCode::type _pdgId;
 
     // Identifier for which generator created this particle.
     GenId _generatorId;
