@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.3 2009/11/12 21:02:48 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.2 2009/11/11 14:55:40 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/12 21:02:48 $
+// $Date: 2009/11/11 14:55:40 $
 //
 // Original author Rob Kutschke
 //
@@ -510,6 +510,7 @@ namespace mu2e {
       } else {
 	trackerInfo = constructLTrackerv3( detSolVacInfo.logical, dsz0 );
       }
+      printPhys();
 
     } else{
 

@@ -1,9 +1,9 @@
 
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.5 2009/11/13 23:29:19 kutschke Exp $
+// $Id: PiCapture.cc,v 1.4 2009/11/11 14:14:42 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/13 23:29:19 $
+// $Date: 2009/11/11 14:14:42 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -19,7 +19,6 @@
 
 #include "EventGenerator/inc/PiCapture.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "Mu2eUtilities/inc/sqrtOrThrow.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -42,6 +41,11 @@ using CLHEP::RandPoisson;
 
 
 namespace mu2e {
+
+  // Need a home for these.  Can we use the root version?
+  static const int  pdg_electron = 11;
+  static const int  pdg_muon     = 13;
+  static const int  pdg_gamma    = 22;
 
   // Also need a home for this - the cycle time of the debuncher.
   static const double tcycle = 1694.;
@@ -147,7 +151,7 @@ namespace mu2e {
       HepLorentzVector mom( p.x(), p.y(), p.z(), e);
       
       // Add the electron to  the list.
-      genParticles.push_back( ToyGenParticle( PDGCode::gamma, GenId::pionCapture, pos, mom, time));
+      genParticles.push_back( ToyGenParticle( pdg_gamma, GenId::pionCapture, pos, mom, time));
     }
 
   }

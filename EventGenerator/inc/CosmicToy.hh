@@ -4,9 +4,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.hh,v 1.2 2009/11/13 23:29:19 kutschke Exp $
+// $Id: CosmicToy.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/13 23:29:19 $
+// $Date: 2009/09/30 22:57:47 $
 //
 // Original author Rob Kutschke
 //
@@ -39,11 +39,6 @@ namespace mu2e {
 
     // Mean multiplicity.
     double _mean;
-
-    // Time range ( in ns) over which to generate events.
-    double _tmin;
-    double _tmax;
-    double _dt;
 
   };
 
