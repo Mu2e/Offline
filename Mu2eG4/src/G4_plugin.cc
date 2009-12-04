@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.4 2009/11/24 23:38:27 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.3 2009/11/06 16:21:38 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/24 23:38:27 $
+// $Date: 2009/11/06 16:21:38 $
 //
 // Original author Rob Kutschke
 //
@@ -222,28 +222,14 @@ namespace mu2e {
     // Should also find at the history of particles created inside G4 and copy it
     // to the edm::event.
 
+
     //_UI->ApplyCommand( "/vis/ogl/printEPS" );
 
-    // Pause to see graphics. 
+    // Prompt to see graphics.
     if ( _visMacro.size() > 0 ) {
-
-      // Prompt to continue and wait for reply.
-      cout << "Enter a character to see next event: "; 
-      string junk;
+      char junk;
+      cout << "Enter a character to see next event: ";
       cin >> junk;
-      
-      _UI->ApplyCommand( "/vis/viewer/refresh"); 
-
-      // Check if user is requesting an early termination of the event loop.
-      if ( !junk.empty() ){
-
-	// Checks only the first character; we should check first non-blank.
-	char c = tolower( junk[0] );
-	if ( c == 'q' ){
-	  throw cms::Exception("CONTROL")
-	    << "Early end of event loop requested inside G4, \n";
-	}
-      }
     }
     
     evt.put(outputHits);
