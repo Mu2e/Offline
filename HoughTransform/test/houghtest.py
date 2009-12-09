@@ -1,8 +1,8 @@
 # Configuration file for G4Test03
 #
-# $Id: houghtest.py,v 1.1 2009/12/07 20:20:32 rhbob Exp $
+# $Id: houghtest.py,v 1.2 2009/12/09 19:20:50 rhbob Exp $
 # $Author: rhbob $
-# $Date: 2009/12/07 20:20:32 $
+# $Date: 2009/12/09 19:20:50 $
 #
 # Original author Rob Kutschke
 #
@@ -57,7 +57,7 @@ process.source = mu2e.Source("EmptySource")
 
 process.generate = mu2e.EDProducer(
     "EventGenerator",
-    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_01.txt")
+    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_03.txt")
 )
 
 # Run G4 and add its hits to the event.
