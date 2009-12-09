@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: DecayInOrbitGun.cc,v 1.1 2009/12/04 20:19:45 rhbob Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.2 2009/12/09 19:09:13 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2009/12/04 20:19:45 $
+// $Date: 2009/12/09 19:09:13 $
 //
 // Original author Rob Kutschke
 // 
@@ -135,8 +135,8 @@ namespace mu2e {
   }
   
   void DecayInOrbitGun::generate( ToyGenParticleCollection& genParts ){
-    cout << "in DIO gun " << endl;
     if (!_doConvs) return;
+    cout << "in DIO gun " << endl;//save for debugging to make sure right genconfig_ij.txt
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
