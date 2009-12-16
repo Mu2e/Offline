@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.3 2009/12/09 18:55:18 rhbob Exp $
+  $Id: EventGenerator_plugin.cc,v 1.4 2009/12/16 19:31:30 rhbob Exp $
   $Author: rhbob $
-  $Date: 2009/12/09 18:55:18 $
+  $Date: 2009/12/16 19:31:30 $
 
   Original author Rob Kutschke
 
@@ -61,6 +61,7 @@
 #include "EventGenerator/inc/CosmicToy.hh"
 #include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
+#include "EventGenerator/inc/EjectedProtonGun.hh"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>
@@ -125,6 +126,7 @@ namespace mu2e {
     _generators.push_back( GeneratorBasePtr( new CosmicToy(           run, config)) );
     _generators.push_back( GeneratorBasePtr( new PiCapture(           run, config)) );
     _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(     run, config)) );
+    _generators.push_back( GeneratorBasePtr( new EjectedProtonGun(     run, config)) );
     
   }
   

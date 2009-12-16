@@ -1,0 +1,38 @@
+//
+// Run-time config info for the event generators.
+//
+// $Id: genconfig_05.txt,v 1.1 2009/12/16 19:29:40 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2009/12/16 19:29:40 $
+//
+// Original author Rob Kutschke
+// added EjectedProtonGun process
+
+// what processes to do
+bool conversionGun.do = 0;
+bool decayinorbitGun.do = 0;
+bool ejectedProtonGun.do = 1;
+
+// Limits on cos(polar angle):
+double conversionGun.czmin = 0.5;
+double conversionGun.czmax = 0.7;
+double decayinorbitGun.czmin = 0.5;
+double decayinorbitGun.czmax = 0.7;
+double ejectedProtonGun.czmin = 0.0;
+double ejectedProtonGun.czmax = 1.0;
+
+// Energy Range for DIOs; upper energy is always conversion energy
+double decayinorbitGun.elow = 0.100;
+double ejectedProtonGun.elow = 0.0;
+
+// Time limits in ns, relative to protons on target.
+double conversionGun.tmin  =  700.;
+double conversionGun.tmax  = 1694.;
+double decayinorbitGun.tmin  =  700.;
+double decayinorbitGun.tmax  = 1694.;
+double ejectedProtonGun.tmin  =  700.;
+double ejectedProtonGun.tmax  = 1694.;
+
+// Mean multiplicities for the two background generators.
+double cosmictoy.mean =  0.0;
+double picapture.mean =  0.0;
