@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.6 2009/11/13 23:29:19 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2009/11/13 23:29:19 $
+// $Id: ConversionGun.cc,v 1.7 2009/12/21 21:36:56 rhbob Exp $ 
+// $Author: rhbob $
+// $Date: 2009/12/21 21:36:56 $
 //
 // Original author Rob Kutschke
 // 
@@ -43,12 +43,12 @@ namespace mu2e {
 
   // Mass of the electron.
   // Once we have the HepPDT package installed, get this number from there.
-  static const double m = 0.000510999;
+  static const double m = 0.510999;
   
   // Need a Conditions entity to hold info about conversions:
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
-  static const double pEndPoint = 104.9;
+  static const double pEndPoint = 104.96;
 
   ConversionGun::ConversionGun( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
