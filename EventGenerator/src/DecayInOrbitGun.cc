@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: DecayInOrbitGun.cc,v 1.2 2009/12/09 19:09:13 rhbob Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.3 2009/12/21 21:41:32 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2009/12/09 19:09:13 $
+// $Date: 2009/12/21 21:41:32 $
 //
 // Original author Rob Kutschke
 // 
@@ -48,13 +48,13 @@ namespace mu2e {
 
   // Mass of the electron.
   // Once we have the HepPDT package installed, get this number from there.
-  static const double mElectron = 0.000510999;
+  static const double mElectron = 0.510999;
   
   // Need a Conditions entity to hold info about conversions:
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
 
-  static const double conversionEnergyAluminum = 0.10496;
+  static const double conversionEnergyAluminum = 104.96;
   DecayInOrbitGun::DecayInOrbitGun( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
 
@@ -70,7 +70,7 @@ namespace mu2e {
     double _tmin = daqPar->t0;
     double _tmax = accPar->deBuncherPeriod;
     
-    _doConvs = config.getBool( "decayinorbitGun.do", 1);
+    _doConvs = config.getBool( "decayinorbitGun.do", 0);
     _p      = config.getDouble("decayinorbitGun.p", conversionEnergyAluminum );
     
     _czmin  = config.getDouble("decayinorbitGun.czmin",  0.3);

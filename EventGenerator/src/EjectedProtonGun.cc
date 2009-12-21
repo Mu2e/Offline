@@ -4,9 +4,9 @@
 // a random time during the accelerator cycle.
 
 //
-// $Id: EjectedProtonGun.cc,v 1.1 2009/12/16 19:26:59 rhbob Exp $ 
+// $Id: EjectedProtonGun.cc,v 1.2 2009/12/21 21:42:10 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2009/12/16 19:26:59 $
+// $Date: 2009/12/21 21:42:10 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -51,7 +51,7 @@ namespace mu2e {
   // these all need to be in a database eventually
   // Mass of the proton.
   // Once we have the HepPDT package installed, get this number from there.
-  static const double mProton = 0.938272;
+  static const double mProton = 938.272;
 
   EjectedProtonGun::EjectedProtonGun( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
@@ -68,7 +68,7 @@ namespace mu2e {
     double _tmin = daqPar->t0;
     double _tmax = accPar->deBuncherPeriod;
     
-    _doEjectedProton = config.getBool( "ejectedProtonGun.do", 1);
+    _doEjectedProton = config.getBool( "ejectedProtonGun.do", 0);
     _ejectedProtonMomentum      = config.getDouble("ejectedProtonGun.p", .100);
     
     _czmin  = config.getDouble("ejectedProtonGun.czmin",  0.3);
