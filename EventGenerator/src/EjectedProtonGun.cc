@@ -4,9 +4,9 @@
 // a random time during the accelerator cycle.
 
 //
-// $Id: EjectedProtonGun.cc,v 1.2 2009/12/21 21:42:10 rhbob Exp $ 
+// $Id: EjectedProtonGun.cc,v 1.3 2009/12/30 19:14:10 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2009/12/21 21:42:10 $
+// $Date: 2009/12/30 19:14:10 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -121,7 +121,8 @@ namespace mu2e {
     // Book histograms.
     edm::Service<edm::TFileService> tfs;
     _ejectedProtonMultiplicity = tfs->make<TH1D>( "ejectedProtonMultiplicity", "Ejected Proton Multiplicity", 20, 0, 20);
-    _ejectedProtonKE = tfs->make<TH1D>( "ejectedProtonE", "Ejected Proton Kinetic Energy", 10, _elow,_ehi);
+    _ejectedProtonKE = tfs->make<TH1D>( "ejectedProtonKE", "Ejected Proton Kinetic Energy", 10, _elow,_ehi);
+    _ejectedProtonMomentumMeV = tfs->make<TH1D>( "ejectedProtonMomentumMeV", "Ejected Proton Momentum in MeV", 10, _elow,_ehi);
     _ejectedProtonKEZoom = tfs->make<TH1D>( "ejectedProtonEZoom", "Ejected Proton Kinetic Energy (zoom)", 200, _elow, _ehi);
   }
   
@@ -172,7 +173,7 @@ namespace mu2e {
     _ejectedProtonEnergy = _ejectedProtonKineticEnergy + mProton;
 
     double ejectedProtonMomentum = safeSqrt(_ejectedProtonEnergy*_ejectedProtonEnergy - mProton*mProton);
-
+    _ejectedProtonMomentumMeV->Fill(ejectedProtonMomentum);
     
     HepLorentzVector mom( _ejectedProtonMomentum*sz*cos(phi2), ejectedProtonMomentum*sz*sin(phi2), ejectedProtonMomentum*cz, 
 			  _ejectedProtonEnergy);
@@ -183,7 +184,7 @@ namespace mu2e {
   }
 
 
-  double EjectedProtonGun::EnergyEjectedProtonFunc(const double protonKineticEnergyInGeV)
+  double EjectedProtonGun::EnergyEjectedProtonFunc(const double protonKineticEnergyInMeV)
   {
     //taken from GMC 
 //
@@ -210,24 +211,22 @@ namespace mu2e {
     static const double par6=10.014;
     static const double par7=1050.;
     static const double par8=5.103;
-    //and I need to do this too...
-    double protonKineticEnergy = protonKineticEnergyInGeV*1000.;
 
     double spectrumWeight;
-      if (protonKineticEnergy >= 20)
+      if (protonKineticEnergyInMeV >= 20)
 	{
-	  spectrumWeight=par5*TMath::Exp(-(protonKineticEnergy-20.)/par6);
+	  spectrumWeight=par5*TMath::Exp(-(protonKineticEnergyInMeV-20.)/par6);
 	}
 
-      else if(protonKineticEnergy >= 8.0 && protonKineticEnergy <= 20.0)
+      else if(protonKineticEnergyInMeV >= 8.0 && protonKineticEnergyInMeV <= 20.0)
 	{
-	  spectrumWeight=par7*exp(-(protonKineticEnergy-8.)/par8);
+	  spectrumWeight=par7*exp(-(protonKineticEnergyInMeV-8.)/par8);
 	}
-      else if (protonKineticEnergy > emn)
+      else if (protonKineticEnergyInMeV > emn)
 	{
-	  double xw=(1.-emn/protonKineticEnergy);
+	  double xw=(1.-emn/protonKineticEnergyInMeV);
 	  double xu=TMath::Power(xw,par2);
-	  double xv=par3*TMath::Exp(-par4*protonKineticEnergy);
+	  double xv=par3*TMath::Exp(-par4*protonKineticEnergyInMeV);
 	  spectrumWeight=xv*xu;
 	}
       else 

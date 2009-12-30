@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: EjectedProtonGun.hh,v 1.1 2009/12/16 19:27:27 rhbob Exp $
+// $Id: EjectedProtonGun.hh,v 1.2 2009/12/30 19:14:19 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2009/12/16 19:27:27 $
+// $Date: 2009/12/30 19:14:19 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -61,11 +61,12 @@ namespace mu2e {
 
   private:
 
-    double EnergyEjectedProtonFunc(const double protonKineticEnergy); 
+    double EnergyEjectedProtonFunc(const double protonKineticEnergyinMeV); 
 
     TH1D* _ejectedProtonMultiplicity;
     TH1D* _ejectedProtonKE;
     TH1D* _ejectedProtonKEZoom;
+    TH1D* _ejectedProtonMomentumMeV;
 
     RandomUnitSphere _randomUnitSphere;
     std::auto_ptr<RandGeneral> _funcGen;
