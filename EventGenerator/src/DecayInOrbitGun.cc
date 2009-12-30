@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: DecayInOrbitGun.cc,v 1.3 2009/12/21 21:41:32 rhbob Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.4 2009/12/30 18:45:07 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2009/12/21 21:41:32 $
+// $Date: 2009/12/30 18:45:07 $
 //
 // Original author Rob Kutschke
 // 
@@ -114,7 +114,7 @@ namespace mu2e {
        else
 	 {
 	   YFunc[ib] = EnergyDIOFunc(x);
-	   cout << "ib, x, Spectrum = " << ib << " " << x << " " << EnergyDIOFunc(x) << endl;
+	   //	   cout << "ib, x, Spectrum = " << ib << " " << x << " " << EnergyDIOFunc(x) << endl;
 	 }
     }
     _funcGen = auto_ptr<RandGeneral>(new RandGeneral(YFunc,_nbins));
@@ -178,6 +178,7 @@ namespace mu2e {
 
     double electronMomentum = safeSqrt(e*e - mElectron*mElectron);
     
+    cout << "electron DIO momentum = " << electronMomentum << endl;
     HepLorentzVector mom( electronMomentum*sz*cos(phi2), electronMomentum*sz*sin(phi2), electronMomentum*cz, e);
 
     // Add the electron to  the list.
