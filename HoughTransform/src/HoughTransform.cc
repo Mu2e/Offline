@@ -2,9 +2,9 @@
 // HoughTransform for circles in the L-tracker
 // 
 //
-// $Id: HoughTransform.cc,v 1.1 2009/12/09 17:34:28 rhbob Exp $
+// $Id: HoughTransform.cc,v 1.2 2010/01/11 21:33:07 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2009/12/09 17:34:28 $
+// $Date: 2010/01/11 21:33:07 $
 //
 // Original author R.Bernstein
 //
@@ -66,7 +66,7 @@ namespace mu2e{
 	  if (!foundMatchingStraw) finalClusters.push_back(trialCluster);
 
 	}
-
+      //      cout << "finalClusters.size = " << finalClusters.size() << endl;
       for(vector<mu2e::hitcluster::HitCluster>::size_type ithCluster = 0; ithCluster < finalClusters.size();
 	  ++ithCluster)
 	{
@@ -92,13 +92,14 @@ namespace mu2e{
       int _zElt = 2;
 
 
-      if (clusterCenters.size() > 3)
+
+      if (clusterCenters.size() >= 3)
 	{
 	  for (clusterCenterVector::size_type iCluster1 = 0; iCluster1 < clusterCenters.size()-2 ; ++iCluster1)
 	    {
 	      double x1 = clusterCenters[iCluster1][_xElt];
 	      double y1 = clusterCenters[iCluster1][_yElt];
-	      for (clusterCenterVector::size_type iCluster2 = iCluster1 + 1; iCluster2 < clusterCenters.size()-2 ; ++iCluster2)
+	      for (clusterCenterVector::size_type iCluster2 = iCluster1 + 1; iCluster2 < clusterCenters.size()-1 ; ++iCluster2)
 		{
 		  double x2 = clusterCenters[iCluster2][_xElt];
 		  double y2 = clusterCenters[iCluster2][_yElt];
