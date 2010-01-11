@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.1 2009/12/09 17:34:11 rhbob Exp $
+// $Id: HoughTest_plugin.cc,v 1.2 2010/01/11 21:37:59 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2009/12/09 17:34:11 $
+// $Date: 2010/01/11 21:37:59 $
 //
 // Original author R. Bernstein
 //
@@ -104,6 +104,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     // This is called for each event.
     void analyze(const edm::Event& e, edm::EventSetup const&);
 
+    RanecuEngine* inefficiencyEngine;
     RanecuEngine* accidentalEngine;
     RanecuEngine* regularEngine;
 
@@ -126,12 +127,14 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     TH1F* _hzHit;
     TH1F* _hHitNeighbours;
     TH1F* _hCheckPointRadius;
-    TH1F* _hRadiusDistribution;
+    TH1F* _hRadiusDistribution2D;
+    TH1F* _hDCADistribution2D;
     TH1F* _hChisqDistribution;
     TNtuple* _ntup;
     TF1* houghRadiusFit;
     TH2F* _hRadiusPeak;
     TH1F* _hNumberOfSpectrumPeaks;
+    TH1F* _hNumberOfSpectrumPeaks2;
 
     // A category for the error logger.
     const std::string _messageCategory;
@@ -169,7 +172,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
 					  "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec");
-    _hRadiusDistribution = tfs->make<TH1F>("radiusDistribution","Radius Distribution",100,0.,1000.);
+    _hRadiusDistribution2D = tfs->make<TH1F>("radiusDistribution2D","Radius Distribution in 2D search",100,0.,1000.);
+    _hDCADistribution2D = tfs->make<TH1F>("DCADistribution2D","DCA Distribution in 2D Search",120,0.,1200.);
 
    //set up fit function in Hough Space
     houghRadiusFit = tfs->make<TF1>("houghRadiusFit",houghFitToRadius,0.,100.,5);
@@ -178,9 +182,14 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     _hRadiusPeak = tfs->make<TH2F>("radiusPeak","Radius Peak", 100,0.,100.,100,200.,400.);
 
     //and the number of peaks
-    _hNumberOfSpectrumPeaks = tfs->make<TH1F>("numberOfSpectrumPeaks","Number of Radius Spectrum Peaks", 10,0.,10.);
+    _hNumberOfSpectrumPeaks =  tfs->make<TH1F>("numberOfSpectrumPeaks" ,"Number of Radius Spectrum Peaks", 10,0.,10.);
+    _hNumberOfSpectrumPeaks2 = tfs->make<TH1F>("numberOfSpectrumPeaks2","Number of Radius/DCA Spectrum Peaks", 10,0.,10.);
+
     //make a special random number generator for noise events
     accidentalEngine = new RanecuEngine();
+
+    //make a special random number generator for inefficiency
+    inefficiencyEngine = new RanecuEngine();
 
     //here's the regular engine
     regularEngine = new RanecuEngine();
@@ -231,7 +240,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     static double occupancy = 0.05;
     static int noiseMean = static_cast<int>(nstraws*occupancy);
     int numberOfNoiseHits = RandPoisson::shoot(accidentalEngine,noiseMean);
-        numberOfNoiseHits = 0;
+          numberOfNoiseHits = 0;
 
     //make a copy of the hits
     StepPointMCCollection plusNoise(*hitsHandle);
@@ -258,10 +267,37 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     HepRandom::setTheEngine(regularEngine);
     cout << "size of plusNoise after " << plusNoise.size() << endl;
 
-        StepPointMCCollection const* plusNoiseHits = &plusNoise;
-    //    StepPointMCCollection const* plusNoiseHits = hits;//removes noise
-    //StepPointMCCollection const* plusNoiseHits = hitsHandle.product();
-	hits = &plusNoise;
+    StepPointMCCollection const* plusNoiseHits = &plusNoise;
+    //replace hits with plusNoise
+    hits = &plusNoise;
+
+
+    //remove hits according to inefficiency
+    double inefficiency = 0.0;
+    HepRandom::setTheEngine(inefficiencyEngine);
+
+    //loop over all hits and delete the element
+
+    //note to self, 1/5/10: I don't think I can just loop over hits and delete them because 
+    //I'm going to foul up the iterator.  I think I need to loop over the original and then copy new elements
+    //to it if they meet the criterion.  Rob says this is the right way for now.  Code it up post-Rice
+
+    //behind the scenes somebody built me a copy constructor and assignment operators for vectors.  thanks!
+    StepPointMCCollection inefficientHits(*hitsHandle);
+    inefficientHits.clear();
+    cout << "size of inefficientHits = " << inefficientHits.size() << endl;
+    for( StepPointMCCollection::const_iterator i = hits->begin(); i!= hits->end(); ++i ) 
+      {
+	if (CLHEP::RandFlat::shoot(inefficiencyEngine) >= inefficiency)
+	  {
+	    // > inefficiency, add the element in inefficientHits
+	    const StepPointMC& hit = *i;
+	    inefficientHits.push_back(StepPointMC(hit));
+	  }
+      }
+    cout << "size of inefficientHits after = " << inefficientHits.size() << endl;
+    //and now make inefficientHits what gets passed to everyone else
+    hits = &inefficientHits;
 
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
@@ -290,7 +326,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	mu2e::houghtransform::HoughTransform::houghCandidates houghTracks;
 
     // look for circles in hough space
-	//	trialHough.foundHoughTracks(ltracker,hits,houghTracks);
 	trialHough.foundHoughTracks(ltracker,plusNoiseHits,houghTracks);
 
 	//loop over all found houghTracks, each of which is a candidate circle
@@ -308,11 +343,11 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	TH1F* _histoRadius = tfs->make<TH1F>(radiusHisto.name(),radiusHisto.title(),
 					     80,100.,500.);
 	TH1F* _histoDCA = tfs->make<TH1F>(dcaHisto.name(),dcaHisto.title(),
-					     100,0.,100.);
+					     110,0.,110.);
 	TH2F* _histoRadiusDCA = tfs->make<TH2F>(radiusDCAHisto.name(),radiusDCAHisto.title(),
-						80,100.,500.,100,0.,100.);
+						80,100.,500.,120,-10.,110.);
 	TH3F* _histoRadiusDCACenter = tfs->make<TH3F>(radiusDCACenterHisto.name(),radiusDCACenterHisto.title(),
-						80,100.,500.,100,0.,100.,100,0.,1000.);
+						80,100.,500.,120,-10.,110.,100,0.,1000.);
 	TH2F* _histoCenter = tfs->make<TH2F>(centerHisto.name(),centerHisto.title(), 
 					     100,-1000.,1000.,100,-1000.,1000.);
 	TH1F* _histoRadiusError = tfs->make<TH1F>(radiusErrorHisto.name(),radiusErrorHisto.title(), 
@@ -320,6 +355,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	TH1F* _histoNStraws = tfs->make<TH1F>(nStrawsHisto.name(),nStrawsHisto.title(), 
 						  100,0.,100.);
 
+	cout << "number of Hough Tracks = " << houghTracks.size() << endl;
 
 	for (int ithHough = 0; ithHough < houghTracks.size(); ++ithHough)
 	  {
@@ -335,6 +371,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 		_histoRadiusDCA->Fill(static_cast<Float_t>(houghTracks[ithHough].radius),
 				      static_cast<Float_t>(houghTracks[ithHough].dca),
 				      static_cast<Float_t>(houghTracks[ithHough].numberOfStraws));
+		//		_histoRadiusDCA->Fill(250.,50.);
 		_histoRadiusDCACenter->Fill(static_cast<Double_t>(houghTracks[ithHough].radius),
 				      static_cast<Double_t>(houghTracks[ithHough].dca),
 				      distance,
@@ -351,10 +388,14 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	s.Search(_histoRadius,1.0," ",0.50);
 	Int_t nPeaks = s.GetNPeaks();
 	_hNumberOfSpectrumPeaks->Fill(static_cast<double>(nPeaks));
-	//	TSpectrum2 s2(50,1.0); dooesn't work, and examples in $ROOT_DIR don't either
-	//	s2.Search(_histoRadiusDCA,2," ",0.05);
-	//	Int_t nPeaks2 = s2.GetNPeaks();
-	cout << "nPeaks = " << nPeaks << endl; //<< " and n2Peaks = " << nPeaks2 << endl;
+	//TSpectrum2 doesn't work correctly, and examples in $ROOT_DIR don't either without turning 
+	//off background and Markov smoothing; hence nobackgroundnomarkov. I don't think this matters
+	//for us.  The examples in ROOT_DIR seem to work better but find a lot more ghost hits; with those
+	//options it just finds random junk
+	TSpectrum2 s2(50,1.0);  
+	s2.Search(_histoRadiusDCA,2,"nobackgroundnomarkov",0.50);
+	Int_t nPeaks2 = s2.GetNPeaks();
+	cout << "nPeaks = " << nPeaks << endl << " and n2Peaks = " << nPeaks2 << endl;
 	//make sure there's something to fit to!
 	if (nPeaks > 0)
 	  {
@@ -365,15 +406,20 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 		_hRadiusPeak->Fill(static_cast<float>(ncalls) - 0.5,firstPeak[ithPeak]);
 	      }
 	  }
-	/*
+	_hNumberOfSpectrumPeaks2->Fill(static_cast<double>(nPeaks2));
+
 	if (nPeaks2 > 0)
 	  {
 	    Float_t* firstPeakX = s2.GetPositionX();
 	    Float_t* firstPeakY = s2.GetPositionY();
 	    for (int ithPeak = 0; ithPeak < nPeaks2; ++ithPeak)
-	      {cout <<"peak number " << ithPeak << " " << firstPeakX[ithPeak] << " " << firstPeakY[ithPeak] << endl;}
+	      {
+		cout <<"peak number " << ithPeak << " " << firstPeakX[ithPeak] << " " << firstPeakY[ithPeak] << endl;
+		_hRadiusDistribution2D->Fill(firstPeakX[ithPeak]);
+		_hDCADistribution2D->Fill(firstPeakY[ithPeak]);
+	      }
 	  }
-	*/
+	
 
 
       }
@@ -389,6 +435,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	TH2F* _eventPlot= tfs->make<TH2F>(eventPlot.name(),eventPlot.title(), 
 					     100,-1000.,1000.,100,-1000.,1000.);
 
+	_eventPlot->SetMarkerStyle(20);
+	_eventPlot->SetMarkerSize(0.5);
     for ( ; i!=e; ++i){
       
       // Aliases, used for readability.
