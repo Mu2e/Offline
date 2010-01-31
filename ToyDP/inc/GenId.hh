@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: GenId.hh,v 1.3 2009/12/22 17:35:48 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2009/12/22 17:35:48 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,8 @@ namespace mu2e {
     unknown,       particleGun,       conversionGun,
     cosmicToy,     cosmic,            dio1,
     dio2,          dio3,              pionCapture,
-    muonCapture,   muonDecayInFlight, lastEnum
+    muonCapture,   muonDecayInFlight, ejectedProtonGun, 
+    piEplusNuGun, lastEnum
   };
   
   // Keep this in sync with the enum. Used in GenId.cc
@@ -43,7 +44,10 @@ namespace mu2e {
     "unknown",     "particleGun",      "conversionGun",   \
     "cosmicToy",   "cosmic",           "dio1",	          \
     "dio2",        "dio3",             "pionCapture",     \
-    "muonCapture", "muonDecayInFlight"
+      "muonCapture", "muonDecayInFlight","ejectedProtonGun",	\
+    "piEplusNuGun"
+
+
 
   public:
 

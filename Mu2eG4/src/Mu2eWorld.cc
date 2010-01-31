@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.3 2009/11/12 21:02:48 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.4 2010/01/31 20:08:59 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/12 21:02:48 $
+// $Date: 2010/01/31 20:08:59 $
 //
 // Original author Rob Kutschke
 //
@@ -406,8 +406,8 @@ namespace mu2e {
     
     
     double detSolCoilParams[5] = { 
-      _config->getDouble("toyDS.rOut"      ) * mm,
       _config->getDouble("toyDS.rIn"       ) * mm,
+      _config->getDouble("toyDS.rOut"      ) * mm,
       _config->getDouble("toyDS.halfLength") * mm,
       0.,
       2.*M_PI

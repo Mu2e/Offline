@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: DecayInOrbitGun.cc,v 1.1 2009/12/04 20:19:45 rhbob Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.4 2009/12/30 18:45:07 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2009/12/04 20:19:45 $
+// $Date: 2009/12/30 18:45:07 $
 //
 // Original author Rob Kutschke
 // 
@@ -48,13 +48,13 @@ namespace mu2e {
 
   // Mass of the electron.
   // Once we have the HepPDT package installed, get this number from there.
-  static const double mElectron = 0.000510999;
+  static const double mElectron = 0.510999;
   
   // Need a Conditions entity to hold info about conversions:
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
 
-  static const double conversionEnergyAluminum = 0.10496;
+  static const double conversionEnergyAluminum = 104.96;
   DecayInOrbitGun::DecayInOrbitGun( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
 
@@ -70,7 +70,7 @@ namespace mu2e {
     double _tmin = daqPar->t0;
     double _tmax = accPar->deBuncherPeriod;
     
-    _doConvs = config.getBool( "decayinorbitGun.do", 1);
+    _doConvs = config.getBool( "decayinorbitGun.do", 0);
     _p      = config.getDouble("decayinorbitGun.p", conversionEnergyAluminum );
     
     _czmin  = config.getDouble("decayinorbitGun.czmin",  0.3);
@@ -114,7 +114,7 @@ namespace mu2e {
        else
 	 {
 	   YFunc[ib] = EnergyDIOFunc(x);
-	   cout << "ib, x, Spectrum = " << ib << " " << x << " " << EnergyDIOFunc(x) << endl;
+	   //	   cout << "ib, x, Spectrum = " << ib << " " << x << " " << EnergyDIOFunc(x) << endl;
 	 }
     }
     _funcGen = auto_ptr<RandGeneral>(new RandGeneral(YFunc,_nbins));
@@ -135,8 +135,8 @@ namespace mu2e {
   }
   
   void DecayInOrbitGun::generate( ToyGenParticleCollection& genParts ){
-    cout << "in DIO gun " << endl;
     if (!_doConvs) return;
+    cout << "in DIO gun " << endl;//save for debugging to make sure right genconfig_ij.txt
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
@@ -178,6 +178,7 @@ namespace mu2e {
 
     double electronMomentum = safeSqrt(e*e - mElectron*mElectron);
     
+    cout << "electron DIO momentum = " << electronMomentum << endl;
     HepLorentzVector mom( electronMomentum*sz*cos(phi2), electronMomentum*sz*sin(phi2), electronMomentum*cz, e);
 
     // Add the electron to  the list.

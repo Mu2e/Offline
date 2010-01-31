@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.2 2009/11/05 00:14:09 rhbob Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.5 2009/12/22 17:36:47 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2009/11/05 00:14:09 $
+// $Date: 2009/12/22 17:36:47 $
 //
 // Original author Rob Kutschke
 //
@@ -109,7 +109,10 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event){
     // Adjust the origin into the G4 world.
     G4ThreeVector     pos(genpart._position);
     if( genpart._generatorId == GenId::conversionGun ||
-	genpart._generatorId == GenId::pionCapture  ){
+	genpart._generatorId == GenId::dio1 ||
+	genpart._generatorId == GenId::ejectedProtonGun ||
+	genpart._generatorId == GenId::pionCapture ||
+	genpart._generatorId == GenId::piEplusNuGun){
       	pos += detectorOrigin;
     } else if ( genpart._generatorId == GenId::cosmicToy ){
       pos += cosmicReferencePlane;

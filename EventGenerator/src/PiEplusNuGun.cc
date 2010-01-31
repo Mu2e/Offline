@@ -1,13 +1,13 @@
 //
-// Generate an electron with the conversion energy
+// Generate a positron from pi -> e nu
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.7 2009/12/21 21:36:56 rhbob Exp $ 
+// $Id: PiEplusNuGun.cc,v 1.1 2009/12/22 17:29:25 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2009/12/21 21:36:56 $
+// $Date: 2009/12/22 17:29:25 $
 //
-// Original author Rob Kutschke
+// Original author Rob Kutschke heavily modified by R. Bernstein
 // 
 
 // C++ incldues.
@@ -18,7 +18,7 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/ConversionGun.hh"
+#include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -48,9 +48,9 @@ namespace mu2e {
   // Need a Conditions entity to hold info about conversions:
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
-  static const double pEndPoint = 104.96;
+  static const double pEplus = 70.0;
 
-  ConversionGun::ConversionGun( edm::Run& run, const SimpleConfig& config ):
+  PiEplusNuGun::PiEplusNuGun( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
 
     // About the ConditionsService:
@@ -65,15 +65,15 @@ namespace mu2e {
     double _tmin = daqPar->t0;
     double _tmax = accPar->deBuncherPeriod;
     
-    _doConvs = config.getBool( "conversionGun.do", 1);
-    _p      = config.getDouble("conversionGun.p", pEndPoint );
+    _doPiEplusNu = config.getBool( "piEplusNuGun.do", 0);
+    _p      = config.getDouble("piEplusNuGun.p", pEplus );
     
-    _czmin  = config.getDouble("conversionGun.czmin",  0.3);
-    _czmax  = config.getDouble("conversionGun.czmax",  0.6);
-    _phimin = config.getDouble("conversionGun.phimin", 0. );
-    _phimax = config.getDouble("conversionGun.phimax", twopi );
-    _tmin   = config.getDouble("conversionGun.tmin",  _tmin );
-    _tmax   = config.getDouble("conversionGun.tmax",  _tmax );
+    _czmin  = config.getDouble("piEplusNuGun.czmin",  0.3);
+    _czmax  = config.getDouble("piEplusNuGun.czmax",  0.6);
+    _phimin = config.getDouble("piEplusNuGun.phimin", 0. );
+    _phimax = config.getDouble("piEplusNuGun.phimax", twopi );
+    _tmin   = config.getDouble("piEplusNuGun.tmin",  _tmin );
+    _tmax   = config.getDouble("piEplusNuGun.tmax",  _tmax );
 
     _dcz  = (  _czmax -  _czmin);
     _dphi = ( _phimax - _phimin);
@@ -81,12 +81,12 @@ namespace mu2e {
     
   }
   
-  ConversionGun::~ConversionGun(){
+  PiEplusNuGun::~PiEplusNuGun(){
   }
   
-  void ConversionGun::generate( ToyGenParticleCollection& genParts ){
+  void PiEplusNuGun::generate( ToyGenParticleCollection& genParts ){
     
-    if (!_doConvs) return;
+    if (!_doPiEplusNu) return;
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
@@ -125,7 +125,7 @@ namespace mu2e {
     HepLorentzVector mom( _p*sz*cos(phi2), _p*sz*sin(phi2), _p*cz, e);
 
     // Add the electron to  the list.
-    genParts.push_back( ToyGenParticle( PDGCode::e_minus, GenId::conversionGun, pos, mom, time));
+    genParts.push_back( ToyGenParticle( PDGCode::e_plus, GenId::piEplusNuGun, pos, mom, time));
 
   }
 

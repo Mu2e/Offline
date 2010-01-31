@@ -1,9 +1,9 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.2 2009/11/13 23:15:53 kutschke Exp $
+// $Id: conditions_01.txt,v 1.3 2010/01/31 20:56:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/13 23:15:53 $
+// $Date: 2010/01/31 20:56:22 $
 //
 
 bool printConfig = true;
@@ -13,5 +13,10 @@ double DAQParams.t0 = 700.;
 
 // Times in ns
 double acceleratorParams.deBuncherPeriod = 1694.;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
 
 

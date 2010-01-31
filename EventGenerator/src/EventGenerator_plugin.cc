@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.2 2009/10/16 04:20:52 shanahan Exp $
-  $Author: shanahan $
-  $Date: 2009/10/16 04:20:52 $
+  $Id: EventGenerator_plugin.cc,v 1.5 2009/12/22 17:30:32 rhbob Exp $
+  $Author: rhbob $
+  $Date: 2009/12/22 17:30:32 $
 
   Original author Rob Kutschke
 
@@ -60,6 +60,9 @@
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "EventGenerator/inc/CosmicToy.hh"
 #include "EventGenerator/inc/PiCapture.hh"
+#include "EventGenerator/inc/DecayInOrbitGun.hh"
+#include "EventGenerator/inc/EjectedProtonGun.hh"
+#include "EventGenerator/inc/PiEplusNuGun.hh"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>
@@ -120,9 +123,12 @@ namespace mu2e {
     _generators.clear();
 
     // Instantiate generators for this run.
-    _generators.push_back( GeneratorBasePtr( new ConversionGun( run, config)) );
-    _generators.push_back( GeneratorBasePtr( new CosmicToy(     run, config)) );
-    _generators.push_back( GeneratorBasePtr( new PiCapture(     run, config)) );
+    _generators.push_back( GeneratorBasePtr( new ConversionGun(       run, config)) );
+    _generators.push_back( GeneratorBasePtr( new CosmicToy(           run, config)) );
+    _generators.push_back( GeneratorBasePtr( new PiCapture(           run, config)) );
+    _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(     run, config)) );
+    _generators.push_back( GeneratorBasePtr( new EjectedProtonGun(     run, config)) );
+    _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
     
   }
   
