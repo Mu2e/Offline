@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_03.txt,v 1.1 2009/12/07 20:55:18 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2009/12/07 20:55:18 $
+// $Id: genconfig_03.txt,v 1.2 2010/01/31 20:56:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/01/31 20:56:09 $
 //
 // Original author Rob Kutschke
 // added DecayInOrbitGun process
@@ -30,3 +30,8 @@ double decayinorbitGun.tmax  = 1694.;
 // Mean multiplicities for the two background generators.
 double cosmictoy.mean =  0.0;
 double picapture.mean =  0.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
