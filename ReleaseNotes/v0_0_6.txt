@@ -1,15 +1,16 @@
            Release notes for Mu2e Offline software, v0_0_6
 
-  $Id: v0_0_6.txt,v 1.2 2010/01/31 20:17:31 kutschke Exp $
+  $Id: v0_0_6.txt,v 1.3 2010/01/31 21:00:14 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/01/31 20:17:31 $
+  $Date: 2010/01/31 21:00:14 $
 
 
 1) Mu2eG4/src/G4_plugin.cc
    If G4 graphics is enabled, clear tracks from the graphics screen between events.
 
-2) Bug fix in Mu2eG4/src/Mu2eWorld.cc
-   Inner and outer radii of detector solenoid coils were swapped.
+2) Bug fix in Mu2eG4/src/Mu2eWorld.cc and Mu2eG4/test/geom_01.txt
+   Inner and outer radii of detector solenoid coils were swapped in both 
+   places. So the net result was previously correct but the code was confusing.
 
 3) Bug fix in EventGenerator/src/ConversionGun.cc
    Wrong units for electron mass; add precision to endpoint energy.
@@ -37,4 +38,10 @@
 5) HoughTransform code from Bob Bernstein.  In directories:
      HoughTransform
      HitCluster
- 
+
+6) Mu2eG4/test/*.txt
+   Added trailing comments to tell emacs to use c++ mode.
+   This allows automatic syntax highlighting on open.
+
+
+
