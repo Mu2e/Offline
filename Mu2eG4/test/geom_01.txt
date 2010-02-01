@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.4 2010/02/01 00:15:05 kutschke Exp $
+// $Id: geom_01.txt,v 1.5 2010/02/01 00:31:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/01 00:15:05 $
+// $Date: 2010/02/01 00:31:23 $
 //
 // Original author Rob Kutschke
 
@@ -21,7 +21,7 @@ bool hasLTracker = true;
 bool printConfig = false;
 
 // Enable the full physics list.
-bool g4.fullPhysics = false;
+bool g4.fullPhysics = true;
 
 // Tell G4 to load these predefined elements.
 vector<string> g4.elements =
