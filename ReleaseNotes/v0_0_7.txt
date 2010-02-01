@@ -1,0 +1,25 @@
+ Still under construction
+
+           Release notes for Mu2e Offline software, v0_0_7
+
+
+  $Id: v0_0_7.txt,v 1.1 2010/02/01 00:23:40 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/02/01 00:23:40 $
+
+
+1) First version with a non-trival physics list.  It is just copied
+   from the G4 novice example N02 so it undoubtedly needs tuning.
+   The default behaviour is still the old one - just transportation
+   in a pure solendoid field.  To select the new physics list, change
+   the following variable in the geometry file:
+
+   bool g4.fullPhysics = true;
+
+   The affect files are:
+    Mu2eG4/inc/PhysicsList.hh         - the more complete physics list
+    Mu2eG4/src/PhysicsList.cc  
+    Mu2eG4/inc/MinimalPhysicsList.hh  - the old physics list.
+    Mu2eG4/src/MinimalPhysicsList.cc
+    Mu2eG4/src/G4_plugin.cc           - select one of the two lists.
+    Mu2eG4/test/geom_01.txt           - user interface to select one of the lists.
