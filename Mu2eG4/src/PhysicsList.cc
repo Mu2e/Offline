@@ -1,72 +1,259 @@
 //
-// Define the physics list with G4 for the Mu2e.
+// Construct particles; construct and register physics processes.
+// This is modeled on:
+//   $G4INSTALL/examples/novice/N02/include/ExN02PhysicsList.hh 
+//    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
-// $Id: PhysicsList.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+//
+// $Id: PhysicsList.cc,v 1.2 2010/02/01 00:15:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/02/01 00:15:05 $
 //
 // Original author Rob Kutschke
 //
-// Intial implementation is a trivial physics lists for use 
-// in debugging the geometry.
-//
 
+// C++ includes.
+#include <iostream>
+
+// Mu2e includes
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+
+// G4 includes
+#include "globals.hh"
 #include "Mu2eG4/inc/PhysicsList.hh"
-#include "G4ParticleTypes.hh"
 #include "G4ProcessManager.hh"
+#include "G4ParticleTypes.hh"
+
+#include "G4ComptonScattering.hh"
+#include "G4GammaConversion.hh"
+#include "G4PhotoElectricEffect.hh"
+
+#include "G4eMultipleScattering.hh"
+#include "G4hMultipleScattering.hh"
+
+#include "G4eIonisation.hh"
+#include "G4eBremsstrahlung.hh"
+#include "G4eplusAnnihilation.hh"
+
+#include "G4MuIonisation.hh"
+#include "G4MuBremsstrahlung.hh"
+#include "G4MuPairProduction.hh"
+
+#include "G4hIonisation.hh"
+#include "G4hBremsstrahlung.hh"
+#include "G4hPairProduction.hh"
+
+#include "G4ionIonisation.hh"
+
+#include "G4Decay.hh"
+
 #include "G4StepLimiter.hh"
-#include "G4ParticleTable.hh"
+#include "G4UserSpecialCuts.hh"
 
 
-namespace mu2e {
-  PhysicsList::PhysicsList():  G4VUserPhysicsList(){
+using namespace std;
+
+namespace mu2e{
+
+  PhysicsList::PhysicsList( const SimpleConfig& config):
+    G4VUserPhysicsList(),
+    _config(&config){
+
     defaultCutValue = 1.0*cm;
     SetVerboseLevel(1);
   }
 
-  PhysicsList::~PhysicsList(){
+  PhysicsList::~PhysicsList(){}
+
+  // Called by the RunManager to define all particles.
+  void PhysicsList::ConstructParticle(){
+    ConstructBosons();
+    ConstructLeptons();
+    ConstructMesons();
+    ConstructBaryons();
+    ConstructAllOthers();
   }
 
-  void PhysicsList::ConstructParticle(){
+  // Called by the RunManager to define and register processes.
+  void PhysicsList::ConstructProcess(){
+    AddTransportation();
+    ConstructEM();
+    ConstructGeneral();
+    AddStepMax();
+  }
 
+  // Called by the RunManager to set cuts.
+  void PhysicsList::SetCuts(){
+    //G4VUserPhysicsList::SetCutsWithDefault method sets 
+    //the default cut value for all particle types 
+    SetCutsWithDefault();
+    
+    if (verboseLevel>0) DumpCutValuesTable();
+  }
+
+  // Methods below here are local methods used to break up the
+  // above methods into smaller chunks.
+
+  void PhysicsList::ConstructBosons(){
+
+    // pseudo-particles
+    G4Geantino::GeantinoDefinition();
     G4ChargedGeantino::ChargedGeantinoDefinition();
+
+    // gamma
+    G4Gamma::GammaDefinition();
+  }
+
+
+  void PhysicsList::ConstructLeptons(){
+
+    // Add tau's if needed.
     G4Electron::ElectronDefinition();
     G4Positron::PositronDefinition();
     G4MuonPlus::MuonPlusDefinition();
     G4MuonMinus::MuonMinusDefinition();
-    G4Gamma::GammaDefinition();
-    
+    G4NeutrinoE::NeutrinoEDefinition();
+    G4AntiNeutrinoE::AntiNeutrinoEDefinition();
+    G4NeutrinoMu::NeutrinoMuDefinition();
+    G4AntiNeutrinoMu::AntiNeutrinoMuDefinition();
   }
 
-  void PhysicsList::ConstructProcess(){
-    AddTransportation();
 
-    // How to do this for one particle type only:
-    // Get the definition for a chargedgeantino.
-    //G4ParticleDefinition* particle = 
-    //G4ParticleTable::GetParticleTable()->FindParticle("chargedgeantino");
-    // Add the step limiter process.
-    // Must add a userstep limit to any logical volume in which you want this
-    // to be active.
-    //G4ProcessManager* pmanager = particle->GetProcessManager();
-    //pmanager->AddDiscreteProcess(new G4StepLimiter);
+  void PhysicsList::ConstructMesons(){
 
+    // We can add more if neeeded.
+    G4PionPlus::PionPlusDefinition();
+    G4PionMinus::PionMinusDefinition();
+    G4PionZero::PionZeroDefinition();
+    G4Eta::EtaDefinition();
+    G4EtaPrime::EtaPrimeDefinition();
+    G4KaonPlus::KaonPlusDefinition();
+    G4KaonMinus::KaonMinusDefinition();
+    G4KaonZero::KaonZeroDefinition();
+    G4AntiKaonZero::AntiKaonZeroDefinition();
+    G4KaonZeroLong::KaonZeroLongDefinition();
+    G4KaonZeroShort::KaonZeroShortDefinition();
+  }
+
+
+  void PhysicsList::ConstructBaryons(){
+
+    // We can add more if needed.
+    G4Proton::ProtonDefinition();
+    G4AntiProton::AntiProtonDefinition();
+
+    G4Neutron::NeutronDefinition();
+    G4AntiNeutron::AntiNeutronDefinition();
+  }
+
+  void PhysicsList::ConstructAllOthers(){
+    // A place holder for nuclei, ions etc.
+  }
+
+
+  // Electromagnetic processes.
+  void PhysicsList::ConstructEM(){
+
+    // Loop over all defined particle types.
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
+
+      // Properties of this particle type.
       G4ParticleDefinition* particle = theParticleIterator->value();
       G4ProcessManager* pmanager = particle->GetProcessManager();
       G4String particleName = particle->GetParticleName();
-      if ( particleName == "e+" ||
-	   particleName == "e-" ||
-	   particleName == "mu+" ||
-	   particleName == "mu-" ||
-	   particleName == "chargedgeantino" ){
-	pmanager->AddDiscreteProcess(new G4StepLimiter);
+
+      // In the following, do the new's leak?
+      
+      // Define processes for each particle type.
+      if (particleName == "gamma") {
+
+	pmanager->AddDiscreteProcess(new G4PhotoElectricEffect);
+	pmanager->AddDiscreteProcess(new G4ComptonScattering);
+	pmanager->AddDiscreteProcess(new G4GammaConversion);
+	
+      } else if (particleName == "e-") {
+	pmanager->AddProcess(new G4eMultipleScattering, -1, 1, 1);
+	pmanager->AddProcess(new G4eIonisation,         -1, 2, 2);
+	pmanager->AddProcess(new G4eBremsstrahlung,     -1, 3, 3);      
+	
+      } else if (particleName == "e+") {
+	pmanager->AddProcess(new G4eMultipleScattering, -1, 1, 1);
+	pmanager->AddProcess(new G4eIonisation,         -1, 2, 2);
+	pmanager->AddProcess(new G4eBremsstrahlung,     -1, 3, 3);
+	pmanager->AddProcess(new G4eplusAnnihilation,    0,-1, 4);
+	
+      } else if( particleName == "mu+" || 
+		 particleName == "mu-"    ) {
+	pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
+	pmanager->AddProcess(new G4MuIonisation,        -1, 2, 2);
+	pmanager->AddProcess(new G4MuBremsstrahlung,    -1, 3, 3);
+	pmanager->AddProcess(new G4MuPairProduction,    -1, 4, 4);       
+	
+      } else if( particleName == "proton" ||
+		 particleName == "pi-" ||
+		 particleName == "pi+"    ) {
+	pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
+	pmanager->AddProcess(new G4hIonisation,         -1, 2, 2);
+	pmanager->AddProcess(new G4hBremsstrahlung,     -1, 3, 3);
+	pmanager->AddProcess(new G4hPairProduction,     -1, 4, 4);       
+	
+      } else if( particleName == "alpha" || 
+		 particleName == "He3" || 
+		 particleName == "GenericIon" ) {
+	pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
+	pmanager->AddProcess(new G4ionIonisation,       -1, 2, 2);
+	
+      } else if ((!particle->IsShortLived()) &&
+		 (particle->GetPDGCharge() != 0.0) && 
+		 (particle->GetParticleName() != "chargedgeantino")) {
+	pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
+	pmanager->AddProcess(new G4hIonisation,         -1, 2, 2);
       }
     }
   }
   
-  void PhysicsList::SetCuts(){
+
+  void PhysicsList::ConstructGeneral(){
+
+    // Does this leak?
+    G4Decay* theDecayProcess = new G4Decay();
+
+    // Loop over all particle types.
+    theParticleIterator->reset();
+    while( (*theParticleIterator)() ){
+
+      // Properties of this particle type.
+      G4ParticleDefinition* particle = theParticleIterator->value();
+      G4ProcessManager* pmanager = particle->GetProcessManager();
+
+      if (theDecayProcess->IsApplicable(*particle)) { 
+	pmanager ->AddProcess(theDecayProcess);
+	// set ordering for PostStepDoIt and AtRestDoIt
+	pmanager ->SetProcessOrdering(theDecayProcess, idxPostStep);
+	pmanager ->SetProcessOrdering(theDecayProcess, idxAtRest);
+      }
+    }
   }
   
-}  // end namespace mu2e
+  void PhysicsList::AddStepMax(){
+
+    // Step limitation seen as a process
+    G4StepLimiter* stepLimiter = new G4StepLimiter();
+    ////G4UserSpecialCuts* userCuts = new G4UserSpecialCuts();
+    
+    theParticleIterator->reset();
+    while ((*theParticleIterator)()){
+      G4ParticleDefinition* particle = theParticleIterator->value();
+      G4ProcessManager* pmanager = particle->GetProcessManager();
+      
+      if (particle->GetPDGCharge() != 0.0)
+        {
+	  pmanager ->AddDiscreteProcess(stepLimiter);
+	  ////pmanager ->AddDiscreteProcess(userCuts);
+        }
+    }
+  }
+  
+} // end namespace mu2e
+

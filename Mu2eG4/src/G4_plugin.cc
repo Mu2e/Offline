@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.4 2009/11/24 23:38:27 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.5 2010/02/01 00:15:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/24 23:38:27 $
+// $Date: 2010/02/01 00:15:05 $
 //
 // Original author Rob Kutschke
 //
@@ -46,6 +46,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "Mu2eG4/inc/DetectorConstruction.hh"
+#include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/EventAction.hh"
@@ -141,7 +142,14 @@ namespace mu2e {
     WorldMaker* allMu2e    = new WorldMaker();
     _runManager->SetUserInitialization(allMu2e);
 
-    G4VUserPhysicsList* physics = new PhysicsList;
+    // Define the physics list.  Does this leak or does G4 delete it?
+    bool fullPhysics = config.getBool("g4.fullPhysics",true);
+    G4VUserPhysicsList* physics(0);
+    if ( fullPhysics ) {
+      physics = new PhysicsList(config);
+    }else{
+      physics = new MinimalPhysicsList;
+    }
     _runManager->SetUserInitialization(physics);
 
     _genAction = new PrimaryGeneratorAction;
@@ -153,7 +161,9 @@ namespace mu2e {
     SteppingAction* stepping_action = new SteppingAction;
     _runManager->SetUserAction(stepping_action);
     
+    cerr << "\n\n Start initialize. \n\n" << endl;
     _runManager->Initialize();
+    cerr << "\n\n End of initialize. \n\n" << endl;
 
     // These operations must happen after the intialize.
     // Copy some information about the G4 world to people who need it.
