@@ -3,9 +3,9 @@
            Release notes for Mu2e Offline software, v0_0_7
 
 
-  $Id: v0_0_7.txt,v 1.2 2010/02/01 00:33:16 kutschke Exp $
+  $Id: v0_0_7.txt,v 1.3 2010/02/04 01:26:43 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/02/01 00:33:16 $
+  $Date: 2010/02/04 01:26:43 $
 
 
 1) First version with a non-trival physics list.  It is just copied
@@ -24,3 +24,13 @@
     Mu2eG4/src/MinimalPhysicsList.cc
     Mu2eG4/src/G4_plugin.cc           - select one of the two lists.
     Mu2eG4/test/geom_01.txt           - user interface to select one of the lists.
+
+2) Create a user stacking action which has a method to kill low momentum
+   secondaries produced in the earth overburdern.  We can extend this to
+   make other tests at stacking time.  Please segegrate each of the tests
+   we develop so that they can easily be moved to separate classes once
+   we get several of them.
+    Mu2eG4/src/G4_plugin.cc           - register it
+    Mu2eG4/inc/StackingAction.hh      - code to implement t
+    Mu2eG4/inc/StackingAction.cc
+    Mu2eG4/test/geom_01.txt           - New parameter g4.doCosmicKiller.

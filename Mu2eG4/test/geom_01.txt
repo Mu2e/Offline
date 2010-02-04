@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.5 2010/02/01 00:31:23 kutschke Exp $
+// $Id: geom_01.txt,v 1.6 2010/02/04 01:26:43 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/01 00:31:23 $
+// $Date: 2010/02/04 01:26:43 $
 //
 // Original author Rob Kutschke
 
@@ -22,6 +22,9 @@ bool printConfig = false;
 
 // Enable the full physics list.
 bool g4.fullPhysics = true;
+
+// Enable the code to kill low p secondaries from cosmics.
+bool g4.doCosmicKiller = false;
 
 // Tell G4 to load these predefined elements.
 vector<string> g4.elements =

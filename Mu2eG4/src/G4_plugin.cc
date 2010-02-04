@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.5 2010/02/01 00:15:05 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.6 2010/02/04 01:26:43 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/02/01 00:15:05 $
+// $Date: 2010/02/04 01:26:43 $
 //
 // Original author Rob Kutschke
 //
@@ -52,6 +52,7 @@
 #include "Mu2eG4/inc/EventAction.hh"
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/SteppingVerbose.hh"
+#include "Mu2eG4/inc/StackingAction.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -160,6 +161,9 @@ namespace mu2e {
     
     SteppingAction* stepping_action = new SteppingAction;
     _runManager->SetUserAction(stepping_action);
+
+    StackingAction* stacking_action = new StackingAction(config);
+    _runManager->SetUserAction(stacking_action);
     
     cerr << "\n\n Start initialize. \n\n" << endl;
     _runManager->Initialize();
