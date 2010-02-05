@@ -1,6 +1,38 @@
+//
+// Steering routine for user stacking actions. 
+//
+// $Id: StackingAction.cc,v 1.2 2010/02/05 02:27:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/02/05 02:27:41 $
+//
+// Original author Rob Kutschke
+//
+// The actions steered by this class are:
+//  1) cosmicKiller
+//      - Kill low momentum secondaries of cosmic rays if those
+//        secondaries are very unlikely to ever reach the detector. 
+//      - The first implementation of this code is rather crude and
+//        is presented to show techniques for accessing information.
+//
+//  Notes
+//   1) Only one instance of this class should be instantiated in a job.
+//   2) It is instantiated and registered with G4 in G4_plugin.cc
+//   3) Once the G4 geometry has been created, the physical volumes
+//      have static locations in memory.  So we can compare if two
+//      physical volumes are the same object by comparing pointers,
+//      rather than by comparing their names using string comparisons.
+//   4) We get pointers to the physical volumes we care about in the
+//      method PrepareNewEvent().  These pointer only change when the
+//      G4 geometry changes but we have no way to detect that. So
+//      do it every event.
+//
+
+// Mu2e includes
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
+// G4 includes
+#include "G4PhysicalVolumeStore.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTypes.hh"
 #include "G4Track.hh"
@@ -13,7 +45,9 @@ namespace mu2e {
   StackingAction::StackingAction( const SimpleConfig& config ):
     ncalls(0),
     nevents(0),
-    doCosmicKiller(false){
+    doCosmicKiller(false),
+    dirtBodyPhysVol(0),
+    dirtCapPhysVol(0){
 
     // Get control info from run time configuration.
     doCosmicKiller = config.getBool("g4.doCosmicKiller",false);
@@ -27,7 +61,7 @@ namespace mu2e {
     ++ncalls;
 
     // When we get a few different tests, we can decide how to
-    // make a common interface.
+    // make a more elegant way to call them all.
     if ( doCosmicKiller ){
       if ( cosmicKiller(trk) ){
 	return fKill;
@@ -44,6 +78,11 @@ namespace mu2e {
   void StackingAction::PrepareNewEvent(){ 
     ncalls = 0;
     ++nevents;
+
+    // Find the addresses of some physical volumes of interest.
+    // See notes 3 and 4.
+    dirtBodyPhysVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtBody");
+    dirtCapPhysVol  = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtCap");
   }
 
   bool StackingAction::cosmicKiller( const G4Track* trk){
@@ -63,14 +102,14 @@ namespace mu2e {
     // Magic numbers for illustrative purposes.
     // You can probably get much more aggressive than this.
     // Get ycut from geometry and pcut from run time config.
-    static const double ycut = 800.;
-    static const double pcut =  50.;
+    static const double ycut = 800.* mm;
+    static const double pcut =  50.* MeV;
 
     // Decide if we want to kill the track.
     bool killit = ( ppos.y() > ycut && p3mom.mag() < pcut);
 
     // Printout about the decision.
-    if ( nevents < 5 ) {
+    if ( nevents < 20 ) {
       G4String killString = killit ? "Kill it": "";
       cout << "Cosmic Killer: " 
 	   << setw(4)  << nevents << " "
@@ -83,7 +122,16 @@ namespace mu2e {
 	   << p3mom.mag() << "      "
 	   << killString
 	   << endl;
+
+      // Check to see if we are in the dirt.
+      if ( pvol == dirtBodyPhysVol ){
+	cout << "Cosmic Killer: tag Dirt Body" << endl;
+      } else if ( pvol == dirtCapPhysVol ) {
+	cout << "Cosmic Killer: tag Dirt Cap" << endl;
+      }
+
     }
+
 
     return killit;
   }
