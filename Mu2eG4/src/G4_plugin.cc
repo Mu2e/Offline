@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.6 2010/02/04 01:26:43 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/02/04 01:26:43 $
+// $Id: G4_plugin.cc,v 1.7 2010/02/05 11:46:38 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2010/02/05 11:46:38 $
 //
 // Original author Rob Kutschke
 //
@@ -18,6 +18,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <memory>
+#include <sstream>
+#include <iomanip>
 
 // Framework includes
 #include "FWCore/Framework/interface/Event.h"
@@ -53,6 +55,8 @@
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/SteppingVerbose.hh"
 #include "Mu2eG4/inc/StackingAction.hh"
+
+#include "ITrackerGeom/inc/ITracker.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -218,19 +222,81 @@ namespace mu2e {
     G4Event const* g4event = _runManager->getCurrentEvent();
     G4HCofThisEvent* hce   = g4event->GetHCofThisEvent();
 
-    // Get the collection ID for the straw hits.
+    // Get the collection ID for the Sensitive Layer hits.
     G4SDManager* SDman   = G4SDManager::GetSDMpointer();
-    G4int colId          = SDman->GetCollectionID("StepPointG4Collection");
+    G4int colId;
 
-    if ( colId >= 0 && hce != 0 ){
-      StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
-      G4int nHits = hits->entries();
+    edm::Service<GeometryService> geom;
+    SimpleConfig const& config = geom->config();
 
-      for (G4int i=0;i<nHits;i++) {
-	StepPointG4* h = (*hits)[i];
-	outputHits->push_back( h->hit() );
-      }
 
+    if ( config.getBool("hasITracker",false) && !config.getBool("hasLTracker",false)) {
+
+    	GeomHandle<ITracker> itracker;
+    	std::stringstream SDname;
+    	std::string sSDname;
+		std::string::size_type loc;
+		for (int iSlr=0; iSlr < itracker->nSuperLayer(); ++iSlr) {
+    		for (int iRng = 0; iRng < itracker->nRing(); ++iRng) {
+    			SDname.str(std::string());
+    			SDname<< "StepPointG4Collection_";
+    			SDname<<"wvolS"<< std::setw(2) << iSlr << "R" << std::setw(2) <<iRng;
+    			sSDname=SDname.str();
+    			loc=sSDname.find( " ", 0 );
+    			while ( loc != std::string::npos ){
+    				sSDname.replace(loc,1,"0");
+    				loc = sSDname.find( " ", 0 );
+    			}
+//    			std::cout<<sSDname<<endl;
+    			colId = SDman->GetCollectionID(sSDname.c_str());
+    			if ( colId >= 0 && hce != 0 ){
+    				StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
+    				G4int nHits = hits->entries();
+
+    				for (G4int i=0;i<nHits;i++) {
+    					StepPointG4* h = (*hits)[i];
+    					outputHits->push_back( h->hit() );
+    				}
+
+    			}
+    			SDname.str(std::string());
+    			SDname<< "StepPointG4Collection_";
+     			SDname<<"gvolS"<< std::setw(2) << iSlr << "R" << std::setw(2) <<iRng;
+    			sSDname=SDname.str();
+				loc = sSDname.find( " ", 0 );
+    			while ( loc != std::string::npos ){
+    				sSDname.replace(loc,1,"0");
+    				loc = sSDname.find( " ", 0 );
+    			}
+//    			std::cout<<sSDname<<endl;
+    			colId = SDman->GetCollectionID(sSDname.c_str());
+    			if ( colId >= 0 && hce != 0 ){
+    				StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
+    				G4int nHits = hits->entries();
+
+    				for (G4int i=0;i<nHits;i++) {
+    					StepPointG4* h = (*hits)[i];
+    					outputHits->push_back( h->hit() );
+    				}
+
+    			}
+
+    		}
+    	}
+
+    } else {
+        colId = SDman->GetCollectionID("StepPointG4Collection");
+
+        if ( colId >= 0 && hce != 0 ){
+          StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
+          G4int nHits = hits->entries();
+
+          for (G4int i=0;i<nHits;i++) {
+        	  StepPointG4* h = (*hits)[i];
+        	  outputHits->push_back( h->hit() );
+          }
+
+        }
     }
 
     // Should also find at the history of particles created inside G4 and copy it

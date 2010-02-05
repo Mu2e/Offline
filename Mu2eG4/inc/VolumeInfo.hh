@@ -4,14 +4,14 @@
 // Return type for the nestBox and nestTubs free functions.
 // Just a struct with a default c'tor.
 // 
-// $Id: VolumeInfo.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: VolumeInfo.hh,v 1.2 2010/02/05 11:46:00 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2010/02/05 11:46:00 $
 //
 // Original author Rob Kutschke
 //
 
-class G4CSGSolid;
+class G4VSolid;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
 
@@ -28,7 +28,7 @@ namespace mu2e {
       physical(0){}
     ~VolumeInfo(){}
 
-    G4CSGSolid*           solid;
+    G4VSolid*           solid;
     G4LogicalVolume*    logical;
     G4VPhysicalVolume* physical;
   };

@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.2 2009/11/11 14:55:40 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/11/11 14:55:40 $
+// $Id: Mu2eWorld.hh,v 1.3 2010/02/05 11:46:00 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2010/02/05 11:46:00 $
 //
 // Original author Rob Kutschke
 //
@@ -70,6 +70,8 @@ namespace mu2e {
     VolumeInfo constructLTrackerv2( G4LogicalVolume* mother, double zOff );
     VolumeInfo constructLTrackerv3( G4LogicalVolume* mother, double zOff );
 
+    VolumeInfo Mu2eWorld::constructITracker( G4LogicalVolume* mother, double zOff );
+    VolumeInfo builbWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses);
     void constructTestWorld();
 
     // The world coordinates of the center of the cosmic ray reference plane.

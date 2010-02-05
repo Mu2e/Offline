@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: GeometryService.cc,v 1.2 2010/02/05 11:44:49 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2010/02/05 11:44:49 $
 //
 // Original author Rob Kutschke
 //
@@ -28,6 +28,8 @@
 #include "CTrackerGeom/inc/CTracker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "LTrackerGeom/inc/LTrackerMaker.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
+#include "ITrackerGeom/inc/ITrackerMaker.hh"
 
 using namespace std;
 
@@ -78,8 +80,10 @@ namespace mu2e {
     if(_config->getBool("hasLTracker",false)){
       LTrackerMaker ltm( *_config );
       addDetector( ltm.getLTrackerPtr() );
+    } else if(_config->getBool("hasITracker",false)){
+      ITrackerMaker itm( *_config );
+      addDetector( itm.getITrackerPtr() );
     }
-
     
   }
 

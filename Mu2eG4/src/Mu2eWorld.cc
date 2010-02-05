@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.4 2010/01/31 20:08:59 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/01/31 20:08:59 $
+// $Id: Mu2eWorld.cc,v 1.5 2010/02/05 11:46:38 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2010/02/05 11:46:38 $
 //
 // Original author Rob Kutschke
 //
@@ -31,6 +31,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <boost/regex.hpp>
+
 // Framework includes
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -39,12 +41,16 @@
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
+#include "Mu2eG4/inc/ITGasLayerSD_ExtWireData.hh"
+#include "Mu2eG4/inc/ITGasLayerSD_v2.hh"
+#include "Mu2eG4/inc/ITGasLayerSD_v3.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
 
 // G4 includes
 #include "G4AssemblyVolume.hh"
@@ -58,6 +64,7 @@
 #include "G4Paraboloid.hh"
 #include "G4Colour.hh"
 #include "G4Tubs.hh"
+#include "G4Hype.hh"
 #include "G4LogicalVolume.hh"
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
@@ -72,6 +79,7 @@
 #include "G4TransportationManager.hh"
 #include "G4UserLimits.hh"
 #include "G4SDManager.hh"
+//#include "G4GDMLParser.hh"
 
 using namespace std;
 
@@ -511,6 +519,9 @@ namespace mu2e {
 	trackerInfo = constructLTrackerv3( detSolVacInfo.logical, dsz0 );
       }
 
+    } else if ( _config->getBool("hasITracker",false) ) {
+      trackerInfo = constructITracker( detSolVacInfo.logical, dsz0 );
+      
     } else{
 
 
@@ -1018,5 +1029,269 @@ namespace mu2e {
   }
 
 
-  
+  VolumeInfo Mu2eWorld::constructITracker( G4LogicalVolume* mother, double zOff ){
+
+    // Master geometry for the ITracker.
+    GeomHandle<ITracker> itracker;
+
+    VolumeInfo trackerInfo;
+
+    // Make the mother volume for the ITracker.
+    string trackerName("ITrackerMother");
+
+    double z0    = mm * itracker->z0();
+	G4ThreeVector trackerOffset(0.,0.,z0-zOff);
+
+    if (itracker->isExternal()) {
+    	throw cms::Exception("GEOM") <<"This GDML file option is temporarily disabled\n";
+//    	G4GDMLParser parser;
+//    	parser.Read(itracker->extFile().c_str());
+//    	trackerInfo.logical = parser.GetWorldVolume()->GetLogicalVolume();
+//    	trackerInfo.logical->SetName(trackerName.c_str());
+//        trackerInfo.physical =  new G4PVPlacement( 0,
+//    					       trackerOffset,
+//    					       trackerInfo.logical,
+//    					       trackerName,
+//    					       mother,
+//    					       0,
+//    					       0);
+//
+//        // Visualization attributes of the the mother volume.
+//        {
+//          G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Red() );
+//          visAtt->SetForceSolid(true);
+//          visAtt->SetForceAuxEdgeVisible (false);
+//          visAtt->SetVisibility(true);
+//          visAtt->SetDaughtersInvisible(true);
+//          trackerInfo.logical->SetVisAttributes(visAtt);
+//        }
+//
+//        int nDaugVol = trackerInfo.logical->GetNoDaughters();
+//        string iVolName;
+//        VolumeInfo gasLayerInfo;
+//
+//        boost::regex vaolSyntax("^[gw]volS[0-9]{2}R[0-9]{2}_");
+//        boost::match_results<std::string::const_iterator> matchingStr;
+//
+//    	G4SDManager* SDman   = G4SDManager::GetSDMpointer();
+//    	std::vector<int> submatches;
+//    	submatches.push_back(-1);
+//        for ( int iVol = 0;	iVol<nDaugVol; ++iVol) {
+//        	gasLayerInfo.logical = trackerInfo.logical->GetDaughter(iVol)->GetLogicalVolume();
+//        	iVolName=gasLayerInfo.logical->GetName();
+//
+//        	/*
+//        	boost::sregex_token_iterator i(iVolName.begin(), iVolName.end(), vaolSyntax, -1);
+//            boost::sregex_token_iterator j;
+//
+//            unsigned count = 0;
+//            while(i != j)
+//            {
+//               cout << *i++ << endl;
+//               count++;
+//            }
+//            cout << "There were " << count << " tokens found." << endl;
+//            */
+//
+//            if ( boost::regex_search(iVolName,matchingStr,vaolSyntax) ){
+//        		G4String cellSDname = matchingStr.str(0).substr(0,matchingStr.str(0).size()-1);
+//         		cout<<cellSDname<<endl;
+//        		ITGasLayerSD* glSD     = new ITGasLayerSD_ExtWireData( cellSDname );
+//        		SDman->AddNewDetector( glSD );
+//        		gasLayerInfo.logical->SetSensitiveDetector( glSD );
+//        	}
+//        }
+    } else {
+
+        G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::White() );
+        visAtt->SetForceSolid(true);
+        visAtt->SetForceAuxEdgeVisible (false);
+        visAtt->SetVisibility(false);
+        visAtt->SetDaughtersInvisible(false);
+
+        G4Material* Vacuum = findMaterialOrThrow( "WAGVacuum" );
+    	trackerInfo.solid = new G4Tubs(itracker->name(),0.0,itracker->rOut(),itracker->maxEndCapDim(),0.0,360.0*degree);
+    	trackerInfo.logical = new G4LogicalVolume(trackerInfo.solid , Vacuum, trackerName,0,0,0);
+    	trackerInfo.logical->SetVisAttributes(visAtt);
+
+        char shape[30], vol[30], shape_name_FD[30], shape_name_SD[30], vol_name_FD[30], vol_name_SD[30], wire_name[40];
+        sprintf(shape_name_FD,"tube_Field");
+        sprintf(shape_name_SD,"tube_Sense");
+
+        int superlayer,iring;
+       	G4SDManager* SDman   = G4SDManager::GetSDMpointer();
+
+        G4ThreeVector positionTracker = G4ThreeVector(0,0,0);
+//        boost::shared_array<SuperLayer> SLayers = itracker->getSuperLayersArray();
+
+        G4VisAttributes* visAttWall = new G4VisAttributes(true, G4Colour::Red() );
+//        visAttWall->SetForceSolid(true);
+//        visAttWall->SetForceAuxEdgeVisible (false);
+        visAttWall->SetVisibility(true);
+        visAttWall->SetDaughtersInvisible(true);
+
+        G4VisAttributes* visAttGas = new G4VisAttributes(true, G4Colour::Cyan() );
+//        visAttGas->SetForceSolid(true);
+//        visAttGas->SetForceAuxEdgeVisible (false);
+        visAttGas->SetForceLineSegmentsPerCircle(12);
+        visAttGas->SetVisibility(true);
+        visAttGas->SetDaughtersInvisible(true);
+
+        G4VisAttributes* visAttFw = new G4VisAttributes(true, G4Colour::Grey() );
+//        visAttFw->SetForceSolid(true);
+//        visAttFw->SetForceAuxEdgeVisible (false);
+        visAttFw->SetVisibility(false);
+        visAttFw->SetDaughtersInvisible(true);
+
+        G4VisAttributes* visAttSw = new G4VisAttributes(true, G4Colour::Yellow() );
+//        visAttSw->SetForceSolid(true);
+//        visAttSw->SetForceAuxEdgeVisible (false);
+        visAttSw->SetVisibility(false);
+        visAttSw->SetDaughtersInvisible(true);
+
+        for (int iSl = 0; iSl < itracker->nSuperLayer(); iSl++){
+
+        	SuperLayer *SLayer = itracker->getSuperLayer(iSl);
+
+        	for (int iLy=0; iLy < SLayer->nLayers(); iLy++ ){
+//           	for (int iLy=0; iLy < SLayers[iSl].nLayers(); iLy++ ){
+
+        		VolumeInfo LayerInfo;
+        		boost::shared_ptr<ITLayer> ily = SLayer->getLayer(iLy);
+//        		const ITLayer *ily = SLayers[iSl].getLayer(iLy);
+        		superlayer = ily->Id().getSuperLayer();
+        		iring = ily->Id().getLayer();
+             	if (ily->getLayerType() == ITLayer::wire) {
+            		sprintf(shape,"wS%dR%d",superlayer,iring);
+                 	sprintf(vol,"wvolS%02dR%02d",superlayer,iring);
+             	} else if (ily->getLayerType() == ITLayer::gas) {
+                 	sprintf(shape,"gS%dR%d",superlayer,iring);
+                 	sprintf(vol,"gvolS%02dR%02d",superlayer,iring);
+             	} else {
+                 	sprintf(shape,"S%dR%d",superlayer,iring);
+                 	sprintf(vol,"volS%02dR%02d",superlayer,iring);
+             	}
+
+//             	cout<<ily->Id()<<" IR "<<ily->getDetail()->centerInnerRadiusRing()<<" OR "<<
+//             			ily->getDetail()->centerOuterRadiusRing()<<" SI "<<ily->getDetail()->stereoAngleInnerRing()<<" SO "<<
+//             			ily->getDetail()->stereoAngleOuterRing()<<" HL "<<ily->getDetail()->halfLength()<<endl;
+
+             	LayerInfo.solid = new G4Hype(shape,ily->getDetail()->centerInnerRadiusRing(),
+             			ily->getDetail()->centerOuterRadiusRing(),ily->getDetail()->stereoAngleInnerRing(),
+             			ily->getDetail()->stereoAngleOuterRing(),ily->getDetail()->halfLength());
+             	G4Material* GasMix = findMaterialOrThrow( ily->getDetail()->materialName() );
+             	LayerInfo.logical = new G4LogicalVolume(LayerInfo.solid,GasMix,vol,0,0,0);
+             	if (ily->voxelizationFactor()==0.0) {
+             		LayerInfo.logical->SetOptimisation(false);
+             	}
+             	else{
+             		LayerInfo.logical->SetSmartless(ily->voxelizationFactor());
+             	}
+                LayerInfo.logical->SetVisAttributes(visAttGas);
+
+                LayerInfo.physical = new G4PVPlacement(0,               // no rotation
+        				                       positionTracker,         // at (x,y,z)
+        				                       LayerInfo.logical,       // its logical volume
+        				                       vol,                     // its name
+        				                       trackerInfo.logical,     // its mother  volume
+        				                       false,                   // no boolean operations
+        				                       0);                      // copy number
+
+                if (ily->getLayerType() != ITLayer::undefined) {
+                	ITGasLayerSD* glSD;
+                	if ( itracker->geomType()==ITracker::Hexagonal ) glSD = new ITGasLayerSD_v2( vol );
+                	else if ( itracker->geomType()==ITracker::Square ) glSD = new ITGasLayerSD_v3( vol );
+                	SDman->AddNewDetector( glSD );
+                	LayerInfo.logical->SetSensitiveDetector( glSD );
+                }
+
+                for ( int iFw=0; iFw < ily->nFieldWires(); iFw++){
+                 	sprintf(vol_name_FD,"tubeFD_%d_%d",superlayer,iring);
+               	    VolumeInfo FieldWireInfo;
+               	    boost::shared_ptr<Wire> iwire = ily->getFWire(iFw);
+               	    boost::shared_ptr<WireDetail> wdet = iwire->getDetail();
+                	FieldWireInfo = builbWire(wdet->outerRadius(),wdet->halfLength(),shape_name_FD,vol_name_FD,wdet->materialNames(),wdet->shellsThicknesses());
+                	sprintf(wire_name,"%s_%i",vol_name_FD,iwire->Id().getWire());
+                	FieldWireInfo.logical->SetVisAttributes(visAttFw);
+                	FieldWireInfo.physical = new G4PVPlacement(iwire->get3DTransfrom(),
+                			        			    FieldWireInfo.logical,	 // its logical volume
+                			        			    wire_name,	             // its name
+                			        			    LayerInfo.logical,	     // its mother  volume
+                			        			    false,	                 // no boolean operations
+                			        			    iwire->Id().getWire());  // copy number
+                }
+
+                for ( int iSw=0; iSw < ily->nCells(); iSw++){
+                 	sprintf(vol_name_SD,"tubeSD_%d_%d",superlayer,iring);
+               	    VolumeInfo SenseWireInfo;
+               	    boost::shared_ptr<Wire> iwire = ily->getCell(iSw)->getWire();
+                	boost::shared_ptr<WireDetail> wdet = iwire->getDetail();
+                	SenseWireInfo = builbWire(wdet->outerRadius(),wdet->halfLength(),shape_name_SD,vol_name_SD,wdet->materialNames(),wdet->shellsThicknesses());
+                	sprintf(wire_name,"%s_%i",vol_name_SD,iwire->Id().getWire());
+                	SenseWireInfo.logical->SetVisAttributes(visAttSw);
+                	SenseWireInfo.physical = new G4PVPlacement(iwire->get3DTransfrom(),
+                			        			    SenseWireInfo.logical,	 // its logical volume
+                			        			    wire_name,	             // its name
+                			        			    LayerInfo.logical,	     // its mother  volume
+                			        			    false,	                 // no boolean operations
+                			        			    iwire->Id().getWire());  // copy number
+                }
+
+        	}
+
+        }
+
+
+
+
+        trackerInfo.physical =  new G4PVPlacement( 0,
+    					       trackerOffset,
+    					       trackerInfo.logical,
+    					       trackerName,
+    					       mother,
+    					       0,
+    					       0);
+
+    }
+
+    return trackerInfo;
+
+  }
+
+VolumeInfo Mu2eWorld::builbWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses){
+
+	VolumeInfo wire;
+    wire.solid = new G4Tubs(shapeName,0.0,radius,length,0.0,360.0*degree);
+    int nSub=materialName.size();
+    if (nSub==1){
+      wire.logical = new G4LogicalVolume(wire.solid,findMaterialOrThrow( materialName.at(0).c_str() ),volName,0,0,0);
+    }
+    else {
+      wire.logical = new G4LogicalVolume(wire.solid,findMaterialOrThrow( "WAGVacuum" ),volName,0,0,0);
+      char tShapeName[50], tVolName[50];
+      double oldRadius = 0.0;
+      double iRadius = 0.0;
+
+      for (int ishell=0; ishell<nSub; ishell++){
+          sprintf(tShapeName,"%s_sub%i",shapeName,ishell);
+          sprintf(tVolName,"%s_sub%i",volName,ishell);
+          iRadius+=thicknesses.at(ishell);
+          G4Tubs *tswire = new G4Tubs(tShapeName,oldRadius,iRadius,length,0.0,360.0*degree);
+//          cout<<tShapeName<<" "<<oldRadius<<" "<<iRadius<<" "<<length<<" "<<materialName.at(ishell)<<endl;
+          oldRadius=iRadius;
+
+		  G4LogicalVolume *tlogicWire = new G4LogicalVolume(tswire,findMaterialOrThrow(materialName.at(ishell).c_str()),tVolName,0,0,0);
+          G4VPhysicalVolume *tphysWire = new G4PVPlacement(0,
+          				    G4ThreeVector(0,0,0),
+          				    tlogicWire,      // its logical volume
+          				    tVolName,	     // its name
+          				    wire.logical,    // its mother  volume
+          				    false,	         // no boolean operations
+          				    0); 	         // copy number
+      }
+
+    }
+    return wire;
+  }
+
 } // end namespace mu2e

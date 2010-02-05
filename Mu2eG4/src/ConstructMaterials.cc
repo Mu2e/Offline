@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: ConstructMaterials.cc,v 1.2 2010/02/05 11:46:38 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2010/02/05 11:46:38 $
 //
 // Original author Rob Kutschke
 //
@@ -241,6 +241,57 @@ namespace mu2e {
       mbOverburden->AddElement( eSi, 20);
       mbOverburden->AddElement( eAl, 15);
     }
+
+    mat = isNeeded(materialsToLoad, "ITGasMix");
+    if ( mat.doit ){
+      //He/C4H10-gas-mixture
+
+      G4double a, z;
+      G4double density, temperature, pressure;
+      G4int nel;
+
+      G4double densityHe   = 0.0001786*g/cm3;
+      G4double densityIsoB = 0.00267  *g/cm3;
+      G4double fractionHe  = 90.0*perCent;
+
+      density = fractionHe*densityHe + (1.0-fractionHe)*densityIsoB;
+
+      G4Material *GasMix = new G4Material( mat.name, density, nel=3,
+                      kStateGas, temperature= 293.15*kelvin, pressure= 1*atmosphere);
+
+//      G4Element* He = new G4Element("He"       , "He", z=2.0, a= 4.002602 *g/mole);
+//      G4Element* C  = new G4Element("Carbonium", "C" , z=6.0, a= 12.0107  *g/mole);
+//      G4Element* H  = new G4Element("Hydrogen" , "H" , z=1.0, a= 1.00794  *g/mole);
+      G4Element* He = getElementOrThrow("He");
+      G4Element* C  = getElementOrThrow("C");
+      G4Element* H  = getElementOrThrow("H");
+      GasMix->AddElement(He, 0.9   );
+      GasMix->AddElement(H , 0.0173);
+      GasMix->AddElement(C , 0.0827);
+    }
+
+    mat = isNeeded(materialsToLoad, "CarbonFiber");
+    if ( mat.doit ){
+        G4double density;
+        G4int nel;
+    	G4Material* CarbonFiber =
+    			new G4Material(mat.name, density = 2.265*g/cm3, nel=1);
+        G4Element* C  = getElementOrThrow("C");
+        CarbonFiber->AddElement(C, 100.0*perCent );
+    }
+
+    mat = isNeeded(materialsToLoad, "PolypropyleneFoam");
+    if ( mat.doit ){
+    	//Polypropylene (CH3)
+        G4double density;
+        G4int nel;
+    	G4Material *Polypropylene = new G4Material(mat.name, density = 0.04*g/cm3, nel=2);
+    	G4Element* H  = getElementOrThrow("H");
+    	G4Element* C  = getElementOrThrow("C");
+    	Polypropylene->AddElement(H, 3 );
+    	Polypropylene->AddElement(C, 1 );
+    }
+
 
     // Completed constructing Mu2e specific materials.
 

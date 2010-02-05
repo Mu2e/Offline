@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.6 2010/02/04 01:26:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/02/04 01:26:43 $
+// $Id: geom_01.txt,v 1.7 2010/02/05 11:48:13 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2010/02/05 11:48:13 $
 //
 // Original author Rob Kutschke
 
@@ -16,6 +16,7 @@ string detector.name  = "g4geom_v00";
 bool hasHall     = true;
 bool hasTarget   = true;
 bool hasLTracker = true;
+bool hasITracker = false;
 
 // Print a copy of this file to the job log.
 bool printConfig = false;
@@ -29,7 +30,7 @@ bool g4.doCosmicKiller = false;
 // Tell G4 to load these predefined elements.
 vector<string> g4.elements =
   { "H",  "He", "C",  "N",  "O",  "F", "Na", "Al", "Si", "Ar",
-    "Ca", "Ti", "Fe", "Cu", "Ta", "W", "Pt", "Au", "Pb" };
+    "Ca", "Ti", "Fe", "Cu", "Ta", "W", "Pt", "Au", "Pb", "Ag" };
  
 // Tell G4 to load these predefined materials.
 vector<string> g4.materials =
@@ -37,13 +38,14 @@ vector<string> g4.materials =
     "G4_F",     "G4_Na",  "G4_Al", "G4_Si", "G4_Ar",
     "G4_Ca",    "G4_Ti",  "G4_Fe", "G4_Cu", "G4_Ta",
     "G4_W",     "G4_Pt",  "G4_Au", "G4_Pb", "G4_WATER",
-    "G4_PbWO4", "G4_AIR"
+    "G4_PbWO4", "G4_AIR", "G4_Ag"
   };
 
 // Load other materials defined specifically for Mu2e.
 vector<string> mu2e.materials =
   { "ShieldingConcrete", "Polyethylene", "IsoButane", "StrawGas", 
-    "Kapton", "Scintillator", "WAGVacuum", "MBOverburden" };
+    "Kapton", "Scintillator", "WAGVacuum", "MBOverburden", 
+    "ITGasMix",  "CarbonFiber", "PolypropyleneFoam" };
 
 // Control printout of element and material lists.
 bool g4.printElements  = false;
@@ -140,8 +142,6 @@ vector<int> ltracker.nStrawsSide   = { 63, 64, 65 };
 vector<int> ltracker.nStrawsVane   = { 51, 50, 51 };
 vector<double> ltracker.vaneOffset = { 572., 10., 0.};  // mm
 
-double tracker.rMagnet       = 850.; 
-
 // Materials in the two types of straws; the same for now.
 string         ltracker.fillMaterial    = "WAGVacuum";
 vector<string> ltracker.strawMaterials0 = { "Kapton", "StrawGas", "G4_W" };
@@ -152,6 +152,72 @@ vector<string> ltracker.strawMaterials1 = { "Kapton", "StrawGas", "G4_W" };
 //    ( z halfLength, r Inner, r Outer )
 // I should really compute this from the above info.
 vector<double> ltracker.tubs     = { 1400., 380., 750. };
+
+// ITracker: Positioning infor is relative to DS.
+string itracker.extFile          =    "";   //"ITrackerGeom/ITrackerGeom.gdml";
+string itracker.extWireFile      =    "";   //"ITrackerGeom/ITrackerWireData.root";
+
+double itracker.r0               = 400.0;   //388.48435399; // Lengths in mm
+double itracker.z0               =10200.;
+double itracker.zHalfLength      =1000.0;   //1300.0;
+double itracker.rOut             = 820.0;   //870.0;
+double itracker.drop             =  20.0;
+
+int    itracker.geomType		 =     3;   //2:Hexagonal, 3:Square, 4:Square with base fw in both directions
+int    itracker.endCapType       =     0;
+double itracker.voxelization     =     0;   //negative: default computation, 0: voxelization off, positive: smartless value
+
+// Cell parameter needed only for the hexagonal cell case
+
+int    itracker.nSWire           =   140;
+int    itracker.nSDeltaWire      =    12;
+int    itracker.nSuperLayer      =     8;
+int    itracker.nRing            =     7;
+
+// Cell parameter needed only for the square cell case
+
+double itracker.cellDimension    =  10.0;
+double itracker.FWireStep        =   1.0;
+int    itracker.nLayer           =    40;
+int    itracker.nVerticalFWire   =     2;
+int    itracker.StoFWireRation   =    12;
+
+
+// Materials and elements compositions
+string         itracker.fillMaterial    = "ITGasMix";
+
+// Field wires description
+int    itracker.nFieldWireShells =      2;
+vector<string> itracker.fieldWireMaterials = { "CarbonFiber", "G4_Ag" };
+//vector<double> itracker.fieldWireShellsThicknesses = { 0.033, 0.001 };
+vector<double> itracker.fieldWireShellsThicknesses = { 0.0795, 0.0005 };
+
+// Sense wires description
+int    itracker.nSenseWireShells =      2;
+vector<string> itracker.senseWireMaterials = { "CarbonFiber", "G4_Ag" };
+//vector<double> itracker.senseWireShellsThicknesses = { 0.033, 0.001 };
+vector<double> itracker.senseWireShellsThicknesses = { 0.0145, 0.0005 };
+
+// Inner Wall description
+//int    itracker.nInnerWallShells =      4;
+//vector<string> itracker.innerWallMaterials = { "CarbonFiber", "PolypropyleneFoam", "CarbonFiber" , "G4_Cu" };
+//vector<double> itracker.innerWallShellsThicknesses = { 0.125, 0.48, 0.125, 0.002 };
+int    itracker.nInnerWallShells =      1;
+vector<string> itracker.innerWallMaterials = { "CarbonFiber"};
+vector<double> itracker.innerWallShellsThicknesses = { 1.0 };
+
+// Outer Wall description
+int    itracker.nOuterWallShells =      2;
+vector<string> itracker.outerWallMaterials = { "G4_Cu" , "CarbonFiber" };
+vector<double> itracker.outerWallShellsThicknesses = { 0.002, 10.0 };
+
+// End Cap description
+int    itracker.nEndCapWallShells =     2;
+vector<string> itracker.endcapWallMaterials = { "CarbonFiber", "G4_Cu" };
+vector<double> itracker.endcapWallShellsThicknesses = { 0.002, 5.0 };
+
+
+double tracker.rMagnet       = 850.; 
 
 // Describe targets.  
 // All dimensions in mm in the detector coordinate system.
