@@ -1,0 +1,11 @@
+<!--  -->
+<!--  $Author: mu2ecvs $ -->
+<!--  $Date: 2010/02/05 11:53:52 $   -->
+<!--  -->
+
+<lcgdict>
+ <class name="ITrackerWiredata"/>
+ <class name="edm::Wrapper<ITrackerWiredata>"/>
+ <class name="IlcDCHwiredata"/>
+ <class name="edm::Wrapper<IlcDCHwiredata>"/>
+</lcgdict>
