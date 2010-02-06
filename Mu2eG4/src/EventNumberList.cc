@@ -1,9 +1,9 @@
 //
 // Utility class to select listed events within G4.
 //
-// $Id: EventNumberList.cc,v 1.1 2009/11/11 14:40:00 kutschke Exp $
+// $Id: EventNumberList.cc,v 1.2 2010/02/06 19:40:31 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/11 14:40:00 $
+// $Date: 2010/02/06 19:40:31 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@ namespace mu2e {
   EventNumberList::EventNumberList( int n, int const* eventNumbers):
     _eventNumbers()
   {
-    Add(n, eventNumbers);
+    add(n, eventNumbers);
   }
 
   EventNumberList::EventNumberList( std::vector<int> const& eventNumbers ):
@@ -30,7 +30,7 @@ namespace mu2e {
   {
   }
 
-  void EventNumberList::Add( int n, int const* eventNumbers){
+  void EventNumberList::add( int n, int const* eventNumbers){
     if ( n < 0 ) {
       // print warning.
       return;
@@ -41,12 +41,12 @@ namespace mu2e {
     }
   }
 
-  void EventNumberList::Add( std::vector<int> const& eventNumbers )
+  void EventNumberList::add( std::vector<int> const& eventNumbers )
   {
-    Add( eventNumbers.size(), &eventNumbers[0] );
+    add( eventNumbers.size(), &eventNumbers[0] );
   }
 
-  void EventNumberList::Add( int eventNumber){
+  void EventNumberList::add( int eventNumber){
     _eventNumbers.push_back(eventNumber);
   }
 

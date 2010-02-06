@@ -3,9 +3,9 @@
 //
 // Utility class to select listed events within G4.
 //
-// $Id: EventNumberList.hh,v 1.1 2009/11/11 14:40:00 kutschke Exp $
+// $Id: EventNumberList.hh,v 1.2 2010/02/06 19:40:31 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/11 14:40:00 $
+// $Date: 2010/02/06 19:40:31 $
 //
 // Original author Rob Kutschke
 //
@@ -33,11 +33,11 @@ namespace mu2e {
     // copy c'tor, d'tor and assignment operator.
 
     // Extend the list of event numbers.
-    void Add( int n, int const* eventNumbers);
-    void Add( std::vector<int> const& eventNumbers );
-    void Add( int eventNumber );
+    void add( int n, int const* eventNumbers);
+    void add( std::vector<int> const& eventNumbers );
+    void add( int eventNumber );
 
-    // Is the current G4 event in the list?
+    // Is the number of the current G4 event in the list?
     bool inList() const;
 
     // Is the specified event number in the list?
