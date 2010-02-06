@@ -3,9 +3,9 @@
            Release notes for Mu2e Offline software, v0_0_7
 
 
-  $Id: v0_0_7.txt,v 1.3 2010/02/04 01:26:43 kutschke Exp $
+  $Id: v0_0_7.txt,v 1.4 2010/02/06 19:41:51 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/02/04 01:26:43 $
+  $Date: 2010/02/06 19:41:51 $
 
 
 1) First version with a non-trival physics list.  It is just copied
@@ -34,3 +34,31 @@
     Mu2eG4/inc/StackingAction.hh      - code to implement t
     Mu2eG4/inc/StackingAction.cc
     Mu2eG4/test/geom_01.txt           - New parameter g4.doCosmicKiller.
+
+3) Added ITracker geometry.  The new code is in the directory ITrackerGeom.  
+   The following routines needed changes in order to integrate the ITracker
+   with existing code:
+        GeometryService/src/GeometryService.cc
+        GeometryService/src/SConscript
+        Mu2eG4/inc/Mu2eWorld.hh
+        Mu2eG4/inc/VolumeInfo.hh
+        Mu2eG4/src/ConstructMaterials.cc
+        Mu2eG4/src/G4_plugin.cc
+        Mu2eG4/src/Mu2eWorld.cc
+        Mu2eG4/src/ReadBack_plugin.cc
+        Mu2eG4/src/SConscript
+        Mu2eG4/test/geom_01.txt
+
+   The chamber walls are not yet included in the geometry.
+
+4) Added a user tracking action.
+     Mu2eG4/inc/TrackingAction.hh
+     Mu2eG4/src/TrackingAction.cc
+     Mu2eG4/src/G4_plugin.cc
+
+5) Renamed .Add() methods of EventNumberList to .add().
+   
+6) Added CVSROOT/cvsignore.
+   Tell diff to ignore .os files.
+
+
