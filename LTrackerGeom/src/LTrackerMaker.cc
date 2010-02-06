@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.4 2009/11/11 15:00:12 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.5 2010/02/06 22:20:28 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/11 15:00:12 $
+// $Date: 2010/02/06 22:20:28 $
 //
 // Original author Rob Kutschke
 //
@@ -652,18 +652,18 @@ void LTrackerMaker::FillPointersAndIndices2(){
 	  e=_ltt->_allStraws.end();
 	i!=e; 
 	++i){
-    vector<const Straw *>& byPtr= i->_nearest;
+    //    vector<const Straw *>& byPtr= i->_nearest;
     vector<StrawId>& byId = i->_nearestById;
     vector<StrawIndex>& byIndex = i->_nearestByIndex;
 
-    byPtr.clear();
+    //   byPtr.clear();
     byIndex.clear();
 
     for ( vector<StrawId>::iterator j=byId.begin(), je=byId.end();
 	   j != je; ++j){
       const StrawId& id = *j;
       const Straw& straw = _ltt->getStraw(id);
-      byPtr.push_back( &straw);
+      //      byPtr.push_back( &straw);
       byIndex.push_back( straw.Index() );
     }
   }

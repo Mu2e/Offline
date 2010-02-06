@@ -2,9 +2,9 @@
 // Geometry and identifier info about an LTracker.
 //
 //
-// $Id: LTracker.cc,v 1.2 2009/10/22 16:27:58 kutschke Exp $
+// $Id: LTracker.cc,v 1.3 2010/02/06 22:20:28 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/22 16:27:58 $
+// $Date: 2010/02/06 22:20:28 $
 //
 // Original author Rob Kutschke
 //
@@ -68,18 +68,18 @@ void LTracker::FillPointers2(){
 	  e= _allStraws.end();
 	i!=e; 
 	++i){
-    vector<const Straw *>& byPtr = i->_nearest;
+    //vector<const Straw *>& byPtr = i->_nearest;
     vector<StrawId>& byId        = i->_nearestById;
     vector<StrawIndex>& byIndex  = i->_nearestByIndex;
     
-    byPtr.clear();
+    //    byPtr.clear();
     byIndex.clear();
     
     for ( vector<StrawId>::iterator j=byId.begin(), je=byId.end();
 	   j != je; ++j){
       const StrawId& id = *j;
       const Straw& straw = getStraw(id);
-      byPtr.push_back( &straw);
+      //      byPtr.push_back( &straw);
       byIndex.push_back( straw.Index() );
     }
   }
