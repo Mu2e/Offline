@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.7 2010/02/05 11:46:38 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2010/02/05 11:46:38 $
+// $Id: G4_plugin.cc,v 1.8 2010/02/06 19:39:29 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/02/06 19:39:29 $
 //
 // Original author Rob Kutschke
 //
@@ -55,6 +55,7 @@
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/SteppingVerbose.hh"
 #include "Mu2eG4/inc/StackingAction.hh"
+#include "Mu2eG4/inc/TrackingAction.hh"
 
 #include "ITrackerGeom/inc/ITracker.hh"
 
@@ -168,6 +169,9 @@ namespace mu2e {
 
     StackingAction* stacking_action = new StackingAction(config);
     _runManager->SetUserAction(stacking_action);
+
+    TrackingAction* tracking_action = new TrackingAction(config);
+    _runManager->SetUserAction(tracking_action);
     
     cerr << "\n\n Start initialize. \n\n" << endl;
     _runManager->Initialize();
