@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.5 2009/11/03 19:59:46 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.6 2010/02/07 00:15:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/03 19:59:46 $
+// $Date: 2010/02/07 00:15:02 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@
 #include <ostream>
 
 // Mu2e includes
-#include "LTrackerGeom/inc/StrawIndex.hh"
+#include "TrackerGeom/inc/StrawIndex.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

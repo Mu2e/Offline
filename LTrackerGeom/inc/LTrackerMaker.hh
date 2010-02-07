@@ -4,9 +4,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: LTrackerMaker.hh,v 1.2 2010/02/07 00:15:02 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/02/07 00:15:02 $
 //
 // Original author Rob Kutschke
 //
@@ -14,11 +14,13 @@
 #include <vector>
 #include <memory>
 
-#include "CLHEP/Vector/ThreeVector.h"
-#include "LTrackerGeom/inc/Device.hh"
-#include "LTrackerGeom/inc/Sector.hh"
 #include "LTrackerGeom/inc/LayerInfo.hh"
-#include "LTrackerGeom/inc/Layer.hh"
+
+#include "TrackerGeom/inc/Device.hh"
+#include "TrackerGeom/inc/Sector.hh"
+#include "TrackerGeom/inc/Layer.hh"
+
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 

@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.2 2009/10/22 16:27:58 kutschke Exp $
+// $Id: LTracker.hh,v 1.3 2010/02/07 00:15:01 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/22 16:27:58 $
+// $Date: 2010/02/07 00:15:01 $
 //
 // Original author Rob Kutschke
 //
@@ -16,14 +16,14 @@
 #include <deque>
 #include <vector>
 
-#include "LTrackerGeom/inc/Device.hh"
-#include "LTrackerGeom/inc/SectorId.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
-#include "GeometryService/inc/Detector.hh"
+#include "TrackerGeom/inc/Device.hh"
+#include "TrackerGeom/inc/SectorId.hh"
 
 namespace mu2e {
 
-  class LTracker: public Detector{
+  class LTracker: public Tracker{
 
   friend class LTrackerMaker;
 

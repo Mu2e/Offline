@@ -7,9 +7,9 @@
 //   - it provides a view to return a hit by StrawIndex.
 //   - it provides a convenience method getStepPointMC().
 //
-// $Id: CrudeStrawHitCollection.hh,v 1.5 2009/11/07 01:10:39 kutschke Exp $
+// $Id: CrudeStrawHitCollection.hh,v 1.6 2010/02/07 00:15:01 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/07 01:10:39 $
+// $Date: 2010/02/07 00:15:01 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,6 @@
 #include "DataFormats/Common/interface/Handle.h"
 
 // Mu2e includes.
-#include "LTrackerGeom/inc/StrawIndex.hh"
 #include "ToyDP/inc/CrudeStrawHitPData.hh"
 
 namespace edm{

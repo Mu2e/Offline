@@ -3,14 +3,14 @@
 //
 // A crude step along the way to forming real clusters.
 //
-// $Id: ProtoStrawCluster.hh,v 1.1 2009/10/28 14:14:13 kutschke Exp $
+// $Id: ProtoStrawCluster.hh,v 1.2 2010/02/07 00:15:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/28 14:14:13 $
+// $Date: 2010/02/07 00:15:02 $
 //
 //
 #include <vector>
 
-#include "LTrackerGeom/inc/SectorId.hh"
+#include "TrackerGeom/inc/SectorId.hh"
 
 namespace mu2e {
 

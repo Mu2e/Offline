@@ -35,9 +35,9 @@
 //    to be defined.
 // 
 // 
-// $Id: CrudeStrawHit.hh,v 1.5 2009/11/07 17:04:15 kutschke Exp $
+// $Id: CrudeStrawHit.hh,v 1.6 2010/02/07 00:15:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/07 17:04:15 $
+// $Date: 2010/02/07 00:15:02 $
 //
 // Original author Rob Kutschke
 //
@@ -48,7 +48,7 @@
 #include <string>
 
 // Mu2e includes
-#include "LTrackerGeom/inc/StrawIndex.hh"
+#include "TrackerGeom/inc/StrawIndex.hh"
 #include "ToyDP/inc/DPIndex.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"

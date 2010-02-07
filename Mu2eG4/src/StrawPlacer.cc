@@ -1,9 +1,9 @@
 //
 // Class to place one straw within the tracker mother volume.
 //
-// $Id: StrawPlacer.cc,v 1.2 2009/10/22 16:27:59 kutschke Exp $
+// $Id: StrawPlacer.cc,v 1.3 2010/02/07 00:15:02 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/10/22 16:27:59 $
+// $Date: 2010/02/07 00:15:02 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/StrawPlacer.hh"
-#include "LTrackerGeom/inc/Straw.hh"
+#include "TrackerGeom/inc/Straw.hh"
 
 // G4 includes
 #include "G4LogicalVolume.hh"

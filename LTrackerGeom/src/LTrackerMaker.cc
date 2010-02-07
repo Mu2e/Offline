@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.5 2010/02/06 22:20:28 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.6 2010/02/07 00:15:02 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/02/06 22:20:28 $
+// $Date: 2010/02/07 00:15:02 $
 //
 // Original author Rob Kutschke
 //
@@ -19,12 +19,11 @@
 
 // Mu2e includes
 #include "LTrackerGeom/inc/LTrackerMaker.hh"
+#include "LTrackerGeom/inc/LTracker.hh"
+#include "TrackerGeom/inc/Straw.hh"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "LTrackerGeom/inc/StrawId.hh"
-#include "LTrackerGeom/inc/Straw.hh"
 #include "Mu2eUtilities/inc/for_all.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
@@ -241,9 +240,9 @@ namespace mu2e {
   void LTrackerMaker::MakeDetails(){
         
     _ltt->_strawDetail.push_back( 
-	 StrawDetail( _strawMaterialNames0, _strawRadius, _strawThick, _halfLength, _rwire) );
+         StrawDetail( 0,  _strawMaterialNames0, _strawRadius, _strawThick, _halfLength, _rwire) );
     _ltt->_strawDetail.push_back( 
-         StrawDetail( _strawMaterialNames1, _strawRadius, _strawThick, _halfLength, _rwire) );
+         StrawDetail( 1, _strawMaterialNames1, _strawRadius, _strawThick, _halfLength, _rwire) );
   }
 
   void LTrackerMaker::MakeSides(){
@@ -652,18 +651,15 @@ void LTrackerMaker::FillPointersAndIndices2(){
 	  e=_ltt->_allStraws.end();
 	i!=e; 
 	++i){
-    //    vector<const Straw *>& byPtr= i->_nearest;
     vector<StrawId>& byId = i->_nearestById;
     vector<StrawIndex>& byIndex = i->_nearestByIndex;
 
-    //   byPtr.clear();
     byIndex.clear();
 
     for ( vector<StrawId>::iterator j=byId.begin(), je=byId.end();
 	   j != je; ++j){
       const StrawId& id = *j;
       const Straw& straw = _ltt->getStraw(id);
-      //      byPtr.push_back( &straw);
       byIndex.push_back( straw.Index() );
     }
   }
