@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.2 2010/01/11 21:37:59 rhbob Exp $
+// $Id: HoughTest_plugin.cc,v 1.3 2010/02/08 17:51:46 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/01/11 21:37:59 $
+// $Date: 2010/02/08 17:51:46 $
 //
 // Original author R. Bernstein
 //
@@ -78,7 +78,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
   //  cout << "x, background, peak " << x[0] << " " << background <<" " << peak << endl;
   return background + peak; 
 }
-
+  static const bool singleHoughHisto = false;
   class HoughTest : public edm::EDAnalyzer {
   public:
     explicit HoughTest(edm::ParameterSet const& pset) : 
@@ -135,6 +135,16 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     TH2F* _hRadiusPeak;
     TH1F* _hNumberOfSpectrumPeaks;
     TH1F* _hNumberOfSpectrumPeaks2;
+
+
+    TH1F* _histoRadius;
+    TH1F* _histoDCA;
+    TH2F* _histoRadiusDCA;
+    TH3F* _histoRadiusDCACenter;
+    TH2F* _histoCenter;
+    TH1F* _histoRadiusError;
+    TH1F* _histoNStraws;
+    TH2F* _eventPlot;
 
     // A category for the error logger.
     const std::string _messageCategory;
@@ -240,7 +250,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     static double occupancy = 0.05;
     static int noiseMean = static_cast<int>(nstraws*occupancy);
     int numberOfNoiseHits = RandPoisson::shoot(accidentalEngine,noiseMean);
-          numberOfNoiseHits = 0;
+             numberOfNoiseHits = 0;
 
     //make a copy of the hits
     StepPointMCCollection plusNoise(*hitsHandle);
@@ -265,7 +275,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
       }
     //go back to normal engine
     HepRandom::setTheEngine(regularEngine);
-    cout << "size of plusNoise after " << plusNoise.size() << endl;
+    //cout << "size of plusNoise after " << plusNoise.size() << endl;
 
     StepPointMCCollection const* plusNoiseHits = &plusNoise;
     //replace hits with plusNoise
@@ -273,7 +283,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
     //remove hits according to inefficiency
-    double inefficiency = 0.0;
+    double inefficiency = 0.05;
     HepRandom::setTheEngine(inefficiencyEngine);
 
     //loop over all hits and delete the element
@@ -285,7 +295,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     //behind the scenes somebody built me a copy constructor and assignment operators for vectors.  thanks!
     StepPointMCCollection inefficientHits(*hitsHandle);
     inefficientHits.clear();
-    cout << "size of inefficientHits = " << inefficientHits.size() << endl;
+    //cout << "size of inefficientHits = " << inefficientHits.size() << endl;
     for( StepPointMCCollection::const_iterator i = hits->begin(); i!= hits->end(); ++i ) 
       {
 	if (CLHEP::RandFlat::shoot(inefficiencyEngine) >= inefficiency)
@@ -295,7 +305,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	    inefficientHits.push_back(StepPointMC(hit));
 	  }
       }
-    cout << "size of inefficientHits after = " << inefficientHits.size() << endl;
+    //cout << "size of inefficientHits after = " << inefficientHits.size() << endl;
     //and now make inefficientHits what gets passed to everyone else
     hits = &inefficientHits;
 
@@ -316,10 +326,39 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     log << "HoughTransforming event #: " 
 	<< evt.id().event();
 
-    cout << endl << "RHB HoughTransforming event # " << evt.id().event() << endl;
+    //cout << endl << "RHB HoughTransforming event # " << evt.id().event() << endl;
+
+
+    if ( (ncalls == 1 && singleHoughHisto) || !singleHoughHisto)
+      {	
+	RootNameTitleHelper radiusHisto("_histoRadius","Radius Accumulator Space Event",evt.id().event(),5);
+	RootNameTitleHelper radiusErrorHisto("_histoErrorRadius","Radius Error Event",evt.id().event(),5);
+	RootNameTitleHelper dcaHisto("_histoDCA","Distance of Closest Approch",evt.id().event(),5);
+	RootNameTitleHelper centerHisto("_histoCenter","Center Accumulator Space Event",evt.id().event(),5);
+	RootNameTitleHelper nStrawsHisto("_histoNStraws","Number of Straws in Circles, Event",evt.id().event(),5);
+	RootNameTitleHelper radiusDCAHisto("_histoRadiusDCA","Radius vs. DCA, Event",evt.id().event(),5);
+	RootNameTitleHelper radiusDCACenterHisto("_histoRadiusDCACenter","Radius vs. DCA vs Center, Event",evt.id().event(),5);
+
+	_histoRadius = tfs->make<TH1F>(radiusHisto.name(),radiusHisto.title(),
+				       80,100.,500.);
+	_histoDCA = tfs->make<TH1F>(dcaHisto.name(),dcaHisto.title(),
+				    110,0.,110.);
+	_histoRadiusDCA = tfs->make<TH2F>(radiusDCAHisto.name(),radiusDCAHisto.title(),
+					  80,100.,500.,120,-10.,110.);
+	_histoRadiusDCACenter = tfs->make<TH3F>(radiusDCACenterHisto.name(),radiusDCACenterHisto.title(),
+						80,100.,500.,120,-10.,110.,100,0.,1000.);
+	_histoCenter = tfs->make<TH2F>(centerHisto.name(),centerHisto.title(),
+				       100,-1000.,1000.,100,-1000.,1000.);
+	_histoRadiusError = tfs->make<TH1F>(radiusErrorHisto.name(),radiusErrorHisto.title(), 
+					    100,0.,100.);
+	_histoNStraws = tfs->make<TH1F>(nStrawsHisto.name(),nStrawsHisto.title(), 
+					100,0.,100.);
+      }
+
+
 
     int minHitsforHough = 3;
-    cout << "minHitsforHough must be >3, size of hits = " << hits->size() << "and plusHits size = " << plusNoiseHits->size() << endl; 
+    //cout << "minHitsforHough must be >3, size of hits = " << hits->size() << "and plusHits size = " << plusNoiseHits->size() << endl; 
     if (hits->size() > minHitsforHough)
       {
 	mu2e::houghtransform::HoughTransform trialHough;
@@ -330,32 +369,11 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 	//loop over all found houghTracks, each of which is a candidate circle
 	//and make a pair of histos that looks at accumulator space in radius and center
+	cout << "ncalls = " << ncalls << endl;
+	//	assert(2==1);
 
-	
-	RootNameTitleHelper radiusHisto("_histoRadius","Radius Accumulator Space Event",evt.id().event(),5);
-	RootNameTitleHelper radiusErrorHisto("_histoErrorRadius","Radius Error Event",evt.id().event(),5);
-	RootNameTitleHelper dcaHisto("_histoDCA","Distance of Closest Approch",evt.id().event(),5);
-	RootNameTitleHelper centerHisto("_histoCenter","Center Accumulator Space Event",evt.id().event(),5);
-	RootNameTitleHelper nStrawsHisto("_histoNStraws","Number of Straws in Circles, Event",evt.id().event(),5);
-	RootNameTitleHelper radiusDCAHisto("_histoRadiusDCA","Radius vs. DCA, Event",evt.id().event(),5);
-	RootNameTitleHelper radiusDCACenterHisto("_histoRadiusDCACenter","Radius vs. DCA vs Center, Event",evt.id().event(),5);
 
-	TH1F* _histoRadius = tfs->make<TH1F>(radiusHisto.name(),radiusHisto.title(),
-					     80,100.,500.);
-	TH1F* _histoDCA = tfs->make<TH1F>(dcaHisto.name(),dcaHisto.title(),
-					     110,0.,110.);
-	TH2F* _histoRadiusDCA = tfs->make<TH2F>(radiusDCAHisto.name(),radiusDCAHisto.title(),
-						80,100.,500.,120,-10.,110.);
-	TH3F* _histoRadiusDCACenter = tfs->make<TH3F>(radiusDCACenterHisto.name(),radiusDCACenterHisto.title(),
-						80,100.,500.,120,-10.,110.,100,0.,1000.);
-	TH2F* _histoCenter = tfs->make<TH2F>(centerHisto.name(),centerHisto.title(), 
-					     100,-1000.,1000.,100,-1000.,1000.);
-	TH1F* _histoRadiusError = tfs->make<TH1F>(radiusErrorHisto.name(),radiusErrorHisto.title(), 
-						  100,0.,100.);
-	TH1F* _histoNStraws = tfs->make<TH1F>(nStrawsHisto.name(),nStrawsHisto.title(), 
-						  100,0.,100.);
-
-	cout << "number of Hough Tracks = " << houghTracks.size() << endl;
+	//cout << "number of Hough Tracks = " << houghTracks.size() << endl;
 
 	for (int ithHough = 0; ithHough < houghTracks.size(); ++ithHough)
 	  {
@@ -385,7 +403,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 	
 	TSpectrum s(50);// calling this with (50) instead of () is a magic trick from Rene Brun. 
-	s.Search(_histoRadius,1.0," ",0.50);
+	s.Search(_histoRadius,1.0," ",0.95);
 	Int_t nPeaks = s.GetNPeaks();
 	_hNumberOfSpectrumPeaks->Fill(static_cast<double>(nPeaks));
 	//TSpectrum2 doesn't work correctly, and examples in $ROOT_DIR don't either without turning 
@@ -393,16 +411,16 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	//for us.  The examples in ROOT_DIR seem to work better but find a lot more ghost hits; with those
 	//options it just finds random junk
 	TSpectrum2 s2(50,1.0);  
-	s2.Search(_histoRadiusDCA,2,"nobackgroundnomarkov",0.50);
+	s2.Search(_histoRadiusDCA,2,"nobackgroundnomarkov",0.95);
 	Int_t nPeaks2 = s2.GetNPeaks();
-	cout << "nPeaks = " << nPeaks << endl << " and n2Peaks = " << nPeaks2 << endl;
+	//cout << "nPeaks = " << nPeaks << endl << " and n2Peaks = " << nPeaks2 << endl;
 	//make sure there's something to fit to!
 	if (nPeaks > 0)
 	  {
 	    Float_t* firstPeak = s.GetPositionX();
 	    for (int ithPeak = 0; ithPeak < nPeaks; ++ithPeak)
 	      {
-		cout <<"peak number " << ithPeak << " " << firstPeak[ithPeak] << endl;	
+		//		cout <<"peak number " << ithPeak << " " << firstPeak[ithPeak] << endl;	
 		_hRadiusPeak->Fill(static_cast<float>(ncalls) - 0.5,firstPeak[ithPeak]);
 	      }
 	  }
@@ -414,14 +432,11 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	    Float_t* firstPeakY = s2.GetPositionY();
 	    for (int ithPeak = 0; ithPeak < nPeaks2; ++ithPeak)
 	      {
-		cout <<"peak number " << ithPeak << " " << firstPeakX[ithPeak] << " " << firstPeakY[ithPeak] << endl;
+		//		cout <<"peak number " << ithPeak << " " << firstPeakX[ithPeak] << " " << firstPeakY[ithPeak] << endl;
 		_hRadiusDistribution2D->Fill(firstPeakX[ithPeak]);
 		_hDCADistribution2D->Fill(firstPeakY[ithPeak]);
 	      }
 	  }
-	
-
-
       }
 	
     
@@ -430,20 +445,37 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     int n(0);
     StepPointMCCollection::const_iterator i = plusNoiseHits->begin();
     StepPointMCCollection::const_iterator e = plusNoiseHits->end();
-    //scatter plot showing event
+    if (!singleHoughHisto)
+      {
+	//scatter plot showing event
 	RootNameTitleHelper eventPlot("_eventPlot","EventPlot",evt.id().event(),5);
-	TH2F* _eventPlot= tfs->make<TH2F>(eventPlot.name(),eventPlot.title(), 
-					     100,-1000.,1000.,100,-1000.,1000.);
+	_eventPlot= tfs->make<TH2F>(eventPlot.name(),eventPlot.title(),
+					  100,-1000.,1000.,100,-1000.,1000.);
 
 	_eventPlot->SetMarkerStyle(20);
 	_eventPlot->SetMarkerSize(0.5);
+      }
+    // clear out multiple use histos
+    if (singleHoughHisto)
+      {
+	_histoRadius->Reset();
+	_histoDCA->Reset();
+	_histoRadiusDCA->Reset();
+	_histoRadiusDCACenter->Reset();
+	_histoCenter->Reset();
+      }
+
+
     for ( ; i!=e; ++i){
       
       // Aliases, used for readability.
       const StepPointMC& hit = *i;
       const Hep3Vector& pos = hit.position();
       const Hep3Vector& mom = hit.momentum();
-      _eventPlot->Fill(pos[0],pos[1]);
+      if (!singleHoughHisto) 
+	{
+	  _eventPlot->Fill(pos[0],pos[1]);
+	}
       // Get the straw information.
       Straw const& straw = ltracker->getStraw( StrawIndex(hit.volumeId()) );
       //      cout << "straw, position of hit " << hit.volumeId() << " " << pos[0] << " " << pos[1] << endl;
