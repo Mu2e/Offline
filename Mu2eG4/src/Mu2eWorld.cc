@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.5 2010/02/05 11:46:38 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2010/02/05 11:46:38 $
+// $Id: Mu2eWorld.cc,v 1.6 2010/02/08 21:33:27 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/02/08 21:33:27 $
 //
 // Original author Rob Kutschke
 //
@@ -81,6 +81,11 @@
 #include "G4SDManager.hh"
 //#include "G4GDMLParser.hh"
 
+//
+//Julie's DSField for reading in the file for full DS field
+#include "Mu2eG4/inc/DSField.hh"
+
+
 using namespace std;
 
 namespace mu2e {
@@ -92,12 +97,18 @@ namespace mu2e {
     :  _cosmicReferencePoint(),
        _mu2eOrigin(),
        _info(),
-       _detSolBField(),
-       _usualRHS(),
-       _exactHelix(),
-       _chordFinder(),
-       _fieldMgr(),
-       _stepLimit(),
+       _detSolUpstreamBField(),
+       _usualUpstreamRHS(),
+       _exactUpstreamHelix(),
+       _chordUpstreamFinder(),
+       _fieldUpstreamMgr(),
+       _stepUpstreamLimit(),
+       _detSolDownstreamBField(),
+       _usualDownstreamRHS(),
+       _exactDownstreamHelix(),
+       _chordDownstreamFinder(),
+       _fieldDownstreamMgr(),
+       _stepDownstreamLimit(),
        _lTrackerWedgeAssembly(),
        _lTrackerVaneAssembly(),
        _lTrackerAssemblyVols(){
@@ -412,23 +423,88 @@ namespace mu2e {
 					     G4Colour::Green()
 					     );
     
-    
-    double detSolCoilParams[5] = { 
+    // this was supposed to be in/out,  but it looks like toyDS.rOut and rIn are reversed, 
+    //so I will put them in the wrong order.  kutschke agrees was a bug.
+     double detSolCoilParams[5] = { 
       _config->getDouble("toyDS.rIn"       ) * mm,
       _config->getDouble("toyDS.rOut"      ) * mm,
       _config->getDouble("toyDS.halfLength") * mm,
       0.,
       2.*M_PI
     };
+ 
+   //will divide the detector solenoid vacuum into two parts. the purpose
+    //is to have a slowly falling field (the real one) over the stopping target
+    //region, and then a pure solenoidal field in the region of the tracker.
+    //
+    //this will greatly simplify debugging of the kalman filter and tracking algorithms.
+    //I considered fudging the field Julie Managan put in, which is the upstream half; Kutschke
+    //says this will cause problems because no matter what I do it will violate Poisson's equation
+    //at some point.  By dividing it into two parts, I can attach different fieldMgrs to the two sections
+    //and this does less emotional violence to G4 as long as I choose a nice transition point.
+    // rhb 1/22/10
+    //
+    //this transitionZ is in theory the only hardwired fudge to make this work; then calculate everything
+    //given where we choose to move from one fieldMgr to the other
+
+    //
+    //ok, now compute the new halfLengths and centers; note Rob's code forces center at zero locally but give it a name for readability
+    double centerOfDS = 0.;
+    //now, you can read off a transition Z based on the field map and translate it to the local system
+    double globalTransitionZ = dsz0; //so let's start at local 0 for debugging
+    double transitionZ = (globalTransitionZ - dsz0) - 1500.;//transition arbitrary while I debug but must respect target/tracker locations
+    
+    double halfLengthOfUpstreamDSVac     = (_config->getDouble("toyDS.halfLengthVac")*mm + (transitionZ-centerOfDS))/2.;
+    double halfLengthOfDownstreamDSVac   = _config->getDouble("toyDS.halfLengthVac")*mm - halfLengthOfUpstreamDSVac;
+    //and of course the center of the upstream and downstream sections just moved
+    double centerOfUpstreamDSVac   = transitionZ - halfLengthOfUpstreamDSVac;
+    double centerOfDownstreamDSVac = transitionZ + halfLengthOfDownstreamDSVac;
+
+    //print out all this nonsense
+    /*
+    cout << "we started with a center at: " << globalTransitionZ - dsz0
+	 << " and a halflength of " << _config->getDouble("toyDS.halfLengthVac") 
+	 << " a transition z at " << transitionZ 
+	 << " and ended up with " << endl;
+
+    cout << " halfLengthOfUpstreamDSVac = " << halfLengthOfUpstreamDSVac
+	 << " centerOfUpstreamDSVac = " << centerOfUpstreamDSVac
+	 << endl;
+    cout << " halfLengthOfDownstreamDSVac = " << halfLengthOfDownstreamDSVac
+	 << " centerOfDownstreamDSVac = " << centerOfDownstreamDSVac
+	 << endl;
+    */
+    //checked this out for a special case, looked fine
+    //     assert(2==1);
+
     double detSolVacParams[5] = { 
       0. * mm,
       detSolCoilParams[0],
       _config->getDouble("toyDS.halfLengthVac") * mm,
       0.,
       2.*M_PI
+      };
+
+    //cout << "toyDS.halfLengthVac = " << _config->getDouble("toyDS.halfLengthVac") << endl;
+    //    assert (2==1);
+    double detSolUpstreamVacParams[5]   = { 
+       0.
+      ,detSolCoilParams[1]
+      ,halfLengthOfUpstreamDSVac*mm
+      ,0.
+      ,2.*M_PI
+    };
+    double detSolDownstreamVacParams[5]   = { 
+       0.
+      ,detSolCoilParams[1]
+      ,halfLengthOfDownstreamDSVac*mm
+      ,0.
+      ,2.*M_PI
     };
     G4Material* detSolCoilMaterial = getMaterial("toyDS.materialName");
-    G4Material* detSolVacMaterial  = getMaterial("toyDS.insideMaterialName");
+    //no longer used    G4Material* detSolVacMaterial  = getMaterial("toyDS.insideMaterialName");
+    G4Material* detSolUpstreamVacMaterial    = getMaterial("toyDS.insideMaterialName");
+    G4Material* detSolDownstreamVacMaterial  = getMaterial("toyDS.insideMaterialName");
     
     // Toy model of the DS coils + cryostat. It needs more structure and has
     // much less total material.
@@ -441,8 +517,8 @@ namespace mu2e {
 					  0,
 					  G4Color::Red()
 					  );
-    
-    // The vaccum inside the DS cryostat and coils; this is longer in z than the coils+cryo.
+    /* again not used with split 
+    // The vacuum inside the DS cryostat and coils; this is longer in z than the coils+cryo.
     VolumeInfo detSolVacInfo = nestTubs( "ToyDSVacuum",
 					 detSolVacParams,
 					 detSolVacMaterial,
@@ -452,6 +528,31 @@ namespace mu2e {
 					 0,
 					 G4Color::Magenta()
 					 );
+    */
+
+
+    G4ThreeVector detSolDownstreamOffset  = G4ThreeVector(0.,0.,centerOfDownstreamDSVac);
+    VolumeInfo detSolDownstreamVacInfo = nestTubs( "ToyDSDownstreamVacuum",
+					 detSolDownstreamVacParams,
+					 detSolDownstreamVacMaterial,
+					 0,
+					 detSolDownstreamOffset,
+					 shieldFeInsideInfo.logical,
+					 0,
+					 G4Color::Magenta()
+					 );
+
+    G4ThreeVector detSolUpstreamOffset  = G4ThreeVector(0.,0.,centerOfUpstreamDSVac);
+    VolumeInfo detSolUpstreamVacInfo   = nestTubs( "ToyDSUpstreamVacuum",
+					 detSolUpstreamVacParams,
+					 detSolUpstreamVacMaterial,
+					 0,
+					 detSolUpstreamOffset,
+					 shieldFeInsideInfo.logical,
+					 0,
+					 G4Colour::White() //color change between two halves
+					 );
+
 
     // Mock up of the production solenoid and its vacuum.
 
@@ -508,22 +609,22 @@ namespace mu2e {
     //trackerInfo.logical = new G4LogicalVolume( info.solid, material, name); 
 
     if( _config->getBool("hasLTracker",false) ){
-      int ver = _config->getInt("LTrackerVersion",2);
+      int ver = _config->getInt("LTrackerVersion",3);
+      log << "LTracker version: " << ver << "\n";
+
+// kutschke says use only v3, significant startup and performance penalty 
+// for v2. default was set to 2
+// beign careful to associate with downstream detsol
       log << "LTracker version: " << ver << "\n";
       if ( ver == 0 ){
-	trackerInfo = constructLTracker( detSolVacInfo.logical, dsz0 );
+	trackerInfo = constructLTracker( detSolDownstreamVacInfo.logical, dsz0 - centerOfDownstreamDSVac );
       }
       else if ( ver == 1 ) {
-	trackerInfo = constructLTrackerv2( detSolVacInfo.logical, dsz0 );
+	trackerInfo = constructLTrackerv2( detSolDownstreamVacInfo.logical, dsz0 - centerOfDownstreamDSVac );
       } else {
-	trackerInfo = constructLTrackerv3( detSolVacInfo.logical, dsz0 );
+	trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
       }
-
-    } else if ( _config->getBool("hasITracker",false) ) {
-      trackerInfo = constructITracker( detSolVacInfo.logical, dsz0 );
-      
     } else{
-
 
       // Make a TUBs to represent the tracking volume.
       // Add detail later.
@@ -536,18 +637,42 @@ namespace mu2e {
 	2.*M_PI
       };
 
-      G4Material*    trackerMaterial = detSolVacMaterial;
-      G4ThreeVector trackerOffset(0.,0.,12000.-dsz0-1800.);
+      //
+      //tracker is associated with downstream constant section -- that's the point
+      G4Material*    trackerMaterial = detSolDownstreamVacMaterial;
+
+      //
+      // this doesn't need to change -- the tracker doesn't move.
+      // however, it really should be computed
+ 
+      double trackerCenterInZ = 12000. - dsz0 - 1800.;
+      G4ThreeVector trackerOffset(0.,0.,trackerCenterInZ);
+      /*      
+           cout << "tracker center in Z " << trackerCenterInZ << "\n" 
+	   <<trackerParams[0] << "\n " 
+	   <<trackerParams[1] << "\n " 
+	   <<trackerParams[2] << "\n" 
+	   <<trackerParams[3] << "\n" 
+	   <<trackerParams[4] << "\n" 
+	   <<endl;
+      */
+    if ( (trackerCenterInZ - trackerParams[2]) < transitionZ)
+      { cout << "from Mu2eWorld:  transition Z in the middle of the tracker, fool..." << endl;
+	assert(2==1);
+      }
+
       trackerInfo = nestTubs( "TrackerMother",
 			      trackerParams,
 			      trackerMaterial,
 			      0,
 			      trackerOffset,
-			      detSolVacInfo.logical,
+			      detSolDownstreamVacInfo.logical,
 			      0,
 			      G4Color::Yellow(),
 			      true
 			      );
+
+
     }
 
     // Make a TUBs to represent the target system.
@@ -560,53 +685,174 @@ namespace mu2e {
       0.,
       2.*M_PI
     };
-    G4Material*   targetMaterial = detSolVacMaterial;
-    G4ThreeVector targetOffset(0.,0.,12000.-dsz0-6100.);
+
+    G4Material*   targetMaterial = detSolUpstreamVacMaterial;
+
+    //
+    // 12000 - dsz0 - 6100 is from kutschke when the mother of the target was detSolVacInfo;
+    double targetCenterInZ = 12000. - dsz0 - 6100. - centerOfUpstreamDSVac;
+    G4ThreeVector targetOffset(0.,0.,targetCenterInZ);
+    //make sure transition  between upstream/downstream isn't in the target since
+    //the target is only in the upstream part
+      cout << "target center in Z= " << targetCenterInZ<< "\n" 
+	   <<targetParams[0] << "\n" 
+	   <<targetParams[1] << "\n" 
+	   <<targetParams[2] << "\n"
+	   <<targetParams[3] << "\n" 
+	   <<targetParams[4] << "\n" 
+	   <<endl;
+
+      //this code may or may not work since this is all a horrible hack with hardwired numbers everywhere;
+      //highly suggest you run Mu2eG4/test/g4test_02.py and look to see everything is in the right place...
+      if ( (targetCenterInZ + targetParams[2])+centerOfUpstreamDSVac > transitionZ)
+	{ cout << "from Mu2eWorld:  transition Z in the middle of the target, idiot..." << endl;
+	  assert(2==1);
+	}
+
+
     VolumeInfo targetInfo = nestTubs( "TargetMother",
 				       targetParams,
 				       targetMaterial,
 				       0,
 				       targetOffset,
-				       detSolVacInfo.logical,
+				      //don't use detSolVacInfo.logical!  it doesn't exist..
+				       detSolUpstreamVacInfo.logical,
 				       0,
 				       G4Color::Yellow(),
 				       true
 				       );
 
+
     // Only after all volumes have been defined should we set the magnetic fields.
-    // (Or else we need to set it on a volume by volume basis; this way we can
-    //  set it on one volume and all of its subvolumes.)
+    // Make the magnetic field valid inside the detSol vacuum; one upstream, one downstream
 
-    // Make the magnetic field valid inside the detSol vacuum.
-    G4double bz = _config->getDouble("toyDS.bz") * tesla;
-    _detSolBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bz)));
-    
-    // Create a field manager to manange this field.  Use exact helix stepping.
-    G4double stepMinimum(1.0e-2*mm);
-    _usualRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolBField.get()) );
-    _exactHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualRHS.get()));
-    _chordFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolBField.get(), stepMinimum, _exactHelix.get() ));
-    _fieldMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolBField.get(), _chordFinder.get(), true));
+    const char* fieldmap = "/home2/misc1/jmanagan/myMu2e/GMC/fieldmaps/dsmap_unfmt_rad100.dat";//note disgusting hardwired absolute path
+    int const nx(50); int const ny(25); int const nz(438);
 
-    double oldDeltaI = _fieldMgr->GetDeltaIntersection();
-    double newDeltaI = 0.00001;
-    _fieldMgr->SetDeltaIntersection(newDeltaI);
+    G4double stepUpstreamMinimum(1.0e-2*mm);
+    G4double stepDownstreamMinimum(1.0e-2*mm);
 
-    log << "Setting Delta Intersection: "  
-	<< "Old value: " << oldDeltaI
+    //
+    //get the field form; default if unspecified is constant
+    int detSolFieldForm = _config->getInt("detSolFieldForm",detSolUpConstantDownConstant); 
+
+      cout << "detSolFieldForm  from Mu2eWorld.cc = " << detSolFieldForm << endl;
+    //assert (2==1);
+    // first check we have a legal configuration
+    if (detSolFieldForm != detSolFullField && detSolFieldForm != detSolUpVaryingDownConstant && detSolFieldForm != detSolUpConstantDownConstant)
+      {
+	G4cout << " no legal field specification; detSolFieldForm = " << detSolFieldForm << G4endl;
+      throw cms::Exception("GEOM")
+	<< "illegal field config as specified in geom.txt \n";
+      }
+
+    if (detSolFieldForm == detSolFullField)
+      {
+	//
+	//upstream varying section
+
+	_detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
+	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
+	_exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
+        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
+									    , _exactUpstreamHelix.get() ));
+        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
+										 _chordUpstreamFinder.get(), true));
+	//
+	//downstream varying section
+	_detSolDownstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
+	_usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamVaryingBField.get() ) );
+	_exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
+        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamVaryingBField.get(), stepDownstreamMinimum									    , _exactDownstreamHelix.get() ));
+        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamVaryingBField.get(), 
+										   _chordDownstreamFinder.get(), true));
+
+      }
+    if (detSolFieldForm == detSolUpVaryingDownConstant)
+      {
+	cout << "in hybrid " << endl;
+	//
+	//upstream varying section
+	_detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
+	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
+	_exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
+        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
+									    , _exactUpstreamHelix.get() ));
+        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
+										 _chordUpstreamFinder.get(), true));
+
+	//downstream constant section
+	G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
+	_detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
+	_usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get()) );
+	_exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
+        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
+									      , _exactDownstreamHelix.get() ));
+        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamConstantBField.get(), 
+										   _chordDownstreamFinder.get(), true));
+      }
+
+    if (detSolFieldForm == detSolUpConstantDownConstant) 
+      {
+	cout << "in constant field" << endl;
+	//
+	// constant field, but split into two parts; upstream first
+	G4double bzUp = _config->getDouble("toyDS.bz") * tesla;
+	_detSolUpstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzUp)));
+	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamConstantBField.get() ) );
+	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamConstantBField.get() ) );
+	_exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
+        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamConstantBField.get(), stepUpstreamMinimum
+										, _exactUpstreamHelix.get() ));
+        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamConstantBField.get(), 
+										 _chordUpstreamFinder.get(), true));
+	//downstream
+	G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
+	_detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
+	_usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get() ) );
+	_usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get() ) );
+	_exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
+        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
+										, _exactDownstreamHelix.get() ));
+        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamConstantBField.get(), 
+										   _chordDownstreamFinder.get(), true));
+      }
+
+
+    // Now that we've chosen, attach the field manager to the detSol volume; full field upstream
+    detSolUpstreamVacInfo.logical->SetFieldManager( _fieldUpstreamMgr.get(), true);
+    detSolDownstreamVacInfo.logical->SetFieldManager( _fieldDownstreamMgr.get(), true);
+
+    //and do bookkeeping
+    double oldUpstreamDeltaI = _fieldUpstreamMgr->GetDeltaIntersection();
+    double newUpstreamDeltaI = 0.00001;
+    double oldDownstreamDeltaI = _fieldDownstreamMgr->GetDeltaIntersection();
+    double newDownstreamDeltaI = 0.00001;
+
+    _fieldUpstreamMgr->SetDeltaIntersection(newUpstreamDeltaI);    
+    _fieldDownstreamMgr->SetDeltaIntersection(newDownstreamDeltaI);    
+    log << "Setting Delta Intersection Upstream: "  
+	<< "Old value: " << oldUpstreamDeltaI
 	<< "  New value: " 
-	<< _fieldMgr->GetDeltaIntersection() 
+	<< _fieldUpstreamMgr->GetDeltaIntersection() 
 	<< "\n";
     
-    // Attach the field manager to the detSol volume.
-    detSolVacInfo.logical->SetFieldManager( _fieldMgr.get(), true);
+
+    log << "Setting Delta Intersection Downstream: "  
+	<< "Old value: " << oldDownstreamDeltaI
+	<< "  New value: " 
+	<< _fieldDownstreamMgr->GetDeltaIntersection() 
+	<< "\n";
+
     
     // Set step limit.  
     // See also PhysicsList.cc to add a steplimiter to the list of processes.
     // Do this so that we can see the helical trajectory in the DS and volumes inside of it.
     G4double maxStep = 20.;
     _stepLimit = auto_ptr<G4UserLimits>( new G4UserLimits(maxStep));
-    detSolVacInfo.logical->SetUserLimits(_stepLimit.get());
+    detSolUpstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
+    detSolDownstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
+
     trackerInfo.logical->SetUserLimits(_stepLimit.get());
     targetInfo.logical->SetUserLimits(_stepLimit.get());
 

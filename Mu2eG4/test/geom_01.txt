@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.7 2010/02/05 11:48:13 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2010/02/05 11:48:13 $
+// $Id: geom_01.txt,v 1.8 2010/02/08 21:35:26 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/02/08 21:35:26 $
 //
 // Original author Rob Kutschke
 
@@ -17,6 +17,10 @@ bool hasHall     = true;
 bool hasTarget   = true;
 bool hasLTracker = true;
 bool hasITracker = false;
+
+//form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
+int detSolFieldForm = 2;
+
 
 // Print a copy of this file to the job log.
 bool printConfig = false;

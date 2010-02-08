@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.3 2010/02/05 11:46:00 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2010/02/05 11:46:00 $
+// $Id: Mu2eWorld.hh,v 1.4 2010/02/08 21:34:08 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/02/08 21:34:08 $
 //
 // Original author Rob Kutschke
 //
@@ -15,6 +15,7 @@
 
 // Forward references.
 class G4Material;
+class DSField;
 class G4UniformMagField;
 class G4Mag_UsualEqRhs;
 class G4ExactHelixStepper;
@@ -102,12 +103,37 @@ namespace mu2e {
     // Physical volumes
     //G4VPhysicalVolume* _worldPhys;
 
-    std::auto_ptr<G4UniformMagField>   _detSolBField;
-    std::auto_ptr<G4Mag_UsualEqRhs>    _usualRHS;
-    std::auto_ptr<G4ExactHelixStepper> _exactHelix;
-    std::auto_ptr<G4ChordFinder>       _chordFinder;
-    std::auto_ptr<G4FieldManager>      _fieldMgr;
+
+    //keep these for future use
+    std::auto_ptr<G4UniformMagField>   _detSolUpstreamBField;
+    std::auto_ptr<G4UniformMagField>   _detSolDownstreamBField;
+
+    //enum to pick field form
+    enum detSolFieldChoice {detSolFullField,detSolUpVaryingDownConstant,detSolUpConstantDownConstant};
+
+    //
+    //if you want to use constant field
+    std::auto_ptr<G4UniformMagField>   _detSolUpstreamConstantBField;
+    std::auto_ptr<G4UniformMagField>   _detSolDownstreamConstantBField;
+    //
+    //varying field
+    std::auto_ptr<DSField>   _detSolUpstreamVaryingBField;
+    std::auto_ptr<DSField>   _detSolDownstreamVaryingBField;
+
+    //need these in both cases
+    std::auto_ptr<G4Mag_UsualEqRhs>    _usualUpstreamRHS;
+    std::auto_ptr<G4ExactHelixStepper> _exactUpstreamHelix;
+    std::auto_ptr<G4ChordFinder>       _chordUpstreamFinder;
+    std::auto_ptr<G4FieldManager>      _fieldUpstreamMgr;
+    std::auto_ptr<G4Mag_UsualEqRhs>    _usualDownstreamRHS;
+    std::auto_ptr<G4ExactHelixStepper> _exactDownstreamHelix;
+    std::auto_ptr<G4ChordFinder>       _chordDownstreamFinder;
+    std::auto_ptr<G4FieldManager>      _fieldDownstreamMgr;
     std::auto_ptr<G4UserLimits>        _stepLimit;
+    std::auto_ptr<G4UserLimits>        _stepUpstreamLimit;
+    std::auto_ptr<G4UserLimits>        _stepDownstreamLimit;
+
+
 
     std::auto_ptr<G4AssemblyVolume>    _lTrackerWedgeAssembly;
     std::auto_ptr<G4AssemblyVolume>    _lTrackerVaneAssembly;
