@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.6 2010/02/08 21:33:27 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/02/08 21:33:27 $
+// $Id: Mu2eWorld.cc,v 1.7 2010/02/11 12:24:16 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2010/02/11 12:24:16 $
 //
 // Original author Rob Kutschke
 //
@@ -624,30 +624,32 @@ namespace mu2e {
       } else {
 	trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
       }
-    } else{
+    } else if ( _config->getBool("hasITracker",false) ) {
+    	trackerInfo = constructITracker( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
+    } else {
 
-      // Make a TUBs to represent the tracking volume.
-      // Add detail later.
-      // A hack here - should get numbers via the geometry system.
-      double trackerParams[5] = { 
-	0.,
-	800.,
-	1300.,
-	0.,
-	2.*M_PI
-      };
+    	// Make a TUBs to represent the tracking volume.
+    	// Add detail later.
+    	// A hack here - should get numbers via the geometry system.
+    	double trackerParams[5] = {
+    			0.,
+    			800.,
+    			1300.,
+    			0.,
+    			2.*M_PI
+    	};
 
-      //
-      //tracker is associated with downstream constant section -- that's the point
-      G4Material*    trackerMaterial = detSolDownstreamVacMaterial;
+    	//
+    	//tracker is associated with downstream constant section -- that's the point
+    	G4Material*    trackerMaterial = detSolDownstreamVacMaterial;
 
-      //
-      // this doesn't need to change -- the tracker doesn't move.
-      // however, it really should be computed
- 
-      double trackerCenterInZ = 12000. - dsz0 - 1800.;
-      G4ThreeVector trackerOffset(0.,0.,trackerCenterInZ);
-      /*      
+    	//
+    	// this doesn't need to change -- the tracker doesn't move.
+    	// however, it really should be computed
+
+    	double trackerCenterInZ = 12000. - dsz0 - 1800.;
+    	G4ThreeVector trackerOffset(0.,0.,trackerCenterInZ);
+    	/*
            cout << "tracker center in Z " << trackerCenterInZ << "\n" 
 	   <<trackerParams[0] << "\n " 
 	   <<trackerParams[1] << "\n " 
@@ -655,22 +657,22 @@ namespace mu2e {
 	   <<trackerParams[3] << "\n" 
 	   <<trackerParams[4] << "\n" 
 	   <<endl;
-      */
-    if ( (trackerCenterInZ - trackerParams[2]) < transitionZ)
-      { cout << "from Mu2eWorld:  transition Z in the middle of the tracker, fool..." << endl;
-	assert(2==1);
-      }
+    	 */
+    	if ( (trackerCenterInZ - trackerParams[2]) < transitionZ)
+    	{ cout << "from Mu2eWorld:  transition Z in the middle of the tracker, fool..." << endl;
+    	assert(2==1);
+    	}
 
-      trackerInfo = nestTubs( "TrackerMother",
-			      trackerParams,
-			      trackerMaterial,
-			      0,
-			      trackerOffset,
-			      detSolDownstreamVacInfo.logical,
-			      0,
-			      G4Color::Yellow(),
-			      true
-			      );
+    	trackerInfo = nestTubs( "TrackerMother",
+    			trackerParams,
+    			trackerMaterial,
+    			0,
+    			trackerOffset,
+    			detSolDownstreamVacInfo.logical,
+    			0,
+    			G4Color::Yellow(),
+    			true
+    	);
 
 
     }
