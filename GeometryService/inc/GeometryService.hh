@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: GeometryService.hh,v 1.2 2010/02/11 15:45:43 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/02/11 15:45:43 $
 //
 // Original author Rob Kutschke
 //
@@ -39,20 +39,26 @@ public:
     
     void preBeginRun( edm::RunID const& id, edm::Timestamp const& ts);
 
-    // A test method.
-    std::string getInfo() const{ return "Here is a string"; }
-
-#if 0
-    // I don't like these access methods but they are what we have for now.
-    bool hasTarget() const { return (target_ !=0);}
-    bool hasCTracker() const { return (ctracker_ !=0);}
-    // Some detector elements we have not yet defined.
-    bool hasECal()       const { return false;}
-    bool hasCosmicVeto() const { return false;}
-    bool hasBeamLine()   const { return false;}
-#endif
-
     SimpleConfig const& config() const { return *_config;}
+
+    template <class DET>
+    bool hasElement()
+    {
+      if(_run_count==0) 
+	throw cms::Exception("GEOM")
+	  << "Cannot get detectors from an unconfigured geometry service.\n"
+	  << "You've attempted to a get an element before the first run\n";
+      
+      // to use this generic way requires a map of names (typeid?) to
+      // abstract elements.
+      // find the detector element requested
+      std::string name = typeid(DET).name();
+      DetMap::iterator it(_detectors.find(name));
+
+      return !(it==_detectors.end());
+
+    }
+
 
 private:
 
