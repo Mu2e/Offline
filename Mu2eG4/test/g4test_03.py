@@ -1,8 +1,8 @@
 # Configuration file for G4Test03
 #
-# $Id: g4test_03.py,v 1.3 2009/11/12 21:00:37 kutschke Exp $
+# $Id: g4test_03.py,v 1.4 2010/02/11 15:47:26 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/11/12 21:00:37 $
+# $Date: 2010/02/11 15:47:26 $
 #
 # Original author Rob Kutschke
 #
@@ -70,7 +70,8 @@ process.outfile = mu2e.OutputModule(
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
-    maxFullPrint = mu2e.untracked.int32(5)
+    minimumEnergy = mu2e.double(0.0),
+    maxFullPrint  = mu2e.untracked.int32(5)
 )
 
 # End of the section that defines and configures modules.

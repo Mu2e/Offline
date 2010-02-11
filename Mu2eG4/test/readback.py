@@ -1,8 +1,8 @@
 # Configuration file for Readback
 #
-# $Id: readback.py,v 1.3 2009/11/12 21:01:45 kutschke Exp $
+# $Id: readback.py,v 1.4 2010/02/11 15:47:33 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/11/12 21:01:45 $
+# $Date: 2010/02/11 15:47:33 $
 #
 # Original author Rob Kutschke
 #
@@ -49,22 +49,15 @@ process.source = mu2e.Source("PoolSource",
 )
 
 # Look at the hits from G4.
+#  - minimum energy is in MeV
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
-    maxFullPrint = mu2e.untracked.int32(10)
+    minimumEnergy = mu2e.double(0.001),
+    maxFullPrint = mu2e.untracked.int32(3)
 )
 
 # End of the section that defines and configures modules.
 
-
-# Adjust configuration of message logger.
-# Enable debug printout from the module instance "hitinspect".
-# Print unlimited messages with category ToyHitInfo.
-process.MessageLogger.cerr.threshold = mu2e.untracked.string('DEBUG')
-process.MessageLogger.debugModules.append("hitinspect")
-process.MessageLogger.categories.append("ToyHitInfo")
-process.MessageLogger.categories.append("GEOM")
-
-# Tell the system to execute all paths.
+# Tell the system to execute the module.
 process.output = mu2e.EndPath(  process.checkhits );
 
