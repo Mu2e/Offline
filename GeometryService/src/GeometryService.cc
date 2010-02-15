@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.2 2010/02/05 11:44:49 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2010/02/05 11:44:49 $
+// $Id: GeometryService.cc,v 1.3 2010/02/15 17:00:48 shanahan Exp $
+// $Author: shanahan $ 
+// $Date: 2010/02/15 17:00:48 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,7 @@
 // Mu2e include files
 #include "GeometryService/inc/GeometryService.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "TargetGeom/inc/TargetMaker.hh"
 #include "CTrackerGeom/inc/CTracker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "LTrackerGeom/inc/LTrackerMaker.hh"
@@ -68,9 +69,10 @@ namespace mu2e {
     // Throw if the configuration 
     checkConfig();
 
-    // Make a detector for every compoment present in the configuration.
+    // Make a detector for every component present in the configuration.
     if(_config->getBool("hasTarget",false)){
-      addDetector( std::auto_ptr<Target>(new Target(*_config)) );
+      TargetMaker targm( *_config );
+      addDetector( targm.getTargetPtr() );
     }
 
     if(_config->getBool("hasCTracker",false)){
