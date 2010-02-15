@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.7 2010/02/11 12:24:16 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2010/02/11 12:24:16 $
+// $Id: Mu2eWorld.cc,v 1.8 2010/02/15 17:03:57 shanahan Exp $
+// $Author: shanahan $ 
+// $Date: 2010/02/15 17:03:57 $
 //
 // Original author Rob Kutschke
 //
@@ -51,6 +51,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
+#include "TargetGeom/inc/Target.hh"
+
 
 // G4 includes
 #include "G4AssemblyVolume.hh"
@@ -677,20 +679,27 @@ namespace mu2e {
 
     }
 
-    // Make a TUBs to represent the target system.
-    // Add detail later.
-    // A hack here - should get numbers via the geometry system.
-    double targetParams[5] = { 
-      0.,
-      100.,
-      400.,
-      0.,
-      2.*M_PI
-    };
+    // Do the Target
 
-    G4Material*   targetMaterial = detSolUpstreamVacMaterial;
+    VolumeInfo targetInfo;
 
-    //
+    if( _config->getBool("hasTarget",false) ){
+
+	targetInfo = constructTarget( detSolUpstreamVacInfo.logical, 
+                        dsz0 + centerOfUpstreamDSVac );
+
+    } else {
+      // Make a TUBs to represent the target system.
+      // Add detail later.
+      // A hack here - should get numbers via the geometry system.
+      double targetParams[5] = { 
+        0.,
+        100.,
+        400.,
+        0.,
+        2.*M_PI
+      };
+
     // 12000 - dsz0 - 6100 is from kutschke when the mother of the target was detSolVacInfo;
     double targetCenterInZ = 12000. - dsz0 - 6100. - centerOfUpstreamDSVac;
     G4ThreeVector targetOffset(0.,0.,targetCenterInZ);
@@ -704,26 +713,25 @@ namespace mu2e {
 	   <<targetParams[4] << "\n" 
 	   <<endl;
 
-      //this code may or may not work since this is all a horrible hack with hardwired numbers everywhere;
-      //highly suggest you run Mu2eG4/test/g4test_02.py and look to see everything is in the right place...
       if ( (targetCenterInZ + targetParams[2])+centerOfUpstreamDSVac > transitionZ)
-	{ cout << "from Mu2eWorld:  transition Z in the middle of the target, idiot..." << endl;
-	  assert(2==1);
+	{ cout << "from Mu2eWorld:  transition Z in the middle of the target, idiot (Bernstein!)..." << endl;
+	  assert(false);
 	}
 
-
-    VolumeInfo targetInfo = nestTubs( "TargetMother",
+      G4Material*   targetMaterial = detSolUpstreamVacMaterial;
+      targetInfo = nestTubs( "TargetMother",
 				       targetParams,
 				       targetMaterial,
 				       0,
 				       targetOffset,
-				      //don't use detSolVacInfo.logical!  it doesn't exist..
 				       detSolUpstreamVacInfo.logical,
 				       0,
 				       G4Color::Yellow(),
 				       true
 				       );
+    } //hasTarget
 
+    // Target done.
 
     // Only after all volumes have been defined should we set the magnetic fields.
     // Make the magnetic field valid inside the detSol vacuum; one upstream, one downstream
@@ -1542,4 +1550,110 @@ VolumeInfo Mu2eWorld::builbWire(float radius, float length, char *shapeName, cha
     return wire;
   }
 
+  VolumeInfo Mu2eWorld::constructTarget( G4LogicalVolume* mother, double zOff ){
+
+std::cout<<"In constructTarget"<<std::endl;
+    // Master geometry for the Target assembly
+    GeomHandle<Target> target;
+
+    double rOut  = mm * target->cylinderRadius();
+    double zHalf = mm * target->cylinderLength()/2.;
+
+    // center in detector coords, assumed to be on axis
+    double z0    = mm * target->cylinderCenter();
+
+    VolumeInfo targetInfo;
+
+    // Make the mother volume for the Target
+    string targetName("TargetMother");
+std::cout<<"Looking for material "<<target->fillMaterial()<<std::endl;
+    G4Material* fillMaterial = findMaterialOrThrow(target->fillMaterial());
+std::cout<<"Done Looking for material "<<target->fillMaterial()<<std::endl;
+    G4ThreeVector targetOffset(0.,0.,(12000+z0-zOff));
+
+    cout << "Target Offset: z0, zOff, z0-zOff: " 
+	 << z0 << " "
+	 << zOff << " "
+	 << z0-zOff << " "
+	 << endl;
+   
+
+
+    targetInfo.solid  = new G4Tubs( targetName,
+				     0., rOut, zHalf, 0., 2.*M_PI );
+    
+    targetInfo.logical = new G4LogicalVolume( targetInfo.solid, fillMaterial, targetName); 
+    
+std::cout<<"targetOffset="<<targetOffset<<std::endl;
+std::cout<<"mother has "<<mother->GetNoDaughters()<<" daughters"<<std::endl;
+std::cout<<" they are:"<<std::endl;
+for (int id=0; id<mother->GetNoDaughters(); id++) cout<<id<<"="<<
+      mother->GetDaughter(id)->GetName()<<" at "<<mother->GetDaughter(id)->GetTranslation()<<std::endl;
+    targetInfo.physical =  new G4PVPlacement( 0, 
+					       targetOffset, 
+					       targetInfo.logical, 
+					       targetName, 
+					       mother, 
+					       0, 
+					       0);
+
+    // Visualization attributes of the the mother volume.
+    {
+      // i.e., none...
+      G4VisAttributes* visAtt = new G4VisAttributes(false);
+      targetInfo.logical->SetVisAttributes(visAtt);
+    }
+
+    // now create the individual targets
+
+    for (unsigned int itf=0; itf<target->nFoils(); itf++)
+    {
+
+        TargetFoil foil=target->foil(itf);
+        VolumeInfo foilInfo;
+        G4Material* foilMaterial = findMaterialOrThrow( foil.material() );
+        string foilName("Foil");
+
+        foilInfo.solid = new G4Tubs(foilName
+                                   ,foil.rIn()
+                                   ,foil.rOut()
+                                   ,foil.halfThickness()
+                                   ,0.
+                                   ,CLHEP::twopi*radian
+                                   );
+
+        foilInfo.logical = new G4LogicalVolume( foilInfo.solid
+                                              , foilMaterial
+                                              , foilName
+                                              );
+
+        // rotation matrix... 
+        G4RotationMatrix* rot = 0; //... will have to wait
+
+        G4ThreeVector foilOffset(foil.center()-G4ThreeVector(0.,0.,z0));
+ cout<<"foil "<<itf<<" center="<<foil.center()<<", offset="<<foilOffset<<endl;
+
+        G4VPhysicalVolume* phys = new G4PVPlacement( rot
+                                                   , foilOffset
+                                                   , foilInfo.logical
+                                                   , "TargetFoil_"
+                                                   , targetInfo.logical
+                                                   , 0
+                                                   , itf
+                                                   );
+
+        G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Magenta() );
+        visAtt->SetForceSolid(true);
+        visAtt->SetForceAuxEdgeVisible (false);
+        visAtt->SetVisibility(true);
+        foilInfo.logical->SetVisAttributes(visAtt);
+       
+
+
+
+    }// target foils
+
+    return targetInfo;
+
+  }
 } // end namespace mu2e

@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.4 2010/02/08 21:34:08 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/02/08 21:34:08 $
+// $Id: Mu2eWorld.hh,v 1.5 2010/02/15 17:03:57 shanahan Exp $
+// $Author: shanahan $ 
+// $Date: 2010/02/15 17:03:57 $
 //
 // Original author Rob Kutschke
 //
@@ -70,6 +70,8 @@ namespace mu2e {
     VolumeInfo constructLTracker  ( G4LogicalVolume* mother, double zOff );
     VolumeInfo constructLTrackerv2( G4LogicalVolume* mother, double zOff );
     VolumeInfo constructLTrackerv3( G4LogicalVolume* mother, double zOff );
+
+    VolumeInfo constructTarget( G4LogicalVolume* mother, double zOff );
 
     VolumeInfo Mu2eWorld::constructITracker( G4LogicalVolume* mother, double zOff );
     VolumeInfo builbWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses);

@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.8 2010/02/08 21:35:26 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/02/08 21:35:26 $
+// $Id: geom_01.txt,v 1.9 2010/02/15 17:03:57 shanahan Exp $
+// $Author: shanahan $
+// $Date: 2010/02/15 17:03:57 $
 //
 // Original author Rob Kutschke
 
@@ -223,17 +223,60 @@ vector<double> itracker.endcapWallShellsThicknesses = { 0.002, 5.0 };
 
 double tracker.rMagnet       = 850.; 
 
+//
 // Describe targets.  
+//
+
+// material around the targets
+string         target.fillMaterial    = "WAGVacuum";
+
 // All dimensions in mm in the detector coordinate system.
 // (0,0,0) = on axis in the DS at z=12000. mm
 double target.z0             = -6100.0;
 double target.deltaZ         =    50.0;
-double target.halfThickness  =     0.1;
+
+// all radii must be specified, i.e., nFoils is determined from the size 
+// of the radii vector.
 vector<double> target.radii  = 
     { 100.000, 82.168, 81.288, 80.378, 79.438,
        78.467, 77.463, 76.425, 75.352, 74.241,
        73.093, 71.904, 70.674, 69.401, 68.082,
        66.716, 65.300 };
+
+// last material given will be repeated up to number radii.size()
+vector<string> target.materials =
+    { "G4_Al"};
+
+// Variation of locations of foil centers 
+// z: variations from equal spacings according to z0 and deltaZ
+// last will be repeated...
+vector<double> target.zVars  =    
+    { 0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0. };
+
+// x: relative to beam axis
+// last will be repeated...
+vector<double> target.xVars  =    
+    { 0.};
+
+// y: relative to beam axis
+// last will be repeated...
+vector<double> target.yVars  =    
+    { 0. };
+
+// last thickness given will be repeated up to number radii.size()
+vector<double> target.halfThicknesses  =    
+    {0.1};
+
+// last x directional cosine given will be repeated up to number radii.size()
+vector<double> target.xCos  =    
+    { 0.};
+
+// last y directional cosine given will be repeated up to number radii.size()
+vector<double> target.yCos  =    
+    { 0.};
 
 //
 //
