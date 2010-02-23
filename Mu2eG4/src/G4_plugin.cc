@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.9 2010/02/06 22:17:51 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/02/06 22:17:51 $
+// $Id: G4_plugin.cc,v 1.10 2010/02/23 20:49:25 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/02/23 20:49:25 $
 //
 // Original author Rob Kutschke
 //
@@ -13,6 +13,7 @@
 // 1) According to Sunanda Banerjee, the various SetUserAction methods
 //    take ownership of the object that is passed to it.  So we must
 //    not delete them.
+// 
 
 // C++ includes.
 #include <iostream>
@@ -43,6 +44,7 @@
 #include "G4NistManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4SDManager.hh"
+#include "G4PhysListFactory.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
@@ -153,11 +155,23 @@ namespace mu2e {
     WorldMaker* allMu2e    = new WorldMaker();
     _runManager->SetUserInitialization(allMu2e);
 
-    // Define the physics list.
+    // Define the physics list. QGSP_BERT_HP currently is not installed
+    // 2/23/10
+
     bool fullPhysics = config.getBool("g4.fullPhysics",true);
-    G4VUserPhysicsList* physics = fullPhysics ?
-      dynamic_cast<G4VUserPhysicsList*>(new PhysicsList(config) ) :
-      dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList() );
+    G4VUserPhysicsList* physics = 0;
+
+    if (fullPhysics)
+      {
+	G4PhysListFactory* physListFactory = new G4PhysListFactory();
+	string nameOfPhysicsList = config.getString("g4.fullPhysicsList",
+						    "QGSP_BERT");
+	physics = physListFactory->GetReferencePhysList(nameOfPhysicsList);
+      }
+    else 
+      {
+	physics = dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList() );
+      }
     _runManager->SetUserInitialization(physics);
 
     _genAction = new PrimaryGeneratorAction;
