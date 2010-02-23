@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2009/09/30 22:57:47 $
+# $Id: setup.sh,v 1.2 2010/02/23 20:50:26 rhbob Exp $
+# $Author: rhbob $
+# $Date: 2010/02/23 20:50:26 $
 #
 # Original author Rob Kutschke
 #
@@ -23,3 +23,11 @@ source  bin/setup_mu2e_project.sh
 
 # Geant is not yet in the externals package; get it from ups.
 setup geant4 v4_9_2_p01 -q g77-OpenGL
+
+# various G4 cross-section data files
+
+setup g4neutron   v3_13
+setup g4emlow     v6_2
+setup g4photon    v2_0
+setup g4radiative v3_2
+setup g4abla      v3_0
