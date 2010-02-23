@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.10 2010/02/23 20:49:25 rhbob Exp $
+// $Id: G4_plugin.cc,v 1.11 2010/02/23 21:09:32 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/02/23 20:49:25 $
+// $Date: 2010/02/23 21:09:32 $
 //
 // Original author Rob Kutschke
 //
@@ -155,6 +155,15 @@ namespace mu2e {
     WorldMaker* allMu2e    = new WorldMaker();
     _runManager->SetUserInitialization(allMu2e);
 
+
+    // Define the physics list.
+    bool fullPhysics = config.getBool("g4.fullPhysics",true);
+    G4VUserPhysicsList* physics = fullPhysics ?
+      dynamic_cast<G4VUserPhysicsList*>(new PhysicsList(config) ) :
+      dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList() );
+    _runManager->SetUserInitialization(physics);
+
+    /*
     // Define the physics list. QGSP_BERT_HP currently is not installed
     // 2/23/10
 
@@ -173,7 +182,7 @@ namespace mu2e {
 	physics = dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList() );
       }
     _runManager->SetUserInitialization(physics);
-
+    */
     _genAction = new PrimaryGeneratorAction;
     _runManager->SetUserAction(_genAction);
 
