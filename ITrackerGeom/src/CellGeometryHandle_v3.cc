@@ -4,7 +4,7 @@ namespace mu2e {
 
 CellGeometryHandle_v3::CellGeometryHandle_v3(ITracker *itr) {
 	_itr = itr;
-	_nLayer = _itr->nSuperLayer();
+	_nLayer = _itr->nSuperLayers();
 	_nLayer--;
 }
 
