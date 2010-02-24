@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <map>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
@@ -11,11 +12,13 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "ITrackerGeom/inc/SuperLayerInfo.hh"
 #include "ITrackerGeom/inc/SuperLayer.hh"
+#include "ITrackerGeom/inc/Wall.hh"
 
 namespace mu2e {
 
 class ITracker;
 class SimpleConfig;
+//class Wall;
 
 class ITrackerMaker{
 
@@ -29,7 +32,7 @@ public:
 
 private:
 
-  void BuildIt();
+  void Build();
   void ITFldWireLocater ( boost::shared_ptr<WireDetail> &wdetail, boost::shared_ptr<ITLayer> &itl/*ITLayer *itl*/, int NofWire, double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha );
   void ITWireLocater ( boost::shared_ptr<WireDetail> &wdetaill, Wire::Wtype wireType, boost::shared_ptr<ITLayer> &itl/*ITLayer *itl*/, int NofWire, double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha, int copyNunOffset=0, boost::shared_ptr<CellDetail> *celldetail = NULL );
 
@@ -56,6 +59,8 @@ private:
   int _endCapType;			//EndCap shape type: 0 plane, 1 spherical
   double _voxFactor;		//voxelization optimization factor
   bool _notExtVoxel;
+  bool _displayGasLayer;	//Allow to display the gas inside the chamber
+  bool _displayWires;		//Allow to display every wires inside gas inside the chamber.
 
   double _z0;				//Shift along z of the center of the tracker
 
@@ -75,18 +80,8 @@ private:
   std::vector<double> _fwShellsThicknesses;
   std::vector<double> _swShellsThicknesses;
 
-  //Walls dimensions and materials composition
-  double _innerWallThickness;
-  double _outerWalThickness;
-  double _endcapWallThickness;
-  // Names of the materials of the walls.
-  std::vector<std::string> _innrwMaterialsName;
-  std::vector<std::string> _otrwMaterialsName;
-  std::vector<std::string> _endcpwMaterialsName;
-
-  std::vector<double> _innrwShellsThicknesses;
-  std::vector<double> _otrwShellsThicknesses;
-  std::vector<double> _endcpwShellsThicknesses;
+  //Walls descriptions
+  std::multimap<Wall::Walltype,Wall* > _walls;
 
   // Center of the tracker.
   CLHEP::Hep3Vector _center;

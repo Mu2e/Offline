@@ -59,18 +59,21 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
 	if ( _extFile.size()>1 && ( _extFile.find_last_of(".gdml") || _extFile.find_last_of(".GDML") )!=0 ) _isExternal = true;
 	_extWireFile  = config.getString("itracker.extWireFile");
 	if ( _isExternal && _extWireFile.size()<1 ) throw cms::Exception("GEOM")<< "Using the external geometry file you have to insert the file name for the Wire Rotation matrix data\n";
-	_r0           = config.getDouble("itracker.r0");
-	_z0           = config.getDouble("itracker.z0");
-	_halfLength   = config.getDouble("itracker.zHalfLength");
-	_rOut         = config.getDouble("itracker.rOut");
-	_drop         = config.getDouble("itracker.drop");
-	_fillMaterial = config.getString("itracker.fillMaterial");
+	_r0           	= config.getDouble("itracker.r0");
+	_z0           	= config.getDouble("itracker.z0");
+	_halfLength   	= config.getDouble("itracker.zHalfLength");
+	_rOut         	= config.getDouble("itracker.rOut");
+	_drop         	= config.getDouble("itracker.drop");
+	_fillMaterial 	= config.getString("itracker.fillMaterial");
 
-	_geomType     = config.getInt("itracker.geomType");
-	_endCapType   = config.getInt("itracker.endCapType");
-	_voxFactor    = config.getDouble("itracker.voxelization");
+	_geomType     	= config.getInt("itracker.geomType");
+	_endCapType   	= config.getInt("itracker.endCapType");
+	_voxFactor    	= config.getDouble("itracker.voxelization");
 	if (_voxFactor<0) _notExtVoxel=true;
 	else  _notExtVoxel=false;
+
+	_displayGasLayer= config.getBool("itracker.displayGasLayer",false);
+	_displayWires	= config.getBool("itracker.displayWires",false);
 
 	_nSWire         = config.getInt("itracker.nSWire",-1);
 	_nSDeltaWire    = config.getInt("itracker.nSDeltaWire",-1);
@@ -101,39 +104,43 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
 		_sWireDiameter+=_swShellsThicknesses.at(is);
 	}
 
+	_walls.insert( pair<Wall::Walltype,Wall*>(Wall::inner,new Wall(Wall::inner)) );
 	nWallShells   = config.getInt("itracker.nInnerWallShells");
-	config.getVectorString("itracker.innerWallMaterials", _innrwMaterialsName, nWallShells);
-	config.getVectorDouble("itracker.innerWallShellsThicknesses", _innrwShellsThicknesses, nWallShells);
-	_innerWallThickness = 0.0;
-	for (int is = 0; is < nWallShells; ++is) {
-		_innerWallThickness += _innrwShellsThicknesses.at(is);
-	}
+	std::vector<std::string> *tempWallMaterialsName = new std::vector<std::string>();
+	std::vector<double> *tempWallShellsThicknesses = new std::vector<double>();
+	config.getVectorString("itracker.innerWallMaterials", *tempWallMaterialsName, nWallShells);
+	config.getVectorDouble("itracker.innerWallShellsThicknesses", *tempWallShellsThicknesses, nWallShells);
+	multimap<Wall::Walltype,Wall* >::iterator walls_it;
+	walls_it=_walls.begin();
+	walls_it->second->addMaterials(nWallShells,tempWallMaterialsName,tempWallShellsThicknesses);
 
+	_walls.insert( pair<Wall::Walltype,Wall*>(Wall::outer,new Wall(Wall::outer)) );
 	nWallShells   = config.getInt("itracker.nOuterWallShells");
-	config.getVectorString("itracker.outerWallMaterials", _otrwMaterialsName, nWallShells);
-	config.getVectorDouble("itracker.outerWallShellsThicknesses", _otrwShellsThicknesses, nWallShells);
-	_outerWalThickness = 0.0;
-	for (int is = 0; is < nWallShells; ++is) {
-		_outerWalThickness += _otrwShellsThicknesses.at(is);
-	}
+	tempWallMaterialsName = new std::vector<std::string>();
+	tempWallShellsThicknesses = new std::vector<double>();
+	config.getVectorString("itracker.outerWallMaterials", *tempWallMaterialsName, nWallShells);
+	config.getVectorDouble("itracker.outerWallShellsThicknesses", *tempWallShellsThicknesses, nWallShells);
+	walls_it++;
+	walls_it->second->addMaterials(nWallShells,tempWallMaterialsName,tempWallShellsThicknesses);
 
+	_walls.insert( pair<Wall::Walltype,Wall*>(Wall::endcap,new Wall(Wall::endcap)) );
 	nWallShells   = config.getInt("itracker.nEndCapWallShells");
-	config.getVectorString("itracker.endcapWallMaterials", _endcpwMaterialsName, nWallShells);
-	config.getVectorDouble("itracker.endcapWallShellsThicknesses", _endcpwShellsThicknesses, nWallShells);
-	_endcapWallThickness = 0.0;
-	for (int is = 0; is < nWallShells; ++is) {
-		_endcapWallThickness += _endcpwShellsThicknesses.at(is);
-	}
+	tempWallMaterialsName = new std::vector<std::string>();
+	tempWallShellsThicknesses = new std::vector<double>();
+	config.getVectorString("itracker.endcapWallMaterials", *tempWallMaterialsName, nWallShells);
+	config.getVectorDouble("itracker.endcapWallShellsThicknesses", *tempWallShellsThicknesses, nWallShells);
+	walls_it++;
+	walls_it->second->addMaterials(nWallShells,tempWallMaterialsName,tempWallShellsThicknesses);
 
 	// Do the real work.
-	BuildIt( );
+	Build( );
 }
 
 
 
 ITrackerMaker::~ITrackerMaker (){}
 
-void ITrackerMaker::BuildIt(){
+void ITrackerMaker::Build(){
 
 	_ltt = auto_ptr<ITracker>(new ITracker());
 	_ltt->_isExternal = _isExternal;
@@ -154,19 +161,27 @@ void ITrackerMaker::BuildIt(){
 
 	} else {
 
-		_ltt->_nSWire     = _nSWire;
-		_ltt->_nSDeltaWire= _nSDeltaWire;
-		_ltt->_nSuperLayer= _nSuperLayer;
-		_ltt->_nRing      = _nRing;
+		Wall *tmpInnerWall, *tmpOuterWall, *tmpEndCapWall;
 
-		_ltt->_r0         = _r0;
-		_ltt->_z0         = _z0;
-		_ltt->_rOut       = _rOut;
+		_ltt->_nSWire     	= _nSWire;
+		_ltt->_nSDeltaWire	= _nSDeltaWire;
+		_ltt->_nSuperLayers	= _nSuperLayer;
+		_ltt->_nRing      	= _nRing;
 
-		_ltt->_zHalfLength= _halfLength;
+		_ltt->_r0        	= _r0;
+		_ltt->_z0         	= _z0;
+		_ltt->_rOut       	= _rOut;
 
-		SuperLayer *_sprlr =new SuperLayer[_nSuperLayer];
+		_ltt->_zHalfLength	= _halfLength;
 
+		_ltt->_displayGasLayer	= _displayGasLayer;
+		_ltt->_displayWires		= _displayWires;
+
+		SuperLayer *_sprlr 	= new SuperLayer[_nSuperLayer];
+
+		tmpInnerWall		= _walls.find(Wall::inner)->second;
+		tmpOuterWall		= _walls.find(Wall::outer)->second;
+		tmpEndCapWall		= _walls.find(Wall::endcap)->second;
 
 		//------------------------------------------------------------------------------
 
@@ -175,23 +190,23 @@ void ITrackerMaker::BuildIt(){
 		double outer_radius              =	_rOut					;
 		double fieldwire_diameter        =	_fWireDiameter			;
 		double sensewire_diameter        =	_sWireDiameter			;
-		double envelop_Inner_thickness   =	_innerWallThickness		;
-		double envelop_Outer_thickness   =	_outerWalThickness		;
-		double envelop_EndCap_thickness  =	_endcapWallThickness	;
+		double envelop_Inner_thickness   =	tmpInnerWall->getTotalThickness();
+		double envelop_Outer_thickness   =	tmpOuterWall->getTotalThickness();
+		double envelop_EndCap_thickness  =	tmpEndCapWall->getTotalThickness();
 		double extra_EndCap_dist         							;
 
-		int   num_wire_sense            =	_nSWire					;
+		int   num_wire_sense             =	_nSWire					;
 
-		int   delta_num_wire_sense      =	_nSDeltaWire			;
-		int   nsuperlayer               =	_nSuperLayer			;
-		int   nring                     =	_nRing					;
-		int   geomType                  =	_geomType				;
-		double voxelizationFactor		=	_voxFactor				;
+		int   delta_num_wire_sense       =	_nSDeltaWire			;
+		int   nsuperlayer                =	_nSuperLayer			;
+		int   nring                      =	_nRing					;
+		int   geomType                   =	_geomType				;
+		double voxelizationFactor		 =	_voxFactor				;
 
 		double drop                      =	_drop					;
 		double length                    =	_halfLength				;
 
-		int   EndCap_type               =	_endCapType				;
+		int   EndCap_type                =	_endCapType				;
 
 		//-------------------
 
@@ -207,8 +222,8 @@ void ITrackerMaker::BuildIt(){
 		int   sign_epsilon = -1;
 		int   num_wire;
 
-		double secure      = 1.0e-2;			//Extra volume layer thickness to avoid wire illegal overlap
-		double capGasLayer = 1.0e-3;			//Thickness of the closing inner gas layer, its is less enough just to be different from 0
+		double secure			= 1.0e-2;			//Extra volume layer thickness to avoid wire illegal overlap
+		double capGasLayer		= 1.0e-3;			//Thickness of the closing inner gas layer, its is less enough just to be different from 0
 
 		char wshape[30], gshape[30], wvol[30], gvol[30], shape_name_FD[30], shape_name_SD[30], vol_name_FD[30], vol_name_SD[30];
 
@@ -217,26 +232,64 @@ void ITrackerMaker::BuildIt(){
 		inscribedRadius=0.0;
 
 
-		endcap_inner_radius	    = inner_radius;
-		extra_EndCap_dist	    = 0.0*mm;
-		max_EndCap_dim=length;
+		endcap_inner_radius		= inner_radius;
+		extra_EndCap_dist		= 0.0*mm;
+		max_EndCap_dim			=length;
 
-		EndCap_Wall_theta_inner   = 0.;
-		EndCap_Wall_theta_outer   = 0.;
+		EndCap_Wall_theta_inner	= 0.;
+		EndCap_Wall_theta_outer	= 0.;
 
 		if(EndCap_type==0) {
+			_ltt->_endcapType		= ITracker::Plane;
 			length = length-envelop_EndCap_thickness;
+
+			tmpEndCapWall->_pRmin	= inner_radius;
+			tmpEndCapWall->_pRmax	= outer_radius;
+			tmpEndCapWall->_pSPhi	= 0.0;
+			tmpEndCapWall->_pDPhi	= 360.0*degree;
+			tmpEndCapWall->_pDz		= envelop_EndCap_thickness*0.5;
+			tmpEndCapWall->_name	= "EndCapWall_R";
+			tmpEndCapWall->_pos		= HepGeom::Translate3D(0.0,0.0,length+tmpEndCapWall->_pDz);
 
 		}
 		else if(EndCap_type==1){
+			_ltt->_endcapType		= ITracker::Spherical;
 			max_EndCap_dim = sqrt(pow(length,2)+pow(outer_radius,2));
 			EndCap_Wall_theta_inner = asin(inner_radius/(max_EndCap_dim-envelop_EndCap_thickness)) * radian;
 			EndCap_Wall_theta_outer = acos(length/max_EndCap_dim) * radian;
 			length-=envelop_EndCap_thickness*length/max_EndCap_dim;  // is equivalent (max_EndCap_dim-envelop_EndCap_thickness)*length/max_EndCap_dim;
 			extra_EndCap_dist=sqrt(pow(max_EndCap_dim-envelop_EndCap_thickness,2)-pow(inner_radius,2))-length;
+
+			tmpEndCapWall->_pRmin	= max_EndCap_dim-envelop_EndCap_thickness;
+			tmpEndCapWall->_pRmax	= max_EndCap_dim;
+			tmpEndCapWall->_pSPhi	= 0.0;
+			tmpEndCapWall->_pDPhi	= 360.0*degree;
+			tmpEndCapWall->_pDz		= envelop_EndCap_thickness*0.5;
+			tmpEndCapWall->_name	= "EndCapWall_R";
+			tmpEndCapWall->_pSTheta	= EndCap_Wall_theta_inner;
+			tmpEndCapWall->_pDTheta	= EndCap_Wall_theta_outer-EndCap_Wall_theta_inner;
 		}
 
-		_ltt->_max_EndCap_dim = max_EndCap_dim;
+		Wall *tmpEndCapWall_L = new Wall(*tmpEndCapWall);
+		tmpEndCapWall_L->_name		= "EndCapWall_L";
+		tmpEndCapWall_L->_pos		= HepGeom::RotateY3D(180.0*degree)*tmpEndCapWall_L->_pos;
+		_walls.insert( pair<Wall::Walltype,Wall*>(tmpEndCapWall_L->getType(), tmpEndCapWall_L) );
+
+		_ltt->_max_EndCap_dim	= max_EndCap_dim;
+
+		tmpInnerWall->_pRmin	= inner_radius;
+		tmpInnerWall->_pRmax	= inner_radius+envelop_Inner_thickness;
+		tmpInnerWall->_pSPhi	= 0.0;
+		tmpInnerWall->_pDPhi	= 360.0*degree;
+		tmpInnerWall->_pDz		= length + extra_EndCap_dist;
+		tmpInnerWall->_name		= "InnerWall";
+
+		tmpOuterWall->_pRmin	= outer_radius - envelop_Outer_thickness;
+		tmpOuterWall->_pRmax	= outer_radius;
+		tmpOuterWall->_pSPhi	= 0.0;
+		tmpOuterWall->_pDPhi	= 360.0*degree;
+		tmpOuterWall->_pDz		= length;
+		tmpOuterWall->_name		= "OuterWall";
 
 		FWradii	    = 0.5*fieldwire_diameter;
 		radius_ring_0     = inner_radius + envelop_Inner_thickness + FWradii + secure + capGasLayer;
@@ -705,6 +758,13 @@ void ITrackerMaker::BuildIt(){
 
 		_ltt->_sprlr.reset(_sprlr);
 
+		if ( (radius_ringIn_0+drop) > (outer_radius-envelop_Outer_thickness) )
+			throw cms::Exception("GEOM") <<"The ITracker gas layer doesn't fit inside the ITracker outer wall\n";
+
+		multimap<Wall::Walltype,Wall* >::iterator walls_it;
+		for ( walls_it=_walls.begin() ; walls_it != _walls.end(); walls_it++ ) {
+			_ltt->addWall(walls_it->second);
+		}
 	}
 
 }
