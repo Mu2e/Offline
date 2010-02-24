@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.11 2010/02/23 21:09:32 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/02/23 21:09:32 $
+// $Id: G4_plugin.cc,v 1.12 2010/02/24 15:45:19 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2010/02/24 15:45:19 $
 //
 // Original author Rob Kutschke
 //
@@ -265,7 +265,7 @@ namespace mu2e {
     	std::stringstream SDname;
     	std::string sSDname;
 		std::string::size_type loc;
-		for (int iSlr=0; iSlr < itracker->nSuperLayer(); ++iSlr) {
+		for (int iSlr=0; iSlr < itracker->nSuperLayers(); ++iSlr) {
     		for (int iRng = 0; iRng < itracker->nRing(); ++iRng) {
     			SDname.str(std::string());
     			SDname<< "StepPointG4Collection_";
