@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.10 2010/02/23 20:49:51 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/02/23 20:49:51 $
+// $Id: geom_01.txt,v 1.11 2010/02/24 15:47:13 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2010/02/24 15:47:13 $
 //
 // Original author Rob Kutschke
 
@@ -167,12 +167,15 @@ string itracker.extWireFile      =    "";   //"ITrackerGeom/ITrackerWireData.roo
 double itracker.r0               = 400.0;   //388.48435399; // Lengths in mm
 double itracker.z0               =10200.;
 double itracker.zHalfLength      =1000.0;   //1300.0;
-double itracker.rOut             = 820.0;   //870.0;
+double itracker.rOut             = 840.0;   //870.0;
 double itracker.drop             =  20.0;
 
 int    itracker.geomType		 =     3;   //2:Hexagonal, 3:Square, 4:Square with base fw in both directions
-int    itracker.endCapType       =     0;
-double itracker.voxelization     =     0;   //negative: default computation, 0: voxelization off, positive: smartless value
+int    itracker.endCapType       =     0;   //EndCap shape type: 0 plane, 1 spherical
+double itracker.voxelization     =     0;   //Choose voxelization method for the gas volumes that contain wires, negative: default computation, 0: voxelization off, positive: smartless value
+bool   itracker.displayGasLayer  = false;   //Allow to display the gas inside the chamber. It is recommended to switch on it only for debug, it makes the display slow.
+bool   itracker.displayWires     = false;   //Allow to display every wires inside gas inside the chamber. It is recommended to switch on it only for debug, it makes the display very slow.
+
 
 // Cell parameter needed only for the hexagonal cell case
 
