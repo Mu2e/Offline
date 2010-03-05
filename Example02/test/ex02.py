@@ -1,8 +1,8 @@
 # Configuration file for Example/02
 #
-# $Id: ex02.py,v 1.3 2009/10/23 22:15:30 kutschke Exp $
+# $Id: ex02.py,v 1.4 2010/03/05 23:56:18 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/10/23 22:15:30 $
+# $Date: 2010/03/05 23:56:18 $
 #
 # Original author Rob Kutschke
 #
@@ -30,9 +30,9 @@ process.TFileService = mu2e.Service("TFileService",
 )
 
 # Initialize the random number sequences.
-process.RandomNumberService = mu2e.Service("RandomNumberService",
-                            globalSeed=mu2e.untracked.int32(9877),
-)
+process.add_(mu2e.Service("RandomNumberService",
+                          globalSeed=mu2e.untracked.int32(9877)
+))
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",

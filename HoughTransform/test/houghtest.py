@@ -1,8 +1,8 @@
 # Configuration file for G4Test03
 #
-# $Id: houghtest.py,v 1.2 2009/12/09 19:20:50 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2009/12/09 19:20:50 $
+# $Id: houghtest.py,v 1.3 2010/03/05 23:56:18 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/03/05 23:56:18 $
 #
 # Original author Rob Kutschke
 #
@@ -31,9 +31,9 @@ process.TFileService = mu2e.Service("TFileService",
 
 # Initialize the random number sequences.
 # This just changes the seed for the global CLHEP random engine.
-process.RandomNumberService = mu2e.Service("RandomNumberService",
-                            globalSeed=mu2e.untracked.int32(9877),
-)                              
+process.add_(mu2e.Service("RandomNumberService",
+                          globalSeed=mu2e.untracked.int32(9877)
+))
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
