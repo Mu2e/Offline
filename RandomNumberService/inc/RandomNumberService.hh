@@ -1,51 +1,103 @@
 #ifndef RandomNumberService_RandomNumberService_hh
 #define RandomNumberService_RandomNumberService_hh
 //
-// Maintain multiple independent chains of random numbers,
-// including save and restore of seeds.  For now it only
-// knows about the CLHEP global instances.
+// Maintain multiple independent random numbers engines.
+// This includes saving and restoring seeds and state.
 //
-// $Id: RandomNumberService.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: RandomNumberService.hh,v 1.2 2010/03/05 16:07:38 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/03/05 16:07:38 $
 //
 // Original author Rob Kutschke
 //
-//  The present implementation just seeds the CLHEP global
-//  random number generator, HepRandom.
+// Notes:
+//  1) The present implementation just seeds the CLHEP global
+//     random number generator, HepRandom.
 //
-//  In a later implementation it will:
-//   1) Propagate the state of the CLHEP global random number
-//      generator across jobs.
-//   2) Manage (potentially) many other random number streams that
-//      can be used by any module.
-//  
+//  2) For details on the planned future behaviour:
+//       http://mu2e.fnal.gov/atwork/computing/Random.shtml
+//
+//  3) These methods are examples of the available callbacks.
+//     I was experimenting to check which ones are useful.
+//
 
 // C++ include files
 #include <string>
-#include <memory>
 
 // Framework include files
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/ActivityRegistry.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "FWCore/Utilities/interface/RandomNumberGenerator.h"
+
+// CLHEP include files.
+#include "CLHEP/Random/RandomEngine.h"
+
+// Forward declarations.
+namespace edm{
+  class ParameterSet;
+  class ActivityRegistry;
+  class EventId;
+  class Event;
+  class EventSetup;
+  class Timestamp;
+}
 
 namespace mu2e {
 
-  class RandomNumberService {
+  class RandomNumberService : public edm::RandomNumberGenerator {
+
   public:
+    typedef std::vector<std::string>            LabelInfo;
+    typedef std::vector<std::vector<uint32_t> > StateInfo;
+    typedef std::vector<std::vector<uint32_t> > SeedInfo;
+    
     RandomNumberService(const edm::ParameterSet&, edm::ActivityRegistry&);
     ~RandomNumberService();
     
+    // See note 3.
     void postBeginJob();
     void postEndJob();
+    void preSource();
+    void postSource();
+    void preProcessEvent(edm::EventID const& id, edm::Timestamp const& iTime);
+    void postProcessEvent(edm::Event const&, edm::EventSetup const&);
+ 
+    // The methods below are required by the RandomNumberGenerator interface
+    
+    // This  methods is the main method called by user code.
+    // Also called by IOPool/Input/src/RootInputFileSequence.cc
+    CLHEP::HepRandomEngine& getEngine() const;
+
+    // Obsolete.  Should never be called and will go away.
+    uint32_t mySeed() const;
+    
+    // Called by RandomNumberService/src/RandomNumberSaver_plugin.cc
+    const LabelInfo& getCachedLabels() const {return _labels; }
+    const StateInfo& getCachedStates() const {return _states; }
+    const SeedInfo&  getCachedSeeds()  const {return _seeds;  }
+
+    // Called by FWCore/Framework/src/InputSource.cc
+    void snapShot();
+    void restoreState(const edm::Event& event);
+
+    // Will be called by RandomNumberSaver_plugin.cc or maybe by
+    // by one of the callback methods?
+    void saveEngineState(const std::string& fileName);
+    void restoreEngineState(const std::string& fileName);
+
+    // For debugging purposes only
+    void print();
+
+    // end of methods required by RandomNumberGenerator
 
   private:
     
-    // Seed for the HepRandom singleton.
+    // Temporary hack.  See note 1.
     long _globalSeed;
-    
+
+    // The per-module-instance information.
+    LabelInfo _labels;
+    StateInfo _states;
+    SeedInfo  _seeds;
+
   };
 }
 
