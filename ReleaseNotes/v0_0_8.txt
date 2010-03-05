@@ -3,7 +3,52 @@ Still under construction
            Release notes for Mu2e Offline software, v0_0_8
 
 
-  $Id: v0_0_8.txt,v 1.1 2010/02/07 00:53:10 kutschke Exp $
+  $Id: v0_0_8.txt,v 1.2 2010/03/05 16:13:06 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/02/07 00:53:10 $
+  $Date: 2010/03/05 16:13:06 $
+
+1) Implement the detailed field map in the DS.
+   The code has options to enable the full field map, a uniform field
+   or a hybrid of the two. See email on mu2e-sim from Bob Bernstein on Feb 8, 2010.
+
+2) GeometryService
+   Remove the non-templated hasXXXXX methods.  Add a the hasElement<T> templated method.
+
+3) Bug fix in Mu2eWorld related to ITracker.  
+   See email from Gianfrano Tassielli on mu2e-sim on Feb 11, 2010.
+
+4) Split Mu2eG4/src/ReadBack_plugin.cc three files:
+   Mu2eG4/src/ReadBack.hh
+   Mu2eG4/src/ReadBack.cc
+   Mu2eG4/src/ReadBack_plugin.cc
+   This was done to provide an example of a module made from 3 files.
+
+   g4test_02.py, g4test_03.py g4test_04.py readback.py
+   Added minimumEnergy tracked parameter to PSet for ReadBack
+   Also for illustration purposes.
+
+5) Add Target foils to the G4 geometry.
+   See email on mu2e-sim from Peter Shanahan on Feb 15, 2010.
+
+6) Use PhysicsLists to describe the physics processs.
+   G4_plugin.cc, geom_01.txt, setup.sh
+   See email from Bob Bernstein on mu2e-sim on Feb 23, 2010.
+
+7) Add external walls to the ITracker. 
+   See email from Gianfrano Tassielli on mu2e-sim on Feb 24, 2010.
+
+8) Add missing hooks to the RandomNumberService.
+   RandomNumberService/
+     src/RandomNumberService_plugin.cc - Change access to service handle of base class
+     src/RNGTest_plugin.cc             - module to test new features.
+     src/RandomNumberSaver_plugin.cc   - module to save state to event.
+     inc/RandomNumberService.hh        - inherit from RandomNumberGenerator and add new methods.
+     src/RandomNumberService.cc          
+     test/test01.py                    - configuration file to invoke the test and output modules
+   ToyDP/src/classes.h                 - add persistent data describing state of Engines
+   ToyDP/src/classes_def.xml           - add persistent data describing state of Engines
+
+   The saver module does not yet work because of a bug in classes_def.xml.  That module
+   will throw if invoked.
+
 
