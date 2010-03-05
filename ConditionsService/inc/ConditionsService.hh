@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.3 2009/11/12 20:58:26 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.4 2010/03/05 16:04:28 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/12 20:58:26 $
+// $Date: 2010/03/05 16:04:28 $
 //
 // Original author Rob Kutschke
 //
@@ -87,7 +87,7 @@ namespace mu2e {
       ENTITY* d = dynamic_cast<ENTITY*>(it->second.get());
       
       if(d==0)
-	cms::Exception("GEOM")
+	throw cms::Exception("GEOM")
 	  << "Failed to convert found conditions entity " << name
 	  << " to its correct type.  There is a serious problem.\n";
       

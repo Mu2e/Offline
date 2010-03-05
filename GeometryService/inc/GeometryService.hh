@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.2 2010/02/11 15:45:43 kutschke Exp $
+// $Id: GeometryService.hh,v 1.3 2010/03/05 16:04:28 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/02/11 15:45:43 $
+// $Date: 2010/03/05 16:04:28 $
 //
 // Original author Rob Kutschke
 //
@@ -93,7 +93,7 @@ private:
       DET* d = dynamic_cast<DET*>(it->second.get());
 
       if(d==0)
-	cms::Exception("GEOM")
+	throw cms::Exception("GEOM")
 	  << "Failed to convert found detector " << name
 	  << " to its correct type.  There is a serious problem.\n";
 
