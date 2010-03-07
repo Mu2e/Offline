@@ -1,14 +1,22 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.5 2010/03/05 16:07:38 kutschke Exp $
+// $Id: classes.h,v 1.6 2010/03/07 22:01:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/05 16:07:38 $
+// $Date: 2010/03/07 22:01:00 $
 // 
 // Original author Rob Kutschke
+//
+// Notes:
+// 1) The system is not able to deal with
+//    edm::Wrapper<std::vector<std::string> >;
+//    The problem is somewhere inside root's reflex mechanism
+//    and Philippe Canal says that it is ( as of March 2010) a
+//    known problem.  He also says that they do not have any
+//    plans to fix it soon.  We can always work around it 
+//    by putting the string inside another object.
 
 #include <vector>
-#include <string>
 
 #include "DataFormats/Common/interface/SortedCollection.h"
 #include "DataFormats/Common/interface/OwnVector.h"
@@ -20,21 +28,16 @@
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/CrudeStrawHitPData.hh"
+#include "ToyDP/inc/RandomEngineState.hh"
 
 //
 // Only include objects that we would like to be able to put into the event.
 // Do not include the objects they contain internally.
 //
 
-//template <> class vector<std::vector<uint32_t> >;
+template class edm::Wrapper<mu2e::ToyHitCollection>;
+template class edm::Wrapper<mu2e::ToyGenParticleCollection>;
+template class edm::Wrapper<mu2e::StepPointMCCollection>;
+template class edm::Wrapper<mu2e::CrudeStrawHitPData>;
+template class edm::Wrapper<std::vector<mu2e::RandomEngineState> >;
 
-namespace {
-struct dictionary {
-  edm::Wrapper<mu2e::ToyHitCollection>               dummy301;
-  edm::Wrapper<mu2e::ToyGenParticleCollection>       dummy302;
-  edm::Wrapper<mu2e::StepPointMCCollection>          dummy303;
-  edm::Wrapper<mu2e::CrudeStrawHitPData>             dummy304;
-  edm::Wrapper<std::vector<std::string> >            dummy305;
-
-};
-}

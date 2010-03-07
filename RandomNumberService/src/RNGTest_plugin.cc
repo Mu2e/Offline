@@ -1,9 +1,9 @@
 //
 // Test accessing the RandomNumberService.
 //
-// $Id: RNGTest_plugin.cc,v 1.1 2010/03/05 16:07:38 kutschke Exp $
+// $Id: RNGTest_plugin.cc,v 1.2 2010/03/07 22:01:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/05 16:07:38 $
+// $Date: 2010/03/07 22:01:00 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,8 @@
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
+#include "CLHEP/Random/RandGaussQ.h"
+#include "CLHEP/Random/RandFlat.h"
 
 using namespace std;
 
@@ -33,37 +35,56 @@ namespace mu2e {
 
   class RNGTest : public edm::EDAnalyzer {
   public:
-    explicit RNGTest(edm::ParameterSet const& pset){}
+    explicit RNGTest(edm::ParameterSet const& pset):
+      _doSkip(pset.getUntrackedParameter<int>("doSkip",0)){
+    }
     virtual ~RNGTest() { }
 
     void analyze( edm::Event const& e, edm::EventSetup const&);
 
   private:
 
+    int _doSkip;
+
   };
 
   void
   RNGTest::analyze( edm::Event const& event, edm::EventSetup const&) {
 
-    cerr << "\nHave event: " << event.id() << endl;
 
-    edm::Service<RandomNumberService> rns;
-    cerr << "Is concrete available: "  << rns.isAvailable() << endl;
-
+    // Access Random Number Service.
     edm::Service<edm::RandomNumberGenerator> rng;
-    cerr << "Is base available:     "  << rng.isAvailable() << endl;
-
     CLHEP::HepRandomEngine& engine = rng->getEngine();
-    cerr << "Fire: " << engine.flat() << endl;
 
-    vector<unsigned long> v = engine.put();
-    cerr << "Size: " << v.size() << endl;
+    // Number of calls to this method.
+    static int ncalls(-1);
 
-    rng->print();
+    // Skip some events if requested.
+    bool skip = false;
+    if ( _doSkip == 1 ){
+      if ( (++ncalls)%2 == 0 ) skip = true;
+    } else if (_doSkip == 2 ) {
+      if ( (++ncalls)%2 == 1 ) skip = true;
+    }
+    if ( skip ) {
+      cerr << "Skipping this event: " << ncalls << endl;
+      return;
+    }
+    
+    // Create some distributions that use that engine.
+    static RandFlat   flat( engine );
+    static RandGaussQ gauss( engine, 10., 2. );
 
-    //if ( event.id().event() == 1 ){
-    //engine.put(cout);
-    //}
+    // Check output of the distributions.
+    for ( int i=0; i<5; ++i ){
+      cerr << "Fire: "
+	   << setw(3) << i <<  " "
+	   << flat.fire()  <<  " "
+	   << gauss.fire()
+	   << endl;
+    }
+
+
 
   }
   

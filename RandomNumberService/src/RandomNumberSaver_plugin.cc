@@ -1,19 +1,13 @@
 //
 // Store state of RandomNumberService into the event. 
 //
-// $Id: RandomNumberSaver_plugin.cc,v 1.1 2010/03/05 16:07:38 kutschke Exp $
+// $Id: RandomNumberSaver_plugin.cc,v 1.2 2010/03/07 22:01:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/05 16:07:38 $
+// $Date: 2010/03/07 22:01:00 $
 //
 // Original author Rob Kutschke
 //
 // Notes
-// 1) In the present implementation both StateInfo and SeedInfo are typedefs
-//    to the same underlying type.  The edm sees the underlying type.
-//    When we put both StateInfo and SeedInfo into the event, the event
-//    sees two data products of identical type; so we are required to 
-//    distinguish them using the string argument to produces().
-//
 
 // C++ includes.
 #include <iostream>
@@ -31,61 +25,73 @@
 
 // Mu2e includes
 #include "RandomNumberService/inc/RandomNumberService.hh"
+#include "ToyDP/inc/RandomEngineState.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-
   class RandomNumberSaver : public edm::EDProducer {
+
   public:
     explicit RandomNumberSaver(edm::ParameterSet const& pset);
     virtual ~RandomNumberSaver() { }
-
+    
     void produce( edm::Event& e, edm::EventSetup const&);
-
+    
     static void fillDescription(edm::ParameterSetDescription& iDesc,
                                 string const& moduleLabel) {
       iDesc.setAllowAnything();
     }
-
-
+    
   private:
 
+    bool _debug;
+    
   };
-
-  RandomNumberSaver::RandomNumberSaver(edm::ParameterSet const& pset){
-
-    throw cms::Exception("NotReady")
-      << "The RandomNumberSaver module does not yet work. \n"
-      << "Please remove it from your configuration.";
-
-    // This produces three data products.  See note 1.
-    /*
-    produces<RandomNumberService::LabelInfo>();
-    produces<RandomNumberService::StateInfo>("StateInfo");
-    produces<RandomNumberService::SeedInfo>("SeedInfo");
-    */
-
+  
+  RandomNumberSaver::RandomNumberSaver(edm::ParameterSet const& pset):
+    _debug(pset.getUntrackedParameter<bool>("debug",false)){
+    produces<std::vector<RandomEngineState> >();
   }
 
+  void RandomNumberSaver::produce( edm::Event& event, edm::EventSetup const&) {
 
-  void
-  RandomNumberSaver::produce( edm::Event& event, edm::EventSetup const&) {
+    auto_ptr<vector<RandomEngineState> >  rnState(new vector<RandomEngineState>() );
 
-    // Get the data from the RandomNumberService and put it into a data product.
-    // The edm requires that we make copies and put the copies into the event.
+    // References to access the data inside the RandomNumberService.
     edm::Service<edm::RandomNumberGenerator> rng;
-    auto_ptr<RandomNumberService::LabelInfo> labels(new RandomNumberService::LabelInfo(rng->getCachedLabels()));
-    auto_ptr<RandomNumberService::StateInfo> states(new RandomNumberService::StateInfo(rng->getCachedStates()));
-    auto_ptr<RandomNumberService::SeedInfo>  seeds (new RandomNumberService::SeedInfo (rng->getCachedSeeds()));
+    const RandomNumberService::LabelInfo& labels = rng->getCachedLabels();
+    const RandomNumberService::StateInfo& states = rng->getCachedStates();
+    const RandomNumberService::SeedInfo&  seeds  = rng->getCachedSeeds();
 
-    event.put(labels);
-    event.put(states);
-    event.put(seeds);
+    // Check self consistency.
+    if ( labels.size() != states.size() ||
+	 labels.size() != seeds.size()     ){
+      throw cms::Exception("RANGE")
+	<< "Inconsistent sizes of objects in the state of the RandomNumberService: "
+	<< labels.size() << " "
+	<< states.size() << " "
+	<< seeds.size()  << "\n";
+    }
 
-    cerr << "Putting stuff into the event." << endl;
+    // For each saved engine, copy the state information to the data product.
+    for ( size_t i=0; i<labels.size(); ++i){
+      
+      // Two phase construction to avoid the double copy.  Use emplace_back when available.
+      rnState->push_back(RandomEngineState());
+      RandomEngineState& s = rnState->back();
+      s.setLabel( labels[i] );
+      s.setState( states[i] );
+      s.setSeed (  seeds[i] );
 
+    }
+
+    event.put(rnState);
+
+    if ( _debug ){
+      rng->print();
+    }
   }
   
 }

@@ -4,9 +4,9 @@
 // Maintain multiple independent random numbers engines.
 // This includes saving and restoring seeds and state.
 //
-// $Id: RandomNumberService.hh,v 1.2 2010/03/05 16:07:38 kutschke Exp $
+// $Id: RandomNumberService.hh,v 1.3 2010/03/07 22:01:00 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/05 16:07:38 $
+// $Date: 2010/03/07 22:01:00 $
 //
 // Original author Rob Kutschke
 //
@@ -45,7 +45,8 @@ namespace mu2e {
   class RandomNumberService : public edm::RandomNumberGenerator {
 
   public:
-    typedef std::vector<std::string>            LabelInfo;
+
+    typedef std::vector<std::string>        LabelInfo;
     typedef std::vector<std::vector<uint32_t> > StateInfo;
     typedef std::vector<std::vector<uint32_t> > SeedInfo;
     
@@ -88,15 +89,22 @@ namespace mu2e {
 
     // end of methods required by RandomNumberGenerator
 
+
   private:
     
     // Temporary hack.  See note 1.
     long _globalSeed;
 
+    std::string _restoreStateLabel;
+
     // The per-module-instance information.
     LabelInfo _labels;
     StateInfo _states;
     SeedInfo  _seeds;
+
+    // Control tracing and debug printout.
+    int  _nPrint;
+    bool _debug;
 
   };
 }
