@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.5 2009/12/22 17:30:32 rhbob Exp $
-  $Author: rhbob $
-  $Date: 2009/12/22 17:30:32 $
+  $Id: EventGenerator_plugin.cc,v 1.6 2010/03/11 02:07:42 yury Exp $
+  $Author: yury $
+  $Date: 2010/03/11 02:07:42 $
 
   Original author Rob Kutschke
 
@@ -59,6 +59,7 @@
 #include "EventGenerator/inc/ParticleGun.hh"
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "EventGenerator/inc/CosmicToy.hh"
+#include "EventGenerator/inc/CosmicDYB.hh"
 #include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
@@ -122,13 +123,23 @@ namespace mu2e {
     // Delete generators from the previous run.
     _generators.clear();
 
+    // read parameters
+    bool doConv = config.getBool( "conversionGun.do", 1);
+    bool doCosmicToy = config.getBool( "cosmictoy.do", 0);
+    bool doCosmicDYB = config.getBool( "cosmicDYB.do", 0);
+    bool doPiCapture = config.getBool( "picapture.do", 0);
+    bool doEjectedProton = config.getBool( "ejectedProtonGun.do", 0);
+    bool doDIO = config.getBool( "decayinorbitGun.do", 0);
+    bool doPiEplusNu = config.getBool( "piEplusNuGun.do", 0);
+
     // Instantiate generators for this run.
-    _generators.push_back( GeneratorBasePtr( new ConversionGun(       run, config)) );
-    _generators.push_back( GeneratorBasePtr( new CosmicToy(           run, config)) );
-    _generators.push_back( GeneratorBasePtr( new PiCapture(           run, config)) );
-    _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(     run, config)) );
-    _generators.push_back( GeneratorBasePtr( new EjectedProtonGun(     run, config)) );
-    _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
+    if ( doConv) _generators.push_back( GeneratorBasePtr( new ConversionGun(       run, config)) );
+    if ( doCosmicToy) _generators.push_back( GeneratorBasePtr( new CosmicToy(           run, config)) );
+    if ( doCosmicDYB) _generators.push_back( GeneratorBasePtr( new CosmicDYB(           run, config)) );
+    if ( doPiCapture) _generators.push_back( GeneratorBasePtr( new PiCapture(           run, config)) );
+    if ( doDIO) _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(     run, config)) );
+    if ( doEjectedProton) _generators.push_back( GeneratorBasePtr( new EjectedProtonGun(     run, config)) );
+    if ( doPiEplusNu) _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
     
   }
   
