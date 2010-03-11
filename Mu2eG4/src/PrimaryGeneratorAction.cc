@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.5 2009/12/22 17:36:47 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2009/12/22 17:36:47 $
+// $Id: PrimaryGeneratorAction.cc,v 1.6 2010/03/11 02:10:52 yury Exp $
+// $Author: yury $ 
+// $Date: 2010/03/11 02:10:52 $
 //
 // Original author Rob Kutschke
 //
@@ -114,7 +114,9 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event){
 	genpart._generatorId == GenId::pionCapture ||
 	genpart._generatorId == GenId::piEplusNuGun){
       	pos += detectorOrigin;
-    } else if ( genpart._generatorId == GenId::cosmicToy ){
+    } else if ( genpart._generatorId == GenId::cosmicToy ||
+		genpart._generatorId == GenId::cosmicDYB || 
+		genpart._generatorId == GenId::cosmic ){
       pos += cosmicReferencePlane;
     } else {
       edm::LogError("KINEMATICS")
