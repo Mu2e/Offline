@@ -6,14 +6,15 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: PrimaryGeneratorAction.hh,v 1.2 2010/03/13 00:09:16 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/03/13 00:09:16 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes
+#include <string>
 #include <memory>
 
 // Framework includes
@@ -39,7 +40,7 @@ namespace mu2e {
 
   class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction{
   public:
-    PrimaryGeneratorAction();
+    PrimaryGeneratorAction( const std::string& generatorModuleLabel);
     ~PrimaryGeneratorAction();
     
   public:
@@ -66,6 +67,9 @@ namespace mu2e {
 
     // The particle I am generating.
     G4ParticleDefinition* _particleDefinition;
+
+    // Module label used to find the event generator input.
+    std::string _generatorModuleLabel;
 
     // Generate random directions tracks on a unit sphere.
     std::auto_ptr<RandomUnitSphere> _randomUnitSphere;

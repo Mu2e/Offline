@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.12 2010/02/24 15:45:19 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2010/02/24 15:45:19 $
+// $Id: G4_plugin.cc,v 1.13 2010/03/13 00:09:16 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/03/13 00:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -88,7 +88,8 @@ namespace mu2e {
       _session(0),
       _visManager(0),
       _UI(0),
-      _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")){
+      _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
+      _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")){
       produces<StepPointMCCollection>();
     }
 
@@ -123,6 +124,8 @@ namespace mu2e {
 
     // Name of a macro file for visualization.
     string _visMacro;
+
+    string _generatorModuleLabel;
     
 
   };
@@ -151,6 +154,8 @@ namespace mu2e {
 
     edm::LogInfo logInfo("GEOM");
     logInfo << "Initializing Geant 4 for run: " << run.id() << endl;
+
+    
 
     WorldMaker* allMu2e    = new WorldMaker();
     _runManager->SetUserInitialization(allMu2e);
@@ -183,7 +188,7 @@ namespace mu2e {
       }
     _runManager->SetUserInitialization(physics);
     */
-    _genAction = new PrimaryGeneratorAction;
+    _genAction = new PrimaryGeneratorAction(_generatorModuleLabel);
     _runManager->SetUserAction(_genAction);
 
     G4UserEventAction* event_action = new EventAction;

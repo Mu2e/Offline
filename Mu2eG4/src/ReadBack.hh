@@ -1,12 +1,15 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.hh,v 1.1 2010/02/11 15:24:48 kutschke Exp $
+// $Id: ReadBack.hh,v 1.2 2010/03/13 00:09:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/11 15:24:48 $
+// $Date: 2010/03/13 00:09:16 $
 //
 // Original author Rob Kutschke
 //
+
+// Framework includes.
+#include <string>
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -17,6 +20,8 @@
 
 // Mu2e includes.
 #include "ToyDP/inc/StepPointMCCollection.hh"
+
+using namespace std;
 
 class TH1F;
 class TNtuple;
@@ -37,6 +42,9 @@ namespace mu2e {
     void analyze(const edm::Event& e, edm::EventSetup const&);
 
   private:
+
+    // Module label of the g4 module that made the hits.
+    std::string _g4ModuleLabel;
 
     // Cut on the minimum energy.
     double _minimumEnergy;

@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.1 2010/02/11 15:24:48 kutschke Exp $
+// $Id: ReadBack.cc,v 1.2 2010/03/13 00:09:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/11 15:24:48 $
+// $Date: 2010/03/13 00:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -42,6 +42,7 @@ using CLHEP::keV;
 namespace mu2e {
 
   ReadBack::ReadBack(edm::ParameterSet const& pset) : 
+    _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
     _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
     _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
     _nAnalyzed(0),
@@ -105,12 +106,9 @@ namespace mu2e {
     // Geometry for the LTracker.
     GeomHandle<LTracker> ltracker;
 
-    // Module name of the module that created the hits of interest;
-    static const string creatorName("g4run");    
-
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<StepPointMCCollection> hits;
-    event.getByLabel(creatorName,hits);
+    event.getByLabel(_g4ModuleLabel,hits);
 
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());

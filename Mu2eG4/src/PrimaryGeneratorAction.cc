@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.6 2010/03/11 02:10:52 yury Exp $
-// $Author: yury $ 
-// $Date: 2010/03/11 02:10:52 $
+// $Id: PrimaryGeneratorAction.cc,v 1.7 2010/03/13 00:09:16 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/03/13 00:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -19,13 +19,10 @@
 // Framework includes
 #include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/Common/interface/Handle.h"
-//#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Services/interface/TFileService.h"
 #include "FWCore/Framework/interface/TFileDirectory.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-
-//#include <boost/shared_ptr.hpp>
 
 // G4 Includes
 #include "G4Event.hh"
@@ -53,9 +50,10 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
-  :_randomUnitSphere(0)
-{
+PrimaryGeneratorAction::PrimaryGeneratorAction( const string& generatorModuleLabel ):
+  _generatorModuleLabel(generatorModuleLabel),
+  _randomUnitSphere(0){
+
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   _particleDefinition = particleTable->FindParticle("chargedgeantino");
 
@@ -96,7 +94,7 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event){
 
   // Get generated particles from the event.
   edm::Handle<ToyGenParticleCollection> handle;
-  _event->getByLabel("generate",handle);
+  _event->getByLabel(_generatorModuleLabel,handle);
 
   // Fill multiplicity histogram.
   _totalMultiplicity->Fill( handle->size() );
