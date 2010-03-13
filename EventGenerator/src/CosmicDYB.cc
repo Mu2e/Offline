@@ -1,9 +1,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.1 2010/03/11 02:07:42 yury Exp $
-// $Author: yury $
-// $Date: 2010/03/11 02:07:42 $
+// $Id: CosmicDYB.cc,v 1.2 2010/03/13 00:15:11 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/03/13 00:15:11 $
 //
 // Original author Yury Kolomensky
 //
@@ -22,6 +22,7 @@
 
 // Mu2e includes.
 #include "EventGenerator/inc/CosmicDYB.hh"
+#include "EventGenerator/src/rm48.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -30,6 +31,8 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
+#include "RandomNumberService/inc/RandomNumberService.hh"
+
 
 // From CLHEP
 #include "CLHEP/Random/Random.h"
@@ -46,7 +49,6 @@ using CLHEP::HepLorentzVector;
 
 // declare DYB functions here
 extern "C" {
-  void rm48in_(long*,long*,long*);
   void hrndg2_(double[100][4000],const long*,double*,double*,const long*,double*,double*,double*,double*,double*,float*);
 }
 
@@ -109,11 +111,10 @@ namespace mu2e {
     // charge
     _cosmicChargeH = tfs->make<TH1D>( "cosmicChargeH", "Muon Charge", 2, -2, 2.);
 
-    // initialize DYB random number generator (RN48)
-    long seed = CLHEP::HepRandom::getTheSeed();
-    long i = 0;
-    long j = 0;
-    ::rm48in_(&seed,&i,&j);
+    // Initialize fake RM48 that is used by DYB code.
+    edm::Service<edm::RandomNumberGenerator> rng;
+    static CLHEP::RandFlat flat(rng->getEngine());
+    setRm48Distribution(flat);
 
     // initialize DYB generator
     float par = 1.;
