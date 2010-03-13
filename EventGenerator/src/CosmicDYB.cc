@@ -1,9 +1,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.2 2010/03/13 00:15:11 kutschke Exp $
+// $Id: CosmicDYB.cc,v 1.3 2010/03/13 00:29:01 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/13 00:15:11 $
+// $Date: 2010/03/13 00:29:01 $
 //
 // Original author Yury Kolomensky
 //
@@ -114,7 +114,11 @@ namespace mu2e {
     // Initialize fake RM48 that is used by DYB code.
     edm::Service<edm::RandomNumberGenerator> rng;
     static CLHEP::RandFlat flat(rng->getEngine());
-    setRm48Distribution(flat);
+    static bool init(true);
+    if ( init ){
+      init = false;
+      setRm48Distribution(flat);
+    }
 
     // initialize DYB generator
     float par = 1.;
