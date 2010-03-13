@@ -1,28 +1,27 @@
-# Configuration file for G4Test03
-#  - Generate 10 events including one conversion electron plus
-#    some number of background processes.
-#  - Run these through G4.
-#  - No event display.
-#  - Write event data to an output file
-#  - Save state of random numbers to the event-data output file
+# Same as replayAll.py, except skip the first 10 events.
 #
-# $Id: g4test_03.py,v 1.6 2010/03/13 00:12:06 kutschke Exp $
+# $Id: replayWithSkip.py,v 1.1 2010/03/13 00:12:06 kutschke Exp $
 # $Author: kutschke $
 # $Date: 2010/03/13 00:12:06 $
 #
 # Original author Rob Kutschke
 #
-# Spacing is not signficant in this file.
+# Notes:
+# 1) There is a bug in the interaction between root and the persistency
+#    mechanism in the framework.  The problem is that fast cloning does
+#    not work.  The solution is to disable fast cloning, which is done
+#    in the configuration of the output modules.
+#
 
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this process a name.  
-process = mu2e.Process("G4Test03")
+# Give this job a name.  
+process = mu2e.Process("replayWithSkip")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(200)
+    input = mu2e.untracked.int32(-1)
 )
 
 # Load the standard message logger configuration.
@@ -31,14 +30,13 @@ process.load("Config/MessageLogger_cfi")
 
 # Load the service that manages root files for histograms.
 process.TFileService = mu2e.Service("TFileService",
-                       fileName = mu2e.string("g4test_03.root"),
+                       fileName = mu2e.string("replayWithSkip.root"),
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
+# State of random number engines will be restored from the input event.
 process.add_(mu2e.Service("RandomNumberService",
-                          globalSeed=mu2e.untracked.int32(9877)
+            restoreStateLabel=mu2e.untracked.string("randomsaver")
 ))
 
 # Define the geometry.
@@ -55,33 +53,34 @@ process.ConditionsService = mu2e.Service("ConditionsService",
 # Modules are just defined for now, the are scheduled later.
 
 # Start each new event with an empty event.
-process.source = mu2e.Source("EmptySource")
+process.source = mu2e.Source("PoolSource",
+   fileNames = mu2e.untracked.vstring("data_03.root"),
+   skipEvents = mu2e.untracked.uint32(10)
+)
 
 #  Make some generated tracks and add them to the event.
-process.generate = mu2e.EDProducer(
+process.generate2 = mu2e.EDProducer(
     "EventGenerator",
     inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_02.txt")
 )
 
 # Run G4 and add its hits to the event.
-process.g4run = mu2e.EDProducer(
+process.g4run2 = mu2e.EDProducer(
     "G4",
-    generatorModuleLabel = mu2e.string("generate"),
+    generatorModuleLabel = mu2e.string("generate2"),
     )
 
-# Save state of random numbers to the event.
-process.randomsaver = mu2e.EDAnalyzer("RandomNumberSaver")
-
-# Define the output file.
+# Define the output file. See note 1.
 process.outfile = mu2e.OutputModule(
     "PoolOutputModule",
-    fileName = mu2e.untracked.string('file:data_03.root'),
+    fileName = mu2e.untracked.string('file:replayWithSkip.root'),
+    fastCloning = mu2e.untracked.bool(False)
 )
 
 # Look at the hits from G4.
-process.checkhits = mu2e.EDAnalyzer(
+process.checkhits2 = mu2e.EDAnalyzer(
     "ReadBack",
-    g4ModuleLabel = mu2e.string("g4run"),
+    g4ModuleLabel = mu2e.string("g4run2"),
     minimumEnergy = mu2e.double(0.001),
     maxFullPrint  = mu2e.untracked.int32(201)
 )
@@ -97,5 +96,4 @@ process.MessageLogger.categories.append("ToyHitInfo")
 process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate*process.g4run*process.randomsaver*
-                                process.checkhits*process.outfile );
+process.output = mu2e.EndPath(  process.generate2*process.g4run2*process.checkhits2*process.outfile );

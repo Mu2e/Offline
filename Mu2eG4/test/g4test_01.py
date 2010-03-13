@@ -1,8 +1,11 @@
 # Configuration file for G4Test01
+#   - Generate a single conversion electron
+#   - Run it through G4
+#   - Event display with xy view.
 #
-# $Id: g4test_01.py,v 1.5 2010/03/05 23:56:18 kutschke Exp $
+# $Id: g4test_01.py,v 1.6 2010/03/13 00:12:06 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/05 23:56:18 $
+# $Date: 2010/03/13 00:12:06 $
 #
 # Original author Rob Kutschke
 #
@@ -11,7 +14,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this process a name.
 process = mu2e.Process("G4Test01")
 
 # Maximum number of events to do.
@@ -60,8 +63,9 @@ process.generate = mu2e.EDProducer(
 # Run G4 and add its hits to the event.
 process.g4run = mu2e.EDProducer(
     "G4",
+    generatorModuleLabel = mu2e.string("generate"),
     visMacro = mu2e.untracked.string("Mu2eG4/test/visxy.mac")
-    )
+)
 
 # End of the section that defines and configures modules.
 

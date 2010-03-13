@@ -1,8 +1,12 @@
 # Configuration file for G4Test02
+#  - Generate 10 events including one conversion electron plus
+#    some number of background processes.
+#  - Run these through G4.
+#  - Event display with yz view.
 #
-# $Id: g4test_02.py,v 1.6 2010/03/05 23:56:18 kutschke Exp $
+# $Id: g4test_02.py,v 1.7 2010/03/13 00:12:06 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/05 23:56:18 $
+# $Date: 2010/03/13 00:12:06 $
 #
 # Original author Rob Kutschke
 #
@@ -11,7 +15,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this process a name.  
 process = mu2e.Process("G4Test02")
 
 # Maximum number of events to do.
@@ -60,12 +64,14 @@ process.generate = mu2e.EDProducer(
 # Run G4 and add its hits to the event.
 process.g4run = mu2e.EDProducer(
     "G4",
+    generatorModuleLabel = mu2e.string("generate"),
     visMacro = mu2e.untracked.string("Mu2eG4/test/visyz.mac")
-    )
+)
 
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
+    g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
     maxFullPrint = mu2e.untracked.int32(5)
 )

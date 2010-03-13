@@ -1,8 +1,9 @@
 # Configuration file for G4Test04
+# Similar to g4test_03.py but do fewer events and do not make the output file.
 #
-# $Id: g4test_04.py,v 1.4 2010/03/05 23:56:18 kutschke Exp $
+# $Id: g4test_04.py,v 1.5 2010/03/13 00:12:06 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/05 23:56:18 $
+# $Date: 2010/03/13 00:12:06 $
 #
 # Original author Rob Kutschke
 #
@@ -11,7 +12,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this process a name.  
 process = mu2e.Process("G4Test04")
 
 # Maximum number of events to do.
@@ -51,7 +52,7 @@ process.ConditionsService = mu2e.Service("ConditionsService",
 # Start each new event with an empty event.
 process.source = mu2e.Source("EmptySource")
 
-# Make some generated tracks and add them to the event.
+#  Make some generated tracks and add them to the event.
 process.generate = mu2e.EDProducer(
     "EventGenerator",
     inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_02.txt")
@@ -60,18 +61,18 @@ process.generate = mu2e.EDProducer(
 # Run G4 and add its hits to the event.
 process.g4run = mu2e.EDProducer(
     "G4",
-    simLevel = mu2e.untracked.int32(10),
-    )
+    generatorModuleLabel = mu2e.string("generate"),
+)
 
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
-    minimumEnergy = mu2e.double(0.001)
+    g4ModuleLabel = mu2e.string("g4run"),
+    minimumEnergy = mu2e.double(0.001),
     maxFullPrint  = mu2e.untracked.int32(5)
 )
 
 # End of the section that defines and configures modules.
-
 
 # Adjust configuration of message logger.
 # Enable debug printout from the module instance "hitinspect".
@@ -82,5 +83,4 @@ process.MessageLogger.categories.append("ToyHitInfo")
 process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(   process.generate*process.g4run*process.checkhits );
-
+process.output = mu2e.EndPath(  process.generate*process.g4run*process.checkhits );

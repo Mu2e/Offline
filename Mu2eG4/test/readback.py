@@ -1,8 +1,9 @@
 # Configuration file for Readback
+# Readback the output of g4test_03.py; make histograms and printout.
 #
-# $Id: readback.py,v 1.5 2010/03/05 23:56:18 kutschke Exp $
+# $Id: readback.py,v 1.6 2010/03/13 00:16:24 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/05 23:56:18 $
+# $Date: 2010/03/13 00:16:24 $
 #
 # Original author Rob Kutschke
 #
@@ -16,7 +17,7 @@ process = mu2e.Process("ReadBack01")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(200)
+    input = mu2e.untracked.int32(-1)
 )
 
 # Load the standard message logger configuration.
@@ -52,8 +53,9 @@ process.source = mu2e.Source("PoolSource",
 #  - minimum energy is in MeV
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
+    g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
-    maxFullPrint = mu2e.untracked.int32(3)
+    maxFullPrint = mu2e.untracked.int32(201)
 )
 
 # End of the section that defines and configures modules.
