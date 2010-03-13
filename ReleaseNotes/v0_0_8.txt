@@ -3,9 +3,9 @@ Still under construction
            Release notes for Mu2e Offline software, v0_0_8
 
 
-  $Id: v0_0_8.txt,v 1.4 2010/03/07 22:02:13 kutschke Exp $
+  $Id: v0_0_8.txt,v 1.5 2010/03/13 00:16:33 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/03/07 22:02:13 $
+  $Date: 2010/03/13 00:16:33 $
 
 1) Implement the detailed field map in the DS.
    The code has options to enable the full field map, a uniform field
@@ -73,4 +73,47 @@ Still under construction
     RandomNumberService/test/test01.py
     RandomNumberService/test/test02.py
     RandomNumberService/test/test03.py
+
+12) Yury added the Daya Bay cosmic ray model, cosmicDYB to the event generator.
+     EventGenerator/inc/CosmicDYB.hh
+     EventGenerator/src/CosmicDYB.cc
+     EventGenerator/src/EventGenerator_plugin.cc
+     EventGenerator/src/SConscript
+     ToyDP/inc/GenId.hh 
+     Mu2eG4/src/PrimaryGeneratorAction.cc
+
+13) G4_plugin.cc and the ReadBack module both look for their inputs
+    in the event using getByLabel.  Previously the module label of
+    the module that made their inputs was hardcoded.  It is now
+    passed in using the parameter mechanism.  This affects:
+      Mu2eG4/src/G4_plugin.cc
+      Mu2eG4/inc/PrimaryGeneratorAction.hh
+      Mu2eG4/src/PrimaryGeneratorAction.cc
+      Mu2eG4/src/ReadBack.cc
+      Mu2eG4/src/ReadBack.hh
+
+14) Need to change the .py files to be consistent with 13.
+      Mu2eG4/test/g4test_01.py
+      Mu2eG4/test/g4test_02.py
+      Mu2eG4/test/g4test_03.py
+      Mu2eG4/test/g4test_04.py
+      Mu2eG4/test/readback.py
+
+15) New .py files to test random number reproducibility.
+      Mu2eG4/test/replayAll.py
+      Mu2eG4/test/replayWithSkip.py
+      Mu2eG4/test/drop.py
+
+16) Added the DayaBay event generator source into this EventGenerator.
+    EventGenerator/src/d2_integral.f  
+    EventGenerator/src/gaisser.f  
+    EventGenerator/src/hrndg2.f
+    EventGenerator/src/SConscript
+
+17) The Daya Bay cosmic code wants to use the cernlib generator rm48.
+    Add an adapter so that calls to rm48 pass through to CLHEP.
+      EventGenerator/src/rm48.cc
+      EventGenerator/src/rm48.hh  
+    Also modified 
+      EventGenerator/src/CosmicDYB.cc
 
