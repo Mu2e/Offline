@@ -1,17 +1,27 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.3 2010/03/13 00:29:01 kutschke Exp $
+// $Id: CosmicDYB.cc,v 1.4 2010/03/15 21:18:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/13 00:29:01 $
+// $Date: 2010/03/15 21:18:16 $
 //
 // Original author Yury Kolomensky
+//
+// Notes:
+// 1) The hrndg2 generator takes a very long time during initialization if the
+//    22 seconds on ilcsim2 if muEMin = 10,000 MeV.
+//    31 seconds on ilcsim2 if muEMin =  5,000 MeV.
+//    41 seconds on ilcsim2 if muEMin =  3,001 MeV.
+//    52 seconds on ilcsim2 if muEmin =  1,000 MeV (same for 1,001 MeV and for 999 MeV).
+//    68 seconds on ilcsim2 if muEmin =    601 MeV 
+//
+//    45 seconds on ilcsim  if muEMin = 10,001 MeV.
+//    62 seconds on ilcsim  if muEMin =  5,001 MeV.
 //
 
 // C++ includes.
 #include <iostream>
 #include <math.h>
-
 
 // Framework includes.
 #include "FWCore/Framework/interface/Run.h"
@@ -22,7 +32,8 @@
 
 // Mu2e includes.
 #include "EventGenerator/inc/CosmicDYB.hh"
-#include "EventGenerator/src/rm48.hh"
+#include "EventGenerator/inc/hrndg2.hh"
+#include "Mu2eUtilities/inc/rm48.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -33,40 +44,34 @@
 #include "ConditionsService/inc/DAQParams.hh"
 #include "RandomNumberService/inc/RandomNumberService.hh"
 
-
 // From CLHEP
-#include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoisson.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 // From Root.
 #include "TH1D.h"
+#include "TH2D.h"
 
 using namespace std;
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
-
-// declare DYB functions here
-extern "C" {
-  void hrndg2_(double[100][4000],const long*,double*,double*,const long*,double*,double*,double*,double*,double*,float*);
-}
+using CLHEP::RandFlat;
+using CLHEP::GeV;
 
 namespace mu2e {
 
-  static const long _ne = 4000;
-  static const long _nth = 100;
-
-  // Mass of the muon, in GeV.
+  // Mass of the muon, in MeV.
   // Once we have the HepPDT package installed, get the mass from there.
-  static const double m = 105.6584; // MeV
+  static const double mMu = 105.6584;
 
   CosmicDYB::CosmicDYB( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
 
     _mean = config.getDouble("cosmicDYB.mean",0.);
-    _muEMin = config.getDouble("cosmicDYB.muEMin",0.);
-    _muEMax = config.getDouble("cosmicDYB.muEMax",1.e5);
+    _muEMin = config.getDouble("cosmicDYB.muEMin", 3000.);
+    _muEMax = config.getDouble("cosmicDYB.muEMax", 1.e5);
 
     // magic number from DYB ? 
     _muCosThMin = config.getDouble("cosmicDYB.muCosThMin",0.00366518);
@@ -77,6 +82,12 @@ namespace mu2e {
     _dz = config.getDouble("cosmicDYB.dz",5000);
     _y0 = config.getDouble("cosmicDYB.y0",0);
 
+    // Dimensions of the arrays.
+    _ne  = config.getInt("cosmicDYB.nBinsE", _default_ne);
+    _nth = config.getInt("cosmicDYB.nBinsTheta",_default_nth);
+
+    // Allocate hrndg2 working space on the heap.
+    _workingSpace.resize(_ne*_nth);
 
     edm::LogInfo log("COSMIC");
     log << "cosmicDYB.mean = " << _mean << "\n"
@@ -86,7 +97,9 @@ namespace mu2e {
 	<< ", cosmicDYB.muCosThMax = " << _muCosThMax << "\n"
 	<< "cosmicDYB.dx = " << _dx 
 	<< ", cosmicDYB.dz = " << _dz
-	<< ", cosmicDYB.y0 = " << _y0 << "\n";
+	<< ", cosmicDYB.y0 = " << _y0 
+	<< ", working space dimenions ("
+	<< _ne << "," << _nth << ")" << "\n";
 
     // Access conditions data.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -101,34 +114,40 @@ namespace mu2e {
     _tmax = accPar->deBuncherPeriod;
     _dt   = _tmax - _tmin;
 
-    // Book histograms.
+    // Book histograms in a separate subdirector for this generator.
     edm::Service<edm::TFileService> tfs;
-    _cosmicMultiplicityH = tfs->make<TH1D>( "cosmicMultiplicityH", "Cosmic Multiplicity", 20, -0.5, 19.5);
+    
+    edm::TFileDirectory tfdir = tfs->mkdir( "CosmicDYB" );
+    _cosmicMultiplicityH = tfdir.make<TH1D>( "MultiplicityH", "Cosmic Multiplicity", 20, -0.5, 19.5);
 
     // log of muon energy (GeV)
-    _cosmicMomH = tfs->make<TH1D>( "cosmicMomH", "log (Momentum, GeV)", 60, -3, 3);
+    _cosmicMomH = tfdir.make<TH1D>( "MomH", "log (Momentum, GeV)", 60, -3, 3);
 
     // charge
-    _cosmicChargeH = tfs->make<TH1D>( "cosmicChargeH", "Muon Charge", 2, -2, 2.);
+    _cosmicChargeH = tfdir.make<TH1D>( "ChargeH", "Muon Charge", 2, -2, 2.);
+
+    // cos(theta)
+    _cosmicCosThetaH = tfdir.make<TH1D>( "CosThetaH", "Cos(Theta)", 60, -1, 1.);
+
+    // cos(theta) vs log(energy)
+    _cosmicCosThetaVsEH = tfdir.make<TH2D>( "CosThetavsEH", "Cos(Theta) vs log (Momentum, GeV)", 
+					     60, -3., 3., 60, -1., 1.);
 
     // Initialize fake RM48 that is used by DYB code.
     edm::Service<edm::RandomNumberGenerator> rng;
-    static CLHEP::RandFlat flat(rng->getEngine());
-    static bool init(true);
-    if ( init ){
-      init = false;
-      setRm48Distribution(flat);
-    }
+    static RandFlat flat(rng->getEngine());
+    setRm48Distribution(flat);
 
     // initialize DYB generator
     float par = 1.;
+
     // convert to GeV
-    _muEMin *= 1e-3;
-    _muEMax *= 1e-3;
+    _muEMin /= GeV;
+    _muEMax /= GeV;
     
     double dim_sum,E,cosTh;
-    ::hrndg2_(_buffer,&_ne,&_muEMin,&_muEMax,&_nth,&_muCosThMin,&_muCosThMax,
-	      &dim_sum,&E,&cosTh,&par);
+    hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
+	      dim_sum,E,cosTh,par);
 
     // rate is per cm^2. The constants are 2*pi times the area
     double tRate = dim_sum*M_PI*0.08*_dx*_dz;
@@ -160,24 +179,27 @@ namespace mu2e {
 
       float par = 111.;  // double precision
       double dim_sum,E,cosTh;
-      ::hrndg2_(_buffer,&_ne,&_muEMin,&_muEMax,&_nth,&_muCosThMin,&_muCosThMax,
-		&dim_sum,&E,&cosTh,&par);
+      hrndg2( _workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
+	      dim_sum,E,cosTh,par);
       
       // energy is in GeV, convert to MeV
-      E *= 1e3;
+      E *= GeV;
 
-      double p = 0;
-      if ( E<= m ) {
-	E = m;
-      } else {
-	p = sqrt(E*E-m*m);
+      double p = safeSqrt(E*E-mMu*mMu);
+      if ( E<= mMu ) {
+	E = mMu;
       }
 
-      _cosmicMomH->Fill(log10(p)-3);
+      // Log10 of momentum, in GeV
+      double log10p = log10(p)-3.;
 
+      _cosmicMomH->Fill(log10p);
+      _cosmicCosThetaH->Fill(cosTh);
+      _cosmicCosThetaVsEH->Fill(log10p,cosTh);
+ 
       // Cosine and sin of polar angle wrt y axis.
       double cy = cosTh;
-      double sy = sin(acos(cosTh));
+      double sy = safeSqrt(1. - cosTh*cosTh);
 
       double phi = 2.*M_PI*RandFlat::shoot();
      
@@ -214,6 +236,7 @@ namespace mu2e {
 
       // Add the cosmic to  the list.
       genParts.push_back( ToyGenParticle( pid, GenId::cosmicDYB, pos, mom, time));
+
     }
   }
 
