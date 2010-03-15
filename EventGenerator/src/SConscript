@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.5 2010/03/13 15:58:06 kutschke Exp $
+# $Id: SConscript,v 1.6 2010/03/15 21:20:08 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/13 15:58:06 $
+# $Date: 2010/03/15 21:20:08 $
 #
 # Original author Rob Kutschke.
 #
@@ -10,12 +10,14 @@ import os, re
 home = os.environ['MU2E_HOME']
 Import('env')
 
+env.Append(FORTRANFLAGS = '-fno-automatic -finit-local-zero -ffortran-bounds-check' )
+
 plugin_cc = Glob('*_plugin.cc', strings=True)
 non_plugin_cc = Glob('*.cc', strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
 fortran = Glob('*.f', strings=True)
 
-cc_and_f = [ non_plugin_cc ]
+cc_and_f = [ non_plugin_cc, fortran ]
 
 if cc_and_f:
     # From: /path1/path2/path3/Name/src extract the string Name field.
@@ -26,7 +28,6 @@ if cc_and_f:
 		      LIBS=[ 'FWCoreFramework',
                              'ToyDP',
                              'CLHEP',
-                             'DYBMuonFlux',
 			     ],
 		      )
     libs=[ local_lib_name ]
