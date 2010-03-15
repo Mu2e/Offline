@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.6 2010/03/11 02:07:42 yury Exp $
-  $Author: yury $
-  $Date: 2010/03/11 02:07:42 $
+  $Id: EventGenerator_plugin.cc,v 1.7 2010/03/15 21:19:14 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/03/15 21:19:14 $
 
   Original author Rob Kutschke
 
@@ -52,6 +52,7 @@
 
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/requireUniqueKey.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/GenId.hh"
 
@@ -110,37 +111,45 @@ namespace mu2e {
     typedef  boost::shared_ptr<GeneratorBase> GeneratorBasePtr;    
     std::vector<GeneratorBasePtr> _generators;
 
+    void checkConfig( const SimpleConfig&  config);
+
   };
 
   // At beginRun time, update any derived geometry information.
   void EventGenerator::beginRun( edm::Run &run, edm::EventSetup const& eSetup ){
+
+    static int ncalls(0);
+    if ( ++ncalls > 1){
+      edm::LogInfo("EventGenerator") 
+	<< "EventGenerator does not change state at beginRun.  Hope that's OK.";
+    }
     
     SimpleConfig config(_configfile);
-
+    checkConfig(config);
+    
     // Change this to modify rather than delete and make an new one??
-    // Also only instantiate ones that are present in the config file.
 
     // Delete generators from the previous run.
     _generators.clear();
 
-    // read parameters
-    bool doConv = config.getBool( "conversionGun.do", 1);
-    bool doCosmicToy = config.getBool( "cosmictoy.do", 0);
-    bool doCosmicDYB = config.getBool( "cosmicDYB.do", 0);
-    bool doPiCapture = config.getBool( "picapture.do", 0);
+    // Which generators will we run?
+    bool doConv          = config.getBool( "conversionGun.do", 1);
+    bool doCosmicToy     = config.getBool( "cosmictoy.do", 0);
+    bool doCosmicDYB     = config.getBool( "cosmicDYB.do", 0);
+    bool doPiCapture     = config.getBool( "picapture.do", 0);
     bool doEjectedProton = config.getBool( "ejectedProtonGun.do", 0);
-    bool doDIO = config.getBool( "decayinorbitGun.do", 0);
-    bool doPiEplusNu = config.getBool( "piEplusNuGun.do", 0);
+    bool doDIO           = config.getBool( "decayinorbitGun.do", 0);
+    bool doPiEplusNu     = config.getBool( "piEplusNuGun.do", 0);
 
     // Instantiate generators for this run.
-    if ( doConv) _generators.push_back( GeneratorBasePtr( new ConversionGun(       run, config)) );
-    if ( doCosmicToy) _generators.push_back( GeneratorBasePtr( new CosmicToy(           run, config)) );
-    if ( doCosmicDYB) _generators.push_back( GeneratorBasePtr( new CosmicDYB(           run, config)) );
-    if ( doPiCapture) _generators.push_back( GeneratorBasePtr( new PiCapture(           run, config)) );
-    if ( doDIO) _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(     run, config)) );
-    if ( doEjectedProton) _generators.push_back( GeneratorBasePtr( new EjectedProtonGun(     run, config)) );
-    if ( doPiEplusNu) _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
-    
+    if ( doConv)          _generators.push_back( GeneratorBasePtr( new ConversionGun(    run, config)) );
+    if ( doCosmicToy)     _generators.push_back( GeneratorBasePtr( new CosmicToy(        run, config)) );
+    if ( doCosmicDYB)     _generators.push_back( GeneratorBasePtr( new CosmicDYB(        run, config)) );
+    if ( doPiCapture)     _generators.push_back( GeneratorBasePtr( new PiCapture(        run, config)) );
+    if ( doDIO)           _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(  run, config)) );
+    if ( doEjectedProton) _generators.push_back( GeneratorBasePtr( new EjectedProtonGun( run, config)) );
+    if ( doPiEplusNu)     _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
+
   }
   
   void
@@ -151,14 +160,30 @@ namespace mu2e {
 
     // Run all of the registered generators.
     for ( std::vector<GeneratorBasePtr>::const_iterator 
-	    i=_generators.begin(),
-	    e=_generators.end(); 
-	  i !=e; ++i ){
+            i=_generators.begin(),
+            e=_generators.end(); 
+          i !=e; ++i ){
       (*i)->generate(*genParticles);
     }
 
     // Put the generated particles into the event.
     edm::OrphanHandle<ToyGenParticleCollection> q = evt.put(genParticles);
+
+  }
+
+  // Look for inconsistencies in the config file.
+  void EventGenerator::checkConfig( const SimpleConfig&  config){
+
+    // The known cosmic ray generators.
+    vector<string> keys;
+    if ( keys.size() == 0 ){
+      keys.push_back("cosmictoy.do");
+      keys.push_back("cosmicDYB.do");
+      keys.push_back("cosmic.do");
+    }
+
+    // Require that 0 or 1 of the generators to be present.
+    requireUniqueKey( keys, config );
 
   }
 
