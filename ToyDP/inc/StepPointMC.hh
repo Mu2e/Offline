@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.6 2010/02/07 00:15:02 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.7 2010/03/15 21:23:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:15:02 $
+// $Date: 2010/03/15 21:23:11 $
 //
 // Original author Rob Kutschke
 //
@@ -37,9 +37,9 @@ namespace mu2e {
       _trackId(-1),
       _volumeId(0),
       _edep(0.),
-      _time(0.),
       _position(),
-      _momentum(){
+      _momentum(),
+      _time(0.){
     }
     
     StepPointMC( int                      trackId,
@@ -52,9 +52,9 @@ namespace mu2e {
       _trackId(trackId),
       _volumeId(volumeId),
       _edep(edep),
-      _time(time),
       _position(position),
-      _momentum(momentum){
+      _momentum(momentum),
+      _time(time){
     }
     
     // Accept compiler generated versions of:
@@ -66,11 +66,11 @@ namespace mu2e {
     void print() const { print(std::cout); }
 
     int                      trackId()  const { return _trackId; }
-    double                   eDep()     const { return _edep;    } 
-    double                   time()     const { return _time;    }
     VolumeId_type            volumeId() const { return _volumeId; }
+    double                   eDep()     const { return _edep;    } 
     CLHEP::Hep3Vector const& position() const { return _position; }
     CLHEP::Hep3Vector const& momentum() const { return _momentum; }
+    double                   time()     const { return _time;    }
 
     // Return the volumeId as a StrawIndex.
     // It's the user's job to know if this is a reasonable thing to do.
