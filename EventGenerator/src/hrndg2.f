@@ -1,11 +1,17 @@
 C
 C  Part of the Daya Bay Cosmic code.
 C
-C  $Id: hrndg2.f,v 1.1 2010/03/13 00:13:09 kutschke Exp $
+C  $Id: hrndg2.f,v 1.2 2010/03/15 21:14:07 kutschke Exp $
 C  $Author: kutschke $
-C  $Date: 2010/03/13 00:13:09 $
+C  $Date: 2010/03/15 21:14:07 $
 C
 C  Original Mu2e author Yury Kolomensky
+C
+C Notes
+C 1) As best I can tell the energy arguments are in GeV. (Rob K.)
+C 2) Must be compiled with -fno-automatic ( -static on some compilers ).
+C 3) If the low energy cut off is below 5 Gev, the initialization step 
+C    is very slow
 
 *********************************************************************
 * Return a random point (x1,x2) distributed according to the contents 
@@ -76,13 +82,13 @@ C  Original Mu2e author Yury Kolomensky
         enddo
        enddo
       sum = sumbox1
-      print *,'*--> do integral !  ---  Result!!!  --- ',sum,'hz'
+c      print *,'*--> do integral !  ---  Result!!!  --- ',sum,'hz'
 
-       If (pro.gt.10.)then
-        print *,'double precision !'
-       Else
-        print *,'single precision !'
-       Endif
+c       If (pro.gt.10.)then
+c        print *,'double precision !'
+c       Else
+c        print *,'single precision !'
+c       Endif
 
       sta1=a1
       ENDIF                        !   only once called  for the same "lowmu"
@@ -163,5 +169,3 @@ C  Original Mu2e author Yury Kolomensky
 *       endif
 **********************************
       END
-
-
