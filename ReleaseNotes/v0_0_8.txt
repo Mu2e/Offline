@@ -3,9 +3,9 @@ Still under construction
            Release notes for Mu2e Offline software, v0_0_8
 
 
-  $Id: v0_0_8.txt,v 1.5 2010/03/13 00:16:33 kutschke Exp $
+  $Id: v0_0_8.txt,v 1.6 2010/03/15 21:39:06 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/03/13 00:16:33 $
+  $Date: 2010/03/15 21:39:06 $
 
 1) Implement the detailed field map in the DS.
    The code has options to enable the full field map, a uniform field
@@ -116,4 +116,32 @@ Still under construction
       EventGenerator/src/rm48.hh  
     Also modified 
       EventGenerator/src/CosmicDYB.cc
+
+18) Updates to make Daya Bay cosmic code work.
+      EventGenerator/src/SConscript 
+         - this now builds the fortran files. It did not before.
+      EventGenerator/src/hrndg2.f   
+         - remove printout and added comments
+      EventGenerator/inc/CosmicDYB.hh 
+      EventGenerator/src/CosmicDYB.cc
+         - Chanaged default value of muEMin.  Lots of structural changes.
+       Mu2eG4/test/genconfig_02.txt
+         - added some example parameters for CosmicDYB.
+
+19) EventGenerator/src/EventGenerator_plugin.cc
+      - Only allow one cosmic ray generator to be present in the configuration.
+      - Warning message if multiple beginRun's are encountered.
+
+20) Add new utility routines:
+     Mu2eUtilities/inc/requireUniqueKey.hh
+     Mu2eUtilities/src/requireUniqueKey.cc
+        - helper routine used in 19)
+     Mu2eUtilities/inc/rm48.hh
+     Mu2eUtilities/src/rm48.cc
+        - moved from EventGenerator/src
+     Mu2eUtilities/src/SConscript
+        - added link time dependency on CLHEP.
+       
+21) ToyDP/inc/StepPointMC.hh
+     - _time data member was out of order initializer list.  Now fixed.
 
