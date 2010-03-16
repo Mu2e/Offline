@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.4 2010/03/11 02:09:13 yury Exp $
-// $Author: yury $ 
-// $Date: 2010/03/11 02:09:13 $
+// $Id: GenId.hh,v 1.5 2010/03/16 23:01:22 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/03/16 23:01:22 $
 //
 // Original author Rob Kutschke
 //
@@ -30,24 +30,22 @@ namespace mu2e {
 
   public:
 
-  // Need to keep the enum and the _name member in sync.
-  enum enum_type {
-    unknown,       particleGun,       conversionGun,
-    cosmicToy,     cosmicDYB,         cosmic,            dio1,
-    dio2,          dio3,              pionCapture,
-    muonCapture,   muonDecayInFlight, ejectedProtonGun, 
-    piEplusNuGun, lastEnum
-  };
+    // Need to keep the enum and the _name member in sync.
+    enum enum_type {
+      unknown,       particleGun,       conversionGun,
+      cosmicToy,     cosmicDYB,         cosmic,            dio1,
+      dio2,          dio3,              pionCapture,
+      muonCapture,   muonDecayInFlight, ejectedProtonGun, 
+      piEplusNuGun, lastEnum
+    };
   
-  // Keep this in sync with the enum. Used in GenId.cc
-#define GENID_NAMES					  \
-    "unknown",     "particleGun",      "conversionGun",   \
-    "cosmicToy",   "cosmicDYB",        "cosmic",           "dio1",     \
-    "dio2",        "dio3",             "pionCapture",     \
-      "muonCapture", "muonDecayInFlight","ejectedProtonGun",	\
-    "piEplusNuGun"
-
-
+    // Keep this in sync with the enum. Used in GenId.cc
+#define GENID_NAMES                                                     \
+    "unknown",     "particleGun",      "conversionGun",                 \
+      "cosmicToy",   "cosmicDYB",        "cosmic",           "dio1",    \
+      "dio2",        "dio3",             "pionCapture",                 \
+      "muonCapture", "muonDecayInFlight","ejectedProtonGun",            \
+      "piEplusNuGun"
 
   public:
 
@@ -71,8 +69,8 @@ namespace mu2e {
     explicit GenId( int id):
       _id(static_cast<enum_type>(id)){
       if ( !isValid() ){
-	// throw or something
-	exit(-1);
+        // throw or something
+        exit(-1);
       }
     }
     
@@ -112,7 +110,7 @@ namespace mu2e {
       return isValid(_id);
     }
 
- private:
+  private:
 
     // The one and only per-instance member datum.
     enum_type _id;
@@ -125,15 +123,15 @@ namespace mu2e {
     // This is really an edm question not a question for the class itself.
     static const int _version = 1000;
     
- };
+  };
   
   // Shift left (printing) operator.
   inline std::ostream& operator<<(std::ostream& ost,
-				  const GenId& id ){
+                                  const GenId& id ){
     ost << "( "
-	<< id.Id() << ": "
-	<< id.name()
-	<< " )";
+        << id.Id() << ": "
+        << id.name()
+        << " )";
     return ost;
   }
 
