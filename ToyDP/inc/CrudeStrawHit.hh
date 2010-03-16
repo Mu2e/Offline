@@ -35,9 +35,9 @@
 //    to be defined.
 // 
 // 
-// $Id: CrudeStrawHit.hh,v 1.6 2010/02/07 00:15:02 kutschke Exp $
+// $Id: CrudeStrawHit.hh,v 1.7 2010/03/16 23:02:49 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:15:02 $
+// $Date: 2010/03/16 23:02:49 $
 //
 // Original author Rob Kutschke
 //
@@ -99,38 +99,38 @@ namespace mu2e {
     // Constructor for a hit that came from an unpacked digi, either 
     // from data or from the full MC chain.
     CrudeStrawHit( StrawIndex         strawIndex_,
-		   float              driftDistance_,
-		   float              driftTime_,
-		   float              sigmaD_,
-		   float              energy_,
-		   DPIndex const&     precursorIndex_,
-		   edm::Event const * event_ = 0
-		   );
+                   float              driftDistance_,
+                   float              driftTime_,
+                   float              sigmaD_,
+                   float              energy_,
+                   DPIndex const&     precursorIndex_,
+                   edm::Event const * event_ = 0
+                   );
 
 
     // Constructor from MC.
     CrudeStrawHit( StrawIndex                  strawIndex_,
-		   float                       driftDistance_,
-		   float                       driftTime_,
-		   float                       sigmaD_,
-		   float                       energy_,
-		   precursor_type              precursorType_,
-		   std::vector<DPIndex> const& precursorIndices_,
-		   float                       trueDriftDistance_,
-		   edm::Event const *          event_ = 0
-		   );
+                   float                       driftDistance_,
+                   float                       driftTime_,
+                   float                       sigmaD_,
+                   float                       energy_,
+                   precursor_type              precursorType_,
+                   std::vector<DPIndex> const& precursorIndices_,
+                   float                       trueDriftDistance_,
+                   edm::Event const *          event_ = 0
+                   );
 
     // A special case of the previous c'tor when there is only one precursor.
     CrudeStrawHit( StrawIndex        strawIndex_,
-		   float             driftDistance_,
-		   float             driftTime_,
-		   float             sigmaD_,
-		   float             energy_,
-		   precursor_type    precursorType_,
-		   DPIndex const&    precursorIndex_,
-		   float             trueDriftDistance_,
-		   edm::Event const* event_ = 0
-		   );
+                   float             driftDistance_,
+                   float             driftTime_,
+                   float             sigmaD_,
+                   float             energy_,
+                   precursor_type    precursorType_,
+                   DPIndex const&    precursorIndex_,
+                   float             trueDriftDistance_,
+                   edm::Event const* event_ = 0
+                   );
     
     // Accept compiler generated versions of:
     //   d'tor
@@ -148,7 +148,7 @@ namespace mu2e {
 
     // Fill a std::vector with (pointers to const) of the precursors of this hit.
     void getStepPointMC( edm::Event const&    event, 
-			 std::vector<StepPointMC const*>& v ) const{
+                         std::vector<StepPointMC const*>& v ) const{
       resolveTransients(event);
       v.insert(v.end(), stepPointMCPointers.begin(), stepPointMCPointers.end());
     }
@@ -178,7 +178,7 @@ namespace mu2e {
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
-				   CrudeStrawHit const& hit){
+                                   CrudeStrawHit const& hit){
     hit.print(ost,false);
     return ost;
   }
