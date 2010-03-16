@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: ToyGenParticle.hh,v 1.2 2009/11/13 23:13:14 kutschke Exp $
+// $Id: ToyGenParticle.hh,v 1.3 2010/03/16 22:58:57 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/13 23:13:14 $
+// $Date: 2010/03/16 22:58:57 $
 //
 // Original author Rob Kutschke
 //
@@ -35,10 +35,10 @@ namespace mu2e {
     ToyGenParticle(){};
 
     ToyGenParticle( PDGCode::type pdgId,
-		    GenId generatorId,
-		    CLHEP::Hep3Vector const&       position,
-		    CLHEP::HepLorentzVector const& momentum,
-		    double time):
+                    GenId generatorId,
+                    CLHEP::Hep3Vector const&       position,
+                    CLHEP::HepLorentzVector const& momentum,
+                    double time):
       _pdgId(pdgId),
       _generatorId(generatorId),
       _position(position),
@@ -48,10 +48,10 @@ namespace mu2e {
 
     // Differs only in the type of second argument.
     ToyGenParticle( PDGCode::type pdgId,
-		    GenId::enum_type generatorId,
-		    CLHEP::Hep3Vector const&       position,
-		    CLHEP::HepLorentzVector const& momentum,
-		    double time):
+                    GenId::enum_type generatorId,
+                    CLHEP::Hep3Vector const&       position,
+                    CLHEP::HepLorentzVector const& momentum,
+                    double time):
       _pdgId(pdgId),
       _generatorId(GenId(generatorId)),
       _position(position),

@@ -5,9 +5,9 @@
 // A persistable index into another data product.
 //
 //
-// $Id: DPIndex.hh,v 1.2 2009/11/03 20:00:08 kutschke Exp $
+// $Id: DPIndex.hh,v 1.3 2010/03/16 22:58:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/03 20:00:08 $
+// $Date: 2010/03/16 22:58:57 $
 //
 
 // Framework includes.
@@ -37,18 +37,18 @@ namespace mu2e {
   };
 
   inline bool operator==(const DPIndex& lhs, 
-			 const DPIndex& rhs){
+                         const DPIndex& rhs){
       return ( lhs.id == rhs.id && lhs.index == rhs.index );
   }
 
   inline bool operator!=(const DPIndex& lhs, 
-			 const DPIndex& rhs){
+                         const DPIndex& rhs){
     return !(lhs==rhs);
   }
 
   // Sort first on ProductID and then on index.
   inline bool operator<(const DPIndex& lhs, 
-			const DPIndex& rhs){
+                        const DPIndex& rhs){
     return ( lhs.id < rhs.id ) || 
       ( lhs.id == rhs.id && lhs.index < rhs.index );
   }
@@ -58,10 +58,10 @@ namespace mu2e {
 
 
   inline std::ostream& operator<<( std::ostream& ost,
-				   DPIndex const& dpi ){
+                                   DPIndex const& dpi ){
     ost << "(" << dpi.id 
-	<< ","  << dpi.index 
-	<< ")";
+        << ","  << dpi.index 
+        << ")";
     return ost;
   }
 

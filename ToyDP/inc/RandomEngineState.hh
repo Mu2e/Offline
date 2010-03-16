@@ -3,9 +3,9 @@
 //
 // Persistent data for the state of one CLHEP::HepRandomEngine.
 //
-// $Id: RandomEngineState.hh,v 1.1 2010/03/07 22:01:00 kutschke Exp $
+// $Id: RandomEngineState.hh,v 1.2 2010/03/16 22:58:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/07 22:01:00 $
+// $Date: 2010/03/16 22:58:57 $
 //
 // Original author Rob Kutschke
 //
@@ -40,15 +40,15 @@ namespace mu2e {
     
     RandomEngineState(){}
     RandomEngineState( const std::string&              label,
-		       const std::vector<StorageType>& state,
-		       const std::vector<StorageType>& seed):
+                       const std::vector<StorageType>& state,
+                       const std::vector<StorageType>& seed):
       label_(label),
       state_(state),
       seed_(seed){
     }
     RandomEngineState( const std::string&                label,
-		       const std::vector<unsigned long>& state,
-		       const std::vector<unsigned long>& seed):
+                       const std::vector<unsigned long>& state,
+                       const std::vector<unsigned long>& seed):
       label_(label){
       setState(state);
       setSeed(seed);

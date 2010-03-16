@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.7 2010/03/15 21:23:11 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.8 2010/03/16 22:58:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/15 21:23:11 $
+// $Date: 2010/03/16 22:58:57 $
 //
 // Original author Rob Kutschke
 //
@@ -43,12 +43,12 @@ namespace mu2e {
     }
     
     StepPointMC( int                      trackId,
-		 VolumeId_type            volumeId,
-		 double                   edep,
-		 double                   time,
-		 CLHEP::Hep3Vector const& position,
-		 CLHEP::Hep3Vector const& momentum
-		 ):
+                 VolumeId_type            volumeId,
+                 double                   edep,
+                 double                   time,
+                 CLHEP::Hep3Vector const& position,
+                 CLHEP::Hep3Vector const& momentum
+                 ):
       _trackId(trackId),
       _volumeId(volumeId),
       _edep(edep),
@@ -88,7 +88,7 @@ namespace mu2e {
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
-				   StepPointMC const& h){
+                                   StepPointMC const& h){
     h.print(ost, false);
     return ost;
   }
