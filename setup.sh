@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.2 2010/02/23 20:50:26 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2010/02/23 20:50:26 $
+# $Id: setup.sh,v 1.3 2010/03/19 01:11:11 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/03/19 01:11:11 $
 #
 # Original author Rob Kutschke
 #
@@ -31,3 +31,6 @@ setup g4emlow     v6_2
 setup g4photon    v2_0
 setup g4radiative v3_2
 setup g4abla      v3_0
+
+# Other products
+setup heppdt      v3_04_01
