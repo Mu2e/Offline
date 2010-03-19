@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.4 2010/03/05 16:04:28 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.5 2010/03/19 01:13:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/05 16:04:28 $
+// $Date: 2010/03/19 01:13:07 $
 //
 // Original author Rob Kutschke
 //
@@ -37,8 +37,6 @@
 #include "boost/shared_ptr.hpp"
 
 namespace mu2e {
-
-  // Forward declarations
 
   class ConditionsService {
 
