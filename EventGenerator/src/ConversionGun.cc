@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.7 2009/12/21 21:36:56 rhbob Exp $ 
-// $Author: rhbob $
-// $Date: 2009/12/21 21:36:56 $
+// $Id: ConversionGun.cc,v 1.8 2010/03/19 01:14:37 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2010/03/19 01:14:37 $
 //
 // Original author Rob Kutschke
 // 
@@ -25,11 +25,13 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace std;
@@ -59,6 +61,7 @@ namespace mu2e {
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
+    ConditionsHandle<ParticleDataTable> pdt("ignored");
     
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
