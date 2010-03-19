@@ -1,9 +1,9 @@
 # Script to build this release.
 
 #
-# $Id: SConstruct,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+# $Id: SConstruct,v 1.2 2010/03/19 01:11:33 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/09/30 22:57:47 $
+# $Date: 2010/03/19 01:11:33 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,12 +16,14 @@ if not os.environ.has_key('MU2E_EXTERNALS'):
 home = os.environ['MU2E_HOME']
 externals = os.environ['MU2E_EXTERNALS']
 rootdir = os.environ['ROOT_DIR']
+heppdtdir = os.environ['HEPPDT_DIR']
 
 # '#' puts the current (top-level) directory into the CPPPATH.
 env = Environment( CPPPATH=[ '#',
 			     '.',
 			     home,
 			     externals+'/include',
+                             heppdtdir+'/include',
 			     rootdir+'/include/root',
 			     externals+'/include/sigc++-2.0',
 			     externals+'/lib/sigc++-2.0/include',
@@ -29,6 +31,7 @@ env = Environment( CPPPATH=[ '#',
 		   LIBPATH=[ '#/lib',
 			     home+'/tmp/lib' ,
 			     externals+'/lib',
+                             heppdtdir+'/lib',
 			     rootdir+'/lib/root',
                              '/lib', '/usr/X11R6/lib',
                            ],
