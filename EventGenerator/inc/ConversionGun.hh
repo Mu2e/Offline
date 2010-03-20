@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.2 2009/10/16 04:20:52 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2009/10/16 04:20:52 $
+// $Id: ConversionGun.hh,v 1.3 2010/03/20 00:59:39 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/03/20 00:59:39 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -42,6 +42,9 @@ namespace mu2e {
 
     // Conversion momentum.
     double _p;
+
+    // Electron mass
+    double _mass;
 
     // Limits on the generated direction.
     double _czmin;

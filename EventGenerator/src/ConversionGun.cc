@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.8 2010/03/19 01:14:37 kutschke Exp $ 
+// $Id: ConversionGun.cc,v 1.9 2010/03/20 00:59:39 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/03/19 01:14:37 $
+// $Date: 2010/03/20 00:59:39 $
 //
 // Original author Rob Kutschke
 // 
@@ -31,7 +31,6 @@
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace std;
@@ -42,10 +41,6 @@ using CLHEP::RandFlat;
 using CLHEP::twopi;
 
 namespace mu2e {
-
-  // Mass of the electron.
-  // Once we have the HepPDT package installed, get this number from there.
-  static const double m = 0.510999;
   
   // Need a Conditions entity to hold info about conversions:
   // endpoints and lifetimes for different materials etc
@@ -62,7 +57,11 @@ namespace mu2e {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
     ConditionsHandle<ParticleDataTable> pdt("ignored");
-    
+
+    // Get the electron mass from the particle data table (in MeV).
+    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus);
+    _mass = e_data.mass().value();
+
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
     double _tmin = daqPar->t0;
@@ -123,7 +122,7 @@ namespace mu2e {
 
     // Derived quantities.
     const double sz   = safeSqrt(1.- cz*cz);
-    double e = sqrt( _p*_p +m*m);
+    double e = sqrt( _p*_p + _mass*_mass );
     
     HepLorentzVector mom( _p*sz*cos(phi2), _p*sz*sin(phi2), _p*cz, e);
 

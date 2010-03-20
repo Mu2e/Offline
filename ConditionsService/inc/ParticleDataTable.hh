@@ -3,20 +3,25 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.hh,v 1.1 2010/03/19 01:18:41 kutschke Exp $
+//   $Id: ParticleDataTable.hh,v 1.2 2010/03/20 00:59:39 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2010/03/19 01:18:41 $
+//   $Date: 2010/03/20 00:59:39 $
 //
 //  Original author Rob Kutschke
 //
 // Notes:
 // 1) For each particle the following info is stored:
-//      pdgid, name, mass, width, lifetime. 
+//      pdgid, name, mass, width
 //     plus errors on the mass and width. See HepPDT::ParticleData.
+//     Lifetimes are computed from the stored width.
 //
-// 2) Units are non-standard for Mu2e:
-//      mass in GeV
-//      lifetimes in seconds
+// 2) In the native file format, units are non-standard for Mu2e:
+//      - masses and widths in GeV
+//      - lifetimes in seconds
+//    So convert the masses and widths to MeV.  This converts
+//    The lifetimes to kilo-seconds!
+//    We are waiting for a change from HepPDT to be able to get the
+//    lifetimes in ns.
 //
 // 3) Why do we have a wrapper?  
 //      a) For safety.  See bullet 4.
@@ -41,7 +46,6 @@
 //
 // 7) I removed all of the accessors and iterators that returned non-const things.
 //
-
 
 // Mu2e includes.
 #include "ConditionsService/inc/ConditionsEntity.hh"
@@ -79,29 +83,34 @@ namespace mu2e {
     }
 
     /// Size of the particle data table and iterators over it.
-    int             size()  const { return pdt.size(); }
-    const_iterator  begin() const { return pdt.begin(); }
-    const_iterator  end()   const { return pdt.end(); }
+    int             size()  const { return _pdt.size(); }
+    const_iterator  begin() const { return _pdt.begin(); }
+    const_iterator  end()   const { return _pdt.end(); }
 
     /// Size of the map of particle names and iterators over it.
-    int                   sizeNameMap()  const { return pdt.sizeNameMap(); }
-    const_iteratorByName  beginNameMap() const { return pdt.beginNameMap(); }
-    const_iteratorByName  endNameMap()   const { return pdt.endNameMap(); }
+    int                   sizeNameMap()  const { return _pdt.sizeNameMap(); }
+    const_iteratorByName  beginNameMap() const { return _pdt.beginNameMap(); }
+    const_iteratorByName  endNameMap()   const { return _pdt.endNameMap(); }
 
     /// Return the name of this particle data table
     //  Cannot return const& since pdt returns by value.
-    std::string tableName() const { return pdt.tableName(); }
+    std::string tableName() const { return _pdt.tableName(); }
 
     // Access the table directly to get at other functions that are not forwarded.
-    HepPDT::ParticleDataTable const& table() const { return pdt;}
+    HepPDT::ParticleDataTable const& table() const { return _pdt;}
+
+    //    void printTable( std::ostream& ostr);
 
   private:
 
     // The actual particle data table.
-    HepPDT::ParticleDataTable pdt;
+    HepPDT::ParticleDataTable _pdt;
 
     // The name of the file from which the data was loaded.
     std::string _tableFilename;
+
+    // Keep track if the units were changed or not.
+    bool _unitsChanged;
 
     // ---  copying; forbidden:
     ParticleDataTable( const HepPDT::ParticleDataTable & orig );
@@ -109,6 +118,10 @@ namespace mu2e {
 
     // A helper function to load the table from a file.
     void loadTableFromFile();
+
+    // Change the units of the masses and widths from GeV to MeV.
+    // This changes the units of lifetimes to kilo-seconds!
+    void changeUnits();
 
   };  // ParticleDataTable
 
