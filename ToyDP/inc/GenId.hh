@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.6 2010/03/23 20:28:02 kutschke Exp $
+// $Id: GenId.hh,v 1.7 2010/03/23 22:14:39 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/23 20:28:02 $
+// $Date: 2010/03/23 22:14:39 $
 //
 // Original author Rob Kutschke
 //
@@ -122,7 +122,7 @@ namespace mu2e {
     // Can this make sense?  What happens if I read in two different
     // files that have different versions?  Should I use cvs version instead?
     // This is really an edm question not a question for the class itself.
-    static const int _version = 1000;
+    static const uint32_t _version = 1000;
     
   };
   
