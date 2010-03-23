@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.hh,v 1.2 2010/03/13 00:09:16 kutschke Exp $
+// $Id: ReadBack.hh,v 1.3 2010/03/23 20:42:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/13 00:09:16 $
+// $Date: 2010/03/23 20:42:10 $
 //
 // Original author Rob Kutschke
 //
@@ -66,6 +66,7 @@ namespace mu2e {
     TH1F* _hzHit;
     TH1F* _hHitNeighbours;
     TH1F* _hCheckPointRadius;
+    TH1F* _hMomentumG4;
 
     TNtuple* _ntup;
 

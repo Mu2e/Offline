@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.2 2010/03/13 00:09:16 kutschke Exp $
+// $Id: ReadBack.cc,v 1.3 2010/03/23 20:40:43 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/13 00:09:16 $
+// $Date: 2010/03/23 20:40:43 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,12 @@
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -80,9 +85,12 @@ namespace mu2e {
     _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
                                           100, 2.25, 2.75 );
 
+    _hMomentumG4 = tfs->make<TH1F>( "hMomentumG4",  "Mommenta of particles created inside G4; (MeV)",
+                                    100, 0., 100. );
+
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
-                                          "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec");
+                                          "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId");
   }
 
   void ReadBack::analyze(const edm::Event& event, edm::EventSetup const&) {
@@ -110,15 +118,29 @@ namespace mu2e {
     edm::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,hits);
 
+    // Get handles to the generated and simulated particles.
+    edm::Handle<ToyGenParticleCollection> genParticles;
+    event.getByType(genParticles);
+
+    edm::Handle<SimParticleCollection> simParticles;
+    event.getByType(simParticles);
+
+    // Handle to information about G4 physical volumes.
+    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    event.getRun().getByType(volumes);
+
+    // Some files might not have the SimParticle and volume information.
+    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
       
     // A silly example just to show that we have a messsage logger.
     if ( hits->size() > 75 ){
       edm::LogWarning("HitInfo")
-	<< "Number of hits "
-	<< hits->size() 
-	<< " is too large.";
+        << "Number of hits "
+        << hits->size() 
+        << " is too large.";
     }
 
     // A silly example just to show how to throw.
@@ -129,8 +151,8 @@ namespace mu2e {
     }
 
     // ntuple buffer.
-    float nt[13];   
- 
+    float nt[15];
+
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
       
@@ -159,7 +181,28 @@ namespace mu2e {
       // coordinates of the straw.  Should be 2.5 mm.
       double s = w.dot(pos-mid);
       Hep3Vector point = pos - (mid + s*w);
+
+      // The simulated particle that made this hit.
+      int trackId = hit.trackId();
+
+      // Default values for these, in case information is not available.
+      int pdgId(0);
+      GenId genId;
+
+      if ( haveSimPart ){
+        SimParticle const& sim = simParticles->at(trackId);
+
+        // PDG Particle Id of the sim particle that made this hit.
+        int pdgId = sim.pdgId();
       
+        // If this is a generated particle, which generator did it come from?
+        // This default constructs to "unknown".
+        if ( sim.fromGenerator() ){
+          ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          genId = gen._generatorId;
+        }
+      }
+
       // Fill some histograms
       _hRadius->Fill(pos.perp());
       _hEnergyDep->Fill(hit.eDep()/keV);
@@ -187,25 +230,67 @@ namespace mu2e {
       nt[10] = hit.time();
       nt[11] = straw.Id().getDevice();
       nt[12] = straw.Id().getSector();
+      nt[13] = pdgId;
+      nt[14] = genId.Id();
       
       _ntup->Fill(nt);
 
       // Print out limited to the first few events.
       if ( _nAnalyzed < _maxFullPrint ){
-	cerr << "Readback hit: "
-	     << event.id().event() << " "
-	     << i <<  " "
-	     << hit.trackId()    << "   "
-	     << hit.volumeId() << " | "
-	     << pca.dca()   << " "
-	     << pos  << " "
-	     << mom  << " "
-	     << point.mag() << " "
-	     << hit.eDep()
-	     << "\n";
+
+        cerr << "Readback hit: "
+             << event.id().event() << " "
+             << i                  <<  " "
+             << hit.trackId()      << "   "
+             << hit.volumeId()     << " | "
+             << pca.dca()          << " "
+             << pos                << " "
+             << mom                << " "
+             << point.mag()        << " "
+             << hit.eDep()
+             << endl;
       }
       
     } // end loop over hits.
+
+
+    // Additional printout and histograms about the simulated particles.
+    if ( haveSimPart && (_nAnalyzed < _maxFullPrint) ){
+
+      ConditionsHandle<ParticleDataTable> pdt("ignored");
+
+      for ( int i=0; i<simParticles->size(); ++ i){
+
+        SimParticle const& sim = simParticles->at(i);
+
+        if ( sim.madeInG4() ) {
+
+          _hMomentumG4->Fill( sim.startMomentum().rho() );
+
+        } else {
+
+          // Particle Data group Id number.
+          int pdgId = sim.pdgId();
+          
+          // Information about generated particle.
+          ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          GenId genId(gen._generatorId);
+
+          // Physical volume in which this track started.
+          PhysicalVolumeInfo const& volInfo = volumes->at(sim.startVolumeIndex());
+
+          cerr << "Simulated Particle: " 
+               << i                   << " "
+               << pdgId               << " "
+               << genId.name()        << " "
+               << sim.startPosition() << " "
+               << volInfo.name()      << " "
+               << volInfo.copyNo()
+               << endl;
+        }
+
+      }
+    }
 
   } // end doLTracker
 
@@ -247,36 +332,36 @@ namespace mu2e {
       const Hep3Vector& mom = hit.momentum();
 
       // Get the cell information.
-//    Cell const& cell = itracker->getCell( hit.volumeId() );
-//    Hep3Vector mid = cell.getMidPoint();
-//    Hep3Vector w   = cell.getDirection();
+      //    Cell const& cell = itracker->getCell( hit.volumeId() );
+      //    Hep3Vector mid = cell.getMidPoint();
+      //    Hep3Vector w   = cell.getDirection();
 
       // Count how many nearest neighbours are also hit.
-//    int nNeighbours = countHitNeighbours( cell, hits );
+      //    int nNeighbours = countHitNeighbours( cell, hits );
 
       // Compute an estimate of the drift distance.
- //   TwoLinePCA pca( mid, w, pos, mom);
+      //   TwoLinePCA pca( mid, w, pos, mom);
 
       // Check that the radius of the reference point in the local
       // coordinates of the cell.  Should be 2.5 mm.
-//    double s = w.dot(pos-mid);
-//    Hep3Vector point = pos - (mid + s*w);
+      //    double s = w.dot(pos-mid);
+      //    Hep3Vector point = pos - (mid + s*w);
 
       // I don't understand the distribution of the time variable.
       // I want it to be the time from the start of the spill.
       // It appears to be the time since start of tracking.
 
       // Fill some histograms
-//    _hRadius->Fill(pos.perp());
+      //    _hRadius->Fill(pos.perp());
       _hTime->Fill(hit.time());
-//    _hHitNeighbours->Fill(nNeighbours);
-//    _hCheckPointRadius->Fill(point.mag());
+      //    _hHitNeighbours->Fill(nNeighbours);
+      //    _hCheckPointRadius->Fill(point.mag());
 
       _hxHit->Fill(pos.x());
       _hyHit->Fill(pos.y());
       _hzHit->Fill(pos.z());
 
-//    _hDriftDist->Fill(pca.dca());
+      //    _hDriftDist->Fill(pca.dca());
       itwp->SelectWireDet(hit.volumeId());
       double distUnit = (itracker->isExternal()) ? 1.0*cm : 1.0*mm ;
       double invDistUnit = 1.0/distUnit;
@@ -299,9 +384,9 @@ namespace mu2e {
       nt[11] = 0;//cell.Id().getDevice();
       nt[12] = 0;//cell.Id().getSector();
 
-//    if (nt[6]<-3.0) {
-//
-//    }
+      //    if (nt[6]<-3.0) {
+      //
+      //    }
 
       _ntup->Fill(nt);
 
@@ -312,10 +397,10 @@ namespace mu2e {
              << n++ <<  " "
              << hit.trackId()    << "   "
              << hit.volumeId() << " | "
-           /*<< pca.dca()   << " "*/
+          /*<< pca.dca()   << " "*/
              << pos  << " "
              << mom  << " "
-           /*<< point.mag()*/
+          /*<< point.mag()*/
              << endl;
       }
       
