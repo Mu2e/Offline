@@ -5,19 +5,27 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.1 2010/02/06 19:39:09 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.2 2010/03/23 20:39:26 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/06 19:39:09 $
+// $Date: 2010/03/23 20:39:26 $
 //
 // Original author Rob Kutschke
 //
 
+// C++ includes
 #include <string>
+#include <map>
 
+// Mu2e includes
+#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
 
-#include "globals.hh"
+// G4 includes.
 #include "G4UserTrackingAction.hh"
+
+// Other includes
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
@@ -27,19 +35,52 @@ namespace mu2e {
   class TrackingAction: public G4UserTrackingAction{
 
   public:
+
     TrackingAction( const SimpleConfig& config);
     virtual ~TrackingAction();
 
-    virtual void PreUserTrackingAction(const G4Track* trk);
+    // These methods are required by G4
+    virtual void PreUserTrackingAction (const G4Track* trk);
     virtual void PostUserTrackingAction(const G4Track* trk);
+
+    // All methods after here are Mu2e specific.
+
+    // Do all things that need to be done at the beginning/end of an event.
+    void endEvent( SimParticleCollection& simParticles );
+    void beginEvent();
+
+    // Record start and end points of each track created by G4.
+    // Copy to the event data.
+    void saveSimParticleStart(const G4Track* trk);
+    void saveSimParticleEnd  (const G4Track* trk);
+    void saveSimParticleCopy (SimParticleCollection& simParticles);
+
+    // Receive persistent volume information and save it for the duration of the run.
+    void beginRun( const PhysicalVolumeHelper& physVolHelper, 
+                   CLHEP::Hep3Vector const& mu2eOrigin ){
+      _physVolHelper = &physVolHelper;
+      _mu2eOrigin    =  mu2eOrigin;
+    }
+
 
   private:
 
-    // Count number of calls to ClassifyNewTrack this event.
-    int ncalls;
-    EventNumberList debugList;
+    // List of events for which to enable debug printout.
+    EventNumberList _debugList;
 
+    // Transient information collected during the event.
+    // Tracks are not processed in order, hence the map.
+    // Used by saveSimParticle*
+    std::map<uint32_t,SimParticle> _spmap;
+
+    // Utility to translate between transient and persistent representations.
+    const PhysicalVolumeHelper* _physVolHelper;
+
+    CLHEP::Hep3Vector _mu2eOrigin;
+
+    // Debug printout.
     void printInfo(const G4Track* trk, const std::string& text);
+
 
   };
 
