@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.3 2010/02/08 17:51:46 rhbob Exp $
+// $Id: HoughTest_plugin.cc,v 1.4 2010/03/23 13:41:14 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/02/08 17:51:46 $
+// $Date: 2010/03/23 13:41:14 $
 //
 // Original author R. Bernstein
 //
@@ -247,10 +247,10 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
     int nstraws = ltracker->getAllStraws().size();
-    static double occupancy = 0.05;
+    static double occupancy = 0.00;
     static int noiseMean = static_cast<int>(nstraws*occupancy);
     int numberOfNoiseHits = RandPoisson::shoot(accidentalEngine,noiseMean);
-             numberOfNoiseHits = 0;
+    //numberOfNoiseHits = 0;
 
     //make a copy of the hits
     StepPointMCCollection plusNoise(*hitsHandle);
@@ -283,7 +283,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
     //remove hits according to inefficiency
-    double inefficiency = 0.05;
+    double inefficiency = 0.00;
     HepRandom::setTheEngine(inefficiencyEngine);
 
     //loop over all hits and delete the element
