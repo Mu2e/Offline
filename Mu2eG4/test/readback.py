@@ -1,9 +1,9 @@
 # Configuration file for Readback
 # Readback the output of g4test_03.py; make histograms and printout.
 #
-# $Id: readback.py,v 1.6 2010/03/13 00:16:24 kutschke Exp $
+# $Id: readback.py,v 1.7 2010/03/23 21:23:11 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/13 00:16:24 $
+# $Date: 2010/03/23 21:23:11 $
 #
 # Original author Rob Kutschke
 #
@@ -39,6 +39,11 @@ process.add_(mu2e.Service("RandomNumberService",
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
        inputfile=mu2e.untracked.string("Mu2eG4/test/geom_01.txt")
+)
+
+# Access the conditions data.
+process.ConditionsService = mu2e.Service("ConditionsService",
+       conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
 )
 
 # Define and configure some modules to do work on each event.
