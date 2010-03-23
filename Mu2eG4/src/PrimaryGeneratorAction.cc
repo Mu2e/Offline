@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.7 2010/03/13 00:09:16 kutschke Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.8 2010/03/23 21:29:26 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/13 00:09:16 $
+// $Date: 2010/03/23 21:29:26 $
 //
 // Original author Rob Kutschke
 //
@@ -50,153 +50,151 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-PrimaryGeneratorAction::PrimaryGeneratorAction( const string& generatorModuleLabel ):
-  _generatorModuleLabel(generatorModuleLabel),
-  _randomUnitSphere(0){
+  PrimaryGeneratorAction::PrimaryGeneratorAction( const string& generatorModuleLabel ):
+    _generatorModuleLabel(generatorModuleLabel),
+    _randomUnitSphere(0){
 
-  G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  _particleDefinition = particleTable->FindParticle("chargedgeantino");
+    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+    _particleDefinition = particleTable->FindParticle("chargedgeantino");
 
-  // Generator for uniform coverage of a restricted region on a unit sphere.
-  _randomUnitSphere =  auto_ptr<RandomUnitSphere>(new RandomUnitSphere ( -0.7, 0.7 ));
+    // Generator for uniform coverage of a restricted region on a unit sphere.
+    _randomUnitSphere =  auto_ptr<RandomUnitSphere>(new RandomUnitSphere ( -0.7, 0.7 ));
 
-  // Book histograms.
-  edm::Service<edm::TFileService> tfs;
-  _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total Multiplicity", 20, 0, 20);
+    // Book histograms.
+    edm::Service<edm::TFileService> tfs;
+    _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total Multiplicity", 20, 0, 20);
 
-}
-
-
-PrimaryGeneratorAction::~PrimaryGeneratorAction(){
-}
+  }
 
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-{ 
+  PrimaryGeneratorAction::~PrimaryGeneratorAction(){
+  }
 
-  // For debugging.
-  //testTrack(anEvent);
 
-  fromEvent(anEvent);
+  void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+  { 
 
-}
+    // For debugging.
+    //testTrack(anEvent);
 
-// Copy generated particles from the event into G4.
-//
-// At the momment none of the supported generators make multi-particle vertices.
-// That may change in the future.
-// 
-void PrimaryGeneratorAction::fromEvent(G4Event* event){ 
+    fromEvent(anEvent);
 
-  // Get the offsets to map from generator world to G4 world.
-  G4ThreeVector const& cosmicReferencePlane = _world->getCosmicReferencePoint();
-  G4ThreeVector const& detectorOrigin       = _world->getMu2eDetectorOrigin();
+  }
 
-  // Get generated particles from the event.
-  edm::Handle<ToyGenParticleCollection> handle;
-  _event->getByLabel(_generatorModuleLabel,handle);
+  // Copy generated particles from the event into G4.
+  //
+  // At the momment none of the supported generators make multi-particle vertices.
+  // That may change in the future.
+  // 
+  void PrimaryGeneratorAction::fromEvent(G4Event* event){ 
 
-  // Fill multiplicity histogram.
-  _totalMultiplicity->Fill( handle->size() );
+    // Get the offsets to map from generator world to G4 world.
+    G4ThreeVector const& cosmicReferencePlane = _world->getCosmicReferencePoint();
+    G4ThreeVector const& detectorOrigin       = _world->getMu2eDetectorOrigin();
+
+    // Get generated particles from the event.
+    edm::Handle<ToyGenParticleCollection> handle;
+    _event->getByLabel(_generatorModuleLabel,handle);
+
+    // Fill multiplicity histogram.
+    _totalMultiplicity->Fill( handle->size() );
   
-  // For each generated particle, add it to the event.
-  for ( unsigned int i=0; i<handle->size(); ++i){
+    // For each generated particle, add it to the event.
+    for ( unsigned int i=0; i<handle->size(); ++i){
 
-    ToyGenParticle const& genpart = (*handle)[i];
+      ToyGenParticle const& genpart = (*handle)[i];
 
-    // Adjust the origin into the G4 world.
-    G4ThreeVector     pos(genpart._position);
-    if( genpart._generatorId == GenId::conversionGun ||
-	genpart._generatorId == GenId::dio1 ||
-	genpart._generatorId == GenId::ejectedProtonGun ||
-	genpart._generatorId == GenId::pionCapture ||
-	genpart._generatorId == GenId::piEplusNuGun){
-      	pos += detectorOrigin;
-    } else if ( genpart._generatorId == GenId::cosmicToy ||
-		genpart._generatorId == GenId::cosmicDYB || 
-		genpart._generatorId == GenId::cosmic ){
-      pos += cosmicReferencePlane;
-    } else {
-      edm::LogError("KINEMATICS")
-	<< "Do not know what to do with this generator id: " 
-	<< genpart._generatorId
-	<< "  Skipping this track.";
-      continue;
+      // Adjust the origin into the G4 world.
+      G4ThreeVector     pos(genpart._position);
+      if( genpart._generatorId == GenId::conversionGun ||
+          genpart._generatorId == GenId::dio1 ||
+          genpart._generatorId == GenId::ejectedProtonGun ||
+          genpart._generatorId == GenId::pionCapture ||
+          genpart._generatorId == GenId::piEplusNuGun){
+        pos += detectorOrigin;
+      } else if ( genpart._generatorId == GenId::cosmicToy ||
+                  genpart._generatorId == GenId::cosmicDYB || 
+                  genpart._generatorId == GenId::cosmic ){
+        pos += cosmicReferencePlane;
+      } else {
+        edm::LogError("KINEMATICS")
+          << "Do not know what to do with this generator id: " 
+          << genpart._generatorId
+          << "  Skipping this track.";
+        continue;
+      }
+
+      // Shorthand for readability: 4-momentum.
+      HepLorentzVector const& p4(genpart._momentum);
+    
+      // Create a new vertex 
+      G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
+    
+      // Create a particle.
+      G4PrimaryParticle* particle = 
+        new G4PrimaryParticle(genpart._pdgId, p4.x(), p4.y(), p4.z(), p4.e() );
+    
+      // Set the charge.  Do I really need to do this?
+      G4ParticleDefinition const* g4id = particle->GetG4code();
+      particle->SetCharge( g4id->GetPDGCharge()*eplus );
+          
+      // Add the particle to the event.
+      vertex->SetPrimary( particle );
+      
+      // Add the vertex to the event.
+      event->AddPrimaryVertex( vertex );
+
     }
 
-    // Shorthand for readability: 4-momentum.
-    HepLorentzVector const& p4(genpart._momentum);
-    
+  }
+
+
+  // A very simple track for debugging G4 volumes and graphics.
+  void PrimaryGeneratorAction::testTrack(G4Event* event){ 
+
+    // All tracks start from the same spot.
+    G4ThreeVector const& position = _world->getMu2eDetectorOrigin();
+
+    // Magnitude of the momentum.
+    G4double p0  = 50. + 100.*G4UniformRand();
+
+    // Generate the momentum 3-vector.
+    G4ThreeVector momentum = p0 * _randomUnitSphere->shoot();
+
+    /*
+    // Status report.
+    printf ( "Forward: %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f\n",
+    1,
+    position.x(),
+    position.y(),
+    position.z(),
+    momentum.x(),
+    momentum.y(),
+    momentum.z(),
+    p0
+    );
+    */
+ 
     // Create a new vertex 
-    G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
-    
-    // Create a particle.
-    G4PrimaryParticle* particle = 
-      new G4PrimaryParticle(genpart._pdgId, p4.x(), p4.y(), p4.z(), p4.e() );
-    
-    // Set the charge.  Do I really need to do this?
-    G4ParticleDefinition const* g4id = particle->GetG4code();
-    particle->SetCharge( g4id->GetPDGCharge()*eplus );
-          
+    G4PrimaryVertex* vertex = new G4PrimaryVertex(position,0.);
+
+    // Create a new particle.
+    G4PrimaryParticle* particle = new 
+      G4PrimaryParticle(_particleDefinition,
+                        momentum.x(),
+                        momentum.y(),
+                        momentum.z()
+                        );
+    particle->SetMass( 0. );
+    particle->SetCharge( eplus );
+    particle->SetPolarization( 0., 0., 0.);
+
     // Add the particle to the event.
     vertex->SetPrimary( particle );
-      
+  
     // Add the vertex to the event.
     event->AddPrimaryVertex( vertex );
 
   }
-
-}
-
-
-// A very simple track for debugging G4 volumes and graphics.
-void PrimaryGeneratorAction::testTrack(G4Event* event){ 
-
-  // All tracks start from the same spot.
-  G4ThreeVector const& position = _world->getMu2eDetectorOrigin();
-
-  // Magnitude of the momentum.
-  G4double p0  = 50. + 100.*G4UniformRand();
-
-  // Generate the momentum 3-vector.
-  G4ThreeVector momentum = p0 * _randomUnitSphere->shoot();
-
-  /*
-  // Status report.
-  printf ( "Forward: %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f\n",
-	   1,
-	   position.x(),
-	   position.y(),
-	   position.z(),
-	   momentum.x(),
-	   momentum.y(),
-	   momentum.z(),
-	   p0
-	   );
-  */
- 
-  // Create a new vertex 
-  G4PrimaryVertex* vertex = new G4PrimaryVertex(position,0.);
-
-  // Create a new particle.
-  G4PrimaryParticle* particle = new 
-    G4PrimaryParticle(_particleDefinition,
-		      momentum.x(),
-		      momentum.y(),
-		      momentum.z()
-		      );
-  particle->SetMass( 0. );
-  particle->SetCharge( eplus );
-  particle->SetPolarization( 0., 0., 0.);
-
-  // Add the particle to the event.
-  vertex->SetPrimary( particle );
-  
-  // Add the vertex to the event.
-  event->AddPrimaryVertex( vertex );
-
-}
-
-
 
 }
