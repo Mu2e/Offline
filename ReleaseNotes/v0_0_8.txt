@@ -3,9 +3,9 @@ Still under construction
            Release notes for Mu2e Offline software, v0_0_8
 
 
-  $Id: v0_0_8.txt,v 1.8 2010/03/20 01:01:09 kutschke Exp $
+  $Id: v0_0_8.txt,v 1.9 2010/03/23 20:41:42 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/03/20 01:01:09 $
+  $Date: 2010/03/23 20:41:42 $
 
 1) Implement the detailed field map in the DS.
    The code has options to enable the full field map, a uniform field
@@ -157,3 +157,42 @@ Still under construction
 23) Revise 22 so that the table will hold particle masses in MeV, even if the table
     supplies them in GeV.  This leaves the lifetimes in odd units and we have
     asked the HepPDT people to fix this.
+
+24) Change some integral data types in persistent objects to be of definite length,
+    int32_t or uint32_t, instead of int or "unsigned int".  This is needed so that
+    files written on a 64 bit machine can be read on a 32 bit machine, and vice versa.
+    This will cause older files to become unreadable.
+    ToyDP/inc/StepPointMC.hh
+    ToyDP/inc/DPIndex.hh
+    ToyDP/inc/GenId.hh
+    ToyDP/inc/ProtoStrawCluster.hh 
+
+25) Change track Id to (0 ... (N-1)) from (1...N).
+    Mu2eG4/src/StrawSD.cc
+    This is needed to match the newly added SimParticleCollection.
+
+26) Add example of skipping data products when writing an output file.
+    Mu2eG4/test/g4test_03.py
+
+27) New files need for data products SimParticleCollection and PhysicalVolumeInfoCollection:
+      ToyDP/inc/PhysicalVolumeInfo.hh
+      ToyDP/inc/PhysicalVolumeInfoCollection.hh
+      ToyDP/inc/SimParticle.hh
+      ToyDP/inc/SimParticleCollection.hh
+    and modify these to add the new data products.
+      ToyDP/src/classes.h 
+      ToyDP/src/classes_def.xml
+
+28) New files needed to construct the info that goes into 27).
+      Mu2eG4/inc/PhysicalVolumeHelper.hh
+      Mu2eG4/inc/VolMapType.hh
+      Mu2eG4/src/PhysicalVolumeHelper.cc
+
+29) Fill in the new data products (see 27) and add them to the event.
+      Mu2eG4/src/G4_plugin.cc 
+      Mu2eG4/inc/TrackingAction.hh
+      Mu2eG4/src/TrackingAction.cc
+
+30) Example of using the new data products.
+      Mu2eG4/src/ReadBack.cc
+      Mu2eG4/src/ReadBack.hh
