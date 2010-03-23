@@ -5,9 +5,9 @@
 // A persistable index into another data product.
 //
 //
-// $Id: DPIndex.hh,v 1.3 2010/03/16 22:58:57 kutschke Exp $
+// $Id: DPIndex.hh,v 1.4 2010/03/23 20:28:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/16 22:58:57 $
+// $Date: 2010/03/23 20:28:02 $
 //
 
 // Framework includes.
@@ -20,7 +20,7 @@ namespace mu2e {
 
     // The actual data for this struct.
     ProductID    id;
-    unsigned int index;
+    uint32_t     index;
 
     DPIndex():
       id(),

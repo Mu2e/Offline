@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.8 2010/03/16 22:58:57 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.9 2010/03/23 20:28:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/16 22:58:57 $
+// $Date: 2010/03/23 20:28:02 $
 //
 // Original author Rob Kutschke
 //
@@ -34,7 +34,7 @@ namespace mu2e {
     typedef unsigned long VolumeId_type;
 
     StepPointMC():
-      _trackId(-1),
+      _trackId(0),
       _volumeId(0),
       _edep(0.),
       _position(),
@@ -42,7 +42,7 @@ namespace mu2e {
       _time(0.){
     }
     
-    StepPointMC( int                      trackId,
+    StepPointMC( uint32_t                 trackId,
                  VolumeId_type            volumeId,
                  double                   edep,
                  double                   time,
@@ -65,7 +65,7 @@ namespace mu2e {
     void print( std::ostream& ost, bool doEndl = true ) const;
     void print() const { print(std::cout); }
 
-    int                      trackId()  const { return _trackId; }
+    uint32_t                 trackId()  const { return _trackId; }
     VolumeId_type            volumeId() const { return _volumeId; }
     double                   eDep()     const { return _edep;    } 
     CLHEP::Hep3Vector const& position() const { return _position; }
@@ -78,7 +78,7 @@ namespace mu2e {
 
   private:
   
-    int               _trackId;
+    uint32_t          _trackId;
     VolumeId_type     _volumeId;
     double            _edep;
     CLHEP::Hep3Vector _position;
