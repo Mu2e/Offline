@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.3 2009/11/11 14:39:00 kutschke Exp $
+// $Id: StrawSD.cc,v 1.4 2010/03/23 20:29:48 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/11 14:39:00 $
+// $Date: 2010/03/23 20:29:48 $
 //
 // Original author Rob Kutschke
 //
@@ -79,7 +79,7 @@ namespace mu2e {
     G4ThreeVector preMomWorld = aStep->GetPreStepPoint()->GetMomentum();
 
     StepPointG4* newHit = 
-      new StepPointG4(aStep->GetTrack()->GetTrackID(),
+      new StepPointG4(aStep->GetTrack()->GetTrackID()-1,
 		      aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
 		      edep,
 		      prePosTracker,
@@ -192,15 +192,13 @@ namespace mu2e {
 
     double ttt = lppca.unit().cosTheta(w);
 
-    printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f\n",
+    printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f | %10.7f %10.7f\n",
 	     eventNo,  _collection->entries(), copy,
 	     aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
 	     prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
-	     preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt  );
+	     preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
+             prePosLocal.perp(),  postPosLocal.perp()  );
     fflush(stdout);
-
-
-
 
     /*
     G4cout << "Measurement: "
