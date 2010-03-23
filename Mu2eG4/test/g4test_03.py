@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.6 2010/03/13 00:12:06 kutschke Exp $
+# $Id: g4test_03.py,v 1.7 2010/03/23 20:31:26 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/13 00:12:06 $
+# $Date: 2010/03/23 20:31:26 $
 #
 # Original author Rob Kutschke
 #
@@ -76,6 +76,11 @@ process.randomsaver = mu2e.EDAnalyzer("RandomNumberSaver")
 process.outfile = mu2e.OutputModule(
     "PoolOutputModule",
     fileName = mu2e.untracked.string('file:data_03.root'),
+    outputCommands = cms.untracked.vstring(
+     'keep *_*_*_*',
+#     'drop mu2eSimParticles_*_*_*'   # Uncomment this line to reduce file size.
+    ),
+
 )
 
 # Look at the hits from G4.
