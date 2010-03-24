@@ -5,9 +5,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.2 2010/02/01 00:15:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/02/01 00:15:05 $
+// $Id: PhysicsList.cc,v 1.3 2010/03/24 18:03:49 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/03/24 18:03:49 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,7 @@
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eReflection/inc/Mu2eReflection.hh"
 
 // G4 includes
 #include "globals.hh"
@@ -153,8 +154,14 @@ namespace mu2e{
 
   // Electromagnetic processes.
   void PhysicsList::ConstructEM(){
+   
+    //
+    // are we doing Mu2eReflection? 
+    ;
 
+    if (!( _config->getBool("mu2eReflection",false))) {
     // Loop over all defined particle types.
+      //      cout << "defining physics processes" << endl; assert (2==1);
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
 
@@ -176,8 +183,7 @@ namespace mu2e{
 	pmanager->AddProcess(new G4eMultipleScattering, -1, 1, 1);
 	pmanager->AddProcess(new G4eIonisation,         -1, 2, 2);
 	pmanager->AddProcess(new G4eBremsstrahlung,     -1, 3, 3);      
-	
-      } else if (particleName == "e+") {
+     } else if (particleName == "e+") {
 	pmanager->AddProcess(new G4eMultipleScattering, -1, 1, 1);
 	pmanager->AddProcess(new G4eIonisation,         -1, 2, 2);
 	pmanager->AddProcess(new G4eBremsstrahlung,     -1, 3, 3);
@@ -211,6 +217,8 @@ namespace mu2e{
 	pmanager->AddProcess(new G4hIonisation,         -1, 2, 2);
       }
     }
+    }
+
   }
   
 
@@ -218,15 +226,10 @@ namespace mu2e{
 
     // Does this leak?
     G4Decay* theDecayProcess = new G4Decay();
-
-    // Loop over all particle types.
     theParticleIterator->reset();
-    while( (*theParticleIterator)() ){
-
-      // Properties of this particle type.
+    while( (*theParticleIterator)() ){ 
       G4ParticleDefinition* particle = theParticleIterator->value();
       G4ProcessManager* pmanager = particle->GetProcessManager();
-
       if (theDecayProcess->IsApplicable(*particle)) { 
 	pmanager ->AddProcess(theDecayProcess);
 	// set ordering for PostStepDoIt and AtRestDoIt
@@ -234,6 +237,26 @@ namespace mu2e{
 	pmanager ->SetProcessOrdering(theDecayProcess, idxAtRest);
       }
     }
+
+
+    if (_config->getBool("mu2eReflection",false))
+      {
+	//mu2e reflection; segregate code for debugging 
+	Mu2eReflection* theReflectionProcess = new Mu2eReflection(
+								  "TargetFoil_",
+								  "ToyDSDownstreamVacuum",
+								  .001*meter);
+	theParticleIterator->reset();
+	while( (*theParticleIterator)() ){
+	  G4ParticleDefinition* particle = theParticleIterator->value();
+	  G4ProcessManager* pmanager = particle->GetProcessManager();
+	  if (theReflectionProcess->IsApplicable(*particle)) {
+	    pmanager ->AddProcess(theReflectionProcess);
+	    //set ordering for PostStepDoIt
+	    pmanager ->SetProcessOrdering(theReflectionProcess, idxPostStep);
+	  }
+	}
+      }
   }
   
   void PhysicsList::AddStepMax(){
