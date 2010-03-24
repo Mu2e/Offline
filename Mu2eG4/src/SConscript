@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.4 2010/03/23 21:23:35 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/03/23 21:23:35 $
+# $Id: SConscript,v 1.5 2010/03/24 17:52:29 rhbob Exp $
+# $Author: rhbob $
+# $Date: 2010/03/24 17:52:29 $
 #
 # Original author Rob Kutschke.
 #
@@ -112,6 +112,7 @@ if non_plugin_cc:
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'FWCoreFramework',
                              'Mu2eUtilities',
+                             'Mu2eReflection',
                              'ConditionsService_plugin',
                               G4GRANULARLIBS,
                               ROOTGEOM,                           
