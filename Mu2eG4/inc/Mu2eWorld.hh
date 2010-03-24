@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.6 2010/02/24 15:41:24 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2010/02/24 15:41:24 $
+// $Id: Mu2eWorld.hh,v 1.7 2010/03/24 18:33:49 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/03/24 18:33:49 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,10 @@ class G4ExactHelixStepper;
 class G4ChordFinder;
 class G4FieldManager;
 class G4UserLimits;
+class G4HelixSimpleRunge;
+class G4ClassicalRK4;
+class G4CashKarpRKF45;
+
 
 #include "G4String.hh"
 #include "G4ThreeVector.hh"
@@ -123,17 +127,17 @@ namespace mu2e {
     //need these in both cases
     std::auto_ptr<G4Mag_UsualEqRhs>    _usualUpstreamRHS;
     std::auto_ptr<G4ExactHelixStepper> _exactUpstreamHelix;
+    std::auto_ptr<G4ClassicalRK4 >     _rungeUpstreamHelix;
     std::auto_ptr<G4ChordFinder>       _chordUpstreamFinder;
     std::auto_ptr<G4FieldManager>      _fieldUpstreamMgr;
     std::auto_ptr<G4Mag_UsualEqRhs>    _usualDownstreamRHS;
     std::auto_ptr<G4ExactHelixStepper> _exactDownstreamHelix;
+    std::auto_ptr<G4ClassicalRK4>     _rungeDownstreamHelix;
     std::auto_ptr<G4ChordFinder>       _chordDownstreamFinder;
     std::auto_ptr<G4FieldManager>      _fieldDownstreamMgr;
     std::auto_ptr<G4UserLimits>        _stepLimit;
     std::auto_ptr<G4UserLimits>        _stepUpstreamLimit;
     std::auto_ptr<G4UserLimits>        _stepDownstreamLimit;
-
-
 
     std::auto_ptr<G4AssemblyVolume>    _lTrackerWedgeAssembly;
     std::auto_ptr<G4AssemblyVolume>    _lTrackerVaneAssembly;

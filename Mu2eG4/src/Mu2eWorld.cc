@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.9 2010/02/24 15:42:26 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2010/02/24 15:42:26 $
+// $Id: Mu2eWorld.cc,v 1.10 2010/03/24 18:33:42 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/03/24 18:33:42 $
 //
 // Original author Rob Kutschke
 //
@@ -82,6 +82,9 @@
 #include "G4TransportationManager.hh"
 #include "G4UserLimits.hh"
 #include "G4SDManager.hh"
+#include "G4ClassicalRK4.hh"
+#include "G4CashKarpRKF45.hh"
+
 //#include "G4GDMLParser.hh"
 
 //
@@ -757,6 +760,8 @@ namespace mu2e {
 	<< "illegal field config as specified in geom.txt \n";
       }
 
+
+
     if (detSolFieldForm == detSolFullField)
       {
 	//
@@ -764,17 +769,18 @@ namespace mu2e {
 
 	_detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
 	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
-	_exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
+	_rungeUpstreamHelix  = auto_ptr<G4ClassicalRK4>(new G4ClassicalRK4(_usualUpstreamRHS.get()));
         _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
-									    , _exactUpstreamHelix.get() ));
+									    , _rungeUpstreamHelix.get() ));
         _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
 										 _chordUpstreamFinder.get(), true));
 	//
 	//downstream varying section
 	_detSolDownstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
 	_usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamVaryingBField.get() ) );
-	_exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
-        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamVaryingBField.get(), stepDownstreamMinimum									    , _exactDownstreamHelix.get() ));
+	_rungeDownstreamHelix  = auto_ptr<G4ClassicalRK4>(new G4ClassicalRK4(_usualDownstreamRHS.get()));
+        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamVaryingBField.get(), stepDownstreamMinimum,
+										  _rungeDownstreamHelix.get() ));
         _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamVaryingBField.get(), 
 										   _chordDownstreamFinder.get(), true));
 
@@ -785,10 +791,10 @@ namespace mu2e {
 	//
 	//upstream varying section
 	_detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
-	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
-	_exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
+	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get()));;
+	_rungeUpstreamHelix  = auto_ptr<G4ClassicalRK4> (new G4ClassicalRK4(_usualUpstreamRHS.get()));
         _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
-									    , _exactUpstreamHelix.get() ));
+									    , _rungeUpstreamHelix.get() ));
         _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
 										 _chordUpstreamFinder.get(), true));
 
@@ -810,7 +816,6 @@ namespace mu2e {
 	// constant field, but split into two parts; upstream first
 	G4double bzUp = _config->getDouble("toyDS.bz") * tesla;
 	_detSolUpstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzUp)));
-	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamConstantBField.get() ) );
 	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamConstantBField.get() ) );
 	_exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
         _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamConstantBField.get(), stepUpstreamMinimum
