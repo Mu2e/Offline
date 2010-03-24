@@ -1,17 +1,17 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfigReflection.txt,v 1.2 2010/03/24 18:57:23 rhbob Exp $
+// $Id: genconfigReflection.txt,v 1.3 2010/03/24 19:08:08 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/03/24 18:57:23 $
+// $Date: 2010/03/24 19:08:08 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
 
 // what processes to do
 bool ejectedProtonGun.do = 0;
-bool conversionGun.do = 0;
-bool decayinorbitGun.do = 1;
+bool conversionGun.do = 1;
+bool decayinorbitGun.do = 0;
 //Mu2e reflection process; this will turn off all physics processes
 bool mu2eReflection = true;
 
