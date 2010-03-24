@@ -1,8 +1,8 @@
 # Configuration file for G4Test03
 #
-# $Id: houghtest.py,v 1.3 2010/03/05 23:56:18 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/03/05 23:56:18 $
+# $Id: houghtest.py,v 1.4 2010/03/24 18:49:53 rhbob Exp $
+# $Author: rhbob $
+# $Date: 2010/03/24 18:49:53 $
 #
 # Original author Rob Kutschke
 #
@@ -57,23 +57,33 @@ process.source = mu2e.Source("EmptySource")
 
 process.generate = mu2e.EDProducer(
     "EventGenerator",
-    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_03.txt")
+    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfigReflection.txt")
 )
 
 # Run G4 and add its hits to the event.
 process.g4run = mu2e.EDProducer(
-    "G4"
+    "G4",
+    generatorModuleLabel = mu2e.string("generate"),
     )
+
+# Save state of random numbers to the event.
+process.randomsaver = mu2e.EDAnalyzer("RandomNumberSaver")
 
 process.outfile = mu2e.OutputModule(
     "PoolOutputModule",
     fileName = cms.untracked.string('file:hough_03.root'),
+        outputCommands = cms.untracked.vstring(
+     'keep *_*_*_*',
+#     'drop mu2eSimParticles_*_*_*'   # Uncomment this line to reduce file size.
+     ),
 )
 
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
 # this line tells me where to get the plugin file from    
     "HoughTest",
+    g4ModuleLabel = mu2e.string("g4run"),
+    minimumEnergy = mu2e.double(0.001),
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
