@@ -1,0 +1,46 @@
+//
+// Run-time config info for the event generators.
+//
+// $Id: genconfigReflection.txt,v 1.1 2010/03/24 17:35:41 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/03/24 17:35:41 $
+//
+// Original author Rob Kutschke
+// added EjectedProtonGun process
+
+// what processes to do
+bool ejectedProtonGun.do = 1;
+bool conversionGun.do = 0;
+bool decayinorbitGun.do = 0;
+//Mu2e reflection process; this will turn off all physics processes
+bool mu2eReflection = true;
+
+// Limits on cos(polar angle):
+double conversionGun.czmin = 0.5;
+double conversionGun.czmax = 0.7;
+double decayinorbitGun.czmin = 0.5;
+double decayinorbitGun.czmax = 0.7;
+double ejectedProtonGun.czmin = 0.5;
+double ejectedProtonGun.czmax = 0.7;
+
+// Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
+double decayinorbitGun.elow = 100.;
+double ejectedProtonGun.elow = 0.0;
+double ejectedProtonGun.ehi = 300.;
+
+// Time limits in ns, relative to protons on target.
+double conversionGun.tmin  =  700.;
+double conversionGun.tmax  = 1694.;
+double decayinorbitGun.tmin  =  700.;
+double decayinorbitGun.tmax  = 1694.;
+double ejectedProtonGun.tmin  =  700.;
+double ejectedProtonGun.tmax  = 1694.;
+
+// Mean multiplicities for the two background generators.
+double cosmictoy.mean =  0.0;
+double picapture.mean =  0.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
