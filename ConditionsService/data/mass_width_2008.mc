@@ -1,3 +1,15 @@
+*
+* Particle data table with precise masses and widths taken from HepPDT version 3.04.1
+*
+*   $Id: mass_width_2008.mc,v 1.2 2010/03/25 18:31:25 kutschke Exp $
+*   $Author: kutschke $
+*   $Date: 2010/03/25 18:31:25 $
+*
+*  Original Mu2e author Rob Kutschke
+*
+* See discussion in ConditionsService/src/ParticleDataTable.cc for how this file is used.
+*
+*
 * MASSES, WIDTHS, AND MC ID NUMBERS FROM 2008 EDITION OF RPP
 *
 * The following values were generated on July 2008 by the Berkeley Particle

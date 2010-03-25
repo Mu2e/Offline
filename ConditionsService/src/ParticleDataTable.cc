@@ -1,22 +1,34 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.cc,v 1.2 2010/03/20 00:59:39 kutschke Exp $
+//   $Id: ParticleDataTable.cc,v 1.3 2010/03/25 18:31:25 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2010/03/20 00:59:39 $
+//   $Date: 2010/03/25 18:31:25 $
 //
 //
-// 1) In changeUnits I want to loop over all elements in the table and change some
-//    units, in situ. The minor complication is that there is no non-const iterator
-//    over the table.  But we can stitch one together using two components.  First,
-//    there is an accessor by ParticleID to give a non-const pointer to any element
-//    in the table.  Also, there is a const iterator over the table.
+// 1) In changeUnits and improveData I want to loop over all elements in the 
+//    and modify their contents. The minor complication is that there is no 
+//    non-const iterator over the table.  But we can stitch one together using 
+//    two components.  First, there is an accessor by ParticleID to give a 
+//    non-const pointer to any element in the table.  Also, there is a const 
+//    iterator over the table.
 //
-// 2) It appears that data in the table is not guarantteed to be accessible until 
-//    the builder goes out of scope.  However it appears that sometimes it is 
-//    possible to access the table before that.
+// 2) The table is populated in the destructor of the table builder.  So it is
+//    not valid until the table builder goes out of scope.
 //
+// 3) At present mass_width_2008.mc contains precise values of masses and widths
+//    but it is missing a lot of particles and does not contain antiparticles.
+//    Moreover if I add anti-particles to the table the code that reads the tables
+//    skips them.  On the other hand particle.tbl has all of the particles present
+//    but it has crude values for the masses and widths.  This code first reads
+//    particle.tbl to make sure that it has all of the particles; this will be the
+//    permanent particle data table.  Then the code reads mass_width_2008.mc into
+//    a temporary table. For all particles that are present in both tables, the
+//    code copies the masses and widths from the temporary table to the permanent table.
+//    Then the temporary table goes out of scope.
+//    
 #include <fstream>
+#include <iomanip>
 
 // Framework include files.
 #include "FWCore/Utilities/interface/Exception.h"
@@ -29,6 +41,7 @@
 
 // External include files.
 #include "HepPDT/TableBuilder.hh"
+#include "HepPDT/TempParticleData.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;
@@ -36,6 +49,7 @@ using namespace std;
 using HepPDT::ParticleData;
 using HepPDT::ParticleID;
 using HepPDT::Measurement;
+using HepPDT::TempParticleData;
 using CLHEP::GeV;
 using CLHEP::second;
 
@@ -56,7 +70,7 @@ namespace mu2e {
     _unitsChanged(false){
     
     _tableFilename = config.getString("particleDataTable.filename",
-                                      "ConditionsService/data/mass_width_2008.mc");    
+                                      "ConditionsService/data/particle.tbl");
     
     loadTableFromFile();
   }
@@ -75,11 +89,16 @@ namespace mu2e {
           << "Unable to open particle data file: " 
           << _tableFilename << "\n";
       }
-      HepPDT::addPDGParticles( in, tb);
+      //HepPDT::addPDGParticles( in, tb);
+      HepPDT::addParticleTable( in, tb, true);
+
     }
+
+    improveData();
 
     // Make sure masses and widths are in MeV.
     changeUnits();
+
   }
 
   // Accessor by ID that checks for null pointer.
@@ -107,7 +126,7 @@ namespace mu2e {
   }
 
   void ParticleDataTable::changeUnits(){
-
+ 
     // Electron mass, in MeV.
     double eMassMeV = 0.510999;
 
@@ -116,15 +135,16 @@ namespace mu2e {
 
     // Ratio of two measures of the mass.
     double r = eMass/eMassMeV;
+    double log10r = log10(r);
 
     // Tolerance on the ratio.
-    double tolerance = 1.e-7;
+    double tolerance = 0.1;
 
     // Decide if the table is in MeV, GeV or something else?
     int units(0);
-    if ( std::abs(r-1.0) < tolerance ){
+    if ( std::abs(log10r) < tolerance ){
       units = 1;
-    } else if ( std::abs(r-0.001) < tolerance ){
+    } else if ( std::abs(log10r+3.) < tolerance ){
       units = 2;
     }
 
@@ -132,7 +152,8 @@ namespace mu2e {
       edm::LogWarning("CONDITIONS") 
         << "Did not recognize the units of masses in the particle data table.\n"
         << "The electron mass appears to be: "
-        << eMass;
+        << eMass 
+        << "  Hope that's OK.\n";
     }
 
     // Units are GeV, so change them to MeV.
@@ -148,8 +169,7 @@ namespace mu2e {
             i!=e; ++i ){
 
         // Get non-const reference to the particle data.  See Note 1.
-        ParticleData const& tmp = i->second;
-        ParticleData& particle = *_pdt.particle(tmp.ID());
+        ParticleData& particle = *_pdt.particle(i->first.pid());
           
         // Extract properties with dimensions of mass.
         Measurement mass   = particle.mass();
@@ -171,5 +191,54 @@ namespace mu2e {
     }
 
   } // end changeUnits.
+
+
+  // This is a temporary hack.  See note 3.
+  void ParticleDataTable::improveData(){
+
+    // Temporary table to hold the better masses and widths.
+    HepPDT::ParticleDataTable tmpTable;
+
+    // Fill the temporary table. See note 2.
+    {
+      // Construct the table builder.
+      HepPDT::TableBuilder  tb(tmpTable);
+
+      string tmpDataFile = "ConditionsService/data/mass_width_2008.mc";
+
+      // Build the table from the data file.
+      ifstream in( tmpDataFile.c_str() );
+      if ( !in ) {
+        throw cms::Exception("FILE")
+          << "Unable to open temporary particle data file: " 
+          << tmpDataFile << "\n";
+      }
+      HepPDT::addPDGParticles( in, tb);
+    }
+
+    // Copy masses and widths from the temporary table to the permanent one.
+    for ( HepPDT::ParticleDataTable::const_iterator i=_pdt.begin(), e=_pdt.end();
+          i!=e; ++i ){
+
+      // Get non-const access to each particle. See note 1.
+      ParticleData* particle = _pdt.particle( i->first.pid() );
+      
+      ParticleData* tmp = tmpTable.particle( std::abs(i->first.pid()) );
+      if ( !tmp ) continue;
+
+      // hadrons, leptons and gamma, Z, W, W-
+      bool doit = particle->isHadron() ||  particle->isLepton() ||
+        ( std::abs(particle->pid()) > 21 && std::abs(particle->pid()) < 25 );
+
+      if ( doit ){
+        particle->setMass(tmp->mass());
+        particle->setTotalWidth(tmp->totalWidth());
+      }
+      
+    }
+
+
+
+  } // end improveData
 
 }  // end namespace mu2e

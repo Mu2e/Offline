@@ -3,9 +3,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.hh,v 1.2 2010/03/20 00:59:39 kutschke Exp $
+//   $Id: ParticleDataTable.hh,v 1.3 2010/03/25 18:31:25 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2010/03/20 00:59:39 $
+//   $Date: 2010/03/25 18:31:25 $
 //
 //  Original author Rob Kutschke
 //
@@ -122,6 +122,9 @@ namespace mu2e {
     // Change the units of the masses and widths from GeV to MeV.
     // This changes the units of lifetimes to kilo-seconds!
     void changeUnits();
+
+    // Improve masses and lifetimes.
+    void improveData();
 
   };  // ParticleDataTable
 
