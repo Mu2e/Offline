@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.7 2010/03/15 21:19:14 kutschke Exp $
+  $Id: EventGenerator_plugin.cc,v 1.8 2010/03/29 16:20:16 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/03/15 21:19:14 $
+  $Date: 2010/03/29 16:20:16 $
 
   Original author Rob Kutschke
 
@@ -134,6 +134,7 @@ namespace mu2e {
 
     // Which generators will we run?
     bool doConv          = config.getBool( "conversionGun.do", 1);
+    bool doParticleGun   = config.getBool( "particleGun.do",   0);
     bool doCosmicToy     = config.getBool( "cosmictoy.do", 0);
     bool doCosmicDYB     = config.getBool( "cosmicDYB.do", 0);
     bool doPiCapture     = config.getBool( "picapture.do", 0);
@@ -142,6 +143,7 @@ namespace mu2e {
     bool doPiEplusNu     = config.getBool( "piEplusNuGun.do", 0);
 
     // Instantiate generators for this run.
+    if ( doParticleGun)   _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
     if ( doConv)          _generators.push_back( GeneratorBasePtr( new ConversionGun(    run, config)) );
     if ( doCosmicToy)     _generators.push_back( GeneratorBasePtr( new CosmicToy(        run, config)) );
     if ( doCosmicDYB)     _generators.push_back( GeneratorBasePtr( new CosmicDYB(        run, config)) );

@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.8 2010/03/23 21:29:26 kutschke Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.9 2010/03/29 16:20:16 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/23 21:29:26 $
+// $Date: 2010/03/29 16:20:16 $
 //
 // Original author Rob Kutschke
 //
@@ -104,9 +104,10 @@ namespace mu2e {
 
       ToyGenParticle const& genpart = (*handle)[i];
 
-      // Adjust the origin into the G4 world.
+      // Transform from generator coordinate system G4 world coordinate system.
       G4ThreeVector     pos(genpart._position);
       if( genpart._generatorId == GenId::conversionGun ||
+          genpart._generatorId == GenId::particleGun ||
           genpart._generatorId == GenId::dio1 ||
           genpart._generatorId == GenId::ejectedProtonGun ||
           genpart._generatorId == GenId::pionCapture ||
