@@ -3,9 +3,9 @@ Still under construction
            Release notes for Mu2e Offline software, v0_0_8
 
 
-  $Id: v0_0_8.txt,v 1.10 2010/03/23 20:51:10 kutschke Exp $
+  $Id: v0_0_8.txt,v 1.11 2010/03/29 16:43:48 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/03/23 20:51:10 $
+  $Date: 2010/03/29 16:43:48 $
 
 1) Implement the detailed field map in the DS.
    The code has options to enable the full field map, a uniform field
@@ -198,3 +198,19 @@ Still under construction
       Mu2eG4/src/ReadBack.hh
     This works correctly whether or not the input file has the SimParticle data product
     present.
+
+31) Bob Bernstein added a discrete process to reflect particles off of a surface.
+    Use to do studies of precision in propagation in magnetic fields.
+    See email to mu2e-sim on March 23, 2010.
+
+32) Modify particle data table to get antiparticles correct.  
+      ConditionsService/data/mass_width_2008.mc
+      ConditionsService/inc/particle.tbl
+      ConditionsService/inc/ParticleDataTable.hh
+      ConditionsService/src/ParticleDataTable.cc
+
+33) Add particle gun to the generator.
+      EventGenerator/src/EventGenerator_plugin.cc        
+      Mu2eG4/src/PrimaryGeneratorAction.cc
+      EventGenerator/inc/ParticleGun.hh
+      EventGenerator/src/ParticleGun.cc
