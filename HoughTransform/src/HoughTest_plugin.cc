@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.4 2010/03/23 13:41:14 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/03/23 13:41:14 $
+// $Id: HoughTest_plugin.cc,v 1.5 2010/03/29 18:35:37 shanahan Exp $
+// $Author: shanahan $ 
+// $Date: 2010/03/29 18:35:37 $
 //
 // Original author R. Bernstein
 //
@@ -153,6 +153,9 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     int countHitNeighbours( Straw const& straw, 
 			    StepPointMCCollection const* hits );
 
+    void HoughTest::bookEventHistos(edm::EventNumber_t);
+    void HoughTest::fillEventHistos(
+         mu2e::houghtransform::HoughTransform::houghCircleStruct);
   };
 
 
@@ -286,16 +289,10 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     double inefficiency = 0.00;
     HepRandom::setTheEngine(inefficiencyEngine);
 
-    //loop over all hits and delete the element
-
-    //note to self, 1/5/10: I don't think I can just loop over hits and delete them because 
-    //I'm going to foul up the iterator.  I think I need to loop over the original and then copy new elements
-    //to it if they meet the criterion.  Rob says this is the right way for now.  Code it up post-Rice
-
-    //behind the scenes somebody built me a copy constructor and assignment operators for vectors.  thanks!
+    //make a copy of all hits, loop over them, and kill according to 
+    // desired inefficiency
     StepPointMCCollection inefficientHits(*hitsHandle);
     inefficientHits.clear();
-    //cout << "size of inefficientHits = " << inefficientHits.size() << endl;
     for( StepPointMCCollection::const_iterator i = hits->begin(); i!= hits->end(); ++i ) 
       {
 	if (CLHEP::RandFlat::shoot(inefficiencyEngine) >= inefficiency)
@@ -329,33 +326,9 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     //cout << endl << "RHB HoughTransforming event # " << evt.id().event() << endl;
 
 
-    if ( (ncalls == 1 && singleHoughHisto) || !singleHoughHisto)
-      {	
-	RootNameTitleHelper radiusHisto("_histoRadius","Radius Accumulator Space Event",evt.id().event(),5);
-	RootNameTitleHelper radiusErrorHisto("_histoErrorRadius","Radius Error Event",evt.id().event(),5);
-	RootNameTitleHelper dcaHisto("_histoDCA","Distance of Closest Approch",evt.id().event(),5);
-	RootNameTitleHelper centerHisto("_histoCenter","Center Accumulator Space Event",evt.id().event(),5);
-	RootNameTitleHelper nStrawsHisto("_histoNStraws","Number of Straws in Circles, Event",evt.id().event(),5);
-	RootNameTitleHelper radiusDCAHisto("_histoRadiusDCA","Radius vs. DCA, Event",evt.id().event(),5);
-	RootNameTitleHelper radiusDCACenterHisto("_histoRadiusDCACenter","Radius vs. DCA vs Center, Event",evt.id().event(),5);
-
-	_histoRadius = tfs->make<TH1F>(radiusHisto.name(),radiusHisto.title(),
-				       80,100.,500.);
-	_histoDCA = tfs->make<TH1F>(dcaHisto.name(),dcaHisto.title(),
-				    110,0.,110.);
-	_histoRadiusDCA = tfs->make<TH2F>(radiusDCAHisto.name(),radiusDCAHisto.title(),
-					  80,100.,500.,120,-10.,110.);
-	_histoRadiusDCACenter = tfs->make<TH3F>(radiusDCACenterHisto.name(),radiusDCACenterHisto.title(),
-						80,100.,500.,120,-10.,110.,100,0.,1000.);
-	_histoCenter = tfs->make<TH2F>(centerHisto.name(),centerHisto.title(),
-				       100,-1000.,1000.,100,-1000.,1000.);
-	_histoRadiusError = tfs->make<TH1F>(radiusErrorHisto.name(),radiusErrorHisto.title(), 
-					    100,0.,100.);
-	_histoNStraws = tfs->make<TH1F>(nStrawsHisto.name(),nStrawsHisto.title(), 
-					100,0.,100.);
-      }
-
-
+    // Book histogram on the first call regardless, and book new ones if
+    //  unless disabled by singHoughHisto
+    if ( ncalls == 1 || !singleHoughHisto) bookEventHistos(evt.id().event());
 
     int minHitsforHough = 3;
     //cout << "minHitsforHough must be >3, size of hits = " << hits->size() << "and plusHits size = " << plusNoiseHits->size() << endl; 
@@ -364,44 +337,28 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	mu2e::houghtransform::HoughTransform trialHough;
 	mu2e::houghtransform::HoughTransform::houghCandidates houghTracks;
 
-    // look for circles in hough space
+    // look for circles in hough space: findHoughTracks fills houghTracks
+    // with all houghCircleStucts it can find.  The latter are all combinations
+    // of 3 hits with their exact circle solution.
 	trialHough.foundHoughTracks(ltracker,plusNoiseHits,houghTracks);
 
-	//loop over all found houghTracks, each of which is a candidate circle
-	//and make a pair of histos that looks at accumulator space in radius and center
 	cout << "ncalls = " << ncalls << endl;
-	//	assert(2==1);
 
-
-	//cout << "number of Hough Tracks = " << houghTracks.size() << endl;
+	//loop over all found houghTracks, each of which is a candidate circle
+	// and make a pair of histos that looks at accumulator space in radius 
+        // and center
 
 	for (int ithHough = 0; ithHough < houghTracks.size(); ++ithHough)
 	  {
 	    // only look at circles that have reasonable number of straws; three per passage-> 1 cluster, times three passages, 
 	    //is enough to give three points (clusters) which is what you need to get a helix =9  
-	    if (houghTracks[ithHough].numberOfStraws >=6 )
-	      {
-		Double_t distance = TMath::Sqrt(pow<2>(houghTracks[ithHough].x0) + pow<2>(houghTracks[ithHough].y0));
-		//		cout << "distance = " << distance << endl;
-		_histoRadius->Fill(static_cast<Double_t>(houghTracks[ithHough].radius),
-				   static_cast<Double_t>(houghTracks[ithHough].numberOfStraws));
-		_histoRadius->Fill(static_cast<Double_t>(houghTracks[ithHough].radius));
-		_histoRadiusDCA->Fill(static_cast<Float_t>(houghTracks[ithHough].radius),
-				      static_cast<Float_t>(houghTracks[ithHough].dca),
-				      static_cast<Float_t>(houghTracks[ithHough].numberOfStraws));
-		//		_histoRadiusDCA->Fill(250.,50.);
-		_histoRadiusDCACenter->Fill(static_cast<Double_t>(houghTracks[ithHough].radius),
-				      static_cast<Double_t>(houghTracks[ithHough].dca),
-				      distance,
-				      static_cast<Double_t>(houghTracks[ithHough].numberOfStraws));
-		_histoDCA->Fill(houghTracks[ithHough].dca,houghTracks[ithHough].numberOfStraws);
-		_histoCenter->Fill(houghTracks[ithHough].x0,houghTracks[ithHough].y0,houghTracks[ithHough].numberOfStraws);
-	      }
-	    _histoNStraws->Fill(houghTracks[ithHough].numberOfStraws);
-	  }
+                 // fill the histos with the found circles
+	          fillEventHistos(houghTracks[ithHough]);
+           } 
 		
 
 	
+       // Look for peaks in the hough space
 	TSpectrum s(50);// calling this with (50) instead of () is a magic trick from Rene Brun. 
 	s.Search(_histoRadius,1.0," ",0.95);
 	Int_t nPeaks = s.GetNPeaks();
@@ -436,15 +393,14 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 		_hRadiusDistribution2D->Fill(firstPeakX[ithPeak]);
 		_hDCADistribution2D->Fill(firstPeakY[ithPeak]);
 	      }
-	  }
-      }
+	  }//nPeaks2>0
+
+      } // minHitsforHough
 	
     
     
     // Loop over all plusNoiseHits.
     int n(0);
-    StepPointMCCollection::const_iterator i = plusNoiseHits->begin();
-    StepPointMCCollection::const_iterator e = plusNoiseHits->end();
     if (!singleHoughHisto)
       {
 	//scatter plot showing event
@@ -466,10 +422,12 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
       }
 
 
-    for ( ; i!=e; ++i){
+    StepPointMCCollection::const_iterator ihit = plusNoiseHits->begin();
+    const StepPointMCCollection::const_iterator endhit = plusNoiseHits->end();
+    for ( ; ihit!=endhit; ++ihit){
       
       // Aliases, used for readability.
-      const StepPointMC& hit = *i;
+      const StepPointMC& hit = *ihit;
       const Hep3Vector& pos = hit.position();
       const Hep3Vector& mom = hit.momentum();
       if (!singleHoughHisto) 
@@ -574,9 +532,61 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
     }
     return count;
-  }
+  } //countHitNeighbors
+
+  void HoughTest::bookEventHistos(edm::EventNumber_t evtno)
+  {	
+	RootNameTitleHelper radiusHisto("_histoRadius","Radius Accumulator Space Event",evtno,5);
+	RootNameTitleHelper radiusErrorHisto("_histoErrorRadius","Radius Error Event",evtno,5);
+	RootNameTitleHelper dcaHisto("_histoDCA","Distance of Closest Approch",evtno,5);
+	RootNameTitleHelper centerHisto("_histoCenter","Center Accumulator Space Event",evtno,5);
+	RootNameTitleHelper nStrawsHisto("_histoNStraws","Number of Straws in Circles, Event",evtno,5);
+	RootNameTitleHelper radiusDCAHisto("_histoRadiusDCA","Radius vs. DCA, Event",evtno,5);
+	RootNameTitleHelper radiusDCACenterHisto("_histoRadiusDCACenter","Radius vs. DCA vs Center, Event",evtno,5);
+
+        edm::Service<edm::TFileService> tfs;
+
+	_histoRadius = tfs->make<TH1F>(radiusHisto.name(),radiusHisto.title(),
+				       80,100.,500.);
+	_histoDCA = tfs->make<TH1F>(dcaHisto.name(),dcaHisto.title(),
+				    110,0.,110.);
+	_histoRadiusDCA = tfs->make<TH2F>(radiusDCAHisto.name(),radiusDCAHisto.title(),
+					  80,100.,500.,120,-10.,110.);
+	_histoRadiusDCACenter = tfs->make<TH3F>(radiusDCACenterHisto.name(),radiusDCACenterHisto.title(),
+						80,100.,500.,120,-10.,110.,100,0.,1000.);
+	_histoCenter = tfs->make<TH2F>(centerHisto.name(),centerHisto.title(),
+				       100,-1000.,1000.,100,-1000.,1000.);
+	_histoRadiusError = tfs->make<TH1F>(radiusErrorHisto.name(),radiusErrorHisto.title(), 
+					    100,0.,100.);
+	_histoNStraws = tfs->make<TH1F>(nStrawsHisto.name(),nStrawsHisto.title(), 
+					100,0.,100.);
+  } //bookEventHistos
   
-}
+ void HoughTest::fillEventHistos(
+         mu2e::houghtransform::HoughTransform::houghCircleStruct houghCircle) 
+ {
+    _histoNStraws->Fill(houghCircle.numberOfStraws);
+    // if there are enough straws, fill the other histograms
+    if (houghCircle.numberOfStraws >=6 )
+    {
+       Double_t distance = TMath::Sqrt(pow<2>(houghCircle.x0) + pow<2>(houghCircle.y0));
+       _histoRadius->Fill(static_cast<Double_t>(houghCircle.radius),
+                  static_cast<Double_t>(houghCircle.numberOfStraws));
+       _histoRadius->Fill(static_cast<Double_t>(houghCircle.radius));
+       _histoRadiusDCA->Fill(static_cast<Float_t>(houghCircle.radius),
+                  static_cast<Float_t>(houghCircle.dca),
+                  static_cast<Float_t>(houghCircle.numberOfStraws));
+       _histoRadiusDCACenter->Fill(static_cast<Double_t>(houghCircle.radius),
+                  static_cast<Double_t>(houghCircle.dca), distance,
+                  static_cast<Double_t>(houghCircle.numberOfStraws));
+       _histoDCA->Fill(houghCircle.dca,houghCircle.numberOfStraws); 
+       _histoCenter->Fill(houghCircle.x0,houghCircle.y0,houghCircle.numberOfStraws);
+    } // if enough straws
+  
+ } // fillEventHistos()
+
+
+} // namespace HoughTest
 
 
 using mu2e::HoughTest;

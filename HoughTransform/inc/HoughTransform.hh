@@ -1,9 +1,9 @@
 #ifndef HOUGHTRANSFORM_HH
 #define HOUGHTRANSFORM_HH
 //
-// $Id: HoughTransform.hh,v 1.1 2009/12/09 17:36:36 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2009/12/09 17:36:36 $
+// $Id: HoughTransform.hh,v 1.2 2010/03/29 18:35:37 shanahan Exp $
+// $Author: shanahan $ 
+// $Date: 2010/03/29 18:35:37 $
 //
 // performs Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms
@@ -103,11 +103,11 @@ namespace mu2e{
       //these are index numbers of hit straws associated with the found 
       //Hough tracks, and then someone else
       //knows which straw goes with which index
-      std::vector<int> strawHitIndices; 
+      // PSH - not used? std::vector<int> strawHitIndices; 
 
-      double _x0;
-      double _y0;
-      double _radius;
+      // PSH - not used? double _x0;
+      // PSH - not used? double _y0;
+      // PSH - not used? double _radius;
 
 
     };
