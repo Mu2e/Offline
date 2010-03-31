@@ -4,9 +4,9 @@
 //
 // A temporary class to hold particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.1 2010/03/23 20:34:30 kutschke Exp $
+// $Id: SimParticle.hh,v 1.2 2010/03/31 19:02:08 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/23 20:34:30 $
+// $Date: 2010/03/31 19:02:08 $
 //
 // Original author Rob Kutschke
 //
@@ -108,7 +108,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const& endPosition() const {_endPosition;}
     CLHEP::HepLorentzVector const& endMomentum() const { return _endMomentum;}
     double   endGlobalTime()  const { return _endGlobalTime;}
-    double   endProeprTime()  const { return _endProperTime;}
+    double   endProperTime()  const { return _endProperTime;}
     uint32_t endVolumeIndex() const { return _endVolumeIndex;}
     uint32_t endG4Status()    const { return _endG4Status;}
 
