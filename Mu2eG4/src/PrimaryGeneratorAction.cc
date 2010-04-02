@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.9 2010/03/29 16:20:16 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/03/29 16:20:16 $
+// $Id: PrimaryGeneratorAction.cc,v 1.10 2010/04/02 18:17:00 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/04/02 18:17:00 $
 //
 // Original author Rob Kutschke
 //
@@ -83,7 +83,7 @@ namespace mu2e {
 
   // Copy generated particles from the event into G4.
   //
-  // At the momment none of the supported generators make multi-particle vertices.
+  // At the moment none of the supported generators make multi-particle vertices.
   // That may change in the future.
   // 
   void PrimaryGeneratorAction::fromEvent(G4Event* event){ 
@@ -91,6 +91,8 @@ namespace mu2e {
     // Get the offsets to map from generator world to G4 world.
     G4ThreeVector const& cosmicReferencePlane = _world->getCosmicReferencePoint();
     G4ThreeVector const& detectorOrigin       = _world->getMu2eDetectorOrigin();
+    G4ThreeVector const& primaryProtonGunOrigin      = _world->getPrimaryProtonGunOrigin();
+    G4RotationMatrix const& primaryProtonGunRotation = _world->getPrimaryProtonGunRotation();
 
     // Get generated particles from the event.
     edm::Handle<ToyGenParticleCollection> handle;
@@ -105,7 +107,9 @@ namespace mu2e {
       ToyGenParticle const& genpart = (*handle)[i];
 
       // Transform from generator coordinate system G4 world coordinate system.
-      G4ThreeVector     pos(genpart._position);
+      G4ThreeVector      pos(genpart._position);
+      G4ThreeVector momentum(genpart._momentum.v());
+
       if( genpart._generatorId == GenId::conversionGun ||
           genpart._generatorId == GenId::particleGun ||
           genpart._generatorId == GenId::dio1 ||
@@ -117,6 +121,13 @@ namespace mu2e {
                   genpart._generatorId == GenId::cosmicDYB || 
                   genpart._generatorId == GenId::cosmic ){
         pos += cosmicReferencePlane;
+      } else if ( genpart._generatorId == GenId::primaryProtonGun ){	
+	//
+	// need inverse; we define the physical object to point along its own z; 
+	// then rotate that coordinate system
+	// back to G4, not take vector in G4 and rotate to new position.  hence inverse
+            pos = primaryProtonGunRotation.inverse()*pos + primaryProtonGunOrigin;
+            momentum = primaryProtonGunRotation.inverse()*momentum;
       } else {
         edm::LogError("KINEMATICS")
           << "Do not know what to do with this generator id: " 
@@ -126,7 +137,8 @@ namespace mu2e {
       }
 
       // Shorthand for readability: 4-momentum.
-      HepLorentzVector const& p4(genpart._momentum);
+	 HepLorentzVector p4(genpart._momentum);
+	 p4.setV(momentum);
     
       // Create a new vertex 
       G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
@@ -150,7 +162,7 @@ namespace mu2e {
   }
 
 
-  // A very simple track for debugging G4 volumes and graphics.
+  // A very simple track for debugging G4 volumes and graphics
   void PrimaryGeneratorAction::testTrack(G4Event* event){ 
 
     // All tracks start from the same spot.

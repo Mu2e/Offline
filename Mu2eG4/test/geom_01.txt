@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.11 2010/02/24 15:47:13 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2010/02/24 15:47:13 $
+// $Id: geom_01.txt,v 1.12 2010/04/02 18:17:42 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/04/02 18:17:42 $
 //
 // Original author Rob Kutschke
 
@@ -131,6 +131,19 @@ double toyPS.halfLengthVac =  2700.;
 double toyPS.z0            = -6529.;
 string toyPS.materialName       = "G4_Al";
 string toyPS.insideMaterialName = "WAGVacuum";
+
+
+
+// Proton Target in PS 
+double targetPS_halfLength        =     80.;  // mm.I use this length to move PrimaryProtonGun in PrimaryProtonGun.cc
+double targetPS_rOut              =      3.;  // mm
+double targetPS_positionX         =      0.;  // mm
+double targetPS_positionY         =      0.;  // mm
+double targetPS_positionZ         =   -35.5;  // mm
+double targetPS_rotX              =     1.8;  // degree
+double targetPS_rotY              =   12.22;  // degree
+string targetPS_materialName      = "G4_Au";
+
 
 // LTracker: Positioning infor is relative to DS.
 int    ltracker.nSides           =     8;

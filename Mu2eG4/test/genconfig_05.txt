@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.3 2010/01/31 20:56:09 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/01/31 20:56:09 $
+// $Id: genconfig_05.txt,v 1.4 2010/04/02 18:17:30 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/04/02 18:17:30 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -12,6 +12,8 @@
 bool ejectedProtonGun.do = 1;
 bool conversionGun.do = 0;
 bool decayinorbitGun.do = 0;
+bool primaryProtonGun.do = 0;
+
 
 // Limits on cos(polar angle):
 double conversionGun.czmin = 0.5;
@@ -20,6 +22,20 @@ double decayinorbitGun.czmin = 0.5;
 double decayinorbitGun.czmax = 0.7;
 double ejectedProtonGun.czmin = 0.5;
 double ejectedProtonGun.czmax = 0.7;
+
+double primaryProtonGun.czmin = 1;
+double primaryProtonGun.czmax = 1;
+double primaryProtonGun.czmin = 1;
+double primaryProtonGun.czmax = 1;
+
+// Position of PrimaryProtonGun (local to target)
+double primaryProtonGun.posX = 0.;
+double primaryProtonGun.posY = 0.;
+double primaryProtonGun.posZ = 0.;
+
+// Distribution parameter of Primary Proton Gun beam
+double primaryProtonGun.stdDev = 3;
+
 
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
 double decayinorbitGun.elow = 100.;
@@ -33,6 +49,8 @@ double decayinorbitGun.tmin  =  700.;
 double decayinorbitGun.tmax  = 1694.;
 double ejectedProtonGun.tmin  =  700.;
 double ejectedProtonGun.tmax  = 1694.;
+double primaryProtonGun.tmin  =  700.;
+double primaryProtonGun.tmax  = 1694.;
 
 // Mean multiplicities for the two background generators.
 double cosmictoy.mean =  0.0;

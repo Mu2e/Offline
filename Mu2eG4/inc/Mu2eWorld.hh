@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.7 2010/03/24 18:33:49 rhbob Exp $
+// $Id: Mu2eWorld.hh,v 1.8 2010/04/02 18:19:05 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/03/24 18:33:49 $
+// $Date: 2010/04/02 18:19:05 $
 //
 // Original author Rob Kutschke
 //
@@ -26,15 +26,19 @@ class G4HelixSimpleRunge;
 class G4ClassicalRK4;
 class G4CashKarpRKF45;
 
-
+//
+//G4 includes 
 #include "G4String.hh"
-#include "G4ThreeVector.hh"
 #include "G4Colour.hh"
+#include "G4ThreeVector.hh"
+#include "G4RotationMatrix.hh"
 
+//
+// Mu2e includes
 #include "Mu2eG4/inc/WorldInfo.hh"
 #include "Mu2eG4/inc/VolumeInfo.hh"
 
-#include "G4ThreeVector.hh"
+
 
 class G4AssemblyVolume;
 
@@ -65,6 +69,15 @@ namespace mu2e {
     G4ThreeVector const& getMu2eDetectorOrigin() const{
       return _mu2eDetectorOrigin;
     }
+
+    G4ThreeVector const& getPrimaryProtonGunOrigin() const{
+      return _primaryProtonGunOrigin;
+    }
+ 
+    G4RotationMatrix const& getPrimaryProtonGunRotation() const{
+      return _primaryProtonGunRotation;
+    }
+
 
   private:
     
@@ -107,6 +120,9 @@ namespace mu2e {
     // Physical volumes
     //G4VPhysicalVolume* _worldPhys;
 
+    // Location in G4 world coordinates of the reference point for the Primary Proton Gun
+    G4ThreeVector _primaryProtonGunOrigin;
+    G4RotationMatrix _primaryProtonGunRotation;
 
     //keep these for future use
     std::auto_ptr<G4UniformMagField>   _detSolUpstreamBField;

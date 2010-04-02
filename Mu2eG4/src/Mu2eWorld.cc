@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.10 2010/03/24 18:33:42 rhbob Exp $
+// $Id: Mu2eWorld.cc,v 1.11 2010/04/02 18:16:44 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/03/24 18:33:42 $
+// $Date: 2010/04/02 18:16:44 $
 //
 // Original author Rob Kutschke
 //
@@ -609,6 +609,60 @@ namespace mu2e {
 					  0,
 					  G4Color::Yellow()
 					  );
+
+
+   // Proton Target in PS 
+
+    // Proton Target parameters 
+    // Proton Target position
+    G4ThreeVector ProtonTargetPosition = G4ThreeVector( 
+				_config->getDouble("targetPS_positionX")*mm,
+				_config->getDouble("targetPS_positionY")*mm,
+				_config->getDouble("targetPS_positionZ")*mm
+     				);
+    
+    // Rotation of Proton Target				
+    double targetPS_rotX = _config->getDouble("targetPS_rotX" );
+    double targetPS_rotY = _config->getDouble("targetPS_rotY" );
+    
+    // Proton Target Material
+    G4Material* targetPS_materialName = getMaterial("targetPS_materialName");   
+    
+    //Proton Target geometry parameters
+    double targetPS_Pam[5] = { 
+      0.,
+      _config->getDouble("targetPS_rOut"      ) * mm,
+      _config->getDouble("targetPS_halfLength") * mm,
+      0.,
+      2.*M_PI
+    };
+
+   // Rotation of Proton Target
+   G4RotationMatrix* PS_target_rot = new G4RotationMatrix();
+    PS_target_rot->rotateX( targetPS_rotX*degree);
+    PS_target_rot->rotateY( targetPS_rotY*degree);
+   
+    //
+    // Creating Proton Target object in prodSolVacInfo logical object (v. khalatian)
+   VolumeInfo ProtonTargetInfo = nestTubs( "ProtonTarget",
+					  targetPS_Pam,
+					  targetPS_materialName,
+					  PS_target_rot,
+					  ProtonTargetPosition,
+					  prodSolVacInfo.logical,
+					  0,
+					  G4Color::White()
+					  );
+   
+    // Primary Proton Gun Origin 
+    _primaryProtonGunOrigin = dirtOffset + wallOffset + hallOffset + prodSolCoilOffset + ProtonTargetPosition;
+    
+    //Primary Proton Gun Rotation 
+    // For rotating Primary Proton Gun I take angles from Proton Target 
+    _primaryProtonGunRotation.rotateX( targetPS_rotX*degree);
+    _primaryProtonGunRotation.rotateY( targetPS_rotY*degree);
+
+
 
     VolumeInfo trackerInfo;
     //trackerInfo.solid   = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
