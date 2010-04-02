@@ -1,18 +1,18 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.4 2010/04/02 18:17:30 rhbob Exp $
+// $Id: genconfig_05.txt,v 1.5 2010/04/02 19:23:22 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/02 18:17:30 $
+// $Date: 2010/04/02 19:23:22 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
 
 // what processes to do
-bool ejectedProtonGun.do = 1;
+bool ejectedProtonGun.do = 0;
 bool conversionGun.do = 0;
 bool decayinorbitGun.do = 0;
-bool primaryProtonGun.do = 0;
+bool primaryProtonGun.do = 1;
 
 
 // Limits on cos(polar angle):
@@ -23,8 +23,6 @@ double decayinorbitGun.czmax = 0.7;
 double ejectedProtonGun.czmin = 0.5;
 double ejectedProtonGun.czmax = 0.7;
 
-double primaryProtonGun.czmin = 1;
-double primaryProtonGun.czmax = 1;
 double primaryProtonGun.czmin = 1;
 double primaryProtonGun.czmax = 1;
 
