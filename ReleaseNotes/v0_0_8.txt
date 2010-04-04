@@ -1,11 +1,9 @@
-Still under construction
 
            Release notes for Mu2e Offline software, v0_0_8
 
-
-  $Id: v0_0_8.txt,v 1.11 2010/03/29 16:43:48 kutschke Exp $
+  $Id: v0_0_8.txt,v 1.12 2010/04/04 20:37:34 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/03/29 16:43:48 $
+  $Date: 2010/04/04 20:37:34 $
 
 1) Implement the detailed field map in the DS.
    The code has options to enable the full field map, a uniform field
@@ -214,3 +212,47 @@ Still under construction
       Mu2eG4/src/PrimaryGeneratorAction.cc
       EventGenerator/inc/ParticleGun.hh
       EventGenerator/src/ParticleGun.cc
+
+34) Fix some typos in ToyDP/inc/SimParticle.hh
+
+35) Peter Shanahan added an new package
+    Offline/EffyNoise
+    This code takes the StepPointMC collection produced by G4, applies
+    an efficiency function and also creates salt and pepper noise.  The
+    output is a new collection of StepPointMC's.
+    Also did some cleanup on the  HoughTransform code.
+
+    This is still under development and is not yet ready for general use.
+
+36) Bob Bernstein commited changes related to:
+     a) First draft of a production target and a proton beam ( PrimaryProtonGun ).
+     b) Using faster field integrators in the regions of non-uniform field.
+       ToyDP/inc/GenId.hh
+       EventGenerator/src/EventGenerator_plugin.cc  
+       EventGenerator/src/PrimaryProtonGun.cc
+       EventGenerator/in/PrimaryProtonGun.hh
+       Mu2eG4/src/PrimaryGeneratorAction.cc 
+       Mu2eG4/inc/Mu2eWorld.hh
+       Mu2eG4/src/Mu2eWorld.cc              
+       Mu2eG4/test/genconfig_05.txt          
+       Mu2eG4/test/geom_01.txt          
+
+    See email from rhbob to Mu2e-sim on April 2, 2010.
+
+37) Add a step length field to StepPointMC.
+        ToyDP/inc/StepPointMC.hh
+        ToyDP/src/StepPointMC.cc
+        Mu2eG4/inc/StepPointG4.hh
+        Mu2eG4/src/StepPointG4.cc
+
+    Requires modificationst to all code the creates StepPointMC or StepPointG4.
+    
+         Mu2eG4/src/StrawSD.cc
+         Mu2eG4/src/ITGasLayerSD_ExtWireData.cc
+         Mu2eG4/src/ITGasLayerSD_v2.cc
+         Mu2eG4/src/ITGasLayerSD_v3.cc
+         EffyNoise/src/SimpleEffyNoise_plugin.cc
+         HoughTransform/src/HoughTest_plugin.cc
+
+38) Bug fix to Readback.cc ( pdgId was not set properly ).
+    Add additional histograms and additional items in the ntuple.
