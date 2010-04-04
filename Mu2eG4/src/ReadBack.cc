@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.4 2010/04/04 17:17:11 kutschke Exp $
+// $Id: ReadBack.cc,v 1.5 2010/04/04 20:36:36 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/04 17:17:11 $
+// $Date: 2010/04/04 20:36:36 $
 //
 // Original author Rob Kutschke
 //
@@ -87,10 +87,12 @@ namespace mu2e {
 
     _hMomentumG4 = tfs->make<TH1F>( "hMomentumG4",  "Mommenta of particles created inside G4; (MeV)",
                                     100, 0., 100. );
+    _hStepLength = tfs->make<TH1F>( "hStepLength",  "G4 Step Length in Sensitive Detector; (mm)",
+                                    100, 0., 10. );
 
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
-                                          "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId:edep:p");
+                      "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId:edep:p:step");
   }
 
   void ReadBack::analyze(const edm::Event& event, edm::EventSetup const&) {
@@ -156,7 +158,7 @@ namespace mu2e {
     }
 
     // ntuple buffer.
-    float nt[17];
+    float nt[18];
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
@@ -221,6 +223,8 @@ namespace mu2e {
 
       _hDriftDist->Fill(pca.dca());
 
+      _hStepLength->Fill( hit.stepLength() );
+
       // Fill the ntuple.
       nt[0]  = event.id().event();
       nt[1]  = hit.trackId();
@@ -239,6 +243,7 @@ namespace mu2e {
       nt[14] = genId.Id();
       nt[15] = hit.eDep()/keV;
       nt[16] = mom.mag();
+      nt[17] = hit.stepLength();
 
       _ntup->Fill(nt);
 
