@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.5 2010/03/29 18:35:37 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/03/29 18:35:37 $
+// $Id: HoughTest_plugin.cc,v 1.6 2010/04/04 20:35:58 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/04/04 20:35:58 $
 //
 // Original author R. Bernstein
 //
@@ -274,7 +274,10 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	Hep3Vector mid = straw.getMidPoint(); //for the HT I only use x/y so the midpoint is perfect
 	Hep3Vector w   = straw.getDirection();
 
-		plusNoise.push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,timeNoise,mid,momentumNoise));
+        // Safe dummy value.
+        double stepLength(1.);
+
+        plusNoise.push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,timeNoise,mid,momentumNoise,stepLength));
       }
     //go back to normal engine
     HepRandom::setTheEngine(regularEngine);

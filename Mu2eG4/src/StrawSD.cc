@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.4 2010/03/23 20:29:48 kutschke Exp $
+// $Id: StrawSD.cc,v 1.5 2010/04/04 20:35:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/23 20:29:48 $
+// $Date: 2010/04/04 20:35:58 $
 //
 // Original author Rob Kutschke
 //
@@ -64,6 +64,10 @@ namespace mu2e {
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
     G4double edep = aStep->GetTotalEnergyDeposit();
+    double step = aStep->GetStepLength();
+
+    // I am not sure why we get these cases but we do.
+    if ( edep == 0. && step == 0. ) return false;
 
     // Eventually we will want this but not now.
     //if(edep==0.) return false;
@@ -80,12 +84,13 @@ namespace mu2e {
 
     StepPointG4* newHit = 
       new StepPointG4(aStep->GetTrack()->GetTrackID()-1,
-		      aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
-		      edep,
-		      prePosTracker,
-		      preMomWorld,
-		      aStep->GetPreStepPoint()->GetGlobalTime()
-		      );
+                      aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
+                      edep,
+                      prePosTracker,
+                      preMomWorld,
+                      aStep->GetPreStepPoint()->GetGlobalTime(),
+                      step
+                      );
     
     // The collection takes ownership of the hit. 
     _collection->insert( newHit );
@@ -93,7 +98,7 @@ namespace mu2e {
     // Some debugging tests.
 
     //
-    EventNumberList list;
+    static EventNumberList list;
     if ( !list.inList() ) return true;
 
     // Transformations between world to local coordinate systems.
@@ -136,41 +141,41 @@ namespace mu2e {
     int eventNo = event->GetEventID();
 
     /*
-    G4cout << "Addhit: "
-	   << setw(4) << eventNo << " "
-	   << setw(4) << _collection->entries() << " " 
-	   << setw(6) << copy <<  "  | "
-	   << std::setprecision(6)
-	   << prePosTracker << " | "
-	   << preMomWorld 
-	   << std::setprecision(6)
-	   << endl;
+      G4cout << "Addhit: "
+      << setw(4) << eventNo << " "
+      << setw(4) << _collection->entries() << " " 
+      << setw(6) << copy <<  "  | "
+      << std::setprecision(6)
+      << prePosTracker << " | "
+      << preMomWorld 
+      << std::setprecision(6)
+      << endl;
     */
  
     /*
-    G4cout << "Add hit: "
-	   << std::setprecision(8)
-	   << _collection->entries() << " "
-	   << aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber() << " "
-	   << aStep->GetTrack()->GetTrackID() << " "
-	   << prePosWorld  << " "
-	   << preMomWorld   << " | "
-	   << angle << "   "
-	   << angleLocal << "   "
-	   << diffAngle << "  | "
-	   << endl; 
+      G4cout << "Add hit: "
+      << std::setprecision(8)
+      << _collection->entries() << " "
+      << aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber() << " "
+      << aStep->GetTrack()->GetTrackID() << " "
+      << prePosWorld  << " "
+      << preMomWorld   << " | "
+      << angle << "   "
+      << angleLocal << "   "
+      << diffAngle << "  | "
+      << endl; 
 
-    G4cout << "Line: " 
-	   << prePosLocal.x()  << " "
-	   << prePosLocal.y()  << " "
-	   << postPosLocal.x()     << " "
-	   << postPosLocal.y()     << " "
-	   << preMomLocal.unit().x()    << " "
-	   << preMomLocal.unit().y()    << " "
-	   << worldOrigin.x() << " "
-	   << worldOrigin.y() << " "
-	   << std::setprecision(6)
-	   << endl;
+      G4cout << "Line: " 
+      << prePosLocal.x()  << " "
+      << prePosLocal.y()  << " "
+      << postPosLocal.x()     << " "
+      << postPosLocal.y()     << " "
+      << preMomLocal.unit().x()    << " "
+      << preMomLocal.unit().y()    << " "
+      << worldOrigin.x() << " "
+      << worldOrigin.y() << " "
+      << std::setprecision(6)
+      << endl;
     */
 
 
@@ -193,19 +198,19 @@ namespace mu2e {
     double ttt = lppca.unit().cosTheta(w);
 
     printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f | %10.7f %10.7f\n",
-	     eventNo,  _collection->entries(), copy,
-	     aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
-	     prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
-	     preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
+             eventNo,  _collection->entries(), copy,
+             aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
+             prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
+             preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
              prePosLocal.perp(),  postPosLocal.perp()  );
     fflush(stdout);
 
     /*
-    G4cout << "Measurement: "
-	   << aStep->GetTrack()->GetTrackID() << " "
-	   << pca.dca()  << " "
-	   << pca.dca2d()  << " "
-	   << endl;
+      G4cout << "Measurement: "
+      << aStep->GetTrack()->GetTrackID() << " "
+      << pca.dca()  << " "
+      << pca.dca2d()  << " "
+      << endl;
     */
 
     // This works.  uvw.perp() is always 2.500000000xxxx or 2.499999999xxxx
@@ -235,10 +240,9 @@ namespace mu2e {
     if (verboseLevel>0) { 
       G4int NbHits = _collection->entries();
       G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
-	     << " hits in the straw chambers: " << G4endl;
+             << " hits in the straw chambers: " << G4endl;
       for (G4int i=0;i<NbHits;i++) (*_collection)[i]->Print();
     } 
   }
   
 } //namespace mu2e
-

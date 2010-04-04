@@ -137,7 +137,8 @@ namespace mu2e {
  		     edep,
  		     prePosTracker,
  		     preMomWorld,
- 		     aStep->GetPreStepPoint()->GetGlobalTime()
+                     aStep->GetPreStepPoint()->GetGlobalTime(),
+                     aStep->GetStepLength()
  		     );
 
     // The collection takes ownership of the hit. 

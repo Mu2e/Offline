@@ -197,8 +197,11 @@ std::cout<<"numberOfNoiseHits="<<numberOfNoiseHits<<"\n\n"<<std::endl;
           Hep3Vector mid = straw.getMidPoint(); //leftover from Bob's 
                 // initial HoughTransform work - may need to change.
           Hep3Vector w   = straw.getDirection();
-  
-                  newPoints->push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,timeNoise,mid,momentumNoise));
+ 
+          // Safe dummy value.
+          double stepLength(1.0);
+ 
+          newPoints->push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,timeNoise,mid,momentumNoise,stepLength));
         } // noise hit ia
   
     } // non-zero noise rate

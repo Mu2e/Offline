@@ -113,7 +113,8 @@ G4bool ITGasLayerSD_v3::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 						edep,
 						prePosTracker,
 						preMomWorld,
-						aStep->GetPreStepPoint()->GetGlobalTime()
+                                                aStep->GetPreStepPoint()->GetGlobalTime(),
+                                                aStep->GetStepLength()
 				);
 
 		// The collection takes ownership of the hit.
