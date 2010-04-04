@@ -1,9 +1,9 @@
 //
 // A class to hold hits created by G4 in most sensitive detectors.
 // 
-// $Id: StepPointG4.cc,v 1.1 2009/10/06 23:19:59 kutschke Exp $
+// $Id: StepPointG4.cc,v 1.2 2010/04/04 20:35:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/06 23:19:59 $
+// $Date: 2010/04/04 20:35:13 $
 //
 // Original author Rob Kutschke
 //
@@ -33,13 +33,13 @@ namespace mu2e {
     G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
     if(pVVisManager)
       {
-	G4Circle circle(_hit.position());
-	circle.SetScreenSize(2.);
-	circle.SetFillStyle(G4Circle::filled);
-	G4Colour colour(1.,0.,0.);
-	G4VisAttributes attribs(colour);
-	circle.SetVisAttributes(attribs);
-	pVVisManager->Draw(circle);
+        G4Circle circle(_hit.position());
+        circle.SetScreenSize(2.);
+        circle.SetFillStyle(G4Circle::filled);
+        G4Colour colour(1.,0.,0.);
+        G4VisAttributes attribs(colour);
+        circle.SetVisAttributes(attribs);
+        pVVisManager->Draw(circle);
       }
   }
 
@@ -49,12 +49,13 @@ namespace mu2e {
 
       // There is no units category for momentum, so use energy.
       G4cout << "  trackId: "        << _hit.trackId()
-	     << "  volumeId: "       << _hit.volumeId()
-	     << "  energy deposit: " << G4BestUnit(_hit.eDep(),"Energy")
-	     << "  position: "       << G4BestUnit(_hit.position(),"Length") 
-	     << "  momentum: "       << G4BestUnit(_hit.momentum(),"Energy") 
-	     << "  time: "           << G4BestUnit(_hit.time(),"Time") 
-	     << G4endl;
+             << "  volumeId: "       << _hit.volumeId()
+             << "  energy deposit: " << G4BestUnit(_hit.eDep(),"Energy")
+             << "  position: "       << G4BestUnit(_hit.position(),"Length") 
+             << "  momentum: "       << G4BestUnit(_hit.momentum(),"Energy") 
+             << "  time: "           << G4BestUnit(_hit.time(),"Time") 
+             << "  step Length: "    << G4BestUnit(_hit.stepLength(),"Length")
+             << G4endl;
     }
   }
 

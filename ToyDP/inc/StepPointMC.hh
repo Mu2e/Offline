@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.9 2010/03/23 20:28:02 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.10 2010/04/04 20:35:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/23 20:28:02 $
+// $Date: 2010/04/04 20:35:13 $
 //
 // Original author Rob Kutschke
 //
@@ -36,25 +36,28 @@ namespace mu2e {
     StepPointMC():
       _trackId(0),
       _volumeId(0),
-      _edep(0.),
+      _totalEDep(0.),
       _position(),
       _momentum(),
-      _time(0.){
+      _time(0.),
+      _stepLength(0.){
     }
     
     StepPointMC( uint32_t                 trackId,
                  VolumeId_type            volumeId,
-                 double                   edep,
+                 double                   totalEDep,
                  double                   time,
                  CLHEP::Hep3Vector const& position,
-                 CLHEP::Hep3Vector const& momentum
+                 CLHEP::Hep3Vector const& momentum,
+                 double                   stepLength
                  ):
       _trackId(trackId),
       _volumeId(volumeId),
-      _edep(edep),
+      _totalEDep(totalEDep),
       _position(position),
       _momentum(momentum),
-      _time(time){
+      _time(time),
+      _stepLength(stepLength){
     }
     
     // Accept compiler generated versions of:
@@ -65,12 +68,16 @@ namespace mu2e {
     void print( std::ostream& ost, bool doEndl = true ) const;
     void print() const { print(std::cout); }
 
-    uint32_t                 trackId()  const { return _trackId; }
-    VolumeId_type            volumeId() const { return _volumeId; }
-    double                   eDep()     const { return _edep;    } 
-    CLHEP::Hep3Vector const& position() const { return _position; }
-    CLHEP::Hep3Vector const& momentum() const { return _momentum; }
-    double                   time()     const { return _time;    }
+    uint32_t                 trackId()    const { return _trackId;   }
+    VolumeId_type            volumeId()   const { return _volumeId;  }
+    double                   totalEDep()  const { return _totalEDep; } 
+    CLHEP::Hep3Vector const& position()   const { return _position;  }
+    CLHEP::Hep3Vector const& momentum()   const { return _momentum;  }
+    double                   time()       const { return _time;      }
+    double                   stepLength() const { return _stepLength;}
+
+    // Kept for backwards compatibility.
+    double                   eDep()     const { return _totalEDep;    } 
 
     // Return the volumeId as a StrawIndex.
     // It's the user's job to know if this is a reasonable thing to do.
@@ -80,10 +87,11 @@ namespace mu2e {
   
     uint32_t          _trackId;
     VolumeId_type     _volumeId;
-    double            _edep;
+    double            _totalEDep;
     CLHEP::Hep3Vector _position;
     CLHEP::Hep3Vector _momentum;
     double            _time;
+    double            _stepLength;
     
   };
 

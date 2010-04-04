@@ -7,9 +7,9 @@
 //
 // For details, see: ToyDP/inc/StepPointMC.hh .
 // 
-// $Id: StepPointG4.hh,v 1.1 2009/10/06 23:19:58 kutschke Exp $
+// $Id: StepPointG4.hh,v 1.2 2010/04/04 20:35:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/06 23:19:58 $
+// $Date: 2010/04/04 20:35:13 $
 //
 // Original author Rob Kutschke
 //
@@ -36,13 +36,14 @@ namespace mu2e {
     
     inline
     StepPointG4( G4int trackId,
-		G4int volumeId,
-		G4double edep,
-		G4ThreeVector const& position,
-		G4ThreeVector const& momentum,
-		G4double time
-		):
-      _hit(trackId,volumeId,edep,time,position,momentum){
+                 G4int volumeId,
+                 G4double edep,
+                 G4ThreeVector const& position,
+                 G4ThreeVector const& momentum,
+                 G4double time,
+                 G4double stepLength
+                 ):
+      _hit(trackId,volumeId,edep,time,position,momentum,stepLength){
     }
     
     // Accept compiler generated versions of:
