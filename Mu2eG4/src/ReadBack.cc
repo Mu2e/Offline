@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.3 2010/03/23 20:40:43 kutschke Exp $
+// $Id: ReadBack.cc,v 1.4 2010/04/04 17:17:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/23 20:40:43 $
+// $Date: 2010/04/04 17:17:11 $
 //
 // Original author Rob Kutschke
 //
@@ -90,7 +90,7 @@ namespace mu2e {
 
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
-                                          "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId");
+                                          "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId:edep:p");
   }
 
   void ReadBack::analyze(const edm::Event& event, edm::EventSetup const&) {
@@ -132,6 +132,11 @@ namespace mu2e {
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
 
+    // Other files might have empty collections.
+    if ( haveSimPart ){
+      haveSimPart = !(simParticles->empty() || volumes->empty());
+    }
+
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
       
@@ -151,7 +156,7 @@ namespace mu2e {
     }
 
     // ntuple buffer.
-    float nt[15];
+    float nt[17];
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
@@ -193,7 +198,7 @@ namespace mu2e {
         SimParticle const& sim = simParticles->at(trackId);
 
         // PDG Particle Id of the sim particle that made this hit.
-        int pdgId = sim.pdgId();
+        pdgId = sim.pdgId();
       
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
@@ -232,7 +237,9 @@ namespace mu2e {
       nt[12] = straw.Id().getSector();
       nt[13] = pdgId;
       nt[14] = genId.Id();
-      
+      nt[15] = hit.eDep()/keV;
+      nt[16] = mom.mag();
+
       _ntup->Fill(nt);
 
       // Print out limited to the first few events.
