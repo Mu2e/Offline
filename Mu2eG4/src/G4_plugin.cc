@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.14 2010/03/23 20:39:26 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.15 2010/04/06 23:07:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/23 20:39:26 $
+// $Date: 2010/04/06 23:07:07 $
 //
 // Original author Rob Kutschke
 //
@@ -208,7 +208,7 @@ namespace mu2e {
     G4UserEventAction* event_action = new EventAction;
     _runManager->SetUserAction(event_action);
     
-    SteppingAction* stepping_action = new SteppingAction;
+    SteppingAction* stepping_action = new SteppingAction(config);
     _runManager->SetUserAction(stepping_action);
 
     StackingAction* stacking_action = new StackingAction(config);
@@ -248,7 +248,7 @@ namespace mu2e {
     _runManager->BeamOnBeginRun();
 
     // Helps with indexology related to persisting G4 volume information.
-   _physVolHelper.beginRun();
+    _physVolHelper.beginRun();
 
     // Add info about the G4 volumes to the run-data.  Framework requires we add a copy.
     const PhysicalVolumeInfoCollection& vinfo = _physVolHelper.persistentInfo();

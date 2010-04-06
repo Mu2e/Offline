@@ -3,20 +3,30 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: SteppingAction.hh,v 1.2 2010/04/06 23:07:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/04/06 23:07:07 $
 //
 // Original author Rob Kutschke
 //
 
+// Mu2e includes
+#include "Mu2eG4/inc/EventNumberList.hh"
+
+// G4 includes
 #include "G4UserSteppingAction.hh"
 #include "G4ThreeVector.hh"
 
+
 namespace mu2e {
+
+  // Forward declarations in mu2e namespace
+  class SimpleConfig;
+
   class SteppingAction : public G4UserSteppingAction{
+
   public:
-    SteppingAction();
+    SteppingAction( const SimpleConfig& config );
     ~SteppingAction(){};
     
     void UserSteppingAction(const G4Step*);
@@ -34,6 +44,9 @@ namespace mu2e {
     
     G4double _zref;
     
+    // List of events for which to enable debug printout.
+    EventNumberList _debugList;
+
   };
   
 } // end namespace mu2e

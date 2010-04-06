@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.5 2010/04/04 20:35:58 kutschke Exp $
+// $Id: StrawSD.cc,v 1.6 2010/04/06 23:07:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/04 20:35:58 $
+// $Date: 2010/04/06 23:07:07 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // G4 includes
 #include "G4RunManager.hh"
@@ -38,9 +39,17 @@ using namespace std;
 
 namespace mu2e {
 
-  StrawSD::StrawSD(G4String name) :G4VSensitiveDetector(name){
-    G4String HCname;
-    collectionName.insert(HCname="StepPointG4Collection");
+  StrawSD::StrawSD(G4String name, const SimpleConfig& config ) :G4VSensitiveDetector(name){
+    G4String HCname("StepPointG4Collection");
+    collectionName.insert(HCname);
+
+    // Get list of events for which to make debug printout.
+    string key("g4.strawSDEventList");
+    if ( config.hasName(key) ){
+      vector<int> list;
+      config.getVectorInt(key,list);
+      _debugList.add(list);
+    }
   }
 
 
@@ -64,13 +73,10 @@ namespace mu2e {
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
     G4double edep = aStep->GetTotalEnergyDeposit();
-    double step = aStep->GetStepLength();
+    G4double step = aStep->GetStepLength();
 
-    // I am not sure why we get these cases but we do.
+    // I am not sure why we get these cases but we do.  Skip them.
     if ( edep == 0. && step == 0. ) return false;
-
-    // Eventually we will want this but not now.
-    //if(edep==0.) return false;
 
     // Origin of the LTracker.  Need to get this from G4.
     static G4ThreeVector detectorOrigin( -3904., -7350., 6200.);
@@ -96,10 +102,7 @@ namespace mu2e {
     _collection->insert( newHit );
 
     // Some debugging tests.
-
-    //
-    static EventNumberList list;
-    if ( !list.inList() ) return true;
+    if ( !_debugList.inList() ) return true;
 
     // Transformations between world to local coordinate systems.
     G4AffineTransform const& toLocal = aStep->GetPreStepPoint()->GetTouchableHandle()->GetHistory()->GetTopTransform();
@@ -137,59 +140,17 @@ namespace mu2e {
     G4ThreeVector worldZUnit = toWorld.TransformAxis(localZUnit);
 
     int copy = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
-
     int eventNo = event->GetEventID();
 
-    /*
-      G4cout << "Addhit: "
-      << setw(4) << eventNo << " "
-      << setw(4) << _collection->entries() << " " 
-      << setw(6) << copy <<  "  | "
-      << std::setprecision(6)
-      << prePosTracker << " | "
-      << preMomWorld 
-      << std::setprecision(6)
-      << endl;
-    */
- 
-    /*
-      G4cout << "Add hit: "
-      << std::setprecision(8)
-      << _collection->entries() << " "
-      << aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber() << " "
-      << aStep->GetTrack()->GetTrackID() << " "
-      << prePosWorld  << " "
-      << preMomWorld   << " | "
-      << angle << "   "
-      << angleLocal << "   "
-      << diffAngle << "  | "
-      << endl; 
-
-      G4cout << "Line: " 
-      << prePosLocal.x()  << " "
-      << prePosLocal.y()  << " "
-      << postPosLocal.x()     << " "
-      << postPosLocal.y()     << " "
-      << preMomLocal.unit().x()    << " "
-      << preMomLocal.unit().y()    << " "
-      << worldOrigin.x() << " "
-      << worldOrigin.y() << " "
-      << std::setprecision(6)
-      << endl;
-    */
-
-
-
-    // Reco Geometry for the LTracker.
+    // Reconstruction Geometry for the LTracker.
     GeomHandle<LTracker> ltracker;
     Straw const& straw = ltracker->getStraw( StrawIndex(copy) );
-    G4ThreeVector mid = straw.getMidPoint();
-    G4ThreeVector w   = straw.getDirection();
+    G4ThreeVector mid  = straw.getMidPoint();
+    G4ThreeVector w    = straw.getDirection();
 
     // Point of closest approach of track to wire.
     // Straight line approximation.
     TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);
-
     
     // Point on the wire that is closest to the step point.
     LinePointPCA lppca( mid, w, prePosTracker);
@@ -205,14 +166,6 @@ namespace mu2e {
              prePosLocal.perp(),  postPosLocal.perp()  );
     fflush(stdout);
 
-    /*
-      G4cout << "Measurement: "
-      << aStep->GetTrack()->GetTrackID() << " "
-      << pca.dca()  << " "
-      << pca.dca2d()  << " "
-      << endl;
-    */
-
     // This works.  uvw.perp() is always 2.500000000xxxx or 2.499999999xxxx
     // Note that uhat and vhat are not the same as the local (xhat, yhat)
     // from G4.  They differ by a rotation about the local zhat.
@@ -224,8 +177,6 @@ namespace mu2e {
     double v0 = detLocal.dot(v);
     double w0 = detLocal.dot(w);
     G4ThreeVector uvw(u0, v0, w0);
-
-    
 
     // End of debug section.
 

@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.3 2010/03/23 20:43:14 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.4 2010/04/06 23:07:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/23 20:43:14 $
+// $Date: 2010/04/06 23:07:07 $
 //
 // Original author Rob Kutschke
 //
@@ -13,8 +13,8 @@
 #include <cmath>
 
 // Mu2e includes
-#include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/SteppingAction.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // G4 includes
 #include "G4RunManager.hh"
@@ -28,8 +28,17 @@ using namespace std;
 
 namespace mu2e {
 
-  SteppingAction::SteppingAction():
+  SteppingAction::SteppingAction( const SimpleConfig& config ):
     _zref(){ 
+
+    // Get list of events for which to make debug printout.
+    string key("g4.steppingActionEventList");
+    if ( config.hasName(key) ){
+      vector<int> list;
+      config.getVectorInt(key,list);
+      _debugList.add(list);
+    }
+
   }
 
   // A helper function to manage the printout.
@@ -49,26 +58,11 @@ namespace mu2e {
 
   void SteppingAction::UserSteppingAction(const G4Step* step){  
 
+    // Do we want to do make debug printout for this event?
+    if ( !_debugList.inList() ) return;
+
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
     int eventNo = event->GetEventID();
-
-
-    // Build list of interesting events.
-    /*
-      static int const nadded(12);
-      static int const nmissing(4);
-      static int const added[nadded]     = {  0, 15, 34,  49, 61, 66, 74, 99, 128, 142, 164, 172};
-      static int const missing[nmissing] = { 25, 41, 63, 144 };
-      static EventNumberList  add( nadded,   added  );
-      static EventNumberList miss( nmissing, missing);
-    */
-
-    static EventNumberList  add;
-    static EventNumberList miss;
-
-    // Skip uninteresting events.
-    bool inList = ( add.inList() || miss.inList() );
-    if ( !inList ) return;
 
     // Pre and post stepping points.
     G4StepPoint const* prept  = step->GetPreStepPoint();
@@ -132,11 +126,13 @@ namespace mu2e {
               postpt->GetPosition(),
               postpt->GetMomentum()
               );
+    fflush(stdout);
 
     cout << "Pre  Volume and copy: " << preVolume  << " " << preCopy  << endl;
     cout << "Post Volume and copy: " << postVolume << " " << postCopy << endl;
 
     printf ( "\n");
+    fflush(stdout);
 
   }
 
