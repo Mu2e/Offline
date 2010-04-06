@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.13 2010/04/06 18:42:43 rhbob Exp $
+// $Id: Mu2eWorld.cc,v 1.14 2010/04/06 19:27:19 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/04/06 18:42:43 $
+// $Date: 2010/04/06 19:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -663,7 +663,9 @@ namespace mu2e {
     // For rotating Primary Proton Gun I take angles from Proton Target 
     _primaryProtonGunRotation.rotateX( targetPS_rotX*degree);
     _primaryProtonGunRotation.rotateY( targetPS_rotY*degree);
-
+    //
+    //these are "active rotations; we want passive, in G4 style
+    _primaryProtonGunRotation = _primaryProtonGunRotation.inverse();
 
 
     VolumeInfo trackerInfo;
