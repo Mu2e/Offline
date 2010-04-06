@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.13 2010/04/05 01:37:52 kutschke Exp $
+// $Id: geom_01.txt,v 1.14 2010/04/06 16:41:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/05 01:37:52 $
+// $Date: 2010/04/06 16:41:17 $
 //
 // Original author Rob Kutschke
 
@@ -147,14 +147,14 @@ string targetPS_materialName      = "G4_Au";
 
 // LTracker: Positioning infor is relative to DS.
 int    ltracker.nSides           =     8;
-double ltracker.r0               =   388.48435399; // Lengths in mm
-double ltracker.z0               = 10200.;         // In Mu2e coordinate system.
-double ltracker.zHalfLength      =  1300.0;
-double ltracker.rOut             =   870.0;
+double ltracker.r0               =   388.55;      // Lengths in mm
+double ltracker.z0               = 10200.;        // In Mu2e coordinate system.
+double ltracker.zHalfLength      =  1310.0;       // Includes a little extra space.
+double ltracker.rOut             =   880.0;
 double ltracker.rStrawOut        =     2.5;
 double ltracker.phi0             =     0.0;       // radians
-double ltracker.tilt             =     0.015;     // radians
-double ltracker.tiltx            =     0.0138563; // radians
+double ltracker.tiltY            =     0.015;     // radians
+double ltracker.tiltX            =     0.0138563; // radians
 double ltracker.strawThickness   =     0.025;     // mm
 double ltracker.rWire            =     0.010;     // mm
 double ltracker.carbonThick      =     1.e-4;     // mm =100 nm

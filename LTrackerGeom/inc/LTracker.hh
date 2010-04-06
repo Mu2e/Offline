@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.3 2010/02/07 00:15:01 kutschke Exp $
+// $Id: LTracker.hh,v 1.4 2010/04/06 16:41:17 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/02/07 00:15:01 $
+// $Date: 2010/04/06 16:41:17 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,11 @@ namespace mu2e {
 
     double zHalfLength() const;
 
-    double Tilt() const { return _tilt;}
+    double tiltY() const { return _tiltY;}
+    double tiltX() const { return _tiltY;}
+
+    // Depracated: kept for backwards compatibiltiy.
+    double Tilt() const { return _tiltY;}
 
     int nSides() const { return _devices.at(0).getSectors().size(); }
 
@@ -168,11 +172,12 @@ protected:
     // _z0 = position of the center of the tracker relative to the origin
     //       of the Mu2e coordinate system.
     // _Inscribed = inscribed radius that is tangent to the inner part of the sector.
-    // _tilt - rotation of each layer about the normal to its own plane.
+    // tilts are described in Mu2e-doc-561-v2 ( or higher version).
     double _r0;
     double _z0;
     double _rInscribed;
-    double _tilt;
+    double _tiltY;
+    double _tiltX;
 
     // Outer radius of a logical volume that will just contain the entire tracker.
     double _rOut;

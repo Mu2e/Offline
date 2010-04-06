@@ -5,9 +5,9 @@
 // approach between the two lines.  The lines are 
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA.hh,v 1.2 2009/11/11 15:00:52 kutschke Exp $
+// $Id: TwoLinePCA.hh,v 1.3 2010/04/06 16:41:17 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/11 15:00:52 $
+// $Date: 2010/04/06 16:41:17 $
 //
 // Original author Rob Kutschke
 //
@@ -52,6 +52,11 @@ namespace mu2e {
     CLHEP::Hep3Vector const& point1() const { return _pca1; }
     CLHEP::Hep3Vector const& point2() const { return _pca2; }
 
+    // "Local z" of the pca.  ( Length along the straw from mid point to pca ).
+    double s1() const { return _s1; }
+    double s2() const { return _s2; }
+
+    // Were the lines treated as parallel?
     bool closeToParallel() const { return _closeToParallel; }
 
   private:

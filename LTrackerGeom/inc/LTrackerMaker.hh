@@ -4,9 +4,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.hh,v 1.2 2010/02/07 00:15:02 kutschke Exp $
+// $Id: LTrackerMaker.hh,v 1.3 2010/04/06 16:41:17 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/02/07 00:15:02 $
+// $Date: 2010/04/06 16:41:17 $
 //
 // Original author Rob Kutschke
 //
@@ -38,7 +38,8 @@ public:
 		 double radius,
 		 CLHEP::Hep3Vector center,
 		 double phi0,
-		 double tilt,
+		 double tiltX,
+		 double tiltY,
 		 CLHEP::Hep3Vector vaneOffset
 		 );
 
@@ -58,6 +59,7 @@ private:
   void CheckFit();
   void CheckSideConsistency();
   void CheckVaneConsistency();
+  void checkForOverlaps( bool printWarnings = true );
   int  totalStraws() const;
 
   void MakeSides();
@@ -108,8 +110,9 @@ private:
   // Overall azimuthal rotation
   double _phi0;
 
-  // Tilt of a layer in its own plane
-  double _tilt;
+  // See Mu2e-doc-561-v2 ( or higher version ).
+  double _tiltX;
+  double _tiltY;
 
   // 
   CLHEP::Hep3Vector _vaneOffset;

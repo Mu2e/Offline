@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: Sector.hh,v 1.2 2010/04/06 16:41:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/04/06 16:41:17 $
 //
 // Original author Rob Kutschke
 //
@@ -67,6 +67,7 @@ public:
 
   const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
 
+  const double         boxRxAngle()     const { return _boxRxAngle;     }
   const double         boxRyAngle()     const { return _boxRyAngle;     }
   const double         boxRzAngle()     const { return _boxRzAngle;     }
   const Hep3Vector&    boxOffset()      const { return _boxOffset;      }
@@ -131,8 +132,9 @@ protected:
   CLHEP::Hep3Vector _baseDelta;
 
   // Rotations and offsets to place the logical box.
-  // placedshape = ( offset + RZ*RY*shape );
+  // placedshape = ( offset + RZ*RX*RY*shape );
   //
+  double _boxRxAngle;
   double _boxRyAngle;
   double _boxRzAngle;
   CLHEP::Hep3Vector _boxOffset;

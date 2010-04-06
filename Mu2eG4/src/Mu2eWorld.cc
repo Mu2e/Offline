@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.11 2010/04/02 18:16:44 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/04/02 18:16:44 $
+// $Id: Mu2eWorld.cc,v 1.12 2010/04/06 16:41:17 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/04/06 16:41:17 $
 //
 // Original author Rob Kutschke
 //
@@ -495,14 +495,14 @@ namespace mu2e {
     //    assert (2==1);
     double detSolUpstreamVacParams[5]   = { 
        0.
-      ,detSolCoilParams[1]
+      ,detSolCoilParams[0]
       ,halfLengthOfUpstreamDSVac*mm
       ,0.
       ,2.*M_PI
     };
     double detSolDownstreamVacParams[5]   = { 
        0.
-      ,detSolCoilParams[1]
+      ,detSolCoilParams[0]
       ,halfLengthOfDownstreamDSVac*mm
       ,0.
       ,2.*M_PI
@@ -677,10 +677,10 @@ namespace mu2e {
 // beign careful to associate with downstream detsol
       log << "LTracker version: " << ver << "\n";
       if ( ver == 0 ){
-	trackerInfo = constructLTracker( detSolDownstreamVacInfo.logical, dsz0 - centerOfDownstreamDSVac );
+	trackerInfo = constructLTracker( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
       }
       else if ( ver == 1 ) {
-	trackerInfo = constructLTrackerv2( detSolDownstreamVacInfo.logical, dsz0 - centerOfDownstreamDSVac );
+	trackerInfo = constructLTrackerv2( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
       } else {
 	trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
       }
@@ -1153,11 +1153,12 @@ namespace mu2e {
       for ( std::size_t isec =0; isec<device.getSectors().size(); ++isec){
 	Sector const& sector = device.getSector(isec);
 
+	HepRotationX RX(sector.boxRxAngle());
 	HepRotationY RY(sector.boxRyAngle());
 	HepRotationZ RZ(sector.boxRzAngle());
      
 	// Need to understand if this causes memory leak.
-	G4RotationMatrix* rot = new G4RotationMatrix( RZ*RY);
+	G4RotationMatrix* rot = new G4RotationMatrix( RZ*RX*RY);
 
 	// MakeImprint requires non-const argument.
 	G4ThreeVector offset = sector.boxOffset();
@@ -1277,9 +1278,10 @@ namespace mu2e {
 	// This rotation is the inverse of the one in v2.
 	// Note the sign and the reversed order : active/passive  confusion.
 	// Need to understand if this causes memory leak.
+	HepRotationX RX(-sector.boxRxAngle());
 	HepRotationY RY(-sector.boxRyAngle());
 	HepRotationZ RZ(-sector.boxRzAngle());
-	G4RotationMatrix* rot = new G4RotationMatrix( RY*RZ);
+	G4RotationMatrix* rot = new G4RotationMatrix( RY*RX*RZ);
 
 	// Make a physical volume for this sector.  Same material as the 
 	// main LTracker volume ( some sort of vacuum ).
