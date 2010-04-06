@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.8 2010/04/02 18:19:05 rhbob Exp $
+// $Id: Mu2eWorld.hh,v 1.9 2010/04/06 18:42:52 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/04/02 18:19:05 $
+// $Date: 2010/04/06 18:42:52 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,8 @@ class G4UserLimits;
 class G4HelixSimpleRunge;
 class G4ClassicalRK4;
 class G4CashKarpRKF45;
+class G4ImplicitEuler;
+class G4ExplicitEuler;
 
 //
 //G4 includes 
@@ -140,15 +142,20 @@ namespace mu2e {
     std::auto_ptr<DSField>   _detSolUpstreamVaryingBField;
     std::auto_ptr<DSField>   _detSolDownstreamVaryingBField;
 
+
     //need these in both cases
     std::auto_ptr<G4Mag_UsualEqRhs>    _usualUpstreamRHS;
     std::auto_ptr<G4ExactHelixStepper> _exactUpstreamHelix;
     std::auto_ptr<G4ClassicalRK4 >     _rungeUpstreamHelix;
+    std::auto_ptr<G4CashKarpRKF45 >     _rungeCKUpstreamHelix;
+    std::auto_ptr<G4ImplicitEuler >     _rungeIEUpstreamHelix;
+    std::auto_ptr<G4ExplicitEuler >     _rungeEEUpstreamHelix;
     std::auto_ptr<G4ChordFinder>       _chordUpstreamFinder;
     std::auto_ptr<G4FieldManager>      _fieldUpstreamMgr;
     std::auto_ptr<G4Mag_UsualEqRhs>    _usualDownstreamRHS;
     std::auto_ptr<G4ExactHelixStepper> _exactDownstreamHelix;
     std::auto_ptr<G4ClassicalRK4>     _rungeDownstreamHelix;
+    std::auto_ptr<G4ExplicitEuler>     _rungeEEDownstreamHelix;
     std::auto_ptr<G4ChordFinder>       _chordDownstreamFinder;
     std::auto_ptr<G4FieldManager>      _fieldDownstreamMgr;
     std::auto_ptr<G4UserLimits>        _stepLimit;

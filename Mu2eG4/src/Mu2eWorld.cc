@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.12 2010/04/06 16:41:17 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/06 16:41:17 $
+// $Id: Mu2eWorld.cc,v 1.13 2010/04/06 18:42:43 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/04/06 18:42:43 $
 //
 // Original author Rob Kutschke
 //
@@ -84,6 +84,8 @@
 #include "G4SDManager.hh"
 #include "G4ClassicalRK4.hh"
 #include "G4CashKarpRKF45.hh"
+#include "G4ImplicitEuler.hh"
+#include "G4ExplicitEuler.hh"
 
 //#include "G4GDMLParser.hh"
 
@@ -814,8 +816,6 @@ namespace mu2e {
 	<< "illegal field config as specified in geom.txt \n";
       }
 
-
-
     if (detSolFieldForm == detSolFullField)
       {
 	//
@@ -823,7 +823,7 @@ namespace mu2e {
 
 	_detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
 	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
-	_rungeUpstreamHelix  = auto_ptr<G4ClassicalRK4>(new G4ClassicalRK4(_usualUpstreamRHS.get()));
+	_rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualUpstreamRHS.get()));
         _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
 									    , _rungeUpstreamHelix.get() ));
         _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
@@ -832,7 +832,7 @@ namespace mu2e {
 	//downstream varying section
 	_detSolDownstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
 	_usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamVaryingBField.get() ) );
-	_rungeDownstreamHelix  = auto_ptr<G4ClassicalRK4>(new G4ClassicalRK4(_usualDownstreamRHS.get()));
+	_rungeEEDownstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualDownstreamRHS.get()));
         _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamVaryingBField.get(), stepDownstreamMinimum,
 										  _rungeDownstreamHelix.get() ));
         _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamVaryingBField.get(), 
@@ -845,12 +845,13 @@ namespace mu2e {
 	//
 	//upstream varying section
 	_detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
-	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get()));;
-	_rungeUpstreamHelix  = auto_ptr<G4ClassicalRK4> (new G4ClassicalRK4(_usualUpstreamRHS.get()));
+	_usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get()));
+	
+	_rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler> (new G4ExplicitEuler(_usualUpstreamRHS.get()));
         _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
-									    , _rungeUpstreamHelix.get() ));
+									    , _rungeEEUpstreamHelix.get() ));
         _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
-										 _chordUpstreamFinder.get(), true));
+								 _chordUpstreamFinder.get(), true));
 
 	//downstream constant section
 	G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
@@ -889,36 +890,37 @@ namespace mu2e {
       }
 
 
+
     // Now that we've chosen, attach the field manager to the detSol volume; full field upstream
     detSolUpstreamVacInfo.logical->SetFieldManager( _fieldUpstreamMgr.get(), true);
     detSolDownstreamVacInfo.logical->SetFieldManager( _fieldDownstreamMgr.get(), true);
 
-    //and do bookkeeping
-    double oldUpstreamDeltaI = _fieldUpstreamMgr->GetDeltaIntersection();
-    double newUpstreamDeltaI = 0.00001;
-    double oldDownstreamDeltaI = _fieldDownstreamMgr->GetDeltaIntersection();
-    double newDownstreamDeltaI = 0.00001;
+
+
+    //
+    //set integration step values
+    G4double singleValue = 0.5e-02*mm;
+    G4double newUpstreamDeltaI = singleValue;
+    G4double newDownstreamDeltaI = singleValue;
+    G4double deltaOneStep = singleValue;
+    G4double deltaChord = singleValue;
+    G4double maxStep = 1.e-00*mm;
+
+    _fieldUpstreamMgr->SetDeltaOneStep(deltaOneStep);
+    _fieldDownstreamMgr->SetDeltaOneStep(deltaOneStep);
+    
 
     _fieldUpstreamMgr->SetDeltaIntersection(newUpstreamDeltaI);    
     _fieldDownstreamMgr->SetDeltaIntersection(newDownstreamDeltaI);    
-    log << "Setting Delta Intersection Upstream: "  
-	<< "Old value: " << oldUpstreamDeltaI
-	<< "  New value: " 
-	<< _fieldUpstreamMgr->GetDeltaIntersection() 
-	<< "\n";
-    
 
-    log << "Setting Delta Intersection Downstream: "  
-	<< "Old value: " << oldDownstreamDeltaI
-	<< "  New value: " 
-	<< _fieldDownstreamMgr->GetDeltaIntersection() 
-	<< "\n";
+    _chordUpstreamFinder->SetDeltaChord(deltaChord);
+    _chordDownstreamFinder->SetDeltaChord(deltaChord);
+
 
     
     // Set step limit.  
     // See also PhysicsList.cc to add a steplimiter to the list of processes.
     // Do this so that we can see the helical trajectory in the DS and volumes inside of it.
-    G4double maxStep = 20.;
     _stepLimit = auto_ptr<G4UserLimits>( new G4UserLimits(maxStep));
     detSolUpstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
     detSolDownstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
