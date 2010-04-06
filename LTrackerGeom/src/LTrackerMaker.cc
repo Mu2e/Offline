@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.8 2010/04/06 17:10:05 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.9 2010/04/06 23:07:31 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 17:10:05 $
+// $Date: 2010/04/06 23:07:31 $
 //
 // Original author Rob Kutschke
 //
@@ -365,13 +365,13 @@ namespace mu2e {
       // Offset between wires in base position.
       sec._baseDelta = Hep3Vector( -2.*_strawRadius, 0., 0.);
 
-      // Scale the box to be slightly larger than it needs to be
-      const double fac = 1.0001;
+      // Pad the box to be slightly larger than it needs to be
+      const double pad = 0.001;
 
       // Half-dimensions of a box that holds this layer.
-      sec._boxHalfLengths.push_back( fac * (maxStrawsThisSector   * _strawRadius) );
-      sec._boxHalfLengths.push_back( fac * (1.+0.5*(nlayers-1)*root3)* _strawRadius );
-      sec._boxHalfLengths.push_back( _halfLength );
+      sec._boxHalfLengths.push_back( maxStrawsThisSector * _strawRadius       + pad );
+      sec._boxHalfLengths.push_back( (1.+0.5*(nlayers-1)*root3)* _strawRadius + pad );
+      sec._boxHalfLengths.push_back( _strawHalfLength + pad );
 
       // Descriptions of the rotations and placement of the sector.
       sec._boxRxAngle = 0.;
@@ -481,10 +481,13 @@ namespace mu2e {
       // Offset for constructing straw positions.
       sec._baseDelta = Hep3Vector( 2.*_strawRadius, 0., 0.);
 
+      // Pad the box to be slightly larger than it needs to be
+      const double pad = 0.001;
+
       // Half-dimensions of a box that holds this layer.
-      sec._boxHalfLengths.push_back( maxStrawsThisSector   * _strawRadius );
-      sec._boxHalfLengths.push_back( (1.+0.5*(nlayers-1)*root3)* _strawRadius );
-      sec._boxHalfLengths.push_back( _halfLength );
+      sec._boxHalfLengths.push_back( maxStrawsThisSector * _strawRadius       + pad );
+      sec._boxHalfLengths.push_back( (1.+0.5*(nlayers-1)*root3)* _strawRadius + pad);
+      sec._boxHalfLengths.push_back( _strawHalfLength + pad );
 
       // Descriptions of the rotations and placement of the sector.
       sec._boxRxAngle = _tiltX;
