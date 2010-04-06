@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.10 2010/04/02 18:17:00 rhbob Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.11 2010/04/06 19:24:56 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/04/02 18:17:00 $
+// $Date: 2010/04/06 19:24:56 $
 //
 // Original author Rob Kutschke
 //
@@ -122,11 +122,7 @@ namespace mu2e {
                   genpart._generatorId == GenId::cosmic ){
         pos += cosmicReferencePlane;
       } else if ( genpart._generatorId == GenId::primaryProtonGun ){	
-	//
-	// need inverse; we define the physical object to point along its own z; 
-	// then rotate that coordinate system
-	// back to G4, not take vector in G4 and rotate to new position.  hence inverse
-            pos = primaryProtonGunRotation.inverse()*pos + primaryProtonGunOrigin;
+            pos = primaryProtonGunRotation*pos + primaryProtonGunOrigin;
             momentum = primaryProtonGunRotation.inverse()*momentum;
       } else {
         edm::LogError("KINEMATICS")
@@ -136,16 +132,16 @@ namespace mu2e {
         continue;
       }
 
-      // Shorthand for readability: 4-momentum.
-	 HepLorentzVector p4(genpart._momentum);
-	 p4.setV(momentum);
     
       // Create a new vertex 
       G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
-    
-      // Create a particle.
-      G4PrimaryParticle* particle = 
-        new G4PrimaryParticle(genpart._pdgId, p4.x(), p4.y(), p4.z(), p4.e() );
+
+    G4PrimaryParticle* particle =
+       new G4PrimaryParticle(genpart._pdgId,
+                             momentum.x(),
+                             momentum.y(),
+                             momentum.z(),
+                             genpart._momentum.e() );
     
       // Set the charge.  Do I really need to do this?
       G4ParticleDefinition const* g4id = particle->GetG4code();
