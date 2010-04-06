@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.5 2010/04/02 19:23:22 rhbob Exp $
+// $Id: genconfig_05.txt,v 1.6 2010/04/06 19:24:04 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/02 19:23:22 $
+// $Date: 2010/04/06 19:24:04 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -27,12 +27,10 @@ double primaryProtonGun.czmin = 1;
 double primaryProtonGun.czmax = 1;
 
 // Position of PrimaryProtonGun (local to target)
-double primaryProtonGun.posX = 0.;
-double primaryProtonGun.posY = 0.;
-double primaryProtonGun.posZ = 0.;
+vector<double> primaryProtonGunOffset = {0.,0.,0.);
 
 // Distribution parameter of Primary Proton Gun beam
-double primaryProtonGun.stdDev = 3;
+double primaryProtonGun.stdDev = 3; //units are mm
 
 
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
