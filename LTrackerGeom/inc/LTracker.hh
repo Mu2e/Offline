@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.4 2010/04/06 16:41:17 kutschke Exp $
+// $Id: LTracker.hh,v 1.5 2010/04/06 17:10:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 16:41:17 $
+// $Date: 2010/04/06 17:10:05 $
 //
 // Original author Rob Kutschke
 //
@@ -45,7 +45,9 @@ namespace mu2e {
 
     double rInscribed() const { return _rInscribed;}
 
-    double zHalfLength() const;
+    double zHalfLength() const{
+      return _halfLength;
+    }
 
     double tiltY() const { return _tiltY;}
     double tiltX() const { return _tiltY;}
@@ -179,8 +181,10 @@ protected:
     double _tiltY;
     double _tiltX;
 
-    // Outer radius of a logical volume that will just contain the entire tracker.
+    // Outer radius and half length ( in z ) of a logical volume that will 
+    // just contain the entire tracker.  Use to make the mother volume.
     double _rOut;
+    double _halfLength;
 
     std::string _fillMaterial;
 

@@ -4,9 +4,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.hh,v 1.3 2010/04/06 16:41:17 kutschke Exp $
+// $Id: LTrackerMaker.hh,v 1.4 2010/04/06 17:10:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 16:41:17 $
+// $Date: 2010/04/06 17:10:05 $
 //
 // Original author Rob Kutschke
 //
@@ -83,10 +83,10 @@ private:
   // Nominal radius of the tracker; radius to mid-plane of a layer at z=0.
   double _r0;
   
-  // Length of the tracker; and half-length.
+  // Length of the tracker mother volume.
   double _halfLength;
 
-  // Outerradius of a volume that will enclose the full tracker.
+  // Outerradius of a volume the tracker mother volume.
   double _rOut;
 
   // Passed through to LTracker as is.
@@ -96,7 +96,8 @@ private:
   // Names of the materials in the straws.
   std::vector<std::string> _strawMaterialNames0, _strawMaterialNames1;
 
-  // Straw radius and thickness; thickness of carbon for conducting straws.
+  // Straw half length, radius and thickness; thickness of carbon for conducting straws.
+  double _strawHalfLength;
   double _strawRadius;
   double _strawThick;
   double _carbonThick;

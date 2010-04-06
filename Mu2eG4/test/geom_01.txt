@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.14 2010/04/06 16:41:17 kutschke Exp $
+// $Id: geom_01.txt,v 1.15 2010/04/06 17:10:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/06 16:41:17 $
+// $Date: 2010/04/06 17:10:05 $
 //
 // Original author Rob Kutschke
 
@@ -151,6 +151,7 @@ double ltracker.r0               =   388.55;      // Lengths in mm
 double ltracker.z0               = 10200.;        // In Mu2e coordinate system.
 double ltracker.zHalfLength      =  1310.0;       // Includes a little extra space.
 double ltracker.rOut             =   880.0;
+double ltracker.strawHalfLength  =  1300.0;
 double ltracker.rStrawOut        =     2.5;
 double ltracker.phi0             =     0.0;       // radians
 double ltracker.tiltY            =     0.015;     // radians

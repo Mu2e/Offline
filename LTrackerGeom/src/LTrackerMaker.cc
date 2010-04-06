@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.7 2010/04/06 16:41:17 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.8 2010/04/06 17:10:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 16:41:17 $
+// $Date: 2010/04/06 17:10:05 $
 //
 // Original author Rob Kutschke
 //
@@ -103,20 +103,21 @@ namespace mu2e {
     _sideInfo(),
     _vaneInfo(){
 
-    _nSides       = config.getInt("ltracker.nSides");
-    _r0           = config.getDouble("ltracker.r0");
-    _z0           = config.getDouble("ltracker.z0");
-    _halfLength   = config.getDouble("ltracker.zHalfLength");
-    _rOut         = config.getDouble("ltracker.rOut");
-    _strawRadius  = config.getDouble("ltracker.rStrawOut");
-    _phi0         = config.getDouble("ltracker.phi0");
-    _tiltX         = config.getDouble("ltracker.tiltX");
-    _tiltY         = config.getDouble("ltracker.tiltY");
-    _strawThick   = config.getDouble("ltracker.strawThickness");
-    _rwire        = config.getDouble("ltracker.rWire");
-    _carbonThick  = config.getDouble("ltracker.carbonThick");
-    _vaneOffset   = config.getHep3Vector("ltracker.vaneOffset");
-    _fillMaterial = config.getString("ltracker.fillMaterial");
+    _nSides          = config.getInt("ltracker.nSides");
+    _r0              = config.getDouble("ltracker.r0");
+    _z0              = config.getDouble("ltracker.z0");
+    _halfLength      = config.getDouble("ltracker.zHalfLength");
+    _rOut            = config.getDouble("ltracker.rOut");
+    _strawHalfLength = config.getDouble("ltracker.strawHalfLength");
+    _strawRadius     = config.getDouble("ltracker.rStrawOut");
+    _phi0            = config.getDouble("ltracker.phi0");
+    _tiltX           = config.getDouble("ltracker.tiltX");
+    _tiltY           = config.getDouble("ltracker.tiltY");
+    _strawThick      = config.getDouble("ltracker.strawThickness");
+    _rwire           = config.getDouble("ltracker.rWire");
+    _carbonThick     = config.getDouble("ltracker.carbonThick");
+    _vaneOffset      = config.getHep3Vector("ltracker.vaneOffset");
+    _fillMaterial    = config.getString("ltracker.fillMaterial");
 
     config.getVectorString("ltracker.strawMaterials0", _strawMaterialNames0, 3);
     config.getVectorString("ltracker.strawMaterials1", _strawMaterialNames1, 3);
@@ -160,6 +161,7 @@ namespace mu2e {
     _ltt->_r0         = _r0;
     _ltt->_z0         = _z0;
     _ltt->_rOut       = _rOut;
+    _ltt->_halfLength = _halfLength;
     _ltt->_rInscribed = _r0-_strawRadius*(1.+sqrt(3.));
     
     _ltt->_fillMaterial = _fillMaterial;
@@ -251,9 +253,9 @@ namespace mu2e {
   void LTrackerMaker::MakeDetails(){
         
     _ltt->_strawDetail.push_back( 
-                                 StrawDetail( 0,  _strawMaterialNames0, _strawRadius, _strawThick, _halfLength, _rwire) );
+                                 StrawDetail( 0,  _strawMaterialNames0, _strawRadius, _strawThick, _strawHalfLength, _rwire) );
     _ltt->_strawDetail.push_back( 
-                                 StrawDetail( 1, _strawMaterialNames1, _strawRadius, _strawThick, _halfLength, _rwire) );
+                                 StrawDetail( 1, _strawMaterialNames1, _strawRadius, _strawThick, _strawHalfLength, _rwire) );
   }
 
   void LTrackerMaker::MakeSides(){
@@ -369,7 +371,7 @@ namespace mu2e {
       // Half-dimensions of a box that holds this layer.
       sec._boxHalfLengths.push_back( fac * (maxStrawsThisSector   * _strawRadius) );
       sec._boxHalfLengths.push_back( fac * (1.+0.5*(nlayers-1)*root3)* _strawRadius );
-      sec._boxHalfLengths.push_back( fac * _halfLength );
+      sec._boxHalfLengths.push_back( _halfLength );
 
       // Descriptions of the rotations and placement of the sector.
       sec._boxRxAngle = 0.;

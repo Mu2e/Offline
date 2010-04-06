@@ -2,9 +2,9 @@
 // Geometry and identifier info about an LTracker.
 //
 //
-// $Id: LTracker.cc,v 1.3 2010/02/06 22:20:28 kutschke Exp $
+// $Id: LTracker.cc,v 1.4 2010/04/06 17:10:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/02/06 22:20:28 $
+// $Date: 2010/04/06 17:10:05 $
 //
 // Original author Rob Kutschke
 //
@@ -15,24 +15,17 @@ using namespace std;
 
 namespace mu2e { 
 
+  /*
   double LTracker::zHalfLength() const{
     
     double zHalfMax = 0.;
-    /*
-    for ( std::vector<StrawDetail>::const_iterator i = _strawDetail.begin(),
-	    e=_strawDetail.end(); 
-	  i != e ; 
-	  ++i ){
-      double l = i->halfLength();
-      zHalfMax = ( l > zHalfMax ) ? l : zHalfMax;
-    }
-    */
     for ( int i=0; i<_strawDetail.size(); ++i ) {
       double l = _strawDetail[i].halfLength();
       zHalfMax = ( l > zHalfMax ) ? l : zHalfMax;
     }
     return zHalfMax;
   }
+  */
 
 // Given the _indices member in each Layer, fill the _straws member.
 void LTracker::FillPointers1(){
