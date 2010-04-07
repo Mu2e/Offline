@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.16 2010/04/07 22:08:58 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.17 2010/04/07 23:19:57 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/07 22:08:58 $
+// $Date: 2010/04/07 23:19:57 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/StepPointG4.hh"
+#include "Mu2eG4/inc/addStepPointMCs.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -166,7 +167,8 @@ namespace mu2e {
 
     edm::LogInfo logInfo("GEOM");
     logInfo << "Initializing Geant 4 for run: " << run.id() << endl;
-    
+
+    // Create user actions and register them with G4.
 
     WorldMaker* allMu2e    = new WorldMaker();
     _runManager->SetUserInitialization(allMu2e);
@@ -196,10 +198,8 @@ namespace mu2e {
 
     // Copy some information about the G4 world to people who need it.
     Mu2eWorld const* world = allMu2e->getWorld();
-    _genAction->setWorld(world);
-
-    _mu2eOrigin         = world->getMu2eOrigin();
-    _mu2eDetectorOrigin = world->getMu2eDetectorOrigin();
+    _mu2eOrigin            = world->getMu2eOrigin();
+    _mu2eDetectorOrigin    = world->getMu2eDetectorOrigin();
 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
@@ -221,12 +221,14 @@ namespace mu2e {
     // Helps with indexology related to persisting G4 volume information.
     _physVolHelper.beginRun();
 
-    // Add info about the G4 volumes to the run-data.  Framework requires we add a copy.
+    // Add info about the G4 volumes to the run-data.  
+    // The framework rules requires we make a copy and add the copy.
     const PhysicalVolumeInfoCollection& vinfo = _physVolHelper.persistentInfo();
     auto_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
     run.put(volumes);
 
     // Some of the user actions have beginRun methods.
+    _genAction->setWorld(world);
     _trackingAction->beginRun( _physVolHelper, _mu2eOrigin );
 
   }
@@ -238,106 +240,20 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection> outputHits(new StepPointMCCollection);
     auto_ptr<SimParticleCollection> simParticles(new SimParticleCollection);
 
-    // Clear internal state of the tracking action object.  Not a standard G4 thing.
+    // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
-    
-    // The primary generator action may need to know about the event.
     _genAction->setEvent(event);
     
-    // Run G4 for this event.
+    // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent();
-
-    // The stuff below here should go into the end of event action.
-    // Need to pass the event to that class too.
-
-    // Access output for G4 for this event.
     G4Event const* g4event = _runManager->getCurrentEvent();
-    G4HCofThisEvent* hce   = g4event->GetHCofThisEvent();
 
-    // Get the collection ID for the Sensitive Layer hits.
-    G4SDManager* SDman   = G4SDManager::GetSDMpointer();
-    G4int colId;
-
-    edm::Service<GeometryService> geom;
-    SimpleConfig const& config = geom->config();
-
-
-    if ( config.getBool("hasITracker",false) && !config.getBool("hasLTracker",false)) {
-
-      GeomHandle<ITracker> itracker;
-      std::stringstream SDname;
-      std::string sSDname;
-      std::string::size_type loc;
-      for (int iSlr=0; iSlr < itracker->nSuperLayers(); ++iSlr) {
-        for (int iRng = 0; iRng < itracker->nRing(); ++iRng) {
-          SDname.str(std::string());
-          SDname<< "StepPointG4Collection_";
-          SDname<<"wvolS"<< std::setw(2) << iSlr << "R" << std::setw(2) <<iRng;
-          sSDname=SDname.str();
-          loc=sSDname.find( " ", 0 );
-          while ( loc != std::string::npos ){
-            sSDname.replace(loc,1,"0");
-            loc = sSDname.find( " ", 0 );
-          }
-          //    			std::cout<<sSDname<<endl;
-          colId = SDman->GetCollectionID(sSDname.c_str());
-          if ( colId >= 0 && hce != 0 ){
-            StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
-            G4int nHits = hits->entries();
-
-            for (G4int i=0;i<nHits;i++) {
-              StepPointG4* h = (*hits)[i];
-              outputHits->push_back( h->hit() );
-            }
-
-          }
-          SDname.str(std::string());
-          SDname<< "StepPointG4Collection_";
-          SDname<<"gvolS"<< std::setw(2) << iSlr << "R" << std::setw(2) <<iRng;
-          sSDname=SDname.str();
-          loc = sSDname.find( " ", 0 );
-          while ( loc != std::string::npos ){
-            sSDname.replace(loc,1,"0");
-            loc = sSDname.find( " ", 0 );
-          }
-          //    			std::cout<<sSDname<<endl;
-          colId = SDman->GetCollectionID(sSDname.c_str());
-          if ( colId >= 0 && hce != 0 ){
-            StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
-            G4int nHits = hits->entries();
-
-            for (G4int i=0;i<nHits;i++) {
-              StepPointG4* h = (*hits)[i];
-              outputHits->push_back( h->hit() );
-            }
-
-          }
-
-        }
-      }
-
-    } else {
-      colId = SDman->GetCollectionID("StepPointG4Collection");
-
-      if ( colId >= 0 && hce != 0 ){
-        StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
-        G4int nHits = hits->entries();
-
-        for (G4int i=0;i<nHits;i++) {
-          StepPointG4* h = (*hits)[i];
-          outputHits->push_back( h->hit() );
-        }
-
-      }
-    }
-
-    // Populate the simParticle information.
+    // Populate the output data products.
+    addStepPointMCs( g4event, *outputHits);
     _trackingAction->endEvent( *simParticles );
 
-    // Should also find at the history of particles created inside G4 and copy it
-    // to the edm::event.
-
-    //_UI->ApplyCommand( "/vis/ogl/printEPS" );
+    event.put(outputHits);
+    event.put(simParticles);
 
     // Pause to see graphics. 
     if ( _visMacro.size() > 0 ) {
@@ -361,10 +277,6 @@ namespace mu2e {
       }
     }
 
-    // Put data products into the event.
-    event.put(outputHits);
-    event.put(simParticles);
-    
     // This deletes the object pointed to by currentEvent.
     _runManager->BeamOnEndEvent();
 
@@ -382,6 +294,6 @@ namespace mu2e {
   }
  
 } // End of namespace mu2e
- 
+
 using mu2e::G4;
 DEFINE_FWK_MODULE(G4);
