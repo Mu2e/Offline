@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.15 2010/04/06 23:07:07 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.16 2010/04/07 22:08:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 23:07:07 $
+// $Date: 2010/04/07 22:08:58 $
 //
 // Original author Rob Kutschke
 //
@@ -43,8 +43,6 @@
 #include "G4NistManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4SDManager.hh"
-#include "G4PhysListFactory.hh"
-#include "G4PhysicalVolumeStore.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
@@ -55,8 +53,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "Mu2eG4/inc/DetectorConstruction.hh"
-#include "Mu2eG4/inc/MinimalPhysicsList.hh"
-#include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/EventAction.hh"
 #include "Mu2eG4/inc/SteppingAction.hh"
@@ -64,6 +60,7 @@
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
+#include "Mu2eG4/inc/physicsListDecider.hh"
 
 #include "ITrackerGeom/inc/ITracker.hh"
 
@@ -174,34 +171,8 @@ namespace mu2e {
     WorldMaker* allMu2e    = new WorldMaker();
     _runManager->SetUserInitialization(allMu2e);
 
+    _runManager->SetUserInitialization(physicsListDecider(config));
 
-    // Define the physics list.
-    bool fullPhysics = config.getBool("g4.fullPhysics",true);
-    G4VUserPhysicsList* physics = fullPhysics ?
-      dynamic_cast<G4VUserPhysicsList*>(new PhysicsList(config) ) :
-      dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList() );
-    _runManager->SetUserInitialization(physics);
-
-    /*
-    // Define the physics list. QGSP_BERT_HP currently is not installed
-    // 2/23/10
-
-    bool fullPhysics = config.getBool("g4.fullPhysics",true);
-    G4VUserPhysicsList* physics = 0;
-
-    if (fullPhysics)
-    {
-    G4PhysListFactory* physListFactory = new G4PhysListFactory();
-    string nameOfPhysicsList = config.getString("g4.fullPhysicsList",
-    "QGSP_BERT");
-    physics = physListFactory->GetReferencePhysList(nameOfPhysicsList);
-    }
-    else 
-    {
-    physics = dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList() );
-    }
-    _runManager->SetUserInitialization(physics);
-    */
     _genAction = new PrimaryGeneratorAction(_generatorModuleLabel);
     _runManager->SetUserAction(_genAction);
 
@@ -257,7 +228,7 @@ namespace mu2e {
 
     // Some of the user actions have beginRun methods.
     _trackingAction->beginRun( _physVolHelper, _mu2eOrigin );
-    
+
   }
 
   // Create one G4 event and copy its output to the edm::event.

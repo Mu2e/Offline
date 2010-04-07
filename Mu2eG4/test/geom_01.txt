@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.17 2010/04/07 18:25:35 kutschke Exp $
+// $Id: geom_01.txt,v 1.18 2010/04/07 22:08:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/07 18:25:35 $
+// $Date: 2010/04/07 22:08:58 $
 //
 // Original author Rob Kutschke
 
@@ -30,11 +30,8 @@ int detSolFieldForm = 2;
 // Print a copy of this file to the job log.
 bool printConfig = false;
 
-// Enable the full physics list.
-bool g4.fullPhysics = true;
-
 // Choose a PhysicsList
-string g4.fullPhysicsList = "QGSP_BERT";
+string g4.physicsListName = "N01";
 
 // Enable the code to kill low p secondaries from cosmics.
 bool g4.doCosmicKiller = false;
