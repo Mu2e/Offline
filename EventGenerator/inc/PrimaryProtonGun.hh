@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.hh,v 1.1 2010/04/02 18:19:51 rhbob Exp $
+// $Id: PrimaryProtonGun.hh,v 1.2 2010/04/07 15:17:23 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/04/02 18:19:51 $
+// $Date: 2010/04/07 15:17:23 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -92,9 +92,7 @@ namespace mu2e {
 
     // primary proton gun coordinates in coordinate system where the center is in the middle of TS
     
-    double _posX;
-    double _posY;
-    double _posZ; 
+    Hep3Vector _beamDisplacementOnTarget; 
     
     double _stdDev;
     

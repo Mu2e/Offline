@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.cc,v 1.1 2010/04/02 18:19:40 rhbob Exp $ 
+// $Id: PrimaryProtonGun.cc,v 1.2 2010/04/07 15:16:49 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2010/04/02 18:19:40 $
+// $Date: 2010/04/07 15:16:49 $
 //
 // Original author Rob Kutschke
 // 
@@ -66,10 +66,7 @@ namespace mu2e {
     _tmin   = config.getDouble("primaryProtonGun.tmin", 700 );
     _tmax   = config.getDouble("primaryProtonGun.tmax", 1694 );
 
-    _posX   = config.getDouble("primaryProtonGun.posX" );
-    _posY   = config.getDouble("primaryProtonGun.posY" );
-    _posZ   = config.getDouble("primaryProtonGun.posZ" );    
-    
+    _beamDisplacementOnTarget = config.getHep3Vector("beamDisplacementOnTarget");   
     _stdDev = config.getDouble("primaryProtonGun.stdDev" );
 	
     _dcz  = (  _czmax -  _czmin);
@@ -93,12 +90,11 @@ namespace mu2e {
     double r = fabs(CLHEP::RandGaussQ::shoot(0.0, _stdDev));
     double phi = twopi*RandFlat::shoot();
     
-    Hep3Vector pos( _posX + r*cos(phi), 
-		    _posY + r*sin(phi), 
-		    _posZ + 80);
+    Hep3Vector pos( _beamDisplacementOnTarget.x() + r*cos(phi), 
+		    _beamDisplacementOnTarget.y() + r*sin(phi), 
+		    _beamDisplacementOnTarget.z() );
     
     // Random direction.
-    // Replace this with RandomUnitSphere from Mu2eUtilities/inc
     const double cz   = _czmin  + _dcz*RandFlat::shoot();
     const double phi2 = _phimin + _dphi*RandFlat::shoot();
     
