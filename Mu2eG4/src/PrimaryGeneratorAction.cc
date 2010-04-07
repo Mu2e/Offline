@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.11 2010/04/06 19:24:56 rhbob Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.12 2010/04/07 14:55:49 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/04/06 19:24:56 $
+// $Date: 2010/04/07 14:55:49 $
 //
 // Original author Rob Kutschke
 //
@@ -123,7 +123,7 @@ namespace mu2e {
         pos += cosmicReferencePlane;
       } else if ( genpart._generatorId == GenId::primaryProtonGun ){	
             pos = primaryProtonGunRotation*pos + primaryProtonGunOrigin;
-            momentum = primaryProtonGunRotation.inverse()*momentum;
+            momentum = primaryProtonGunRotation*momentum;
       } else {
         edm::LogError("KINEMATICS")
           << "Do not know what to do with this generator id: " 
