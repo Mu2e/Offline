@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.hh,v 1.2 2010/04/07 15:17:23 rhbob Exp $
+// $Id: PrimaryProtonGun.hh,v 1.3 2010/04/07 17:43:56 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/04/07 15:17:23 $
+// $Date: 2010/04/07 17:43:56 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -95,6 +95,8 @@ namespace mu2e {
     Hep3Vector _beamDisplacementOnTarget; 
     
     double _stdDev;
+    double _zOffset;
+
     
     //histos
     TH1D* _primaryProtonKE;

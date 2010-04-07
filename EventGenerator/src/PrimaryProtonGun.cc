@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.cc,v 1.2 2010/04/07 15:16:49 rhbob Exp $ 
+// $Id: PrimaryProtonGun.cc,v 1.3 2010/04/07 17:43:50 rhbob Exp $ 
 // $Author: rhbob $
-// $Date: 2010/04/07 15:16:49 $
+// $Date: 2010/04/07 17:43:50 $
 //
 // Original author Rob Kutschke
 // 
@@ -67,6 +67,7 @@ namespace mu2e {
     _tmax   = config.getDouble("primaryProtonGun.tmax", 1694 );
 
     _beamDisplacementOnTarget = config.getHep3Vector("beamDisplacementOnTarget");   
+    _zOffset = config.getDouble("targetPS_halfLength",80.);
     _stdDev = config.getDouble("primaryProtonGun.stdDev" );
 	
     _dcz  = (  _czmax -  _czmin);
@@ -90,9 +91,13 @@ namespace mu2e {
     double r = fabs(CLHEP::RandGaussQ::shoot(0.0, _stdDev));
     double phi = twopi*RandFlat::shoot();
     
+    //
+    //last piece moves the gun to fire at the upstream end of the 
+    //proton target.  When we have the proton beam exiting the solenoid
+    //this will all be replaced.
     Hep3Vector pos( _beamDisplacementOnTarget.x() + r*cos(phi), 
 		    _beamDisplacementOnTarget.y() + r*sin(phi), 
-		    _beamDisplacementOnTarget.z() );
+		    _beamDisplacementOnTarget.z() + _zOffset);
     
     // Random direction.
     const double cz   = _czmin  + _dcz*RandFlat::shoot();
@@ -109,7 +114,7 @@ namespace mu2e {
     
     _primaryProtonKE->Fill(primaryProtonKineticEnergy);
     
-    // direction of Primary Proton Gun. "-_p*cz" because Z axe is in opposite direction
+    // direction of Primary Proton Gun. "-_p*cz" because Z axis is in opposite direction
     HepLorentzVector mom( _p*sz*cos(phi2), _p*sz*sin(phi2), -_p*cz, e); 
 
     // Add the proton to  the list.
