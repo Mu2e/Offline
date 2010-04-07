@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.6 2010/04/06 19:24:04 rhbob Exp $
+// $Id: genconfig_05.txt,v 1.7 2010/04/07 15:06:30 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/06 19:24:04 $
+// $Date: 2010/04/07 15:06:30 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -27,7 +27,7 @@ double primaryProtonGun.czmin = 1;
 double primaryProtonGun.czmax = 1;
 
 // Position of PrimaryProtonGun (local to target)
-vector<double> primaryProtonGunOffset = {0.,0.,0.);
+vector<double> beamDisplacementOnTarget = {0.,0.,0.);
 
 // Distribution parameter of Primary Proton Gun beam
 double primaryProtonGun.stdDev = 3; //units are mm
