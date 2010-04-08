@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.1 2010/04/07 22:08:58 kutschke Exp $
+// $Id: physicsListDecider.cc,v 1.2 2010/04/08 21:25:42 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/07 22:08:58 $
+// $Date: 2010/04/08 21:25:42 $
 //
 // Original author Rob Kutschke 
 //
@@ -18,7 +18,7 @@
 //
 // 3) There are two special names:
 //     Minimal - the original Mu2e minimal physics list
-//     N01     - the physics list copied from the G4 novice example N01.
+//     N02     - the physics list copied from the G4 novice example N02.
 // 
 // 4) All other names are presumed to be valid names for physics lists that
 //    can be created by the PhysListFactory.  At this writing ( April 2010),
@@ -50,14 +50,14 @@ namespace mu2e{
 
     G4VUserPhysicsList* physicsList(0);
 
-    string name = config.getString("g4.physicsListName","N01");
+    string name = config.getString("g4.physicsListName","N02");
 
     // Two special cases
     if ( name  == "Minimal" ) {
       physicsList = dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList );
     }
 
-    else if ( name == "N01" ){
+    else if ( name == "N02" ){
       physicsList = dynamic_cast<G4VUserPhysicsList*>(new PhysicsList(config) );
     }
 
