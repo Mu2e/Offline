@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.2 2010/04/08 21:25:42 kutschke Exp $
+// $Id: physicsListDecider.cc,v 1.3 2010/04/11 15:16:55 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/08 21:25:42 $
+// $Date: 2010/04/11 15:16:55 $
 //
 // Original author Rob Kutschke 
 //
@@ -25,7 +25,6 @@
 //    the PhysListFactory has a default if it does not recognize name as
 //    one of its known lists.  The default is QGSP_BERT 3.3.
 //
-
 // C++ includes
 #include <string>
 
@@ -36,6 +35,7 @@
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/PhysicsList.hh"
+#include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // G4 includes
@@ -64,7 +64,12 @@ namespace mu2e{
     // General case
     else {
       G4PhysListFactory physListFactory;
-      physicsList = physListFactory.GetReferencePhysList(name);
+      G4VModularPhysicsList* tmp = physListFactory.GetReferencePhysList(name);
+
+      // The modular physics list takes ownership of the StepLimiterPhysConstructor.
+      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
+
+      physicsList = tmp;
     }
 
     if ( !physicsList ){

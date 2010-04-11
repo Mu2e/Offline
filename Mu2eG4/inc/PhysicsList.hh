@@ -8,9 +8,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.hh,v 1.2 2010/02/01 00:15:05 kutschke Exp $
+// $Id: PhysicsList.hh,v 1.3 2010/04/11 15:16:55 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/01 00:15:05 $
+// $Date: 2010/04/11 15:16:55 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,6 @@ namespace mu2e {
     // Methods used to break up ConstructProcess into smaller pieces.
     void ConstructGeneral();
     void ConstructEM();
-    void AddStepMax();
 
   private:
 
@@ -59,5 +58,3 @@ namespace mu2e {
 }  // end namespace mu2e
 
 #endif
-
- 
