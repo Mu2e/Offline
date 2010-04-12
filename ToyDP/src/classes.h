@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.7 2010/03/23 20:37:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/23 20:37:00 $
+// $Id: classes.h,v 1.8 2010/04/12 18:12:28 shanahan Exp $
+// $Author: shanahan $
+// $Date: 2010/04/12 18:12:28 $
 // 
 // Original author Rob Kutschke
 //
@@ -31,6 +31,7 @@
 #include "ToyDP/inc/RandomEngineState.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/HoughCircleCollection.hh"
 
 //
 // Only include objects that we would like to be able to put into the event.
@@ -44,4 +45,5 @@ template class edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>;
 template class edm::Wrapper<mu2e::CrudeStrawHitPData>;
 template class edm::Wrapper<std::vector<mu2e::RandomEngineState> >;
 template class edm::Wrapper<mu2e::SimParticleCollection>;
+template class edm::Wrapper<mu2e::HoughCircleCollection>;
 

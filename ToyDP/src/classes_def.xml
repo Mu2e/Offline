@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.9 2010/03/23 20:37:00 kutschke Exp $     -->
-<!--  $Author: kutschke $ -->
-<!--  $Date: 2010/03/23 20:37:00 $   -->
+<!--  $Id: classes_def.xml,v 1.10 2010/04/12 18:12:28 shanahan Exp $     -->
+<!--  $Author: shanahan $ -->
+<!--  $Date: 2010/04/12 18:12:28 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.9 $$Date: 2010/03/23 20:37:00 $"; -->
+<!--  rev="$Revision: 1.10 $$Date: 2010/04/12 18:12:28 $"; -->
 
 <!--  Only include edm::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the edm::Wrapper lines and     -->
@@ -32,6 +32,7 @@
  <class name="edm::ProcessIndex"/>
  <class name="mu2e::DPIndex"/>
  <class name="std::vector<mu2e::DPIndex>"/>
+ <class name="CLHEP::Hep2Vector"/>
  <class name="CLHEP::Hep3Vector"/>
  <class name="CLHEP::HepLorentzVector"/>
  <class name="mu2e::ToyHit"/>
@@ -47,6 +48,8 @@
     <field name="stepPointMCPointers"      transient="true"/>
  </class>
  <class name="mu2e::CrudeStrawHitPData"/>
+ <class name="mu2e::HoughCircle"/>
+ <class name="mu2e::HoughCircleCollection"/>
  <class name="edm::Wrapper<mu2e::ToyHitCollection>"/>
  <class name="edm::Wrapper<mu2e::ToyGenParticleCollection>"/>
  <class name="edm::Wrapper<mu2e::StepPointMCCollection>"/>
@@ -54,4 +57,5 @@
  <class name="edm::Wrapper<std::vector<mu2e::RandomEngineState> >"/>
  <class name="edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>
  <class name="edm::Wrapper<mu2e::SimParticleCollection>"/>
+ <class name="edm::Wrapper<mu2e::HoughCircleCollection>"/>
 </lcgdict>
