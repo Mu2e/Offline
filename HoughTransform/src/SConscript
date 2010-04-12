@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.1 2009/12/09 18:03:43 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2009/12/09 18:03:43 $
+# $Id: SConscript,v 1.2 2010/04/12 18:18:04 shanahan Exp $
+# $Author: shanahan $
+# $Date: 2010/04/12 18:18:04 $
 #
 # Original author Rob Kutschke.
 #
@@ -20,7 +20,7 @@ if non_plugin_cc:
     local_lib_name=os.path.dirname(dd)
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-		      LIBS=[ 'FWCoreFramework','GeneralUtilities',"HitCluster","ConditionsService",'Spectrum','MLP',
+		      LIBS=[ 'FWCoreFramework','GeneralUtilities',"HitCluster","ConditionsService",'Spectrum','MLP','Gpad','Graf'
 			     ],
 		      )
     libs=[ local_lib_name ]

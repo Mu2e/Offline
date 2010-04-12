@@ -1,9 +1,9 @@
 //
-// An EDAnalyzer Module that runs the HoughTransform L-tracker code
+// An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.6 2010/04/04 20:35:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/04 20:35:58 $
+// $Id: HoughTest_plugin.cc,v 1.7 2010/04/12 18:18:04 shanahan Exp $
+// $Author: shanahan $ 
+// $Date: 2010/04/12 18:18:04 $
 //
 // Original author R. Bernstein
 //
@@ -14,7 +14,7 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
@@ -45,6 +45,7 @@
 // Mu2e includes.
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/HoughCircleCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "HoughTransform/inc/HoughTransform.hh"
 #include "HitCluster/inc/HitCluster.hh"
@@ -79,16 +80,20 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
   return background + peak; 
 }
   static const bool singleHoughHisto = false;
-  class HoughTest : public edm::EDAnalyzer {
+  class HoughTest : public edm::EDProducer {
   public:
     explicit HoughTest(edm::ParameterSet const& pset) : 
+      _hitCreatorName(pset.getParameter<string>("hitCreatorName")),
+      _nPeakSearch(pset.getParameter<uint32_t>("NPeakSearch")),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",10)),
       _nAnalyzed(0),
       _hRadius(0),
       _hTime(0),
       _hMultiplicity(0),
       _hDriftDist(0),
-      _messageCategory("ToyHitInfo"){
+      _messageCategory("ToyHitInfo")
+    {
+        produces<HoughCircleCollection>();
     }
     virtual ~HoughTest() { }
 
@@ -102,17 +107,15 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 				      edm::EventSetup const&);
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
-
-    RanecuEngine* inefficiencyEngine;
-    RanecuEngine* accidentalEngine;
-    RanecuEngine* regularEngine;
+    void produce(edm::Event& e, edm::EventSetup const&);
 
 
   private:
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
+    // number of peaks to look for
+    uint32_t _nPeakSearch; 
 
     // Number of events analyzed.
     int _nAnalyzed;
@@ -129,6 +132,14 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     TH1F* _hCheckPointRadius;
     TH1F* _hRadiusDistribution2D;
     TH1F* _hDCADistribution2D;
+    TH1F* _hRHitFromHTCenter; // radius of hits from peak hough center
+    TH1F* _hRHitFromCircle; // residual of hits from peak hough track
+    TH1F* _hRNoiseHitFromHTCenter; // radius of noise hits from peak hough center
+    TH1F* _hRNoiseHitFromCircle; // residual of noise hits from peak hough track
+    TH1F* _hRPhysHitFromHTCenter; // radius of physical hits from peak hough center
+    TH1F* _hRPhysHitFromCircle; // residual of physical hits from peak hough track
+    TH2F* _hRadius2v1; // radius from 2D vs. radius from 1D
+    TH2F* _hYvsX; // Y vs. X of 1st peak
     TH1F* _hChisqDistribution;
     TNtuple* _ntup;
     TF1* houghRadiusFit;
@@ -148,6 +159,9 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
     // A category for the error logger.
     const std::string _messageCategory;
+
+    //name of the module that created the hits to be used
+    const std::string _hitCreatorName;
 
     // A helper function.
     int countHitNeighbours( Straw const& straw, 
@@ -182,11 +196,34 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
 					  100, 2.25, 2.75 );
 
+    _hRHitFromHTCenter = tfs->make<TH1F>( "hRHitFromHTCenter",  
+                         "Radius of Hits from Peak Hough Center",100,0,400);
+
+    _hRHitFromCircle = tfs->make<TH1F>( "hRHitFromCircle",  
+                         "Radius hits - radius Peak",100,-100,100);
+
+    _hRNoiseHitFromHTCenter = tfs->make<TH1F>( "hRNoiseHitFromHTCenter",  
+                     "Radius of Noise Hits from Peak Hough Center",100,0,400);
+
+    _hRNoiseHitFromCircle = tfs->make<TH1F>( "hRNoiseHitFromCircle",  
+                     "Radius Noise hits - radius Peak",100,-100,100);
+
+    _hRPhysHitFromHTCenter = tfs->make<TH1F>( "hRPhysHitFromHTCenter",  
+                   "Radius of Physical Hits from Peak Hough Center",100,0,400);
+
+    _hRPhysHitFromCircle = tfs->make<TH1F>( "hRPhysHitFromCircle",  
+                   "Radius Physical hits - radius Peak",100,-100,100);
+
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
 					  "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec");
     _hRadiusDistribution2D = tfs->make<TH1F>("radiusDistribution2D","Radius Distribution in 2D search",100,0.,1000.);
     _hDCADistribution2D = tfs->make<TH1F>("DCADistribution2D","DCA Distribution in 2D Search",120,0.,1200.);
+    _hRadius2v1 = tfs->make<TH2F>("hRadius2v1","First Radius from 2D vs. 1D ",
+        100,0.,400.,100,0,400.);
+    _hYvsX = tfs->make<TH2F>("hYvsX","First Radius from 2D vs. 1D ",
+        100,-500,500,100,-500,500);
+;
 
    //set up fit function in Hough Space
     houghRadiusFit = tfs->make<TF1>("houghRadiusFit",houghFitToRadius,0.,100.,5);
@@ -197,16 +234,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     //and the number of peaks
     _hNumberOfSpectrumPeaks =  tfs->make<TH1F>("numberOfSpectrumPeaks" ,"Number of Radius Spectrum Peaks", 10,0.,10.);
     _hNumberOfSpectrumPeaks2 = tfs->make<TH1F>("numberOfSpectrumPeaks2","Number of Radius/DCA Spectrum Peaks", 10,0.,10.);
-
-    //make a special random number generator for noise events
-    accidentalEngine = new RanecuEngine();
-
-    //make a special random number generator for inefficiency
-    inefficiencyEngine = new RanecuEngine();
-
-    //here's the regular engine
-    regularEngine = new RanecuEngine();
-    HepRandom::setTheEngine(regularEngine);
 
   }
 
@@ -225,7 +252,9 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
   void
-  HoughTest::analyze(const edm::Event& evt, edm::EventSetup const&) {
+  HoughTest::produce(edm::Event& evt, edm::EventSetup const&) {
+
+    auto_ptr<HoughCircleCollection> HoughResults(new HoughCircleCollection);
 
     static int ncalls(0);
     ++ncalls;
@@ -236,89 +265,23 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
-    // Instance name of the module that created the hits of interest;
-    static const string creatorName("g4run");
-
-
     // Ask the event to give us a "handle" to the requested hits.
     //    edm::Handle<StepPointMCCollection> hits;
     //evt.getByLabel(creatorName,hits);
     
     edm::Handle<StepPointMCCollection> hitsHandle;
-    evt.getByLabel(creatorName,hitsHandle);
+    evt.getByLabel(_hitCreatorName,hitsHandle);
     StepPointMCCollection const* hits = hitsHandle.product();
 
-
-    int nstraws = ltracker->getAllStraws().size();
-    static double occupancy = 0.00;
-    static int noiseMean = static_cast<int>(nstraws*occupancy);
-    int numberOfNoiseHits = RandPoisson::shoot(accidentalEngine,noiseMean);
-    //numberOfNoiseHits = 0;
-
-    //make a copy of the hits
-    StepPointMCCollection plusNoise(*hitsHandle);
-    plusNoise.reserve(plusNoise.size()+numberOfNoiseHits);
-    //    cout << "size of plusNoise before " << plusNoise.size() << "and number of noiseHits =" << numberOfNoiseHits << endl;
-
-    //add noise hits
-    int trackIDnoise = 2;
-    double eDepNoise = 0.;
-    double timeNoise = 0.;
-    Hep3Vector momentumNoise;
-    HepRandom::setTheEngine(accidentalEngine);
-    for (int i=0; i < numberOfNoiseHits; ++i)
-      {
-	//int istraw = static_cast<int>(nstraws*CLHEP::RandFlat::shoot());
-	int istraw = static_cast<int>(nstraws*CLHEP::RandFlat::shoot(accidentalEngine));
-	Straw const& straw = ltracker->getStraw( StrawIndex(istraw) );
-	Hep3Vector mid = straw.getMidPoint(); //for the HT I only use x/y so the midpoint is perfect
-	Hep3Vector w   = straw.getDirection();
-
-        // Safe dummy value.
-        double stepLength(1.);
-
-        plusNoise.push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,timeNoise,mid,momentumNoise,stepLength));
-      }
-    //go back to normal engine
-    HepRandom::setTheEngine(regularEngine);
-    //cout << "size of plusNoise after " << plusNoise.size() << endl;
-
-    StepPointMCCollection const* plusNoiseHits = &plusNoise;
-    //replace hits with plusNoise
-    hits = &plusNoise;
-
-
-    //remove hits according to inefficiency
-    double inefficiency = 0.00;
-    HepRandom::setTheEngine(inefficiencyEngine);
-
-    //make a copy of all hits, loop over them, and kill according to 
-    // desired inefficiency
-    StepPointMCCollection inefficientHits(*hitsHandle);
-    inefficientHits.clear();
-    for( StepPointMCCollection::const_iterator i = hits->begin(); i!= hits->end(); ++i ) 
-      {
-	if (CLHEP::RandFlat::shoot(inefficiencyEngine) >= inefficiency)
-	  {
-	    // > inefficiency, add the element in inefficientHits
-	    const StepPointMC& hit = *i;
-	    inefficientHits.push_back(StepPointMC(hit));
-	  }
-      }
-    //cout << "size of inefficientHits after = " << inefficientHits.size() << endl;
-    //and now make inefficientHits what gets passed to everyone else
-    hits = &inefficientHits;
 
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
 
  
-    //    assert(2==1);
-
     // don't bother unless there are some minimum number of hits; start with 3. I might want this in the constructor as an argument...
 
     //so I have access to histos from results
-    edm::Service<edm::TFileService> tfs;
+    // used here? edm::Service<edm::TFileService> tfs;
 
 
 
@@ -334,7 +297,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     if ( ncalls == 1 || !singleHoughHisto) bookEventHistos(evt.id().event());
 
     int minHitsforHough = 3;
-    //cout << "minHitsforHough must be >3, size of hits = " << hits->size() << "and plusHits size = " << plusNoiseHits->size() << endl; 
     if (hits->size() > minHitsforHough)
       {
 	mu2e::houghtransform::HoughTransform trialHough;
@@ -343,7 +305,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     // look for circles in hough space: findHoughTracks fills houghTracks
     // with all houghCircleStucts it can find.  The latter are all combinations
     // of 3 hits with their exact circle solution.
-	trialHough.foundHoughTracks(ltracker,plusNoiseHits,houghTracks);
+	trialHough.foundHoughTracks(ltracker,hits,houghTracks);
 
 	cout << "ncalls = " << ncalls << endl;
 
@@ -362,50 +324,112 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 	
        // Look for peaks in the hough space
-	TSpectrum s(50);// calling this with (50) instead of () is a magic trick from Rene Brun. 
+	TSpectrum s(_nPeakSearch);// calling this with (_nPeakSearch) instead of () is a magic trick from Rene Brun. 
 	s.Search(_histoRadius,1.0," ",0.95);
 	Int_t nPeaks = s.GetNPeaks();
 	_hNumberOfSpectrumPeaks->Fill(static_cast<double>(nPeaks));
 	//TSpectrum2 doesn't work correctly, and examples in $ROOT_DIR don't either without turning 
 	//off background and Markov smoothing; hence nobackgroundnomarkov. I don't think this matters
 	//for us.  The examples in ROOT_DIR seem to work better but find a lot more ghost hits; with those
+
 	//options it just finds random junk
-	TSpectrum2 s2(50,1.0);  
+	TSpectrum2 s2(_nPeakSearch,1.0);  
 	s2.Search(_histoRadiusDCA,2,"nobackgroundnomarkov",0.95);
 	Int_t nPeaks2 = s2.GetNPeaks();
-	//cout << "nPeaks = " << nPeaks << endl << " and n2Peaks = " << nPeaks2 << endl;
+
+        // look for center
+	TSpectrum2 sCenter(_nPeakSearch,1.0);  
+	sCenter.Search(_histoCenter,2,"nobackgroundnomarkov",0.95);
+	Int_t nPeaksCenter = sCenter.GetNPeaks();
+       
+        Float_t* rad1D=0; // radius from 1D plot
+	Float_t* rad2D=0; // radius from 2D plot
+	Float_t* dca2D=0; // Distance of closest approach from 2D plot
+	Float_t* centX=0;  // center in X and Y
+	Float_t* centY=0; 
+
 	//make sure there's something to fit to!
 	if (nPeaks > 0)
 	  {
-	    Float_t* firstPeak = s.GetPositionX();
+	    rad1D = s.GetPositionX();
 	    for (int ithPeak = 0; ithPeak < nPeaks; ++ithPeak)
 	      {
 		//		cout <<"peak number " << ithPeak << " " << firstPeak[ithPeak] << endl;	
-		_hRadiusPeak->Fill(static_cast<float>(ncalls) - 0.5,firstPeak[ithPeak]);
+		_hRadiusPeak->Fill(static_cast<float>(ncalls) - 0.5,rad1D[ithPeak]);
 	      }
 	  }
 	_hNumberOfSpectrumPeaks2->Fill(static_cast<double>(nPeaks2));
 
 	if (nPeaks2 > 0)
 	  {
-	    Float_t* firstPeakX = s2.GetPositionX();
-	    Float_t* firstPeakY = s2.GetPositionY();
+	    rad2D = s2.GetPositionX();
+	    dca2D = s2.GetPositionY();
 	    for (int ithPeak = 0; ithPeak < nPeaks2; ++ithPeak)
 	      {
 		//		cout <<"peak number " << ithPeak << " " << firstPeakX[ithPeak] << " " << firstPeakY[ithPeak] << endl;
-		_hRadiusDistribution2D->Fill(firstPeakX[ithPeak]);
-		_hDCADistribution2D->Fill(firstPeakY[ithPeak]);
+		_hRadiusDistribution2D->Fill(rad2D[ithPeak]);
+		_hDCADistribution2D->Fill(dca2D[ithPeak]);
 	      }
+              if (nPeaks>0) _hRadius2v1->Fill(rad1D[0],rad2D[0]);
 	  }//nPeaks2>0
+
+          if (nPeaksCenter > 0 )
+          {
+	       centX = sCenter.GetPositionX();
+	       centY = sCenter.GetPositionY();
+              _hYvsX->Fill(centX[0],centY[0]);
+
+              // quick and dirty... to be moved to another module when
+              // a HT DP exists...
+              // Plot fraction of hits with annular road vs. road width
+
+
+          }
+
+         
+          //we have cent, dca, radius to define the circle
+          if (nPeaksCenter>0&&nPeaks2>0) {
+
+              StepPointMCCollection::const_iterator ihit = hits->begin();
+              const StepPointMCCollection::const_iterator endhit = hits->end();
+              for ( ; ihit!=endhit; ++ihit){
+      
+                // Aliases, used for readability.
+                 const StepPointMC& hit = *ihit;
+                 const Hep3Vector& pos = hit.position();
+                 double radFromCenter=sqrt(TMath::Power(centX[0]-pos.x(),2)
+                                          +TMath::Power(centY[0]-pos.y(),2));
+                 _hRHitFromHTCenter->Fill(radFromCenter);
+                 _hRHitFromCircle->Fill(radFromCenter-rad2D[0]);
+                 if (hit.trackId()==2) {
+                    _hRNoiseHitFromHTCenter->Fill(radFromCenter);
+                    _hRNoiseHitFromCircle->Fill(radFromCenter-rad2D[0]);
+                 } else {
+                    _hRPhysHitFromHTCenter->Fill(radFromCenter);
+                    _hRPhysHitFromCircle->Fill(radFromCenter-rad2D[0]);
+                 }
+
+
+              } //hits
+                
+              // create the data product
+                     // currently "number of straws"=1.  This is a dummy,
+                     // soon to be replaced with useful info
+              HoughCircle hc(centX[0],centY[0],rad2D[0],1);
+              HoughResults->push_back(hc); 
+
+          }//we have cent, dca, radiaus
 
       } // minHitsforHough
 	
     
     
-    // Loop over all plusNoiseHits.
+    // Loop over all hits
     int n(0);
+
     if (!singleHoughHisto)
       {
+        edm::Service<edm::TFileService> tfs;
 	//scatter plot showing event
 	RootNameTitleHelper eventPlot("_eventPlot","EventPlot",evt.id().event(),5);
 	_eventPlot= tfs->make<TH2F>(eventPlot.name(),eventPlot.title(),
@@ -425,8 +449,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
       }
 
 
-    StepPointMCCollection::const_iterator ihit = plusNoiseHits->begin();
-    const StepPointMCCollection::const_iterator endhit = plusNoiseHits->end();
+    StepPointMCCollection::const_iterator ihit = hits->begin();
+    const StepPointMCCollection::const_iterator endhit = hits->end();
     for ( ; ihit!=endhit; ++ihit){
       
       // Aliases, used for readability.
@@ -444,7 +468,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
       Hep3Vector w   = straw.getDirection();
 
       // Count how many nearest neighbours are also hit.
-      int nNeighbours = countHitNeighbours( straw, plusNoiseHits );
+      int nNeighbours = countHitNeighbours( straw, hits );
 
       // Compute an estimate of the drift distance.
       TwoLinePCA pca( mid, w, pos, mom);
@@ -503,8 +527,10 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
       }
 
     } // end loop over hits.
+
+    evt.put(HoughResults);
     
-  } // end of ::analyze.
+  } // end of ::produce.
 
     //minuit fitting code
 
@@ -573,8 +599,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     if (houghCircle.numberOfStraws >=6 )
     {
        Double_t distance = TMath::Sqrt(pow<2>(houghCircle.x0) + pow<2>(houghCircle.y0));
-       _histoRadius->Fill(static_cast<Double_t>(houghCircle.radius),
-                  static_cast<Double_t>(houghCircle.numberOfStraws));
        _histoRadius->Fill(static_cast<Double_t>(houghCircle.radius));
        _histoRadiusDCA->Fill(static_cast<Float_t>(houghCircle.radius),
                   static_cast<Float_t>(houghCircle.dca),
