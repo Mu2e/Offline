@@ -7,7 +7,7 @@
 
 //
 // Mu2e includes
-#include "Calorimeter/inc/Device.hh"
+#include "CalorimeterGeom/inc/Device.hh"
 
 class Calorimeter{
 

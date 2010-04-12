@@ -7,8 +7,8 @@
 
 //
 // Mu2e includes
-#include "Calorimeter/inc/DeviceId.hh"
-#include "Calorimeter/inc/Layer.hh"
+#include "CalorimeterGeom/inc/DeviceId.hh"
+#include "CalorimeterGeom/inc/Layer.hh"
 
 class Device{
 

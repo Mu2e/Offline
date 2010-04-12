@@ -7,9 +7,9 @@
 
 //
 // Mu2e includes
-#include "Calorimeter/inc/CrystalId.hh"
-#include "Calorimeter/inc/CrystalIndex.hh"
-#include "Calorimeter/inc/CrystalDetail.hh"
+#include "CalorimeterGeom/inc/CrystalId.hh"
+#include "CalorimeterGeom/inc/CrystalIndex.hh"
+#include "CalorimeterGeom/inc/CrystalDetail.hh"
 
 //
 //Other includes

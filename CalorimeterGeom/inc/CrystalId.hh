@@ -1,7 +1,7 @@
 #ifndef CRYSTALID_HH
 #define CRYSTALID_HH
 
-#include "Calorimeter/inc/LayerId.hh"
+#include "CalorimeterGeom/inc/LayerId.hh"
 
 struct CrystalId{
 

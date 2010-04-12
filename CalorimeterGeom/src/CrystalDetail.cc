@@ -1,7 +1,7 @@
 
 //
 // Mu2e includes
-#include "Calorimeter/inc/CrystalDetail.hh"
+#include "CalorimeterGeom/inc/CrystalDetail.hh"
 
 
 CrystalDetail::CrystalDetail(

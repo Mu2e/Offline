@@ -7,9 +7,9 @@
 
 //
 // Mu2e includes
-#include "Calorimeter/inc/LayerId.hh"
-#include "Calorimeter/inc/LayerInfo.hh"
-#include "Calorimeter/inc/Crystal.hh"
+#include "CalorimeterGeom/inc/LayerId.hh"
+#include "CalorimeterGeom/inc/LayerInfo.hh"
+#include "CalorimeterGeom/inc/Crystal.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

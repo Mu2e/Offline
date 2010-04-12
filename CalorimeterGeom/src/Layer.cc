@@ -1,7 +1,7 @@
 
 //
 // Mu2e includes
-#include "Calorimeter/inc/Layer.hh"
+#include "CalorimeterGeom/inc/Layer.hh"
 
 
 using namespace std;

@@ -7,7 +7,7 @@
 
 //
 // Mu2e includes
-#include "Calorimeter/inc/DeviceId.hh"
+#include "CalorimeterGeom/inc/DeviceId.hh"
 
 struct LayerId{
 

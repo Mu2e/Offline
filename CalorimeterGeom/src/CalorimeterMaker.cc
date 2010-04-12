@@ -10,10 +10,10 @@
 
 //
 // Mu2e includes
-#include "Calorimeter/inc/CalorimeterMaker.hh"
-#include "Calorimeter/inc/Calorimeter.hh"
-#include "Calorimeter/inc/CrystalId.hh"
-#include "Calorimeter/inc/Crystal.hh"
+#include "CalorimeterGeom/inc/CalorimeterMaker.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/CrystalId.hh"
+#include "CalorimeterGeom/inc/Crystal.hh"
 
 // Framework include files
 #include "FWCore/Utilities/interface/Exception.h"
