@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_plugin.cc,v 1.1 2010/04/12 18:18:04 shanahan Exp $
+// $Id: HoughTuner_plugin.cc,v 1.2 2010/04/12 18:26:12 shanahan Exp $
 // $Author: shanahan $ 
-// $Date: 2010/04/12 18:18:04 $
+// $Date: 2010/04/12 18:26:12 $
 //
 // Original author P. Shanahan
 //
@@ -180,9 +180,11 @@ namespace mu2e {
      hpad.Draw();
 
 // draw circles
+     std::vector<TEllipse*> circles; // to be able to delete them when done
      for (int ihc=0; ihc<hcHandle->size(); ihc++) {
          const HoughCircle& hc=hcHandle->at(ihc);
          TEllipse *circle=new TEllipse(hc.Center().x(),hc.Center().y(),hc.Radius());
+         circles.push_back(circle);
          circle->Draw();
         std::cout<<"Draw a circle: "<<hc.Center().x()<<" "<<hc.Center().y()
                 <<" "<<hc.Radius()<<std::endl;
@@ -217,6 +219,7 @@ namespace mu2e {
 
      delete tpPhys;
      delete tpNois;
+     for (int ic=0; ic<circles.size(); ic++) delete circles[ic];
      
 
  
