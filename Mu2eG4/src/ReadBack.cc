@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.5 2010/04/04 20:36:36 kutschke Exp $
+// $Id: ReadBack.cc,v 1.6 2010/04/13 14:36:49 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/04 20:36:36 $
+// $Date: 2010/04/13 14:36:49 $
 //
 // Original author Rob Kutschke
 //
@@ -254,12 +254,14 @@ namespace mu2e {
              << event.id().event() << " "
              << i                  <<  " "
              << hit.trackId()      << "   "
-             << hit.volumeId()     << " | "
+             << hit.volumeId()     << " "
+             << straw.Id()         << " | "
              << pca.dca()          << " "
              << pos                << " "
              << mom                << " "
              << point.mag()        << " "
-             << hit.eDep()
+             << hit.eDep()         << " "
+             << s
              << endl;
       }
       
