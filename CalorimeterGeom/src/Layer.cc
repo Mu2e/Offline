@@ -1,3 +1,8 @@
+// $Id: Layer.cc,v 1.3 2010/04/13 17:23:33 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/04/13 17:23:33 $
+
+// original authors Julie Managan and Robert Bernstein
 
 //
 // Mu2e includes
@@ -8,6 +13,8 @@ using namespace std;
 
 using CLHEP::Hep3Vector;
 
+namespace mu2e{
+  namespace calorimeter{
 
 Layer::Layer():
   _id(LayerId()),
@@ -35,3 +42,6 @@ Layer::Layer(const LayerId& id ):
 }
 
 Layer::~Layer(){}
+
+  } //namespace calorimeter
+} //namespace mu2e
