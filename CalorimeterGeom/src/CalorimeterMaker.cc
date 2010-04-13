@@ -1,9 +1,9 @@
 //
-// Make an Calorimeter.
+// Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.3 2010/04/13 17:23:55 rhbob Exp $
+// $Id: CalorimeterMaker.cc,v 1.4 2010/04/13 17:45:06 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/13 17:23:55 $
+// $Date: 2010/04/13 17:45:06 $
 
 // original authors Julie Managan and Robert Bernstein
 
