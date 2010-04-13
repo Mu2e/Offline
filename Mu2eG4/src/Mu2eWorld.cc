@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.15 2010/04/06 23:07:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/06 23:07:07 $
+// $Id: Mu2eWorld.cc,v 1.16 2010/04/13 20:33:44 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/04/13 20:33:44 $
 //
 // Original author Rob Kutschke
 //
@@ -880,12 +880,12 @@ namespace mu2e {
 
     //
     //set integration step values
-    G4double singleValue = 0.5e-02*mm;
+    G4double singleValue = 0.5e-01*mm;
     G4double newUpstreamDeltaI = singleValue;
     G4double newDownstreamDeltaI = singleValue;
     G4double deltaOneStep = singleValue;
     G4double deltaChord = singleValue;
-    G4double maxStep = 1.e-00*mm;
+    G4double maxStep = 10.e-00*mm;
 
     _fieldUpstreamMgr->SetDeltaOneStep(deltaOneStep);
     _fieldDownstreamMgr->SetDeltaOneStep(deltaOneStep);
