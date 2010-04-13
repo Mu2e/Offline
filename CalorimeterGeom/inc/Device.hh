@@ -1,13 +1,11 @@
 #ifndef DEVICE_HH
 #define DEVICE_HH
-// $Id: Device.hh,v 1.3 2010/04/13 17:15:19 rhbob Exp $
+// $Id: Device.hh,v 1.4 2010/04/13 17:32:16 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/13 17:15:19 $
+// $Date: 2010/04/13 17:32:16 $
 
 // original authors Julie Managan and Robert Bernstein
 
-namespace mu2e{
-  namespace calorimeter{
 
 //
 // C++ includes
@@ -17,6 +15,9 @@ namespace mu2e{
 // Mu2e includes
 #include "CalorimeterGeom/inc/DeviceId.hh"
 #include "CalorimeterGeom/inc/Layer.hh"
+
+namespace mu2e{
+  namespace calorimeter{
 
     class Device{
 

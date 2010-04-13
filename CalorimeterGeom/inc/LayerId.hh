@@ -1,13 +1,10 @@
 #ifndef LAYERID_HH
 #define LAYERID_HH
-// $Id: LayerId.hh,v 1.3 2010/04/13 17:15:33 rhbob Exp $
+// $Id: LayerId.hh,v 1.4 2010/04/13 17:32:32 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/13 17:15:33 $
+// $Date: 2010/04/13 17:32:32 $
 
 // original authors Julie Managan and Robert Bernstein
-
-namespace mu2e{
-  namespace calorimeter{
 
 //
 // C++ includes
@@ -16,6 +13,10 @@ namespace mu2e{
 //
 // Mu2e includes
 #include "CalorimeterGeom/inc/DeviceId.hh"
+
+namespace mu2e{
+  namespace calorimeter{
+
 
 struct LayerId{
 

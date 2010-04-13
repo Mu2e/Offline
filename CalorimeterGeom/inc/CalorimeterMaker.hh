@@ -1,24 +1,26 @@
 #ifndef CALORIMETERMAKER_HH
 #define CALORIMETERMAKER_HH
-// $Id: CalorimeterMaker.hh,v 1.3 2010/04/13 17:14:41 rhbob Exp $
+// $Id: CalorimeterMaker.hh,v 1.4 2010/04/13 17:31:41 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/13 17:14:41 $
+// $Date: 2010/04/13 17:31:41 $
 
 // original authors Julie Managan and Robert Bernstein
-namespace mu2e{
-  namespace calorimeter{
 
-    //
-    // C++ includes
+//
+// C++ includes
 #include <vector>
 
-    //
-    //Mu2e includes
+//
+//Mu2e includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CalorimeterGeom/inc/Device.hh"
 #include "CalorimeterGeom/inc/LayerInfo.hh"
 #include "CalorimeterGeom/inc/Layer.hh"
 
+
+
+namespace mu2e{
+  namespace calorimeter{
 
     //
     //forward declarations

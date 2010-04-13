@@ -1,17 +1,19 @@
 #ifndef CRYSTALID_HH
 #define CRYSTALID_HH
-// $Id: CrystalId.hh,v 1.3 2010/04/13 17:15:07 rhbob Exp $
+// $Id: CrystalId.hh,v 1.4 2010/04/13 17:32:05 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/13 17:15:07 $
+// $Date: 2010/04/13 17:32:05 $
 
 // original authors Julie Managan and Robert Bernstein
-
-namespace mu2e{
-  namespace calorimeter{
 
 //
 // Mu2e includes
 #include "CalorimeterGeom/inc/LayerId.hh"
+
+
+namespace mu2e{
+  namespace calorimeter{
+
 
     struct CrystalId{
 

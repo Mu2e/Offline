@@ -1,13 +1,11 @@
 #ifndef CRYSTAL_HH
 #define CRYSTAL_HH
-// $Id: Crystal.hh,v 1.3 2010/04/13 17:14:55 rhbob Exp $
+// $Id: Crystal.hh,v 1.4 2010/04/13 17:32:00 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/13 17:14:55 $
+// $Date: 2010/04/13 17:32:00 $
 
 // original authors Julie Managan and Robert Bernstein
 
-namespace mu2e{
-  namespace calorimeter{
 
 //
 // C++ includes
@@ -23,6 +21,8 @@ namespace mu2e{
 //Other includes
 #include "CLHEP/Vector/ThreeVector.h"
 
+namespace mu2e{
+  namespace calorimeter{
 
     class Crystal{
 

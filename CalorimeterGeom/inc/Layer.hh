@@ -1,13 +1,10 @@
 #ifndef LAYER_HH
 #define LAYER_HH
-// $Id: Layer.hh,v 1.3 2010/04/13 17:15:30 rhbob Exp $
+// $Id: Layer.hh,v 1.4 2010/04/13 17:32:29 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/13 17:15:30 $
+// $Date: 2010/04/13 17:32:29 $
 
 // original authors Julie Managan and Robert Bernstein
-
-namespace mu2e{
-  namespace calorimeter{
 
 //
 // C++ includes
@@ -22,6 +19,11 @@ namespace mu2e{
 //
 // other includes
 #include "CLHEP/Vector/ThreeVector.h"
+
+
+namespace mu2e{
+  namespace calorimeter{
+
 
     class Layer{
 
