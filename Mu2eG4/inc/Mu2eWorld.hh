@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.9 2010/04/06 18:42:52 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/04/06 18:42:52 $
+// $Id: Mu2eWorld.hh,v 1.10 2010/04/13 23:13:08 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/04/13 23:13:08 $
 //
 // Original author Rob Kutschke
 //
@@ -109,7 +109,6 @@ namespace mu2e {
 
     // Utility functions.
     void Mu2eWorld::setUnits( std::vector<double>& V, G4double unit );
-    G4Material* Mu2eWorld::getMaterial( std::string const& name );
 
     SimpleConfig const* _config;
 

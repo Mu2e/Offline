@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.16 2010/04/13 20:33:44 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/04/13 20:33:44 $
+// $Id: Mu2eWorld.cc,v 1.17 2010/04/13 23:13:09 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/04/13 23:13:09 $
 //
 // Original author Rob Kutschke
 //
@@ -39,6 +39,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eWorld.hh"
+#include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_ExtWireData.hh"
@@ -53,6 +54,7 @@
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "Mu2eG4/inc/constructCalorimeter.hh"
 
 
 // G4 includes
@@ -160,11 +162,14 @@ namespace mu2e {
 
   void Mu2eWorld::constructWorld( SimpleConfig const& config ){
 
+    MaterialFinder materialFinder(config);
+
     // Dimensions and material of the world.
     vector<double> worldHLen;
     _config->getVectorDouble("world.halfLengths", worldHLen,3);
     setUnits ( worldHLen, mm );
-    G4Material* worldMaterial = getMaterial("world.materialName");
+    G4Material* worldMaterial = materialFinder.get("world.materialName");
+
 
     // A number of objects are referenced to the solenoids.
     double prodSolXoff = _config->getDouble("world.prodSolXoff") * mm;
@@ -193,7 +198,7 @@ namespace mu2e {
     setUnits( hallInHLen, mm);
 
     // Derived parameters.
-    G4Material* dirtMaterial = getMaterial("dirt.overburdenMaterialName");
+    G4Material* dirtMaterial = materialFinder.get("dirt.overburdenMaterialName");
 
     // Top of the floor in G4 world coordinates.
     double yFloor   = -worldHLen[1] + floorThick;
@@ -295,8 +300,8 @@ namespace mu2e {
     double hallY0 = yFloor + hallInHLen[1] + hallPosition[1];
 
     // Materials for the hall walls and the interior of the hall
-    G4Material* wallMaterial = getMaterial("hall.wallMaterialName");
-    G4Material* hallMaterial = getMaterial("hall.insideMaterialName");
+    G4Material* wallMaterial = materialFinder.get("hall.wallMaterialName");
+    G4Material* hallMaterial = materialFinder.get("hall.insideMaterialName");
 
     // Half lengths of the exterior of the concrete for the hall walls.
     double hallOutHLen[3] ={
@@ -346,10 +351,10 @@ namespace mu2e {
     double shieldFeZExtra    = mm * _config->getDouble("shieldFe.zextra");
     
     // Materials for the above.
-    G4Material* shieldConMaterial       = getMaterial("shieldCon.materialName");
-    G4Material* shieldConInsideMaterial = getMaterial("shieldCon.insideMaterialName");
-    G4Material* shieldFeMaterial        = getMaterial("shieldFe.materialName");
-    G4Material* shieldFeInsideMaterial  = getMaterial("shieldFe.insideMaterialName");
+    G4Material* shieldConMaterial       = materialFinder.get("shieldCon.materialName");
+    G4Material* shieldConInsideMaterial = materialFinder.get("shieldCon.insideMaterialName");
+    G4Material* shieldFeMaterial        = materialFinder.get("shieldFe.materialName");
+    G4Material* shieldFeInsideMaterial  = materialFinder.get("shieldFe.insideMaterialName");
     
     // Derived information for the concrete and Fe shields.
     double shieldConInsideHalfDim[3], shieldConOutsideHalfDim[3];
@@ -509,10 +514,10 @@ namespace mu2e {
       ,0.
       ,2.*M_PI
     };
-    G4Material* detSolCoilMaterial = getMaterial("toyDS.materialName");
-    //no longer used    G4Material* detSolVacMaterial  = getMaterial("toyDS.insideMaterialName");
-    G4Material* detSolUpstreamVacMaterial    = getMaterial("toyDS.insideMaterialName");
-    G4Material* detSolDownstreamVacMaterial  = getMaterial("toyDS.insideMaterialName");
+    G4Material* detSolCoilMaterial = materialFinder.get("toyDS.materialName");
+    //no longer used    G4Material* detSolVacMaterial  = materialFinder.get("toyDS.insideMaterialName");
+    G4Material* detSolUpstreamVacMaterial    = materialFinder.get("toyDS.insideMaterialName");
+    G4Material* detSolDownstreamVacMaterial  = materialFinder.get("toyDS.insideMaterialName");
     
     // Toy model of the DS coils + cryostat. It needs more structure and has
     // much less total material.
@@ -579,8 +584,8 @@ namespace mu2e {
       2.*M_PI
     };
     
-    G4Material* prodSolCoilMaterial = getMaterial("toyPS.materialName");
-    G4Material* prodSolVacMaterial  = getMaterial("toyPS.insideMaterialName");
+    G4Material* prodSolCoilMaterial = materialFinder.get("toyPS.materialName");
+    G4Material* prodSolVacMaterial  = materialFinder.get("toyPS.insideMaterialName");
     
     // Position of PS inside the air volume of the hall.
     G4ThreeVector prodSolCoilOffset = 
@@ -628,7 +633,7 @@ namespace mu2e {
     double targetPS_rotY = _config->getDouble("targetPS_rotY" );
     
     // Proton Target Material
-    G4Material* targetPS_materialName = getMaterial("targetPS_materialName");   
+    G4Material* targetPS_materialName = materialFinder.get("targetPS_materialName");
     
     //Proton Target geometry parameters
     double targetPS_Pam[5] = { 
@@ -718,6 +723,14 @@ namespace mu2e {
                               );
 
 
+    }
+
+    // 
+    VolumeInfo calorimeterInfo;
+    if ( _config->getBool("hasCalorimeter",false) ){
+      calorimeterInfo = constructCalorimeter( detSolDownstreamVacInfo.logical,
+                                              -(dsz0+centerOfDownstreamDSVac),
+                                              *_config );
     }
 
     // Do the Target
@@ -887,17 +900,17 @@ namespace mu2e {
     G4double deltaChord = singleValue;
     G4double maxStep = 10.e-00*mm;
 
-    _fieldUpstreamMgr->SetDeltaOneStep(deltaOneStep);
-    _fieldDownstreamMgr->SetDeltaOneStep(deltaOneStep);
-    
-
-    _fieldUpstreamMgr->SetDeltaIntersection(newUpstreamDeltaI);    
-    _fieldDownstreamMgr->SetDeltaIntersection(newDownstreamDeltaI);    
-
-    _chordUpstreamFinder->SetDeltaChord(deltaChord);
-    _chordDownstreamFinder->SetDeltaChord(deltaChord);
-
-
+    // Leave the defaults for the uniform field; override for for non-uniform field.
+    if ( detSolFieldForm == detSolFullField || detSolFieldForm == detSolUpVaryingDownConstant ){
+      _fieldUpstreamMgr->SetDeltaOneStep(deltaOneStep);
+      _fieldUpstreamMgr->SetDeltaIntersection(newUpstreamDeltaI);    
+      _chordUpstreamFinder->SetDeltaChord(deltaChord);
+    }
+    if ( detSolFieldForm == detSolFullField ){
+      _fieldDownstreamMgr->SetDeltaOneStep(deltaOneStep);
+      _fieldDownstreamMgr->SetDeltaIntersection(newDownstreamDeltaI);    
+      _chordDownstreamFinder->SetDeltaChord(deltaChord);
+    }
     
     // Set step limit.  
     // See also PhysicsList.cc to add a steplimiter to the list of processes.
@@ -909,12 +922,6 @@ namespace mu2e {
     trackerInfo.logical->SetUserLimits(_stepLimit.get());
     targetInfo.logical->SetUserLimits(_stepLimit.get());
 
-  }
-
-  // Get the requested material, throwing if necessary.
-  G4Material* Mu2eWorld::getMaterial( string const& key ){
-    string materialName = _config->getString(key);
-    return findMaterialOrThrow(materialName);
   }
 
   // Convert to base units for all of the items in the vector.
