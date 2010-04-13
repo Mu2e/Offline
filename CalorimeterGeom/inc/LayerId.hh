@@ -1,5 +1,13 @@
 #ifndef LAYERID_HH
 #define LAYERID_HH
+// $Id: LayerId.hh,v 1.3 2010/04/13 17:15:33 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/04/13 17:15:33 $
+
+// original authors Julie Managan and Robert Bernstein
+
+namespace mu2e{
+  namespace calorimeter{
 
 //
 // C++ includes
@@ -58,4 +66,8 @@ inline std::ostream& operator<<(std::ostream& ost,
   ost << l._did << " " << l._layer;
   return ost;
 }
+
+  } //namespace calorimeter
+} //namespace mu2e
+
 #endif

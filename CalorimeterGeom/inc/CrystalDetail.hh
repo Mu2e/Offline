@@ -1,5 +1,13 @@
 #ifndef CRYSTALDETAIL_HH
 #define CRYSTALDETAIL_HH
+// $Id: CrystalDetail.hh,v 1.2 2010/04/13 17:14:51 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/04/13 17:14:51 $
+
+// original authors Julie Managan and Robert Bernstein
+
+namespace mu2e{
+  namespace calorimeter{
 
 class CrystalDetail{
 
@@ -36,5 +44,9 @@ private:
   double _zhalfLength;
 
 };
+
+
+  } //namespace calorimeter
+} //namespace mu2e
 
 #endif
