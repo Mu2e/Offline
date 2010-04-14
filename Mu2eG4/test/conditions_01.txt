@@ -1,9 +1,9 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.4 2010/04/14 18:00:46 kutschke Exp $
+// $Id: conditions_01.txt,v 1.5 2010/04/14 18:04:38 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/14 18:00:46 $
+// $Date: 2010/04/14 18:04:38 $
 //
 
 bool printConfig = true;
@@ -15,8 +15,8 @@ double DAQParams.t0 = 700.;
 double acceleratorParams.deBuncherPeriod = 1694.;
 
 // Primary particle data table and the auxillary table.
-string particleDataTable.filename          = "ConditionsService/data1/particle.tbl";
-string particleDataTable.auxillaryFilename = "ConditionsService/data1/mass_width_2008.mc";
+string particleDataTable.filename          = "ConditionsService/data/particle.tbl";
+string particleDataTable.auxillaryFilename = "ConditionsService/data/mass_width_2008.mc";
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
