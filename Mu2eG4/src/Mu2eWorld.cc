@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.17 2010/04/13 23:13:09 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.18 2010/04/14 12:32:16 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/13 23:13:09 $
+// $Date: 2010/04/14 12:32:16 $
 //
 // Original author Rob Kutschke
 //
@@ -875,7 +875,6 @@ namespace mu2e {
         G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
         _detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
         _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get() ) );
-        _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get() ) );
         _exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
         _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
                                                                                   , _exactDownstreamHelix.get() ));
@@ -898,9 +897,9 @@ namespace mu2e {
     G4double newDownstreamDeltaI = singleValue;
     G4double deltaOneStep = singleValue;
     G4double deltaChord = singleValue;
-    G4double maxStep = 10.e-00*mm;
+    G4double maxStep = 20.e-00*mm;
 
-    // Leave the defaults for the uniform field; override for for non-uniform field.
+    // Leave the defaults for the uniform field; override them for non-uniform field.
     if ( detSolFieldForm == detSolFullField || detSolFieldForm == detSolUpVaryingDownConstant ){
       _fieldUpstreamMgr->SetDeltaOneStep(deltaOneStep);
       _fieldUpstreamMgr->SetDeltaIntersection(newUpstreamDeltaI);    
@@ -910,6 +909,16 @@ namespace mu2e {
       _fieldDownstreamMgr->SetDeltaOneStep(deltaOneStep);
       _fieldDownstreamMgr->SetDeltaIntersection(newDownstreamDeltaI);    
       _chordDownstreamFinder->SetDeltaChord(deltaChord);
+    }
+
+    // For the uniform field, change only deltaIntersection.
+    if ( detSolFieldForm == detSolUpConstantDownConstant ||
+         detSolFieldForm == detSolUpVaryingDownConstant     ){
+      G4double deltaIntersection = 0.00001*mm;
+      if ( detSolFieldForm == detSolUpConstantDownConstant ){
+        _fieldUpstreamMgr->SetDeltaIntersection(deltaIntersection);
+      }
+      _fieldDownstreamMgr->SetDeltaIntersection(deltaIntersection);    
     }
     
     // Set step limit.  
