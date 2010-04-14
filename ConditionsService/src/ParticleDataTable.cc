@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.cc,v 1.3 2010/03/25 18:31:25 kutschke Exp $
+//   $Id: ParticleDataTable.cc,v 1.4 2010/04/14 18:00:46 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2010/03/25 18:31:25 $
+//   $Date: 2010/04/14 18:00:46 $
 //
 //
 // 1) In changeUnits and improveData I want to loop over all elements in the 
@@ -23,9 +23,9 @@
 //    but it has crude values for the masses and widths.  This code first reads
 //    particle.tbl to make sure that it has all of the particles; this will be the
 //    permanent particle data table.  Then the code reads mass_width_2008.mc into
-//    a temporary table. For all particles that are present in both tables, the
-//    code copies the masses and widths from the temporary table to the permanent table.
-//    Then the temporary table goes out of scope.
+//    an auxillary table. For all particles that are present in both tables, the
+//    code copies the masses and widths from the auxillary table to the permanent table.
+//    Then the auxillary table goes out of scope.
 //    
 #include <fstream>
 #include <iomanip>
@@ -71,6 +71,9 @@ namespace mu2e {
     
     _tableFilename = config.getString("particleDataTable.filename",
                                       "ConditionsService/data/particle.tbl");
+
+    _auxillaryFilename = config.getString("particleDataTable.auxillaryFilename",
+                                          "ConditionsService/data/mass_width_2008.mc");
     
     loadTableFromFile();
   }
@@ -196,34 +199,32 @@ namespace mu2e {
   // This is a temporary hack.  See note 3.
   void ParticleDataTable::improveData(){
 
-    // Temporary table to hold the better masses and widths.
-    HepPDT::ParticleDataTable tmpTable;
+    // Auxillary table that has better masses and widths but is missing anti-particles.
+    HepPDT::ParticleDataTable auxTable;
 
-    // Fill the temporary table. See note 2.
+    // Fill the auxillary table. See note 2.
     {
       // Construct the table builder.
-      HepPDT::TableBuilder  tb(tmpTable);
-
-      string tmpDataFile = "ConditionsService/data/mass_width_2008.mc";
+      HepPDT::TableBuilder  tb(auxTable);
 
       // Build the table from the data file.
-      ifstream in( tmpDataFile.c_str() );
+      ifstream in( _auxillaryFilename.c_str() );
       if ( !in ) {
         throw cms::Exception("FILE")
-          << "Unable to open temporary particle data file: " 
-          << tmpDataFile << "\n";
+          << "Unable to open auxillary particle data file: " 
+          << _auxillaryFilename << "\n";
       }
       HepPDT::addPDGParticles( in, tb);
     }
 
-    // Copy masses and widths from the temporary table to the permanent one.
+    // Copy masses and widths from the auxillary table to the permanent one.
     for ( HepPDT::ParticleDataTable::const_iterator i=_pdt.begin(), e=_pdt.end();
           i!=e; ++i ){
 
       // Get non-const access to each particle. See note 1.
       ParticleData* particle = _pdt.particle( i->first.pid() );
       
-      ParticleData* tmp = tmpTable.particle( std::abs(i->first.pid()) );
+      ParticleData* tmp = auxTable.particle( std::abs(i->first.pid()) );
       if ( !tmp ) continue;
 
       // hadrons, leptons and gamma, Z, W, W-
