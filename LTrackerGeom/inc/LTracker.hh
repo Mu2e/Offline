@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.5 2010/04/06 17:10:05 kutschke Exp $
+// $Id: LTracker.hh,v 1.6 2010/04/14 22:59:32 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 17:10:05 $
+// $Date: 2010/04/14 22:59:32 $
 //
 // Original author Rob Kutschke
 //
@@ -50,7 +50,7 @@ namespace mu2e {
     }
 
     double tiltY() const { return _tiltY;}
-    double tiltX() const { return _tiltY;}
+    double tiltX() const { return _tiltX;}
 
     // Depracated: kept for backwards compatibiltiy.
     double Tilt() const { return _tiltY;}
