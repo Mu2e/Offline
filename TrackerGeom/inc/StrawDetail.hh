@@ -7,9 +7,9 @@
 // straws in the LTracker and for different lengths of straws in the TTracker.
 // 
 //
-// $Id: StrawDetail.hh,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: StrawDetail.hh,v 1.2 2010/04/14 14:21:40 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/04/14 14:21:40 $
 //
 // Original author Rob Kutschke
 //
@@ -79,7 +79,7 @@ public:
 private:
 
   // Identifier for this type of straw.
-  int _id;
+  int32_t _id; 
 
   // Order of materials is:
   // straw material, gas volume, wire

@@ -4,9 +4,9 @@
 // Hold information about one straw in a tracker.
 //
 //
-// $Id: Straw.hh,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: Straw.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/04/14 14:16:41 $
 //
 // Original author Rob Kutschke
 //
@@ -134,7 +134,7 @@ protected:
 
   // Detailed description of a straw.
   const StrawDetail* _detail;
-  int _detailIndex;
+  int32_t _detailIndex;
 
   // Unit vector along the wire direction.
   // Need to add unit vectors along local u and v also.

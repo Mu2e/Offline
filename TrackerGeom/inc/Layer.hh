@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Layer.hh,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: Layer.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/04/14 14:16:41 $
 //
 // Original author Rob Kutschke
 //
@@ -112,7 +112,7 @@ protected:
   // Number of straws.  Needed because of 2 phase construction.
   // The member _straws is not filled until the second phase
   // but this is neede beforehand. Keep it strictly private.
-  int _nStraws;
+  int32_t _nStraws;
 
 
   // Nominal position of wire 0 and offset from wire 0 to wire 1.

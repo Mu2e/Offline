@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: LayerId.hh,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: LayerId.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/04/14 14:16:41 $
 //
 // Original author Rob Kutschke
 //
@@ -78,7 +78,7 @@ public:
   // should be OK.
 
   SectorId _sid;
-  int _layer;
+  int32_t _layer;
   
 };
 

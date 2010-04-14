@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: SectorId.hh,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: SectorId.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/04/14 14:16:41 $
 //
 // Original author Rob Kutschke
 //
@@ -61,7 +61,7 @@ public:
   }
   
   DeviceId _did;
-  int _sector;
+  int32_t _sector;
   
 };
 

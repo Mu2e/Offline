@@ -7,9 +7,9 @@
 // of straws in the system.  This works for both the LTracker
 // and the TTracker.
 //
-// $Id: StrawIndex.hh,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: StrawIndex.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/04/14 14:16:41 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@ namespace mu2e {
     // No default c'tor by design.
 
     // No automatic conversion of int to StrawIndex.
-    explicit StrawIndex(int idx):
+    explicit StrawIndex(int32_t idx):
       _idx(idx){
     }
     
@@ -45,7 +45,7 @@ namespace mu2e {
 
     // Return the value as an int.
     // Do not want automatic conversion to an int.
-    int asInt() const { return _idx;}
+    int32_t asInt() const { return _idx;}
 
     bool operator==( StrawIndex const& rhs) const{
       return (_idx == rhs._idx);
@@ -57,7 +57,7 @@ namespace mu2e {
 
   private:
 
-    int _idx;
+    int32_t _idx;
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
