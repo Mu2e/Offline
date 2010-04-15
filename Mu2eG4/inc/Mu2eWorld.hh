@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.10 2010/04/13 23:13:08 kutschke Exp $
+// $Id: Mu2eWorld.hh,v 1.11 2010/04/15 23:01:39 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/13 23:13:08 $
+// $Date: 2010/04/15 23:01:39 $
 //
 // Original author Rob Kutschke
 //
@@ -85,15 +85,6 @@ namespace mu2e {
     
     void constructWorld( SimpleConfig const& );
 
-    // Three different versions of the LTracker.  To test them for speed.
-    VolumeInfo constructLTracker  ( G4LogicalVolume* mother, double zOff );
-    VolumeInfo constructLTrackerv2( G4LogicalVolume* mother, double zOff );
-    VolumeInfo constructLTrackerv3( G4LogicalVolume* mother, double zOff );
-
-    VolumeInfo constructTarget( G4LogicalVolume* mother, double zOff );
-
-    void constructTestWorld();
-
     // The world coordinates of the center of the cosmic ray reference plane.
     G4ThreeVector _cosmicReferencePoint;
 
@@ -111,15 +102,6 @@ namespace mu2e {
     void Mu2eWorld::setUnits( std::vector<double>& V, G4double unit );
 
     SimpleConfig const* _config;
-
-    //Information for a few upper level volumes.
-    //    G4Box* _worldSolid;
-    
-    // Logical volumes
-    //G4LogicalVolume* _worldLog;
-    
-    // Physical volumes
-    //G4VPhysicalVolume* _worldPhys;
 
     // Location in G4 world coordinates of the reference point for the Primary Proton Gun
     G4ThreeVector _primaryProtonGunOrigin;
@@ -161,16 +143,8 @@ namespace mu2e {
     std::auto_ptr<G4UserLimits>        _stepUpstreamLimit;
     std::auto_ptr<G4UserLimits>        _stepDownstreamLimit;
 
-    std::auto_ptr<G4AssemblyVolume>    _lTrackerWedgeAssembly;
-    std::auto_ptr<G4AssemblyVolume>    _lTrackerVaneAssembly;
-
-    // Cannot make std::vector of auto_ptr. 
-    // So use statically dimensioned array instead.  Remember to check dimensions.
-    static int const ndevices = 2;
-    std::auto_ptr<G4AssemblyVolume>    _lTrackerAssemblyVols[ndevices];
 
   };
 
 } // end namespace mu2e
 #endif
-
