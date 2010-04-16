@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.3 2010/03/19 01:11:11 kutschke Exp $
+# $Id: setup.sh,v 1.4 2010/04/16 14:49:57 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/19 01:11:11 $
+# $Date: 2010/04/16 14:49:57 $
 #
 # Original author Rob Kutschke
 #
@@ -26,7 +26,7 @@ setup geant4 v4_9_2_p01 -q g77-OpenGL
 
 # various G4 cross-section data files
 
-setup g4neutron   v3_13
+setup g4neutron   v3_13a
 setup g4emlow     v6_2
 setup g4photon    v2_0
 setup g4radiative v3_2
