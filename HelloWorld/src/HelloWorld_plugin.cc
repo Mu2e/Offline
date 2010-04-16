@@ -1,9 +1,9 @@
 //
 //  The hello world plugin, for a very basic introduction.
 //
-//  $Id: HelloWorld_plugin.cc,v 1.1 2010/04/16 15:13:00 kutschke Exp $
+//  $Id: HelloWorld_plugin.cc,v 1.2 2010/04/16 15:17:48 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2010/04/16 15:13:00 $
+//  $Date: 2010/04/16 15:17:48 $
 //   
 //  Original author Rob Kutschke
 //
@@ -29,7 +29,7 @@ namespace mu2e {
     explicit HelloWorld(edm::ParameterSet const& pset){
       cerr << "Hello, world.  From constructor. "
            << "My magic number is: "
-           << pset.pset.getUntrackedParameter<int>("magicNumber",-1)
+           << pset.getUntrackedParameter<int>("magicNumber",-1)
            << endl;
     }
     virtual ~HelloWorld() { }
