@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: nestTubs.hh,v 1.2 2010/04/16 14:46:44 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/04/16 14:46:44 $
 //
 // Original author Rob Kutschke
 //
@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "Mu2eG4/inc/VolumeInfo.hh"
+#include "TrackerGeom/inc/TubsParams.hh"
 
 class G4Material;
 class G4LogicalVolume;
@@ -28,7 +29,7 @@ class G4CSGSolid;
 namespace mu2e {
 
   VolumeInfo nestTubs ( std::string const& name,
-			double halfDim[5],
+			double params[5],
 			G4Material* material,
 			G4RotationMatrix* rot,
 			G4ThreeVector const& offset,
@@ -40,10 +41,9 @@ namespace mu2e {
   
 
 
-  // Alternate argument list, using a vector for the half dimensions.
-  //
+  // Alternate argument list, using a vector for the parameters.
   inline VolumeInfo nestTubs ( std::string const& name,
-			       std::vector<double>&  halfDim,
+			       std::vector<double>&  params,
 			       G4Material* material,
 			       G4RotationMatrix* rot,
 			       G4ThreeVector& offset,
@@ -53,7 +53,30 @@ namespace mu2e {
 			       bool forceSolid = false
 			       ){
     return nestTubs( name, 
-		     &halfDim[0],
+		     &params[0],
+		     material,
+		     rot,
+		     offset,
+		     parent,
+		     copyNo,
+		     color,
+		     forceSolid
+		     );
+  }
+
+  // Alternate argument list, using a TubsParams object for the parameters.
+  inline VolumeInfo nestTubs ( std::string const& name,
+			       TubsParams& params,
+			       G4Material* material,
+			       G4RotationMatrix* rot,
+			       G4ThreeVector& offset,
+			       G4LogicalVolume* parent,
+			       int copyNo,
+			       G4Colour color = G4Colour::Black(),
+			       bool forceSolid = false
+			       ){
+    return nestTubs( name, 
+		     &params.innerRadius,
 		     material,
 		     rot,
 		     offset,
