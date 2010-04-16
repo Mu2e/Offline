@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_plugin.cc,v 1.2 2010/04/12 18:26:12 shanahan Exp $
+// $Id: HoughTuner_plugin.cc,v 1.3 2010/04/16 16:31:17 shanahan Exp $
 // $Author: shanahan $ 
-// $Date: 2010/04/12 18:26:12 $
+// $Date: 2010/04/16 16:31:17 $
 //
 // Original author P. Shanahan
 //
@@ -100,7 +100,10 @@ namespace mu2e {
     int _nAnalyzed;
 
     // Pointers to histograms to be filled.
-    TH1F* _hRadius;
+    TH1F* _hBiasRadiusNoise; // mean radius of noise hits minus hough track's
+    TH1F* _hBiasRadiusPhys; // mean radius of physics hits minus hough track's
+    TH1F* _hBiasRadiusNoiseW; // " " wide plot
+    TH1F* _hBiasRadiusPhysW; // " " wide plot
 
     // A category for the error logger.
     const std::string _messageCategory;
@@ -120,7 +123,15 @@ namespace mu2e {
     edm::Service<edm::TFileService> tfs;
 
     // Create some 1D histograms.
-    _hRadius       = tfs->make<TH1F>( "hRadius", "Radius of Hits;(mm)",          100,  0., 1000. );
+    _hBiasRadiusNoise= tfs->make<TH1F>( "hBiasRadiusNoise", 
+            "Mean Radius of noise hits vs. hough track",200,-20,20);
+    _hBiasRadiusPhys= tfs->make<TH1F>( "hBiasRadiusPhys", 
+            "Mean Radius of physics hits vs. hough track",200,-20,20);
+    _hBiasRadiusNoiseW= tfs->make<TH1F>( "hBiasRadiusNoiseW", 
+            "Mean Radius of noise hits vs. hough track (wide)",200,-1000,1000);
+    _hBiasRadiusPhysW= tfs->make<TH1F>( "hBiasRadiusPhysW", 
+            "Mean Radius of physics hits vs. hough track (wide)",200,-1000,1000);
+
 
   }
 
@@ -161,6 +172,10 @@ namespace mu2e {
     edm::Handle<HoughCircleCollection> hcHandle;
     evt.getByType(hcHandle);
 
+   // primary hough circle: i.e., the first one in the collection
+    const HoughCircle* hcp=0;
+    if (hcHandle->size()) hcp=&hcHandle->at(0);
+
     // Fill histogram with number of hits per event.
     //_hHitMultiplicity->Fill(hits->size());
  
@@ -170,7 +185,7 @@ namespace mu2e {
     // and make a pretty Plot
      uint32_t evtno=evt.id().event();
 
-     RootNameTitleHelper displayCanv("_canvEvt","Display, Event",evtno,5);
+     RootNameTitleHelper displayCanv("canvEvt","Display, Event",evtno,5);
      edm::Service<edm::TFileService> tfs;
 
      TCanvas *canvEvt = tfs->make<TCanvas>(displayCanv.name(),
@@ -181,46 +196,71 @@ namespace mu2e {
 
 // draw circles
      std::vector<TEllipse*> circles; // to be able to delete them when done
+std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
      for (int ihc=0; ihc<hcHandle->size(); ihc++) {
          const HoughCircle& hc=hcHandle->at(ihc);
          TEllipse *circle=new TEllipse(hc.Center().x(),hc.Center().y(),hc.Radius());
          circles.push_back(circle);
          circle->Draw();
-        std::cout<<"Draw a circle: "<<hc.Center().x()<<" "<<hc.Center().y()
-                <<" "<<hc.Radius()<<std::endl;
      }
 
 
 // draw hits
-     TPolyMarker* tpPhys=new TPolyMarker(); tpPhys->SetMarkerStyle(20);
-            tpPhys->SetMarkerColor(kRed);
-     TPolyMarker* tpNois=new TPolyMarker(); tpNois->SetMarkerStyle(24);
-            tpNois->SetMarkerColor(kCyan);
-     int nPhys=0;
-     int nNois=0;
+     enum {kPhys,kNoise};
+     TPolyMarker* tp[2]={0,0};
+     tp[kPhys]=new TPolyMarker(); tp[kPhys]->SetMarkerStyle(20);
+            tp[kPhys]->SetMarkerColor(kRed);
+     tp[kNoise]=new TPolyMarker(); tp[kNoise]->SetMarkerStyle(24);
+            tp[kNoise]->SetMarkerColor(kCyan);
+     int npm[2]={0,0};
      
+     // also want to calculate mean hit radius from Hough Center
+     double rmean[2]={0,0};
+
+// loop over hits
      for (int ih=0; ih<hits->size(); ih++)
      {
           
          const StepPointMC& hit=hits->at(ih);
 
-          // add hit to noise or physics TPolyMarker as appropriate
-         if ( 2==hit.trackId() && TMath::Abs(hit.totalEDep()-0)<1e-10) {
-             tpNois->SetPoint(nNois++,hit.position()[0],hit.position()[1]);
-         } else {
-             tpPhys->SetPoint(nPhys++,hit.position()[0],hit.position()[1]);
+
+          // add hit to noise or physics TPolyMarker and stats as appropriate
+         unsigned int kType=kPhys;
+         if ( 2==hit.trackId() && TMath::Abs(hit.totalEDep()-0)<1e-10) 
+                                                              kType=kNoise;
+         tp[kType]->SetPoint(npm[kType]++,hit.position()[0],hit.position()[1]);
+
+         // calculate mean hit radius from center of 1st circle
+         if (hcp) {
+           double rhit=sqrt(TMath::Power(hit.position()[0]-hcp->Center().x(),2)
+                           +TMath::Power(hit.position()[1]-hcp->Center().y(),2));
+           rmean[kType]+=rhit;
          }
 
      }
 
-     tpPhys->Draw();
-     tpNois->Draw();
+     // normalize the means
+     if(npm[kNoise]) rmean[kNoise]/=npm[kNoise];
+     if(npm[kPhys]) rmean[kPhys]/=npm[kPhys];
+
+     tp[kPhys]->Draw();
+     tp[kNoise]->Draw();
      canvEvt->Write();
 
-     delete tpPhys;
-     delete tpNois;
+     delete tp[kPhys];
+     delete tp[kNoise];
      for (int ic=0; ic<circles.size(); ic++) delete circles[ic];
+
      
+     if (hcp) {
+       _hBiasRadiusNoise->Fill(rmean[kNoise]-hcp->Radius());
+       _hBiasRadiusPhys->Fill(rmean[kPhys]-hcp->Radius());
+       _hBiasRadiusNoiseW->Fill(rmean[kNoise]-hcp->Radius());
+       _hBiasRadiusPhysW->Fill(rmean[kPhys]-hcp->Radius());
+      if (TMath::Abs(rmean[kPhys]-hcp->Radius())>100) 
+       std::cout<<"Event "<< evtno <<"diff="<<rmean[kPhys]-hcp->Radius()<<std::endl;
+     }
+
 
  
   } // end of ::analyze.
