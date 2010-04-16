@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.19 2010/04/15 23:01:40 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.20 2010/04/16 14:47:17 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/15 23:01:40 $
+// $Date: 2010/04/16 14:47:17 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,9 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eG4/inc/constructLTracker.hh"
+#include "Mu2eG4/inc/constructDummyTracker.hh"
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
+#include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructCalorimeter.hh"
 
 // G4 includes
@@ -84,9 +86,6 @@
 using namespace std;
 
 namespace mu2e {
-
-  // Value used to request that all Mu2e specific materials be made.
-  static const std::string DoAllValue = "DoAll";
 
   Mu2eWorld::Mu2eWorld()
     :  _cosmicReferencePoint(),
@@ -654,8 +653,8 @@ namespace mu2e {
     _primaryProtonGunRotation = _primaryProtonGunRotation.inverse();
 
 
+    // Construct one of the trackers.
     VolumeInfo trackerInfo;
-
     if( _config->getBool("hasLTracker",false) ){
       int ver = _config->getInt("LTrackerVersion",1);
       log << "LTracker version: " << ver << "\n";
@@ -670,40 +669,7 @@ namespace mu2e {
     } else if ( _config->getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
     } else {
-
-      // Make a TUBs to represent the tracking volume.
-      // Add detail later.
-      // A hack here - should get numbers via the geometry system.
-      double trackerParams[5] = {
-        0.,
-        800.,
-        1300.,
-        0.,
-        2.*M_PI
-      };
-
-      //tracker is associated with downstream constant section -- that's the point
-      G4Material*    trackerMaterial = detSolDownstreamVacMaterial;
-
-      double trackerCenterInZ = 12000. - dsz0 - 1800.;
-      G4ThreeVector trackerOffset(0.,0.,trackerCenterInZ);
-      if ( (trackerCenterInZ - trackerParams[2]) < transitionZ)
-        { cout << "from Mu2eWorld:  transition Z in the middle of the tracker, fool..." << endl;
-          assert(2==1);
-        }
-
-      trackerInfo = nestTubs( "TrackerMother",
-                              trackerParams,
-                              trackerMaterial,
-                              0,
-                              trackerOffset,
-                              detSolDownstreamVacInfo.logical,
-                              0,
-                              G4Color::Yellow(),
-                              true
-                              );
-
-
+      trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac, *_config );
     }
 
     // 
@@ -722,49 +688,12 @@ namespace mu2e {
                                             dsz0 + centerOfUpstreamDSVac );
 
     } else {
-      // Make a TUBs to represent the target system.
-      // Add detail later.
-      // A hack here - should get numbers via the geometry system.
-      double targetParams[5] = { 
-        0.,
-        100.,
-        400.,
-        0.,
-        2.*M_PI
-      };
 
-      // 12000 - dsz0 - 6100 is from kutschke when the mother of the target was detSolVacInfo;
-      double targetCenterInZ = 12000. - dsz0 - 6100. - centerOfUpstreamDSVac;
-      G4ThreeVector targetOffset(0.,0.,targetCenterInZ);
-      //make sure transition  between upstream/downstream isn't in the target since
-      //the target is only in the upstream part
-      cout << "target center in Z= " << targetCenterInZ<< "\n" 
-           <<targetParams[0] << "\n" 
-           <<targetParams[1] << "\n" 
-           <<targetParams[2] << "\n"
-           <<targetParams[3] << "\n" 
-           <<targetParams[4] << "\n" 
-           <<endl;
-
-      if ( (targetCenterInZ + targetParams[2])+centerOfUpstreamDSVac > transitionZ)
-        { cout << "from Mu2eWorld:  transition Z in the middle of the target, idiot (Bernstein!)..." << endl;
-          assert(false);
-        }
-
-      G4Material*   targetMaterial = detSolUpstreamVacMaterial;
-      targetInfo = nestTubs( "TargetMother",
-                             targetParams,
-                             targetMaterial,
-                             0,
-                             targetOffset,
-                             detSolUpstreamVacInfo.logical,
-                             0,
-                             G4Color::Yellow(),
-                             true
-                             );
+      targetInfo = constructDummyStoppingTarget( detSolUpstreamVacInfo.logical, 
+                                                 dsz0 + centerOfUpstreamDSVac,
+                                                 *_config );
     } //hasTarget
 
-    // Target done.
 
     // Only after all volumes have been defined should we set the magnetic fields.
     // Make the magnetic field valid inside the detSol vacuum; one upstream, one downstream
