@@ -4,9 +4,9 @@
 // Manage lookup of G4Material from a name found in a geometry file.
 // Throws if operation cannot be successfully completed.
 //
-// $Id: MaterialFinder.hh,v 1.1 2010/04/13 23:09:54 kutschke Exp $
+// $Id: MaterialFinder.hh,v 1.2 2010/04/16 14:46:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/13 23:09:54 $
+// $Date: 2010/04/16 14:46:05 $
 //
 // Original author Rob Kutschke
 
@@ -26,8 +26,11 @@ namespace mu2e {
   public:
     MaterialFinder( SimpleConfig const& config );
 
-    // key is the name of variable from a geometry file.
+    // This call has no default; throws if key not found.
     G4Material* get(  std::string const& key );
+
+    // This call has a default.
+    G4Material* get(  std::string const& key, std::string const& defaultValue );
 
   private:
     
