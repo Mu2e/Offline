@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.21 2010/04/13 23:13:38 kutschke Exp $
+// $Id: geom_01.txt,v 1.22 2010/04/16 14:47:42 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/13 23:13:38 $
+// $Date: 2010/04/16 14:47:42 $
 //
 // Original author Rob Kutschke
 
@@ -244,6 +244,19 @@ int    itracker.nEndCapWallShells =     2;
 vector<string> itracker.endcapWallMaterials = { "CarbonFiber", "G4_Cu" };
 vector<double> itracker.endcapWallShellsThicknesses = { 0.002, 5.0 };
 
+// Describe dummy tracker that is just one big G4TUBS.
+double dummytracker.rIn        =     0.;
+double dummytracker.rOut       =   800.;
+double dummytracker.halfLength =  1300.;
+double dummytracker.z0         = 10200.;
+double dummytracker.material   = "WAGVacuum";
+
+// Describe dummy stopping target that is just one big G4TUBS.
+double dummyStoppingTarget.rIn        =     0.;
+double dummyStoppingTarget.rOut       =   100.;
+double dummyStoppingTarget.halfLength =   400.;
+double dummyStoppingTarget.z0         =  5900.;
+double dummyStoppingTarget.material   = "WAGVacuum";
 
 double tracker.rMagnet       = 850.; 
 
