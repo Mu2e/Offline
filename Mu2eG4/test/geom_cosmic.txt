@@ -2,7 +2,7 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.23 2010/04/17 23:58:31 yury Exp $
+// $Id: geom_cosmic.txt,v 1.1 2010/04/17 23:58:31 yury Exp $
 // $Author: yury $
 // $Date: 2010/04/17 23:58:31 $
 //
@@ -35,7 +35,8 @@ bool printConfig = false;
 string g4.physicsListName = "N02";
 
 // Enable the code to kill low p secondaries from cosmics.
-bool g4.doCosmicKiller = false;
+bool g4.doCosmicKiller = true;
+int  g4.cosmicKillLevel = 2;
 
 // Tell G4 to load these predefined elements.
 vector<string> g4.elements =

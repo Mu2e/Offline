@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.2 2010/02/05 02:27:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/02/05 02:27:41 $
+// $Id: StackingAction.cc,v 1.3 2010/04/17 23:58:31 yury Exp $
+// $Author: yury $
+// $Date: 2010/04/17 23:58:31 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,8 @@
 // Mu2e includes
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "FWCore/Utilities/interface/Exception.h"
+#include "Mu2eUtilities/inc/PDGCode.hh"
 
 // G4 includes
 #include "G4PhysicalVolumeStore.hh"
@@ -46,11 +48,13 @@ namespace mu2e {
     ncalls(0),
     nevents(0),
     doCosmicKiller(false),
+    killLevel(0),
     dirtBodyPhysVol(0),
     dirtCapPhysVol(0){
 
     // Get control info from run time configuration.
     doCosmicKiller = config.getBool("g4.doCosmicKiller",false);
+    killLevel = config.getInt("g4.cosmicKillLevel",0);
   }
 
   StackingAction::~StackingAction(){
@@ -89,28 +93,42 @@ namespace mu2e {
 
     // Get some properties of the tracks.
     G4VPhysicalVolume* pvol = trk->GetVolume();
-    G4String volName = (pvol !=0) ?
-      pvol->GetName(): "Unknown Volume";
-    
     G4ParticleDefinition* pdef = trk->GetDefinition();
-    G4String partName = (pdef !=0) ?
-      pdef->GetParticleName() : "Unknown Particle";
 
-    const G4ThreeVector& ppos = trk->GetPosition();
-    G4ThreeVector p3mom = trk->GetMomentum();
+    bool killit = false;
 
-    // Magic numbers for illustrative purposes.
-    // You can probably get much more aggressive than this.
-    // Get ycut from geometry and pcut from run time config.
-    static const double ycut = 800.* mm;
-    static const double pcut =  50.* MeV;
+    if ( killLevel > 1 && pdef != 0 ) {
+      int pType = pdef->GetPDGEncoding();
 
-    // Decide if we want to kill the track.
-    bool killit = ( ppos.y() > ycut && p3mom.mag() < pcut);
+      // just kill anything electromagnetic in the dirt
+      killit =  ( pvol == dirtBodyPhysVol &&
+		  (pType == PDGCode::e_minus || 
+		   pType ==  PDGCode::e_plus || 
+		   PDGCode::gamma ) );
+    } else {
+
+      const G4ThreeVector& ppos = trk->GetPosition();
+      G4ThreeVector p3mom = trk->GetMomentum();
+      
+      // Magic numbers for illustrative purposes.
+      // You can probably get much more aggressive than this.
+      // Get ycut from geometry and pcut from run time config.
+      static const double ycut = 800.* mm;
+      static const double pcut =  50.* MeV;
+      
+      // Decide if we want to kill the track.
+      killit = ( ppos.y() > ycut && p3mom.mag() < pcut);
+    }
 
     // Printout about the decision.
     if ( nevents < 20 ) {
+      G4String volName = (pvol !=0) ? pvol->GetName(): "Unknown Volume";
+      G4String partName = (pdef !=0) ?
+	pdef->GetParticleName() : "Unknown Particle";
       G4String killString = killit ? "Kill it": "";
+      const G4ThreeVector& ppos = trk->GetPosition();
+      G4ThreeVector p3mom = trk->GetMomentum();
+
       cout << "Cosmic Killer: " 
 	   << setw(4)  << nevents << " "
 	   << setw(4)  << ncalls << " "

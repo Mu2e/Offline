@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.2 2010/02/05 02:27:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/02/05 02:27:41 $
+// $Id: StackingAction.hh,v 1.3 2010/04/17 23:58:31 yury Exp $
+// $Author: yury $
+// $Date: 2010/04/17 23:58:31 $
 //
 // Original author Rob Kutschke
 //
@@ -43,6 +43,7 @@ namespace mu2e {
 
     // Do we run the cosmic killer?
     bool doCosmicKiller;
+    int  killLevel;
 
     // Pointers to some physical volumes of interest.
     G4VPhysicalVolume * dirtBodyPhysVol;

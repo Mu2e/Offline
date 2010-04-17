@@ -1,0 +1,22 @@
+//
+// Run-time test config for CosmicDYB
+//
+// $Id: cosmicconfig_01.txt,v 1.1 2010/04/17 23:58:31 yury Exp $
+// $Author: yury $
+// $Date: 2010/04/17 23:58:31 $
+//
+// Original author Yury Kolomensky
+
+bool conversionGun.do = false;
+bool cosmictoy.do = false;
+bool cosmicDYB.do = true;
+bool picapture.do = false;
+bool ejectedProtonGun.do = false;
+bool decayinorbitGun.do = false;
+bool piEplusNuGun.do = false;
+
+double cosmicDYB.mean =  -1.1; 
+double cosmicDYB.muEMin = 5e3;
+double cosmicDYB.muEMax = 500e3;
+double cosmicDYB.dx     = 5000.;
+double cosmicDYB.dz     = 5000.;
