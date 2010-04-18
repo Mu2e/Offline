@@ -1,9 +1,9 @@
 //
 // Add StepPointMC objects to the event.
 //
-// $Id: addStepPointMCs.cc,v 1.1 2010/04/07 23:19:57 kutschke Exp $
+// $Id: addStepPointMCs.cc,v 1.2 2010/04/18 00:06:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/07 23:19:57 $
+// $Date: 2010/04/18 00:06:53 $
 //
 // Original author Rob Kutschke
 //
@@ -16,6 +16,7 @@
 #include "Mu2eG4/inc/addStepPointMCs.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "Mu2eG4/inc/StepPointG4.hh"
@@ -31,16 +32,17 @@ namespace mu2e{
 
     edm::Service<GeometryService> geom;
 
-    if ( geom->hasElement<LTracker>() ){
-      addL( g4event, hits );
+    if ( geom->hasElement<LTracker>() ||
+         geom->hasElement<TTracker>()    ){
+      addLT( g4event, hits );
     }
     else if ( geom->hasElement<ITracker>() ) {
       addI( g4event, hits );
     }
   }
 
-  // For the LTracker.
-  void addL( const G4Event* g4event, StepPointMCCollection& outputHits  ){
+  // For the LTracker and the TTracker.
+  void addLT( const G4Event* g4event, StepPointMCCollection& outputHits  ){
     
     // G4 Hit collections for this event.
     G4HCofThisEvent* hce = g4event->GetHCofThisEvent();
