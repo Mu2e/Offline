@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.hh,v 1.2 2010/04/16 14:46:44 kutschke Exp $
+// $Id: nestTubs.hh,v 1.3 2010/04/18 00:08:13 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/16 14:46:44 $
+// $Date: 2010/04/18 00:08:13 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@ namespace mu2e {
 			double params[5],
 			G4Material* material,
 			G4RotationMatrix* rot,
-			G4ThreeVector const& offset,
+			const G4ThreeVector& offset,
 			G4LogicalVolume* parent,
 			int copyNo,
 			G4Colour color = G4Colour::Black(),
@@ -46,7 +46,7 @@ namespace mu2e {
 			       std::vector<double>&  params,
 			       G4Material* material,
 			       G4RotationMatrix* rot,
-			       G4ThreeVector& offset,
+			       const G4ThreeVector& offset,
 			       G4LogicalVolume* parent,
 			       int copyNo,
 			       G4Colour color = G4Colour::Black(),
@@ -69,7 +69,7 @@ namespace mu2e {
 			       TubsParams& params,
 			       G4Material* material,
 			       G4RotationMatrix* rot,
-			       G4ThreeVector& offset,
+			       const G4ThreeVector& offset,
 			       G4LogicalVolume* parent,
 			       int copyNo,
 			       G4Colour color = G4Colour::Black(),

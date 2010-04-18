@@ -1,12 +1,15 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: nestTubs.cc,v 1.2 2010/04/18 00:08:13 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/04/18 00:08:13 $
 //
 // Original author Rob Kutschke
 //
+// Notes:
+// 1) See note in Mu2eWorld about how G4VisAttributes leaks memory.
+//    Should address this sometime.
 
 #include <string>
 
@@ -44,7 +47,8 @@ namespace mu2e {
     info.logical = new G4LogicalVolume( info.solid, material, name); 
     
     info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo);
-    
+
+    // This leaks. See note 1.
     G4VisAttributes* visAtt = new G4VisAttributes(true, color);
     visAtt->SetForceSolid(forceSolid);
 
