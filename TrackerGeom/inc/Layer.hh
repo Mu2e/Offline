@@ -3,11 +3,9 @@
 //
 // Hold information about one Layer in a tracker.
 //
-
-//
-// $Id: Layer.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
+// $Id: Layer.hh,v 1.3 2010/04/18 00:31:55 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/14 14:16:41 $
+// $Date: 2010/04/18 00:31:55 $
 //
 // Original author Rob Kutschke
 //
@@ -22,111 +20,114 @@
 
 namespace mu2e {
 
-class Layer{
+  class Tracker;
 
-  friend class Sector;
-  friend class Device;
-  friend class LTracker;
-  friend class LTrackerMaker;
+  class Layer{
 
-public:
+    friend class Sector;
+    friend class Device;
+    friend class LTracker;
+    friend class TTracker;
+    friend class LTrackerMaker;
+    friend class TTrackerMaker;
 
-  // A free function, returning void, that takes a const Layer& as an argument.
-  typedef void (*LayerFunction)( const Layer& s);
+  public:
 
-  Layer();
+    // A free function, returning void, that takes a const Layer& as an argument.
+    typedef void (*LayerFunction)( const Layer& s);
 
-  Layer(const LayerId& id);
+    Layer();
 
-  Layer(const LayerId&   id,
-	      int        nStraws,
-	const CLHEP::Hep3Vector& origin,
-	const CLHEP::Hep3Vector& delta
-	);
+    Layer(const LayerId& id);
 
-  
-  ~Layer ();
+    Layer(const LayerId&   id,
+          int        nStraws,
+          const CLHEP::Hep3Vector& origin,
+          const CLHEP::Hep3Vector& delta
+          );
+
+    // Accept the compiler generated destructor, copy constructor and assignment operators
  
-  const LayerId& Id() const { return _id;}
+    const LayerId& Id() const { return _id;}
   
-  int nStraws() const { return _straws.size(); }
+    int nStraws() const { return _straws.size(); }
 
-  const CLHEP::Hep3Vector getOrigin() const {return _orig;}
-  const CLHEP::Hep3Vector getDelta()  const {return _delta;}
+    const CLHEP::Hep3Vector getOrigin() const {return _orig;}
+    const CLHEP::Hep3Vector getDelta()  const {return _delta;}
 
-  const Straw& getStraw( int n ) const {
-    return *_straws.at(n);
-  }
-  
-  const Straw& getStraw( const StrawId& id ) const {
-    return getStraw(id._n);
-  }
-  
-  const std::vector<const Straw*>& getStraws() const { 
-    return _straws;
-  }
-
-  // Formatted string embedding the id of the layer.
-  std::string name( std::string const& base ) const;
-
-  // Return Id of the last straw in the layer.
-  // Return an illegal id if there are no straws.
-  //  - which should never happen.
-  StrawId getIdLastStraw() const{
-
-    return ( _straws.size() != 0 )?
-      _straws.back()->Id():
-      StrawId();
-  }
-  
-  // Compiler generated copy and assignment constructors
-  // should be OK.
-
-  // Options:
-  // 1) return F or void; std-like says return F.
-  //    Can be inefficient if F has a lot of state.
-  //    THis is a copy in copy out model.
-  // 2) Order is not defined.  In practice when run on
-  //    vector it is defined.
-  template <class F>
-  void for_each( F f ) const {
-    std::for_each( _straws.begin(),
-		   _straws.end(),
-		   f);
-  }
-  
-  // Loop over all straws and call F.
-  // F can be a class with an operator() or a free function.
-  template <class F>
-  inline void Layer::forAllStraws ( F& f) const{
-    for ( std::vector<const Straw*>::const_iterator i=_straws.begin(), e=_straws.end();
-	  i !=e; ++i){
-      f(**i);
+    const Straw& getStraw( int n ) const {
+      return *_straws.at(n);
     }
-  }
 
-protected:
+    const Straw& getStraw( const StrawId& id ) const {
+      return getStraw(id._n);
+    }
 
-  LayerId _id;
+    const std::vector<const Straw*>& getStraws() const { 
+      return _straws;
+    }
 
-  // Number of straws.  Needed because of 2 phase construction.
-  // The member _straws is not filled until the second phase
-  // but this is neede beforehand. Keep it strictly private.
-  int32_t _nStraws;
+    // Formatted string embedding the id of the layer.
+    std::string name( std::string const& base ) const;
 
+    // Return Id of the last straw in the layer.
+    // Return an illegal id if there are no straws.
+    //  - which should never happen.
+    StrawId getIdLastStraw() const{
 
-  // Nominal position of wire 0 and offset from wire 0 to wire 1.
-  // This is exactly only all wires are in their nominal positions.
-  CLHEP::Hep3Vector _orig;
-  CLHEP::Hep3Vector _delta;
+      return ( _straws.size() != 0 )?
+        _straws.back()->Id():
+        StrawId();
+    }
 
-  // Pointers to the straws in this layer.
-  // These pointers do not own the straws to which they point.
-  std::vector<const Straw*> _straws;
+    // Options:
+    // 1) return F or void; std-like says return F.
+    //    Can be inefficient if F has a lot of state.
+    //    THis is a copy in copy out model.
+    // 2) Order is not defined.  In practice when run on
+    //    vector it is defined.
+    template <class F>
+    void for_each( F f ) const {
+      std::for_each( _straws.begin(),
+                     _straws.end(),
+                     f);
+    }
 
-  std::vector<StrawIndex> _indices;
+    // Loop over all straws and call F.
+    // F can be a class with an operator() or a free function.
+    template <class F>
+    inline void Layer::forAllStraws ( F& f) const{
+      for ( std::vector<const Straw*>::const_iterator i=_straws.begin(), e=_straws.end();
+            i !=e; ++i){
+        f(**i);
+      }
+    }
 
-};
+    // On readback from persistency, recursively recompute mutable members.
+    void fillPointers ( const Tracker& tracker ) const;
+
+  protected:
+
+    LayerId _id;
+
+    // Number of straws.  Needed because of 2 phase construction.
+    // The member _straws is not filled until the second phase
+    // but this is neede beforehand. Keep it strictly private.
+    int32_t _nStraws;
+
+    // Nominal position of wire 0 and offset from wire 0 to wire 1.
+    // This is exactly only all wires are in their nominal positions.
+    CLHEP::Hep3Vector _orig;
+    CLHEP::Hep3Vector _delta;
+
+    // Pointers to the straws in this layer.
+    // These pointers do not own the straws to which they point.
+    // These are not persisted and may need to be recomputed after readback.
+    mutable std::vector<const Straw*> _straws;
+
+    std::vector<StrawIndex> _indices;
+
+  };
 }
 
 #endif

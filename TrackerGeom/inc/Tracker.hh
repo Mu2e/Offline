@@ -3,9 +3,9 @@
 //
 // Pure virtual base class that will used by both LTracker or TTracker.
 //
-// $Id: Tracker.hh,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: Tracker.hh,v 1.2 2010/04/18 00:31:55 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/04/18 00:31:55 $
 //
 // Original author Rob Kutschke
 //
@@ -36,6 +36,7 @@ namespace mu2e {
     virtual const Straw& getStraw ( const StrawId& sid ) const=0;
     virtual const Straw& getStraw ( StrawIndex i ) const=0;
     virtual const std::deque<Straw>& getAllStraws() const=0;
+    virtual const std::vector<StrawDetail>& getStrawDetails() const=0;
 
   };
 

@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.2 2010/04/06 16:41:17 kutschke Exp $
+// $Id: Sector.hh,v 1.3 2010/04/18 00:31:55 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/06 16:41:17 $
+// $Date: 2010/04/18 00:31:55 $
 //
 // Original author Rob Kutschke
 //
@@ -25,123 +25,127 @@
 
 namespace mu2e {
 
-class Sector{
+  class Tracker;
 
-  friend class Device;
-  friend class LTracker;
-  friend class LTrackerMaker;
+  class Sector{
 
-public:
 
-  Sector():_id(SectorId(-1,-1)){};
-  Sector( const SectorId& id ):_id(id){};
-  ~Sector(){}
- 
-  // Compiler generated copy and assignment constructors
-  // should be OK.
+    friend class Device;
+    friend class LTracker;
+    friend class TTracker;
+    friend class LTrackerMaker;
+    friend class TTrackerMaker;
+
+  public:
+
+    Sector():_id(SectorId(-1,-1)){};
+    Sector( const SectorId& id ):_id(id){};
+
+    // Accept the compiler generated destructor, copy constructor and assignment operators
   
-  const SectorId& Id() const { return _id;}
+    const SectorId& Id() const { return _id;}
 
-  const std::vector<Layer>& getLayers() const{ 
-    return _layers;
-  }
+    const std::vector<Layer>& getLayers() const{ 
+      return _layers;
+    }
 
-  int nLayers() const{ 
-    return _layers.size();
-  }
+    int nLayers() const{ 
+      return _layers.size();
+    }
 
-  const Layer& getLayer ( int n ) const { 
-    return _layers.at(n);
-  }
+    const Layer& getLayer ( int n ) const { 
+      return _layers.at(n);
+    }
 
-  const Layer& getLayer ( const LayerId& lid) const { 
-    return _layers.at(lid.getLayer());
-  }
+    const Layer& getLayer ( const LayerId& lid) const { 
+      return _layers.at(lid.getLayer());
+    }
 
-  const Straw& getStraw ( const StrawId& sid ) const{
-    return _layers.at(sid.getLayer()).getStraw(sid);
-  }
+    const Straw& getStraw ( const StrawId& sid ) const{
+      return _layers.at(sid.getLayer()).getStraw(sid);
+    }
 
-  // Formatted string embedding the id of the sector.
-  std::string name( std::string const& base ) const;
+    // Formatted string embedding the id of the sector.
+    std::string name( std::string const& base ) const;
 
-  const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
+    const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
 
-  const double         boxRxAngle()     const { return _boxRxAngle;     }
-  const double         boxRyAngle()     const { return _boxRyAngle;     }
-  const double         boxRzAngle()     const { return _boxRzAngle;     }
-  const Hep3Vector&    boxOffset()      const { return _boxOffset;      }
+    const double         boxRxAngle()     const { return _boxRxAngle;     }
+    const double         boxRyAngle()     const { return _boxRyAngle;     }
+    const double         boxRzAngle()     const { return _boxRzAngle;     }
+    const Hep3Vector&    boxOffset()      const { return _boxOffset;      }
 
-  std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
-    return _basePosition;
-  }
+    std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
+      return _basePosition;
+    }
 
-  CLHEP::Hep3Vector const& getBaseDelta() const{
-    return _baseDelta;
-  }
+    CLHEP::Hep3Vector const& getBaseDelta() const{
+      return _baseDelta;
+    }
+
+    // On readback from persistency, recursively recompute mutable members.
+    void fillPointers ( const Tracker& tracker ) const;
 
 #ifndef __CINT__
 
-  template <class F>
-  void for_each_layer( F f) const{
-    std::for_each ( _layers.begin(),
-		    _layers.end(),
-		    f);
-  }
-
-  template <class F>
-  void for_each_straw( F f) const {
-    for_each_layer( boost::bind( Layer::for_each<F>, _1, f));
-  }
-
-  // Loop over all straws and call F.
-  // F can be a class with an operator() or a free function.
-  template <class F>
-  inline void Sector::forAllStraws ( F& f) const{
-    for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
-	  i !=e; ++i){
-      i->forAllStraws(f);
+    template <class F>
+    void for_each_layer( F f) const{
+      std::for_each ( _layers.begin(),
+                      _layers.end(),
+                      f);
     }
-  }
 
-  template <class F>
-  inline void Sector::forAllLayers ( F& f) const{
-    for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
-	  i !=e; ++i){
-      f(*i);
+    template <class F>
+    void for_each_straw( F f) const {
+      for_each_layer( boost::bind( Layer::for_each<F>, _1, f));
     }
-  }
+
+    // Loop over all straws and call F.
+    // F can be a class with an operator() or a free function.
+    template <class F>
+    inline void Sector::forAllStraws ( F& f) const{
+      for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
+            i !=e; ++i){
+        i->forAllStraws(f);
+      }
+    }
+
+    template <class F>
+    inline void Sector::forAllLayers ( F& f) const{
+      for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
+            i !=e; ++i){
+        f(*i);
+      }
+    }
 
 
 #endif
   
-protected:
+  protected:
   
-  SectorId _id;
-  std::vector<Layer> _layers;
+    SectorId _id;
+    std::vector<Layer> _layers;
 
-  // Vertices of enclosing polygon.
-  std::vector<CLHEP::Hep3Vector> corners;
+    // Vertices of enclosing polygon.
+    std::vector<CLHEP::Hep3Vector> corners;
 
-  // Properties of the enclosing logical volume (box).
+    // Properties of the enclosing logical volume (box).
 
-  // Half lengths of the logical box.
-  std::vector<double> _boxHalfLengths;
+    // Half lengths of the logical box.
+    std::vector<double> _boxHalfLengths;
 
-  std::vector<CLHEP::Hep3Vector> _basePosition;
-  CLHEP::Hep3Vector _baseDelta;
+    std::vector<CLHEP::Hep3Vector> _basePosition;
+    CLHEP::Hep3Vector _baseDelta;
 
-  // Rotations and offsets to place the logical box.
-  // placedshape = ( offset + RZ*RX*RY*shape );
-  //
-  double _boxRxAngle;
-  double _boxRyAngle;
-  double _boxRzAngle;
-  CLHEP::Hep3Vector _boxOffset;
+    // Rotations and offsets to place the logical box.
+    // placedshape = ( offset + RZ*RX*RY*shape );
+    //
+    double _boxRxAngle;
+    double _boxRyAngle;
+    double _boxRzAngle;
+    CLHEP::Hep3Vector _boxOffset;
 
-};
+  };
 
 }  //namespace mu2e
-
 #endif
-
