@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.20 2010/04/16 14:47:17 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.21 2010/04/18 00:08:55 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/16 14:47:17 $
+// $Date: 2010/04/18 00:08:55 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,14 @@
 //  to the surface of the earth plus a cap above grade.  The cap is shaped
 //  as a G4Paraboloid.
 //
+// Notes:
+// 1) G4VisAttributes is screwed up in this routine and everywhere.
+//    The logical volume class never takes ownership of the G4VisAttibutes.
+//    It simply leaks them.  We can pass vis attributes by const ref and
+//    G4 will make a copy that it subsequently leaks at destructor time.
+//    We can pass it in by pointer; then it is our job to keep it alive for the
+//    full lifetime of the logical volume and then to delete it after that.
+//
 
 // C++ includes
 #include <iostream>
@@ -47,6 +55,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eG4/inc/constructLTracker.hh"
+#include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/constructDummyTracker.hh"
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
@@ -668,6 +677,8 @@ namespace mu2e {
       }
     } else if ( _config->getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
+    } else if ( _config->getBool("hasTTracker",false) ) {
+      trackerInfo = constructTTrackerv1( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac, *_config );
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac, *_config );
     }
