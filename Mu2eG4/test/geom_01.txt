@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.23 2010/04/17 23:58:31 yury Exp $
-// $Author: yury $
-// $Date: 2010/04/17 23:58:31 $
+// $Id: geom_01.txt,v 1.24 2010/04/18 00:28:47 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/04/18 00:28:47 $
 //
 // Original author Rob Kutschke
 
@@ -16,6 +16,7 @@ string detector.name  = "g4geom_v00";
 bool hasHall        = true;
 bool hasTarget      = true;
 bool hasLTracker    = true;
+bool hasTTracker    = false;
 bool hasITracker    = false;
 bool hasCalorimeter = true;
 
@@ -77,11 +78,6 @@ double world.prodSolXoff = 3904.;
 
 // Overburden above the detector: 20 ft in proposal.
 // I have arbitrarily split it into a flat part and a dome.
-// make it flat (ygk)
-//double dirt.overburdenDepth = 4000.;  
-//double dirt.capHalfHeight   = 1500.;
-//double dirt.capBottomRadius = 6000.;
-//double dirt.capTopRadius    = 1000.;
 double dirt.overburdenDepth = 6000.;  
 double dirt.capHalfHeight   = 1.;
 double dirt.capBottomRadius = 2.;
@@ -263,6 +259,41 @@ double dummyStoppingTarget.halfLength =   400.;
 double dummyStoppingTarget.z0         =  5900.;
 double dummyStoppingTarget.material   = "WAGVacuum";
 
+// TTracker
+int    ttracker.numDevices         =   54;
+int    ttracker.sectorsPerDevice   =    4;
+int    ttracker.layersPerSector    =    1;
+int    ttracker.manifoldsPerEnd    =    4;
+int    ttracker.strawsPerManifold  =   16;
+int    ttracker.rotationPattern    =    0;
+
+double ttracker.z0                   = 10200.0;
+double ttracker.envelopeInnerRadius  =   380.0;
+double ttracker.strawOuterRadius     =     2.5;
+double ttracker.strawWallThickness   =     0.015;
+double ttracker.deviceSeparation     =    57.;
+double ttracker.deviceRotation       =    60.;
+double ttracker.outerSupportRadius   =   830.0;
+double ttracker.innerSupportRadius   =   700.0;
+double ttracker.supportHalfThickness =    10.0;
+double ttracker.wireRadius           =     0.0125;
+double ttracker.manifoldYOffset      =    10.;
+
+vector<double> ttracker.manifoldHalfLengths  = { 40.0, 35.0, 5.25};
+vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGas", "G4_W" };
+
+string ttracker.mat.vacuum    = "WAGVacuum";
+string ttracker.mat.strawgas  = "StrawGas";
+string ttracker.mat.strawwall = "Kapton";
+string ttracker.mat.wire      = "G4_W";
+string ttracker.mat.manifold  = "G4_Al";
+string ttracker.mat.support   = "CarbonFiber";
+
+// Debug control for TTracker; uncomment to make only a selected sector.
+//int    ttracker.devDraw  =  -1;
+//int    ttracker.secDraw  =  -1;
+
+//
 double tracker.rMagnet       = 850.; 
 
 //
