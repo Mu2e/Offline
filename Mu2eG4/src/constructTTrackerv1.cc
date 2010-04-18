@@ -1,9 +1,9 @@
 //
 // Free function to construct version 1 of the TTracker
 //
-// $Id: constructTTrackerv1.cc,v 1.1 2010/04/18 00:33:02 kutschke Exp $
+// $Id: constructTTrackerv1.cc,v 1.2 2010/04/18 01:11:09 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/18 00:33:02 $
+// $Date: 2010/04/18 01:11:09 $
 //
 // Original author Rob Kutschke
 //
@@ -101,7 +101,7 @@ namespace mu2e{
                                      G4Color::Magenta(),
                                      false
                                      );
-      devInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+      //devInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
 
       for ( size_t isec = 0; isec<device.nSectors(); ++isec){
         if ( isec != secDraw && secDraw > -1 ) continue;
@@ -142,6 +142,7 @@ namespace mu2e{
 
             // Make this straw a sensitive detector.
             strawInfo.logical->SetSensitiveDetector( strawSD );
+            strawInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
 
           }   // end loop over straws
         }     // end loop over layers
