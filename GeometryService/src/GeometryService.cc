@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.3 2010/02/15 17:00:48 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/02/15 17:00:48 $
+// $Id: GeometryService.cc,v 1.4 2010/04/18 00:01:17 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/04/18 00:01:17 $
 //
 // Original author Rob Kutschke
 //
@@ -29,6 +29,8 @@
 #include "CTrackerGeom/inc/CTracker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "LTrackerGeom/inc/LTrackerMaker.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "TTrackerGeom/inc/TTrackerMaker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "ITrackerGeom/inc/ITrackerMaker.hh"
 
@@ -37,14 +39,13 @@ using namespace std;
 namespace mu2e {
 
   GeometryService::GeometryService(edm::ParameterSet const& iPS, 
-				   edm::ActivityRegistry&iRegistry) :
+                                   edm::ActivityRegistry&iRegistry) :
     _inputfile(iPS.getUntrackedParameter<std::string>("inputfile","geom000.txt")),
     _detectors(),
     _run_count()
   {
     iRegistry.watchPreBeginRun(this, &GeometryService::preBeginRun);
   }
-  
 
   GeometryService::~GeometryService(){
   }
@@ -56,7 +57,7 @@ namespace mu2e {
       edm::LogWarning("GEOM") << "This test version does not change geometry on run boundaries.";
       return;
     }
-    
+
     edm::LogInfo  log("GEOM");
     log << "Geometry input file is: " << _inputfile << "\n";
 
@@ -82,11 +83,14 @@ namespace mu2e {
     if(_config->getBool("hasLTracker",false)){
       LTrackerMaker ltm( *_config );
       addDetector( ltm.getLTrackerPtr() );
-    } else if(_config->getBool("hasITracker",false)){
+    } else if (_config->getBool("hasITracker",false)){
       ITrackerMaker itm( *_config );
       addDetector( itm.getITrackerPtr() );
+    } else if (_config->getBool("hasTTracker",false)){
+      TTrackerMaker ttm( *_config );
+      addDetector( ttm.getTTrackerPtr() );
     }
-    
+
   }
 
   // Check that the configuration is self consistent.
@@ -113,10 +117,10 @@ namespace mu2e {
     if ( ntrackers > 1 ){
       throw cms::Exception("GEOM")
         << "This configuration has more than one tracker: "
-	<< allTrackers
+        << allTrackers
         << "\n";
     }
-    
+
   }
 
 } // end namespace mu2e
