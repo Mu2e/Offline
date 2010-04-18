@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.6 2010/04/13 14:36:49 kutschke Exp $
+// $Id: ReadBack.cc,v 1.7 2010/04/18 00:10:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/13 14:36:49 $
+// $Date: 2010/04/18 00:10:00 $
 //
 // Original author Rob Kutschke
 //
@@ -23,6 +23,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
@@ -31,6 +32,7 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -102,7 +104,7 @@ namespace mu2e {
     
     // Call code appropriate for the tracker that is installed in this job.
     edm::Service<GeometryService> geom;
-    if( geom->hasElement<LTracker>() ){
+    if( geom->hasElement<LTracker>() || geom->hasElement<TTracker>() ){
       doLTracker(event);
     }
     else if ( geom->hasElement<ITracker>() ){
@@ -113,8 +115,9 @@ namespace mu2e {
 
   void ReadBack::doLTracker(const edm::Event& event){
 
-    // Geometry for the LTracker.
-    GeomHandle<LTracker> ltracker;
+    // Get a reference to one of the L or T trackers.
+    // Throw exception if not successful.
+    const Tracker& tracker = getTrackerOrThrow();
 
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<StepPointMCCollection> hits;
@@ -174,7 +177,7 @@ namespace mu2e {
       const Hep3Vector& mom = hit.momentum();
       
       // Get the straw information: 
-      const Straw&      straw = ltracker->getStraw( hit.strawIndex() );
+      const Straw&      straw = tracker.getStraw( hit.strawIndex() );
       const Hep3Vector& mid   = straw.getMidPoint();
       const Hep3Vector& w     = straw.getDirection();
       
