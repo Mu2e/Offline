@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.6 2010/04/14 22:59:32 kutschke Exp $
+// $Id: LTracker.hh,v 1.7 2010/04/18 00:05:02 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/14 22:59:32 $
+// $Date: 2010/04/18 00:05:02 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,7 @@ namespace mu2e {
 
   class LTracker: public Tracker{
 
-  friend class LTrackerMaker;
+    friend class LTrackerMaker;
 
   public:
     LTracker(){}
@@ -66,31 +66,31 @@ namespace mu2e {
     // Check for legal identifiers.
     bool isLegal(DeviceId d) const{
       return ( d>-1 && 
-	       std::vector<Device>::size_type(d) <_devices.size() 
-	       );
+               std::vector<Device>::size_type(d) <_devices.size() 
+               );
     };
 
     
     bool isLegal(const SectorId& sid) const{
       return (isLegal(sid._did) && 
-	      sid._sector >-1   &&
-	      std::vector<Sector>::size_type(sid._sector) < getDevice(sid._did).getSectors().size()
-	      );
+              sid._sector >-1   &&
+              std::vector<Sector>::size_type(sid._sector) < getDevice(sid._did).getSectors().size()
+              );
     }
 
     typedef std::vector<Sector>::size_type stypeLayer;
     bool isLegal(const LayerId& lid ) const{
       return ( isLegal(lid._sid) &&
-	       lid._layer > -1   &&
-	       std::vector<Layer>::size_type(lid._layer) < getSector(lid._sid).getLayers().size()
-	       );
+               lid._layer > -1   &&
+               std::vector<Layer>::size_type(lid._layer) < getSector(lid._sid).getLayers().size()
+               );
     }
 
     bool isLegal(const StrawId& sid) const{
       return ( isLegal(sid._lid) &&
-	       sid._n > -1       &&
-	       std::vector<Straw>::size_type(sid._n) < getLayer(sid._lid).getStraws().size()
-	       );
+               sid._n > -1       &&
+               std::vector<Straw>::size_type(sid._n) < getLayer(sid._lid).getStraws().size()
+               );
     }
 
     // Accessors
@@ -128,6 +128,12 @@ namespace mu2e {
 
     const std::deque<Straw>& getAllStraws() const {return _allStraws;}
 
+    const std::vector<StrawDetail>& getStrawDetails() const{
+      return _strawDetail;
+    }
+
+
+
 #ifndef __CINT__
 
     // Loop over all straws and call F.
@@ -135,39 +141,39 @@ namespace mu2e {
     template <class F>
     inline void LTracker::forAllStraws ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
-	    i !=e; ++i){
-	i->forAllStraws(f);
+            i !=e; ++i){
+        i->forAllStraws(f);
       }
     }
 
     template <class F>
     inline void LTracker::forAllLayers ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
-	    i !=e; ++i){
-	i->forAllLayers(f);
+            i !=e; ++i){
+        i->forAllLayers(f);
       }
     }
 
     template <class F>
     inline void LTracker::forAllSectors ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
-	    i !=e; ++i){
-	i->forAllSectors(f);
+            i !=e; ++i){
+        i->forAllSectors(f);
       }
     }
     
     template <class F>
     inline void LTracker::forAllDevices ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
-	    i !=e; ++i){
-	f(*i);
+            i !=e; ++i){
+        f(*i);
       }
     }
 
 #endif
 
 
-protected:
+  protected:
 
     // Nominal values.  
     // _r0 = Nominal radius of the center of the sector.
@@ -200,7 +206,9 @@ protected:
     // Needed to complete the second phase of construction.
     void FillPointers1();
     void FillPointers2();
-    
+
+    // On readback from persistency, recursively recompute mutable members.
+    void fillPointers() const;
 
   };
 
