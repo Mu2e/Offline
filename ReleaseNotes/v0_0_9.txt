@@ -3,9 +3,9 @@
 
            Release notes for Mu2e Offline software, v0_0_9
 
-  $Id: v0_0_9.txt,v 1.11 2010/04/16 14:48:07 kutschke Exp $
+  $Id: v0_0_9.txt,v 1.12 2010/04/18 01:20:47 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/04/16 14:48:07 $
+  $Date: 2010/04/18 01:20:47 $
 
 1) Added the x tilt to the LTracker. 
    Also increase the inner radius a small amount to remove straw overlaps.
@@ -149,3 +149,62 @@
       Mu2eG4/inc/nestTubs.hh         - add a method that uses a TubsParams object to define parameters
       Mu2eG4/src/Mu2eWorld.cc        - removed code moved to the new routines.
       Mu2eG4/test/geom_01.txt        - added parameters for the dummy target and tracker volumes.
+
+19) Modify the classes in common to LTracker and TTracker in preparation for the first TTracker
+    release.  Add a new accessor methods to most classes.  This required corresponding changes
+    in LTracker, since the new features must be in both classes.  Added fillpointers() which is designed
+    for use with future persistency.  The old FillPointers1 and FillPointers2 will soon go away in 
+    favour of fillpointers.  Also removed tabs and deleted some obsolete commented out code.
+       TrackerGeom/inc/Device.hh  
+       TrackerGeom/inc/Layer.hh  
+       TrackerGeom/inc/Sector.hh 
+       TrackerGeom/inc/Straw.hh  
+       TrackerGeom/inc/Tracker.hh  
+       TrackerGeom/src/Device.cc  
+       TrackerGeom/src/Layer.cc  
+       TrackerGeom/src/Sector.cc 
+       TrackerGeom/src/Straw.cc
+
+       LTrackerGeom/inc/LTracker.hh 
+       LTrackerGeom/src/LTracker.cc
+
+
+20) New routines to implement the TTracker
+      TTrackerGeom/inc/*
+      TTrackerGeom/src/*
+      Mu2eG4/inc/constructTTracker.hh  
+      Mu2eG4/src/constructTTrackerv1.cc
+
+    After the first commit I modified constructTTrackerv1.cc so that it only draws the per device
+    envelope volumes, not each straw.  Otherwise graphics is much to slow.
+
+21) Changes to existing routines to add TTracker code or changes to allow code
+    to work with both the LTracker and the TTracker.
+       Mu2eG4/test/geom_01.txt
+       GeometryService/src/GeometryService.cc 
+       GeometryService/src/SConscript
+       Mu2eG4/src/Mu2eWorld.cc
+       Mu2eG4/inc/addStepPointMCs.hh 
+       Mu2eG4/src/addStepPointMCs.cc
+       Mu2eG4/src/ReadBack.cc
+       Mu2eG4/src/StrawSD.cc
+
+    The changes to StrawSD are not yet complete.  The mainline fully supports
+    both trackers but the debug code only half supports the TTracker.
+    The code that does not work with the TTracker is protected.
+
+22) New utility routine to select which ever tracker is currently available
+    and to return a reference to the base class.
+       GeometryService/inc/getTrackerOrThrow.hh 
+       GeometryService/src/getTrackerOrThrow.cc
+
+23) Improve const correctness.
+       Mu2eG4/inc/nestTubs.hh  
+       Mu2eG4/src/nestTubs.cc
+
+24) Changes to HoughTransform from Peter Shanahan.  I think this is still in development.
+    See cvs logs.
+
+25) Changes for cosmic studies from Yury.   I think that these are mostly for his internal
+    use so I will let him explain.
+
