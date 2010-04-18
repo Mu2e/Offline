@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.6 2010/04/06 23:07:07 kutschke Exp $
+// $Id: StrawSD.cc,v 1.7 2010/04/18 00:14:28 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 23:07:07 $
+// $Date: 2010/04/18 00:14:28 $
 //
 // Original author Rob Kutschke
 //
@@ -142,7 +142,23 @@ namespace mu2e {
     int copy = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     int eventNo = event->GetEventID();
 
+
+    /*
+      // Works for both TTracker and LTracker.
+    printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %10.7f %10.7f\n",
+             eventNo,  _collection->entries(), copy,
+             aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
+             prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
+             preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(),
+             prePosLocal.perp(),  postPosLocal.perp()  );
+    fflush(stdout);
+    */
+
     // Reconstruction Geometry for the LTracker.
+    // Need to make this work for the TTracker too.
+    edm::Service<GeometryService> geom;
+    if ( !geom->hasElement<LTracker>() ) return true;
+
     GeomHandle<LTracker> ltracker;
     Straw const& straw = ltracker->getStraw( StrawIndex(copy) );
     G4ThreeVector mid  = straw.getMidPoint();
