@@ -1,8 +1,8 @@
-#ifndef VANEID_HH
-#define VANEID_HH
-// $Id: DeviceId.hh,v 1.4 2010/04/21 17:50:29 rhbob Exp $
+#ifndef DEVICEID_HH
+#define DEVICEID_HH
+// $Id: DeviceId.hh,v 1.5 2010/04/21 17:52:15 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/21 17:50:29 $
+// $Date: 2010/04/21 17:52:15 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -12,7 +12,7 @@ namespace mu2e{
 // Device identifier.
 // If set to -1, then the device is not defined.
 
-typedef int VaneId;
+typedef int DeviceId;
 
   } //namespace calorimeter
 } //namespace mu2e
