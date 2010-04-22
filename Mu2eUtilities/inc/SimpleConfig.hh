@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.2 2009/10/22 16:14:59 kutschke Exp $
+ * $Id: SimpleConfig.hh,v 1.3 2010/04/22 18:30:01 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2009/10/22 16:14:59 $
+ * $Date: 2010/04/22 18:30:01 $
  *
  * Original author Rob Kutschke
  *
@@ -23,7 +23,7 @@
  * 2) Does not escape new lines within a string properly.
  *
  *@author $Author: kutschke $
- *@version $Id: SimpleConfig.hh,v 1.2 2009/10/22 16:14:59 kutschke Exp $
+ *@version $Id: SimpleConfig.hh,v 1.3 2010/04/22 18:30:01 kutschke Exp $
  *
  * Date $Date%
  *
@@ -102,7 +102,7 @@ namespace mu2e {
      * @return the value of the parameter as a string.
      */
     std::string getString ( const std::string& name, 
-			    const std::string& def ) const;
+                            const std::string& def ) const;
     
     /**
      * Get a specified parameter as a int.
@@ -158,8 +158,8 @@ namespace mu2e {
      * @return the value of the parameter as a vector<std::string>.
      */
     void getVectorString ( const std::string& name, 
-			   std::vector<std::string>&,
-			   int nRequired=-1) const;
+                           std::vector<std::string>&,
+                           int nRequired=-1) const;
 
     /**
      * Get a specified parameter as a vector<int>.
@@ -167,8 +167,8 @@ namespace mu2e {
      * @return the value of the parameter as a vector<int>.
      */
     void getVectorInt ( const std::string& name, 
-			std::vector<int>&,
-			int nRequired=-1) const;
+                        std::vector<int>&,
+                        int nRequired=-1) const;
     
     /**
      * Get a specified parameter as a vector<double>.
@@ -176,8 +176,8 @@ namespace mu2e {
      * @return the value of the parameter as a vector<double>.
      */
     void getVectorDouble ( const std::string& name, 
-			   std::vector<double>& v,
-			   int nRequired=-1) const;
+                           std::vector<double>& v,
+                           int nRequired=-1) const;
 
     /**
      * Get a specified parameter as a Hep3Vector.
@@ -192,7 +192,7 @@ namespace mu2e {
      * @return the value of the parameter as a Hep3Vector.
      */
     CLHEP::Hep3Vector getHep3Vector ( const std::string& name,
-				      const CLHEP::Hep3Vector& def );
+                                      const CLHEP::Hep3Vector& def );
   
     /**
      * Return the requested record as a formatted string.
@@ -268,7 +268,7 @@ namespace mu2e {
      * @return a pointer to the requested record, or 0 if there is no such record.
      */
     bool getSharedPointer( const std::string& name, 
-			   boost::shared_ptr<SimpleConfigRecord>& ) const;
+                           boost::shared_ptr<SimpleConfigRecord>& ) const;
     
     /**
      * Read the input file and break it into records.
@@ -277,7 +277,7 @@ namespace mu2e {
      *
      */
     void ReadFile();
-    
+
     /**
      * Test to see if a record is complete.
      * 
@@ -298,8 +298,19 @@ namespace mu2e {
      * @return a copy of the input with comments and insignificant whitespace removed.
      */
     std::string StripComment( std::string s);
+
+    /**
+     * Does this line contain an include?
+     */
+    bool hasInclude( const std::string& line );
+
+    /**
+     *  Insert contents of an included file.
+     *  
+     */
+    void processInclude( const std::string& line);
     
-};
+  };  // end class SimpleConfig
 
 
   // Function to allow printing using the shift-in operator.
@@ -308,5 +319,5 @@ namespace mu2e {
     return ost;
   }
 
-}
+} // end namespace mu2e
 #endif
