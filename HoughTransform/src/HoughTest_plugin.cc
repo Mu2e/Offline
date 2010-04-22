@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.8 2010/04/16 16:31:17 shanahan Exp $
+// $Id: HoughTest_plugin.cc,v 1.9 2010/04/22 17:13:16 shanahan Exp $
 // $Author: shanahan $ 
-// $Date: 2010/04/16 16:31:17 $
+// $Date: 2010/04/22 17:13:16 $
 //
 // Original author R. Bernstein
 //
@@ -76,7 +76,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
   Double_t background = par[0] + par[1]*x[0];
   //  Double_t peak = par[2] * (1./(TMath::Sqrt(2.*TMath::Pi())*par[4]) )* TMath::Exp(- 0.5*pow<2>((x[0] - par[3])/par[4]) );
   Double_t peak = par[2] * TMath::Exp(- 0.5*pow<2>((x[0] - par[3])/par[4]) );
-  //  cout << "x, background, peak " << x[0] << " " << background <<" " << peak << endl;
   return background + peak; 
 }
   static const bool singleHoughHisto = false;
@@ -85,6 +84,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     explicit HoughTest(edm::ParameterSet const& pset) : 
       _hitCreatorName(pset.getParameter<string>("hitCreatorName")),
       _nPeakSearch(pset.getParameter<uint32_t>("NPeakSearch")),
+      _useStepPointMC(pset.getParameter<bool>("UseMCHits")),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",10)),
       _nAnalyzed(0),
       _hRadius(0),
@@ -142,12 +142,12 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
                               // radius/dca space peak
     TH1F* _hRadiusPeakNotNN;// non of the above
 
-    TH1F* _hRHitFromHTCenter; // radius of hits from peak hough center
-    TH1F* _hRHitFromCircle; // residual of hits from peak hough track
-    TH1F* _hRNoiseHitFromHTCenter; // radius of noise hits from peak hough center
-    TH1F* _hRNoiseHitFromCircle; // residual of noise hits from peak hough track
-    TH1F* _hRPhysHitFromHTCenter; // radius of physical hits from peak hough center
-    TH1F* _hRPhysHitFromCircle; // residual of physical hits from peak hough track
+    TH1F* _hRHitFromHTCenterMC; // radius of hits from peak hough center (MC hits)
+    TH1F* _hRHitFromCircleMC; // residual of hits from peak hough track
+    TH1F* _hRNoiseHitFromHTCenterMC; // radius of noise hits from peak hough center
+    TH1F* _hRNoiseHitFromCircleMC; // residual of noise hits from peak hough track
+    TH1F* _hRPhysHitFromHTCenterMC; // radius of physical hits from peak hough center
+    TH1F* _hRPhysHitFromCircleMC; // residual of physical hits from peak hough track
     TH2F* _hRadius2v1; // radius from 2D vs. radius from 1D
     TH2F* _hYvsX; // Y vs. X of 1st peak
     TH1F* _hChisqDistribution;
@@ -174,6 +174,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
     //name of the module that created the hits to be used
     const std::string _hitCreatorName;
+
+    bool _useStepPointMC; // use MC Hits 
 
     // A helper function.
     int countHitNeighbours( Straw const& straw, 
@@ -208,23 +210,23 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
 					  100, 2.25, 2.75 );
 
-    _hRHitFromHTCenter = tfs->make<TH1F>( "hRHitFromHTCenter",  
-                         "Radius of Hits from Peak Hough Center",100,0,400);
+    _hRHitFromHTCenterMC = tfs->make<TH1F>( "hRHitFromHTCenterMC",  
+                         "Radius of (MC) Hits from Peak Hough Center",100,0,400);
 
-    _hRHitFromCircle = tfs->make<TH1F>( "hRHitFromCircle",  
-                         "Radius hits - radius Peak",100,-100,100);
+    _hRHitFromCircleMC = tfs->make<TH1F>( "hRHitFromCircleMC",  
+                         "Radius (MC) hits - radius Peak",100,-100,100);
 
-    _hRNoiseHitFromHTCenter = tfs->make<TH1F>( "hRNoiseHitFromHTCenter",  
-                     "Radius of Noise Hits from Peak Hough Center",100,0,400);
+    _hRNoiseHitFromHTCenterMC = tfs->make<TH1F>( "hRNoiseHitFromHTCenterMC",  
+                     "Radius of Noise (MC) Hits from Peak Hough Center",100,0,400);
 
-    _hRNoiseHitFromCircle = tfs->make<TH1F>( "hRNoiseHitFromCircle",  
-                     "Radius Noise hits - radius Peak",100,-100,100);
+    _hRNoiseHitFromCircleMC = tfs->make<TH1F>( "hRNoiseHitFromCircleMC",  
+                     "Radius Noise (MC) hits - radius Peak",100,-100,100);
 
-    _hRPhysHitFromHTCenter = tfs->make<TH1F>( "hRPhysHitFromHTCenter",  
-                   "Radius of Physical Hits from Peak Hough Center",100,0,400);
+    _hRPhysHitFromHTCenterMC = tfs->make<TH1F>( "hRPhysHitFromHTCenterMC",  
+                   "Radius of Physical (MC) Hits from Peak Hough Center",100,0,400);
 
-    _hRPhysHitFromCircle = tfs->make<TH1F>( "hRPhysHitFromCircle",  
-                   "Radius Physical hits - radius Peak",100,-100,100);
+    _hRPhysHitFromCircleMC = tfs->make<TH1F>( "hRPhysHitFromCircleMC",  
+                   "Radius Physical (MC) hits - radius Peak",100,-100,100);
 
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
@@ -279,27 +281,42 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
   }
 
 
-  void
-  HoughTest::produce(edm::Event& evt, edm::EventSetup const&) {
-
-    auto_ptr<HoughCircleCollection> HoughResults(new HoughCircleCollection);
+  void HoughTest::produce(edm::Event& evt, edm::EventSetup const&) {
 
     static int ncalls(0);
     ++ncalls;
 
-    // Master geometry for the LTracker.
-    GeomHandle<LTracker> ltracker;
-
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
-    // Ask the event to give us a "handle" to the requested hits.
+    // the product
+    auto_ptr<HoughCircleCollection> HoughResults(new HoughCircleCollection);
+
+
+    // Ask the event to give us a handle to the requested hits.
     //    edm::Handle<StepPointMCCollection> hits;
     //evt.getByLabel(creatorName,hits);
-    
     edm::Handle<StepPointMCCollection> hitsHandle;
-    evt.getByLabel(_hitCreatorName,hitsHandle);
-    StepPointMCCollection const* hits = hitsHandle.product();
+
+    // someday hitClusters will be produced elsewhere, but for now,
+    // we get them from StepPointMCs
+
+    vector<mu2e::hitcluster::HitCluster> hitClusters;
+
+    if (_useStepPointMC) {
+       evt.getByLabel(_hitCreatorName,hitsHandle);
+       StepPointMCCollection const* hits = hitsHandle.product();
+       if (!hits->size()) return; // return with empty product
+       HoughTransform::MakeClusters(hits,hitClusters);
+       if (!hitClusters.size()) return;
+    }// else get them from somewhere else when the means to do so exists {}
+
+    // Master geometry for the LTracker.
+    GeomHandle<LTracker> ltracker;
+
+    // a helper class for lots of the heavy lifting
+    HoughTransform houghHelper(hitClusters);
+    
 
     double InitialRadius=-1;
 /*
@@ -317,8 +334,40 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     }
 */
 
+    // Book histogram on the first call regardless, and book new ones if
+    //  unless disabled by singHoughHisto
+    if ( ncalls == 1 || !singleHoughHisto) bookEventHistos(evt.id().event());
+
+/*
+    do 1st loop
+
+    fill histograms ? or part of 1st loop?
+
+      (set radius
+      do 2nd loop
+      fill histograms)
+
+    make data products
+*/
+
+
+/*
+    // if were using a radius from a first pass, get it here
+    if (_InitialRadiusCreater!="none") {
+       edm::Handle<HoughCircleCollection> hcHandle;
+       evt.getByLabel(_InitialRadiusCreator,hcHandle);
+       if (hcHandle->size()) {
+          const HoughCircle& hc=hcHandle->at(0);
+          InitialRadius=hc.Radius();
+       } else {
+          std::cout<<"Looking for initial radius, but no hough circles found."
+            << std::endl;
+       }
+    }
+*/
+
     // Fill histogram with number of hits per event.
-    _hMultiplicity->Fill(hits->size());
+    _hMultiplicity->Fill(hitsHandle->size());
 
  
     // don't bother unless there are some minimum number of hits; start with 3. I might want this in the constructor as an argument...
@@ -335,21 +384,16 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     //cout << endl << "RHB HoughTransforming event # " << evt.id().event() << endl;
 
 
-    // Book histogram on the first call regardless, and book new ones if
-    //  unless disabled by singHoughHisto
-    if ( ncalls == 1 || !singleHoughHisto) bookEventHistos(evt.id().event());
 
     int minHitsforHough = 3;
-    if (hits->size() > minHitsforHough)
+    if (hitClusters.size() > minHitsforHough)
       {
-
-	mu2e::houghtransform::HoughTransform trialHough(InitialRadius);
 	mu2e::houghtransform::HoughTransform::houghCandidates houghTracks;
 
     // look for circles in hough space: findHoughTracks fills houghTracks
     // with all houghCircleStucts it can find.  The latter are all combinations
     // of 3 hits with their exact circle solution.
-	trialHough.foundHoughTracks(ltracker,hits,houghTracks);
+	houghHelper.foundHoughTracks(ltracker,houghTracks);
 
 	cout << "ncalls = " << ncalls << endl;
 
@@ -442,9 +486,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
           }
 
          
-          //we have cent, dca, radius to define the circle
           // loop over all combinations of the peaks
-cout<<nPeaksCenterX<<" "<<nPeaksCenterY<<endl;
           int nPeaksCenter=min(nPeaksCenterX,nPeaksCenterY);
           for (int ipc=0; ipc<nPeaksCenter; ipc++)  {
 
@@ -465,9 +507,9 @@ cout<<nPeaksCenterX<<" "<<nPeaksCenterY<<endl;
               TH1F* hrad=0; 
               if (ipr==ipc) {
                  hrad=_hRadiusPeakEqual;
-              } else if (ipr=ipc+1) {
+              } else if (ipr==ipc+1) {
                  hrad=_hRadiusPeakNNPlus;
-              } else if (ipr=ipc-1) {
+              } else if (ipr==ipc-1) {
                  hrad=_hRadiusPeakNNMinus;
               } else {
                  hrad=_hRadiusPeakNotNN;
@@ -479,33 +521,43 @@ cout<<nPeaksCenterX<<" "<<nPeaksCenterY<<endl;
               // the center of the 1st peak in center space and the radius
               // of the 1st peak in radius-DCA space.
               if (ipc==0 && ipr==0) {
-                 StepPointMCCollection::const_iterator ihit = hits->begin();
-                 const StepPointMCCollection::const_iterator endhit = hits->end();
-                 for ( ; ihit!=endhit; ++ihit){
-      
-                   // Aliases, used for readability.
-                    const StepPointMC& hit = *ihit;
-                    const Hep3Vector& pos = hit.position();
-                    double radFromCenter=sqrt(TMath::Power(centX[ipc]-pos.x(),2)
-                                          +TMath::Power(centY[ipc]-pos.y(),2));
-                    _hRHitFromHTCenter->Fill(radFromCenter);
-                    _hRHitFromCircle->Fill(radFromCenter-rad2D[ipr]);
-                    if (hit.trackId()==2) {
-                       _hRNoiseHitFromHTCenter->Fill(radFromCenter);
-                       _hRNoiseHitFromCircle->Fill(radFromCenter-rad2D[ipr]);
-                    } else {
-                       _hRPhysHitFromHTCenter->Fill(radFromCenter);
-                       _hRPhysHitFromCircle->Fill(radFromCenter-rad2D[ipr]);
-                    }
 
 
-                 } //hits
-                
                  // create the data product
                         // currently "number of straws"=1.  This is a dummy,
                         // soon to be replaced with useful info
                  HoughCircle hc(centX[ipc],centY[ipc],rad2D[ipr],1);
                  HoughResults->push_back(hc); 
+
+                 if (_useStepPointMC) {
+
+                    StepPointMCCollection const* hits = hitsHandle.product();
+                    StepPointMCCollection::const_iterator ihit=hits->begin();
+                    StepPointMCCollection::const_iterator endhit=hits->end();
+
+
+                    for ( ; ihit!=endhit; ++ihit){
+      
+                      // Aliases, used for readability.
+                       const StepPointMC& hit = *ihit;
+                       const Hep3Vector& pos = hit.position();
+                       double radFromCenter=sqrt(TMath::Power(centX[ipc]-pos.x(),2)
+                                          +TMath::Power(centY[ipc]-pos.y(),2));
+                       _hRHitFromHTCenterMC->Fill(radFromCenter);
+                       _hRHitFromCircleMC->Fill(radFromCenter-rad2D[ipr]);
+                       if (hit.trackId()==2) {
+                          _hRNoiseHitFromHTCenterMC->Fill(radFromCenter);
+                          _hRNoiseHitFromCircleMC->Fill(radFromCenter-rad2D[ipr]);
+                       } else {
+                          _hRPhysHitFromHTCenterMC->Fill(radFromCenter);
+                          _hRPhysHitFromCircleMC->Fill(radFromCenter-rad2D[ipr]);
+                       }
+
+
+                    } //MC hits
+
+                 } //using MC hits
+                
 
               } // ipc=ipr=0
 
@@ -541,85 +593,90 @@ cout<<nPeaksCenterX<<" "<<nPeaksCenterY<<endl;
       }
 
 
-    StepPointMCCollection::const_iterator ihit = hits->begin();
-    const StepPointMCCollection::const_iterator endhit = hits->end();
-    for ( ; ihit!=endhit; ++ihit){
-      
-      // Aliases, used for readability.
-      const StepPointMC& hit = *ihit;
-      const Hep3Vector& pos = hit.position();
-      const Hep3Vector& mom = hit.momentum();
-      if (!singleHoughHisto) 
-	{
-	  _eventPlot->Fill(pos[0],pos[1]);
-	}
-      // Get the straw information.
-      Straw const& straw = ltracker->getStraw( StrawIndex(hit.volumeId()) );
-      //      cout << "straw, position of hit " << hit.volumeId() << " " << pos[0] << " " << pos[1] << endl;
-      Hep3Vector mid = straw.getMidPoint();
-      Hep3Vector w   = straw.getDirection();
+    if (_useStepPointMC) {
+     // most of this needs to be switched over to Clusters
 
-      // Count how many nearest neighbours are also hit.
-      int nNeighbours = countHitNeighbours( straw, hits );
-
-      // Compute an estimate of the drift distance.
-      TwoLinePCA pca( mid, w, pos, mom);
-
-      // Check that the radius of the reference point in the local
-      // coordinates of the straw.  Should be 2.5 mm.
-      double s = w.dot(pos-mid);
-      Hep3Vector point = pos - (mid + s*w);
-
-      // I don't understand the distribution of the time variable.
-      // I want it to be the time from the start of the spill.
-      // It appears to be the time since start of tracking.
-
-      // Fill some histograms
-      _hRadius->Fill(pos.perp());
-      _hTime->Fill(hit.time());
-      _hHitNeighbours->Fill(nNeighbours);
-      _hCheckPointRadius->Fill(point.mag());
-
-      _hxHit->Fill(pos.x());
-      _hyHit->Fill(pos.y());
-      _hzHit->Fill(pos.z());
-
-      _hDriftDist->Fill(pca.dca());
-
-      /*
-      // Fill the ntuple.
-      nt[0]  = evt.id().event();
-      nt[1]  = hit.trackId();
-      nt[2]  = hit.volumeId();
-      nt[3]  = pos.x();
-      nt[4]  = pos.y();
-      nt[5]  = pos.z();
-      nt[6]  = mid.x();
-      nt[7]  = mid.y();
-      nt[8]  = mid.z();
-      nt[9]  = pca.dca();
-      nt[10] = hit.time();
-      nt[11] = straw.Id().getDevice();
-      nt[12] = straw.Id().getSector();
-
-      _ntup->Fill(nt);
-      */
-      // Print out limited to the first few events.
-      if ( ncalls < _maxFullPrint ){
-	cout << "Readback hit: "
-	     << evt.id().event()
-	     << n++ <<  " "
-	     << hit.trackId()    << "   "
-	     << hit.volumeId() << " | "
-	     << pca.dca()   << " "
-	     << pos  << " "
-	     << mom  << " "
-	     << point.mag() 
-	     << endl;
-      }
-
-    } // end loop over hits.
-
+      StepPointMCCollection const* hits = hitsHandle.product();
+      StepPointMCCollection::const_iterator ihit = hits->begin();
+      const StepPointMCCollection::const_iterator endhit = hits->end();
+      for ( ; ihit!=endhit; ++ihit){
+        
+        // Aliases, used for readability.
+        const StepPointMC& hit = *ihit;
+        const Hep3Vector& pos = hit.position();
+        const Hep3Vector& mom = hit.momentum();
+        if (!singleHoughHisto) 
+	  {
+	    _eventPlot->Fill(pos[0],pos[1]);
+	  }
+        // Get the straw information.
+        Straw const& straw = ltracker->getStraw( StrawIndex(hit.volumeId()) );
+        //      cout << "straw, position of hit " << hit.volumeId() << " " << pos[0] << " " << pos[1] << endl;
+        Hep3Vector mid = straw.getMidPoint();
+        Hep3Vector w   = straw.getDirection();
+  
+        // Count how many nearest neighbours are also hit.
+        int nNeighbours = countHitNeighbours( straw, hits );
+  
+        // Compute an estimate of the drift distance.
+        TwoLinePCA pca( mid, w, pos, mom);
+  
+        // Check that the radius of the reference point in the local
+        // coordinates of the straw.  Should be 2.5 mm.
+        double s = w.dot(pos-mid);
+        Hep3Vector point = pos - (mid + s*w);
+  
+        // I don't understand the distribution of the time variable.
+        // I want it to be the time from the start of the spill.
+        // It appears to be the time since start of tracking.
+  
+        // Fill some histograms
+        _hRadius->Fill(pos.perp());
+        _hTime->Fill(hit.time());
+        _hHitNeighbours->Fill(nNeighbours);
+        _hCheckPointRadius->Fill(point.mag());
+  
+        _hxHit->Fill(pos.x());
+        _hyHit->Fill(pos.y());
+        _hzHit->Fill(pos.z());
+  
+        _hDriftDist->Fill(pca.dca());
+  
+        /*
+        // Fill the ntuple.
+        nt[0]  = evt.id().event();
+        nt[1]  = hit.trackId();
+        nt[2]  = hit.volumeId();
+        nt[3]  = pos.x();
+        nt[4]  = pos.y();
+        nt[5]  = pos.z();
+        nt[6]  = mid.x();
+        nt[7]  = mid.y();
+        nt[8]  = mid.z();
+        nt[9]  = pca.dca();
+        nt[10] = hit.time();
+        nt[11] = straw.Id().getDevice();
+        nt[12] = straw.Id().getSector();
+  
+        _ntup->Fill(nt);
+        */
+        // Print out limited to the first few events.
+        if ( ncalls < _maxFullPrint ){
+	  cout << "Readback hit: "
+	       << evt.id().event()
+	       << n++ <<  " "
+	       << hit.trackId()    << "   "
+	       << hit.volumeId() << " | "
+	       << pca.dca()   << " "
+	       << pos  << " "
+	       << mom  << " "
+	       << point.mag() 
+	       << endl;
+        }
+  
+      } // end loop over hits.
+    } // if using MC hits
+  
     evt.put(HoughResults);
     
   } // end of ::produce.

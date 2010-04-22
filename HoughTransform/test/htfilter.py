@@ -1,8 +1,8 @@
 # Configuration file for G4Test03
 #
-# $Id: htfilter.py,v 1.1 2010/04/12 18:18:04 shanahan Exp $
+# $Id: htfilter.py,v 1.2 2010/04/22 17:13:16 shanahan Exp $
 # $Author: shanahan $
-# $Date: 2010/04/12 18:18:04 $
+# $Date: 2010/04/22 17:13:16 $
 #
 # Original author Rob Kutschke
 #
@@ -16,7 +16,7 @@ process = mu2e.Process("HoughTest0501")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(100)
+    input = mu2e.untracked.int32(1000)
 )
 
 # Load the standard message logger configuration.
@@ -84,6 +84,7 @@ process.checkhits = mu2e.EDProducer(
 # this line tells me where to get the plugin file from    
     "HoughTest",
     NPeakSearch = mu2e.uint32(50),
+    UseMCHits = mu2e.bool(True),
     hitCreatorName = mu2e.string("simpleen"),
     maxFullPrint = mu2e.untracked.int32(5)
 )

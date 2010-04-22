@@ -1,13 +1,13 @@
 #ifndef HOUGHTRANSFORM_HH
 #define HOUGHTRANSFORM_HH
 //
-// $Id: HoughTransform.hh,v 1.3 2010/04/16 16:31:16 shanahan Exp $
+// $Id: HoughTransform.hh,v 1.4 2010/04/22 17:13:16 shanahan Exp $
 // $Author: shanahan $ 
-// $Date: 2010/04/16 16:31:16 $
+// $Date: 2010/04/22 17:13:16 $
 //
-// performs Hough Transform looking for circles in the L-Tracker,
-// closely tied to HitCluster algorithms
-//original author R. Bernstein
+// helps perform Hough Transform looking for circles in the L-Tracker,
+// closely tied to HitCluster algorithms.  
+//original author R. Bernstein. Rework by P. Shanahan
 //
 
 // C++ includes.
@@ -16,6 +16,9 @@
 #include <cmath>
 #include <vector>
 
+// CLHEP inlcudes
+#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -57,12 +60,19 @@ namespace mu2e{
     class HoughTransform{
 
     public:
-      HoughTransform(double radius=-1):
-      	_inputRadius(radius),goodHoughTracks(false), numberOfHoughTracks(0){};
+      typedef std::vector<mu2e::hitcluster::HitCluster> ClusterList;
+
+      HoughTransform(ClusterList& clusters) :
+       _hitClusters(clusters), goodHoughTracks(false), numberOfHoughTracks(0){
+           FindCenters(); };
 
       ~HoughTransform(){};
 
       virtual std::string name() const {return "HoughTransform";}
+
+      static void MakeClusters(StepPointMCCollection const* hits,
+                                  ClusterList& clusters);
+
 
       struct houghCircleStruct
       {
@@ -81,19 +91,15 @@ namespace mu2e{
       bool goodHoughTracks;
       int numberOfHoughTracks;
       int minHitsforHoughFit;
-      typedef std::vector<Hep3Vector> clusterCenterVector;
-      std::vector< Hep3Vector > clusterCenters;
-      std::vector<int> clusterSize;
-      houghCandidates houghCircles;
+
 
       //methods
       //      void foundHoughTracks(GeomHandle<LTracker>& ltracker,edm::Handle<StepPointMCCollection>& hits,
-      void foundHoughTracks(GeomHandle<LTracker>& ltracker,StepPointMCCollection const* hits,
+      void foundHoughTracks(double radius, GeomHandle<LTracker>& ltracker,
 			    houghCandidates&);
-      void solveForCircle(double& x1,double& y1, 
-                          double& x2, double& y2, 
-                          double& x3, double& y3,
-          double& radius, double& x0,double& y0, double& dca);
+      void foundHoughTracks(GeomHandle<LTracker>& ltracker,
+			    houghCandidates&);
+
 
       //      int countHitNeighbours( Straw const& straw, edm::Handle<StepPointMCCollection>& hits );
       int countHitNeighbours( Straw const& straw, StepPointMCCollection const* hits );
@@ -102,7 +108,21 @@ namespace mu2e{
       Hep3Vector computeClusterXYZ(std::vector<mu2e::hitcluster::Candidate>& candClust);
 
      private:
-      double _inputRadius; // if >0, radius is forced to equal this value.
+
+      static const bool _use3P=false;// use geometric cicle finder, not algebraic
+
+      ClusterList& _hitClusters; // list of clusters input to Hough finding
+
+      // regardless of where clusters come from, it's a good idea to 
+      // make a list of centers so we don't keep recalculating them in
+      // nested loops. 
+      // we only use x and y, so it could probably be Hep2Vector, but
+      // why tempt fate?
+      typedef std::vector<Hep3Vector> clusterCenterVector;
+      clusterCenterVector _clusterCenters;
+
+      std::vector<int> _clusterSizes;
+      houghCandidates _houghCircles;
 
       //these are index numbers of hit straws associated with the found 
       //Hough tracks, and then someone else
@@ -112,6 +132,23 @@ namespace mu2e{
       // PSH - not used? double _x0;
       // PSH - not used? double _y0;
       // PSH - not used? double _radius;
+
+      bool solveForCircle(const CLHEP::Hep3Vector& v1,
+                          const CLHEP::Hep3Vector& v2,
+                          const CLHEP::Hep3Vector& v3,
+                          double& radius, double& x0,double& y0, double& dca);
+
+      bool solveForCircle3P(const CLHEP::Hep3Vector& v1, 
+                            const CLHEP::Hep3Vector& v2, 
+                            const CLHEP::Hep3Vector& v3, 
+                            double& radius, double& x0,double& y0, double& dca);
+
+      bool solveForCircle2P(const CLHEP::Hep3Vector& v1,
+                            const CLHEP::Hep3Vector& v2, double radius,
+                            double& x0m, double& y0m, double& dcam,
+                            double& x0p, double& y0p, double& dcap);
+
+      void FindCenters(); // find centers of all the clusters and store them
 
 
     };
