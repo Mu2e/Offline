@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.4 2010/04/16 14:49:57 kutschke Exp $
+# $Id: setup.sh,v 1.5 2010/04/23 20:32:06 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/04/16 14:49:57 $
+# $Date: 2010/04/23 20:32:06 $
 #
 # Original author Rob Kutschke
 #
@@ -34,3 +34,6 @@ setup g4abla      v3_0
 
 # Other products
 setup heppdt      v3_04_01
+
+# Build the symlink director for the BaBar code.
+./BaBar/makeInclude.csh
