@@ -1,0 +1,34 @@
+//
+// Run-time config info for the event generators.
+//
+// $Id: genconfig_01.txt,v 1.1 2010/04/23 20:18:57 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/04/23 20:18:57 $
+//
+// Original author Rob Kutschke
+
+bool conversionGun.do = false;
+bool particleGun.do   = true;
+
+bool particleGun.doHistograms = true;
+
+vector<double> particleGun.point     = { 0., 0., -6100.};
+vector<double> particleGun.halLength = { 0., 0., 0.};
+
+// Limits on cos(polar angle):
+double conversionGun.czmin = 0.5;
+double conversionGun.czmax = 0.7;
+
+// Time limits in ns, relative to protons on target.
+double conversionGun.tmin  =  700.;
+double conversionGun.tmax  = 1694.;
+
+// Mean multiplicities for the two background generators.
+double cosmictoy.mean =  0.0;
+double picapture.mean =  0.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
+
