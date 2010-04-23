@@ -1,9 +1,9 @@
 # Script to build this release.
 
 #
-# $Id: SConstruct,v 1.2 2010/03/19 01:11:33 kutschke Exp $
+# $Id: SConstruct,v 1.3 2010/04/23 04:12:09 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/19 01:11:33 $
+# $Date: 2010/04/23 04:12:09 $
 #
 # Original author Rob Kutschke.
 #
@@ -20,6 +20,7 @@ heppdtdir = os.environ['HEPPDT_DIR']
 
 # '#' puts the current (top-level) directory into the CPPPATH.
 env = Environment( CPPPATH=[ '#',
+                             '#/BaBar/include',
 			     '.',
 			     home,
 			     externals+'/include',
@@ -75,3 +76,7 @@ for root,dirs,files in os.walk('.'):
 # scons to bulid all of the SConscript files
 env.SConscript(ss)
 
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
