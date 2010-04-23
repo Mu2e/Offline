@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.9 2010/04/02 18:16:01 rhbob Exp $
-  $Author: rhbob $
-  $Date: 2010/04/02 18:16:01 $
+  $Id: EventGenerator_plugin.cc,v 1.10 2010/04/23 04:27:23 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/04/23 04:27:23 $
 
   Original author Rob Kutschke
 
@@ -154,6 +154,11 @@ namespace mu2e {
     if ( doEjectedProton)        _generators.push_back( GeneratorBasePtr( new EjectedProtonGun( run, config)) );
     if ( doPiEplusNu)            _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
     if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun(     run, config)) );
+
+    if ( _generators.size() == 0 ){
+      edm::LogWarning("CONTROL")
+        << "EventGenerator has no generators enabled. Hope that's OK.";
+    }
 
   }
   
