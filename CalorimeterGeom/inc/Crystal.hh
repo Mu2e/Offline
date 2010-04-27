@@ -1,11 +1,5 @@
 #ifndef CRYSTAL_HH
 #define CRYSTAL_HH
-// $Id: Crystal.hh,v 1.4 2010/04/13 17:32:00 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/04/13 17:32:00 $
-
-// original authors Julie Managan and Robert Bernstein
-
 
 //
 // C++ includes
@@ -13,12 +7,15 @@
 
 //
 // Mu2e includes
-#include "CalorimeterGeom/inc/CrystalId.hh"
-#include "CalorimeterGeom/inc/CrystalIndex.hh"
-#include "CalorimeterGeom/inc/CrystalDetail.hh"
 
+
+#include "CrystalId.hh"
+#include "CrystalIndex.hh"
+/*
+#include "CrystalDetail.hh"
+*/
 //
-//Other includes
+// other includes
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e{
@@ -26,89 +23,61 @@ namespace mu2e{
 
     class Crystal{
 
-      friend class Layer;
-      friend class Device;
+      friend class RSlice;
+      friend class ZSlice;
+      friend class Vane;
       friend class Calorimeter;
       friend class CalorimeterMaker;
 
 
     public:
 
-      // A free function, returning void, that takes a const Crystal& as an argument.
-      typedef void (*CrystalFunction)( const Crystal& c);
-
       Crystal();
-
-      // Constructor using wire tangents.
-      Crystal( const CrystalId& id,
-	       CrystalIndex index,
-	       const CLHEP::Hep3Vector& c,
-	       const CrystalDetail* detail,
-	       int    detailIndex,
-	       double wtx = 0.,
-	       double wty = 0.
+      
+      //
+      // construct a crystal
+      Crystal( const CrystalId& id,             // crystal identifier
+	       CrystalIndex index,              // index into dumb crystal array
+	       const CLHEP::Hep3Vector& center, // center of crystal
+	       const CrystalDetail* detail,     // dumb data describing crystal makeup
+	       CLHEP::Hep3Vector const& t       // unit vector along crystal axis from readout to opposite edge
 	       );
+      
+      ~Crystal(){};
 
-      // Constructor using wire unit vector.
-      Crystal( const CrystalId& id,
-	       CrystalIndex index,
-	       const CLHEP::Hep3Vector& c,
-	       const CrystalDetail* detail,
-	       int detailIndex,
-	       CLHEP::Hep3Vector const& t
-	       );
-  
-      ~Crystal ();
+  const CrystalId& Id() const { return _id;}
+  CrystalIndex Index() const { return _index;}
 
-      const CrystalId& Id() const { return _id;}
-      CrystalIndex Index() const { return _index;}
 
-      const CrystalDetail& getDetail() const { return *_detail;}
-
-      const std::vector<const Crystal*>& nearestNeighbours() const{
-	return _nearest;
-      }
-  
-      // Compiler generated copy and assignment constructors
-      // should be OK.
-  
-      // Nominal mid-point of the crystal, ignoring sag.
-      const CLHEP::Hep3Vector& midPoint() const {return _cNominal;}
-
-      // Unit vector in the nominal direction of the wire.
-      const CLHEP::Hep3Vector& direction() const { return _w;}
-
-      // Half length of the crystal.
-      double zhalfLength() const { return _detail->zhalfLength();}
-
-      int hack;
-  
     protected:
 
-      // Identifier
-      CrystalId _id;
 
-      // Index into the array of all crystals.
-      CrystalIndex _index;
+  // Identifier
+  CrystalId _id;
 
-      // Nominal mid-point of the crystal, ignoring sag.
-      CLHEP::Hep3Vector _cNominal;
+  // Index into the array of all straws.
+  CrystalIndex _index;
 
-      // Detailed description of a crystal.
-      const CrystalDetail* _detail;
-      int _detailIndex;
+  // Mid-point of the straw.
+  CLHEP::Hep3Vector _c;
 
-      // Unit vector along the wire direction.
-      CLHEP::Hep3Vector _w;
+  // Detailed description of a straw.
+  const CrystalDetail* _detail;
+  int _detailIndex;
 
-      // Nearest neighbours.
-      std::vector<const Crystal *> _nearest;
+  // Unit vector along the wire direction.
+  // Need to add unit vectors along local u and v also.
+  // Use Euler angle convention from G4.
+  CLHEP::Hep3Vector _w;
 
-      std::vector<CrystalId> _nearestById;
-      std::vector<CrystalIndex> _nearestByIndex;
+  // Nearest neighbours.
+  std::vector<const Crystal *> _nearest;
+
+  std::vector<CrystalId> _nearestById;
+  std::vector<CrystalIndex> _nearestByIndex;
 
     };
-  } //namespace calorimeter
-} //namespace mu2e
+  }//namespace calorimeter
+}//namespace mu2e
 
 #endif
