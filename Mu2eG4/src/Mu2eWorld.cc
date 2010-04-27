@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.21 2010/04/18 00:08:55 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/18 00:08:55 $
+// $Id: Mu2eWorld.cc,v 1.22 2010/04/27 19:06:57 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/04/27 19:06:57 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestTorus.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -489,13 +490,6 @@ namespace mu2e {
 
     //cout << "toyDS.halfLengthVac = " << _config->getDouble("toyDS.halfLengthVac") << endl;
     //    assert (2==1);
-    double detSolUpstreamVacParams[5]   = { 
-      0.
-      ,detSolCoilParams[0]
-      ,halfLengthOfUpstreamDSVac*mm
-      ,0.
-      ,2.*M_PI
-    };
     double detSolDownstreamVacParams[5]   = { 
       0.
       ,detSolCoilParams[0]
@@ -544,16 +538,293 @@ namespace mu2e {
                                                    G4Color::Magenta()
                                                    );
 
-    G4ThreeVector detSolUpstreamOffset  = G4ThreeVector(0.,0.,centerOfUpstreamDSVac);
+
+
+
+
+    ///////////////////////////
+      ///////////////////////////
+      ///////////////////////////
+
+    // Half Length of the block to prevent leakage of vaccume
+    // This block is covering TS1 and placed between TS1-coil & DS-Upstream coil
+    // Right now this is inside the DS  
+    double toyDSBK1dothalfLength = 500.0*mm;   //this length can vary 
+
+ 
+    //this is TS1 coil parameters
+    double toyTS1dotrIn  = 600.0*mm;    
+    double toyTS1dotrOut = 700.0*mm;    
+    double toyTS1dothalfLength = 500.0*mm;
+
+
+    double detSolUpstreamVacParams[5]   = { 
+      0.
+      ,detSolCoilParams[0]
+      ,halfLengthOfUpstreamDSVac*mm - toyDSBK1dothalfLength
+      ,0.
+      ,2.*M_PI
+    };
+    G4ThreeVector detSolUpstreamOffset  = G4ThreeVector(detSolXoff-hallPosition[0],
+					       shieldConOutsideHalfDim[1] - hallInHLen[1],
+				   	  dsz0+_mu2eOrigin.z() + centerOfUpstreamDSVac*mm + toyDSBK1dothalfLength);
     VolumeInfo detSolUpstreamVacInfo   = nestTubs( "ToyDSUpstreamVacuum",
                                                    detSolUpstreamVacParams,
                                                    detSolUpstreamVacMaterial,
                                                    0,
                                                    detSolUpstreamOffset,
-                                                   shieldFeInsideInfo.logical,
+                                                   hallInfo.logical,
                                                    0,
-                                                   G4Colour::White() //color change between two halves
+                                                   G4Colour::Yellow(), //color change between two halves
+                                                   0
                                                    );
+
+
+
+    //Now make TS1 coil with respect to hall
+    //radius and halfLength are already defiend
+    G4ThreeVector TS1CoilOffset = G4ThreeVector(detSolXoff-hallPosition[0],
+					       shieldConOutsideHalfDim[1] - hallInHLen[1],
+ dsz0+_mu2eOrigin.z() +centerOfUpstreamDSVac*mm -halfLengthOfUpstreamDSVac*mm + 2*toyDSBK1dothalfLength - toyTS1dothalfLength);
+    double TS1CoilParams[5] = { 
+      toyTS1dotrIn,
+      toyTS1dotrOut,
+      toyTS1dothalfLength,
+      0.,
+      2.*M_PI
+    };
+    G4Material* TS1CoilMaterial  = materialFinder.get("toyDS.materialName");
+    VolumeInfo TS1CoilInfo = nestTubs( "ToyTS1Coil",
+                                           TS1CoilParams,
+                                           TS1CoilMaterial,
+                                           0,
+                                           TS1CoilOffset,
+                                           hallInfo.logical,
+                                           0,
+				           G4Color::White(),
+				           1
+                                          );
+
+    //This is TS1 vacuum with respect to TS1 coil
+    G4ThreeVector TS1VacOffset = G4ThreeVector();
+    double TS1VacParams[5] = { 
+      0.0,
+      toyTS1dotrIn,
+      toyTS1dothalfLength,
+      0.,
+      2.*M_PI
+    };
+    G4Material* TS1VacMaterial  = materialFinder.get("toyDS.insideMaterialName");
+    VolumeInfo TS1VacInfo = nestTubs( "ToyTS1Vacuum",
+				      TS1VacParams,
+				      TS1VacMaterial,
+				      0,
+				      TS1VacOffset,
+				      TS1CoilInfo.logical,
+				      0,
+				      G4Color::Yellow(),
+				      1
+				      );
+
+
+
+    //this is block around TS1 to prevent vacuum leakage
+    if(toyDSBK1dothalfLength!=0){ //length of block should not be zero!
+      G4ThreeVector DSBK1CoilOffset =  G4ThreeVector(detSolXoff-hallPosition[0],
+						     shieldConOutsideHalfDim[1] - hallInHLen[1],
+       dsz0+_mu2eOrigin.z() +centerOfUpstreamDSVac*mm -halfLengthOfUpstreamDSVac*mm +toyDSBK1dothalfLength);
+      
+      double DSBK1CoilParams[5] = { 
+	toyTS1dotrOut,
+	_config->getDouble("toyDS.rIn")*mm,
+	toyDSBK1dothalfLength,
+	0.,
+	2.*M_PI
+      };
+      G4Material* DSBK1CoilMaterial  = materialFinder.get("toyDS.materialName");
+      VolumeInfo DSBK1CoilInfo = nestTubs( "ToyDSBK1Coil",
+                                           DSBK1CoilParams,
+                                           DSBK1CoilMaterial,
+                                           0,
+                                           DSBK1CoilOffset,
+                                           hallInfo.logical,
+					   0,
+					   G4Color::Magenta(),
+					   1
+					   );
+    }//length of block should not be zero!
+
+
+    //this is TS3 coil parameters
+    double toyTS3dotrIn  = 600.0*mm;    
+    double toyTS3dotrOut = 700.0*mm;    
+    double toyTS3dothalfLength = 1950.0*mm/2.0;
+
+
+    //this is TS2 coil parameters
+    double toyTS2dotrIn  = 600.0*mm;    
+    double toyTS2dotrOut = 700.0*mm;    
+    double toyTS2dothalfLength = -detSolXoff - toyTS3dothalfLength;
+
+
+    //Now make TS2 coil
+    G4ThreeVector TS2CoilOffset =  G4ThreeVector(-hallPosition[0] -toyTS3dothalfLength, yOriginHeight -hallInHLen[1], _mu2eOrigin.z() +toyTS2dothalfLength);
+    double TS2CoilParams[5] = { 
+      toyTS2dotrIn,
+      toyTS2dotrOut,
+      toyTS2dothalfLength,
+      0.5*M_PI,
+      0.5*M_PI
+    };
+    G4Material* TS2CoilMaterial  = materialFinder.get("toyDS.materialName");
+    G4RotationMatrix* TS2CoilRot = new G4RotationMatrix();
+    TS2CoilRot->rotateX(90.0*degree);
+    VolumeInfo TS2CoilInfo = nestTorus("ToyTS2Coil",
+                                           TS2CoilParams,
+                                           TS2CoilMaterial,
+                                           TS2CoilRot,
+                                           TS2CoilOffset,
+                                          hallInfo.logical,
+                                          0,
+				          G4Color::Red(),
+				          1
+                                          );
+
+
+    //Now make TS2 vacuum
+    G4ThreeVector TS2VacOffset =  G4ThreeVector();
+    double TS2VacParams[5] = { 
+      0.0,
+      toyTS2dotrIn,
+      toyTS2dothalfLength,
+      0.5*M_PI,
+      0.5*M_PI
+    };
+    G4Material* TS2VacMaterial  = materialFinder.get("toyDS.insideMaterialName");
+    G4RotationMatrix* TS2VacRot = new G4RotationMatrix();
+    TS2VacRot->rotateX(0.0*degree);
+    VolumeInfo TS2VacInfo = nestTorus("ToyTS2Vac",
+                                           TS2VacParams,
+                                           TS2VacMaterial,
+                                           TS2VacRot,
+                                           TS2VacOffset,
+                                           TS2CoilInfo.logical,
+                                           0,
+				           G4Color::Yellow(),
+				           1
+                                          );
+
+
+
+    //this is TS4 coil parameters
+    double toyTS4dotrIn  = 600.0;    
+    double toyTS4dotrOut = 700.0;    
+    double toyTS4dothalfLength = -detSolXoff - toyTS3dothalfLength;
+
+    //Now make TS4 coil
+    G4ThreeVector TS4CoilOffset =  G4ThreeVector(-hallPosition[0] + toyTS3dothalfLength, yOriginHeight-hallInHLen[1], _mu2eOrigin.z() - toyTS2dothalfLength);
+    double TS4CoilParams[5] = { 
+      toyTS4dotrIn*mm,
+      toyTS4dotrOut*mm,
+      toyTS4dothalfLength*mm,
+      1.5*M_PI,
+      0.5*M_PI
+    };
+    G4Material* TS4CoilMaterial  = materialFinder.get("toyDS.materialName");
+    G4RotationMatrix* TS4CoilRot = new G4RotationMatrix();
+    TS4CoilRot->rotateX(90.0*degree);
+    VolumeInfo TS4CoilInfo = nestTorus("ToyTS4Coil",
+                                           TS4CoilParams,
+                                           TS4CoilMaterial,
+                                           TS4CoilRot,
+                                           TS4CoilOffset,
+                                          hallInfo.logical,
+                                          0,
+				          G4Color::Red(),
+				          1
+                                          );
+
+
+    //Now make TS4 vacuum
+    G4ThreeVector TS4VacOffset =  G4ThreeVector();
+    double TS4VacParams[5] = { 
+      0.0,
+      toyTS4dotrIn,
+      toyTS4dothalfLength,
+      1.5*M_PI,
+      0.5*M_PI
+    };
+    G4Material* TS4VacMaterial  = materialFinder.get("toyDS.insideMaterialName");
+    G4RotationMatrix* TS4VacRot = new G4RotationMatrix();
+    TS2VacRot->rotateX(0.0*degree);
+    VolumeInfo TS4VacInfo = nestTorus("ToyTS4Vac",
+                                           TS4VacParams,
+                                           TS4VacMaterial,
+                                           TS4VacRot,
+                                           TS4VacOffset,
+                                           TS4CoilInfo.logical,
+                                           0,
+				           G4Color::Yellow(),
+				           1
+                                          );
+
+
+
+    //Now make TS3 coil
+    G4ThreeVector TS3CoilOffset = G4ThreeVector(-hallPosition[0], yOriginHeight-hallInHLen[1], _mu2eOrigin.z() );
+    double TS3CoilParams[5] = { 
+      toyTS3dotrIn*mm,
+      toyTS3dotrOut*mm,
+      toyTS3dothalfLength*mm,
+      0.,
+      2.*M_PI
+    };
+    G4Material* TS3CoilMaterial  = materialFinder.get("toyDS.materialName");
+     G4RotationMatrix* TS3CoilRot = new G4RotationMatrix();
+    TS3CoilRot->rotateY(90.*degree);
+    VolumeInfo TS3CoilInfo = nestTubs( "ToyTS3Coil",
+                                           TS3CoilParams,
+                                           TS3CoilMaterial,
+                                           TS3CoilRot,
+                                           TS3CoilOffset,
+                                          hallInfo.logical,
+                                          0,
+				          G4Color::White(),
+				          1
+                                          );
+
+    //This is TS1 vacuum
+    G4ThreeVector TS3VacOffset = G4ThreeVector();
+    double TS3VacParams[5] = { 
+      0.0*mm,
+      toyTS3dotrIn*mm,
+      toyTS3dothalfLength*mm,
+      0.,
+      2.*M_PI
+    };
+    G4Material* TS3VacMaterial  = materialFinder.get("toyDS.insideMaterialName");
+    VolumeInfo TS3VacInfo = nestTubs( "ToyTS3Vacuum",
+				      TS3VacParams,
+				      TS3VacMaterial,
+				      0,
+				      TS3VacOffset,
+				      TS3CoilInfo.logical,
+				      0,
+				      G4Color::Yellow(),
+				      1
+				      );
+    
+    ///////////////////////////
+      ///////////////////////////
+      ///////////////////////////
+
+
+
+
+
+
+
+
 
 
     // Mock up of the production solenoid and its vacuum.
@@ -565,17 +836,8 @@ namespace mu2e {
       0.,
       2.*M_PI
     };
-    double prodSolVacParams[5] = { 
-      0.*mm,
-      prodSolCoilParams[0],
-      _config->getDouble("toyPS.halfLengthVac") * mm,
-      0.,
-      2.*M_PI
-    };
-    
-    G4Material* prodSolCoilMaterial = materialFinder.get("toyPS.materialName");
-    G4Material* prodSolVacMaterial  = materialFinder.get("toyPS.insideMaterialName");
-    
+
+    G4Material* prodSolCoilMaterial = materialFinder.get("toyPS.materialName");   
     // Position of PS inside the air volume of the hall.
     G4ThreeVector prodSolCoilOffset = 
       G4ThreeVector( prodSolXoff-hallPosition[0],
@@ -595,16 +857,146 @@ namespace mu2e {
                                            G4Color::Cyan()
                                            );
     
-    // The vacuum inside the PS cyrostat; this can be longer than the coils!
+
+
+    ///////////////////////////
+      ///////////////////////////
+      ///////////////////////////
+
+    // Half Length of the block to prevent leakage of vaccume
+    // This block is covering TS1 and placed between TS1-coil & PS-coil 
+    double toyPSBK1dothalfLength = 50.0*mm; 
+
+    //this is TS5 coil parameters
+    double toyTS5dotrIn  = 600.0*mm;    
+    double toyTS5dotrOut = 700.0*mm;    
+    double toyTS5dothalfLength =  500.0*mm;
+
+
+    // production solenoid vacuum recreated with respect to block
+    G4ThreeVector prodSolVacOffset = G4ThreeVector(prodSolXoff - hallPosition[0],
+                                                   yOriginHeight - hallInHLen[1],
+                     _config->getDouble("toyPS.z0") * mm + _mu2eOrigin.z() - toyPSBK1dothalfLength); 
+    double prodSolVacParams[5] = { 
+      0.*mm,
+      prodSolCoilParams[0],
+      _config->getDouble("toyPS.halfLengthVac")*mm - toyPSBK1dothalfLength,
+      0.,
+      2.*M_PI
+    };
+    G4Material* prodSolVacMaterial  = materialFinder.get("toyPS.insideMaterialName");
     VolumeInfo prodSolVacInfo = nestTubs( "ToyPSVacuum",
                                           prodSolVacParams,
                                           prodSolVacMaterial,
                                           0,
-                                          prodSolCoilOffset,
+                                          prodSolVacOffset,
                                           hallInfo.logical,
                                           0,
-                                          G4Color::Yellow()
+                                          G4Color::Yellow(),
+                                          0
                                           );
+
+
+
+
+
+    //Now make TS5 coil
+    G4ThreeVector TS5CoilOffset = G4ThreeVector(prodSolXoff - hallPosition[0],
+                                                   yOriginHeight - hallInHLen[1],
+  _config->getDouble("toyPS.z0")*mm +_mu2eOrigin.z() +_config->getDouble("toyPS.halfLength")*mm -2.0*toyPSBK1dothalfLength +toyTS5dothalfLength);     
+    double TS5CoilParams[5] = { 
+      toyTS5dotrIn,
+      toyTS5dotrOut,
+      toyTS5dothalfLength,
+      0.,
+      2.*M_PI
+    };
+    G4Material* TS5CoilMaterial  = materialFinder.get("toyPS.materialName");
+    VolumeInfo TS5CoilInfo = nestTubs( "ToyTS5Coil",
+                                           TS5CoilParams,
+                                           TS5CoilMaterial,
+                                           0,
+                                           TS5CoilOffset,
+                                          hallInfo.logical,
+                                          0,
+				          G4Color::White(),
+				          1
+                                          );
+
+    //This is TS5 vacuum
+    G4ThreeVector TS5VacOffset = G4ThreeVector();
+    double TS5VacParams[5] = { 
+      0.0,
+      toyTS5dotrIn,
+      toyTS5dothalfLength,
+      0.,
+      2.*M_PI
+    };
+    G4Material* TS5VacMaterial  = materialFinder.get("toyPS.insideMaterialName");
+    VolumeInfo TS5VacInfo = nestTubs( "ToyTS5Vacuum",
+				      TS5VacParams,
+				      TS5VacMaterial,
+				      0,
+				      TS5VacOffset,
+				      TS5CoilInfo.logical,
+				      0,
+				      G4Color::Yellow(),
+				      1
+				      );
+    
+
+
+    
+    //this is block around TS5 to prevent vacuum leakage
+    if(toyPSBK1dothalfLength!=0){//only when vacuum leak block is non-zero lenght
+    G4ThreeVector PSBK1CoilOffset = G4ThreeVector(prodSolXoff - hallPosition[0],
+                                                   yOriginHeight - hallInHLen[1],
+  _config->getDouble("toyPS.z0")*mm +_mu2eOrigin.z() +_config->getDouble("toyPS.halfLength")*mm -toyPSBK1dothalfLength);     
+
+
+    double PSBK1CoilParams[5] = { 
+      toyTS5dotrOut,
+      _config->getDouble("toyPS.rIn")*mm,
+      toyPSBK1dothalfLength,
+      0.,
+      2.*M_PI
+    };
+    G4Material* PSBK1CoilMaterial  = materialFinder.get("toyPS.materialName");
+    VolumeInfo PSBK1CoilInfo = nestTubs( "ToyPSBK1Coil",
+                                           PSBK1CoilParams,
+                                           PSBK1CoilMaterial,
+                                           0,
+                                           PSBK1CoilOffset,
+                                          hallInfo.logical,
+                                          0,
+					 G4Color::Magenta(),
+					 1
+                                          );
+    }//only when vacuum leak block is non-zero lenght
+
+
+    ///////////////////////////
+      ///////////////////////////
+      ///////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     // Proton Target in PS 
