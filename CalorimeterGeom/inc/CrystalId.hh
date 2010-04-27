@@ -1,41 +1,51 @@
 #ifndef CRYSTALID_HH
 #define CRYSTALID_HH
-// $Id: CrystalId.hh,v 1.4 2010/04/13 17:32:05 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/04/13 17:32:05 $
-
-// original authors Julie Managan and Robert Bernstein
+//
+// Identifier of one crystal in a calorimeter.
+//
 
 //
-// Mu2e includes
-#include "CalorimeterGeom/inc/LayerId.hh"
+// $Id: CrystalId.hh,v 1.5 2010/04/27 18:21:12 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/04/27 18:21:12 $
+//
+// Original author R. Bernstein and Rob Kutschke
+//
+#include <ostream>
+#include "CalorimeterGeom/inc/RSliceId.hh"
 
-
-namespace mu2e{
+namespace mu2e { 
   namespace calorimeter{
-
-
     struct CrystalId{
 
     public:
 
       CrystalId():
-	_lid(LayerId()),
+	_rid(RSliceId()),
 	_n(-1){
       }
   
-      CrystalId( LayerId layer,
+      CrystalId( RSliceId rslice,
 		 int n
 		 ):
-	_lid(layer),
+	_rid(rslice),
 	_n(n){
       }
   
-      CrystalId( DeviceId deviceid,
-		 int layer,
+      CrystalId( ZSliceId zsliceid,
+		 int rslice,
 		 int n
 		 ):
-	_lid(deviceid,layer),
+	_rid(zsliceid,rslice),
+	_n(n){
+      }
+
+      CrystalId( VaneId vane,
+		 int section,
+		 int rslice,
+		 int n
+		 ):
+	_rid(RSliceId(vane,section,rslice)),
 	_n(n){
       }
 
@@ -45,31 +55,44 @@ namespace mu2e{
       // Compiler generated copy c'tor and assignment
       // operators should be should be OK.
 
-      const DeviceId& getDeviceId() const {
-	return _lid._did;
+      const VaneId& getVaneId() const {
+	return _rid._zid._vid;
       }
 
-      const LayerId& getLayerId() const {
-	return _lid;
+      const ZSliceId& getZSliceId() const {
+	return _rid._zid;
+      }
+
+      const RSliceId& getRSliceId() const {
+	return _rid;
       }
   
-      const int getDevice() const{
-	return _lid._did;
+      const int getVane() const{
+	return _rid._zid._vid;
       }
 
-      const int getLayer() const{
-	return _lid._layer;
+      const int getZSlice() const{
+	return _rid._zid._zslice;
+      }
+
+      const int getRSlice() const{
+	return _rid._rslice;
       }
 
       const int getCrystal() const{
 	return _n;
       }
 
-      bool operator==(const CrystalId c) const{
-	return ( _lid == c._lid && _n == c._n );
+      bool operator==( CrystalId const& rhs) const{
+	return ( _rid == rhs._rid && _n == rhs._n );
       }
 
-      LayerId _lid;
+      bool operator!=( CrystalId const& rhs) const{
+	return !( *this == rhs);
+      }
+
+
+      RSliceId _rid;
       int _n;
   
     };
@@ -77,13 +100,12 @@ namespace mu2e{
     inline std::ostream& operator<<(std::ostream& ost, 
 				    const CrystalId& c ){
       ost << "Crystal Id: ("
-	  << c.getLayerId() << " "
+	  << c.getRSliceId() << " "
 	  << c._n
 	  << " )";
       return ost;
     }
 
   } //namespace calorimeter
-} //namespace mu2e
-
+}
 #endif
