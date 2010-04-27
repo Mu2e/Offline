@@ -6,7 +6,6 @@
 
 cd BaBar
 if ( -e include ) then
-  echo "include already exists.  Not making it."
   cd ..
   exit
 endif
