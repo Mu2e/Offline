@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.3 2010/04/18 00:01:17 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/04/18 00:01:17 $
+# $Id: SConscript,v 1.4 2010/04/29 18:19:55 rhbob Exp $
+# $Author: rhbob $
+# $Date: 2010/04/29 18:19:55 $
 #
 # Original author Rob Kutschke.
 #
@@ -24,6 +24,7 @@ env.SharedLibrary(libname, non_plugin_cc,
                'ITrackerGeom',
                'TrackerGeom',
                'TargetGeom',
+               'CalorimeterGeom',
                'DataFormatsProvenance',
                'DataFormatsCommon',
                'FWCoreServiceRegistry',

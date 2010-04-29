@@ -1,8 +1,8 @@
 #ifndef CALORIMETERMAKER_HH
 #define CALORIMETERMAKER_HH
-// $Id: CalorimeterMaker.hh,v 1.5 2010/04/27 18:46:35 rhbob Exp $
+// $Id: CalorimeterMaker.hh,v 1.6 2010/04/29 18:21:26 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/27 18:46:35 $
+// $Date: 2010/04/29 18:21:26 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -21,11 +21,10 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
 #include "CalorimeterGeom/inc/CrystalDetail.hh"
-/*
-#include "CalorimeterGeom/inc/Device.hh"
-#include "CalorimeterGeom/inc/LayerInfo.hh"
-#include "CalorimeterGeom/inc/Layer.hh"
-*/
+
+#include "CalorimeterGeom/inc/Vane.hh"
+#include "CalorimeterGeom/inc/RSlice.hh"
+
 
 //
 // other includes
@@ -64,12 +63,12 @@ namespace mu2e{
       double crystalHalfLong;
 
       //
-      //number of rows, rows defined as starting from center and going out
-      uint32_t nCrystalRows;
+      //number of rslices, constant distance from z-axis
+      uint32_t nCrystalRSlices;
 
       //
-      //number of columns, orthogonal to rows
-      uint32_t nCrystalColumns;
+      //number of zslices, constant z
+      uint32_t nCrystalZSlices;
 
       //
       // center of calorimeter
@@ -107,13 +106,15 @@ namespace mu2e{
 
       std::string crystalMaterial;
       std::string crystalWrapper;
-      double crystalWrapperThickness;
+      double crystalWrapperHalfThickness;
 
       //
-      // the calorimeter and a vector of crystals in it, for dumb access
-      Calorimeter* _calorimeter;
+      // simple dumb vector
       std::vector <Crystal> allCrystals;
 
+      // Accessor and auto_ptr to calorimeter needed by GeometryService.
+      std::auto_ptr<Calorimeter> _calorimeter;
+      std::auto_ptr<Calorimeter> getCalorimeterPtr() { return _calorimeter; }
 
     private:
 

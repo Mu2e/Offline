@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.4 2010/04/18 00:01:17 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/18 00:01:17 $
+// $Id: GeometryService.cc,v 1.5 2010/04/29 18:19:46 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/04/29 18:19:46 $
 //
 // Original author Rob Kutschke
 //
@@ -33,8 +33,11 @@
 #include "TTrackerGeom/inc/TTrackerMaker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "ITrackerGeom/inc/ITrackerMaker.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/CalorimeterMaker.hh"
 
 using namespace std;
+using namespace mu2e::calorimeter;
 
 namespace mu2e {
 
@@ -90,6 +93,12 @@ namespace mu2e {
       TTrackerMaker ttm( *_config );
       addDetector( ttm.getTTrackerPtr() );
     }
+
+    if(_config->getBool("hasCalorimeter",false)){
+      CalorimeterMaker calorm( *_config );
+      addDetector( calorm.getCalorimeterPtr() );
+    }
+
 
   }
 

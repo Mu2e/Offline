@@ -11,9 +11,8 @@
 
 #include "CrystalId.hh"
 #include "CrystalIndex.hh"
-/*
 #include "CrystalDetail.hh"
-*/
+
 //
 // other includes
 #include "CLHEP/Vector/ThreeVector.h"

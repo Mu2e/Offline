@@ -1,3 +1,4 @@
+
 #ifndef CRYSTALID_HH
 #define CRYSTALID_HH
 //
@@ -5,9 +6,9 @@
 //
 
 //
-// $Id: CrystalId.hh,v 1.5 2010/04/27 18:21:12 rhbob Exp $
+// $Id: CrystalId.hh,v 1.6 2010/04/29 18:21:56 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/27 18:21:12 $
+// $Date: 2010/04/29 18:21:56 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -21,14 +22,14 @@ namespace mu2e {
     public:
 
       CrystalId():
-	_rid(RSliceId()),
+	_rslid(RSliceId()),
 	_n(-1){
       }
   
       CrystalId( RSliceId rslice,
 		 int n
 		 ):
-	_rid(rslice),
+	_rslid(rslice),
 	_n(n){
       }
   
@@ -36,7 +37,7 @@ namespace mu2e {
 		 int rslice,
 		 int n
 		 ):
-	_rid(zsliceid,rslice),
+	_rslid(zsliceid,rslice),
 	_n(n){
       }
 
@@ -45,7 +46,7 @@ namespace mu2e {
 		 int rslice,
 		 int n
 		 ):
-	_rid(RSliceId(vane,section,rslice)),
+	_rslid(RSliceId(vane,section,rslice)),
 	_n(n){
       }
 
@@ -56,27 +57,27 @@ namespace mu2e {
       // operators should be should be OK.
 
       const VaneId& getVaneId() const {
-	return _rid._zid._vid;
+	return _rslid._zid._vid;
       }
 
       const ZSliceId& getZSliceId() const {
-	return _rid._zid;
+	return _rslid._zid;
       }
 
       const RSliceId& getRSliceId() const {
-	return _rid;
+	return _rslid;
       }
   
       const int getVane() const{
-	return _rid._zid._vid;
+	return _rslid._zid._vid;
       }
 
       const int getZSlice() const{
-	return _rid._zid._zslice;
+	return _rslid._zid._zslice;
       }
 
       const int getRSlice() const{
-	return _rid._rslice;
+	return _rslid._rslice;
       }
 
       const int getCrystal() const{
@@ -84,7 +85,7 @@ namespace mu2e {
       }
 
       bool operator==( CrystalId const& rhs) const{
-	return ( _rid == rhs._rid && _n == rhs._n );
+	return ( _rslid == rhs._rslid && _n == rhs._n );
       }
 
       bool operator!=( CrystalId const& rhs) const{
@@ -92,7 +93,8 @@ namespace mu2e {
       }
 
 
-      RSliceId _rid;
+      RSliceId _rslid;
+      ZSliceId _zid;
       int _n;
   
     };

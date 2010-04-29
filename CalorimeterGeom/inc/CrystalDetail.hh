@@ -1,8 +1,8 @@
 #ifndef CRYSTALDETAIL_HH
 #define CRYSTALDETAIL_HH
-// $Id: CrystalDetail.hh,v 1.3 2010/04/27 18:46:48 rhbob Exp $
+// $Id: CrystalDetail.hh,v 1.4 2010/04/29 18:22:10 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/27 18:46:48 $
+// $Date: 2010/04/29 18:22:10 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -23,22 +23,22 @@ public:
 	       double crystalHalfLong,
 	       string crystalMaterial,
 	       string crystalWrapper,
-	       double crystalWrapperThickness):
-    _crystalHalfTrans       (crystalHalfTrans),
-    _crystalHalfLong        (crystalHalfLong),
-    _crystalMaterial        (crystalMaterial),
-    _crystalWrapper         (crystalWrapper),
-    _crystalWrapperThickness(crystalWrapperThickness) {}
+	       double crystalWrapperHalfThickness):
+    _crystalHalfTrans            (crystalHalfTrans),
+    _crystalHalfLong             (crystalHalfLong),
+    _crystalMaterial             (crystalMaterial),
+    _crystalWrapper              (crystalWrapper),
+    _crystalWrapperHalfThickness (crystalWrapperHalfThickness) {}
 
 
   
   ~CrystalDetail () {};
 
-  string crystalMaterial()         const { return _crystalMaterial;}
-  string crystalWrapper()          const { return _crystalWrapper;}
-  double crystalHalfTrans()        const { return _crystalHalfTrans; }
-  double crystalHalfLong()         const { return _crystalHalfLong; }
-  double crystalWrapperThickness() const { return _crystalWrapperThickness; }
+  const string& getCrystalMaterial()         const{ return _crystalMaterial;}
+  const string& getCrystalWrapper()          const{ return _crystalWrapper;}
+  double  getCrystalHalfTrans()              const{ return _crystalHalfTrans; }
+  double  getCrystalHalfLong()               const{ return _crystalHalfLong; }
+  double  getCrystalWrapperHalfThickness()   const{ return _crystalWrapperHalfThickness; }
 
 private:
 
@@ -46,7 +46,7 @@ private:
   double _crystalHalfLong;
   string _crystalMaterial;
   string _crystalWrapper;
-  double _crystalWrapperThickness;
+  double _crystalWrapperHalfThickness;
 
 
 };
