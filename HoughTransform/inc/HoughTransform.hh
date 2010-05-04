@@ -1,9 +1,9 @@
 #ifndef HOUGHTRANSFORM_HH
 #define HOUGHTRANSFORM_HH
 //
-// $Id: HoughTransform.hh,v 1.3 2010/04/16 16:31:16 shanahan Exp $
+// $Id: HoughTransform.hh,v 1.2 2010/03/29 18:35:37 shanahan Exp $
 // $Author: shanahan $ 
-// $Date: 2010/04/16 16:31:16 $
+// $Date: 2010/03/29 18:35:37 $
 //
 // performs Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms
@@ -57,8 +57,8 @@ namespace mu2e{
     class HoughTransform{
 
     public:
-      HoughTransform(double radius=-1):
-      	_inputRadius(radius),goodHoughTracks(false), numberOfHoughTracks(0){};
+      HoughTransform():
+      	goodHoughTracks(false), numberOfHoughTracks(0){};
 
       ~HoughTransform(){};
 
@@ -90,10 +90,8 @@ namespace mu2e{
       //      void foundHoughTracks(GeomHandle<LTracker>& ltracker,edm::Handle<StepPointMCCollection>& hits,
       void foundHoughTracks(GeomHandle<LTracker>& ltracker,StepPointMCCollection const* hits,
 			    houghCandidates&);
-      void solveForCircle(double& x1,double& y1, 
-                          double& x2, double& y2, 
-                          double& x3, double& y3,
-          double& radius, double& x0,double& y0, double& dca);
+      void solveForCircle(double& x1,double& y1, double& x2, double& y2, double& x3, double& y3,double& radius,
+			  double& x0,double& y0, double& dca);
 
       //      int countHitNeighbours( Straw const& straw, edm::Handle<StepPointMCCollection>& hits );
       int countHitNeighbours( Straw const& straw, StepPointMCCollection const* hits );
@@ -102,8 +100,6 @@ namespace mu2e{
       Hep3Vector computeClusterXYZ(std::vector<mu2e::hitcluster::Candidate>& candClust);
 
      private:
-      double _inputRadius; // if >0, radius is forced to equal this value.
-
       //these are index numbers of hit straws associated with the found 
       //Hough tracks, and then someone else
       //knows which straw goes with which index

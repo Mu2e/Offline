@@ -3,9 +3,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.hh,v 1.4 2010/04/14 18:00:46 kutschke Exp $
+//   $Id: ParticleDataTable.hh,v 1.3 2010/03/25 18:31:25 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2010/04/14 18:00:46 $
+//   $Date: 2010/03/25 18:31:25 $
 //
 //  Original author Rob Kutschke
 //
@@ -68,7 +68,7 @@ namespace mu2e {
     ParticleDataTable( SimpleConfig const& config );
     ParticleDataTable( std::string const& name, std::string const& tableFilename );
 
-    // Accept the compiler supplied destructor.  Copying forbidden - see below.
+    // Accept the compiler supplied destructor.
 
     /// Access particle information via ParticleID or particle name
     HepPDT::ParticleData const& particle( HepPDT::ParticleID ) const;
@@ -108,11 +108,6 @@ namespace mu2e {
 
     // The name of the file from which the data was loaded.
     std::string _tableFilename;
-
-    // Tempoary hack.  The name of the auxillary particle data file,
-    // which has better values for the masses and widths but which is
-    // missing anti-particles.
-    std::string _auxillaryFilename;
 
     // Keep track if the units were changed or not.
     bool _unitsChanged;

@@ -2,9 +2,9 @@
 // HoughTransform for circles in the L-tracker
 // 
 //
-// $Id: HoughTransform.cc,v 1.3 2010/04/16 16:31:17 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/04/16 16:31:17 $
+// $Id: HoughTransform.cc,v 1.2 2010/01/11 21:33:07 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/01/11 21:33:07 $
 //
 // Original author R.Bernstein
 //
@@ -16,7 +16,7 @@ namespace mu2e{
   
     //    void HoughTransform::foundHoughTracks(GeomHandle<LTracker>& ltracker,edm::Handle<StepPointMCCollection>& hits,
     void HoughTransform::foundHoughTracks(GeomHandle<LTracker>& ltracker,StepPointMCCollection const* hits,
-                  houghCandidates& houghCircles )
+					  houghCandidates& houghCircles )
     {
 
       //we're looking to fit three points to a circle, so I'm going to iterate over all combinations of three hits
@@ -150,23 +150,15 @@ namespace mu2e{
     }
 
 
-    void HoughTransform::solveForCircle(double& x1,double& y1,
-                                        double& x2,double& y2,
-                                        double& x3,double& y3,
-         double& radius,double& x0,double& y0, double& dca)
+    void HoughTransform::solveForCircle(double& x1,double& y1,double& x2,double& y2,double& x3,double& y3,
+								     double& radius,double& x0,double& y0, double& dca)
     //given three points, find the radius and center of the circle
     {
-
-      // if positive input radius is passed, use it
-      if (_inputRadius<0) {
-        radius =    (pow<2>(x1-x2) + pow<2>(y1-y2)) * 
-                    (pow<2>(x1-x3) + pow<2>(y1-y3)) * 
-                    (pow<2>(x2-x3) + pow<2>(y2-y3));
-        radius /=     pow<2> (x2*y1 - x3*y1 - x1*y2 + x3*y2 + x1*y3 - x2*y3);
-        radius = 0.5*sqrtOrThrow(radius,1.0E-06);
-      } else {
-        radius = _inputRadius;
-      }
+      radius =    (pow<2>(x1-x2) + pow<2>(y1-y2)) * (pow<2>(x1-x3) + pow<2>(y1-y3)) * (pow<2>(x2-x3) + pow<2>(y2-y3));
+      radius /=     pow<2> (x2*y1 - x3*y1 - x1*y2 + x3*y2 + x1*y3 - x2*y3);
+      //      cout << "x1, x2,x3,y1,y2,y3 "<< x1 <<  " " << x2 << " " << x3 << " " << y1 << " " << y2 << " " << y3 << endl;
+      // cout << "radius= " << sqrt(radius) << endl;
+      radius = 0.5*sqrtOrThrow(radius,1.0E-06);
 
       //now the x- and y-center; first common term
       double denom = 2*(x3*(y1-y2) + x1*(y2-y3) + x2*(y3-y1));

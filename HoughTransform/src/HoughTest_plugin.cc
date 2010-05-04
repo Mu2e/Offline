@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.8 2010/04/16 16:31:17 shanahan Exp $
+// $Id: HoughTest_plugin.cc,v 1.7 2010/04/12 18:18:04 shanahan Exp $
 // $Author: shanahan $ 
-// $Date: 2010/04/16 16:31:17 $
+// $Date: 2010/04/12 18:18:04 $
 //
 // Original author R. Bernstein
 //
@@ -132,16 +132,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     TH1F* _hCheckPointRadius;
     TH1F* _hRadiusDistribution2D;
     TH1F* _hDCADistribution2D;
-                      // radius of center from center hough space - 
-                      // radius of center from radius vc. dca hough space
-    TH1F* _hRadiusPeakEqual; // center and radius/dca peaks are equal in
-                               // rank
-    TH1F* _hRadiusPeakNNPlus; // center space peak is one rank higher than
-                              // radius/dca space peak
-    TH1F* _hRadiusPeakNNMinus; // center space peak is one rank lower than
-                              // radius/dca space peak
-    TH1F* _hRadiusPeakNotNN;// non of the above
-
     TH1F* _hRHitFromHTCenter; // radius of hits from peak hough center
     TH1F* _hRHitFromCircle; // residual of hits from peak hough track
     TH1F* _hRNoiseHitFromHTCenter; // radius of noise hits from peak hough center
@@ -163,8 +153,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     TH2F* _histoRadiusDCA;
     TH3F* _histoRadiusDCACenter;
     TH2F* _histoCenter;
-    TH2F* _histoRXCenter;
-    TH2F* _histoRYCenter;
     TH1F* _histoRadiusError;
     TH1F* _histoNStraws;
     TH2F* _eventPlot;
@@ -235,22 +223,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
         100,0.,400.,100,0,400.);
     _hYvsX = tfs->make<TH2F>("hYvsX","First Radius from 2D vs. 1D ",
         100,-500,500,100,-500,500);
-
-    double deltaRmin=-140;
-    double deltaRmax=60;
-    _hRadiusPeakEqual = tfs->make<TH1F>("hRadiusPeakEqual",
-           "Delta R for center, center and rad/dca peaks equal rank",
-           100,deltaRmin,deltaRmax);
-    _hRadiusPeakNNPlus = tfs->make<TH1F>("hRadiusPeakNNPlus",
-           "Delta R for center, center peak one rank higher than rad/dca",
-           100,deltaRmin,deltaRmax);
-    _hRadiusPeakNNMinus = tfs->make<TH1F>("hRadiusPeakNNMinus",
-           "Delta R for center, center peak one rank lower than rad/dca",
-           100,deltaRmin,deltaRmax);
-    _hRadiusPeakNotNN = tfs->make<TH1F>("hRadiusPeakNotNN",
-           "Delta R for center, center peak and rad/dca peak not neighbors in rank",
-           100,deltaRmin,deltaRmax);
-
 ;
 
    //set up fit function in Hough Space
@@ -301,21 +273,6 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     evt.getByLabel(_hitCreatorName,hitsHandle);
     StepPointMCCollection const* hits = hitsHandle.product();
 
-    double InitialRadius=-1;
-/*
-    // if were using a radius from a first pass, get it here
-    if (_InitialRadiusCreater!="none") {
-       edm::Handle<HoughCircleCollection> hcHandle;
-       evt.getByLabel(_InitialRadiusCreator,hcHandle);
-       if (hcHandle->size()) {
-          const HoughCircle& hc=hcHandle->at(0);
-          InitialRadius=hc.Radius();
-       } else {
-          std::cout<<"Looking for initial radius, but no hough circles found."
-            << std::endl;
-       }
-    }
-*/
 
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
@@ -342,8 +299,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     int minHitsforHough = 3;
     if (hits->size() > minHitsforHough)
       {
-
-	mu2e::houghtransform::HoughTransform trialHough(InitialRadius);
+	mu2e::houghtransform::HoughTransform trialHough;
 	mu2e::houghtransform::HoughTransform::houghCandidates houghTracks;
 
     // look for circles in hough space: findHoughTracks fills houghTracks
@@ -381,9 +337,10 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 	s2.Search(_histoRadiusDCA,2,"nobackgroundnomarkov",0.95);
 	Int_t nPeaks2 = s2.GetNPeaks();
 
-	TSpectrum sCenterX(_nPeakSearch); // gets a histogram filled after we
-	TSpectrum sCenterY(_nPeakSearch); // gets a histogram filled after we
-                       // know R
+        // look for center
+	TSpectrum2 sCenter(_nPeakSearch,1.0);  
+	sCenter.Search(_histoCenter,2,"nobackgroundnomarkov",0.95);
+	Int_t nPeaksCenter = sCenter.GetNPeaks();
        
         Float_t* rad1D=0; // radius from 1D plot
 	Float_t* rad2D=0; // radius from 2D plot
@@ -413,104 +370,55 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 		_hRadiusDistribution2D->Fill(rad2D[ithPeak]);
 		_hDCADistribution2D->Fill(dca2D[ithPeak]);
 	      }
-
               if (nPeaks>0) _hRadius2v1->Fill(rad1D[0],rad2D[0]);
-
-              // look for center in X in a band of best peak radius
-              // Radius already found.  Same for Y
-              int bin=_histoRXCenter->GetYaxis()->FindBin(rad2D[0]);
-              int binl=max(bin-1,1);
-              int binu=min(bin+1,_histoRXCenter->GetNbinsY());
-
-              TH1D* xProj=_histoRXCenter->ProjectionX(Form("_px"),binl,binu);
-	      sCenterX.Search(xProj,1," ",0.95);
-
-              TH1D* yProj=_histoRYCenter->ProjectionX(Form("_py"),binl,binu);
-	      sCenterY.Search(yProj,1," ",0.95);
-
 	  }//nPeaks2>0
 
-	  Int_t nPeaksCenterX = sCenterX.GetNPeaks();
-	  Int_t nPeaksCenterY = sCenterY.GetNPeaks();
-
-          if (nPeaksCenterX > 0  && nPeaksCenterY >0 )
+          if (nPeaksCenter > 0 )
           {
-	       centX = sCenterX.GetPositionX();
-	       centY = sCenterY.GetPositionX();
+	       centX = sCenter.GetPositionX();
+	       centY = sCenter.GetPositionY();
               _hYvsX->Fill(centX[0],centY[0]);
+
+              // quick and dirty... to be moved to another module when
+              // a HT DP exists...
+              // Plot fraction of hits with annular road vs. road width
+
 
           }
 
          
           //we have cent, dca, radius to define the circle
-          // loop over all combinations of the peaks
-cout<<nPeaksCenterX<<" "<<nPeaksCenterY<<endl;
-          int nPeaksCenter=min(nPeaksCenterX,nPeaksCenterY);
-          for (int ipc=0; ipc<nPeaksCenter; ipc++)  {
+          if (nPeaksCenter>0&&nPeaks2>0) {
 
-            // radius of the hough center (from detector axis) calculated
-            // from center space peak
-            double radial_center=sqrt(TMath::Power(centX[ipc],2)
-                                     +TMath::Power(centY[ipc],2));
-
-            for (int ipr=0; ipr<nPeaks2; ipr++) {
-
-              // radius of the hough center (from detector axis) calculated
-              // from radius-DCA space peak
-           // this is useless - it has an ambiguity of whether the circle
-           // encompases the origin
-              double radial_radiusDCA=dca2D[ipr]+rad2D[ipr];
-
-              // plots for matching peaks in the two different spaces
-              TH1F* hrad=0; 
-              if (ipr==ipc) {
-                 hrad=_hRadiusPeakEqual;
-              } else if (ipr=ipc+1) {
-                 hrad=_hRadiusPeakNNPlus;
-              } else if (ipr=ipc-1) {
-                 hrad=_hRadiusPeakNNMinus;
-              } else {
-                 hrad=_hRadiusPeakNotNN;
-              }
-
-              hrad->Fill(radial_center-radial_radiusDCA);
-
-              // for now, "the" hough track is the one defined by 
-              // the center of the 1st peak in center space and the radius
-              // of the 1st peak in radius-DCA space.
-              if (ipc==0 && ipr==0) {
-                 StepPointMCCollection::const_iterator ihit = hits->begin();
-                 const StepPointMCCollection::const_iterator endhit = hits->end();
-                 for ( ; ihit!=endhit; ++ihit){
+              StepPointMCCollection::const_iterator ihit = hits->begin();
+              const StepPointMCCollection::const_iterator endhit = hits->end();
+              for ( ; ihit!=endhit; ++ihit){
       
-                   // Aliases, used for readability.
-                    const StepPointMC& hit = *ihit;
-                    const Hep3Vector& pos = hit.position();
-                    double radFromCenter=sqrt(TMath::Power(centX[ipc]-pos.x(),2)
-                                          +TMath::Power(centY[ipc]-pos.y(),2));
-                    _hRHitFromHTCenter->Fill(radFromCenter);
-                    _hRHitFromCircle->Fill(radFromCenter-rad2D[ipr]);
-                    if (hit.trackId()==2) {
-                       _hRNoiseHitFromHTCenter->Fill(radFromCenter);
-                       _hRNoiseHitFromCircle->Fill(radFromCenter-rad2D[ipr]);
-                    } else {
-                       _hRPhysHitFromHTCenter->Fill(radFromCenter);
-                       _hRPhysHitFromCircle->Fill(radFromCenter-rad2D[ipr]);
-                    }
+                // Aliases, used for readability.
+                 const StepPointMC& hit = *ihit;
+                 const Hep3Vector& pos = hit.position();
+                 double radFromCenter=sqrt(TMath::Power(centX[0]-pos.x(),2)
+                                          +TMath::Power(centY[0]-pos.y(),2));
+                 _hRHitFromHTCenter->Fill(radFromCenter);
+                 _hRHitFromCircle->Fill(radFromCenter-rad2D[0]);
+                 if (hit.trackId()==2) {
+                    _hRNoiseHitFromHTCenter->Fill(radFromCenter);
+                    _hRNoiseHitFromCircle->Fill(radFromCenter-rad2D[0]);
+                 } else {
+                    _hRPhysHitFromHTCenter->Fill(radFromCenter);
+                    _hRPhysHitFromCircle->Fill(radFromCenter-rad2D[0]);
+                 }
 
 
-                 } //hits
+              } //hits
                 
-                 // create the data product
-                        // currently "number of straws"=1.  This is a dummy,
-                        // soon to be replaced with useful info
-                 HoughCircle hc(centX[ipc],centY[ipc],rad2D[ipr],1);
-                 HoughResults->push_back(hc); 
+              // create the data product
+                     // currently "number of straws"=1.  This is a dummy,
+                     // soon to be replaced with useful info
+              HoughCircle hc(centX[0],centY[0],rad2D[0],1);
+              HoughResults->push_back(hc); 
 
-              } // ipc=ipr=0
-
-            } // ipr
-          } // ipc
+          }//we have cent, dca, radiaus
 
       } // minHitsforHough
 	
@@ -661,8 +569,6 @@ cout<<nPeaksCenterX<<" "<<nPeaksCenterY<<endl;
 	RootNameTitleHelper radiusErrorHisto("_histoErrorRadius","Radius Error Event",evtno,5);
 	RootNameTitleHelper dcaHisto("_histoDCA","Distance of Closest Approch",evtno,5);
 	RootNameTitleHelper centerHisto("_histoCenter","Center Accumulator Space Event",evtno,5);
-	RootNameTitleHelper rXCenterHisto("_histoRXCenter","Radius vs. X Center Accumulator Space Event",evtno,5);
-	RootNameTitleHelper rYCenterHisto("_histoRYCenter","Radius vs. Y Center Accumulator Space Event",evtno,5);
 	RootNameTitleHelper nStrawsHisto("_histoNStraws","Number of Straws in Circles, Event",evtno,5);
 	RootNameTitleHelper radiusDCAHisto("_histoRadiusDCA","Radius vs. DCA, Event",evtno,5);
 	RootNameTitleHelper radiusDCACenterHisto("_histoRadiusDCACenter","Radius vs. DCA vs Center, Event",evtno,5);
@@ -679,18 +585,12 @@ cout<<nPeaksCenterX<<" "<<nPeaksCenterY<<endl;
 						80,100.,500.,120,-10.,110.,100,0.,1000.);
 	_histoCenter = tfs->make<TH2F>(centerHisto.name(),centerHisto.title(),
 				       100,-1000.,1000.,100,-1000.,1000.);
-	_histoRXCenter = tfs->make<TH2F>(rXCenterHisto.name(),
-                                         rXCenterHisto.title(),
-				       100,-1000.,1000.,80,100.,500.);
-	_histoRYCenter = tfs->make<TH2F>(rYCenterHisto.name(),
-                                         rYCenterHisto.title(),
-				       100,-1000.,1000.,80,100.,500.);
 	_histoRadiusError = tfs->make<TH1F>(radiusErrorHisto.name(),radiusErrorHisto.title(), 
 					    100,0.,100.);
 	_histoNStraws = tfs->make<TH1F>(nStrawsHisto.name(),nStrawsHisto.title(), 
 					100,0.,100.);
   } //bookEventHistos
-
+  
  void HoughTest::fillEventHistos(
          mu2e::houghtransform::HoughTransform::houghCircleStruct houghCircle) 
  {
@@ -708,11 +608,10 @@ cout<<nPeaksCenterX<<" "<<nPeaksCenterY<<endl;
                   static_cast<Double_t>(houghCircle.numberOfStraws));
        _histoDCA->Fill(houghCircle.dca,houghCircle.numberOfStraws); 
        _histoCenter->Fill(houghCircle.x0,houghCircle.y0,houghCircle.numberOfStraws);
-       _histoRXCenter->Fill(houghCircle.x0,houghCircle.radius,houghCircle.numberOfStraws);
-       _histoRYCenter->Fill(houghCircle.y0,houghCircle.radius,houghCircle.numberOfStraws);
     } // if enough straws
   
  } // fillEventHistos()
+
 
 } // namespace HoughTest
 
