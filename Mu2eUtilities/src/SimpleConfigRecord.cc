@@ -3,9 +3,9 @@
  * A class to hold one record within the primitive 
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+ * $Id: SimpleConfigRecord.cc,v 1.2 2010/05/05 12:45:45 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2009/09/30 22:57:47 $
+ * $Date: 2010/05/05 12:45:45 $
  *
  * Original author Rob Kutschke
  *
@@ -46,7 +46,8 @@ using namespace std;
 SimpleConfigRecord::SimpleConfigRecord( const string& record_a ):
   record(record_a),
   _isCommentOrBlank(false),
-  isVector(false){
+  isVector(false),
+  _superceded(false){
   Parse();
 }
   

@@ -6,9 +6,9 @@
  * A class to hold one record within the primitive 
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+ * $Id: SimpleConfigRecord.hh,v 1.2 2010/05/05 12:45:45 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2009/09/30 22:57:47 $
+ * $Date: 2010/05/05 12:45:45 $
  *
  * Original author Rob Kutschke
  *
@@ -150,6 +150,12 @@ class SimpleConfigRecord {
    */
   void print( std::ostream& ) const;
 
+  bool isSuperceded() const { return _superceded; }
+
+  void setSuperceded() {
+    _superceded=true;
+  }
+
 private:
   // Private instance data.
   
@@ -180,6 +186,7 @@ private:
   // State data.
   bool _isCommentOrBlank;
   bool isVector;
+  bool _superceded;
   
   //  Private methods.
 

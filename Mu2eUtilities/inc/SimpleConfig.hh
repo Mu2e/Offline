@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.3 2010/04/22 18:30:01 kutschke Exp $
+ * $Id: SimpleConfig.hh,v 1.4 2010/05/05 12:45:45 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/04/22 18:30:01 $
+ * $Date: 2010/05/05 12:45:45 $
  *
  * Original author Rob Kutschke
  *
@@ -23,7 +23,7 @@
  * 2) Does not escape new lines within a string properly.
  *
  *@author $Author: kutschke $
- *@version $Id: SimpleConfig.hh,v 1.3 2010/04/22 18:30:01 kutschke Exp $
+ *@version $Id: SimpleConfig.hh,v 1.4 2010/05/05 12:45:45 kutschke Exp $
  *
  * Date $Date%
  *
@@ -56,9 +56,10 @@ namespace mu2e {
     /**
      * Constructor.  Takes the name of an input file as an argument.
      *
-     * @return The singleton instance of this class.
      */
-    SimpleConfig( const std::string& filename = "runtime.conf");
+    SimpleConfig( const std::string& filename = "runtime.conf",
+                  bool allowReplacement=true,
+                  bool messageOnReplacement=true);
     
     ~SimpleConfig(){}
     
@@ -202,20 +203,33 @@ namespace mu2e {
     std::string toString ( const std::string& name ) const;
     
     /**
-     * Print the image of the input file to the specfied stream.
+     * Print the config information to the specfied stream.
+     * Print in input order, supressing comments, blank
+     * lines and superceded items.
      *
      * @return
      */
     void print( std::ostream& ost) const;
     
     /**
-     * Print the image of the input file to std::cout.
+     * Print the config information to std::cout.
+     * Print in input order, supressing comments, blank
+     * lines and superceded items.
      *
      * @return
      */
     void print() const{
       print(std::cout);
     }
+
+    /**
+     * Print the config information to the specfied stream.
+     * Print in input order, do not supressing superceded items.
+     *
+     * @return
+     */
+    void printFullImage( std::ostream& ost) const;
+
 
     /**
      * Return the name of the input file.
@@ -229,7 +243,15 @@ namespace mu2e {
   private:
 
     // Name of the input file.
-    std::string inputfile;
+    std::string _inputfile;
+
+    // If a parameter is repeated one two things can happen:
+    // true  - the latest value over writes the previous value.
+    // false - it is an error so throw.
+    bool _allowReplacement;
+
+    // If true, give a message when a parameter is replaced.
+    bool _messageOnReplacement;
 
     typedef boost::shared_ptr<SimpleConfigRecord> Record_sptr;
     typedef std::map<std::string, Record_sptr > Rmap_type;
@@ -237,13 +259,13 @@ namespace mu2e {
     // Access to the input data, keyed by parameter name.
     // Records are owned by the variable image so rmap does not need to 
     // worry about deleting records.
-    Rmap_type rmap;
+    Rmap_type _rmap;
   
     // Image of the input file, with comments and empty lines stripped.
     // Records that span multiple lines in the input file are concatenated
     // into a single line in this file.
     typedef std::vector<Record_sptr> Image_type;
-    Image_type image;  
+    Image_type _image;  
 
     // Private methods.
     

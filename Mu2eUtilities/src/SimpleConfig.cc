@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.2 2010/04/22 18:30:01 kutschke Exp $
+ * $Id: SimpleConfig.cc,v 1.3 2010/05/05 12:45:45 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/04/22 18:30:01 $
+ * $Date: 2010/05/05 12:45:45 $
  *
  * Original author Rob Kutschke
  *
@@ -25,6 +25,7 @@
 
 // Framework includes
 #include "FWCore/Utilities/interface/EDMException.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -44,11 +45,14 @@ namespace mu2e {
   /**
    * The only constructor.
    *
-   * @return The singleton instance of this class.
    */
-  SimpleConfig::SimpleConfig( const string& filename ):
-    inputfile(filename)
-  {
+  SimpleConfig::SimpleConfig( const string& filename, 
+                              bool allowReplacement,
+                              bool messageOnReplacement
+ ):
+    _inputfile(filename),
+    _allowReplacement(allowReplacement),
+    _messageOnReplacement(messageOnReplacement){
     ReadFile();
   }
 
@@ -59,15 +63,15 @@ namespace mu2e {
    * @return a vector<string> containing all variable names.
    */
   void SimpleConfig::getNames(vector<string>& V) const{
-    Rmap_type::const_iterator b = rmap.begin();
-    Rmap_type::const_iterator e = rmap.end();
+    Rmap_type::const_iterator b = _rmap.begin();
+    Rmap_type::const_iterator e = _rmap.end();
     for ( ; b!=e; ++b){
       V.push_back(b->first);
     }
   }
 
   bool SimpleConfig::hasName( const string& name ) const{
-    return rmap.find(name) != rmap.end();
+    return _rmap.find(name) != _rmap.end();
   }
 
 
@@ -77,7 +81,7 @@ namespace mu2e {
    * @return name of the input file.
    */
   string SimpleConfig::inputFile() const{
-    return inputfile;
+    return _inputfile;
   }
     
   // Accessors to named parameters, separated by data type.
@@ -190,7 +194,7 @@ namespace mu2e {
         << "SimpleConfig: Wrong number of elements in vector<string> "
         << name 
         << " in file " 
-        << inputfile 
+        << _inputfile 
         << " Required: "
         << nRequired
         << " Found: "
@@ -211,7 +215,7 @@ namespace mu2e {
         << "SimpleConfig: Wrong number of elements in vector<int> "
         << name 
         << " in file " 
-        << inputfile 
+        << _inputfile 
         << " Required: "
         << nRequired
         << " Found: "
@@ -235,7 +239,7 @@ namespace mu2e {
         << "SimpleConfig: Wrong number of elements in vector<String> "
         << name 
         << " in file " 
-        << inputfile 
+        << _inputfile 
         << " Required: "
         << nRequired
         << " Found: "
@@ -274,18 +278,40 @@ namespace mu2e {
 
 
   /**
-   * Print the image of the input file to the specfied stream.
+   * Print the config information to the specfied stream.
+   * Print in input order, supressing comments, blank
+   * lines and superceded items.
    *
    * @return
    */
   void SimpleConfig::print( std::ostream& ost ) const{
 
-    Image_type::const_iterator b = image.begin();
-    Image_type::const_iterator e = image.end();
+    Image_type::const_iterator b = _image.begin();
+    Image_type::const_iterator e = _image.end();
     for ( vector<SimpleConfigRecord>::size_type i=0;
-          i<image.size(); ++i ){
-      if ( !image[i]->isCommentOrBlank() ) {
-        image[i]->print(ost);
+          i<_image.size(); ++i ){
+      if ( !_image[i]->isCommentOrBlank() && !_image[i]->isSuperceded() ) {
+        _image[i]->print(ost);
+        ost << endl;
+      }
+    }
+  }
+
+  /**
+   * Print the config information to the specfied stream.
+   * Print in input order, supressing comments and blank
+   * lines.  But include superceded items.
+   *
+   * @return
+   */
+  void SimpleConfig::printFullImage( std::ostream& ost ) const{
+
+    Image_type::const_iterator b = _image.begin();
+    Image_type::const_iterator e = _image.end();
+    for ( vector<SimpleConfigRecord>::size_type i=0;
+          i<_image.size(); ++i ){
+      if ( !_image[i]->isCommentOrBlank() ) {
+        _image[i]->print(ost);
         ost << endl;
       }
     }
@@ -302,8 +328,8 @@ namespace mu2e {
    */
   bool SimpleConfig::getSharedPointer( const string& name,
                                        Record_sptr& ptr ) const{
-    Rmap_type::const_iterator b = rmap.find(name);
-    Rmap_type::const_iterator e = rmap.end();
+    Rmap_type::const_iterator b = _rmap.find(name);
+    Rmap_type::const_iterator e = _rmap.end();
     if (b == e) {
       return false;
     }
@@ -326,7 +352,7 @@ namespace mu2e {
         << "SimpleConfig: No such parameter "
         << name 
         << " in file " 
-        << inputfile;
+        << _inputfile;
 
     }
     return *b;
@@ -343,13 +369,13 @@ namespace mu2e {
    */
   void SimpleConfig::ReadFile(){
 
-    ifstream in(inputfile.c_str());
+    ifstream in(_inputfile.c_str());
     if ( !in ) {
     
       // No conf file for this test.
       throw edm::Exception(edm::errors::Unknown)
         << "SimpleConfig: Cannot open input file: "
-        << inputfile
+        << _inputfile
         << endl;
     }
 
@@ -366,8 +392,9 @@ namespace mu2e {
       // Remove comments.
       line = StripComment(line);
       
-      // Add extension lines if needed.
-      if ( WantsExtension(line) ){
+      // If line is not semi-colon terminated, look for the line
+      // to be continued.  Exception for a line starting with #include.
+      if ( WantsExtension(line) && !hasInclude(line) ){
       
         string all(line);
         string nextline;
@@ -400,7 +427,7 @@ namespace mu2e {
       }
       else{
         // Convert to a record and store an image of all records that we find.
-        image.push_back(Record_sptr(new SimpleConfigRecord(line)));
+        _image.push_back(Record_sptr(new SimpleConfigRecord(line)));
       }
     
     }
@@ -408,8 +435,8 @@ namespace mu2e {
     // Form the map after the image has been made.
 
     // Loop over all records in the image.
-    Image_type::const_iterator b0 = image.begin();
-    Image_type::const_iterator e0 = image.end();
+    Image_type::const_iterator b0 = _image.begin();
+    Image_type::const_iterator e0 = _image.end();
     for ( ; b0 != e0; ++b0 ){
 
       // For readability.
@@ -421,25 +448,45 @@ namespace mu2e {
         const string& key = r.getName();
 
         // Check for duplicate parameter names.
-        Rmap_type::const_iterator b = rmap.find(key);
-        Rmap_type::const_iterator e = rmap.end();
-        if ( b != e ){
+        Rmap_type::const_iterator b = _rmap.find(key);
+        if ( b != _rmap.end() ){
 
-          // Test: fail03.conf
-          throw edm::Exception(edm::errors::Unknown)
-            << "Duplicate parameter name found in the input file: "
-            << endl 
-            << "This record:     " 
-            << r.toString()
-            << endl
-            << "Previous record: " 
-            << b->second->toString()
-            << endl;
+          // Duplicate name.  Either replace previous value or declare an error.
+          if ( _allowReplacement ){
+            Record_sptr old = _rmap[key];
+            old->setSuperceded();
+            _rmap[key] = *b0;
 
+            if ( _messageOnReplacement ){
+              edm::LogWarning("CONFIG")
+                << "SimpleConfig replacing parameter in: "
+                << _inputfile << "\n"
+                << "old record: " << *old << "\n"
+                << "new record: " << **b0
+                << "\n";
+            }
+
+
+
+          } else{
+            // Test: fail03.conf
+            throw edm::Exception(edm::errors::Unknown)
+              << "Duplicate parameter name found in the input file: "
+              << endl 
+              << "This record:     " 
+              << r.toString()
+              << endl
+              << "Previous record: " 
+              << b->second->toString()
+              << endl;
+          }
+
+        } else{
+
+          // Not a duplicate parameter. Add it to the map.
+          _rmap[key] = *b0;
         }
 
-        // All Ok. Add it to the map.
-        rmap[key] = *b0;
       }
 
     }
@@ -491,21 +538,79 @@ namespace mu2e {
   }
 
   /**
-   * Does this line contain an include?
-   * Right now demands #include start in column 0.
-   * Should we weaken this to first non-blank?
+   * Does this line start with an include?
+   * By the time we use this, any leading white space has been stripped.
    */
   bool SimpleConfig::hasInclude( const std::string& line ){
     string::size_type idx = line.find("#include");
-    return idx==0;
+    return idx == 0;
   }
 
 
   /**
    *  Insert contents of an included file.
+   *  The required syntax is:
+   *  #include "filename"
+   *  where there may be any amount of white space between or after the 
+   *  two tokens. The filename must be delimited with double quotes.
    *  
    */
   void SimpleConfig::processInclude( const std::string& line){
+    string::size_type idx = line.find("#include");
+
+    // Find the double quote that opens filename.
+    string::size_type j0 = line.find("\"",idx+8);
+    if ( j0 == string::npos ){
+      throw edm::Exception(edm::errors::Unknown)
+        << "Cannot find first double quote on include line: "
+        << line
+        << endl;
+    }
+
+    // Ensure that all charcaters between #include and opening " are
+    // legal whitespace.  This can be triggered by a missing leading quote.
+    for ( string::size_type i=idx+8; i<j0; ++i ){
+      if ( line[i] != ' ' && line[i] != '\t' ){
+        throw edm::Exception(edm::errors::Unknown)
+          << "Unexpected characters after include and before first double quote.\n"
+          << "Maybe a missing leading quote?\n"
+          << line
+          << endl;
+
+      }
+    }
+
+    // Find the double quote that ends the filename.
+    string::size_type j1 = line.find("\"",j0+1);
+    if ( j1 == string::npos ){
+      throw edm::Exception(edm::errors::Unknown)
+        << "Cannot find trailing double quote on include line: \n"
+        << line
+        << endl;
+    }
+
+    // Check for a non-empty file name.
+    if ( j1-j0-1 == 0 ){
+      throw edm::Exception(edm::errors::Unknown)
+        << "Empty filename in include line: \n"
+        << line
+        << endl;
+    }
+
+    // The filename of the file to be included.
+    string fname = line.substr(j0+1,j1-j0-1);
+
+    // Read the included file.
+    SimpleConfig nestedFile(fname);
+
+    // Copy the contents of the included file into this one.
+    for ( Image_type::const_iterator i=nestedFile._image.begin();
+          i != nestedFile._image.end(); ++i ){
+      if ( !(**i).isCommentOrBlank() ){
+        _image.push_back(*i);
+      }
+    }
+
   }
 
 } // end namespace mu2e
