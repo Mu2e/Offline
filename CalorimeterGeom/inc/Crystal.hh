@@ -44,36 +44,38 @@ namespace mu2e{
       
       ~Crystal(){};
 
-  const CrystalId& Id() const { return _id;}
-  CrystalIndex Index() const { return _index;}
+      const CrystalId& Id() const { return _id;}
+      CrystalIndex Index() const { return _index;}
 
 
     protected:
 
 
-  // Identifier
-  CrystalId _id;
+      // Identifier
+      CrystalId _id;
 
-  // Index into the array of all straws.
-  CrystalIndex _index;
+      // Index into the array of all straws.
+      CrystalIndex _index;
 
-  // Mid-point of the straw.
-  CLHEP::Hep3Vector _c;
+      // Mid-point of the straw.
+      CLHEP::Hep3Vector _c;
 
-  // Detailed description of a straw.
-  const CrystalDetail* _detail;
-  int _detailIndex;
+      // Detailed description of a straw.
+      const CrystalDetail* _detail;
+      int _detailIndex;
 
-  // Unit vector along the wire direction.
-  // Need to add unit vectors along local u and v also.
-  // Use Euler angle convention from G4.
-  CLHEP::Hep3Vector _w;
+      // Unit vector along the wire direction.
+      // Need to add unit vectors along local u and v also.
+      // Use Euler angle convention from G4.
+      CLHEP::Hep3Vector _w;
 
-  // Nearest neighbours.
-  std::vector<const Crystal *> _nearest;
+      // Nearest neighbours.
+      std::vector<const Crystal *> _nearest;
 
-  std::vector<CrystalId> _nearestById;
-  std::vector<CrystalIndex> _nearestByIndex;
+      std::vector<CrystalId> _nearestById;
+      std::vector<CrystalIndex> _nearestByIndex;
+
+
 
     };
   }//namespace calorimeter

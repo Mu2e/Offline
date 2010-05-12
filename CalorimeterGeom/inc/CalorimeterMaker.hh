@@ -1,8 +1,8 @@
 #ifndef CALORIMETERMAKER_HH
 #define CALORIMETERMAKER_HH
-// $Id: CalorimeterMaker.hh,v 1.6 2010/04/29 18:21:26 rhbob Exp $
+// $Id: CalorimeterMaker.hh,v 1.7 2010/05/12 14:57:13 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/29 18:21:26 $
+// $Date: 2010/05/12 14:57:13 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -93,10 +93,11 @@ namespace mu2e{
 
 
       //
-      // Individual rotations in x,y,z of vanes from central axis (so in system with theta_0 = 0)
-      std::vector<double> calorimeterVaneRotationsX;
-      std::vector<double> calorimeterVaneRotationsY;
-      std::vector<double> calorimeterVaneRotationsZ;
+      // Individual rotations in euler notation of vanes from central axis (so in system with theta_0 = 0)
+      // these are supposed to be perturbations from overall rotation of vane
+      std::vector<double> calorimeterVaneRotationsPhi;
+      std::vector<double> calorimeterVaneRotationsTheta;
+      std::vector<double> calorimeterVaneRotationsPsi;
 
       //
       // Individual offsets of vanes from ideal locations

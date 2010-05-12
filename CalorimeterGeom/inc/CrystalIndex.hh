@@ -7,11 +7,11 @@
 // of crystals in the system.  This works for both the LTracker
 // and the TTracker having been copied over.  
 //
-// $Id: CrystalIndex.hh,v 1.3 2010/04/27 18:47:06 rhbob Exp $
+// $Id: CrystalIndex.hh,v 1.4 2010/05/12 14:57:29 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/27 18:47:06 $
+// $Date: 2010/05/12 14:57:29 $
 //
-// Original author Rob Kutschke
+// Original author R. Bernstein and Rob Kutschke
 //
 // This class exists to allow compile time checks that
 // the code is using the correct sort of index when indexing

@@ -6,18 +6,19 @@
 //
 
 //
-// $Id: Vane.hh,v 1.1 2010/04/27 18:22:30 rhbob Exp $
+// $Id: Vane.hh,v 1.2 2010/05/12 14:57:48 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/27 18:22:30 $
+// $Date: 2010/05/12 14:57:48 $
 //
 // Original author R, Bernstein and Rob Kutschke
 //
 
 #include <vector>
+//#include <iostream> 
 
 #include "CalorimeterGeom/inc/VaneId.hh"
 #include "CalorimeterGeom/inc/ZSlice.hh"
-
+//using namespace std;
 namespace mu2e {
   namespace calorimeter{
     class Vane{
@@ -52,6 +53,9 @@ namespace mu2e {
       }
 
       const RSlice& getRSlice ( const RSliceId& rslid ) const{
+	//	std::cout << "zslice in getRSlice of Vane.hh = " << rslid.getZSlice()<< endl;
+
+	// 5/7/10 this is a zslice object, and I am getting it's RSlice --> go to ZSlice next
 	return _zslices.at(rslid.getZSlice()).getRSlice(rslid);
       }
 
@@ -61,6 +65,9 @@ namespace mu2e {
 
       // Formatted string embedding the id of the zslice.
       std::string name( std::string const& base ) const;
+
+      // On readback from persistency, recursively recompute mutable members.
+      void fillPointers ( const Calorimeter& calorimeter ) const;
 
 
 #ifndef __CINT__

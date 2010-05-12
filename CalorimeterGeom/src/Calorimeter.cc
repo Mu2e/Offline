@@ -1,78 +1,78 @@
 //
-// Geometry and identifier info about an LTracker.
+// Geometry and identifier info about the Calorimeter.
 //
 //
-// $Id: Calorimeter.cc,v 1.1 2010/04/29 18:23:12 rhbob Exp $
+// $Id: Calorimeter.cc,v 1.2 2010/05/12 14:58:27 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/04/29 18:23:12 $
+// $Date: 2010/05/12 14:58:27 $
 //
-// Original author Rob Kutschke
+// Original author R. Bernstein and Rob Kutschke
 //
 
-#include "LTrackerGeom/inc/LTracker.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 
 using namespace std;
 
 namespace mu2e { 
+  namespace calorimeter{
 
-
-  // On readback from persistency, recursively recompute mutable members.
-  void LTracker::fillPointers() const{
-    for ( size_t i=0; i<_devices.size(); ++i ){
-      _devices[i].fillPointers(*this);
+    // On readback from persistency, recursively recompute mutable members.
+    void Calorimeter::fillPointers() const{
+      for ( size_t i=0; i<_vanes.size(); ++i ){
+	_vanes[i].fillPointers(*this);
+      }
     }
-  }
 
-  // Given the _indices member in each Layer, fill the _straws member.
-  void LTracker::FillPointers1(){
+    // Given the _indices member in each Layer, fill the _straws member.
+    void Calorimeter::FillPointers1(){
 
-    for ( vector<Device>::iterator idev = _devices.begin(),
-            edev = _devices.end(); 
-          idev != edev;  ++idev ){
+      for ( vector<Vane>::iterator ivane = _vanes.begin(),
+	      edev = _vanes.end(); 
+	    ivane != edev;  ++ivane ){
   
-      for ( vector<Sector>::iterator isec = idev->_sectors.begin(),
-              esec = idev->_sectors.end();
-            isec != esec; ++isec ){
+	for ( vector<ZSlice>::iterator izsl = ivane->_zslices.begin(),
+		ezsl = ivane->_zslices.end();
+	      izsl != ezsl; ++izsl ){
 
-        for ( vector<Layer>::iterator ilay = isec->_layers.begin(),
-                elay = isec->_layers.end();
-              ilay != elay; ++ilay ){
-          ilay->_straws.clear();
-          for ( vector<StrawIndex>::iterator istr = ilay->_indices.begin(),
-                  estr = ilay->_indices.end();
-                istr != estr ; ++istr ){
-            const Straw& str = _allStraws[(*istr).asInt()];
-            ilay->_straws.push_back( &str );
-          }
-        }
+	  for ( vector<RSlice>::iterator irsl = izsl->_rslices.begin(),
+		  ersl = izsl->_rslices.end();
+		irsl != ersl; ++irsl ){
+	    irsl->_crystals.clear();
+	    for ( vector<CrystalIndex>::iterator icrys = irsl->_indices.begin(),
+		    ecrys = irsl->_indices.end();
+		  icrys != ecrys ; ++icrys ){
+	      const Crystal& crys = _allCrystals[(*icrys).asInt()];
+	      irsl->_crystals.push_back( &crys );
+	    }
+	  }
+	}
       }
+
     }
 
-  }
+    void Calorimeter::FillPointers2(){
 
-  void LTracker::FillPointers2(){
-
-    // Fill nearest neighbour indices and pointers from the NN Ids.
-    for ( deque<Straw>::iterator i= _allStraws.begin(), 
-            e= _allStraws.end();
-          i!=e; 
-          ++i){
-      //vector<const Straw *>& byPtr = i->_nearest;
-      vector<StrawId>& byId        = i->_nearestById;
-      vector<StrawIndex>& byIndex  = i->_nearestByIndex;
+      // Fill nearest neighbour indices and pointers from the NN Ids.
+      for ( deque<Crystal>::iterator i= _allCrystals.begin(), 
+	      e= _allCrystals.end();
+	    i!=e; 
+	    ++i){
+	//vector<const Straw *>& byPtr = i->_nearest;
+	vector<CrystalId>& byId        = i->_nearestById;
+	vector<CrystalIndex>& byIndex  = i->_nearestByIndex;
     
-      //    byPtr.clear();
-      byIndex.clear();
+	//    byPtr.clear();
+	byIndex.clear();
     
-      for ( vector<StrawId>::iterator j=byId.begin(), je=byId.end();
-            j != je; ++j){
-        const StrawId& id = *j;
-        const Straw& straw = getStraw(id);
-        //      byPtr.push_back( &straw);
-        byIndex.push_back( straw.Index() );
+	for ( vector<CrystalId>::iterator j=byId.begin(), je=byId.end();
+	      j != je; ++j){
+	  const CrystalId& id = *j;
+	  const Crystal& crystal = getCrystal(id);
+	  //      byPtr.push_back( &straw);
+	  byIndex.push_back( crystal.Index() );
+	}
       }
+
     }
-
-  }
-
+  } //namespace calorimeter
 } // namespace mu2e

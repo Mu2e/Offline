@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: RSliceId.hh,v 1.1 2010/04/27 18:22:04 rhbob Exp $
+// $Id: RSliceId.hh,v 1.2 2010/05/12 14:57:41 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/04/27 18:22:04 $
+// $Date: 2010/05/12 14:57:41 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -29,15 +29,15 @@ namespace mu2e {
       }
 
       RSliceId( ZSliceId zslice,
-		int rslice
+		uint32_t rslice
 		):
 	_zid(zslice),
 	_rslice(rslice){
       }
 
       RSliceId( VaneId vane,
-		int zslice,
-		int rslice
+		uint32_t zslice,
+		uint32_t rslice
 		):
 	_zid(ZSliceId(vane,zslice)),
 	_rslice(rslice){
