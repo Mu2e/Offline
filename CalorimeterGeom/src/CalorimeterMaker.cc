@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.7 2010/05/12 14:58:32 rhbob Exp $
+// $Id: CalorimeterMaker.cc,v 1.8 2010/05/13 20:31:06 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/05/12 14:58:32 $
+// $Date: 2010/05/13 20:31:06 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -185,9 +185,9 @@ namespace mu2e{
 	    HepRotation(calorimeterVaneRotationsPhi[ithVane],
 			calorimeterVaneRotationsTheta[ithVane],
 			calorimeterVaneRotationsPsi[ithVane])  *  HepRotationZ(phiZSlice);
-	  cout << "rotation matrix " << "\n" << masterVaneRotation << endl;
+	  //	  cout << "rotation matrix " << "\n" << masterVaneRotation << endl;
 	  Hep3Vector currentLongAxis = masterVaneRotation*initialLongAxis;
-	  cout <<"wire of vane number " << ithVane << " is " << currentLongAxis << endl;
+	  //cout <<"wire of vane number " << ithVane << " is " << currentLongAxis << endl;
 
 	  //
 	  // create ZSlices
@@ -269,7 +269,7 @@ namespace mu2e{
       // Build the nearest neighbour info for each crystal.
       for ( deque<Crystal>::iterator i=_calorimeter->_allCrystals.begin(), e=_calorimeter->_allCrystals.end();
 	    i != e; ++i){
-	cout << "crystal number" << ifoo << endl;
+	//	cout << "crystal number" << ifoo << endl;
 	++ifoo;
 
 	//
