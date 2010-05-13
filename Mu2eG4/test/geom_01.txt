@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.26 2010/05/05 12:37:45 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/05 12:37:45 $
+// $Id: geom_01.txt,v 1.27 2010/05/13 19:41:05 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/05/13 19:41:05 $
 //
 // Original author Rob Kutschke
 
@@ -360,25 +360,25 @@ double calorimeter.z0           = 12700.;
 
 
 // calorimeter 
-int    calorimeter.numberOfVanes                       =  4;
-double calorimeter.crystalHalfTrans                    = 15.; 
-double calorimeter.crystalHalfLong                     = 60.;
-int    calorimeter.nCrystalRSlices                     =  2;
-int    calorimeter.nCrystalZSlices                     =  2;
-vector<double> calorimeter.calorimeterCenter           = {0.,0.,12700.};
-vector<double> calorimeter.calorimeterCenterOffset     = {0.,0.,0.};
-double calorimeter.rInscribed                          = 360.;
-double calorimeter.phi0                                =  0.;
-double calorimeter.theta0                              =  0.;
-vector<double> calorimeter.calorimeterVaneRotationsX   = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneRotationsY   = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneRotationsZ   = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneOffsetsX     = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneOffsetsY     = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneOffsetsZ     = {0.,0.,0.,0.};
-string calorimeter.crystalMaterial                     = "G4_PbWO4";
-string calorimeter.crystalWrapper                      = "G4_POLYETHYLENE"; // until I get around to defining Tyvek with Ti02.
-double calorimeter.crystalWrapperHalfThickness         = 0.01 ;             // totally made up
+int    calorimeter.numberOfVanes                           =  4;
+double calorimeter.crystalHalfTrans                        = 15.; 
+double calorimeter.crystalHalfLong                         = 60.;
+int    calorimeter.nCrystalRSlices                         =  2;
+int    calorimeter.nCrystalZSlices                         =  2;
+vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};
+vector<double> calorimeter.calorimeterCenterOffset         = {0.,0.,0.};
+double calorimeter.rInscribed                              = 360.;
+double calorimeter.phi0                                    =  0.;
+double calorimeter.theta0                                  =  0.;
+vector<double> calorimeter.calorimeterVaneRotationsPhi     = {0.,0.,0.,0.};
+vector<double> calorimeter.calorimeterVaneRotationsTheta   = {0.,0.,0.,0.};
+vector<double> calorimeter.calorimeterVaneRotationsPsi     = {0.,0.,0.,0.};
+vector<double> calorimeter.calorimeterVaneOffsetsX         = {0.,0.,0.,0.};
+vector<double> calorimeter.calorimeterVaneOffsetsY         = {0.,0.,0.,0.};
+vector<double> calorimeter.calorimeterVaneOffsetsZ         = {0.,0.,0.,0.};
+string calorimeter.crystalMaterial                         = "G4_PbWO4";
+string calorimeter.crystalWrapper                          = "G4_POLYETHYLENE"; // until I get around to defining Tyvek with Ti02.
+double calorimeter.crystalWrapperHalfThickness             = 0.01 ;             // totally made up
 
 
 //
