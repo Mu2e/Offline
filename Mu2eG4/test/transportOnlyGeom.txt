@@ -1,0 +1,27 @@
+//
+// Standard geometry with physics turned off.
+// We need to put the control of physics elsewhere.
+//
+// $Id: transportOnlyGeom.txt,v 1.1 2010/05/14 18:49:52 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/14 18:49:52 $
+//
+// Original author Rob Kutschke
+
+// Start with the standard geometry.
+#include "Mu2eG4/test/geom_01.txt"
+
+// Change the name.
+string detector.name  = "transportOnlyGeom";
+
+// Use the faster implementation of the LTracker.
+int LTrackerVersion  = 3;
+
+// Disable all physics except transport.
+string g4.physicsListName = "Minimal";
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
