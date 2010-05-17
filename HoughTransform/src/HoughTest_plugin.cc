@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.9 2010/04/22 17:13:16 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/04/22 17:13:16 $
+// $Id: HoughTest_plugin.cc,v 1.10 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author R. Bernstein
 //
@@ -193,21 +193,21 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     edm::Service<edm::TFileService> tfs;
 
     // Create some 1D histograms.
-    _hRadius       = tfs->make<TH1F>( "hRadius", "Radius of Hits;(mm)",          100,  0., 1000. );
+    _hRadius       = tfs->make<TH1F>( "hRadius", "Radius of Hits;(CLHEP::mm)",          100,  0., 1000. );
     _hTime         = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  100. );
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",         100,  0.,  100. );
-    _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)", 100,  0.,   3.  );
-    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(mm)",                 
+    _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(CLHEP::mm)", 100,  0.,   3.  );
+    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(CLHEP::mm)",                 
 				      100,  -1000.,  1000. );
-    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(mm)",                 
+    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(CLHEP::mm)",                 
 				      100,  -1000.,  1000. );
-    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of Hit;(mm)",                 
+    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of Hit;(CLHEP::mm)",                 
 				      100,  -1400.,  1400. );
 
     _hHitNeighbours    = tfs->make<TH1F>( "hHitNeighbours",  "Number of hit neighbours",
 					  10, 0., 10. );
 
-    _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
+    _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
 					  100, 2.25, 2.75 );
 
     _hRHitFromHTCenterMC = tfs->make<TH1F>( "hRHitFromHTCenterMC",  
@@ -540,7 +540,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
       
                       // Aliases, used for readability.
                        const StepPointMC& hit = *ihit;
-                       const Hep3Vector& pos = hit.position();
+                       const CLHEP::Hep3Vector& pos = hit.position();
                        double radFromCenter=sqrt(TMath::Power(centX[ipc]-pos.x(),2)
                                           +TMath::Power(centY[ipc]-pos.y(),2));
                        _hRHitFromHTCenterMC->Fill(radFromCenter);
@@ -603,8 +603,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
         
         // Aliases, used for readability.
         const StepPointMC& hit = *ihit;
-        const Hep3Vector& pos = hit.position();
-        const Hep3Vector& mom = hit.momentum();
+        const CLHEP::Hep3Vector& pos = hit.position();
+        const CLHEP::Hep3Vector& mom = hit.momentum();
         if (!singleHoughHisto) 
 	  {
 	    _eventPlot->Fill(pos[0],pos[1]);
@@ -612,8 +612,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
         // Get the straw information.
         Straw const& straw = ltracker->getStraw( StrawIndex(hit.volumeId()) );
         //      cout << "straw, position of hit " << hit.volumeId() << " " << pos[0] << " " << pos[1] << endl;
-        Hep3Vector mid = straw.getMidPoint();
-        Hep3Vector w   = straw.getDirection();
+        CLHEP::Hep3Vector mid = straw.getMidPoint();
+        CLHEP::Hep3Vector w   = straw.getDirection();
   
         // Count how many nearest neighbours are also hit.
         int nNeighbours = countHitNeighbours( straw, hits );
@@ -624,7 +624,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
         // Check that the radius of the reference point in the local
         // coordinates of the straw.  Should be 2.5 mm.
         double s = w.dot(pos-mid);
-        Hep3Vector point = pos - (mid + s*w);
+        CLHEP::Hep3Vector point = pos - (mid + s*w);
   
         // I don't understand the distribution of the time variable.
         // I want it to be the time from the start of the spill.

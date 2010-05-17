@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: ZSlice.hh,v 1.2 2010/05/12 14:58:07 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/12 14:58:07 $
+// $Id: ZSlice.hh,v 1.3 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -69,7 +69,7 @@ namespace mu2e {
       const double         boxRxAngle()     const { return _boxRxAngle;     }
       const double         boxRyAngle()     const { return _boxRyAngle;     }
       const double         boxRzAngle()     const { return _boxRzAngle;     }
-      const Hep3Vector&    boxOffset()      const { return _boxOffset;      }
+      const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
 
       std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
 	return _basePosition;

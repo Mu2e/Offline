@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.1 2010/04/15 23:01:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/15 23:01:40 $
+// $Id: constructStoppingTarget.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Peter Shanahan
 //
@@ -47,11 +47,11 @@ namespace mu2e {
     // Master geometry for the Target assembly
     GeomHandle<Target> target;
 
-    double rOut  = mm * target->cylinderRadius();
-    double zHalf = mm * target->cylinderLength()/2.;
+    double rOut  = CLHEP::mm * target->cylinderRadius();
+    double zHalf = CLHEP::mm * target->cylinderLength()/2.;
 
     // center in detector coords, assumed to be on axis
-    double z0    = mm * target->cylinderCenter();
+    double z0    = CLHEP::mm * target->cylinderCenter();
 
     VolumeInfo targetInfo;
 
@@ -110,7 +110,7 @@ namespace mu2e {
                                     ,foil.rOut()
                                     ,foil.halfThickness()
                                     ,0.
-                                    ,CLHEP::twopi*radian
+                                    ,CLHEP::twopi*CLHEP::radian
                                     );
 
         foilInfo.logical = new G4LogicalVolume( foilInfo.solid

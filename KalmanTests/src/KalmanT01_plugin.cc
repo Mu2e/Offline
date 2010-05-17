@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_plugin.cc,v 1.1 2010/04/23 20:18:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/23 20:18:57 $
+// $Id: KalmanT01_plugin.cc,v 1.2 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -121,13 +121,13 @@ namespace mu2e {
 
       edm::Service<edm::TFileService> tfs;
 
-      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Generated Drift Distance;(mm)", 100, -3., 3. );
-      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
+      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Generated Drift Distance;(CLHEP::mm)", 100, -3., 3. );
+      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
 					    100, 2.4, 2.6 );
-      _hd0   = tfs->make<TH1F>( "hd0",   "Gen d0;(cm)",    100, -10., 10. );
+      _hd0   = tfs->make<TH1F>( "hd0",   "Gen d0;(CLHEP::cm)",    100, -10., 10. );
 
-      _hphi0 = tfs->make<TH1F>( "hphi0", "Gen phi00;(radians)", 100, -CLHEP::pi, CLHEP::pi);
-      _hz0   = tfs->make<TH1F>( "hz0",   "Gen z0;(cm)",     70, -500., -300. );
+      _hphi0 = tfs->make<TH1F>( "hphi0", "Gen phi00;(CLHEP::radians)", 100, -CLHEP::pi, CLHEP::pi);
+      _hz0   = tfs->make<TH1F>( "hz0",   "Gen z0;(CLHEP::cm)",     70, -500., -300. );
       _hct   = tfs->make<TH1F>( "hct",   "Gen ct;",     70, 0.3, 0.8 );
       _hs0   = tfs->make<TH1F>( "hs0",   "Gen s0;",     70, -10., 10. );
     }
@@ -140,7 +140,7 @@ namespace mu2e {
     ++ncalls;
 
     // Tracker origin in the Mu2e system.
-    static Hep3Vector trackerOrigin( -3904., 0, 10200.);
+    static CLHEP::Hep3Vector trackerOrigin( -3904., 0, 10200.);
 
     // Get a reference to one of the L or T trackers.  Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
@@ -159,7 +159,7 @@ namespace mu2e {
     const SimParticleCollection& sims = *simsHandle;
 
     // Eventually get this from a calibration DB.
-    static const double sigma=0.1*mm;
+    static const double sigma=0.1*CLHEP::mm;
 
     const SimParticle& sim = sims.front();
 
@@ -169,7 +169,7 @@ namespace mu2e {
     double s0;
     double charge(-1.);
     const BFieldFixed bfield(0.,0.,-1.,0.);
-    const Hep3Vector pos0 = sim.startPosition() - trackerOrigin;
+    const CLHEP::Hep3Vector pos0 = sim.startPosition() - trackerOrigin;
 
     TrkHelixUtils::helixFromMom( startPar, s0, 
                                 toHepPoint(pos0),
@@ -216,18 +216,18 @@ namespace mu2e {
       
       // Aliases (references), used for readability.
       StepPointMC const& hit = (*points)[i];
-      Hep3Vector  const& pos = hit.position();
-      Hep3Vector  const& mom = hit.momentum();
+      CLHEP::Hep3Vector  const& pos = hit.position();
+      CLHEP::Hep3Vector  const& mom = hit.momentum();
       
       // Get the straw information, also by reference.
       Straw const&      straw = tracker.getStraw(hit.strawIndex());
-      Hep3Vector const& mid   = straw.getMidPoint();
-      Hep3Vector const& w     = straw.getDirection();
+      CLHEP::Hep3Vector const& mid   = straw.getMidPoint();
+      CLHEP::Hep3Vector const& w     = straw.getDirection();
 
       // Compute straight line approximation of the drift distance.
       TwoLinePCA pca( mid, w, pos, mom);
       double dcaTrue = pca.dca();
-      double dca  = dcaTrue + RandGaussQ::shoot(0.,sigma);
+      double dca  = dcaTrue + CLHEP::RandGaussQ::shoot(0.,sigma);
 
       // Arc length from poca to step point.
       double arc = (hit.time()-t0)*beta*CLHEP::c_light;
@@ -253,7 +253,7 @@ namespace mu2e {
 	// Check the radius of the reference point in the local
 	// coordinates of the straw.  It should be 2.5 mm.
 	double s = w.dot(pos-mid);
-	Hep3Vector point = pos - (mid + s*w);
+	CLHEP::Hep3Vector point = pos - (mid + s*w);
 	_hCheckPointRadius->Fill(point.mag());
 	_hDriftDist->Fill(pca.dca());
 

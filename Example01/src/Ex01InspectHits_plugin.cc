@@ -2,9 +2,9 @@
 
   Look at some overly simplified hits that are in the event.
 
-  $Id: Ex01InspectHits_plugin.cc,v 1.2 2009/10/23 22:17:49 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2009/10/23 22:17:49 $
+  $Id: Ex01InspectHits_plugin.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
+  $Author: genser $
+  $Date: 2010/05/17 21:47:33 $
    
   Original author Rob Kutschke
 
@@ -169,7 +169,7 @@ namespace mu2e {
       // References are like aliases and are used for readability.
       // No run time costs in CPU time or memory.
       const ToyHit& hit     = hits[i];
-      const Hep3Vector& pos = hit._position;
+      const CLHEP::Hep3Vector& pos = hit._position;
       
       // Fill the histograms
       float radius = pos.perp();

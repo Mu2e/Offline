@@ -188,15 +188,15 @@ std::cout<<"numberOfNoiseHits="<<numberOfNoiseHits<<"\n\n"<<std::endl;
       int trackIDnoise = 2;
       double eDepNoise = 0.;
       double timeNoise = 0.;
-      Hep3Vector momentumNoise;
+      CLHEP::Hep3Vector momentumNoise;
 
       for (int ia=0; ia < numberOfNoiseHits; ++ia)
         {
           int istraw = static_cast<int>(nstraws*_noiseFlat->fire());
           Straw const& straw = ltracker->getStraw( StrawIndex(istraw) );
-          Hep3Vector mid = straw.getMidPoint(); //leftover from Bob's 
+          CLHEP::Hep3Vector mid = straw.getMidPoint(); //leftover from Bob's 
                 // initial HoughTransform work - may need to change.
-          Hep3Vector w   = straw.getDirection();
+          CLHEP::Hep3Vector w   = straw.getDirection();
  
           // Safe dummy value.
           double stepLength(1.0);

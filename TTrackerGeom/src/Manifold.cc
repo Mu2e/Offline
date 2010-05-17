@@ -10,14 +10,14 @@ namespace mu2e {
 
   // Default constructor
   Manifold::Manifold():
-    _origin(Hep3Vector(0.,0.,0.)){
+    _origin(CLHEP::Hep3Vector(0.,0.,0.)){
     _halfLengths.push_back(-1.);
     _halfLengths.push_back(-1.);
     _halfLengths.push_back(-1.);
   }
 
   // Main constructor
-  Manifold::Manifold(const Hep3Vector& origin,
+  Manifold::Manifold(const CLHEP::Hep3Vector& origin,
                      const vector<double>& halfLengths
                      ):
     _origin(origin),

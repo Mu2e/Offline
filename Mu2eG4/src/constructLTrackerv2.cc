@@ -1,9 +1,9 @@
 //
 // Free function to construct version 2 of the LTracker
 //
-// $Id: constructLTrackerv2.cc,v 1.1 2010/04/15 23:01:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/15 23:01:40 $
+// $Id: constructLTrackerv2.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -59,9 +59,9 @@ namespace mu2e{
     // Master geometry for the LTracker.
     GeomHandle<LTracker> ltracker;
 
-    double rOut  = mm * ltracker->rOut();
-    double zHalf = mm * ltracker->zHalfLength();
-    double z0    = mm * ltracker->z0();
+    double rOut  = CLHEP::mm * ltracker->rOut();
+    double zHalf = CLHEP::mm * ltracker->zHalfLength();
+    double z0    = CLHEP::mm * ltracker->z0();
 
     VolumeInfo trackerInfo;
 
@@ -102,10 +102,10 @@ namespace mu2e{
     G4Material* strawMaterial = findMaterialOrThrow( detail.materialName(1) );
     strawInfo.solid  = new G4Tubs(strawName
                                   ,0.
-                                  ,detail.outerRadius() * mm
-                                  ,detail.halfLength()  * mm
+                                  ,detail.outerRadius() * CLHEP::mm
+                                  ,detail.halfLength()  * CLHEP::mm
                                   ,0.
-                                  ,CLHEP::twopi*radian
+                                  ,CLHEP::twopi*CLHEP::radian
                                   );
     
     strawInfo.logical = new G4LogicalVolume( strawInfo.solid
@@ -130,13 +130,13 @@ namespace mu2e{
 
       for ( std::size_t ilay =0; ilay<sec.getLayers().size(); ++ilay){
         Layer const& lay = sec.getLayer(ilay);
-        Hep3Vector const& origin = sec.getBasePosition().at(ilay);
-        Hep3Vector const& delta  = sec.getBaseDelta();
+        CLHEP::Hep3Vector const& origin = sec.getBasePosition().at(ilay);
+        CLHEP::Hep3Vector const& delta  = sec.getBaseDelta();
 
         StrawId id(idev,0,ilay,0);
         
         for ( std::size_t istr = 0; istr<lay.nStraws(); ++istr ){
-          Hep3Vector position = origin + istr*delta;
+          CLHEP::Hep3Vector position = origin + istr*delta;
           _lTrackerAssemblyVols[idev]->AddPlacedVolume( strawInfo.logical, position, 0); 
         }
       }
@@ -150,9 +150,9 @@ namespace mu2e{
       for ( std::size_t isec =0; isec<device.getSectors().size(); ++isec){
         Sector const& sector = device.getSector(isec);
 
-        HepRotationX RX(sector.boxRxAngle());
-        HepRotationY RY(sector.boxRyAngle());
-        HepRotationZ RZ(sector.boxRzAngle());
+        CLHEP::HepRotationX RX(sector.boxRxAngle());
+        CLHEP::HepRotationY RY(sector.boxRyAngle());
+        CLHEP::HepRotationZ RZ(sector.boxRzAngle());
      
         // Need to understand if this causes memory leak.
         G4RotationMatrix* rot = new G4RotationMatrix( RZ*RX*RY);

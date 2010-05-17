@@ -3,9 +3,9 @@
 // approach between the two lines.  The lines are 
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: TwoLinePCA.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -59,7 +59,7 @@ namespace mu2e {
     // Normal case: lines far from parallel.
     else {
 
-      Hep3Vector delta(_p1-_p2);
+      CLHEP::Hep3Vector delta(_p1-_p2);
       double dDotT1 = delta.dot(_t1);
       double dDotT2 = delta.dot(_t2);
 
@@ -70,7 +70,7 @@ namespace mu2e {
       _pca2 = _p2 + _t2*_s2;
     }
 
-    Hep3Vector diff = (_pca1-_pca2);
+    CLHEP::Hep3Vector diff = (_pca1-_pca2);
     _dca   = diff.mag();
     _dca2d = diff.perp();
 

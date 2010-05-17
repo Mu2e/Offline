@@ -58,8 +58,8 @@ namespace mu2e {
        phirel1=phihit-phiwire0;
        if(phiwire1<phiwire0) phirel1*=-1.;
 
-       if(phirel1<-0.5*_Dphi) phirel1+=M_2PI;
-       if(phirel1>=M_2PI-0.5*_Dphi) phirel1-=M_2PI;
+       if(phirel1<-0.5*_Dphi) phirel1+=CLHEP::twopi;
+       if(phirel1>=CLHEP::twopi-0.5*_Dphi) phirel1-=CLHEP::twopi;
 
        wire1=int((phirel1+0.5*_Dphi)/_Dphi);
        if(wire1<0||wire1>=_nwires)
@@ -83,8 +83,8 @@ namespace mu2e {
        phirel2=phihit-phiwire0;
        if(phiwire1<phiwire0) phirel2*=-1.;
 
-       if(phirel2<-0.5*_Dphi) phirel2+=M_2PI;
-       if(phirel2>=M_2PI-0.5*_Dphi) phirel2-=M_2PI;
+       if(phirel2<-0.5*_Dphi) phirel2+=CLHEP::twopi;
+       if(phirel2>=CLHEP::twopi-0.5*_Dphi) phirel2-=CLHEP::twopi;
 
        wire2=int((phirel2+0.5*_Dphi)/_Dphi);
        if(wire2<0||wire2>=_nwires)

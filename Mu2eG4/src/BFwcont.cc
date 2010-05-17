@@ -83,8 +83,8 @@ void BFwcont::readmap(string fieldmap){
     unsigned int yIndex = static_cast<int>((r.y - _ymin)/_dy + 0.5);
     unsigned int zIndex = static_cast<int>((r.z - _zmin)/_dz + 0.5);
 
-    _grid.set(xIndex, yIndex, zIndex, Hep3Vector(r.x,r.y,r.z));
-    _field.set(xIndex, yIndex, zIndex, Hep3Vector(r.bx,r.by,r.bz));
+    _grid.set(xIndex, yIndex, zIndex, CLHEP::Hep3Vector(r.x,r.y,r.z));
+    _field.set(xIndex, yIndex, zIndex, CLHEP::Hep3Vector(r.bx,r.by,r.bz));
 
   }
 
@@ -92,7 +92,7 @@ void BFwcont::readmap(string fieldmap){
 }
 
 // function to determine if the point is in the map
-bool BFwcont::isValid(Hep3Vector const& point){
+bool BFwcont::isValid(CLHEP::Hep3Vector const& point){
   if (point.x() < _xmin || point.x() > _xmax) {
     cout << "Bad X: " << point.x() << endl;
     return false;
@@ -110,7 +110,7 @@ bool BFwcont::isValid(Hep3Vector const& point){
 
 // function to save an array of B-field values at the nearest 
 // neighbors to the point
-void BFwcont::getNeighbors(Container3D<Hep3Vector>& neighborsBF) const {
+void BFwcont::getNeighbors(Container3D<CLHEP::Hep3Vector>& neighborsBF) const {
   for (int i = 0; i != 3; ++i){
     unsigned int xindex = _ix + i - 1;
     for (int j = 0; j != 3; ++j){
@@ -132,12 +132,12 @@ void BFwcont::getNeighbors(Container3D<Hep3Vector>& neighborsBF) const {
 
 // Function to interpolate the BField value at the point from the values
 // at in the neighbor grid. 
-Hep3Vector BFwcont::interpolate(Container3D<Hep3Vector> const vec,
-				Hep3Vector const frac) const {
+Hep3Vector BFwcont::interpolate(Container3D<CLHEP::Hep3Vector> const vec,
+				CLHEP::Hep3Vector const frac) const {
   // Create vecs and vectors
   vector<double> x1d, y1d, z1d;
-  vector<Hep3Vector> vecx;
-  vector<Hep3Vector> vecxy;
+  vector<CLHEP::Hep3Vector> vecx;
+  vector<CLHEP::Hep3Vector> vecxy;
   double xin = frac.x();
   double yin = frac.y();
   double zin = frac.z();
@@ -160,7 +160,7 @@ Hep3Vector BFwcont::interpolate(Container3D<Hep3Vector> const vec,
       double zval = gmcpoly2(z1d,xin);
       /*      cout << "Xin pass: (" << xval << "," << yval << "," << zval
 	      << ")" << endl;*/
-      vecx.push_back(Hep3Vector(xval,yval,zval));
+      vecx.push_back(CLHEP::Hep3Vector(xval,yval,zval));
     }
   }
 
@@ -175,7 +175,7 @@ Hep3Vector BFwcont::interpolate(Container3D<Hep3Vector> const vec,
     double xval = gmcpoly2(x1d,yin);
     double yval = gmcpoly2(y1d,yin);
     double zval = gmcpoly2(z1d,yin);
-    vecxy.push_back(Hep3Vector(xval,yval,zval));
+    vecxy.push_back(CLHEP::Hep3Vector(xval,yval,zval));
   }
 
   // Third loop - interpolate zin
@@ -189,7 +189,7 @@ Hep3Vector BFwcont::interpolate(Container3D<Hep3Vector> const vec,
   double zval = gmcpoly2(z1d,zin);
 
   // Return BField 3Vector
-  return Hep3Vector(xval,yval,zval);
+  return CLHEP::Hep3Vector(xval,yval,zval);
 }
 
 // Standard Lagrange formula for 2nd order polynomial fit of 
@@ -208,11 +208,11 @@ double BFwcont::gmcpoly2(vector<double> const& f1d, double const& x) const {
 } 
 
 // Function to return the BField for any point
-Hep3Vector BFwcont::GetBField(Hep3Vector const& testpoint ){
+Hep3Vector BFwcont::GetBField(CLHEP::Hep3Vector const& testpoint ){
 
   // Allow y-symmetry (grid is only defined for y > 0);
   int sign(1);
-  Hep3Vector point(testpoint.x(), testpoint.y(), testpoint.z());
+  CLHEP::Hep3Vector point(testpoint.x(), testpoint.y(), testpoint.z());
   if (testpoint.y() < _origin.y()){
     sign = -1;
     double y = -(testpoint.y() - _origin.y()) + _origin.y();
@@ -222,7 +222,7 @@ Hep3Vector BFwcont::GetBField(Hep3Vector const& testpoint ){
   // check validity
   _inMap = isValid(point);
   if (! _inMap){ 
-    return Hep3Vector(0,0,0);
+    return CLHEP::Hep3Vector(0,0,0);
   }
 
   // Get the indices of the nearest grid point
@@ -246,7 +246,7 @@ Hep3Vector BFwcont::GetBField(Hep3Vector const& testpoint ){
        << endl;
   */ 
   // Get the BField values of the nearest grid neighbors to the point
-  Container3D<Hep3Vector> neighborsBF(3,3,3);
+  Container3D<CLHEP::Hep3Vector> neighborsBF(3,3,3);
   getNeighbors(neighborsBF);
 
   // Set up fractional grid point. The interpolater treats the neighbors array
@@ -260,12 +260,12 @@ Hep3Vector BFwcont::GetBField(Hep3Vector const& testpoint ){
   double yFrac = (point.y() - _grid(xindex,yindex,zindex).y())/_dy;
   double zFrac = (point.z() - _grid(xindex,yindex,zindex).z())/_dz;
 
-  Hep3Vector frac = Hep3Vector(xFrac,yFrac,zFrac);
+  CLHEP::Hep3Vector frac = CLHEP::Hep3Vector(xFrac,yFrac,zFrac);
   /*  cout << "Frac: (" << frac.x() << "," << frac.y() << ","
       << frac.z() << ")" << endl;*/
 
   // Run the interpolater
-  Hep3Vector testBF = interpolate(neighborsBF,frac);
+  CLHEP::Hep3Vector testBF = interpolate(neighborsBF,frac);
 
   // Reassign y sign
   if (sign == -1){

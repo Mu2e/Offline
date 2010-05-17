@@ -2,9 +2,9 @@
 // Shoots a single particle gun and puts its output
 // into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.3 2010/03/29 16:20:57 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/03/29 16:20:57 $
+// $Id: ParticleGun.cc,v 1.4 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 // 
@@ -79,7 +79,7 @@ namespace mu2e {
     _randomUnitSphere.setczmin(  config.getDouble("particleGun.czmin",  0.5));
     _randomUnitSphere.setczmax(  config.getDouble("particleGun.czmax",  0.7));
     _randomUnitSphere.setphimin( config.getDouble("particleGun.czmin",   0.));
-    _randomUnitSphere.setphimax( config.getDouble("particleGun.czmax",  twopi));
+    _randomUnitSphere.setphimax( config.getDouble("particleGun.czmax",  CLHEP::twopi));
 
     _tmin   = config.getDouble("particleGun.tmin",  0. );
     _tmax   = config.getDouble("particleGun.tmax",  0. );
@@ -100,7 +100,7 @@ namespace mu2e {
 
     edm::TFileDirectory tfdir = tfs->mkdir( "ParticleGun" );
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Particle Gun Multiplicity",    10,  0.,  10.);
-    _hMomentum     = tfs->make<TH1F>( "hMomentum",     "Particle Gun Momentum (MeV)",  100, 0., 110.);
+    _hMomentum     = tfs->make<TH1F>( "hMomentum",     "Particle Gun Momentum (CLHEP::MeV)",  100, 0., 110.);
     _hCz           = tfs->make<TH1F>( "hCz",           "Particle Gun cos(theta)",      100, -1.,  1.);
     _hX0           = tfs->make<TH1F>( "hX0",           "Particle Gun X0",              100,   -20.,    20.);
     _hY0           = tfs->make<TH1F>( "hY0",           "Particle Gun Y0",              100,   -20.,    20.);
@@ -123,24 +123,24 @@ namespace mu2e {
       // Random point inside of a box.
       double x[3];
       for ( int i=0; i<3; ++i ){
-        x[i] = _point[i] + RandFlat::shoot(-1.,1.)*_halfLength[i];
+        x[i] = _point[i] + CLHEP::RandFlat::shoot(-1.,1.)*_halfLength[i];
       }
-      Hep3Vector pos(x[0], x[1], x[2]);
+      CLHEP::Hep3Vector pos(x[0], x[1], x[2]);
 
       // Magnitude of momentum.
-      double p = _pmin + _dp * RandFlat::shoot();
+      double p = _pmin + _dp * CLHEP::RandFlat::shoot();
       
       // 3 Momentum.
-      Hep3Vector mom = p*_randomUnitSphere.shoot();
+      CLHEP::Hep3Vector mom = p*_randomUnitSphere.shoot();
 
       // Energy
       double e = sqrt(mom*mom + _mass*_mass);
     
       // 4 Momentum.
-      HepLorentzVector p4( mom, e);
+      CLHEP::HepLorentzVector p4( mom, e);
 
       // Time
-      double time = _tmin + _dt*RandFlat::shoot();
+      double time = _tmin + _dt*CLHEP::RandFlat::shoot();
 
       genParts.push_back( ToyGenParticle( _pdgId, GenId::particleGun, pos, p4, time));
 

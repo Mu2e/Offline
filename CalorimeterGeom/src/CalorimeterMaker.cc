@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.9 2010/05/14 19:31:53 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/14 19:31:53 $
+// $Id: CalorimeterMaker.cc,v 1.10 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -35,7 +35,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/DiagMatrix.h"
 using namespace std;
-using namespace CLHEP;
+
 
 
 
@@ -157,7 +157,7 @@ namespace mu2e{
       //
       // set initial direction for vector along crystal long axis
       // vane at 6 o'clock if four vanes
-      Hep3Vector initialLongAxis(1.,0.,0.); 
+      CLHEP::Hep3Vector initialLongAxis(1.,0.,0.); 
       //
       // other useful numbers
       double angleOfRotation = CLHEP::twopi/numberOfVanes;
@@ -181,12 +181,12 @@ namespace mu2e{
 	  // rotate "ideal vane" into its phi position, then adjust for angular offset of vane
 	  //
 	  // this assumes eulerian system
-	  HepRotation masterVaneRotation = 
-	    HepRotation(calorimeterVaneRotationsPhi[ithVane],
+	  CLHEP::HepRotation masterVaneRotation = 
+	    CLHEP::HepRotation(calorimeterVaneRotationsPhi[ithVane],
 			calorimeterVaneRotationsTheta[ithVane],
-			calorimeterVaneRotationsPsi[ithVane])  *  HepRotationZ(phiZSlice);
+			calorimeterVaneRotationsPsi[ithVane])  *  CLHEP::HepRotationZ(phiZSlice);
 	  cout << "rotation matrix " << "\n" << masterVaneRotation << endl;
-	  Hep3Vector currentLongAxis = masterVaneRotation*initialLongAxis;
+	  CLHEP::Hep3Vector currentLongAxis = masterVaneRotation*initialLongAxis;
 	  //cout <<"wire of vane number " << ithVane << " is " << currentLongAxis << endl;
 
 	  //
@@ -196,7 +196,7 @@ namespace mu2e{
 	    {
 	      zSlicesCurrentVane.push_back(ZSlice(ZSliceId(ithVane,ithZSlice)));
 	      //
-	      // get the address of this last piece so I can put things directly into the vector;
+	      // get the address of this last CLHEP::piece so I can put things directly into the vector;
 	      // otherwise I need to fill the vector and then do a copy later
 	      ZSlice& currentZSlice = zSlicesCurrentVane.back();
 
@@ -215,8 +215,8 @@ namespace mu2e{
 		  // center of crystal in this rslice again with first one at 6PM for 4-vane
 		  double x0 = 0.;
 		  double y0 = -(crystalHalfTrans + distanceBetweenCrystals*ithRSlice + rInscribed); 
-		  Hep3Vector origin(x0,y0,0.);
-		  Hep3Vector delta(0.,0.,distanceBetweenCrystals);
+		  CLHEP::Hep3Vector origin(x0,y0,0.);
+		  CLHEP::Hep3Vector delta(0.,0.,distanceBetweenCrystals);
 		  RSliceId rid = RSliceId(vid,ithZSlice,ithRSlice);
 		  RSlice currentRSlice = RSlice(rid,
 		  				nCrystalRSlices,origin,delta);
@@ -235,11 +235,11 @@ namespace mu2e{
 		  crystals.reserve(1);
 		  //
 		  // and drop the crystal where it's supposed to be
-		  Hep3Vector finalPositionWithinZSlice = masterVaneRotation*origin;
+		  CLHEP::Hep3Vector finalPositionWithinZSlice = masterVaneRotation*origin;
 		  cout << "origin = " << origin << endl;
 
 		  //
-		  Hep3Vector finalLongAxis = masterVaneRotation*initialLongAxis;
+		  CLHEP::Hep3Vector finalLongAxis = masterVaneRotation*initialLongAxis;
 
 		  CrystalIndex index = CrystalIndex(allCrystals.size());
 		  //

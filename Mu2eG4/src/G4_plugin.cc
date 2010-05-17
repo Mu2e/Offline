@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.17 2010/04/07 23:19:57 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/07 23:19:57 $
+// $Id: G4_plugin.cc,v 1.18 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -127,10 +127,10 @@ namespace mu2e {
     G4UImanager  *_UI;
 
     // Position, in G4 world coord, of (0,0,0) of the mu2e coordinate system.
-    Hep3Vector _mu2eOrigin;
+    CLHEP::Hep3Vector _mu2eOrigin;
 
     // Position, in G4 world coord, of (0,0,0) of the detector coordinate system.
-    Hep3Vector _mu2eDetectorOrigin;
+    CLHEP::Hep3Vector _mu2eDetectorOrigin;
 
     // Name of a macro file for visualization.
     string _visMacro;

@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.1 2010/04/15 23:01:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/15 23:01:40 $
+// $Id: constructLTrackerv3.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -53,9 +53,9 @@ namespace mu2e{
     // Master geometry for the LTracker.
     GeomHandle<LTracker> ltracker;
 
-    double rOut  = mm * ltracker->rOut();
-    double zHalf = mm * ltracker->zHalfLength();
-    double z0    = mm * ltracker->z0();
+    double rOut  = CLHEP::mm * ltracker->rOut();
+    double zHalf = CLHEP::mm * ltracker->zHalfLength();
+    double z0    = CLHEP::mm * ltracker->z0();
 
     VolumeInfo trackerInfo;
 
@@ -104,10 +104,10 @@ namespace mu2e{
     G4Material* strawMaterial = findMaterialOrThrow( detail.materialName(1) );
     strawInfo.solid  = new G4Tubs(strawName
                                   ,0.
-                                  ,detail.outerRadius() * mm
-                                  ,detail.halfLength()  * mm
+                                  ,detail.outerRadius() * CLHEP::mm
+                                  ,detail.halfLength()  * CLHEP::mm
                                   ,0.
-                                  ,CLHEP::twopi*radian
+                                  ,CLHEP::twopi*CLHEP::radian
                                   );
     
     strawInfo.logical = new G4LogicalVolume( strawInfo.solid
@@ -130,9 +130,9 @@ namespace mu2e{
         // This rotation is the inverse of the one in v2.
         // Note the sign and the reversed order : active/passive  confusion.
         // Need to understand if this causes memory leak.
-        HepRotationX RX(-sector.boxRxAngle());
-        HepRotationY RY(-sector.boxRyAngle());
-        HepRotationZ RZ(-sector.boxRzAngle());
+        CLHEP::HepRotationX RX(-sector.boxRxAngle());
+        CLHEP::HepRotationY RY(-sector.boxRyAngle());
+        CLHEP::HepRotationZ RZ(-sector.boxRzAngle());
         G4RotationMatrix* rot = new G4RotationMatrix( RY*RX*RZ);
 
         // Make a physical volume for this sector.  Same material as the 
@@ -147,18 +147,18 @@ namespace mu2e{
         vinfo.push_back(tmp);
         VolumeInfo const& sectorBoxInfo = vinfo.back();
 
-        Hep3Vector const& delta  = sector.getBaseDelta();
+        CLHEP::Hep3Vector const& delta  = sector.getBaseDelta();
 
         for ( std::size_t ilay =0; ilay<sector.getLayers().size(); ++ilay){
           Layer const& layer = sector.getLayer(ilay);
 
-          Hep3Vector const& origin = sector.getBasePosition().at(ilay);
+          CLHEP::Hep3Vector const& origin = sector.getBasePosition().at(ilay);
 
           for ( std::size_t istr =0; istr<layer.nStraws(); ++istr){
             Straw const& straw = layer.getStraw(istr);
 
             // Position within the sector box.
-            Hep3Vector position = origin + istr*delta;
+            CLHEP::Hep3Vector position = origin + istr*delta;
 
             // Name of this physical volume.
             string sname = straw.name( "LTrackerStraw_");

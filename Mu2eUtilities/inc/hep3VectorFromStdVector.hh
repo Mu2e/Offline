@@ -3,11 +3,11 @@
 
 //
 //  A variety of ways of copying a std::vector into a 
-//  Hep3Vector.
+//  CLHEP::Hep3Vector.
 //
-// $Id: hep3VectorFromStdVector.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: hep3VectorFromStdVector.hh,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //

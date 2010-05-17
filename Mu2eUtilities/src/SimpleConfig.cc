@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.3 2010/05/05 12:45:45 kutschke Exp $
- * $Author: kutschke $ 
- * $Date: 2010/05/05 12:45:45 $
+ * $Id: SimpleConfig.cc,v 1.4 2010/05/17 21:47:32 genser Exp $
+ * $Author: genser $ 
+ * $Date: 2010/05/17 21:47:32 $
  *
  * Original author Rob Kutschke
  *
@@ -248,19 +248,19 @@ namespace mu2e {
 
   }
 
-  Hep3Vector SimpleConfig::getHep3Vector ( const std::string& name ) const{
+  CLHEP::Hep3Vector SimpleConfig::getHep3Vector ( const std::string& name ) const{
     vector<double> tmp;
     getVectorDouble(name,tmp,3);
-    Hep3Vector val( tmp[0], tmp[1], tmp[2]);
+    CLHEP::Hep3Vector val( tmp[0], tmp[1], tmp[2]);
     return val;
   }
 
-  Hep3Vector SimpleConfig::getHep3Vector ( const std::string& name,
-                                           const Hep3Vector& def ){
+  CLHEP::Hep3Vector SimpleConfig::getHep3Vector ( const std::string& name,
+                                           const CLHEP::Hep3Vector& def ){
     if ( hasName(name) ) {
       vector<double> tmp;
       getVectorDouble(name,tmp,3);
-      Hep3Vector val( tmp[0], tmp[1], tmp[2]);
+      CLHEP::Hep3Vector val( tmp[0], tmp[1], tmp[2]);
       return val;
     }
     return def;

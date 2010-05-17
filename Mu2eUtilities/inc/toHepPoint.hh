@@ -1,11 +1,11 @@
 #ifndef Mu2eUtilities_toHepPoint_HH
 #define Mu2eUtilities_toHepPoint_HH
 //
-//  Free functions to convert between  HepPoint and Hep3Vector.
+//  Free functions to convert between  HepPoint and CLHEP::Hep3Vector.
 //
-// $Id: toHepPoint.hh,v 1.1 2010/04/23 20:07:29 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/23 20:07:29 $
+// $Id: toHepPoint.hh,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -18,12 +18,12 @@
 
 namespace mu2e {
 
-  inline const HepPoint toHepPoint( const Hep3Vector& v){
+  inline const HepPoint toHepPoint( const CLHEP::Hep3Vector& v){
     return HepPoint( v.x(), v.y(), v.z());
   }
 
-  inline const Hep3Vector fromHepPoint( const HepPoint& v){
-    return Hep3Vector( v.x(), v.y(), v.z() );
+  inline const CLHEP::Hep3Vector fromHepPoint( const HepPoint& v){
+    return CLHEP::Hep3Vector( v.x(), v.y(), v.z() );
   }
 
 }

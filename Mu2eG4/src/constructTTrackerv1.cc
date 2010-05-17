@@ -1,9 +1,9 @@
 //
 // Free function to construct version 1 of the TTracker
 //
-// $Id: constructTTrackerv1.cc,v 1.2 2010/04/18 01:11:09 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 01:11:09 $
+// $Id: constructTTrackerv1.cc,v 1.3 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -121,8 +121,8 @@ namespace mu2e{
 
             const G4ThreeVector& w = straw.direction();
 
-            double theta = w.theta()*radian;
-            double phi   = w.phi()*radian;
+            double theta = w.theta()*CLHEP::radian;
+            double phi   = w.phi()*CLHEP::radian;
             double alpha = M_PI/2.-phi;
           
             // This choice of Euler angles ensures that the z axis fixed to the straw

@@ -1,9 +1,9 @@
 //
 // Hold information about one Straw.
 //
-// $Id: Crystal.cc,v 1.5 2010/05/12 14:58:49 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/12 14:58:49 $
+// $Id: Crystal.cc,v 1.6 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -21,9 +21,9 @@ namespace mu2e {
   namespace calorimeter{
   Crystal::Crystal( const CrystalId& id,
                 CrystalIndex index,
-                Hep3Vector const& c,
+                CLHEP::Hep3Vector const& c,
                 const CrystalDetail* detail,
-                Hep3Vector const& w
+                CLHEP::Hep3Vector const& w
                 ):
     _id(id),
     _index(index),

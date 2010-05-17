@@ -1,9 +1,9 @@
 //
 // Class to place one straw within the tracker mother volume.
 //
-// $Id: StrawPlacer.cc,v 1.3 2010/02/07 00:15:02 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/02/07 00:15:02 $
+// $Id: StrawPlacer.cc,v 1.4 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -62,8 +62,8 @@ namespace mu2e {
     //  1) One rotation matrix per wedge/vane.
     //  2) Delete them at end of run.
 
-    double theta = w.theta()*radian;
-    double phi   = w.phi()*radian;
+    double theta = w.theta()*CLHEP::radian;
+    double phi   = w.phi()*CLHEP::radian;
     double alpha = M_PI/2.-phi;
 
     // This choice of Euler angles ensures that the z axis fixed to the straw

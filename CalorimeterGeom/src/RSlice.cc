@@ -2,9 +2,9 @@
 // Hold information about one RSlice in the calorimeter.
 //
 //
-// $Id: RSlice.cc,v 1.1 2010/05/12 14:59:13 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/12 14:59:13 $
+// $Id: RSlice.cc,v 1.2 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -26,14 +26,14 @@ namespace mu2e {
     RSlice::RSlice():
       _id(RSliceId()),
       _nCrystals(0),
-      _orig(Hep3Vector(0.,0.,0.)),
-      _delta(Hep3Vector(0.,0.,0.)){
+      _orig(CLHEP::Hep3Vector(0.,0.,0.)),
+      _delta(CLHEP::Hep3Vector(0.,0.,0.)){
     }
 
     RSlice::RSlice(const RSliceId& id,
 		   int      nCrystals,
-		   const Hep3Vector& origin,
-		   const Hep3Vector& delta
+		   const CLHEP::Hep3Vector& origin,
+		   const CLHEP::Hep3Vector& delta
 		   ):
       _id(id),
       _nCrystals(nCrystals),

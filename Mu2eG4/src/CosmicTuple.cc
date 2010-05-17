@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.1 2010/05/04 01:33:46 yury Exp $
-// $Author: yury $
-// $Date: 2010/05/04 01:33:46 $
+// $Id: CosmicTuple.cc,v 1.2 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -105,7 +105,7 @@ namespace mu2e {
 
     int oldTrk = -1;
     bool first = true;
-    Hep3Vector ptrk(0,0,0);
+    CLHEP::Hep3Vector ptrk(0,0,0);
     int nHits = 0;
     float hxMin = 1e6;
     float hyMin = 1e6;
@@ -126,8 +126,8 @@ namespace mu2e {
       if ( hit.eDep() < _minimumEnergy ) continue;
       
       // Get the hit information.
-      const Hep3Vector& pos = hit.position();
-      const Hep3Vector& mom = hit.momentum();
+      const CLHEP::Hep3Vector& pos = hit.position();
+      const CLHEP::Hep3Vector& mom = hit.momentum();
       
       // The simulated particle that made this hit.
       int trackId = hit.trackId();
@@ -154,7 +154,7 @@ namespace mu2e {
 	  int pdgId = -1;
 	  float eGen = 0;
 	  float thGen = 0;
-	  Hep3Vector posGen(0,0,0);
+	  CLHEP::Hep3Vector posGen(0,0,0);
 	  GenId idGen;
 	  int pidGen = -1;
 
@@ -185,8 +185,8 @@ namespace mu2e {
 	      ToyGenParticle const& genpart = genParticles->at(gTrk);
 	      idGen = genpart._generatorId;
 	      pidGen = genpart._pdgId;
-	      HepLorentzVector p4gen = genpart._momentum;
-	      Hep3Vector y(0,-1,0);
+	      CLHEP::HepLorentzVector p4gen = genpart._momentum;
+	      CLHEP::Hep3Vector y(0,-1,0);
 	      eGen = p4gen.e();
 	      thGen = y.angle(p4gen.vect());
 	      posGen = genpart._position;

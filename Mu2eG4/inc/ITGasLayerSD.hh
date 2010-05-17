@@ -16,7 +16,7 @@
 #include "G4SDManager.hh"
 #include "G4ios.hh"
 
-#include "CLHEP/config/CLHEP.h"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 namespace mu2e {
 

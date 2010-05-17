@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.7 2010/04/18 00:14:28 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/18 00:14:28 $
+// $Id: StrawSD.cc,v 1.8 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -130,7 +130,7 @@ namespace mu2e {
     G4double dotLocal = dTLocal.unit().dot(pTLocal.unit());
     G4double angleLocal = dTLocal.angle(pTLocal);
 
-    // This is took big. O(1.e-5 radians) or about 1% of the value. Why?
+    // This is took big. O(1.e-5 CLHEP::radians) or about 1% of the value. Why?
     G4double diffAngle = angle-angleLocal;
 
     G4ThreeVector localOrigin(0.,0.,0.);

@@ -2,9 +2,9 @@
 // code for finding HoughTransform for circles in the L-tracker
 // 
 //
-// $Id: HoughTransform.cc,v 1.4 2010/04/22 17:13:16 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/04/22 17:13:16 $
+// $Id: HoughTransform.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author R.Bernstein
 //
@@ -135,7 +135,7 @@ namespace mu2e{
 
     } //foundHoughTracks(3 points)
 
-    Hep3Vector HoughTransform::computeClusterXYZ(vector<mu2e::hitcluster::Candidate>& candClust)
+    CLHEP::Hep3Vector HoughTransform::computeClusterXYZ(vector<mu2e::hitcluster::Candidate>& candClust)
     {
       double averageX = 0.;
       double averageY = 0.;
@@ -148,7 +148,7 @@ namespace mu2e{
       for (vector<int>::size_type ifoo = 0; ifoo < candClust.size(); ++ifoo)
 	{
 	  //	 	  cout << candClust.at(ifoo).id << *(candClust.at(ifoo).hitPointer) << " " ;
-	  const Hep3Vector& pos = candClust.at(ifoo).hitPointer->position();
+	  const CLHEP::Hep3Vector& pos = candClust.at(ifoo).hitPointer->position();
 	  averageX += pos[0];
 	  averageY += pos[1];
 	}
@@ -157,7 +157,7 @@ namespace mu2e{
 	averageY /= clusterSize;
       
       //we don't know the Z in this algorithm since the points are collapsed on the plane
-      return Hep3Vector(averageX,averageY,0.);
+      return CLHEP::Hep3Vector(averageX,averageY,0.);
     }
 
 

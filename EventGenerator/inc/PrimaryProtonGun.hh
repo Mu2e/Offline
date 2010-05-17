@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.hh,v 1.3 2010/04/07 17:43:56 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/04/07 17:43:56 $
+// $Id: PrimaryProtonGun.hh,v 1.4 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -39,7 +39,7 @@
 #include "TF1.h"
 
 
-using CLHEP::RandGeneral;
+
 
 class TH1D;
 
@@ -92,7 +92,7 @@ namespace mu2e {
 
     // primary proton gun coordinates in coordinate system where the center is in the middle of TS
     
-    Hep3Vector _beamDisplacementOnTarget; 
+    CLHEP::Hep3Vector _beamDisplacementOnTarget; 
     
     double _stdDev;
     double _zOffset;

@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.4 2009/11/07 17:05:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2009/11/07 17:05:15 $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -99,8 +99,8 @@ namespace mu2e {
       edm::Service<edm::TFileService> tfs;
 
       _hTime      = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  2000. );
-      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)", 100,  0.,     3.  );
-      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
+      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(CLHEP::mm)", 100,  0.,     3.  );
+      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
 					    100, 2.25, 2.75 );
     }
 
@@ -132,13 +132,13 @@ namespace mu2e {
       
       // Aliases (references), used for readability.
       StepPointMC const& hit = (*points)[i];
-      Hep3Vector  const& pos = hit.position();
-      Hep3Vector  const& mom = hit.momentum();
+      CLHEP::Hep3Vector  const& pos = hit.position();
+      CLHEP::Hep3Vector  const& mom = hit.momentum();
       
       // Get the straw information, also by reference.
       Straw const&      straw = ltracker->getStraw(hit.strawIndex());
-      Hep3Vector const& mid   = straw.getMidPoint();
-      Hep3Vector const& w     = straw.getDirection();
+      CLHEP::Hep3Vector const& mid   = straw.getMidPoint();
+      CLHEP::Hep3Vector const& w     = straw.getDirection();
 
       // Compute straight line approximation of the drift distance.
       TwoLinePCA pca( mid, w, pos, mom);
@@ -150,7 +150,7 @@ namespace mu2e {
 
       // Compute drift time and smeared drift distance.
       double time = dcaTrue/driftVelocity;
-      double dca  = dcaTrue + RandGauss::shoot(0.,sigma);
+      double dca  = dcaTrue + CLHEP::RandGauss::shoot(0.,sigma);
 
       // Add to the output collection.
       crudeHits->push_back( CrudeStrawHit( straw.Index(), 
@@ -170,7 +170,7 @@ namespace mu2e {
 	// Check the radius of the reference point in the local
 	// coordinates of the straw.  It should be 2.5 mm.
 	double s = w.dot(pos-mid);
-	Hep3Vector point = pos - (mid + s*w);
+	CLHEP::Hep3Vector point = pos - (mid + s*w);
 
 	// I don't understand the distribution of the time variable.
 	// I want it to be the time from the start of the spill.

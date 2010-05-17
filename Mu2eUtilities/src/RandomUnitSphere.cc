@@ -1,10 +1,10 @@
 //
-// Return Hep3Vector objects that are unit vectors uniformly
+// Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: RandomUnitSphere.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -18,9 +18,9 @@ using CLHEP::RandFlat;
 
 namespace mu2e{ 
 
-  Hep3Vector RandomUnitSphere::shoot() const{
-    double  cz = _czmin  + ( _czmax  - _czmin  )*RandFlat::shoot();
-    double phi = _phimin + ( _phimax - _phimin )*RandFlat::shoot();
+  CLHEP::Hep3Vector RandomUnitSphere::shoot() const{
+    double  cz = _czmin  + ( _czmax  - _czmin  )*CLHEP::RandFlat::shoot();
+    double phi = _phimin + ( _phimax - _phimin )*CLHEP::RandFlat::shoot();
     return polar3Vector ( 1., cz, phi);
   }
 

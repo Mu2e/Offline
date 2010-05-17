@@ -1,11 +1,11 @@
 //
-// Generate a positron from pi -> e nu
+// Generate a positron from CLHEP::pi -> e nu
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.1 2009/12/22 17:29:25 rhbob Exp $ 
-// $Author: rhbob $
-// $Date: 2009/12/22 17:29:25 $
+// $Id: PiEplusNuGun.cc,v 1.2 2010/05/17 21:47:33 genser Exp $ 
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 // 
@@ -71,7 +71,7 @@ namespace mu2e {
     _czmin  = config.getDouble("piEplusNuGun.czmin",  0.3);
     _czmax  = config.getDouble("piEplusNuGun.czmax",  0.6);
     _phimin = config.getDouble("piEplusNuGun.phimin", 0. );
-    _phimax = config.getDouble("piEplusNuGun.phimax", twopi );
+    _phimax = config.getDouble("piEplusNuGun.phimax", CLHEP::twopi );
     _tmin   = config.getDouble("piEplusNuGun.tmin",  _tmin );
     _tmax   = config.getDouble("piEplusNuGun.tmax",  _tmax );
 
@@ -94,7 +94,7 @@ namespace mu2e {
     int nFoils = target->nFoils();
     
     // Pick a foil.
-    int ifoil = static_cast<int>(nFoils*RandFlat::shoot());
+    int ifoil = static_cast<int>(nFoils*CLHEP::RandFlat::shoot());
     TargetFoil const& foil = target->foil(ifoil);
 
     // Foil properties.
@@ -103,26 +103,26 @@ namespace mu2e {
     const double dr = foil.rOut() - r1;
     
     // A random point within the foil.
-    const double r   = r1 + dr*RandFlat::shoot();
-    const double dz  = (-1.+2.*RandFlat::shoot())*foil.halfThickness();
-    const double phi = twopi*RandFlat::shoot();
-    Hep3Vector pos( center.x()+r*cos(phi), 
+    const double r   = r1 + dr*CLHEP::RandFlat::shoot();
+    const double dz  = (-1.+2.*CLHEP::RandFlat::shoot())*foil.halfThickness();
+    const double phi = CLHEP::twopi*CLHEP::RandFlat::shoot();
+    CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
 		    center.y()+r*sin(phi), 
 		    center.z()+dz );
     
     // Random direction.
     // Replace this with RandomUnitSphere from Mu2eUtilities/inc
-    const double cz   = _czmin  +  _dcz*RandFlat::shoot();
-    const double phi2 = _phimin + _dphi*RandFlat::shoot();
+    const double cz   = _czmin  +  _dcz*CLHEP::RandFlat::shoot();
+    const double phi2 = _phimin + _dphi*CLHEP::RandFlat::shoot();
     
     // This should be an exponential decay.
-    const double time = _tmin   +   _dt*RandFlat::shoot();
+    const double time = _tmin   +   _dt*CLHEP::RandFlat::shoot();
 
     // Derived quantities.
     const double sz   = safeSqrt(1.- cz*cz);
     double e = sqrt( _p*_p +m*m);
     
-    HepLorentzVector mom( _p*sz*cos(phi2), _p*sz*sin(phi2), _p*cz, e);
+    CLHEP::HepLorentzVector mom( _p*sz*cos(phi2), _p*sz*sin(phi2), _p*cz, e);
 
     // Add the electron to  the list.
     genParts.push_back( ToyGenParticle( PDGCode::e_plus, GenId::piEplusNuGun, pos, mom, time));

@@ -1,9 +1,9 @@
 //
 // Free functions to add step limiters to some particles.
 //
-// $Id: addStepLimiter.cc,v 1.2 2010/04/12 13:11:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/12 13:11:44 $
+// $Id: addStepLimiter.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,7 @@ using namespace std;
 namespace mu2e{
 
   // Add step limiters for a standard list of particles:
-  // e, mu, pi, K, p (particles and anti-particles) plus chargedgeantino.
+  // e, mu, CLHEP::pi, K, p (particles and anti-particles) plus chargedgeantino.
   void addStepLimiter (){
 
     // Create the standard list.

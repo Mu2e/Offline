@@ -2,11 +2,11 @@
 #define RM48_HH
 
 //
-//  Adapter to make RandFlat look like the cernlib rn48.
+//  Adapter to make CLHEP::RandFlat look like the cernlib rn48.
 //
-//  $Id: rm48.hh,v 1.1 2010/03/15 21:27:24 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2010/03/15 21:27:24 $
+//  $Id: rm48.hh,v 1.2 2010/05/17 21:47:32 genser Exp $
+//  $Author: genser $
+//  $Date: 2010/05/17 21:47:32 $
 //
 //  Original author Rob Kutschke.
 //

@@ -1,9 +1,9 @@
 #ifndef HOUGHTRANSFORM_HH
 #define HOUGHTRANSFORM_HH
 //
-// $Id: HoughTransform.hh,v 1.4 2010/04/22 17:13:16 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/04/22 17:13:16 $
+// $Id: HoughTransform.hh,v 1.5 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.  
@@ -105,7 +105,7 @@ namespace mu2e{
       int countHitNeighbours( Straw const& straw, StepPointMCCollection const* hits );
       //and a numbering scheme for the returned vector of radius, center x, center y no one needs to know about
 
-      Hep3Vector computeClusterXYZ(std::vector<mu2e::hitcluster::Candidate>& candClust);
+      CLHEP::Hep3Vector computeClusterXYZ(std::vector<mu2e::hitcluster::Candidate>& candClust);
 
      private:
 
@@ -118,7 +118,7 @@ namespace mu2e{
       // nested loops. 
       // we only use x and y, so it could probably be Hep2Vector, but
       // why tempt fate?
-      typedef std::vector<Hep3Vector> clusterCenterVector;
+      typedef std::vector<CLHEP::Hep3Vector> clusterCenterVector;
       clusterCenterVector _clusterCenters;
 
       std::vector<int> _clusterSizes;

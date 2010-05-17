@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.9 2010/04/06 23:07:31 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/06 23:07:31 $
+// $Id: LTrackerMaker.cc,v 1.10 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -31,7 +31,7 @@
 
 #ifndef __CINT__ 
 
-using namespace CLHEP;
+
 
 using namespace std;
 
@@ -74,11 +74,11 @@ namespace mu2e {
                                double r0,
                                double halfLength,
                                double radius,
-                               Hep3Vector center,
+                               CLHEP::Hep3Vector center,
                                double phi0,
                                double tiltX,
                                double tiltY,
-                               Hep3Vector vaneOffset
+                               CLHEP::Hep3Vector vaneOffset
                                ):
     _nSides(nSides),
     _sideInfo(sideInfo),
@@ -281,9 +281,9 @@ namespace mu2e {
     double yoffset(root3*_strawRadius);
 
     // Rotation in the plane of the sector.
-    HepRotationY RY(_tiltY);
+    CLHEP::HepRotationY RY(_tiltY);
 
-    Hep3Vector baseWire(0.,0.,1.);
+    CLHEP::Hep3Vector baseWire(0.,0.,1.);
 
     for ( int isec=0; isec<_nSides; ++isec ){
 
@@ -295,14 +295,14 @@ namespace mu2e {
 
       // Define the rotation from the canonical position.
       double angle = isec*2.*M_PI/_nSides - 3*M_PI/_nSides + _phi0;
-      HepRotationZ RZ(angle);
+      CLHEP::HepRotationZ RZ(angle);
 
       // Offset to place the center of the sector.
       double angle2 = isec*2.*M_PI/_nSides + M_PI/_nSides + _phi0;
-      Hep3Vector sectorOffset(_r0*cos(angle2),_r0*sin(angle2),0.);
+      CLHEP::Hep3Vector sectorOffset(_r0*cos(angle2),_r0*sin(angle2),0.);
 
       // Wire direction for all wires in this sector.
-      Hep3Vector wireDir = RZ*(RY*baseWire);
+      CLHEP::Hep3Vector wireDir = RZ*(RY*baseWire);
     
       SectorId secId(LTracker::wedge,isec);
 
@@ -323,8 +323,8 @@ namespace mu2e {
           (double(j)-halfnlayers)*yoffset :
           (double(j)-halfnlayers+0.5)*yoffset;
         
-        Hep3Vector origin = Hep3Vector( x0,   y0, 0.);
-        Hep3Vector delta  = Hep3Vector( -2.*_strawRadius, 0., 0.);
+        CLHEP::Hep3Vector origin = CLHEP::Hep3Vector( x0,   y0, 0.);
+        CLHEP::Hep3Vector delta  = CLHEP::Hep3Vector( -2.*_strawRadius, 0., 0.);
       
         LayerId lid(secId,j);
         layers.push_back( Layer(lid, n, origin, delta));
@@ -341,13 +341,13 @@ namespace mu2e {
         for ( int is=0; is<linfo._nStraws; ++is ){
 
           // Position in sector centered at the origin.
-          Hep3Vector p = origin + is*delta;
+          CLHEP::Hep3Vector p = origin + is*delta;
 
           // Index into master container.
           StrawIndex index = StrawIndex(allStraws.size());
           
           // Final position with rotation and translation.
-          Hep3Vector q = RZ*(RY*p) + sectorOffset;
+          CLHEP::Hep3Vector q = RZ*(RY*p) + sectorOffset;
 
           // This operation must not invalidate pointers to
           // previous elements in allStraws.
@@ -363,7 +363,7 @@ namespace mu2e {
       } // end loop over layers
 
       // Offset between wires in base position.
-      sec._baseDelta = Hep3Vector( -2.*_strawRadius, 0., 0.);
+      sec._baseDelta = CLHEP::Hep3Vector( -2.*_strawRadius, 0., 0.);
 
       // Pad the box to be slightly larger than it needs to be
       const double pad = 0.001;
@@ -402,10 +402,10 @@ namespace mu2e {
     const double root3(sqrt(3.0));
     double yoffset(root3*_strawRadius);
 
-    HepRotationX RX(_tiltX);
-    HepRotationY RY(_tiltY);
+    CLHEP::HepRotationX RX(_tiltX);
+    CLHEP::HepRotationY RY(_tiltY);
 
-    Hep3Vector baseWire(0.,0.,1.);
+    CLHEP::Hep3Vector baseWire(0.,0.,1.);
 
     for ( int isec=0; isec<_nSides; ++isec ){
 
@@ -417,10 +417,10 @@ namespace mu2e {
 
       // Define the rotation from the canonical position.
       double angle = 2.*isec*M_PI/_nSides  + _phi0;
-      HepRotationZ RZ(angle);
+      CLHEP::HepRotationZ RZ(angle);
     
       // Wire direction for all wires in this sector.
-      Hep3Vector wireDir = RZ*(RX*(RY*baseWire));
+      CLHEP::Hep3Vector wireDir = RZ*(RX*(RY*baseWire));
     
       SectorId secId(LTracker::vane,isec);
 
@@ -445,8 +445,8 @@ namespace mu2e {
         //y0 += 4*isec + 2;
       
         // Rotate origin and offset to this sector.
-        Hep3Vector origin = Hep3Vector( x0,   y0, 0.);
-        Hep3Vector delta  = Hep3Vector( 2.*_strawRadius, 0., 0.);
+        CLHEP::Hep3Vector origin = CLHEP::Hep3Vector( x0,   y0, 0.);
+        CLHEP::Hep3Vector delta  = CLHEP::Hep3Vector( 2.*_strawRadius, 0., 0.);
       
         LayerId lid(secId,j);
         layers.push_back( Layer(lid, linfo._nStraws, origin, delta));
@@ -461,10 +461,10 @@ namespace mu2e {
         sec._basePosition.push_back(origin);
 
         for ( int is=0; is<linfo._nStraws; ++is ){
-          Hep3Vector p = origin + is*delta;
+          CLHEP::Hep3Vector p = origin + is*delta;
           StrawIndex index = StrawIndex(allStraws.size());
 
-          Hep3Vector q = RZ*(RX*RY*p + _vaneOffset);
+          CLHEP::Hep3Vector q = RZ*(RX*RY*p + _vaneOffset);
 
           // This operation must not invalidate pointers to
           // previous elements in allStraws.
@@ -479,7 +479,7 @@ namespace mu2e {
       } // end loop over layers
 
       // Offset for constructing straw positions.
-      sec._baseDelta = Hep3Vector( 2.*_strawRadius, 0., 0.);
+      sec._baseDelta = CLHEP::Hep3Vector( 2.*_strawRadius, 0., 0.);
 
       // Pad the box to be slightly larger than it needs to be
       const double pad = 0.001;
@@ -710,8 +710,8 @@ namespace mu2e {
     for ( int i=0; i<allStraws.size()-1; ++i){
 
       Straw const& strawI    = allStraws[i];
-      Hep3Vector const& midi = strawI.getMidPoint();
-      Hep3Vector const& wi   = strawI.getDirection();
+      CLHEP::Hep3Vector const& midi = strawI.getMidPoint();
+      CLHEP::Hep3Vector const& wi   = strawI.getDirection();
       double radiusI         = strawI.getDetail().outerRadius();
       double halfLengthI     = strawI.getDetail().halfLength();
 
@@ -723,8 +723,8 @@ namespace mu2e {
              strawI.Id().getSectorId()    ) continue;
         ++nChecked;
         
-        Hep3Vector const& midj = strawJ.getMidPoint();
-        Hep3Vector const& wj   = strawJ.getDirection();
+        CLHEP::Hep3Vector const& midj = strawJ.getMidPoint();
+        CLHEP::Hep3Vector const& wj   = strawJ.getDirection();
         double radiusJ         = strawJ.getDetail().outerRadius();
         double halfLengthJ     = strawI.getDetail().halfLength();
 

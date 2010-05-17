@@ -2,12 +2,12 @@
 #define RANDOMUNITSHPERE_HH
 
 //
-// Return Hep3Vector objects that are unit vectors uniformly
+// Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: RandomUnitSphere.hh,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,7 @@
 
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 namespace mu2e { 
 
@@ -28,13 +29,13 @@ namespace mu2e {
       _czmin(-1.),
       _czmax( 1.),
       _phimin(0.),
-      _phimax(twoPi){
+      _phimax(CLHEP::twopi){
     }
 
     RandomUnitSphere( double czmin,
 		      double czmax,
 		      double phimin=0,
-		      double phimax=twoPi):
+		      double phimax=CLHEP::twopi):
       _czmin(czmin),
       _czmax(czmax),
       _phimin(phimin),
@@ -71,8 +72,6 @@ namespace mu2e {
     
     
   private:
-
-    static const double twoPi = 2.*M_PI;
 
     double _czmin;
     double _czmax;

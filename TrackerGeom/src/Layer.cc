@@ -2,9 +2,9 @@
 // Hold information about one Layer in a tracker.
 //
 //
-// $Id: Layer.cc,v 1.2 2010/04/18 00:31:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:31:56 $
+// $Id: Layer.cc,v 1.3 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -25,14 +25,14 @@ namespace mu2e {
   Layer::Layer():
     _id(LayerId()),
     _nStraws(0),
-    _orig(Hep3Vector(0.,0.,0.)),
-    _delta(Hep3Vector(0.,0.,0.)){
+    _orig(CLHEP::Hep3Vector(0.,0.,0.)),
+    _delta(CLHEP::Hep3Vector(0.,0.,0.)){
   }
 
   Layer::Layer(const LayerId& id,
                int      nStraws,
-               const Hep3Vector& origin,
-               const Hep3Vector& delta
+               const CLHEP::Hep3Vector& origin,
+               const CLHEP::Hep3Vector& delta
                ):
     _id(id),
     _nStraws(nStraws),

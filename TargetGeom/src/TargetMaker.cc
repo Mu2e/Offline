@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.1 2010/02/15 16:59:23 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/02/15 16:59:23 $
+// $Id: TargetMaker.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Peter Shanahan
 //
@@ -29,7 +29,7 @@
 
 #ifndef __CINT__ 
 
-using namespace CLHEP;
+
 
 using namespace std;
 
@@ -138,8 +138,8 @@ namespace mu2e {
       }
   
       _targ->_foils.push_back( TargetFoil( i, 
-			          Hep3Vector(_xVars[i],_yVars[i],z),
-				  Hep3Vector(_xCos[i],_yCos[i],zCos),
+			          CLHEP::Hep3Vector(_xVars[i],_yVars[i],z),
+				  CLHEP::Hep3Vector(_xCos[i],_yCos[i],zCos),
 				  _rOut[i],
 				  _rIn, 
 				  _halfThicknesses[i],

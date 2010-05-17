@@ -5,9 +5,9 @@
 //
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
-// $Id: PiCapture.hh,v 1.3 2009/10/23 21:40:45 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2009/10/23 21:40:45 $
+// $Id: PiCapture.hh,v 1.4 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke, P. Shanahan
 // 
@@ -17,7 +17,7 @@
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "CLHEP/Random/RandGeneral.h"
 
-using CLHEP::RandGeneral;
+
 
 class TH1D;
 
@@ -48,7 +48,7 @@ namespace mu2e {
     TH1D* _piCaptureEPhotZ;
 
     RandomUnitSphere _randomUnitSphere;
-    std::auto_ptr<RandGeneral> _funcGen;
+    std::auto_ptr<CLHEP::RandGeneral> _funcGen;
 
     double _mean; //< mean per event
     double _elow; //< lower photon energy 

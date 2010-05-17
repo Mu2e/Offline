@@ -2,9 +2,9 @@
 
   Look at some overly simplified hits that are in the event.
 
-  $Id: Ex02InspectHits_plugin.cc,v 1.2 2009/10/23 22:16:43 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2009/10/23 22:16:43 $
+  $Id: Ex02InspectHits_plugin.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
+  $Author: genser $
+  $Date: 2010/05/17 21:47:33 $
    
   Original author Rob Kutschke
 
@@ -144,7 +144,7 @@ namespace mu2e {
       
       // These are essentially aliases.  Used for readability.
       const ToyHit& hit     = *i;
-      const Hep3Vector& pos = hit._position;
+      const CLHEP::Hep3Vector& pos = hit._position;
       
       // Fill the histograms
       float radius = pos.perp();

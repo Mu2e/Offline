@@ -3,9 +3,9 @@
   A producer module that makes a collection of overly simplified "hits"
   and adds them to the event.
 
-  $Id: Ex02MakeHits_plugin.cc,v 1.3 2009/10/28 13:35:43 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2009/10/28 13:35:43 $
+  $Id: Ex02MakeHits_plugin.cc,v 1.4 2010/05/17 21:47:33 genser Exp $
+  $Author: genser $
+  $Date: 2010/05/17 21:47:33 $
    
   Original author Rob Kutschke
 
@@ -107,7 +107,7 @@ namespace mu2e {
       double s = radius[i]/sinTheta;
 
       // Point of intersection between the track and the layer.
-      Hep3Vector intersectionPoint = s*vunit;
+      CLHEP::Hep3Vector intersectionPoint = s*vunit;
 
       // Generate a gaussian distributed pulse height.
       double ph = CLHEP::RandGauss::shoot(10.,2.);

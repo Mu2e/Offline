@@ -1,9 +1,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.4 2010/03/15 21:18:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/15 21:18:16 $
+// $Id: CosmicDYB.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Yury Kolomensky
 //
@@ -135,7 +135,7 @@ namespace mu2e {
 
     // Initialize fake RM48 that is used by DYB code.
     edm::Service<edm::RandomNumberGenerator> rng;
-    static RandFlat flat(rng->getEngine());
+    static CLHEP::RandFlat flat(rng->getEngine());
     setRm48Distribution(flat);
 
     // initialize DYB generator
@@ -149,7 +149,7 @@ namespace mu2e {
     hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
 	      dim_sum,E,cosTh,par);
 
-    // rate is per cm^2. The constants are 2*pi times the area
+    // rate is per cm^2. The constants are 2*CLHEP::pi times the area
     double tRate = dim_sum*M_PI*0.08*_dx*_dz;
     log << "Total cosmic rate = " << tRate << " Hz\n";
     
@@ -170,7 +170,7 @@ namespace mu2e {
     if (_mean<0) {
       n=(long)-_mean;
     } else {
-      n = RandPoisson::shoot(_mean);
+      n = CLHEP::RandPoisson::shoot(_mean);
     }
 
     _cosmicMultiplicityH->Fill(n);
@@ -201,21 +201,21 @@ namespace mu2e {
       double cy = cosTh;
       double sy = safeSqrt(1. - cosTh*cosTh);
 
-      double phi = 2.*M_PI*RandFlat::shoot();
+      double phi = 2.*M_PI*CLHEP::RandFlat::shoot();
      
-      HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
+      CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
 
       // Position in a reference plane that is just above the ground.
       // We can worry later about the exact meaning of the height.
       // The G4 interface code ( PrimaryGeneratorAction) will put it
       // at the right height.
       // units of (x,y,z)
-      double x = (1.-2.*RandFlat::shoot())*_dx;
+      double x = (1.-2.*CLHEP::RandFlat::shoot())*_dx;
       double y = _y0;
-      double z = (1.-2.*RandFlat::shoot())*_dz;
-      Hep3Vector pos( x, y, z );
+      double z = (1.-2.*CLHEP::RandFlat::shoot())*_dz;
+      CLHEP::Hep3Vector pos( x, y, z );
 
-      double time = _tmin + _dt*RandFlat::shoot();
+      double time = _tmin + _dt*CLHEP::RandFlat::shoot();
 
       // Pick a random charge.
       // implement a rough charge asymmetry
@@ -230,7 +230,7 @@ namespace mu2e {
       }
 
 
-      PDGCode::type pid = (RandFlat::shoot() > asym/(1+asym) ) ? PDGCode::mu_minus : PDGCode::mu_plus;
+      PDGCode::type pid = (CLHEP::RandFlat::shoot() > asym/(1+asym) ) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
       _cosmicChargeH->Fill(-pid/abs(pid));
 

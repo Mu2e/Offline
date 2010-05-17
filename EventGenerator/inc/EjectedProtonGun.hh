@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: EjectedProtonGun.hh,v 1.2 2009/12/30 19:14:19 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2009/12/30 19:14:19 $
+// $Id: EjectedProtonGun.hh,v 1.3 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -38,7 +38,7 @@
 #include "TF1.h"
 
 
-using CLHEP::RandGeneral;
+
 
 class TH1D;
 
@@ -69,7 +69,7 @@ namespace mu2e {
     TH1D* _ejectedProtonMomentumMeV;
 
     RandomUnitSphere _randomUnitSphere;
-    std::auto_ptr<RandGeneral> _funcGen;
+    std::auto_ptr<CLHEP::RandGeneral> _funcGen;
 
 
     double _mean; //< mean per event

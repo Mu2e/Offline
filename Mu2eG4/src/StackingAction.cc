@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.3 2010/04/17 23:58:31 yury Exp $
-// $Author: yury $
-// $Date: 2010/04/17 23:58:31 $
+// $Id: StackingAction.cc,v 1.4 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -113,8 +113,8 @@ namespace mu2e {
       // Magic numbers for illustrative purposes.
       // You can probably get much more aggressive than this.
       // Get ycut from geometry and pcut from run time config.
-      static const double ycut = 800.* mm;
-      static const double pcut =  50.* MeV;
+      static const double ycut = 800.* CLHEP::mm;
+      static const double pcut =  50.* CLHEP::MeV;
       
       // Decide if we want to kill the track.
       killit = ( ppos.y() > ycut && p3mom.mag() < pcut);

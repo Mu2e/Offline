@@ -233,7 +233,7 @@ void ITrackerMaker::Build(){
 
 
 		endcap_inner_radius		= inner_radius;
-		extra_EndCap_dist		= 0.0*mm;
+		extra_EndCap_dist		= 0.0*CLHEP::mm;
 		max_EndCap_dim			=length;
 
 		EndCap_Wall_theta_inner	= 0.;
@@ -246,7 +246,7 @@ void ITrackerMaker::Build(){
 			tmpEndCapWall->_pRmin	= inner_radius;
 			tmpEndCapWall->_pRmax	= outer_radius;
 			tmpEndCapWall->_pSPhi	= 0.0;
-			tmpEndCapWall->_pDPhi	= 360.0*degree;
+			tmpEndCapWall->_pDPhi	= 360.0*CLHEP::degree;
 			tmpEndCapWall->_pDz		= envelop_EndCap_thickness*0.5;
 			tmpEndCapWall->_name	= "EndCapWall_R";
 			tmpEndCapWall->_pos		= HepGeom::Translate3D(0.0,0.0,length+tmpEndCapWall->_pDz);
@@ -255,15 +255,15 @@ void ITrackerMaker::Build(){
 		else if(EndCap_type==1){
 			_ltt->_endcapType		= ITracker::Spherical;
 			max_EndCap_dim = sqrt(pow(length,2)+pow(outer_radius,2));
-			EndCap_Wall_theta_inner = asin(inner_radius/(max_EndCap_dim-envelop_EndCap_thickness)) * radian;
-			EndCap_Wall_theta_outer = acos(length/max_EndCap_dim) * radian;
+			EndCap_Wall_theta_inner = asin(inner_radius/(max_EndCap_dim-envelop_EndCap_thickness)) * CLHEP::radian;
+			EndCap_Wall_theta_outer = acos(length/max_EndCap_dim) * CLHEP::radian;
 			length-=envelop_EndCap_thickness*length/max_EndCap_dim;  // is equivalent (max_EndCap_dim-envelop_EndCap_thickness)*length/max_EndCap_dim;
 			extra_EndCap_dist=sqrt(pow(max_EndCap_dim-envelop_EndCap_thickness,2)-pow(inner_radius,2))-length;
 
 			tmpEndCapWall->_pRmin	= max_EndCap_dim-envelop_EndCap_thickness;
 			tmpEndCapWall->_pRmax	= max_EndCap_dim;
 			tmpEndCapWall->_pSPhi	= 0.0;
-			tmpEndCapWall->_pDPhi	= 360.0*degree;
+			tmpEndCapWall->_pDPhi	= 360.0*CLHEP::degree;
 			tmpEndCapWall->_pDz		= envelop_EndCap_thickness*0.5;
 			tmpEndCapWall->_name	= "EndCapWall_R";
 			tmpEndCapWall->_pSTheta	= EndCap_Wall_theta_inner;
@@ -272,7 +272,7 @@ void ITrackerMaker::Build(){
 
 		Wall *tmpEndCapWall_L = new Wall(*tmpEndCapWall);
 		tmpEndCapWall_L->_name		= "EndCapWall_L";
-		tmpEndCapWall_L->_pos		= HepGeom::RotateY3D(180.0*degree)*tmpEndCapWall_L->_pos;
+		tmpEndCapWall_L->_pos		= HepGeom::RotateY3D(180.0*CLHEP::degree)*tmpEndCapWall_L->_pos;
 		_walls.insert( pair<Wall::Walltype,Wall*>(tmpEndCapWall_L->getType(), tmpEndCapWall_L) );
 
 		_ltt->_max_EndCap_dim	= max_EndCap_dim;
@@ -280,14 +280,14 @@ void ITrackerMaker::Build(){
 		tmpInnerWall->_pRmin	= inner_radius;
 		tmpInnerWall->_pRmax	= inner_radius+envelop_Inner_thickness;
 		tmpInnerWall->_pSPhi	= 0.0;
-		tmpInnerWall->_pDPhi	= 360.0*degree;
+		tmpInnerWall->_pDPhi	= 360.0*CLHEP::degree;
 		tmpInnerWall->_pDz		= length + extra_EndCap_dist;
 		tmpInnerWall->_name		= "InnerWall";
 
 		tmpOuterWall->_pRmin	= outer_radius - envelop_Outer_thickness;
 		tmpOuterWall->_pRmax	= outer_radius;
 		tmpOuterWall->_pSPhi	= 0.0;
-		tmpOuterWall->_pDPhi	= 360.0*degree;
+		tmpOuterWall->_pDPhi	= 360.0*CLHEP::degree;
 		tmpOuterWall->_pDz		= length;
 		tmpOuterWall->_name		= "OuterWall";
 
@@ -299,7 +299,7 @@ void ITrackerMaker::Build(){
 		radius_ringOut_0  = radius_ring_0-FWradii-secure;  // is the radius In, there is Out just for a computation optimization
 		radius_ringOut    = radius_ringOut_0+drop;
 		//epsilonOut	      = atan((radius_ringOut+drop)/length*sin(alfa));
-		epsilonOut	    = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+		epsilonOut	    = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 
 		int superlayer,iring;
 
@@ -324,7 +324,7 @@ void ITrackerMaker::Build(){
 				_sprlr[superlayer]._id._id=superlayer;
 
 				num_wire   = num_wire_sense+superlayer*delta_num_wire_sense;
-				phi        = twopi/((double) num_wire);
+				phi        = CLHEP::twopi/((double) num_wire);
 				sign_epsilon*=-1;
 
 				theta_ring = phi/3.0;
@@ -334,8 +334,8 @@ void ITrackerMaker::Build(){
 				for( iring=0; iring< nring; iring++ ){
 
 					radius_ring	 = radius_ring_0+drop;
-					alfa		 = acos(1.-(drop/radius_ring)) * radian;
-					epsilon 	 = atan(radius_ring/length*sin(alfa)) * radian;
+					alfa		 = acos(1.-(drop/radius_ring)) * CLHEP::radian;
+					epsilon 	 = atan(radius_ring/length*sin(alfa)) * CLHEP::radian;
 
 					radius_ringIn_0  = radius_ringOut_0;
 					radius_ringIn	 = radius_ringOut;
@@ -344,7 +344,7 @@ void ITrackerMaker::Build(){
 					radius_ringOut_0 = radius_ring_0+FWradii+secure;
 					radius_ringOut   = radius_ringOut_0+drop;
 					//epsilonOut	 = atan((radius_ringOut+drop)/length*sin(alfa));
-					epsilonOut	 = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+					epsilonOut	 = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 
 					if ((iring%2)==0){
 						ringangle = 0.;
@@ -354,7 +354,7 @@ void ITrackerMaker::Build(){
 					}
 
 					cellBase = 2.*radius_ring_0*sin(theta_ring*0.5);
-					delta_radius_ring = cellBase * cos(30.*degree);
+					delta_radius_ring = cellBase * cos(30.*CLHEP::degree);
 
 					if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 					else zlength = length;
@@ -399,7 +399,7 @@ void ITrackerMaker::Build(){
 					epsilonIn	 = epsilonOut;
 					radius_ringOut_0 = radius_ring_0-FWradii-secure;
 					radius_ringOut   = radius_ringOut_0+drop;
-					epsilonOut	 = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+					epsilonOut	 = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 					if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 					else zlength = length;
 
@@ -417,8 +417,8 @@ void ITrackerMaker::Build(){
 			}
 
 			radius_ring      = radius_ring_0+drop;
-			alfa	     = acos(1.-(drop/radius_ring)) * radian;
-			epsilon	     = atan(radius_ring/length*sin(alfa)) * radian;
+			alfa	     = acos(1.-(drop/radius_ring)) * CLHEP::radian;
+			epsilon	     = atan(radius_ring/length*sin(alfa)) * CLHEP::radian;
 
 			radius_ringIn_0  = radius_ringOut_0;
 			radius_ringIn    = radius_ringOut;
@@ -426,7 +426,7 @@ void ITrackerMaker::Build(){
 
 			radius_ringOut_0 = radius_ring_0+FWradii+secure;
 			radius_ringOut   = radius_ringOut_0+drop;
-			epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+			epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 			ringangle = 0.;
 			if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 			else zlength = length;
@@ -472,10 +472,10 @@ void ITrackerMaker::Build(){
 				_sprlr[superlayer]._id._id=superlayer;
 
 				senseWireRing_radius_0	= radius_ring_0+inscribedRadius;
-				num_wire				= (int)(twopi*senseWireRing_radius_0/_cellDimension);
-				phi						= twopi/((float) num_wire);
+				num_wire				= (int)(CLHEP::twopi*senseWireRing_radius_0/_cellDimension);
+				phi						= CLHEP::twopi/((float) num_wire);
 				nFwire					= nHorizontalFWire*num_wire;
-				//if ( (twopi*radius_ring_0/((float)nFwire))<fwireDist ) throw cms::Exception("GEOM")<< "Error during field wire positioning: "<< nFwire
+				//if ( (CLHEP::twopi*radius_ring_0/((float)nFwire))<fwireDist ) throw cms::Exception("GEOM")<< "Error during field wire positioning: "<< nFwire
 				//							<<" field wires don't fit on a circumference with radius of "<<radius_ring_0<<" using a step of "<<fwireDist<<std::endl;
 
 				sign_epsilon*=-1;
@@ -484,8 +484,8 @@ void ITrackerMaker::Build(){
 
 				iring					= 0;
 				radius_ring				= radius_ring_0+drop;
-				alfa					= acos(1.-(drop/radius_ring)) * radian;
-				epsilon					= atan(radius_ring/length*sin(alfa)) * radian;
+				alfa					= acos(1.-(drop/radius_ring)) * CLHEP::radian;
+				epsilon					= atan(radius_ring/length*sin(alfa)) * CLHEP::radian;
 
 				radius_ringIn_0			= radius_ringOut_0;
 				radius_ringIn			= radius_ringOut;
@@ -494,7 +494,7 @@ void ITrackerMaker::Build(){
 				radius_ringOut_0		= radius_ring_0+FWradii+secure;
 				radius_ringOut			= radius_ringOut_0+drop;
 				//epsilonOut			= atan((radius_ringOut+drop)/length*sin(alfa));
-				epsilonOut				= atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+				epsilonOut				= atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 
 				if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 				else zlength = length;
@@ -511,7 +511,7 @@ void ITrackerMaker::Build(){
 				zlength/=cos(epsilon);
 				boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
 
-				theta_ring = twopi/((float) nFwire);
+				theta_ring = CLHEP::twopi/((float) nFwire);
 
 				ITWireLocater(fw,Wire::field,itl,nFwire,radius_ring_0,theta_ring,ringangle,sign_epsilon*epsilon,alfa);
 
@@ -524,7 +524,7 @@ void ITrackerMaker::Build(){
 				epsilonIn        = epsilonOut;
 				radius_ringOut_0 = radius_ring_0-FWradii-secure;
 				radius_ringOut   = radius_ringOut_0+drop;
-				epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+				epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 				if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 				else zlength = length;
 
@@ -554,8 +554,8 @@ void ITrackerMaker::Build(){
 			}
 
 			radius_ring      = radius_ring_0+drop;
-			alfa	     = acos(1.-(drop/radius_ring)) * radian;
-			epsilon	     = atan(radius_ring/length*sin(alfa)) * radian;
+			alfa	     = acos(1.-(drop/radius_ring)) * CLHEP::radian;
+			epsilon	     = atan(radius_ring/length*sin(alfa)) * CLHEP::radian;
 
 			radius_ringIn_0  = radius_ringOut_0;
 			radius_ringIn    = radius_ringOut;
@@ -563,7 +563,7 @@ void ITrackerMaker::Build(){
 
 			radius_ringOut_0 = radius_ring_0+FWradii+secure;
 			radius_ringOut   = radius_ringOut_0+drop;
-			epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+			epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 
 			if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 			else zlength = length;
@@ -581,8 +581,8 @@ void ITrackerMaker::Build(){
 			zlength/=cos(epsilon);
 
 			boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
-			nFwire = (unsigned int) (twopi*radius_ring_0/fwireDist);
-			theta_ring = twopi/((float) nFwire);
+			nFwire = (unsigned int) (CLHEP::twopi*radius_ring_0/fwireDist);
+			theta_ring = CLHEP::twopi/((float) nFwire);
 
 			ITWireLocater(fw,Wire::field,itl,nFwire,radius_ring_0,theta_ring,ringangle,sign_epsilon*epsilon,alfa);
 			iring=0;
@@ -617,10 +617,10 @@ void ITrackerMaker::Build(){
 
 				//num_wire	= num_wire_sense+superlayer*delta_num_wire_sense;
 				senseWireRing_radius_0	= radius_ring_0+inscribedRadius;
-				num_wire				= (int)(twopi*senseWireRing_radius_0/_cellDimension);
-				phi						= twopi/((float) num_wire);
+				num_wire				= (int)(CLHEP::twopi*senseWireRing_radius_0/_cellDimension);
+				phi						= CLHEP::twopi/((float) num_wire);
 				nFwire					= nHorizontalFWire*num_wire;
-				//if ( (twopi*radius_ring_0/((float)nFwire))<fwireDist ) throw cms::Exception("GEOM")<< "Error during field wire positioning: "<< nFwire
+				//if ( (CLHEP::twopi*radius_ring_0/((float)nFwire))<fwireDist ) throw cms::Exception("GEOM")<< "Error during field wire positioning: "<< nFwire
 				//							<<" field wires don't fit on a circumference with radius of "<<radius_ring_0<<" using a step of "<<fwireDist<<std::endl;
 
 				sign_epsilon*=-1;
@@ -629,8 +629,8 @@ void ITrackerMaker::Build(){
 
 				iring					= 0;
 				radius_ring				= radius_ring_0+drop;
-				alfa					= acos(1.-(drop/radius_ring)) * radian;
-				epsilon					= atan(radius_ring/length*sin(alfa)) * radian;
+				alfa					= acos(1.-(drop/radius_ring)) * CLHEP::radian;
+				epsilon					= atan(radius_ring/length*sin(alfa)) * CLHEP::radian;
 
 				radius_ringIn_0			= radius_ringOut_0;
 				radius_ringIn			= radius_ringOut;
@@ -639,7 +639,7 @@ void ITrackerMaker::Build(){
 				radius_ringOut_0		= radius_ring_0+_fWireDiameter+secure;
 				radius_ringOut			= radius_ringOut_0+drop;
 				//epsilonOut			= atan((radius_ringOut+drop)/length*sin(alfa));
-				epsilonOut				= atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+				epsilonOut				= atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 
 				if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 				else zlength = length;
@@ -656,7 +656,7 @@ void ITrackerMaker::Build(){
 				zlength/=cos(epsilon);
 				boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
 
-				theta_ring = twopi/((float) nFwire);
+				theta_ring = CLHEP::twopi/((float) nFwire);
 				if (/*isCellStaggered &&*/ (superlayer%2==1)) cellStaggering=theta_ring;
 				else cellStaggering=0.0;
 
@@ -675,7 +675,7 @@ void ITrackerMaker::Build(){
 				epsilonIn        = epsilonOut;
 				radius_ringOut_0 = radius_ring_0-_fWireDiameter-secure;
 				radius_ringOut   = radius_ringOut_0+drop;
-				epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+				epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 				if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 				else zlength = length;
 
@@ -706,8 +706,8 @@ void ITrackerMaker::Build(){
 
 			radius_ring_0+=_fWireDiameter;
 			radius_ring      = radius_ring_0+drop;
-			alfa	     = acos(1.-(drop/radius_ring)) * radian;
-			epsilon	     = atan(radius_ring/length*sin(alfa)) * radian;
+			alfa	     = acos(1.-(drop/radius_ring)) * CLHEP::radian;
+			epsilon	     = atan(radius_ring/length*sin(alfa)) * CLHEP::radian;
 
 			radius_ringIn_0  = radius_ringOut_0;
 			radius_ringIn    = radius_ringOut;
@@ -715,7 +715,7 @@ void ITrackerMaker::Build(){
 
 			radius_ringOut_0 = radius_ring_0+_fWireDiameter+secure;
 			radius_ringOut   = radius_ringOut_0+drop;
-			epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * radian;
+			epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 
 			if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 			else zlength = length;
@@ -733,8 +733,8 @@ void ITrackerMaker::Build(){
 			zlength/=cos(epsilon);
 
 			boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
-			nFwire = (unsigned int) (twopi*radius_ring_0/fwireDist);
-			theta_ring = twopi/((float) nFwire);
+			nFwire = (unsigned int) (CLHEP::twopi*radius_ring_0/fwireDist);
+			theta_ring = CLHEP::twopi/((float) nFwire);
 
 			nFwire1=nFwire;
 			nFwire1/=2;
@@ -772,35 +772,35 @@ void ITrackerMaker::Build(){
 void ITrackerMaker::ITFldWireLocater ( boost::shared_ptr<WireDetail> &wdetail, boost::shared_ptr<ITLayer> &itl, int NofWire,
 		double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha )
 {
-	Transform3D Transform  ( Translate3D(PosRadius, 0., 0.) * RotateX3D(Stereo) );
+	HepGeom::Transform3D Transform  ( HepGeom::Translate3D(PosRadius, 0., 0.) * HepGeom::RotateX3D(Stereo) );
 	for (int copyNo=0; copyNo<NofWire; copyNo++){
-		RotateZ3D iRot (ThetaOffset + Theta*((copyNo/2)+copyNo) );
+		HepGeom::RotateZ3D iRot (ThetaOffset + Theta*((copyNo/2)+copyNo) );
 
-		itl->addFieldWire( new Wire( WireId(&(itl->_id),copyNo), wdetail, new Transform3D(iRot * Transform), Stereo, 2.0*halfAlpha, Wire::field ) );
+		itl->addFieldWire( new Wire( WireId(&(itl->_id),copyNo), wdetail, new HepGeom::Transform3D(iRot * Transform), Stereo, 2.0*halfAlpha, Wire::field ) );
 	}
 }
 
 void ITrackerMaker::ITWireLocater ( boost::shared_ptr<WireDetail> &wdetail, Wire::Wtype wireType, boost::shared_ptr<ITLayer> &itl/*ITLayer *itl*/, int NofWire,
 		double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha, int copyNunOffset, boost::shared_ptr<CellDetail> *celldetail )
 {
-	Transform3D Transform  ( Translate3D(PosRadius, 0., 0.) * RotateX3D(Stereo) );
+	HepGeom::Transform3D Transform  ( HepGeom::Translate3D(PosRadius, 0., 0.) * HepGeom::RotateX3D(Stereo) );
 	if ( wireType == Wire::sense ){
 		for (int copyNo=0; copyNo<NofWire; copyNo++){
-			RotateZ3D iRot ( ThetaOffset + Theta*copyNo );
+			HepGeom::RotateZ3D iRot ( ThetaOffset + Theta*copyNo );
 			WireId twid (&(itl->_id),copyNunOffset+copyNo);
 			itl->addCell(
 					new Cell(
 							CellId(twid), *celldetail,
 							boost::shared_ptr<Wire> (
-									new Wire( twid, wdetail, new Transform3D(iRot * Transform), Stereo, 2.0*halfAlpha, wireType )
+									new Wire( twid, wdetail, new HepGeom::Transform3D(iRot * Transform), Stereo, 2.0*halfAlpha, wireType )
 							)
 					)
 			);
 		}
 	} else {
 		for (int copyNo=0; copyNo<NofWire; copyNo++){
-			RotateZ3D iRot ( ThetaOffset + Theta*copyNo );
-			itl->addFieldWire( new Wire( WireId(&(itl->_id),copyNunOffset+copyNo), wdetail, new Transform3D(iRot * Transform), Stereo, 2.0*halfAlpha, wireType ) );
+			HepGeom::RotateZ3D iRot ( ThetaOffset + Theta*copyNo );
+			itl->addFieldWire( new Wire( WireId(&(itl->_id),copyNunOffset+copyNo), wdetail, new HepGeom::Transform3D(iRot * Transform), Stereo, 2.0*halfAlpha, wireType ) );
 		}
 	}
 }

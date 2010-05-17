@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.4 2010/05/05 12:45:45 kutschke Exp $
- * $Author: kutschke $ 
- * $Date: 2010/05/05 12:45:45 $
+ * $Id: SimpleConfig.hh,v 1.5 2010/05/17 21:47:32 genser Exp $
+ * $Author: genser $ 
+ * $Date: 2010/05/17 21:47:32 $
  *
  * Original author Rob Kutschke
  *
@@ -22,8 +22,8 @@
  *     string name = "//This is not a comment"; 
  * 2) Does not escape new lines within a string properly.
  *
- *@author $Author: kutschke $
- *@version $Id: SimpleConfig.hh,v 1.4 2010/05/05 12:45:45 kutschke Exp $
+ *@author $Author: genser $
+ *@version $Id: SimpleConfig.hh,v 1.5 2010/05/17 21:47:32 genser Exp $
  *
  * Date $Date%
  *
@@ -181,16 +181,16 @@ namespace mu2e {
                            int nRequired=-1) const;
 
     /**
-     * Get a specified parameter as a Hep3Vector.
+     * Get a specified parameter as a CLHEP::Hep3Vector.
      *
-     * @return the value of the parameter as Hep3Vector.
+     * @return the value of the parameter as CLHEP::Hep3Vector.
      */
     CLHEP::Hep3Vector getHep3Vector ( const std::string& name ) const;
 
     /**
-     * Get a specified parameter as a Hep3Vector.
+     * Get a specified parameter as a CLHEP::Hep3Vector.
      *
-     * @return the value of the parameter as a Hep3Vector.
+     * @return the value of the parameter as a CLHEP::Hep3Vector.
      */
     CLHEP::Hep3Vector getHep3Vector ( const std::string& name,
                                       const CLHEP::Hep3Vector& def );

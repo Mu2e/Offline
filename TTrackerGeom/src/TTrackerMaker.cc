@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.1 2010/04/18 00:37:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:37:16 $
+// $Id: TTrackerMaker.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@
 
 #ifndef __CINT__ 
 
-using namespace CLHEP;
+
 
 using namespace std;
 
@@ -58,23 +58,23 @@ namespace mu2e {
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
 
-    _zCenter              = config.getDouble("ttracker.z0")*mm;
-    _envelopeInnerRadius  = config.getDouble("ttracker.envelopeInnerRadius")*mm;
-    _strawOuterRadius     = config.getDouble("ttracker.strawOuterRadius")*mm;
-    _strawWallThickness   = config.getDouble("ttracker.strawWallThickness")*mm;
-    _deviceSeparation     = config.getDouble("ttracker.deviceSeparation")*mm;
-    _deviceRotation       = config.getDouble("ttracker.deviceRotation")*degree;
+    _zCenter              = config.getDouble("ttracker.z0")*CLHEP::mm;
+    _envelopeInnerRadius  = config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
+    _strawOuterRadius     = config.getDouble("ttracker.strawOuterRadius")*CLHEP::mm;
+    _strawWallThickness   = config.getDouble("ttracker.strawWallThickness")*CLHEP::mm;
+    _deviceSeparation     = config.getDouble("ttracker.deviceSeparation")*CLHEP::mm;
+    _deviceRotation       = config.getDouble("ttracker.deviceRotation")*CLHEP::degree;
 
-    _outerSupportRadius   = config.getDouble("ttracker.outerSupportRadius")*mm;
-    _innerSupportRadius   = config.getDouble("ttracker.innerSupportRadius")*mm;
-    _supportHalfThickness = config.getDouble("ttracker.supportHalfThickness")*mm;
+    _outerSupportRadius   = config.getDouble("ttracker.outerSupportRadius")*CLHEP::mm;
+    _innerSupportRadius   = config.getDouble("ttracker.innerSupportRadius")*CLHEP::mm;
+    _supportHalfThickness = config.getDouble("ttracker.supportHalfThickness")*CLHEP::mm;
 
-    _wireRadius           = config.getDouble("ttracker.wireRadius")*mm;
+    _wireRadius           = config.getDouble("ttracker.wireRadius")*CLHEP::mm;
     
-    _manifoldYOffset      = config.getDouble("ttracker.manifoldYOffset")*mm;
+    _manifoldYOffset      = config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
     config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
     for ( int i=0; i<_manifoldHalfLengths.size(); ++i ){
-      _manifoldHalfLengths[i] *= mm;
+      _manifoldHalfLengths[i] *= CLHEP::mm;
     }
     
     config.getVectorString("ttracker.strawMaterials", _strawMaterials, 3);
@@ -86,10 +86,10 @@ namespace mu2e {
 
     // Also define some parameters that may become variable some day.
     _sectorBaseRotations.clear();
-    _sectorBaseRotations.push_back(   0.*degree);
-    _sectorBaseRotations.push_back(  90.*degree);
-    _sectorBaseRotations.push_back( 180.*degree);
-    _sectorBaseRotations.push_back( 270.*degree);
+    _sectorBaseRotations.push_back(   0.*CLHEP::degree);
+    _sectorBaseRotations.push_back(  90.*CLHEP::degree);
+    _sectorBaseRotations.push_back( 180.*CLHEP::degree);
+    _sectorBaseRotations.push_back( 270.*CLHEP::degree);
     _sectorZSide.clear();
     _sectorZSide.push_back(-1.);
     _sectorZSide.push_back(+1.);
@@ -157,7 +157,7 @@ namespace mu2e {
 
     int idev = devId;
 
-    Hep3Vector origin( 0., 0., _z0+_deviceSeparation*idev);
+    CLHEP::Hep3Vector origin( 0., 0., _z0+_deviceSeparation*idev);
     double phi = chooseDeviceRotation(idev)+_deviceRotation;
 
     _tt->_devices.push_back(Device(devId, origin, phi));
@@ -209,10 +209,10 @@ namespace mu2e {
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
-    HepRotationZ RZ(_sectorBaseRotations.at(isec));
+    CLHEP::HepRotationZ RZ(_sectorBaseRotations.at(isec));
 
     // Unit vector in the wire direction.
-    Hep3Vector unit = RZ*Hep3Vector(0.,1.,0.);
+    CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
 
     // Straw number within the layer; does not reset to zero at each manifold.
     int istraw(-1);
@@ -230,11 +230,11 @@ namespace mu2e {
         // Construct straw midpoint in its base position in the 
         // coord system of the device envelope.
         double xstraw = xA + (1. + 2.*istr)*_strawOuterRadius ;
-        Hep3Vector mid( xstraw, 0., zOffset*_sectorZSide.at(isec) );
+        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_sectorZSide.at(isec) );
         mid += device.origin();
         
         // Rotate straw midpoint to its actual location.
-        Hep3Vector offset = RZ*mid;
+        CLHEP::Hep3Vector offset = RZ*mid;
 
         StrawIndex index(allStraws.size());
 
@@ -280,7 +280,7 @@ namespace mu2e {
     }
 
     double phi = _tt->getDevice(secId.getDevice()).rotation();
-    HepRotationZ RZ(phi);
+    CLHEP::HepRotationZ RZ(phi);
 
 
     for ( int i=0; i<_manifoldsPerEnd; ++i){
@@ -295,7 +295,7 @@ namespace mu2e {
       double z0 = ( _supportHalfThickness + _manifoldHalfLengths[2] );
       if ( secId.getSector() <= 1 ) z0 = -z0;
       
-      Hep3Vector origin(x0,y0,z0);
+      CLHEP::Hep3Vector origin(x0,y0,z0);
 
 
       _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
@@ -310,7 +310,7 @@ namespace mu2e {
     _strawHalfLengths.clear();
 
     // Should get this from somewhere else.
-    static const double tolerance = 1.e-4*mm;
+    static const double tolerance = 1.e-4*CLHEP::mm;
 
     // Space between first/last straw and edge of manifold.
     double dx = _manifoldHalfLengths[0] - _strawOuterRadius*_strawsPerManifold;

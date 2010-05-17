@@ -1,9 +1,9 @@
 
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.5 2009/11/13 23:29:19 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/11/13 23:29:19 $
+// $Id: PiCapture.cc,v 1.6 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -69,7 +69,7 @@ namespace mu2e {
     if (_nbins>0) _bindE = (_ehi - _elow) / _nbins;
     else {
        // I'm sure this isn't the right way to do this...
-       throw cms::Exception("RANGE") <<"Nonsense picapture.nbins requested="<<
+       throw cms::Exception("RANGE") <<"Nonsense CLHEP::picapture.nbins requested="<<
             _nbins<<"\n";
     }
 
@@ -80,7 +80,7 @@ namespace mu2e {
        double x = _elow+(ib+0.5) * _bindE;
        YFunc[ib] = EPhotFunc(x);
     }
-    _funcGen = auto_ptr<RandGeneral>(new RandGeneral(YFunc,_nbins));
+    _funcGen = auto_ptr<CLHEP::RandGeneral>(new CLHEP::RandGeneral(YFunc,_nbins));
 
     // Book histograms.
     edm::Service<edm::TFileService> tfs;
@@ -108,14 +108,14 @@ namespace mu2e {
     // This number is not meant to be real - its just to exercise the system.
     long n;
     if (_mean<=0) n=(long)-_mean;
-    else         n = RandPoisson::shoot(_mean);
+    else         n = CLHEP::RandPoisson::shoot(_mean);
 
     _piCaptureMultiplicity->Fill(n);
 
     for ( int i=0; i<n; ++i ){
 
       // Pick a foil.
-      int ifoil = static_cast<int>(nFoils*RandFlat::shoot());
+      int ifoil = static_cast<int>(nFoils*CLHEP::RandFlat::shoot());
       TargetFoil const& foil = target->foil(ifoil);
 
       // Foil properties.
@@ -124,10 +124,10 @@ namespace mu2e {
       const double dr = foil.rOut() - r1;
       
       // A random point within the foil.
-      const double r   = r1 + dr*RandFlat::shoot();
+      const double r   = r1 + dr*CLHEP::RandFlat::shoot();
       const double dz  = 2.*(0.5-RandFlat::shoot())*foil.halfThickness();
-      const double phi = 2.*M_PI*RandFlat::shoot();
-      Hep3Vector pos( center.x()+r*cos(phi), 
+      const double phi = 2.*M_PI*CLHEP::RandFlat::shoot();
+      CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
 		      center.y()+r*sin(phi), 
 		      center.z()+dz );
 
@@ -137,14 +137,14 @@ namespace mu2e {
       _piCaptureEPhotZ->Fill(e);
 
       // Momentum 3 vector: uniform on a unit sphere.
-      Hep3Vector p = e*_randomUnitSphere.shoot();
+      CLHEP::Hep3Vector p = e*_randomUnitSphere.shoot();
 
       // This should reflect the model of the tails of the beam
       // and the out-of-time protons.
-      const double time = 1694*RandFlat::shoot();
+      const double time = 1694*CLHEP::RandFlat::shoot();
 
       // Make the 4 vector.
-      HepLorentzVector mom( p.x(), p.y(), p.z(), e);
+      CLHEP::HepLorentzVector mom( p.x(), p.y(), p.z(), e);
       
       // Add the electron to  the list.
       genParticles.push_back( ToyGenParticle( PDGCode::gamma, GenId::pionCapture, pos, mom, time));

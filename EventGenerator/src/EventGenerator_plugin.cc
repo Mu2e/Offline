@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.10 2010/04/23 04:27:23 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/04/23 04:27:23 $
+  $Id: EventGenerator_plugin.cc,v 1.11 2010/05/17 21:47:33 genser Exp $
+  $Author: genser $
+  $Date: 2010/05/17 21:47:33 $
 
   Original author Rob Kutschke
 
@@ -18,9 +18,9 @@
   3) (Emax-E)**5 DIO model.
   4) Other DIO models.
   5) protons, neutrons, gammas and nuclear fragments from muon capture.
-  6) Mockups of pion capture on nuclei and of pion and muon decay in flight.
-  I say mock-ups because I see this starting from an known pion and muon
-  flux distributions, not by starting from a pion or a muon entering
+  6) Mockups of CLHEP::pion capture on nuclei and of CLHEP::pion and muon decay in flight.
+  I say mock-ups because I see this starting from an known CLHEP::pion and muon
+  flux distributions, not by starting from a CLHEP::pion or a muon entering
   the DS.
   7) Simplified models of cosmics.
   

@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: DecayInOrbitGun.hh,v 1.1 2009/12/04 20:16:43 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2009/12/04 20:16:43 $
+// $Id: DecayInOrbitGun.hh,v 1.2 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -37,7 +37,7 @@
 #include "TMath.h"
 #include "TF1.h"
 
-using CLHEP::RandGeneral;
+
 
 class TH1D;
 
@@ -68,7 +68,7 @@ namespace mu2e {
     TH1D* _decayInOrbitEElecZ;
 
     RandomUnitSphere _randomUnitSphere;
-    std::auto_ptr<RandGeneral> _funcGen;
+    std::auto_ptr<CLHEP::RandGeneral> _funcGen;
 
     double _mean; //< mean per event
     double _elow; //< lower photon energy 

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e detector with the Mu2e G4 world.
 //
-// $Id: DetectorConstruction.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: DetectorConstruction.cc,v 1.2 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -76,12 +76,12 @@ namespace mu2e {
     G4cout << *(G4Material::GetMaterialTable()) << G4endl;
     
     // Half dimensions of the world.  Roughly the size of the Detector Solenoid.
-    _xwHalf = 1000.*mm;
-    _ywHalf = 1000.*mm;
-    _zwHalf = 3000.*mm;
+    _xwHalf = 1000.*CLHEP::mm;
+    _ywHalf = 1000.*CLHEP::mm;
+    _zwHalf = 3000.*CLHEP::mm;
     
     // Thickness in z of the reference boxes.
-    const G4double zHalfThick(0.010*mm);
+    const G4double zHalfThick(0.010*CLHEP::mm);
     
     // Number of reference volumes to make;
     const G4int nRef(11);
@@ -117,7 +117,7 @@ namespace mu2e {
     fieldMgr->SetDetectorField(_magField);
     
     // Define propagation code that does an exact helix in a uniform magnetic field.
-    G4double stepMinimum(1.0e-2*mm);
+    G4double stepMinimum(1.0e-2*CLHEP::mm);
     _usualRHS    = new G4Mag_UsualEqRhs( _magField );
     _exactHelix  = new G4ExactHelixStepper(_usualRHS);
     _chordFinder = new G4ChordFinder( _magField, stepMinimum, _exactHelix );
@@ -179,7 +179,7 @@ namespace mu2e {
     }
     
     // Set a maximum set length.  This does not seem to work.
-    _stepLimit = new G4UserLimits(5.*mm);
+    _stepLimit = new G4UserLimits(5.*CLHEP::mm);
     logicWorld->SetUserLimits(_stepLimit);
     
     return physiWorld;

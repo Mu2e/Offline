@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.4 2009/11/13 23:29:19 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2009/11/13 23:29:19 $
+// $Id: CosmicToy.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -88,7 +88,7 @@ namespace mu2e {
     // Pick a number of muons from a Poisson distribution.
     long n;
     if (_mean<=0) n=(long)-_mean;
-    else          n = RandPoisson::shoot(_mean);
+    else          n = CLHEP::RandPoisson::shoot(_mean);
 
     _cosmicMultiplicity->Fill(n);
 
@@ -98,16 +98,16 @@ namespace mu2e {
       double p = 1500.;
 
       // Look at a small angle around the zenith, going downard.
-      double theta = 0.1*RandFlat::shoot();
+      double theta = 0.1*CLHEP::RandFlat::shoot();
 
       // Cosine and sin of polar angle wrt y axis.
       double cy = cos(theta);
       double sy = sin(theta);
 
-      double phi = 2.*M_PI*RandFlat::shoot();
+      double phi = 2.*M_PI*CLHEP::RandFlat::shoot();
      
       double e = sqrt(p*p +m*m);
-      HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), e);
+      CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), e);
 
       // Footprint of this toy model is 10m on each side.
       double halfLength = 5000.;
@@ -116,15 +116,15 @@ namespace mu2e {
       // We can worry later about the exact meaning of the height.
       // The G4 interface code ( PrimaryGeneratorAction) will put it
       // at the right height.
-      double x = (1.-2.*RandFlat::shoot())*halfLength;
+      double x = (1.-2.*CLHEP::RandFlat::shoot())*halfLength;
       double y = 0.;
-      double z = (1.-2.*RandFlat::shoot())*halfLength;
-      Hep3Vector pos( x, y, z );
+      double z = (1.-2.*CLHEP::RandFlat::shoot())*halfLength;
+      CLHEP::Hep3Vector pos( x, y, z );
 
-      double time = _tmin + _dt*RandFlat::shoot();
+      double time = _tmin + _dt*CLHEP::RandFlat::shoot();
 
       // Pick a random charge.
-      PDGCode::type pid = (RandFlat::shoot() >0.5) ? PDGCode::mu_minus : PDGCode::mu_plus;
+      PDGCode::type pid = (CLHEP::RandFlat::shoot() >0.5) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
       // Add the cosmic to  the list.
       genParts.push_back( ToyGenParticle( pid, GenId::cosmicToy, pos, mom, time));

@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.2 2010/03/23 20:39:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/23 20:39:26 $
+// $Id: TrackingAction.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -98,7 +98,7 @@ namespace mu2e {
     }
 
     // Add this track to the transient data.
-    HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
+    CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
     _spmap.insert(std::make_pair(id,SimParticle( id,
                                                  parentId,
                                                  trk->GetDefinition()->GetPDGEncoding(),
@@ -143,7 +143,7 @@ namespace mu2e {
     SimParticle& particle = i->second;
 
     // Add info about the end of the track.
-    HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
+    CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
     particle.addEndInfo( trk->GetPosition()-_mu2eOrigin,
                          p4,
                          trk->GetGlobalTime(),

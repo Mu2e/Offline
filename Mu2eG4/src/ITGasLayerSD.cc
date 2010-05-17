@@ -14,7 +14,7 @@ namespace mu2e {
     try {
         itracker->getCellGeometryHandle()->SelectCell(_superlayer,_ring,0);
     	_nwires=itracker->getCellGeometryHandle()->GetITLayer()->nCells();
-    	_Dphi=M_2PI/_nwires;
+    	_Dphi=CLHEP::twopi/_nwires;
     }catch (cms::Exception e) {
     	cerr<<e;
     	_nwires=0;

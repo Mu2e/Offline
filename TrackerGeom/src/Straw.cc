@@ -1,9 +1,9 @@
 //
 // Hold information about one Straw.
 //
-// $Id: Straw.cc,v 1.2 2010/04/18 00:31:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:31:56 $
+// $Id: Straw.cc,v 1.3 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -22,15 +22,15 @@ namespace mu2e {
   Straw::Straw():
     _id(StrawId()),
     _index(StrawIndex(0)),
-    _c(Hep3Vector(0.,0.,0.)),
+    _c(CLHEP::Hep3Vector(0.,0.,0.)),
     _detail(0),
     _detailIndex(0),
-    _w(Hep3Vector(0.,0.,1.)){
+    _w(CLHEP::Hep3Vector(0.,0.,1.)){
   }
 
   Straw::Straw( const StrawId& id,
                 StrawIndex  index,
-                Hep3Vector const& c,
+                CLHEP::Hep3Vector const& c,
                 const StrawDetail* detail,
                 int detailIndex,
                 double wtx,
@@ -41,15 +41,15 @@ namespace mu2e {
     _c(c),
     _detail(detail),
     _detailIndex(detailIndex){
-    _w = Hep3Vector(wtx,wty,1.).unit();
+    _w = CLHEP::Hep3Vector(wtx,wty,1.).unit();
   }
 
   Straw::Straw( const StrawId& id,
                 StrawIndex index,
-                Hep3Vector const& c,
+                CLHEP::Hep3Vector const& c,
                 const StrawDetail* detail,
                 int detailIndex,
-                Hep3Vector const& w
+                CLHEP::Hep3Vector const& w
                 ):
     _id(id),
     _index(index),

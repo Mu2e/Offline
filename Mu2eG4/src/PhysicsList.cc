@@ -5,9 +5,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.4 2010/04/11 15:16:55 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/11 15:16:55 $
+// $Id: PhysicsList.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke
 //
@@ -94,7 +94,7 @@ namespace mu2e{
   }
 
   // Methods below here are local methods used to break up the
-  // above methods into smaller pieces.
+  // above methods into smaller CLHEP::pieces.
 
   void PhysicsList::ConstructBosons(){
 

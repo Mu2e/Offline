@@ -2,9 +2,9 @@
 #define HITCLUSTER_HH
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.hh,v 1.1 2009/12/07 20:16:52 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2009/12/07 20:16:52 $
+// $Id: HitCluster.hh,v 1.2 2010/05/17 21:47:33 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/05/17 21:47:33 $
 //
 //original author R. Bernstein
 //
@@ -146,7 +146,7 @@ namespace mu2e{
       const StepPointMC* _hit;
       const Straw* _straw;
       StepPointMCCollection const* _hits;
-      Hep3Vector clusterXYZ;
+      CLHEP::Hep3Vector clusterXYZ;
 
       hitNeighbours findHitNeighbours();
       void       addStraw(Candidate addThisStraw);

@@ -1,9 +1,9 @@
 //
 // Test accessing the RandomNumberService.
 //
-// $Id: RNGTest_plugin.cc,v 1.2 2010/03/07 22:01:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/07 22:01:00 $
+// $Id: RNGTest_plugin.cc,v 1.3 2010/05/17 21:47:32 genser Exp $
+// $Author: genser $
+// $Date: 2010/05/17 21:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -72,8 +72,8 @@ namespace mu2e {
     }
     
     // Create some distributions that use that engine.
-    static RandFlat   flat( engine );
-    static RandGaussQ gauss( engine, 10., 2. );
+    static CLHEP::RandFlat   flat( engine );
+    static CLHEP::RandGaussQ gauss( engine, 10., 2. );
 
     // Check output of the distributions.
     for ( int i=0; i<5; ++i ){

@@ -47,7 +47,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 	// Make the mother volume for the ITracker.
 	string trackerName("ITrackerMother");
 
-	double z0    = mm * itracker->z0();
+	double z0    = CLHEP::mm * itracker->z0();
 	G4ThreeVector trackerOffset(0.,0.,z0-zOff);
 
 	if ( itracker->rOut() >= ((G4Tubs *)mother->GetSolid())->GetOuterRadius() )
@@ -121,7 +121,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 		visAtt->SetDaughtersInvisible(false);
 
 		G4Material* Vacuum = findMaterialOrThrow( "WAGVacuum" );
-		trackerInfo.solid = new G4Tubs(itracker->name(),0.0,itracker->rOut(),itracker->maxEndCapDim(),0.0,360.0*degree);
+		trackerInfo.solid = new G4Tubs(itracker->name(),0.0,itracker->rOut(),itracker->maxEndCapDim(),0.0,360.0*CLHEP::degree);
 		trackerInfo.logical = new G4LogicalVolume(trackerInfo.solid , Vacuum, trackerName,0,0,0);
 		trackerInfo.logical->SetVisAttributes(visAtt);
 
@@ -308,7 +308,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 VolumeInfo ITrackerBuilder::buildWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses){
 
 	VolumeInfo wire;
-	wire.solid = new G4Tubs(shapeName,0.0,radius,length,0.0,360.0*degree);
+	wire.solid = new G4Tubs(shapeName,0.0,radius,length,0.0,360.0*CLHEP::degree);
 	int nSub=materialName.size();
 	if (nSub==1){
 		wire.logical = new G4LogicalVolume(wire.solid,findMaterialOrThrow( materialName.at(0).c_str() ),volName,0,0,0);
@@ -323,7 +323,7 @@ VolumeInfo ITrackerBuilder::buildWire(float radius, float length, char *shapeNam
 			sprintf(tShapeName,"%s_sub%i",shapeName,ishell);
 			sprintf(tVolName,"%s_sub%i",volName,ishell);
 			iRadius+=thicknesses.at(ishell);
-			G4Tubs *tswire = new G4Tubs(tShapeName,oldRadius,iRadius,length,0.0,360.0*degree);
+			G4Tubs *tswire = new G4Tubs(tShapeName,oldRadius,iRadius,length,0.0,360.0*CLHEP::degree);
 			//          cout<<tShapeName<<" "<<oldRadius<<" "<<iRadius<<" "<<length<<" "<<materialName.at(ishell)<<endl;
 			oldRadius=iRadius;
 

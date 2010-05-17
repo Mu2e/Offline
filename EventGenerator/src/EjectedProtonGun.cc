@@ -4,9 +4,9 @@
 // a random time during the accelerator cycle.
 
 //
-// $Id: EjectedProtonGun.cc,v 1.3 2009/12/30 19:14:10 rhbob Exp $ 
-// $Author: rhbob $
-// $Date: 2009/12/30 19:14:10 $
+// $Id: EjectedProtonGun.cc,v 1.4 2010/05/17 21:47:33 genser Exp $ 
+// $Author: genser $
+// $Date: 2010/05/17 21:47:33 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -74,7 +74,7 @@ namespace mu2e {
     _czmin  = config.getDouble("ejectedProtonGun.czmin",  0.3);
     _czmax  = config.getDouble("ejectedProtonGun.czmax",  0.6);
     _phimin = config.getDouble("ejectedProtonGun.phimin", 0. );
-    _phimax = config.getDouble("ejectedProtonGun.phimax", twopi );
+    _phimax = config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi );
     _tmin   = config.getDouble("ejectedProtonGun.tmin",  _tmin );
     _tmax   = config.getDouble("ejectedProtonGun.tmax",  _tmax );
 
@@ -116,7 +116,7 @@ namespace mu2e {
 	   //	   cout << "ib, x, Spectrum from EjectedProtonGun= " << ib << " " << x << " " << EnergyEjectedProtonFunc(x) << endl;
 	 }
     }
-    _funcGen = auto_ptr<RandGeneral>(new RandGeneral(YFunc,_nbins));
+    _funcGen = auto_ptr<CLHEP::RandGeneral>(new CLHEP::RandGeneral(YFunc,_nbins));
 
     // Book histograms.
     edm::Service<edm::TFileService> tfs;
@@ -139,7 +139,7 @@ namespace mu2e {
     int nFoils = target->nFoils();
     
     // Pick a foil.
-    int ifoil = static_cast<int>(nFoils*RandFlat::shoot());
+    int ifoil = static_cast<int>(nFoils*CLHEP::RandFlat::shoot());
     TargetFoil const& foil = target->foil(ifoil);
 
     // Foil properties.
@@ -148,20 +148,20 @@ namespace mu2e {
     const double dr = foil.rOut() - r1;
     
     // A random point within the foil.
-    const double r   = r1 + dr*RandFlat::shoot();
-    const double dz  = (-1.+2.*RandFlat::shoot())*foil.halfThickness();
-    const double phi = twopi*RandFlat::shoot();
-    Hep3Vector pos( center.x()+r*cos(phi), 
+    const double r   = r1 + dr*CLHEP::RandFlat::shoot();
+    const double dz  = (-1.+2.*CLHEP::RandFlat::shoot())*foil.halfThickness();
+    const double phi = CLHEP::twopi*CLHEP::RandFlat::shoot();
+    CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
 		    center.y()+r*sin(phi), 
 		    center.z()+dz );
     
     // Random direction.
     // Replace this with RandomUnitSphere from Mu2eUtilities/inc
-    const double cz   = _czmin  +  _dcz*RandFlat::shoot();
-    const double phi2 = _phimin + _dphi*RandFlat::shoot();
+    const double cz   = _czmin  +  _dcz*CLHEP::RandFlat::shoot();
+    const double phi2 = _phimin + _dphi*CLHEP::RandFlat::shoot();
     
     // This should be an exponential decay.
-    const double time = _tmin   +   _dt*RandFlat::shoot();
+    const double time = _tmin   +   _dt*CLHEP::RandFlat::shoot();
 
     // Derived quantities.
     const double sz   = safeSqrt(1.- cz*cz); // what's the diff between this and boost's sqrtOrThrow?
@@ -175,7 +175,7 @@ namespace mu2e {
     double ejectedProtonMomentum = safeSqrt(_ejectedProtonEnergy*_ejectedProtonEnergy - mProton*mProton);
     _ejectedProtonMomentumMeV->Fill(ejectedProtonMomentum);
     
-    HepLorentzVector mom( _ejectedProtonMomentum*sz*cos(phi2), ejectedProtonMomentum*sz*sin(phi2), ejectedProtonMomentum*cz, 
+    CLHEP::HepLorentzVector mom( _ejectedProtonMomentum*sz*cos(phi2), ejectedProtonMomentum*sz*sin(phi2), ejectedProtonMomentum*cz, 
 			  _ejectedProtonEnergy);
 
     // Add the proton to  the list.
