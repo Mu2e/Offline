@@ -5,28 +5,26 @@
 // A persistable index into another data product.
 //
 //
-// $Id: DPIndex.hh,v 1.4 2010/03/23 20:28:02 kutschke Exp $
+// $Id: DPIndex.hh,v 1.5 2010/05/18 22:06:46 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/23 20:28:02 $
+// $Date: 2010/05/18 22:06:46 $
 //
 
 // Framework includes.
 #include "DataFormats/Provenance/interface/ProductID.h"
 
-using edm::ProductID;
-
 namespace mu2e {
   struct DPIndex{
 
     // The actual data for this struct.
-    ProductID    id;
-    uint32_t     index;
+    edm::ProductID id;
+    uint32_t       index;
 
     DPIndex():
       id(),
       index(0){}
 
-    DPIndex( ProductID const& id_, int index_):
+    DPIndex( edm::ProductID const& id_, int index_):
       id(id_),
       index(index_){
     } 
