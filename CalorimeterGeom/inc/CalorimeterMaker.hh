@@ -1,8 +1,8 @@
 #ifndef CALORIMETERMAKER_HH
 #define CALORIMETERMAKER_HH
-// $Id: CalorimeterMaker.hh,v 1.7 2010/05/12 14:57:13 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/12 14:57:13 $
+// $Id: CalorimeterMaker.hh,v 1.8 2010/05/18 22:06:19 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 22:06:19 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -29,8 +29,6 @@
 //
 // other includes
 #include "CLHEP/Vector/ThreeVector.h"
-
-using namespace std;
 
 namespace mu2e{
 

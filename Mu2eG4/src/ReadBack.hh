@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.hh,v 1.5 2010/05/18 20:28:45 kutschke Exp $
+// $Id: ReadBack.hh,v 1.6 2010/05/18 22:06:19 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/18 20:28:45 $
+// $Date: 2010/05/18 22:06:19 $
 //
 // Original author Rob Kutschke
 //
@@ -20,8 +20,6 @@
 
 // Mu2e includes.
 #include "ToyDP/inc/StepPointMCCollection.hh"
-
-using namespace std;
 
 class TH1F;
 class TNtuple;

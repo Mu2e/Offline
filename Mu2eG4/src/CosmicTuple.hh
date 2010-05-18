@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.hh,v 1.1 2010/05/04 01:33:46 yury Exp $
-// $Author: yury $
-// $Date: 2010/05/04 01:33:46 $
+// $Id: CosmicTuple.hh,v 1.2 2010/05/18 22:06:19 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 22:06:19 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -20,8 +20,6 @@
 
 // Mu2e includes.
 #include "ToyDP/inc/StepPointMCCollection.hh"
-
-using namespace std;
 
 class TH1F;
 class TNtuple;
