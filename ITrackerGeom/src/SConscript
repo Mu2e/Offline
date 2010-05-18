@@ -1,3 +1,11 @@
+#
+# $Id: SConscript,v 1.2 2010/05/18 21:47:38 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/05/18 21:47:38 $
+#
+# Original author Rob Kutschke
+#
+
 import os, re
 home = os.environ['MU2E_HOME']
 Import('env')
@@ -18,11 +26,15 @@ if non_plugin_cc:
                      ['classes.h','classes_def.xml'])
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-		      LIBS=[ 'FWCoreFramework',
+                      LIBS=[ 'FWCoreFramework',
                              'Mu2eUtilities'
-			     ],
-		      )
+                             ],
+                      )
     libs=[ '#/lib/' + local_lib_name ]
 else:
     libs=[]
 
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+# $Id: SConscript,v 1.2 2010/05/18 21:47:42 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2009/09/30 22:57:47 $
+# $Date: 2010/05/18 21:47:42 $
 #
 # Original author Rob Kutschke.
 #
@@ -17,26 +17,26 @@ libname='#/lib/RandomNumberService'
 
 env._dict["LIBPATH"] += ['#/lib']
 env.SharedLibrary(libname, non_plugin_cc,
-	LIBS=[ 'Mu2eUtilities',
-	       'DataFormatsProvenance',
-	       'DataFormatsCommon',
-	       'FWCoreServiceRegistry',
-	       'FWCoreCatalog',
-	       'FWCoreMessageLogger',
-	       'FWCoreParameterSet',
-	       'FWCorePluginManager',
-	       'FWCoreRootAutoLibraryLoader',
-	       'FWCoreUtilities',
-#	       'boost_system-gcc%s-mt'%(env.gcc_ver,),
-	       'boost_thread-gcc%s-mt'%(env.gcc_ver,),
-	       'Core',
-	       'Hist',
-	       'Tree',
-	       'RIO',
-	       'Net',
-	       'Reflex',
-	       'Cintex',
-	     ],
+        LIBS=[ 'Mu2eUtilities',
+               'DataFormatsProvenance',
+               'DataFormatsCommon',
+               'FWCoreServiceRegistry',
+               'FWCoreCatalog',
+               'FWCoreMessageLogger',
+               'FWCoreParameterSet',
+               'FWCorePluginManager',
+               'FWCoreRootAutoLibraryLoader',
+               'FWCoreUtilities',
+#               'boost_system-gcc%s-mt'%(env.gcc_ver,),
+               'boost_thread-gcc%s-mt'%(env.gcc_ver,),
+               'Core',
+               'Hist',
+               'Tree',
+               'RIO',
+               'Net',
+               'Reflex',
+               'Cintex',
+             ],
         )
 
 
@@ -46,3 +46,8 @@ libnm=os.path.basename(libname)
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc, LIBS=[ libnm ] )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

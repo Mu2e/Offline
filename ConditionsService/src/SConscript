@@ -1,7 +1,6 @@
-#
-# $Id: SConscript,v 1.2 2010/03/19 01:13:35 kutschke Exp $
+# $Id: SConscript,v 1.3 2010/05/18 21:47:22 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/19 01:13:35 $
+# $Date: 2010/05/18 21:47:22 $
 #
 # Original author Rob Kutschke.
 #
@@ -17,26 +16,26 @@ libname='#/lib/ConditionsService'
 
 env._dict["LIBPATH"] += ['#/lib']
 env.SharedLibrary(libname, non_plugin_cc,
-	LIBS=[ 'Mu2eUtilities',
-	       'DataFormatsProvenance',
-	       'DataFormatsCommon',
-	       'FWCoreServiceRegistry',
-	       'FWCoreCatalog',
-	       'FWCoreMessageLogger',
-	       'FWCoreParameterSet',
-	       'FWCorePluginManager',
-	       'FWCoreRootAutoLibraryLoader',
-	       'FWCoreUtilities',
+        LIBS=[ 'Mu2eUtilities',
+               'DataFormatsProvenance',
+               'DataFormatsCommon',
+               'FWCoreServiceRegistry',
+               'FWCoreCatalog',
+               'FWCoreMessageLogger',
+               'FWCoreParameterSet',
+               'FWCorePluginManager',
+               'FWCoreRootAutoLibraryLoader',
+               'FWCoreUtilities',
                'HepPDT',
-	       'boost_thread-gcc%s-mt'%(env.gcc_ver,),
-	       'Core',
-	       'Hist',
-	       'Tree',
-	       'RIO',
-	       'Net',
-	       'Reflex',
-	       'Cintex',
-	     ],
+               'boost_thread-gcc%s-mt'%(env.gcc_ver,),
+               'Core',
+               'Hist',
+               'Tree',
+               'RIO',
+               'Net',
+               'Reflex',
+               'Cintex',
+             ],
         )
 
 
@@ -46,3 +45,8 @@ libnm=os.path.basename(libname)
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc, LIBS=[ libnm ] )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

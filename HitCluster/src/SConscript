@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.1 2009/12/09 18:06:00 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2009/12/09 18:06:00 $
+# $Id: SConscript,v 1.2 2010/05/18 21:47:34 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/05/18 21:47:34 $
 #
 # Original author Rob Kutschke.
 #
@@ -20,9 +20,9 @@ if non_plugin_cc:
     local_lib_name=os.path.dirname(dd)
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-		      LIBS=[ 'FWCoreFramework','GeneralUtilities',
-			     ],
-		      )
+                      LIBS=[ 'FWCoreFramework','GeneralUtilities',
+                             ],
+                      )
     libs=[ local_lib_name ]
 else:
     libs=['GeneralUtilities']
@@ -30,3 +30,8 @@ else:
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc, LIBS=libs )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

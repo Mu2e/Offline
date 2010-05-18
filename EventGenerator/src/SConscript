@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.6 2010/03/15 21:20:08 kutschke Exp $
+# $Id: SConscript,v 1.7 2010/05/18 21:47:25 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/15 21:20:08 $
+# $Date: 2010/05/18 21:47:25 $
 #
 # Original author Rob Kutschke.
 #
@@ -25,11 +25,11 @@ if cc_and_f:
     local_lib_name=os.path.dirname(dd)
 
     env.SharedLibrary('#/lib/'+local_lib_name, cc_and_f,
-		      LIBS=[ 'FWCoreFramework',
+                      LIBS=[ 'FWCoreFramework',
                              'ToyDP',
                              'CLHEP',
-			     ],
-		      )
+                             ],
+                      )
     libs=[ local_lib_name ]
 else:
     libs=[]
@@ -37,3 +37,8 @@ else:
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc, LIBS=libs )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
