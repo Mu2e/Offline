@@ -3,9 +3,9 @@
 //
 // Parameters of the DAQ system.
 //
-// $Id: DAQParams.hh,v 1.1 2009/11/13 23:07:51 kutschke Exp $
+// $Id: DAQParams.hh,v 1.2 2010/05/18 20:28:01 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/13 23:07:51 $
+// $Date: 2010/05/18 20:28:01 $
 //
 // Original author Rob Kutschke
 //
@@ -42,13 +42,11 @@ namespace mu2e
   inline std::ostream& operator<<(std::ostream& ost,
                                   const DAQParams& daqpar ){
     ost << "( "
-	<< daqpar.t0 << ", "
-	<< " )";
+        << daqpar.t0 << ", "
+        << " )";
 
     return ost;
   }
-
-
 }
 
 #endif

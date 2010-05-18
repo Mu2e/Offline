@@ -16,14 +16,14 @@
 
 namespace mu2e {
 
-class ITrackerBuilder {
-public:
-	static VolumeInfo constructTracker( G4LogicalVolume* mother, double zOff );
-private:
-	static VolumeInfo buildWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses);
-	static VolumeInfo buildWall(Wall *wall, ITracker::EnCapType endcapType);
+  class ITrackerBuilder {
+  public:
+    static VolumeInfo constructTracker( G4LogicalVolume* mother, double zOff );
+  private:
+    static VolumeInfo buildWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses);
+    static VolumeInfo buildWall(Wall *wall, ITracker::EnCapType endcapType);
 
-};
+  };
 
 } //namespace mu2e
 

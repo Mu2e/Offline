@@ -37,12 +37,12 @@ class ITrackerWireposition {
     void WirePosAtEndcap(Float_t *right, Float_t *left);
     void WirePosAtZ(Float_t z, Float_t *pos);
     
-    Int_t  GetSuperLayer()   	     { return  fSuperLayer; }
-    Int_t  GetCelRing()      	     { return  fLayer; }
-    Int_t  GetWire()         	     { return  fWire; }
-    Float_t GetWireAlfa()    	     { return selectedAlfa; }
-    Float_t GetWireEpsilon() 	     { return selectedEpsilon; }
-    Float_t GetLayerRad() 	     { return selectedRadius; }
+    Int_t  GetSuperLayer()                { return  fSuperLayer; }
+    Int_t  GetCelRing()                   { return  fLayer; }
+    Int_t  GetWire()                      { return  fWire; }
+    Float_t GetWireAlfa()                 { return selectedAlfa; }
+    Float_t GetWireEpsilon()              { return selectedEpsilon; }
+    Float_t GetLayerRad()                 { return selectedRadius; }
     
     Double_t DistFromWire(Double_t *global);
     Double_t DistFromWireCenter(Double_t *global);

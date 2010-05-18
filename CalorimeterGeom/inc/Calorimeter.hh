@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.5 2010/04/29 18:21:15 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/04/29 18:21:15 $
+// $Id: Calorimeter.hh,v 1.6 2010/05/18 20:29:07 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 20:29:07 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -41,64 +41,64 @@ namespace mu2e {
     
       // Check for legal identifiers.
       bool isLegal(VaneId v) const{
-	return ( v >-1 && 
-		 std::vector<Vane>::size_type(v) <_vanes.size() 
-		 );
+         return ( v >-1 && 
+                   std::vector<Vane>::size_type(v) <_vanes.size() 
+                   );
       };
 
     
       bool isLegal(const ZSliceId& zid) const{
-	return (isLegal(zid._vid) && 
-		zid._zslice >-1   &&
-		std::vector<ZSlice>::size_type(zid._zslice) < getVane(zid._vid).getZSlices().size()
-		);
+         return (isLegal(zid._vid) && 
+                  zid._zslice >-1   &&
+                  std::vector<ZSlice>::size_type(zid._zslice) < getVane(zid._vid).getZSlices().size()
+                  );
       }
 
       typedef std::vector<ZSlice>::size_type stypeRSlice;
       bool isLegal(const RSliceId& rslid ) const{
-	return ( isLegal(rslid._zid) &&
-		 rslid._rslice > -1   &&
-		 std::vector<RSlice>::size_type(rslid._rslice) < getZSlice(rslid._zid).getRSlices().size()
-		 );
+         return ( isLegal(rslid._zid) &&
+                   rslid._rslice > -1   &&
+                   std::vector<RSlice>::size_type(rslid._rslice) < getZSlice(rslid._zid).getRSlices().size()
+                   );
       }
 
       bool isLegal(const CrystalId& cid) const{
-	return ( isLegal(cid._rslid) &&
-		 cid._n > -1       &&
-		 std::vector<Crystal>::size_type(cid._n) < getRSlice(cid._rslid).getCrystals().size()
-		 );
+         return ( isLegal(cid._rslid) &&
+                   cid._n > -1       &&
+                   std::vector<Crystal>::size_type(cid._n) < getRSlice(cid._rslid).getCrystals().size()
+                   );
       }
 
       // Accessors
       const std::vector<Vane>& getVanes() const{ 
-	return _vanes;
+         return _vanes;
       }
     
       const Vane& getVane ( VaneId id) const{ 
-	return _vanes.at(id);
+         return _vanes.at(id);
       }
     
 
       const ZSlice& getZSlice ( const ZSliceId& zid ) const{
-	return _vanes.at(zid.getVane()).getZSlice(zid);
+         return _vanes.at(zid.getVane()).getZSlice(zid);
       }
 
       const RSlice& getRSlice ( const RSliceId& rslid ) const{
-	return _vanes.at(rslid.getVane()).getRSlice(rslid);
+         return _vanes.at(rslid.getVane()).getRSlice(rslid);
       }
 
       const Crystal& getCrystal ( const CrystalId& cid ) const{
-	return _vanes.at(cid.getVane()).getCrystal(cid);
+         return _vanes.at(cid.getVane()).getCrystal(cid);
       }
 
       const Crystal& getCrystal ( CrystalIndex i ) const{
-	return _allCrystals.at(i.asInt());
+         return _allCrystals.at(i.asInt());
       }
 
       const std::deque<Crystal>& getAllCrystals() const {return _allCrystals;}
 
       const std::vector<CrystalDetail>& getCrystalDetails() const{
-	return _crystalDetail;
+         return _crystalDetail;
       }
 
 
@@ -106,58 +106,58 @@ namespace mu2e {
       // no point in passing reference args for ints and doubles or short strings, but do it for vectors
 
       uint32_t getNumberOfVanes() const{
-	return _numberOfVanes;
+         return _numberOfVanes;
       }
 
       double getROut() const{
-	return _rOut;
+         return _rOut;
       }
 
       double getHalfLength() const{
-	return _halfLength;
+         return _halfLength;
       }
 
       uint32_t getNumCrystalRSlices() const{
-	return _numberOfRSlices;
+         return _numberOfRSlices;
       }
 
       uint32_t getNumCrystalZSlices() const{
-	return _numberOfZSlices;
+         return _numberOfZSlices;
       }
 
       const CLHEP::Hep3Vector& getCalorimeterCenter() const{
-	return _calorimeterCenter;
+         return _calorimeterCenter;
       }
 
 
       const CLHEP::Hep3Vector& getCalorimeterCenterOffset() const{
-	return _calorimeterCenterOffset;
+         return _calorimeterCenterOffset;
       }
 
 
 
       const std::vector<double>& getCalorimeterVaneRotationsX() const{
-	return _calorimeterVaneRotationsX;
+         return _calorimeterVaneRotationsX;
       }
 
       const std::vector<double>& getCalorimeterVaneRotationsY() const{
-	return _calorimeterVaneRotationsY;
+         return _calorimeterVaneRotationsY;
       }
 
       const std::vector<double>& getCalorimeterVaneRotationsZ() const{
-	return _calorimeterVaneRotationsZ;
+         return _calorimeterVaneRotationsZ;
       }
 
       const std::vector<double>& getCalorimeterVaneOffsetsX() const{
-	return _calorimeterVaneOffsetsX;
+         return _calorimeterVaneOffsetsX;
       }
 
       const std::vector<double>& getCalorimeterVaneOffsetsY() const{
-	return _calorimeterVaneOffsetsY;
+         return _calorimeterVaneOffsetsY;
       }
 
       const std::vector<double>& getCalorimeterVaneOffsetsZ() const{
-	return _calorimeterVaneOffsetsZ;
+         return _calorimeterVaneOffsetsZ;
       }
 
 
@@ -168,34 +168,34 @@ namespace mu2e {
       // F can be a class with an operator() or a free function.
       template <class F>
       inline void Calorimeter::forAllCrystals ( F& f) const{
-	for ( std::vector<Vane>::const_iterator i=_vanes.begin(), e=_vanes.end();
-	      i !=e; ++i){
-	  i->forAllCrystals(f);
-	}
+         for ( std::vector<Vane>::const_iterator i=_vanes.begin(), e=_vanes.end();
+               i !=e; ++i){
+           i->forAllCrystals(f);
+         }
       }
 
       template <class F>
       inline void Calorimeter::forAllRSlices ( F& f) const{
-	for ( std::vector<Vane>::const_iterator i=_vanes.begin(), e=_vanes.end();
-	      i !=e; ++i){
-	  i->forAllRSlices(f);
-	}
+         for ( std::vector<Vane>::const_iterator i=_vanes.begin(), e=_vanes.end();
+               i !=e; ++i){
+           i->forAllRSlices(f);
+         }
       }
 
       template <class F>
       inline void Calorimeter::forAllZSlices ( F& f) const{
-	for ( std::vector<Vane>::const_iterator i=_vanes.begin(), e=_vanes.end();
-	      i !=e; ++i){
-	  i->forAllZSlices(f);
-	}
+         for ( std::vector<Vane>::const_iterator i=_vanes.begin(), e=_vanes.end();
+               i !=e; ++i){
+           i->forAllZSlices(f);
+         }
       }
     
       template <class F>
       inline void Calorimeter::forAllVanes ( F& f) const{
-	for ( std::vector<Vane>::const_iterator i=_vanes.begin(), e=_vanes.end();
-	      i !=e; ++i){
-	  f(*i);
-	}
+         for ( std::vector<Vane>::const_iterator i=_vanes.begin(), e=_vanes.end();
+               i !=e; ++i){
+           f(*i);
+         }
       }
 
 #endif

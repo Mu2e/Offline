@@ -30,17 +30,17 @@ public:
 
   // Constructor using sense wire info.
   Cell( CellId id,
-	 boost::shared_ptr<CellDetail> detail,
-	 boost::shared_ptr<Wire> senseWire
-	 );
+         boost::shared_ptr<CellDetail> detail,
+         boost::shared_ptr<Wire> senseWire
+         );
 
 //  // Constructor using sense wire info.
 //  Cell( CellId id,
-//	 CellIndex index,
-//	 boost::shared_ptr<CellDetail> detail,
-//	 int detailIndex,
-//	 boost::shared_ptr<Wire> senseWire
-//	 );
+//         CellIndex index,
+//         boost::shared_ptr<CellDetail> detail,
+//         int detailIndex,
+//         boost::shared_ptr<Wire> senseWire
+//         );
   
   ~Cell ();
 

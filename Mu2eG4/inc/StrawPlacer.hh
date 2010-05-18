@@ -3,9 +3,9 @@
 //
 // Class to place one straw within the tracker mother volume.
 //
-// $Id: StrawPlacer.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: StrawPlacer.hh,v 1.2 2010/05/18 20:28:41 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/05/18 20:28:41 $
 //
 // Original author Rob Kutschke
 //
@@ -25,11 +25,11 @@ namespace mu2e {
   class StrawPlacer{
 
   public:
-    
+
     StrawPlacer( std::string basename
-		 , G4LogicalVolume* logical
-		 , G4LogicalVolume* motherLogical
-		 );
+                 , G4LogicalVolume* logical
+                 , G4LogicalVolume* motherLogical
+                 );
     ~StrawPlacer();
 
     void operator() ( const Straw& s );
@@ -38,7 +38,7 @@ namespace mu2e {
     std::string      _basename;
     G4LogicalVolume* _logical;
     G4LogicalVolume* _motherLogical;
-		 
+
   };
 
 }

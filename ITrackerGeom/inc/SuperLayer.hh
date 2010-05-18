@@ -27,12 +27,12 @@ public:
   SuperLayer(SuperLayerId& id);
 
   SuperLayer(SuperLayerId&   id,
-		  std::vector< boost::shared_ptr<ITLayer> > &layer);
+                  std::vector< boost::shared_ptr<ITLayer> > &layer);
 
   SuperLayer( int &id);
 
   SuperLayer( int &id,
-		  std::vector< boost::shared_ptr<ITLayer> > &layer);
+                  std::vector< boost::shared_ptr<ITLayer> > &layer);
 
   ~SuperLayer ();
  
@@ -54,11 +54,11 @@ public:
   }
 
 //  SuperLayer& operator=(const SuperLayer &sl) {
-//	  if (this!=&sl) {
-//		  _id = sl.Id();
-//		  _nLayers = sl.nLayers();
-//		  _layers = sl.
-//	  }
+//          if (this!=&sl) {
+//                  _id = sl.Id();
+//                  _nLayers = sl.nLayers();
+//                  _layers = sl.
+//          }
 //  }
 
 protected:
@@ -70,8 +70,8 @@ protected:
   std::vector< boost::shared_ptr<ITLayer> > _layers;
 
   void addLayer(ITLayer *itl){
-	  _layers.push_back(boost::shared_ptr<ITLayer>(itl));
-	  _nLayers++;
+          _layers.push_back(boost::shared_ptr<ITLayer>(itl));
+          _nLayers++;
   }
 
 };

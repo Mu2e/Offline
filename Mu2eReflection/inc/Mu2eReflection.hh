@@ -28,9 +28,9 @@ namespace mu2e{
   class Mu2eReflection : public G4VDiscreteProcess{
   public:
     Mu2eReflection(
-		   const G4String& startingVolume, //need to do the string; G4 may not have
-		   const G4String& endingVolume,   //made the volume yet
-		   const double toleranceForQuitting = 0.001*meter):
+                   const G4String& startingVolume, //need to do the string; G4 may not have
+                   const G4String& endingVolume,   //made the volume yet
+                   const double toleranceForQuitting = 0.001*meter):
       G4VDiscreteProcess("Mu2eReflection",fUserDefined),
       _startingVolume(startingVolume),
       _endingVolume(endingVolume),
@@ -38,13 +38,13 @@ namespace mu2e{
       alreadyReflected(false)
     {
       //tell the user what I'm doing; could iterate over all volumes and check names exist
-	G4cout << "Reflecting through following volumes" 
-	       << G4endl
-	       << "starting Volume was: " <<startingVolume 
-	       << "\n"
-	       << "ending Volume was:   " <<endingVolume
-	       << G4endl;
-	pParticleChange = &fMu2eParticleChangeForReflection;
+      G4cout << "Reflecting through following volumes" 
+             << G4endl
+             << "starting Volume was: " <<startingVolume 
+             << "\n"
+             << "ending Volume was:   " <<endingVolume
+             << G4endl;
+      pParticleChange = &fMu2eParticleChangeForReflection;
 
     };
     ~Mu2eReflection(){}
@@ -59,10 +59,10 @@ namespace mu2e{
 
   protected:
     // GetMeanFreePath returns ctau*beta*gamma for decay in flight 
-     virtual G4double GetMeanFreePath(const G4Track& aTrack,
-                               G4double   previousStepSize,
-                               G4ForceCondition* condition
-				      );
+    virtual G4double GetMeanFreePath(const G4Track& aTrack,
+                                     G4double   previousStepSize,
+                                     G4ForceCondition* condition
+                                     );
 
   private:
 

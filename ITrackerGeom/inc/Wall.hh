@@ -12,113 +12,113 @@ namespace mu2e {
 
 class Wall{
 
-	friend class ITrackerMaker;
+        friend class ITrackerMaker;
 
 public:
 
-	// A free function, returning void, that takes a const Layer& as an argument.
-	typedef void (*WallFunction)( const Wall& s);
+        // A free function, returning void, that takes a const Layer& as an argument.
+        typedef void (*WallFunction)( const Wall& s);
 
-	enum Walltype {undefined=-1, inner, outer, endcap};
+        enum Walltype {undefined=-1, inner, outer, endcap};
 
-	Wall();
+        Wall();
 
-	Wall(Walltype wt=Wall::undefined);
+        Wall(Walltype wt=Wall::undefined);
 
-	Wall(const Wall &wl);
+        Wall(const Wall &wl);
 
-	~Wall (){}
+        ~Wall (){}
 
-//	CLHEP::Hep3Vector getC()		const { return _c; }
+//        CLHEP::Hep3Vector getC()                const { return _c; }
 
-	HepGeom::Transform3D getPos()	const { return _pos; }
+        HepGeom::Transform3D getPos()        const { return _pos; }
 
-	Walltype getType() 				const { return _type; }
+        Walltype getType()                                 const { return _type; }
 
-	int getNShells() 				const { return _nShells; }
+        int getNShells()                                 const { return _nShells; }
 
-	float getDPhi() 				const { return _pDPhi; }
+        float getDPhi()                                 const { return _pDPhi; }
 
-	float getDTheta() 				const { return _pDTheta; }
+        float getDTheta()                                 const { return _pDTheta; }
 
-	float getDz() 					const { return _pDz; }
+        float getDz()                                         const { return _pDz; }
 
-	std::string getName() 			const { return _name; }
+        std::string getName()                         const { return _name; }
 
-	float getRmax() 				const { return _pRmax; }
+        float getRmax()                                 const { return _pRmax; }
 
-	float getRmin() 				const { return _pRmin; }
+        float getRmin()                                 const { return _pRmin; }
 
-	float getSPhi() 				const { return _pSPhi; }
+        float getSPhi()                                 const { return _pSPhi; }
 
-	float getSTheta() 				const { return _pSTheta; }
+        float getSTheta()                                 const { return _pSTheta; }
 
-	float getTotalThickness()		const {
-		return _totalThickness;
-	}
+        float getTotalThickness()                const {
+                return _totalThickness;
+        }
 
-	boost::shared_ptr<std::vector<std::string> > getMaterialsName() const {
-		return _materialsName;
-	}
+        boost::shared_ptr<std::vector<std::string> > getMaterialsName() const {
+                return _materialsName;
+        }
 
-	boost::shared_ptr<std::vector<double> > getThicknesses() const {
-		return _thicknesses;
-	}
+        boost::shared_ptr<std::vector<double> > getThicknesses() const {
+                return _thicknesses;
+        }
 
-	void addMaterials(int &wShellNumber, std::vector<std::string> *wShellsMatName, std::vector<double> *wShellsThicknesses) throw(cms::Exception);
-	/*{
-		_nShells=wShellNumber;
-		if ( _nShells!=wShellsMatName.size() && _nShells!=wShellsThicknesses.size() )
-			throw cms::Exception("GEOM")<< "Error in Configuration file! There is a disagreement between the vectors dimensions of a ITracker wall.\n";
+        void addMaterials(int &wShellNumber, std::vector<std::string> *wShellsMatName, std::vector<double> *wShellsThicknesses) throw(cms::Exception);
+        /*{
+                _nShells=wShellNumber;
+                if ( _nShells!=wShellsMatName.size() && _nShells!=wShellsThicknesses.size() )
+                        throw cms::Exception("GEOM")<< "Error in Configuration file! There is a disagreement between the vectors dimensions of a ITracker wall.\n";
 
-		_materialsName.reset(&wShellsMatName);
-		_thicknesses.reset(&wShellsThicknesses);
-		_totalThickness = 0.0;
-		for (int is = 0; is < _nShells; ++is) {
-			_totalThickness += wShellsThicknesses.at(is);
-		}
-	}*/
+                _materialsName.reset(&wShellsMatName);
+                _thicknesses.reset(&wShellsThicknesses);
+                _totalThickness = 0.0;
+                for (int is = 0; is < _nShells; ++is) {
+                        _totalThickness += wShellsThicknesses.at(is);
+                }
+        }*/
 
-	Wall& operator=(const Wall &wl);
-	/*{
-		if (this!=&wl) {
-			_type=wl.getType();
-			_nShells=wl.getShells();
-			_totalThickness=wl.getTotalThickness();
-			_pRmin=wl.getRmin();
-			_pRmax=wl.getRmax();
-			_pSPhi=wl.getSPhi();
-			_pDPhi=wl.getDPhi();
-			_pSTheta=wl.getSTheta();
-			_pDTheta=wl.getDTheta();
-			_pDz=wl.getDz();
-			_name=wl.getName();
-			_c=wl.getC();
-			_materialsName=wl.getMaterialsName();
-			_thicknesses=wl.getThicknesses();
-		}
-	}*/
+        Wall& operator=(const Wall &wl);
+        /*{
+                if (this!=&wl) {
+                        _type=wl.getType();
+                        _nShells=wl.getShells();
+                        _totalThickness=wl.getTotalThickness();
+                        _pRmin=wl.getRmin();
+                        _pRmax=wl.getRmax();
+                        _pSPhi=wl.getSPhi();
+                        _pDPhi=wl.getDPhi();
+                        _pSTheta=wl.getSTheta();
+                        _pDTheta=wl.getDTheta();
+                        _pDz=wl.getDz();
+                        _name=wl.getName();
+                        _c=wl.getC();
+                        _materialsName=wl.getMaterialsName();
+                        _thicknesses=wl.getThicknesses();
+                }
+        }*/
 
 protected:
 
-	Walltype				_type;
+        Walltype                                _type;
 
-	float					_pRmin;
-	float					_pRmax;
-	float					_pSPhi;
-	float					_pDPhi;
-	float					_pSTheta;
-	float					_pDTheta;
-	float					_pDz;
-	std::string				_name;
-//	CLHEP::Hep3Vector		_c;
-	HepGeom::Transform3D	_pos;
+        float                                        _pRmin;
+        float                                        _pRmax;
+        float                                        _pSPhi;
+        float                                        _pDPhi;
+        float                                        _pSTheta;
+        float                                        _pDTheta;
+        float                                        _pDz;
+        std::string                                _name;
+//        CLHEP::Hep3Vector                _c;
+        HepGeom::Transform3D        _pos;
 
 private:
-	int						_nShells;
-	float					_totalThickness;
-	boost::shared_ptr<std::vector<std::string> > 	_materialsName;
-	boost::shared_ptr<std::vector<double> > 		_thicknesses;
+        int                                                _nShells;
+        float                                        _totalThickness;
+        boost::shared_ptr<std::vector<std::string> >         _materialsName;
+        boost::shared_ptr<std::vector<double> >                 _thicknesses;
 
 };
 

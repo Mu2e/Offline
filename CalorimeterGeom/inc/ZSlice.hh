@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: ZSlice.hh,v 1.3 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: ZSlice.hh,v 1.4 2010/05/18 20:29:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 20:29:15 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -42,23 +42,23 @@ namespace mu2e {
       const ZSliceId& Id() const { return _id;}
 
       const std::vector<RSlice>& getRSlices() const{ 
-	return _rslices;
+        return _rslices;
       }
 
       int nRSlices() const{ 
-	return _rslices.size();
+        return _rslices.size();
       }
 
       const RSlice& getRSlice ( int n ) const { 
-	return _rslices.at(n);
+        return _rslices.at(n);
       }
 
       const RSlice& getRSlice ( const RSliceId& rslid) const { 
-	return _rslices.at(rslid.getRSlice());
+        return _rslices.at(rslid.getRSlice());
       }
 
       const Crystal& getCrystal ( const CrystalId& cid ) const{
-	return _rslices.at(cid.getRSlice()).getCrystal(cid);
+        return _rslices.at(cid.getRSlice()).getCrystal(cid);
       }
 
       // Formatted string embedding the id of the sector.
@@ -72,43 +72,43 @@ namespace mu2e {
       const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
 
       std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
-	return _basePosition;
+        return _basePosition;
       }
 
       CLHEP::Hep3Vector const& getBaseDelta() const{
-	return _baseDelta;
+        return _baseDelta;
       }
 
 #ifndef __CINT__
 
       template <class F>
       void for_each_rslice( F f) const{
-	std::for_each ( _rslices.begin(),
-			_rslices.end(),
-			f);
+        std::for_each ( _rslices.begin(),
+                        _rslices.end(),
+                        f);
       }
 
       template <class F>
       void for_each_crystal( F f) const {
-	for_each_rslice( boost::bind( RSlice::for_each<F>, _1, f));
+        for_each_rslice( boost::bind( RSlice::for_each<F>, _1, f));
       }
 
       // Loop over all crystals and call F.
       // F can be a class with an operator() or a free function.
       template <class F>
       inline void ZSlice::forAllCrystals ( F& f) const{
-	for ( std::vector<RSlice>::const_iterator i=_rslices.begin(), e=_rslices.end();
-	      i !=e; ++i){
-	  i->forAllCrystals(f);
-	}
+        for ( std::vector<RSlice>::const_iterator i=_rslices.begin(), e=_rslices.end();
+              i !=e; ++i){
+          i->forAllCrystals(f);
+        }
       }
 
       template <class F>
       inline void ZSlice::forAllRSlices ( F& f) const{
-	for ( std::vector<RSlice>::const_iterator i=_rslices.begin(), e=_rslices.end();
-	      i !=e; ++i){
-	  f(*i);
-	}
+        for ( std::vector<RSlice>::const_iterator i=_rslices.begin(), e=_rslices.end();
+              i !=e; ++i){
+          f(*i);
+        }
       }
 
 

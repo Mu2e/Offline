@@ -84,23 +84,23 @@ namespace mu2e {
     // Check for a valid index.
     bool isValid(unsigned int ix, unsigned int iy, unsigned int iz){
       if ( ix > -1 && ix < _nx &&
-	   iy > -1 && iy < _ny &&
-	   ix > -1 && iz < _nz ) return true;
+           iy > -1 && iy < _ny &&
+           ix > -1 && iz < _nz ) return true;
       return false;
     }
 
     // Throw if the point is not valid.
     void isValidOrThrow( unsigned int ix, unsigned int iy, unsigned int iz){
       if ( !isValid(ix, iy, iz) ){
-	std::ostringstream os;
-	os << "Invalid index into Container3D: " 
-	   << ix << " "
-	   << iy << " "
-	   << iz << " | Limits are: "
-	   << _nx << " "
-	   << _ny << " "
-	   << _nz;	  
-	throw std::domain_error(os.str());
+        std::ostringstream os;
+        os << "Invalid index into Container3D: " 
+           << ix << " "
+           << iy << " "
+           << iz << " | Limits are: "
+           << _nx << " "
+           << _ny << " "
+           << _nz;          
+        throw std::domain_error(os.str());
       }
     }
 

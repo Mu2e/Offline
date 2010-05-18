@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 // 
-// $Id: nestBox.hh,v 1.2 2009/11/11 14:36:41 kutschke Exp $
+// $Id: nestBox.hh,v 1.3 2010/05/18 20:28:42 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/11 14:36:41 $
+// $Date: 2010/05/18 20:28:42 $
 //
 // Original author Rob Kutschke
 //
@@ -27,39 +27,39 @@ class G4CSGSolid;
 namespace mu2e {
 
   VolumeInfo nestBox ( std::string const& name,
-		       double const halfDim[3],
-		       G4Material* material,
-		       G4RotationMatrix* rot,
-		       G4ThreeVector const& offset,
-		       G4LogicalVolume* parent,
-		       int copyNo,
-		       G4Colour color = G4Colour::Black(),
-		       bool forceSolid = false
-		       );
+                       double const halfDim[3],
+                       G4Material* material,
+                       G4RotationMatrix* rot,
+                       G4ThreeVector const& offset,
+                       G4LogicalVolume* parent,
+                       int copyNo,
+                       G4Colour color = G4Colour::Black(),
+                       bool forceSolid = false
+                       );
   
 
 
   // Alternate argument list, using a vector for the half dimensions.
   inline VolumeInfo nestBox ( std::string const& name,
-			      std::vector<double> const&  halfDim,
-			      G4Material* material,
-			      G4RotationMatrix* rot,
-			      G4ThreeVector const& offset,
-			      G4LogicalVolume* parent,
-			      int copyNo,
-			      G4Colour color = G4Colour::Black(),
-			      bool forceSolid = false
-			      ){
+                              std::vector<double> const&  halfDim,
+                              G4Material* material,
+                              G4RotationMatrix* rot,
+                              G4ThreeVector const& offset,
+                              G4LogicalVolume* parent,
+                              int copyNo,
+                              G4Colour color = G4Colour::Black(),
+                              bool forceSolid = false
+                              ){
     return nestBox( name, 
-		    &halfDim[0],
-		    material,
-		    rot,
-		    offset,
-		    parent,
-		    copyNo,
-		    color,
-		    forceSolid
-		    );
+                    &halfDim[0],
+                    material,
+                    rot,
+                    offset,
+                    parent,
+                    copyNo,
+                    color,
+                    forceSolid
+                    );
   }
 }
 

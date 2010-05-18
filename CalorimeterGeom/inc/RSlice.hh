@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: RSlice.hh,v 1.2 2010/05/12 14:57:36 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/05/12 14:57:36 $
+// $Id: RSlice.hh,v 1.3 2010/05/18 20:29:12 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 20:29:12 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -40,10 +40,10 @@ namespace mu2e {
       RSlice(const RSliceId& id);
 
       RSlice(const RSliceId&   id,
-	     int        nCrystals,
-	     const CLHEP::Hep3Vector& origin,
-	     const CLHEP::Hep3Vector& delta
-	     );
+             int        nCrystals,
+             const CLHEP::Hep3Vector& origin,
+             const CLHEP::Hep3Vector& delta
+             );
 
   
       ~RSlice (){};
@@ -56,15 +56,15 @@ namespace mu2e {
       const CLHEP::Hep3Vector getDelta()  const {return _delta;}
 
       const Crystal& getCrystal( int n ) const {
-	return *_crystals.at(n);
+        return *_crystals.at(n);
       }
   
       const Crystal& getCrystal( const CrystalId& id ) const {
-	return getCrystal(id._n);
+        return getCrystal(id._n);
       }
   
       const std::vector<const Crystal*>& getCrystals() const { 
-	return _crystals;
+        return _crystals;
       }
 
       // Formatted string embedding the id of the layer.
@@ -75,9 +75,9 @@ namespace mu2e {
       //  - which should never happen.
       CrystalId getIdLastCrystal() const{
 
-	return ( _crystals.size() != 0 )?
-	  _crystals.back()->Id():
-	  CrystalId();
+        return ( _crystals.size() != 0 )?
+          _crystals.back()->Id():
+          CrystalId();
       }
   
       // Compiler generated copy and assignment constructors
@@ -91,19 +91,19 @@ namespace mu2e {
       //    vector it is defined.
       template <class F>
       void for_each( F f ) const {
-	std::for_each( _crystals.begin(),
-		       _crystals.end(),
-		       f);
+        std::for_each( _crystals.begin(),
+                       _crystals.end(),
+                       f);
       }
   
       // Loop over all crystals and call F.
       // F can be a class with an operator() or a free function.
       template <class F>
       inline void RSlice::forAllCrystals ( F& f) const{
-	for ( std::vector<const Crystal*>::const_iterator i=_crystals.begin(), e=_crystals.end();
-	      i !=e; ++i){
-	  f(**i);
-	}
+        for ( std::vector<const Crystal*>::const_iterator i=_crystals.begin(), e=_crystals.end();
+              i !=e; ++i){
+          f(**i);
+        }
       }
 
     protected:

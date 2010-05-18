@@ -8,16 +8,16 @@
 //  U u = static_cast<U> t;
 // 
 //
-// $Id: vectorTransform.hh,v 1.1 2010/03/07 21:59:33 kutschke Exp $
+// $Id: vectorTransform.hh,v 1.2 2010/05/18 20:28:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/07 21:59:33 $
+// $Date: 2010/05/18 20:28:04 $
 //
 
 #include <vector>
 
 template<class T, class U>
 void vectorTransform( const std::vector<T>& in,
-		      std::vector<U>&       out){
+                      std::vector<U>&       out){
   out.clear();
   out.reserve(in.size());
   for ( size_t i=0; i<in.size(); ++i ){

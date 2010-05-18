@@ -7,7 +7,7 @@ namespace mu2e {
 
 struct ITLayerId{
 
-	friend struct SuperLayerId;
+        friend struct SuperLayerId;
 
 public:
 
@@ -18,8 +18,8 @@ public:
   }
   
   ITLayerId( SuperLayerId *sid,
-	   int &id
-	   ):
+           int &id
+           ):
     _sid(sid),
     _id(id)
   {
@@ -50,7 +50,7 @@ public:
 };
 
 inline std::ostream& operator<<(std::ostream& ost, 
-				const ITLayerId& l ){
+                                const ITLayerId& l ){
   ost << "Layer Id: ("
       << l.getSuperLayerId() << " "
       << l._id

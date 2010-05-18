@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.3 2010/03/05 16:04:28 kutschke Exp $
+// $Id: GeometryService.hh,v 1.4 2010/05/18 20:28:06 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/05 16:04:28 $
+// $Date: 2010/05/18 20:28:06 $
 //
 // Original author Rob Kutschke
 //
@@ -45,9 +45,9 @@ public:
     bool hasElement()
     {
       if(_run_count==0) 
-	throw cms::Exception("GEOM")
-	  << "Cannot get detectors from an unconfigured geometry service.\n"
-	  << "You've attempted to a get an element before the first run\n";
+        throw cms::Exception("GEOM")
+          << "Cannot get detectors from an unconfigured geometry service.\n"
+          << "You've attempted to a get an element before the first run\n";
       
       // to use this generic way requires a map of names (typeid?) to
       // abstract elements.
@@ -76,9 +76,9 @@ private:
     DET* getElement()
     {
       if(_run_count==0) 
-	throw cms::Exception("GEOM")
-	  << "Cannot get detectors from an unconfigured geometry service.\n"
-	  << "You've attempted to a get an element before the first run\n";
+        throw cms::Exception("GEOM")
+          << "Cannot get detectors from an unconfigured geometry service.\n"
+          << "You've attempted to a get an element before the first run\n";
       
       // to use this generic way requires a map of names (typeid?) to
       // abstract elements.
@@ -86,16 +86,16 @@ private:
       std::string name = typeid(DET).name();
       DetMap::iterator it(_detectors.find(name));
       if(it==_detectors.end())
-	throw cms::Exception("GEOM")
-	  << "Failed to retrieve detector element of type " << name << "\n";
+        throw cms::Exception("GEOM")
+          << "Failed to retrieve detector element of type " << name << "\n";
 
       // this must succeed or there is something terribly wrong
       DET* d = dynamic_cast<DET*>(it->second.get());
 
       if(d==0)
-	throw cms::Exception("GEOM")
-	  << "Failed to convert found detector " << name
-	  << " to its correct type.  There is a serious problem.\n";
+        throw cms::Exception("GEOM")
+          << "Failed to convert found detector " << name
+          << " to its correct type.  There is a serious problem.\n";
 
       return d;
     }
@@ -114,9 +114,9 @@ private:
     void addDetector(std::auto_ptr<DET> d)
     {
       if(_detectors.find(typeid(DET).name())!=_detectors.end())
-	throw cms::Exception("GEOM") << "failed to install detector "
-				     << d->name() << "\nwith type name "
-				     << typeid(DET).name() << "\n";
+        throw cms::Exception("GEOM") << "failed to install detector "
+                                     << d->name() << "\nwith type name "
+                                     << typeid(DET).name() << "\n";
       
       DetectorPtr ptr(d.release());
       _detectors[typeid(DET).name()] = ptr;

@@ -1,8 +1,8 @@
 #ifndef CRYSTALDETAIL_HH
 #define CRYSTALDETAIL_HH
-// $Id: CrystalDetail.hh,v 1.4 2010/04/29 18:22:10 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/04/29 18:22:10 $
+// $Id: CrystalDetail.hh,v 1.5 2010/05/18 20:29:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 20:29:09 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -19,11 +19,11 @@ class CrystalDetail{
 public:
 
   CrystalDetail(
-	       double crystalHalfTrans,
-	       double crystalHalfLong,
-	       string crystalMaterial,
-	       string crystalWrapper,
-	       double crystalWrapperHalfThickness):
+               double crystalHalfTrans,
+               double crystalHalfLong,
+               string crystalMaterial,
+               string crystalWrapper,
+               double crystalWrapperHalfThickness):
     _crystalHalfTrans            (crystalHalfTrans),
     _crystalHalfLong             (crystalHalfLong),
     _crystalMaterial             (crystalMaterial),

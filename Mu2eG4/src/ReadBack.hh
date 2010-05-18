@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.hh,v 1.4 2010/04/04 20:36:36 kutschke Exp $
+// $Id: ReadBack.hh,v 1.5 2010/05/18 20:28:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/04 20:36:36 $
+// $Date: 2010/05/18 20:28:45 $
 //
 // Original author Rob Kutschke
 //
@@ -77,7 +77,7 @@ namespace mu2e {
 
     // A helper function.
     int countHitNeighbours( Straw const& straw, 
-			    edm::Handle<StepPointMCCollection>& hits );
+                            edm::Handle<StepPointMCCollection>& hits );
 
   };
   

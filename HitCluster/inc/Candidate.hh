@@ -5,9 +5,9 @@
 // Helper struct for cluster finding.  
 // Holds a StrawIndex and an index into a container of hits.
 // 
-// $Id: Candidate.hh,v 1.1 2009/12/07 20:17:51 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2009/12/07 20:17:51 $
+// $Id: Candidate.hh,v 1.2 2010/05/18 20:28:07 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 20:28:07 $
 //
 // Original author Rob Kutschke
 //
@@ -50,10 +50,10 @@ namespace mu2e {
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
-				   Candidate const& c){
+                                   Candidate const& c){
     ost << "( " 
-	<< c.id << "," 
-	<< c.hitIndex <<")";
+        << c.id << "," 
+        << c.hitIndex <<")";
     return ost;
   }  
 

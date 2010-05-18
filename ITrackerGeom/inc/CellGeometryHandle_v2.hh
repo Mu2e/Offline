@@ -8,16 +8,16 @@ namespace mu2e {
 
 class CellGeometryHandle_v2 : public CellGeometryHandle{
 
-	friend class ITrackerMaker;
+        friend class ITrackerMaker;
 
 protected:
-	CellGeometryHandle_v2(ITracker *itr=0x0);
+        CellGeometryHandle_v2(ITracker *itr=0x0);
 
 public:
 
-	~CellGeometryHandle_v2();
+        ~CellGeometryHandle_v2();
 
-	virtual void  SelectCell(int SupLayer, int CelLayer, int Cell);
+        virtual void  SelectCell(int SupLayer, int CelLayer, int Cell);
 
 protected:
     const ITracker *_itr;

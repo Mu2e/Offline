@@ -5,9 +5,9 @@
 // A utility function to compute values for all of the transients
 // in members of a collection.
 //
-// $Id: resolveTransients.hh,v 1.2 2009/11/07 17:04:15 kutschke Exp $
+// $Id: resolveTransients.hh,v 1.3 2010/05/18 20:28:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/07 17:04:15 $
+// $Date: 2010/05/18 20:28:58 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,7 @@ namespace mu2e {
   void resolveTransients( T const& v, edm::Event const& event){
     
     for ( typename T::const_iterator i=v.begin(), e=v.end();
-	  i<e; ++i ){
+          i<e; ++i ){
       i->resolveTransients(event);
     }
   }

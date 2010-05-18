@@ -9,9 +9,9 @@
 // A later version of C++ will allow a ... notation for an arbitrary
 // number of additional objects.
 //
-// $Id: for_all.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: for_all.hh,v 1.2 2010/05/18 20:28:54 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/05/18 20:28:54 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,7 @@ namespace mu2e {
   template < class C, class F, class Acc>
   inline void for_all ( C const& c, F f, Acc& acc){
     for ( typename C::const_iterator i=c.begin(), e=c.end();
-	  i != e; ++i ){
+          i != e; ++i ){
       f(*i,acc);
     }
   }
@@ -31,7 +31,7 @@ namespace mu2e {
   template < class C, class F, class Acc>
   inline void for_all ( C& c, F f, Acc& acc){
     for ( typename C::const_iterator i=c.begin(), e=c.end();
-	  i != e; ++i ){
+          i != e; ++i ){
       f(*i,acc);
     }
   }

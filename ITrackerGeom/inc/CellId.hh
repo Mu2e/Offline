@@ -20,8 +20,8 @@ public:
   }
 
   CellId( ITLayerId *layer,
-	   int n
-	   ):
+           int n
+           ):
     _swid(WireId(layer,n))
     {
   }
@@ -50,7 +50,7 @@ public:
 };
 
 inline std::ostream& operator<<(std::ostream& ost, 
-				const CellId& c ){
+                                const CellId& c ){
   ost << "Cell Id: ("
       << c.getLayerId() << " "
       << c._swid._n

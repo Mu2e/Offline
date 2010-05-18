@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.hh,v 1.3 2010/04/18 00:08:13 kutschke Exp $
+// $Id: nestTubs.hh,v 1.4 2010/05/18 20:28:43 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/18 00:08:13 $
+// $Date: 2010/05/18 20:28:43 $
 //
 // Original author Rob Kutschke
 //
@@ -29,62 +29,62 @@ class G4CSGSolid;
 namespace mu2e {
 
   VolumeInfo nestTubs ( std::string const& name,
-			double params[5],
-			G4Material* material,
-			G4RotationMatrix* rot,
-			const G4ThreeVector& offset,
-			G4LogicalVolume* parent,
-			int copyNo,
-			G4Colour color = G4Colour::Black(),
-			bool forceSolid = false
-			);
+                        double params[5],
+                        G4Material* material,
+                        G4RotationMatrix* rot,
+                        const G4ThreeVector& offset,
+                        G4LogicalVolume* parent,
+                        int copyNo,
+                        G4Colour color = G4Colour::Black(),
+                        bool forceSolid = false
+                        );
   
 
 
   // Alternate argument list, using a vector for the parameters.
   inline VolumeInfo nestTubs ( std::string const& name,
-			       std::vector<double>&  params,
-			       G4Material* material,
-			       G4RotationMatrix* rot,
-			       const G4ThreeVector& offset,
-			       G4LogicalVolume* parent,
-			       int copyNo,
-			       G4Colour color = G4Colour::Black(),
-			       bool forceSolid = false
-			       ){
+                               std::vector<double>&  params,
+                               G4Material* material,
+                               G4RotationMatrix* rot,
+                               const G4ThreeVector& offset,
+                               G4LogicalVolume* parent,
+                               int copyNo,
+                               G4Colour color = G4Colour::Black(),
+                               bool forceSolid = false
+                               ){
     return nestTubs( name, 
-		     &params[0],
-		     material,
-		     rot,
-		     offset,
-		     parent,
-		     copyNo,
-		     color,
-		     forceSolid
-		     );
+                     &params[0],
+                     material,
+                     rot,
+                     offset,
+                     parent,
+                     copyNo,
+                     color,
+                     forceSolid
+                     );
   }
 
   // Alternate argument list, using a TubsParams object for the parameters.
   inline VolumeInfo nestTubs ( std::string const& name,
-			       TubsParams& params,
-			       G4Material* material,
-			       G4RotationMatrix* rot,
-			       const G4ThreeVector& offset,
-			       G4LogicalVolume* parent,
-			       int copyNo,
-			       G4Colour color = G4Colour::Black(),
-			       bool forceSolid = false
-			       ){
+                               TubsParams& params,
+                               G4Material* material,
+                               G4RotationMatrix* rot,
+                               const G4ThreeVector& offset,
+                               G4LogicalVolume* parent,
+                               int copyNo,
+                               G4Colour color = G4Colour::Black(),
+                               bool forceSolid = false
+                               ){
     return nestTubs( name, 
-		     &params.innerRadius,
-		     material,
-		     rot,
-		     offset,
-		     parent,
-		     copyNo,
-		     color,
-		     forceSolid
-		     );
+                     &params.innerRadius,
+                     material,
+                     rot,
+                     offset,
+                     parent,
+                     copyNo,
+                     color,
+                     forceSolid
+                     );
   }
 }
 

@@ -5,9 +5,9 @@
 // approach between the two lines.  The lines are 
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA.hh,v 1.3 2010/04/06 16:41:17 kutschke Exp $
+// $Id: TwoLinePCA.hh,v 1.4 2010/05/18 20:28:52 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 16:41:17 $
+// $Date: 2010/05/18 20:28:52 $
 //
 // Original author Rob Kutschke
 //
@@ -37,11 +37,11 @@ namespace mu2e {
 
   public:
     TwoLinePCA( CLHEP::Hep3Vector const& p1,
-		CLHEP::Hep3Vector const& t1,
-		CLHEP::Hep3Vector const& p2,
-		CLHEP::Hep3Vector const& t2,
-		double closeToParallelCut = 1.e-8
-		);
+                CLHEP::Hep3Vector const& t1,
+                CLHEP::Hep3Vector const& p2,
+                CLHEP::Hep3Vector const& t2,
+                double closeToParallelCut = 1.e-8
+                );
     ~TwoLinePCA();
 
     // Accessors for the 3d and 2d DCA.

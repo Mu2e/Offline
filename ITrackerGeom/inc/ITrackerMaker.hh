@@ -42,27 +42,27 @@ private:
   bool _isExternal;
 
   // Basic geometry element parameter
-  int _nSWire;				//Number of sense wire at the first Ring of the first SuperLayer
-  int _nSDeltaWire;			//Increment of the sense wire number for each SuperLayer
-  int _nSuperLayer;			//Number of SuperLayer
-  int _nRing;				//Number of Ring in each Superlayer
-  int _nVerticalFWire;		//Number of additional Vertical Field Wire in the case of Square cells
-  int _StoFWireRatio;		//Sense to Field wire ratio per cell in the case of Square cells
-  double _cellDimension;	//Cell dimension in the case of Square cells
-  double _FWireStep;		//Field Wire step distance in the case of Square cells
-  double _r0;				//Nominal Inner radius of the tracker
-  double _halfLength;		//Nominal Half-Length of the tracker in the barrel region
-  double _rOut;				//Nominal Outer radius of the tracker
-  double _drop;				//Drop distance of the wires (the wires stereo angles depend by it)
+  int _nSWire;                                //Number of sense wire at the first Ring of the first SuperLayer
+  int _nSDeltaWire;                        //Increment of the sense wire number for each SuperLayer
+  int _nSuperLayer;                        //Number of SuperLayer
+  int _nRing;                                //Number of Ring in each Superlayer
+  int _nVerticalFWire;                //Number of additional Vertical Field Wire in the case of Square cells
+  int _StoFWireRatio;                //Sense to Field wire ratio per cell in the case of Square cells
+  double _cellDimension;        //Cell dimension in the case of Square cells
+  double _FWireStep;                //Field Wire step distance in the case of Square cells
+  double _r0;                                //Nominal Inner radius of the tracker
+  double _halfLength;                //Nominal Half-Length of the tracker in the barrel region
+  double _rOut;                                //Nominal Outer radius of the tracker
+  double _drop;                                //Drop distance of the wires (the wires stereo angles depend by it)
 
-  int _geomType;			//Cell Geometry type: 2 hexagonal, 3 square
-  int _endCapType;			//EndCap shape type: 0 plane, 1 spherical
-  double _voxFactor;		//voxelization optimization factor
+  int _geomType;                        //Cell Geometry type: 2 hexagonal, 3 square
+  int _endCapType;                        //EndCap shape type: 0 plane, 1 spherical
+  double _voxFactor;                //voxelization optimization factor
   bool _notExtVoxel;
-  bool _displayGasLayer;	//Allow to display the gas inside the chamber
-  bool _displayWires;		//Allow to display every wires inside gas inside the chamber.
+  bool _displayGasLayer;        //Allow to display the gas inside the chamber
+  bool _displayWires;                //Allow to display every wires inside gas inside the chamber.
 
-  double _z0;				//Shift along z of the center of the tracker
+  double _z0;                                //Shift along z of the center of the tracker
 
   // Number of layers and of cells per layer in superlayer.
   std::vector<SuperLayerInfo> _slayersInfo;

@@ -15,8 +15,8 @@ public:
   {
   }
   SuperLayerInfo( int nLayers, Stype cellType
-	     ):
-	_nLayers(nLayers),
+             ):
+        _nLayers(nLayers),
     _cellType(cellType){
   }
   

@@ -7,9 +7,9 @@
 //   - it provides a view to return a hit by StrawIndex.
 //   - it provides a convenience method getStepPointMC().
 //
-// $Id: CrudeStrawHitCollection.hh,v 1.6 2010/02/07 00:15:01 kutschke Exp $
+// $Id: CrudeStrawHitCollection.hh,v 1.7 2010/05/18 20:28:34 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:15:01 $
+// $Date: 2010/05/18 20:28:34 $
 //
 // Original author Rob Kutschke
 //
@@ -41,10 +41,10 @@ namespace mu2e {
     // No default constructor by design.
     
     CrudeStrawHitCollection( edm::Event const& event,
-			     edm::Handle<CrudeStrawHitPData> const& hits );
+                             edm::Handle<CrudeStrawHitPData> const& hits );
 
     CrudeStrawHitCollection( edm::Event const& event,
-			     CrudeStrawHitPData const& hits );
+                             CrudeStrawHitPData const& hits );
 
     // Compiler generated versions of the following will be OK:
     //   destructor, copy constructor, assignment operator.
@@ -84,7 +84,7 @@ namespace mu2e {
     // Fill the array of pointers to const, v, elements of which point 
     // to the precursors of the specified hit.
     void getStepPointMC( int i,
-			 std::vector<StepPointMC const*>& v ) const;
+                         std::vector<StepPointMC const*>& v ) const;
 
     // Safe version of the previous.
     int strawIndexToHitIndexOrThrow( StrawIndex idx ) const;

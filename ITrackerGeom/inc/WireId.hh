@@ -7,7 +7,7 @@ namespace mu2e {
 
 struct WireId{
 
-	friend struct ITLayerId;
+        friend struct ITLayerId;
 
 public:
 
@@ -17,8 +17,8 @@ public:
   }
   
   WireId( ITLayerId *layer,
-	   int n
-	   ):
+           int n
+           ):
     _lid(layer),
     _n(n){
   }
@@ -48,7 +48,7 @@ public:
 };
 
 inline std::ostream& operator<<(std::ostream& ost, 
-				const WireId& w ){
+                                const WireId& w ){
   ost << "Wire Id: ("
       << w.getLayerId() << " "
       << w._n

@@ -20,29 +20,29 @@ public:
   {}
 
   WireDetail( std::vector<double> & thicknesses, std::vector<std::string> & materialNames,
-	       double halfLength
-	       );
+               double halfLength
+               );
   
   ~WireDetail ();
 
   std::string const materialName(int idx) const throw(cms::Exception) {
-	  try {
-		  return _materialNames.at(idx);
-	  } catch (cms::Exception e) {
-	      throw cms::Exception("GEOM")
-		<< "No material defined for the wire \n";
-	  }
+          try {
+                  return _materialNames.at(idx);
+          } catch (cms::Exception e) {
+              throw cms::Exception("GEOM")
+                << "No material defined for the wire \n";
+          }
   }
 
   const std::vector<std::string> &materialNames() const { return _materialNames;}
 
   double const shellThickness(int idx) const throw(cms::Exception) {
-	  try {
-		  return _shellsThicknesses.at(idx);
-	  } catch (cms::Exception e) {
-	      throw cms::Exception("GEOM")
-		<< "No shells thicknesses defined for the wire \n";
-	  }
+          try {
+                  return _shellsThicknesses.at(idx);
+          } catch (cms::Exception e) {
+              throw cms::Exception("GEOM")
+                << "No shells thicknesses defined for the wire \n";
+          }
   }
 
   const std::vector<double> &shellsThicknesses() const { return _shellsThicknesses;}

@@ -6,9 +6,9 @@
 // collection of DPIndex's into pointers to the objects
 // that they describe.
 //
-// $Id: resolveDPIndices.hh,v 1.2 2009/10/22 21:54:48 kutschke Exp $
+// $Id: resolveDPIndices.hh,v 1.3 2010/05/18 20:28:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/22 21:54:48 $
+// $Date: 2010/05/18 20:28:57 $
 //
 // Original author Rob Kutschke
 //
@@ -27,7 +27,7 @@ namespace mu2e {
   // Resolve a single DPIndex.
   template<typename T>
   typename T::value_type const * resolveDPIndex( edm::Event const& event,
-						 DPIndex const&    dpi ){
+                                                 DPIndex const&    dpi ){
     
     edm::Handle<T> handle;
     event.get( dpi.id, handle);
@@ -39,14 +39,14 @@ namespace mu2e {
   // Assume that ProductIDs may be different from one DPIndex to the other.
   template<typename T>
   void resolveDPIndices( edm::Event const&                  event,
-			 std::vector<DPIndex> const&        indices,
-			 std::vector<typename T::value_type const*>& vout
-			 ){
+                         std::vector<DPIndex> const&        indices,
+                         std::vector<typename T::value_type const*>& vout
+                         ){
 
     for ( std::vector<DPIndex>::const_iterator 
-	    i = indices.begin(),
-	    e = indices.end();
-	  i!=e; ++i ){
+            i = indices.begin(),
+            e = indices.end();
+          i!=e; ++i ){
      
       vout.push_back( resolveDPIndex<T>(event,*i) );
       
@@ -57,18 +57,18 @@ namespace mu2e {
   // Resolve multiple objects within a single ProductID.
   template<typename T>
   void resolveDPIndices( edm::Event const&                  event,
-			 edm::ProductID const&              id,
-			 std::vector<int> const&            indices,
-			 std::vector<typename T::value_type const*>& vout
-			 ){
+                         edm::ProductID const&              id,
+                         std::vector<int> const&            indices,
+                         std::vector<typename T::value_type const*>& vout
+                         ){
     
     edm::Handle<T> handle;
     event.get( id, handle);
 
     for ( std::vector<int>::const_iterator 
-	    i = indices.begin(),
-	    e = indices.end();
-	  i!=e; ++i ){
+            i = indices.begin(),
+            e = indices.end();
+          i!=e; ++i ){
      
       vout.push_back( &handle->at(*i) );
       

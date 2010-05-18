@@ -7,9 +7,9 @@
 // of straws in the system.  This works for both the LTracker
 // and the TTracker.
 //
-// $Id: StrawIndex.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
+// $Id: StrawIndex.hh,v 1.3 2010/05/18 20:29:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/14 14:16:41 $
+// $Date: 2010/05/18 20:29:05 $
 //
 // Original author Rob Kutschke
 //
@@ -61,18 +61,15 @@ namespace mu2e {
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
-				   StrawIndex const& i){
+                                   StrawIndex const& i){
     ost << i.asInt();
     return ost;
   }
 
   inline bool operator!=( StrawIndex const& lhs, 
-			  StrawIndex const& rhs) {
-      return !( lhs == rhs);
+                          StrawIndex const& rhs) {
+    return !( lhs == rhs);
   }
 
-  
-
 }
-
 #endif

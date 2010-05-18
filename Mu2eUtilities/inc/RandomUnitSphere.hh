@@ -5,9 +5,9 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.hh,v 1.2 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:32 $
+// $Id: RandomUnitSphere.hh,v 1.3 2010/05/18 20:28:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 20:28:50 $
 //
 // Original author Rob Kutschke
 //
@@ -33,9 +33,9 @@ namespace mu2e {
     }
 
     RandomUnitSphere( double czmin,
-		      double czmax,
-		      double phimin=0,
-		      double phimax=CLHEP::twopi):
+                      double czmax,
+                      double phimin=0,
+                      double phimax=CLHEP::twopi):
       _czmin(czmin),
       _czmax(czmax),
       _phimin(phimin),

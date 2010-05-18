@@ -36,11 +36,11 @@ namespace mu2e{
       //
       // construct a crystal
       Crystal( const CrystalId& id,             // crystal identifier
-	       CrystalIndex index,              // index into dumb crystal array
-	       const CLHEP::Hep3Vector& center, // center of crystal
-	       const CrystalDetail* detail,     // dumb data describing crystal makeup
-	       CLHEP::Hep3Vector const& t       // unit vector along crystal axis from readout to opposite edge
-	       );
+               CrystalIndex index,              // index into dumb crystal array
+               const CLHEP::Hep3Vector& center, // center of crystal
+               const CrystalDetail* detail,     // dumb data describing crystal makeup
+               CLHEP::Hep3Vector const& t       // unit vector along crystal axis from readout to opposite edge
+               );
       
       ~Crystal(){};
 

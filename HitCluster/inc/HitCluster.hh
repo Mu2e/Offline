@@ -2,9 +2,9 @@
 #define HITCLUSTER_HH
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.hh,v 1.2 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: HitCluster.hh,v 1.3 2010/05/18 20:28:08 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 20:28:08 $
 //
 //original author R. Bernstein
 //
@@ -54,56 +54,56 @@ namespace mu2e{
     //
 
   
-      struct Candidate{
+    struct Candidate{
 
-	//Identifier of the hit straw ( StrawIndex or VolumeId ).
-	int id;
+      //Identifier of the hit straw ( StrawIndex or VolumeId ).
+      int id;
 
-	//Index in the original hit container.
-	StepPointMC const* hitPointer;
+      //Index in the original hit container.
+      StepPointMC const* hitPointer;
 
-	explicit Candidate( int id_=-1, StepPointMC const* hitPointer_= 0):
-	  id(id_),
-	  hitPointer(hitPointer_){
-	}
-
-	//Compiler generated versions are OK for:
-	//copy c'tor, destructor, operator=
-
-	//The required behaviour of the comparison operators is that they
-	//compare only the values of the id belonging to the seed hit of this candidate.
-	bool operator==( Candidate const& rhs) const{
-	  return ( hitPointer->volumeId() == rhs.hitPointer->volumeId()  );
-	}
-
-	bool operator!=( Candidate const& rhs) const{
-	  return !( *this == rhs );
-	}
-
-	bool operator<( Candidate const& rhs) const{
-	  return ( hitPointer->volumeId() < rhs.hitPointer->volumeId() );
-	}
-	bool operator>( Candidate const& rhs) const{
-	  return ( hitPointer->volumeId() > rhs.hitPointer->volumeId());
-	}
-
-	bool operator>=( Candidate const& rhs) const{
-	  return ( hitPointer->volumeId() >= rhs.hitPointer->volumeId());
-	}
-
-	bool operator<=( Candidate const& rhs) const{
-	  return ( hitPointer->volumeId() <= rhs.hitPointer->volumeId());
-	}
-
-      };
-
-      inline std::ostream& operator<<( std::ostream& ost,
-				       Candidate const& c){
-	ost << "( "
-	    << c.id << ","
-	    << c.hitPointer->position() <<")";
-	return ost;
+      explicit Candidate( int id_=-1, StepPointMC const* hitPointer_= 0):
+        id(id_),
+        hitPointer(hitPointer_){
       }
+
+      //Compiler generated versions are OK for:
+      //copy c'tor, destructor, operator=
+
+      //The required behaviour of the comparison operators is that they
+      //compare only the values of the id belonging to the seed hit of this candidate.
+      bool operator==( Candidate const& rhs) const{
+        return ( hitPointer->volumeId() == rhs.hitPointer->volumeId()  );
+      }
+
+      bool operator!=( Candidate const& rhs) const{
+        return !( *this == rhs );
+      }
+
+      bool operator<( Candidate const& rhs) const{
+        return ( hitPointer->volumeId() < rhs.hitPointer->volumeId() );
+      }
+      bool operator>( Candidate const& rhs) const{
+        return ( hitPointer->volumeId() > rhs.hitPointer->volumeId());
+      }
+
+      bool operator>=( Candidate const& rhs) const{
+        return ( hitPointer->volumeId() >= rhs.hitPointer->volumeId());
+      }
+
+      bool operator<=( Candidate const& rhs) const{
+        return ( hitPointer->volumeId() <= rhs.hitPointer->volumeId());
+      }
+
+    };
+
+    inline std::ostream& operator<<( std::ostream& ost,
+                                     Candidate const& c){
+      ost << "( "
+          << c.id << ","
+          << c.hitPointer->position() <<")";
+      return ost;
+    }
 
     class HitCluster{
 
@@ -111,10 +111,10 @@ namespace mu2e{
 
       HitCluster(const StepPointMC& hit,Straw const& straw,StepPointMCCollection const* hits)
         :_hit(&hit),
-	 _straw(&straw),
-	 _hits(hits)
+         _straw(&straw),
+         _hits(hits)
       {
-	listOfStraws = HitCluster::findHitNeighbours();
+        listOfStraws = HitCluster::findHitNeighbours();
       }
 
       ~HitCluster(){};
@@ -139,7 +139,7 @@ namespace mu2e{
       void cleanUpDuplicates();
 
 
-     private:
+    private:
 
       hitNeighbours listOfStraws;
 

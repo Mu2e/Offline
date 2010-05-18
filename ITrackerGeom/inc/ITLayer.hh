@@ -35,11 +35,11 @@ public:
 
   // Constructor using cell/wire/layer info.
   ITLayer( ITLayerId& id,
-	 boost::shared_ptr<ITLayerDetail> &detail,
-	 int detailIndex,
-	 std::vector<boost::shared_ptr<Cell> > &cells,
-	 std::vector<boost::shared_ptr<Wire> > &fieldWires
-	 );
+         boost::shared_ptr<ITLayerDetail> &detail,
+         int detailIndex,
+         std::vector<boost::shared_ptr<Cell> > &cells,
+         std::vector<boost::shared_ptr<Wire> > &fieldWires
+         );
   
   ~ITLayer ();
 
@@ -56,8 +56,8 @@ public:
   double voxelizationFactor() const { return _voxelizationFactor; }
 
   boost::shared_ptr<Cell> getCell( int n ) const throw(cms::Exception) {
-	if (n>=0 && n<_nCells) return _cells.at(n);
-	else throw cms::Exception("GEOM")<< "Cell number: "<< n <<" not present in "<<_id;
+        if (n>=0 && n<_nCells) return _cells.at(n);
+        else throw cms::Exception("GEOM")<< "Cell number: "<< n <<" not present in "<<_id;
   }
 
   boost::shared_ptr<Cell> getCell( const CellId& id ) const {
@@ -65,8 +65,8 @@ public:
   }
 
   boost::shared_ptr<Wire> getFWire( int n ) const throw(cms::Exception) {
-	if (n>=0 && n<_nFiledWires) return _fieldWires.at(n);
-	else throw cms::Exception("GEOM")<< "Field wire number: "<< n <<" not present in "<<_id;
+        if (n>=0 && n<_nFiledWires) return _fieldWires.at(n);
+        else throw cms::Exception("GEOM")<< "Field wire number: "<< n <<" not present in "<<_id;
   }
 
   boost::shared_ptr<Wire> getFWire( const WireId& id ) const {
@@ -93,13 +93,13 @@ protected:
   std::vector<boost::shared_ptr<Wire> > _fieldWires;
 
   void addCell(Cell *cell){
-	  _cells.push_back(boost::shared_ptr<Cell>(cell));
-	  _nCells++;
+          _cells.push_back(boost::shared_ptr<Cell>(cell));
+          _nCells++;
   }
 
   void addFieldWire(Wire *wire){
-	  _fieldWires.push_back(boost::shared_ptr<Wire> (wire));
-	  _nFiledWires++;
+          _fieldWires.push_back(boost::shared_ptr<Wire> (wire));
+          _nFiledWires++;
   }
 
 

@@ -18,8 +18,8 @@ class CellDetail{
 
 public:
   CellDetail():
-	  _circumscribedRadius(0.0),
-	  _inscribedCircleRadius(0.0)
+          _circumscribedRadius(0.0),
+          _inscribedCircleRadius(0.0)
   {}
 
   CellDetail( double circumscribedRadius, double inscribedCircleRadius, boost::shared_ptr<WireDetail> senseWire );
@@ -29,23 +29,23 @@ public:
   double      CirumscribedRadius()   const { return _circumscribedRadius;}
   double      InscribedCircleRadius()   const { return _inscribedCircleRadius;}
   double      wireRadius() const throw(cms::Exception) {
-	  try {
-		  return _senseWire.get()->outerRadius();
-	  } catch (cms::Exception e) {
-	      throw cms::Exception("GEOM")
-		<< "No sense wire defined for the Cell \n";
+          try {
+                  return _senseWire.get()->outerRadius();
+          } catch (cms::Exception e) {
+              throw cms::Exception("GEOM")
+                << "No sense wire defined for the Cell \n";
           return 0.0;
-	  }
+          }
   }
 
   double      halfLength() const throw(cms::Exception) {
-	  try {
-		  return _senseWire->halfLength();
-	  } catch (cms::Exception e) {
-	      throw cms::Exception("GEOM")
-		<< "No sense wire defined for the Cell \n";
+          try {
+                  return _senseWire->halfLength();
+          } catch (cms::Exception e) {
+              throw cms::Exception("GEOM")
+                << "No sense wire defined for the Cell \n";
           return 0.0;
-	  }
+          }
 
   }
 

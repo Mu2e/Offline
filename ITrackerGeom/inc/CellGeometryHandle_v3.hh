@@ -12,18 +12,18 @@ namespace mu2e {
 
 class CellGeometryHandle_v3 : public CellGeometryHandle{
 
-	friend class ITrackerMaker;
+        friend class ITrackerMaker;
 
 protected:
-	CellGeometryHandle_v3(ITracker *itr=0x0);
+        CellGeometryHandle_v3(ITracker *itr=0x0);
 
 public:
 
-	~CellGeometryHandle_v3();
+        ~CellGeometryHandle_v3();
 
-	virtual void  SelectCell(int SupLayer, int CelLayer, int Cell);
-	virtual void  SelectWireDet(unsigned long det);
-	virtual unsigned long computeDet(int SupLayer, int CelLayer, int Cell);
+        virtual void  SelectCell(int SupLayer, int CelLayer, int Cell);
+        virtual void  SelectWireDet(unsigned long det);
+        virtual unsigned long computeDet(int SupLayer, int CelLayer, int Cell);
 
 protected:
     const ITracker *_itr;

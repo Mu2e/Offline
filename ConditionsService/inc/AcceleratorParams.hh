@@ -3,9 +3,9 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.hh,v 1.1 2009/11/13 23:07:51 kutschke Exp $
+// $Id: AcceleratorParams.hh,v 1.2 2010/05/18 20:27:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/13 23:07:51 $
+// $Date: 2010/05/18 20:27:58 $
 //
 // Original author Rob Kutschke
 //
@@ -41,12 +41,11 @@ namespace mu2e
   inline std::ostream& operator<<(std::ostream& ost,
                                   const AcceleratorParams& lw ){
     ost << "( "
-	<< lw.deBuncherPeriod << ", "
-	<< " )";
+        << lw.deBuncherPeriod << ", "
+        << " )";
 
     return ost;
   }
-
 
 }
 

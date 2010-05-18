@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: Vane.hh,v 1.2 2010/05/12 14:57:48 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/12 14:57:48 $
+// $Id: Vane.hh,v 1.3 2010/05/18 20:29:14 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 20:29:14 $
 //
 // Original author R, Bernstein and Rob Kutschke
 //
@@ -41,26 +41,26 @@ namespace mu2e {
       const VaneId Id() const { return _id;}
 
       const std::vector<ZSlice>& getZSlices () const{ 
-	return _zslices;
+        return _zslices;
       }
 
       const ZSlice& getZSlice ( int n) const { 
-	return _zslices.at(n);
+        return _zslices.at(n);
       }
 
       const ZSlice& getZSlice ( const ZSliceId& zid ) const{
-	return _zslices.at(zid._zslice);
+        return _zslices.at(zid._zslice);
       }
 
       const RSlice& getRSlice ( const RSliceId& rslid ) const{
-	//	std::cout << "zslice in getRSlice of Vane.hh = " << rslid.getZSlice()<< endl;
+        //        std::cout << "zslice in getRSlice of Vane.hh = " << rslid.getZSlice()<< endl;
 
-	// 5/7/10 this is a zslice object, and I am getting it's RSlice --> go to ZSlice next
-	return _zslices.at(rslid.getZSlice()).getRSlice(rslid);
+        // 5/7/10 this is a zslice object, and I am getting it's RSlice --> go to ZSlice next
+        return _zslices.at(rslid.getZSlice()).getRSlice(rslid);
       }
 
       const Crystal& getCrystal ( const CrystalId& cid ) const{
-	return _zslices.at(cid.getZSlice()).getCrystal(cid);
+        return _zslices.at(cid.getZSlice()).getCrystal(cid);
       }
 
       // Formatted string embedding the id of the zslice.
@@ -76,28 +76,28 @@ namespace mu2e {
       // F can be a class with an operator() or a free function.
       template <class F>
       inline void Vane::forAllCrystals ( F& f) const{
-	for ( std::vector<ZSlice>::const_iterator i=_zslices.begin(), e=_zslices.end();
-	      i !=e; ++i){
-	  i->forAllCrystals(f);
-	}
+        for ( std::vector<ZSlice>::const_iterator i=_zslices.begin(), e=_zslices.end();
+              i !=e; ++i){
+          i->forAllCrystals(f);
+        }
       }
 
       // Loop over all crystals and call F.
       // F can be a class with an operator() or a free function.
       template <class F>
       inline void Vane::forAllRSlices ( F& f) const{
-	for ( std::vector<ZSlice>::const_iterator i=_zslices.begin(), e=_zslices.end();
-	      i !=e; ++i){
-	  i->forAllRSlices(f);
-	}
+        for ( std::vector<ZSlice>::const_iterator i=_zslices.begin(), e=_zslices.end();
+              i !=e; ++i){
+          i->forAllRSlices(f);
+        }
       }
 
       template <class F>
       inline void Vane::forAllZSlices ( F& f) const{
-	for ( std::vector<ZSlice>::const_iterator i=_zslices.begin(), e=_zslices.end();
-	      i !=e; ++i){
-	  f(*i);
-	}
+        for ( std::vector<ZSlice>::const_iterator i=_zslices.begin(), e=_zslices.end();
+              i !=e; ++i){
+          f(*i);
+        }
       }
 
 #endif

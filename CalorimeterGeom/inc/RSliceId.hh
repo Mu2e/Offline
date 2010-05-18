@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: RSliceId.hh,v 1.2 2010/05/12 14:57:41 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/12 14:57:41 $
+// $Id: RSliceId.hh,v 1.3 2010/05/18 20:29:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 20:29:13 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -24,53 +24,53 @@ namespace mu2e {
     public:
 
       RSliceId():
-	_zid(ZSliceId()),
-	_rslice(-1){
+        _zid(ZSliceId()),
+        _rslice(-1){
       }
 
       RSliceId( ZSliceId zslice,
-		uint32_t rslice
-		):
-	_zid(zslice),
-	_rslice(rslice){
+                uint32_t rslice
+                ):
+        _zid(zslice),
+        _rslice(rslice){
       }
 
       RSliceId( VaneId vane,
-		uint32_t zslice,
-		uint32_t rslice
-		):
-	_zid(ZSliceId(vane,zslice)),
-	_rslice(rslice){
+                uint32_t zslice,
+                uint32_t rslice
+                ):
+        _zid(ZSliceId(vane,zslice)),
+        _rslice(rslice){
       }
 
       ~RSliceId  (){
       }
 
       const VaneId getVaneId () const{
-	return _zid._vid;
+        return _zid._vid;
       }
       const ZSliceId getZSliceId () const{
-	return _zid;
+        return _zid;
       }
 
       const int getVane () const{
-	return _zid._vid;
+        return _zid._vid;
       }
 
       const int getZSlice () const{
-	return _zid._zslice;
+        return _zid._zslice;
       }
 
       const int getRSlice() const{
-	return _rslice;
+        return _rslice;
       }
 
       bool operator==(RSliceId const& rhs) const{
-	return ( _zid == rhs._zid && _rslice == rhs._rslice );
+        return ( _zid == rhs._zid && _rslice == rhs._rslice );
       }
 
       bool operator!=(RSliceId const& rhs) const{
-	return !( *this == rhs);
+        return !( *this == rhs);
       }
 
   
@@ -83,7 +83,7 @@ namespace mu2e {
     };
 
     inline std::ostream& operator<<(std::ostream& ost, 
-				    const RSliceId& rsl ){
+                                    const RSliceId& rsl ){
       ost << rsl._zid << " " << rsl._rslice;
       return ost;
     }

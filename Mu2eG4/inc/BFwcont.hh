@@ -11,7 +11,7 @@ class BFwcont { //public BField
 
 public:
   BFwcont(std::string filename, CLHEP::Hep3Vector const& origin,
-	  int const nx, int const ny, int const nz ): 
+          int const nx, int const ny, int const nz ): 
     _nx(nx),
     _ny(ny),
     _nz(nz),
@@ -68,7 +68,7 @@ private:
 
   // Interpolater
   CLHEP::Hep3Vector interpolate(mu2e::Container3D<CLHEP::Hep3Vector> const vec,
-				CLHEP::Hep3Vector const frac) const;
+                                CLHEP::Hep3Vector const frac) const;
 
   // Polynomial fit function used by interpolater
   double gmcpoly2(std::vector<double> const& f1d, double const& x) const;

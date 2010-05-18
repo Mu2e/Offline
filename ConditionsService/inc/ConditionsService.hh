@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.5 2010/03/19 01:13:07 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.6 2010/05/18 20:28:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/19 01:13:07 $
+// $Date: 2010/05/18 20:28:00 $
 //
 // Original author Rob Kutschke
 //
@@ -68,9 +68,9 @@ namespace mu2e {
     ENTITY* getElement( std::string const& key, std::string const& version)
     {
       if(_run_count==0) 
-	throw cms::Exception("GEOM")
-	  << "Cannot get _entities from an unconfigured conditions service.\n"
-	  << "You've attempted to a get an element before the first run\n";
+        throw cms::Exception("GEOM")
+          << "Cannot get _entities from an unconfigured conditions service.\n"
+          << "You've attempted to a get an element before the first run\n";
       
       // to use this generic way requires a map of names (typeid?) to
       // abstract elements.
@@ -78,16 +78,16 @@ namespace mu2e {
       std::string name = typeid(ENTITY).name();
       ConditionsMap::iterator it(_entities.find(name));
       if(it==_entities.end())
-	throw cms::Exception("GEOM")
-	  << "Failed to retrieve conditions entity of type " << name << "\n";
+        throw cms::Exception("GEOM")
+          << "Failed to retrieve conditions entity of type " << name << "\n";
 
       // this must succeed or there is something terribly wrong
       ENTITY* d = dynamic_cast<ENTITY*>(it->second.get());
       
       if(d==0)
-	throw cms::Exception("GEOM")
-	  << "Failed to convert found conditions entity " << name
-	  << " to its correct type.  There is a serious problem.\n";
+        throw cms::Exception("GEOM")
+          << "Failed to convert found conditions entity " << name
+          << " to its correct type.  There is a serious problem.\n";
       
       return d;
     }
@@ -106,9 +106,9 @@ namespace mu2e {
     void addEntity(std::auto_ptr<ENTITY> d)
     {
       if(_entities.find(typeid(ENTITY).name())!=_entities.end())
-	throw cms::Exception("GEOM") << "failed to install conditions entity "
-				     << d->name() << "\nwith type name "
-				     << typeid(ENTITY).name() << "\n";
+        throw cms::Exception("GEOM") << "failed to install conditions entity "
+                                     << d->name() << "\nwith type name "
+                                     << typeid(ENTITY).name() << "\n";
       
       ConditionsEntityPtr ptr(d.release());
       _entities[typeid(ENTITY).name()] = ptr;

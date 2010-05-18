@@ -4,9 +4,9 @@
 //
 // A safe pointer to a ConditionsEntity.
 //
-// $Id: ConditionsHandle.hh,v 1.2 2009/11/12 01:35:50 kutschke Exp $
+// $Id: ConditionsHandle.hh,v 1.3 2010/05/18 20:27:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/12 01:35:50 $
+// $Date: 2010/05/18 20:27:59 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,7 @@ namespace mu2e {
   {
   public:
     ConditionsHandle( std::string const& key,
-		      std::string const& version="current")
+                      std::string const& version="current")
     {
       edm::Service<ConditionsService> sg;
       _entity = sg->getElement<ENTITY>(key,version);

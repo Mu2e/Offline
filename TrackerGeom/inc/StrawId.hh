@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: StrawId.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
+// $Id: StrawId.hh,v 1.3 2010/05/18 20:29:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/14 14:16:41 $
+// $Date: 2010/05/18 20:29:04 $
 //
 // Original author Rob Kutschke
 //
@@ -26,25 +26,25 @@ public:
   }
   
   StrawId( LayerId layer,
-	   int n
-	   ):
+           int n
+           ):
     _lid(layer),
     _n(n){
   }
   
   StrawId( SectorId sectorid,
-	   int layer,
-	   int n
-	   ):
+           int layer,
+           int n
+           ):
     _lid(sectorid,layer),
     _n(n){
   }
 
   StrawId( DeviceId device,
-	   int section,
-	   int layer,
-	   int n
-	   ):
+           int section,
+           int layer,
+           int n
+           ):
     _lid(LayerId(device,section,layer)),
     _n(n){
   }
@@ -98,7 +98,7 @@ public:
 };
 
 inline std::ostream& operator<<(std::ostream& ost, 
-				const StrawId& s ){
+                                const StrawId& s ){
   ost << "Straw Id: ("
       << s.getLayerId() << " "
       << s._n

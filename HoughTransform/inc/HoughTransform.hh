@@ -1,9 +1,9 @@
 #ifndef HOUGHTRANSFORM_HH
 #define HOUGHTRANSFORM_HH
 //
-// $Id: HoughTransform.hh,v 1.5 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: HoughTransform.hh,v 1.6 2010/05/18 20:28:11 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 20:28:11 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.  
@@ -76,13 +76,13 @@ namespace mu2e{
 
       struct houghCircleStruct
       {
-	double radius;
-	double x0;
-	double y0;
-	double dca;
-	int numberOfStraws;
-	houghCircleStruct(double radius_,double x0_, double y0_ ,double dca_, int numberOfStraws_):
-	  radius(radius_),x0(x0_),y0(y0_),dca(dca_),numberOfStraws(numberOfStraws_){}
+        double radius;
+        double x0;
+        double y0;
+        double dca;
+        int numberOfStraws;
+        houghCircleStruct(double radius_,double x0_, double y0_ ,double dca_, int numberOfStraws_):
+          radius(radius_),x0(x0_),y0(y0_),dca(dca_),numberOfStraws(numberOfStraws_){}
       };
 
       typedef std::vector< houghCircleStruct > houghCandidates;
@@ -96,9 +96,9 @@ namespace mu2e{
       //methods
       //      void foundHoughTracks(GeomHandle<LTracker>& ltracker,edm::Handle<StepPointMCCollection>& hits,
       void foundHoughTracks(double radius, GeomHandle<LTracker>& ltracker,
-			    houghCandidates&);
+                            houghCandidates&);
       void foundHoughTracks(GeomHandle<LTracker>& ltracker,
-			    houghCandidates&);
+                            houghCandidates&);
 
 
       //      int countHitNeighbours( Straw const& straw, edm::Handle<StepPointMCCollection>& hits );

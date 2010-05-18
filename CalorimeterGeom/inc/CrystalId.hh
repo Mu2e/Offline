@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: CrystalId.hh,v 1.6 2010/04/29 18:21:56 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/04/29 18:21:56 $
+// $Id: CrystalId.hh,v 1.7 2010/05/18 20:29:10 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 20:29:10 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -22,32 +22,32 @@ namespace mu2e {
     public:
 
       CrystalId():
-	_rslid(RSliceId()),
-	_n(-1){
+        _rslid(RSliceId()),
+        _n(-1){
       }
   
       CrystalId( RSliceId rslice,
-		 int n
-		 ):
-	_rslid(rslice),
-	_n(n){
+                 int n
+                 ):
+        _rslid(rslice),
+        _n(n){
       }
   
       CrystalId( ZSliceId zsliceid,
-		 int rslice,
-		 int n
-		 ):
-	_rslid(zsliceid,rslice),
-	_n(n){
+                 int rslice,
+                 int n
+                 ):
+        _rslid(zsliceid,rslice),
+        _n(n){
       }
 
       CrystalId( VaneId vane,
-		 int section,
-		 int rslice,
-		 int n
-		 ):
-	_rslid(RSliceId(vane,section,rslice)),
-	_n(n){
+                 int section,
+                 int rslice,
+                 int n
+                 ):
+        _rslid(RSliceId(vane,section,rslice)),
+        _n(n){
       }
 
       ~CrystalId  (){
@@ -57,39 +57,39 @@ namespace mu2e {
       // operators should be should be OK.
 
       const VaneId& getVaneId() const {
-	return _rslid._zid._vid;
+        return _rslid._zid._vid;
       }
 
       const ZSliceId& getZSliceId() const {
-	return _rslid._zid;
+        return _rslid._zid;
       }
 
       const RSliceId& getRSliceId() const {
-	return _rslid;
+        return _rslid;
       }
   
       const int getVane() const{
-	return _rslid._zid._vid;
+        return _rslid._zid._vid;
       }
 
       const int getZSlice() const{
-	return _rslid._zid._zslice;
+        return _rslid._zid._zslice;
       }
 
       const int getRSlice() const{
-	return _rslid._rslice;
+        return _rslid._rslice;
       }
 
       const int getCrystal() const{
-	return _n;
+        return _n;
       }
 
       bool operator==( CrystalId const& rhs) const{
-	return ( _rslid == rhs._rslid && _n == rhs._n );
+        return ( _rslid == rhs._rslid && _n == rhs._n );
       }
 
       bool operator!=( CrystalId const& rhs) const{
-	return !( *this == rhs);
+        return !( *this == rhs);
       }
 
 
@@ -100,11 +100,11 @@ namespace mu2e {
     };
 
     inline std::ostream& operator<<(std::ostream& ost, 
-				    const CrystalId& c ){
+                                    const CrystalId& c ){
       ost << "Crystal Id: ("
-	  << c.getRSliceId() << " "
-	  << c._n
-	  << " )";
+          << c.getRSliceId() << " "
+          << c._n
+          << " )";
       return ost;
     }
 

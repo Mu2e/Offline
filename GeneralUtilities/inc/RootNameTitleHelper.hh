@@ -5,9 +5,9 @@
 // Helper class to construct a series of similar
 // names and titles for root objects.
 //
-// $Id: RootNameTitleHelper.hh,v 1.1 2009/10/14 18:47:54 kutschke Exp $
+// $Id: RootNameTitleHelper.hh,v 1.2 2010/05/18 20:28:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/14 18:47:54 $
+// $Date: 2010/05/18 20:28:02 $
 //
 // This class helps to make a series of root objects that 
 // have names that differ only by a trailing integer, such as:
@@ -45,9 +45,9 @@ class RootNameTitleHelper {
 
 public:
   RootNameTitleHelper ( std::string const& name_base,
-			std::string const& title_base,
-			int id,
-			int pad=-1 );
+                        std::string const& title_base,
+                        int id,
+                        int pad=-1 );
   
   // Compiler generated versions of d'tor, copy c'tor
   // and assignment operator are OK.
@@ -61,5 +61,4 @@ private:
 
 };
 
-#endif  // COMPILE_TIME_POW
-
+#endif

@@ -17,8 +17,8 @@ namespace mu2e {
     }
     
     ManifoldId(SectorId sector,
-	       int manifold
-	       ):
+               int manifold
+               ):
       _sid(sector),
       _manifold(manifold)
     {}
@@ -46,7 +46,7 @@ namespace mu2e {
   };
   
   inline std::ostream& operator<<(std::ostream& ost,
-				    const ManifoldId& m ){
+                                  const ManifoldId& m ){
     ost << m.getSectorId() << " " << m.getManifold();
     return ost;
   }

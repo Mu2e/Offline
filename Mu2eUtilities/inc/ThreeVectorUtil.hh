@@ -3,9 +3,9 @@
 //
 // Various utilities that construct or operate on CLHEP::Hep3Vectors;
 //
-// $Id: ThreeVectorUtil.hh,v 1.2 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:32 $
+// $Id: ThreeVectorUtil.hh,v 1.3 2010/05/18 20:28:51 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 20:28:51 $
 //
 // Original author Rob Kutschke
 //
@@ -24,15 +24,15 @@ namespace mu2e {
   // ( magnitude, cos(polar angle), azimuth) = ( r, cz, phi)
   // Uses safesqrt to compute sin(theta).
   CLHEP::Hep3Vector polar3Vector( double r,
-				  double cz,
-				  double phi );
+                                  double cz,
+                                  double phi );
 
   // As above but uses a tolerance in the computation of sin(theta).
   // ( uses sqrtOrThrow ).
   CLHEP::Hep3Vector polar3Vector( double r,
-				  double cz,
-				  double phi,
-				  double eps );
+                                  double cz,
+                                  double phi,
+                                  double eps );
 }
 
 #endif

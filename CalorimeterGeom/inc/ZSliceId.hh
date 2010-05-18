@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: ZSliceId.hh,v 1.1 2010/04/27 18:21:52 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/04/27 18:21:52 $
+// $Id: ZSliceId.hh,v 1.2 2010/05/18 20:29:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 20:29:16 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -23,15 +23,15 @@ namespace mu2e {
     public:
 
       ZSliceId():
-	_vid(-1),
-	_zslice(-1){
+        _vid(-1),
+        _zslice(-1){
       }
   
       ZSliceId( VaneId vane,
-		int zslice
-		):
-	_vid(vane),
-	_zslice(zslice){
+                int zslice
+                ):
+        _vid(vane),
+        _zslice(zslice){
       }
   
       ~ZSliceId  (){
@@ -41,23 +41,23 @@ namespace mu2e {
       // should be OK.
 
       const int getVaneId() const {
-	return _vid;
+        return _vid;
       }
 
       const int getVane() const {
-	return _vid;
+        return _vid;
       }
 
       const int getZSlice() const {
-	return _zslice;
+        return _zslice;
       }
 
       bool operator==(ZSliceId const& rhs) const{
-	return ( _vid == rhs._vid && _zslice == rhs._zslice );
+        return ( _vid == rhs._vid && _zslice == rhs._zslice );
       }
 
       bool operator!=(ZSliceId const& rhs) const{
-	return !( *this == rhs);
+        return !( *this == rhs);
       }
   
       VaneId _vid;
@@ -66,7 +66,7 @@ namespace mu2e {
     };
 
     inline std::ostream& operator<<(std::ostream& ost, 
-				    const ZSliceId& zsl ){
+                                    const ZSliceId& zsl ){
       ost << zsl._vid << " " << zsl._zslice;
       return ost;
     }

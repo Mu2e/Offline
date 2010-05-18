@@ -5,9 +5,9 @@
 //  A variety of ways of copying a std::vector into a 
 //  CLHEP::Hep3Vector.
 //
-// $Id: hep3VectorFromStdVector.hh,v 1.2 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:32 $
+// $Id: hep3VectorFromStdVector.hh,v 1.3 2010/05/18 20:28:55 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 20:28:55 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@ namespace mu2e {
   // Setter style version
   inline void
   hep3VectorFromStdVector( CLHEP::Hep3Vector cv, 
-			   std::vector<double> const& sv){
+                           std::vector<double> const& sv){
     cv.set( sv[0], sv[1], sv[2] );
   }
 
@@ -33,7 +33,7 @@ namespace mu2e {
   // Safe version of setter.
   inline void
   checkedHep3VectorFromStdVector( CLHEP::Hep3Vector cv, 
-				  std::vector<double> const& sv ){
+                                  std::vector<double> const& sv ){
     cv.set( sv.at(0), sv.at(1), sv.at(2) );
   }
 

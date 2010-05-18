@@ -7,9 +7,9 @@
 // of crystals in the system.  This works for both the LTracker
 // and the TTracker having been copied over.  
 //
-// $Id: CrystalIndex.hh,v 1.4 2010/05/12 14:57:29 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/12 14:57:29 $
+// $Id: CrystalIndex.hh,v 1.5 2010/05/18 20:29:11 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 20:29:11 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -61,13 +61,13 @@ namespace mu2e {
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
-				   CrystalIndex const& i){
+                                   CrystalIndex const& i){
     ost << i.asInt();
     return ost;
   }
 
   inline bool operator!=( CrystalIndex const& lhs, 
-			  CrystalIndex const& rhs) {
+                          CrystalIndex const& rhs) {
       return !( lhs == rhs);
   }
 

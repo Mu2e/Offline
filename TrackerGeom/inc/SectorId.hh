@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: SectorId.hh,v 1.2 2010/04/14 14:16:41 kutschke Exp $
+// $Id: SectorId.hh,v 1.3 2010/05/18 20:29:01 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/14 14:16:41 $
+// $Date: 2010/05/18 20:29:01 $
 //
 // Original author Rob Kutschke
 //
@@ -18,58 +18,58 @@
 
 namespace mu2e { 
 
-struct SectorId{
+  struct SectorId{
 
-public:
+  public:
 
-  SectorId():
-    _did(-1),
-    _sector(-1){
-  }
+    SectorId():
+      _did(-1),
+      _sector(-1){
+    }
   
-  SectorId( DeviceId device,
-	    int sector
-	   ):
-    _did(device),
-    _sector(sector){
-  }
+    SectorId( DeviceId device,
+              int sector
+              ):
+      _did(device),
+      _sector(sector){
+    }
   
-  ~SectorId  (){
-  }
+    ~SectorId  (){
+    }
   
-  // Compiler generated copy and assignment constructors
-  // should be OK.
+    // Compiler generated copy and assignment constructors
+    // should be OK.
 
-  const int getDeviceId() const {
-    return _did;
-  }
+    const int getDeviceId() const {
+      return _did;
+    }
 
-  const int getDevice() const {
-    return _did;
-  }
+    const int getDevice() const {
+      return _did;
+    }
 
-  const int getSector() const {
-    return _sector;
-  }
+    const int getSector() const {
+      return _sector;
+    }
 
-  bool operator==(SectorId const& rhs) const{
-    return ( _did == rhs._did && _sector == rhs._sector );
-  }
+    bool operator==(SectorId const& rhs) const{
+      return ( _did == rhs._did && _sector == rhs._sector );
+    }
 
-  bool operator!=(SectorId const& rhs) const{
-    return !( *this == rhs);
-  }
+    bool operator!=(SectorId const& rhs) const{
+      return !( *this == rhs);
+    }
   
-  DeviceId _did;
-  int32_t _sector;
+    DeviceId _did;
+    int32_t _sector;
   
-};
+  };
 
-inline std::ostream& operator<<(std::ostream& ost, 
-				const SectorId& s ){
-  ost << s._did << " " << s._sector;
-  return ost;
-}
+  inline std::ostream& operator<<(std::ostream& ost, 
+                                  const SectorId& s ){
+    ost << s._did << " " << s._sector;
+    return ost;
+  }
 
 }  //namespace mu2e
 

@@ -8,14 +8,14 @@ namespace mu2e {
 
 class CellGeometryHandle_ExtGeom : public CellGeometryHandle {
 
-	friend class ITrackerMaker;
+        friend class ITrackerMaker;
 
 protected:
-	CellGeometryHandle_ExtGeom(const char *WireDataFile = "ITrackerWireData.root");
+        CellGeometryHandle_ExtGeom(const char *WireDataFile = "ITrackerWireData.root");
 
 public:
 
-	~CellGeometryHandle_ExtGeom();
+        ~CellGeometryHandle_ExtGeom();
 
     virtual void SelectCell(int SupLayer, int CelLayer, int Cell);
     virtual void SelectWireDet(unsigned long det);// Det Method

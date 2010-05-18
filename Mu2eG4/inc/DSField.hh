@@ -1,5 +1,5 @@
-#ifndef DSFIELD_HH
-#define DSFIELD_HH
+#ifndef DSFIELD_HH                              \
+  #define DSFIELD_HH
 
 #include <memory>
 #include "G4MagneticField.hh"
@@ -12,7 +12,7 @@ class DSField: public G4MagneticField {
 public:
 
   DSField( std::string filename, G4ThreeVector const& origin, 
-	   int const nx, int const ny, int const nz):
+           int const nx, int const ny, int const nz):
     G4MagneticField(),
     //_p(new BFBMvec(filename,origin,nx,ny,nz)){ 
     _p(new BFwcont(filename,origin,nx,ny,nz)){
@@ -20,7 +20,7 @@ public:
 
   virtual ~DSField(){};
   virtual void GetFieldValue(const G4double Point[4],
-			     G4double *Bfield) const;
+                             G4double *Bfield) const;
 
 private:
 

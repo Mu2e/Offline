@@ -5,9 +5,9 @@
 // Class to represent one target foil.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: TargetFoil.hh,v 1.2 2010/02/15 16:56:50 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/02/15 16:56:50 $
+// $Id: TargetFoil.hh,v 1.3 2010/05/18 20:28:59 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 20:28:59 $
 //
 // Original author Rob Kutschke
 //
@@ -26,11 +26,11 @@ namespace mu2e {
 
   public:
     TargetFoil( int id,
-		CLHEP::Hep3Vector const& c, 
-		CLHEP::Hep3Vector const& n, 
-		double rOut, 
-		double rIn, 
-		double t,
+                CLHEP::Hep3Vector const& c, 
+                CLHEP::Hep3Vector const& n, 
+                double rOut, 
+                double rIn, 
+                double t,
                 std::string m):
       _id(id),
       _c(c),
