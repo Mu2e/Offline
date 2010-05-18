@@ -3,9 +3,9 @@
 // approach between the two lines.  The lines are 
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:32 $
+// $Id: TwoLinePCA.cc,v 1.3 2010/05/18 21:16:37 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:16:37 $
 //
 // Original author Rob Kutschke
 //
@@ -13,19 +13,17 @@
 #include <iostream>
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
-using CLHEP::Hep3Vector;
-
 using namespace std;
 
 namespace mu2e {
 
 
   TwoLinePCA::TwoLinePCA( CLHEP::Hep3Vector const& p1,
-			  CLHEP::Hep3Vector const& t1,
-			  CLHEP::Hep3Vector const& p2,
-			  CLHEP::Hep3Vector const& t2,
-			  double cut
-			  ):
+                          CLHEP::Hep3Vector const& t1,
+                          CLHEP::Hep3Vector const& p2,
+                          CLHEP::Hep3Vector const& t2,
+                          double cut
+                          ):
     _p1(p1),
     _t1(t1.unit()),
     _p2(p2),
@@ -74,30 +72,9 @@ namespace mu2e {
     _dca   = diff.mag();
     _dca2d = diff.perp();
 
-    /*
-    double dd1 = diff.dot(_t1);
-    double dd2 = diff.dot(_t2);
-
-    cout << "Steps: " 
-	 << _s1 << " "
-	 << _s2 
-	 << endl;
-    cout << "Points: "
-	 << _pca1 << "   |  "
-	 << _pca2
-	 << endl;
-    
-    cout << "Check .... "
-	 << dd1 << " "
-	 << dd2 << "  |  "
-	 << diff << "  "
-	 << diff.mag()
-	 << endl;
-    */
-
-
   }
+
   TwoLinePCA::~TwoLinePCA(){
   }
   
-}
+} // end namespace mu2e

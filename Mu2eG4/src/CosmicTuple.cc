@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.2 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: CosmicTuple.cc,v 1.3 2010/05/18 21:16:31 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:31 $
 //
 // Original author Rob Kutschke
 //
@@ -59,7 +59,7 @@ namespace mu2e {
     
     // Create an ntuple.
     _ntupTrk = tfs->make<TNtuple>( "ntupTrk", "Trk ntuple", 
-				   "evt:trk:pid:px:py:pz:pmag:genId:pidGen:eGen:thGen:xGen:yGen:zGen:nHits:hxMin:hyMin:hzMin:hxMax:hyMax:hzMax:tMin:tMax");
+                                   "evt:trk:pid:px:py:pz:pmag:genId:pidGen:eGen:thGen:xGen:yGen:zGen:nHits:hxMin:hyMin:hzMin:hxMax:hyMax:hzMax:tMin:tMax");
 
   }
 
@@ -133,70 +133,70 @@ namespace mu2e {
       int trackId = hit.trackId();
 
       if ( oldTrk != trackId || i == hits->size()-1 ) {
-	// special case
-	if ( i == hits->size()-1 ) {
-	  oldTrk = trackId;
-	  if ( pos.x() < hxMin ) hxMin = pos.x();
-	  if ( pos.y() < hyMin ) hyMin = pos.y();
-	  if ( pos.z() < hzMin ) hzMin = pos.z();
-	  if ( hit.time() < tMin ) tMin = hit.time();
-	  if ( pos.x() > hxMax ) hxMax = pos.x();
-	  if ( pos.y() > hyMax ) hyMax = pos.y();
-	  if ( pos.z() > hzMax ) hzMax = pos.z();
-	  if ( hit.time() > tMax ) tMax = hit.time();
-	  nHits++;
-	}
+        // special case
+        if ( i == hits->size()-1 ) {
+          oldTrk = trackId;
+          if ( pos.x() < hxMin ) hxMin = pos.x();
+          if ( pos.y() < hyMin ) hyMin = pos.y();
+          if ( pos.z() < hzMin ) hzMin = pos.z();
+          if ( hit.time() < tMin ) tMin = hit.time();
+          if ( pos.x() > hxMax ) hxMax = pos.x();
+          if ( pos.y() > hyMax ) hyMax = pos.y();
+          if ( pos.z() > hzMax ) hzMax = pos.z();
+          if ( hit.time() > tMax ) tMax = hit.time();
+          nHits++;
+        }
 
         if ( !first ) {
           // dump previous track
 
-	  // Default values for these, in case information is not available.
-	  int pdgId = -1;
-	  float eGen = 0;
-	  float thGen = 0;
-	  CLHEP::Hep3Vector posGen(0,0,0);
-	  GenId idGen;
-	  int pidGen = -1;
+          // Default values for these, in case information is not available.
+          int pdgId = -1;
+          float eGen = 0;
+          float thGen = 0;
+          CLHEP::Hep3Vector posGen(0,0,0);
+          GenId idGen;
+          int pidGen = -1;
 
-	  if ( haveSimPart && oldTrk >= 0 && oldTrk < simParticles->size() ){
-	    const SimParticle* sim = &(simParticles->at(oldTrk));
+          if ( haveSimPart && oldTrk >= 0 && oldTrk < simParticles->size() ){
+            const SimParticle* sim = &(simParticles->at(oldTrk));
 
-	    // PDG Particle Id of the sim particle that made this hit.
-	    pdgId = sim->pdgId();
+            // PDG Particle Id of the sim particle that made this hit.
+            pdgId = sim->pdgId();
       
-	    // find the generated parent
-	    const SimParticle* p = sim;
-	    int gTrk = p->generatorIndex();
-	    int depth = 0;
-	    while ( gTrk < 0 && depth < 100 ) {
-	      if ( p->hasParent() ) {
-		int pId = p->parentId();
-		if ( pId < 0 || pId >= simParticles->size() ) break;
-		p = &(simParticles->at(pId));
-		gTrk = p->generatorIndex();
-		depth++;
-	      } else {
-		break;
-	      }
-	    }
+            // find the generated parent
+            const SimParticle* p = sim;
+            int gTrk = p->generatorIndex();
+            int depth = 0;
+            while ( gTrk < 0 && depth < 100 ) {
+              if ( p->hasParent() ) {
+                int pId = p->parentId();
+                if ( pId < 0 || pId >= simParticles->size() ) break;
+                p = &(simParticles->at(pId));
+                gTrk = p->generatorIndex();
+                depth++;
+              } else {
+                break;
+              }
+            }
 
-	    // store generator info
-	    if ( gTrk >= 0 && gTrk < genParticles->size() ) {
-	      ToyGenParticle const& genpart = genParticles->at(gTrk);
-	      idGen = genpart._generatorId;
-	      pidGen = genpart._pdgId;
-	      CLHEP::HepLorentzVector p4gen = genpart._momentum;
-	      CLHEP::Hep3Vector y(0,-1,0);
-	      eGen = p4gen.e();
-	      thGen = y.angle(p4gen.vect());
-	      posGen = genpart._position;
-	    }
+            // store generator info
+            if ( gTrk >= 0 && gTrk < genParticles->size() ) {
+              ToyGenParticle const& genpart = genParticles->at(gTrk);
+              idGen = genpart._generatorId;
+              pidGen = genpart._pdgId;
+              CLHEP::HepLorentzVector p4gen = genpart._momentum;
+              CLHEP::Hep3Vector y(0,-1,0);
+              eGen = p4gen.e();
+              thGen = y.angle(p4gen.vect());
+              posGen = genpart._position;
+            }
 
-	  }
+          }
 
-	  ntT[0]  = event.id().event();
+          ntT[0]  = event.id().event();
           ntT[1]  = oldTrk;
-	  ntT[2]  = pdgId;
+          ntT[2]  = pdgId;
           ntT[3]  = ptrk.x();
           ntT[4]  = ptrk.y();
           ntT[5]  = ptrk.z();

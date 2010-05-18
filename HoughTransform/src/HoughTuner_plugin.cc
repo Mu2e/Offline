@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_plugin.cc,v 1.3 2010/04/16 16:31:17 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/04/16 16:31:17 $
+// $Id: HoughTuner_plugin.cc,v 1.4 2010/05/18 21:15:52 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:15:52 $
 //
 // Original author P. Shanahan
 //
@@ -82,10 +82,10 @@ namespace mu2e {
     virtual void endJob();
 
     virtual void beginRun(edm::Run const &r, 
-			  edm::EventSetup const& eSetup );
+                          edm::EventSetup const& eSetup );
 
     virtual void beginLuminosityBlock(edm::LuminosityBlock const& lblock, 
-				      edm::EventSetup const&);
+                                      edm::EventSetup const&);
  
     // This is called for each event.
     void analyze(const edm::Event& e, edm::EventSetup const&);
@@ -145,7 +145,7 @@ namespace mu2e {
   }
 
   void HoughTuner::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
-					     edm::EventSetup const&){
+                                             edm::EventSetup const&){
   }
 
 
@@ -267,7 +267,7 @@ std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
 
 
   void HoughTuner::bookEventHistos(edm::EventNumber_t evtno)
-  {	
+  {
   } //bookEventHistos
   
  void HoughTuner::fillEventHistos(

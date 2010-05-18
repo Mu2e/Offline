@@ -1,9 +1,9 @@
 //
 // Class to place one straw within the tracker mother volume.
 //
-// $Id: StrawPlacer.cc,v 1.4 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: StrawPlacer.cc,v 1.5 2010/05/18 21:16:25 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:16:25 $
 //
 // Original author Rob Kutschke
 //
@@ -29,9 +29,9 @@ using namespace std;
 namespace mu2e {
 
   StrawPlacer::StrawPlacer( std::string basename
-			    , G4LogicalVolume* logical
-			    , G4LogicalVolume* motherLogical
-			    ):
+                            , G4LogicalVolume* logical
+                            , G4LogicalVolume* motherLogical
+                            ):
     _basename(basename),
     _logical(logical),
     _motherLogical(motherLogical){
@@ -72,13 +72,13 @@ namespace mu2e {
 
     // Place the volume.
     G4VPhysicalVolume* physical =  new G4PVPlacement( rot 
-						      ,mid
-						      ,_logical
-						      ,os.str()
-						      ,_motherLogical
-						      ,0
-						      ,copyNo
-						      );
+                                                      ,mid
+                                                      ,_logical
+                                                      ,os.str()
+                                                      ,_motherLogical
+                                                      ,0
+                                                      ,copyNo
+                                                      );
 
   }
 

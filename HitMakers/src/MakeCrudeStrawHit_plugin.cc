@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.6 2010/05/18 21:15:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:15:48 $
 //
 // Original author Rob Kutschke
 //
@@ -101,7 +101,7 @@ namespace mu2e {
       _hTime      = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  2000. );
       _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(CLHEP::mm)", 100,  0.,     3.  );
       _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
-					    100, 2.25, 2.75 );
+                                            100, 2.25, 2.75 );
     }
 
   }
@@ -154,31 +154,31 @@ namespace mu2e {
 
       // Add to the output collection.
       crudeHits->push_back( CrudeStrawHit( straw.Index(), 
-					   dca, 
-					   time, 
-					   sigma, 
-					   hit.eDep(), 
-					   CrudeStrawHit::stepPointMC,
-					   DPIndex(id,i),
-					   dcaTrue,
-					   &event)
-			    );
+                                           dca, 
+                                           time, 
+                                           sigma, 
+                                           hit.eDep(), 
+                                           CrudeStrawHit::stepPointMC,
+                                           DPIndex(id,i),
+                                           dcaTrue,
+                                           &event)
+                            );
 
       // Fill diagnostic histograms.
       if ( _diagLevel > 0 ) {
 
-	// Check the radius of the reference point in the local
-	// coordinates of the straw.  It should be 2.5 mm.
-	double s = w.dot(pos-mid);
-	CLHEP::Hep3Vector point = pos - (mid + s*w);
+        // Check the radius of the reference point in the local
+        // coordinates of the straw.  It should be 2.5 mm.
+        double s = w.dot(pos-mid);
+        CLHEP::Hep3Vector point = pos - (mid + s*w);
 
-	// I don't understand the distribution of the time variable.
-	// I want it to be the time from the start of the spill.
-	// It appears to be the time since start of tracking.
+        // I don't understand the distribution of the time variable.
+        // I want it to be the time from the start of the spill.
+        // It appears to be the time since start of tracking.
 
-	_hTime->Fill(hit.time());
-	_hCheckPointRadius->Fill(point.mag());
-	_hDriftDist->Fill(pca.dca());
+        _hTime->Fill(hit.time());
+        _hCheckPointRadius->Fill(point.mag());
+        _hDriftDist->Fill(pca.dca());
       }
 
 
@@ -187,7 +187,7 @@ namespace mu2e {
     // Diagnostic printout.
     if ( ncalls < _maxFullPrint && _diagLevel > 2){
       for ( unsigned int i=0; i<crudeHits->size(); ++i){
-	cout << event.id().event() << " | "   << (*crudeHits)[i] << endl;
+        cout << event.id().event() << " | "   << (*crudeHits)[i] << endl;
       }
     }
 

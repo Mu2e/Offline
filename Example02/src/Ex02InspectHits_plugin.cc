@@ -1,21 +1,21 @@
 /*----------------------------------------------------------------------
 
-  Look at some overly simplified hits that are in the event.
+Look at some overly simplified hits that are in the event.
 
-  $Id: Ex02InspectHits_plugin.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
-  $Author: genser $
-  $Date: 2010/05/17 21:47:33 $
+$Id: Ex02InspectHits_plugin.cc,v 1.4 2010/05/18 21:15:40 kutschke Exp $
+$Author: kutschke $
+$Date: 2010/05/18 21:15:40 $
    
-  Original author Rob Kutschke
+Original author Rob Kutschke
 
 
-  This differs from the Example01 version by:
-   - Change printout from severity of info to severity of debug
-      - For now this only works inside the analyze method.
-      - Soon it will work in all methods.
-   - Remove the beginRun, beginLuminosityBlock and endJob methods.
+This differs from the Example01 version by:
+- Change printout from severity of info to severity of debug
+- For now this only works inside the analyze method.
+- Soon it will work in all methods.
+- Remove the beginRun, beginLuminosityBlock and endJob methods.
 
- ----------------------------------------------------------------------*/
+----------------------------------------------------------------------*/
 
 // C++ includes.
 #include <iostream>
@@ -101,7 +101,7 @@ namespace mu2e {
     // Create a subdirectory and create a 2D histogram in the subdirectory.
     edm::TFileDirectory tfdir = tfs->mkdir( "subdir" );
     _hist2 = tfdir.make<TH2F>( "hist2"  , "Radius of Hits vs Z of Hits", 
-			       100,  0., 35., 100,  0., 45. );
+                               100,  0., 35., 100,  0., 45. );
 
   }
   
@@ -123,7 +123,7 @@ namespace mu2e {
     // This code is included to show how to throw!
     if ( !handle.isValid() ) {
       throw edm::Exception(edm::errors::UnimplementedFeature,
-	       "Event contains no ToyHitCollections.");
+                           "Event contains no ToyHitCollections.");
     }
 
     // Some debug printout with decorations.
@@ -140,7 +140,7 @@ namespace mu2e {
     // Compare to the same loop in Ex01InspectHits.
     int n(0);
     for ( ToyHitCollection::const_iterator i(handle->begin()), e(handle->end()); 
-	  i!=e; ++i){
+          i!=e; ++i){
       
       // These are essentially aliases.  Used for readability.
       const ToyHit& hit     = *i;
@@ -155,16 +155,16 @@ namespace mu2e {
       // Limit verbose printout.
       if ( _nAnalyzed <= _maxFullPrint ) {
 
-	// Some debug severity printout without decorations.
-	// Note the absense of a leading edm:: !
-	LogTrace(_messageCategory)
-	  << "Event: "
-	  << evt.id().event() 
-	  << "  | Hit #: "
-	  << n++ << "  | Position: "
-	  << pos
-	  << " | Pulse Height: "
-	  << hit._pulseheight;
+        // Some debug severity printout without decorations.
+        // Note the absense of a leading edm:: !
+        LogTrace(_messageCategory)
+          << "Event: "
+          << evt.id().event() 
+          << "  | Hit #: "
+          << n++ << "  | Position: "
+          << pos
+          << " | Pulse Height: "
+          << hit._pulseheight;
       }
     }
   }

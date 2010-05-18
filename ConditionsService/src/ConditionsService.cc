@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.cc,v 1.4 2010/03/19 01:13:35 kutschke Exp $
+// $Id: ConditionsService.cc,v 1.5 2010/05/18 21:15:29 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/19 01:13:35 $
+// $Date: 2010/05/18 21:15:29 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@ using namespace std;
 namespace mu2e {
 
   ConditionsService::ConditionsService(edm::ParameterSet const& iPS, 
-				   edm::ActivityRegistry&iRegistry) :
+                                       edm::ActivityRegistry&iRegistry) :
     _conditionsFile(iPS.getUntrackedParameter<std::string>("conditionsfile","conditions.txt")),
     _entities(),
     _run_count()

@@ -1,9 +1,9 @@
 
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.6 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: PiCapture.cc,v 1.7 2010/05/18 21:15:36 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:15:36 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -128,8 +128,8 @@ namespace mu2e {
       const double dz  = 2.*(0.5-RandFlat::shoot())*foil.halfThickness();
       const double phi = 2.*M_PI*CLHEP::RandFlat::shoot();
       CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
-		      center.y()+r*sin(phi), 
-		      center.z()+dz );
+                      center.y()+r*sin(phi), 
+                      center.z()+dz );
 
       // Pick a random energy.  
       const double e = _elow + _funcGen->shoot() * ( _ehi - _elow );

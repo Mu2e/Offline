@@ -1,9 +1,9 @@
 //
 // Test accessing the RandomNumberService.
 //
-// $Id: RNGTest_plugin.cc,v 1.3 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: RNGTest_plugin.cc,v 1.4 2010/05/18 21:16:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:41 $
 //
 // Original author Rob Kutschke
 //
@@ -78,18 +78,17 @@ namespace mu2e {
     // Check output of the distributions.
     for ( int i=0; i<5; ++i ){
       cerr << "Fire: "
-	   << setw(3) << i <<  " "
-	   << flat.fire()  <<  " "
-	   << gauss.fire()
-	   << endl;
+           << setw(3) << i <<  " "
+           << flat.fire()  <<  " "
+           << gauss.fire()
+           << endl;
     }
 
 
 
   }
   
-}
-
+} // end namespace mu2e
 
 using mu2e::RNGTest;
 DEFINE_FWK_MODULE(RNGTest);

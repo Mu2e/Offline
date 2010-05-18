@@ -3,9 +3,9 @@
 // many of the keys have a value of true. Throw if more than 
 // one is true.  Optionally, throw if none are true.
 //
-// $Id: requireUniqueKey.cc,v 1.1 2010/03/15 21:27:24 kutschke Exp $
+// $Id: requireUniqueKey.cc,v 1.2 2010/05/18 21:16:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/15 21:27:24 $
+// $Date: 2010/05/18 21:16:39 $
 //
 // Original author Rob Kutschke
 //
@@ -23,17 +23,17 @@ using namespace std;
 namespace mu2e {
 
   int requireUniqueKey ( const std::vector<std::string>& keys,
-			 const SimpleConfig&             config,
-			 bool  throwOnZero ){
+                         const SimpleConfig&             config,
+                         bool  throwOnZero ){
 
     // Count how many of the keys are true?
     int count(0);
     string found;
     for ( size_t i=0; i<keys.size(); ++i ){
       if ( config.getBool(keys[i],false) ) {
-	if ( !found.empty() ) found += " ";
-	found += keys[i];
-	++count;
+        if ( !found.empty() ) found += " ";
+        found += keys[i];
+        ++count;
       }
     }
 
@@ -41,26 +41,25 @@ namespace mu2e {
     if ( count == 0 ) {
 
       if ( throwOnZero ){
-	cms::Exception exception("CONFIG");
-	exception << "None of the configuration parameters is true: ";
-	for ( size_t i=0; i<keys.size(); ++i){
-	  if ( i != 0 ) exception << " ";
-	  exception << keys[i];
-	}
-	exception << "\n";
-	throw exception;
+        cms::Exception exception("CONFIG");
+        exception << "None of the configuration parameters is true: ";
+        for ( size_t i=0; i<keys.size(); ++i){
+          if ( i != 0 ) exception << " ";
+          exception << keys[i];
+        }
+        exception << "\n";
+        throw exception;
       }
 
     } else if ( count > 1 ) {
-	throw cms::Exception("CONFIG")
-	  << "More than one of the requested configuration parameters is true: "
-	  << found
-	  << "\n";
+        throw cms::Exception("CONFIG")
+          << "More than one of the requested configuration parameters is true: "
+          << found
+          << "\n";
     }
 
     // Successful return.
     return count;
   }
  
-}
-
+} // end namespace mu2e

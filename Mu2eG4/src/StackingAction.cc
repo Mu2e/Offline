@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.4 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: StackingAction.cc,v 1.5 2010/05/18 21:16:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:23 $
 //
 // Original author Rob Kutschke
 //
@@ -68,7 +68,7 @@ namespace mu2e {
     // make a more elegant way to call them all.
     if ( doCosmicKiller ){
       if ( cosmicKiller(trk) ){
-	return fKill;
+        return fKill;
       }
     }
 
@@ -102,9 +102,9 @@ namespace mu2e {
 
       // just kill anything electromagnetic in the dirt
       killit =  ( pvol == dirtBodyPhysVol &&
-		  (pType == PDGCode::e_minus || 
-		   pType ==  PDGCode::e_plus || 
-		   PDGCode::gamma ) );
+                  (pType == PDGCode::e_minus || 
+                   pType ==  PDGCode::e_plus || 
+                   PDGCode::gamma ) );
     } else {
 
       const G4ThreeVector& ppos = trk->GetPosition();
@@ -124,28 +124,28 @@ namespace mu2e {
     if ( nevents < 20 ) {
       G4String volName = (pvol !=0) ? pvol->GetName(): "Unknown Volume";
       G4String partName = (pdef !=0) ?
-	pdef->GetParticleName() : "Unknown Particle";
+        pdef->GetParticleName() : "Unknown Particle";
       G4String killString = killit ? "Kill it": "";
       const G4ThreeVector& ppos = trk->GetPosition();
       G4ThreeVector p3mom = trk->GetMomentum();
 
       cout << "Cosmic Killer: " 
-	   << setw(4)  << nevents << " "
-	   << setw(4)  << ncalls << " "
-	   << setw(4)  << trk->GetTrackID() << " "
-	   << setw(4)  << trk->GetParentID() <<  " "
-	   << setw(8)  << partName << "   |   "
-	   << ppos     << " "
-	   << volName  << " "
-	   << p3mom.mag() << "      "
-	   << killString
-	   << endl;
+           << setw(4)  << nevents << " "
+           << setw(4)  << ncalls << " "
+           << setw(4)  << trk->GetTrackID() << " "
+           << setw(4)  << trk->GetParentID() <<  " "
+           << setw(8)  << partName << "   |   "
+           << ppos     << " "
+           << volName  << " "
+           << p3mom.mag() << "      "
+           << killString
+           << endl;
 
       // Check to see if we are in the dirt.
       if ( pvol == dirtBodyPhysVol ){
-	cout << "Cosmic Killer: tag Dirt Body" << endl;
+        cout << "Cosmic Killer: tag Dirt Body" << endl;
       } else if ( pvol == dirtCapPhysVol ) {
-	cout << "Cosmic Killer: tag Dirt Cap" << endl;
+        cout << "Cosmic Killer: tag Dirt Cap" << endl;
       }
 
     }

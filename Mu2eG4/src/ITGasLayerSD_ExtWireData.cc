@@ -12,8 +12,8 @@ namespace mu2e {
 
   G4bool ITGasLayerSD_ExtWireData::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
-	int ring = _ring;
-	if(ring==0) return false;
+        int ring = _ring;
+        if(ring==0) return false;
     G4double edep = aStep->GetTotalEnergyDeposit();
 
     // Eventually we will want this but not now.
@@ -63,7 +63,7 @@ namespace mu2e {
 
        wire1=int((phirel1+0.5*_Dphi)/_Dphi);
        if(wire1<0||wire1>=_nwires)
-     	  /*throw cms::Exception("GEOM")*/cerr<<"Wrong wire number "<<wire1<< "\n";
+               /*throw cms::Exception("GEOM")*/cerr<<"Wrong wire number "<<wire1<< "\n";
 
        phirel1=phirel1-wire1*_Dphi;
        if(phiwire1<phiwire0) phirel1*=-1.;
@@ -88,7 +88,7 @@ namespace mu2e {
 
        wire2=int((phirel2+0.5*_Dphi)/_Dphi);
        if(wire2<0||wire2>=_nwires)
-     	  /*throw cms::Exception("GEOM")*/cerr<<"Wrong wire number "<<wire2<<"\n";
+               /*throw cms::Exception("GEOM")*/cerr<<"Wrong wire number "<<wire2<<"\n";
 
        phirel2=phirel2-wire2*_Dphi;
        if(phiwire1<phiwire0) phirel2*=-1.;
@@ -133,13 +133,13 @@ namespace mu2e {
 
     StepPointG4* newHit =
       new StepPointG4( aStep->GetTrack()->GetTrackID(),
-     		 det,
- 		     edep,
- 		     prePosTracker,
- 		     preMomWorld,
+                      det,
+                      edep,
+                      prePosTracker,
+                      preMomWorld,
                      aStep->GetPreStepPoint()->GetGlobalTime(),
                      aStep->GetStepLength()
- 		     );
+                      );
 
     // The collection takes ownership of the hit. 
     _collection->insert( newHit );

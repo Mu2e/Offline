@@ -116,14 +116,14 @@ void BFwcont::getNeighbors(Container3D<CLHEP::Hep3Vector>& neighborsBF) const {
     for (int j = 0; j != 3; ++j){
       unsigned int yindex = _iy + j - 1;
       for (int k = 0; k != 3; ++k){
-	unsigned int zindex = _iz + k - 1;
-       	neighborsBF.set(i, j, k, _field(xindex, yindex, zindex));
-	/*	
-      	cout << "Neighbor(" << xindex << "," << yindex << "," << zindex 
-	     << ") = (" << neighborsBF(i,j,k).x() << ","
-	     << neighborsBF(i,j,k).y() << "," << neighborsBF(i,j,k).z() 
-	     << ")" << endl;
-	*/
+        unsigned int zindex = _iz + k - 1;
+        neighborsBF.set(i, j, k, _field(xindex, yindex, zindex));
+        /*        
+                  cout << "Neighbor(" << xindex << "," << yindex << "," << zindex 
+                  << ") = (" << neighborsBF(i,j,k).x() << ","
+                  << neighborsBF(i,j,k).y() << "," << neighborsBF(i,j,k).z() 
+                  << ")" << endl;
+        */
       }
     }
   }
@@ -133,7 +133,7 @@ void BFwcont::getNeighbors(Container3D<CLHEP::Hep3Vector>& neighborsBF) const {
 // Function to interpolate the BField value at the point from the values
 // at in the neighbor grid. 
 Hep3Vector BFwcont::interpolate(Container3D<CLHEP::Hep3Vector> const vec,
-				CLHEP::Hep3Vector const frac) const {
+                                CLHEP::Hep3Vector const frac) const {
   // Create vecs and vectors
   vector<double> x1d, y1d, z1d;
   vector<CLHEP::Hep3Vector> vecx;
@@ -149,17 +149,17 @@ Hep3Vector BFwcont::interpolate(Container3D<CLHEP::Hep3Vector> const vec,
   for (int j = 0; j != 3; ++j){
     for (int k = 0; k != 3; ++k){
       for (int i = 0; i != 3; ++i){
-	/*	cout << "1st loop access: (" << vec(i,j,k).x() << ","
-		<< vec(i,j,k).y() << "," << vec(i,j,k).z() << ")" << endl;*/
-	x1d.push_back(vec(i,j,k).x());
-	y1d.push_back(vec(i,j,k).y());
-	z1d.push_back(vec(i,j,k).z());
+        /*        cout << "1st loop access: (" << vec(i,j,k).x() << ","
+                  << vec(i,j,k).y() << "," << vec(i,j,k).z() << ")" << endl;*/
+        x1d.push_back(vec(i,j,k).x());
+        y1d.push_back(vec(i,j,k).y());
+        z1d.push_back(vec(i,j,k).z());
       }
       double xval = gmcpoly2(x1d,xin);
       double yval = gmcpoly2(y1d,xin);
       double zval = gmcpoly2(z1d,xin);
       /*      cout << "Xin pass: (" << xval << "," << yval << "," << zval
-	      << ")" << endl;*/
+              << ")" << endl;*/
       vecx.push_back(CLHEP::Hep3Vector(xval,yval,zval));
     }
   }
@@ -202,8 +202,8 @@ double BFwcont::gmcpoly2(vector<double> const& f1d, double const& x) const {
   double y2 = f1d[2];
 
   double fout = y0*(x-x1)*(x-x2)/((x0-x1)*(x0-x2)) + 
-                y1*(x-x0)*(x-x2)/((x1-x0)*(x1-x2)) + 
-                y2*(x-x0)*(x-x1)/((x2-x0)*(x2-x1));
+    y1*(x-x0)*(x-x2)/((x1-x0)*(x1-x2)) + 
+    y2*(x-x0)*(x-x1)/((x2-x0)*(x2-x1));
   return fout;
 } 
 
@@ -239,11 +239,11 @@ Hep3Vector BFwcont::GetBField(CLHEP::Hep3Vector const& testpoint ){
   if (_iz == _nz-1){--_iz;}
   
   /*  cout << "Nearest Point: (" << _grid(_ix,_iy,_iz).x() << ","
-       << _grid(_ix,_iy,_iz).y() << "," << _grid(_ix,_iy,_iz).z() 
-       << ")\nIndices set to: " << _ix << " " << _iy << " " << _iz 
-       << "\nField: (" << _field(_ix,_iy,_iz).x() << ","
-       << _field(_ix,_iy,_iz).y() << "," << _field(_ix,_iy,_iz).z() << ")"
-       << endl;
+      << _grid(_ix,_iy,_iz).y() << "," << _grid(_ix,_iy,_iz).z() 
+      << ")\nIndices set to: " << _ix << " " << _iy << " " << _iz 
+      << "\nField: (" << _field(_ix,_iy,_iz).x() << ","
+      << _field(_ix,_iy,_iz).y() << "," << _field(_ix,_iy,_iz).z() << ")"
+      << endl;
   */ 
   // Get the BField values of the nearest grid neighbors to the point
   Container3D<CLHEP::Hep3Vector> neighborsBF(3,3,3);

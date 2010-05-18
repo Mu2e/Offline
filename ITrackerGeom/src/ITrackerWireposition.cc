@@ -49,13 +49,13 @@ ITrackerWireposition::ITrackerWireposition(Bool_t newFile, const char *WireDataF
       wirefile = new TFile(WireDataFile,"READ");
       trwdata = (TTree*) wirefile->Get("WireData");
       trwdata->SetBranchAddress("WireDataMatrix",&fwiredata);
-      for(int i=0;i< trwdata->GetEntries();i++){	
+      for(int i=0;i< trwdata->GetEntries();i++){        
         fWireDataAll[i]=new ITrackerWiredata();
-      	trwdata->SetBranchAddress("WireDataMatrix",&fWireDataAll[i]);
-      	trwdata->GetEntry(i);
+              trwdata->SetBranchAddress("WireDataMatrix",&fWireDataAll[i]);
+              trwdata->GetEntry(i);
       }
-		
-	
+                
+
     }
     else {
       // We were not able to get the file attributes.

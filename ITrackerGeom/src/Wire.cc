@@ -21,12 +21,12 @@ Wire::Wire():
 
 
 Wire::Wire( WireId id,
-		boost::shared_ptr<WireDetail> detail,
-		HepGeom::Transform3D *pos,
-		double epsilon,
-		double alpha,
-		Wtype wireType
-	    ):
+                boost::shared_ptr<WireDetail> detail,
+                HepGeom::Transform3D *pos,
+                double epsilon,
+                double alpha,
+                Wtype wireType
+            ):
   _id(id),
   _pos(pos),
   _epsilon(epsilon),
@@ -41,15 +41,15 @@ Wire::Wire( WireId id,
 }
 
 Wire::~Wire (){
-//	try {
-//		if (*_detail) {delete *_detail; *_detail=NULL;}
-//		delete _pos;
-//	} catch (cms::Exception e) {
-//	    throw cms::Exception("GEOM")
-//		<< "Error during deleting wire data \n";
-//	}
+//        try {
+//                if (*_detail) {delete *_detail; *_detail=NULL;}
+//                delete _pos;
+//        } catch (cms::Exception e) {
+//            throw cms::Exception("GEOM")
+//                << "Error during deleting wire data \n";
+//        }
 
-	if (_pos) delete _pos;
+  if (_pos) delete _pos;
 }
 
 } // namespace mu2e

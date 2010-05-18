@@ -1,9 +1,9 @@
 //
 // A crudely calibrated hit in a straw. See header for full details.
 //
-// $Id: CrudeStrawHit.cc,v 1.6 2009/11/07 17:04:15 kutschke Exp $
+// $Id: CrudeStrawHit.cc,v 1.7 2010/05/18 21:16:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/11/07 17:04:15 $
+// $Date: 2010/05/18 21:16:45 $
 //
 // Original author Rob Kutschke
 
@@ -27,8 +27,8 @@ namespace mu2e {
                                 float             driftTime_,
                                 float             sigmaD_,
                                 float             energy_,
-				DPIndex const&    precursorIndex_,
-				edm::Event const* event_
+                                DPIndex const&    precursorIndex_,
+                                edm::Event const* event_
                                 ):
     precursorType(unpackedDigi),
     strawIndex(strawIndex_),
@@ -51,10 +51,10 @@ namespace mu2e {
                                 float                       driftTime_,
                                 float                       sigmaD_,
                                 float                       energy_,
-				precursor_type              precursorType_,
-				std::vector<DPIndex> const& precursorIndices_,
+                                precursor_type              precursorType_,
+                                std::vector<DPIndex> const& precursorIndices_,
                                 float                       trueDriftDistance_,
-				edm::Event const*           event_
+                                edm::Event const*           event_
                                 ):
     precursorType(precursorType_),
     strawIndex(strawIndex_),
@@ -77,10 +77,10 @@ namespace mu2e {
                                 float             driftTime_,
                                 float             sigmaD_,
                                 float             energy_,
-				precursor_type    precursorType_,
-				DPIndex  const&   precursorIndex_,
+                                precursor_type    precursorType_,
+                                DPIndex  const&   precursorIndex_,
                                 float             trueDriftDistance_,
-				edm::Event const* event_
+                                edm::Event const* event_
                                 ):
     precursorType(precursorType_),
     strawIndex(strawIndex_),
@@ -117,8 +117,8 @@ namespace mu2e {
 
     if ( precursorType != stepPointMC ) {
       throw cms::Exception("ProductNotFound")
-	<< "Cannot compute pointers to StepPointMC from a precursor of type: "
-	<< precursorType;
+        << "Cannot compute pointers to StepPointMC from a precursor of type: "
+        << precursorType;
     }
 
     resolveDPIndices<StepPointMCCollection>( event, precursorIndices, stepPointMCPointers);
@@ -129,7 +129,7 @@ namespace mu2e {
   void CrudeStrawHit::print( ostream& ost, bool doEndl ) const {
 
     ost << "CrudeStraw Hit:"
-	<< " pretyp: "    << precursorType
+        << " pretyp: "    << precursorType
         << " id: "        << strawIndex
         << " d: "         << driftDistance
         << " t: "         << driftTime

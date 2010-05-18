@@ -1,14 +1,14 @@
 /*------------------------------------------------------
 
-  Look at some overly simplified hits that are in the event.
+Look at some overly simplified hits that are in the event.
 
-  $Id: Ex01InspectHits_plugin.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
-  $Author: genser $
-  $Date: 2010/05/17 21:47:33 $
+$Id: Ex01InspectHits_plugin.cc,v 1.4 2010/05/18 21:15:39 kutschke Exp $
+$Author: kutschke $
+$Date: 2010/05/18 21:15:39 $
    
-  Original author Rob Kutschke
+Original author Rob Kutschke
 
- --------------------------------------------------------*/
+--------------------------------------------------------*/
 
 // C++ includes.
 #include <iostream>
@@ -60,10 +60,10 @@ namespace mu2e {
     virtual void endJob();
 
     virtual void beginRun(edm::Run const &r, 
-			  edm::EventSetup const& eSetup );
+                          edm::EventSetup const& eSetup );
 
     virtual void beginLuminosityBlock(edm::LuminosityBlock const& lblock, 
-				      edm::EventSetup const&);
+                                      edm::EventSetup const&);
  
     // This is called for each event.
     void analyze(const edm::Event& e, edm::EventSetup const&);
@@ -100,7 +100,7 @@ namespace mu2e {
     // Create a subdirectory and create a 2D histogram in the subdirectory.
     edm::TFileDirectory tfdir = tfs->mkdir( "subdir" );
     _hist2 = tfdir.make<TH2F>( "hist2"  , "Radius of Hits vs Z of Hits", 
-			       100,  0., 35., 100,  0., 45. );
+                               100,  0., 35., 100,  0., 45. );
 
     // Put a decorated message into the log file.  No endl or \n needed.
     edm::LogInfo(_messageCategory) << "Hello, world!";
@@ -127,7 +127,7 @@ namespace mu2e {
   }
 
   void Ex01InspectHits::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
-					     edm::EventSetup const&){
+                                             edm::EventSetup const&){
     // Access the run number.
     edm::LogInfo(_messageCategory) 
       << "Starting a new lumi block: "
@@ -155,16 +155,16 @@ namespace mu2e {
     // Some printout.  This time keep the variable log around for future use.
     edm::LogVerbatim log(_messageCategory);
     log << "Analyzing event #: " 
-	<< event.id() << ". Number of hits: "
-	<< hits.size() << ".";
+        << event.id() << ". Number of hits: "
+        << hits.size() << ".";
 
     // Fill histogram with number of hits per event.
     _hist4->Fill(hits.size());
     
     // Loop over all hits.
     for ( ToyHitCollection::size_type i=0; 
-	  i<hits.size(); 
-	  ++i){
+          i<hits.size(); 
+          ++i){
 
       // References are like aliases and are used for readability.
       // No run time costs in CPU time or memory.
@@ -180,14 +180,14 @@ namespace mu2e {
       // Limit verbose printout.
       if ( _nAnalyzed <= _maxFullPrint ) {
 
-	// We do need the newline here!
-	log << "\nEvent: "
-	    << event.id().event() 
-	    << "  | Hit #: "
-	    << i << "  | Position: "
-	    << pos
-	    << " | Pulse Height: "
-	    << hit._pulseheight;
+        // We do need the newline here!
+        log << "\nEvent: "
+            << event.id().event() 
+            << "  | Hit #: "
+            << i << "  | Position: "
+            << pos
+            << " | Pulse Height: "
+            << hit._pulseheight;
       }
     }
   }

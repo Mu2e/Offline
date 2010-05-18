@@ -7,9 +7,9 @@
  *    Data Product.
  * 2) Get a list of all handles in the event and look at each of them.
 
- * $Id: Ex03InspectProvenance_plugin.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+ * $Id: Ex03InspectProvenance_plugin.cc,v 1.2 2010/05/18 21:15:42 kutschke Exp $
  * $Author: kutschke $
- * $Date: 2009/09/30 22:57:47 $
+ * $Date: 2010/05/18 21:15:42 $
  *  
  * Original author Rob Kutschke
  *
@@ -85,8 +85,8 @@ namespace mu2e {
     // Print the provenance and keep the message open for additions.
     edm::LogInfo log("ProvenanceInfo");
     log << "Provenance of the hits in this event: \n"
-	 << prov 
-	 << "\n";
+         << prov 
+         << "\n";
     
     // Extract the parameter set IDs from the provenance.
     const set<edm::ParameterSetID>&  ids = prov.psetIDs();
@@ -102,14 +102,14 @@ namespace mu2e {
       edm::ParameterSet result;
 
       if (!reg->getMapped(*b, result)){
-	log << "Could not get the parameter set... \n";
+        log << "Could not get the parameter set... \n";
       }else{
-	log << result;
+        log << result;
 
-	// We know that there is only one provenance and that it has
-	// a parameter named minPulseHeight.
-	double minPulseHeight = result.getParameter<double>("minPulseHeight");
-	log << "\nminimum pulse height: " << minPulseHeight << "\n";
+        // We know that there is only one provenance and that it has
+        // a parameter named minPulseHeight.
+        double minPulseHeight = result.getParameter<double>("minPulseHeight");
+        log << "\nminimum pulse height: " << minPulseHeight << "\n";
       }
     }
 
@@ -120,15 +120,13 @@ namespace mu2e {
 
     //Loop over all of the provenances in this event.
     for ( vector<edm::Provenance const *>::size_type i=0;
-	  i<Prov.size(); ++i ){
+          i<Prov.size(); ++i ){
       const edm::Provenance&  prov = *Prov[i];
       log  << "\nNext Provenance: \n"
-	   << prov; 
+           << prov; 
     }
-
   }
 }
-
 
 using mu2e::Ex03InspectProvenance;
 DEFINE_FWK_MODULE(Ex03InspectProvenance);

@@ -5,20 +5,20 @@ using namespace std;
 namespace mu2e {
 
   CellDetail::CellDetail( double circumscribedRadius, double inscribedCircleRadius, boost::shared_ptr<WireDetail> senseWire
-			   ):
-			   _circumscribedRadius(circumscribedRadius),
-			   _inscribedCircleRadius(inscribedCircleRadius),
-			   _senseWire(senseWire)
+                           ):
+                           _circumscribedRadius(circumscribedRadius),
+                           _inscribedCircleRadius(inscribedCircleRadius),
+                           _senseWire(senseWire)
   {
   }
   
   CellDetail::~CellDetail (){
-//		try {
-//			if (*_senseWire) {delete *_senseWire; *_senseWire=NULL;};
-//		} catch (cms::Exception e) {
-//		    throw cms::Exception("GEOM")
-//			<< "Error during deleting cell wire detail data \n";
-//		}
+//                try {
+//                        if (*_senseWire) {delete *_senseWire; *_senseWire=NULL;};
+//                } catch (cms::Exception e) {
+//                    throw cms::Exception("GEOM")
+//                        << "Error during deleting cell wire detail data \n";
+//                }
 
   }
 

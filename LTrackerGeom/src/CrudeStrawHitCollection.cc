@@ -17,7 +17,7 @@ namespace mu2e{
 
   CrudeStrawHitCollection::
   CrudeStrawHitCollection( edm::Event const& event,
-			   edm::Handle<CrudeStrawHitPData> const& hits ):
+                           edm::Handle<CrudeStrawHitPData> const& hits ):
     _event(&event),
     _hits(&(*hits)),
     _index()
@@ -27,7 +27,7 @@ namespace mu2e{
 
   CrudeStrawHitCollection::
   CrudeStrawHitCollection( edm::Event const& event,
-			   CrudeStrawHitPData const& hits ):
+                           CrudeStrawHitPData const& hits ):
     _event(&event),
     _hits(&hits),
     _index()
@@ -52,7 +52,7 @@ namespace mu2e{
   }
 
   void CrudeStrawHitCollection::getStepPointMC( int i,
-						vector<StepPointMC const*>& v ) const{
+                                                vector<StepPointMC const*>& v ) const{
 
     // The requested hit.
     CrudeStrawHit const& hit = _hits->at(i);
@@ -62,10 +62,10 @@ namespace mu2e{
     // that path.
     if ( hit.precursorType != CrudeStrawHit::stepPointMC){
       throw cms::Exception("Hits")
-	<< "Requested precursor for a CrudeStrawHit and that precursor could not be found.\n"
-	<< "Requested type: StepPointMC "
-	<< "Available type code: "
-	<< hit.precursorType;
+        << "Requested precursor for a CrudeStrawHit and that precursor could not be found.\n"
+        << "Requested type: StepPointMC "
+        << "Available type code: "
+        << hit.precursorType;
     }
 
     // Fill the return argument.
@@ -79,9 +79,9 @@ namespace mu2e{
 
     if ( ihit == -1 ) {
       throw cms::Exception("RANGE")
-	<< "There is no hit for this StrawIndex: "
-	<< idx
-	<< "\n";
+        << "There is no hit for this StrawIndex: "
+        << idx
+        << "\n";
     }
 
     return ihit;
@@ -92,4 +92,3 @@ namespace mu2e{
   }
 
 }
-

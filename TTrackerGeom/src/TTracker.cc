@@ -2,9 +2,9 @@
 // Geometry and identifier info about an TTracker.
 //
 //
-// $Id: TTracker.cc,v 1.1 2010/04/18 00:37:16 kutschke Exp $
+// $Id: TTracker.cc,v 1.2 2010/05/18 21:16:51 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/18 00:37:16 $
+// $Date: 2010/05/18 21:16:51 $
 //
 // Original author Rob Kutschke
 //
@@ -28,8 +28,8 @@ namespace mu2e {
     double pad = 0.05;
     double halfThick = _supportParams.halfThickness + 2.*_manifoldHalfLengths[2];
     return TubsParams( _envelopeInnerRadius-pad,
-		       _supportParams.outerRadius+pad,
-		       halfThick+pad);
+                       _supportParams.outerRadius+pad,
+                       halfThick+pad);
   }
 
   // Envelope that holds the full TTracker
@@ -46,8 +46,8 @@ namespace mu2e {
 
     double pad = 0.1;
     return TubsParams( deviceEnvelope.innerRadius-pad,
-		       deviceEnvelope.outerRadius+pad,
-		       halfLength+pad);
+                       deviceEnvelope.outerRadius+pad,
+                       halfLength+pad);
 
     ;
   }

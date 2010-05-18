@@ -1,9 +1,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: CosmicDYB.cc,v 1.6 2010/05/18 21:15:32 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:15:32 $
 //
 // Original author Yury Kolomensky
 //
@@ -91,15 +91,15 @@ namespace mu2e {
 
     edm::LogInfo log("COSMIC");
     log << "cosmicDYB.mean = " << _mean << "\n"
-	<< "cosmicDYB.muEMin = " << _muEMin 
-	<< ", cosmicDYB.muEMax = " << _muEMax << "\n"
-	<< "cosmicDYB.muCosThMin = " << _muCosThMin 
-	<< ", cosmicDYB.muCosThMax = " << _muCosThMax << "\n"
-	<< "cosmicDYB.dx = " << _dx 
-	<< ", cosmicDYB.dz = " << _dz
-	<< ", cosmicDYB.y0 = " << _y0 
-	<< ", working space dimenions ("
-	<< _ne << "," << _nth << ")" << "\n";
+        << "cosmicDYB.muEMin = " << _muEMin 
+        << ", cosmicDYB.muEMax = " << _muEMax << "\n"
+        << "cosmicDYB.muCosThMin = " << _muCosThMin 
+        << ", cosmicDYB.muCosThMax = " << _muCosThMax << "\n"
+        << "cosmicDYB.dx = " << _dx 
+        << ", cosmicDYB.dz = " << _dz
+        << ", cosmicDYB.y0 = " << _y0 
+        << ", working space dimenions ("
+        << _ne << "," << _nth << ")" << "\n";
 
     // Access conditions data.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -131,7 +131,7 @@ namespace mu2e {
 
     // cos(theta) vs log(energy)
     _cosmicCosThetaVsEH = tfdir.make<TH2D>( "CosThetavsEH", "Cos(Theta) vs log (Momentum, GeV)", 
-					     60, -3., 3., 60, -1., 1.);
+                                            60, -3., 3., 60, -1., 1.);
 
     // Initialize fake RM48 that is used by DYB code.
     edm::Service<edm::RandomNumberGenerator> rng;
@@ -147,7 +147,7 @@ namespace mu2e {
     
     double dim_sum,E,cosTh;
     hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
-	      dim_sum,E,cosTh,par);
+           dim_sum,E,cosTh,par);
 
     // rate is per cm^2. The constants are 2*CLHEP::pi times the area
     double tRate = dim_sum*M_PI*0.08*_dx*_dz;
@@ -180,14 +180,14 @@ namespace mu2e {
       float par = 111.;  // double precision
       double dim_sum,E,cosTh;
       hrndg2( _workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
-	      dim_sum,E,cosTh,par);
+              dim_sum,E,cosTh,par);
       
       // energy is in GeV, convert to MeV
       E *= GeV;
 
       double p = safeSqrt(E*E-mMu*mMu);
       if ( E<= mMu ) {
-	E = mMu;
+        E = mMu;
       }
 
       // Log10 of momentum, in GeV
@@ -222,11 +222,11 @@ namespace mu2e {
       double logP = log10(p)-3.;
       double asym = 1.15;
       if ( logP > 0 ) {
-	if ( logP > 1 ) {
-	  asym = 1.3;
-	} else {
-	  asym = 1.15+0.15*logP;
-	}
+        if ( logP > 1 ) {
+          asym = 1.3;
+        } else {
+          asym = 1.15+0.15*logP;
+        }
       }
 
 

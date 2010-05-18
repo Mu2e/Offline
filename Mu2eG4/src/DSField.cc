@@ -12,7 +12,7 @@ using CLHEP::Hep3Vector;
 using namespace std;
 
 void DSField::GetFieldValue(const G4double Point[4],
-			     G4double *Bfield) const {
+                             G4double *Bfield) const {
 
   CLHEP::Hep3Vector point(Point[0],Point[1],Point[2]);
   CLHEP::Hep3Vector BField = _p->GetBField(point);

@@ -1,9 +1,9 @@
 //
 // Store state of RandomNumberService into the event. 
 //
-// $Id: RandomNumberSaver_plugin.cc,v 1.2 2010/03/07 22:01:00 kutschke Exp $
+// $Id: RandomNumberSaver_plugin.cc,v 1.3 2010/05/18 21:16:42 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/07 22:01:00 $
+// $Date: 2010/05/18 21:16:42 $
 //
 // Original author Rob Kutschke
 //
@@ -67,12 +67,12 @@ namespace mu2e {
 
     // Check self consistency.
     if ( labels.size() != states.size() ||
-	 labels.size() != seeds.size()     ){
+         labels.size() != seeds.size()     ){
       throw cms::Exception("RANGE")
-	<< "Inconsistent sizes of objects in the state of the RandomNumberService: "
-	<< labels.size() << " "
-	<< states.size() << " "
-	<< seeds.size()  << "\n";
+        << "Inconsistent sizes of objects in the state of the RandomNumberService: "
+        << labels.size() << " "
+        << states.size() << " "
+        << seeds.size()  << "\n";
     }
 
     // For each saved engine, copy the state information to the data product.
@@ -93,9 +93,8 @@ namespace mu2e {
       rng->print();
     }
   }
-  
-}
 
+} // end namespace mu2e
 
 using mu2e::RandomNumberSaver;
 DEFINE_FWK_MODULE(RandomNumberSaver);

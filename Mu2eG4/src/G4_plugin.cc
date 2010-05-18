@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.18 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: G4_plugin.cc,v 1.19 2010/05/18 21:16:14 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:16:14 $
 //
 // Original author Rob Kutschke
 //
@@ -161,7 +161,7 @@ namespace mu2e {
     
     if ( ++ncalls > 1 ){
       edm::LogWarning("GEOM") 
-	<< "This version of the code does not update the G4 geometry on run boundaries.";
+        << "This version of the code does not update the G4 geometry on run boundaries.";
       return;
     }
 
@@ -268,12 +268,12 @@ namespace mu2e {
       // Check if user is requesting an early termination of the event loop.
       if ( !junk.empty() ){
 
-	// Checks only the first character; we should check first non-blank.
-	char c = tolower( junk[0] );
-	if ( c == 'q' ){
-	  throw cms::Exception("CONTROL")
-	    << "Early end of event loop requested inside G4, \n";
-	}
+        // Checks only the first character; we should check first non-blank.
+        char c = tolower( junk[0] );
+        if ( c == 'q' ){
+          throw cms::Exception("CONTROL")
+            << "Early end of event loop requested inside G4, \n";
+        }
       }
     }
 

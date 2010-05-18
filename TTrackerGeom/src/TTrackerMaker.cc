@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: TTrackerMaker.cc,v 1.3 2010/05/18 21:16:52 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:52 $
 //
 // Original author Rob Kutschke
 //
@@ -29,10 +29,6 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 #include "GeneralUtilities/inc/pow.hh"
-
-#ifndef __CINT__ 
-
-
 
 using namespace std;
 
@@ -251,21 +247,21 @@ namespace mu2e {
         
 
         /*
-        if ( layId.getDevice() == 0 ){
+          if ( layId.getDevice() == 0 ){
           cout << "Position: "
-               << layId << " | "
-               << iman << " "
-               << istr                << " | "
-               << istraw << " "
-               << xstraw  << " "
-               << 2.*_strawHalfLengths.at(iman) << " "
-               << mid << " "
-               << device.origin() << " | " 
-               << index <<  " "
-               << allStraws.size() << " " 
-               << layer._straws.size() << " "
-               << endl;
-        }
+          << layId << " | "
+          << iman << " "
+          << istr                << " | "
+          << istraw << " "
+          << xstraw  << " "
+          << 2.*_strawHalfLengths.at(iman) << " "
+          << mid << " "
+          << device.origin() << " | " 
+          << index <<  " "
+          << allStraws.size() << " " 
+          << layer._straws.size() << " "
+          << endl;
+          }
         */
       }
     }
@@ -287,8 +283,8 @@ namespace mu2e {
     
       // First compute everything in their nominal positions: sector 2, top
       double x0 = _envelopeInnerRadius + 
-	_strawsPerManifold*_strawOuterRadius +
-	_manifoldHalfLengths[0];
+        _strawsPerManifold*_strawOuterRadius +
+        _manifoldHalfLengths[0];
     
       double y0 = _tt->_strawDetails[i].halfLength() + _manifoldHalfLengths[2];
 
@@ -339,15 +335,15 @@ namespace mu2e {
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
       _tt->_strawDetails.push_back
-	( StrawDetail
-	  ( i,
-	    _strawMaterials,
-	    _strawOuterRadius,
-	    _strawWallThickness,
-	    _strawHalfLengths[i],
-	    _wireRadius
-	    )
-	  );
+        ( StrawDetail
+          ( i,
+            _strawMaterials,
+            _strawOuterRadius,
+            _strawWallThickness,
+            _strawHalfLengths[i],
+            _wireRadius
+            )
+          );
     }
     
   }
@@ -370,5 +366,3 @@ namespace mu2e {
   }
 
 } // namespace mu2e
-
-#endif

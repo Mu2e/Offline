@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e detector with the Mu2e G4 world.
 //
-// $Id: DetectorConstruction.cc,v 1.2 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: DetectorConstruction.cc,v 1.3 2010/05/18 21:16:13 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:16:13 $
 //
 // Original author Rob Kutschke
 //
@@ -41,7 +41,7 @@ namespace mu2e {
      _stepLimit(0),
      _usualRHS(0),
      _exactHelix(0),
-   _chordFinder(0){
+     _chordFinder(0){
   }
   
  
@@ -68,8 +68,8 @@ namespace mu2e {
     G4double pressure    = 3.e-18*pascal;
     G4double temperature = 2.73*kelvin;
     G4Material* vacuum =
-    new G4Material( "Vacuum", 1., 1.01*g/mole,
-		    density, kStateGas, temperature, pressure);
+      new G4Material( "Vacuum", 1., 1.01*g/mole,
+                      density, kStateGas, temperature, pressure);
     
     // Print all the materials defined.
     G4cout << G4endl << "The materials defined are : " << G4endl << G4endl;
@@ -131,12 +131,12 @@ namespace mu2e {
     G4LogicalVolume* logicWorld = new G4LogicalVolume( solidWorld, vacuum, "World", 0, 0, 0 );
     G4VPhysicalVolume* physiWorld = 
       new G4PVPlacement(0,               // no rotation
-			G4ThreeVector(), // at (0,0,0)
-			logicWorld,      // its logical volume
-			"World",         // its name
-			0,               // its mother  volume
-			false,           // no boolean operations
-			0);              // copy number
+                        G4ThreeVector(), // at (0,0,0)
+                        logicWorld,      // its logical volume
+                        "World",         // its name
+                        0,               // its mother  volume
+                        false,           // no boolean operations
+                        0);              // copy number
     
     // Divide the work into two hemispheres.
     
@@ -154,8 +154,8 @@ namespace mu2e {
     
     // Make a logical volume and set its color.
     G4LogicalVolume* logical  = new G4LogicalVolume( solid,
-						     vacuum,
-						     lname);
+                                                     vacuum,
+                                                     lname);
     logical->SetVisAttributes(visRefBox);
 
   
@@ -169,13 +169,13 @@ namespace mu2e {
       
       // Place the volume.
       new G4PVPlacement( 0,
-			 position,
-			 logical,
-			 pname,
-			 logicWorld,
-			 false,
-			 i
-			 );
+                         position,
+                         logical,
+                         pname,
+                         logicWorld,
+                         false,
+                         i
+                         );
     }
     
     // Set a maximum set length.  This does not seem to work.
@@ -186,5 +186,4 @@ namespace mu2e {
     
   }
 
-} 
-
+} // end namespace mu2e

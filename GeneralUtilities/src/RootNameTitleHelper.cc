@@ -3,9 +3,9 @@
 // names and titles for root objects.  See the header
 // for details.
 //
-// $Id: RootNameTitleHelper.cc,v 1.1 2009/10/14 18:47:54 kutschke Exp $
+// $Id: RootNameTitleHelper.cc,v 1.2 2010/05/18 21:15:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2009/10/14 18:47:54 $
+// $Date: 2010/05/18 21:15:44 $
 //
 
 #include <iostream>
@@ -17,10 +17,10 @@
 using namespace std;
 
 RootNameTitleHelper::RootNameTitleHelper( 
-					 std::string const& name_base,
-					 std::string const& title_base,
-					 int id,
-					 int pad ){
+                                         std::string const& name_base,
+                                         std::string const& title_base,
+                                         int id,
+                                         int pad ){
   
   // Form the name.
   ostringstream name;

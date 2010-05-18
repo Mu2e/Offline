@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: DecayInOrbitGun.cc,v 1.5 2010/05/17 21:47:33 genser Exp $ 
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: DecayInOrbitGun.cc,v 1.6 2010/05/18 21:15:33 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2010/05/18 21:15:33 $
 //
 // Original author Rob Kutschke
 // 
@@ -97,25 +97,25 @@ namespace mu2e {
     // set up the generator function
     if (_nbins>0) _bindE = (_ehi - _elow) / _nbins;
     else {
-       // I'm sure this isn't the right way to do this...
-       throw cms::Exception("RANGE") <<"Nonsense DecayInOrbitGun.nbins requested="<<
-            _nbins<<"\n";
+      // I'm sure this isn't the right way to do this...
+      throw cms::Exception("RANGE") <<"Nonsense DecayInOrbitGun.nbins requested="<<
+        _nbins<<"\n";
     }
 
     double YFunc[_nbins];
     for (int ib=0; ib<_nbins; ib++) {
 
-       double x = _elow+(ib+0.5) * _bindE;
-       if (x > pEndPoint)
-	 {
-	   cout << "past endpoint " << endl;
-	   YFunc[ib] = 0.;
-	 }
-       else
-	 {
-	   YFunc[ib] = EnergyDIOFunc(x);
-	   //	   cout << "ib, x, Spectrum = " << ib << " " << x << " " << EnergyDIOFunc(x) << endl;
-	 }
+      double x = _elow+(ib+0.5) * _bindE;
+      if (x > pEndPoint)
+        {
+          cout << "past endpoint " << endl;
+          YFunc[ib] = 0.;
+        }
+      else
+        {
+          YFunc[ib] = EnergyDIOFunc(x);
+          //           cout << "ib, x, Spectrum = " << ib << " " << x << " " << EnergyDIOFunc(x) << endl;
+        }
     }
     _funcGen = auto_ptr<CLHEP::RandGeneral>(new CLHEP::RandGeneral(YFunc,_nbins));
 
@@ -157,8 +157,8 @@ namespace mu2e {
     const double dz  = (-1.+2.*CLHEP::RandFlat::shoot())*foil.halfThickness();
     const double phi = CLHEP::twopi*CLHEP::RandFlat::shoot();
     CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
-		    center.y()+r*sin(phi), 
-		    center.z()+dz );
+                           center.y()+r*sin(phi), 
+                           center.z()+dz );
     
     // Random direction.
     // Replace this with RandomUnitSphere from Mu2eUtilities/inc

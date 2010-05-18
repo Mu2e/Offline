@@ -2,9 +2,9 @@
 // code for finding HoughTransform for circles in the L-tracker
 // 
 //
-// $Id: HoughTransform.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: HoughTransform.cc,v 1.6 2010/05/18 21:15:51 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:15:51 $
 //
 // Original author R.Bernstein
 //
@@ -142,19 +142,19 @@ namespace mu2e{
       double clusterSize = candClust.size();
 
       if (candClust.empty())
-	{ throw cms::Exception("RANGE") << "zero size cluster in computeClusterXYZ" ;}
+        { throw cms::Exception("RANGE") << "zero size cluster in computeClusterXYZ" ;}
 
 
       for (vector<int>::size_type ifoo = 0; ifoo < candClust.size(); ++ifoo)
-	{
-	  //	 	  cout << candClust.at(ifoo).id << *(candClust.at(ifoo).hitPointer) << " " ;
-	  const CLHEP::Hep3Vector& pos = candClust.at(ifoo).hitPointer->position();
-	  averageX += pos[0];
-	  averageY += pos[1];
-	}
+        {
+          //                   cout << candClust.at(ifoo).id << *(candClust.at(ifoo).hitPointer) << " " ;
+          const CLHEP::Hep3Vector& pos = candClust.at(ifoo).hitPointer->position();
+          averageX += pos[0];
+          averageY += pos[1];
+        }
 
-	averageX /= clusterSize;
-	averageY /= clusterSize;
+        averageX /= clusterSize;
+        averageY /= clusterSize;
       
       //we don't know the Z in this algorithm since the points are collapsed on the plane
       return CLHEP::Hep3Vector(averageX,averageY,0.);
@@ -306,24 +306,24 @@ namespace mu2e{
     }
 
     int HoughTransform::countHitNeighbours( Straw const& straw, 
-					    //				    edm::Handle<StepPointMCCollection>& hits ){
-				    StepPointMCCollection const* hits ){
+                                            //                                    edm::Handle<StepPointMCCollection>& hits ){
+                                    StepPointMCCollection const* hits ){
     
       int count(0);
       vector<StrawIndex> const& nearest = straw.nearestNeighboursByIndex();
       for ( vector<int>::size_type ihit =0;
-	    ihit<nearest.size(); ++ihit ){
+            ihit<nearest.size(); ++ihit ){
   
         StrawIndex idx = nearest[ihit];
   
         for( StepPointMCCollection::const_iterator 
-	       i = hits->begin(),
-	       e = hits->end(); i!=e ; ++i ) {
-	  const StepPointMC& hit = *i;
-	  if ( hit.volumeId() == idx.asInt() ){
-	    ++count;
-	    break;
-	  }
+               i = hits->begin(),
+               e = hits->end(); i!=e ; ++i ) {
+          const StepPointMC& hit = *i;
+          if ( hit.volumeId() == idx.asInt() ){
+            ++count;
+            break;
+          }
         }
 
       }// ihit
@@ -333,17 +333,17 @@ namespace mu2e{
     void HoughTransform::FindCenters()
     {
       for(ClusterList::size_type iclus = 0; iclus < _hitClusters.size();
-	  ++iclus)
-	{
+          ++iclus)
+        {
 
-	  //do something useful -- compute the center of a cluster to hand off to the transform.
-	  //getStraws produces a vector of candidates; each candidate has a set of straws and pointers to hits
-	  //associated with the straws.
-	  vector<mu2e::hitcluster::Candidate> candList = 
+          //do something useful -- compute the center of a cluster to hand off to the transform.
+          //getStraws produces a vector of candidates; each candidate has a set of straws and pointers to hits
+          //associated with the straws.
+          vector<mu2e::hitcluster::Candidate> candList = 
                               _hitClusters[iclus].getStraws();
-	  _clusterCenters.push_back(computeClusterXYZ(candList));
-	  _clusterSizes.push_back(candList.size());
-	}
+          _clusterCenters.push_back(computeClusterXYZ(candList));
+          _clusterSizes.push_back(candList.size());
+        }
 
     } // FindCenters
 
@@ -367,43 +367,43 @@ namespace mu2e{
 
       //loop over hits and form clusters of adjacent hits
       for ( ; ithhit < endhit; ++ithhit)
-	{
-	  const StepPointMC& hit = *ithhit;
-	  Straw const& straw = ltracker->getStraw( StrawIndex(hit.volumeId()) );
+        {
+          const StepPointMC& hit = *ithhit;
+          Straw const& straw = ltracker->getStraw( StrawIndex(hit.volumeId()) );
 
-	  //make a trial cluster based on this hit
-	  mu2e::hitcluster::HitCluster trialCluster(hit,straw,hits);
+          //make a trial cluster based on this hit
+          mu2e::hitcluster::HitCluster trialCluster(hit,straw,hits);
 
-	  //now loop over existing clusters. If any straws match, merge the clusters and add all straws to 
-	  //the first one. go through existing clusters and compare.  I could have avoided the check here by waiting
-	  //to put the first Cluster into newClusters Clusters afterwards and keeping newClusters.size=0,
-	  //but this seems easier to follow. 
+          //now loop over existing clusters. If any straws match, merge the clusters and add all straws to 
+          //the first one. go through existing clusters and compare.  I could have avoided the check here by waiting
+          //to put the first Cluster into newClusters Clusters afterwards and keeping newClusters.size=0,
+          //but this seems easier to follow. 
 
-	  bool foundMatchingStraw = false;
-	  for(vector<mu2e::hitcluster::HitCluster>::size_type ithCluster = 1;
-	      (ithCluster <=  newClusters.size()) && !foundMatchingStraw;
-	      ++ithCluster)
-	    {
-	      trialCluster.matchAndMerge(foundMatchingStraw,newClusters);
-	    }
-	  ///if nobody matched, this is the first time we've seen these straws and put them into
-	  //the newClusters vector.
+          bool foundMatchingStraw = false;
+          for(vector<mu2e::hitcluster::HitCluster>::size_type ithCluster = 1;
+              (ithCluster <=  newClusters.size()) && !foundMatchingStraw;
+              ++ithCluster)
+            {
+              trialCluster.matchAndMerge(foundMatchingStraw,newClusters);
+            }
+          ///if nobody matched, this is the first time we've seen these straws and put them into
+          //the newClusters vector.
 
 
-	  if (!foundMatchingStraw) newClusters.push_back(trialCluster);
+          if (!foundMatchingStraw) newClusters.push_back(trialCluster);
 
-	}//hit
+        }//hit
 
         for(ClusterList::size_type ithCluster = 0; 
                             ithCluster < newClusters.size(); ++ithCluster)
-	{
-	  //have looked through all hits and formed clusters. 
-	  //the newClusters cluster vectors may have lots of duplicates from merges and we should clean that up.
-	  //it might be more elegant to do that as the clusters are formed rather than doing this here,
-	  //but this way we only do it once.  
-	  newClusters.at(ithCluster).cleanUpDuplicates();
+        {
+          //have looked through all hits and formed clusters. 
+          //the newClusters cluster vectors may have lots of duplicates from merges and we should clean that up.
+          //it might be more elegant to do that as the clusters are formed rather than doing this here,
+          //but this way we only do it once.  
+          newClusters.at(ithCluster).cleanUpDuplicates();
 
-	}
+        }
 
     }// MakeClusters
 

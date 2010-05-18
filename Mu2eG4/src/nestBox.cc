@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 // 
-// $Id: nestBox.cc,v 1.2 2009/11/11 14:36:41 kutschke Exp $
+// $Id: nestBox.cc,v 1.3 2010/05/18 21:16:27 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/11 14:36:41 $
+// $Date: 2010/05/18 21:16:27 $
 //
 // Original author Rob Kutschke
 //
@@ -27,15 +27,15 @@ namespace mu2e {
   // Place a box inside a logical volume.
   // 
   VolumeInfo nestBox ( string const& name,
-		       double const halfDim[3],
-		       G4Material* material,
-		       G4RotationMatrix* rot,
-		       G4ThreeVector const& offset,
-		       G4LogicalVolume* parent,
-		       int copyNo,
-		       G4Colour color,
-		       bool forceSolid
-		       ){
+                       double const halfDim[3],
+                       G4Material* material,
+                       G4RotationMatrix* rot,
+                       G4ThreeVector const& offset,
+                       G4LogicalVolume* parent,
+                       int copyNo,
+                       G4Colour color,
+                       bool forceSolid
+                       ){
     
     VolumeInfo info;
     

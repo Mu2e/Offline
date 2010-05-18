@@ -4,9 +4,9 @@
 // The wrapper does the job of throwing if the pointer comes
 // back null.
 //
-// $Id: findMaterialOrThrow.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: findMaterialOrThrow.cc,v 1.2 2010/05/18 21:16:26 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/05/18 21:16:26 $
 //
 // Original author Rob Kutschke
 //
@@ -31,9 +31,9 @@ namespace mu2e {
     // Throw if necessary.
     if ( !m ){
       throw cms::Exception("GEOM")
-	<< "Could not find a material with the name: "
-	<< name
-	<< "\n";
+        << "Could not find a material with the name: "
+        << name
+        << "\n";
     }
     return m;
   }

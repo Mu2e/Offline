@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.12 2010/04/07 14:55:49 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/04/07 14:55:49 $
+// $Id: PrimaryGeneratorAction.cc,v 1.13 2010/05/18 21:16:22 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:16:22 $
 //
 // Original author Rob Kutschke
 //
@@ -121,9 +121,9 @@ namespace mu2e {
                   genpart._generatorId == GenId::cosmicDYB || 
                   genpart._generatorId == GenId::cosmic ){
         pos += cosmicReferencePlane;
-      } else if ( genpart._generatorId == GenId::primaryProtonGun ){	
-            pos = primaryProtonGunRotation*pos + primaryProtonGunOrigin;
-            momentum = primaryProtonGunRotation*momentum;
+      } else if ( genpart._generatorId == GenId::primaryProtonGun ){
+        pos = primaryProtonGunRotation*pos + primaryProtonGunOrigin;
+        momentum = primaryProtonGunRotation*momentum;
       } else {
         edm::LogError("KINEMATICS")
           << "Do not know what to do with this generator id: " 
@@ -136,12 +136,12 @@ namespace mu2e {
       // Create a new vertex 
       G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
 
-    G4PrimaryParticle* particle =
-       new G4PrimaryParticle(genpart._pdgId,
-                             momentum.x(),
-                             momentum.y(),
-                             momentum.z(),
-                             genpart._momentum.e() );
+      G4PrimaryParticle* particle =
+        new G4PrimaryParticle(genpart._pdgId,
+                              momentum.x(),
+                              momentum.y(),
+                              momentum.z(),
+                              genpart._momentum.e() );
     
       // Set the charge.  Do I really need to do this?
       G4ParticleDefinition const* g4id = particle->GetG4code();
@@ -206,4 +206,4 @@ namespace mu2e {
 
   }
 
-}
+} // end namespace mu2e

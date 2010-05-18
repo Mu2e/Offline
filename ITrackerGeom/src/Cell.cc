@@ -17,9 +17,9 @@ Cell::Cell():
 }
 
 Cell::Cell( CellId id,
-		 boost::shared_ptr<CellDetail> detail,
-		 boost::shared_ptr<Wire> senseWire
-		):
+            boost::shared_ptr<CellDetail> detail,
+            boost::shared_ptr<Wire> senseWire
+            ):
   _id(id),
   _detail(detail),
   _senseWire(senseWire)
@@ -27,13 +27,13 @@ Cell::Cell( CellId id,
 }
 
 Cell::~Cell (){
-//	try {
-//		if (_detail) delete _detail;
-//		if (_senseWire) delete _senseWire;
-//	} catch (cms::Exception e) {
-//	    throw cms::Exception("GEOM")
-//		<< "Error during deleting cell data \n";
-//	}
+//         try {
+//                  if (_detail) delete _detail;
+//                  if (_senseWire) delete _senseWire;
+//         } catch (cms::Exception e) {
+//             throw cms::Exception("GEOM")
+//                  << "Error during deleting cell data \n";
+//         }
 }
 
 } // namespace mu2e

@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.cc,v 1.4 2010/05/17 21:47:33 genser Exp $ 
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: PrimaryProtonGun.cc,v 1.5 2010/05/18 21:15:38 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2010/05/18 21:15:38 $
 //
 // Original author Rob Kutschke
 // 
@@ -48,10 +48,9 @@ namespace mu2e {
   // Mass of the proton.
   // Once we have the HepPDT package installed, get this number from there.
   static const double m = 938.272*CLHEP::MeV;
- 
   
   // the kinetic energy of proton is 8 Gev; E = T + m, p = sqrt(E^2 - m^2)
-    static const double pPrimaryProton = 8888.6*CLHEP::MeV;
+  static const double pPrimaryProton = 8888.6*CLHEP::MeV;
 
   PrimaryProtonGun::PrimaryProtonGun( edm::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
@@ -69,7 +68,7 @@ namespace mu2e {
     _beamDisplacementOnTarget = config.getHep3Vector("beamDisplacementOnTarget");   
     _zOffset = config.getDouble("targetPS_halfLength",80.);
     _stdDev = config.getDouble("primaryProtonGun.stdDev" );
-	
+        
     _dcz  = (  _czmax -  _czmin);
     _dphi = ( _phimax - _phimin);
     _dt   = (   _tmax -   _tmin);
@@ -96,8 +95,8 @@ namespace mu2e {
     //proton target.  When we have the proton beam exiting the solenoid
     //this will all be replaced.
     CLHEP::Hep3Vector pos( _beamDisplacementOnTarget.x() + r*cos(phi), 
-		    _beamDisplacementOnTarget.y() + r*sin(phi), 
-		    _beamDisplacementOnTarget.z() + _zOffset);
+                    _beamDisplacementOnTarget.y() + r*sin(phi), 
+                    _beamDisplacementOnTarget.z() + _zOffset);
     
     // Random direction.
     const double cz   = _czmin  + _dcz*CLHEP::RandFlat::shoot();

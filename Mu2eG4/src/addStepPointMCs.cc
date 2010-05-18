@@ -1,9 +1,9 @@
 //
 // Add StepPointMC objects to the event.
 //
-// $Id: addStepPointMCs.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: addStepPointMCs.cc,v 1.4 2010/05/18 21:16:30 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:30 $
 //
 // Original author Rob Kutschke
 //
@@ -88,7 +88,7 @@ namespace mu2e{
           sSDname.replace(loc,1,"0");
           loc = sSDname.find( " ", 0 );
         }
-        //    			std::cout<<sSDname<<endl;
+        //                            std::cout<<sSDname<<endl;
         G4int colId = SDman->GetCollectionID(sSDname.c_str());
         if ( colId >= 0 && hce != 0 ){
           StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
@@ -109,7 +109,7 @@ namespace mu2e{
           sSDname.replace(loc,1,"0");
           loc = sSDname.find( " ", 0 );
         }
-        //    			std::cout<<sSDname<<endl;
+        //                              std::cout<<sSDname<<endl;
         colId = SDman->GetCollectionID(sSDname.c_str());
         if ( colId >= 0 && hce != 0 ){
           StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
@@ -125,6 +125,4 @@ namespace mu2e{
 
   } // end addI
 
-}
-
-
+} // end namespace mu2e

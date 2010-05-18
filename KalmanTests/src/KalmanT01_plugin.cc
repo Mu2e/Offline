@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_plugin.cc,v 1.2 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: KalmanT01_plugin.cc,v 1.3 2010/05/18 21:16:47 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:47 $
 //
 // Original author Rob Kutschke
 //
@@ -123,7 +123,7 @@ namespace mu2e {
 
       _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Generated Drift Distance;(CLHEP::mm)", 100, -3., 3. );
       _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
-					    100, 2.4, 2.6 );
+                                            100, 2.4, 2.6 );
       _hd0   = tfs->make<TH1F>( "hd0",   "Gen d0;(CLHEP::cm)",    100, -10., 10. );
 
       _hphi0 = tfs->make<TH1F>( "hphi0", "Gen phi00;(CLHEP::radians)", 100, -CLHEP::pi, CLHEP::pi);
@@ -172,10 +172,10 @@ namespace mu2e {
     const CLHEP::Hep3Vector pos0 = sim.startPosition() - trackerOrigin;
 
     TrkHelixUtils::helixFromMom( startPar, s0, 
-                                toHepPoint(pos0),
-                                sim.startMomentum(),
-                                charge,
-                                bfield);
+                                 toHepPoint(pos0),
+                                 sim.startMomentum(),
+                                 charge,
+                                 bfield);
     cout << "Starting position: "
          << pos0 << " "
          << endl;
@@ -237,7 +237,7 @@ namespace mu2e {
       double turns2 = dz/radius/ct/CLHEP::twopi;
 
       /*
-        // To test computation of poca.
+      // To test computation of poca.
       HepSymMatrix dummy(5,1);
       HelixTraj    trktraj(startPar,dummy);
       HepPoint     wirestart( mid.x(), mid.y(), mid.z());
@@ -250,13 +250,12 @@ namespace mu2e {
       // Fill diagnostic histograms and make diagnostic printout.
       if ( _diagLevel > 0 ) {
 
-	// Check the radius of the reference point in the local
-	// coordinates of the straw.  It should be 2.5 mm.
-	double s = w.dot(pos-mid);
-	CLHEP::Hep3Vector point = pos - (mid + s*w);
-	_hCheckPointRadius->Fill(point.mag());
-	_hDriftDist->Fill(pca.dca());
-
+        // Check the radius of the reference point in the local
+        // coordinates of the straw.  It should be 2.5 mm.
+        double s = w.dot(pos-mid);
+        CLHEP::Hep3Vector point = pos - (mid + s*w);
+        _hCheckPointRadius->Fill(point.mag());
+        _hDriftDist->Fill(pca.dca());
 
         if ( ncalls < _maxFullPrint ) {
           cerr << "Readback hit: "

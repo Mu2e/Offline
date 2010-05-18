@@ -2,9 +2,9 @@
 // Maintain multiple independent random number engines,
 // including save and restore of seeds and state. 
 //
-// $Id: RandomNumberService.cc,v 1.3 2010/03/07 22:01:00 kutschke Exp $
+// $Id: RandomNumberService.cc,v 1.4 2010/05/18 21:16:43 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/07 22:01:00 $
+// $Date: 2010/05/18 21:16:43 $
 //
 // Original author Rob Kutschke
 //
@@ -53,7 +53,7 @@ using namespace std;
 namespace mu2e {
 
   RandomNumberService::RandomNumberService(edm::ParameterSet const& iPS, 
-					   edm::ActivityRegistry&iRegistry) :
+                                           edm::ActivityRegistry&iRegistry) :
     _globalSeed(iPS.getUntrackedParameter<int>("globalSeed",-1)),
     _restoreStateLabel(iPS.getUntrackedParameter<string>("restoreStateLabel","")),
     _labels(),
@@ -88,15 +88,15 @@ namespace mu2e {
     if ( _globalSeed > -1 && _globalSeed < 90000000 ){
       CLHEP::HepRandom::setTheSeed(_globalSeed);
       if ( _debug ) {
-	edm::LogInfo("RANDOM") 
-	  << "Setting the seed of the HepRandom at job start: " << _globalSeed;
+        edm::LogInfo("RANDOM") 
+          << "Setting the seed of the HepRandom at job start: " << _globalSeed;
       }
     } else if ( _globalSeed != -1 ) {
 
       // Or do we want to just give a warning message?
       throw cms::Exception("RANGE")
-	<< "Seed for the HepRandom generator is out of bounds: "
-	<< _globalSeed;
+        << "Seed for the HepRandom generator is out of bounds: "
+        << _globalSeed;
     }
 
     // Add the HepRandom singleton engine to the list of managed engines.
@@ -167,9 +167,9 @@ namespace mu2e {
     bool status = CLHEP::HepRandom::getTheEngine()->getState(v);
     if ( !status ){
       throw cms::Exception("RANGE")
-	<< "Failed during restore of state of engine for: "
-	<< state0.getLabel() << " "
-	<< state0.getState().size();
+        << "Failed during restore of state of engine for: "
+        << state0.getLabel() << " "
+        << state0.getState().size();
     }
 
     // Private data must match the restored state of the engines.
@@ -189,19 +189,19 @@ namespace mu2e {
     edm::LogInfo log("RANDOM");
     if ( _restoreStateLabel.size() != 0 ){
       log << "Name of module that created stored state: "
-	  << _restoreStateLabel
-	  << "\n";
+          << _restoreStateLabel
+          << "\n";
     }else{
       log << "Will not restore state from the event. \n";
     }
     for ( size_t i=0; i<_labels.size(); ++i ){
       log << "Module label for engine: " 
-	  << _labels[i]
-	  << "  Size of state: " 
-	  << _states[i].size()
-	  << "  Size of seeds: " 
-	  << _seeds[i].size()
-	  << "\n";
+          << _labels[i]
+          << "  Size of state: " 
+          << _states[i].size()
+          << "  Size of seeds: " 
+          << _seeds[i].size()
+          << "\n";
     }
   }
 

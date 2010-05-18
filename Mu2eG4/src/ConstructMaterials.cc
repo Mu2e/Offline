@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.2 2010/02/05 11:46:38 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2010/02/05 11:46:38 $
+// $Id: ConstructMaterials.cc,v 1.3 2010/05/18 21:16:11 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:16:11 $
 //
 // Original author Rob Kutschke
 //
@@ -95,7 +95,7 @@ namespace mu2e {
     
     // Load the elements.
     for ( vector<string>::const_iterator i=elementsToLoad.begin();
-	  i!=elementsToLoad.end(); ++i ){
+          i!=elementsToLoad.end(); ++i ){
       getElementOrThrow(*i);
     }
 
@@ -107,7 +107,7 @@ namespace mu2e {
 
     // Load the materials.
     for ( vector<string>::const_iterator i=materialsToLoad.begin();
-	  i!=materialsToLoad.end(); ++i ){
+          i!=materialsToLoad.end(); ++i ){
       findMaterialOrThrow(*i);
     }
     
@@ -134,7 +134,7 @@ namespace mu2e {
       // www-esh.fnal.gov/TM1834_PDF_FILES/TM_1834_Revision_9.pdf
       //
       G4Material* ShieldingConcrete = 
-	new G4Material( mat.name, 2.5*g/cm3, 6);
+        new G4Material( mat.name, 2.5*g/cm3, 6);
       G4Element* eO  = getElementOrThrow("O");
       G4Element* eSi = getElementOrThrow("Si");
       G4Element* eCa = getElementOrThrow("Ca");
@@ -152,7 +152,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "Polyethylene");
     if ( mat.doit ){
       G4Material* Polyethylene = 
-	new G4Material( mat.name, 0.956*g/cm3, 2);
+        new G4Material( mat.name, 0.956*g/cm3, 2);
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eH  = getElementOrThrow("H");
       Polyethylene->AddElement( eC, 1);
@@ -162,7 +162,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "IsoButane");
     if ( mat.doit ){
       G4Material* IsoButane = 
-	new G4Material( mat.name, 0.00265*g/cm3, 2);
+        new G4Material( mat.name, 0.00265*g/cm3, 2);
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eH  = getElementOrThrow("H");
       IsoButane->AddElement( eC, 4);
@@ -172,7 +172,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "StrawGas");
     if ( mat.doit ) {
       G4Material* StrawGas = 
-	new G4Material(mat.name, 0.0028561*g/cm3, 3);
+        new G4Material(mat.name, 0.0028561*g/cm3, 3);
       G4Element* eAr = getElementOrThrow("Ar");
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eF  = getElementOrThrow("F");
@@ -187,7 +187,7 @@ namespace mu2e {
       // Kapton: from NIST: physics.nist.gov/cgi-bin/Star/compos.pl?matno=179
       //
       G4Material* Kapton = 
-	new G4Material(mat.name, 1.42*g/cm3, 4);
+        new G4Material(mat.name, 1.42*g/cm3, 4);
       G4Element* eH  = getElementOrThrow("H");
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eN  = getElementOrThrow("N");
@@ -206,7 +206,7 @@ namespace mu2e {
       // detector by just changing a name in the config file.
       //
       G4Material* Sci = 
-	new G4Material( mat.name, 1.032*g/cm3, 2);
+        new G4Material( mat.name, 1.032*g/cm3, 2);
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eH  = getElementOrThrow("H");
       Sci->AddElement( eC, 9);
@@ -224,8 +224,8 @@ namespace mu2e {
       G4double pressure    = 3.e-18*pascal;
       G4double temperature = 2.73*kelvin;
       G4Material* Vacuum = 
-	new G4Material( mat.name, 1., 1.01 *g/mole,
-			density, kStateGas, temperature, pressure);
+        new G4Material( mat.name, 1., 1.01 *g/mole,
+                        density, kStateGas, temperature, pressure);
     }
 
     mat = isNeeded(materialsToLoad, "MBOverburden");
@@ -257,11 +257,11 @@ namespace mu2e {
       density = fractionHe*densityHe + (1.0-fractionHe)*densityIsoB;
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
-                      kStateGas, temperature= 293.15*kelvin, pressure= 1*atmosphere);
+                                           kStateGas, temperature= 293.15*kelvin, pressure= 1*atmosphere);
 
-//      G4Element* He = new G4Element("He"       , "He", z=2.0, a= 4.002602 *g/mole);
-//      G4Element* C  = new G4Element("Carbonium", "C" , z=6.0, a= 12.0107  *g/mole);
-//      G4Element* H  = new G4Element("Hydrogen" , "H" , z=1.0, a= 1.00794  *g/mole);
+      //      G4Element* He = new G4Element("He"       , "He", z=2.0, a= 4.002602 *g/mole);
+      //      G4Element* C  = new G4Element("Carbonium", "C" , z=6.0, a= 12.0107  *g/mole);
+      //      G4Element* H  = new G4Element("Hydrogen" , "H" , z=1.0, a= 1.00794  *g/mole);
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
       G4Element* H  = getElementOrThrow("H");
@@ -272,24 +272,24 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "CarbonFiber");
     if ( mat.doit ){
-        G4double density;
-        G4int nel;
-    	G4Material* CarbonFiber =
-    			new G4Material(mat.name, density = 2.265*g/cm3, nel=1);
-        G4Element* C  = getElementOrThrow("C");
-        CarbonFiber->AddElement(C, 100.0*perCent );
+      G4double density;
+      G4int nel;
+      G4Material* CarbonFiber =
+        new G4Material(mat.name, density = 2.265*g/cm3, nel=1);
+      G4Element* C  = getElementOrThrow("C");
+      CarbonFiber->AddElement(C, 100.0*perCent );
     }
 
     mat = isNeeded(materialsToLoad, "PolypropyleneFoam");
     if ( mat.doit ){
-    	//Polypropylene (CH3)
-        G4double density;
-        G4int nel;
-    	G4Material *Polypropylene = new G4Material(mat.name, density = 0.04*g/cm3, nel=2);
-    	G4Element* H  = getElementOrThrow("H");
-    	G4Element* C  = getElementOrThrow("C");
-    	Polypropylene->AddElement(H, 3 );
-    	Polypropylene->AddElement(C, 1 );
+      //Polypropylene (CH3)
+      G4double density;
+      G4int nel;
+      G4Material *Polypropylene = new G4Material(mat.name, density = 0.04*g/cm3, nel=2);
+      G4Element* H  = getElementOrThrow("H");
+      G4Element* C  = getElementOrThrow("C");
+      Polypropylene->AddElement(H, 3 );
+      Polypropylene->AddElement(C, 1 );
     }
 
 
@@ -297,9 +297,9 @@ namespace mu2e {
 
     // Check that all requested materials are present. 
     for ( vector<string>::const_iterator i=materialsToLoad.begin();
-	  i!=materialsToLoad.end(); ++i ){
+          i!=materialsToLoad.end(); ++i ){
       if ( *i != DoAllValue ){
-	findMaterialOrThrow(*i);
+        findMaterialOrThrow(*i);
       }
     }
   }
@@ -328,7 +328,7 @@ namespace mu2e {
   // The match must be exact.
   bool ConstructMaterials::isRequested( vector<string> const& V, string const& s){
     for ( vector<string>::const_iterator i=V.begin(), e=V.end();
-	  i != e; ++i ){
+          i != e; ++i ){
       if ( *i == s ) return true;
     }
     return false;
@@ -338,10 +338,10 @@ namespace mu2e {
   void ConstructMaterials::uniqueMaterialOrThrow( G4String const& name){
     if ( G4Material::GetMaterial(name,false) != 0 ){
       throw cms::Exception("GEOM")
-	<< "mu2e::ConstructMaterials::constructMu2eMaterials(): "
-	<< "The requested material is already defined: "
-	<< name
-	<< "\n";
+        << "mu2e::ConstructMaterials::constructMu2eMaterials(): "
+        << "The requested material is already defined: "
+        << name
+        << "\n";
     }
   }
 
@@ -357,10 +357,10 @@ namespace mu2e {
     // Throw if we could not find a requested element.
     if ( !answer ){
       throw cms::Exception("GEOM")
-	<< "mu2e::ConstructMaterials::constructMaterials(): "
-	<< "Could not load predefined G4 element named: "
-	<< name
-	<< "\n";
+        << "mu2e::ConstructMaterials::constructMaterials(): "
+        << "Could not load predefined G4 element named: "
+        << name
+        << "\n";
     }
 
     return answer;

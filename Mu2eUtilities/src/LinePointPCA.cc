@@ -2,9 +2,9 @@
 // Given a line and an external point, find the point on the line that is
 // closest to the external point.
 //
-// $Id: LinePointPCA.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: LinePointPCA.cc,v 1.3 2010/05/18 21:16:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:33 $
 //
 // Original author Rob Kutschke
 //
@@ -18,9 +18,9 @@ using CLHEP::Hep3Vector;
 namespace mu2e{
 
   LinePointPCA::LinePointPCA( CLHEP::Hep3Vector const& p,
-			      CLHEP::Hep3Vector const& t,
-			      CLHEP::Hep3Vector const& q
-			      ):
+                              CLHEP::Hep3Vector const& t,
+                              CLHEP::Hep3Vector const& q
+                              ):
     _p(p), _q(q), _t(t){
     
 

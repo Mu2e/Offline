@@ -1,13 +1,13 @@
 /*----------------------------------------------------------------------
 
-  A producer module that makes a collection of overly simplified "hits"
-  and adds them to the event.
+A producer module that makes a collection of overly simplified "hits"
+and adds them to the event.
 
-  $Id: Ex02MakeHits_plugin.cc,v 1.4 2010/05/17 21:47:33 genser Exp $
-  $Author: genser $
-  $Date: 2010/05/17 21:47:33 $
+$Id: Ex02MakeHits_plugin.cc,v 1.5 2010/05/18 21:15:41 kutschke Exp $
+$Author: kutschke $
+$Date: 2010/05/18 21:15:41 $
    
-  Original author Rob Kutschke
+Original author Rob Kutschke
 
 
 ----------------------------------------------------------------------*/
@@ -114,7 +114,7 @@ namespace mu2e {
       
       // Keep only hits with large enough pulse height.
       if ( ph > minPulseHeight_ ){
-	p->push_back(ToyHit(intersectionPoint,ph));
+        p->push_back(ToyHit(intersectionPoint,ph));
       }
     }
 
@@ -131,13 +131,10 @@ namespace mu2e {
     
     edm::OrphanHandle<ToyHitCollection> q = event.put(p);
     edm::LogInfo("Hits") << "Number of hits: " 
-			 << q->size();
-
-
+         		 << q->size();
   }
 
 }
-
 
 using mu2e::Ex02MakeHits;
 DEFINE_FWK_MODULE(Ex02MakeHits);

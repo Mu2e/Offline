@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_plugin.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: MCSH_Test_plugin.cc,v 1.6 2010/05/18 21:15:47 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:15:47 $
 //
 // Original author Rob Kutschke
 //
@@ -83,9 +83,9 @@ namespace mu2e {
   void MCSH_Test::beginJob(edm::EventSetup const& ){
 
     cout << "Diaglevel: " 
-	 << _diagLevel << " "
-	 << _maxFullPrint 
-	 << endl;
+         << _diagLevel << " "
+         << _maxFullPrint 
+         << endl;
 
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ){
@@ -117,13 +117,13 @@ namespace mu2e {
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
       for ( std::size_t i=0; i<pdata->size(); ++i){
-	cout << "Before pdata: " 
-	     << evt.id().event() <<  " " 
-	     << i << " " 
-	     << pdata->at(i).stepPointMCsValid() << " "
-	     << pdata->at(i).getStepPointMCs(true).size() << " "
-	     << pdata->at(i).getStepPointMCs(true).capacity() << " "
-	     << endl;
+        cout << "Before pdata: " 
+             << evt.id().event() <<  " " 
+             << i << " " 
+             << pdata->at(i).stepPointMCsValid() << " "
+             << pdata->at(i).getStepPointMCs(true).size() << " "
+             << pdata->at(i).getStepPointMCs(true).capacity() << " "
+             << endl;
       }
     }
 
@@ -135,20 +135,20 @@ namespace mu2e {
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
       for ( std::size_t i=0; i<pdata->size(); ++i){
-	cout << "After pdata: " 
-	     << evt.id().event() <<  " " 
-	     << i << " " 
-	     << pdata->at(i).stepPointMCsValid() << " "
-	     << pdata->at(i).getStepPointMCs().size() << " "
-	     << pdata->at(i).getStepPointMCs().capacity() << " "
-	     << endl;
+        cout << "After pdata: " 
+             << evt.id().event() <<  " " 
+             << i << " " 
+             << pdata->at(i).stepPointMCsValid() << " "
+             << pdata->at(i).getStepPointMCs().size() << " "
+             << pdata->at(i).getStepPointMCs().capacity() << " "
+             << endl;
       }
     }
 
 
     for ( vector<CrudeStrawHit>::size_type i=0; 
-	  i<pdata->size(); 
-	  ++i){
+          i<pdata->size(); 
+          ++i){
 
       // Aliases for readability.
       CrudeStrawHit const&      hit(pdata->at(i));
@@ -159,60 +159,60 @@ namespace mu2e {
 
       // Fill diagnostic histogram.
       if ( _diagLevel > 0){
-	_hDriftDist->Fill(hit.trueDriftDistance);
+        _hDriftDist->Fill(hit.trueDriftDistance);
       }
       
       // Diagnostic printout.
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
-	
-	// Print list of nearest neighbours that are hit.
-	cout << "Hit neighbours : " 
-	     << setw(4) << i <<  " : "
-	     << setw(4) << straw.Id() << " : ";
+        
+        // Print list of nearest neighbours that are hit.
+        cout << "Hit neighbours : " 
+             << setw(4) << i <<  " : "
+             << setw(4) << straw.Id() << " : ";
 
-	/*
-	for ( vector<StrawIndex>::size_type j=0;
-	      j<nearest.size(); 
-	      ++j ){
+        /*
+        for ( vector<StrawIndex>::size_type j=0;
+              j<nearest.size(); 
+              ++j ){
 
-	  if ( crudeHits.hasHitByStrawIndex(nearest[j]) ){
-	    Straw const& s = ltracker->getStraw(nearest[j]);
-	    cout << " " << setw(4) << s.Id();
-	  }
+          if ( crudeHits.hasHitByStrawIndex(nearest[j]) ){
+            Straw const& s = ltracker->getStraw(nearest[j]);
+            cout << " " << setw(4) << s.Id();
+          }
 
-	}
-	*/
-	cout << endl;
+        }
+        */
+        cout << endl;
 
-	// Get pointers back to precursors of this hit.
-	vector<StepPointMC const*> v;
-	pdata->at(i).getStepPointMC(evt, v);
-	
-	cout << "Roundtrip Id Check for straw: "
-	     << hit.strawIndex << " | #points: "
-	     << v.size() << " | points: ";
-	for ( vector<StepPointMC const*>::size_type i=0;
-	      i<v.size(); ++i ){
-	  cout << " " << v[i]->strawIndex();
-	}
-	cout << endl;
+        // Get pointers back to precursors of this hit.
+        vector<StepPointMC const*> v;
+        pdata->at(i).getStepPointMC(evt, v);
+        
+        cout << "Roundtrip Id Check for straw: "
+             << hit.strawIndex << " | #points: "
+             << v.size() << " | points: ";
+        for ( vector<StepPointMC const*>::size_type i=0;
+              i<v.size(); ++i ){
+          cout << " " << v[i]->strawIndex();
+        }
+        cout << endl;
 
-	// Exercise two other versions of the DPIndex resolver.
-	// Should move this testing to ToyDP/test.
-	if ( hit.precursorIndices.size() > 0 ) {
-	  StepPointMC const * p = resolveDPIndex<StepPointMCCollection>( evt, hit.precursorIndices[0]);
+        // Exercise two other versions of the DPIndex resolver.
+        // Should move this testing to ToyDP/test.
+        if ( hit.precursorIndices.size() > 0 ) {
+          StepPointMC const * p = resolveDPIndex<StepPointMCCollection>( evt, hit.precursorIndices[0]);
 
-	  vector<StepPointMC const*> v2;
-	  edm::ProductID const& id = hit.precursorIndices[0].id;
-	  vector<int> offsets(1,hit.precursorIndices[0].index);
-	  resolveDPIndices<StepPointMCCollection>( evt, id, offsets, v2);
+          vector<StepPointMC const*> v2;
+          edm::ProductID const& id = hit.precursorIndices[0].id;
+          vector<int> offsets(1,hit.precursorIndices[0].index);
+          resolveDPIndices<StepPointMCCollection>( evt, id, offsets, v2);
 
-	  cout << "First precursor check: "
-	       << hit.strawIndex  << " : "
-	       << p->strawIndex() << "   "
-	       << v2[0]->strawIndex()
-	       << endl;
-	}
+          cout << "First precursor check: "
+               << hit.strawIndex  << " : "
+               << p->strawIndex() << "   "
+               << v2[0]->strawIndex()
+               << endl;
+        }
 
       } // end of ncalls < _maxFullPrint
 

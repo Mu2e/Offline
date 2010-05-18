@@ -2,9 +2,9 @@
 // Hold information about one RSlice in the calorimeter.
 //
 //
-// $Id: RSlice.cc,v 1.2 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: RSlice.cc,v 1.3 2010/05/18 21:16:50 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:50 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -31,10 +31,10 @@ namespace mu2e {
     }
 
     RSlice::RSlice(const RSliceId& id,
-		   int      nCrystals,
-		   const CLHEP::Hep3Vector& origin,
-		   const CLHEP::Hep3Vector& delta
-		   ):
+                   int      nCrystals,
+                   const CLHEP::Hep3Vector& origin,
+                   const CLHEP::Hep3Vector& delta
+                   ):
       _id(id),
       _nCrystals(nCrystals),
       _orig(origin),
@@ -50,9 +50,9 @@ namespace mu2e {
       ostringstream os;
 
       os << base
-	 << _id.getVane() << "_"
-	 << _id.getZSlice() << "_"
-	 << _id.getRSlice();
+         << _id.getVane() << "_"
+         << _id.getZSlice() << "_"
+         << _id.getRSlice();
       return os.str();
     }
 

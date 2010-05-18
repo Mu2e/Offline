@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.10 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: CalorimeterMaker.cc,v 1.11 2010/05/18 21:16:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:16:48 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -138,12 +138,12 @@ namespace mu2e{
       // location or orientation.  
 
       _calorimeter->_crystalDetail.push_back
-	(CrystalDetail(
-		       crystalHalfTrans,
-		       crystalHalfLong,
-		       crystalMaterial,
-		       crystalWrapper,
-      		       crystalWrapperHalfThickness));
+        (CrystalDetail(
+                       crystalHalfTrans,
+                       crystalHalfLong,
+                       crystalMaterial,
+                       crystalWrapper,
+                             crystalWrapperHalfThickness));
       return;
     }
 
@@ -165,230 +165,230 @@ namespace mu2e{
       //
       // loop over vanes
       for (uint32_t ithVane = 0; ithVane < numberOfVanes ; ++ithVane)
-	{
-	  allVanes.push_back(Vane(ithVane));
-	  Vane& currentVane = allVanes[ithVane]; 
-	  VaneId vid = ithVane;
+        {
+          allVanes.push_back(Vane(ithVane));
+          Vane& currentVane = allVanes[ithVane]; 
+          VaneId vid = ithVane;
 
-	  //
-	  //start making RSlices and ZSlices in this vane
-	  vector<ZSlice>& zSlicesCurrentVane = currentVane._zslices;
+          //
+          //start making RSlices and ZSlices in this vane
+          vector<ZSlice>& zSlicesCurrentVane = currentVane._zslices;
 
-	  // 
-	  //all zslices in a vane have the same phi. 
-	  double phiZSlice = ithVane*angleOfRotation + phi0;
-	  //
-	  // rotate "ideal vane" into its phi position, then adjust for angular offset of vane
-	  //
-	  // this assumes eulerian system
-	  CLHEP::HepRotation masterVaneRotation = 
-	    CLHEP::HepRotation(calorimeterVaneRotationsPhi[ithVane],
-			calorimeterVaneRotationsTheta[ithVane],
-			calorimeterVaneRotationsPsi[ithVane])  *  CLHEP::HepRotationZ(phiZSlice);
-	  cout << "rotation matrix " << "\n" << masterVaneRotation << endl;
-	  CLHEP::Hep3Vector currentLongAxis = masterVaneRotation*initialLongAxis;
-	  //cout <<"wire of vane number " << ithVane << " is " << currentLongAxis << endl;
+          // 
+          //all zslices in a vane have the same phi. 
+          double phiZSlice = ithVane*angleOfRotation + phi0;
+          //
+          // rotate "ideal vane" into its phi position, then adjust for angular offset of vane
+          //
+          // this assumes eulerian system
+          CLHEP::HepRotation masterVaneRotation = 
+            CLHEP::HepRotation(calorimeterVaneRotationsPhi[ithVane],
+                        calorimeterVaneRotationsTheta[ithVane],
+                        calorimeterVaneRotationsPsi[ithVane])  *  CLHEP::HepRotationZ(phiZSlice);
+          cout << "rotation matrix " << "\n" << masterVaneRotation << endl;
+          CLHEP::Hep3Vector currentLongAxis = masterVaneRotation*initialLongAxis;
+          //cout <<"wire of vane number " << ithVane << " is " << currentLongAxis << endl;
 
-	  //
-	  // create ZSlices
-	  zSlicesCurrentVane.reserve(nCrystalZSlices);
-	  for (uint32_t ithZSlice = 0; ithZSlice < nCrystalZSlices; ++ithZSlice)
-	    {
-	      zSlicesCurrentVane.push_back(ZSlice(ZSliceId(ithVane,ithZSlice)));
-	      //
-	      // get the address of this last CLHEP::piece so I can put things directly into the vector;
-	      // otherwise I need to fill the vector and then do a copy later
-	      ZSlice& currentZSlice = zSlicesCurrentVane.back();
+          //
+          // create ZSlices
+          zSlicesCurrentVane.reserve(nCrystalZSlices);
+          for (uint32_t ithZSlice = 0; ithZSlice < nCrystalZSlices; ++ithZSlice)
+            {
+              zSlicesCurrentVane.push_back(ZSlice(ZSliceId(ithVane,ithZSlice)));
+              //
+              // get the address of this last CLHEP::piece so I can put things directly into the vector;
+              // otherwise I need to fill the vector and then do a copy later
+              ZSlice& currentZSlice = zSlicesCurrentVane.back();
 
 
-	      //
-	      // populate r slices at a fixed z in this vane
-	      double z0 = crystalHalfTrans + distanceBetweenCrystals*ithZSlice;
-	      for (uint32_t ithRSlice = 0; ithRSlice < nCrystalRSlices; ++ithRSlice)
-		{
-		  //
-		  // calculate various useful things in format that which will be convenient for
-		  // G4 instead of human beings; names, etc are for vanes parallel to z but we still
-		  // tweak them with offsets
+              //
+              // populate r slices at a fixed z in this vane
+              double z0 = crystalHalfTrans + distanceBetweenCrystals*ithZSlice;
+              for (uint32_t ithRSlice = 0; ithRSlice < nCrystalRSlices; ++ithRSlice)
+                {
+                  //
+                  // calculate various useful things in format that which will be convenient for
+                  // G4 instead of human beings; names, etc are for vanes parallel to z but we still
+                  // tweak them with offsets
 
-		  //
-		  // center of crystal in this rslice again with first one at 6PM for 4-vane
-		  double x0 = 0.;
-		  double y0 = -(crystalHalfTrans + distanceBetweenCrystals*ithRSlice + rInscribed); 
-		  CLHEP::Hep3Vector origin(x0,y0,0.);
-		  CLHEP::Hep3Vector delta(0.,0.,distanceBetweenCrystals);
-		  RSliceId rid = RSliceId(vid,ithZSlice,ithRSlice);
-		  RSlice currentRSlice = RSlice(rid,
-		  				nCrystalRSlices,origin,delta);
-		  currentZSlice._rslices.push_back(currentRSlice);
-		  //
-		  // so now for this vane, we've made a ZSlice populated by RSlices.
-		  // Next we need to relate them to crystals.
-		  //
-		  // the below seems (and probably is) stupid.  But for each ZSlice there are 
-		  // nCrystalRSlices, but each of them has exactly one crystal.  This structure
-		  // was set up for the Trackers, which are geometrically more complicated
-		 
-		  vector<CrystalIndex> indices = currentRSlice._indices;
-		  indices.reserve(1);
-		  vector<const Crystal*>& crystals = currentRSlice._crystals;
-		  crystals.reserve(1);
-		  //
-		  // and drop the crystal where it's supposed to be
-		  CLHEP::Hep3Vector finalPositionWithinZSlice = masterVaneRotation*origin;
-		  cout << "origin = " << origin << endl;
+                  //
+                  // center of crystal in this rslice again with first one at 6PM for 4-vane
+                  double x0 = 0.;
+                  double y0 = -(crystalHalfTrans + distanceBetweenCrystals*ithRSlice + rInscribed); 
+                  CLHEP::Hep3Vector origin(x0,y0,0.);
+                  CLHEP::Hep3Vector delta(0.,0.,distanceBetweenCrystals);
+                  RSliceId rid = RSliceId(vid,ithZSlice,ithRSlice);
+                  RSlice currentRSlice = RSlice(rid,
+                                                  nCrystalRSlices,origin,delta);
+                  currentZSlice._rslices.push_back(currentRSlice);
+                  //
+                  // so now for this vane, we've made a ZSlice populated by RSlices.
+                  // Next we need to relate them to crystals.
+                  //
+                  // the below seems (and probably is) stupid.  But for each ZSlice there are 
+                  // nCrystalRSlices, but each of them has exactly one crystal.  This structure
+                  // was set up for the Trackers, which are geometrically more complicated
+                 
+                  vector<CrystalIndex> indices = currentRSlice._indices;
+                  indices.reserve(1);
+                  vector<const Crystal*>& crystals = currentRSlice._crystals;
+                  crystals.reserve(1);
+                  //
+                  // and drop the crystal where it's supposed to be
+                  CLHEP::Hep3Vector finalPositionWithinZSlice = masterVaneRotation*origin;
+                  cout << "origin = " << origin << endl;
 
-		  //
-		  CLHEP::Hep3Vector finalLongAxis = masterVaneRotation*initialLongAxis;
+                  //
+                  CLHEP::Hep3Vector finalLongAxis = masterVaneRotation*initialLongAxis;
 
-		  CrystalIndex index = CrystalIndex(allCrystals.size());
-		  //
-		  // if we ever have more than one sort of crystal
-		  CrystalDetail* standardCrystal = &_calorimeter->_crystalDetail[0]; 
+                  CrystalIndex index = CrystalIndex(allCrystals.size());
+                  //
+                  // if we ever have more than one sort of crystal
+                  CrystalDetail* standardCrystal = &_calorimeter->_crystalDetail[0]; 
 
-		  allCrystals.push_back(Crystal(CrystalId(rid,1),
-						index,finalPositionWithinZSlice,standardCrystal,finalLongAxis));
-		  indices.push_back(index);
+                  allCrystals.push_back(Crystal(CrystalId(rid,1),
+                                                index,finalPositionWithinZSlice,standardCrystal,finalLongAxis));
+                  indices.push_back(index);
 
-		  
-		  cout << "dumpola: " << "\n" <<
-		    "size of crystal array" << allCrystals.size() << "\n" <<
-		    "rid " << rid << " " << "\n"
-		    "crystalId "<< CrystalId(rid,1) << " \n" <<
-		    "index " << index << "\n" <<
-		    "finalPositionWithinZSlice " << finalPositionWithinZSlice << "\n" <<
-		    "finalLongAxis" << finalLongAxis << endl;
-		  
-		}// close rslice
-	    } //close zslice
-	}//close vane
+                  
+                  cout << "dumpola: " << "\n" <<
+                    "size of crystal array" << allCrystals.size() << "\n" <<
+                    "rid " << rid << " " << "\n"
+                    "crystalId "<< CrystalId(rid,1) << " \n" <<
+                    "index " << index << "\n" <<
+                    "finalPositionWithinZSlice " << finalPositionWithinZSlice << "\n" <<
+                    "finalLongAxis" << finalLongAxis << endl;
+                  
+                }// close rslice
+            } //close zslice
+        }//close vane
       return;}
 
     void CalorimeterMaker::FillNearestNeighbours(){
       uint32_t ifoo = 0;
       // Build the nearest neighbour info for each crystal.
       for ( deque<Crystal>::iterator i=_calorimeter->_allCrystals.begin(), e=_calorimeter->_allCrystals.end();
-	    i != e; ++i){
-	cout << "crystal number" << ifoo << endl;
-	++ifoo;
+            i != e; ++i){
+        cout << "crystal number" << ifoo << endl;
+        ++ifoo;
 
-	//
-	// for readability
-	Crystal& crystal = *i;
+        //
+        // for readability
+        Crystal& crystal = *i;
 
-	//
-	// pull out information about this crystal's Vane, RSlice and ZSlice
-	const VaneId&   crystalVaneId      = crystal.Id().getVaneId();
-	const ZSliceId& crystalZSliceId    = crystal.Id().getZSliceId();
-	const RSliceId& crystalRSliceId    = crystal.Id().getRSliceId();
-	const VaneId&   crystalVane        = crystal.Id().getVaneId();
-	const ZSlice&   crystalZSlice      = _calorimeter->getZSlice(crystalZSliceId);
-	const RSlice&   crystalRSlice      = _calorimeter->getRSlice(crystalRSliceId);
+        //
+        // pull out information about this crystal's Vane, RSlice and ZSlice
+        const VaneId&   crystalVaneId      = crystal.Id().getVaneId();
+        const ZSliceId& crystalZSliceId    = crystal.Id().getZSliceId();
+        const RSliceId& crystalRSliceId    = crystal.Id().getRSliceId();
+        const VaneId&   crystalVane        = crystal.Id().getVaneId();
+        const ZSlice&   crystalZSlice      = _calorimeter->getZSlice(crystalZSliceId);
+        const RSlice&   crystalRSlice      = _calorimeter->getRSlice(crystalRSliceId);
 
-	int jv0 = crystal.Id().getVane();
-	int jz0 = crystal.Id().getZSlice();
-	int jr0 = crystal.Id().getRSlice();
-	int jC  = crystal.Id().getCrystal();
+        int jv0 = crystal.Id().getVane();
+        int jz0 = crystal.Id().getZSlice();
+        int jr0 = crystal.Id().getRSlice();
+        int jC  = crystal.Id().getCrystal();
 
 
-	//
-	// Add crystals in the same RSlice.  Deal with edge cases.
-	if ( jC == 0 ){
-	  crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
-	} else if ( jC == nCrystalRSlices-1 ){
-	  crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
-	} else {
-	  crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
-	  crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
-	}
+        //
+        // Add crystals in the same RSlice.  Deal with edge cases.
+        if ( jC == 0 ){
+          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
+        } else if ( jC == nCrystalRSlices-1 ){
+          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
+        } else {
+          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
+          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
+        }
 
-	// Add crystals one RSlice inward, unless already in innermost RSlice. 
-	// Deal with edge cases.
-	if ( jr0 != 0 ){
-	  if ( jC == 0 ){
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC+1));
-	  } else if ( jC == nCrystalRSlices-1 ) {
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC-1));
-	  }else{
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC-1));
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC+1));
-	  }
-	}
+        // Add crystals one RSlice inward, unless already in innermost RSlice. 
+        // Deal with edge cases.
+        if ( jr0 != 0 ){
+          if ( jC == 0 ){
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC+1));
+          } else if ( jC == nCrystalRSlices-1 ) {
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC-1));
+          }else{
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC-1));
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC+1));
+          }
+        }
 
-	// Add crystals one RSlice outward, unless already in innermost RSlice. 
-	// Deal with edge cases.
+        // Add crystals one RSlice outward, unless already in innermost RSlice. 
+        // Deal with edge cases.
 
-	//not sure about this logic, see what Julie did with ncrystals and nlayers. 
-	if ( jr0 != nCrystalRSlices-1 ){
-	  if ( jC == 0 ){
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC+1));
-	  } else if ( jC == nCrystalZSlices-1 ) {
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC-1));
-	  }else{
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC-1));
-	    crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC+1));
-	  }
-	}
+        //not sure about this logic, see what Julie did with ncrystals and nlayers. 
+        if ( jr0 != nCrystalRSlices-1 ){
+          if ( jC == 0 ){
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC+1));
+          } else if ( jC == nCrystalZSlices-1 ) {
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC-1));
+          }else{
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC-1));
+            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC+1));
+          }
+        }
 
-	
+        
 
       }
       return;
     }
     /*
  
-	//
-	// Add crystals in the same RSlice.  Deal with edge cases.
-	if ( jC == 0 ){
-	  crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
-	} else if ( jC == nCrystalRSlices-1 ){
-	  crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
-	} else {
-	  crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
-	  crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
-	}
+        //
+        // Add crystals in the same RSlice.  Deal with edge cases.
+        if ( jC == 0 ){
+          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
+        } else if ( jC == nCrystalRSlices-1 ){
+          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
+        } else {
+          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
+          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
+        }
       }
 
       
 
 
-	// Add crystals one layer inward one layer, unless already in innermost layer. 
-	// Deal with edge cases.
-	if ( jr0 != 0 ){
-	  if ( jC == 0 ){
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC+1));
-	  } else if ( jC == ncrystals-1 ) {
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC-1));
-	  }else{
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC-1));
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC+1));
-	  }
-	}
+        // Add crystals one layer inward one layer, unless already in innermost layer. 
+        // Deal with edge cases.
+        if ( jr0 != 0 ){
+          if ( jC == 0 ){
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC+1));
+          } else if ( jC == ncrystals-1 ) {
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC-1));
+          }else{
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC-1));
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC+1));
+          }
+        }
 
-	// Add crystals from one layer outward, unless already in outermost layer. 
-	// Deal with edge cases.
-	if ( jL != nCrystalRSlices-1){
-	  if ( jC == 0 ){
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC+1));
-	  } else if ( jC == ncrystals-1 ){
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC-1));
-	  } else{
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC+1));
-	    cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC-1));
-	  }
-	}
+        // Add crystals from one layer outward, unless already in outermost layer. 
+        // Deal with edge cases.
+        if ( jL != nCrystalRSlices-1){
+          if ( jC == 0 ){
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC+1));
+          } else if ( jC == ncrystals-1 ){
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC-1));
+          } else{
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC+1));
+            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC-1));
+          }
+        }
     
       }
       return;

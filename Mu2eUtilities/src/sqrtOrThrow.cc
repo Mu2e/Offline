@@ -6,9 +6,9 @@
 //  that this is round off error and set the answer
 //  to zero.  If the argument is very negative, throw.
 //
-// $Id: sqrtOrThrow.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: sqrtOrThrow.cc,v 1.2 2010/05/18 21:16:40 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/05/18 21:16:40 $
 //
 // Original author Rob Kutschke
 //
@@ -32,8 +32,8 @@ namespace mu2e {
       return 0.;
     }else {
       throw cms::Exception("RANGE")
-      	<< "sqrtOrThrow has an input of: "
-	<< x;
+        << "sqrtOrThrow has an input of: "
+        << x;
     }
   }
 
@@ -45,9 +45,9 @@ namespace mu2e {
       return 0.;
     }else {
       throw cms::Exception("RANGE")
-      	<< "sqrtOrThrow has an input of: "
-	<< x;
+        << "sqrtOrThrow has an input of: "
+        << x;
     }
   }
 
-}
+} // end namespace mu2e

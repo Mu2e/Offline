@@ -37,45 +37,45 @@ namespace mu2e {
 
     if (aTrack.GetVolume()->GetName() == _startingVolume && aTrack.GetCurrentStepNumber() == 1)
       {
-	//
-	// need to save where track starts for future reference
+        //
+        // need to save where track starts for future reference
         startingVertex = aTrack.GetVertexPosition();
-	//
-	// and set reflection flag. 
-	alreadyReflected = false;
+        //
+        // and set reflection flag. 
+        alreadyReflected = false;
       }
 
      if (aTrack.GetVolume()->GetName() == _endingVolume && !alreadyReflected )
        {
-	 alreadyReflected = true;
-	 return ReflectIt(aTrack,aStep);
+         alreadyReflected = true;
+         return ReflectIt(aTrack,aStep);
        }
       else if (aTrack.GetVolume()->GetName() == _startingVolume && alreadyReflected 
-	       && (abs (startingVertex.z() - aTrack.GetPosition().z()) < _toleranceForQuitting ) )
-	{
-	  G4cout << "z difference at KillIt: " << startingVertex.z() << " " << aTrack.GetPosition().z() << " " <<
-	    abs(startingVertex.z() - aTrack.GetPosition().z())<< G4endl;
-	  double zDistance = abs(startingVertex.z() - aTrack.GetPosition().z());
-	  double totalDistanceAtKill = Distance(startingVertex,aTrack.GetPosition());
-	  //  - pow<2>(zDistance) );
-	  //	  double totalDistanceAtKill = safeSqrt(pow<2>(Distance(startingVertex,aTrack.GetPosition())) 
-	  //  - pow<2>(zDistance) );
-	  double transverseDistanceAtKill = safeSqrt(totalDistanceAtKill*totalDistanceAtKill - zDistance*zDistance);
-	  G4cout << "and transverse distance is = " << transverseDistanceAtKill << G4endl;
+               && (abs (startingVertex.z() - aTrack.GetPosition().z()) < _toleranceForQuitting ) )
+        {
+          G4cout << "z difference at KillIt: " << startingVertex.z() << " " << aTrack.GetPosition().z() << " " <<
+            abs(startingVertex.z() - aTrack.GetPosition().z())<< G4endl;
+          double zDistance = abs(startingVertex.z() - aTrack.GetPosition().z());
+          double totalDistanceAtKill = Distance(startingVertex,aTrack.GetPosition());
+          //  - pow<2>(zDistance) );
+          //          double totalDistanceAtKill = safeSqrt(pow<2>(Distance(startingVertex,aTrack.GetPosition())) 
+          //  - pow<2>(zDistance) );
+          double transverseDistanceAtKill = safeSqrt(totalDistanceAtKill*totalDistanceAtKill - zDistance*zDistance);
+          G4cout << "and transverse distance is = " << transverseDistanceAtKill << G4endl;
 
-	  //
-	  // and look at direction cosines
+          //
+          // and look at direction cosines
 
-	  return KillIt(aTrack,aStep);
-	}
+          return KillIt(aTrack,aStep);
+        }
     else
       {
-	return DoNothing(aTrack,aStep);
+        return DoNothing(aTrack,aStep);
       }
   }
 
   G4VParticleChange* Mu2eReflection::ReflectIt( const G4Track& aTrack, 
-						const G4Step& aStep){
+                                                const G4Step& aStep){
     //
     // reflect momentum and reverse charge since you hit the end of the ending volume
 
@@ -144,13 +144,13 @@ namespace mu2e {
 
 
   G4VParticleChange* Mu2eReflection::DoNothing( const G4Track& aTrack, 
-						const G4Step& aStep){
+                                                const G4Step& aStep){
     fMu2eParticleChangeForReflection.Initialize(aTrack); // need to return a proper object
     return &fMu2eParticleChangeForReflection;
   }
 
   G4double Mu2eReflection::GetMeanFreePath(const G4Track& aTrack, G4double previousStepSize, 
-					   G4ForceCondition* condition)
+                                           G4ForceCondition* condition)
   {
 
     *condition = Forced;

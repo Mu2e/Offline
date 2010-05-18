@@ -1,9 +1,9 @@
 //
 // Details common to many straws.
 //
-// $Id: StrawDetail.cc,v 1.1 2010/02/07 00:29:41 kutschke Exp $
+// $Id: StrawDetail.cc,v 1.2 2010/05/18 21:16:46 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/02/07 00:29:41 $
+// $Date: 2010/05/18 21:16:46 $
 //
 // Original author Rob Kutschke
 //
@@ -17,12 +17,12 @@ using namespace std;
 namespace mu2e {
 
   StrawDetail::StrawDetail( int    id,
-			    vector<string> const& materialNames,
-			    double radius,
-			    double thickness,
-			    double halfLength,
-			    double rwire
-			   ):
+                            vector<string> const& materialNames,
+                            double radius,
+                            double thickness,
+                            double halfLength,
+                            double rwire
+                            ):
     _id(id),
     _materialNames(materialNames),
     _radius(radius),

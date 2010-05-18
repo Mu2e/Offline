@@ -13,12 +13,12 @@ namespace mu2e {
 //    _nwires=itracker->nSWire()+_superlayer*itracker->nSDeltaWire();
     try {
         itracker->getCellGeometryHandle()->SelectCell(_superlayer,_ring,0);
-    	_nwires=itracker->getCellGeometryHandle()->GetITLayer()->nCells();
-    	_Dphi=CLHEP::twopi/_nwires;
+            _nwires=itracker->getCellGeometryHandle()->GetITLayer()->nCells();
+            _Dphi=CLHEP::twopi/_nwires;
     }catch (cms::Exception e) {
-    	cerr<<e;
-    	_nwires=0;
-    	_Dphi=0.0;
+            cerr<<e;
+            _nwires=0;
+            _Dphi=0.0;
     }
     G4String HCname;
     HCname="StepPointG4Collection_";
@@ -31,10 +31,10 @@ namespace mu2e {
 
   void ITGasLayerSD::Initialize(G4HCofThisEvent* HCE){
 
-//	  std::cout<<SensitiveDetectorName<<std::endl;
-	  _collection = new StepPointG4Collection
-			  (SensitiveDetectorName,collectionName[0]);
-	  HCE->AddHitsCollection( HCE->GetNumberOfCollections(), _collection );
+//          std::cout<<SensitiveDetectorName<<std::endl;
+          _collection = new StepPointG4Collection
+                          (SensitiveDetectorName,collectionName[0]);
+          HCE->AddHitsCollection( HCE->GetNumberOfCollections(), _collection );
 
   }
   
@@ -44,10 +44,9 @@ namespace mu2e {
     if (verboseLevel>0) { 
       G4int NbHits = _collection->entries();
       G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
-	     << " hits in the Drift Chamber chambers: " << G4endl;
+             << " hits in the Drift Chamber chambers: " << G4endl;
       for (G4int i=0;i<NbHits;i++) (*_collection)[i]->Print();
     } 
   }
   
 } //namespace mu2e
-

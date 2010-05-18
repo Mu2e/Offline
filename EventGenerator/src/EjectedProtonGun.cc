@@ -4,9 +4,9 @@
 // a random time during the accelerator cycle.
 
 //
-// $Id: EjectedProtonGun.cc,v 1.4 2010/05/17 21:47:33 genser Exp $ 
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: EjectedProtonGun.cc,v 1.5 2010/05/18 21:15:34 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2010/05/18 21:15:34 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -96,25 +96,25 @@ namespace mu2e {
     // set up the generator function
     if (_nbins>0) _bindE = (_ehi - _elow) / _nbins;
     else {
-       // I'm sure this isn't the right way to do this...
-       throw cms::Exception("RANGE") <<"Nonsense EjectedProtonGun.nbins requested="<<
-            _nbins<<"\n";
+      // I'm sure this isn't the right way to do this...
+      throw cms::Exception("RANGE") <<"Nonsense EjectedProtonGun.nbins requested="<<
+        _nbins<<"\n";
     }
 
     double YFunc[_nbins];
     for (int ib=0; ib<_nbins; ib++) {
 
-       double x = _elow+(ib+0.5) * _bindE;
-       if (x > pEndPoint)
-	 {
-	   cout << "past endpoint " << endl;
-	   YFunc[ib] = 0.;
-	 }
-       else
-	 {
-	   YFunc[ib] = EnergyEjectedProtonFunc(x);
-	   //	   cout << "ib, x, Spectrum from EjectedProtonGun= " << ib << " " << x << " " << EnergyEjectedProtonFunc(x) << endl;
-	 }
+      double x = _elow+(ib+0.5) * _bindE;
+      if (x > pEndPoint)
+        {
+          cout << "past endpoint " << endl;
+          YFunc[ib] = 0.;
+        }
+      else
+        {
+          YFunc[ib] = EnergyEjectedProtonFunc(x);
+          //           cout << "ib, x, Spectrum from EjectedProtonGun= " << ib << " " << x << " " << EnergyEjectedProtonFunc(x) << endl;
+        }
     }
     _funcGen = auto_ptr<CLHEP::RandGeneral>(new CLHEP::RandGeneral(YFunc,_nbins));
 
@@ -152,8 +152,8 @@ namespace mu2e {
     const double dz  = (-1.+2.*CLHEP::RandFlat::shoot())*foil.halfThickness();
     const double phi = CLHEP::twopi*CLHEP::RandFlat::shoot();
     CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
-		    center.y()+r*sin(phi), 
-		    center.z()+dz );
+                           center.y()+r*sin(phi), 
+                           center.z()+dz );
     
     // Random direction.
     // Replace this with RandomUnitSphere from Mu2eUtilities/inc
@@ -176,7 +176,7 @@ namespace mu2e {
     _ejectedProtonMomentumMeV->Fill(ejectedProtonMomentum);
     
     CLHEP::HepLorentzVector mom( _ejectedProtonMomentum*sz*cos(phi2), ejectedProtonMomentum*sz*sin(phi2), ejectedProtonMomentum*cz, 
-			  _ejectedProtonEnergy);
+                                 _ejectedProtonEnergy);
 
     // Add the proton to  the list.
     genParts.push_back( ToyGenParticle( PDGCode::p_plus, GenId::ejectedProtonGun, pos, mom, time));
@@ -187,15 +187,15 @@ namespace mu2e {
   double EjectedProtonGun::EnergyEjectedProtonFunc(const double protonKineticEnergyInMeV)
   {
     //taken from GMC 
-//
-//   Ed Hungerford  Houston University May 17 1999 
-//   Rashid Djilkibaev New York University (modified) May 18 1999 
-//
-//   ep - proton kinetic energy (MeV)
-//   pp - proton Momentum (MeV/c)
-// 
-//   Generates a proton spectrum similar to that observed in
-//   u capture in Si.  JEPT 33(1971)11 and PRL 20(1967)569
+    //
+    //   Ed Hungerford  Houston University May 17 1999 
+    //   Rashid Djilkibaev New York University (modified) May 18 1999 
+    //
+    //   ep - proton kinetic energy (MeV)
+    //   pp - proton Momentum (MeV/c)
+    // 
+    //   Generates a proton spectrum similar to that observed in
+    //   u capture in Si.  JEPT 33(1971)11 and PRL 20(1967)569
 
     //these numbers are in MeV!!!!
     static const double emx = 1000.;
@@ -213,29 +213,29 @@ namespace mu2e {
     static const double par8=5.103;
 
     double spectrumWeight;
-      if (protonKineticEnergyInMeV >= 20)
-	{
-	  spectrumWeight=par5*TMath::Exp(-(protonKineticEnergyInMeV-20.)/par6);
-	}
+    if (protonKineticEnergyInMeV >= 20)
+      {
+        spectrumWeight=par5*TMath::Exp(-(protonKineticEnergyInMeV-20.)/par6);
+      }
 
-      else if(protonKineticEnergyInMeV >= 8.0 && protonKineticEnergyInMeV <= 20.0)
-	{
-	  spectrumWeight=par7*exp(-(protonKineticEnergyInMeV-8.)/par8);
-	}
-      else if (protonKineticEnergyInMeV > emn)
-	{
-	  double xw=(1.-emn/protonKineticEnergyInMeV);
-	  double xu=TMath::Power(xw,par2);
-	  double xv=par3*TMath::Exp(-par4*protonKineticEnergyInMeV);
-	  spectrumWeight=xv*xu;
-	}
-      else 
-	{
-	  spectrumWeight = 0.;
-	}
+    else if(protonKineticEnergyInMeV >= 8.0 && protonKineticEnergyInMeV <= 20.0)
+      {
+        spectrumWeight=par7*exp(-(protonKineticEnergyInMeV-8.)/par8);
+      }
+    else if (protonKineticEnergyInMeV > emn)
+      {
+        double xw=(1.-emn/protonKineticEnergyInMeV);
+        double xu=TMath::Power(xw,par2);
+        double xv=par3*TMath::Exp(-par4*protonKineticEnergyInMeV);
+        spectrumWeight=xv*xu;
+      }
+    else 
+      {
+        spectrumWeight = 0.;
+      }
 
 
-      return spectrumWeight; // GMC code was in MeV
+    return spectrumWeight; // GMC code was in MeV
 
 
   }// EjectedProtonGun::EnergyEjectedProtonFunc

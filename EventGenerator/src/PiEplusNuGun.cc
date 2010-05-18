@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.2 2010/05/17 21:47:33 genser Exp $ 
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: PiEplusNuGun.cc,v 1.3 2010/05/18 21:15:37 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2010/05/18 21:15:37 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 // 
@@ -107,8 +107,8 @@ namespace mu2e {
     const double dz  = (-1.+2.*CLHEP::RandFlat::shoot())*foil.halfThickness();
     const double phi = CLHEP::twopi*CLHEP::RandFlat::shoot();
     CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
-		    center.y()+r*sin(phi), 
-		    center.z()+dz );
+                           center.y()+r*sin(phi), 
+                           center.z()+dz );
     
     // Random direction.
     // Replace this with RandomUnitSphere from Mu2eUtilities/inc

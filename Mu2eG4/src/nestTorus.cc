@@ -25,15 +25,15 @@ namespace mu2e {
   // Create and place a G4Torus inside a logical volume.
   // 
   VolumeInfo nestTorus ( string const& name,
-			double param[5],
-			G4Material* material,
-			G4RotationMatrix* rot,
-			G4ThreeVector const& offset,
-			G4LogicalVolume* parent,
-			int copyNo,
-			G4Colour color,
-			bool forceSolid
-			){
+                        double param[5],
+                        G4Material* material,
+                        G4RotationMatrix* rot,
+                        G4ThreeVector const& offset,
+                        G4LogicalVolume* parent,
+                        int copyNo,
+                        G4Colour color,
+                        bool forceSolid
+                        ){
     
     VolumeInfo info;
     

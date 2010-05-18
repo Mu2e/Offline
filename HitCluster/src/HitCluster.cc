@@ -1,8 +1,8 @@
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.cc,v 1.1 2009/12/07 20:18:52 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2009/12/07 20:18:52 $
+// $Id: HitCluster.cc,v 1.2 2010/05/18 21:15:45 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/05/18 21:15:45 $
 //
 //original author R. Bernstein
 //
@@ -26,21 +26,21 @@ namespace mu2e{
 
       //and now find everyone else
       for ( vector<int>::size_type ihit =0;
-	    ihit<nearest.size(); ++ihit ){
+            ihit<nearest.size(); ++ihit ){
 
-	StrawIndex idx = nearest[ihit];
-	//       	for  (vector<StepPointMCCollection>::size_type ithhit=0; ithhit < (*_hits)->size(); ++ithhit)
-       	for  (vector<StepPointMCCollection>::size_type ithhit=0; ithhit < _hits->size(); ++ithhit)
-	  {
-	    //	    const StepPointMC&  nextHit = (**_hits)[ithhit];//dereference handle to get pointer,then dereference pointer
-	    const StepPointMC&  nextHit = (*_hits)[ithhit];//dereference pointer
-	    if ( nextHit.volumeId() == idx.asInt() ){
-	      Candidate _nextCand;
-	      _nextCand.id = idx.asInt();
-	      _nextCand.hitPointer = _hit;
-	      nearbyStraws.push_back(_nextCand);
-	    }
-	  }
+        StrawIndex idx = nearest[ihit];
+        //               for  (vector<StepPointMCCollection>::size_type ithhit=0; ithhit < (*_hits)->size(); ++ithhit)
+               for  (vector<StepPointMCCollection>::size_type ithhit=0; ithhit < _hits->size(); ++ithhit)
+          {
+            //            const StepPointMC&  nextHit = (**_hits)[ithhit];//dereference handle to get pointer,then dereference pointer
+            const StepPointMC&  nextHit = (*_hits)[ithhit];//dereference pointer
+            if ( nextHit.volumeId() == idx.asInt() ){
+              Candidate _nextCand;
+              _nextCand.id = idx.asInt();
+              _nextCand.hitPointer = _hit;
+              nearbyStraws.push_back(_nextCand);
+            }
+          }
       }
     return nearbyStraws;
   }
@@ -50,36 +50,36 @@ namespace mu2e{
       //this is owned by a trialCluster, so I can just get its list of straws and start comparing
       match = false;
       for (std::vector<HitCluster::HitCluster>::size_type ithCluster = 0; (ithCluster <= finalClusters.size()-1) && !match; 
-	   ++ithCluster)
-	{
-	  vector<Candidate> firstSet = finalClusters.at(ithCluster).getStraws();
-	  for (hitNeighbours::size_type ithStraw = 0; (ithStraw <= firstSet.size()-1) && !match; ++ithStraw)
-	    {
-	      int lookingForThisStraw = firstSet.at(ithStraw).id; 
-	      //loop over straws in our test cluster, and note the &&!match -- once there's a match
-	      //we immediately merge the clusters and there's no reason to continue the loop.  
-	      for (hitNeighbours::size_type jthStraw = 0; (jthStraw <= listOfStraws.size()-1) && !match; ++jthStraw)
-		{
-		  int trialStraw = listOfStraws.at(jthStraw).id;
-		  if (trialStraw == lookingForThisStraw)
-		    {
-		      //omg, a match; this cluster should get merged
-		      match = true;
-		      //gobble up all straws in this cluster and stick them in the finalCluster.  It would be
-		      //nice to not have to go through the whole list but there's no guarantee the first straw
-		      //will be the one that matches.  
-		      //doing it this way will have duplicates; I can check now, but then I will but repeating
-		      //searches every time I look at a new trial cluster.  So I will save this to the end 
-		      //and crunch down just once.
-		      for (hitNeighbours::size_type eatThisStraw = 0; eatThisStraw <= listOfStraws.size()-1; 
-			   ++eatThisStraw)
-			{
-			  finalClusters.at(ithCluster).addStraw(listOfStraws.at(eatThisStraw));
-			}
-		    }
-		}
-	    }
-	}
+           ++ithCluster)
+        {
+          vector<Candidate> firstSet = finalClusters.at(ithCluster).getStraws();
+          for (hitNeighbours::size_type ithStraw = 0; (ithStraw <= firstSet.size()-1) && !match; ++ithStraw)
+            {
+              int lookingForThisStraw = firstSet.at(ithStraw).id; 
+              //loop over straws in our test cluster, and note the &&!match -- once there's a match
+              //we immediately merge the clusters and there's no reason to continue the loop.  
+              for (hitNeighbours::size_type jthStraw = 0; (jthStraw <= listOfStraws.size()-1) && !match; ++jthStraw)
+                {
+                  int trialStraw = listOfStraws.at(jthStraw).id;
+                  if (trialStraw == lookingForThisStraw)
+                    {
+                      //omg, a match; this cluster should get merged
+                      match = true;
+                      //gobble up all straws in this cluster and stick them in the finalCluster.  It would be
+                      //nice to not have to go through the whole list but there's no guarantee the first straw
+                      //will be the one that matches.  
+                      //doing it this way will have duplicates; I can check now, but then I will but repeating
+                      //searches every time I look at a new trial cluster.  So I will save this to the end 
+                      //and crunch down just once.
+                      for (hitNeighbours::size_type eatThisStraw = 0; eatThisStraw <= listOfStraws.size()-1; 
+                           ++eatThisStraw)
+                        {
+                          finalClusters.at(ithCluster).addStraw(listOfStraws.at(eatThisStraw));
+                        }
+                    }
+                }
+            }
+        }
       return;
     }
 

@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.11 2010/05/17 21:47:33 genser Exp $
-  $Author: genser $
-  $Date: 2010/05/17 21:47:33 $
+  $Id: EventGenerator_plugin.cc,v 1.12 2010/05/18 21:15:35 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/05/18 21:15:35 $
 
   Original author Rob Kutschke
 
@@ -74,9 +74,6 @@ using namespace std;
 
 namespace mu2e {
 
-  //--------------------------------------------------------------------
-  //
-  //
   class EventGenerator : public edm::EDProducer {
     
   public:
@@ -122,7 +119,7 @@ namespace mu2e {
     static int ncalls(0);
     if ( ++ncalls > 1){
       edm::LogInfo("EventGenerator") 
-	<< "EventGenerator does not change state at beginRun.  Hope that's OK.";
+        << "EventGenerator does not change state at beginRun.  Hope that's OK.";
     }
     
     SimpleConfig config(_configfile);
@@ -153,7 +150,7 @@ namespace mu2e {
     if ( doDIO)                  _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(  run, config)) );
     if ( doEjectedProton)        _generators.push_back( GeneratorBasePtr( new EjectedProtonGun( run, config)) );
     if ( doPiEplusNu)            _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
-    if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun(     run, config)) );
+    if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
 
     if ( _generators.size() == 0 ){
       edm::LogWarning("CONTROL")
