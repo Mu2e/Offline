@@ -1,9 +1,9 @@
 //
 // Run-time test config for CosmicDYB
 //
-// $Id: cosmicconfig_01.txt,v 1.1 2010/04/17 23:58:31 yury Exp $
-// $Author: yury $
-// $Date: 2010/04/17 23:58:31 $
+// $Id: cosmicconfig_01.txt,v 1.2 2010/05/18 21:55:12 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/05/18 21:55:12 $
 //
 // Original author Yury Kolomensky
 
@@ -20,3 +20,9 @@ double cosmicDYB.muEMin = 5e3;
 double cosmicDYB.muEMax = 500e3;
 double cosmicDYB.dx     = 5000.;
 double cosmicDYB.dz     = 5000.;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
