@@ -3,9 +3,9 @@
 A producer module that makes a collection of overly simplified "hits"
 and adds them to the event.
 
-$Id: Ex02MakeHits_plugin.cc,v 1.5 2010/05/18 21:15:41 kutschke Exp $
+$Id: Ex02MakeHits_plugin.cc,v 1.6 2010/05/18 21:23:45 kutschke Exp $
 $Author: kutschke $
-$Date: 2010/05/18 21:15:41 $
+$Date: 2010/05/18 21:23:45 $
    
 Original author Rob Kutschke
 
@@ -51,9 +51,6 @@ using namespace std;
 
 namespace mu2e {
 
-  //--------------------------------------------------------------------
-  //
-  //
   class Ex02MakeHits : public edm::EDProducer {
     
   public:
@@ -131,10 +128,10 @@ namespace mu2e {
     
     edm::OrphanHandle<ToyHitCollection> q = event.put(p);
     edm::LogInfo("Hits") << "Number of hits: " 
-         		 << q->size();
+                         << q->size();
   }
 
-}
+} // end namespace mu2e
 
 using mu2e::Ex02MakeHits;
 DEFINE_FWK_MODULE(Ex02MakeHits);

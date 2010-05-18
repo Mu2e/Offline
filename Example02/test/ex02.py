@@ -1,8 +1,8 @@
 # Configuration file for Example/02
 #
-# $Id: ex02.py,v 1.4 2010/03/05 23:56:18 kutschke Exp $
+# $Id: ex02.py,v 1.5 2010/05/18 21:24:21 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/05 23:56:18 $
+# $Date: 2010/05/18 21:24:21 $
 #
 # Original author Rob Kutschke
 #
@@ -91,12 +91,12 @@ process.outputeven = mu2e.OutputModule(
 
 # Define a path that selects odd numbered events
 process.podd = mu2e.Path( process.ex02hitmaker
-                	 *process.oddfilter
+                         *process.oddfilter
                         )
 
 # Define a path that selects even numbered events
 process.peven = mu2e.Path( process.ex02hitmaker
-                	  *process.evenfilter
+                          *process.evenfilter
                          )
 
 # Adjust configuration of message logger.
