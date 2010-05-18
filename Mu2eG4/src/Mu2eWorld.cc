@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.25 2010/05/18 21:16:21 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.26 2010/05/18 22:34:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:21 $
+// $Date: 2010/05/18 22:34:46 $
 //
 // Original author Rob Kutschke
 //
@@ -1146,7 +1146,7 @@ namespace mu2e {
                 //
                 //upstream varying section
 
-                _detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
+                _detSolUpstreamVaryingBField = auto_ptr<G4MagneticField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
                 _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
                 _rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualUpstreamRHS.get()));
                 _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
@@ -1155,7 +1155,7 @@ namespace mu2e {
                                                                                          _chordUpstreamFinder.get(), true));
                 //
                 //downstream varying section
-                _detSolDownstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
+                _detSolDownstreamVaryingBField = auto_ptr<G4MagneticField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
                 _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamVaryingBField.get() ) );
                 _rungeEEDownstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualDownstreamRHS.get()));
                 _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamVaryingBField.get(), stepDownstreamMinimum,

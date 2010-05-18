@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.11 2010/04/15 23:01:39 kutschke Exp $
+// $Id: Mu2eWorld.hh,v 1.12 2010/05/18 22:34:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/15 23:01:39 $
+// $Date: 2010/05/18 22:34:46 $
 //
 // Original author Rob Kutschke
 //
@@ -27,6 +27,7 @@ class G4ClassicalRK4;
 class G4CashKarpRKF45;
 class G4ImplicitEuler;
 class G4ExplicitEuler;
+class G4MagneticField;
 
 //
 //G4 includes 
@@ -120,8 +121,8 @@ namespace mu2e {
     std::auto_ptr<G4UniformMagField>   _detSolDownstreamConstantBField;
     //
     //varying field
-    std::auto_ptr<DSField>   _detSolUpstreamVaryingBField;
-    std::auto_ptr<DSField>   _detSolDownstreamVaryingBField;
+    std::auto_ptr<G4MagneticField>   _detSolUpstreamVaryingBField;
+    std::auto_ptr<G4MagneticField>   _detSolDownstreamVaryingBField;
 
 
     //need these in both cases
