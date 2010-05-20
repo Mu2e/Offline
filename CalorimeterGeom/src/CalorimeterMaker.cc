@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.12 2010/05/20 20:02:29 rhbob Exp $
+// $Id: CalorimeterMaker.cc,v 1.13 2010/05/20 20:08:48 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/05/20 20:02:29 $
+// $Date: 2010/05/20 20:08:48 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -264,136 +264,123 @@ namespace mu2e{
         }//close vane
       return;}
 
+
+
+
     void CalorimeterMaker::FillNearestNeighbours(){
       uint32_t ifoo = 0;
       // Build the nearest neighbour info for each crystal.
       for ( deque<Crystal>::iterator i=_calorimeter->_allCrystals.begin(), e=_calorimeter->_allCrystals.end();
-            i != e; ++i){
-        //cout << "crystal number" << ifoo << endl;
-        ++ifoo;
+	    i != e; ++i){
+	//cout << "crystal number" << ifoo << endl;
+	++ifoo;
 
-        //
-        // for readability
-        Crystal& crystal = *i;
+	//
+	// for readability
+	Crystal& crystal = *i;
 
-        //
-        // pull out information about this crystal's Vane, RSlice and ZSlice
-        const VaneId&   crystalVaneId      = crystal.Id().getVaneId();
-        const ZSliceId& crystalZSliceId    = crystal.Id().getZSliceId();
-        const RSliceId& crystalRSliceId    = crystal.Id().getRSliceId();
-        const VaneId&   crystalVane        = crystal.Id().getVaneId();
-        const ZSlice&   crystalZSlice      = _calorimeter->getZSlice(crystalZSliceId);
-        const RSlice&   crystalRSlice      = _calorimeter->getRSlice(crystalRSliceId);
+	//
+	// pull out information about this crystal's Vane, RSlice and ZSlice
+	const VaneId&   crystalVaneId      = crystal.Id().getVaneId();
+	const ZSliceId& crystalZSliceId    = crystal.Id().getZSliceId();
+	const RSliceId& crystalRSliceId    = crystal.Id().getRSliceId();
+	const VaneId&   crystalVane        = crystal.Id().getVaneId();
+	const ZSlice&   crystalZSlice      = _calorimeter->getZSlice(crystalZSliceId);
+	const RSlice&   crystalRSlice      = _calorimeter->getRSlice(crystalRSliceId);
 
-        int jv0 = crystal.Id().getVane();
-        int jz0 = crystal.Id().getZSlice();
-        int jr0 = crystal.Id().getRSlice();
-        int jC  = crystal.Id().getCrystal();
+	int jv0 = crystal.Id().getVane();
+	int jz0 = crystal.Id().getZSlice();
+	int jr0 = crystal.Id().getRSlice();
+	//
+	// this is which crystal in the rslice we are looking at
+	int jC  = crystal.Id().getCrystal();
+
+	//cout << "for this crystal the vane, zslice, rslice and crystal number are " << jv0 << " " << jz0 << " " << jr0 << " " << jC << endl;
+
+	//
+	//innermost and outermost RSlices:
+
+	//
+	//innermost rslice:
+	// first zslice has nothing upstream
+	if (jr0 == 0){
+	  if (jz0 == 0){
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0+1));
+	  } 
+	  // last zslice has nothing downstream
+	  else if (jz0 == nCrystalZSlices-1){
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0-1));
+	  }
+	  else{
+	    //
+	    //all other zslices in innermost rslice
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0  ,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0+1));
+
+	  }
+	}
 
 
-        //
-        // Add crystals in the same RSlice.  Deal with edge cases.
-        if ( jC == 0 ){
-          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
-        } else if ( jC == nCrystalRSlices-1 ){
-          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
-        } else {
-          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
-          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
-        }
+	//
+	//outermost rslice
+	// first zslice has nothing upstream
+	if (jr0 == nCrystalRSlices-1){
+	  if (jz0 == 0){
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0  ,jr0-1));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0-1));
+	  } 
+	  // last zslice has nothing downstream
+	  else if (jz0 == nCrystalZSlices-1){
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0-1));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0  ,jr0-1));
+	  }
+	  else{
+	    //
+	    //all other zslices in outerrmost rslice
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0  ,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0+1));
 
-        // Add crystals one RSlice inward, unless already in innermost RSlice. 
-        // Deal with edge cases.
-        if ( jr0 != 0 ){
-          if ( jC == 0 ){
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC+1));
-          } else if ( jC == nCrystalRSlices-1 ) {
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC-1));
-          }else{
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC));
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC-1));
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0-1,jC+1));
-          }
-        }
+	  }
+	}
 
-        // Add crystals one RSlice outward, unless already in innermost RSlice. 
-        // Deal with edge cases.
 
-        //not sure about this logic, see what Julie did with ncrystals and nlayers. 
-        if ( jr0 != nCrystalRSlices-1 ){
-          if ( jC == 0 ){
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC+1));
-          } else if ( jC == nCrystalZSlices-1 ) {
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC-1));
-          }else{
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC));
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC-1));
-            crystal._nearestById.push_back(CrystalId(crystalZSliceId,jr0+1,jC+1));
-          }
-        }
+	//
+	//everyone else ( yes, I know I could have written these special cases as a giant if else clause but it only gets executed once/job
+	//and it's just easier for me to follow.  and I could have unrolled this loop too.  )
+	if (jC != 0 && jC != nCrystalRSlices-1){
+	  for (uint32_t iz0 = jz0-1; iz0 <= jz0 + 1; ++iz0){
+	    for (uint32_t ir0 = jr0 -1; ir0 <= jr0 + 1; ++ir0){
+	      if (!(iz0 == jz0 && ir0 == jr0)){crystal._nearestById.push_back(CrystalId(jv0,iz0,ir0));}
+	    }
+	  }
+	}
 
-        
-
+	// print out results
+	for (uint32_t idx = 0; idx < crystal._nearestById.size(); ++idx)
+	  {
+	    //	    cout << "nearest neighbor " << idx+1 << crystal._nearestById[idx] << endl;
+	  }
       }
-      return;
-    }
-    /*
- 
-        //
-        // Add crystals in the same RSlice.  Deal with edge cases.
-        if ( jC == 0 ){
-          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
-        } else if ( jC == nCrystalRSlices-1 ){
-          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
-        } else {
-          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC-1));
-          crystal._nearestById.push_back(CrystalId(crystalRSliceId,jC+1));
-        }
-      }
-
-      
-
-
-        // Add crystals one layer inward one layer, unless already in innermost layer. 
-        // Deal with edge cases.
-        if ( jr0 != 0 ){
-          if ( jC == 0 ){
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC+1));
-          } else if ( jC == ncrystals-1 ) {
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC-1));
-          }else{
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC));
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC-1));
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId-1,jC+1));
-          }
-        }
-
-        // Add crystals from one layer outward, unless already in outermost layer. 
-        // Deal with edge cases.
-        if ( jL != nCrystalRSlices-1){
-          if ( jC == 0 ){
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC+1));
-          } else if ( jC == ncrystals-1 ){
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC-1));
-          } else{
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC));
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC+1));
-            cryst._nearestById.push_back(CrystalId(crystalRSliceId+1,jC-1));
-          }
-        }
     
-      }
-      return;
-    }
-    */
+
+    //      assert(2==1);
+    return;
+  }
+
+
+
   void CalorimeterMaker::FillPointersAndIndices(){return;}
    
   uint32_t  CalorimeterMaker::NumberOfCrystalsPerVane() 
