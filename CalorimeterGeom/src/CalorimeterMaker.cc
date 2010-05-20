@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.11 2010/05/18 21:16:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:48 $
+// $Id: CalorimeterMaker.cc,v 1.12 2010/05/20 20:02:29 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/05/20 20:02:29 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -185,7 +185,7 @@ namespace mu2e{
             CLHEP::HepRotation(calorimeterVaneRotationsPhi[ithVane],
                         calorimeterVaneRotationsTheta[ithVane],
                         calorimeterVaneRotationsPsi[ithVane])  *  CLHEP::HepRotationZ(phiZSlice);
-          cout << "rotation matrix " << "\n" << masterVaneRotation << endl;
+          //cout << "rotation matrix " << "\n" << masterVaneRotation << endl;
           CLHEP::Hep3Vector currentLongAxis = masterVaneRotation*initialLongAxis;
           //cout <<"wire of vane number " << ithVane << " is " << currentLongAxis << endl;
 
@@ -236,7 +236,7 @@ namespace mu2e{
                   //
                   // and drop the crystal where it's supposed to be
                   CLHEP::Hep3Vector finalPositionWithinZSlice = masterVaneRotation*origin;
-                  cout << "origin = " << origin << endl;
+                  //cout << "origin = " << origin << endl;
 
                   //
                   CLHEP::Hep3Vector finalLongAxis = masterVaneRotation*initialLongAxis;
@@ -250,7 +250,7 @@ namespace mu2e{
                                                 index,finalPositionWithinZSlice,standardCrystal,finalLongAxis));
                   indices.push_back(index);
 
-                  
+                  /*
                   cout << "dumpola: " << "\n" <<
                     "size of crystal array" << allCrystals.size() << "\n" <<
                     "rid " << rid << " " << "\n"
@@ -258,7 +258,7 @@ namespace mu2e{
                     "index " << index << "\n" <<
                     "finalPositionWithinZSlice " << finalPositionWithinZSlice << "\n" <<
                     "finalLongAxis" << finalLongAxis << endl;
-                  
+		  */
                 }// close rslice
             } //close zslice
         }//close vane
@@ -269,7 +269,7 @@ namespace mu2e{
       // Build the nearest neighbour info for each crystal.
       for ( deque<Crystal>::iterator i=_calorimeter->_allCrystals.begin(), e=_calorimeter->_allCrystals.end();
             i != e; ++i){
-        cout << "crystal number" << ifoo << endl;
+        //cout << "crystal number" << ifoo << endl;
         ++ifoo;
 
         //
