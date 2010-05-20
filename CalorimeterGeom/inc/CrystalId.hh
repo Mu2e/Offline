@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: CrystalId.hh,v 1.7 2010/05/18 20:29:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:29:10 $
+// $Id: CrystalId.hh,v 1.8 2010/05/20 20:09:07 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/05/20 20:09:07 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -42,13 +42,11 @@ namespace mu2e {
       }
 
       CrystalId( VaneId vane,
-                 int section,
-                 int rslice,
-                 int n
-                 ):
-        _rslid(RSliceId(vane,section,rslice)),
-        _n(n){
-      }
+		 int zslice,
+		 int rslice
+		 ):
+	_rslid(RSliceId(vane,zslice,rslice)) {}
+
 
       ~CrystalId  (){
       }
