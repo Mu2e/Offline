@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.19 2010/05/18 21:16:14 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.20 2010/05/22 15:39:15 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:14 $
+// $Date: 2010/05/22 15:39:15 $
 //
 // Original author Rob Kutschke
 //
@@ -258,13 +258,13 @@ namespace mu2e {
     // Pause to see graphics. 
     if ( _visMacro.size() > 0 ) {
 
+      _UI->ApplyCommand( "/vis/scene/endOfEventAction refresh");
+
       // Prompt to continue and wait for reply.
       cout << "Enter a character to see next event: "; 
       string junk;
       cin >> junk;
       
-      _UI->ApplyCommand( "/vis/viewer/refresh"); 
-
       // Check if user is requesting an early termination of the event loop.
       if ( !junk.empty() ){
 
