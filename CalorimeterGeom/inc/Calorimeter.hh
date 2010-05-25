@@ -6,14 +6,13 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.6 2010/05/18 20:29:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:29:07 $
+// $Id: Calorimeter.hh,v 1.7 2010/05/25 17:34:55 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/05/25 17:34:55 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
 
-#include <deque>
 #include <vector>
 
 //
@@ -95,7 +94,7 @@ namespace mu2e {
          return _allCrystals.at(i.asInt());
       }
 
-      const std::deque<Crystal>& getAllCrystals() const {return _allCrystals;}
+      const std::vector<Crystal>& getAllCrystals() const {return _allCrystals;}
 
       const std::vector<CrystalDetail>& getCrystalDetails() const{
          return _crystalDetail;
@@ -271,7 +270,7 @@ namespace mu2e {
       std::vector<Vane> _vanes;
 
       // There will be pointers to the objects in this container.
-      std::deque<Crystal>  _allCrystals;
+      std::vector<Crystal>  _allCrystals;
 
       // Needed to complete the second phase of construction.
       void FillPointers1();

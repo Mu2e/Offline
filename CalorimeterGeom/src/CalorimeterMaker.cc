@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.13 2010/05/20 20:08:48 rhbob Exp $
+// $Id: CalorimeterMaker.cc,v 1.14 2010/05/25 17:36:21 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/05/20 20:08:48 $
+// $Date: 2010/05/25 17:36:21 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -143,14 +143,14 @@ namespace mu2e{
                        crystalHalfLong,
                        crystalMaterial,
                        crystalWrapper,
-                             crystalWrapperHalfThickness));
+		       crystalWrapperHalfThickness));
       return;
     }
 
     void CalorimeterMaker::MakeVanes()
     {
       
-      deque  <Crystal>& allCrystals = _calorimeter->_allCrystals;
+      vector  <Crystal>& allCrystals = _calorimeter->_allCrystals;
       vector <Vane>&    allVanes    = _calorimeter->_vanes;
 
       allVanes.reserve(numberOfVanes);
@@ -183,8 +183,8 @@ namespace mu2e{
           // this assumes eulerian system
           CLHEP::HepRotation masterVaneRotation = 
             CLHEP::HepRotation(calorimeterVaneRotationsPhi[ithVane],
-                        calorimeterVaneRotationsTheta[ithVane],
-                        calorimeterVaneRotationsPsi[ithVane])  *  CLHEP::HepRotationZ(phiZSlice);
+			       calorimeterVaneRotationsTheta[ithVane],
+			       calorimeterVaneRotationsPsi[ithVane])  *  CLHEP::HepRotationZ(phiZSlice);
           //cout << "rotation matrix " << "\n" << masterVaneRotation << endl;
           CLHEP::Hep3Vector currentLongAxis = masterVaneRotation*initialLongAxis;
           //cout <<"wire of vane number " << ithVane << " is " << currentLongAxis << endl;
@@ -219,7 +219,7 @@ namespace mu2e{
                   CLHEP::Hep3Vector delta(0.,0.,distanceBetweenCrystals);
                   RSliceId rid = RSliceId(vid,ithZSlice,ithRSlice);
                   RSlice currentRSlice = RSlice(rid,
-                                                  nCrystalRSlices,origin,delta);
+						nCrystalRSlices,origin,delta);
                   currentZSlice._rslices.push_back(currentRSlice);
                   //
                   // so now for this vane, we've made a ZSlice populated by RSlices.
@@ -246,12 +246,12 @@ namespace mu2e{
                   // if we ever have more than one sort of crystal
                   CrystalDetail* standardCrystal = &_calorimeter->_crystalDetail[0]; 
 
-                  allCrystals.push_back(Crystal(CrystalId(rid,1),
+                  allCrystals.push_back(Crystal(CrystalId(rid),
                                                 index,finalPositionWithinZSlice,standardCrystal,finalLongAxis));
                   indices.push_back(index);
 
                   /*
-                  cout << "dumpola: " << "\n" <<
+		    cout << "dumpola: " << "\n" <<
                     "size of crystal array" << allCrystals.size() << "\n" <<
                     "rid " << rid << " " << "\n"
                     "crystalId "<< CrystalId(rid,1) << " \n" <<
@@ -268,13 +268,12 @@ namespace mu2e{
 
 
     void CalorimeterMaker::FillNearestNeighbours(){
-      uint32_t ifoo = 0;
+      int32_t ifoo = -1;
       // Build the nearest neighbour info for each crystal.
-      for ( deque<Crystal>::iterator i=_calorimeter->_allCrystals.begin(), e=_calorimeter->_allCrystals.end();
+      for ( vector<Crystal>::iterator i=_calorimeter->_allCrystals.begin(), e=_calorimeter->_allCrystals.end();
 	    i != e; ++i){
-	//cout << "crystal number" << ifoo << endl;
 	++ifoo;
-
+	//cout << "crystal number" << ifoo << endl;
 	//
 	// for readability
 	Crystal& crystal = *i;
@@ -284,16 +283,14 @@ namespace mu2e{
 	const VaneId&   crystalVaneId      = crystal.Id().getVaneId();
 	const ZSliceId& crystalZSliceId    = crystal.Id().getZSliceId();
 	const RSliceId& crystalRSliceId    = crystal.Id().getRSliceId();
-	const VaneId&   crystalVane        = crystal.Id().getVaneId();
 	const ZSlice&   crystalZSlice      = _calorimeter->getZSlice(crystalZSliceId);
 	const RSlice&   crystalRSlice      = _calorimeter->getRSlice(crystalRSliceId);
 
 	int jv0 = crystal.Id().getVane();
 	int jz0 = crystal.Id().getZSlice();
 	int jr0 = crystal.Id().getRSlice();
-	//
-	// this is which crystal in the rslice we are looking at
-	int jC  = crystal.Id().getCrystal();
+
+	int jC = ifoo; 
 
 	//cout << "for this crystal the vane, zslice, rslice and crystal number are " << jv0 << " " << jz0 << " " << jr0 << " " << jC << endl;
 
@@ -305,24 +302,24 @@ namespace mu2e{
 	// first zslice has nothing upstream
 	if (jr0 == 0){
 	  if (jz0 == 0){
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0,jr0+1));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1,jr0));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1,jr0+1));
 	  } 
 	  // last zslice has nothing downstream
 	  else if (jz0 == nCrystalZSlices-1){
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0,jr0+1));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0-1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1,jr0));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1,jr0+1));
 	  }
 	  else{
 	    //
 	    //all other zslices in innermost rslice
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0+1));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0  ,jr0+1));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1,jr0));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1,jr0));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0  ,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1,jr0+1));
 
 	  }
 	}
@@ -333,36 +330,69 @@ namespace mu2e{
 	// first zslice has nothing upstream
 	if (jr0 == nCrystalRSlices-1){
 	  if (jz0 == 0){
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0  ,jr0-1));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0-1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1,jr0));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0  ,jr0-1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1,jr0-1));
 	  } 
 	  // last zslice has nothing downstream
 	  else if (jz0 == nCrystalZSlices-1){
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0-1));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0  ,jr0-1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1,jr0));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1,jr0-1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0  ,jr0-1));
 	  }
 	  else{
 	    //
-	    //all other zslices in outerrmost rslice
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0-1,jr0+1));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0  ,jr0+1));
-	    crystal._nearestById.push_back(CrystalId(jv0,jz0+1,jr0+1));
+	    //all other zslices in outermost rslice
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1,jr0));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1,jr0));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0  ,jr0+1));
+	    crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1,jr0+1));
 
 	  }
 	}
 
 
+
+	//
+	//innermost and outermost ZSlices:
+
+	//
+	//innermost zslice; corners done
+	if (jz0 == 0 && (jr0 !=0 && jr0 != nCrystalRSlices -1)) {
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0   ,jr0+1));
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0   ,jr0-1));
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1 ,jr0-1));
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1 ,jr0  ));
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0+1 ,jr0+1));
+	}
+
+
+	//
+	//outermost zslice
+	if (jz0 == nCrystalZSlices-1 && (jr0!=0 && jr0 != nCrystalZSlices-1)){
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0   ,jr0+1));
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0   ,jr0-1));
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1 ,jr0-1));
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1 ,jr0  ));
+	  crystal._nearestById.push_back(CrystalId(crystalVaneId,jz0-1 ,jr0+1));
+	} 
+
+
+
+
+
+
+
+
 	//
 	//everyone else ( yes, I know I could have written these special cases as a giant if else clause but it only gets executed once/job
 	//and it's just easier for me to follow.  and I could have unrolled this loop too.  )
-	if (jC != 0 && jC != nCrystalRSlices-1){
+	if (jr0 != 0 && jr0 != nCrystalRSlices-1 && jz0 != 0 && jz0 != nCrystalZSlices-1){
 	  for (uint32_t iz0 = jz0-1; iz0 <= jz0 + 1; ++iz0){
 	    for (uint32_t ir0 = jr0 -1; ir0 <= jr0 + 1; ++ir0){
-	      if (!(iz0 == jz0 && ir0 == jr0)){crystal._nearestById.push_back(CrystalId(jv0,iz0,ir0));}
+	      //   cout << "inside standard loop" << endl;
+	      if (!(iz0 == jz0 && ir0 == jr0)){crystal._nearestById.push_back(CrystalId(crystalVaneId,iz0,ir0));}
 	    }
 	  }
 	}
@@ -370,25 +400,76 @@ namespace mu2e{
 	// print out results
 	for (uint32_t idx = 0; idx < crystal._nearestById.size(); ++idx)
 	  {
-	    //	    cout << "nearest neighbor " << idx+1 << crystal._nearestById[idx] << endl;
+	    // cout << "nearest neighbor " << idx+1 << crystal._nearestById[idx] << endl;
 	  }
       }
     
 
-    //      assert(2==1);
+      //      assert(2==1);
+      return;
+    }
+
+
+
+    void CalorimeterMaker::FillPointersAndIndices(){
+
+      // Fill the main link
+      for ( vector<Vane>::iterator iVane = _calorimeter->_vanes.begin(),
+	      eVane = _calorimeter->_vanes.end(); 
+	    iVane != eVane;  ++iVane ){
+	for ( vector<ZSlice>::iterator iZSlice = iVane->_zslices.begin(),
+		eZSlice = iVane->_zslices.end();
+	      iZSlice != eZSlice; ++iZSlice ){
+	  for ( vector<RSlice>::iterator iRSlice = iZSlice->_rslices.begin(),
+		  eRSlice = iZSlice->_rslices.end();
+		iRSlice != eRSlice; ++iRSlice ){
+	    iRSlice->_crystals.clear();
+
+	    for ( vector<CrystalIndex>::iterator iCrys = iRSlice->_indices.begin(),
+		    eCrys = iRSlice->_indices.end();
+		  iCrys != eCrys ; ++iCrys ){
+	      const Crystal& cryst = _calorimeter->_allCrystals[(*iCrys).asInt()];
+	      iRSlice->_crystals.push_back( &cryst );
+	    }
+	  }
+	}
+      }
+      return;
+    }
+   
+
+  void CalorimeterMaker::FillPointersAndIndicesByNN(){
+
+    // Fill nearest neighbour indices and pointers from the nearest neighbor Ids.
+    for ( vector<Crystal>::iterator iCrys=_calorimeter->_allCrystals.begin(), 
+            eCrys=_calorimeter->_allCrystals.end();
+          iCrys != eCrys; 
+          ++iCrys){
+      vector<CrystalId>& byId = iCrys->_nearestById;
+      vector<CrystalIndex>& byIndex = iCrys->_nearestByIndex;
+
+      byIndex.clear();
+
+      for ( vector<CrystalId>::iterator jCrys=byId.begin(), jCrysEnd=byId.end();
+            jCrys != jCrysEnd; ++jCrys){
+        const CrystalId& id = *jCrys;
+        const Crystal& cryst = _calorimeter->getCrystal(id);
+        byIndex.push_back( cryst.Index() );
+      }
+    }
     return;
   }
 
+  uint32_t  CalorimeterMaker::NumberOfCrystalsPerVane() {
+    return nCrystalRSlices*nCrystalZSlices;
+  }
 
-
-  void CalorimeterMaker::FillPointersAndIndices(){return;}
-   
-  uint32_t  CalorimeterMaker::NumberOfCrystalsPerVane() 
-  {return nCrystalRSlices*nCrystalZSlices;}
-  uint32_t  CalorimeterMaker::TotalNumberOfCrystals()   
-  {return nCrystalRSlices*nCrystalZSlices*numberOfVanes;}
-  void CalorimeterMaker::MakeCalorimeter()
-  { return;}
+  uint32_t  CalorimeterMaker::TotalNumberOfCrystals(){
+    return nCrystalRSlices*nCrystalZSlices*numberOfVanes;
+  }
+  void CalorimeterMaker::MakeCalorimeter() {
+    return;
+  }
 } //namespace calorimeter
 } //namespace mu2e
 

@@ -48,19 +48,27 @@ namespace mu2e{
       CrystalIndex Index() const { return _index;}
 
 
+    // Return true if the argument is one of the nearest neighbours of this crystal.
+    bool isNearestNeighbour( CrystalIndex idx ) const;
+
+    const std::vector<CrystalIndex>& nearestNeighboursByIndex() const{
+      return _nearestByIndex;
+    }
+
+
     protected:
 
 
       // Identifier
       CrystalId _id;
 
-      // Index into the array of all straws.
+      // Index into the array of all crystals.
       CrystalIndex _index;
 
-      // Mid-point of the straw.
+      // Mid-point of the crystal.
       CLHEP::Hep3Vector _c;
 
-      // Detailed description of a straw.
+      // Detailed description of a crystal.
       const CrystalDetail* _detail;
       int _detailIndex;
 

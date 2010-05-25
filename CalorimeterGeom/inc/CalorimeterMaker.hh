@@ -1,8 +1,8 @@
 #ifndef CALORIMETERMAKER_HH
 #define CALORIMETERMAKER_HH
-// $Id: CalorimeterMaker.hh,v 1.8 2010/05/18 22:06:19 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 22:06:19 $
+// $Id: CalorimeterMaker.hh,v 1.9 2010/05/25 17:35:00 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/05/25 17:35:00 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -132,6 +132,7 @@ namespace mu2e{
 
       void FillNearestNeighbours();
       void FillPointersAndIndices();
+      void FillPointersAndIndicesByNN();
 
 
       //

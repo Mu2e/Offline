@@ -2,9 +2,9 @@
 // Geometry and identifier info about the Calorimeter.
 //
 //
-// $Id: Calorimeter.cc,v 1.3 2010/05/18 21:16:49 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:49 $
+// $Id: Calorimeter.cc,v 1.4 2010/05/25 17:36:16 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/05/25 17:36:16 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -53,7 +53,7 @@ namespace mu2e {
     void Calorimeter::FillPointers2(){
 
       // Fill nearest neighbour indices and pointers from the NN Ids.
-      for ( deque<Crystal>::iterator i= _allCrystals.begin(), 
+      for ( vector<Crystal>::iterator i= _allCrystals.begin(), 
               e= _allCrystals.end();
             i!=e; 
             ++i){

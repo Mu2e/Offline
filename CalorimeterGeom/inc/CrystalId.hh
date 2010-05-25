@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: CrystalId.hh,v 1.8 2010/05/20 20:09:07 rhbob Exp $
+// $Id: CrystalId.hh,v 1.9 2010/05/25 17:35:18 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/05/20 20:09:07 $
+// $Date: 2010/05/25 17:35:18 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -21,18 +21,19 @@ namespace mu2e {
 
     public:
 
-      CrystalId():
+      
+      /*      CrystalId():
         _rslid(RSliceId()),
         _n(-1){
       }
-  
+
       CrystalId( RSliceId rslice,
                  int n
                  ):
         _rslid(rslice),
         _n(n){
       }
-  
+
       CrystalId( ZSliceId zsliceid,
                  int rslice,
                  int n
@@ -40,6 +41,20 @@ namespace mu2e {
         _rslid(zsliceid,rslice),
         _n(n){
       }
+
+
+      */
+      CrystalId():
+        _rslid(RSliceId()){}
+      
+      
+      CrystalId( RSliceId rslice):
+        _rslid(rslice){}
+  
+      CrystalId( ZSliceId zsliceid,
+                 int rslice
+                 ):
+        _rslid(zsliceid,rslice){}
 
       CrystalId( VaneId vane,
 		 int zslice,
@@ -78,8 +93,8 @@ namespace mu2e {
         return _rslid._rslice;
       }
 
-      const int getCrystal() const{
-        return _n;
+      const int getCrystalIndex() const{
+        return 0;
       }
 
       bool operator==( CrystalId const& rhs) const{
@@ -100,8 +115,7 @@ namespace mu2e {
     inline std::ostream& operator<<(std::ostream& ost, 
                                     const CrystalId& c ){
       ost << "Crystal Id: ("
-          << c.getRSliceId() << " "
-          << c._n
+          << c.getRSliceId() 
           << " )";
       return ost;
     }
