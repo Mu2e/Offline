@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: RSlice.hh,v 1.3 2010/05/18 20:29:12 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:29:12 $
+// $Id: RSlice.hh,v 1.4 2010/05/25 19:33:33 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/05/25 19:33:33 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -121,9 +121,11 @@ namespace mu2e {
       CLHEP::Hep3Vector _orig;
       CLHEP::Hep3Vector _delta;
 
-      // Pointers to the crystals in this layer.
+      // Pointers to the crystals in this RSlice.
       // These pointers do not own the crystals to which they point.
-      std::vector<const Crystal*> _crystals;
+      // These are not persisted and may need to be recomputed after readback; hence the mutable
+
+      mutable std::vector<const Crystal*> _crystals;
 
       std::vector<CrystalIndex> _indices;
 
