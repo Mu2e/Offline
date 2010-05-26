@@ -1,8 +1,8 @@
 # Configuration file for G4Test03
 #
-# $Id: houghtest.py,v 1.4 2010/03/24 18:49:53 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2010/03/24 18:49:53 $
+# $Id: houghtest.py,v 1.5 2010/05/26 22:26:36 shanahan Exp $
+# $Author: shanahan $
+# $Date: 2010/05/26 22:26:36 $
 #
 # Original author Rob Kutschke
 #
@@ -82,8 +82,9 @@ process.outfile = mu2e.OutputModule(
 process.checkhits = mu2e.EDAnalyzer(
 # this line tells me where to get the plugin file from    
     "HoughTest",
-    g4ModuleLabel = mu2e.string("g4run"),
-    minimumEnergy = mu2e.double(0.001),
+    NPeakSearch = mu2e.uint32(50),
+    UseMCHits = mu2e.bool(True),
+    hitCreatorName = mu2e.string("g4run"),
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
