@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.26 2010/05/18 22:34:46 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.27 2010/06/02 03:59:23 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 22:34:46 $
+// $Date: 2010/06/02 03:59:23 $
 //
 // Original author Rob Kutschke
 //
@@ -12,27 +12,23 @@
 //  1      Earthen Overburden
 //  2      Concrete walls of the hall
 //  3      Air inside the hall
-//  4      Concrete shielding around the DS.
-//  5      Air inside the concrete sheilding
-//  6      Iron cosmic ray absorber.
-//  7      Air inside the cosmic ray absorber
-//  8      Effective volume representing the DS coils+cryostats.
-//  9      Vacuum inside of the DS coils.
+//  4      Effective volume representing the DS coils+cryostats.
+//  4      DS Vaccum
 //
 //  4      Effective volume representing the PS coils+cryostats.
-//  5      Vacuum inside of the PS coils.
+//  4      PS Vacuum
 //
-//  The Earth overburden is modelling in two parts: a box that extends
+//  The Earth overburden is modeled in two parts: a box that extends
 //  to the surface of the earth plus a cap above grade.  The cap is shaped
 //  as a G4Paraboloid.
 //
 // Notes:
-// 1) G4VisAttributes is screwed up in this routine and everywhere.
-//    The logical volume class never takes ownership of the G4VisAttibutes.
-//    It simply leaks them.  We can pass vis attributes by const ref and
-//    G4 will make a copy that it subsequently leaks at destructor time.
-//    We can pass it in by pointer; then it is our job to keep it alive for the
-//    full lifetime of the logical volume and then to delete it after that.
+// 1) When a G4VisAttributes is given to a G4LogicalVolume, the logical volume
+//    object does not take ownership of the G4VisAttributes object; so the caller
+//    who called SetVisAttributes needs to manage the lifetime of the G4VisAttributes
+//    object.  We do this by putting them into a list that has a lifetime as long
+//    as Mu2eWorld.  Note that push_back() on a list does not invalidate pointers
+//    to previous entries in the list.
 //
 
 // C++ includes
@@ -48,9 +44,7 @@
 #include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestTorus.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -65,13 +59,14 @@
 // G4 includes
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4SolidStore.hh"
+//#include "G4LogicalVolumeStore.hh"
+//#include "G4SolidStore.hh"
 #include "G4Material.hh"
 #include "G4Box.hh"
 #include "G4Paraboloid.hh"
 #include "G4Colour.hh"
 #include "G4Tubs.hh"
+#include "G4Torus.hh"
 #include "G4LogicalVolume.hh"
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
@@ -84,7 +79,7 @@
 #include "G4ChordFinder.hh"
 #include "G4TransportationManager.hh"
 #include "G4UserLimits.hh"
-#include "G4SDManager.hh"
+//#include "G4SDManager.hh"
 #include "G4ClassicalRK4.hh"
 #include "G4CashKarpRKF45.hh"
 #include "G4ImplicitEuler.hh"
@@ -122,6 +117,7 @@ namespace mu2e {
 
   }
 
+  // A helper function for debugging.  Print a subset of the physical volume store.
   void printPhys() {
     G4PhysicalVolumeStore* pstore = G4PhysicalVolumeStore::GetInstance();
     int n(0);
@@ -136,46 +132,237 @@ namespace mu2e {
   }
 
 
-  // This is the callback used by G4.
+  // This is the callback called by G4.
   WorldInfo const* Mu2eWorld::construct(){
+
+    // In case this is called a second time within a job.
+    _volumeInfoList.clear();
+    _visAttributes.clear();
     
     // Get access to the master geometry system and its run time config.
     edm::Service<GeometryService> geom;
     SimpleConfig const& config = geom->config();
     _config = &config;
-    
-    // Construct a world with nothing in it.
-    constructWorld(config);
+
+    // Construct all of the Mu2e world, hall, detectors, beamline ...
+    constructWorld();
 
     return &_info;
   }
 
-  void Mu2eWorld::constructWorld( SimpleConfig const& config ){
+  // Construct all of the Mu2e world, hall, detectors, beamline ...
+  void Mu2eWorld::constructWorld(){
 
-    MaterialFinder materialFinder(config);
+    // If you play with the order of these calls, you may break things.
+    defineMu2eOrigin();
+    VolumeInfo dirtInfo  = constructDirt();
+    VolumeInfo hallInfo  = constructHall( dirtInfo );
+    constructDS(hallInfo);
+    constructTS(hallInfo);
+    constructPS(hallInfo);
+    VolumeInfo trackerInfo = constructTracker();
+    VolumeInfo targetInfo  = constructTarget();
 
+    edm::LogInfo log("GEOM");
+    log << "Mu2e Origin:          " << _mu2eOrigin           << "\n";
+    log << "Mu2e Detector Origin: " << _mu2eDetectorOrigin   << "\n";
+    log << "Cosmic Ref:           " << _cosmicReferencePoint << "\n";
+    log << "Hall Origin in Mu2e:  " << _hallOriginInMu2e     << "\n";
+
+    VolumeInfo detSolUpstreamVacInfo   = locateVolInfo("ToyDS2Vacuum");
+    VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
+
+    // Move this to a function.
+    if ( _config->getBool("hasCalorimeter",false) ){
+
+      // z Position of the center of the DS solenoid downstream part, given in the Mu2e coordinate system.
+      double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+
+      VolumeInfo calorimeterInfo = constructCalorimeter( detSolDownstreamVacInfo.logical,
+                                                         -z0DSdown,
+                                                         *_config );
+    }
+
+    // Create magnetic fields and managers only after all volumes have been defined.
+    constructBFieldAndManagers();
+
+    // Set step limits.
+    // See also PhysicsList.cc to add a steplimiter to the list of processes.
+    // Do this so that we can see the helical trajectory in the DS and volumes inside of it.
+    
+    G4double maxStep = 20.0*CLHEP::mm;
+    _stepLimit = auto_ptr<G4UserLimits>( new G4UserLimits(maxStep));
+    detSolUpstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
+    detSolDownstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
+
+    trackerInfo.logical->SetUserLimits(_stepLimit.get());
+    targetInfo.logical->SetUserLimits(_stepLimit.get());
+
+  }
+
+  // Convert to base units for all of the items in the vector.
+  void Mu2eWorld::setUnits( vector<double>& V, G4double unit ){
+    for ( vector<double>::iterator b=V.begin(), e=V.end();
+          b!=e; ++b){
+      *b *= unit;
+    }
+  }
+
+  void Mu2eWorld::defineMu2eOrigin(){
+
+    // Dimensions of the world.
+    vector<double> worldHLen;
+    _config->getVectorDouble("world.halfLengths", worldHLen, 3);
+
+    // Floor thickness.
+    double floorThick = _config->getDouble("hall.floorThick");
+
+    // Top of the floor in G4 world coordinates.
+    double yFloor = -worldHLen[1] + floorThick;
+
+    // The height above the floor of the y origin of the Mu2e coordinate system.
+    double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
+
+    // Position of the origin of the mu2e coordinate system
+    _mu2eOrigin = G4ThreeVector( 
+                                _config->getDouble("world.mu2eOrigin.xoffset")*CLHEP::mm,
+                                yFloor + yOriginHeight,
+                                _config->getDouble("world.mu2eOrigin.zoffset")*CLHEP::mm
+                                );
+
+    // Origin used to construct the MECO detector.
+    // Magic number to fix:
+    _mu2eDetectorOrigin = _mu2eOrigin + G4ThreeVector( -3904., 0., 12000.);
+
+    double ceilingThick     = _config->getDouble("hall.ceilingThick");
+    double overburdenDepth  = _config->getDouble("dirt.overburdenDepth");
+    double capHalfHeight    = _config->getDouble("dirt.capHalfHeight");
+    vector<double> hallInHLen;
+    _config->getVectorDouble("hall.insideHalfLengths",hallInHLen,3);
+
+    // Bottom of the ceiling in G4 world coordinates.
+    double yCeilingInSide = yFloor + 2.*hallInHLen[1];
+    
+    // Top of the ceiling in G4 world coordinates.
+    double yCeilingOutside  = yCeilingInSide + ceilingThick;
+
+    // Surface of the earth in G4 world coordinates.
+    double ySurface  = yCeilingOutside + overburdenDepth;
+
+    // Top of the world.
+    double yEverest = ySurface + 2.*capHalfHeight;
+
+    // Build the reference points that others will use.
+    _cosmicReferencePoint = G4ThreeVector( 0., yEverest, 0.);
+
+    // Selfconsistency check.
+    if ( yEverest > 2.*worldHLen[1] ){
+      throw cms::Exception("GEOM")
+        << "Top of the world is outside of the world volume! \n";
+    }
+
+  }  // end of Mu2eWorld::defineMu2eOrigin
+
+
+  // Construct hall walls and hall interior inside the earthen overburden.
+  VolumeInfo Mu2eWorld::constructHall ( const VolumeInfo& parent ){
+
+    // A helper class.
+    MaterialFinder materialFinder(*_config);
+
+    // Dimensions of the world.
+    vector<double> worldHLen;
+    _config->getVectorDouble("world.halfLengths", worldHLen, 3);
+
+    vector<double> hallInHLen;
+    _config->getVectorDouble("hall.insideHalfLengths",hallInHLen,3);
+
+    // Floor thickness.
+    double ceilingThick = _config->getDouble("hall.ceilingThick");
+    double floorThick   = _config->getDouble("hall.floorThick");
+    double wallThick    = _config->getDouble("hall.wallThick");
+
+    // Top of the floor in G4 world coordinates.
+    double yFloor = -worldHLen[1] + floorThick;
+
+    // Position of the center of the hall in the world volume.
+    vector<double> hallPosition;
+    _config->getVectorDouble("hall.offset", hallPosition,3);
+    double hallY0 = yFloor + hallInHLen[1] + hallPosition[1];
+
+    // Materials for the hall walls and the interior of the hall
+    G4Material* wallMaterial = materialFinder.get("hall.wallMaterialName");
+    G4Material* hallMaterial = materialFinder.get("hall.insideMaterialName");
+
+    // Half lengths of the exterior of the concrete for the hall walls.
+    double hallOutHLen[3] ={
+      hallInHLen[0] + wallThick,
+      hallInHLen[1] + ( ceilingThick + floorThick )/2.,
+      hallInHLen[2] + wallThick
+    };
+    
+    // Center of the concrete volume in the coordinate system of the dirt.
+    G4ThreeVector wallOffset = 
+      G4ThreeVector(hallPosition[0], hallY0, hallPosition[2]) - parent.centerInParent;
+
+    // Origin of the hall air volume in the system of the hall concrete volume.
+    G4ThreeVector hallOffset( 0., (floorThick-ceilingThick)/2., 0.);
+
+    // Concrete walls of the hall.
+    VolumeInfo wallInfo = nestBox( "HallWalls",
+                                   hallOutHLen,
+                                   wallMaterial,
+                                   0,
+                                   wallOffset,
+                                   parent,
+                                   0,
+                                   true,
+                                   G4Colour::Red()
+                                   );
+    
+    // Air volume inside of the hall.
+    VolumeInfo hallInfo = nestBox( "HallAir",
+                                   hallInHLen,
+                                   hallMaterial,
+                                   0,
+                                   hallOffset,
+                                   wallInfo,
+                                   0,
+                                   true,
+                                   G4Colour::Red()
+                                   );
+
+    // Define the hall origin in Mu2e coordinates.
+    _hallOriginInMu2e = hallInfo.centerInWorld - _mu2eOrigin;
+
+    return hallInfo;
+  }  // end of Mu2eWorld::constructHall
+
+  // Construct world mother volume and the earthen overburden.
+  VolumeInfo Mu2eWorld::constructDirt (){
+
+    // A helper class.
+    MaterialFinder materialFinder(*_config);
+    
     // Dimensions and material of the world.
     vector<double> worldHLen;
-    _config->getVectorDouble("world.halfLengths", worldHLen,3);
-    setUnits ( worldHLen, CLHEP::mm );
+    _config->getVectorDouble("world.halfLengths", worldHLen, 3);
     G4Material* worldMaterial = materialFinder.get("world.materialName");
 
+    const string worldName("World");
 
-    // A number of objects are referenced to the solenoids.
-    double prodSolXoff = _config->getDouble("world.prodSolXoff") * CLHEP::mm;
-    double detSolXoff  = -prodSolXoff;
-    double dsz0        = _config->getDouble("toyDS.z0") * CLHEP::mm;
-
-    // Half length of the detector solenoid.
-    double dsHalfLength = _config->getDouble("toyDS.halfLength")* CLHEP::mm;
-    
-    // Construct the world volume.
-    string worldName("World");
-    _info.worldSolid = new G4Box( worldName, worldHLen[0], worldHLen[1], worldHLen[2] );
-    _info.worldLog   = new G4LogicalVolume( _info.worldSolid, worldMaterial, worldName );
-    _info.worldPhys  = new G4PVPlacement( 0, G4ThreeVector(), _info.worldLog, worldName, 
-                                          0, 0, 0);
-    _info.worldLog->SetVisAttributes(G4VisAttributes::Invisible);
+    // Construct the world volume.  The dummy is needed because the interface
+    // to nestBox requires a mother even if this is the top level.
+    VolumeInfo dummy("MotherofTheWorld", G4ThreeVector(), G4ThreeVector());
+    VolumeInfo worldInfo = nestBox (worldName, 
+                                    worldHLen, 
+                                    worldMaterial, 
+                                    0, 
+                                    G4ThreeVector(), 
+                                    dummy,
+                                    0
+                                    );
+    _info.worldPhys  = worldInfo.physical;
 
     // Get parameters related to the overall dimensions of the hall and to
     // the earthen overburden.
@@ -185,7 +372,6 @@ namespace mu2e {
     double overburdenDepth      = CLHEP::mm * _config->getDouble("dirt.overburdenDepth");
     vector<double> hallInHLen;
     _config->getVectorDouble("hall.insideHalfLengths",hallInHLen,3);
-    setUnits( hallInHLen, CLHEP::mm);
 
     // Derived parameters.
     G4Material* dirtMaterial = materialFinder.get("dirt.overburdenMaterialName");
@@ -194,20 +380,7 @@ namespace mu2e {
     double yFloor   = -worldHLen[1] + floorThick;
 
     // The height above the floor of the y origin of the Mu2e coordinate system.
-    double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
-
-    // Position of the origin of the mu2e coordinate system
-    _mu2eOrigin = G4ThreeVector( 
-                                _config->getDouble("world.mu2eOrigin.xoffset")*CLHEP::mm,
-                                yOriginHeight + yFloor,
-                                _config->getDouble("world.mu2eOrigin.zoffset")*CLHEP::mm
-                                );
-    edm::LogInfo log("GEOM");
-    log << "Mu2e Origin: " << _mu2eOrigin << "\n";
-
-    // Origin used to construct the MECO detector.
-    _mu2eDetectorOrigin = _mu2eOrigin + G4ThreeVector( -3904., 0., 12000.);
-    log << "Mu2e Detector Origin: " << _mu2eDetectorOrigin << "\n";
+    //    double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
 
     // Bottom of the ceiling in G4 world coordinates.
     double yCeilingInSide = yFloor + 2.*hallInHLen[1];
@@ -234,1042 +407,842 @@ namespace mu2e {
                                    dirtMaterial,
                                    0,
                                    dirtOffset,
-                                   _info.worldLog,
+                                   worldInfo,
                                    0,
+                                   true,
                                    G4Colour::Magenta()
                                    );
-    
+
     // Dirt cap is modeled as a paraboloid.
-    double capHalfHeight  = CLHEP::mm * _config->getDouble("dirt.capHalfHeight");
-    double capBottomR     = CLHEP::mm * _config->getDouble("dirt.capBottomRadius");
-    double capTopR        = CLHEP::mm * _config->getDouble("dirt.capTopRadius");
+    double capHalfHeight = _config->getDouble("dirt.capHalfHeight");
+    double capBottomR    = _config->getDouble("dirt.capBottomRadius");
+    double capTopR       = _config->getDouble("dirt.capTopRadius");
 
-    // The top of the world.
-    double yEverest = ySurface + 2.*capHalfHeight;
+    double dsz0          = _config->getDouble("toyDS.z0");
 
-    // Selfconsistency check.
-    if ( yEverest > 2.*worldHLen[1] ){
-      throw cms::Exception("GEOM")
-        << "Top of the world is outside of the world volume! \n";
-    }
+    double solenoidOffset = _config->getDouble("mu2e.solenoidOffset");
 
-    // Build the reference points that others will use.
-    _cosmicReferencePoint = G4ThreeVector( 0., yEverest, 0.);
-    log << "Cosmic Ref: " << _cosmicReferencePoint << "\n";
+    G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight, dsz0+_mu2eOrigin.z());
 
-    // Construct the cap.
-    string dirtCapName("DirtCap");
-    G4Paraboloid* dirtCapSolid = new
-      G4Paraboloid( dirtCapName, capHalfHeight, capTopR, capBottomR);
-    
-    G4LogicalVolume* dirtCapLog = new
-      G4LogicalVolume( dirtCapSolid, 
-                       dirtMaterial, 
-                       dirtCapName);
-    
     G4RotationMatrix* dirtCapRot = new G4RotationMatrix();
     dirtCapRot->rotateX( -90*CLHEP::degree);
+
+    string dirtCapName("DirtCap");
+
+    // Construct the cap.
+    VolumeInfo dirtCapInfo( dirtCapName, dirtCapOffset, dirtInfo.centerInWorld);
+
+    dirtCapInfo.solid = new G4Paraboloid( dirtCapName, capHalfHeight, capTopR, capBottomR);
     
-    G4VPhysicalVolume* dirtCapPhys =  new
-      G4PVPlacement( dirtCapRot, 
-                     G4ThreeVector( detSolXoff, ySurface+capHalfHeight, dsz0+_mu2eOrigin.z()), 
-                     dirtCapLog, 
-                     dirtCapName, 
-                     _info.worldLog, 
-                     0, 
-                     0);
+    dirtCapInfo.logical= new G4LogicalVolume( dirtCapInfo.solid, 
+                                              dirtMaterial, 
+                                              dirtCapName);
     
-    G4VisAttributes* dirtCapVisAtt = new G4VisAttributes(true, G4Colour::Green());
-    dirtCapVisAtt->SetForceSolid(true);
-    dirtCapLog->SetVisAttributes(dirtCapVisAtt);
+    dirtCapInfo.physical =  new G4PVPlacement( dirtCapRot, 
+                                               dirtCapOffset,
+                                               dirtCapInfo.logical,
+                                               dirtCapName, 
+                                               worldInfo.logical, 
+                                               0, 
+                                               0);
 
-    // Position of the center of the hall in the world volume.
-    vector<double> hallPosition;
-    _config->getVectorDouble("hall.offset", hallPosition,3);
-    setUnits( hallPosition, CLHEP::mm);
-    double hallY0 = yFloor + hallInHLen[1] + hallPosition[1];
+    _visAttributes.push_back(G4VisAttributes(true, G4Colour::Green()));
+    G4VisAttributes& visAtt = _visAttributes.back();
 
-    // Materials for the hall walls and the interior of the hall
-    G4Material* wallMaterial = materialFinder.get("hall.wallMaterialName");
-    G4Material* hallMaterial = materialFinder.get("hall.insideMaterialName");
+    visAtt.SetForceSolid(true);
+    dirtCapInfo.logical->SetVisAttributes(&visAtt);
 
-    // Half lengths of the exterior of the concrete for the hall walls.
-    double hallOutHLen[3] ={
-      hallInHLen[0] + wallThick,
-      hallInHLen[1] + ( ceilingThick + floorThick )/2.,
-      hallInHLen[2] + wallThick
-    };
-    
-    // Center of the concrete volume in the coordinate system of the dirt.
-    G4ThreeVector wallOffset = 
-      G4ThreeVector(hallPosition[0], hallY0, hallPosition[2]) - dirtOffset;
+    addVolInfo( dirtCapInfo );
 
-    // Origin of the hall air volume in the system of the hall concrete volume.
-    G4ThreeVector hallOffset( 0., (floorThick-ceilingThick)/2., 0.);
+    return dirtInfo;
 
-    // Concrete walls of the hall.
-    VolumeInfo wallInfo = nestBox( "HallWalls",
-                                   hallOutHLen,
-                                   wallMaterial,
-                                   0,
-                                   wallOffset,
-                                   dirtInfo.logical,
-                                   0,
-                                   G4Colour::Red()
-                                   );
-    
-    // Air volume inside of the hall.
-    VolumeInfo hallInfo = nestBox( "HallAir",
-                                   hallInHLen,
-                                   hallMaterial,
-                                   0,
-                                   hallOffset,
-                                   wallInfo.logical,
-                                   0,
-                                   G4Colour::Red()
-                                   );
-    
-    // Concrete shield.
-    double shieldConXSpace           = CLHEP::mm * _config->getDouble("shieldCon.xspace");
-    double shieldConInsideHeight     = CLHEP::mm * _config->getDouble("shieldCon.insideHeight");
-    double shieldConInsideHalfLength = CLHEP::mm * _config->getDouble("shieldCon.insideHalfLength");
-    double shieldConThick            = CLHEP::mm * _config->getDouble("shieldCon.Thick");
+  }  // end of Mu2eWorld::constructDirt
 
-    // The iron cosmic ray shield.
-    double shieldFeThick     = CLHEP::mm * _config->getDouble("shieldFe.thick");
-    double shieldFeOuterHW   = CLHEP::mm * _config->getDouble("shieldFe.outerHalfWidth");
-    double shieldFeZExtra    = CLHEP::mm * _config->getDouble("shieldFe.zextra");
-    
-    // Materials for the above.
-    G4Material* shieldConMaterial       = materialFinder.get("shieldCon.materialName");
-    G4Material* shieldConInsideMaterial = materialFinder.get("shieldCon.insideMaterialName");
-    G4Material* shieldFeMaterial        = materialFinder.get("shieldFe.materialName");
-    G4Material* shieldFeInsideMaterial  = materialFinder.get("shieldFe.insideMaterialName");
-    
-    // Derived information for the concrete and Fe shields.
-    double shieldConInsideHalfDim[3], shieldConOutsideHalfDim[3];
-    double shieldFeInsideHalfDim[3], shieldFeOutsideHalfDim[3];
-    
-    shieldConOutsideHalfDim[0] = shieldFeOuterHW + shieldConXSpace + shieldConThick;
-    shieldConOutsideHalfDim[1] = ( shieldConInsideHeight + shieldConThick)/2.;
-    
-    shieldConInsideHalfDim[0]  = shieldFeOuterHW + shieldConXSpace;
-    shieldConInsideHalfDim[1]  = shieldConInsideHeight/2.;
+  // Construct the DS.  Parent volume is the air inside of the hall.
+  // This makes 4 volumes:
+  //  0 - a single volume that represents the coils+cryostats in an average way.
+  //  1 - DS1, a small piece of DS vacuum that surrounds TS5.
+  //  2 - DS2, the upstream part of the DS vacuum, that has a graded field.
+  //  3 - DS3, the downstream part of the DS vacuum, that may have a uniform field.
+  void Mu2eWorld::constructDS( const VolumeInfo& parent ){
 
-    shieldFeOutsideHalfDim[0]  = shieldFeOuterHW;
-    shieldFeOutsideHalfDim[1]  = shieldFeOuterHW;
+    // Extract information from the config file.
+    TubsParams detSolCoilParams( _config->getDouble("toyDS.rIn"),
+                                 _config->getDouble("toyDS.rOut"),
+                                 _config->getDouble("toyDS.halfLength"));
 
-    shieldFeInsideHalfDim[0]   = shieldFeOuterHW - shieldFeThick;
-    shieldFeInsideHalfDim[1]   = shieldFeOuterHW - shieldFeThick;
+    double dsCoilZ0          = _config->getDouble("toyDS.z0");
+    double rTorus            = _config->getDouble("toyTS.rTorus");
+    double rCryo             = _config->getDouble("toyTS.rCryo");
+    double ds1HalfLength     = _config->getDouble("toyDS1.halfLength");
+    double ds2HalfLength     = _config->getDouble("toyDS2.halfLength");
+    double ds3HalfLength     = _config->getDouble("toyDS3.halfLength");
+    double ts5HalfLength     = _config->getDouble("toyTS5.halfLength");
+    double solenoidOffset    = _config->getDouble("mu2e.solenoidOffset");
+    double dsFrontHalfLength = _config->getDouble("toyDS.frontHalfLength");
 
-    shieldFeInsideHalfDim[2]  = dsHalfLength + shieldFeZExtra;
-    shieldFeOutsideHalfDim[2]  = shieldFeInsideHalfDim[2];
+    // All Vacuumn volumes fit inside the DS coil+cryostat package.
+    // DS1 surrounds ts5.
+    // DS2 and DS3 extend to r=0
+    TubsParams dsFrontParams( rCryo,
+                              detSolCoilParams.innerRadius,
+                              dsFrontHalfLength);
 
-    shieldConInsideHalfDim[2] = shieldConInsideHalfLength;
-    shieldConOutsideHalfDim[2] = shieldConInsideHalfLength + shieldConThick;
+    TubsParams ds1VacParams( rCryo,
+                             detSolCoilParams.innerRadius,
+                             ds1HalfLength);
 
-    // Position of concrete box inside the air volume of the hall.
-    G4ThreeVector shieldConOffset = G4ThreeVector(
-                                                  detSolXoff-hallPosition[0],
-                                                  shieldConOutsideHalfDim[1] - hallInHLen[1],
-                                                  dsz0+_mu2eOrigin.z()
-                                                  );
+    TubsParams ds2VacParams( 0.,
+                             detSolCoilParams.innerRadius,
+                             ds2HalfLength);
 
-    // Position of air inside concrete shield wrt concrete.
-    double yoff2 = shieldConInsideHalfDim[1] - shieldConOutsideHalfDim[1];
-    G4ThreeVector shieldConInsideOffset = G4ThreeVector(0.,yoff2,0.);
+    TubsParams ds3VacParams( 0.,
+                             detSolCoilParams.innerRadius,
+                             ds3HalfLength);
 
-    // Position of the iron shield inside wrt the air inside the concrete.
-    G4ThreeVector shieldFeOffset( 0., yOriginHeight-shieldConInsideHalfDim[1], 0. );
+    // Compute positions of objects in Mu2e coordinates.
+    double dsFrontZ0 = rTorus + 2.*ts5HalfLength - 2.*ds1HalfLength - dsFrontHalfLength;
+    double ds1Z0     = rTorus + 2.*ts5HalfLength - ds1HalfLength;
+    double ds2Z0     = rTorus + 2.*ts5HalfLength + ds2HalfLength;
+    double ds3Z0     = ds2Z0  + ds2HalfLength    + ds3HalfLength;
+    G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., dsCoilZ0);
+    G4ThreeVector    dsFrontPosition(-solenoidOffset, 0., dsFrontZ0);
+    G4ThreeVector        ds1Position(-solenoidOffset, 0., ds1Z0);
+    G4ThreeVector        ds2Position(-solenoidOffset, 0., ds2Z0);
+    G4ThreeVector        ds3Position(-solenoidOffset, 0., ds3Z0);
 
-    // Concrete shield around DS.
-    VolumeInfo shieldConInfo = nestBox( "ShieldConDS_01",
-                                        shieldConOutsideHalfDim,
-                                        shieldConMaterial,
+    MaterialFinder materialFinder(*_config);
+    G4Material* detSolCoilMaterial = materialFinder.get("toyDS.materialName");
+    G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
+
+    // Single volume representing the DS coils + cryostat in an average way.
+    VolumeInfo detSolCoilInfo = nestTubs2( "ToyDSCoil",
+                                           detSolCoilParams,
+                                           detSolCoilMaterial,
+                                           0,
+                                           detSolCoilPosition-_hallOriginInMu2e,
+                                           parent,
+                                           0,
+                                           true,
+                                           G4Color::Magenta()
+                                           );
+
+    // Upstream face of the DS coils+cryo.
+    VolumeInfo dsFrontInfo = nestTubs2( "ToyDSFront",
+                                        dsFrontParams,
+                                        detSolCoilMaterial,
                                         0,
-                                        shieldConOffset,
-                                        hallInfo.logical,
+                                        dsFrontPosition-_hallOriginInMu2e,
+                                        parent,
                                         0,
-                                        G4Colour::Blue()
+                                        true,
+                                        G4Color::Blue(),
+                                        true
                                         );
 
-    // Air between the concrete and Fe shields.
-    VolumeInfo shieldConInsideInfo = nestBox( "ShieldConDS_01_AIR",
-                                              shieldConInsideHalfDim,
-                                              shieldConInsideMaterial,
-                                              0,
-                                              shieldConInsideOffset,
-                                              shieldConInfo.logical,
-                                              0,
-                                              G4Colour::Blue()
-                                              );
-    
-    // Fe shield around DS.
-    VolumeInfo shieldFeInfo = nestBox( "ShieldFe_01",
-                                       shieldFeOutsideHalfDim,
-                                       shieldFeMaterial,
+
+    VolumeInfo ds1VacInfo   = nestTubs2( "ToyDS1Vacuum",
+                                         ds1VacParams,
+                                         vacuumMaterial,
+                                         0,
+                                         ds1Position-_hallOriginInMu2e,
+                                         parent,
+                                         0,
+                                         true,
+                                         G4Colour::Green(),
+                                         true
+                                         );
+
+    VolumeInfo ds2VacInfo   = nestTubs2( "ToyDS2Vacuum",
+                                         ds2VacParams,
+                                         vacuumMaterial,
+                                         0,
+                                         ds2Position-_hallOriginInMu2e,
+                                         parent,
+                                         0,
+                                         true,
+                                         G4Colour::Yellow()
+                                         );
+
+    VolumeInfo ds3VacInfo = nestTubs2( "ToyDS3Vacuum",
+                                       ds3VacParams,
+                                       vacuumMaterial,
                                        0,
-                                       shieldFeOffset,
-                                       shieldConInsideInfo.logical,
+                                       ds3Position-_hallOriginInMu2e,
+                                       parent,
                                        0,
-                                       G4Colour::Green()
+                                       true,
+                                       G4Color::Blue()
                                        );
+
+  } // end of Mu2eWorld::constructDS;
+
+  // Construct the TS.  Parent volume is the air inside of the hall.
+  void Mu2eWorld::constructTS( const VolumeInfo& parent ){
+
+    // A helper class.
+    MaterialFinder materialFinder(*_config);
+
+    // Extract base parameters from config information.
+    double solenoidOffset = _config->getDouble("mu2e.solenoidOffset");
+
+    double rTorus  = _config->getDouble("toyTS.rTorus");
+    double rVac    = _config->getDouble("toyTS.rVac");
+    double rCryo   = _config->getDouble("toyTS.rCryo");
+
+    double ts1HalfLength = _config->getDouble("toyTS1.halfLength");
+    double ts5HalfLength = _config->getDouble("toyTS5.halfLength");
+
+    // Computed quantities.
+    double ts3HalfLength = (solenoidOffset - rTorus);
+    double ts1zOffset    = (-rTorus-ts1HalfLength);
+    double ts5zOffset    = ( rTorus+ts5HalfLength);
+
+    // For how all pieces are made from one of two types of material,
+    // vacuum or average coils + cryostat material.
+    G4Material* vacuumMaterial  = materialFinder.get("toyDS.insideMaterialName");
+    G4Material* cryoMaterial    = materialFinder.get("toyDS.materialName");
+
+    // Build TS1.
+    TubsParams ts1VacParams (   0.,  rVac, ts1HalfLength);
+    TubsParams ts1CryoParams( rVac, rCryo, ts1HalfLength);
+
+    // Position in the Mu2e coordintate system.
+    G4ThreeVector ts1VacPosition( solenoidOffset, 0., ts1zOffset) ;
+
+    VolumeInfo ts1VacInfo = nestTubs2( "ToyTS1Vacuum",
+                                       ts1VacParams,
+                                       vacuumMaterial,
+                                       0,
+                                       ts1VacPosition-_hallOriginInMu2e,
+                                       parent,
+                                       0,
+                                       false,
+                                       G4Color::Red(),
+                                       true
+                                       );
+
+    VolumeInfo ts1CryoInfo = nestTubs2( "ToyTS1Cryo",
+                                        ts1CryoParams,
+                                        cryoMaterial,
+                                        0,
+                                        ts1VacPosition-_hallOriginInMu2e,
+                                        parent,
+                                        0,
+                                        true,
+                                        G4Color::Red(),
+                                        true
+                                        );
+
+    // Build TS2.
+    double ts2VacParams[5]  = { 0.0,   rVac, rTorus, 1.5*M_PI, 0.5*M_PI };
+    double ts2CryoParams[5] = { rVac, rCryo, rTorus, 1.5*M_PI, 0.5*M_PI };
+
+    // Position in the Mu2e coordintate system.
+    G4ThreeVector ts2VacPosition( ts3HalfLength, 0., -rTorus);
+
+    G4RotationMatrix* ts2Rot = new G4RotationMatrix();
+    ts2Rot->rotateX(90.0*CLHEP::degree);
+
+    VolumeInfo ts2VacInfo = nestTorus2("ToyTS2Vacuum",
+                                       ts2VacParams,
+                                       vacuumMaterial,
+                                       ts2Rot,
+                                       ts2VacPosition-_hallOriginInMu2e,
+                                       parent,
+                                       0,
+                                       false,
+                                       G4Color::Yellow(),
+                                       true
+                                       );
+
+    VolumeInfo ts2CryoInfo = nestTorus2("ToyTS2Cryo",
+                                        ts2CryoParams,
+                                        cryoMaterial,
+                                        ts2Rot,
+                                        ts2VacPosition-_hallOriginInMu2e,
+                                        parent,
+                                        0,
+                                        true,
+                                        G4Color::Yellow(),
+                                        true
+                                        );
+
+    // Build TS3.
+    TubsParams ts3VacParams (   0.,  rVac, ts3HalfLength);
+    TubsParams ts3CryoParams( rVac, rCryo, ts3HalfLength);
     
-    // Air between the Fe shield and the DS cryostat.
-    VolumeInfo shieldFeInsideInfo = nestBox( "ShieldFe_AIR_01",
-                                             shieldFeInsideHalfDim,
-                                             shieldFeInsideMaterial,
+    // Position in the Mu2e coordintate system.
+    G4ThreeVector ts3VacPosition;
+
+    // Rotation that is good for both the vacuum and the coils+cryo mockup.
+    G4RotationMatrix* ts3Rot = new G4RotationMatrix();
+    ts3Rot->rotateY(90.*CLHEP::degree);
+
+    VolumeInfo ts3VacInfo = nestTubs2( "ToyTS3Vacuum",
+                                       ts3VacParams,
+                                       vacuumMaterial,
+                                       ts3Rot,
+                                       ts3VacPosition-_hallOriginInMu2e,
+                                       parent,
+                                       0,
+                                       false,
+                                       G4Color::Green(),
+                                       true
+                                       );
+
+    VolumeInfo ts3CryoInfo = nestTubs2( "ToyTS3Cryo",
+                                        ts3CryoParams,
+                                        cryoMaterial,
+                                        ts3Rot,
+                                        ts3VacPosition-_hallOriginInMu2e,
+                                        parent,
+                                        0,
+                                        true,
+                                        G4Color::Green(),
+                                        true
+                                        );
+
+    // Build TS4.
+    double ts4VacParams[5]  = { 0.0,  rVac, rTorus, 0.5*M_PI, 0.5*M_PI };
+    double ts4CryoParams[5] = {rVac, rCryo, rTorus, 0.5*M_PI, 0.5*M_PI };
+
+    // Position in the Mu2e coordintate system.
+    G4ThreeVector ts4VacPosition( -ts3HalfLength, 0., rTorus);
+
+    G4RotationMatrix* ts4Rot = new G4RotationMatrix();
+    ts4Rot->rotateX(90.0*CLHEP::degree);
+
+    VolumeInfo ts4VacInfo = nestTorus2("ToyTS4Vacuum",
+                                       ts4VacParams,
+                                       vacuumMaterial,
+                                       ts4Rot,
+                                       ts4VacPosition-_hallOriginInMu2e,
+                                       parent,
+                                       0,
+                                       false,
+                                       G4Color::Yellow(),
+                                       true
+                                       );
+
+    VolumeInfo ts4CryoInfo = nestTorus2("ToyTS4Cryo",
+                                        ts4CryoParams,
+                                        cryoMaterial,
+                                        ts4Rot,
+                                        ts4VacPosition-_hallOriginInMu2e,
+                                        parent,
+                                        0,
+                                        true,
+                                        G4Color::Yellow(),
+                                        true
+                                        );
+    
+    // Build TS5.
+    TubsParams ts5VacParams (   0.,  rVac, ts5HalfLength);
+    TubsParams ts5CryoParams( rVac, rCryo, ts5HalfLength);
+
+    // Position in the Mu2e coordintate system.
+    G4ThreeVector ts5VacPosition( -solenoidOffset, 0., ts5zOffset) ;
+
+    VolumeInfo ts5VacInfo = nestTubs2( "ToyTS5Vacuum",
+                                       ts5VacParams,
+                                       vacuumMaterial,
+                                       0,
+                                       ts5VacPosition-_hallOriginInMu2e,
+                                       parent,
+                                       0,
+                                       true,
+                                       G4Color::Red(),
+                                       true
+                                       );
+
+    VolumeInfo ts5CryoInfo = nestTubs2( "ToyTS5Cryo",
+                                        ts5CryoParams,
+                                        cryoMaterial,
+                                        0,
+                                        ts5VacPosition-_hallOriginInMu2e,
+                                        parent,
+                                        0,
+                                        true,
+                                        G4Color::Red(),
+                                        true
+                                        );
+
+  } // end Mu2eWorld::constructTS
+
+  void Mu2eWorld::constructPS( const VolumeInfo& parent ){
+
+    // A helper class.
+    MaterialFinder materialFinder(*_config);
+
+    // Extract information from the config file.
+    
+    double rTorus            = _config->getDouble("toyTS.rTorus");
+    double ps1HalfLength     = _config->getDouble("toyPS1.vacHalfLength");
+    double ts1HalfLength     = _config->getDouble("toyTS1.halfLength");
+    double solenoidOffset    = _config->getDouble("mu2e.solenoidOffset");
+
+    // Build the barrel of the cryostat.
+    TubsParams psCryoParams( _config->getDouble("toyPS.rIn"),
+                             _config->getDouble("toyPS.rOut"),
+                             _config->getDouble("toyPS.CryoHalfLength"));
+    G4Material* psCryoMaterial = materialFinder.get("toyPS.materialName");
+
+    // In the Mu2e coordinate system.
+    double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength;
+    G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
+    
+    // Toy model of the PS coils + cryostat. It needs real structure.
+    VolumeInfo psCryoInfo = nestTubs2( "ToyPSCryo",
+                                       psCryoParams,
+                                       psCryoMaterial,
+                                       0,
+                                       psCryoPosition-_hallOriginInMu2e,
+                                       parent,
+                                       0,
+                                       true,
+                                       G4Color::Cyan(),
+                                       false
+                                       );
+
+    // Build the main PS vacuum body.
+    TubsParams ps1VacParams( 0.,
+                             _config->getDouble("toyPS.rIn"),
+                             ps1HalfLength);
+    G4Material* vacuumMaterial  = materialFinder.get("toyDS.insideMaterialName");
+
+    // Position in the Mu2e coordinate system.
+    double ps1Z0     = -rTorus + -2.*ts1HalfLength - ps1HalfLength;
+    G4ThreeVector ps1Position( solenoidOffset, 0., ps1Z0);    
+    
+    VolumeInfo ps1VacInfo   = nestTubs2( "ToyPS1Vacuum",
+                                         ps1VacParams,
+                                         vacuumMaterial,
+                                         0,
+                                         ps1Position-_hallOriginInMu2e,
+                                         parent,
+                                         0,
+                                         true,
+                                         G4Colour::Green(),
+                                         false
+                                         );
+    
+    // Build the production target.
+    TubsParams prodTargetParams( 0.,
+                                 _config->getDouble("targetPS_rOut"),
+                                 _config->getDouble("targetPS_halfLength"));
+    G4Material* prodTargetMaterial = materialFinder.get("targetPS_materialName");
+    
+    // Position in the Mu2e coordinate system.
+    CLHEP::Hep3Vector prodTargetPosition = _config->getHep3Vector("productionTarget.position");
+
+    // Rotation of production target.
+    G4RotationMatrix* prodTargetRotation = new G4RotationMatrix;
+    double targetPS_rotX = _config->getDouble("targetPS_rotX" )*CLHEP::degree;
+    double targetPS_rotY = _config->getDouble("targetPS_rotY" )*CLHEP::degree;
+    prodTargetRotation->rotateX( targetPS_rotX);
+    prodTargetRotation->rotateY( targetPS_rotY);
+
+    VolumeInfo prodTargetInfo   = nestTubs2( "ProductionTarget",
+                                             prodTargetParams,
+                                             prodTargetMaterial,
+                                             prodTargetRotation,
+                                             prodTargetPosition-ps1Position,
+                                             ps1VacInfo,
                                              0,
-                                             G4ThreeVector(),
-                                             shieldFeInfo.logical,
-                                             0,
-                                             G4Colour::Green()
+                                             true,
+                                             G4Colour::Red(),
+                                             true
                                              );
     
-    // this was supposed to be in/out,  but it looks like toyDS.rOut and rIn are reversed, 
-    //so I will put them in the wrong order.  kutschke agrees was a bug.
-    double detSolCoilParams[5] = { 
-      _config->getDouble("toyDS.rIn"       ) * CLHEP::mm,
-      _config->getDouble("toyDS.rOut"      ) * CLHEP::mm,
-      _config->getDouble("toyDS.halfLength") * CLHEP::mm,
-      0.,
-      2.*M_PI
-    };
- 
-    //will divide the detector solenoid vacuum into two parts. the purpose
-    //is to have a slowly falling field (the real one) over the stopping target
-    //region, and then a pure solenoidal field in the region of the tracker.
-    //
-    //this will greatly simplify debugging of the kalman filter and tracking algorithms.
-    //I considered fudging the field Julie Managan put in, which is the upstream half; Kutschke
-    //says this will cause problems because no matter what I do it will violate Poisson's equation
-    //at some point.  By dividing it into two parts, I can attach different fieldMgrs to the two sections
-    //and this does less emotional violence to G4 as long as I choose a nice transition point.
-    // rhb 1/22/10
-    //
-    //this transitionZ is in theory the only hardwired fudge to make this work; then calculate everything
-    //given where we choose to move from one fieldMgr to the other
+    // Set the parameters of the transformation from the PrimaryProtonGun
+    // coordinates to G4 coordinates.
+    _primaryProtonGunRotation = prodTargetRotation->inverse();
 
-    //
-    //ok, now compute the new halfLengths and centers; note Rob's code forces center at zero locally but give it a name for readability
-    // we need this here because we're cutting the length of the ds vac by this amount 
-    ///////////////////////////
-      ///////////////////////////
-      ///////////////////////////
-
-      // Half Length of the block to prevent leakage of vaccume
-      // This block is covering TS1 and placed between TS1-coil & DS-Upstream coil
-      // Right now this is inside the DS  
-      double toyDSBK1dothalfLength = 500.0*CLHEP::mm;   //this length can vary 
-      //
-      //these are TS1 coil parameters
-      double toyTS1dotrIn  = 600.0*CLHEP::mm;    
-      double toyTS1dotrOut = 700.0*CLHEP::mm;    
-      double toyTS1dothalfLength = 500.0*CLHEP::mm;
-
-      double centerOfDS = 0.;
-      //now, you can read off a transition Z based on the field map and translate it to the local system
-      double globalTransitionZ = dsz0; //so let's start at local 0 for debugging
-      double transitionZ = (globalTransitionZ - dsz0) - 1500.;//transition arbitrary while I debug but must respect target/tracker locations
+    G4ThreeVector prodTargetFaceLocal(0.,0.,prodTargetParams.zHalfLength);
+    _primaryProtonGunOrigin = prodTargetPosition + _mu2eOrigin + _primaryProtonGunRotation*prodTargetFaceLocal;
     
-      double halfLengthOfUpstreamDSVac     = (_config->getDouble("toyDS.halfLengthVac")*CLHEP::mm + (transitionZ-centerOfDS))/2.
-        - toyDSBK1dothalfLength - toyTS1dothalfLength;
-      double halfLengthOfDownstreamDSVac   = _config->getDouble("toyDS.halfLengthVac")*CLHEP::mm - halfLengthOfUpstreamDSVac;
-      //and of course the center of the upstream and downstream sections just moved
-      double centerOfUpstreamDSVac   = transitionZ - halfLengthOfUpstreamDSVac;
-      double centerOfDownstreamDSVac = transitionZ + halfLengthOfDownstreamDSVac;
-
-      //print out all this nonsense
-      /*
-        cout << "we started with a center at: " << globalTransitionZ - dsz0
-        << " and a halflength of " << _config->getDouble("toyDS.halfLengthVac") 
-        << " a transition z at " << transitionZ 
-        << " and ended up with " << endl;
-
-        cout << " halfLengthOfUpstreamDSVac = " << halfLengthOfUpstreamDSVac
-        << " centerOfUpstreamDSVac = " << centerOfUpstreamDSVac
-        << endl;
-        cout << " halfLengthOfDownstreamDSVac = " << halfLengthOfDownstreamDSVac
-        << " centerOfDownstreamDSVac = " << centerOfDownstreamDSVac
-        << endl;
-      */
-      //checked this out for a special case, looked fine
-      //     assert(2==1);
-
-      double detSolVacParams[5] = { 
-        0. * CLHEP::mm,
-        detSolCoilParams[0],
-        _config->getDouble("toyDS.halfLengthVac") * CLHEP::mm,
-        0.,
-        2.*M_PI
-      };
-
-      //cout << "toyDS.halfLengthVac = " << _config->getDouble("toyDS.halfLengthVac") << endl;
-      //    assert (2==1);
-      double detSolDownstreamVacParams[5]   = { 
-        0.
-        ,detSolCoilParams[0]
-        ,halfLengthOfDownstreamDSVac*CLHEP::mm
-        ,0.
-        ,2.*M_PI
-      };
-      G4Material* detSolCoilMaterial = materialFinder.get("toyDS.materialName");
-      //no longer used    G4Material* detSolVacMaterial  = materialFinder.get("toyDS.insideMaterialName");
-      G4Material* detSolUpstreamVacMaterial    = materialFinder.get("toyDS.insideMaterialName");
-      G4Material* detSolDownstreamVacMaterial  = materialFinder.get("toyDS.insideMaterialName");
-    
-      // Toy model of the DS coils + cryostat. It needs more structure and has
-      // much less total material.
-      VolumeInfo detSolCoilInfo = nestTubs( "ToyDSCoil",
-                                            detSolCoilParams,
-                                            detSolCoilMaterial,
-                                            0,
-                                            G4ThreeVector(),
-                                            shieldFeInsideInfo.logical,
-                                            0,
-                                            G4Color::Magenta()
-                                            );
-      /* again not used with split 
-      // The vacuum inside the DS cryostat and coils; this is longer in z than the coils+cryo.
-      VolumeInfo detSolVacInfo = nestTubs( "ToyDSVacuum",
-      detSolVacParams,
-      detSolVacMaterial,
-      0,
-      G4ThreeVector(),
-      shieldFeInsideInfo.logical,
-      0,
-      G4Color::Magenta()
-      );
-      */
-
-
-      G4ThreeVector detSolDownstreamOffset  = G4ThreeVector(0.,0.,centerOfDownstreamDSVac);
-      VolumeInfo detSolDownstreamVacInfo = nestTubs( "ToyDSDownstreamVacuum",
-                                                     detSolDownstreamVacParams,
-                                                     detSolDownstreamVacMaterial,
-                                                     0,
-                                                     detSolDownstreamOffset,
-                                                     shieldFeInsideInfo.logical,
-                                                     0,
-                                                     G4Color::Magenta()
-                                                     );
-
-
-
-
-
-
-
-      double detSolUpstreamVacParams[5]   = {
-        0.
-        ,detSolCoilParams[0]
-        //      ,halfLengthOfUpstreamDSVac - toyDSBK1dothalfLength
-        ,halfLengthOfUpstreamDSVac
-        ,0.
-        ,2.*M_PI
-      };
-      //    G4ThreeVector detSolUpstreamOffset  = G4ThreeVector(detSolXoff-hallPosition[0],
-      //                                               shieldConOutsideHalfDim[1] - hallInHLen[1],
-      //                             dsz0+_mu2eOrigin.z() + centerOfUpstreamDSVac*CLHEP::mm + toyDSBK1dothalfLength);
-      G4ThreeVector detSolUpstreamOffset  = G4ThreeVector(0.,0.,
-                                                          centerOfUpstreamDSVac);
-      VolumeInfo detSolUpstreamVacInfo   = nestTubs( "ToyDSUpstreamVacuum",
-                                                     detSolUpstreamVacParams,
-                                                     detSolUpstreamVacMaterial,
-                                                     0,
-                                                     detSolUpstreamOffset,
-                                                     shieldFeInsideInfo.logical,
-                                                     0,
-                                                     G4Colour::Yellow(), //color change between two halves
-                                                     0
-                                                     );
-
-
-
-      //Now make TS1 coil with respect to hall
-      //radius and halfLength are already defiend
-      //    G4ThreeVector TS1CoilOffset = G4ThreeVector(detSolXoff-hallPosition[0],
-      //                                               shieldConOutsideHalfDim[1] - hallInHLen[1],
-      //dsz0+_mu2eOrigin.z() +centerOfUpstreamDSVac*CLHEP::mm -halfLengthOfUpstreamDSVac*CLHEP::mm + 2*toyDSBK1dothalfLength - toyTS1dothalfLength);
-
-      //
-      // same mother volume as detector solenoid, you need this offset
-      G4ThreeVector TS1CoilOffset = G4ThreeVector(0.,0.,
-                                                  centerOfUpstreamDSVac -
-                                                  (halfLengthOfUpstreamDSVac + 2*toyDSBK1dothalfLength + toyTS1dothalfLength));
-      double TS1CoilParams[5] = { 
-        toyTS1dotrIn,
-        toyTS1dotrOut,
-        toyTS1dothalfLength,
-        0.,
-        2.*M_PI
-      };
-      G4Material* TS1CoilMaterial  = materialFinder.get("toyDS.materialName");
-      VolumeInfo TS1CoilInfo = nestTubs( "ToyTS1Coil",
-                                         TS1CoilParams,
-                                         TS1CoilMaterial,
-                                         0,
-                                         TS1CoilOffset,
-                                         //
-                                         // make this have same mother as DS
-                                         //                                           hallInfo.logical,
-                                         shieldFeInsideInfo.logical,
-                                         0,
-                                         G4Color::White(),
-                                         1
-                                         );
-
-      //This is TS1 vacuum with respect to TS1 coil
-      G4ThreeVector TS1VacOffset = G4ThreeVector();
-      double TS1VacParams[5] = { 
-        0.0,
-        toyTS1dotrIn,
-        toyTS1dothalfLength,
-        0.,
-        2.*M_PI
-      };
-      G4Material* TS1VacMaterial  = materialFinder.get("toyDS.insideMaterialName");
-      VolumeInfo TS1VacInfo = nestTubs( "ToyTS1Vacuum",
-                                        TS1VacParams,
-                                        TS1VacMaterial,
-                                        0,
-                                        TS1VacOffset,
-                                        TS1CoilInfo.logical,
-                                        0,
-                                        G4Color::Yellow(),
-                                        1
-                                        );
-
-
-
-      //this is block around TS1 to prevent vacuum leakage
-      if(toyDSBK1dothalfLength!=0){ //length of block should not be zero!
-        //      G4ThreeVector DSBK1CoilOffset =  G4ThreeVector(detSolXoff-hallPosition[0],
-        //                                                     shieldConOutsideHalfDim[1] - hallInHLen[1],
-        // dsz0+_mu2eOrigin.z() +centerOfUpstreamDSVac*CLHEP::mm -halfLengthOfUpstreamDSVac*CLHEP::mm +toyDSBK1dothalfLength);
-
-        //
-        // placing this inside same mother volume as detector solenoid, you need this offset
-        G4ThreeVector DSBK1CoilOffset =  G4ThreeVector(0.,0.,
-                                                       centerOfUpstreamDSVac -(halfLengthOfUpstreamDSVac +toyDSBK1dothalfLength));
-
-        double DSBK1CoilParams[5] = { 
-          toyTS1dotrOut,
-          _config->getDouble("toyDS.rIn")*CLHEP::mm,
-          toyDSBK1dothalfLength,
-          0.,
-          2.*M_PI
-        };
-        G4Material* DSBK1CoilMaterial  = materialFinder.get("toyDS.materialName");
-        VolumeInfo DSBK1CoilInfo = nestTubs( "ToyDSBK1Coil",
-                                             DSBK1CoilParams,
-                                             DSBK1CoilMaterial,
-                                             0,
-                                             DSBK1CoilOffset,
-                                             shieldFeInsideInfo.logical,
-                                             0,
-                                             G4Color::Green(),
-                                             1
-                                             );
-      }//length of block should not be zero!
-
-
-      //this is TS3 coil parameters
-      double toyTS3dotrIn  = 600.0*CLHEP::mm;    
-      double toyTS3dotrOut = 700.0*CLHEP::mm;    
-      double toyTS3dothalfLength = 1950.0*CLHEP::mm/2.0;
-
-
-      //this is TS2 coil parameters
-      double toyTS2dotrIn  = 600.0*CLHEP::mm;    
-      double toyTS2dotrOut = 700.0*CLHEP::mm;    
-      double toyTS2dothalfLength = -detSolXoff - toyTS3dothalfLength;
-
-
-      //Now make TS2 coil
-      G4ThreeVector TS2CoilOffset =  G4ThreeVector(-hallPosition[0] -toyTS3dothalfLength, yOriginHeight -hallInHLen[1], _mu2eOrigin.z() +toyTS2dothalfLength);
-      double TS2CoilParams[5] = { 
-        toyTS2dotrIn,
-        toyTS2dotrOut,
-        toyTS2dothalfLength,
-        0.5*M_PI,
-        0.5*M_PI
-      };
-      G4Material* TS2CoilMaterial  = materialFinder.get("toyDS.materialName");
-      G4RotationMatrix* TS2CoilRot = new G4RotationMatrix();
-      TS2CoilRot->rotateX(90.0*CLHEP::degree);
-      VolumeInfo TS2CoilInfo = nestTorus("ToyTS2Coil",
-                                         TS2CoilParams,
-                                         TS2CoilMaterial,
-                                         TS2CoilRot,
-                                         TS2CoilOffset,
-                                         hallInfo.logical,
-                                         0,
-                                         G4Color::Red(),
-                                         1
-                                         );
-
-
-      //Now make TS2 vacuum
-      G4ThreeVector TS2VacOffset =  G4ThreeVector();
-      double TS2VacParams[5] = { 
-        0.0,
-        toyTS2dotrIn,
-        toyTS2dothalfLength,
-        0.5*M_PI,
-        0.5*M_PI
-      };
-      G4Material* TS2VacMaterial  = materialFinder.get("toyDS.insideMaterialName");
-      G4RotationMatrix* TS2VacRot = new G4RotationMatrix();
-      TS2VacRot->rotateX(0.0*CLHEP::degree);
-      VolumeInfo TS2VacInfo = nestTorus("ToyTS2Vac",
-                                        TS2VacParams,
-                                        TS2VacMaterial,
-                                        TS2VacRot,
-                                        TS2VacOffset,
-                                        TS2CoilInfo.logical,
-                                        0,
-                                        G4Color::Yellow(),
-                                        1
-                                        );
-
-
-
-      //this is TS4 coil parameters
-      double toyTS4dotrIn  = 600.0;    
-      double toyTS4dotrOut = 700.0;    
-      double toyTS4dothalfLength = -detSolXoff - toyTS3dothalfLength;
-
-      //Now make TS4 coil
-      G4ThreeVector TS4CoilOffset =  G4ThreeVector(-hallPosition[0] + toyTS3dothalfLength, yOriginHeight-hallInHLen[1], _mu2eOrigin.z() - toyTS2dothalfLength);
-      double TS4CoilParams[5] = { 
-        toyTS4dotrIn*CLHEP::mm,
-        toyTS4dotrOut*CLHEP::mm,
-        toyTS4dothalfLength*CLHEP::mm,
-        1.5*M_PI,
-        0.5*M_PI
-      };
-      G4Material* TS4CoilMaterial  = materialFinder.get("toyDS.materialName");
-      G4RotationMatrix* TS4CoilRot = new G4RotationMatrix();
-      TS4CoilRot->rotateX(90.0*CLHEP::degree);
-      VolumeInfo TS4CoilInfo = nestTorus("ToyTS4Coil",
-                                         TS4CoilParams,
-                                         TS4CoilMaterial,
-                                         TS4CoilRot,
-                                         TS4CoilOffset,
-                                         hallInfo.logical,
-                                         0,
-                                         G4Color::Red(),
-                                         1
-                                         );
-
-
-      //Now make TS4 vacuum
-      G4ThreeVector TS4VacOffset =  G4ThreeVector();
-      double TS4VacParams[5] = { 
-        0.0,
-        toyTS4dotrIn,
-        toyTS4dothalfLength,
-        1.5*M_PI,
-        0.5*M_PI
-      };
-      G4Material* TS4VacMaterial  = materialFinder.get("toyDS.insideMaterialName");
-      G4RotationMatrix* TS4VacRot = new G4RotationMatrix();
-      TS2VacRot->rotateX(0.0*CLHEP::degree);
-      VolumeInfo TS4VacInfo = nestTorus("ToyTS4Vac",
-                                        TS4VacParams,
-                                        TS4VacMaterial,
-                                        TS4VacRot,
-                                        TS4VacOffset,
-                                        TS4CoilInfo.logical,
-                                        0,
-                                        G4Color::Yellow(),
-                                        1
-                                        );
-
-
-
-      //Now make TS3 coil
-      G4ThreeVector TS3CoilOffset = G4ThreeVector(-hallPosition[0], yOriginHeight-hallInHLen[1], _mu2eOrigin.z() );
-      double TS3CoilParams[5] = { 
-        toyTS3dotrIn*CLHEP::mm,
-        toyTS3dotrOut*CLHEP::mm,
-        toyTS3dothalfLength*CLHEP::mm,
-        0.,
-        2.*M_PI
-      };
-      G4Material* TS3CoilMaterial  = materialFinder.get("toyDS.materialName");
-      G4RotationMatrix* TS3CoilRot = new G4RotationMatrix();
-      TS3CoilRot->rotateY(90.*CLHEP::degree);
-      VolumeInfo TS3CoilInfo = nestTubs( "ToyTS3Coil",
-                                         TS3CoilParams,
-                                         TS3CoilMaterial,
-                                         TS3CoilRot,
-                                         TS3CoilOffset,
-                                         hallInfo.logical,
-                                         0,
-                                         G4Color::White(),
-                                         1
-                                         );
-
-      //This is TS1 vacuum
-      G4ThreeVector TS3VacOffset = G4ThreeVector();
-      double TS3VacParams[5] = { 
-        0.0*CLHEP::mm,
-        toyTS3dotrIn*CLHEP::mm,
-        toyTS3dothalfLength*CLHEP::mm,
-        0.,
-        2.*M_PI
-      };
-      G4Material* TS3VacMaterial  = materialFinder.get("toyDS.insideMaterialName");
-      VolumeInfo TS3VacInfo = nestTubs( "ToyTS3Vacuum",
-                                        TS3VacParams,
-                                        TS3VacMaterial,
-                                        0,
-                                        TS3VacOffset,
-                                        TS3CoilInfo.logical,
-                                        0,
-                                        G4Color::Yellow(),
-                                        1
-                                        );
-    
-      ///////////////////////////
-        ///////////////////////////
-        ///////////////////////////
-
-
-
-
-
-
-
-
-
-
-        // Mock up of the production solenoid and its vacuum.
-
-        double prodSolCoilParams[5] = { 
-          _config->getDouble("toyPS.rIn"       ) * CLHEP::mm,
-          _config->getDouble("toyPS.rOut"      ) * CLHEP::mm,
-          _config->getDouble("toyPS.halfLength") * CLHEP::mm,
-          0.,
-          2.*M_PI
-        };
-
-        G4Material* prodSolCoilMaterial = materialFinder.get("toyPS.materialName");   
-        // Position of PS inside the air volume of the hall.
-        G4ThreeVector prodSolCoilOffset = 
-          G4ThreeVector( prodSolXoff-hallPosition[0],
-                         yOriginHeight - hallInHLen[1],
-                         _config->getDouble("toyPS.z0") * CLHEP::mm + _mu2eOrigin.z()
-                         );
-
-        // Toy model of the PS coils + cryostat. It needs more structure and has
-        // much less total material.
-        VolumeInfo prodSolCoilInfo = nestTubs( "ToyPSCoil",
-                                               prodSolCoilParams,
-                                               prodSolCoilMaterial,
-                                               0,
-                                               prodSolCoilOffset,
-                                               hallInfo.logical,
-                                               0,
-                                               G4Color::Cyan(),
-                                               1
-                                               );
-    
-
-
-        ///////////////////////////
-          ///////////////////////////
-          ///////////////////////////
-
-          // Half Length of the block to prevent leakage of vaccume
-          // This block is covering TS1 and placed between TS1-coil & PS-coil 
-          double toyPSBK1dothalfLength = 50.0*CLHEP::mm; 
-
-          //this is TS5 coil parameters
-          double toyTS5dotrIn  = 600.0*CLHEP::mm;    
-          double toyTS5dotrOut = 700.0*CLHEP::mm;    
-          double toyTS5dothalfLength =  500.0*CLHEP::mm;
-
-
-          // production solenoid vacuum recreated with respect to block
-          G4ThreeVector prodSolVacOffset = G4ThreeVector(prodSolXoff - hallPosition[0],
-                                                         yOriginHeight - hallInHLen[1],
-                                                         _config->getDouble("toyPS.z0") * CLHEP::mm + _mu2eOrigin.z() - toyPSBK1dothalfLength); 
-          double prodSolVacParams[5] = { 
-            0.*CLHEP::mm,
-            prodSolCoilParams[0],
-            _config->getDouble("toyPS.halfLengthVac")*CLHEP::mm - toyPSBK1dothalfLength,
-            0.,
-            2.*M_PI
-          };
-          G4Material* prodSolVacMaterial  = materialFinder.get("toyPS.insideMaterialName");
-          VolumeInfo prodSolVacInfo = nestTubs( "ToyPSVacuum",
-                                                prodSolVacParams,
-                                                prodSolVacMaterial,
-                                                0,
-                                                prodSolVacOffset,
-                                                hallInfo.logical,
-                                                0,
-                                                G4Color::Yellow(),
-                                                0
-                                                );
-
-
-
-
-
-          //Now make TS5 coil
-          G4ThreeVector TS5CoilOffset = G4ThreeVector(prodSolXoff - hallPosition[0],
-                                                      yOriginHeight - hallInHLen[1],
-                                                      _config->getDouble("toyPS.z0")*CLHEP::mm +_mu2eOrigin.z() +_config->getDouble("toyPS.halfLength")*CLHEP::mm -2.0*toyPSBK1dothalfLength +toyTS5dothalfLength);     
-          double TS5CoilParams[5] = { 
-            toyTS5dotrIn,
-            toyTS5dotrOut,
-            toyTS5dothalfLength,
-            0.,
-            2.*M_PI
-          };
-          G4Material* TS5CoilMaterial  = materialFinder.get("toyPS.materialName");
-          VolumeInfo TS5CoilInfo = nestTubs( "ToyTS5Coil",
-                                             TS5CoilParams,
-                                             TS5CoilMaterial,
-                                             0,
-                                             TS5CoilOffset,
-                                             hallInfo.logical,
-                                             0,
-                                             G4Color::White(),
-                                             1
-                                             );
-
-          //This is TS5 vacuum
-          G4ThreeVector TS5VacOffset = G4ThreeVector();
-          double TS5VacParams[5] = { 
-            0.0,
-            toyTS5dotrIn,
-            toyTS5dothalfLength,
-            0.,
-            2.*M_PI
-          };
-          G4Material* TS5VacMaterial  = materialFinder.get("toyPS.insideMaterialName");
-          VolumeInfo TS5VacInfo = nestTubs( "ToyTS5Vacuum",
-                                            TS5VacParams,
-                                            TS5VacMaterial,
-                                            0,
-                                            TS5VacOffset,
-                                            TS5CoilInfo.logical,
-                                            0,
-                                            G4Color::Yellow(),
-                                            1
-                                            );
-    
-
-
-    
-          //this is block around TS5 to prevent vacuum leakage
-          if(toyPSBK1dothalfLength!=0){//only when vacuum leak block is non-zero lenght
-            G4ThreeVector PSBK1CoilOffset = G4ThreeVector(prodSolXoff - hallPosition[0],
-                                                          yOriginHeight - hallInHLen[1],
-                                                          _config->getDouble("toyPS.z0")*CLHEP::mm +_mu2eOrigin.z() +_config->getDouble("toyPS.halfLength")*CLHEP::mm -toyPSBK1dothalfLength);     
-
-
-            double PSBK1CoilParams[5] = { 
-              toyTS5dotrOut,
-              _config->getDouble("toyPS.rIn")*CLHEP::mm,
-              toyPSBK1dothalfLength,
-              0.,
-              2.*M_PI
-            };
-            G4Material* PSBK1CoilMaterial  = materialFinder.get("toyPS.materialName");
-            VolumeInfo PSBK1CoilInfo = nestTubs( "ToyPSBK1Coil",
-                                                 PSBK1CoilParams,
-                                                 PSBK1CoilMaterial,
-                                                 0,
-                                                 PSBK1CoilOffset,
-                                                 hallInfo.logical,
-                                                 0,
-                                                 G4Color::Magenta(),
-                                                 1
-                                                 );
-          }//only when vacuum leak block is non-zero lenght
-
-
-          ///////////////////////////
-            ///////////////////////////
-            ///////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            // Proton Target in PS 
-
-            // Proton Target parameters 
-            // Proton Target position
-            G4ThreeVector ProtonTargetPosition = G4ThreeVector( 
-                                                               _config->getDouble("targetPS_positionX")*CLHEP::mm,
-                                                               _config->getDouble("targetPS_positionY")*CLHEP::mm,
-                                                               _config->getDouble("targetPS_positionZ")*CLHEP::mm
-                                                               );
-    
-            // Rotation of Proton Target                                
-            double targetPS_rotX = _config->getDouble("targetPS_rotX" );
-            double targetPS_rotY = _config->getDouble("targetPS_rotY" );
-    
-            // Proton Target Material
-            G4Material* targetPS_materialName = materialFinder.get("targetPS_materialName");
-    
-            //Proton Target geometry parameters
-            double targetPS_Pam[5] = { 
-              0.,
-              _config->getDouble("targetPS_rOut"      ) * CLHEP::mm,
-              _config->getDouble("targetPS_halfLength") * CLHEP::mm,
-              0.,
-              2.*M_PI
-            };
-
-            // Rotation of Proton Target
-            G4RotationMatrix* PS_target_rot = new G4RotationMatrix();
-            PS_target_rot->rotateX( targetPS_rotX*CLHEP::degree);
-            PS_target_rot->rotateY( targetPS_rotY*CLHEP::degree);
-   
-            //
-            // Creating Proton Target object in prodSolVacInfo logical object (v. khalatian)
-            VolumeInfo ProtonTargetInfo = nestTubs( "ProtonTarget",
-                                                    targetPS_Pam,
-                                                    targetPS_materialName,
-                                                    PS_target_rot,
-                                                    ProtonTargetPosition,
-                                                    prodSolVacInfo.logical,
-                                                    0,
-                                                    G4Color::White()
-                                                    );
-   
-            // Primary Proton Gun Origin 
-            _primaryProtonGunOrigin = dirtOffset + wallOffset + hallOffset + prodSolCoilOffset + ProtonTargetPosition;
-    
-            //Primary Proton Gun Rotation 
-            // For rotating Primary Proton Gun I take angles from Proton Target 
-            _primaryProtonGunRotation.rotateX( targetPS_rotX*CLHEP::degree);
-            _primaryProtonGunRotation.rotateY( targetPS_rotY*CLHEP::degree);
-            //
-            //these are "active rotations; we want passive, in G4 style
-            _primaryProtonGunRotation = _primaryProtonGunRotation.inverse();
-
-
-            // Construct one of the trackers.
-            VolumeInfo trackerInfo;
-            if( _config->getBool("hasLTracker",false) ){
-              int ver = _config->getInt("LTrackerVersion",1);
-              log << "LTracker version: " << ver << "\n";
-              if ( ver == 1 ){
-                trackerInfo = constructLTrackerv1( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac, *_config );
-              }
-              else if ( ver == 2 ) {
-                trackerInfo = constructLTrackerv2( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac, *_config );
-              } else {
-                trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac, *_config );
-              }
-            } else if ( _config->getBool("hasITracker",false) ) {
-              trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac );
-            } else if ( _config->getBool("hasTTracker",false) ) {
-              trackerInfo = constructTTrackerv1( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac, *_config );
-            } else {
-              trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, dsz0 + centerOfDownstreamDSVac, *_config );
-            }
-
-            // 
-            VolumeInfo calorimeterInfo;
-            if ( _config->getBool("hasCalorimeter",false) ){
-              calorimeterInfo = constructCalorimeter( detSolDownstreamVacInfo.logical,
-                                                      -(dsz0+centerOfDownstreamDSVac),
-                                                      *_config );
-            }
-
-            // Do the Target
-            VolumeInfo targetInfo;
-            if( _config->getBool("hasTarget",false) ){
-
-              targetInfo = constructStoppingTarget( detSolUpstreamVacInfo.logical, 
-                                                    dsz0 + centerOfUpstreamDSVac );
-
-            } else {
-
-              targetInfo = constructDummyStoppingTarget( detSolUpstreamVacInfo.logical, 
-                                                         dsz0 + centerOfUpstreamDSVac,
-                                                         *_config );
-            } //hasTarget
-
-
-            // Only after all volumes have been defined should we set the magnetic fields.
-            // Make the magnetic field valid inside the detSol vacuum; one upstream, one downstream
-
-            const char* fieldmap = "/home2/misc1/jmanagan/myMu2e/GMC/fieldmaps/dsmap_unfmt_rad100.dat";//note disgusting hardwired absolute path
-            int const nx(50); int const ny(25); int const nz(438);
-
-            G4double stepUpstreamMinimum(1.0e-2*CLHEP::mm);
-            G4double stepDownstreamMinimum(1.0e-2*CLHEP::mm);
-
-            //
-            //get the field form; default if unspecified is constant
-            int detSolFieldForm = _config->getInt("detSolFieldForm",detSolUpConstantDownConstant); 
-
-            cout << "detSolFieldForm  from Mu2eWorld.cc = " << detSolFieldForm << endl;
-            //assert (2==1);
-            // first check we have a legal configuration
-            if (detSolFieldForm != detSolFullField && detSolFieldForm != detSolUpVaryingDownConstant && detSolFieldForm != detSolUpConstantDownConstant)
-              {
-                G4cout << " no legal field specification; detSolFieldForm = " << detSolFieldForm << G4endl;
-                throw cms::Exception("GEOM")
-                  << "illegal field config as specified in geom.txt \n";
-              }
-
-            if (detSolFieldForm == detSolFullField)
-              {
-                //
-                //upstream varying section
-
-                _detSolUpstreamVaryingBField = auto_ptr<G4MagneticField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
-                _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
-                _rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualUpstreamRHS.get()));
-                _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
-                                                                                        , _rungeUpstreamHelix.get() ));
-                _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
-                                                                                         _chordUpstreamFinder.get(), true));
-                //
-                //downstream varying section
-                _detSolDownstreamVaryingBField = auto_ptr<G4MagneticField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
-                _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamVaryingBField.get() ) );
-                _rungeEEDownstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualDownstreamRHS.get()));
-                _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamVaryingBField.get(), stepDownstreamMinimum,
-                                                                                          _rungeDownstreamHelix.get() ));
-                _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamVaryingBField.get(), 
-                                                                                           _chordDownstreamFinder.get(), true));
-
-              }
-            if (detSolFieldForm == detSolUpVaryingDownConstant)
-              {
-                cout << "in hybrid " << endl;
-                //
-                //upstream varying section
-                _detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
-                _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get()));
-        
-                _rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler> (new G4ExplicitEuler(_usualUpstreamRHS.get()));
-                _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
-                                                                                        , _rungeEEUpstreamHelix.get() ));
-                _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
-                                                                                         _chordUpstreamFinder.get(), true));
-
-                //downstream constant section
-                G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
-                _detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
-                _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get()) );
-                _exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
-                _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
-                                                                                          , _exactDownstreamHelix.get() ));
-                _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamConstantBField.get(), 
-                                                                                           _chordDownstreamFinder.get(), true));
-              }
-
-            if (detSolFieldForm == detSolUpConstantDownConstant) 
-              {
-                cout << "in constant field" << endl;
-                //
-                // constant field, but split into two parts; upstream first
-                G4double bzUp = _config->getDouble("toyDS.bz") * tesla;
-                _detSolUpstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzUp)));
-                _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamConstantBField.get() ) );
-                _exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
-                _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamConstantBField.get(), stepUpstreamMinimum
-                                                                                        , _exactUpstreamHelix.get() ));
-                _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamConstantBField.get(), 
-                                                                                         _chordUpstreamFinder.get(), true));
-                //downstream
-                G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
-                _detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
-                _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get() ) );
-                _exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
-                _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
-                                                                                          , _exactDownstreamHelix.get() ));
-                _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamConstantBField.get(), 
-                                                                                           _chordDownstreamFinder.get(), true));
-              }
-
-
-
-            // Now that we've chosen, attach the field manager to the detSol volume; full field upstream
-            detSolUpstreamVacInfo.logical->SetFieldManager( _fieldUpstreamMgr.get(), true);
-            detSolDownstreamVacInfo.logical->SetFieldManager( _fieldDownstreamMgr.get(), true);
-
-
-
-            //
-            //set integration step values
-            G4double singleValue = 0.5e-01*CLHEP::mm;
-            G4double newUpstreamDeltaI = singleValue;
-            G4double newDownstreamDeltaI = singleValue;
-            G4double deltaOneStep = singleValue;
-            G4double deltaChord = singleValue;
-            G4double maxStep = 20.e-00*CLHEP::mm;
-
-            // Leave the defaults for the uniform field; override them for non-uniform field.
-            if ( detSolFieldForm == detSolFullField || detSolFieldForm == detSolUpVaryingDownConstant ){
-              _fieldUpstreamMgr->SetDeltaOneStep(deltaOneStep);
-              _fieldUpstreamMgr->SetDeltaIntersection(newUpstreamDeltaI);    
-              _chordUpstreamFinder->SetDeltaChord(deltaChord);
-            }
-            if ( detSolFieldForm == detSolFullField ){
-              _fieldDownstreamMgr->SetDeltaOneStep(deltaOneStep);
-              _fieldDownstreamMgr->SetDeltaIntersection(newDownstreamDeltaI);    
-              _chordDownstreamFinder->SetDeltaChord(deltaChord);
-            }
-
-            // For the uniform field, change only deltaIntersection.
-            if ( detSolFieldForm == detSolUpConstantDownConstant ||
-                 detSolFieldForm == detSolUpVaryingDownConstant     ){
-              G4double deltaIntersection = 0.00001*CLHEP::mm;
-              if ( detSolFieldForm == detSolUpConstantDownConstant ){
-                _fieldUpstreamMgr->SetDeltaIntersection(deltaIntersection);
-              }
-              _fieldDownstreamMgr->SetDeltaIntersection(deltaIntersection);    
-            }
-    
-            // Set step limit.  
-            // See also PhysicsList.cc to add a steplimiter to the list of processes.
-            // Do this so that we can see the helical trajectory in the DS and volumes inside of it.
-            _stepLimit = auto_ptr<G4UserLimits>( new G4UserLimits(maxStep));
-            detSolUpstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
-            detSolDownstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
-
-            trackerInfo.logical->SetUserLimits(_stepLimit.get());
-            targetInfo.logical->SetUserLimits(_stepLimit.get());
-
-  }
-
-  // Convert to base units for all of the items in the vector.
-  void Mu2eWorld::setUnits( vector<double>& V, G4double unit ){
-    for ( vector<double>::iterator b=V.begin(), e=V.end();
-          b!=e; ++b){
-      *b *= unit;
+  } // end Mu2eWorld::constructPS
+
+
+  // Choose the selected tracker and build it.
+  VolumeInfo Mu2eWorld::constructTracker(){
+
+    // The tracker is built inside this volume.
+    VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
+
+    // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
+    double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+
+    // Construct one of the trackers.
+    VolumeInfo trackerInfo;
+    if( _config->getBool("hasLTracker",false) ){
+      int ver = _config->getInt("LTrackerVersion",1);
+      //cout << "LTracker version: " << ver << "\n";
+      if ( ver == 1 ){
+        trackerInfo = constructLTrackerv1( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+      }
+      else if ( ver == 2 ) {
+        trackerInfo = constructLTrackerv2( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+      } else {
+        trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+        cout << "Checking detsoldownstream: " 
+             << detSolDownstreamVacInfo.centerInWorld << " "
+             << detSolDownstreamVacInfo.centerInWorld+_hallOriginInMu2e << " "
+             << endl;
+      }
+    } else if ( _config->getBool("hasITracker",false) ) {
+      trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
+    } else if ( _config->getBool("hasTTracker",false) ) {
+      trackerInfo = constructTTrackerv1( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+    } else {
+      trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
     }
+
+    return trackerInfo;
+
+  } // end Mu2eWorld::constructTracker
+
+  // Either build the stopping target or a placeholder.
+  // This should be call constrcutStoppingTarget but the name is already taken.
+  VolumeInfo Mu2eWorld::constructTarget(){
+
+
+    // The target is built inside this volume.
+    VolumeInfo detSolUpstreamVacInfo   = locateVolInfo("ToyDS2Vacuum");
+
+    // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
+    double z0DSup   = detSolUpstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+
+    // Buid the stopping target
+    VolumeInfo targetInfo;
+    if( _config->getBool("hasTarget",false) ){
+
+      targetInfo = constructStoppingTarget( detSolUpstreamVacInfo.logical, 
+                                            z0DSup );
+
+    } else {
+
+      targetInfo = constructDummyStoppingTarget( detSolUpstreamVacInfo.logical, 
+                                                 z0DSup,
+                                                 *_config );
+    } //hasTarget
+
+    return targetInfo;
   }
+
+  void Mu2eWorld::constructBFieldAndManagers(){
+
+    VolumeInfo detSolUpstreamVacInfo   = locateVolInfo("ToyDS2Vacuum");
+    VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
+
+    // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
+    //double z0DSup   = detSolUpstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+    //    double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+
+    const char* fieldmap = "/home2/misc1/jmanagan/myMu2e/GMC/fieldmaps/dsmap_unfmt_rad100.dat";//note disgusting hardwired absolute path
+    int const nx(50); int const ny(25); int const nz(438);
+    
+    G4double stepUpstreamMinimum(1.0e-2*CLHEP::mm);
+    G4double stepDownstreamMinimum(1.0e-2*CLHEP::mm);
+
+    //
+    //get the field form; default if unspecified is constant
+    int detSolFieldForm = _config->getInt("detSolFieldForm",detSolUpConstantDownConstant); 
+
+    cout << "detSolFieldForm  from Mu2eWorld.cc = " << detSolFieldForm << endl;
+    //assert (2==1);
+    // first check we have a legal configuration
+    if (detSolFieldForm != detSolFullField && detSolFieldForm != detSolUpVaryingDownConstant && detSolFieldForm != detSolUpConstantDownConstant)
+      {
+        G4cout << " no legal field specification; detSolFieldForm = " << detSolFieldForm << G4endl;
+        throw cms::Exception("GEOM")
+          << "illegal field config as specified in geom.txt \n";
+      }
+
+    if (detSolFieldForm == detSolFullField)
+      {
+        //
+        //upstream varying section
+
+        _detSolUpstreamVaryingBField = auto_ptr<G4MagneticField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
+        _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
+        _rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualUpstreamRHS.get()));
+        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
+                                                                                , _rungeUpstreamHelix.get() ));
+        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
+                                                                                 _chordUpstreamFinder.get(), true));
+        //
+        //downstream varying section
+        _detSolDownstreamVaryingBField = auto_ptr<G4MagneticField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
+        _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamVaryingBField.get() ) );
+        _rungeEEDownstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualDownstreamRHS.get()));
+        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamVaryingBField.get(), stepDownstreamMinimum,
+                                                                                  _rungeDownstreamHelix.get() ));
+        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamVaryingBField.get(), 
+                                                                                   _chordDownstreamFinder.get(), true));
+
+      }
+    if (detSolFieldForm == detSolUpVaryingDownConstant)
+      {
+        cout << "in hybrid " << endl;
+        //
+        //upstream varying section
+        _detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
+        _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get()));
+        
+        _rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler> (new G4ExplicitEuler(_usualUpstreamRHS.get()));
+        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
+                                                                                , _rungeEEUpstreamHelix.get() ));
+        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
+                                                                                 _chordUpstreamFinder.get(), true));
+
+        //downstream constant section
+        G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
+        _detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
+        _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get()) );
+        _exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
+        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
+                                                                                  , _exactDownstreamHelix.get() ));
+        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamConstantBField.get(), 
+                                                                                   _chordDownstreamFinder.get(), true));
+      }
+
+    if (detSolFieldForm == detSolUpConstantDownConstant) 
+      {
+        cout << "in constant field" << endl;
+        //
+        // constant field, but split into two parts; upstream first
+        G4double bzUp = _config->getDouble("toyDS.bz") * tesla;
+        _detSolUpstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzUp)));
+        _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamConstantBField.get() ) );
+        _exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
+        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamConstantBField.get(), stepUpstreamMinimum
+                                                                                , _exactUpstreamHelix.get() ));
+        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamConstantBField.get(), 
+                                                                                 _chordUpstreamFinder.get(), true));
+        //downstream
+        G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
+        _detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
+        _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get() ) );
+        _exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
+        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
+                                                                                  , _exactDownstreamHelix.get() ));
+        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamConstantBField.get(), 
+                                                                                   _chordDownstreamFinder.get(), true));
+      }
+
+
+
+    // Now that we've chosen, attach the field manager to the detSol volume; full field upstream
+    detSolUpstreamVacInfo.logical->SetFieldManager( _fieldUpstreamMgr.get(), true);
+    detSolDownstreamVacInfo.logical->SetFieldManager( _fieldDownstreamMgr.get(), true);
+
+
+
+    //
+    //set integration step values
+    G4double singleValue = 0.5e-01*CLHEP::mm;
+    G4double newUpstreamDeltaI = singleValue;
+    G4double newDownstreamDeltaI = singleValue;
+    G4double deltaOneStep = singleValue;
+    G4double deltaChord = singleValue;
+    G4double maxStep = 20.e-00*CLHEP::mm;
+
+    // Leave the defaults for the uniform field; override them for non-uniform field.
+    if ( detSolFieldForm == detSolFullField || detSolFieldForm == detSolUpVaryingDownConstant ){
+      _fieldUpstreamMgr->SetDeltaOneStep(deltaOneStep);
+      _fieldUpstreamMgr->SetDeltaIntersection(newUpstreamDeltaI);    
+      _chordUpstreamFinder->SetDeltaChord(deltaChord);
+    }
+    if ( detSolFieldForm == detSolFullField ){
+      _fieldDownstreamMgr->SetDeltaOneStep(deltaOneStep);
+      _fieldDownstreamMgr->SetDeltaIntersection(newDownstreamDeltaI);    
+      _chordDownstreamFinder->SetDeltaChord(deltaChord);
+    }
+
+    // For the uniform field, change only deltaIntersection.
+    if ( detSolFieldForm == detSolUpConstantDownConstant ||
+         detSolFieldForm == detSolUpVaryingDownConstant     ){
+      G4double deltaIntersection = 0.00001*CLHEP::mm;
+      if ( detSolFieldForm == detSolUpConstantDownConstant ){
+        _fieldUpstreamMgr->SetDeltaIntersection(deltaIntersection);
+      }
+      _fieldDownstreamMgr->SetDeltaIntersection(deltaIntersection);    
+    }
+}
+
+  // Place a G4Box inside a logical volume.
+  VolumeInfo Mu2eWorld::nestBox ( string const& name,
+                                  double const halfDim[3],
+                                  G4Material* material,
+                                  G4RotationMatrix* rot,
+                                  G4ThreeVector const& offset,
+                                  const VolumeInfo& parent,
+                                  int copyNo,
+                                  bool isVisible,
+                                  G4Colour color,
+                                  bool forceSolid
+                                  ){
+    
+    VolumeInfo info(name,offset,parent.centerInWorld);
+    
+    info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
+    
+    info.logical = new G4LogicalVolume( info.solid, material, name); 
+    
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+
+    if ( isVisible ){
+
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, color));
+      G4VisAttributes& visAtt = _visAttributes.back();
+
+      // Finish the setting of visualization properties.
+      visAtt.SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
+
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
+
+    // Save the volume information in case someone else needs to access it by name.
+    addVolInfo(info);
+
+    return info;
+  }  // end of Mu2eWorld::nestBox
+
+  // Create and place a G4Tubs inside a logical volume.
+  VolumeInfo Mu2eWorld::nestTubs2 ( string const& name,
+                                    double param[5],
+                                    G4Material* material,
+                                    G4RotationMatrix* rot,
+                                    G4ThreeVector const& offset,
+                                    const VolumeInfo& parent,
+                                    int copyNo,
+                                    bool isVisible,
+                                    G4Colour color,
+                                    bool forceSolid
+                                    ){
+    
+    VolumeInfo info(name,offset,parent.centerInWorld);
+    
+    info.solid   = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
+    
+    info.logical = new G4LogicalVolume( info.solid, material, name); 
+    
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+
+    if ( isVisible ){
+
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, color));
+      G4VisAttributes& visAtt = _visAttributes.back();
+
+      // If I do not do this, then the rendering depends on what happens in
+      // other parts of the code;  is there a G4 bug that causes something to be
+      // unitialized?
+      visAtt.SetForceAuxEdgeVisible (false);
+
+      // Finish the setting of visualization properties.
+      visAtt.SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
+
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
+
+    // Save the volume information in case someone else needs to access it by name.
+    addVolInfo(info);
+
+    return info;
+  }  // end of Mu2eWorld::nestTubs
+
+
+  //
+  // Create and place a G4Torus inside a logical volume.
+  // 
+  VolumeInfo Mu2eWorld::nestTorus2 ( string const& name,
+                                     double param[5],
+                                     G4Material* material,
+                                     G4RotationMatrix* rot,
+                                     G4ThreeVector const& offset,
+                                     const VolumeInfo& parent,
+                                     int copyNo,
+                                     bool isVisible,
+                                     G4Colour color,
+                                     bool forceSolid
+                                    ){
+    
+    VolumeInfo info(name,offset,parent.centerInWorld);
+    
+    info.solid   = new G4Torus( name, param[0], param[1], param[2], param[3], param[4]  );
+    
+    info.logical = new G4LogicalVolume( info.solid, material, name); 
+    
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+    
+    if ( isVisible ){
+
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, color));
+      G4VisAttributes& visAtt = _visAttributes.back();
+
+      // If I do not do this, then the rendering depends on what happens in
+      // other parts of the code;  is there a G4 bug that causes something to be
+      // unitialized?
+      visAtt.SetForceAuxEdgeVisible (false);
+
+      // Finish the setting of visualization properties.
+      visAtt.SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
+
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
+
+    // Save the volume information in case someone else needs to access it by name.
+    addVolInfo(info);
+
+    return info;
+  } // end of Mu2eWorld::nestTorus
+
+  // Return the volume info mapped to the given key, throw if the key does not exist.
+  // The syntax:
+  //    VolumeInfo& xx =_volumeInfoList[key];
+  // does not throw if the key does not exist.
+  VolumeInfo& Mu2eWorld::locateVolInfo( const std::string key){
+    std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(key);
+    if ( i == _volumeInfoList.end() ){
+      throw cms::Exception("GEOM")
+        << "locateVolInfo cannot find the volume named: "
+        << key 
+        << "\n";
+    }
+    return i->second;
+  } // end of Mu2eWorld::locateVolInfo
+
+  // If the key already exists, throw. Otherwise add the (key, value) pair
+  // to the map.
+  // The syntax:
+  //    VolumeInfo& xx;
+  //   _volumeInfoList[key] = xx;
+  // does not throw if the key already exists.
+  void Mu2eWorld::addVolInfo( const VolumeInfo& info ){
+    std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(info.name);
+    if ( i != _volumeInfoList.end() ){
+      throw cms::Exception("GEOM")
+        << "locateVolInfo already has the key: "
+        << info.name
+        << "\n";
+    }
+    _volumeInfoList[info.name] = info;
+  } // end of Mu2eWorld::addVolInfo
+
+
 
 } // end namespace mu2e
