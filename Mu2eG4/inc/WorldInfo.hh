@@ -5,9 +5,9 @@
 //  be interesting to others.
 //
 //
-// $Id: WorldInfo.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: WorldInfo.hh,v 1.2 2010/06/02 04:01:24 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/06/02 04:01:24 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 #include <string>
 
 // Forward references.
-class G4Box;
+class G4VSolid;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
 
@@ -29,8 +29,6 @@ namespace mu2e {
   public:
     
     WorldInfo():
-      worldSolid(0),
-      worldLog(0),
       worldPhys(0),
       yEverest(0),
       Mu2eOrigin(),
@@ -39,8 +37,6 @@ namespace mu2e {
     ~WorldInfo(){}
 
     // Information about the world volume.
-    G4Box*             worldSolid;
-    G4LogicalVolume*   worldLog;
     G4VPhysicalVolume* worldPhys;
 
     // The top of the world.
