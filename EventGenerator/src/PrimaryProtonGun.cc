@@ -1,11 +1,13 @@
 //
-// Generate a proton with the primary proton energy
-// from a random spot within the target system at
-// a random time during the accelerator cycle.
+// Generate a proton with the primary proton beam energy.
+// The nominal beam direction is -z.
+// The transverse cross-section of the beam is in the (x,y) plane,
+// nominally centered at (0,0).
+// It is generated at a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.cc,v 1.5 2010/05/18 21:15:38 kutschke Exp $ 
+// $Id: PrimaryProtonGun.cc,v 1.6 2010/06/02 03:59:57 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/05/18 21:15:38 $
+// $Date: 2010/06/02 03:59:57 $
 //
 // Original author Rob Kutschke
 // 
@@ -66,7 +68,6 @@ namespace mu2e {
     _tmax   = config.getDouble("primaryProtonGun.tmax", 1694 );
 
     _beamDisplacementOnTarget = config.getHep3Vector("beamDisplacementOnTarget");   
-    _zOffset = config.getDouble("targetPS_halfLength",80.);
     _stdDev = config.getDouble("primaryProtonGun.stdDev" );
         
     _dcz  = (  _czmax -  _czmin);
@@ -96,7 +97,7 @@ namespace mu2e {
     //this will all be replaced.
     CLHEP::Hep3Vector pos( _beamDisplacementOnTarget.x() + r*cos(phi), 
                     _beamDisplacementOnTarget.y() + r*sin(phi), 
-                    _beamDisplacementOnTarget.z() + _zOffset);
+                    _beamDisplacementOnTarget.z() );
     
     // Random direction.
     const double cz   = _czmin  + _dcz*CLHEP::RandFlat::shoot();
