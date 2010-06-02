@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.27 2010/06/02 03:59:23 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.28 2010/06/02 04:43:45 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/02 03:59:23 $
+// $Date: 2010/06/02 04:43:45 $
 //
 // Original author Rob Kutschke
 //
@@ -162,6 +162,10 @@ namespace mu2e {
     constructPS(hallInfo);
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
+
+    // These are just placeholders for now:
+    constructMagnetYoke();
+    constructCRV();
 
     edm::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << _mu2eOrigin           << "\n";
@@ -929,8 +933,8 @@ namespace mu2e {
     } //hasTarget
 
     return targetInfo;
-  }
-
+  } // end Mu2eWorld::constructTarget
+ 
   void Mu2eWorld::constructBFieldAndManagers(){
 
     VolumeInfo detSolUpstreamVacInfo   = locateVolInfo("ToyDS2Vacuum");
@@ -1070,7 +1074,16 @@ namespace mu2e {
       }
       _fieldDownstreamMgr->SetDeltaIntersection(deltaIntersection);    
     }
-}
+  } // end Mu2eWorld::constructBFieldAndManagers
+
+
+  // A place holder for now.
+  void Mu2eWorld::constructMagnetYoke(){
+  } // end Mu2eWorld::constructMagnetYoke
+
+  // A place holder for now.
+  void Mu2eWorld::constructCRV(){
+  } // end Mu2eWorld::constructCRV
 
   // Place a G4Box inside a logical volume.
   VolumeInfo Mu2eWorld::nestBox ( string const& name,

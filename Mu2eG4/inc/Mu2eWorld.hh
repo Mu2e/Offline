@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.13 2010/06/02 03:59:23 kutschke Exp $
+// $Id: Mu2eWorld.hh,v 1.14 2010/06/02 04:43:45 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/02 03:59:23 $
+// $Date: 2010/06/02 04:43:45 $
 //
 // Original author Rob Kutschke
 //
@@ -108,6 +108,8 @@ namespace mu2e {
     void constructPS( const VolumeInfo& parent );
     VolumeInfo constructTracker();
     VolumeInfo constructTarget();
+    void constructMagnetYoke();
+    void constructCRV();
     void constructBFieldAndManagers();
 
     // The world coordinates of the center of the cosmic ray reference plane.
