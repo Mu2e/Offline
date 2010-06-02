@@ -1,17 +1,15 @@
 //
-// Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.27 2010/05/13 19:41:05 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/13 19:41:05 $
+// $Id: geom_01.txt,v 1.28 2010/06/02 04:00:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/06/02 04:00:24 $
 //
 // Original author Rob Kutschke
-
-string detector.name  = "g4geom_v00";
-
 //
 // Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+string detector.name  = "g4geom_v00";
 
 bool hasHall        = true;
 bool hasTarget      = true;
@@ -27,7 +25,6 @@ bool hasCalorimeter = true;
 
 //form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
 int detSolFieldForm = 2;
-
 
 // Print a copy of this file to the job log.
 bool printConfig = false;
@@ -74,8 +71,6 @@ double world.mu2eOrigin.xoffset =     0.;
 double world.mu2eOrigin.height  =  2350.;
 double world.mu2eOrigin.zoffset = -4000.;
 
-double world.prodSolXoff = 3904.;
-
 // Overburden above the detector: 20 ft in proposal.
 // I have arbitrarily split it into a flat part and a dome.
 double dirt.overburdenDepth = 6000.;  
@@ -93,34 +88,23 @@ double hall.wallThick    = 300.;
 string hall.wallMaterialName = "G4_CONCRETE";
 string hall.insideMaterialName = "G4_AIR";
 
-// Offset of the hall from its standard position within the world:
+// Offset of the hall from its base position within the world:
 //   - Centered in x and z.
 //   - At the bottom in y.
 vector<double> hall.offset = { -1525., 0., 0. };
 
-// Concrete shielding 
-double shieldCon.xspace             = 1300.;
-double shieldCon.insideHeight       = 5050.;
-double shieldCon.Thick              = 1000.;
-double shieldCon.insideHalfLength   = 7735.;
-string shieldCon.materialName       = "ShieldingConcrete";
-string shieldCon.insideMaterialName = "G4_AIR";
+// X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
+double mu2e.solenoidOffset = 3904.;
 
-// The iron Cosmic Ray shield.
-double shieldFe.thick              =  508.;
-double shieldFe.outerHalfWidth     = 2048.;
-double shieldFe.zextra             = 1000.;
-string shieldFe.materialName       = "G4_Fe";
-string shieldFe.insideMaterialName = "G4_AIR";
-
-// A toy model of the DS, coils cryo and vacuum.
-//  - it is centered on the cosmic ray shield in (x,y).
-//  - middle of the volume is at z0, expressed in MECO system.
-double toyDS.rIn           = 1000;
-double toyDS.rOut          = 1300;
-double toyDS.halfLength    = 5940.;
-double toyDS.halfLengthVac = 6000.;
-double toyDS.z0            = 9229.;
+// A toy model of the DS, cyrostats+coils, vacuum
+double toyDS.rIn                = 1000;
+double toyDS.rOut               = 1300;
+double toyDS.halfLength         = 6000.;
+double toyDS.z0                 = 9226.;
+double toyDS1.halfLength        =  150.;
+double toyDS2.halfLength        = 2350.;
+double toyDS3.halfLength        = 3650.;
+double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
 
@@ -128,18 +112,25 @@ string toyDS.insideMaterialName = "WAGVacuum";
 double toyDS.bz            = -1.0;
 
 // A toy model of the PS, coils, cryo and vaccum.
-double toyPS.rIn           =   880.;
-double toyPS.rOut          =  1300.;
-double toyPS.halfLength    =  2580.;
-double toyPS.halfLengthVac =  2700.;
-double toyPS.z0            = -6529.;
-string toyPS.materialName       = "G4_Al";
-string toyPS.insideMaterialName = "WAGVacuum";
+double toyPS.rIn            =   880.;
+double toyPS.rOut           =  1300.;
+double toyPS1.vacHalfLength =  2700.;
+double toyPS.CryoHalfLength =  2580.;
+string toyPS.materialName   = "G4_Al";
 
+// Parameters for TS volumes.
+double toyTS.rVac        =  600.;          // Outer radius of vacuum volume
+double toyTS.rCryo       =  700.;          // Outer radius of cryostat
+double toyTS.rTorus      = 2926.;          // Bend radius of the torus
+double toyTS1.halfLength =  500.;
+double toyTS5.halfLength =  500.;
 
+// Production Target in PS:
 
-// Proton Target in PS 
-double targetPS_halfLength        =     80.;  // mm.I use this length to move PrimaryProtonGun in PrimaryProtonGun.cc
+// Position in the Mu2e coordinate system
+vector<double> productionTarget.position = { 3904., 0., -6564.5};
+
+double targetPS_halfLength        =     80.;  // mm.
 double targetPS_rOut              =      3.;  // mm
 double targetPS_positionX         =      0.;  // mm
 double targetPS_positionY         =      0.;  // mm
