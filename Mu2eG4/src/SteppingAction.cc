@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.4 2010/04/06 23:07:07 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.5 2010/06/02 04:01:53 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 23:07:07 $
+// $Date: 2010/06/02 04:01:53 $
 //
 // Original author Rob Kutschke
 //
@@ -11,6 +11,8 @@
 // C++ includes
 #include <cstdio>
 #include <cmath>
+#include <set>
+#include <string>
 
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
@@ -57,6 +59,42 @@ namespace mu2e {
 
 
   void SteppingAction::UserSteppingAction(const G4Step* step){  
+
+    static set<G4VPhysicalVolume*> vnames;
+    G4StepPoint const* prept2 = step->GetPreStepPoint();
+    G4VPhysicalVolume* prevol2 = prept2->GetPhysicalVolume();
+    if ( prevol2 ){
+      G4String preVol = prept2->GetPhysicalVolume()->GetName();
+      int preCopy     = prept2->GetPhysicalVolume()->GetCopyNo();
+      string spreVol(preVol);
+        if ( spreVol.find("Straw") == string::npos ) {
+          if ( vnames.find(prevol2) == vnames.end() ){
+            vnames.insert(prevol2);
+            G4AffineTransform const& toLocal = step->GetPreStepPoint()->GetTouchableHandle()->GetHistory()->GetTopTransform();
+            G4AffineTransform        toWorld = toLocal.Inverse();
+            G4ThreeVector localOrigin(0.,0.,0.);
+            G4ThreeVector worldOrigin = toWorld.TransformPoint(localOrigin);
+            cout << "Local Origin for "
+                 << setw(40) << preVol << ", "
+                 << setw(4) << preCopy << " : "
+                 << worldOrigin
+                 << endl;
+            /*
+            if ( spreVol == "ProductionTarget" ){
+              G4ThreeVector localxhat(1.,0.,0.);
+              G4ThreeVector localyhat(0.,1.,0.);
+              G4ThreeVector localzhat(0.,0.,1.);
+              G4ThreeVector worldxhat = toWorld.TransformPoint(localxhat) - worldOrigin;
+              G4ThreeVector worldyhat = toWorld.TransformPoint(localyhat) - worldOrigin;
+              G4ThreeVector worldzhat = toWorld.TransformPoint(localzhat) - worldOrigin;
+              cout << "ProtonTarget xhat: " << worldxhat << " " << worldxhat.mag() << endl;
+              cout << "ProtonTarget yhat: " << worldyhat << " " << worldyhat.mag() << endl;
+              cout << "ProtonTarget zhat: " << worldzhat << " " << worldzhat.mag() << endl;
+            }
+            */
+          }
+        }
+    }
 
     // Do we want to do make debug printout for this event?
     if ( !_debugList.inList() ) return;

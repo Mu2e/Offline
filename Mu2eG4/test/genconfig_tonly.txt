@@ -1,0 +1,43 @@
+//
+// Run-time config info for the event generators.
+//
+// $Id: genconfig_tonly.txt,v 1.1 2010/06/02 04:01:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/06/02 04:01:53 $
+//
+// Original author Rob Kutschke
+
+bool cosmictoy.do     = false;
+
+// Limits on cos(polar angle):
+double conversionGun.czmin = 0.5;
+double conversionGun.czmax = 0.7;
+
+// Time limits in ns, relative to protons on target.
+double conversionGun.tmin  =  700.;
+double conversionGun.tmax  = 1694.;
+
+// Mean multiplicities for the two background generators.
+double cosmictoy.mean =  4.0;
+double picapture.mean =  0.0;
+
+bool primaryProtonGun.do = 1;
+
+double primaryProtonGun.czmin = 1;
+double primaryProtonGun.czmax = 1;
+
+// Position of PrimaryProtonGun (local to target)
+vector<double> beamDisplacementOnTarget = {0.,0.,0.};
+
+// Distribution parameter of Primary Proton Gun beam
+double primaryProtonGun.stdDev = 0; //units are mm
+
+double primaryProtonGun.tmin  =  700.;
+double primaryProtonGun.tmax  = 1694.;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
+

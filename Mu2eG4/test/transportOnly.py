@@ -1,8 +1,8 @@
 # Variant of g4test_03 but with transport only.
 #
-# $Id: transportOnly.py,v 1.1 2010/05/14 18:49:52 kutschke Exp $
+# $Id: transportOnly.py,v 1.2 2010/06/02 04:01:53 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/05/14 18:49:52 $
+# $Date: 2010/06/02 04:01:53 $
 #
 # Original author Rob Kutschke
 #
@@ -54,7 +54,7 @@ process.source = mu2e.Source("EmptySource")
 #  Make some generated tracks and add them to the event.
 process.generate = mu2e.EDProducer(
     "EventGenerator",
-    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_01.txt")
+    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_tonly.txt")
 )
 
 # Run G4 and add its hits to the event.

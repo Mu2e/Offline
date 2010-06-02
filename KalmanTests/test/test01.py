@@ -1,9 +1,9 @@
 # Configuration file for Kalman tests - run a few events with lots
 # of printout.
 #
-# $Id: test01.py,v 1.1 2010/04/23 20:18:57 kutschke Exp $
+# $Id: test01.py,v 1.2 2010/06/02 04:01:53 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/04/23 20:18:57 $
+# $Date: 2010/06/02 04:01:53 $
 #
 # Original author Rob Kutschke
 #
@@ -77,6 +77,7 @@ process.kalmanTest = mu2e.EDAnalyzer("KalmanT01",
 # Print unlimited messages with category ToyHitInfo.
 process.MessageLogger.cerr.threshold = mu2e.untracked.string('DEBUG')
 process.MessageLogger.categories.append("GEOM")
+process.MessageLogger.categories.append("CONFIG")
 
 # Tell the system to execute all paths.
 process.output = mu2e.EndPath(   process.generate*process.g4run*process.kalmanTest );

@@ -2,9 +2,9 @@
 // Standard geometry with physics turned off.
 // We need to put the control of physics elsewhere.
 //
-// $Id: transportOnlyGeom.txt,v 1.1 2010/05/14 18:49:52 kutschke Exp $
+// $Id: transportOnlyGeom.txt,v 1.2 2010/06/02 04:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/14 18:49:52 $
+// $Date: 2010/06/02 04:01:53 $
 //
 // Original author Rob Kutschke
 
@@ -19,6 +19,10 @@ int LTrackerVersion  = 3;
 
 // Disable all physics except transport.
 string g4.physicsListName = "Minimal";
+
+//double dirt.capHalfHeight   = 2000.;
+//double dirt.capBottomRadius = 5000.;
+//double dirt.capTopRadius    =  500.;
 
 //
 // This tells emacs to view this file in c++ mode.
