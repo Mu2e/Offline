@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.10 2010/05/17 21:47:33 genser Exp $
+// $Id: LTrackerMaker.cc,v 1.11 2010/06/04 22:07:22 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Date: 2010/06/04 22:07:22 $
 //
 // Original author Rob Kutschke
 //
@@ -372,6 +372,19 @@ namespace mu2e {
       sec._boxHalfLengths.push_back( maxStrawsThisSector * _strawRadius       + pad );
       sec._boxHalfLengths.push_back( (1.+0.5*(nlayers-1)*root3)* _strawRadius + pad );
       sec._boxHalfLengths.push_back( _strawHalfLength + pad );
+
+      // if it were a Trapezoid  translate from Box to Trapezoid, but only for wedges
+      // by adding two more values which are min max x, assume nsectors=nsides>3 == 60degree angles
+      // "longer" x:(when trapezoid enscribes the straws (60 & 120 degree angles)
+      //      sec._boxHalfLengths.push_back( (maxStrawsThisSector+root3-1.) * _strawRadius + pad );
+      // "shorter" x
+      //      sec._boxHalfLengths.push_back( (maxStrawsThisSector-1./root3) * _strawRadius + pad );
+
+      // this trapezoid fills the ntagon, asuming N>=6
+
+      double minRc = _strawRadius/_tphiHalf*(maxStrawsThisSector -1.0 + _cphiHalf- (root3-_sphiHalf)*_tphiHalf);
+      sec._boxHalfLengths.push_back( _tphiHalf*(minRc+_strawRadius*(1.+root3))+pad); //longer  x
+      sec._boxHalfLengths.push_back( _tphiHalf*(minRc-_strawRadius*(1.+root3))    ); //shorter x
 
       // Descriptions of the rotations and placement of the sector.
       sec._boxRxAngle = 0.;

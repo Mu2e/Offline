@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
+// $Id: constructLTrackerv3.cc,v 1.3 2010/06/04 22:07:22 genser Exp $
 // $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Date: 2010/06/04 22:07:22 $
 //
 // Original author Rob Kutschke
 //
@@ -31,6 +31,7 @@
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
+#include "Mu2eG4/inc/nestTrp.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -89,6 +90,7 @@ namespace mu2e{
     {
       G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Green() );
       visAtt->SetForceSolid(true);
+      // visAtt->SetForceSolid(false);
       visAtt->SetForceAuxEdgeVisible (false);
       visAtt->SetVisibility(true);
       trackerInfo.logical->SetVisAttributes(visAtt);
@@ -130,47 +132,93 @@ namespace mu2e{
         // This rotation is the inverse of the one in v2.
         // Note the sign and the reversed order : active/passive  confusion.
         // Need to understand if this causes memory leak.
+
+        double const trapezoidRxAngle = M_PI_2;
+	CLHEP::HepRotationX RForTrapezoids(trapezoidRxAngle);
+
+        G4RotationMatrix* rotft = new G4RotationMatrix(RForTrapezoids.inverse());
+
+	G4RotationMatrix* rotfb = 0;
+
         CLHEP::HepRotationX RX(-sector.boxRxAngle());
         CLHEP::HepRotationY RY(-sector.boxRyAngle());
         CLHEP::HepRotationZ RZ(-sector.boxRzAngle());
-        G4RotationMatrix* rot = new G4RotationMatrix( RY*RX*RZ);
+        G4RotationMatrix* rot   = new G4RotationMatrix( RY*RX*RZ);
+        G4RotationMatrix* rottr = new G4RotationMatrix( RForTrapezoids*RY*RX*RZ);
 
         // Make a physical volume for this sector.  Same material as the 
         // main LTracker volume ( some sort of vacuum ).
-        VolumeInfo tmp = nestBox( name,
-                                  sector.boxHalfLengths(),
-                                  fillMaterial,
-                                  rot,
-                                  sector.boxOffset(),
-                                  trackerInfo.logical,
-                                  0);
+
+        VolumeInfo tmp = ( device.Id() ==  LTracker::vane) ?
+          //VolumeInfo tmp = ( true ) ?
+          nestBox( name,
+                   sector.boxHalfLengths(),
+                   fillMaterial,
+                   rot,
+                   sector.boxOffset(),
+                   trackerInfo.logical,
+                   0,
+                   G4Colour::Magenta())
+          :
+          nestTrp( name,
+                   sector.boxHalfLengths(),
+                   fillMaterial,
+                   rottr,
+                   sector.boxOffset(),
+                   trackerInfo.logical,
+                   0,
+                   G4Colour::Yellow());
+
+
+//      the code below changes the recorded hits
+// 	if (tmp.physical->CheckOverlaps(1000,0.0,false)){
+// 	  std::cout << "Overlap while placing " << name << std::endl;
+// 	}
+
         vinfo.push_back(tmp);
         VolumeInfo const& sectorBoxInfo = vinfo.back();
 
         CLHEP::Hep3Vector const& delta  = sector.getBaseDelta();
 
+	// for trapezoidal wedges the coordinate system is different
+	// due to the Geant4 conventions for Trapezoids
+	CLHEP::Hep3Vector const trapezoiddelta = CLHEP::Hep3Vector(delta.x(),delta.z(),delta.y());
+
         for ( std::size_t ilay =0; ilay<sector.getLayers().size(); ++ilay){
           Layer const& layer = sector.getLayer(ilay);
 
           CLHEP::Hep3Vector const& origin = sector.getBasePosition().at(ilay);
+          CLHEP::Hep3Vector const trapezoidorigin = CLHEP::Hep3Vector(origin.x(),origin.z(),origin.y());
 
           for ( std::size_t istr =0; istr<layer.nStraws(); ++istr){
             Straw const& straw = layer.getStraw(istr);
 
             // Position within the sector box.
             CLHEP::Hep3Vector position = origin + istr*delta;
+            CLHEP::Hep3Vector trapezoidposition = trapezoidorigin + istr*trapezoiddelta;
 
             // Name of this physical volume.
             string sname = straw.name( "LTrackerStraw_");
 
-            G4VPhysicalVolume* phys = new G4PVPlacement( 0, 
-                                                         position,
-                                                         strawInfo.logical,
-                                                         sname, 
-                                                         sectorBoxInfo.logical, 
-                                                         0, 
-                                                         straw.Index().asInt()
-                                                         );
+            G4VPhysicalVolume* phys = (device.Id() ==  LTracker::vane) ?
+              // G4VPhysicalVolume* phys = ( true ) ?
+              new G4PVPlacement( rotfb,
+                                 position,
+                                 strawInfo.logical,
+                                 sname, 
+                                 sectorBoxInfo.logical, 
+                                 0, 
+                                 straw.Index().asInt()
+                                 ) 
+              :
+              new G4PVPlacement( rotft,
+                                 trapezoidposition,
+                                 strawInfo.logical,
+                                 sname, 
+                                 sectorBoxInfo.logical, 
+                                 0, 
+                                 straw.Index().asInt()
+                                 );
             
           } // loop over straws
         }   // loop over layers
@@ -190,7 +238,9 @@ namespace mu2e{
       G4VisAttributes* strawVisAtt = new G4VisAttributes(true, G4Colour::Green() );
       strawVisAtt->SetForceSolid(false);
       strawVisAtt->SetForceAuxEdgeVisible (false);
+      // strawVisAtt->SetForceAuxEdgeVisible (true);
       strawVisAtt->SetVisibility(false);
+      // strawVisAtt->SetVisibility(true);
       strawInfo.logical->SetVisAttributes(strawVisAtt);
     }
     
