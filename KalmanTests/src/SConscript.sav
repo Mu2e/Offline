@@ -1,13 +1,13 @@
 #
-# $Id: SConscript.sav,v 1.1 2010/04/27 01:25:34 kutschke Exp $
+# $Id: SConscript.sav,v 1.2 2010/06/15 16:51:36 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/04/27 01:25:34 $
+# $Date: 2010/06/15 16:51:36 $
 #
 # Original author Rob Kutschke.
 #
 
 import os, re
-home = os.environ['MU2E_HOME']
+home = os.environ['FW_HOME']
 Import('env')
 
 plugin_cc = Glob('*_plugin.cc', strings=True)
