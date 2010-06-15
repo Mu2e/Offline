@@ -1,46 +1,68 @@
 # Script to build this release.
 
 #
-# $Id: SConstruct,v 1.4 2010/05/18 21:48:01 kutschke Exp $
+# $Id: SConstruct,v 1.5 2010/06/15 16:49:44 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/05/18 21:48:01 $
+# $Date: 2010/06/15 16:49:44 $
 #
 # Original author Rob Kutschke.
 #
 import os
 import sys
 
-if not os.environ.has_key('MU2E_EXTERNALS'):
-    sys.exit('You must define MU2E_EXTERNALS before running scons.\nExiting.')
+if not os.environ.has_key('FRAMEWORK_DIR'):
+    sys.exit('You must setup framwork before running scons.\nExiting.')
 
-home = os.environ['MU2E_HOME']
-externals = os.environ['MU2E_EXTERNALS']
-rootdir = os.environ['ROOT_DIR']
-heppdtdir = os.environ['HEPPDT_DIR']
+SetOption('warn', 'no-fortran-cxx-mix')
+
+home = os.environ['FRAMEWORK_DIR']
+boost_dir = os.environ['BOOST_DIR']
+boost_inc = os.environ['BOOST_INC']
+clhep_dir = os.environ['CLHEP_DIR']
+#cmake_dir = os.environ['CMAKE_DIR']
+cppunit_dir = os.environ['CPPUNIT_DIR']
+gccxml_dir = os.environ['GCCXML_DIR']
+heppdt_dir = os.environ['HEPPDT_DIR']
+libsigcpp_dir = os.environ['LIBSIGCPP_DIR']
+python_dir = os.environ['PYTHON_DIR']
+root_dir = os.environ['ROOT_DIR']
+scons_dir = os.environ['SCONS_DIR']
 
 # '#' puts the current (top-level) directory into the CPPPATH.
 env = Environment( CPPPATH=[ '#',
                              '#/BaBar/include',
-                             '.',
-                             home,
-                             externals+'/include',
-                             heppdtdir+'/include',
-                             rootdir+'/include/root',
-                             externals+'/include/sigc++-2.0',
-                             externals+'/lib/sigc++-2.0/include',
-                           ],
-                   LIBPATH=[ '#/lib',
-                             home+'/tmp/lib' ,
-                             externals+'/lib',
-                             heppdtdir+'/lib',
-                             rootdir+'/lib/root',
+			     '.',
+			     home,
+			     boost_inc,
+                             clhep_dir+'/include',
+                             cppunit_dir+'/include',
+                             heppdt_dir+'/include',
+			     libsigcpp_dir+'/include/sigc++-2.0',
+			     libsigcpp_dir+'/lib/sigc++-2.0/include',
+                             python_dir+'/include',
+			     root_dir+'/include',
+                             scons_dir+'/include',
+			   ],
+		   LIBPATH=[ '#/lib',
+			     home+'/tmp/lib' ,
+                             boost_dir+'/lib',
+ 	                     clhep_dir+'/lib',
+                             cppunit_dir+'/lib',
+		             heppdt_dir+'/lib',
+                             libsigcpp_dir+'/lib',
+                             python_dir+'/lib',
+			     root_dir+'/lib',
+			     scons_dir+'/lib',
                              '/lib', '/usr/X11R6/lib',
                            ],
-                   ENV={ 'PATH' : os.environ['PATH'], 
-                         'LD_LIBRARY_PATH': os.environ['LD_LIBRARY_PATH'],
-                         'MU2E_HOME' : os.environ['MU2E_HOME'],
-                       }
+		   ENV={ 'PATH' : os.environ['PATH'], 
+			 'LD_LIBRARY_PATH': os.environ['LD_LIBRARY_PATH'],
+			 'FRAMEWORK_DIR' : os.environ['FRAMEWORK_DIR'],
+		       },
+                   FORTRAN = 'g77',
                  )
+
+#env.AppendUnique(CCFLAGS=['-rpath' + home+'/tmp/lib'])
 
 genreflex_flags = '--deep --fail_on_warnings  --capabilities=classes_ids.cc '\
                 + '-DCMS_DICT_IMPL -D_REENTRANT -DGNU_SOURCE  -DGNU_GCC '\
@@ -69,8 +91,8 @@ Export('env')
 ss=[]
 for root,dirs,files in os.walk('.'):
     for file in files:
-        if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
-        pass
+	if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
+	pass
     pass
 
 # scons to bulid all of the SConscript files
