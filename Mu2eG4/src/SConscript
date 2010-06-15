@@ -1,13 +1,13 @@
 #
-# $Id: SConscript,v 1.6 2010/05/18 21:53:18 kutschke Exp $
+# $Id: SConscript,v 1.7 2010/06/15 16:50:43 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/05/18 21:53:18 $
+# $Date: 2010/06/15 16:50:43 $
 #
 # Original author Rob Kutschke.
 #
 
 import os, re
-home = os.environ['MU2E_HOME']
+home = os.environ['FRAMEWORK_DIR']
 Import('env')
 
 #
@@ -92,7 +92,14 @@ G4GRANULARLIBS = [
            'G4partman',                           'G4geometrymng',
            'G4materials',                         'G4graphics_reps',
            'G4intercoms',                         'G4globman'
-#           ,'G4gdml'
+# new geant 9.3 granular libs:
+          ,'G4emadjoint',
+           'G4gl2ps',
+           'G4GMocren',
+           'G4hadronic_crosec_ci',
+           'G4hadronic_fragm_ci',
+           'G4hadronic_proc_ci'
+#          ,'G4gdml'
            ]
 
 ROOTGEOM = [ 'Geom' ]
