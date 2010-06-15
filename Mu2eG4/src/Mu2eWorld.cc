@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.28 2010/06/02 04:43:45 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.29 2010/06/15 19:21:28 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/02 04:43:45 $
+// $Date: 2010/06/15 19:21:28 $
 //
 // Original author Rob Kutschke
 //
@@ -881,7 +881,7 @@ namespace mu2e {
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
     if( _config->getBool("hasLTracker",false) ){
-      int ver = _config->getInt("LTrackerVersion",1);
+      int ver = _config->getInt("LTrackerVersion",3);
       //cout << "LTracker version: " << ver << "\n";
       if ( ver == 1 ){
         trackerInfo = constructLTrackerv1( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
@@ -890,10 +890,6 @@ namespace mu2e {
         trackerInfo = constructLTrackerv2( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
       } else {
         trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
-        cout << "Checking detsoldownstream: " 
-             << detSolDownstreamVacInfo.centerInWorld << " "
-             << detSolDownstreamVacInfo.centerInWorld+_hallOriginInMu2e << " "
-             << endl;
       }
     } else if ( _config->getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
