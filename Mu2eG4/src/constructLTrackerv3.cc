@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.3 2010/06/04 22:07:22 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/04 22:07:22 $
+// $Id: constructLTrackerv3.cc,v 1.4 2010/06/17 20:31:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/06/17 20:31:13 $
 //
 // Original author Rob Kutschke
 //
@@ -233,15 +233,17 @@ namespace mu2e{
     strawInfo.logical->SetSensitiveDetector( strawSD );
 
 
-    // Does this leak strawVisAtt ??
     {
-      G4VisAttributes* strawVisAtt = new G4VisAttributes(true, G4Colour::Green() );
-      strawVisAtt->SetForceSolid(false);
-      strawVisAtt->SetForceAuxEdgeVisible (false);
-      // strawVisAtt->SetForceAuxEdgeVisible (true);
-      strawVisAtt->SetVisibility(false);
-      // strawVisAtt->SetVisibility(true);
-      strawInfo.logical->SetVisAttributes(strawVisAtt);
+      //This leaks strawVisAtt.  
+      //G4VisAttributes* strawVisAtt = new G4VisAttributes(true, G4Colour::Green() );
+      //strawVisAtt->SetForceSolid(true);
+      //strawVisAtt->SetForceAuxEdgeVisible (false);
+      //strawVisAtt->SetVisibility(true);
+      //strawInfo.logical->SetVisAttributes(strawVisAtt);
+
+      // Do not draw straws since it is too time consuming.
+      strawInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+
     }
     
     return trackerInfo;
