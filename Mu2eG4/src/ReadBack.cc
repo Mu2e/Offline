@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.8 2010/05/17 21:47:33 genser Exp $
+// $Id: ReadBack.cc,v 1.9 2010/06/18 18:45:57 genser Exp $
 // $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Date: 2010/06/18 18:45:57 $
 //
 // Original author Rob Kutschke
 //
@@ -71,25 +71,25 @@ namespace mu2e {
     edm::Service<edm::TFileService> tfs;
     
     // Create some 1D histograms.
-    _hRadius       = tfs->make<TH1F>( "hRadius",       "Radius of Hits;(CLHEP::mm)",     100,  0., 1000. );
+    _hRadius       = tfs->make<TH1F>( "hRadius",       "Radius of Hits;(mm)",     100,  0., 1000. );
     _hEnergyDep    = tfs->make<TH1F>( "hEnergyDep",    "Energy Deposited;(keV)",  100,  0.,   10. );
     _hTime         = tfs->make<TH1F>( "hTime",         "Pulse Height;(ns)",       100,  0., 2000. );
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",          100,  0.,  100. );
-    _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(CLHEP::mm)",  100,  0.,   3.  );
+    _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)",  100,  0.,   3.  );
 
-    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(CLHEP::mm)",                  100, -1000., 1000. );
-    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(CLHEP::mm)",                  100, -1000., 1000. );
-    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of Hit;(CLHEP::mm)",                  100, -1400., 1400. );
+    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(mm)",                  100, -1000., 1000. );
+    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(mm)",                  100, -1000., 1000. );
+    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of Hit;(mm)",                  100, -1400., 1400. );
 
     _hHitNeighbours    = tfs->make<TH1F>( "hHitNeighbours",  "Number of hit neighbours",
                                           10, 0., 10. );
 
-    _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
+    _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
                                           100, 2.25, 2.75 );
 
-    _hMomentumG4 = tfs->make<TH1F>( "hMomentumG4",  "Mommenta of particles created inside G4; (CLHEP::MeV)",
+    _hMomentumG4 = tfs->make<TH1F>( "hMomentumG4",  "Mommenta of particles created inside G4; (MeV)",
                                     100, 0., 100. );
-    _hStepLength = tfs->make<TH1F>( "hStepLength",  "G4 Step Length in Sensitive Detector; (CLHEP::mm)",
+    _hStepLength = tfs->make<TH1F>( "hStepLength",  "G4 Step Length in Sensitive Detector; (mm)",
                                     100, 0., 10. );
 
     // Create an ntuple.
