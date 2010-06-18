@@ -5,9 +5,9 @@
 // nominally centered at (0,0).
 // It is generated at a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.cc,v 1.6 2010/06/02 03:59:57 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2010/06/02 03:59:57 $
+// $Id: PrimaryProtonGun.cc,v 1.7 2010/06/18 19:24:05 genser Exp $ 
+// $Author: genser $
+// $Date: 2010/06/18 19:24:05 $
 //
 // Original author Rob Kutschke
 // 
@@ -76,7 +76,7 @@ namespace mu2e {
     
     edm::Service<edm::TFileService> tfs;
     _primaryProtonKE = tfs->make<TH1D>( "primaryProtonKE", "Primary Proton Kinetic Energy", 10, 7000.,9000.);
-    _primaryProtonMomentumMeV = tfs->make<TH1D>( "primaryProtonMomentumMeV", "Primary Proton Momentum in CLHEP::MeV", 10, 7000.,9000.);
+    _primaryProtonMomentumMeV = tfs->make<TH1D>( "primaryProtonMomentumMeV", "Primary Proton Momentum in MeV", 10, 7000.,9000.);
     _primaryProtonKEZoom = tfs->make<TH1D>( "primaryProtonEZoom", "Primary Proton Kinetic Energy (zoom)", 200, 7000.,9000.);
 
   }

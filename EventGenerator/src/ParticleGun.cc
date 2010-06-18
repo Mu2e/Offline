@@ -2,9 +2,9 @@
 // Shoots a single particle gun and puts its output
 // into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.4 2010/05/17 21:47:33 genser Exp $
+// $Id: ParticleGun.cc,v 1.5 2010/06/18 19:24:05 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Date: 2010/06/18 19:24:05 $
 //
 // Original author Rob Kutschke
 // 
@@ -100,7 +100,7 @@ namespace mu2e {
 
     edm::TFileDirectory tfdir = tfs->mkdir( "ParticleGun" );
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Particle Gun Multiplicity",    10,  0.,  10.);
-    _hMomentum     = tfs->make<TH1F>( "hMomentum",     "Particle Gun Momentum (CLHEP::MeV)",  100, 0., 110.);
+    _hMomentum     = tfs->make<TH1F>( "hMomentum",     "Particle Gun Momentum (MeV)",  100, 0., 110.);
     _hCz           = tfs->make<TH1F>( "hCz",           "Particle Gun cos(theta)",      100, -1.,  1.);
     _hX0           = tfs->make<TH1F>( "hX0",           "Particle Gun X0",              100,   -20.,    20.);
     _hY0           = tfs->make<TH1F>( "hY0",           "Particle Gun Y0",              100,   -20.,    20.);

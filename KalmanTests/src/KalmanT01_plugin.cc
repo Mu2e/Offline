@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_plugin.cc,v 1.3 2010/05/18 21:16:47 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:47 $
+// $Id: KalmanT01_plugin.cc,v 1.4 2010/06/18 19:24:05 genser Exp $
+// $Author: genser $
+// $Date: 2010/06/18 19:24:05 $
 //
 // Original author Rob Kutschke
 //
@@ -121,13 +121,13 @@ namespace mu2e {
 
       edm::Service<edm::TFileService> tfs;
 
-      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Generated Drift Distance;(CLHEP::mm)", 100, -3., 3. );
-      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
+      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Generated Drift Distance;(mm)", 100, -3., 3. );
+      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
                                             100, 2.4, 2.6 );
-      _hd0   = tfs->make<TH1F>( "hd0",   "Gen d0;(CLHEP::cm)",    100, -10., 10. );
+      _hd0   = tfs->make<TH1F>( "hd0",   "Gen d0;(cm)",    100, -10., 10. );
 
-      _hphi0 = tfs->make<TH1F>( "hphi0", "Gen phi00;(CLHEP::radians)", 100, -CLHEP::pi, CLHEP::pi);
-      _hz0   = tfs->make<TH1F>( "hz0",   "Gen z0;(CLHEP::cm)",     70, -500., -300. );
+      _hphi0 = tfs->make<TH1F>( "hphi0", "Gen phi00;(radians)", 100, -CLHEP::pi, CLHEP::pi);
+      _hz0   = tfs->make<TH1F>( "hz0",   "Gen z0;(cm)",     70, -500., -300. );
       _hct   = tfs->make<TH1F>( "hct",   "Gen ct;",     70, 0.3, 0.8 );
       _hs0   = tfs->make<TH1F>( "hs0",   "Gen s0;",     70, -10., 10. );
     }

@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.6 2010/05/18 21:15:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:15:48 $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.7 2010/06/18 19:24:05 genser Exp $
+// $Author: genser $
+// $Date: 2010/06/18 19:24:05 $
 //
 // Original author Rob Kutschke
 //
@@ -99,8 +99,8 @@ namespace mu2e {
       edm::Service<edm::TFileService> tfs;
 
       _hTime      = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  2000. );
-      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(CLHEP::mm)", 100,  0.,     3.  );
-      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
+      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)", 100,  0.,     3.  );
+      _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
                                             100, 2.25, 2.75 );
     }
 

@@ -1,9 +1,9 @@
 
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.7 2010/05/18 21:15:36 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:15:36 $
+// $Id: PiCapture.cc,v 1.8 2010/06/18 19:24:05 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/06/18 19:24:05 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -69,7 +69,7 @@ namespace mu2e {
     if (_nbins>0) _bindE = (_ehi - _elow) / _nbins;
     else {
        // I'm sure this isn't the right way to do this...
-       throw cms::Exception("RANGE") <<"Nonsense CLHEP::picapture.nbins requested="<<
+       throw cms::Exception("RANGE") <<"Nonsense picapture.nbins requested="<<
             _nbins<<"\n";
     }
 

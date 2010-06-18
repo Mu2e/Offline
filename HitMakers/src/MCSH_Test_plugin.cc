@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_plugin.cc,v 1.6 2010/05/18 21:15:47 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:15:47 $
+// $Id: MCSH_Test_plugin.cc,v 1.7 2010/06/18 19:24:05 genser Exp $
+// $Author: genser $
+// $Date: 2010/06/18 19:24:05 $
 //
 // Original author Rob Kutschke
 //
@@ -92,7 +92,7 @@ namespace mu2e {
 
       edm::Service<edm::TFileService> tfs;
 
-      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "True Drift Distance;(CLHEP::mm)", 100,  0.,   3.  );
+      _hDriftDist = tfs->make<TH1F>( "hDriftDist", "True Drift Distance;(mm)", 100,  0.,   3.  );
 
     }
 

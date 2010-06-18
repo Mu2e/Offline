@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.11 2010/05/18 21:15:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:15:50 $
+// $Id: HoughTest_plugin.cc,v 1.12 2010/06/18 19:24:05 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/06/18 19:24:05 $
 //
 // Original author R. Bernstein
 //
@@ -193,21 +193,21 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     edm::Service<edm::TFileService> tfs;
 
     // Create some 1D histograms.
-    _hRadius       = tfs->make<TH1F>( "hRadius", "Radius of Hits;(CLHEP::mm)",          100,  0., 1000. );
+    _hRadius       = tfs->make<TH1F>( "hRadius", "Radius of Hits;(mm)",          100,  0., 1000. );
     _hTime         = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  100. );
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",         100,  0.,  100. );
-    _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(CLHEP::mm)", 100,  0.,   3.  );
-    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(CLHEP::mm)",                 
+    _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)", 100,  0.,   3.  );
+    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(mm)",                 
                                       100,  -1000.,  1000. );
-    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(CLHEP::mm)",                 
+    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(mm)",                 
                                       100,  -1000.,  1000. );
-    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of Hit;(CLHEP::mm)",                 
+    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of Hit;(mm)",                 
                                       100,  -1400.,  1400. );
 
     _hHitNeighbours    = tfs->make<TH1F>( "hHitNeighbours",  "Number of hit neighbours",
                                           10, 0., 10. );
 
-    _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (CLHEP::mm)",
+    _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
                                           100, 2.25, 2.75 );
 
     _hRHitFromHTCenterMC = tfs->make<TH1F>( "hRHitFromHTCenterMC",  
