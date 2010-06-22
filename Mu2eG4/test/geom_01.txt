@@ -1,9 +1,9 @@
 //
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.28 2010/06/02 04:00:24 kutschke Exp $
+// $Id: geom_01.txt,v 1.29 2010/06/22 16:48:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/06/02 04:00:24 $
+// $Date: 2010/06/22 16:48:16 $
 //
 // Original author Rob Kutschke
 //
@@ -11,12 +11,13 @@
 
 string detector.name  = "g4geom_v00";
 
-bool hasHall        = true;
-bool hasTarget      = true;
-bool hasLTracker    = true;
-bool hasTTracker    = false;
-bool hasITracker    = false;
-bool hasCalorimeter = true;
+bool hasHall          = true;
+bool hasTarget        = true;
+bool hasLTracker      = true;
+bool hasTTracker      = false;
+bool hasITracker      = false;
+bool hasCalorimeter   = true;
+bool hasBFieldManager = true;
 
 // Uncomment to enable debug printout on a per event basis.
 //vector<int> g4.steppingActionEventList = { 0, 1 };
@@ -371,6 +372,14 @@ string calorimeter.crystalMaterial                         = "G4_PbWO4";
 string calorimeter.crystalWrapper                          = "G4_POLYETHYLENE"; // until I get around to defining Tyvek with Ti02.
 double calorimeter.crystalWrapperHalfThickness             = 0.01 ;             // totally made up
 
+// Magnetic field
+
+string bfield.dsFile = "/home2/misc1/jmanagan/myMu2e/GMC/fieldmaps/dsmap_unfmt_rad100.dat";
+vector<int> bfield.dsDimensions = {  50, 25, 438 };
+string bfield.tsFile = "/home2/misc1/jmanagan/myMu2e/GMC/fieldmaps/tsmap_unfmt_rotcor.dat";
+vector<int> bfield.tsDimensions = { 425, 18, 388 };
+string bfield.psFile = "/home2/misc1/jmanagan/myMu2e/GMC/fieldmaps/psmap_unfmt.dat";
+vector<int> bfield.psDimensions = {  76, 38, 251 };
 
 //
 //
