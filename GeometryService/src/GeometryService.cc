@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.5 2010/04/29 18:19:46 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/04/29 18:19:46 $
+// $Id: GeometryService.cc,v 1.6 2010/06/22 16:46:07 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/06/22 16:46:07 $
 //
 // Original author Rob Kutschke
 //
@@ -35,6 +35,8 @@
 #include "ITrackerGeom/inc/ITrackerMaker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/CalorimeterMaker.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "BFieldGeom/inc/BFieldManagerMaker.hh"
 
 using namespace std;
 using namespace mu2e::calorimeter;
@@ -98,7 +100,11 @@ namespace mu2e {
       CalorimeterMaker calorm( *_config );
       addDetector( calorm.getCalorimeterPtr() );
     }
-
+    
+    if(_config->getBool("hasBFieldManager",false)){
+      BFieldManagerMaker bfmgr( *_config);
+      addDetector( bfmgr.getBFieldManager() );
+    }
 
   }
 
