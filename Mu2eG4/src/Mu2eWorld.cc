@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.30 2010/06/22 16:42:22 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.31 2010/06/22 22:45:59 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/22 16:42:22 $
+// $Date: 2010/06/22 22:45:59 $
 //
 // Original author Rob Kutschke
 //
@@ -826,11 +826,13 @@ namespace mu2e {
     CLHEP::Hep3Vector prodTargetPosition = _config->getHep3Vector("productionTarget.position");
 
     // Rotation of production target.
-    G4RotationMatrix* prodTargetRotation = new G4RotationMatrix;
     double targetPS_rotX = _config->getDouble("targetPS_rotX" )*CLHEP::degree;
     double targetPS_rotY = _config->getDouble("targetPS_rotY" )*CLHEP::degree;
-    prodTargetRotation->rotateX( targetPS_rotX);
-    prodTargetRotation->rotateY( targetPS_rotY);
+
+    // Passive rotation. See Mu2e-doc-938.
+    G4RotationMatrix* prodTargetRotation = new G4RotationMatrix;
+    prodTargetRotation->rotateY( -targetPS_rotY);
+    prodTargetRotation->rotateX( -targetPS_rotX);
 
     VolumeInfo prodTargetInfo   = nestTubs2( "ProductionTarget",
                                              prodTargetParams,
@@ -843,6 +845,7 @@ namespace mu2e {
                                              G4Colour::Red(),
                                              true
                                              );
+
     
     // Set the parameters of the transformation from the PrimaryProtonGun
     // coordinates to G4 coordinates.
