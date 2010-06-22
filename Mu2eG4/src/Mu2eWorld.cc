@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.29 2010/06/15 19:21:28 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.30 2010/06/22 16:42:22 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/15 19:21:28 $
+// $Date: 2010/06/22 16:42:22 $
 //
 // Original author Rob Kutschke
 //
@@ -48,6 +48,7 @@
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eG4/inc/constructLTracker.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
@@ -60,7 +61,6 @@
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
 //#include "G4LogicalVolumeStore.hh"
-//#include "G4SolidStore.hh"
 #include "G4Material.hh"
 #include "G4Box.hh"
 #include "G4Paraboloid.hh"
@@ -79,35 +79,20 @@
 #include "G4ChordFinder.hh"
 #include "G4TransportationManager.hh"
 #include "G4UserLimits.hh"
-//#include "G4SDManager.hh"
 #include "G4ClassicalRK4.hh"
-#include "G4CashKarpRKF45.hh"
-#include "G4ImplicitEuler.hh"
 #include "G4ExplicitEuler.hh"
 
-//Julie's DSField for reading in the file for full DS field
 #include "Mu2eG4/inc/DSField.hh"
+#include "Mu2eG4/inc/FieldMgr.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  Mu2eWorld::Mu2eWorld()
-    :  _cosmicReferencePoint(),
-       _mu2eOrigin(),
-       _info(),
-       _detSolUpstreamBField(),
-       _usualUpstreamRHS(),
-       _exactUpstreamHelix(),
-       _chordUpstreamFinder(),
-       _fieldUpstreamMgr(),
-       _stepUpstreamLimit(),
-       _detSolDownstreamBField(),
-       _usualDownstreamRHS(),
-       _exactDownstreamHelix(),
-       _chordDownstreamFinder(),
-       _fieldDownstreamMgr(),
-       _stepDownstreamLimit(){
+  Mu2eWorld::Mu2eWorld():
+    _cosmicReferencePoint(),
+    _mu2eOrigin(),
+    _info(){
   }
   
   Mu2eWorld::~Mu2eWorld(){
@@ -930,146 +915,64 @@ namespace mu2e {
 
     return targetInfo;
   } // end Mu2eWorld::constructTarget
- 
+
+  // Construct the magnetic field managers and attach them to
+  // the relevant volumes.
   void Mu2eWorld::constructBFieldAndManagers(){
 
-    VolumeInfo detSolUpstreamVacInfo   = locateVolInfo("ToyDS2Vacuum");
-    VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
+    // Figure out which magnetic field managers are needed.
+    int dsFieldForm    = _config->getInt("detSolFieldForm", dsModelUniform); 
+    bool needDSFull    = (dsFieldForm == dsModelFull  || dsFieldForm == dsModelSplit );
+    bool needDSUniform = (dsFieldForm == dsModelSplit || dsFieldForm == dsModelUniform );
 
-    // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
-    //double z0DSup   = detSolUpstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
-    //    double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+    // Create field manager for the full DS field.
+    if ( needDSFull ){
+      _dsFull = FieldMgr::forMappedField<G4ExplicitEuler>( "DS", _mu2eOrigin );
+    }
 
-    const char* fieldmap = "/home2/misc1/jmanagan/myMu2e/GMC/fieldmaps/dsmap_unfmt_rad100.dat";//note disgusting hardwired absolute path
-    int const nx(50); int const ny(25); int const nz(438);
-    
-    G4double stepUpstreamMinimum(1.0e-2*CLHEP::mm);
-    G4double stepDownstreamMinimum(1.0e-2*CLHEP::mm);
+    // Create field manager for the uniform DS field.
+    if ( needDSUniform){
+      // Handle to the BField manager.
+      GeomHandle<BFieldManager> bfMgr;
 
-    //
-    //get the field form; default if unspecified is constant
-    int detSolFieldForm = _config->getInt("detSolFieldForm",detSolUpConstantDownConstant); 
+      _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue(), _mu2eOrigin );
+    }
 
-    cout << "detSolFieldForm  from Mu2eWorld.cc = " << detSolFieldForm << endl;
-    //assert (2==1);
-    // first check we have a legal configuration
-    if (detSolFieldForm != detSolFullField && detSolFieldForm != detSolUpVaryingDownConstant && detSolFieldForm != detSolUpConstantDownConstant)
-      {
-        G4cout << " no legal field specification; detSolFieldForm = " << detSolFieldForm << G4endl;
-        throw cms::Exception("GEOM")
-          << "illegal field config as specified in geom.txt \n";
-      }
+    // Get pointers to logical volumes.
+    G4LogicalVolume* ds2Vacuum = locateVolInfo("ToyDS2Vacuum").logical;
+    G4LogicalVolume* ds3Vacuum = locateVolInfo("ToyDS3Vacuum").logical;
 
-    if (detSolFieldForm == detSolFullField)
-      {
-        //
-        //upstream varying section
+    // Attach field managers to the appropriate logical volumes.
+    if (dsFieldForm == dsModelFull  ){
+      ds2Vacuum->SetFieldManager( _dsFull->manager(), true);
+      ds3Vacuum->SetFieldManager( _dsFull->manager(), true);
+    } else if ( dsFieldForm == dsModelSplit ){
+      ds2Vacuum->SetFieldManager( _dsFull->manager(), true);
+      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+    } else {
+      ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
+      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+    }
 
-        _detSolUpstreamVaryingBField = auto_ptr<G4MagneticField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
-        _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get() ) );
-        _rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualUpstreamRHS.get()));
-        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
-                                                                                , _rungeUpstreamHelix.get() ));
-        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
-                                                                                 _chordUpstreamFinder.get(), true));
-        //
-        //downstream varying section
-        _detSolDownstreamVaryingBField = auto_ptr<G4MagneticField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
-        _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamVaryingBField.get() ) );
-        _rungeEEDownstreamHelix  = auto_ptr<G4ExplicitEuler>(new G4ExplicitEuler(_usualDownstreamRHS.get()));
-        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamVaryingBField.get(), stepDownstreamMinimum,
-                                                                                  _rungeDownstreamHelix.get() ));
-        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamVaryingBField.get(), 
-                                                                                   _chordDownstreamFinder.get(), true));
-
-      }
-    if (detSolFieldForm == detSolUpVaryingDownConstant)
-      {
-        cout << "in hybrid " << endl;
-        //
-        //upstream varying section
-        _detSolUpstreamVaryingBField = auto_ptr<DSField>(new DSField(fieldmap,_mu2eOrigin,nx,ny,nz));
-        _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamVaryingBField.get()));
-        
-        _rungeEEUpstreamHelix  = auto_ptr<G4ExplicitEuler> (new G4ExplicitEuler(_usualUpstreamRHS.get()));
-        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamVaryingBField.get(), stepUpstreamMinimum
-                                                                                , _rungeEEUpstreamHelix.get() ));
-        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamVaryingBField.get(), 
-                                                                                 _chordUpstreamFinder.get(), true));
-
-        //downstream constant section
-        G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
-        _detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
-        _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get()) );
-        _exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
-        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
-                                                                                  , _exactDownstreamHelix.get() ));
-        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamConstantBField.get(), 
-                                                                                   _chordDownstreamFinder.get(), true));
-      }
-
-    if (detSolFieldForm == detSolUpConstantDownConstant) 
-      {
-        cout << "in constant field" << endl;
-        //
-        // constant field, but split into two parts; upstream first
-        G4double bzUp = _config->getDouble("toyDS.bz") * tesla;
-        _detSolUpstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzUp)));
-        _usualUpstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolUpstreamConstantBField.get() ) );
-        _exactUpstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualUpstreamRHS.get()));
-        _chordUpstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolUpstreamConstantBField.get(), stepUpstreamMinimum
-                                                                                , _exactUpstreamHelix.get() ));
-        _fieldUpstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolUpstreamConstantBField.get(), 
-                                                                                 _chordUpstreamFinder.get(), true));
-        //downstream
-        G4double bzDown = _config->getDouble("toyDS.bz") * tesla;
-        _detSolDownstreamConstantBField = auto_ptr<G4UniformMagField>(new G4UniformMagField(G4ThreeVector(0.,0.,bzDown)));
-        _usualDownstreamRHS    = auto_ptr<G4Mag_UsualEqRhs>   (new G4Mag_UsualEqRhs( _detSolDownstreamConstantBField.get() ) );
-        _exactDownstreamHelix  = auto_ptr<G4ExactHelixStepper>(new G4ExactHelixStepper(_usualDownstreamRHS.get()));
-        _chordDownstreamFinder = auto_ptr<G4ChordFinder>      (new G4ChordFinder( _detSolDownstreamConstantBField.get(), stepDownstreamMinimum
-                                                                                  , _exactDownstreamHelix.get() ));
-        _fieldDownstreamMgr    = auto_ptr<G4FieldManager>     (new G4FieldManager( _detSolDownstreamConstantBField.get(), 
-                                                                                   _chordDownstreamFinder.get(), true));
-      }
-
-
-
-    // Now that we've chosen, attach the field manager to the detSol volume; full field upstream
-    detSolUpstreamVacInfo.logical->SetFieldManager( _fieldUpstreamMgr.get(), true);
-    detSolDownstreamVacInfo.logical->SetFieldManager( _fieldDownstreamMgr.get(), true);
-
-
-
-    //
-    //set integration step values
-    G4double singleValue = 0.5e-01*CLHEP::mm;
-    G4double newUpstreamDeltaI = singleValue;
+    // Adjust properties of the integrators to control accuracy vs time.
+    G4double singleValue         = 0.5e-01*CLHEP::mm;
+    G4double newUpstreamDeltaI   = singleValue;
     G4double newDownstreamDeltaI = singleValue;
-    G4double deltaOneStep = singleValue;
-    G4double deltaChord = singleValue;
-    G4double maxStep = 20.e-00*CLHEP::mm;
+    G4double deltaOneStep        = singleValue;
+    G4double deltaChord          = singleValue;
 
-    // Leave the defaults for the uniform field; override them for non-uniform field.
-    if ( detSolFieldForm == detSolFullField || detSolFieldForm == detSolUpVaryingDownConstant ){
-      _fieldUpstreamMgr->SetDeltaOneStep(deltaOneStep);
-      _fieldUpstreamMgr->SetDeltaIntersection(newUpstreamDeltaI);    
-      _chordUpstreamFinder->SetDeltaChord(deltaChord);
-    }
-    if ( detSolFieldForm == detSolFullField ){
-      _fieldDownstreamMgr->SetDeltaOneStep(deltaOneStep);
-      _fieldDownstreamMgr->SetDeltaIntersection(newDownstreamDeltaI);    
-      _chordDownstreamFinder->SetDeltaChord(deltaChord);
+    if ( _dsFull.get() != 0 ){
+      _dsFull->manager()->SetDeltaOneStep(deltaOneStep);
+      _dsFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
+      _dsFull->chordFinder()->SetDeltaChord(deltaChord);
     }
 
-    // For the uniform field, change only deltaIntersection.
-    if ( detSolFieldForm == detSolUpConstantDownConstant ||
-         detSolFieldForm == detSolUpVaryingDownConstant     ){
+    if ( _dsUniform.get() != 0 ){
       G4double deltaIntersection = 0.00001*CLHEP::mm;
-      if ( detSolFieldForm == detSolUpConstantDownConstant ){
-        _fieldUpstreamMgr->SetDeltaIntersection(deltaIntersection);
-      }
-      _fieldDownstreamMgr->SetDeltaIntersection(deltaIntersection);    
+      _dsUniform->manager()->SetDeltaIntersection(deltaIntersection);
     }
+
+
   } // end Mu2eWorld::constructBFieldAndManagers
 
 

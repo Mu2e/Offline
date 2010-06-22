@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.14 2010/06/02 04:43:45 kutschke Exp $
+// $Id: Mu2eWorld.hh,v 1.15 2010/06/22 16:42:22 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/02 04:43:45 $
+// $Date: 2010/06/22 16:42:22 $
 //
 // Original author Rob Kutschke
 //
@@ -30,24 +30,13 @@
 
 // Forward references.
 class G4Material;
-class DSField;
-class G4UniformMagField;
 class G4Mag_UsualEqRhs;
-class G4ExactHelixStepper;
-class G4ChordFinder;
-class G4FieldManager;
 class G4UserLimits;
-class G4HelixSimpleRunge;
-class G4ClassicalRK4;
-class G4CashKarpRKF45;
-class G4ImplicitEuler;
-class G4ExplicitEuler;
-class G4MagneticField;
-//class G4AssemblyVolume;
 
 // Mu2e includes
 #include "Mu2eG4/inc/WorldInfo.hh"
 #include "Mu2eG4/inc/VolumeInfo.hh"
+#include "Mu2eG4/inc/FieldMgr.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
 //G4 includes 
@@ -92,7 +81,6 @@ namespace mu2e {
     G4RotationMatrix const& getPrimaryProtonGunRotation() const{
       return _primaryProtonGunRotation;
     }
-
 
   private:
 
@@ -274,51 +262,31 @@ namespace mu2e {
     VolumeInfo& locateVolInfo( const std::string key);
     void addVolInfo( const VolumeInfo& info );
     
+    // Stash a pointer to the config object so everyone can get at it easily.
     SimpleConfig const* _config;
 
     // Location in G4 world coordinates of the reference point for the Primary Proton Gun
     G4ThreeVector _primaryProtonGunOrigin;
     G4RotationMatrix _primaryProtonGunRotation;
 
-    //keep these for future use
-    std::auto_ptr<G4UniformMagField>   _detSolUpstreamBField;
-    std::auto_ptr<G4UniformMagField>   _detSolDownstreamBField;
+    // Models of the DS magnetic field:
+    // 0 - whole DS uses the field map.
+    // 1 - upstream uses the full field map; downstream uses a uniform field.
+    // 2 - whole DS uses a uniform field.
+    enum DSFieldModel { dsModelFull, dsModelSplit, dsModelUniform};
 
-    //enum to pick field form
-    enum detSolFieldChoice {detSolFullField,detSolUpVaryingDownConstant,detSolUpConstantDownConstant};
+    // Field managers for the different regions of magnetic field.
+    // These have a lifetime equal to that of the G4 geometry.
+    std::auto_ptr<FieldMgr> _dsFull;
+    std::auto_ptr<FieldMgr> _dsUniform;
 
-    //
-    //if you want to use constant field
-    std::auto_ptr<G4UniformMagField>   _detSolUpstreamConstantBField;
-    std::auto_ptr<G4UniformMagField>   _detSolDownstreamConstantBField;
-    //
-    //varying field
-    std::auto_ptr<G4MagneticField>   _detSolUpstreamVaryingBField;
-    std::auto_ptr<G4MagneticField>   _detSolDownstreamVaryingBField;
-
-    //need these in both cases
-    std::auto_ptr<G4Mag_UsualEqRhs>    _usualUpstreamRHS;
-    std::auto_ptr<G4ExactHelixStepper> _exactUpstreamHelix;
-    std::auto_ptr<G4ClassicalRK4 >     _rungeUpstreamHelix;
-    std::auto_ptr<G4CashKarpRKF45 >     _rungeCKUpstreamHelix;
-    std::auto_ptr<G4ImplicitEuler >     _rungeIEUpstreamHelix;
-    std::auto_ptr<G4ExplicitEuler >     _rungeEEUpstreamHelix;
-    std::auto_ptr<G4ChordFinder>       _chordUpstreamFinder;
-    std::auto_ptr<G4FieldManager>      _fieldUpstreamMgr;
-    std::auto_ptr<G4Mag_UsualEqRhs>    _usualDownstreamRHS;
-    std::auto_ptr<G4ExactHelixStepper> _exactDownstreamHelix;
-    std::auto_ptr<G4ClassicalRK4>     _rungeDownstreamHelix;
-    std::auto_ptr<G4ExplicitEuler>     _rungeEEDownstreamHelix;
-    std::auto_ptr<G4ChordFinder>       _chordDownstreamFinder;
-    std::auto_ptr<G4FieldManager>      _fieldDownstreamMgr;
-    std::auto_ptr<G4UserLimits>        _stepLimit;
-    std::auto_ptr<G4UserLimits>        _stepUpstreamLimit;
-    std::auto_ptr<G4UserLimits>        _stepDownstreamLimit;
+    std::auto_ptr<G4UserLimits> _stepLimit;
 
     // Allow access to the volume information by volume name.  See note 1.
     std::map<std::string,VolumeInfo> _volumeInfoList;
 
     // Manage the lifetime of the G4VisAttributes objects.
+    // Lifetime matches that of the G4 geometry.
     std::list<G4VisAttributes> _visAttributes;
 
   };
