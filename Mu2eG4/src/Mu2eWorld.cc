@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.31 2010/06/22 22:45:59 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.32 2010/06/22 22:53:06 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/22 22:45:59 $
+// $Date: 2010/06/22 22:53:06 $
 //
 // Original author Rob Kutschke
 //
@@ -829,6 +829,7 @@ namespace mu2e {
     double targetPS_rotX = _config->getDouble("targetPS_rotX" )*CLHEP::degree;
     double targetPS_rotY = _config->getDouble("targetPS_rotY" )*CLHEP::degree;
 
+    // G4 takes ownership of this G4RotationMatrix object.
     // Passive rotation. See Mu2e-doc-938.
     G4RotationMatrix* prodTargetRotation = new G4RotationMatrix;
     prodTargetRotation->rotateY( -targetPS_rotY);
@@ -848,7 +849,8 @@ namespace mu2e {
 
     
     // Set the parameters of the transformation from the PrimaryProtonGun
-    // coordinates to G4 coordinates.
+    // coordinates to G4 coordinates.  This needs an active sense rotation,
+    // the opposite of what G4 needed.
     _primaryProtonGunRotation = prodTargetRotation->inverse();
 
     G4ThreeVector prodTargetFaceLocal(0.,0.,prodTargetParams.zHalfLength);
