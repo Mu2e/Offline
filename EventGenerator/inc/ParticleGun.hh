@@ -1,17 +1,15 @@
 #ifndef PARTICLEGUN_HH
 #define PARTICLEGUN_HH
 //
-// Shoots a single particle gun and puts its output
-// into a generated event.
+// Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.2 2010/03/29 16:20:57 kutschke Exp $
+// $Id: ParticleGun.hh,v 1.3 2010/06/23 23:28:10 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/29 16:20:57 $
+// $Date: 2010/06/23 23:28:10 $
 //
 // Original author Rob Kutschke
 //
-// The adjustable properties are:
-// 1) 
+// The position is given in the Mu2e coordinate system.
 // 
 
 // Mu2e includes
@@ -48,12 +46,13 @@ namespace mu2e {
     // Number of particles per event.
     int _n;
 
-    // PDG particle id code and the mass of the particle.
+    // PDG particle id code of the particle to be generated.
     PDGCode::type _pdgId;
 
     // Particles will be produced in a box, specified by 
     // a point in the Tracker coordinate system and 
     // the half lengths of the box.  Units are mm.
+    // The point (0,0,0) is at the origin of the Mu2e coordinate system.
     CLHEP::Hep3Vector _point;
     CLHEP::Hep3Vector _halfLength;
     
@@ -88,9 +87,6 @@ namespace mu2e {
     TH1F* _hY0;
     TH1F* _hZ0;
     TH1F* _hT0;
-
-    // Compute the default value of the point of origin.
-    double defaultZ0();
 
   };
 

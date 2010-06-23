@@ -1,10 +1,9 @@
 //
-// Shoots a single particle gun and puts its output
-// into a generated event.
+// Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.5 2010/06/18 19:24:05 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/06/18 19:24:05 $
+// $Id: ParticleGun.cc,v 1.6 2010/06/23 23:28:10 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/06/23 23:28:10 $
 //
 // Original author Rob Kutschke
 // 
@@ -54,16 +53,13 @@ namespace mu2e {
     _hMultiplicity(0),
     _hMomentum(0){
 
-    // Finish setting up default values.
-    _point.setZ( defaultZ0() );
-
     // Conversion energy for Al.  Should come from conditions.
     static const double pEndPoint = 104.96;
 
     // Process the run time configuration.
     _n = config.getInt("particleGun.n", _n);
 
-    _pdgId = static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::e_minus));
+    _pdgId = static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::mu_minus));
 
     if ( config.hasName("particleGun.point") ){
       _point  = config.getHep3Vector("particleGun.point");
@@ -73,8 +69,8 @@ namespace mu2e {
       _halfLength = config.getHep3Vector("particleGun.halfLength");
     }
 
-    _pmin   = config.getDouble("particleGun.tmin", pEndPoint );
-    _pmax   = config.getDouble("particleGun.tmax", pEndPoint );
+    _pmin   = config.getDouble("particleGun.pmin", pEndPoint );
+    _pmax   = config.getDouble("particleGun.pmax", pEndPoint );
 
     _randomUnitSphere.setczmin(  config.getDouble("particleGun.czmin",  0.5));
     _randomUnitSphere.setczmax(  config.getDouble("particleGun.czmax",  0.7));
@@ -102,10 +98,20 @@ namespace mu2e {
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Particle Gun Multiplicity",    10,  0.,  10.);
     _hMomentum     = tfs->make<TH1F>( "hMomentum",     "Particle Gun Momentum (MeV)",  100, 0., 110.);
     _hCz           = tfs->make<TH1F>( "hCz",           "Particle Gun cos(theta)",      100, -1.,  1.);
-    _hX0           = tfs->make<TH1F>( "hX0",           "Particle Gun X0",              100,   -20.,    20.);
-    _hY0           = tfs->make<TH1F>( "hY0",           "Particle Gun Y0",              100,   -20.,    20.);
-    _hZ0           = tfs->make<TH1F>( "hZ0",           "Particle Gun Z0",              100, -2000.,  2000.);
-    _hT0           = tfs->make<TH1F>( "hT0",           "Particle Gun Time",            100,     0.,  2000.);
+
+    double xlen = (_halfLength.x() != 0. ) ? _halfLength.x() : 1.;
+    double ylen = (_halfLength.y() != 0. ) ? _halfLength.y() : 1.;
+    double zlen = (_halfLength.z() != 0. ) ? _halfLength.z() : 1.;
+    double xl = _point.x() - xlen;
+    double xh = _point.x() + xlen;
+    double yl = _point.y() - ylen;
+    double yh = _point.y() + ylen;
+    double zl = _point.z() - zlen;
+    double zh = _point.z() + zlen;
+    _hX0           = tfs->make<TH1F>( "hX0", "Particle Gun X0",              100,   xl,    xh);
+    _hY0           = tfs->make<TH1F>( "hY0", "Particle Gun Y0",              100,   yl,    yh);
+    _hZ0           = tfs->make<TH1F>( "hZ0", "Particle Gun Z0",              100,   zl,    zh);
+    _hT0           = tfs->make<TH1F>( "hT0", "Particle Gun Time",            100,  _tmin, _tmax);
 
   }
 
@@ -156,33 +162,5 @@ namespace mu2e {
     }
 
   } // end of generate
-
-
-  // Compute a default value of the z0 of the particle gun.
-  // In the tracker coordinate system, in mm.
-  double ParticleGun::defaultZ0(){
-
-    // Default z position is at the entrance to a nominal tracker, in mm.
-    double z0 = -1400.;
-
-    // Override this if an actual tracker is present.
-
-    edm::Service<GeometryService> geom;
-
-    if ( geom->hasElement<LTracker>() ){
-      GeomHandle<LTracker> ltracker;
-      z0 = -ltracker->zHalfLength();
-    } else if ( geom->hasElement<ITracker>() ) {
-      GeomHandle<ITracker> itracker;
-      z0 = -itracker->zHalfLength();
-    }
-
-    // Add a TTracker branch when ready.
-
-    // Tracker position in the Detecctor coordinate system.
-    static double trackerOffset = -1800.;
-
-    return z0+trackerOffset;
-  }
 
 }

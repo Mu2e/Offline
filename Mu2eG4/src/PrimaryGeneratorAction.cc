@@ -4,16 +4,16 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.13 2010/05/18 21:16:22 kutschke Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.14 2010/06/23 23:28:10 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:22 $
+// $Date: 2010/06/23 23:28:10 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes
 #include <iostream>
-#include <cassert>
+//#include <cassert>
 #include <stdexcept>
 
 // Framework includes
@@ -89,8 +89,9 @@ namespace mu2e {
   void PrimaryGeneratorAction::fromEvent(G4Event* event){ 
 
     // Get the offsets to map from generator world to G4 world.
-    G4ThreeVector const& cosmicReferencePlane = _world->getCosmicReferencePoint();
-    G4ThreeVector const& detectorOrigin       = _world->getMu2eDetectorOrigin();
+    G4ThreeVector const& mu2eOrigin                  = _world->getMu2eOrigin();
+    G4ThreeVector const& cosmicReferencePlane        = _world->getCosmicReferencePoint();
+    G4ThreeVector const& detectorOrigin              = _world->getMu2eDetectorOrigin();
     G4ThreeVector const& primaryProtonGunOrigin      = _world->getPrimaryProtonGunOrigin();
     G4RotationMatrix const& primaryProtonGunRotation = _world->getPrimaryProtonGunRotation();
 
@@ -110,11 +111,10 @@ namespace mu2e {
       G4ThreeVector      pos(genpart._position);
       G4ThreeVector momentum(genpart._momentum.v());
 
-      if( genpart._generatorId == GenId::conversionGun ||
-          genpart._generatorId == GenId::particleGun ||
-          genpart._generatorId == GenId::dio1 ||
+      if( genpart._generatorId == GenId::conversionGun    ||
+          genpart._generatorId == GenId::dio1             ||
           genpart._generatorId == GenId::ejectedProtonGun ||
-          genpart._generatorId == GenId::pionCapture ||
+          genpart._generatorId == GenId::pionCapture      ||
           genpart._generatorId == GenId::piEplusNuGun){
         pos += detectorOrigin;
       } else if ( genpart._generatorId == GenId::cosmicToy ||
@@ -124,6 +124,8 @@ namespace mu2e {
       } else if ( genpart._generatorId == GenId::primaryProtonGun ){
         pos = primaryProtonGunRotation*pos + primaryProtonGunOrigin;
         momentum = primaryProtonGunRotation*momentum;
+      } else if ( genpart._generatorId == GenId::particleGun ){
+        pos += mu2eOrigin;
       } else {
         edm::LogError("KINEMATICS")
           << "Do not know what to do with this generator id: " 
@@ -131,7 +133,6 @@ namespace mu2e {
           << "  Skipping this track.";
         continue;
       }
-
     
       // Create a new vertex 
       G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
@@ -146,10 +147,10 @@ namespace mu2e {
       // Set the charge.  Do I really need to do this?
       G4ParticleDefinition const* g4id = particle->GetG4code();
       particle->SetCharge( g4id->GetPDGCharge()*eplus );
-          
+
       // Add the particle to the event.
       vertex->SetPrimary( particle );
-      
+
       // Add the vertex to the event.
       event->AddPrimaryVertex( vertex );
 
