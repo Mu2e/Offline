@@ -1,9 +1,9 @@
 //
 // Free function to construct version 1 of the TTracker
 //
-// $Id: constructTTrackerv1.cc,v 1.3 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: constructTTrackerv1.cc,v 1.4 2010/06/23 23:29:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/06/23 23:29:16 $
 //
 // Original author Rob Kutschke
 //
@@ -65,7 +65,7 @@ namespace mu2e{
 
     G4Material* envelopeMaterial = findMaterialOrThrow(ttracker->envelopeMaterial());
 
-    VolumeInfo info = nestTubs( "TTrackerMother",
+    VolumeInfo info = nestTubs( "TrackerMother",
                                 envelopeParams,
                                 envelopeMaterial,
                                 0,

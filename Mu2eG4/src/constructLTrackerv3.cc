@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.4 2010/06/17 20:31:13 kutschke Exp $
+// $Id: constructLTrackerv3.cc,v 1.5 2010/06/23 23:29:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/06/17 20:31:13 $
+// $Date: 2010/06/23 23:29:16 $
 //
 // Original author Rob Kutschke
 //
@@ -54,14 +54,17 @@ namespace mu2e{
     // Master geometry for the LTracker.
     GeomHandle<LTracker> ltracker;
 
-    double rOut  = CLHEP::mm * ltracker->rOut();
-    double zHalf = CLHEP::mm * ltracker->zHalfLength();
+    // Ugly hack; 
+    // add padding to ensure that this encloses the rotated volumes
+    // This should be done inside the LTracker object.
+    double rOut  = CLHEP::mm * ltracker->rOut()+10.;
+    double zHalf = CLHEP::mm * ltracker->zHalfLength()+30.;
     double z0    = CLHEP::mm * ltracker->z0();
 
     VolumeInfo trackerInfo;
 
     // Make the mother volume for the LTracker.
-    string trackerName("LTrackerMother");
+    string trackerName("TrackerMother");
     G4Material* fillMaterial = findMaterialOrThrow(ltracker->fillMaterial());
     G4ThreeVector trackerOffset(0.,0.,z0-zOff);
 

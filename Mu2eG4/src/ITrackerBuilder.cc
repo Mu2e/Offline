@@ -45,7 +45,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
         VolumeInfo trackerInfo;
 
         // Make the mother volume for the ITracker.
-        string trackerName("ITrackerMother");
+        string trackerName("TrackerMother");
 
         double z0    = CLHEP::mm * itracker->z0();
         G4ThreeVector trackerOffset(0.,0.,z0-zOff);

@@ -1,9 +1,9 @@
 //
 // Free function to construct version 2 of the LTracker
 //
-// $Id: constructLTrackerv2.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: constructLTrackerv2.cc,v 1.3 2010/06/23 23:29:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/06/23 23:29:16 $
 //
 // Original author Rob Kutschke
 //
@@ -66,7 +66,7 @@ namespace mu2e{
     VolumeInfo trackerInfo;
 
     // Make the mother volume for the LTracker.
-    string trackerName("LTrackerMother");
+    string trackerName("TrackerMother");
     G4Material* fillMaterial = findMaterialOrThrow(ltracker->fillMaterial());
     G4ThreeVector trackerOffset(0.,0.,z0-zOff);
 
