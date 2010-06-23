@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.12 2010/05/18 21:15:35 kutschke Exp $
+  $Id: EventGenerator_plugin.cc,v 1.13 2010/06/23 23:18:59 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/05/18 21:15:35 $
+  $Date: 2010/06/23 23:18:59 $
 
   Original author Rob Kutschke
 
@@ -131,15 +131,15 @@ namespace mu2e {
     _generators.clear();
 
     // Which generators will we run?
-    bool doConv                 = config.getBool( "conversionGun.do", 1);
-    bool doParticleGun          = config.getBool( "particleGun.do",   0);
-    bool doCosmicToy            = config.getBool( "cosmictoy.do", 0);
-    bool doCosmicDYB            = config.getBool( "cosmicDYB.do", 0);
-    bool doPiCapture            = config.getBool( "picapture.do", 0);
-    bool doEjectedProton        = config.getBool( "ejectedProtonGun.do", 0);
-    bool doDIO                  = config.getBool( "decayinorbitGun.do", 0);
-    bool doPiEplusNu            = config.getBool( "piEplusNuGun.do", 0);
-    bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", 0);
+    bool doConv                 = config.getBool( "conversionGun.do",    true );
+    bool doParticleGun          = config.getBool( "particleGun.do",      false );
+    bool doCosmicToy            = config.getBool( "cosmictoy.do",        false );
+    bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
+    bool doPiCapture            = config.getBool( "picapture.do",        false );
+    bool doEjectedProton        = config.getBool( "ejectedProtonGun.do", false );
+    bool doDIO                  = config.getBool( "decayinorbitGun.do",  false );
+    bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
+    bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
