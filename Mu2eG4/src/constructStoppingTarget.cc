@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: constructStoppingTarget.cc,v 1.3 2010/06/23 23:32:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/06/23 23:32:09 $
 //
 // Original author Peter Shanahan
 //
@@ -56,7 +56,7 @@ namespace mu2e {
     VolumeInfo targetInfo;
 
     // Make the mother volume for the Target
-    string targetName("TargetMother");
+    string targetName("StoppingTargetMother");
     std::cout<<"Looking for material "<<target->fillMaterial()<<std::endl;
     G4Material* fillMaterial = findMaterialOrThrow(target->fillMaterial());
     std::cout<<"Done Looking for material "<<target->fillMaterial()<<std::endl;
