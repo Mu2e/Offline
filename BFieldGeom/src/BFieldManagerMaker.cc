@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.1 2010/06/22 16:44:25 kutschke Exp $
+// $Id: BFieldManagerMaker.cc,v 1.2 2010/06/23 23:18:10 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/22 16:44:25 $
+// $Date: 2010/06/23 23:18:10 $
 //
 
 // Includes from C++
@@ -230,7 +230,6 @@ namespace mu2e {
     bfmap.setLimits( mmX.min(), mmX.max(),
                      mmY.min(), mmY.max(),
                      mmZ.min(), mmZ.max() );
-    bfmap.print(cout);
 
     // Store grid points and field values into 3D arrays
     for (vector<DiskRecord>::const_iterator i=data.begin(), e=data.end();
