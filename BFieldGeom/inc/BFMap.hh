@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.1 2010/06/22 16:44:25 kutschke Exp $
+// $Id: BFMap.hh,v 1.2 2010/06/23 23:17:21 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/06/22 16:44:25 $
+// $Date: 2010/06/23 23:17:21 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 //
@@ -27,7 +27,7 @@ namespace mu2e {
 
     BFMap():
       _key(),
-      _throwIfOutside(false),
+      _warnIfOutside(false),
       _nx(),
       _ny(),
       _nz(),
@@ -36,9 +36,9 @@ namespace mu2e {
       _field(){
     }
 
-    BFMap( const std::string& key, bool throwIfOutside=false):
+    BFMap( const std::string& key, bool warnIfOutside=false):
       _key(key),
-      _throwIfOutside(throwIfOutside),
+      _warnIfOutside(warnIfOutside),
       _nx(),
       _ny(),
       _nz(),
@@ -52,9 +52,9 @@ namespace mu2e {
           int const nx, 
           int const ny, 
           int const nz,
-          bool throwIfOutside=false):
+          bool warnIfOutside=false):
       _key(filename),
-      _throwIfOutside(throwIfOutside),
+      _warnIfOutside(warnIfOutside),
       _nx(nx),
       _ny(ny),
       _nz(nz),
@@ -90,9 +90,10 @@ namespace mu2e {
     // where this map came from.
     std::string _key;
 
-    // If true, then throw when a point is outside the region in which the 
-    // map is defined; else return a field with a value of (0.,0.,0.);
-    bool _throwIfOutside;
+    // If true, then print a warning message when a point is outside the region 
+    // in which the map is defined; else return a field with a value of (0.,0.,0.);
+    // This does happen under normal operation of G4 so we should not warn be default.
+    bool _warnIfOutside;
 
     // Grid dimensions
     const unsigned int _nx, _ny, _nz;
@@ -102,11 +103,6 @@ namespace mu2e {
 
     // Distance between points.
     double _dx, _dy, _dz;
-
-    // Indices of nearest gridpoint
-    // These should be local variables of the one member function
-    // and passed as arguments to the other.
-    mutable unsigned int _ix, _iy, _iz;
 
     // Origin from external setup
     CLHEP::Hep3Vector _origin;
@@ -121,7 +117,7 @@ namespace mu2e {
     bool isValid(CLHEP::Hep3Vector const& point) const;
 
     // method to store the neighbors
-    void getNeighbors(mu2e::Container3D<CLHEP::Hep3Vector>& neighborsBF) const;
+    void getNeighbors(int ix, int iy, int iz, mu2e::Container3D<CLHEP::Hep3Vector>& neighborsBF) const;
 
     // Interpolater
     CLHEP::Hep3Vector interpolate(mu2e::Container3D<CLHEP::Hep3Vector> const vec,
