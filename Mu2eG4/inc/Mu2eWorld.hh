@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.15 2010/06/22 16:42:22 kutschke Exp $
+// $Id: Mu2eWorld.hh,v 1.16 2010/06/23 23:39:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/22 16:42:22 $
+// $Date: 2010/06/23 23:39:46 $
 //
 // Original author Rob Kutschke
 //
@@ -96,9 +96,11 @@ namespace mu2e {
     void constructPS( const VolumeInfo& parent );
     VolumeInfo constructTracker();
     VolumeInfo constructTarget();
+    void constructCal();
     void constructMagnetYoke();
     void constructCRV();
     void constructBFieldAndManagers();
+    void constructStepLimiters();
 
     // The world coordinates of the center of the cosmic ray reference plane.
     G4ThreeVector _cosmicReferencePoint;
@@ -262,7 +264,7 @@ namespace mu2e {
     VolumeInfo& locateVolInfo( const std::string key);
     void addVolInfo( const VolumeInfo& info );
     
-    // Stash a pointer to the config object so everyone can get at it easily.
+    // Stash a pointer to the config object so that all methods can get at it easily.
     SimpleConfig const* _config;
 
     // Location in G4 world coordinates of the reference point for the Primary Proton Gun
@@ -279,15 +281,17 @@ namespace mu2e {
     // These have a lifetime equal to that of the G4 geometry.
     std::auto_ptr<FieldMgr> _dsFull;
     std::auto_ptr<FieldMgr> _dsUniform;
-
-    std::auto_ptr<G4UserLimits> _stepLimit;
+    std::auto_ptr<FieldMgr> _psFull;
+    std::auto_ptr<FieldMgr> _tsFull;
 
     // Allow access to the volume information by volume name.  See note 1.
     std::map<std::string,VolumeInfo> _volumeInfoList;
 
-    // Manage the lifetime of the G4VisAttributes objects.
-    // Lifetime matches that of the G4 geometry.
+    // Manage the lifetime of various objects whose lifetimes match that of the
+    // G4 geometry.  Use a list not a vector since push_back invalidates iterators for
+    // vectors but not for a list.
     std::list<G4VisAttributes> _visAttributes;
+    std::list<G4UserLimits>    _stepLimits;
 
   };
 

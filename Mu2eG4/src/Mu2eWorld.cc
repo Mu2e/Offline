@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.32 2010/06/22 22:53:06 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.33 2010/06/23 23:39:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/22 22:53:06 $
+// $Date: 2010/06/23 23:39:46 $
 //
 // Original author Rob Kutschke
 //
@@ -60,7 +60,7 @@
 // G4 includes
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
-//#include "G4LogicalVolumeStore.hh"
+#include "G4LogicalVolumeStore.hh"
 #include "G4Material.hh"
 #include "G4Box.hh"
 #include "G4Paraboloid.hh"
@@ -149,8 +149,15 @@ namespace mu2e {
     VolumeInfo targetInfo  = constructTarget();
 
     // These are just placeholders for now:
+    constructCal();
     constructMagnetYoke();
     constructCRV();
+
+    // Hack alert: These belong in constructTracker and constructTarget.
+    trackerInfo.name = "TrackerMother";
+    targetInfo.name  = "StoppingTargetMother";
+    addVolInfo(trackerInfo);
+    addVolInfo(targetInfo);
 
     edm::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << _mu2eOrigin           << "\n";
@@ -158,34 +165,9 @@ namespace mu2e {
     log << "Cosmic Ref:           " << _cosmicReferencePoint << "\n";
     log << "Hall Origin in Mu2e:  " << _hallOriginInMu2e     << "\n";
 
-    VolumeInfo detSolUpstreamVacInfo   = locateVolInfo("ToyDS2Vacuum");
-    VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
-
-    // Move this to a function.
-    if ( _config->getBool("hasCalorimeter",false) ){
-
-      // z Position of the center of the DS solenoid downstream part, given in the Mu2e coordinate system.
-      double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
-
-      VolumeInfo calorimeterInfo = constructCalorimeter( detSolDownstreamVacInfo.logical,
-                                                         -z0DSdown,
-                                                         *_config );
-    }
-
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();
-
-    // Set step limits.
-    // See also PhysicsList.cc to add a steplimiter to the list of processes.
-    // Do this so that we can see the helical trajectory in the DS and volumes inside of it.
-    
-    G4double maxStep = 20.0*CLHEP::mm;
-    _stepLimit = auto_ptr<G4UserLimits>( new G4UserLimits(maxStep));
-    detSolUpstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
-    detSolDownstreamVacInfo.logical->SetUserLimits(_stepLimit.get());
-
-    trackerInfo.logical->SetUserLimits(_stepLimit.get());
-    targetInfo.logical->SetUserLimits(_stepLimit.get());
+    constructStepLimiters();
 
   }
 
@@ -297,6 +279,8 @@ namespace mu2e {
     // Origin of the hall air volume in the system of the hall concrete volume.
     G4ThreeVector hallOffset( 0., (floorThick-ceilingThick)/2., 0.);
 
+    bool hallVisible = _config->getBool("hall.visible",true);
+
     // Concrete walls of the hall.
     VolumeInfo wallInfo = nestBox( "HallWalls",
                                    hallOutHLen,
@@ -305,7 +289,7 @@ namespace mu2e {
                                    wallOffset,
                                    parent,
                                    0,
-                                   true,
+                                   hallVisible,
                                    G4Colour::Red()
                                    );
     
@@ -317,7 +301,7 @@ namespace mu2e {
                                    hallOffset,
                                    wallInfo,
                                    0,
-                                   true,
+                                   hallVisible,
                                    G4Colour::Red()
                                    );
 
@@ -340,6 +324,8 @@ namespace mu2e {
 
     const string worldName("World");
 
+    bool worldBoxVisible = _config->getBool("world.boxVisible",true);
+
     // Construct the world volume.  The dummy is needed because the interface
     // to nestBox requires a mother even if this is the top level.
     VolumeInfo dummy("MotherofTheWorld", G4ThreeVector(), G4ThreeVector());
@@ -349,7 +335,8 @@ namespace mu2e {
                                     0, 
                                     G4ThreeVector(), 
                                     dummy,
-                                    0
+                                    0,
+                                    worldBoxVisible
                                     );
     _info.worldPhys  = worldInfo.physical;
 
@@ -389,7 +376,9 @@ namespace mu2e {
     
     // Half lengths of the dirt box.
     double dirtHLen[3] = { worldHLen[0], yLDirt, worldHLen[2] };
-    
+
+    bool dirtVisible = _config->getBool("dirt.visible",false);
+
     // Main body of dirt around the hall.
     VolumeInfo dirtInfo = nestBox( "DirtBody",
                                    dirtHLen,
@@ -398,7 +387,7 @@ namespace mu2e {
                                    dirtOffset,
                                    worldInfo,
                                    0,
-                                   true,
+                                   dirtVisible,
                                    G4Colour::Magenta()
                                    );
 
@@ -782,7 +771,7 @@ namespace mu2e {
     G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
     
     // Toy model of the PS coils + cryostat. It needs real structure.
-    VolumeInfo psCryoInfo = nestTubs2( "ToyPSCryo",
+    VolumeInfo psCryoInfo = nestTubs2( "PSCryo",
                                        psCryoParams,
                                        psCryoMaterial,
                                        0,
@@ -804,7 +793,7 @@ namespace mu2e {
     double ps1Z0     = -rTorus + -2.*ts1HalfLength - ps1HalfLength;
     G4ThreeVector ps1Position( solenoidOffset, 0., ps1Z0);    
     
-    VolumeInfo ps1VacInfo   = nestTubs2( "ToyPS1Vacuum",
+    VolumeInfo ps1VacInfo   = nestTubs2( "PS1Vacuum",
                                          ps1VacParams,
                                          vacuumMaterial,
                                          0,
@@ -843,7 +832,7 @@ namespace mu2e {
                                              ps1VacInfo,
                                              0,
                                              true,
-                                             G4Colour::Red(),
+                                             G4Colour::Magenta(),
                                              true
                                              );
 
@@ -943,9 +932,23 @@ namespace mu2e {
       _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue(), _mu2eOrigin );
     }
 
+    // Create field managers for the PS and TS.
+    _psFull = FieldMgr::forMappedField<G4ExplicitEuler>( "PS", _mu2eOrigin );
+    _tsFull = FieldMgr::forMappedField<G4ExplicitEuler>( "TS", _mu2eOrigin );
+
     // Get pointers to logical volumes.
     G4LogicalVolume* ds2Vacuum = locateVolInfo("ToyDS2Vacuum").logical;
     G4LogicalVolume* ds3Vacuum = locateVolInfo("ToyDS3Vacuum").logical;
+
+    vector<G4LogicalVolume*> psVacua;
+    psVacua.push_back( locateVolInfo("PS1Vacuum").logical );
+
+    vector<G4LogicalVolume*> tsVacua;
+    tsVacua.push_back( locateVolInfo("ToyTS1Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS2Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS3Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS4Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS5Vacuum").logical );
 
     // Attach field managers to the appropriate logical volumes.
     if (dsFieldForm == dsModelFull  ){
@@ -957,6 +960,16 @@ namespace mu2e {
     } else {
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
       ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+    }
+
+    for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
+          i!=psVacua.end(); ++i ){
+      (**i).SetFieldManager( _psFull->manager(), true);
+    }
+
+    for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
+          i!=tsVacua.end(); ++i ){
+      (**i).SetFieldManager( _tsFull->manager(), true);
     }
 
     // Adjust properties of the integrators to control accuracy vs time.
@@ -977,8 +990,85 @@ namespace mu2e {
       _dsUniform->manager()->SetDeltaIntersection(deltaIntersection);
     }
 
+    _tsFull->manager()->SetDeltaOneStep(deltaOneStep);
+    _tsFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
+    _tsFull->chordFinder()->SetDeltaChord(deltaChord);
+
+    _psFull->manager()->SetDeltaOneStep(deltaOneStep);
+    _psFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
+    _psFull->chordFinder()->SetDeltaChord(deltaChord);
+
 
   } // end Mu2eWorld::constructBFieldAndManagers
+
+  // Adding a step limiter is a two step process.
+  // 1) In the physics list constructor add a G4StepLimiter to the list of discrete
+  //    physics processes attached to each particle species of interest.
+  //
+  // 2) In this code, create a G4UserLimits object and attach it to the logical 
+  //    volumes of interest.
+  // The net result is specifying a step limiter for pairs of (logical volume, particle species).
+  //
+  void Mu2eWorld::constructStepLimiters(){
+
+    // Maximum step length, in mm.
+    double maxStep = _config->getDouble("bfield.maxStep", 20.);
+
+    G4LogicalVolume* ds2Vacuum      = locateVolInfo("ToyDS2Vacuum").logical;
+    G4LogicalVolume* ds3Vacuum      = locateVolInfo("ToyDS3Vacuum").logical;
+    G4LogicalVolume* tracker        = locateVolInfo("TrackerMother").logical;
+    G4LogicalVolume* stoppingtarget = locateVolInfo("StoppingTargetMother").logical;
+
+    vector<G4LogicalVolume*> psVacua;
+    psVacua.push_back( locateVolInfo("PS1Vacuum").logical );
+
+    vector<G4LogicalVolume*> tsVacua;
+    tsVacua.push_back( locateVolInfo("ToyTS1Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS2Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS3Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS4Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS5Vacuum").logical );
+
+    // We may make separate G4UserLimits objects per logical volume but we choose not to.
+    _stepLimits.push_back( G4UserLimits(maxStep) );
+    G4UserLimits* stepLimit = &(_stepLimits.back());
+
+    ds2Vacuum->SetUserLimits( stepLimit );
+    ds3Vacuum->SetUserLimits( stepLimit );
+
+    tracker->SetUserLimits( stepLimit );
+    stoppingtarget->SetUserLimits( stepLimit );
+
+    for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
+          i!=psVacua.end(); ++i ){
+      (**i).SetUserLimits( stepLimit);
+    }
+
+    for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
+          i!=tsVacua.end(); ++i ){
+      (**i).SetUserLimits( stepLimit);
+    }
+
+
+  } // end Mu2eWorld::constructStepLimiters(){
+
+
+  // Construct calorimeter if needed.
+  void Mu2eWorld::constructCal(){
+
+    if ( _config->getBool("hasCalorimeter",false) ){
+
+      VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
+
+      // z Position of the center of the DS solenoid downstream part, given in the Mu2e coordinate system.
+      double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+
+      VolumeInfo calorimeterInfo = constructCalorimeter( detSolDownstreamVacInfo.logical,
+                                                         -z0DSdown,
+                                                         *_config );
+    }
+
+  }
 
 
   // A place holder for now.
@@ -1159,7 +1249,6 @@ namespace mu2e {
     }
     _volumeInfoList[info.name] = info;
   } // end of Mu2eWorld::addVolInfo
-
 
 
 } // end namespace mu2e
