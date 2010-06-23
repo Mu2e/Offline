@@ -1,9 +1,9 @@
 //
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.32 2010/06/23 23:33:29 kutschke Exp $
+// $Id: geom_01.txt,v 1.33 2010/06/23 23:49:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/06/23 23:33:29 $
+// $Date: 2010/06/23 23:49:13 $
 //
 // Original author Rob Kutschke
 //
@@ -63,7 +63,7 @@ bool g4.printMaterials = false;
 // Half lengths of the world box, (x,y,z) in mm.
 vector<double> world.halfLengths  = { 20000., 10000., 20000.};
 string         world.materialName = "G4_AIR";
-bool           world.boxVisible   = false;
+bool           world.boxVisible   = true;
 
 
 // Position of the origin of the Mu2e origin system at the 
@@ -81,7 +81,7 @@ double dirt.capHalfHeight   = 1.;
 double dirt.capBottomRadius = 2.;
 double dirt.capTopRadius    = 1.;
 string dirt.overburdenMaterialName = "MBOverburden";
-bool   dirt.visible         = false;
+bool   dirt.visible         = true;
 
 // Inside dimensions of the hall.  Order is: (x,y,z) = width, height, length.
 // Thicknesses of the hall walls.
@@ -91,7 +91,7 @@ double hall.ceilingThick = 300.;
 double hall.wallThick    = 300.;
 string hall.wallMaterialName = "G4_CONCRETE";
 string hall.insideMaterialName = "G4_AIR";
-bool   hall.visible            = false;
+bool   hall.visible            = true;
 
 // Offset of the hall from its base position within the world:
 //   - Centered in x and z.
