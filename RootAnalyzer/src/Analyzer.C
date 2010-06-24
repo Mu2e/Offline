@@ -1,0 +1,506 @@
+//
+// c++ (not cint) Root "script" to make some plots based on a root example 
+// and ReadBack.cc
+//
+// $Id: Analyzer.C,v 1.1 2010/06/24 22:01:36 genser Exp $
+// $Author: genser $
+// $Date: 2010/06/24 22:01:36 $
+//
+// Original author KLG
+//
+
+
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TFile.h>
+
+#include <Cintex/Cintex.h>
+
+#include <TH1.h>
+#include <TStyle.h>
+#include <TString.h>
+#include <TCanvas.h>
+#include <TTree.h>
+
+#include <sstream>
+#include <iostream>
+#include <vector>
+
+#include "CLHEP/Vector/ThreeVector.h"
+
+#include "DataFormats/Common/interface/Wrapper.h"
+#include "FWCore/Framework/interface/Event.h"
+
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+
+#include "LTrackerGeom/inc/LTracker.hh"
+
+#include "Analyzer.h"
+
+using namespace std;
+
+// do not make it inline so that root can see the symbols
+Analyzer::Analyzer (TString file,
+                    ULong64_t maxevent, 
+                    ULong64_t maxFullPrint,
+                    TString g4ModuleLabel,
+                    Double_t minEnergy):
+  _file(file), 
+  _mevent(maxevent),
+  _g4ModuleLabel(g4ModuleLabel),
+  _minimumEnergy(minEnergy),
+  _maxFullPrint(maxFullPrint),
+  _canvasNameFullPrefix("Analyzer"),
+  _nAnalyzed(0),
+  _hRadius(0),
+  _hEnergyDep(0),
+  _hTime(0),
+  _hMultiplicity(0),
+  _hDriftDist(0),
+  _hxHit(0),
+  _hyHit(0),
+  _hzHit(0),
+  _hHitNeighbours(0),
+  _hCheckPointRadius(0),
+  _hMomentumG4(0),
+  _hStepLength(0),
+  _ntup(0),
+  canvases(0)
+{};
+
+// we want to keep the objects after the script exits
+// Analyzer::~Analyzer() {
+
+//   delete _hRadius;
+//   delete _hEnergyDep;
+//   delete _hTime;
+//   delete _hMultiplicity;
+//   delete _hDriftDist;
+//   delete _hxHit;
+//   delete _hyHit;
+//   delete _hzHit;
+//   delete _hHitNeighbours;
+//   delete _hCheckPointRadius;
+//   delete _hMomentumG4;
+//   delete _hStepLength;
+
+//   delete _ntup;
+
+// }
+
+void Analyzer::begin(){
+
+  // Create some 1D histograms.
+  _hRadius       = new TH1F("hRadius",       "Radius of Hits;(mm)",       100,  0., 1000. );
+  _hEnergyDep    = new TH1F("hEnergyDep",    "Energy Deposited;(keV)",    100,  0.,   10. );
+  _hTime         = new TH1F("hTime",         "Pulse Height;(ns)",         100,  0., 2000. );
+  _hMultiplicity = new TH1F("hMultiplicity", "Hits per Event",            100,  0.,  100. );
+  _hDriftDist    = new TH1F("hDriftDist",    "Crude Drift Distance;(mm)", 100,  0.,    3. );
+
+  _hxHit         = new TH1F("hxHit",  "X of Hit;(mm)",                    100, -1000., 1000. );
+  _hyHit         = new TH1F("hyHit",  "Y of Hit;(mm)",                    100, -1000., 1000. );
+  _hzHit         = new TH1F("hzHit",  "Z of Hit;(mm)",                    100, -1400., 1400. );
+
+  _hHitNeighbours    = new TH1F("hHitNeighbours",  "Number of hit neighbours",         10,   0., 10. );
+  _hCheckPointRadius = new TH1F("hCheckPointRadius","Radius of Reference point;(mm)", 100, 2.25, 2.75 );
+
+  _hMomentumG4 = new TH1F("hMomentumG4",  "Mommenta of particles created inside G4; (MeV)", 100, 0., 100. );
+  _hStepLength = new TH1F("hStepLength",  "G4 Step Length in Sensitive Detector; (mm)",     100, 0.,  10. );
+
+  // Create an ntuple.
+  _ntup           = new TNtuple("ntup", "Hit ntuple", 
+                                "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId:edep:p:step");
+  canvases = new std::vector<TCanvas*>();
+  canvases->reserve(20);
+  return;
+}
+
+void Analyzer::plotHist(TH1F* hist) {
+
+  TString canvasName =  hist->GetTitle();
+  TCanvas* theCanvas = prepareNextCanvas();
+  theCanvas->SetTitle(canvasName.Data());
+  cout << "drawing: " << canvasName <<  endl;
+  hist->Draw("");
+  theCanvas->Update();
+
+}
+
+void Analyzer::plotNT(char const * nts) {
+
+  TString canvasName(nts);
+  TCanvas* theCanvas = prepareNextCanvas();
+  theCanvas->SetTitle(canvasName.Data());
+  cout << "drawing  " << canvasName <<  endl;
+  _ntup->Draw(nts); 
+  theCanvas->Update();
+
+}
+
+void Analyzer::plot() {
+
+  gStyle->SetOptStat("neMRuoi");
+  plotHist( _hRadius);
+  plotHist( _hEnergyDep);
+  plotHist( _hTime);
+  plotHist( _hMultiplicity);
+  //  plotHist( _hDriftDist);
+  plotHist( _hxHit);
+  plotHist( _hyHit);
+  plotHist( _hzHit);
+  //  plotHist( _hHitNeighbours);
+  //  plotHist( _hCheckPointRadius);
+  plotHist( _hMomentumG4);
+  plotHist( _hStepLength);
+
+  plotNT("hx:hy"); 
+  plotNT("hz:time"); 
+  plotNT("hz:step"); 
+  plotNT("sid:trk"); 
+  plotNT("pdgId"); 
+  plotNT("genId"); 
+  plotNT("step:edep"); 
+
+}
+
+TCanvas* Analyzer::prepareNextCanvas( Int_t const logx, Int_t const logy,
+                                      Int_t const gridx, Int_t const gridy
+                                      ) {
+
+  Int_t canvasPosID = canvases->size()+1;
+  Int_t canvasNumber = canvasPosID;
+
+  ostringstream forCanvasSuffix("");
+  //  forCanvasSuffix.str("");
+  forCanvasSuffix.width(3);
+  forCanvasSuffix.fill('0');
+  forCanvasSuffix << canvasNumber;
+
+  cout << "constructing canvas " << forCanvasSuffix.str() << ", position id: " <<  canvasPosID << endl;
+
+  TString canvasName = _canvasNameFullPrefix + "_c" + forCanvasSuffix.str();
+  
+  Long_t canvasox = canvasOriginX + (canvasPosID%2)*(canvasWX+canvasSpace) + (canvasPosID/2)*canvasShiftX;
+  Long_t canvasoy = canvasOriginY + (canvasPosID/2)*canvasShiftY;
+
+  TCanvas* theCanvas = new TCanvas(canvasName, canvasName, canvasox, canvasoy, canvasWX, canvasWY);
+  canvases->push_back(theCanvas); // we want to be able to access canvases after the script exits
+
+  theCanvas->Divide(1,1);
+
+  ULong_t const canvasSlotNumber = 1;
+
+  theCanvas->cd(canvasSlotNumber);
+
+  gPad->SetLogx(logx);
+  gPad->SetLogy(logy);
+
+  gPad->SetGridx(gridx);
+  gPad->SetGridy(gridy);
+
+  return theCanvas;
+
+}
+
+
+
+void Analyzer::analyze() {
+
+  // Open the input file that contains Mu2e event data.
+  TFile* file = new TFile(Analyzer::_file);
+
+  // Fill a pointer to the Events & Run tree.
+
+  TString EventsTree_name("Events");
+  TTree* EventsTree; file->GetObject(EventsTree_name,EventsTree);
+
+  TString RunsTree_name("Runs");
+  TTree* RunsTree; file->GetObject(RunsTree_name,RunsTree);
+
+  // Br    3 :mu2eRandomEngineStates_randomsaver__G4Test03.obj :
+  // Br    9 :mu2eSimParticles_g4run__G4Test03.obj :            
+  // Br   41 :mu2eStepPointMCs_g4run__G4Test03.obj :            
+  // Br   55 :mu2eToyGenParticles_generate__G4Test03.obj :     
+
+  // Br    3 :mu2ePhysicalVolumeInfos_g4run__G4Test03.obj :
+ 
+
+  // Branch names without the trailing "." if any
+
+  TString EventAuxiliaryBranchName    ("EventAuxiliary");                   //  the event info / Events tree
+
+  TString SimParticleBranchName       ("mu2eSimParticles_g4run__G4Test03"); // simParticles / Events tree
+  TString StepPointMCBranchName       ("mu2eStepPointMCs_g4run__G4Test03"); // hits / Events tree
+  TString ToyGenParticleBranchName    ("mu2eToyGenParticles_generate__G4Test03"); // genParticles / Events tree
+  TString PhysicalVolumeInfoBranchName("mu2ePhysicalVolumeInfos_g4run__G4Test03"); // volumes / Runs tree
+
+  // we should create a class/struct for all data needed for one wrapped type
+  // here is the running list: BranchName, Wrppd, 
+
+  // edm::Wrapper<mu2e::SimParticleCollection>   w; 
+  // edm::Wrapper<mu2e::SimParticleCollection>* ww; ww = &w;
+  // make sure to not to use cint for the code below, rely on a complier
+
+
+  edm::EventAuxiliary* EventAuxiliaryWrppd = new edm::EventAuxiliary(); // this is a very different branch
+
+  edm::Wrapper<mu2e::SimParticleCollection>* SimParticleWrppd = 
+    new edm::Wrapper<mu2e::SimParticleCollection>();
+  edm::Wrapper<mu2e::StepPointMCCollection>* StepPointMCWrppd = 
+    new edm::Wrapper<mu2e::StepPointMCCollection>();
+  edm::Wrapper<mu2e::ToyGenParticleCollection>* ToyGenParticleWrppd = 
+    new edm::Wrapper<mu2e::ToyGenParticleCollection>();
+  edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd = 
+    new edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>();
+
+  //disable branch ("*");
+
+  EventsTree->SetBranchStatus("*",0); //disable all branches
+  RunsTree->SetBranchStatus("*",0);   //disable all branches
+
+  //enable subbranches, relies on the "." in the branch name
+
+  EventsTree->SetBranchStatus(EventAuxiliaryBranchName+"*",1); 
+  EventsTree->SetBranchAddress(EventAuxiliaryBranchName,&EventAuxiliaryWrppd);
+
+  EventsTree->SetBranchStatus(SimParticleBranchName+"*",1); 
+  EventsTree->SetBranchAddress(SimParticleBranchName+".",&SimParticleWrppd);
+  EventsTree->SetBranchStatus(StepPointMCBranchName+"*",1); 
+  EventsTree->SetBranchAddress(StepPointMCBranchName+".",&StepPointMCWrppd);
+  EventsTree->SetBranchStatus(ToyGenParticleBranchName+"*",1); 
+  EventsTree->SetBranchAddress(ToyGenParticleBranchName+".",&ToyGenParticleWrppd);
+
+  RunsTree->SetBranchStatus(PhysicalVolumeInfoBranchName+"*",1); 
+  RunsTree->SetBranchAddress(PhysicalVolumeInfoBranchName+".",&PhysicalVolumeInfoWrppd);
+
+  ULong64_t EventsNEntries = EventsTree->GetEntries();
+  ULong64_t RunsNEntries = RunsTree->GetEntries();
+
+  cout << "EventsNEntries/RunsNEntries  " << EventsNEntries << "/" << RunsNEntries  << endl;
+  // EventsNEntries/RunsNEntries  200/1
+
+  cout << "EventAuxiliaryWrppd->id().event()  " << EventAuxiliaryWrppd->id().event() << endl;
+
+  cout << "Size of SimParticle branch          " << 
+    EventsTree->GetBranch(SimParticleBranchName+".")->GetEntries() << endl;
+
+  ULong64_t EventsMaxEntries = min(EventsNEntries,Analyzer::_mevent);
+
+  for ( ULong64_t i = 0; i<EventsMaxEntries; ++i) {
+    EventsTree->GetEntry(i);
+    // the object event has been filled at this point for the activated branches
+    // Examples of elements of each object: (may not work if there are no
+    // entries in a collection, fix it for it later)
+
+    if (i<Analyzer::_maxFullPrint) {
+
+      cout << "EventAuxiliaryWrppd->id().event()  " << EventAuxiliaryWrppd->id().event() << endl;
+
+      cout << "Event i " << i << " SimParticle _endPosition.dx " << 
+        SimParticleWrppd->product()->at(0).endPosition().x() << endl;
+      cout << "Event i " << i << " StepPointMC    _position.dx " 
+           << StepPointMCWrppd->product()->at(0).position().x() << endl;
+      cout << "Event i " << i << " ToyGenParticle _position.dx " 
+           << ToyGenParticleWrppd->product()->at(0)._position.x() << endl;
+
+      cout << "Size of StepPointMCWrppd->product() " << StepPointMCWrppd->product()->size() << endl;
+
+    }
+
+//     doLTracker(EventAuxiliaryWrppd,
+//                StepPointMCWrppd,
+//                ToyGenParticleWrppd,
+//                SimParticleWrppd,
+//                PhysicalVolumeInfoWrppd);
+
+// using those types in the root dict is problematic..., so we use them locally in this function
+
+// void Analyzer::doLTracker(edm::EventAuxiliary*                              EventAuxiliaryWrppd,
+//                           edm::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd,
+//                           edm::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd,
+//                           edm::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd,
+//                           edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd
+//                           ){
+
+    // "aliases/handles"
+    edm::EventAuxiliary                const & event        = *EventAuxiliaryWrppd;
+    mu2e::StepPointMCCollection        const * hits         = StepPointMCWrppd->product(); 
+    mu2e::ToyGenParticleCollection     const * genParticles = ToyGenParticleWrppd->product();
+    mu2e::SimParticleCollection        const * simParticles = SimParticleWrppd->product();
+    mu2e::PhysicalVolumeInfoCollection const * volumes      = PhysicalVolumeInfoWrppd->product();
+  
+    // Some files might not have the SimParticle and volume information.
+    bool haveSimPart = ( simParticles!=0 && volumes!=0 );
+
+    // Other files might have empty collections.
+    if ( haveSimPart ){
+      haveSimPart = !(simParticles->empty() || volumes->empty());
+    }
+
+    // Fill histogram with number of hits per event.
+    _hMultiplicity->Fill(hits->size());
+      
+    // ntuple buffer.
+    float nt[18];
+
+    // Loop over all hits.
+    UInt_t maxhit = hits->size();
+    for ( UInt_t i=0; i<maxhit; ++i ){
+      
+      // Alias, used for readability.
+      const mu2e::StepPointMC& hit = hits->at(i);
+
+      // Skip hits with low pulse height.
+      if ( hit.eDep() < _minimumEnergy ) continue;
+      
+      // Get the hit information.
+      const CLHEP::Hep3Vector& pos = hit.position();
+      const CLHEP::Hep3Vector& mom = hit.momentum();
+      
+      //     // Get the straw information: 
+      //     const mu2e::Straw&      straw = tracker.getStraw( hit.strawIndex() );
+      //     const CLHEP::Hep3Vector& mid   = straw.getMidPoint();
+      //     const CLHEP::Hep3Vector& w     = straw.getDirection();
+      
+      //     // Count how many nearest neighbours are also hit.
+      //     int nNeighbours = countHitNeighbours( straw, hits );
+      
+      //     // Compute an estimate of the drift distance.
+      //     TwoLinePCA pca( mid, w, pos, mom);
+      
+      //     // Check that the radius of the reference point in the local
+      //     // coordinates of the straw.  Should be 2.5 mm.
+      //     double s = w.dot(pos-mid);
+      //     CLHEP::Hep3Vector point = pos - (mid + s*w);
+
+      // The simulated particle that made this hit.
+      int trackId = hit.trackId();
+
+      // Default values for these, in case information is not available.
+      int pdgId(0);
+      mu2e::GenId genId;
+
+      if ( haveSimPart ){
+        mu2e::SimParticle const& sim = simParticles->at(trackId);
+
+        // PDG Particle Id of the sim particle that made this hit.
+        pdgId = sim.pdgId();
+      
+        // If this is a generated particle, which generator did it come from?
+        // This default constructs to "unknown".
+        if ( sim.fromGenerator() ){
+          mu2e::ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          genId = gen._generatorId;
+        }
+      }
+
+      // Fill some histograms
+      _hRadius->Fill(pos.perp());
+      _hEnergyDep->Fill(hit.eDep()/CLHEP::keV);
+      _hTime->Fill(hit.time());
+      // _hHitNeighbours->Fill(nNeighbours);
+      // _hCheckPointRadius->Fill(point.mag());
+      
+      _hxHit->Fill(pos.x());
+      _hyHit->Fill(pos.y());
+      _hzHit->Fill(pos.z());
+
+      //    _hDriftDist->Fill(pca.dca());
+
+      _hStepLength->Fill( hit.stepLength() );
+
+      // Fill the ntuple. (we comment out the elemets requiring the geometry service)
+      nt[0]  = event.id().event();
+      nt[1]  = hit.trackId();
+      nt[2]  = hit.volumeId();
+      nt[3]  = pos.x();
+      nt[4]  = pos.y();
+      nt[5]  = pos.z();
+      // nt[6]  = mid.x();
+      // nt[7]  = mid.y();
+      // nt[8]  = mid.z();
+      // nt[9]  = pca.dca();
+      nt[10] = hit.time();
+      // nt[11] = straw.Id().getDevice();
+      // nt[12] = straw.Id().getSector();
+      nt[13] = pdgId;
+      nt[14] = genId.Id();
+      nt[15] = hit.eDep()/CLHEP::keV;
+      nt[16] = mom.mag();
+      nt[17] = hit.stepLength();
+
+      _ntup->Fill(nt);
+
+      //     // Print out limited to the first few events.
+      //     if ( _nAnalyzed < _maxFullPrint ){
+
+      //       cerr << "Readback hit: "
+      //            << event.id().event() << " "
+      //            << i                  <<  " "
+      //            << hit.trackId()      << "   "
+      //            << hit.volumeId()     << " "
+      //            << straw.Id()         << " | "
+      //            << pca.dca()          << " "
+      //            << pos                << " "
+      //            << mom                << " "
+      //            << point.mag()        << " "
+      //            << hit.eDep()         << " "
+      //            << s
+      //            << endl;
+      //     }
+      
+    } // end loop over hits.
+
+
+    // Additional printout and histograms about the simulated particles.
+    //   if ( haveSimPart && (_nAnalyzed < _maxFullPrint) ){
+
+    //     ConditionsHandle<ParticleDataTable> pdt("ignored");
+
+    for ( int i=0; i<simParticles->size(); ++ i){
+
+      mu2e::SimParticle const& sim = simParticles->at(i);
+
+      if ( sim.madeInG4() ) {
+
+        _hMomentumG4->Fill( sim.startMomentum().rho() );
+
+      }
+
+    }
+    
+    //       } else {
+
+    //         // Particle Data group Id number.
+    //         int pdgId = sim.pdgId();
+          
+    //         // Information about generated particle.
+    //         ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+    //         GenId genId(gen._generatorId);
+
+    //         // Physical volume in which this track started.
+    //         PhysicalVolumeInfo const& volInfo = volumes->at(sim.startVolumeIndex());
+
+    //         cerr << "Simulated Particle: " 
+    //              << i                   << " "
+    //              << pdgId               << " "
+    //              << genId.name()        << " "
+    //              << sim.startPosition() << " "
+    //              << volInfo.name()      << " "
+    //              << volInfo.copyNo()
+    //              << endl;
+    //       }
+
+    //     }
+    //   }
+
+  } // end event loop
+
+} // end analyze
+
+
+
