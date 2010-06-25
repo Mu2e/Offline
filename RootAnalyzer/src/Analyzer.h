@@ -1,9 +1,9 @@
 //
 // header for Analyzer.C 
 
-// $Id: Analyzer.h,v 1.1 2010/06/24 22:01:36 genser Exp $
+// $Id: Analyzer.h,v 1.2 2010/06/25 22:08:34 genser Exp $
 // $Author: genser $
-// $Date: 2010/06/24 22:01:36 $
+// $Date: 2010/06/25 22:08:34 $
 //
 // Original author KLG
 //
@@ -16,13 +16,15 @@
 
 #include <vector>
 
+// avoid "complicated" types in the interface
+// one may want to revisit types relying on boost libraries
+
 /* #include "ToyDP/inc/SimParticleCollection.hh" */
 /* #include "ToyDP/inc/ToyGenParticleCollection.hh" */
 /* #include "ToyDP/inc/StepPointMCCollection.hh" */
 /* #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh" */
 
 /* #include "DataFormats/Common/interface/Wrapper.h" */
-
 /* #include "FWCore/Framework/interface/Event.h" */
 
 class Analyzer {
@@ -32,11 +34,12 @@ class Analyzer {
 //   cint may not be able to handle more complicated defaults in the Dict ...
 /*   Analyzer::Analyzer (TString file="data_03.root", */
 
-  Analyzer (TString file,
-            ULong64_t maxevent,
-            ULong64_t maxFullPrint,
-            TString g4ModuleLabel,
-            Double_t minEnergy
+  Analyzer (char const * file,
+            ULong64_t maxevent = 1000000,
+            ULong64_t maxFullPrint = 2,
+            char const * g4ModuleLabel = "g4run",
+            Double_t minEnergy = 0.001,
+            char const * cformat = "png"
             );
 
   //  ~Analyzer();
@@ -44,16 +47,20 @@ class Analyzer {
   void begin();
   void analyze();
   void plot();
+  void write();
+  
+  void printOutCanvases();
+
   TCanvas* prepareNextCanvas( Int_t const logx = 0, Int_t const logy = 0,
                               Int_t const gridx = 1, Int_t const gridy = 1);
   void Analyzer::plotHist(TH1F* hist);
   void Analyzer::plotNT(const char*);
   
-/*   void Analyzer::doLTracker(edm::EventAuxiliary*                              EventAuxiliaryWrppd, */
-/*                             edm::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd, */
-/*                             edm::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd, */
-/*                             edm::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd, */
-/*                             edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd); */
+/* void Analyzer::doLTracker(edm::EventAuxiliary*                              EventAuxiliaryWrppd, */
+/*                           edm::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd, */
+/*                           edm::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd, */
+/*                           edm::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd, */
+/*                           edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd); */
 
  private:
 
@@ -82,7 +89,11 @@ class Analyzer {
   // Number of events analyzed.
   ULong64_t _nAnalyzed;
 
-  TString _canvasNameFullPrefix;
+  // Name for output canvases/files
+  TString _outputFileNamePrefix;
+
+  // file format of root canvases
+  TString _canvasPrintFormat;
 
  public:
 
@@ -102,7 +113,7 @@ class Analyzer {
 
   TNtuple* _ntup;
 
-  std::vector<TCanvas*> * canvases;
+  std::vector<TCanvas*> * _canvases;
 
 };
 #ifdef __CINT__

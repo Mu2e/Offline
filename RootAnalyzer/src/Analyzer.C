@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example 
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.1 2010/06/24 22:01:36 genser Exp $
+// $Id: Analyzer.C,v 1.2 2010/06/25 22:08:34 genser Exp $
 // $Author: genser $
-// $Date: 2010/06/24 22:01:36 $
+// $Date: 2010/06/25 22:08:34 $
 //
 // Original author KLG
 //
@@ -44,17 +44,19 @@
 using namespace std;
 
 // do not make it inline so that root can see the symbols
-Analyzer::Analyzer (TString file,
+Analyzer::Analyzer (char const * file,
                     ULong64_t maxevent, 
                     ULong64_t maxFullPrint,
-                    TString g4ModuleLabel,
-                    Double_t minEnergy):
+                    char const * g4ModuleLabel,
+                    Double_t minEnergy,
+                    char const * cformat):
   _file(file), 
   _mevent(maxevent),
   _g4ModuleLabel(g4ModuleLabel),
   _minimumEnergy(minEnergy),
   _maxFullPrint(maxFullPrint),
-  _canvasNameFullPrefix("Analyzer"),
+  _outputFileNamePrefix("Analyzer"),
+  _canvasPrintFormat(cformat),
   _nAnalyzed(0),
   _hRadius(0),
   _hEnergyDep(0),
@@ -69,12 +71,11 @@ Analyzer::Analyzer (TString file,
   _hMomentumG4(0),
   _hStepLength(0),
   _ntup(0),
-  canvases(0)
+  _canvases(0)
 {};
 
 // we want to keep the objects after the script exits
 // Analyzer::~Analyzer() {
-
 //   delete _hRadius;
 //   delete _hEnergyDep;
 //   delete _hTime;
@@ -87,9 +88,9 @@ Analyzer::Analyzer (TString file,
 //   delete _hCheckPointRadius;
 //   delete _hMomentumG4;
 //   delete _hStepLength;
-
 //   delete _ntup;
-
+//   delete _canvases;
+//   delete _histograms;
 // }
 
 void Analyzer::begin(){
@@ -114,17 +115,17 @@ void Analyzer::begin(){
   // Create an ntuple.
   _ntup           = new TNtuple("ntup", "Hit ntuple", 
                                 "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId:edep:p:step");
-  canvases = new std::vector<TCanvas*>();
-  canvases->reserve(20);
+  _canvases = new std::vector<TCanvas*>();
+  _canvases->reserve(20);
   return;
 }
 
 void Analyzer::plotHist(TH1F* hist) {
 
-  TString canvasName =  hist->GetTitle();
+  TString canvasTitle =  hist->GetTitle();
   TCanvas* theCanvas = prepareNextCanvas();
-  theCanvas->SetTitle(canvasName.Data());
-  cout << "drawing: " << canvasName <<  endl;
+  theCanvas->SetTitle(canvasTitle.Data());
+  cout << "drawing: " << canvasTitle << " on canvas" << theCanvas->GetName() << endl;
   hist->Draw("");
   theCanvas->Update();
 
@@ -132,10 +133,10 @@ void Analyzer::plotHist(TH1F* hist) {
 
 void Analyzer::plotNT(char const * nts) {
 
-  TString canvasName(nts);
+  TString canvasTitle(nts);
   TCanvas* theCanvas = prepareNextCanvas();
-  theCanvas->SetTitle(canvasName.Data());
-  cout << "drawing  " << canvasName <<  endl;
+  theCanvas->SetTitle(canvasTitle.Data());
+  cout << "drawing: " << canvasTitle << " on canvas" << theCanvas->GetName() << endl;
   _ntup->Draw(nts); 
   theCanvas->Update();
 
@@ -167,11 +168,46 @@ void Analyzer::plot() {
 
 }
 
+void Analyzer::write() {
+
+  // store canvases/histograms/functions
+
+  TFile*   outputRootFile;
+  TString  outputRootFileName(_outputFileNamePrefix);
+
+  outputRootFileName += ".root";
+
+  outputRootFile = new TFile(outputRootFileName,"recreate");
+
+  gROOT->GetList()->Write(); // histogrmas and the nutuple
+  gROOT->GetListOfCanvases()->Write();
+
+  gDirectory->ls("-m");
+  gDirectory->ls("-d");
+
+  outputRootFile->Close();
+
+  return;
+
+}
+
+void Analyzer::printOutCanvases() {
+
+  // write out individual canvase files (e.g. png)
+
+  TIter citer(gROOT->GetListOfCanvases());  
+  while ( TCanvas* nc =  dynamic_cast<TCanvas*>(citer.Next()) ) {
+    TString cn = nc->GetName();
+    nc->Print(cn+"."+_canvasPrintFormat,_canvasPrintFormat);
+  }
+
+}
+
 TCanvas* Analyzer::prepareNextCanvas( Int_t const logx, Int_t const logy,
                                       Int_t const gridx, Int_t const gridy
                                       ) {
 
-  Int_t canvasPosID = canvases->size()+1;
+  Int_t canvasPosID = _canvases->size()+1;
   Int_t canvasNumber = canvasPosID;
 
   ostringstream forCanvasSuffix("");
@@ -182,13 +218,13 @@ TCanvas* Analyzer::prepareNextCanvas( Int_t const logx, Int_t const logy,
 
   cout << "constructing canvas " << forCanvasSuffix.str() << ", position id: " <<  canvasPosID << endl;
 
-  TString canvasName = _canvasNameFullPrefix + "_c" + forCanvasSuffix.str();
+  TString canvasName = _outputFileNamePrefix + "_c" + forCanvasSuffix.str();
   
   Long_t canvasox = canvasOriginX + (canvasPosID%2)*(canvasWX+canvasSpace) + (canvasPosID/2)*canvasShiftX;
   Long_t canvasoy = canvasOriginY + (canvasPosID/2)*canvasShiftY;
 
   TCanvas* theCanvas = new TCanvas(canvasName, canvasName, canvasox, canvasoy, canvasWX, canvasWY);
-  canvases->push_back(theCanvas); // we want to be able to access canvases after the script exits
+  _canvases->push_back(theCanvas); // we want to be able to access canvases after the script exits
 
   theCanvas->Divide(1,1);
 
@@ -205,8 +241,6 @@ TCanvas* Analyzer::prepareNextCanvas( Int_t const logx, Int_t const logy,
   return theCanvas;
 
 }
-
-
 
 void Analyzer::analyze() {
 
