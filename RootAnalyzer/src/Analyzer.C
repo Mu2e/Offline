@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example 
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.2 2010/06/25 22:08:34 genser Exp $
+// $Id: Analyzer.C,v 1.3 2010/06/28 02:50:44 genser Exp $
 // $Author: genser $
-// $Date: 2010/06/25 22:08:34 $
+// $Date: 2010/06/28 02:50:44 $
 //
 // Original author KLG
 //
@@ -95,6 +95,16 @@ Analyzer::Analyzer (char const * file,
 
 void Analyzer::begin(){
 
+  gROOT->SetStyle("Plain");
+  gStyle->SetMarkerStyle(8);
+  gStyle->SetMarkerColor(kRed);
+  gStyle->SetMarkerSize(0.5);
+  gStyle->SetHistLineColor(kRed);
+  //  gStyle->SetFuncWidth(1);
+  //  gStyle->SetOptFit(1111);
+  //gStyle->SetOptStat(111111);
+  //gStyle->SetOptStat("neMRuoiSK");
+
   // Create some 1D histograms.
   _hRadius       = new TH1F("hRadius",       "Radius of Hits;(mm)",       100,  0., 1000. );
   _hEnergyDep    = new TH1F("hEnergyDep",    "Energy Deposited;(keV)",    100,  0.,   10. );
@@ -144,7 +154,7 @@ void Analyzer::plotNT(char const * nts) {
 
 void Analyzer::plot() {
 
-  gStyle->SetOptStat("neMRuoi");
+
   plotHist( _hRadius);
   plotHist( _hEnergyDep);
   plotHist( _hTime);
