@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example 
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.3 2010/06/28 02:50:44 genser Exp $
+// $Id: Analyzer.C,v 1.4 2010/06/29 17:43:35 genser Exp $
 // $Author: genser $
-// $Date: 2010/06/28 02:50:44 $
+// $Date: 2010/06/29 17:43:35 $
 //
 // Original author KLG
 //
@@ -47,12 +47,11 @@ using namespace std;
 Analyzer::Analyzer (char const * file,
                     ULong64_t maxevent, 
                     ULong64_t maxFullPrint,
-                    char const * g4ModuleLabel,
                     Double_t minEnergy,
                     char const * cformat):
   _file(file), 
   _mevent(maxevent),
-  _g4ModuleLabel(g4ModuleLabel),
+  //  _g4ModuleLabel(g4ModuleLabel),
   _minimumEnergy(minEnergy),
   _maxFullPrint(maxFullPrint),
   _outputFileNamePrefix("Analyzer"),
@@ -130,39 +129,81 @@ void Analyzer::begin(){
   return;
 }
 
-void Analyzer::plotHist(TH1F* hist) {
+void Analyzer::plotHist(TH1* hist, char const * opt) {
 
+  // plot a single histogram
   TString canvasTitle =  hist->GetTitle();
   TCanvas* theCanvas = prepareNextCanvas();
   theCanvas->SetTitle(canvasTitle.Data());
   cout << "drawing: " << canvasTitle << " on canvas" << theCanvas->GetName() << endl;
-  hist->Draw("");
+  hist->Draw(opt);
   theCanvas->Update();
 
 }
 
-void Analyzer::plotNT(char const * nts) {
+void Analyzer::plotNHist(vector<TH1*> vhist, char const * opt) {
+
+  // an example on how to plot N histograms on one canvas
+
+  ULong64_t nhist = vhist.size();
+  // is nhist even?
+  ULong64_t nhalf = nhist/2;
+  ULong64_t nx = 2;
+  ULong64_t ny = (nhalf*2 == nhist) ? nhalf : nhalf+1;
+
+  TCanvas* theCanvas = prepareNextCanvas(nx,ny);
+  TString canvasTitle;
+
+  for (ULong64_t i=0; i<nhist; ++i) {
+
+    ULong64_t ipad = i+1;
+    theCanvas->cd(ipad);
+    canvasTitle += vhist.at(i)->GetTitle();
+    if (ipad<nhist) canvasTitle += ", ";
+    cout << "drawing: " << vhist[i]->GetTitle() << " on canvas" << 
+      theCanvas->GetName() << " on pad " << ipad << endl;
+    vhist.at(i)->Draw(opt);
+
+  }
+
+  theCanvas->SetTitle(canvasTitle.Data());
+  theCanvas->Update();
+
+}
+
+void Analyzer::plotNT(char const * nts, char const * cut, char const * opt) {
 
   TString canvasTitle(nts);
   TCanvas* theCanvas = prepareNextCanvas();
   theCanvas->SetTitle(canvasTitle.Data());
   cout << "drawing: " << canvasTitle << " on canvas" << theCanvas->GetName() << endl;
-  _ntup->Draw(nts); 
+  // Long64_t TTree::Draw(const char* varexp, const TCut& selection, Option_t* option = "", ...
+  _ntup->Draw(nts,cut,opt); 
   theCanvas->Update();
 
 }
 
 void Analyzer::plot() {
 
-
-  plotHist( _hRadius);
-  plotHist( _hEnergyDep);
-  plotHist( _hTime);
+//   plotHist( _hRadius);
+//   plotHist( _hEnergyDep);
+//   plotHist( _hTime);
   plotHist( _hMultiplicity);
-  //  plotHist( _hDriftDist);
-  plotHist( _hxHit);
-  plotHist( _hyHit);
-  plotHist( _hzHit);
+  // plotHist( _hDriftDist);
+//   plotHist( _hxHit);
+//   plotHist( _hyHit);
+//   plotHist( _hzHit);
+
+  vector<TH1*> htp;
+  htp.push_back(_hRadius);
+  htp.push_back(_hEnergyDep);
+  htp.push_back(_hTime);
+  htp.push_back(_hxHit);  
+  htp.push_back(_hyHit);
+  htp.push_back(_hzHit);
+
+  plotNHist(htp);
+
   //  plotHist( _hHitNeighbours);
   //  plotHist( _hCheckPointRadius);
   plotHist( _hMomentumG4);
@@ -189,7 +230,9 @@ void Analyzer::write() {
 
   outputRootFile = new TFile(outputRootFileName,"recreate");
 
-  gROOT->GetList()->Write(); // histogrmas and the nutuple
+  // get the current objects in memory, here: histogrmas and the nutuple and write them out
+
+  gROOT->GetList()->Write(); 
   gROOT->GetListOfCanvases()->Write();
 
   gDirectory->ls("-m");
@@ -213,7 +256,8 @@ void Analyzer::printOutCanvases() {
 
 }
 
-TCanvas* Analyzer::prepareNextCanvas( Int_t const logx, Int_t const logy,
+TCanvas* Analyzer::prepareNextCanvas( Int_t nx, Int_t ny,
+                                      Int_t const logx, Int_t const logy,
                                       Int_t const gridx, Int_t const gridy
                                       ) {
 
@@ -236,17 +280,24 @@ TCanvas* Analyzer::prepareNextCanvas( Int_t const logx, Int_t const logy,
   TCanvas* theCanvas = new TCanvas(canvasName, canvasName, canvasox, canvasoy, canvasWX, canvasWY);
   _canvases->push_back(theCanvas); // we want to be able to access canvases after the script exits
 
-  theCanvas->Divide(1,1);
 
-  ULong_t const canvasSlotNumber = 1;
+  // void TPad::Divide(Int_t nx = 1, Int_t ny = 1, Float_t xmargin = 0.01, Float_t ymargin = 0.01, Int_t color = 0)
+  // e.g see http://root.cern.ch/root/html526/TCanvas.html
+  theCanvas->Divide(nx,ny);
 
-  theCanvas->cd(canvasSlotNumber);
+  ULong64_t npads = nx*ny;
 
-  gPad->SetLogx(logx);
-  gPad->SetLogy(logy);
+  for (ULong_t ipad=1; ipad<=npads; ++ipad) {
+    
+    theCanvas->cd(ipad);
 
-  gPad->SetGridx(gridx);
-  gPad->SetGridy(gridy);
+    gPad->SetLogx(logx);
+    gPad->SetLogy(logy);
+
+    gPad->SetGridx(gridx);
+    gPad->SetGridy(gridy);
+
+  }
 
   return theCanvas;
 

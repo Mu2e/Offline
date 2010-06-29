@@ -1,19 +1,18 @@
 //
 // cint (not c++) Root "script" to run Analyzer.C
 //
-// $Id: run_analyzer.C,v 1.2 2010/06/25 22:08:34 genser Exp $
+// $Id: run_analyzer.C,v 1.3 2010/06/29 17:43:35 genser Exp $
 // $Author: genser $
-// $Date: 2010/06/25 22:08:34 $
+// $Date: 2010/06/29 17:43:35 $
 //
 // Original author KLG
 //
 
-void run_analyzer(char const * fname="data_03.root",
+void run_analyzer(TString const fname="data_03.root",
                   ULong64_t nevents=300000000, 
                   ULong64_t maxPrintEvents=2, 
-                  char const * g4ModuleLabel="g4run",
                   Double_t minEnergy=0.001,
-                  char const * cformat="png")
+                  TString const cformat="png")
 {
 
   // Do not do it in compiled scripts and named macros
@@ -45,7 +44,7 @@ void run_analyzer(char const * fname="data_03.root",
 
   gSystem->Load("libAnalyzer_C.so");
   gSystem->Load("libAnalyzerDict_C.so");
-  Analyzer* analyzer = new Analyzer(fname,nevents,maxPrintEvents,g4ModuleLabel,minEnergy,cformat);
+  Analyzer* analyzer = new Analyzer(fname.Data(),nevents,maxPrintEvents,minEnergy,cformat.Data());
   analyzer->begin();
   analyzer->analyze();
   analyzer->plot();

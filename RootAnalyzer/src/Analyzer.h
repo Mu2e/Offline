@@ -1,9 +1,9 @@
 //
 // header for Analyzer.C 
 
-// $Id: Analyzer.h,v 1.2 2010/06/25 22:08:34 genser Exp $
+// $Id: Analyzer.h,v 1.3 2010/06/29 17:43:35 genser Exp $
 // $Author: genser $
-// $Date: 2010/06/25 22:08:34 $
+// $Date: 2010/06/29 17:43:35 $
 //
 // Original author KLG
 //
@@ -11,6 +11,7 @@
 #include <TROOT.h>
 #include <TString.h>
 #include <TH1F.h>
+#include <TH1.h>
 #include <TNtuple.h>
 #include <TCanvas.h>
 
@@ -32,12 +33,11 @@ class Analyzer {
  public:
 
 //   cint may not be able to handle more complicated defaults in the Dict ...
-/*   Analyzer::Analyzer (TString file="data_03.root", */
+//   we can't use  TString file="data_03.root",  so we use char const *
 
   Analyzer (char const * file,
             ULong64_t maxevent = 1000000,
             ULong64_t maxFullPrint = 2,
-            char const * g4ModuleLabel = "g4run",
             Double_t minEnergy = 0.001,
             char const * cformat = "png"
             );
@@ -51,10 +51,12 @@ class Analyzer {
   
   void printOutCanvases();
 
-  TCanvas* prepareNextCanvas( Int_t const logx = 0, Int_t const logy = 0,
+  TCanvas* prepareNextCanvas( Int_t nx = 1, Int_t ny = 1,
+                              Int_t const logx = 0, Int_t const logy = 0,
                               Int_t const gridx = 1, Int_t const gridy = 1);
-  void Analyzer::plotHist(TH1F* hist);
-  void Analyzer::plotNT(const char*);
+  void Analyzer::plotHist(TH1* hist, char const * opt="");
+  void Analyzer::plotNHist(std::vector<TH1*>, char const * opt="");
+  void Analyzer::plotNT(const char* nts, char const * cut="", char const * opt="");
   
 /* void Analyzer::doLTracker(edm::EventAuxiliary*                              EventAuxiliaryWrppd, */
 /*                           edm::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd, */
@@ -78,7 +80,7 @@ class Analyzer {
   ULong64_t _mevent;
 
   // Module label of the g4 module that made the hits.
-  TString _g4ModuleLabel;
+  //  TString _g4ModuleLabel;
 
   // Cut on the minimum energy.
   Double_t _minimumEnergy;
