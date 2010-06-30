@@ -2,11 +2,28 @@
 
            Release notes for Mu2e Offline software, v0_1_2
 
-  $Id: v0_1_2.txt,v 1.2 2010/06/23 23:41:35 kutschke Exp $
+  $Id: v0_1_2.txt,v 1.3 2010/06/30 14:56:55 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/06/23 23:41:35 $
+  $Date: 2010/06/30 14:56:55 $
 
-10) June 22, 2010 kutschke
+13) June 29, 2010 kutschke
+    Updated Mu2eG4/test/g4test_03.cint so that it 
+
+12) June 29, 2010 kutschke
+    Mu2eG4/src/Mu2eWorld.cc
+    Disabled the PS and TS fields until I fix a bug.  This bug slowed
+    down g4test_02 and g4test_03 since the cosmic rays sometimes
+    went through the buggy regions.
+
+11) June 24-29 2010, genser
+    Added the package RootAnalyzer that provides a sample job for reading
+    Mu2e data files using "pure root" without any assistance from the f
+    framework.  I do not recommend doing this since it requires that you
+    have intimate knowledge of the structure of the root file, while
+    reading data files via the framework hides those details from you.
+    But some people have asked for it so here it is.
+
+10) June 23, 2010 kutschke
     Mu2eG4/inc/Mu2eWorld.hh
      - Create field managers for TS and PS and attach them to logical volumes.
      - Move the Calorimeter code to a new member function,
@@ -17,17 +34,17 @@
      - control visibility of world box, dirt and hall using the variables created
        in item 9).
    
-9) June 22, 2010 kutschke
+9) June 23, 2010 kutschke
    Mu2eG4/test/geom_01.txt
     - add variables to control the visibilty of the world volume, the dirt and the hall walls.
 
-8) June 22, 2010 kutschke
+8) June 23, 2010 kutschke
    Mu2eG4/src/constructStoppingTarget.cc
     Change name of mother volume to "StoppingTargetMother".
-    I do not want all target info to say eithe StoppingTarget or
-    ProductionTarget so that there is no chance for ambiguity.
+    I do want all target info to say either StoppingTarget or
+    ProductionTarget so that there is no ambiguity.
 
-7) June 22, 2010 kutschke
+7) June 23, 2010 kutschke
     Mu2eG4/src/constructLTrackerv1.cc
     Mu2eG4/src/constructLTrackerv2.cc
     Mu2eG4/src/constructLTrackerv3.cc
@@ -38,12 +55,12 @@
         ITrackerMother.
       - Done so that step length limiters work the same for all trackers.
 
-6) June 22, 2010 kutschke
+6) June 23, 2010 kutschke
    Mu2eG4/src/constructLTrackerv3.cc
      - Extend the z length and radius of the mother volume so that it is big
        enough to hold the tilted sectors.
 
-5) June 22, 2010 kutschke
+5) June 23, 2010 kutschke
    Mu2eG4/src/PrimaryGeneratorAction.cc
    EventGenerator/inc/ParticleGun.hh
    EventGenerator/src/ParticleGun.cc
@@ -52,15 +69,15 @@
     - Fixed bug in momentum range.
     - Removed histograms that are made obsolte by change of coordinate system.
 
-4) June 22, 2010 kutschke
+4) June 23, 2010 kutschke
    EventGenerator/src/EventGenerator_plugin.cc 
      - cosmetic cleanup.
 
-3) June 22, 2010 kutschke
+3) June 23, 2010 kutschke
    BFieldGeom/src/BFieldManagerMaker.cc
     - Remove debug printout.
 
-2) June 22, 2010 kutschke
+2) June 23, 2010 kutschke
    BFieldGeom/inc/BFMap.hh
    BFieldGeom/src/BFMap.cc
     - Warning printout for request for a point outside of the map is now
@@ -69,7 +86,7 @@
       They are now local to the functions that calculates them and passed
       via argument to other routines.
 
-1) June 22, 2010 kutschke
+1) June 23, 2010 kutschke
    Until now the production target was placed with the wrong sense of the y rotation
    and the description was not clear about active vs passive rotations.
    The correct answers are documented in Mu2e-doc-938. 
