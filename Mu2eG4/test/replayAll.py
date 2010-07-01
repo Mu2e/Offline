@@ -3,9 +3,9 @@
 # event contains both sets of data products, those created in
 # the first run and those created in the second run.
 #
-# $Id: replayAll.py,v 1.1 2010/03/13 00:12:06 kutschke Exp $
+# $Id: replayAll.py,v 1.2 2010/07/01 14:18:20 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/13 00:12:06 $
+# $Date: 2010/07/01 14:18:20 $
 #
 # Original author Rob Kutschke
 #
@@ -75,7 +75,7 @@ process.g4run2 = mu2e.EDProducer(
 # Define the output file. See note 1.
 process.outfile = mu2e.OutputModule(
     "PoolOutputModule",
-    fileName = mu2e.untracked.string('file:replayAll.root'),
+    fileName = mu2e.untracked.string('file:replayAllData.root'),
     fastCloning = mu2e.untracked.bool(False)
 )
 
