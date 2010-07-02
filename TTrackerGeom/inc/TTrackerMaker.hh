@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.1 2010/04/18 00:37:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:37:16 $
+// $Id: TTrackerMaker.hh,v 1.2 2010/07/02 20:11:26 genser Exp $
+// $Author: genser $
+// $Date: 2010/07/02 20:11:26 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,8 @@ private:
   void buildIt();
 
   double chooseDeviceRotation( int idev ) const;
+  double chooseDeviceSpacing( int idev ) const;
+  double findFirstDevZ0() const;
 
   // Basic parameters needed to describe the TTracker.
   int    _numDevices;                  // Number of devices.
@@ -64,11 +66,13 @@ private:
   int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer.
   int    _strawsPerManifold;           // Number of straws connected to each manifold.
   int    _rotationPattern;             // Pattern of rotations from device to device.
+  int    _spacingPattern;              // Pattern of spacing from device to device.
   double _zCenter;                     // Position of the center of the tracker, in the Mu2e coord system.
   double _envelopeInnerRadius;         // Inner radius of inside of innermost straw.
   double _strawOuterRadius;            // Radius of each straw.
   double _strawWallThickness;          // Thickness of each straw.
-  double _deviceSeparation;            // Z-separation between adjacent devices.
+  double _deviceSeparation;            // Z-separation between adjacent stations.
+  double _deviceSpacing;               // Z-separation between adjacent devices.
   double _deviceRotation;              // Relative rotation of each succesive device.
   double _innerSupportRadius;          // Inner radius of support frame.
   double _outerSupportRadius;          // Outer radius of support frame.

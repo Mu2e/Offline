@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.3 2010/05/18 21:16:52 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:52 $
+// $Id: TTrackerMaker.cc,v 1.4 2010/07/02 20:11:26 genser Exp $
+// $Author: genser $
+// $Date: 2010/07/02 20:11:26 $
 //
 // Original author Rob Kutschke
 //
@@ -53,12 +53,14 @@ namespace mu2e {
     _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
+    _spacingPattern     = config.getInt("ttracker.spacingPattern");
 
     _zCenter              = config.getDouble("ttracker.z0")*CLHEP::mm;
     _envelopeInnerRadius  = config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
     _strawOuterRadius     = config.getDouble("ttracker.strawOuterRadius")*CLHEP::mm;
     _strawWallThickness   = config.getDouble("ttracker.strawWallThickness")*CLHEP::mm;
     _deviceSeparation     = config.getDouble("ttracker.deviceSeparation")*CLHEP::mm;
+    _deviceSpacing        = config.getDouble("ttracker.deviceSpacing")*CLHEP::mm;
     _deviceRotation       = config.getDouble("ttracker.deviceRotation")*CLHEP::degree;
 
     _outerSupportRadius   = config.getDouble("ttracker.outerSupportRadius")*CLHEP::mm;
@@ -82,15 +84,40 @@ namespace mu2e {
 
     // Also define some parameters that may become variable some day.
     _sectorBaseRotations.clear();
-    _sectorBaseRotations.push_back(   0.*CLHEP::degree);
-    _sectorBaseRotations.push_back(  90.*CLHEP::degree);
-    _sectorBaseRotations.push_back( 180.*CLHEP::degree);
-    _sectorBaseRotations.push_back( 270.*CLHEP::degree);
     _sectorZSide.clear();
-    _sectorZSide.push_back(-1.);
-    _sectorZSide.push_back(+1.);
-    _sectorZSide.push_back(-1.);
-    _sectorZSide.push_back(+1.);
+    
+    if (_rotationPattern == 0 && _sectorsPerDevice == 4 ){
+      _sectorBaseRotations.push_back(   0.*CLHEP::degree);
+      _sectorBaseRotations.push_back(  90.*CLHEP::degree);
+      _sectorBaseRotations.push_back( 180.*CLHEP::degree);
+      _sectorBaseRotations.push_back( 270.*CLHEP::degree);
+      
+      _sectorZSide.push_back(-1.);
+      _sectorZSide.push_back(+1.);
+      _sectorZSide.push_back(-1.);
+      _sectorZSide.push_back(+1.);
+    }
+    else if (_rotationPattern == 1 && _sectorsPerDevice == 6 ){
+      _sectorBaseRotations.push_back(   0.*CLHEP::degree);
+      _sectorBaseRotations.push_back(  60.*CLHEP::degree);
+      _sectorBaseRotations.push_back( 120.*CLHEP::degree);
+      _sectorBaseRotations.push_back( 180.*CLHEP::degree);
+      _sectorBaseRotations.push_back( 240.*CLHEP::degree);
+      _sectorBaseRotations.push_back( 300.*CLHEP::degree);
+      
+      _sectorZSide.push_back(-1.);
+      _sectorZSide.push_back(+1.);
+      _sectorZSide.push_back(-1.);
+      _sectorZSide.push_back(+1.);
+      _sectorZSide.push_back(-1.);
+      _sectorZSide.push_back(+1.);
+    }
+
+    else
+      throw cms::Exception("GEOM")
+        << "Unrecognized rotation pattern in TTrackerMaker. \n";
+
+
 
   }
 
@@ -128,12 +155,12 @@ namespace mu2e {
     _tt->_envelopeMaterial    = _envelopeMaterial;
 
     // Z location of the first device.
-    _z0 = -_deviceSeparation*double(_numDevices-1)/2.0;
+    _z0 = -findFirstDevZ0();
 
     // Reserve space for straws so that pointers are valid.
     _nStrawsToReserve = _numDevices * _sectorsPerDevice * _layersPerSector * 
       _manifoldsPerEnd * _strawsPerManifold;
-    //_tt->_allStraws.reserve(_nStrawsToReserve);
+    //_tt->_allStraws.reserve(_nStrawsToReserve); // see makeLayer
 
     _tt->_devices.reserve(_numDevices);
     // Construct the devices and their internals.
@@ -153,8 +180,10 @@ namespace mu2e {
 
     int idev = devId;
 
-    CLHEP::Hep3Vector origin( 0., 0., _z0+_deviceSeparation*idev);
-    double phi = chooseDeviceRotation(idev)+_deviceRotation;
+    double devDeltaZ = chooseDeviceSpacing(idev);
+    CLHEP::Hep3Vector origin( 0., 0., _z0+devDeltaZ);
+    //    double phi = chooseDeviceRotation(idev)+_deviceRotation;
+    double phi = chooseDeviceRotation(idev);
 
     _tt->_devices.push_back(Device(devId, origin, phi));
     Device& dev = _tt->_devices.back();
@@ -205,7 +234,8 @@ namespace mu2e {
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
-    CLHEP::HepRotationZ RZ(_sectorBaseRotations.at(isec));
+    // CLHEP::HepRotationZ RZ(_sectorBaseRotations.at(isec));
+    CLHEP::HepRotationZ RZ(_sectorBaseRotations.at(isec) + device.rotation());
 
     // Unit vector in the wire direction.
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
@@ -270,9 +300,9 @@ namespace mu2e {
 
   void TTrackerMaker::makeManifolds( const SectorId& secId){
 
-    if ( _sectorsPerDevice != 4 ) {
+    if ( _sectorsPerDevice != 4 && _sectorsPerDevice != 6 ) {
       throw cms::Exception("GEOM")
-        << "This code only knows how to do 4 sectors per device.\n";
+        << "This code only knows how to do 4 or 6 sectors per device.\n";
     }
 
     double phi = _tt->getDevice(secId.getDevice()).rotation();
@@ -349,20 +379,69 @@ namespace mu2e {
   }
 
   // Compute the rotation for the given device.
-  // For now, only one pattern is known.
   double TTrackerMaker::chooseDeviceRotation( int idev ) const{
-    if ( _rotationPattern != 0 ){
+
+
+    if ( _rotationPattern == 0 ){
+      int k = idev%3;
+      if ( k == 0 ) {
+	return 0.;
+      } else if ( k == 1 ){
+	return _deviceRotation;
+      } else{
+	return -_deviceRotation;
+      }
+    }
+    else if ( _rotationPattern == 1 ){
+      int k = idev%2;
+      if ( k == 0 ) {
+	return 0.;
+      } else 
+	return _deviceRotation;
+    }
+    else 
       throw cms::Exception("GEOM")
-        << "Unrecognized rotation pattern in TTrackerMaker. \n";
-    }
-    int k = idev%3;
-    if ( k == 0 ) {
-      return 0.;
-    } else if ( k == 1 ){
-      return _deviceRotation;
-    } else{
-      return -_deviceRotation;
-    }
+	<< "Unrecognized rotation pattern in TTrackerMaker. \n";
+  
   }
+
+
+  // Compute the spacing for the given device.
+  double TTrackerMaker::chooseDeviceSpacing( int idev ) const{
+
+
+    if ( _spacingPattern == 0 ) {
+      return idev * _deviceSeparation;
+    }
+
+    else if ( _spacingPattern == 1 ) {
+      int k = idev%2;
+      if (k == 0 ) {
+	return  ( idev/2 )  * ( _deviceSeparation + _deviceSpacing);
+      } else if (k == 1 ) {
+	return ( (idev-1)/2 ) * ( _deviceSeparation + _deviceSpacing ) + _deviceSpacing;
+      }
+    }
+    else 
+      throw cms::Exception("GEOM")
+	<< "Unrecognized separation pattern in TTrackerMaker. \n";
+  
+  }
+
+  double TTrackerMaker::findFirstDevZ0() const{
+
+    if ( _spacingPattern == 0 ) {
+      return _deviceSeparation*double(_numDevices-1)/2.0;
+    }
+
+    else if ( _spacingPattern == 1 ) {
+      return (_deviceSeparation+_deviceSpacing) *double(_numDevices-1)/4.0;
+    }
+    else 
+      throw cms::Exception("GEOM")
+	<< "Unrecognized separation pattern in TTrackerMaker. \n";
+  }
+
+
 
 } // namespace mu2e

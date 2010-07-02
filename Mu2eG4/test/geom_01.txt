@@ -1,9 +1,9 @@
 //
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.33 2010/06/23 23:49:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/23 23:49:13 $
+// $Id: geom_01.txt,v 1.34 2010/07/02 20:11:26 genser Exp $
+// $Author: genser $
+// $Date: 2010/07/02 20:11:26 $
 //
 // Original author Rob Kutschke
 //
@@ -112,6 +112,7 @@ double toyDS3.halfLength        = 3650.;
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
+bool   toyDS.visible            = true;
 
 // Use a uniform magnetic field with the DS volume.
 double toyDS.bz            = -1.0;
@@ -122,6 +123,7 @@ double toyPS.rOut           =  1300.;
 double toyPS1.vacHalfLength =  2700.;
 double toyPS.CryoHalfLength =  2580.;
 string toyPS.materialName   = "G4_Al";
+bool   toyPS.visible        = true;
 
 // Parameters for TS volumes.
 double toyTS.rVac        =  600.;          // Outer radius of vacuum volume
@@ -129,6 +131,7 @@ double toyTS.rCryo       =  700.;          // Outer radius of cryostat
 double toyTS.rTorus      = 2926.;          // Bend radius of the torus
 double toyTS1.halfLength =  500.;
 double toyTS5.halfLength =  500.;
+bool   toyTS.visible        = true;
 
 // Production Target in PS:
 
@@ -143,7 +146,7 @@ double targetPS_positionZ         =   -35.5;  // mm
 double targetPS_rotX              =    -1.8;  // degree. Active rotation. See Mu2e-doc-938.
 double targetPS_rotY              =   12.22;  // degree.
 string targetPS_materialName      = "G4_Au";
-
+bool   targetPS.visible           = true;
 
 // LTracker: Positioning infor is relative to DS.
 int    ltracker.nSides           =     8;
@@ -258,22 +261,30 @@ string dummyStoppingTarget.material   = "WAGVacuum";
 // TTracker
 int    ttracker.numDevices         =   54;
 int    ttracker.sectorsPerDevice   =    4;
+//int    ttracker.sectorsPerDevice   =    6;
 int    ttracker.layersPerSector    =    1;
 int    ttracker.manifoldsPerEnd    =    4;
 int    ttracker.strawsPerManifold  =   16;
 int    ttracker.rotationPattern    =    0;
+//int    ttracker.rotationPattern    =    1;
+int    ttracker.spacingPattern     =    0;
+//int    ttracker.spacingPattern     =    1;
 
 double ttracker.z0                   = 10200.0;
 double ttracker.envelopeInnerRadius  =   380.0;
 double ttracker.strawOuterRadius     =     2.5;
 double ttracker.strawWallThickness   =     0.015;
 double ttracker.deviceSeparation     =    57.;
+double ttracker.deviceSpacing        =    49.;
 double ttracker.deviceRotation       =    60.;
 double ttracker.outerSupportRadius   =   830.0;
 double ttracker.innerSupportRadius   =   700.0;
 double ttracker.supportHalfThickness =    10.0;
 double ttracker.wireRadius           =     0.0125;
 double ttracker.manifoldYOffset      =    10.;
+bool   ttracker.envelopeVisible      =  true;
+bool   ttracker.deviceEnvelopeVisible = true;
+bool   ttracker.strawVisible         =  true;
 
 vector<double> ttracker.manifoldHalfLengths  = { 40.0, 35.0, 5.25};
 vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGas", "G4_W" };
@@ -286,8 +297,9 @@ string ttracker.mat.manifold  = "G4_Al";
 string ttracker.mat.support   = "CarbonFiber";
 
 // Debug control for TTracker; uncomment to make only a selected sector.
-//int    ttracker.devDraw  =  -1;
-//int    ttracker.secDraw  =  -1;
+// it is not about drawing, but about the construction itself
+int    ttracker.devDraw  =   -1;
+int    ttracker.secDraw  =   -1;
 
 //
 double tracker.rMagnet       = 850.; 
@@ -303,6 +315,7 @@ string         target.fillMaterial    = "WAGVacuum";
 // (0,0,0) = on axis in the DS at z=12000. mm
 double target.z0             = -6100.0;
 double target.deltaZ         =    50.0;
+bool   target.visible        = true;
 
 // all radii must be specified, i.e., nFoils is determined from the size 
 // of the radii vector.
@@ -375,6 +388,7 @@ vector<double> calorimeter.calorimeterVaneOffsetsZ         = {0.,0.,0.,0.};
 string calorimeter.crystalMaterial                         = "G4_PbWO4";
 string calorimeter.crystalWrapper                          = "G4_POLYETHYLENE"; // until I get around to defining Tyvek with Ti02.
 double calorimeter.crystalWrapperHalfThickness             = 0.01 ;             // totally made up
+bool   calorimeter.visible        = true;
 
 // Magnetic field
 
