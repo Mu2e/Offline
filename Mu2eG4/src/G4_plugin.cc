@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.20 2010/05/22 15:39:15 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/22 15:39:15 $
+// $Id: G4_plugin.cc,v 1.21 2010/07/07 17:20:12 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/07/07 17:20:12 $
 //
 // Original author Rob Kutschke
 //
@@ -74,6 +74,20 @@
 // ROOT includes
 #include "TNtuple.h"
 
+// not sure why this needs to be here; if it is above with other
+// Geant4 includes a complier error occurs...
+
+// In file included from ./ToyDP/inc/SimParticle.hh:22,
+//                  from ./ToyDP/inc/SimParticleCollection.hh:16,
+//                  from ./Mu2eG4/inc/TrackingAction.hh:22,
+//                  from Mu2eG4/src/G4_plugin.cc:63:
+//./Mu2eUtilities/inc/PDGCode.hh:222: error: expected identifier before numeric constant
+//./Mu2eUtilities/inc/PDGCode.hh:222: error: expected `}' before numeric constant
+//./Mu2eUtilities/inc/PDGCode.hh:222: error: expected unqualified-id before numeric constant
+//        B0 = 511 ,
+#include "G4UIExecutive.hh"
+
+
 using namespace std;
 using CLHEP::Hep3Vector;
 
@@ -89,6 +103,7 @@ namespace mu2e {
       _session(0),
       _visManager(0),
       _UI(0),
+      _rmvlevel(pSet.getUntrackedParameter<int>("rmvlevel",0)),
       _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")){
 
@@ -125,6 +140,7 @@ namespace mu2e {
     G4UIsession  *_session;
     G4VisManager *_visManager;
     G4UImanager  *_UI;
+    int _rmvlevel;
 
     // Position, in G4 world coord, of (0,0,0) of the mu2e coordinate system.
     CLHEP::Hep3Vector _mu2eOrigin;
@@ -171,6 +187,9 @@ namespace mu2e {
     // Create user actions and register them with G4.
 
     WorldMaker* allMu2e    = new WorldMaker();
+
+    _runManager->SetVerboseLevel(_rmvlevel);
+
     _runManager->SetUserInitialization(allMu2e);
 
     _runManager->SetUserInitialization(physicsListDecider(config));
@@ -255,27 +274,63 @@ namespace mu2e {
     event.put(outputHits);
     event.put(simParticles);
 
+//     // Pause to see graphics. 
+//     if ( _visMacro.size() > 0 ) {
+
+//       _UI->ApplyCommand( "/vis/scene/endOfEventAction refresh");
+
+//       // Prompt to continue and wait for reply.
+//       cout << "Enter a character to see next event: "; 
+//       string junk;
+//       cin >> junk;
+      
+//       // Check if user is requesting an early termination of the event loop.
+//       if ( !junk.empty() ){
+
+//         // Checks only the first character; we should check first non-blank.
+//         char c = tolower( junk[0] );
+//         if ( c == 'q' ){
+//           throw cms::Exception("CONTROL")
+//             << "Early end of event loop requested inside G4, \n";
+//         }
+//       }
+//     }
+
     // Pause to see graphics. 
     if ( _visMacro.size() > 0 ) {
 
       _UI->ApplyCommand( "/vis/scene/endOfEventAction refresh");
 
       // Prompt to continue and wait for reply.
-      cout << "Enter a character to see next event: "; 
-      string junk;
-      cin >> junk;
+      cout << "Enter a character to go to the next event (q quits, v enters G4 interactive session)" << endl;
+      cout << "(Once in G4 interactive session to quit it type exit): ";
+      string userinput;
+      cin >> userinput;
+      G4cout << userinput << G4endl;
       
       // Check if user is requesting an early termination of the event loop.
-      if ( !junk.empty() ){
-
-        // Checks only the first character; we should check first non-blank.
-        char c = tolower( junk[0] );
-        if ( c == 'q' ){
-          throw cms::Exception("CONTROL")
-            << "Early end of event loop requested inside G4, \n";
+      if ( !userinput.empty() ){
+	// Checks only the first character; we should check first non-blank.
+	char c = tolower( userinput[0] );
+	if ( c == 'q' ){
+	  throw cms::Exception("CONTROL")
+	    << "Early end of event loop requested inside G4, \n";
+	} else if ( c == 'v' ){
+          G4int argc=1;
+          char* dummy = "dummy";
+          char** argv = &dummy;
+          G4UIExecutive* UIE = new G4UIExecutive(argc, argv);
+          UIE->SessionStart();
+          delete UIE;
         }
       }
+      //_UI->ApplyCommand(userinput); 
+      _UI->ApplyCommand("/vis/scene/endOfEventAction refresh");
+      //_UI->ApplyCommand( "/vis/viewer/refresh"); 
+      //_UI->ApplyCommand( "/vis/viewer/flush"); 
+
     }
+     
 
     // This deletes the object pointed to by currentEvent.
     _runManager->BeamOnEndEvent();
