@@ -1,9 +1,9 @@
 //
 // Free function to construct version 1 of the TTracker
 //
-// $Id: constructTTrackerv1.cc,v 1.4 2010/06/23 23:29:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/23 23:29:16 $
+// $Id: constructTTrackerv1.cc,v 1.5 2010/07/07 16:44:14 genser Exp $
+// $Author: genser $
+// $Date: 2010/07/07 16:44:14 $
 //
 // Original author Rob Kutschke
 //
@@ -73,9 +73,12 @@ namespace mu2e{
                                 mother,
                                 0,
                                 G4Color::Blue(),
-                                true
+                                config.getBool("ttracker.envelopeSolid",true)
                                 );
-    info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+
+    if (!config.getBool("ttracker.envelopeVisible",false)) {
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
 
 
     // Define the straws to be sensitive detectors.  Does this leak the StrawSD?
@@ -85,6 +88,12 @@ namespace mu2e{
     SDman->AddNewDetector( strawSD );
 
     TubsParams deviceEnvelopeParams = ttracker->getDeviceEnvelopeParams();
+
+    bool ttrackerDeviceEnvelopeVisible = config.getBool("ttracker.deviceEnvelopeVisible",true);
+    bool ttrackerDeviceEnvelopeSolid = config.getBool("ttracker.deviceEnvelopeSolid",true);
+    bool ttrackerStrawVisible          = config.getBool("ttracker.strawVisible",false);
+    bool ttrackerStrawSolid          = config.getBool("ttracker.strawSolid",true);
+
     for ( size_t idev=0; idev<ttracker->nDevices(); ++idev ){
 
       if ( idev != devDraw && devDraw > -1 ) continue;
@@ -99,9 +108,12 @@ namespace mu2e{
                                      info.logical,
                                      idev,
                                      G4Color::Magenta(),
-                                     false
+                                     ttrackerDeviceEnvelopeSolid
                                      );
-      //devInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+
+      if (!ttrackerDeviceEnvelopeVisible) {
+        devInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+      }
 
       for ( size_t isec = 0; isec<device.nSectors(); ++isec){
         if ( isec != secDraw && secDraw > -1 ) continue;
@@ -137,12 +149,14 @@ namespace mu2e{
                                              devInfo.logical,
                                              straw.Index().asInt(),
                                              G4Color::Green(),
-                                             true
+                                             ttrackerStrawSolid
                                              );
 
             // Make this straw a sensitive detector.
             strawInfo.logical->SetSensitiveDetector( strawSD );
-            strawInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+            if (!ttrackerStrawVisible) {
+              strawInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+            }
 
           }   // end loop over straws
         }     // end loop over layers

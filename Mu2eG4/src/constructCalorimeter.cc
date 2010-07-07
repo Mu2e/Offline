@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.1 2010/04/13 23:10:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/13 23:10:18 $
+// $Id: constructCalorimeter.cc,v 1.2 2010/07/07 16:43:12 genser Exp $
+// $Author: genser $
+// $Date: 2010/07/07 16:43:12 $
 //
 // Original author Rob Kutschke
 // 
@@ -22,6 +22,7 @@
 // G4 includes
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
+#include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 
 using namespace std;
@@ -50,6 +51,8 @@ namespace mu2e {
       0.,
       2.*M_PI
     };
+    
+    bool calorimeterSolid = config.getBool("calorimeter.solid",true);
 
     VolumeInfo calorimeterInfo = nestTubs( "CalorimeterMother",
                                            calorimeterParams,
@@ -59,8 +62,12 @@ namespace mu2e {
                                            mother,
                                            0,
                                            G4Colour::Yellow(),
-                                           true
+                                           calorimeterSolid
                                            );
+    if (!config.getBool("calorimeter.visible",true)) {
+      calorimeterInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
+
     return calorimeterInfo;
   }
 
