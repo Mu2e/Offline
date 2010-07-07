@@ -4,9 +4,9 @@
 // Override the G4RunManager class so that the Mu2e framework can drive
 // the event loop. 
 //
-// $Id: Mu2eG4RunManager.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: Mu2eG4RunManager.hh,v 1.2 2010/07/07 16:57:30 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/07/07 16:57:30 $
 //
 // Original author Rob Kutschke
 //
@@ -38,6 +38,7 @@
 //        code shows that it should work fine.  The implementation of DoEventLoop
 //        in this class does not use any methods or data members from the
 //        derived class: the only access stuff in the base.
+//        (NO LONGER NEEDED IN Geant4.9.3)
 //     
 //     3) I have not tried changing the G4 geometry and doing multiple runs within
 //        one job.  As best I can tell it should work as well as it would in native G4.
@@ -72,7 +73,7 @@ private:
   Mu2eG4RunManager& operator=( Mu2eG4RunManager const & );
 
   // See Note 2.
-  void UpdateScoring();
+  //  void UpdateScoring();
 
   // A test to see if this works.
   G4Event * _previousEvent;

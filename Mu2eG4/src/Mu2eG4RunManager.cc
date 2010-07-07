@@ -2,9 +2,9 @@
 // Override the G4RunManager class so that the Mu2e framework can drive
 // the event loop. 
 //
-// $Id: Mu2eG4RunManager.cc,v 1.2 2010/05/18 21:16:20 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:20 $
+// $Id: Mu2eG4RunManager.cc,v 1.3 2010/07/07 16:58:35 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/07/07 16:58:35 $
 //
 // Original author Rob Kutschke
 //
@@ -128,24 +128,24 @@ namespace mu2e {
     RunTermination();
   }
 
-  // Copied verbatim from G4RunManager::UpdateScoring().
-  // Does all of its work via singletons and public/protected objects in the 
-  // base.  So it should work identically.  No idea why it is private in the base.
-  void Mu2eG4RunManager::UpdateScoring()
-  {
-    G4ScoringManager* ScM = ::G4ScoringManager::GetScoringManagerIfExist();
-    if(!ScM) return;
-    G4int nPar = ScM->GetNumberOfMesh();
-    if(nPar<1) return;
+//   // Copied verbatim from G4RunManager::UpdateScoring().
+//   // Does all of its work via singletons and public/protected objects in the 
+//   // base.  So it should work identically.  No idea why it is private in the base.
+//   void Mu2eG4RunManager::UpdateScoring()
+//   {
+//     G4ScoringManager* ScM = ::G4ScoringManager::GetScoringManagerIfExist();
+//     if(!ScM) return;
+//     G4int nPar = ScM->GetNumberOfMesh();
+//     if(nPar<1) return;
 
-    G4HCofThisEvent* HCE = currentEvent->GetHCofThisEvent();
-    if(!HCE) return;
-    G4int nColl = HCE->GetCapacity();
-    for(G4int i=0;i<nColl;i++)
-      {
-        G4VHitsCollection* HC = HCE->GetHC(i);
-        if(HC) ScM->Accumulate(HC);
-      }
-  }
+//     G4HCofThisEvent* HCE = currentEvent->GetHCofThisEvent();
+//     if(!HCE) return;
+//     G4int nColl = HCE->GetCapacity();
+//     for(G4int i=0;i<nColl;i++)
+//       {
+//         G4VHitsCollection* HC = HCE->GetHC(i);
+//         if(HC) ScM->Accumulate(HC);
+//       }
+//   }
 
 } // end namespace mu2e
