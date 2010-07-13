@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.hh,v 1.2 2010/05/18 22:06:19 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 22:06:19 $
+// $Id: CosmicTuple.hh,v 1.3 2010/07/13 01:36:35 timothym Exp $
+// $Author: timothym $
+// $Date: 2010/07/13 01:36:35 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -18,6 +18,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "DataFormats/Common/interface/Handle.h"
 
+#include "FWCore/Framework/interface/EDFilter.h"
 // Mu2e includes.
 #include "ToyDP/inc/StepPointMCCollection.hh"
 
@@ -26,7 +27,7 @@ class TNtuple;
 
 namespace mu2e {
 
-  class CosmicTuple : public edm::EDAnalyzer {
+  class CosmicTuple : public edm::EDFilter {
   public:
     
     explicit CosmicTuple(edm::ParameterSet const& pset);
@@ -35,7 +36,7 @@ namespace mu2e {
     virtual void beginJob(edm::EventSetup const&);
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    virtual bool filter(edm::Event& e, edm::EventSetup const&);
 
   private:
 
@@ -43,7 +44,10 @@ namespace mu2e {
     std::string _g4ModuleLabel;
 
     // Cut on the minimum energy.
-    double _minimumEnergy;
+	double _minimumEnergy;
+	double _minimump;
+	double _maximump;
+	double _traverseZ;
 
     // Number of events analyzed.
     int _nAnalyzed;
