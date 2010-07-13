@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.3 2010/05/18 21:16:31 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:31 $
+// $Id: CosmicTuple.cc,v 1.4 2010/07/13 01:36:35 timothym Exp $
+// $Author: timothym $
+// $Date: 2010/07/13 01:36:35 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,8 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 
+#include "FWCore/Framework/interface/EDFilter.h"
+
 // Root includes.
 #include "TH1F.h"
 #include "TNtuple.h"
@@ -46,7 +48,11 @@ namespace mu2e {
 
   CosmicTuple::CosmicTuple(edm::ParameterSet const& pset) : 
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-    _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
+  //  _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
+    _minimump(pset.getParameter<double>("minimump")),
+    _maximump(pset.getParameter<double>("maximump")),
+    _traverseZ(pset.getParameter<double>("traverseZ")),
+
     _nAnalyzed(0),
     _ntupTrk(0)
   {
@@ -63,11 +69,12 @@ namespace mu2e {
 
   }
 
-  void CosmicTuple::analyze(const edm::Event& event, edm::EventSetup const&) {
+   bool CosmicTuple::filter(edm::Event& event, edm::EventSetup const&) {
     
+
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
-    
+
     if ( _nAnalyzed % 10000 == 0 ) {
       edm::LogInfo("CosmicTuple")
         << "Processing event " << _nAnalyzed;
@@ -91,6 +98,26 @@ namespace mu2e {
     if ( haveSimPart ){
       haveSimPart = !(simParticles->empty() );
     }
+
+    //tim edit filter
+
+      // Get the hit information.
+//      const CLHEP::Hep3Vector& pos = hit.position();
+//      const CLHEP::Hep3Vector& mom = hit.momentum();
+
+
+//    if ( ptrk.mag() > _minimump ) return true;
+//    if ( ptrk.mag() < _minimump ) return false;
+//    if ( ptrk.mag() < _maximump ) return true;
+//    if ( ptrk.mag() > _maximump ) return false;
+//    if ( hzMax-hzMin > _traverseZ ) return true;
+//    if ( hzMax-hzMin < _traverseZ ) return false;
+//
+//end tim edit
+
+
+
+
 
     // A silly example just to show how to throw.
     if ( hits->size() > 1000000 ){
@@ -116,19 +143,38 @@ namespace mu2e {
     float hzMax = -1e6;
     float tMax = -1e6;
  
+
+bool pass= false;
+bool pass1= false;
+bool pass2= false;
+bool pass3= false;
+
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
       
       // Alias, used for readability.
       const StepPointMC& hit = (*hits)[i];
 
+
       // Skip hits with low pulse height.
       if ( hit.eDep() < _minimumEnergy ) continue;
-      
+//      if ( hit.momentum() > _minimump ) continue;
+//      if ( hit.momentum() < _maximump ) continue;
+//      if ( hzMax-hzMin  > _traverseZ ) continue;
+    
       // Get the hit information.
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
-      
+     
+
+  //          if ( ptrk.mag() > _minimump ){ pass1 = true;}
+  //          if ( ptrk.mag() < _maximump ){ pass2 = true;}
+  //          if ( hzMax-hzMin > _traverseZ ) {pass3 = true;}
+  //      pass = pass1 && pass2 && pass3;
+
+
+
+ 
       // The simulated particle that made this hit.
       int trackId = hit.trackId();
 
@@ -217,6 +263,10 @@ namespace mu2e {
           ntT[20] = hzMax;
           ntT[21] = tMin;
           ntT[22] = tMax;
+            if ( ptrk.mag() > _minimump ){ pass1 = true;}
+            if ( ptrk.mag() < _maximump ){ pass2 = true;}
+            if ( hzMax-hzMin > _traverseZ ) {pass3 = true;}
+        pass = pass1 && pass2 && pass3;
 
           _ntupTrk->Fill(ntT);
         }
@@ -246,7 +296,7 @@ namespace mu2e {
       first=false;
 
     } // end loop over hits.
-
+	return pass;
 
   } // end analyze
 
