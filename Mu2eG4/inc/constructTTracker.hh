@@ -3,9 +3,9 @@
 //
 // Free functions to construct various versions of the TTracker.
 //
-// $Id: constructTTracker.hh,v 1.1 2010/04/18 00:33:02 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:33:02 $
+// $Id: constructTTracker.hh,v 1.2 2010/07/19 22:38:44 genser Exp $
+// $Author: genser $
+// $Date: 2010/07/19 22:38:44 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,10 @@ namespace mu2e{
   class SimpleConfig;
 
   VolumeInfo constructTTrackerv1( G4LogicalVolume* mother,
+                                  double zOff,
+                                  SimpleConfig const& config );
+
+  VolumeInfo constructTTrackerv2( G4LogicalVolume* mother,
                                   double zOff,
                                   SimpleConfig const& config );
 

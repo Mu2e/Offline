@@ -4,9 +4,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.hh,v 1.3 2010/04/06 23:07:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/06 23:07:07 $
+// $Id: StrawSD.hh,v 1.4 2010/07/19 22:38:44 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/07/19 22:38:44 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,9 @@ namespace mu2e {
 
     // List of events for which to enable debug printout.
     EventNumberList _debugList;
+    int _nStrawsPerDevice;
+    int _nStrawsPerSector;
+    int _TTrackerVersion;
 
     
   };

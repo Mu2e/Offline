@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.8 2010/05/17 21:47:33 genser Exp $
+// $Id: StrawSD.cc,v 1.9 2010/07/19 22:38:43 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Date: 2010/07/19 22:38:43 $
 //
 // Original author Rob Kutschke
 //
@@ -15,6 +15,7 @@
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
@@ -50,6 +51,24 @@ namespace mu2e {
       config.getVectorInt(key,list);
       _debugList.add(list);
     }
+
+    edm::Service<GeometryService> geom;
+
+    if ( geom->hasElement<TTracker>() ) {
+      
+      GeomHandle<TTracker> ttracker;
+
+      const Device& device = ttracker->getDevice(0);
+      const Sector& sector = device.getSector(0);
+      const Layer&  layer  = sector.getLayer(0);
+
+      _nStrawsPerSector = sector.nLayers() * layer.nStraws();
+      _nStrawsPerDevice = device.nSectors() * _nStrawsPerSector;
+
+      _TTrackerVersion = config.getInt("TTrackerVersion",1);
+
+    }
+
   }
 
 
@@ -88,9 +107,54 @@ namespace mu2e {
 
     G4ThreeVector preMomWorld = aStep->GetPreStepPoint()->GetMomentum();
 
+//     G4int en = event->GetEventID();
+//     G4int ti = aStep->GetTrack()->GetTrackID()-1;
+//     G4int cn = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
+//     G4int rn = aStep->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber();
+
+//     G4TouchableHistory* theTouchable = 
+//       (G4TouchableHistory*)( aStep->GetPreStepPoint()->GetTouchable() );
+
+//     cout << "Debugging history depth " << 
+//       setw(4) << theTouchable->GetHistoryDepth() << endl;
+
+//     cout << "Debugging replica 0 replica 1 " <<
+//       setw(4) << theTouchable->GetReplicaNumber(0) <<
+//       setw(4) << theTouchable->GetReplicaNumber(1) << endl;
+
+//     cout << "Debugging replica 0 replica 1 " <<
+//       setw(4) << aStep->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(0) <<
+//       setw(4) << aStep->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(1) << endl;
+
+//     cout << "Debugging PV Name Mother Name" <<
+//       theTouchable->GetVolume(0)->GetName() << " " <<
+//       theTouchable->GetVolume(1)->GetName() << endl;
+
+//     cout << "Debugging hit info event track copyn replican: " << 
+//       setw(4) << en << " " << 
+//       setw(4) << ti << " " << 
+//       setw(4) << cn << " " << 
+//       setw(4) << rn << endl;
+
+    // getting the sector/device number
+
+    G4int sdcn = 0;
+    if ( _TTrackerVersion == 2) {
+      
+      //      cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
+
+      sdcn = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(0) + 
+        _nStrawsPerDevice*(aStep->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(1));
+
+    } else {
+      sdcn = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
+    }
+
+    //    cout << "Debugging sdcn " << sdcn << endl;
+
     StepPointG4* newHit = 
       new StepPointG4(aStep->GetTrack()->GetTrackID()-1,
-                      aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
+                      sdcn,
                       edep,
                       prePosTracker,
                       preMomWorld,

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.35 2010/07/07 16:42:02 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.36 2010/07/19 22:38:43 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/07/07 16:42:02 $
+// $Date: 2010/07/19 22:38:43 $
 //
 // Original author Rob Kutschke
 //
@@ -899,7 +899,13 @@ namespace mu2e {
     } else if ( _config->getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
     } else if ( _config->getBool("hasTTracker",false) ) {
-      trackerInfo = constructTTrackerv1( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+      int ver = _config->getInt("TTrackerVersion",1);
+      if ( ver == 1 ){
+        trackerInfo = constructTTrackerv1( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+      }
+      else if ( ver == 2 ) {
+        trackerInfo = constructTTrackerv2( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+      }        
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
     }
@@ -1181,6 +1187,7 @@ namespace mu2e {
       // other parts of the code;  is there a G4 bug that causes something to be
       // unitialized?
       visAtt.SetForceAuxEdgeVisible(false);
+      //visAtt.SetForceAuxEdgeVisible(true);
 
       // Finish the setting of visualization properties.
       visAtt.SetForceSolid(forceSolid);
@@ -1231,6 +1238,7 @@ namespace mu2e {
       // other parts of the code;  is there a G4 bug that causes something to be
       // unitialized?
       visAtt.SetForceAuxEdgeVisible(false);
+      // visAtt.SetForceAuxEdgeVisible(true);
 
       // Finish the setting of visualization properties.
       visAtt.SetForceSolid(forceSolid);
