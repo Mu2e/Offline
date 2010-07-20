@@ -1,16 +1,17 @@
 //
-// Free function to construct version 1 of the TTracker
+// Free function to construct version 2 of the TTracker
 //
-// $Id: constructTTrackerv2.cc,v 1.1 2010/07/19 22:38:43 genser Exp $
+// $Id: constructTTrackerv2.cc,v 1.2 2010/07/20 17:51:40 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/19 22:38:43 $
+// $Date: 2010/07/20 17:51:40 $
 //
-// Original author KLG
+// Original author KLG based on RKK using different methodology
 //
 // Notes
 // 1) This version makes mother volumes per device and places
 //    straws within that volume.  There is no per sector or per
-//    manifold substructure. There is only one logical volume per device
+//    manifold substructure. 
+//    There is only one logical volume for all devices
 
 
 // C++ includes
@@ -156,8 +157,7 @@ namespace mu2e{
           // object points in the direction of w, as measured in the world frame
           G4RotationMatrix* rot = new G4RotationMatrix( -alpha, -theta, alpha );
 
-          // how to make sure the straw index is correct? if doing placement from "outside"????
-          // i.e. can one place the logical devices and still have a different index?
+          // look at StrawSD to see how the straw index is reconstructed
 
           VolumeInfo strawInfo  = nestTubs("TTrackerStraw",
                                            strawParams,
