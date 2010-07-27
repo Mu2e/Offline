@@ -2,17 +2,39 @@
 # Macro file for setting up the graphics scene and the verbosity level: xy view
 #
 #
-# $Id: visxy.mac,v 1.2 2010/05/22 15:39:15 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/05/22 15:39:15 $
+# $Id: visxy.mac,v 1.3 2010/07/27 18:26:48 genser Exp $
+# $Author: genser $
+# $Date: 2010/07/27 18:26:48 $
 #
 # Original author Rob Kutschke
 
 /control/verbose 0
 /run/verbose 0
-/vis/open OGLIX 600x600-0+0
-/vis/viewer/set/viewpointThetaPhi 0 0 deg
-/vis/viewer/zoom 1.0
+/vis/open OGLIX 800x800-0+0
+# xy
+#/vis/viewer/set/viewpointThetaPhi 0 180 deg
+# yz
+#/vis/viewer/set/viewpointThetaPhi 90 180 deg
+#
+/vis/viewer/set/viewpointThetaPhi 45 45
+#/vis/viewer/panTo -6.6 -6.0
+# TTracker debugging in 45 45 view
+#/vis/viewer/panTo -0.5 -5.5
+
+# xz?
+# TTracker debugging 
+#/vis/viewer/set/viewpointThetaPhi 90 0
+#/vis/viewer/panTo -0.55 -6.0
+#/vis/viewer/zoomTo 175
+
+#
+#/vis/viewer/zoomTo 2.0
+#
+#/vis/viewer/zoomTo 200.0
+/vis/viewer/zoomTo 1.0
+# LTracker debugging in 45 45 view
+#/vis/viewer/panTo -3.9 -5.23 m
+#
 /vis/disable
 /vis/scene/create
 /vis/scene/add/volume world
@@ -22,3 +44,7 @@
 /vis/enable 
 
 # Do NOT issue the /run/beamon command
+# /vis/viewer/flush
+# /vis/viewer/reset
+
+# /vis/viewer/set/hiddenEdge 1
