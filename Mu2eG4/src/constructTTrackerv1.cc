@@ -1,9 +1,9 @@
 //
 // Free function to construct version 1 of the TTracker
 //
-// $Id: constructTTrackerv1.cc,v 1.5 2010/07/07 16:44:14 genser Exp $
+// $Id: constructTTrackerv1.cc,v 1.6 2010/07/29 16:56:25 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/07 16:44:14 $
+// $Date: 2010/07/29 16:56:25 $
 //
 // Original author Rob Kutschke
 //
@@ -96,7 +96,7 @@ namespace mu2e{
 
     for ( size_t idev=0; idev<ttracker->nDevices(); ++idev ){
 
-      if ( idev != devDraw && devDraw > -1 ) continue;
+      if ( idev > devDraw && devDraw > -1 ) continue;
 
       const Device& device = ttracker->getDevice(idev);
 
@@ -116,7 +116,7 @@ namespace mu2e{
       }
 
       for ( size_t isec = 0; isec<device.nSectors(); ++isec){
-        if ( isec != secDraw && secDraw > -1 ) continue;
+        if ( isec > secDraw && secDraw > -1 ) continue;
 
         const Sector& sector = device.getSector(isec);
 
