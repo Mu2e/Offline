@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.5 2010/06/23 23:29:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/23 23:29:16 $
+// $Id: constructLTrackerv3.cc,v 1.6 2010/07/29 20:43:37 genser Exp $
+// $Author: genser $
+// $Date: 2010/07/29 20:43:37 $
 //
 // Original author Rob Kutschke
 //
@@ -11,8 +11,6 @@
 //
 // 1) Version 3 builds the LTracker by making physical mother volumes
 //    for each sector.
-// 2) There is bug in this version.  The physical volumes that bound
-//    each sector of the octagon should be trapezoids, not boxes.
 //
 
 // C++ includes
