@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.2 2010/07/02 20:11:26 genser Exp $
+// $Id: TTrackerMaker.hh,v 1.3 2010/07/29 21:02:42 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/02 20:11:26 $
+// $Date: 2010/07/29 21:02:42 $
 //
 // Original author Rob Kutschke
 //
@@ -51,6 +51,8 @@ private:
   void makeManifolds( const SectorId& secId);
 
   void computeStrawHalfLengths();
+  void computeSectorBoxParams(Sector& sector, Device& dev);
+
 
   // Do the work of constructing it.
   void buildIt();

@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.4 2010/07/02 20:11:26 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.5 2010/07/29 21:02:42 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/02 20:11:26 $
+// $Date: 2010/07/29 21:02:42 $
 //
 // Original author Rob Kutschke
 //
@@ -72,7 +72,7 @@ namespace mu2e {
     _manifoldYOffset      = config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
     config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
     for ( int i=0; i<_manifoldHalfLengths.size(); ++i ){
-      _manifoldHalfLengths[i] *= CLHEP::mm;
+      _manifoldHalfLengths.at(i) *= CLHEP::mm;
     }
     
     config.getVectorString("ttracker.strawMaterials", _strawMaterials, 3);
@@ -207,6 +207,9 @@ namespace mu2e {
       makeLayer( LayerId(secId,ilay), sector );
     }
 
+    // calculate/make a sector envelope
+    computeSectorBoxParams(sector, dev);
+
   }
 
   void TTrackerMaker::makeLayer ( const LayerId& layId, Sector& sector ){
@@ -226,18 +229,18 @@ namespace mu2e {
     layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
 
     // Space between first/last straw and edge of manifold.
-    double dx = _manifoldHalfLengths[0] - _strawOuterRadius*_strawsPerManifold;
+    double dx = _manifoldHalfLengths.at(0) - _strawOuterRadius*_strawsPerManifold;
 
     // |z| of straw center, relative to the center of the device.
     // Sign is taken care of elsewhere.
-    double zOffset = _supportHalfThickness + _manifoldHalfLengths[2];
+    double zOffset = _supportHalfThickness + _manifoldHalfLengths.at(2);
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
     // CLHEP::HepRotationZ RZ(_sectorBaseRotations.at(isec));
     CLHEP::HepRotationZ RZ(_sectorBaseRotations.at(isec) + device.rotation());
 
-    // Unit vector in the wire direction.
+    // Unit vector in the wire direction. (nominal is the sector 0 to the right?)
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
 
     // Straw number within the layer; does not reset to zero at each manifold.
@@ -247,7 +250,7 @@ namespace mu2e {
     for ( int iman=0; iman<_manifoldsPerEnd; ++iman ){
 
       // Inner edge of the innermost wire connected to this manifold.
-      double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths[0]*iman - dx;
+      double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*iman - dx;
 
       // Add all of the straws connected to this manifold.
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
@@ -276,23 +279,22 @@ namespace mu2e {
         layer._indices.push_back(index);
         
 
-        /*
-          if ( layId.getDevice() == 0 ){
-          cout << "Position: "
-          << layId << " | "
-          << iman << " "
-          << istr                << " | "
-          << istraw << " "
-          << xstraw  << " "
-          << 2.*_strawHalfLengths.at(iman) << " "
-          << mid << " "
-          << device.origin() << " | " 
-          << index <<  " "
-          << allStraws.size() << " " 
-          << layer._straws.size() << " "
-          << endl;
-          }
-        */
+//           if ( layId.getDevice() != -1 ){
+//           cout << "Position: " << setw(3) <<
+//           layId << " | " << setw(3) <<
+//           iman << " " << setw(3) <<
+//           istr                << " | " << setw(3) <<
+//           istraw << " " << fixed << setprecision(2) << setw(8) <<
+//           xstraw << " " << fixed << setprecision(2) << setw(8) <<
+//           2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
+//           mid << " " << fixed << setprecision(2) << setw(8) <<
+//           device.origin() << " | "  << setw(3) <<
+//           index <<  " " << setw(3) <<
+//           allStraws.size() << " "  << setw(3) <<
+//           layer._straws.size() << " "
+//           << endl;
+//           }
+
       }
     }
     
@@ -311,17 +313,30 @@ namespace mu2e {
 
     for ( int i=0; i<_manifoldsPerEnd; ++i){
     
-      // First compute everything in their nominal positions: sector 2, top
+      // First compute everything in their nominal positions: sector 0, right ?
       double x0 = _envelopeInnerRadius + 
         _strawsPerManifold*_strawOuterRadius +
-        _manifoldHalfLengths[0];
+        _manifoldHalfLengths.at(0);
     
-      double y0 = _tt->_strawDetails[i].halfLength() + _manifoldHalfLengths[2];
+      double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
 
-      double z0 = ( _supportHalfThickness + _manifoldHalfLengths[2] );
-      if ( secId.getSector() <= 1 ) z0 = -z0;
-      
+      double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
+      //if ( secId.getSector() <= 1 ) z0 = -z0; // is this correct for the 6 sectors?
+      // why not *_sectorZSide.at(secId.getSector())
+
+      z0 = z0*_sectorZSide.at(secId.getSector());
+
+      // is the above assuming correct Z? why not secId.getSector()%2?
+      // are manifolds ever used?
+      // is it correct at all? I mean the origin? It is always the same for each device... 
+      // x never changes
+
       CLHEP::Hep3Vector origin(x0,y0,z0);
+
+//       cout << "Manifold device, sector, origin, length[0] :" << 
+//         _tt->getDevice(secId.getDevice()).Id() << ", " <<
+//         secId.getSector() << ", " <<
+//         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
 
 
       _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
@@ -339,7 +354,7 @@ namespace mu2e {
     static const double tolerance = 1.e-4*CLHEP::mm;
 
     // Space between first/last straw and edge of manifold.
-    double dx = _manifoldHalfLengths[0] - _strawOuterRadius*_strawsPerManifold;
+    double dx = _manifoldHalfLengths.at(0) - _strawOuterRadius*_strawsPerManifold;
 
     // Check for a legal size.
     if ( dx < 0.0 ){
@@ -351,10 +366,10 @@ namespace mu2e {
     }
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-      double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths[0]*i - dx;
+      double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i - dx;
       double yA = sqrt( square(_innerSupportRadius) - square(xA) );
       double yB = yA + _manifoldYOffset;
-      //      cout << "Straw Length: " << xA << " " << yB*2.0 << endl;
+      // cout << "Straw Length: " << xA << " " << yB*2.0 << endl;
       _strawHalfLengths.push_back(yB);
     }
   }
@@ -370,12 +385,115 @@ namespace mu2e {
             _strawMaterials,
             _strawOuterRadius,
             _strawWallThickness,
-            _strawHalfLengths[i],
+            _strawHalfLengths.at(i),
             _wireRadius
             )
           );
     }
     
+  }
+
+  void  TTrackerMaker::computeSectorBoxParams(Sector& sector, Device& dev){
+
+    // get sector number
+
+    int isec = sector.Id().getSector();
+
+    //  void  TTrackerMaker::computeSectorBoxParams(vector<double>& boxHalfLengths){
+
+    // the box is a trapezoid 
+    // shorter x             is the length of the straws in the top/last (shortest) manifold
+    // longer  x is longer than the length of the straws in the longest manifold 
+    // the other dimentions are "z", the combined manifold width
+    // the "thickness" of the trpezoid y, the layer thickness * number of layers 
+
+
+    // z
+    double bz = _manifoldHalfLengths.at(0)*double(_manifoldsPerEnd);
+
+    // calculating "longer" x;
+    // starting from the tng of the slope 
+
+    // calculate the largest slope starting from the longest straws manifold
+    double maxtg = 0.0;
+
+    for (size_t i=1; i!=_manifoldsPerEnd; ++i) {
+      double ttg = (_manifoldHalfLengths.at(0)*double(i) ) /
+        ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i) );
+      if (maxtg < ttg ) {
+        maxtg = ttg;
+      }
+    }
+
+    double slopeAlpha = atan(maxtg);
+
+    // finally x (long, short)
+    double bxl = _manifoldHalfLengths.at(0)/tan(slopeAlpha)+_strawHalfLengths.at(0);
+    double bxs = bxl - bz/tan(slopeAlpha);
+
+    // we need to make sure the trapezoids do not extend beyond the device envelope...
+    // we may need to do "volume subtraction"
+
+    // y
+    // double by = _layersPerSector*_tt->_strawDetails.at(0).outerRadius();
+    // manifold better be thicker than the straws:
+    double by = _layersPerSector* max(_manifoldHalfLengths.at(2),_tt->_strawDetails.at(0).outerRadius());
+
+    // now push it all back into the vector
+
+    // Pad the box to be slightly larger than it needs to be
+    const double pad = 0.001; // this needs to be in the geom file...
+
+    sector._boxHalfLengths.reserve(5);
+
+    // the order is forced by the LTracker and nestTrp/G4Trd and Sector data
+
+    sector._boxHalfLengths.push_back(0.0); //dummy to be compatible with LTracker
+    sector._boxHalfLengths.push_back(bz+pad);
+    sector._boxHalfLengths.push_back(by+pad);
+
+    sector._boxHalfLengths.push_back(bxs+pad);
+    sector._boxHalfLengths.push_back(bxl+pad);
+
+    // Now calculate the rotations and placement of the sector envelope
+
+    sector._boxRxAngle = 0.;
+    sector._boxRyAngle = 0.;
+    sector._boxRzAngle = _sectorBaseRotations.at(isec) + dev.rotation();
+
+    double zOffset = _layersPerSector*(_supportHalfThickness + _manifoldHalfLengths.at(2))*
+      _sectorZSide.at(isec);
+    
+    double xOffset = _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd;
+
+    CLHEP::HepRotationZ RZ(sector._boxRzAngle);
+
+    sector._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + dev.origin());
+
+    // we may want to set to 0.0 some values smaller than say 10-6...
+    const double max0val = 1.e-06;
+    for (int ii=0; ii!=sector._boxOffset.SIZE; ++ii) {
+      if (abs(sector._boxOffset[ii])<max0val) sector._boxOffset[ii]=0.0;
+    }
+
+//     cout << "Debugging sector box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
+//       isec << ", " << 
+//       by << ", " <<
+//       bz << ", " <<
+//       bxl << ", " <<
+//       bxs << ", " <<
+//       sector._boxRzAngle << ", " <<
+//       sector._boxOffset << 
+//       endl;
+
+//     cout << "Debugging sector box isec, straw lengths: ";
+//     for ( int i=0; i<_manifoldsPerEnd; ++i ){
+//       cout << i << " " << _strawHalfLengths.at(i);
+//     }
+//     cout << endl;
+
+    return;
+
   }
 
   // Compute the rotation for the given device.

@@ -4,9 +4,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.hh,v 1.4 2010/07/19 22:38:44 genser Exp $
+// $Id: StrawSD.hh,v 1.5 2010/07/29 21:02:43 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/07/19 22:38:44 $
+// $Date: 2010/07/29 21:02:43 $
 //
 // Original author Rob Kutschke
 //
@@ -37,13 +37,17 @@ namespace mu2e {
     void EndOfEvent(G4HCofThisEvent*);
   
   private:
+
+    G4ThreeVector GetTrackerOrigin(const G4TouchableHandle & touchableHandle);
+
     StepPointG4Collection* _collection;
 
     // List of events for which to enable debug printout.
     EventNumberList _debugList;
     int _nStrawsPerDevice;
     int _nStrawsPerSector;
-    int _TTrackerVersion;
+    int _TrackerVersion;
+
 
     
   };
