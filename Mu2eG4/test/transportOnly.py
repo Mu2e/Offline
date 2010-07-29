@@ -1,8 +1,8 @@
 # Variant of g4test_03 but with transport only.
 #
-# $Id: transportOnly.py,v 1.2 2010/06/02 04:01:53 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/06/02 04:01:53 $
+# $Id: transportOnly.py,v 1.3 2010/07/29 20:47:13 genser Exp $
+# $Author: genser $
+# $Date: 2010/07/29 20:47:13 $
 #
 # Original author Rob Kutschke
 #
@@ -61,7 +61,9 @@ process.generate = mu2e.EDProducer(
 process.g4run = mu2e.EDProducer(
     "G4",
     generatorModuleLabel = mu2e.string("generate"),
-    )
+    rmvlevel = mu2e.untracked.int32(2),
+#    visMacro = mu2e.untracked.string("Mu2eG4/test/visxy.mac")
+)
 
 # Save state of random numbers to the event.
 process.randomsaver = mu2e.EDAnalyzer("RandomNumberSaver")
