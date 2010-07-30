@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.10 2010/07/29 21:02:42 genser Exp $
+// $Id: StrawSD.cc,v 1.11 2010/07/30 15:52:39 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/07/29 21:02:42 $
+// $Date: 2010/07/30 15:52:39 $
 //
 // Original author Rob Kutschke
 //
@@ -205,7 +205,7 @@ namespace mu2e {
       
     }
 
-    //    cout << "Debugging sdcn " << sdcn << endl;
+    // cout << "Debugging sdcn " << sdcn << endl;
 
     StepPointG4* newHit = 
       new StepPointG4(aStep->GetTrack()->GetTrackID()-1,
@@ -333,20 +333,24 @@ namespace mu2e {
 
   G4ThreeVector StrawSD::GetTrackerOrigin(const G4TouchableHandle & touchableHandle) {
 
-
     // how deep in the hierachy is the tracker a.k.a tracker depth
-    // (depends on the tracker version) right now (1,2,3) for TTracker it happens to
-    // be the tracker version; for LTracker 1,2,3 it is 2 set in the constructor
+    // (depends on the tracker version)
+    // for LTracker 1,2,3 it is 2 
+    // the tracker version is set in the constructor
 
     size_t td = 2;
 
     edm::Service<GeometryService> geom;
     if ( geom->hasElement<TTracker>() ) {
-      if ( _TrackerVersion == 1 ||  _TrackerVersion == 2 ||  _TrackerVersion == 3 ) {
+      if ( _TrackerVersion == 1 ) {
+        td = 2;
+      } else if ( _TrackerVersion == 2 ||  _TrackerVersion == 3 ) {
         td =_TrackerVersion;
       }
     }
-      
+
+    cout << "Debugging: tracker depth/version: " << td << "/" << _TrackerVersion << endl;
+
     size_t hdepth = touchableHandle->GetHistoryDepth();
 
     G4ThreeVector cdo;
