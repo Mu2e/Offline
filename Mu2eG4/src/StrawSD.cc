@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.11 2010/07/30 15:52:39 genser Exp $
+// $Id: StrawSD.cc,v 1.12 2010/07/30 16:16:01 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/07/30 15:52:39 $
+// $Date: 2010/07/30 16:16:01 $
 //
 // Original author Rob Kutschke
 //
@@ -349,7 +349,7 @@ namespace mu2e {
       }
     }
 
-    cout << "Debugging: tracker depth/version: " << td << "/" << _TrackerVersion << endl;
+    //    cout << "Debugging: tracker depth/version: " << td << "/" << _TrackerVersion << endl;
 
     size_t hdepth = touchableHandle->GetHistoryDepth();
 
