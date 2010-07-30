@@ -1,9 +1,9 @@
 //
-// Free function to construct version 2 of the TTracker
+// Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.1 2010/07/29 21:02:42 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.2 2010/07/30 19:43:25 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/29 21:02:42 $
+// $Date: 2010/07/30 19:43:25 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -12,7 +12,7 @@
 //     This version makes logical mother volumes per device and per
 //     sector and places sectors in device and straws in sector
 //     It has only one sector/device logical volume placed several times
-//
+//     This versoin has a negligeable construction time and a much smaler memory footprint
 
 
 // C++ includes
@@ -80,6 +80,11 @@ namespace mu2e{
 
     if (!config.getBool("ttracker.envelopeVisible",false)) {
       motherInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    } else {
+      // leak?
+      G4VisAttributes* visAtt = new G4VisAttributes(motherInfo.logical->GetVisAttributes());
+      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+      motherInfo.logical->SetVisAttributes(visAtt);
     }
 
 
@@ -123,8 +128,7 @@ namespace mu2e{
     else {
       G4VisAttributes* visAtt = new G4VisAttributes(true, G4Color::Magenta());
       visAtt->SetForceSolid(ttrackerDeviceEnvelopeSolid);
-      //visAtt->SetForceAuxEdgeVisible(true);
-      visAtt->SetForceAuxEdgeVisible(false);
+      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
       devInfo.logical->SetVisAttributes(visAtt);
     }
     // place straws etc... wrt the envelope
@@ -171,11 +175,11 @@ namespace mu2e{
       devInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
     } 
     else {
-      // it will be allways blue
+      // it will be allways Cyan if done this way
       G4Color color = (isec%2 == 1) ? G4Color::Blue() : G4Color::Cyan();
       G4VisAttributes* visAtt = new G4VisAttributes(true, color);
       visAtt->SetForceSolid(ttrackerDeviceEnvelopeSolid);
-      visAtt->SetForceAuxEdgeVisible(true);
+      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
       secInfo.logical->SetVisAttributes(visAtt);
     }
 
@@ -239,8 +243,12 @@ namespace mu2e{
         strawInfo.logical->SetSensitiveDetector( strawSD );
         if (!ttrackerStrawVisible) {
           strawInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+        } else {
+          // leak?
+          G4VisAttributes* visAtt = new G4VisAttributes(*strawInfo.logical->GetVisAttributes());
+          visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+          strawInfo.logical->SetVisAttributes(visAtt);
         }
-
       }   // end loop over straws
     }     // end loop over layers
 
@@ -271,8 +279,7 @@ namespace mu2e{
       
       // we may need to keep those pointers somewhre... (this is only the last one...)
 
-      //      G4bool doSurfCheck = true; // it true this draws random numbers
-      G4bool doSurfCheck = false; // it true this draws random numbers
+      G4bool doSurfCheck = false; // if true this draws random numbers
 
       secInfo.physical =  new G4PVPlacement(secRotation,
                                             origin,
@@ -304,7 +311,7 @@ namespace mu2e{
 
       // could we descend the final hierarchy and set the "true" copy numbers?
 
-      G4bool doSurfCheck = false; // it true this draws random numbers
+      G4bool doSurfCheck = false; // if true this draws random numbers
 
       // we may need to keep those pointers somewhre... (this is only the last one...)
       devInfo.physical =  new G4PVPlacement(devRotation,

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.37 2010/07/29 21:02:42 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.38 2010/07/30 19:43:25 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/07/29 21:02:42 $
+// $Date: 2010/07/30 19:43:25 $
 //
 // Original author Rob Kutschke
 //
@@ -436,7 +436,7 @@ namespace mu2e {
     _visAttributes.push_back(G4VisAttributes(dirtCapVisible, G4Colour::Green()));
     G4VisAttributes& visAtt = _visAttributes.back();
     visAtt.SetForceSolid(dirtCapSolid);
-    visAtt.SetForceAuxEdgeVisible(false);
+    visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
     dirtCapInfo.logical->SetVisAttributes(&visAtt);
 
     addVolInfo( dirtCapInfo );
@@ -1189,8 +1189,7 @@ namespace mu2e {
       // If I do not do this, then the rendering depends on what happens in
       // other parts of the code;  is there a G4 bug that causes something to be
       // unitialized?
-      visAtt.SetForceAuxEdgeVisible(false);
-      //visAtt.SetForceAuxEdgeVisible(true);
+      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
 
       // Finish the setting of visualization properties.
       visAtt.SetForceSolid(forceSolid);
@@ -1240,8 +1239,7 @@ namespace mu2e {
       // If I do not do this, then the rendering depends on what happens in
       // other parts of the code;  is there a G4 bug that causes something to be
       // unitialized?
-      visAtt.SetForceAuxEdgeVisible(false);
-      // visAtt.SetForceAuxEdgeVisible(true);
+      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
 
       // Finish the setting of visualization properties.
       visAtt.SetForceSolid(forceSolid);

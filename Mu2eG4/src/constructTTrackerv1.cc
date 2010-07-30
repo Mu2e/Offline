@@ -1,9 +1,9 @@
 //
 // Free function to construct version 1 of the TTracker
 //
-// $Id: constructTTrackerv1.cc,v 1.6 2010/07/29 16:56:25 genser Exp $
+// $Id: constructTTrackerv1.cc,v 1.7 2010/07/30 19:43:25 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/29 16:56:25 $
+// $Date: 2010/07/30 19:43:25 $
 //
 // Original author Rob Kutschke
 //
@@ -78,6 +78,11 @@ namespace mu2e{
 
     if (!config.getBool("ttracker.envelopeVisible",false)) {
       info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    } else {
+      // leak?
+      G4VisAttributes* visAtt = new G4VisAttributes(*info.logical->GetVisAttributes());
+      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+      info.logical->SetVisAttributes(visAtt);
     }
 
 
@@ -113,7 +118,13 @@ namespace mu2e{
 
       if (!ttrackerDeviceEnvelopeVisible) {
         devInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
-      }
+      } else {
+        // leak?
+        G4VisAttributes* visAtt = new G4VisAttributes(*devInfo.logical->GetVisAttributes());
+        visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+        devInfo.logical->SetVisAttributes(visAtt);
+    }
+
 
       for ( size_t isec = 0; isec<device.nSectors(); ++isec){
         if ( isec > secDraw && secDraw > -1 ) continue;
@@ -156,6 +167,11 @@ namespace mu2e{
             strawInfo.logical->SetSensitiveDetector( strawSD );
             if (!ttrackerStrawVisible) {
               strawInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+            } else {
+              // leak?
+              G4VisAttributes* visAtt = new G4VisAttributes(*strawInfo.logical->GetVisAttributes());
+              visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+              strawInfo.logical->SetVisAttributes(visAtt);
             }
 
           }   // end loop over straws

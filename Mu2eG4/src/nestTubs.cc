@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.cc,v 1.3 2010/05/18 21:16:28 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:28 $
+// $Id: nestTubs.cc,v 1.4 2010/07/30 19:43:25 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/07/30 19:43:25 $
 //
 // Original author Rob Kutschke
 //
@@ -45,8 +45,11 @@ namespace mu2e {
     info.solid   = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
     
     info.logical = new G4LogicalVolume( info.solid, material, name); 
+
+    G4bool doSurfCheck = false; // if true this draws random numbers
     
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo);
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo, 
+                                        doSurfCheck);
 
     // This leaks. See note 1.
     G4VisAttributes* visAtt = new G4VisAttributes(true, color);
@@ -55,7 +58,7 @@ namespace mu2e {
     // If I do not do this, then the rendering depends on what happens in
     // other parts of the code;  is there a G4 bug that causes something to be
     // unitialized?
-    visAtt->SetForceAuxEdgeVisible (false);
+    visAtt->SetForceAuxEdgeVisible(false);
 
     info.logical->SetVisAttributes(visAtt);
 

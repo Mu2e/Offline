@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.6 2010/07/29 20:43:37 genser Exp $
+// $Id: constructLTrackerv3.cc,v 1.7 2010/07/30 19:43:25 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/29 20:43:37 $
+// $Date: 2010/07/30 19:43:25 $
 //
 // Original author Rob Kutschke
 //
@@ -92,7 +92,7 @@ namespace mu2e{
       G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Green() );
       visAtt->SetForceSolid(true);
       // visAtt->SetForceSolid(false);
-      visAtt->SetForceAuxEdgeVisible (false);
+      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
       visAtt->SetVisibility(true);
       trackerInfo.logical->SetVisAttributes(visAtt);
     }
@@ -176,6 +176,10 @@ namespace mu2e{
 // 	  std::cout << "Overlap while placing " << name << std::endl;
 // 	}
 
+        G4VisAttributes* visAtt = new G4VisAttributes(*tmp.logical->GetVisAttributes());
+        visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+        tmp.logical->SetVisAttributes(visAtt);
+
         vinfo.push_back(tmp);
         VolumeInfo const& sectorBoxInfo = vinfo.back();
 
@@ -238,7 +242,7 @@ namespace mu2e{
       //This leaks strawVisAtt.  
       //G4VisAttributes* strawVisAtt = new G4VisAttributes(true, G4Colour::Green() );
       //strawVisAtt->SetForceSolid(true);
-      //strawVisAtt->SetForceAuxEdgeVisible (false);
+      //visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
       //strawVisAtt->SetVisibility(true);
       //strawInfo.logical->SetVisAttributes(strawVisAtt);
 

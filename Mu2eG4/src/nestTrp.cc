@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
 // 
-// $Id: nestTrp.cc,v 1.1 2010/06/04 22:07:22 genser Exp $
+// $Id: nestTrp.cc,v 1.2 2010/07/30 19:43:25 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/06/04 22:07:22 $
+// $Date: 2010/07/30 19:43:25 $
 //
 // Original author Krzysztof Genser based on Rob Kutschke' nestBox
 //
@@ -58,7 +58,6 @@ namespace mu2e {
     G4VisAttributes* visAtt = new G4VisAttributes(true, color);
     visAtt->SetForceSolid(forceSolid);
     visAtt->SetForceAuxEdgeVisible(false);
-    //visAtt->SetForceAuxEdgeVisible(true);
     info.logical->SetVisAttributes(visAtt);
     
     return info;
