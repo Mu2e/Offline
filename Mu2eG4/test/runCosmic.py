@@ -5,9 +5,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: runCosmic.py,v 1.1 2010/04/17 23:58:31 yury Exp $
-# $Author: yury $
-# $Date: 2010/04/17 23:58:31 $
+# $Id: runCosmic.py,v 1.2 2010/08/04 09:49:09 timothym Exp $
+# $Author: timothym $
+# $Date: 2010/08/04 09:49:09 $
 #
 # Original author Rob Kutschke
 #
@@ -21,7 +21,7 @@ process = mu2e.Process("runCosmic")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(1000000)
+    input = mu2e.untracked.int32(1000)
 )
 
 # Load the standard message logger configuration.
@@ -83,10 +83,14 @@ process.outfile = mu2e.OutputModule(
 )
 
 # Look at the hits from G4.
-process.checkhits = mu2e.EDAnalyzer(
+process.checkhits = mu2e.EDFilter(
     "CosmicTuple",
     g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
+    traverseZ     = mu2e.double(1500.),
+    minimump      = mu2e.double(103.),
+    maximump      = mu2e.double(107.),
+    pdgidnumber   = mu2e.double(11),
 )
 
 # End of the section that defines and configures modules.
