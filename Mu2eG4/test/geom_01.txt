@@ -1,9 +1,9 @@
 //
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_01.txt,v 1.36 2010/07/07 16:44:41 genser Exp $
-// $Author: genser $
-// $Date: 2010/07/07 16:44:41 $
+// $Id: geom_01.txt,v 1.37 2010/08/09 16:57:03 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2010/08/09 16:57:03 $
 //
 // Original author Rob Kutschke
 //
@@ -13,9 +13,7 @@ string detector.name  = "g4geom_v00";
 
 bool hasHall          = true;
 bool hasTarget        = true;
-//bool hasLTracker      = false;
 bool hasLTracker      = true;
-//bool hasTTracker      = true;
 bool hasTTracker      = false;
 bool hasITracker      = false;
 bool hasCalorimeter   = true;
@@ -66,7 +64,6 @@ bool g4.printMaterials = false;
 vector<double> world.halfLengths  = { 20000., 10000., 20000.};
 string         world.materialName = "G4_AIR";
 bool           world.boxVisible   = true;
-bool           world.boxSolid     = false;
 
 
 // Position of the origin of the Mu2e origin system at the 
@@ -80,14 +77,11 @@ double world.mu2eOrigin.zoffset = -4000.;
 // Overburden above the detector: 20 ft in proposal.
 // I have arbitrarily split it into a flat part and a dome.
 double dirt.overburdenDepth = 6000.;  
-double dirt.capHalfHeight   = 1.; // small numbers make it "almost" invisible (mm)
+double dirt.capHalfHeight   = 1.;
 double dirt.capBottomRadius = 2.;
 double dirt.capTopRadius    = 1.;
 string dirt.overburdenMaterialName = "MBOverburden";
 bool   dirt.visible         = true;
-bool   dirt.solid           = false;
-bool   dirt.capVisible      = true;
-bool   dirt.capSolid        = false;
 
 // Inside dimensions of the hall.  Order is: (x,y,z) = width, height, length.
 // Thicknesses of the hall walls.
@@ -98,7 +92,15 @@ double hall.wallThick    = 300.;
 string hall.wallMaterialName = "G4_CONCRETE";
 string hall.insideMaterialName = "G4_AIR";
 bool   hall.visible            = true;
-bool   hall.solid              = false;
+
+// Dimensions of CRV steel, assuming constant thickness all around, and square
+// shape
+
+double hall.HallSteelHalfThick	 = 250.;
+double hall.HallSteelHalfLengthXY = 2048.;
+double hall.HallSteelHalfLengthZ = 7250;
+string hall.HallSteelMaterialName = "G4_Fe";
+	
 
 // Offset of the hall from its base position within the world:
 //   - Centered in x and z.
@@ -119,8 +121,6 @@ double toyDS3.halfLength        = 3650.;
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
-bool   toyDS.visible            = true;
-bool   toyDS.solid              = true;
 
 // Use a uniform magnetic field with the DS volume.
 double toyDS.bz            = -1.0;
@@ -131,8 +131,6 @@ double toyPS.rOut           =  1300.;
 double toyPS1.vacHalfLength =  2700.;
 double toyPS.CryoHalfLength =  2580.;
 string toyPS.materialName   = "G4_Al";
-bool   toyPS.visible        = true;
-bool   toyPS.solid          = true;
 
 // Parameters for TS volumes.
 double toyTS.rVac        =  600.;          // Outer radius of vacuum volume
@@ -140,8 +138,6 @@ double toyTS.rCryo       =  700.;          // Outer radius of cryostat
 double toyTS.rTorus      = 2926.;          // Bend radius of the torus
 double toyTS1.halfLength =  500.;
 double toyTS5.halfLength =  500.;
-bool   toyTS.visible        = true;
-bool   toyTS.solid          = true;
 
 // Production Target in PS:
 
@@ -156,8 +152,7 @@ double targetPS_positionZ         =   -35.5;  // mm
 double targetPS_rotX              =    -1.8;  // degree. Active rotation. See Mu2e-doc-938.
 double targetPS_rotY              =   12.22;  // degree.
 string targetPS_materialName      = "G4_Au";
-bool   targetPS.visible           = true;
-bool   targetPS.solid             = true;
+
 
 // LTracker: Positioning infor is relative to DS.
 int    ltracker.nSides           =     8;
@@ -272,33 +267,22 @@ string dummyStoppingTarget.material   = "WAGVacuum";
 // TTracker
 int    ttracker.numDevices         =   54;
 int    ttracker.sectorsPerDevice   =    4;
-//int    ttracker.sectorsPerDevice   =    6;
 int    ttracker.layersPerSector    =    1;
 int    ttracker.manifoldsPerEnd    =    4;
 int    ttracker.strawsPerManifold  =   16;
 int    ttracker.rotationPattern    =    0;
-//int    ttracker.rotationPattern    =    1;
-int    ttracker.spacingPattern     =    0;
-//int    ttracker.spacingPattern     =    1;
 
 double ttracker.z0                   = 10200.0;
 double ttracker.envelopeInnerRadius  =   380.0;
 double ttracker.strawOuterRadius     =     2.5;
 double ttracker.strawWallThickness   =     0.015;
 double ttracker.deviceSeparation     =    57.;
-double ttracker.deviceSpacing        =    49.;
 double ttracker.deviceRotation       =    60.;
 double ttracker.outerSupportRadius   =   830.0;
 double ttracker.innerSupportRadius   =   700.0;
 double ttracker.supportHalfThickness =    10.0;
 double ttracker.wireRadius           =     0.0125;
 double ttracker.manifoldYOffset      =    10.;
-bool   ttracker.envelopeVisible      =  true;
-//bool   ttracker.envelopeSolid      =  true;
-bool   ttracker.deviceEnvelopeVisible = true;
-//bool   ttracker.deviceEnvelopeSolid = true;
-bool   ttracker.strawVisible         =  false;
-//bool   ttracker.strawSolid         =  true;
 
 vector<double> ttracker.manifoldHalfLengths  = { 40.0, 35.0, 5.25};
 vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGas", "G4_W" };
@@ -311,9 +295,8 @@ string ttracker.mat.manifold  = "G4_Al";
 string ttracker.mat.support   = "CarbonFiber";
 
 // Debug control for TTracker; uncomment to make only a selected sector.
-// it is not about drawing, but about the construction itself
-int    ttracker.devDraw  =   -1;
-int    ttracker.secDraw  =   -1;
+//int    ttracker.devDraw  =  -1;
+//int    ttracker.secDraw  =  -1;
 
 //
 double tracker.rMagnet       = 850.; 
@@ -329,7 +312,6 @@ string         target.fillMaterial    = "WAGVacuum";
 // (0,0,0) = on axis in the DS at z=12000. mm
 double target.z0             = -6100.0;
 double target.deltaZ         =    50.0;
-bool   target.visible        = true;
 
 // all radii must be specified, i.e., nFoils is determined from the size 
 // of the radii vector.
@@ -400,17 +382,8 @@ vector<double> calorimeter.calorimeterVaneOffsetsX         = {0.,0.,0.,0.};
 vector<double> calorimeter.calorimeterVaneOffsetsY         = {0.,0.,0.,0.};
 vector<double> calorimeter.calorimeterVaneOffsetsZ         = {0.,0.,0.,0.};
 string calorimeter.crystalMaterial                         = "G4_PbWO4";
-string calorimeter.crystalWrapper                  = "G4_POLYETHYLENE"; // until I get around to defining Tyvek with Ti02.
-string calorimeter.calorimeterFillMaterial                 = "WAGVacuum";
-
+string calorimeter.crystalWrapper                          = "G4_POLYETHYLENE"; // until I get around to defining Tyvek with Ti02.
 double calorimeter.crystalWrapperHalfThickness             = 0.01 ;             // totally made up
-
-string calorimeter.crystalReadoutMaterial                  = "G4_Si";
-double calorimeter.crystalReadoutHalfTrans                 = 15.;
-double calorimeter.crystalReadoutHalfThickness             = 10.; 
-int    calorimeter.crystalReadoutChannelCount              = 1;                 // number of APD's for example per crystal
-bool   calorimeter.visible        = true;
-bool   calorimeter.solid          = true;
 
 // Magnetic field
 
