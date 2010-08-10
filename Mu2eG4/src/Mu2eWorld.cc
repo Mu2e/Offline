@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.39 2010/08/09 16:56:44 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/08/09 16:56:44 $
+// $Id: Mu2eWorld.cc,v 1.40 2010/08/10 18:10:06 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/10 18:10:06 $
 //
 // Original author Rob Kutschke
 //
@@ -151,9 +151,9 @@ namespace mu2e {
     // These are just placeholders for now:
     constructCal();
     constructMagnetYoke();
-    // constructCRV(hallInfo);
-	constructSteel(hallInfo);
-	
+    //constructCRV(hallInfo);
+    constructSteel(hallInfo);
+
     // Hack alert: These belong in constructTracker and constructTarget.
     trackerInfo.name = "TrackerMother";
     targetInfo.name  = "StoppingTargetMother";
@@ -965,15 +965,15 @@ namespace mu2e {
 
     // Comment out until I have verified that these work correctly.
     /*
-    for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
-          i!=psVacua.end(); ++i ){
+      for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
+      i!=psVacua.end(); ++i ){
       (**i).SetFieldManager( _psFull->manager(), true);
-    }
+      }
 
-    for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
-          i!=tsVacua.end(); ++i ){
+      for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
+      i!=tsVacua.end(); ++i ){
       (**i).SetFieldManager( _tsFull->manager(), true);
-    }
+      }
     */
 
     // Adjust properties of the integrators to control accuracy vs time.
@@ -1086,120 +1086,120 @@ namespace mu2e {
   void Mu2eWorld::constructSteel( const VolumeInfo& parent ){
 
 
-	  MaterialFinder materialFinder(*_config);
+    MaterialFinder materialFinder(*_config);
 
 
 
-	  // Extract information from the config file
-	  double HallSteelHalfThick   = _config->getDouble("hall.HallSteelHalfThick");
-	  double HallSteelHalfLenXY = _config->getDouble("hall.HallSteelHalfLengthXY");
-	  double HallSteelHalfLenZ = _config->getDouble("hall.HallSteelHalfLengthZ");
-	  G4Material* HallSteelShieldMaterial = materialFinder.get("hall.HallSteelMaterialName");
+    // Extract information from the config file
+    double HallSteelHalfThick   = _config->getDouble("hall.HallSteelHalfThick");
+    double HallSteelHalfLenXY = _config->getDouble("hall.HallSteelHalfLengthXY");
+    double HallSteelHalfLenZ = _config->getDouble("hall.HallSteelHalfLengthZ");
+    G4Material* HallSteelShieldMaterial = materialFinder.get("hall.HallSteelMaterialName");
 
-	  // Compute dimensions of 5 sides in Mu2e coordinates
-	  double HallSteelTopHalfX = HallSteelHalfLenXY;
-	  double HallSteelTopHalfY = HallSteelHalfThick;
-	  double HallSteelTopHalfZ = HallSteelHalfLenZ;
-	  double HallSteelSideHalfX = HallSteelHalfThick;
-	  double HallSteelSideHalfY = HallSteelHalfLenXY - HallSteelHalfThick;
-	  double HallSteelSideHalfZ = HallSteelHalfLenZ; 
-	  double HallSteelFrontHalfX = HallSteelHalfLenXY - HallSteelHalfThick;
-	  double HallSteelFrontHalfY = HallSteelHalfLenXY - HallSteelHalfThick;
-	  double HallSteelFrontHalfZ = HallSteelHalfThick;
+    // Compute dimensions of 5 sides in Mu2e coordinates
+    double HallSteelTopHalfX = HallSteelHalfLenXY;
+    double HallSteelTopHalfY = HallSteelHalfThick;
+    double HallSteelTopHalfZ = HallSteelHalfLenZ;
+    double HallSteelSideHalfX = HallSteelHalfThick;
+    double HallSteelSideHalfY = HallSteelHalfLenXY - HallSteelHalfThick;
+    double HallSteelSideHalfZ = HallSteelHalfLenZ; 
+    double HallSteelFrontHalfX = HallSteelHalfLenXY - HallSteelHalfThick;
+    double HallSteelFrontHalfY = HallSteelHalfLenXY - HallSteelHalfThick;
+    double HallSteelFrontHalfZ = HallSteelHalfThick;
 
-	  // Store each in a std vector
+    // Store each in a std vector
 
-	  double HallSteelTopDims[3] ={
-		  HallSteelTopHalfX,
-		  HallSteelTopHalfY,
-		  HallSteelTopHalfZ
-	  };
+    double HallSteelTopDims[3] ={
+      HallSteelTopHalfX,
+      HallSteelTopHalfY,
+      HallSteelTopHalfZ
+    };
 
-	  double HallSteelSideDims[3] ={
-		  HallSteelSideHalfX,
-		  HallSteelSideHalfY,
-		  HallSteelSideHalfZ
-	  };
+    double HallSteelSideDims[3] ={
+      HallSteelSideHalfX,
+      HallSteelSideHalfY,
+      HallSteelSideHalfZ
+    };
 
-	  double HallSteelFrontDims[3] ={
-		  HallSteelFrontHalfX,
-		  HallSteelFrontHalfY,           
-		  HallSteelFrontHalfZ                        
-	  };
+    double HallSteelFrontDims[3] ={
+      HallSteelFrontHalfX,
+      HallSteelFrontHalfY,           
+      HallSteelFrontHalfZ                        
+    };
 
-	  // Get positions of each side. Assuming view from target foils 
-		double dsCoilZ0          = _config->getDouble("toyDS.z0");
-		double solenoidOffset    = _config->getDouble("mu2e.solenoidOffset");
+    // Get positions of each side. Assuming view from target foils 
+    double dsCoilZ0          = _config->getDouble("toyDS.z0");
+    double solenoidOffset    = _config->getDouble("mu2e.solenoidOffset");
 
-		//		G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., -dsCoilZ0);
-		G4ThreeVector detSolCoilPosition(+solenoidOffset, 0., -dsCoilZ0);
+    //		G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., -dsCoilZ0);
+    G4ThreeVector detSolCoilPosition(+solenoidOffset, 0., -dsCoilZ0);
 
-	  _hallOriginInMu2e = parent.centerInWorld - _mu2eOrigin + detSolCoilPosition;
+    _hallOriginInMu2e = parent.centerInWorld - _mu2eOrigin + detSolCoilPosition;
 
-	  G4ThreeVector TopShield(0., HallSteelSideHalfY + HallSteelHalfThick, 0.);
-	  G4ThreeVector BottomShield(0., -(HallSteelSideHalfY + HallSteelHalfThick), 0.);
-	  G4ThreeVector LeftShield(HallSteelSideHalfY + HallSteelHalfThick,0., 0.);
-	  G4ThreeVector RightShield(-(HallSteelSideHalfY + HallSteelHalfThick),0., 0.);
-	  G4ThreeVector BackShield(0., 0., HallSteelSideHalfZ - HallSteelHalfThick);
+    G4ThreeVector TopShield(0., HallSteelSideHalfY + HallSteelHalfThick, 0.);
+    G4ThreeVector BottomShield(0., -(HallSteelSideHalfY + HallSteelHalfThick), 0.);
+    G4ThreeVector LeftShield(HallSteelSideHalfY + HallSteelHalfThick,0., 0.);
+    G4ThreeVector RightShield(-(HallSteelSideHalfY + HallSteelHalfThick),0., 0.);
+    G4ThreeVector BackShield(0., 0., HallSteelSideHalfZ - HallSteelHalfThick);
 
-	  bool hallVisible = _config->getBool("hall.visible",true);
+    bool hallVisible = _config->getBool("hall.visible",true);
 
-	  // Place Boxes
+    // Place Boxes
 
-	  VolumeInfo TopInfo = nestBox ("HallSteelTopShield",
-			  HallSteelTopDims,
-			  HallSteelShieldMaterial,
-			  0,
-			  TopShield -_hallOriginInMu2e,
-			  parent,
-			  0,
-			  hallVisible,
-			  G4Colour::Yellow()
-			  );
+    VolumeInfo TopInfo = nestBox ("HallSteelTopShield",
+                                  HallSteelTopDims,
+                                  HallSteelShieldMaterial,
+                                  0,
+                                  TopShield -_hallOriginInMu2e,
+                                  parent,
+                                  0,
+                                  hallVisible,
+                                  G4Colour::Yellow()
+                                  );
 
-	  VolumeInfo BottomInfo = nestBox ("HallSteelBottomShield",
-			  HallSteelTopDims, 
-			  HallSteelShieldMaterial,
-			  0,
-			  BottomShield -_hallOriginInMu2e,
-			  parent,
-			  0, 
-			  hallVisible, 
-			  G4Colour::Yellow() 
-			  );
+    VolumeInfo BottomInfo = nestBox ("HallSteelBottomShield",
+                                     HallSteelTopDims, 
+                                     HallSteelShieldMaterial,
+                                     0,
+                                     BottomShield -_hallOriginInMu2e,
+                                     parent,
+                                     0, 
+                                     hallVisible, 
+                                     G4Colour::Yellow() 
+                                     );
 
-	  VolumeInfo LeftInfo = nestBox ("HallSteelLeftShield",
-			  HallSteelSideDims,
-			  HallSteelShieldMaterial,
-			  0, 
-			  LeftShield -_hallOriginInMu2e,
-			  parent,
-			  0, 
-			  hallVisible,
-			  G4Colour::Yellow()
-			  ); 
+    VolumeInfo LeftInfo = nestBox ("HallSteelLeftShield",
+                                   HallSteelSideDims,
+                                   HallSteelShieldMaterial,
+                                   0, 
+                                   LeftShield -_hallOriginInMu2e,
+                                   parent,
+                                   0, 
+                                   hallVisible,
+                                   G4Colour::Yellow()
+                                   ); 
 
-	  VolumeInfo RightInfo = nestBox ("HallSteelRightShield",
-			  HallSteelSideDims,
-			  HallSteelShieldMaterial,
-			  0, 
-			  RightShield -_hallOriginInMu2e,
-			  parent,
-			  0, 
-			  hallVisible,
-			  G4Colour::Yellow()
-			  ); 
+    VolumeInfo RightInfo = nestBox ("HallSteelRightShield",
+                                    HallSteelSideDims,
+                                    HallSteelShieldMaterial,
+                                    0, 
+                                    RightShield -_hallOriginInMu2e,
+                                    parent,
+                                    0, 
+                                    hallVisible,
+                                    G4Colour::Yellow()
+                                    ); 
 
-	  VolumeInfo BackInfo = nestBox ("HallSteelBackShield",
-			  HallSteelFrontDims,
-			  HallSteelShieldMaterial,
-			  0, 
-			  BackShield -_hallOriginInMu2e,
-			  parent,
-			  0, 
-			  hallVisible,
-			  G4Colour::Yellow()
-			  ); 
+    VolumeInfo BackInfo = nestBox ("HallSteelBackShield",
+                                   HallSteelFrontDims,
+                                   HallSteelShieldMaterial,
+                                   0, 
+                                   BackShield -_hallOriginInMu2e,
+                                   parent,
+                                   0, 
+                                   hallVisible,
+                                   G4Colour::Yellow()
+                                   ); 
 
 
 
@@ -1208,91 +1208,91 @@ namespace mu2e {
 
   // Place a G4Box inside a logical volume.
   VolumeInfo Mu2eWorld::nestBox ( string const& name,
-		  double const halfDim[3],
-		  G4Material* material,
-		  G4RotationMatrix* rot,
-		  G4ThreeVector const& offset,
-		  const VolumeInfo& parent,
-		  int copyNo,
-		  bool isVisible,
-		  G4Colour color,
-		  bool forceSolid
-		  ){
+                                  double const halfDim[3],
+                                  G4Material* material,
+                                  G4RotationMatrix* rot,
+                                  G4ThreeVector const& offset,
+                                  const VolumeInfo& parent,
+                                  int copyNo,
+                                  bool isVisible,
+                                  G4Colour color,
+                                  bool forceSolid
+                                  ){
 
-	  VolumeInfo info(name,offset,parent.centerInWorld);
+    VolumeInfo info(name,offset,parent.centerInWorld);
 
-	  info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
+    info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
 
-	  info.logical = new G4LogicalVolume( info.solid, material, name); 
+    info.logical = new G4LogicalVolume( info.solid, material, name); 
 
-	  info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
 
-	  if ( isVisible ){
+    if ( isVisible ){
 
-		  // We need to manage the lifetime of the G4VisAttributes object.
-		  _visAttributes.push_back(G4VisAttributes(true, color));
-		  G4VisAttributes& visAtt = _visAttributes.back();
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, color));
+      G4VisAttributes& visAtt = _visAttributes.back();
 
-		  // Finish the setting of visualization properties.
-		  visAtt.SetForceSolid(forceSolid);
-		  info.logical->SetVisAttributes(&visAtt);
-	  } 
-	  else{
+      // Finish the setting of visualization properties.
+      visAtt.SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
 
-		  info.logical->SetVisAttributes(G4VisAttributes::Invisible);
-	  }
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
 
-	  // Save the volume information in case someone else needs to access it by name.
-	  addVolInfo(info);
+    // Save the volume information in case someone else needs to access it by name.
+    addVolInfo(info);
 
-	  return info;
+    return info;
   }  // end of Mu2eWorld::nestBox
 
   // Create and place a G4Tubs inside a logical volume.
   VolumeInfo Mu2eWorld::nestTubs2 ( string const& name,
-		  double param[5],
-		  G4Material* material,
-		  G4RotationMatrix* rot,
-		  G4ThreeVector const& offset,
-		  const VolumeInfo& parent,
-		  int copyNo,
-		  bool isVisible,
-		  G4Colour color,
-		  bool forceSolid
-		  ){
+                                    double param[5],
+                                    G4Material* material,
+                                    G4RotationMatrix* rot,
+                                    G4ThreeVector const& offset,
+                                    const VolumeInfo& parent,
+                                    int copyNo,
+                                    bool isVisible,
+                                    G4Colour color,
+                                    bool forceSolid
+                                    ){
 
-	  VolumeInfo info(name,offset,parent.centerInWorld);
+    VolumeInfo info(name,offset,parent.centerInWorld);
 
-	  info.solid   = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
+    info.solid   = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
 
-	  info.logical = new G4LogicalVolume( info.solid, material, name); 
+    info.logical = new G4LogicalVolume( info.solid, material, name); 
 
-	  info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
 
-	  if ( isVisible ){
+    if ( isVisible ){
 
-		  // We need to manage the lifetime of the G4VisAttributes object.
-		  _visAttributes.push_back(G4VisAttributes(true, color));
-		  G4VisAttributes& visAtt = _visAttributes.back();
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, color));
+      G4VisAttributes& visAtt = _visAttributes.back();
 
-		  // If I do not do this, then the rendering depends on what happens in
-		  // other parts of the code;  is there a G4 bug that causes something to be
-		  // unitialized?
-		  visAtt.SetForceAuxEdgeVisible (false);
+      // If I do not do this, then the rendering depends on what happens in
+      // other parts of the code;  is there a G4 bug that causes something to be
+      // unitialized?
+      visAtt.SetForceAuxEdgeVisible (false);
 
-		  // Finish the setting of visualization properties.
-		  visAtt.SetForceSolid(forceSolid);
-		  info.logical->SetVisAttributes(&visAtt);
-	  } 
-	  else{
+      // Finish the setting of visualization properties.
+      visAtt.SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
 
-		  info.logical->SetVisAttributes(G4VisAttributes::Invisible);
-	  }
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
 
-	  // Save the volume information in case someone else needs to access it by name.
-	  addVolInfo(info);
+    // Save the volume information in case someone else needs to access it by name.
+    addVolInfo(info);
 
-	  return info;
+    return info;
   }  // end of Mu2eWorld::nestTubs
 
 
@@ -1300,49 +1300,49 @@ namespace mu2e {
   // Create and place a G4Torus inside a logical volume.
   // 
   VolumeInfo Mu2eWorld::nestTorus2 ( string const& name,
-		  double param[5],
-		  G4Material* material,
-		  G4RotationMatrix* rot,
-		  G4ThreeVector const& offset,
-		  const VolumeInfo& parent,
-		  int copyNo,
-		  bool isVisible,
-		  G4Colour color,
-		  bool forceSolid
-		  ){
+                                     double param[5],
+                                     G4Material* material,
+                                     G4RotationMatrix* rot,
+                                     G4ThreeVector const& offset,
+                                     const VolumeInfo& parent,
+                                     int copyNo,
+                                     bool isVisible,
+                                     G4Colour color,
+                                     bool forceSolid
+                                     ){
 
-	  VolumeInfo info(name,offset,parent.centerInWorld);
+    VolumeInfo info(name,offset,parent.centerInWorld);
 
-	  info.solid   = new G4Torus( name, param[0], param[1], param[2], param[3], param[4]  );
+    info.solid   = new G4Torus( name, param[0], param[1], param[2], param[3], param[4]  );
 
-	  info.logical = new G4LogicalVolume( info.solid, material, name); 
+    info.logical = new G4LogicalVolume( info.solid, material, name); 
 
-	  info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
 
-	  if ( isVisible ){
+    if ( isVisible ){
 
-		  // We need to manage the lifetime of the G4VisAttributes object.
-		  _visAttributes.push_back(G4VisAttributes(true, color));
-		  G4VisAttributes& visAtt = _visAttributes.back();
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, color));
+      G4VisAttributes& visAtt = _visAttributes.back();
 
-		  // If I do not do this, then the rendering depends on what happens in
-		  // other parts of the code;  is there a G4 bug that causes something to be
-		  // unitialized?
-		  visAtt.SetForceAuxEdgeVisible (false);
+      // If I do not do this, then the rendering depends on what happens in
+      // other parts of the code;  is there a G4 bug that causes something to be
+      // unitialized?
+      visAtt.SetForceAuxEdgeVisible (false);
 
-		  // Finish the setting of visualization properties.
-		  visAtt.SetForceSolid(forceSolid);
-		  info.logical->SetVisAttributes(&visAtt);
-	  } 
-	  else{
+      // Finish the setting of visualization properties.
+      visAtt.SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
 
-		  info.logical->SetVisAttributes(G4VisAttributes::Invisible);
-	  }
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
 
-	  // Save the volume information in case someone else needs to access it by name.
-	  addVolInfo(info);
+    // Save the volume information in case someone else needs to access it by name.
+    addVolInfo(info);
 
-	  return info;
+    return info;
   } // end of Mu2eWorld::nestTorus
 
   // Return the volume info mapped to the given key, throw if the key does not exist.
@@ -1350,14 +1350,14 @@ namespace mu2e {
   //    VolumeInfo& xx =_volumeInfoList[key];
   // does not throw if the key does not exist.
   VolumeInfo& Mu2eWorld::locateVolInfo( const std::string key){
-	  std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(key);
-	  if ( i == _volumeInfoList.end() ){
-		  throw cms::Exception("GEOM")
-			  << "locateVolInfo cannot find the volume named: "
-			  << key 
-			  << "\n";
-	  }
-	  return i->second;
+    std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(key);
+    if ( i == _volumeInfoList.end() ){
+      throw cms::Exception("GEOM")
+        << "locateVolInfo cannot find the volume named: "
+        << key 
+        << "\n";
+    }
+    return i->second;
   } // end of Mu2eWorld::locateVolInfo
 
   // If the key already exists, throw. Otherwise add the (key, value) pair
@@ -1367,15 +1367,14 @@ namespace mu2e {
   //   _volumeInfoList[key] = xx;
   // does not throw if the key already exists.
   void Mu2eWorld::addVolInfo( const VolumeInfo& info ){
-	  std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(info.name);
-	  if ( i != _volumeInfoList.end() ){
-		  throw cms::Exception("GEOM")
-			  << "locateVolInfo already has the key: "
-			  << info.name
-			  << "\n";
-	  }
-	  _volumeInfoList[info.name] = info;
+    std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(info.name);
+    if ( i != _volumeInfoList.end() ){
+      throw cms::Exception("GEOM")
+        << "locateVolInfo already has the key: "
+        << info.name
+        << "\n";
+    }
+    _volumeInfoList[info.name] = info;
   } // end of Mu2eWorld::addVolInfo
-
 
 } // end namespace mu2e
