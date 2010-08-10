@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.2 2010/05/18 21:53:18 kutschke Exp $
+# $Id: SConscript,v 1.3 2010/08/10 19:06:58 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/05/18 21:53:18 $
+# $Date: 2010/08/10 19:06:58 $
 #
 # Original author Rob Kutschke.
 #
@@ -12,7 +12,7 @@ Import('env')
 cLIBS=[ 'DataFormatsProvenance'
              , 'DataFormatsCommon'
              , 'FWCoreMessageLogger'
-	     , 'FWCoreServices'      # temp for temp RootHandlers.cc
+             , 'FWCoreServices'      # temp for temp RootHandlers.cc
              , 'FWCoreFramework'
              , 'FWCoreParameterSet'
              , 'FWCorePluginManager'

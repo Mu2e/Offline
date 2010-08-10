@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.hh,v 1.3 2010/07/13 01:36:35 timothym Exp $
-// $Author: timothym $
-// $Date: 2010/07/13 01:36:35 $
+// $Id: CosmicTuple.hh,v 1.4 2010/08/10 19:06:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/10 19:06:58 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -44,10 +44,10 @@ namespace mu2e {
     std::string _g4ModuleLabel;
 
     // Cut on the minimum energy.
-	double _minimumEnergy;
-	double _minimump;
-	double _maximump;
-	double _traverseZ;
+    double _minimumEnergy;
+    double _minimump;
+    double _maximump;
+    double _traverseZ;
 
     // Number of events analyzed.
     int _nAnalyzed;

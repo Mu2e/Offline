@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.4 2010/07/13 01:36:35 timothym Exp $
-// $Author: timothym $
-// $Date: 2010/07/13 01:36:35 $
+// $Id: CosmicTuple.cc,v 1.5 2010/08/10 19:06:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/10 19:06:58 $
 //
 // Original author Rob Kutschke
 //
@@ -48,7 +48,7 @@ namespace mu2e {
 
   CosmicTuple::CosmicTuple(edm::ParameterSet const& pset) : 
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-  //  _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
+    //  _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
     _minimump(pset.getParameter<double>("minimump")),
     _maximump(pset.getParameter<double>("maximump")),
     _traverseZ(pset.getParameter<double>("traverseZ")),
@@ -69,7 +69,7 @@ namespace mu2e {
 
   }
 
-   bool CosmicTuple::filter(edm::Event& event, edm::EventSetup const&) {
+  bool CosmicTuple::filter(edm::Event& event, edm::EventSetup const&) {
     
 
     // Maintain a counter for number of events seen.
@@ -101,19 +101,19 @@ namespace mu2e {
 
     //tim edit filter
 
-      // Get the hit information.
-//      const CLHEP::Hep3Vector& pos = hit.position();
-//      const CLHEP::Hep3Vector& mom = hit.momentum();
+    // Get the hit information.
+    //      const CLHEP::Hep3Vector& pos = hit.position();
+    //      const CLHEP::Hep3Vector& mom = hit.momentum();
 
 
-//    if ( ptrk.mag() > _minimump ) return true;
-//    if ( ptrk.mag() < _minimump ) return false;
-//    if ( ptrk.mag() < _maximump ) return true;
-//    if ( ptrk.mag() > _maximump ) return false;
-//    if ( hzMax-hzMin > _traverseZ ) return true;
-//    if ( hzMax-hzMin < _traverseZ ) return false;
-//
-//end tim edit
+    //    if ( ptrk.mag() > _minimump ) return true;
+    //    if ( ptrk.mag() < _minimump ) return false;
+    //    if ( ptrk.mag() < _maximump ) return true;
+    //    if ( ptrk.mag() > _maximump ) return false;
+    //    if ( hzMax-hzMin > _traverseZ ) return true;
+    //    if ( hzMax-hzMin < _traverseZ ) return false;
+    //
+    //end tim edit
 
 
 
@@ -144,10 +144,10 @@ namespace mu2e {
     float tMax = -1e6;
  
 
-bool pass= false;
-bool pass1= false;
-bool pass2= false;
-bool pass3= false;
+    bool pass= false;
+    bool pass1= false;
+    bool pass2= false;
+    bool pass3= false;
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
@@ -158,19 +158,19 @@ bool pass3= false;
 
       // Skip hits with low pulse height.
       if ( hit.eDep() < _minimumEnergy ) continue;
-//      if ( hit.momentum() > _minimump ) continue;
-//      if ( hit.momentum() < _maximump ) continue;
-//      if ( hzMax-hzMin  > _traverseZ ) continue;
+      //      if ( hit.momentum() > _minimump ) continue;
+      //      if ( hit.momentum() < _maximump ) continue;
+      //      if ( hzMax-hzMin  > _traverseZ ) continue;
     
       // Get the hit information.
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
      
 
-  //          if ( ptrk.mag() > _minimump ){ pass1 = true;}
-  //          if ( ptrk.mag() < _maximump ){ pass2 = true;}
-  //          if ( hzMax-hzMin > _traverseZ ) {pass3 = true;}
-  //      pass = pass1 && pass2 && pass3;
+      //          if ( ptrk.mag() > _minimump ){ pass1 = true;}
+      //          if ( ptrk.mag() < _maximump ){ pass2 = true;}
+      //          if ( hzMax-hzMin > _traverseZ ) {pass3 = true;}
+      //      pass = pass1 && pass2 && pass3;
 
 
 
@@ -263,10 +263,10 @@ bool pass3= false;
           ntT[20] = hzMax;
           ntT[21] = tMin;
           ntT[22] = tMax;
-            if ( ptrk.mag() > _minimump ){ pass1 = true;}
-            if ( ptrk.mag() < _maximump ){ pass2 = true;}
-            if ( hzMax-hzMin > _traverseZ ) {pass3 = true;}
-        pass = pass1 && pass2 && pass3;
+          if ( ptrk.mag() > _minimump ){ pass1 = true;}
+          if ( ptrk.mag() < _maximump ){ pass2 = true;}
+          if ( hzMax-hzMin > _traverseZ ) {pass3 = true;}
+          pass = pass1 && pass2 && pass3;
 
           _ntupTrk->Fill(ntT);
         }
@@ -296,9 +296,8 @@ bool pass3= false;
       first=false;
 
     } // end loop over hits.
-	return pass;
+    return pass;
 
   } // end analyze
-
   
 }  // end namespace mu2e

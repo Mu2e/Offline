@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.2 2010/07/30 19:43:25 genser Exp $
-// $Author: genser $
-// $Date: 2010/07/30 19:43:25 $
+// $Id: constructTTrackerv3.cc,v 1.3 2010/08/10 19:06:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/10 19:06:58 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -159,7 +159,7 @@ namespace mu2e{
                                   sector.boxHalfLengths().at(2),
                                   sector.boxHalfLengths().at(2),
                                   sector.boxHalfLengths().at(1)
-			       );
+                                  );
 //     cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
 //       isec << ", " << 
 //       sector.boxHalfLengths().at(4) << ", " <<

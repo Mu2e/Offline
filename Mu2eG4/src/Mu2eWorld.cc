@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.40 2010/08/10 18:10:06 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.41 2010/08/10 19:06:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/10 18:10:06 $
+// $Date: 2010/08/10 19:06:58 $
 //
 // Original author Rob Kutschke
 //
@@ -1131,7 +1131,7 @@ namespace mu2e {
     double dsCoilZ0          = _config->getDouble("toyDS.z0");
     double solenoidOffset    = _config->getDouble("mu2e.solenoidOffset");
 
-    //		G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., -dsCoilZ0);
+    //G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., -dsCoilZ0);
     G4ThreeVector detSolCoilPosition(+solenoidOffset, 0., -dsCoilZ0);
 
     _hallOriginInMu2e = parent.centerInWorld - _mu2eOrigin + detSolCoilPosition;

@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.7 2010/07/30 19:43:25 genser Exp $
-// $Author: genser $
-// $Date: 2010/07/30 19:43:25 $
+// $Id: constructLTrackerv3.cc,v 1.8 2010/08/10 19:06:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/10 19:06:58 $
 //
 // Original author Rob Kutschke
 //
@@ -135,11 +135,11 @@ namespace mu2e{
         // Need to understand if this causes memory leak.
 
         double const trapezoidRxAngle = M_PI_2;
-	CLHEP::HepRotationX RForTrapezoids(trapezoidRxAngle);
+        CLHEP::HepRotationX RForTrapezoids(trapezoidRxAngle);
 
         G4RotationMatrix* rotft = new G4RotationMatrix(RForTrapezoids.inverse());
 
-	G4RotationMatrix* rotfb = 0;
+        G4RotationMatrix* rotfb = 0;
 
         CLHEP::HepRotationX RX(-sector.boxRxAngle());
         CLHEP::HepRotationY RY(-sector.boxRyAngle());
@@ -171,10 +171,10 @@ namespace mu2e{
                    G4Colour::Yellow());
 
 
-//      the code below changes the recorded hits
-// 	if (tmp.physical->CheckOverlaps(1000,0.0,false)){
-// 	  std::cout << "Overlap while placing " << name << std::endl;
-// 	}
+        //      the code below changes the recorded hits
+        // if (tmp.physical->CheckOverlaps(1000,0.0,false)){
+        //     std::cout << "Overlap while placing " << name << std::endl;
+        //  }
 
         G4VisAttributes* visAtt = new G4VisAttributes(*tmp.logical->GetVisAttributes());
         visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
@@ -185,9 +185,9 @@ namespace mu2e{
 
         CLHEP::Hep3Vector const& delta  = sector.getBaseDelta();
 
-	// for trapezoidal wedges the coordinate system is different
-	// due to the Geant4 conventions for Trapezoids
-	CLHEP::Hep3Vector const trapezoiddelta = CLHEP::Hep3Vector(delta.x(),delta.z(),delta.y());
+        // for trapezoidal wedges the coordinate system is different
+        // due to the Geant4 conventions for Trapezoids
+        CLHEP::Hep3Vector const trapezoiddelta = CLHEP::Hep3Vector(delta.x(),delta.z(),delta.y());
 
         for ( std::size_t ilay =0; ilay<sector.getLayers().size(); ++ilay){
           Layer const& layer = sector.getLayer(ilay);

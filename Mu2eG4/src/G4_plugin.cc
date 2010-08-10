@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.21 2010/07/07 17:20:12 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/07/07 17:20:12 $
+// $Id: G4_plugin.cc,v 1.22 2010/08/10 19:06:58 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/10 19:06:58 $
 //
 // Original author Rob Kutschke
 //
@@ -78,13 +78,13 @@
 // Geant4 includes a complier error occurs...
 
 // In file included from ./ToyDP/inc/SimParticle.hh:22,
-//                  from ./ToyDP/inc/SimParticleCollection.hh:16,
-//                  from ./Mu2eG4/inc/TrackingAction.hh:22,
-//                  from Mu2eG4/src/G4_plugin.cc:63:
+//              from ./ToyDP/inc/SimParticleCollection.hh:16,
+//              from ./Mu2eG4/inc/TrackingAction.hh:22,
+//              from Mu2eG4/src/G4_plugin.cc:63:
 //./Mu2eUtilities/inc/PDGCode.hh:222: error: expected identifier before numeric constant
 //./Mu2eUtilities/inc/PDGCode.hh:222: error: expected `}' before numeric constant
 //./Mu2eUtilities/inc/PDGCode.hh:222: error: expected unqualified-id before numeric constant
-//        B0 = 511 ,
+//      B0 = 511 ,
 #include "G4UIExecutive.hh"
 
 
@@ -135,7 +135,7 @@ namespace mu2e {
     auto_ptr<Mu2eG4RunManager> _runManager;
 
     PrimaryGeneratorAction* _genAction;
-    TrackingAction*         _trackingAction;
+    TrackingAction*       _trackingAction;
     
     G4UIsession  *_session;
     G4VisManager *_visManager;
@@ -217,7 +217,7 @@ namespace mu2e {
 
     // Copy some information about the G4 world to people who need it.
     Mu2eWorld const* world = allMu2e->getWorld();
-    _mu2eOrigin            = world->getMu2eOrigin();
+    _mu2eOrigin          = world->getMu2eOrigin();
     _mu2eDetectorOrigin    = world->getMu2eDetectorOrigin();
 
     // Setup the graphics if requested.
@@ -274,27 +274,27 @@ namespace mu2e {
     event.put(outputHits);
     event.put(simParticles);
 
-//     // Pause to see graphics. 
-//     if ( _visMacro.size() > 0 ) {
+    //     // Pause to see graphics. 
+    //     if ( _visMacro.size() > 0 ) {
 
-//       _UI->ApplyCommand( "/vis/scene/endOfEventAction refresh");
+    //       _UI->ApplyCommand( "/vis/scene/endOfEventAction refresh");
 
-//       // Prompt to continue and wait for reply.
-//       cout << "Enter a character to see next event: "; 
-//       string junk;
-//       cin >> junk;
+    //       // Prompt to continue and wait for reply.
+    //       cout << "Enter a character to see next event: "; 
+    //       string junk;
+    //       cin >> junk;
       
-//       // Check if user is requesting an early termination of the event loop.
-//       if ( !junk.empty() ){
+    //       // Check if user is requesting an early termination of the event loop.
+    //       if ( !junk.empty() ){
 
-//         // Checks only the first character; we should check first non-blank.
-//         char c = tolower( junk[0] );
-//         if ( c == 'q' ){
-//           throw cms::Exception("CONTROL")
-//             << "Early end of event loop requested inside G4, \n";
-//         }
-//       }
-//     }
+    //       // Checks only the first character; we should check first non-blank.
+    //       char c = tolower( junk[0] );
+    //       if ( c == 'q' ){
+    //         throw cms::Exception("CONTROL")
+    //           << "Early end of event loop requested inside G4, \n";
+    //       }
+    //       }
+    //     }
 
     // Pause to see graphics. 
     if ( _visMacro.size() > 0 ) {
@@ -310,12 +310,12 @@ namespace mu2e {
       
       // Check if user is requesting an early termination of the event loop.
       if ( !userinput.empty() ){
-	// Checks only the first character; we should check first non-blank.
-	char c = tolower( userinput[0] );
-	if ( c == 'q' ){
-	  throw cms::Exception("CONTROL")
-	    << "Early end of event loop requested inside G4, \n";
-	} else if ( c == 'v' ){
+        // Checks only the first character; we should check first non-blank.
+        char c = tolower( userinput[0] );
+        if ( c == 'q' ){
+          throw cms::Exception("CONTROL")
+            << "Early end of event loop requested inside G4, \n";
+        } else if ( c == 'v' ){
           G4int argc=1;
           char* dummy = "dummy";
           char** argv = &dummy;

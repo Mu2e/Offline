@@ -1,9 +1,9 @@
 # Script to build this release.
 
 #
-# $Id: SConstruct,v 1.5 2010/06/15 16:49:44 kutschke Exp $
+# $Id: SConstruct,v 1.6 2010/08/10 19:06:58 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/06/15 16:49:44 $
+# $Date: 2010/08/10 19:06:58 $
 #
 # Original author Rob Kutschke.
 #
@@ -31,34 +31,34 @@ scons_dir = os.environ['SCONS_DIR']
 # '#' puts the current (top-level) directory into the CPPPATH.
 env = Environment( CPPPATH=[ '#',
                              '#/BaBar/include',
-			     '.',
-			     home,
-			     boost_inc,
+                             '.',
+                             home,
+                             boost_inc,
                              clhep_dir+'/include',
                              cppunit_dir+'/include',
                              heppdt_dir+'/include',
-			     libsigcpp_dir+'/include/sigc++-2.0',
-			     libsigcpp_dir+'/lib/sigc++-2.0/include',
+                             libsigcpp_dir+'/include/sigc++-2.0',
+                             libsigcpp_dir+'/lib/sigc++-2.0/include',
                              python_dir+'/include',
-			     root_dir+'/include',
+                             root_dir+'/include',
                              scons_dir+'/include',
-			   ],
-		   LIBPATH=[ '#/lib',
-			     home+'/tmp/lib' ,
+                           ],
+                   LIBPATH=[ '#/lib',
+                             home+'/tmp/lib' ,
                              boost_dir+'/lib',
- 	                     clhep_dir+'/lib',
+                              clhep_dir+'/lib',
                              cppunit_dir+'/lib',
-		             heppdt_dir+'/lib',
+                             heppdt_dir+'/lib',
                              libsigcpp_dir+'/lib',
                              python_dir+'/lib',
-			     root_dir+'/lib',
-			     scons_dir+'/lib',
+                             root_dir+'/lib',
+                             scons_dir+'/lib',
                              '/lib', '/usr/X11R6/lib',
                            ],
-		   ENV={ 'PATH' : os.environ['PATH'], 
-			 'LD_LIBRARY_PATH': os.environ['LD_LIBRARY_PATH'],
-			 'FRAMEWORK_DIR' : os.environ['FRAMEWORK_DIR'],
-		       },
+                   ENV={ 'PATH' : os.environ['PATH'], 
+                         'LD_LIBRARY_PATH': os.environ['LD_LIBRARY_PATH'],
+                         'FRAMEWORK_DIR' : os.environ['FRAMEWORK_DIR'],
+                       },
                    FORTRAN = 'g77',
                  )
 
@@ -91,8 +91,8 @@ Export('env')
 ss=[]
 for root,dirs,files in os.walk('.'):
     for file in files:
-	if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
-	pass
+        if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
+        pass
     pass
 
 # scons to bulid all of the SConscript files

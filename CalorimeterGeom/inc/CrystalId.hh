@@ -1,4 +1,3 @@
-
 #ifndef CRYSTALID_HH
 #define CRYSTALID_HH
 //
@@ -6,9 +5,9 @@
 //
 
 //
-// $Id: CrystalId.hh,v 1.9 2010/05/25 17:35:18 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/05/25 17:35:18 $
+// $Id: CrystalId.hh,v 1.10 2010/08/10 19:06:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/10 19:06:58 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -23,24 +22,24 @@ namespace mu2e {
 
       
       /*      CrystalId():
-        _rslid(RSliceId()),
-        _n(-1){
-      }
+              _rslid(RSliceId()),
+              _n(-1){
+              }
 
-      CrystalId( RSliceId rslice,
-                 int n
-                 ):
-        _rslid(rslice),
-        _n(n){
-      }
+              CrystalId( RSliceId rslice,
+              int n
+              ):
+              _rslid(rslice),
+              _n(n){
+              }
 
-      CrystalId( ZSliceId zsliceid,
-                 int rslice,
-                 int n
-                 ):
-        _rslid(zsliceid,rslice),
-        _n(n){
-      }
+              CrystalId( ZSliceId zsliceid,
+              int rslice,
+              int n
+              ):
+              _rslid(zsliceid,rslice),
+              _n(n){
+              }
 
 
       */
@@ -57,11 +56,10 @@ namespace mu2e {
         _rslid(zsliceid,rslice){}
 
       CrystalId( VaneId vane,
-		 int zslice,
-		 int rslice
-		 ):
-	_rslid(RSliceId(vane,zslice,rslice)) {}
-
+                 int zslice,
+                 int rslice
+                 ):
+        _rslid(RSliceId(vane,zslice,rslice)) {}
 
       ~CrystalId  (){
       }

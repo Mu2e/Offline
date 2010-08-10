@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.5 2010/07/29 21:02:42 genser Exp $
-// $Author: genser $
-// $Date: 2010/07/29 21:02:42 $
+// $Id: TTrackerMaker.cc,v 1.6 2010/08/10 19:08:31 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/10 19:08:31 $
 //
 // Original author Rob Kutschke
 //
@@ -503,23 +503,23 @@ namespace mu2e {
     if ( _rotationPattern == 0 ){
       int k = idev%3;
       if ( k == 0 ) {
-	return 0.;
+        return 0.;
       } else if ( k == 1 ){
-	return _deviceRotation;
+        return _deviceRotation;
       } else{
-	return -_deviceRotation;
+        return -_deviceRotation;
       }
     }
     else if ( _rotationPattern == 1 ){
       int k = idev%2;
       if ( k == 0 ) {
-	return 0.;
+        return 0.;
       } else 
-	return _deviceRotation;
+        return _deviceRotation;
     }
     else 
       throw cms::Exception("GEOM")
-	<< "Unrecognized rotation pattern in TTrackerMaker. \n";
+        << "Unrecognized rotation pattern in TTrackerMaker. \n";
   
   }
 
@@ -535,14 +535,14 @@ namespace mu2e {
     else if ( _spacingPattern == 1 ) {
       int k = idev%2;
       if (k == 0 ) {
-	return  ( idev/2 )  * ( _deviceSeparation + _deviceSpacing);
+        return  ( idev/2 )  * ( _deviceSeparation + _deviceSpacing);
       } else if (k == 1 ) {
-	return ( (idev-1)/2 ) * ( _deviceSeparation + _deviceSpacing ) + _deviceSpacing;
+        return ( (idev-1)/2 ) * ( _deviceSeparation + _deviceSpacing ) + _deviceSpacing;
       }
     }
     else 
       throw cms::Exception("GEOM")
-	<< "Unrecognized separation pattern in TTrackerMaker. \n";
+        << "Unrecognized separation pattern in TTrackerMaker. \n";
   
   }
 
@@ -557,7 +557,7 @@ namespace mu2e {
     }
     else 
       throw cms::Exception("GEOM")
-	<< "Unrecognized separation pattern in TTrackerMaker. \n";
+        << "Unrecognized separation pattern in TTrackerMaker. \n";
   }
 
 

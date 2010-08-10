@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
 // 
-// $Id: nestTrp.cc,v 1.2 2010/07/30 19:43:25 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/07/30 19:43:25 $
+// $Id: nestTrp.cc,v 1.3 2010/08/10 19:06:58 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/10 19:06:58 $
 //
 // Original author Krzysztof Genser based on Rob Kutschke' nestBox
 //
@@ -43,13 +43,13 @@ namespace mu2e {
 //    info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
 //    z,y,x, smallerx
 
-    info.solid   = new G4Trd ( name,
-			       halfDim[4], 
-			       halfDim[3], 
-			       halfDim[2],		       
-			       halfDim[2],
-			       halfDim[1]
-			       );
+     info.solid   = new G4Trd ( name,
+                                halfDim[4],
+                                halfDim[3],
+                                halfDim[2],
+                                halfDim[2],
+                                halfDim[1]
+                                );
 
     info.logical  = new G4LogicalVolume( info.solid, material, name); 
     
