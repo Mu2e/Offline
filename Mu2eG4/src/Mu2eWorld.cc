@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.41 2010/08/10 19:06:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/10 19:06:58 $
+// $Id: Mu2eWorld.cc,v 1.42 2010/08/10 19:43:32 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/08/10 19:43:32 $
 //
 // Original author Rob Kutschke
 //
@@ -1095,9 +1095,12 @@ namespace mu2e {
     double HallSteelHalfLenXY = _config->getDouble("hall.HallSteelHalfLengthXY");
     double HallSteelHalfLenZ = _config->getDouble("hall.HallSteelHalfLengthZ");
     G4Material* HallSteelShieldMaterial = materialFinder.get("hall.HallSteelMaterialName");
+    double rCryo             = _config->getDouble("toyTS.rCryo");
+    G4Material* FrontHoleMaterial = materialFinder.get("toyDS.insideMaterialName");
+
 
     // Compute dimensions of 5 sides in Mu2e coordinates
-    double HallSteelTopHalfX = HallSteelHalfLenXY;
+    double HallSteelTopHalfX = HallSteelHalfLenXY + HallSteelHalfThick;
     double HallSteelTopHalfY = HallSteelHalfThick;
     double HallSteelTopHalfZ = HallSteelHalfLenZ;
     double HallSteelSideHalfX = HallSteelHalfThick;
@@ -1126,6 +1129,11 @@ namespace mu2e {
       HallSteelFrontHalfY,           
       HallSteelFrontHalfZ                        
     };
+    TubsParams FrontHoleDims(0.,
+			     rCryo,
+			     HallSteelHalfThick
+			     );
+
 
     // Get positions of each side. Assuming view from target foils 
     double dsCoilZ0          = _config->getDouble("toyDS.z0");
@@ -1141,6 +1149,11 @@ namespace mu2e {
     G4ThreeVector LeftShield(HallSteelSideHalfY + HallSteelHalfThick,0., 0.);
     G4ThreeVector RightShield(-(HallSteelSideHalfY + HallSteelHalfThick),0., 0.);
     G4ThreeVector BackShield(0., 0., HallSteelSideHalfZ - HallSteelHalfThick);
+	  G4ThreeVector FrontShield(0., 0., -(HallSteelSideHalfZ-HallSteelHalfThick));
+
+
+    //Hole in front shield for TS is centered in the shield
+    G4ThreeVector FrontHole(0.,0.,0.);
 
     bool hallVisible = _config->getBool("hall.visible",true);
 
@@ -1201,6 +1214,27 @@ namespace mu2e {
                                    G4Colour::Yellow()
                                    ); 
 
+	  VolumeInfo FrontInfo = nestBox ("CRVFrontShield", 
+			  HallSteelFrontDims, 
+			  HallSteelShieldMaterial, 
+			  0,  
+			  FrontShield -_hallOriginInMu2e, 
+			  parent, 
+			  0,  
+			  hallVisible, 
+			  G4Colour::Yellow() 
+			  ); 
+
+	  VolumeInfo FrontHoleInfo = nestTubs2( "HallSteelFrontHole",
+			  FrontHoleDims,
+			  FrontHoleMaterial,
+			  0,
+			  FrontHole,
+			  FrontInfo,
+			  0,
+			  hallVisible,
+			  G4Colour::Red()
+			  );
 
 
 
