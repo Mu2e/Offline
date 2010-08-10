@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.17 2010/08/09 16:56:52 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/08/09 16:56:52 $
+// $Id: Mu2eWorld.hh,v 1.18 2010/08/10 18:10:25 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/10 18:10:25 $
 //
 // Original author Rob Kutschke
 //
@@ -94,12 +94,12 @@ namespace mu2e {
     void constructDS( const VolumeInfo& parent );
     void constructTS( const VolumeInfo& parent );
     void constructPS( const VolumeInfo& parent );
-	void constructSteel( const VolumeInfo& parent );
     VolumeInfo constructTracker();
     VolumeInfo constructTarget();
     void constructCal();
     void constructMagnetYoke();
     void constructCRV();
+    void constructSteel( const VolumeInfo& parent );
     void constructBFieldAndManagers();
     void constructStepLimiters();
 
