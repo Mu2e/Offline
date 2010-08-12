@@ -5,6 +5,10 @@
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
+// $Id: Container3D.hh,v 1.2 2010/08/12 16:29:27 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/12 16:29:27 $
+//
 
 #include <vector>
 #include <stdexcept>
@@ -81,11 +85,11 @@ namespace mu2e {
       return _vec.at(index(ix,iy,iz));
     }
 
-    // Check for a valid index.
-    bool isValid(unsigned int ix, unsigned int iy, unsigned int iz){
+    // Check for a valid index
+    bool isValid(int ix, int iy, int iz){
       if ( ix > -1 && ix < _nx &&
            iy > -1 && iy < _ny &&
-           ix > -1 && iz < _nz ) return true;
+           iz > -1 && iz < _nz ) return true;
       return false;
     }
 
