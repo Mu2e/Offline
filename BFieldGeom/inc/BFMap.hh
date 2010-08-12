@@ -5,11 +5,12 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.2 2010/06/23 23:17:21 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/23 23:17:21 $
+// $Id: BFMap.hh,v 1.3 2010/08/12 16:38:45 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/12 16:38:45 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
+// Rewritten in part by Krzysztof Genser to save execution time
 //
 
 #include <iosfwd>
@@ -117,14 +118,14 @@ namespace mu2e {
     bool isValid(CLHEP::Hep3Vector const& point) const;
 
     // method to store the neighbors
-    void getNeighbors(int ix, int iy, int iz, mu2e::Container3D<CLHEP::Hep3Vector>& neighborsBF) const;
+    void getNeighbors(int ix, int iy, int iz, CLHEP::Hep3Vector neighborsBF[3][3][3]) const;
 
-    // Interpolater
-    CLHEP::Hep3Vector interpolate(mu2e::Container3D<CLHEP::Hep3Vector> const vec,
-                                  CLHEP::Hep3Vector const frac) const;
+    // Interpolator
+    CLHEP::Hep3Vector interpolate(CLHEP::Hep3Vector const vec[3][3][3],
+                                  double const frac[3]) const;
 
-    // Polynomial fit function used by interpolater
-    double gmcpoly2(std::vector<double> const& f1d, double const& x) const;
+    // Polynomial fit function used by interpolator
+    double gmcpoly2(double const f1d[3], double const& x) const;
 
     // Define the limits and step sizes for the maps.
     void setLimits ( double xmin, double xmax, double ymin, double ymax,
