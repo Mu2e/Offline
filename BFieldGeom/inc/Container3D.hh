@@ -5,9 +5,9 @@
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
-// $Id: Container3D.hh,v 1.2 2010/08/12 16:29:27 genser Exp $
+// $Id: Container3D.hh,v 1.3 2010/08/12 19:25:27 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/12 16:29:27 $
+// $Date: 2010/08/12 19:25:27 $
 //
 
 #include <vector>
@@ -86,10 +86,10 @@ namespace mu2e {
     }
 
     // Check for a valid index
-    bool isValid(int ix, int iy, int iz){
-      if ( ix > -1 && ix < _nx &&
-           iy > -1 && iy < _ny &&
-           iz > -1 && iz < _nz ) return true;
+    bool isValid(unsigned int ix, unsigned int iy, unsigned int iz){
+      if ( ix >= 0 && ix < _nx &&
+           iy >= 0 && iy < _ny &&
+           iz >= 0 && iz < _nz ) return true;
       return false;
     }
 
