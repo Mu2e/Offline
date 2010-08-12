@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.43 2010/08/11 15:27:18 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/11 15:27:18 $
+// $Id: Mu2eWorld.cc,v 1.44 2010/08/12 22:12:14 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/08/12 22:12:14 $
 //
 // Original author Rob Kutschke
 //
@@ -79,8 +79,13 @@
 #include "G4ChordFinder.hh"
 #include "G4TransportationManager.hh"
 #include "G4UserLimits.hh"
-#include "G4ClassicalRK4.hh"
-#include "G4ExplicitEuler.hh"
+// #include "G4ClassicalRK4.hh"
+// #include "G4ImplicitEuler.hh"
+// #include "G4ExplicitEuler.hh"
+#include "G4SimpleRunge.hh"
+// #include "G4SimpleHeum.hh"
+// #include "G4HelixImplicitEuler.hh"
+// #include "G4HelixSimpleRunge.hh"
 
 #include "Mu2eG4/inc/DSField.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
@@ -959,7 +964,7 @@ namespace mu2e {
 
     // Create field manager for the full DS field.
     if ( needDSFull ){
-      _dsFull = FieldMgr::forMappedField<G4ExplicitEuler>( "DS", _mu2eOrigin );
+      _dsFull = FieldMgr::forMappedField<G4SimpleRunge>( "DS", _mu2eOrigin );
     }
 
     // Create field manager for the uniform DS field.
@@ -971,8 +976,8 @@ namespace mu2e {
     }
 
     // Create field managers for the PS and TS.
-    _psFull = FieldMgr::forMappedField<G4ExplicitEuler>( "PS", _mu2eOrigin );
-    _tsFull = FieldMgr::forMappedField<G4ExplicitEuler>( "TS", _mu2eOrigin );
+    _psFull = FieldMgr::forMappedField<G4SimpleRunge>( "PS", _mu2eOrigin );
+    _tsFull = FieldMgr::forMappedField<G4SimpleRunge>( "TS", _mu2eOrigin );
 
     // Get pointers to logical volumes.
     G4LogicalVolume* ds2Vacuum = locateVolInfo("ToyDS2Vacuum").logical;
