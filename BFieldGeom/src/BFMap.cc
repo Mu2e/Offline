@@ -2,15 +2,17 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.2 2010/06/23 23:17:21 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/23 23:17:21 $
+// $Id: BFMap.cc,v 1.3 2010/08/12 16:33:56 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/12 16:33:56 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
+// Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
 //
 
 // C++ includes
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 
@@ -25,8 +27,8 @@
 // Other includes
 #include "CLHEP/Vector/ThreeVector.h"
 
-using CLHEP::Hep3Vector;
-using mu2e::Container3D;
+//using CLHEP::Hep3Vector;
+//using mu2e::Container3D;
 using namespace std;
 
 namespace mu2e {
@@ -48,14 +50,14 @@ namespace mu2e {
   // Populate a 3x3x3 array with the field values centered on the grid point
   // that is the closest to the requested point.
   void BFMap::getNeighbors( int ix, int iy, int iz, 
-                            Container3D<CLHEP::Hep3Vector>& neighborsBF) const {
+                            CLHEP::Hep3Vector neighborsBF[3][3][3]) const {
     for (int i = 0; i != 3; ++i){
       unsigned int xindex = ix + i - 1;
       for (int j = 0; j != 3; ++j){
         unsigned int yindex = iy + j - 1;
         for (int k = 0; k != 3; ++k){
           unsigned int zindex = iz + k - 1;
-          neighborsBF.set(i, j, k, _field(xindex, yindex, zindex));
+          neighborsBF[i][j][k] = _field(xindex, yindex, zindex);
           /*        
                     cout << "Neighbor(" << xindex << "," << yindex << "," << zindex 
                     << ") = (" << neighborsBF(i,j,k).x() << ","
@@ -70,15 +72,16 @@ namespace mu2e {
 
   // Function to interpolate the BField value at the point from the values
   // at in the neighbor grid. 
-  Hep3Vector BFMap::interpolate(Container3D<CLHEP::Hep3Vector> const vec,
-                                  CLHEP::Hep3Vector const frac) const {
+  CLHEP::Hep3Vector BFMap::interpolate(CLHEP::Hep3Vector const vec[3][3][3],
+                                       double const frac[3]) const {
+
     // Create vecs and vectors
-    vector<double> x1d, y1d, z1d;
-    vector<CLHEP::Hep3Vector> vecx;
-    vector<CLHEP::Hep3Vector> vecxy;
-    double xin = frac.x();
-    double yin = frac.y();
-    double zin = frac.z();
+    double x1d[3], y1d[3], z1d[3];
+    CLHEP::Hep3Vector vecx[9];
+    CLHEP::Hep3Vector vecxy[3];
+    double xin = frac[0];
+    double yin = frac[1];
+    double zin = frac[2];
 
     /*  cout << "--------Starting interpolation-------- \n" << "Input: (" 
         << xin << "," << yin << "," << zin << ")" << endl;*/
@@ -87,18 +90,15 @@ namespace mu2e {
     for (int j = 0; j != 3; ++j){
       for (int k = 0; k != 3; ++k){
         for (int i = 0; i != 3; ++i){
-          /*        cout << "1st loop access: (" << vec(i,j,k).x() << ","
-                    << vec(i,j,k).y() << "," << vec(i,j,k).z() << ")" << endl;*/
-          x1d.push_back(vec(i,j,k).x());
-          y1d.push_back(vec(i,j,k).y());
-          z1d.push_back(vec(i,j,k).z());
+          /*        cout << "1st loop access: (" << vec[i][j][k].x() << ","
+                    << vec[i][j][k].y() << "," << vec[i][j][k].z() << ")" << endl;*/
+          x1d[i] = (vec[i][j][k]).x();
+          y1d[i] = (vec[i][j][k]).y();
+          z1d[i] = (vec[i][j][k]).z();
         }
-        double xval = gmcpoly2(x1d,xin);
-        double yval = gmcpoly2(y1d,xin);
-        double zval = gmcpoly2(z1d,xin);
-        /*      cout << "Xin pass: (" << xval << "," << yval << "," << zval
-                << ")" << endl;*/
-        vecx.push_back(CLHEP::Hep3Vector(xval,yval,zval));
+        vecx[j*3 + k] = CLHEP::Hep3Vector(gmcpoly2(x1d,xin),
+                                          gmcpoly2(y1d,xin),
+                                          gmcpoly2(z1d,xin));
       }
     }
 
@@ -110,10 +110,9 @@ namespace mu2e {
         y1d[j] = vecx[index].y();
         z1d[j] = vecx[index].z();
       }
-      double xval = gmcpoly2(x1d,yin);
-      double yval = gmcpoly2(y1d,yin);
-      double zval = gmcpoly2(z1d,yin);
-      vecxy.push_back(CLHEP::Hep3Vector(xval,yval,zval));
+      vecxy[k] = CLHEP::Hep3Vector(gmcpoly2(x1d,yin),
+                                   gmcpoly2(y1d,yin),
+                                   gmcpoly2(z1d,yin));
     }
 
     // Third loop - interpolate zin
@@ -122,31 +121,29 @@ namespace mu2e {
       y1d[k] = vecxy[k].y();
       z1d[k] = vecxy[k].z();
     }
-    double xval = gmcpoly2(x1d,zin);
-    double yval = gmcpoly2(y1d,zin);
-    double zval = gmcpoly2(z1d,zin);
 
     // Return BField 3Vector
-    return CLHEP::Hep3Vector(xval,yval,zval);
+    return CLHEP::Hep3Vector(gmcpoly2(x1d,zin),
+                             gmcpoly2(y1d,zin),
+                             gmcpoly2(z1d,zin));
   }
 
   // Standard Lagrange formula for 2nd order polynomial fit of 
   // univariate function
-  double BFMap::gmcpoly2(vector<double> const& f1d, double const& x) const {
+  double BFMap::gmcpoly2(double const f1d[3], double const& x) const {
 
-    double x0(0.),x1(1.),x2(2.);
-    double y0 = f1d[0];
-    double y1 = f1d[1];
-    double y2 = f1d[2];
+    static const double  x0(0.),x1(1.),x2(2.);
 
-    double fout = y0*(x-x1)*(x-x2)/((x0-x1)*(x0-x2)) +
-      y1*(x-x0)*(x-x2)/((x1-x0)*(x1-x2)) +
-      y2*(x-x0)*(x-x1)/((x2-x0)*(x2-x1));
-    return fout;
+    return f1d[0]*(x-x1)*(x-x2)/((x0-x1)*(x0-x2)) +
+      f1d[1]*(x-x0)*(x-x2)/((x1-x0)*(x1-x2)) +
+      f1d[2]*(x-x0)*(x-x1)/((x2-x0)*(x2-x1));
+
   } 
 
   // Function to return the BField for any point
-  Hep3Vector BFMap::getBField(CLHEP::Hep3Vector const& testpoint ) const{
+  CLHEP::Hep3Vector BFMap::getBField(CLHEP::Hep3Vector const& testpoint ) const{
+
+    static const bool dflag = false;
 
     // Allow y-symmetry (grid is only defined for y > 0);
     int sign(1);
@@ -156,9 +153,17 @@ namespace mu2e {
       double y = -(testpoint.y() - _origin.y()) + _origin.y();
       point.setY(y);
     }
-    //    cout << "Point: " << point << endl;
-    //cout << "Point: " << point+CLHEP::Hep3Vector(0.,-7350.,-4000.) << endl;
-    //cout << "Origin: " << _origin << endl;
+    
+    dflag && cout 
+      << "Testpoint:          " << testpoint << endl
+      << "Point:              " << point << " "
+      << "Origin:             " << _origin << endl;
+
+
+//     LogDebug("BFIELD")
+//       << "Testpoint:          " << testpoint << " "
+//       << "Point:              " << point << " "
+//       << "Origin:             " << _origin;
 
     // Check validity.  Return a zero field and optionally print a warning.
     if ( !isValid(point) ){
@@ -171,17 +176,20 @@ namespace mu2e {
     }
 
     // Get the indices of the nearest grid point
-    unsigned int ix = static_cast<int>((point.x() - _xmin)/_dx + 0.5);
-    unsigned int iy = static_cast<int>((point.y() - _ymin)/_dy + 0.5);
-    unsigned int iz = static_cast<int>((point.z() - _zmin)/_dz + 0.5);
-    /*
-    cout << "Initial ix,y,z: " 
-         << ix << " "
-         << iy << " "
-         << iz << " "
+    int ix = static_cast<int>((point.x() - _xmin)/_dx + 0.5);
+    int iy = static_cast<int>((point.y() - _ymin)/_dy + 0.5);
+    int iz = static_cast<int>((point.z() - _zmin)/_dz + 0.5);
+    
+    dflag && cout << "Initial ix,iy,iz " << endl
+         << "& dx, dy, dy:    " 
+         << setw(4) << ix << " "  
+         << setw(4) << iy << " " 
+         << setw(4) << iz << " " << endl
+         << setw(4) << _dx << " "
+         << setw(4) << _dy << " "
+         << setw(4) << _dz << " "
          << endl;
-    */
-
+    
     // Correct for edge points by moving their NGPt just inside the edge
     if (ix ==     0){++ix;}
     if (ix == _nx-1){--ix;}
@@ -189,48 +197,55 @@ namespace mu2e {
     if (iy == _ny-1){--iy;}
     if (iz ==     0){++iz;}
     if (iz == _nz-1){--iz;}
-    /*
-    cout << "Final ix,y,z:  " 
-         << ix << " "
-         << iy << " "
-         << iz << " "
+    
+    dflag && cout << "Final ix,iy,iz:  " 
+         << setw(4) << ix << " "
+         << setw(4) << iy << " "
+         << setw(4) << iz << " "
          << endl;
-    */
+    
   
-    /*  cout << "Nearest Point: (" << _grid(ix,iy,iz).x() << ","
-        << _grid(ix,iy,iz).y() << "," << _grid(ix,iy,iz).z() 
-        << ")\nIndices set to: " << ix << " " << iy << " " << iz 
-        << "\nField: (" << _field(ix,iy,iz).x() << ","
-        << _field(ix,iy,iz).y() << "," << _field(ix,iy,iz).z() << ")"
-        << endl;
-    */ 
+    dflag && cout << "Nearest Point:   " << _grid(ix,iy,iz) << endl
+         << "Indices set to:  " << setw(4) << ix << " " << setw(4) << iy << " " << setw(4) << iz << endl
+         << "Field:              " << _field(ix,iy,iz) << endl;
+
     // Get the BField values of the nearest grid neighbors to the point
-    Container3D<CLHEP::Hep3Vector> neighborsBF(3,3,3);
+    static CLHEP::Hep3Vector neighborsBF[3][3][3];
     getNeighbors(ix, iy, iz, neighborsBF);
 
-    // Set up fractional grid point. The interpolater treats the neighbors array
+    // Set up fractional grid point. The interpolator treats the neighbors array
     // as spanning from (0,0,0) to (2,2,2), so we find the location of the point
     // within this frame.
 
-    unsigned int xindex = ix-1; 
-    unsigned int yindex = iy-1; 
-    unsigned int zindex = iz-1;
-    double xFrac = (point.x() - _grid(xindex,yindex,zindex).x())/_dx;
-    double yFrac = (point.y() - _grid(xindex,yindex,zindex).y())/_dy;
-    double zFrac = (point.z() - _grid(xindex,yindex,zindex).z())/_dz;
+    // klg it is done to be consistent with the getNeighbors point selection 
+    // klg doing it on the unit grid saves passing the _grid neighbor points to the interpolator
 
-    CLHEP::Hep3Vector frac = CLHEP::Hep3Vector(xFrac,yFrac,zFrac);
-    /*  cout << "Frac: (" << frac.x() << "," << frac.y() << ","
-        << frac.z() << ")" << endl;*/
+    int xindex = ix-1;
+    int yindex = iy-1; 
+    int zindex = iz-1;
 
-    // Run the interpolater
+    dflag && cout << "Used   x, y, z:  " 
+         << setw(4) << xindex << " "
+         << setw(4) << yindex << " "
+         << setw(4) << zindex << " "
+         << endl;
+
+    dflag && cout << "Used Point:      " << _grid(xindex,yindex,zindex) << endl;
+
+    double frac[] = {
+      (point.x() - _grid(xindex,yindex,zindex).x())/_dx,
+      (point.y() - _grid(xindex,yindex,zindex).y())/_dy,
+      (point.z() - _grid(xindex,yindex,zindex).z())/_dz 
+    };
+
+    // Run the interpolator
     CLHEP::Hep3Vector testBF = interpolate(neighborsBF,frac);
+    dflag && cout << "Interpolated Field: " << testBF << endl;
 
     // Reassign y sign
     if (sign == -1){
       testBF.setY(-testBF.y());
     }
-
     return testBF;
   }
 
@@ -258,7 +273,18 @@ namespace mu2e {
     cout << "Range X:    " << _xmin << " : " << _xmax << "  Middle: " << (_xmin+_xmax)/2. << endl;
     cout << "Range Y:    " << _ymin << " : " << _ymax << "  Middle: " << (_ymin+_ymax)/2. << endl;
     cout << "Range Z:    " << _zmin << " : " << _zmax << "  Middle: " << (_zmin+_zmax)/2. << endl;
-    cout << "Size:       " << _dx << " " << _dy << " " << _dz << endl;
+    cout << "Distance:       " << _dx << " " << _dy << " " << _dz << endl;
+
+    cout << "Field at the edges: " 
+         << _field(    0,     0,     0) << ", "
+         << _field(_nx-1,     0,     0) << ", "
+         << _field(    0, _ny-1,     0) << ", "
+         << _field(    0,     0, _nz-1) << ", "
+         << _field(_nx-1, _ny-1,     0) << ", "
+         << _field(_nx-1, _ny-1, _nz-1) << endl;
+
+    cout << "Field in the middle: "
+         << _field(_nx/2, _ny/2, _nz/2) << endl;
 
     if ( _warnIfOutside ){
       cout << "Will warn if outside of the valid region." << endl;
