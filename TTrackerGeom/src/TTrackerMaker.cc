@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.6 2010/08/10 19:08:31 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.7 2010/08/12 16:46:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/10 19:08:31 $
+// $Date: 2010/08/12 16:46:59 $
 //
 // Original author Rob Kutschke
 //
@@ -113,13 +113,24 @@ namespace mu2e {
       _sectorZSide.push_back(+1.);
     }
 
-    else
+    else {
       throw cms::Exception("GEOM")
         << "Unrecognized rotation pattern in TTrackerMaker. \n";
+    }
 
+    // Parts of the algorithm require that the Aseet style tracker is built
+    // of stations with 2 devices each.
+    if ( _spacingPattern == 1 ){
+      if ( _numDevices%2 == 1 ){
+        throw cms::Exception("GEOM")
+          << "Aseet style tracker requires 2 devices per station.\n"
+          << "So ttracker.numDevices must be even.  It was: "
+          << _numDevices
+          << "\n";
+      }
+    }
 
-
-  }
+  } // end TTrackerMaker::parseConfig
 
   void lptest( const Layer& lay){
     cout << lay.Id() << " |  " 
@@ -133,6 +144,15 @@ namespace mu2e {
          << dev.Id() << " "
          << dev.origin() << " "
          << dev.rotation()
+         << endl;
+  }
+
+  void positionTest( const Layer& lay){
+    const Straw& straw = lay.getStraw( 0 );
+    cout << "Layer: "
+         << lay.Id() << " "
+         << straw.getMidPoint().z() <<  " " 
+         << straw.getDirection().z() << " "
          << endl;
   }
 
@@ -156,6 +176,7 @@ namespace mu2e {
 
     // Z location of the first device.
     _z0 = -findFirstDevZ0();
+    cout << "First device z0: " << _z0 << endl;
 
     // Reserve space for straws so that pointers are valid.
     _nStrawsToReserve = _numDevices * _sectorsPerDevice * _layersPerSector * 
@@ -174,7 +195,9 @@ namespace mu2e {
     //_tt->forAllLayers( lptest);
     //_tt->forAllDevices( devtest);
 
-  }
+    _tt->forAllLayers( positionTest);
+
+  } //end TTrackerMaker::buildIt.
 
   void TTrackerMaker::makeDevice( DeviceId devId ){
 
@@ -182,6 +205,8 @@ namespace mu2e {
 
     double devDeltaZ = chooseDeviceSpacing(idev);
     CLHEP::Hep3Vector origin( 0., 0., _z0+devDeltaZ);
+    cout << "Device z: " << origin.z() << endl;
+
     //    double phi = chooseDeviceRotation(idev)+_deviceRotation;
     double phi = chooseDeviceRotation(idev);
 
@@ -514,14 +539,16 @@ namespace mu2e {
       int k = idev%2;
       if ( k == 0 ) {
         return 0.;
-      } else 
-        return _deviceRotation;
+      } else {
+        return _deviceRotation/2.;
+      }
     }
-    else 
+    else {
       throw cms::Exception("GEOM")
         << "Unrecognized rotation pattern in TTrackerMaker. \n";
+    }
   
-  }
+  } //end TTrackerMaker::chooseDeviceRotation
 
 
   // Compute the spacing for the given device.
@@ -533,16 +560,18 @@ namespace mu2e {
     }
 
     else if ( _spacingPattern == 1 ) {
+      int station = idev/2;
       int k = idev%2;
       if (k == 0 ) {
-        return  ( idev/2 )  * ( _deviceSeparation + _deviceSpacing);
+        return  station*_deviceSeparation - _deviceSpacing;
       } else if (k == 1 ) {
-        return ( (idev-1)/2 ) * ( _deviceSeparation + _deviceSpacing ) + _deviceSpacing;
+        return  station*_deviceSeparation + _deviceSpacing;
       }
     }
-    else 
+    else {
       throw cms::Exception("GEOM")
         << "Unrecognized separation pattern in TTrackerMaker. \n";
+    }
   
   }
 
@@ -553,11 +582,13 @@ namespace mu2e {
     }
 
     else if ( _spacingPattern == 1 ) {
-      return (_deviceSeparation+_deviceSpacing) *double(_numDevices-1)/4.0;
+      int nStations = _numDevices/2;
+      return double(nStations-1)/2.0 * _deviceSeparation;
     }
-    else 
+    else {
       throw cms::Exception("GEOM")
         << "Unrecognized separation pattern in TTrackerMaker. \n";
+    }
   }
 
 
