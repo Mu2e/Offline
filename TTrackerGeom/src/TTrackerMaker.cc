@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.7 2010/08/12 16:46:59 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.8 2010/08/12 21:10:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/12 16:46:59 $
+// $Date: 2010/08/12 21:10:11 $
 //
 // Original author Rob Kutschke
 //
@@ -176,7 +176,7 @@ namespace mu2e {
 
     // Z location of the first device.
     _z0 = -findFirstDevZ0();
-    cout << "First device z0: " << _z0 << endl;
+    //    cout << "First device z0: " << _z0 << endl;
 
     // Reserve space for straws so that pointers are valid.
     _nStrawsToReserve = _numDevices * _sectorsPerDevice * _layersPerSector * 
@@ -195,7 +195,7 @@ namespace mu2e {
     //_tt->forAllLayers( lptest);
     //_tt->forAllDevices( devtest);
 
-    _tt->forAllLayers( positionTest);
+    //_tt->forAllLayers( positionTest);
 
   } //end TTrackerMaker::buildIt.
 
@@ -205,7 +205,7 @@ namespace mu2e {
 
     double devDeltaZ = chooseDeviceSpacing(idev);
     CLHEP::Hep3Vector origin( 0., 0., _z0+devDeltaZ);
-    cout << "Device z: " << origin.z() << endl;
+    //    cout << "Device z: " << origin.z() << endl;
 
     //    double phi = chooseDeviceRotation(idev)+_deviceRotation;
     double phi = chooseDeviceRotation(idev);
