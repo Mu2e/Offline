@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.3 2010/08/12 16:33:56 genser Exp $
+// $Id: BFMap.cc,v 1.4 2010/08/12 19:39:58 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/12 16:33:56 $
+// $Date: 2010/08/12 19:39:58 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -77,8 +77,8 @@ namespace mu2e {
 
     // Create vecs and vectors
     double x1d[3], y1d[3], z1d[3];
-    CLHEP::Hep3Vector vecx[9];
-    CLHEP::Hep3Vector vecxy[3];
+    static CLHEP::Hep3Vector vecx[9];
+    static CLHEP::Hep3Vector vecxy[3];
     double xin = frac[0];
     double yin = frac[1];
     double zin = frac[2];
