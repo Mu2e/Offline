@@ -1,0 +1,63 @@
+//
+// Geometry description of the MECO version of the TTracker.
+// See:  Mu2e-doc-888
+//
+// $Id: ttracker_v0.txt,v 1.1 2010/08/12 22:49:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/12 22:49:40 $
+//
+// Original author Rob Kutschke
+//
+// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+bool hasTTracker      = true;
+
+int TTrackerVersion   = 3;
+
+int    ttracker.numDevices         =   36;
+int    ttracker.sectorsPerDevice   =    6;
+int    ttracker.layersPerSector    =    1;
+int    ttracker.manifoldsPerEnd    =    4;
+int    ttracker.strawsPerManifold  =   15;
+int    ttracker.rotationPattern    =    1;
+int    ttracker.spacingPattern     =    1;
+
+double ttracker.z0                   = 10200.0;
+double ttracker.envelopeInnerRadius  =   380.0;
+double ttracker.strawOuterRadius     =     2.5;
+double ttracker.strawWallThickness   =     0.015;
+double ttracker.deviceSeparation     =   170.;
+double ttracker.deviceSpacing        =    10.;
+double ttracker.deviceRotation       =    60.;
+double ttracker.outerSupportRadius   =   830.0;
+double ttracker.innerSupportRadius   =   700.0;
+double ttracker.supportHalfThickness =     2.5;
+double ttracker.wireRadius           =     0.0125;
+double ttracker.manifoldYOffset      =    10.;
+bool   ttracker.envelopeVisible      =  true;
+//bool   ttracker.envelopeSolid      =  true;
+bool   ttracker.deviceEnvelopeVisible = true;
+//bool   ttracker.deviceEnvelopeSolid = true;
+bool   ttracker.strawVisible         =  false;
+//bool   ttracker.strawSolid         =  true;
+
+vector<double> ttracker.manifoldHalfLengths  = { 37.5, 5.0, 2.5};  // mm
+vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGas", "G4_W" };
+
+string ttracker.mat.vacuum    = "WAGVacuum";
+string ttracker.mat.strawgas  = "StrawGas";
+string ttracker.mat.strawwall = "Kapton";
+string ttracker.mat.wire      = "G4_W";
+string ttracker.mat.manifold  = "G4_Al";
+string ttracker.mat.support   = "CarbonFiber";
+
+// Debug control for TTracker; uncomment to make only a selected sector.
+// it is not about drawing, but about the construction itself
+int    ttracker.devDraw  =   -1;
+int    ttracker.secDraw  =   -1;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
