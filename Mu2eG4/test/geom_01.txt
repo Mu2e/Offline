@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.38 2010/08/12 23:22:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/12 23:22:17 $
+// $Id: geom_01.txt,v 1.39 2010/08/13 17:02:38 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/13 17:02:38 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,21 @@ bool hasBFieldManager = true;
 
 //form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
 int detSolFieldForm = 2;
+
+
+// current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
+
+// G4ClassicalRK4
+// G4ImplicitEuler
+// G4ExplicitEuler
+// G4SimpleRunge
+// G4SimpleHeum
+// G4HelixImplicitEuler
+// G4HelixSimpleRunge
+
+// the default is G4SimpleRunge
+
+string g4.stepper = "G4SimpleRunge";
 
 // Print a copy of this file to the job log.
 bool printConfig = false;
