@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.44 2010/08/12 22:12:14 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.45 2010/08/13 16:54:51 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/08/12 22:12:14 $
+// $Date: 2010/08/13 16:54:51 $
 //
 // Original author Rob Kutschke
 //
@@ -79,13 +79,13 @@
 #include "G4ChordFinder.hh"
 #include "G4TransportationManager.hh"
 #include "G4UserLimits.hh"
-// #include "G4ClassicalRK4.hh"
-// #include "G4ImplicitEuler.hh"
-// #include "G4ExplicitEuler.hh"
+#include "G4ClassicalRK4.hh"
+#include "G4ImplicitEuler.hh"
+#include "G4ExplicitEuler.hh"
 #include "G4SimpleRunge.hh"
-// #include "G4SimpleHeum.hh"
-// #include "G4HelixImplicitEuler.hh"
-// #include "G4HelixSimpleRunge.hh"
+#include "G4SimpleHeum.hh"
+#include "G4HelixImplicitEuler.hh"
+#include "G4HelixSimpleRunge.hh"
 
 #include "Mu2eG4/inc/DSField.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
@@ -959,25 +959,74 @@ namespace mu2e {
 
     // Figure out which magnetic field managers are needed.
     int dsFieldForm    = _config->getInt("detSolFieldForm", dsModelUniform); 
+
+    // Decide on the G4 Stepper
+
     bool needDSFull    = (dsFieldForm == dsModelFull  || dsFieldForm == dsModelSplit );
     bool needDSUniform = (dsFieldForm == dsModelSplit || dsFieldForm == dsModelUniform );
 
+    string stepper = _config->getString("g4.stepper","G4SimpleRunge");
+
     // Create field manager for the full DS field.
     if ( needDSFull ){
-      _dsFull = FieldMgr::forMappedField<G4SimpleRunge>( "DS", _mu2eOrigin );
+      if ( stepper  == "G4ClassicalRK4" ) {
+        _dsFull = FieldMgr::forMappedField<G4ClassicalRK4>( "DS", _mu2eOrigin );
+      } else if ( stepper  == "G4ImplicitEuler" ) {
+        _dsFull = FieldMgr::forMappedField<G4ImplicitEuler>( "DS", _mu2eOrigin );
+      } else if ( stepper  == "G4ExplicitEuler" ) {
+        _dsFull = FieldMgr::forMappedField<G4ExplicitEuler>( "DS", _mu2eOrigin );
+      } else if ( stepper  == "G4SimpleHeum" ) {
+        _dsFull = FieldMgr::forMappedField<G4SimpleHeum>( "DS", _mu2eOrigin );
+      } else if ( stepper  == "G4HelixImplicitEuler" ) {
+        _dsFull = FieldMgr::forMappedField<G4HelixImplicitEuler>( "DS", _mu2eOrigin );
+      } else if ( stepper  == "G4HelixSimpleRunge" ) {
+        _dsFull = FieldMgr::forMappedField<G4HelixSimpleRunge>( "DS", _mu2eOrigin );
+      } else {
+        _dsFull = FieldMgr::forMappedField<G4SimpleRunge>( "DS", _mu2eOrigin );
+      } 
     }
 
     // Create field manager for the uniform DS field.
     if ( needDSUniform){
       // Handle to the BField manager.
       GeomHandle<BFieldManager> bfMgr;
-
       _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue(), _mu2eOrigin );
     }
 
     // Create field managers for the PS and TS.
-    _psFull = FieldMgr::forMappedField<G4SimpleRunge>( "PS", _mu2eOrigin );
-    _tsFull = FieldMgr::forMappedField<G4SimpleRunge>( "TS", _mu2eOrigin );
+
+    if ( stepper  == "G4ClassicalRK4" ) {
+      _psFull = FieldMgr::forMappedField<G4ClassicalRK4>( "PS", _mu2eOrigin );
+    } else if ( stepper  == "G4ImplicitEuler" ) {
+      _psFull = FieldMgr::forMappedField<G4ImplicitEuler>( "PS", _mu2eOrigin );
+    } else if ( stepper  == "G4ExplicitEuler" ) {
+      _psFull = FieldMgr::forMappedField<G4ExplicitEuler>( "PS", _mu2eOrigin );
+    } else if ( stepper  == "G4SimpleHeum" ) {
+      _psFull = FieldMgr::forMappedField<G4SimpleHeum>( "PS", _mu2eOrigin );
+    } else if ( stepper  == "G4HelixImplicitEuler" ) {
+      _psFull = FieldMgr::forMappedField<G4HelixImplicitEuler>( "PS", _mu2eOrigin );
+    } else if ( stepper  == "G4HelixSimpleRunge" ) {
+      _psFull = FieldMgr::forMappedField<G4HelixSimpleRunge>( "PS", _mu2eOrigin );
+    } else {
+      _psFull = FieldMgr::forMappedField<G4SimpleRunge>( "PS", _mu2eOrigin );
+    } 
+
+
+    if ( stepper  == "G4ClassicalRK4" ) {
+      _tsFull = FieldMgr::forMappedField<G4ClassicalRK4>( "TS", _mu2eOrigin );
+    } else if ( stepper  == "G4ImplicitEuler" ) {
+      _tsFull = FieldMgr::forMappedField<G4ImplicitEuler>( "TS", _mu2eOrigin );
+    } else if ( stepper  == "G4ExplicitEuler" ) {
+      _tsFull = FieldMgr::forMappedField<G4ExplicitEuler>( "TS", _mu2eOrigin );
+    } else if ( stepper  == "G4SimpleHeum" ) {
+      _tsFull = FieldMgr::forMappedField<G4SimpleHeum>( "TS", _mu2eOrigin );
+    } else if ( stepper  == "G4HelixImplicitEuler" ) {
+      _tsFull = FieldMgr::forMappedField<G4HelixImplicitEuler>( "TS", _mu2eOrigin );
+    } else if ( stepper  == "G4HelixSimpleRunge" ) {
+      _tsFull = FieldMgr::forMappedField<G4HelixSimpleRunge>( "TS", _mu2eOrigin );
+    } else {
+      _tsFull = FieldMgr::forMappedField<G4SimpleRunge>( "TS", _mu2eOrigin );
+    }
 
     // Get pointers to logical volumes.
     G4LogicalVolume* ds2Vacuum = locateVolInfo("ToyDS2Vacuum").logical;
