@@ -1,9 +1,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.6 2010/05/18 21:15:32 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:15:32 $
+// $Id: CosmicDYB.cc,v 1.7 2010/08/17 15:18:39 wb Exp $
+// $Author: wb $
+// $Date: 2010/08/17 15:18:39 $
 //
 // Original author Yury Kolomensky
 //
@@ -13,36 +13,36 @@
 //    31 seconds on ilcsim2 if muEMin =  5,000 MeV.
 //    41 seconds on ilcsim2 if muEMin =  3,001 MeV.
 //    52 seconds on ilcsim2 if muEmin =  1,000 MeV (same for 1,001 MeV and for 999 MeV).
-//    68 seconds on ilcsim2 if muEmin =    601 MeV 
+//    68 seconds on ilcsim2 if muEmin =    601 MeV
 //
 //    45 seconds on ilcsim  if muEMin = 10,001 MeV.
 //    62 seconds on ilcsim  if muEMin =  5,001 MeV.
 //
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
-#include <math.h>
 
 // Framework includes.
 #include "FWCore/Framework/interface/Run.h"
+#include "FWCore/Framework/interface/TFileDirectory.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Services/interface/RandomNumberGeneratorService.h"
 #include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
 
 // Mu2e includes.
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/DAQParams.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
 #include "EventGenerator/inc/hrndg2.hh"
-#include "Mu2eUtilities/inc/rm48.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/DAQParams.hh"
-#include "RandomNumberService/inc/RandomNumberService.hh"
+#include "Mu2eUtilities/inc/rm48.hh"
+#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "TargetGeom/inc/Target.hh"
 
 // From CLHEP
 #include "CLHEP/Random/RandFlat.h"
@@ -66,38 +66,55 @@ namespace mu2e {
   // Once we have the HepPDT package installed, get the mass from there.
   static const double mMu = 105.6584;
 
-  CosmicDYB::CosmicDYB( edm::Run& run, const SimpleConfig& config ):
-    GeneratorBase(){
+  CosmicDYB::CosmicDYB( edm::Run& run, const SimpleConfig& config )
+  : GeneratorBase()
+    // Histograms
+  , _cosmicMultiplicityH( 0 )
+  , _cosmicMomH         ( 0 )
+  , _cosmicChargeH      ( 0 )
+  , _cosmicCosThetaH    ( 0 )
+  , _cosmicCosThetaVsEH ( 0 )
 
-    _mean = config.getDouble("cosmicDYB.mean",0.);
-    _muEMin = config.getDouble("cosmicDYB.muEMin", 3000.);
-    _muEMax = config.getDouble("cosmicDYB.muEMax", 1.e5);
+    // configurable parameters
 
-    // magic number from DYB ? 
-    _muCosThMin = config.getDouble("cosmicDYB.muCosThMin",0.00366518);
-    _muCosThMax = config.getDouble("cosmicDYB.muCosThMax",1.0);
+    // Mean multiplicity. If negative, use -_mean as a fixed number
+  , _mean      ( config.getDouble("cosmicDYB.mean",0.) )
+  , _muEMin    ( config.getDouble("cosmicDYB.muEMin", 3000.) )
+  , _muEMax    ( config.getDouble("cosmicDYB.muEMax", 1.e5) )
+  , _muCosThMin( config.getDouble("cosmicDYB.muCosThMin",0.00366518) )
+  , _muCosThMax( config.getDouble("cosmicDYB.muCosThMax",1.0) )
 
-    // size of the area to illuminate (in mm)
-    _dx = config.getDouble("cosmicDYB.dx",5000);
-    _dz = config.getDouble("cosmicDYB.dz",5000);
-    _y0 = config.getDouble("cosmicDYB.y0",0);
+    // half area to generate events (cm)
+  , _dx( config.getDouble("cosmicDYB.dx",5000) )
+  , _dz( config.getDouble("cosmicDYB.dz",5000) )
+  , _y0( config.getDouble("cosmicDYB.y0",0) )
 
-    // Dimensions of the arrays.
-    _ne  = config.getInt("cosmicDYB.nBinsE", _default_ne);
-    _nth = config.getInt("cosmicDYB.nBinsTheta",_default_nth);
+    // Dimensions of the 2d working space for hrndg2.
+  , _ne ( config.getInt("cosmicDYB.nBinsE", _default_ne) )
+  , _nth( config.getInt("cosmicDYB.nBinsTheta",_default_nth) )
 
+    // end of configurable parameters
+
+    // Time range (in ns) over which to generate events.
+  ,_tmin( 0.0 )
+  ,_tmax( 0.0 )
+  ,_dt  ( 0.0 )
+
+    // Working space for hrndg2 (working space will be on the heap).
+  , _workingSpace( )
+  {
     // Allocate hrndg2 working space on the heap.
     _workingSpace.resize(_ne*_nth);
 
     edm::LogInfo log("COSMIC");
     log << "cosmicDYB.mean = " << _mean << "\n"
-        << "cosmicDYB.muEMin = " << _muEMin 
+        << "cosmicDYB.muEMin = " << _muEMin
         << ", cosmicDYB.muEMax = " << _muEMax << "\n"
-        << "cosmicDYB.muCosThMin = " << _muCosThMin 
+        << "cosmicDYB.muCosThMin = " << _muCosThMin
         << ", cosmicDYB.muCosThMax = " << _muCosThMax << "\n"
-        << "cosmicDYB.dx = " << _dx 
+        << "cosmicDYB.dx = " << _dx
         << ", cosmicDYB.dz = " << _dz
-        << ", cosmicDYB.y0 = " << _y0 
+        << ", cosmicDYB.y0 = " << _y0
         << ", working space dimenions ("
         << _ne << "," << _nth << ")" << "\n";
 
@@ -116,7 +133,7 @@ namespace mu2e {
 
     // Book histograms in a separate subdirector for this generator.
     edm::Service<edm::TFileService> tfs;
-    
+
     edm::TFileDirectory tfdir = tfs->mkdir( "CosmicDYB" );
     _cosmicMultiplicityH = tfdir.make<TH1D>( "MultiplicityH", "Cosmic Multiplicity", 20, -0.5, 19.5);
 
@@ -130,12 +147,12 @@ namespace mu2e {
     _cosmicCosThetaH = tfdir.make<TH1D>( "CosThetaH", "Cos(Theta)", 60, -1, 1.);
 
     // cos(theta) vs log(energy)
-    _cosmicCosThetaVsEH = tfdir.make<TH2D>( "CosThetavsEH", "Cos(Theta) vs log (Momentum, GeV)", 
+    _cosmicCosThetaVsEH = tfdir.make<TH2D>( "CosThetavsEH", "Cos(Theta) vs log (Momentum, GeV)",
                                             60, -3., 3., 60, -1., 1.);
 
-    // Initialize fake RM48 that is used by DYB code.
-    edm::Service<edm::RandomNumberGenerator> rng;
-    static CLHEP::RandFlat flat(rng->getEngine());
+      // Initialize fake RM48 that is used by DYB code.
+    edm::Service<edm::RandomNumberGeneratorService>  rng;
+    static CLHEP::RandFlat flat( rng -> getEngine() );
     setRm48Distribution(flat);
 
     // initialize DYB generator
@@ -144,7 +161,7 @@ namespace mu2e {
     // convert to GeV
     _muEMin /= GeV;
     _muEMax /= GeV;
-    
+
     double dim_sum,E,cosTh;
     hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
            dim_sum,E,cosTh,par);
@@ -152,11 +169,10 @@ namespace mu2e {
     // rate is per cm^2. The constants are 2*CLHEP::pi times the area
     double tRate = dim_sum*M_PI*0.08*_dx*_dz;
     log << "Total cosmic rate = " << tRate << " Hz\n";
-    
-  }
 
-  CosmicDYB::~CosmicDYB(){
-  }
+  }  // CosmicDYB()
+
+  CosmicDYB::~CosmicDYB() { }
 
   void CosmicDYB::generate( ToyGenParticleCollection& genParts ){
 
@@ -166,27 +182,23 @@ namespace mu2e {
     // geometry manager.
 
     // Pick a number of muons from a Poisson distribution.
-    long n;
-    if (_mean<0) {
-      n=(long)-_mean;
-    } else {
-      n = CLHEP::RandPoisson::shoot(_mean);
-    }
+    long n = _mean < 0 ? long(- _mean)
+                       : CLHEP::RandPoisson::shoot(_mean);
 
     _cosmicMultiplicityH->Fill(n);
 
-    for ( int i=0; i<n; ++i ){
+    for ( int i = 0; i != n; ++i ){
 
       float par = 111.;  // double precision
       double dim_sum,E,cosTh;
       hrndg2( _workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
               dim_sum,E,cosTh,par);
-      
+
       // energy is in GeV, convert to MeV
       E *= GeV;
 
       double p = safeSqrt(E*E-mMu*mMu);
-      if ( E<= mMu ) {
+      if ( E <= mMu ) {
         E = mMu;
       }
 
@@ -196,13 +208,13 @@ namespace mu2e {
       _cosmicMomH->Fill(log10p);
       _cosmicCosThetaH->Fill(cosTh);
       _cosmicCosThetaVsEH->Fill(log10p,cosTh);
- 
+
       // Cosine and sin of polar angle wrt y axis.
       double cy = cosTh;
       double sy = safeSqrt(1. - cosTh*cosTh);
 
       double phi = 2.*M_PI*CLHEP::RandFlat::shoot();
-     
+
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
 
       // Position in a reference plane that is just above the ground.

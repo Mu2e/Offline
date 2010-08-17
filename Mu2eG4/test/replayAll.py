@@ -3,9 +3,9 @@
 # event contains both sets of data products, those created in
 # the first run and those created in the second run.
 #
-# $Id: replayAll.py,v 1.2 2010/07/01 14:18:20 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/07/01 14:18:20 $
+# $Id: replayAll.py,v 1.3 2010/08/17 15:18:39 wb Exp $
+# $Author: wb $
+# $Date: 2010/08/17 15:18:39 $
 #
 # Original author Rob Kutschke
 #
@@ -19,7 +19,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("replayAll")
 
 # Maximum number of events to do.
@@ -38,7 +38,7 @@ process.TFileService = mu2e.Service("TFileService",
 )
 
 # State of random number engines will be restored from the input event.
-process.add_(mu2e.Service("RandomNumberService",
+process.add_(mu2e.Service("RandomNumberGeneratorService",
             restoreStateLabel=mu2e.untracked.string("randomsaver")
 ))
 
@@ -61,15 +61,15 @@ process.source = mu2e.Source("PoolSource",
 )
 
 #  Make some generated tracks and add them to the event.
-process.generate2 = mu2e.EDProducer(
+process.generate = mu2e.EDProducer(
     "EventGenerator",
     inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_02.txt")
 )
 
 # Run G4 and add its hits to the event.
-process.g4run2 = mu2e.EDProducer(
+process.g4run = mu2e.EDProducer(
     "G4",
-    generatorModuleLabel = mu2e.string("generate2"),
+    generatorModuleLabel = mu2e.string("generate"),
     )
 
 # Define the output file. See note 1.
@@ -82,7 +82,7 @@ process.outfile = mu2e.OutputModule(
 # Look at the hits from G4.
 process.checkhits2 = mu2e.EDAnalyzer(
     "ReadBack",
-    g4ModuleLabel = mu2e.string("g4run2"),
+    g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
     maxFullPrint  = mu2e.untracked.int32(201)
 )
@@ -98,4 +98,4 @@ process.MessageLogger.categories.append("ToyHitInfo")
 process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate2*process.g4run2*process.checkhits2*process.outfile );
+process.output = mu2e.EndPath(  process.generate*process.g4run*process.checkhits2*process.outfile );

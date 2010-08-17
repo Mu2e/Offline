@@ -3,9 +3,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.2 2010/03/15 21:18:16 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/03/15 21:18:16 $
+// $Id: CosmicDYB.hh,v 1.3 2010/08/17 15:18:39 wb Exp $
+// $Author: wb $
+// $Date: 2010/08/17 15:18:39 $
 //
 // Original author Yury Kolomensky
 //
@@ -27,7 +27,7 @@ namespace mu2e {
   // Forward declaratations.
   class SimpleConfig;
 
-  class CosmicDYB: public GeneratorBase{
+  class CosmicDYB: public GeneratorBase {
 
   public:
     CosmicDYB( edm::Run& run, const SimpleConfig& config );
@@ -47,8 +47,8 @@ namespace mu2e {
     // configurable parameters
 
     // Mean multiplicity. If negative, use -_mean as a fixed number
-    double _mean;     
-    double _muEMin;   // min and max values of muon energy (MeV)     
+    double _mean;
+    double _muEMin;   // min and max values of muon energy (MeV)
     double _muEMax;
     double _muCosThMin; // min and max zenith angles
     double _muCosThMax;
@@ -64,7 +64,7 @@ namespace mu2e {
 
     // end of configurable parameters
 
-    // Time range ( in ns) over which to generate events.
+    // Time range (in ns) over which to generate events.
     double _tmin;
     double _tmax;
     double _dt;
@@ -76,11 +76,8 @@ namespace mu2e {
     // Working space for hrndg2 ( working space will be on the heap).
     std::vector<double> _workingSpace;
 
+  };  // CosmicDYB
 
-  };
+}  // namespace mu2e
 
-} // end namespace mu2e,
-
-#endif
-
-
+#endif  // CosmicDYB_HH

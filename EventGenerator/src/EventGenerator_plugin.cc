@@ -3,16 +3,16 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.13 2010/06/23 23:18:59 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/06/23 23:18:59 $
+  $Id: EventGenerator_plugin.cc,v 1.14 2010/08/17 15:18:39 wb Exp $
+  $Author: wb $
+  $Date: 2010/08/17 15:18:39 $
 
   Original author Rob Kutschke
 
   Eventually this will support a variety of event generators, controllable
   from the run time configuration.  A given call might invoke one or more
   of these generators.
-  
+
   1) A full featured single particle gun.
   2) Single conversion track, uniformly from the targets.
   3) (Emax-E)**5 DIO model.
@@ -23,7 +23,7 @@
   flux distributions, not by starting from a CLHEP::pion or a muon entering
   the DS.
   7) Simplified models of cosmics.
-  
+
   At present I expect that the highest fidelity generation of cosmics will be
   done by running an external generator and then reading "events" from the output
   of that generator.  Perhaps the merge will be done in this module, perhaps
@@ -32,38 +32,38 @@
 */
 
 // C++ includes.
-#include <iostream>
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <cmath>
-#include <cstdlib>
 
 // Framework includes.
-#include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
 
 // Mu2e includes.
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/requireUniqueKey.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "ToyDP/inc/GenId.hh"
+#include "ToyDP/inc/ToyGenParticleCollection.hh"
 
 // Particular generators that this code knows about.
-#include "EventGenerator/inc/ParticleGun.hh"
 #include "EventGenerator/inc/ConversionGun.hh"
-#include "EventGenerator/inc/CosmicToy.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
-#include "EventGenerator/inc/PiCapture.hh"
+#include "EventGenerator/inc/CosmicToy.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
+#include "EventGenerator/inc/ParticleGun.hh"
+#include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
 
@@ -75,7 +75,7 @@ using namespace std;
 namespace mu2e {
 
   class EventGenerator : public edm::EDProducer {
-    
+
   public:
 
     explicit EventGenerator(edm::ParameterSet const& pSet):
@@ -87,14 +87,16 @@ namespace mu2e {
       // Print generators for which Id's are defined.
       //GenId::printAll();
 
+      // provide a common engine for the generators to use via the service
+      createEngine( -1 );
     }
 
     virtual ~EventGenerator() { }
 
     virtual void produce(edm::Event& e, edm::EventSetup const& c);
-    
+
     virtual void beginRun(edm::Run &r, edm::EventSetup const& eSetup );
-    
+
     static void fillDescription(edm::ParameterSetDescription& iDesc,
                                 string const& moduleLabel) {
       iDesc.setAllowAnything();
@@ -106,7 +108,7 @@ namespace mu2e {
     string _configfile;
 
     // A collection of all of the generators that we will run.
-    typedef  boost::shared_ptr<GeneratorBase> GeneratorBasePtr;    
+    typedef  boost::shared_ptr<GeneratorBase> GeneratorBasePtr;
     std::vector<GeneratorBasePtr> _generators;
 
     void checkConfig( const SimpleConfig&  config);
@@ -118,13 +120,13 @@ namespace mu2e {
 
     static int ncalls(0);
     if ( ++ncalls > 1){
-      edm::LogInfo("EventGenerator") 
+      edm::LogInfo("EventGenerator")
         << "EventGenerator does not change state at beginRun.  Hope that's OK.";
     }
-    
+
     SimpleConfig config(_configfile);
     checkConfig(config);
-    
+
     // Change this to modify rather than delete and make an new one??
 
     // Delete generators from the previous run.
@@ -158,7 +160,7 @@ namespace mu2e {
     }
 
   }
-  
+
   void
   EventGenerator::produce(edm::Event& evt, edm::EventSetup const&) {
 
@@ -166,9 +168,9 @@ namespace mu2e {
     auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);
 
     // Run all of the registered generators.
-    for ( std::vector<GeneratorBasePtr>::const_iterator 
-            i=_generators.begin(),
-            e=_generators.end(); 
+    for ( std::vector<GeneratorBasePtr>::const_iterator
+            i = _generators.begin(),
+            e = _generators.end();
           i !=e; ++i ){
       (*i)->generate(*genParticles);
     }
