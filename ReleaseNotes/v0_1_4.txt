@@ -1,0 +1,60 @@
+
+  Still under construciton.
+
+           Release notes for Mu2e Offline software, v0_1_4
+
+  $Id: v0_1_4.txt,v 1.1 2010/08/17 23:00:23 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/08/17 23:00:23 $
+
+2) Prune and reorder included headers 
+
+1) August 17, 2010 wb
+
+   The RandomNumberService that was a mu2e package has been replaced by 
+   RandomNumberGeneratorService that is part of the framework.  Note that the
+   name of the service has changed.  
+
+   The obsolete code removed from the framework is:
+     RandomNumberService/ ( the entire directory tree)
+     GeneralUtilities/inc/vectorTransform.hh
+     ToyDP/inc/RandomEngineState.hh
+
+   The modified code is described below.  In addition to the modifications specific
+   to the job at hand, the following was done to some of the files:
+     - Remove unnecessary headers.
+     - Reorder headers when needed.
+     - In constructors, move assignments to intializer lists when possible.
+     - Change some small code fragments to follow standard idioms.
+     - Commenting the end of some } or #endif blocks
+
+   setup.sh
+     - Change to version 1_1_0 of the framework.
+
+   ToyDP/src/classes.h
+   ToyDP/src/classes_def.xml
+     - Remove everything related to mu2e::RandomEngineState.
+     - The corresponding functionality now comes from the framework.
+
+   EventGenerator/src/EventGenerator_plugin.cc
+     - Add call to createEengine, taking the default seed.
+
+   EventGenerator/inc/CosmicDYB.hh
+   EventGenerator/src/CosmicDYB.cc
+     - Syntax change to access the service.
+       ( Need to change this to global to repeat behaviour ).
+
+   EffyNoise/src/SimpleEffyNoise_plugin.cc
+     - Syntax change to access the service.
+
+   Mu2eG4/test/g4test_03.py 
+    - New name for the service
+    - seeds now live in the PSets for each module, not in the PSet for the service
+
+   Mu2eG4/test/replayAll.py
+   Mu2eG4/test/replayWithSkip.py
+    - New name for the service
+    - Need to distinguish module labels from those in the original job.
+
+
+
