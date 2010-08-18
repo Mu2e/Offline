@@ -1,9 +1,9 @@
 
 # Configuration file for Readback
 #
-# $Id: makehits.py,v 1.8 2010/03/05 23:56:18 kutschke Exp $
+# $Id: makehits.py,v 1.9 2010/08/18 05:12:34 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/05 23:56:18 $
+# $Date: 2010/08/18 05:12:34 $
 #
 # Original author Rob Kutschke
 #
@@ -32,10 +32,7 @@ process.TFileService = mu2e.Service("TFileService",
 
 # Initialize the random number sequences.
 # This just changes the seed for the global CLHEP random engine.
-process.add_(mu2e.Service("RandomNumberService",
-                          globalSeed=mu2e.untracked.int32(9877)
-))
-
+process.add_(mu2e.Service("RandomNumberGeneratorService"))
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",

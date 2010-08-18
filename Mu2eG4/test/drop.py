@@ -1,8 +1,8 @@
 # Drop all information except the saved random number engine state.
 #
-# $Id: drop.py,v 1.1 2010/03/13 00:12:06 kutschke Exp $
+# $Id: drop.py,v 1.2 2010/08/18 05:12:34 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/13 00:12:06 $
+# $Date: 2010/08/18 05:12:34 $
 #
 # Original author Rob Kutschke
 #
@@ -37,8 +37,12 @@ process.source = mu2e.Source("PoolSource",
 # Define the output file. See note 1.
 process.outfile = mu2e.OutputModule(
     "PoolOutputModule",
-    fileName = mu2e.untracked.string('file:drop01.root'),
-    fastCloning = mu2e.untracked.bool(False)
+    fileName = mu2e.untracked.string('file:drop_03.root'),
+    fastCloning = mu2e.untracked.bool(False),
+    outputCommands = cms.untracked.vstring(
+     'drop *_*_*_*',
+     'keep edmRNGsnapshots_*_*_*'
+     )
 )
 
 # End of the section that defines and configures modules.

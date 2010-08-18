@@ -1,9 +1,9 @@
 # Configuration file for G4Test04
 # Similar to g4test_03.py but do fewer events and do not make the output file.
 #
-# $Id: g4test_04.py,v 1.5 2010/03/13 00:12:06 kutschke Exp $
+# $Id: g4test_04.py,v 1.6 2010/08/18 05:12:34 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/03/13 00:12:06 $
+# $Date: 2010/08/18 05:12:34 $
 #
 # Original author Rob Kutschke
 #
@@ -32,9 +32,7 @@ process.TFileService = mu2e.Service("TFileService",
 
 # Initialize the random number sequences.
 # This just changes the seed for the global CLHEP random engine.
-process.add_(mu2e.Service("RandomNumberService",
-                          globalSeed=mu2e.untracked.int32(9877)
-))
+process.add_(mu2e.Service("RandomNumberGeneratorService"))
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
@@ -62,6 +60,7 @@ process.generate = mu2e.EDProducer(
 process.g4run = mu2e.EDProducer(
     "G4",
     generatorModuleLabel = mu2e.string("generate"),
+    seed=mu2e.untracked.vint32(9877)
 )
 
 # Look at the hits from G4.

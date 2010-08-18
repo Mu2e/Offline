@@ -1,8 +1,8 @@
 # Same as replayAll.py, except skip the first 10 events.
 #
-# $Id: replayWithSkip.py,v 1.3 2010/08/17 15:18:39 wb Exp $
-# $Author: wb $
-# $Date: 2010/08/17 15:18:39 $
+# $Id: replayWithSkip.py,v 1.4 2010/08/18 05:12:34 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/08/18 05:12:34 $
 #
 # Original author Rob Kutschke
 #
@@ -54,7 +54,7 @@ process.ConditionsService = mu2e.Service("ConditionsService",
 
 # Start each new event with an empty event.
 process.source = mu2e.Source("PoolSource",
-   fileNames = mu2e.untracked.vstring("data_03.root"),
+   fileNames = mu2e.untracked.vstring("drop_03.root"),
    skipEvents = mu2e.untracked.uint32(10)
 )
 

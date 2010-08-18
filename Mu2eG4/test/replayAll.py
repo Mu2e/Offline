@@ -3,9 +3,9 @@
 # event contains both sets of data products, those created in
 # the first run and those created in the second run.
 #
-# $Id: replayAll.py,v 1.3 2010/08/17 15:18:39 wb Exp $
-# $Author: wb $
-# $Date: 2010/08/17 15:18:39 $
+# $Id: replayAll.py,v 1.4 2010/08/18 05:12:34 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/08/18 05:12:34 $
 #
 # Original author Rob Kutschke
 #
@@ -57,7 +57,7 @@ process.ConditionsService = mu2e.Service("ConditionsService",
 
 # Start each new event with an empty event.
 process.source = mu2e.Source("PoolSource",
-   fileNames = mu2e.untracked.vstring("data_03.root"),
+   fileNames = mu2e.untracked.vstring("drop_03.root"),
 )
 
 #  Make some generated tracks and add them to the event.
