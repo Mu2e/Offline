@@ -5,9 +5,9 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.hh,v 1.3 2010/05/18 20:28:50 kutschke Exp $
+// $Id: RandomUnitSphere.hh,v 1.4 2010/08/18 21:05:19 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:50 $
+// $Date: 2010/08/18 21:05:19 $
 //
 // Original author Rob Kutschke
 //
@@ -16,68 +16,74 @@
 //
 
 #include <cmath>
-#include "CLHEP/Vector/ThreeVector.h"
+
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e { 
 
   class RandomUnitSphere {
 
   public:
-  
-    RandomUnitSphere():
-      _czmin(-1.),
-      _czmax( 1.),
-      _phimin(0.),
-      _phimax(CLHEP::twopi){
-    }
+
+    RandomUnitSphere();
 
     RandomUnitSphere( double czmin,
                       double czmax,
                       double phimin=0,
-                      double phimax=CLHEP::twopi):
-      _czmin(czmin),
-      _czmax(czmax),
-      _phimin(phimin),
-      _phimax(phimax){
-    }
+                      double phimax=CLHEP::twopi);
+
+    RandomUnitSphere( CLHEP::HepRandomEngine& engine,
+                      double czmin,
+                      double czmax,
+                      double phimin=0,
+                      double phimax=CLHEP::twopi);
 
     ~RandomUnitSphere(){}
 
-    CLHEP::Hep3Vector shoot() const;
+    CLHEP::Hep3Vector fire() const;
+    CLHEP::Hep3Vector fire( double magnitude ) const;
 
-    
-    // Do I really want the setters?
+    // Depracated
+    CLHEP::Hep3Vector shoot() const{
+      return fire();
+    }
+
+
     void setczmin(double czmin){
       _czmin=czmin;
     }
-    
+
     void setczmax(double czmax){
       _czmax=czmax;
     }
-    
+
     void setphimin(double phimin){
       _phimin=phimin;
     }
-    
+
     void setphimax(double phimax){
       _phimax=phimax;
     }
 
     double czmin(){ return _czmin;}
     double czmax(){ return _czmax;}
-    
+
     double phimin(){ return _phimin;}
     double phimax(){ return _phimax;}
-    
-    
+
   private:
 
     double _czmin;
     double _czmax;
     double _phimin;
     double _phimax;
-    
+
+    // The underlying uniform random number distribution.
+    mutable CLHEP::RandFlat _randFlat;
+
   };
 
 }
