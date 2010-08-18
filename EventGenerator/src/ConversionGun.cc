@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.11 2010/05/18 21:15:30 kutschke Exp $ 
+// $Id: ConversionGun.cc,v 1.12 2010/08/18 06:33:00 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/05/18 21:15:30 $
+// $Date: 2010/08/18 06:33:00 $
 //
 // Original author Rob Kutschke
 // 
@@ -30,14 +30,12 @@
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
 // Other external includes.
-#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace std;
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
-using CLHEP::RandFlat;
 using CLHEP::twopi;
 
 namespace mu2e {
@@ -48,7 +46,8 @@ namespace mu2e {
   static const double pEndPoint = 104.96;
 
   ConversionGun::ConversionGun( edm::Run& run, const SimpleConfig& config ):
-    GeneratorBase(){
+    GeneratorBase(),
+    _randFlat( GeneratorBase::getEngine() ){
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
@@ -96,7 +95,7 @@ namespace mu2e {
     int nFoils = target->nFoils();
     
     // Pick a foil.
-    int ifoil = static_cast<int>(nFoils*CLHEP::RandFlat::shoot());
+    int ifoil = static_cast<int>(nFoils*_randFlat.fire());
     TargetFoil const& foil = target->foil(ifoil);
 
     // Foil properties.
@@ -105,20 +104,20 @@ namespace mu2e {
     const double dr = foil.rOut() - r1;
     
     // A random point within the foil.
-    const double r   = r1 + dr*CLHEP::RandFlat::shoot();
-    const double dz  = (-1.+2.*CLHEP::RandFlat::shoot())*foil.halfThickness();
-    const double phi = CLHEP::twopi*CLHEP::RandFlat::shoot();
+    const double r   = r1 + dr*_randFlat.fire();
+    const double dz  = (-1.+2.*_randFlat.fire())*foil.halfThickness();
+    const double phi = CLHEP::twopi*_randFlat.fire();
     CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
                            center.y()+r*sin(phi), 
                            center.z()+dz );
     
     // Random direction.
     // Replace this with RandomUnitSphere from Mu2eUtilities/inc
-    const double cz   = _czmin  +  _dcz*CLHEP::RandFlat::shoot();
-    const double phi2 = _phimin + _dphi*CLHEP::RandFlat::shoot();
+    const double cz   = _czmin  +  _dcz*_randFlat.fire();
+    const double phi2 = _phimin + _dphi*_randFlat.fire();
     
     // This should be an exponential decay.
-    const double time = _tmin   +   _dt*CLHEP::RandFlat::shoot();
+    const double time = _tmin   +   _dt*_randFlat.fire();
 
     // Derived quantities.
     const double sz   = safeSqrt(1.- cz*cz);

@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.3 2010/03/20 00:59:39 kutschke Exp $
+// $Id: ConversionGun.hh,v 1.4 2010/08/18 06:33:00 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/20 00:59:39 $
+// $Date: 2010/08/18 06:33:00 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -16,8 +16,13 @@
 //  - Limits on cos(theta) and phi but uniform within the range.
 //
 
+// Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 
+// CLHEP includes
+#include "CLHEP/Random/RandFlat.h"
+
+// Forward references in other namespaces.
 namespace edm {
   class Run;
 }
@@ -61,6 +66,8 @@ namespace mu2e {
     double _dphi;
     double _dt;
 
+    // A distribution used in many places in this class.
+    CLHEP::RandFlat _randFlat;
 
   };
 
