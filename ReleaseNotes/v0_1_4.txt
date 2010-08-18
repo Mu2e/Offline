@@ -3,11 +3,33 @@
 
            Release notes for Mu2e Offline software, v0_1_4
 
-  $Id: v0_1_4.txt,v 1.1 2010/08/17 23:00:23 kutschke Exp $
+  $Id: v0_1_4.txt,v 1.2 2010/08/18 04:41:10 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/08/17 23:00:23 $
+  $Date: 2010/08/18 04:41:10 $
 
-2) Prune and reorder included headers 
+3) August 17, 2010 kutschke
+    - Change the following .py files to use the new RandomNumberGeneratorService.
+   EffyNoise/test/simpleENtest_01.py
+   Example02/test/ex02.py
+   HitMakers/test/makehits.py
+   HitMakers/test/read.py
+   HoughTransform/test/houghread.py
+   HoughTransform/test/houghtest.py
+   HoughTransform/test/htfilter.py
+   KalmanTests/test/test01.py
+   KalmanTests/test/test02.py
+   Mu2eG4/test/g4test_01.py
+   Mu2eG4/test/g4test_02.py
+   Mu2eG4/test/g4test_04.py
+   Mu2eG4/test/readback.py
+   Mu2eG4/test/runCosmic.py
+   Mu2eG4/test/runCosmicGraf.py
+   Mu2eG4/test/transportOnly.py
+
+2) August 17, 2010 kutschke
+   Mu2eG4/src/G4_plugin.cc
+    - Using the new RandomNumberGeneratorService, seed the random number 
+      engine used by G4.
 
 1) August 17, 2010 wb
 
