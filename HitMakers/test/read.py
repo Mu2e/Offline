@@ -1,9 +1,9 @@
 
 # Configuration file for Readback
 #
-# $Id: read.py,v 1.4 2010/08/18 05:12:34 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/08/18 05:12:34 $
+# $Id: read.py,v 1.5 2010/08/18 23:14:03 logash Exp $
+# $Author: logash $
+# $Date: 2010/08/18 23:14:03 $
 #
 # Original author Rob Kutschke
 #
@@ -34,7 +34,6 @@ process.TFileService = mu2e.Service("TFileService",
 # This just changes the seed for the global CLHEP random engine.
 process.add_(mu2e.Service("RandomNumberGeneratorService"))
 
-
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
        inputfile=mu2e.untracked.string("Mu2eG4/test/geom_01.txt")
@@ -49,7 +48,7 @@ process.source = mu2e.Source("PoolSource",
 )
 
 # Check the crudeStrawHits.
-process.testCSH = mu2e.EDAnalyzer("MCSH_Test",
+process.testCSH = mu2e.EDAnalyzer("ReadStrawHit",
     diagLevel    = mu2e.untracked.int32(3),
     maxFullPrint = mu2e.untracked.int32(100)
 )

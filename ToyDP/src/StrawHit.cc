@@ -1,9 +1,9 @@
 // 
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.cc,v 1.1 2010/07/01 13:34:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/07/01 13:34:57 $
+// $Id: StrawHit.cc,v 1.2 2010/08/18 23:14:03 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/18 23:14:03 $
 //
 // Original author Rob Kutschke
 //
@@ -28,10 +28,7 @@ namespace mu2e {
         << " idx: "      << _strawIndex
         << " time: "     << _time
         << " dt: "       << _dt
-        << " eDep: "     << _energyDep
-        << " pre: ";
-
-    printPrecursorIndices(ost);
+        << " eDep: "     << _energyDep;
 
     if ( doEndl ){
       ost << endl;
@@ -39,18 +36,4 @@ namespace mu2e {
     
   }
   
-  // Print the values of the elements of precursorIndices.
-  void StrawHit::printPrecursorIndices( ostream& ost) const {
-
-    ost << "(";
-    for ( vector<uint32_t>::size_type i=0;
-          i<_precursorIndices.size(); ++i ){
-      if ( i > 0 ){
-        ost << ",";
-      }
-      ost << _precursorIndices[i];
-    }
-    ost << ")";
-  }
-
 } // namespace mu2e

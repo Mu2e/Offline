@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.10 2010/08/17 15:18:39 wb Exp $
-// $Author: wb $
-// $Date: 2010/08/17 15:18:39 $
+// $Id: classes.h,v 1.11 2010/08/18 23:14:03 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/18 23:14:03 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,8 @@
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
+#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
+#include "ToyDP/inc/StrawHitMCPtrCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/ToyHitCollection.hh"
 
@@ -46,3 +48,5 @@ template class edm::Wrapper<mu2e::CrudeStrawHitPData>;
 template class edm::Wrapper<mu2e::SimParticleCollection>;
 template class edm::Wrapper<mu2e::HoughCircleCollection>;
 template class edm::Wrapper<mu2e::StrawHitCollection>;
+template class edm::Wrapper<mu2e::StrawHitMCTruthCollection>;
+template class edm::Wrapper<mu2e::StrawHitMCPtrCollection>;

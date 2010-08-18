@@ -3,9 +3,9 @@
 // 
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.hh,v 1.1 2010/07/01 13:34:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/07/01 13:34:57 $
+// $Id: StrawHit.hh,v 1.2 2010/08/18 23:14:03 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/18 23:14:03 $
 //
 // Original author Rob Kutschke
 //
@@ -27,8 +27,7 @@ namespace mu2e {
       _strawIndex(StrawIndex(-1)),
       _time(0.),
       _dt(0.),
-      _energyDep(0.),
-      _precursorIndices(){
+      _energyDep(0.) {
     }
 
     // Constructor for a hit that came from an unpacked digi, either
@@ -36,13 +35,11 @@ namespace mu2e {
     StrawHit( StrawIndex       strawIndex,
               float            time,
               float            dt,
-              float            energyDep,
-              const std::vector<uint32_t>& precursorIndices ):
+              float            energyDep  ):
       _strawIndex(strawIndex),
       _time(time),
       _dt(dt),
-      _energyDep(energyDep),
-      _precursorIndices(precursorIndices){
+      _energyDep(energyDep) {
     }
 
     // Accessors
@@ -50,7 +47,6 @@ namespace mu2e {
     float      time()       const { return _time;}
     float      dt()         const { return _dt;}
     float      energyDep()  const { return _energyDep; }
-    const std::vector<uint32_t>& precursorIndices() const { return _precursorIndices; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
     
@@ -63,11 +59,6 @@ namespace mu2e {
     float            _time;             // (ns)
     float            _dt;               // (ns)
     float            _energyDep;        // (MeV)
-    std::vector<uint32_t> _precursorIndices; // Indices into StepPointMCCollection
-
-    // Helper function for printing.
-    void printPrecursorIndices( std::ostream& ost) const;
-
 
   };
 
