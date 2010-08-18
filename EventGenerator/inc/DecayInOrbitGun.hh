@@ -1,53 +1,40 @@
 #ifndef DECAYINORBIT_HH
 #define DECAYINORBIT_HH
-
 //
-// Generate an electron with the conversion energy
-// from a random spot within the target system at
-// a random time during the accelerator cycle.
+// Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.2 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: DecayInOrbitGun.hh,v 1.3 2010/08/18 21:04:28 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/18 21:04:28 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
-//  - Uniform in time during the requested interval.
+//  - Uniform within each target.
+//  - Uniform in time during the requested time interval.
+//  - All of the above need to be improved at a later date.
 //  - Limits on cos(theta) and phi but uniform within the range.
-//
 
+// Framework includes
+#include "FWCore/Framework/interface/Run.h"
+
+// Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+
+// CLHEP includes
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandFlat.h"
 
-// Framework Includes
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-
-//ROOT Includes
-#include "TFile.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TNtuple.h"
-#include "TMath.h"
-#include "TF1.h"
-
-
-
+// Forward declarations outside of mu2e namespace.
 class TH1D;
-
 namespace edm {
   class Run;
 }
 
 namespace mu2e {
 
-  // Forward reference.
+  // Forward declarations
   class SimpleConfig;
 
   class DecayInOrbitGun: public GeneratorBase{
@@ -60,28 +47,18 @@ namespace mu2e {
 
   private:
 
-    const double EnergyDIOFunc(double x);
+    // Start: parameters that can be configured from the config file.
 
+    // Mean number of dio electrons to generate in each event.
+    // If positive, use this as the mean of a Poisson distribution.
+    // If negative, generate exactly std::abs(mean) every time.
+    double _mean;
 
-    TH1D* _decayInOrbitMultiplicity;
-    TH1D* _decayInOrbitEElec;
-    TH1D* _decayInOrbitEElecZ;
-
-    RandomUnitSphere _randomUnitSphere;
-    std::auto_ptr<CLHEP::RandGeneral> _funcGen;
-
-    double _mean; //< mean per event
-    double _elow; //< lower photon energy 
-    double _ehi; //< upper photon energy 
-    double _bindE; //< energy bin width for generator
-    int _nbins; //< number of bins in photon energy pdf
-
-
-    // simulation conversions?
-    bool _doConvs;
-
-    // Conversion momentum.
-    double _p;
+    // Limits on the energy range to be generated.
+    // Number of bins in the binned representation of the energy spectrum.
+    double _elow;
+    double _ehi;
+    int    _nbins;
 
     // Limits on the generated direction.
     double _czmin;
@@ -93,16 +70,34 @@ namespace mu2e {
     double _tmin;
     double _tmax;
 
-    // Range for the above.
-    double _dcz;
-    double _dphi;
-    double _dt;
+    // Histogram control.
+    bool _doHistograms;
 
+    // End: parameters that can be configured from the config file.
+
+    // Random number generators.
+    RandomUnitSphere    _randomUnitSphere;
+    CLHEP::RandFlat     _randFlat;
+    CLHEP::RandPoissonQ _randPoissonQ;
+    CLHEP::RandGeneral  _shape;
+
+    // Diagnostic histograms.
+    TH1D* _hMultiplicity;
+    TH1D* _hEElec;
+    TH1D* _hEElecZ;
+    TH1D* _hzPosition;
+    TH1D* _hcz;
+    TH1D* _hphi;
+    TH1D* _ht;
+
+    // Compute the value of the energy spectrum at given energy.
+    const double energySpectrum(double e);
+
+    // Build a binned representation of the energy spectrum.
+    std::vector<double> binnedEnergySpectrum();
 
   };
 
 } // end namespace mu2e,
 
 #endif
-
-
