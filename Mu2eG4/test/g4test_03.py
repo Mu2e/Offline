@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.8 2010/08/17 15:18:39 wb Exp $
-# $Author: wb $
-# $Date: 2010/08/17 15:18:39 $
+# $Id: g4test_03.py,v 1.9 2010/08/18 06:32:22 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/08/18 06:32:22 $
 #
 # Original author Rob Kutschke
 #
@@ -35,8 +35,7 @@ process.TFileService = mu2e.Service("TFileService",
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
+# Define the random number service.
 process.add_(mu2e.Service("RandomNumberGeneratorService"))
 
 # Define the geometry.
@@ -59,7 +58,7 @@ process.source = mu2e.Source("EmptySource")
 process.generate = mu2e.EDProducer(
     "EventGenerator",
     inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_02.txt"),
-    seed=mu2e.untracked.vint32(9877)
+    seed=mu2e.untracked.vint32(7789)
 )
 
 # Run G4 and add its hits to the event.
