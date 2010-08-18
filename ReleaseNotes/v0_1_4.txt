@@ -3,11 +3,34 @@
 
            Release notes for Mu2e Offline software, v0_1_4
 
-  $Id: v0_1_4.txt,v 1.3 2010/08/18 05:11:58 kutschke Exp $
+  $Id: v0_1_4.txt,v 1.4 2010/08/18 06:33:21 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/08/18 05:11:58 $
+  $Date: 2010/08/18 06:33:21 $
 
-4) August 17, 2010 kutschke
+8) August 18, 2010 kutschke
+   EventGenerator/src/ConversionGun.cc
+   EventGenerator/inc/ConversionGun.hh
+    - Change use of CLHEP::RandFlat::shoot() to using fire() from
+      a local instance of RandFlat, that is constructed using the
+      per module engine.
+
+7) August 18, 2010 kutschke
+   EventGenerator/src/EventGenerator_plugin.cc
+    - Pass seed from pSet to createEngine.
+  
+   Mu2eG4/test/g4test_03.py
+    - Change seed to be different than that for G4.
+
+6) August 18, 2010 kutschke
+   EventGenerator/inc/GeneratorBase.hh
+   EventGenerator/src/GeneratorBase.cc
+     - Add  getEngine() method.
+
+5) August 18, 2010 kutschke
+   ToyDP/inc/GenId.hh
+    - Need to include <iostream>, not just <ostream>, to get std::cout.
+
+4) August 18, 2010 kutschke
    Mu2eG4/test/drop.py   
      - This now does what it was advertised to do.
    Mu2eG4/test/replayAll.py
