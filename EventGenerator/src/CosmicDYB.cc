@@ -1,9 +1,9 @@
 //
-// Muon generator, uses Daya Bay libraries
+// Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.7 2010/08/17 15:18:39 wb Exp $
-// $Author: wb $
-// $Date: 2010/08/17 15:18:39 $
+// $Id: CosmicDYB.cc,v 1.8 2010/08/18 21:04:47 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/18 21:04:47 $
 //
 // Original author Yury Kolomensky
 //
