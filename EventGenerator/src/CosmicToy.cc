@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.5 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: CosmicToy.cc,v 1.6 2010/08/18 22:40:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/18 22:40:15 $
 //
 // Original author Rob Kutschke
 //
@@ -30,20 +30,14 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 
-// From CLHEP
+// CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoisson.h"
 
-// From Root.
+// ROOT includes
 #include "TH1D.h"
 
 using namespace std;
-
-using CLHEP::Hep3Vector;
-using CLHEP::HepLorentzVector;
-using CLHEP::RandPoisson;
-using CLHEP::RandFlat;
-
 
 namespace mu2e {
 
@@ -52,9 +46,22 @@ namespace mu2e {
   static const double m = 0.1056584;
 
   CosmicToy::CosmicToy( edm::Run& run, const SimpleConfig& config ):
-    GeneratorBase(){
+    GeneratorBase(),
+    _mean(config.getDouble("cosmictoy.mean",2.)),
+    _doHistograms(config.getBool("cosmictoy.doHistograms",true)),
+    _hMultiplicity(0),
+    _hMomentum(0),
+    _hAngle(0),
+    _randFlat( getEngine() ),
+    _randPoissonQ( getEngine(), std::abs(_mean) ){
 
-    _mean = config.getDouble("cosmictoy.mean",0.);
+    // Sanity check.
+    if ( std::abs(_mean) > 99999. ) {
+      throw cms::Exception("RANGE") 
+        << "DecayInOrbit Gun has been asked to produce a crazily large number of electrons."
+        << _mean
+        << "\n";
+    }
 
     // Access conditions data.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -70,8 +77,13 @@ namespace mu2e {
     _dt   = _tmax - _tmin;
 
     // Book histograms.
-    edm::Service<edm::TFileService> tfs;
-    _cosmicMultiplicity = tfs->make<TH1D>( "cosmicMultiplicity", "Cosmic Multiplicity", 20, 0, 20);
+    if ( _doHistograms ) {
+      edm::Service<edm::TFileService> tfs;
+      edm::TFileDirectory tfdir = tfs->mkdir( "CosmicToy" );
+      _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "Cosmic Toy Multiplicity", 20, 0, 20);
+      _hMomentum     = tfdir.make<TH1D>( "hMomentum",     "Cosmic Toy Momentum",   100, 0, 10000.);
+      _hAngle        = tfdir.make<TH1D>( "hAngle",        "Cosmic Toy Angle from Zenith", 100, 0, 0.5);
+    }
 
   }
 
@@ -80,17 +92,12 @@ namespace mu2e {
 
   void CosmicToy::generate( ToyGenParticleCollection& genParts ){
 
-    if ( _mean <= -99999. ) return;
-
-    // Should get the numbers here from the config file or from the
-    // geometry manager.
-
     // Pick a number of muons from a Poisson distribution.
-    long n;
-    if (_mean<=0) n=(long)-_mean;
-    else          n = CLHEP::RandPoisson::shoot(_mean);
-
-    _cosmicMultiplicity->Fill(n);
+    // Choose the number of electrons to generate this event.
+    long n = _mean < 0 ? static_cast<long>(-_mean) : _randPoissonQ.fire();
+    if ( _doHistograms ){
+      _hMultiplicity->Fill(n);
+    }
 
     for ( int i=0; i<n; ++i ){
 
@@ -98,13 +105,13 @@ namespace mu2e {
       double p = 1500.;
 
       // Look at a small angle around the zenith, going downard.
-      double theta = 0.1*CLHEP::RandFlat::shoot();
+      double theta = 0.1*_randFlat.fire();
 
       // Cosine and sin of polar angle wrt y axis.
       double cy = cos(theta);
       double sy = sin(theta);
 
-      double phi = 2.*M_PI*CLHEP::RandFlat::shoot();
+      double phi = 2.*M_PI*_randFlat.fire();
      
       double e = sqrt(p*p +m*m);
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), e);
@@ -116,18 +123,27 @@ namespace mu2e {
       // We can worry later about the exact meaning of the height.
       // The G4 interface code ( PrimaryGeneratorAction) will put it
       // at the right height.
-      double x = (1.-2.*CLHEP::RandFlat::shoot())*halfLength;
+      double x = (1.-2.*_randFlat.fire())*halfLength;
       double y = 0.;
-      double z = (1.-2.*CLHEP::RandFlat::shoot())*halfLength;
+      double z = (1.-2.*_randFlat.fire())*halfLength;
       CLHEP::Hep3Vector pos( x, y, z );
 
-      double time = _tmin + _dt*CLHEP::RandFlat::shoot();
+      double time = _tmin + _dt*_randFlat.fire();
 
       // Pick a random charge.
-      PDGCode::type pid = (CLHEP::RandFlat::shoot() >0.5) ? PDGCode::mu_minus : PDGCode::mu_plus;
+      PDGCode::type pid = (_randFlat.fire() >0.5) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
-      // Add the cosmic to  the list.
+      // Add the cosmic ray muon to the list of generated particles.
       genParts.push_back( ToyGenParticle( pid, GenId::cosmicToy, pos, mom, time));
+
+      if ( _doHistograms ){
+        static CLHEP::Hep3Vector vertical( 0., -1., 0.);
+        double angle = mom.angle(vertical);
+        
+        _hMomentum->Fill(p);
+        _hAngle->Fill(angle);
+      }
+
     }
   }
 

@@ -4,24 +4,29 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.hh,v 1.2 2009/11/13 23:29:19 kutschke Exp $
+// $Id: CosmicToy.hh,v 1.3 2010/08/18 22:40:15 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/11/13 23:29:19 $
+// $Date: 2010/08/18 22:40:15 $
 //
 // Original author Rob Kutschke
 //
 
+// Mu2e includes.
 #include "EventGenerator/inc/GeneratorBase.hh"
 
-class TH1D;
+// CLHEP includes
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 
+// Forward references outside of namespace mu2e.
+class TH1D;
 namespace edm{
   class Run;
 }
 
 namespace mu2e {
 
-  // Forward reference.
+  // Forward references.
   class SimpleConfig;
 
   class CosmicToy: public GeneratorBase{
@@ -34,11 +39,24 @@ namespace mu2e {
 
   private:
 
-    // Histogram of multiplicity.
-    TH1D* _cosmicMultiplicity;
+    // Start: run time configurable parameters
 
-    // Mean multiplicity.
+    // Mean multiplicity. If negative, use -_mean as a fixed number
     double _mean;
+
+    // Control making of histograms.
+    bool _doHistograms;
+
+    // end: run time configurable parameters
+
+    // Histogram of multiplicity.
+    TH1D* _hMultiplicity;
+    TH1D* _hMomentum;
+    TH1D* _hAngle;
+
+    // Random number distributions.
+    CLHEP::RandFlat     _randFlat;
+    CLHEP::RandPoissonQ _randPoissonQ;
 
     // Time range ( in ns) over which to generate events.
     double _tmin;

@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.8 2010/08/18 21:04:47 kutschke Exp $
+// $Id: CosmicDYB.cc,v 1.9 2010/08/18 22:40:15 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/18 21:04:47 $
+// $Date: 2010/08/18 22:40:15 $
 //
 // Original author Yury Kolomensky
 //
@@ -93,6 +93,9 @@ namespace mu2e {
   , _ne ( config.getInt("cosmicDYB.nBinsE", _default_ne) )
   , _nth( config.getInt("cosmicDYB.nBinsTheta",_default_nth) )
 
+    // Control of histograms.
+  , _doHistograms( config.getBool("cosmicDYB.doHistograms", true) )
+
     // end of configurable parameters
 
     // Time range (in ns) over which to generate events.
@@ -100,9 +103,22 @@ namespace mu2e {
   ,_tmax( 0.0 )
   ,_dt  ( 0.0 )
 
+    // Random number distributions.
+  ,_randFlat( getEngine() )
+  ,_randPoissonQ( getEngine(), std::abs(_mean) )
+
     // Working space for hrndg2 (working space will be on the heap).
   , _workingSpace( )
   {
+
+    // Sanity check.
+    if ( std::abs(_mean) > 99999. ) {
+      throw cms::Exception("RANGE") 
+        << "DecayInOrbit Gun has been asked to produce a crazily large number of electrons."
+        << _mean
+        << "\n";
+    }
+
     // Allocate hrndg2 working space on the heap.
     _workingSpace.resize(_ne*_nth);
 
@@ -131,29 +147,31 @@ namespace mu2e {
     _tmax = accPar->deBuncherPeriod;
     _dt   = _tmax - _tmin;
 
-    // Book histograms in a separate subdirector for this generator.
-    edm::Service<edm::TFileService> tfs;
 
-    edm::TFileDirectory tfdir = tfs->mkdir( "CosmicDYB" );
-    _cosmicMultiplicityH = tfdir.make<TH1D>( "MultiplicityH", "Cosmic Multiplicity", 20, -0.5, 19.5);
+    // Book histograms in a separate subdirectory.
+    if ( _doHistograms ){
 
-    // log of muon energy (GeV)
-    _cosmicMomH = tfdir.make<TH1D>( "MomH", "log (Momentum, GeV)", 60, -3, 3);
+      edm::Service<edm::TFileService> tfs;
 
-    // charge
-    _cosmicChargeH = tfdir.make<TH1D>( "ChargeH", "Muon Charge", 2, -2, 2.);
+      edm::TFileDirectory tfdir = tfs->mkdir( "CosmicDYB" );
+      _cosmicMultiplicityH = tfdir.make<TH1D>( "MultiplicityH", "Cosmic Multiplicity", 20, -0.5, 19.5);
+      
+      // log of muon energy (GeV)
+      _cosmicMomH = tfdir.make<TH1D>( "MomH", "log (Momentum, GeV)", 60, -3, 3);
+      
+      // charge
+      _cosmicChargeH = tfdir.make<TH1D>( "ChargeH", "Muon Charge", 2, -2, 2.);
 
-    // cos(theta)
-    _cosmicCosThetaH = tfdir.make<TH1D>( "CosThetaH", "Cos(Theta)", 60, -1, 1.);
+      // cos(theta)
+      _cosmicCosThetaH = tfdir.make<TH1D>( "CosThetaH", "Cos(Theta)", 60, -1, 1.);
+      
+      // cos(theta) vs log(energy)
+      _cosmicCosThetaVsEH = tfdir.make<TH2D>( "CosThetavsEH", "Cos(Theta) vs log (Momentum, GeV)",
+                                              60, -3., 3., 60, -1., 1.);
+    }
 
-    // cos(theta) vs log(energy)
-    _cosmicCosThetaVsEH = tfdir.make<TH2D>( "CosThetavsEH", "Cos(Theta) vs log (Momentum, GeV)",
-                                            60, -3., 3., 60, -1., 1.);
-
-      // Initialize fake RM48 that is used by DYB code.
-    edm::Service<edm::RandomNumberGeneratorService>  rng;
-    static CLHEP::RandFlat flat( rng -> getEngine() );
-    setRm48Distribution(flat);
+    // Initialize fake RM48 that is used by DYB code.
+    setRm48Distribution(_randFlat);
 
     // initialize DYB generator
     float par = 1.;
@@ -176,16 +194,11 @@ namespace mu2e {
 
   void CosmicDYB::generate( ToyGenParticleCollection& genParts ){
 
-    if ( _mean <= -99999. ) return;
-
-    // Should get the numbers here from the config file or from the
-    // geometry manager.
-
-    // Pick a number of muons from a Poisson distribution.
-    long n = _mean < 0 ? long(- _mean)
-                       : CLHEP::RandPoisson::shoot(_mean);
-
-    _cosmicMultiplicityH->Fill(n);
+    // Choose the number of electrons to generate this event.
+    long n = (_mean < 0) ? static_cast<long>(-_mean) : _randPoissonQ.fire();
+    if ( _doHistograms) {
+      _cosmicMultiplicityH->Fill(n);
+    }
 
     for ( int i = 0; i != n; ++i ){
 
@@ -213,7 +226,7 @@ namespace mu2e {
       double cy = cosTh;
       double sy = safeSqrt(1. - cosTh*cosTh);
 
-      double phi = 2.*M_PI*CLHEP::RandFlat::shoot();
+      double phi = 2.*M_PI*_randFlat.fire();
 
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
 
@@ -222,12 +235,12 @@ namespace mu2e {
       // The G4 interface code ( PrimaryGeneratorAction) will put it
       // at the right height.
       // units of (x,y,z)
-      double x = (1.-2.*CLHEP::RandFlat::shoot())*_dx;
+      double x = (1.-2.*_randFlat.fire())*_dx;
       double y = _y0;
-      double z = (1.-2.*CLHEP::RandFlat::shoot())*_dz;
+      double z = (1.-2.*_randFlat.fire())*_dz;
       CLHEP::Hep3Vector pos( x, y, z );
 
-      double time = _tmin + _dt*CLHEP::RandFlat::shoot();
+      double time = _tmin + _dt*_randFlat.fire();
 
       // Pick a random charge.
       // implement a rough charge asymmetry
@@ -242,7 +255,7 @@ namespace mu2e {
       }
 
 
-      PDGCode::type pid = (CLHEP::RandFlat::shoot() > asym/(1+asym) ) ? PDGCode::mu_minus : PDGCode::mu_plus;
+      PDGCode::type pid = (_randFlat.fire() > asym/(1+asym) ) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
       _cosmicChargeH->Fill(-pid/abs(pid));
 

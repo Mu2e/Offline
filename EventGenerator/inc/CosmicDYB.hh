@@ -3,9 +3,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.3 2010/08/17 15:18:39 wb Exp $
-// $Author: wb $
-// $Date: 2010/08/17 15:18:39 $
+// $Id: CosmicDYB.hh,v 1.4 2010/08/18 22:40:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/18 22:40:15 $
 //
 // Original author Yury Kolomensky
 //
@@ -14,10 +14,12 @@
 
 #include "EventGenerator/inc/GeneratorBase.hh"
 
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandPoissonQ.h"
+
 // Forward declarations.
 class TH1D;
 class TH2D;
-
 namespace edm{
   class Run;
 }
@@ -62,6 +64,9 @@ namespace mu2e {
     long _ne;
     long _nth;
 
+    // Do we make the histograms.
+    bool _doHistograms;
+
     // end of configurable parameters
 
     // Time range (in ns) over which to generate events.
@@ -69,12 +74,17 @@ namespace mu2e {
     double _tmax;
     double _dt;
 
+    // Random number distributions.
+    CLHEP::RandFlat     _randFlat;
+    CLHEP::RandPoissonQ _randPoissonQ;
+
     // Default dimensions
     static const long _default_ne = 4000;
     static const long _default_nth = 100;
 
     // Working space for hrndg2 ( working space will be on the heap).
     std::vector<double> _workingSpace;
+
 
   };  // CosmicDYB
 
