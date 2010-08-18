@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.6 2010/08/18 22:40:15 kutschke Exp $
+// $Id: CosmicToy.cc,v 1.7 2010/08/18 22:43:37 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/18 22:40:15 $
+// $Date: 2010/08/18 22:43:37 $
 //
 // Original author Rob Kutschke
 //
@@ -58,7 +58,7 @@ namespace mu2e {
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
       throw cms::Exception("RANGE") 
-        << "DecayInOrbit Gun has been asked to produce a crazily large number of electrons."
+        << "CosmicToy has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
     }

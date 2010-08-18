@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.9 2010/08/18 22:40:15 kutschke Exp $
+// $Id: CosmicDYB.cc,v 1.10 2010/08/18 22:43:37 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/18 22:40:15 $
+// $Date: 2010/08/18 22:43:37 $
 //
 // Original author Yury Kolomensky
 //
@@ -114,7 +114,7 @@ namespace mu2e {
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
       throw cms::Exception("RANGE") 
-        << "DecayInOrbit Gun has been asked to produce a crazily large number of electrons."
+        << "CosmicDYB has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
     }
