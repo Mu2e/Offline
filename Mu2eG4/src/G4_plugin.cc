@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.22 2010/08/10 19:06:58 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.23 2010/08/18 04:10:34 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/10 19:06:58 $
+// $Date: 2010/08/18 04:10:34 $
 //
 // Original author Rob Kutschke
 //
@@ -111,11 +111,13 @@ namespace mu2e {
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,edm::InRun>();
 
+      // The string "G4Engine" is magic; see the docs for RandomNumberGeneratorService.
+      createEngine( get_seed_value(pSet), "G4Engine");
+
     }
 
     virtual ~G4() { 
-      // Must not delete the pointers handed to G4.
-      // G4 takes over the lifetime of these objects.
+      // See note 1.
     }
 
     virtual void produce(edm::Event& e, edm::EventSetup const& c);
