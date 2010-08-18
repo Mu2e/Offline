@@ -1,0 +1,22 @@
+
+  Still under construction
+
+           Release notes for Mu2e Offline software, v0_1_5
+
+  $Id: v0_1_5.txt,v 1.1 2010/08/18 22:47:22 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/08/18 22:47:22 $
+
+
+2) August 18, 2010 kutschke
+   EventGenerator/src/DecayInOrbitGun.cc
+    - Fix typo in histogram title 
+    - Initialize mean of Poisson in initializer list, not in generate().
+
+1) August 18, 2010 kutschke
+   EventGenerator/inc/CosmicDYB.hh 
+   EventGenerator/src/CosmicDYB.cc 
+   EventGenerator/inc/CosmicToy.hh 
+   EventGenerator/src/CosmicToy.cc
+    - convert to RandomNumberGeneratorService
+    - Some small fixups.
