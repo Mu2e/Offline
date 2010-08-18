@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.8 2010/04/02 18:18:13 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/04/02 18:18:13 $
+// $Id: GenId.hh,v 1.9 2010/08/18 06:30:52 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/18 06:30:52 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,7 @@
 //    at the end of the .cc file.
 // 4) Root stores enum types as 32 bit ints.
 
-#include <ostream>
+#include <iostream>
 #include <vector>
 #include <string>
 
