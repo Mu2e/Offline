@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.14 2010/08/17 15:18:39 wb Exp $
-  $Author: wb $
-  $Date: 2010/08/17 15:18:39 $
+  $Id: EventGenerator_plugin.cc,v 1.15 2010/08/18 06:31:47 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/08/18 06:31:47 $
 
   Original author Rob Kutschke
 
@@ -87,8 +87,8 @@ namespace mu2e {
       // Print generators for which Id's are defined.
       //GenId::printAll();
 
-      // provide a common engine for the generators to use via the service
-      createEngine( -1 );
+      // Provide a common engine for the generators to use via the service
+      createEngine( get_seed_value(pSet) );
     }
 
     virtual ~EventGenerator() { }
