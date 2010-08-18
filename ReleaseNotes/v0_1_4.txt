@@ -1,11 +1,26 @@
 
-  Still under construciton.
 
            Release notes for Mu2e Offline software, v0_1_4
 
-  $Id: v0_1_4.txt,v 1.4 2010/08/18 06:33:21 kutschke Exp $
+  $Id: v0_1_4.txt,v 1.5 2010/08/18 21:11:56 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/08/18 06:33:21 $
+  $Date: 2010/08/18 21:11:56 $
+
+10) August 18, 2010 kutschke
+    EventGenerator/inc/DecayInOrbitGun.hh 
+    EventGenerator/src/DecayInOrbitGun.cc
+     - Now uses RandomNumberGeneratorService rather than the CLHEP global distributions.
+     - This code was badly broken in many ways.  It is now fixed.
+     - In the process of fixing it, I did a major reorganization.    
+
+9) August 18, 2010 kutschke
+   Mu2eUtilities/inc/RandomUnitSphere.hh
+   Mu2eUtilities/src/RandomUnitSphere.cc
+    - Now uses RandomNumberGeneratorService rather than the CLHEP global distributions.
+    - Renamed shoot to fire to follow standard usage.
+    - Keep shoot around as a depracted method for a while - it just calls fire.
+    - Added second fire method that lets you change the magnitude of the vector.
+    - Added a new c'tor that takes a reference to an engine.
 
 8) August 18, 2010 kutschke
    EventGenerator/src/ConversionGun.cc
