@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.7 2010/08/18 21:04:28 kutschke Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.8 2010/08/18 22:43:17 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/08/18 21:04:28 $
+// $Date: 2010/08/18 22:43:17 $
 //
 // Original author Rob Kutschke
 // 
@@ -92,7 +92,7 @@ namespace mu2e {
     // Random number distributions.
     _randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax),
     _randFlat( getEngine() ),
-    _randPoissonQ( getEngine(), _mean),
+    _randPoissonQ( getEngine(), std::abs(_mean) ),
 
     // See Note 4.
     _shape( GeneratorBase::getEngine(), &(binnedEnergySpectrum()[0]), _nbins),
@@ -106,6 +106,7 @@ namespace mu2e {
     _hphi(0),
     _ht()  {
 
+    // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
       throw cms::Exception("RANGE") 
         << "DecayInOrbit Gun has been asked to produce a crazily large number of electrons."
@@ -132,7 +133,7 @@ namespace mu2e {
       _hEElecZ       = tfdir.make<TH1D>( "hEElecZ",       "DIO Electron Energy (zoom)",     200,  _elow, _ehi     );
       _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "DIO z Position (Tracker Coord)", 200, -6600., -5600.   );
       _hcz           = tfdir.make<TH1D>( "hcz",           "DIO cos(theta)",                 100,    -1.,    -1.   );
-      _hphi          = tfdir.make<TH1D>( "hphi",          "DIO cos(theta)",                 100,  -M_PI,   M_PI   );
+      _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 200, 0, 2000. );
     }
   }
@@ -143,7 +144,7 @@ namespace mu2e {
   void DecayInOrbitGun::generate( ToyGenParticleCollection& genParts ){
 
     // Choose the number of electrons to generate this event.
-    long n = _mean < 0 ? long(- _mean): _randPoissonQ.fire(_mean);
+    long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
     if ( _doHistograms ) { 
       _hMultiplicity->Fill(n); 
     }
