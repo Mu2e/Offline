@@ -5,9 +5,9 @@
 //
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
-// $Id: PiCapture.hh,v 1.4 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/05/17 21:47:33 $
+// $Id: PiCapture.hh,v 1.5 2010/08/19 19:10:36 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/08/19 19:10:36 $
 //
 // Original author Rob Kutschke, P. Shanahan
 // 
@@ -43,7 +43,6 @@ namespace mu2e {
 
     const double EPhotFunc(const double x);
 
-    TH1D* _piCaptureMultiplicity;
     TH1D* _piCaptureEPhot;
     TH1D* _piCaptureEPhotZ;
 
