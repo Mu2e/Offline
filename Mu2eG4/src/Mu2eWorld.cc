@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.45 2010/08/13 16:54:51 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/08/13 16:54:51 $
+// $Id: Mu2eWorld.cc,v 1.46 2010/08/19 15:46:49 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/19 15:46:49 $
 //
 // Original author Rob Kutschke
 //
@@ -145,6 +145,7 @@ namespace mu2e {
 
     // If you play with the order of these calls, you may break things.
     defineMu2eOrigin();
+    VolumeInfo::setMu2eOriginInWorld( _mu2eOrigin );
     VolumeInfo dirtInfo  = constructDirt();
     VolumeInfo hallInfo  = constructHall( dirtInfo );
     constructDS(hallInfo);
