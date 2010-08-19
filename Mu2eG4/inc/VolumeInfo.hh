@@ -6,9 +6,9 @@
 // and is useful only for the top few levels of the detector.
 // 
 // 
-// $Id: VolumeInfo.hh,v 1.3 2010/06/02 04:00:50 kutschke Exp $
+// $Id: VolumeInfo.hh,v 1.4 2010/08/19 15:46:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/02 04:00:50 $
+// $Date: 2010/08/19 15:46:07 $
 //
 // Original author Rob Kutschke
 //
@@ -54,6 +54,16 @@ namespace mu2e {
     // Location information in two coordinate systems.
     G4ThreeVector      centerInParent;
     G4ThreeVector      centerInWorld;
+
+    G4ThreeVector centerInMu2e() const { return centerInWorld-_Mu2eOriginInWorld; }
+
+    static void setMu2eOriginInWorld( const G4ThreeVector& origin ){
+      _Mu2eOriginInWorld = origin;
+    }
+
+  private:
+
+    static G4ThreeVector _Mu2eOriginInWorld;
 
   };
 
