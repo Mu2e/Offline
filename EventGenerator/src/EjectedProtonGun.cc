@@ -1,15 +1,31 @@
 //
-// Generate an ejected proton from the stopping target; use the MECO distributions
-// from a random spot within the target system at
-// a random time during the accelerator cycle.
-
 //
-// $Id: EjectedProtonGun.cc,v 1.5 2010/05/18 21:15:34 kutschke Exp $ 
+// Simulate the protons that come from the stopping target when muons capture
+// on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
+// protons.  Production is uniform across the targets and uniform in time;
+// this model needs to be improved.
+//
+// $Id: EjectedProtonGun.cc,v 1.6 2010/08/19 22:03:11 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/05/18 21:15:34 $
+// $Date: 2010/08/19 22:03:11 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
+// 1) This code uses a incorrect model of the distribution of proton production over 
+//    the targets.  It is uniform in target number and uniform across each target.
+//    At a future date this needs to be made more realistic.
+// 2) This code uses an incorrect model of the distribution of protons in time.
+//    At a future date this needs to be made more realistic.
+// 3) About the initialization of _shape.
+//    The c'tor of RandGeneral wants, as its second argument, the starting
+//    address of an array of doubles that describes the required shape.
+//    The method binnedEnergySpectrum returns, by value, a std::vector<double>.
+//    We can get the required argument by taking the address of the first element 
+//    of the std::vector. There is a subtlety about the return value of
+//    binnedEnergySpectrum:  it returns by value to a temporary variable that
+//    we cannot see; this variable goes out of scope after the c'tor completes;
+//    therefore its lifetime is managed properly.
+//
 
 // C++ incldues.
 #include <iostream>
@@ -17,6 +33,8 @@
 // Framework includes
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Services/interface/TFileService.h"
+#include "FWCore/Framework/interface/TFileDirectory.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/EjectedProtonGun.hh"
@@ -26,6 +44,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
@@ -36,25 +55,40 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-
+//ROOT Includes
+#include "TH1D.h"
+#include "TMath.h"
 
 using namespace std;
-
-using CLHEP::Hep3Vector;
-using CLHEP::HepLorentzVector;
-using CLHEP::RandFlat;
-using CLHEP::twopi;
-
 
 namespace mu2e {
 
   // these all need to be in a database eventually
   // Mass of the proton.
   // Once we have the HepPDT package installed, get this number from there.
-  static const double mProton = 938.272;
+  //static const double mProton = 938.272;
 
   EjectedProtonGun::EjectedProtonGun( edm::Run& run, const SimpleConfig& config ):
-    GeneratorBase(){
+    GeneratorBase(),
+    
+    // Configurable parameters
+    _mean(config.getDouble("ejectedProtonGun.mean",1.)),
+    _elow(config.getDouble("ejectedProtonGun.elow",0.)),
+    _ehi(config.getDouble("ejectedProtonGun.ehi",.100)),
+    _czmin(config.getDouble("ejectedProtonGun.czmin",  0.3)),
+    _czmax(config.getDouble("ejectedProtonGun.czmax",  0.6)),
+    _phimin(config.getDouble("ejectedProtonGun.phimin", 0. )),
+    _phimax(config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi )),
+    _nbins(config.getInt("ejectedProtonGun.nbins",1000)),
+    _doHistograms(config.getBool("ejectedProtonGun.doHistograms",true)),
+
+    // Initialize random number distributions.
+    _randFlat( getEngine() ),
+    _randPoissonQ( getEngine(), std::abs(_mean) ),
+    _randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax),
+
+    // See Note 3.
+    _shape( GeneratorBase::getEngine(), &(binnedEnergySpectrum()[0]), _nbins){
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
@@ -62,130 +96,108 @@ namespace mu2e {
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
+    ConditionsHandle<ParticleDataTable> pdt("ignored");
     
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
-    double _tmin = daqPar->t0;
-    double _tmax = accPar->deBuncherPeriod;
+    _tmin = daqPar->t0;
+    _tmax = accPar->deBuncherPeriod;
     
-    _doEjectedProton = config.getBool( "ejectedProtonGun.do", 0);
-    _ejectedProtonMomentum      = config.getDouble("ejectedProtonGun.p", .100);
-    
-    _czmin  = config.getDouble("ejectedProtonGun.czmin",  0.3);
-    _czmax  = config.getDouble("ejectedProtonGun.czmax",  0.6);
-    _phimin = config.getDouble("ejectedProtonGun.phimin", 0. );
-    _phimax = config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi );
-    _tmin   = config.getDouble("ejectedProtonGun.tmin",  _tmin );
-    _tmax   = config.getDouble("ejectedProtonGun.tmax",  _tmax );
+    _tmin = config.getDouble("ejectedProtonGun.tmin",  _tmin );
+    _tmax = config.getDouble("ejectedProtonGun.tmax",  _tmax );
 
-    _mean = config.getDouble("ejectedProtonGun.mean",1.);
-    _elow = config.getDouble("ejectedProtonGun.elow",0.);
-    _ehi = config.getDouble("ejectedProtonGun.ehi",.100);
-    _nbins = config.getInt("ejectedProtonGun.nbins",1000);
-
-
-    _dcz  = (  _czmax -  _czmin);
-    _dphi = ( _phimax - _phimin);
-    _dt   = (   _tmax -   _tmin);
-
-
-    double pEndPoint = _ehi; // rename here for naturalness inside, _ehi for uniformity outside
-
-    cout << "from EjectedProtonGun: _elow, _ehi = " << _elow << " " << _ehi << endl;
-
-    // set up the generator function
-    if (_nbins>0) _bindE = (_ehi - _elow) / _nbins;
-    else {
-      // I'm sure this isn't the right way to do this...
-      throw cms::Exception("RANGE") <<"Nonsense EjectedProtonGun.nbins requested="<<
-        _nbins<<"\n";
-    }
-
-    double YFunc[_nbins];
-    for (int ib=0; ib<_nbins; ib++) {
-
-      double x = _elow+(ib+0.5) * _bindE;
-      if (x > pEndPoint)
-        {
-          cout << "past endpoint " << endl;
-          YFunc[ib] = 0.;
-        }
-      else
-        {
-          YFunc[ib] = EnergyEjectedProtonFunc(x);
-          //           cout << "ib, x, Spectrum from EjectedProtonGun= " << ib << " " << x << " " << EnergyEjectedProtonFunc(x) << endl;
-        }
-    }
-    _funcGen = auto_ptr<CLHEP::RandGeneral>(new CLHEP::RandGeneral(YFunc,_nbins));
+    // Get the electron mass from the particle data table (in MeV).
+    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::p_plus);
+    _mProton = e_data.mass().value();
 
     // Book histograms.
-    edm::Service<edm::TFileService> tfs;
-    _ejectedProtonMultiplicity = tfs->make<TH1D>( "ejectedProtonMultiplicity", "Ejected Proton Multiplicity", 20, 0, 20);
-    _ejectedProtonKE = tfs->make<TH1D>( "ejectedProtonKE", "Ejected Proton Kinetic Energy", 10, _elow,_ehi);
-    _ejectedProtonMomentumMeV = tfs->make<TH1D>( "ejectedProtonMomentumMeV", "Ejected Proton Momentum in MeV", 10, _elow,_ehi);
-    _ejectedProtonKEZoom = tfs->make<TH1D>( "ejectedProtonEZoom", "Ejected Proton Kinetic Energy (zoom)", 200, _elow, _ehi);
+    if ( _doHistograms ){
+      edm::Service<edm::TFileService> tfs;
+      edm::TFileDirectory tfdir  = tfs->mkdir( "EjectedProtonGun" );
+      _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "Proton Multiplicity",                20,     0,     20  );
+      _hKE           = tfdir.make<TH1D>( "hKE",           "Proton Kinetic Energy",              50, _elow,   _ehi  );
+      _hMomentumMeV  = tfdir.make<TH1D>( "hMomentumMeV",  "Proton Momentum in MeV",             50, _elow,   _ehi  );
+      _hKEZoom       = tfdir.make<TH1D>( "hEZoom",        "Proton Kinetic Energy (zoom)",      200, _elow,   _ehi  );
+      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Proton z Position (Tracker Coord)", 200, -6600., -5600. );
+      _hcz           = tfdir.make<TH1D>( "hcz",           "Proton cos(theta)",                 100,    -1.,     1. );
+      _hphi          = tfdir.make<TH1D>( "hphi",          "Proton azimuth",                    100,  -M_PI,  M_PI  );
+      _htime         = tfdir.make<TH1D>( "htime",         "Proton time ",                      200,      0,  2000. );
+    }
   }
   
   EjectedProtonGun::~EjectedProtonGun(){
   }
   
   void EjectedProtonGun::generate( ToyGenParticleCollection& genParts ){
-    if (!_doEjectedProton) return;
-    cout << "in EjectedProton gun " << endl;//save for debugging to make sure right genconfig_ij.txt
 
-    // Get access to the geometry system.
+    // Choose the number of electrons to generate this event.
+    long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
+    if ( _doHistograms ) { 
+      _hMultiplicity->Fill(n); 
+    }
+
+    // Get information about the target system.
     GeomHandle<Target> target;
-    
     int nFoils = target->nFoils();
-    
-    // Pick a foil.
-    int ifoil = static_cast<int>(nFoils*CLHEP::RandFlat::shoot());
-    TargetFoil const& foil = target->foil(ifoil);
 
-    // Foil properties.
-    CLHEP::Hep3Vector const& center = foil.center();
-    const double r1 = foil.rIn();
-    const double dr = foil.rOut() - r1;
-    
-    // A random point within the foil.
-    const double r   = r1 + dr*CLHEP::RandFlat::shoot();
-    const double dz  = (-1.+2.*CLHEP::RandFlat::shoot())*foil.halfThickness();
-    const double phi = CLHEP::twopi*CLHEP::RandFlat::shoot();
-    CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
-                           center.y()+r*sin(phi), 
-                           center.z()+dz );
-    
-    // Random direction.
-    // Replace this with RandomUnitSphere from Mu2eUtilities/inc
-    const double cz   = _czmin  +  _dcz*CLHEP::RandFlat::shoot();
-    const double phi2 = _phimin + _dphi*CLHEP::RandFlat::shoot();
-    
-    // This should be an exponential decay.
-    const double time = _tmin   +   _dt*CLHEP::RandFlat::shoot();
+    for ( long i=0; i<n; ++i ){
 
-    // Derived quantities.
-    const double sz   = safeSqrt(1.- cz*cz); // what's the diff between this and boost's sqrtOrThrow?
+      // Pick a foil.
+      int ifoil = static_cast<int>(nFoils*_randFlat.fire());
+      TargetFoil const& foil = target->foil(ifoil);
+      
+      // Foil properties.
+      CLHEP::Hep3Vector const& center = foil.center();
+      const double r1 = foil.rIn();
+      const double dr = foil.rOut() - r1;
 
-    // Pick a random energy.  
-    _ejectedProtonKineticEnergy = _elow + _funcGen->shoot() * ( _ehi - _elow );// returned in GeV, original code was in MeV
-    _ejectedProtonKE->Fill(_ejectedProtonKineticEnergy);
-    _ejectedProtonKEZoom->Fill(_ejectedProtonKineticEnergy);
-    _ejectedProtonEnergy = _ejectedProtonKineticEnergy + mProton;
+      // Pick a random point within the foil.
+      const double r   = r1 + dr*_randFlat.fire();
+      const double dz  = (-1.+2.*_randFlat.fire())*foil.halfThickness();
+      const double phi = CLHEP::twopi*_randFlat.fire();
+      CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
+                             center.y()+r*sin(phi), 
+                             center.z()+dz );
 
-    double ejectedProtonMomentum = safeSqrt(_ejectedProtonEnergy*_ejectedProtonEnergy - mProton*mProton);
-    _ejectedProtonMomentumMeV->Fill(ejectedProtonMomentum);
-    
-    CLHEP::HepLorentzVector mom( _ejectedProtonMomentum*sz*cos(phi2), ejectedProtonMomentum*sz*sin(phi2), ejectedProtonMomentum*cz, 
-                                 _ejectedProtonEnergy);
+      // Pick a kinetic energy from the distribution.  Compute energy and momentum.
+      double eKine = _elow + _shape.fire() * ( _ehi - _elow );
+      double ePr   = eKine + _mProton;
+      double pPr   = safeSqrt(ePr*ePr - _mProton*_mProton);
 
-    // Add the proton to  the list.
-    genParts.push_back( ToyGenParticle( PDGCode::p_plus, GenId::ejectedProtonGun, pos, mom, time));
+      // Pick a 4 vector uniformly over the requested region of the unit sphere.
+      CLHEP::HepLorentzVector mom( _randomUnitSphere.fire(pPr), ePr);
 
-  }
+      // This is not the right time structure.
+      double time = _tmin + (_tmax - _tmin)*_randFlat.fire();
 
+      // Add the proton to the list of generated particles.
+      genParts.push_back( ToyGenParticle( PDGCode::p_plus, GenId::ejectedProtonGun, pos, mom, time));
 
-  double EjectedProtonGun::EnergyEjectedProtonFunc(const double protonKineticEnergyInMeV)
-  {
+      cout << "Ejected proton: " 
+           << mom  << " "
+           << pPr << " "
+           << mom.vect().mag() << " "
+           << time
+           << endl;
+
+      // Fill histograms.
+      if ( _doHistograms) {
+        _hKE->Fill(eKine);
+        _hKEZoom->Fill(eKine);
+        _hMomentumMeV->Fill(pPr);
+        _hzPosition->Fill(pos.z());
+        _hcz->Fill(mom.cosTheta());
+        _hphi->Fill(mom.phi());
+        _htime->Fill(time);
+      }
+
+    } // end loop over generated protons.
+
+} // end generate
+
+  // Input argument is in MeV.
+  double EjectedProtonGun::energySpectrum(const double protonKineticEnergyInMeV){
+
     //taken from GMC 
     //
     //   Ed Hungerford  Houston University May 17 1999 
@@ -196,7 +208,7 @@ namespace mu2e {
     // 
     //   Generates a proton spectrum similar to that observed in
     //   u capture in Si.  JEPT 33(1971)11 and PRL 20(1967)569
-
+    
     //these numbers are in MeV!!!!
     static const double emx = 1000.;
     static const double fac = 8.4;
@@ -211,13 +223,13 @@ namespace mu2e {
     static const double par6=10.014;
     static const double par7=1050.;
     static const double par8=5.103;
-
+  
     double spectrumWeight;
     if (protonKineticEnergyInMeV >= 20)
       {
         spectrumWeight=par5*TMath::Exp(-(protonKineticEnergyInMeV-20.)/par6);
       }
-
+    
     else if(protonKineticEnergyInMeV >= 8.0 && protonKineticEnergyInMeV <= 20.0)
       {
         spectrumWeight=par7*exp(-(protonKineticEnergyInMeV-8.)/par8);
@@ -233,14 +245,36 @@ namespace mu2e {
       {
         spectrumWeight = 0.;
       }
+    
+    
+    return spectrumWeight;
 
+  } // EjectedProtonGun::EnergyEjectedProtonFunc
 
-    return spectrumWeight; // GMC code was in MeV
+  // Compute a binned representation of the energy spectrum.
+  std::vector<double> EjectedProtonGun::binnedEnergySpectrum(){
 
+    // Sanity check.
+    if (_nbins <= 0) {
+      throw cms::Exception("RANGE") 
+        << "Nonsense ejectedProtonGun.nbins requested="
+        << _nbins
+        << "\n";
+    }
 
-  }// EjectedProtonGun::EnergyEjectedProtonFunc
+    // Bin width.
+    double dE = (_ehi - _elow) / _nbins;
 
+    // Vector to hold the binned representation of the energy spectrum.
+    std::vector<double> spectrum;
+    spectrum.reserve(_nbins);
 
+    for (int ib=0; ib<_nbins; ib++) {
+      double e = _elow+(ib+0.5) * dE;
+      spectrum.push_back(energySpectrum(e));
+    }
 
+    return spectrum;
+  } // EjectedProtonGun::binnedEnergySpectrum(){
 
-}
+} // namespace mu2e
