@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.3 2010/08/18 21:04:28 kutschke Exp $
+// $Id: DecayInOrbitGun.hh,v 1.4 2010/08/19 22:02:51 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/18 21:04:28 $
+// $Date: 2010/08/19 22:02:51 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -91,7 +91,7 @@ namespace mu2e {
     TH1D* _ht;
 
     // Compute the value of the energy spectrum at given energy.
-    const double energySpectrum(double e);
+    double energySpectrum(double e);
 
     // Build a binned representation of the energy spectrum.
     std::vector<double> binnedEnergySpectrum();

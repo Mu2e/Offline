@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.8 2010/08/18 22:43:17 kutschke Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.9 2010/08/19 22:02:52 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/08/18 22:43:17 $
+// $Date: 2010/08/19 22:02:52 $
 //
 // Original author Rob Kutschke
 // 
@@ -132,7 +132,7 @@ namespace mu2e {
       _hEElec        = tfdir.make<TH1D>( "hEElec",        "DIO Electron Energy",             10,  _elow,    0.105 );
       _hEElecZ       = tfdir.make<TH1D>( "hEElecZ",       "DIO Electron Energy (zoom)",     200,  _elow, _ehi     );
       _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "DIO z Position (Tracker Coord)", 200, -6600., -5600.   );
-      _hcz           = tfdir.make<TH1D>( "hcz",           "DIO cos(theta)",                 100,    -1.,    -1.   );
+      _hcz           = tfdir.make<TH1D>( "hcz",           "DIO cos(theta)",                 100,    -1.,     1.   );
       _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 200, 0, 2000. );
     }
@@ -204,7 +204,7 @@ namespace mu2e {
   } // DecayInOrbitGun::generate
 
   // Energy spectrum of the electron from DIO.
-  const double DecayInOrbitGun::energySpectrum(const double e)
+  double DecayInOrbitGun::energySpectrum( double e )
   {
     return pow<5>(conversionEnergyAluminum - e) ;
   } 
