@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.5 2010/08/10 19:06:58 kutschke Exp $
+// $Id: CosmicTuple.cc,v 1.6 2010/08/19 15:47:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/10 19:06:58 $
+// $Date: 2010/08/19 15:47:13 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,6 @@
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
