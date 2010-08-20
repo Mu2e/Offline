@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.9 2010/08/19 22:02:52 kutschke Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.10 2010/08/20 14:45:09 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/08/19 22:02:52 $
+// $Date: 2010/08/20 14:45:09 $
 //
 // Original author Rob Kutschke
 // 
@@ -76,6 +76,8 @@ namespace mu2e {
   static const double conversionEnergyAluminum = 104.96;
 
   DecayInOrbitGun::DecayInOrbitGun( edm::Run& run, const SimpleConfig& config ):
+
+    // Base class
     GeneratorBase(),
 
     // Information from config file.
@@ -89,7 +91,7 @@ namespace mu2e {
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
 
-    // Random number distributions.
+    // Random number distributions; getEngine comes from the base class.
     _randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax),
     _randFlat( getEngine() ),
     _randPoissonQ( getEngine(), std::abs(_mean) ),

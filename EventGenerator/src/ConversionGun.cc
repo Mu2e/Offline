@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.12 2010/08/18 06:33:00 kutschke Exp $ 
+// $Id: ConversionGun.cc,v 1.13 2010/08/20 14:45:09 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/08/18 06:33:00 $
+// $Date: 2010/08/20 14:45:09 $
 //
 // Original author Rob Kutschke
 // 
@@ -46,7 +46,11 @@ namespace mu2e {
   static const double pEndPoint = 104.96;
 
   ConversionGun::ConversionGun( edm::Run& run, const SimpleConfig& config ):
+
+    // Base class
     GeneratorBase(),
+
+    // Random number distributions; getEngine comes from the base class.
     _randFlat( GeneratorBase::getEngine() ){
 
     // About the ConditionsService:

@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.10 2010/08/18 22:43:37 kutschke Exp $
+// $Id: CosmicDYB.cc,v 1.11 2010/08/20 14:45:09 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/18 22:43:37 $
+// $Date: 2010/08/20 14:45:09 $
 //
 // Original author Yury Kolomensky
 //
@@ -103,7 +103,7 @@ namespace mu2e {
   ,_tmax( 0.0 )
   ,_dt  ( 0.0 )
 
-    // Random number distributions.
+    // Random number distributions; getEngine comes from the base class.
   ,_randFlat( getEngine() )
   ,_randPoissonQ( getEngine(), std::abs(_mean) )
 

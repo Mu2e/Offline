@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.7 2010/08/18 22:43:37 kutschke Exp $
+// $Id: CosmicToy.cc,v 1.8 2010/08/20 14:45:09 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/18 22:43:37 $
+// $Date: 2010/08/20 14:45:09 $
 //
 // Original author Rob Kutschke
 //
@@ -46,12 +46,20 @@ namespace mu2e {
   static const double m = 0.1056584;
 
   CosmicToy::CosmicToy( edm::Run& run, const SimpleConfig& config ):
+
+    // Base class.
     GeneratorBase(),
+
+    // From run time configuration.
     _mean(config.getDouble("cosmictoy.mean",2.)),
     _doHistograms(config.getBool("cosmictoy.doHistograms",true)),
+
+    // Histograms.
     _hMultiplicity(0),
     _hMomentum(0),
     _hAngle(0),
+
+    // Random number distributions; getEngine comes from the base class.
     _randFlat( getEngine() ),
     _randPoissonQ( getEngine(), std::abs(_mean) ){
 
