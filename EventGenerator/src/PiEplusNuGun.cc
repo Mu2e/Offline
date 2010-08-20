@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.3 2010/05/18 21:15:37 kutschke Exp $ 
+// $Id: PiEplusNuGun.cc,v 1.4 2010/08/20 22:14:30 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/05/18 21:15:37 $
+// $Date: 2010/08/20 22:14:30 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 // 
@@ -27,6 +27,7 @@
 #include "ConditionsService/inc/DAQParams.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -65,7 +66,6 @@ namespace mu2e {
     double _tmin = daqPar->t0;
     double _tmax = accPar->deBuncherPeriod;
     
-    _doPiEplusNu = config.getBool( "piEplusNuGun.do", 0);
     _p      = config.getDouble("piEplusNuGun.p", pEplus );
     
     _czmin  = config.getDouble("piEplusNuGun.czmin",  0.3);
@@ -75,18 +75,16 @@ namespace mu2e {
     _tmin   = config.getDouble("piEplusNuGun.tmin",  _tmin );
     _tmax   = config.getDouble("piEplusNuGun.tmax",  _tmax );
 
-    _dcz  = (  _czmax -  _czmin);
-    _dphi = ( _phimax - _phimin);
-    _dt   = (   _tmax -   _tmin);
-    
   }
   
   PiEplusNuGun::~PiEplusNuGun(){
   }
   
   void PiEplusNuGun::generate( ToyGenParticleCollection& genParts ){
-    
-    if (!_doPiEplusNu) return;
+
+    // getEngine comes from the base class.
+    static CLHEP::RandFlat randFlat( getEngine() );
+    static RandomUnitSphere randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax );
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
@@ -94,7 +92,7 @@ namespace mu2e {
     int nFoils = target->nFoils();
     
     // Pick a foil.
-    int ifoil = static_cast<int>(nFoils*CLHEP::RandFlat::shoot());
+    int ifoil = static_cast<int>(nFoils*randFlat.fire());
     TargetFoil const& foil = target->foil(ifoil);
 
     // Foil properties.
@@ -103,26 +101,21 @@ namespace mu2e {
     const double dr = foil.rOut() - r1;
     
     // A random point within the foil.
-    const double r   = r1 + dr*CLHEP::RandFlat::shoot();
-    const double dz  = (-1.+2.*CLHEP::RandFlat::shoot())*foil.halfThickness();
-    const double phi = CLHEP::twopi*CLHEP::RandFlat::shoot();
+    const double r   = r1 + dr*randFlat.fire();
+    const double dz  = (-1.+2.*randFlat.fire())*foil.halfThickness();
+    const double phi = CLHEP::twopi*randFlat.fire();
     CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
                            center.y()+r*sin(phi), 
                            center.z()+dz );
-    
-    // Random direction.
-    // Replace this with RandomUnitSphere from Mu2eUtilities/inc
-    const double cz   = _czmin  +  _dcz*CLHEP::RandFlat::shoot();
-    const double phi2 = _phimin + _dphi*CLHEP::RandFlat::shoot();
-    
-    // This should be an exponential decay.
-    const double time = _tmin   +   _dt*CLHEP::RandFlat::shoot();
 
-    // Derived quantities.
-    const double sz   = safeSqrt(1.- cz*cz);
+    // This is not the correct distribution but it is good enough for now.
+    const double time = _tmin + (_tmax-_tmin)*randFlat.fire();
+
+    // Energy of the positron.
     double e = sqrt( _p*_p +m*m);
-    
-    CLHEP::HepLorentzVector mom( _p*sz*cos(phi2), _p*sz*sin(phi2), _p*cz, e);
+
+    // Generated 4 momentum.
+    CLHEP::HepLorentzVector mom( randomUnitSphere.fire(_p), e);
 
     // Add the electron to  the list.
     genParts.push_back( ToyGenParticle( PDGCode::e_plus, GenId::piEplusNuGun, pos, mom, time));

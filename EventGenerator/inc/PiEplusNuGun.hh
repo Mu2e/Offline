@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.hh,v 1.1 2009/12/22 17:29:46 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2009/12/22 17:29:46 $
+// $Id: PiEplusNuGun.hh,v 1.2 2010/08/20 22:14:30 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/20 22:14:30 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -37,10 +37,9 @@ namespace mu2e {
 
   private:
 
-    // simulation pi^= -> e nu?
-    bool _doPiEplusNu;
+    // Start information from the run time configuration
 
-    // Conversion momentum.
+    // Momentum of positron from pi e nu decay.
     double _p;
 
     // Limits on the generated direction.
@@ -53,11 +52,7 @@ namespace mu2e {
     double _tmin;
     double _tmax;
 
-    // Range for the above.
-    double _dcz;
-    double _dphi;
-    double _dt;
-
+    // End information from the run time configuration.
 
   };
 
