@@ -1,48 +1,38 @@
 #ifndef PRIMARYPROTONGUN_HH
 #define PRIMARYPROTONGUN_HH
-
 //
 // Generate a proton with the primary proton energy
-// from a random spot within the target system at
-// a random time during the accelerator cycle.
 //
-// $Id: PrimaryProtonGun.hh,v 1.5 2010/06/02 03:59:57 kutschke Exp $
+// $Id: PrimaryProtonGun.hh,v 1.6 2010/08/20 20:19:04 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/02 03:59:57 $
+// $Date: 2010/08/20 20:19:04 $
 //
-// For now this is limited to:
-//  - Uniform over the targets.
-//  - Uniform in time during the requested interval.
-//  - Limits on cos(theta) and phi but uniform within the range.
+//
+// The coordinate system used in this class is:
+//
+// 1) The origin is at the upstream face of the production target.
+//    (upstream in the sense of the proton beam).
+//
+// 2) The positive z direction is along the cylinder axis of the production target, 
+//    in the usual Mu2e sense (from PS toward DS); ie the ideal beam direction
+//    is in the -z direction.  The target is slightly tilted from the Mu2e z axis. 
+//    The x and y axes are in the plane of the upstream face of the production target; 
+//    the sense of these axes is defined by the rotation matrix that was used to position 
+//    the production target inside the PS vacuum volume; see the section titled 
+//    "Production Target" inside Mu2e-doc-938.
+//
+// 3) The transformation from this coordinate system to the G4 world coordinate
+//    system is done in Mu2eG4/src/PrimaryGeneratorAction.cc .
 //
 
-
+// Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "CLHEP/Random/RandGeneral.h"
 
 // Framework Includes
 #include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
 
-//ROOT Includes
-#include "TFile.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TNtuple.h"
-#include "TMath.h"
-#include "TF1.h"
-
-
-
-
+// Forward references outside of namespace mu2e
 class TH1D;
-
 namespace edm {
   class Run;
 }
@@ -62,45 +52,36 @@ namespace mu2e {
 
   private:
 
-    // simulation primary proton gun?
-    bool _doPrimaryProt;
+    // Start parameters from the run time configuration.
 
-    // primary proton momentum.
+    // Momentum of the generated proton; in MeV.
     double _p;
 
-    // Limits on the generated direction.
+    // Offset of production point relative to the origin described above; in mm.
+    CLHEP::Hep3Vector _beamDisplacementOnTarget; 
+    
+    // Beamspot is a 2D gaussian with this sigma in both x and y.
+    double _beamSpotSigma;
+
+    // Limits on the generated direction; generated over a unit sphere within these limits.
     double _czmin;
     double _czmax;
     double _phimin;
     double _phimax;
 
-    // Limits on the generated time.
+    // Time of generation is a flat distribution within these limits. Time in ns.
     double _tmin;
     double _tmax;
 
-    // Range for the above.
-    double _dcz;
-    double _dphi;
-    double _dt;
+    // Make histograms or not.
+    bool _doHistograms;
 
+    // End parameters from the run time configuration.
 
-    // primary proton default total energy.
-    double _primaryProtonEnergy;
-    double _primaryProtonMomentum;
-    double _primaryProtonKineticEnergy;
-
-
-    // primary proton gun coordinates in coordinate system where the center is in the middle of TS
-    
-    CLHEP::Hep3Vector _beamDisplacementOnTarget; 
-    
-    double _stdDev;
-    
-    //histos
-    TH1D* _primaryProtonKE;
-    TH1D* _primaryProtonKEZoom;
-    TH1D* _primaryProtonMomentumMeV;
-
+    // Histograms.
+    TH1D* _hKE;
+    TH1D* _hKEZoom;
+    TH1D* _hmomentum;
 
   };
 
