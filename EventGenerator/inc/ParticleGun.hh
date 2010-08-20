@@ -3,9 +3,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.3 2010/06/23 23:28:10 kutschke Exp $
+// $Id: ParticleGun.hh,v 1.4 2010/08/20 14:47:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/23 23:28:10 $
+// $Date: 2010/08/20 14:47:07 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,8 @@
 
 // External includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward references.
 namespace edm{
@@ -41,13 +43,29 @@ namespace mu2e {
 
   private:
 
-    // Information from the run time configuration.
+    // Start: Information from the run time configuration.
 
     // Number of particles per event.
-    int _n;
+    // If positive, mean of a Poisson distribution.
+    // If negative, then exactly that number of particles per event.
+    double _mean;
 
     // PDG particle id code of the particle to be generated.
     PDGCode::type _pdgId;
+
+    // Angular range over which particles will be generated.
+    double _czmin;
+    double _czmax;
+    double _phimin;
+    double _phimax;
+
+    // Momentum range of the particle.  Units are MeV.
+    double _pmin;
+    double _pmax;
+
+    // Time range over which the particle will be produced; units are ns.
+    double _tmin;
+    double _tmax;
 
     // Particles will be produced in a box, specified by 
     // a point in the Tracker coordinate system and 
@@ -55,19 +73,16 @@ namespace mu2e {
     // The point (0,0,0) is at the origin of the Mu2e coordinate system.
     CLHEP::Hep3Vector _point;
     CLHEP::Hep3Vector _halfLength;
-    
-    // Momentum range of the particle.  Units are MeV.
-    double _pmin;
-    double _pmax;
 
-    // Direction will be uniform over a restricted section of a unit sphere
-    RandomUnitSphere _randomUnitSphere;
+    // Enable histograms
+    bool _doHistograms;
 
-    // Time range over which the particle will be produced; units are ns.
-    double _tmin;
-    double _tmax;
+    // End: Information from the run time configuration.
 
-    // End of information from the run time configuration.
+    // Random number distributions.
+    CLHEP::RandFlat     _randFlat;
+    CLHEP::RandPoissonQ _randPoissonQ;
+    RandomUnitSphere    _randomUnitSphere;
 
     // Derived information.
 
@@ -78,8 +93,6 @@ namespace mu2e {
     double _dp, _dt;
 
     // Histogram information.
-    bool _doHistograms;
-
     TH1F* _hMultiplicity;
     TH1F* _hMomentum;
     TH1F* _hCz;
