@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.46 2010/08/19 15:46:49 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.47 2010/08/20 20:18:09 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/19 15:46:49 $
+// $Date: 2010/08/20 20:18:09 $
 //
 // Original author Rob Kutschke
 //
@@ -1055,18 +1055,15 @@ namespace mu2e {
       ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
     }
 
-    // Comment out until I have verified that these work correctly.
-    /*
-      for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
-      i!=psVacua.end(); ++i ){
+    for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
+          i!=psVacua.end(); ++i ){
       (**i).SetFieldManager( _psFull->manager(), true);
-      }
-
-      for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
-      i!=tsVacua.end(); ++i ){
+    }
+    
+    for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
+          i!=tsVacua.end(); ++i ){
       (**i).SetFieldManager( _tsFull->manager(), true);
-      }
-    */
+    }
 
     // Adjust properties of the integrators to control accuracy vs time.
     G4double singleValue         = 0.5e-01*CLHEP::mm;
