@@ -6,16 +6,15 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.2 2010/03/13 00:09:16 kutschke Exp $
+// $Id: PrimaryGeneratorAction.hh,v 1.3 2010/08/20 22:13:30 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/13 00:09:16 $
+// $Date: 2010/08/20 22:13:30 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes
 #include <string>
-#include <memory>
 
 // Framework includes
 #include "FWCore/Framework/interface/Event.h"
@@ -23,9 +22,6 @@
 // G4 includes
 #include "globals.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
-
-// Mu2e inclues
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 class G4ParticleDefinition;
 class G4ParticleGun;
@@ -70,14 +66,10 @@ namespace mu2e {
 
     // Module label used to find the event generator input.
     std::string _generatorModuleLabel;
-
-    // Generate random directions tracks on a unit sphere.
-    std::auto_ptr<RandomUnitSphere> _randomUnitSphere;
     
     // Non-owing pointer to the detector information.
     Mu2eWorld const* _world;
-    
-    
+
     TH1D* _totalMultiplicity;
     
   };

@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.14 2010/06/23 23:28:10 kutschke Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.15 2010/08/20 22:13:13 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/23 23:28:10 $
+// $Date: 2010/08/20 22:13:13 $
 //
 // Original author Rob Kutschke
 //
@@ -39,6 +39,7 @@
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // ROOT includes
 #include "TH1D.h"
@@ -51,14 +52,10 @@ using CLHEP::HepLorentzVector;
 namespace mu2e {
 
   PrimaryGeneratorAction::PrimaryGeneratorAction( const string& generatorModuleLabel ):
-    _generatorModuleLabel(generatorModuleLabel),
-    _randomUnitSphere(0){
+    _generatorModuleLabel(generatorModuleLabel){
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     _particleDefinition = particleTable->FindParticle("chargedgeantino");
-
-    // Generator for uniform coverage of a restricted region on a unit sphere.
-    _randomUnitSphere =  auto_ptr<RandomUnitSphere>(new RandomUnitSphere ( -0.7, 0.7 ));
 
     // Book histograms.
     edm::Service<edm::TFileService> tfs;
@@ -66,10 +63,8 @@ namespace mu2e {
 
   }
 
-
   PrimaryGeneratorAction::~PrimaryGeneratorAction(){
   }
-
 
   void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   { 
@@ -101,7 +96,7 @@ namespace mu2e {
 
     // Fill multiplicity histogram.
     _totalMultiplicity->Fill( handle->size() );
-  
+
     // For each generated particle, add it to the event.
     for ( unsigned int i=0; i<handle->size(); ++i){
 
@@ -133,7 +128,7 @@ namespace mu2e {
           << "  Skipping this track.";
         continue;
       }
-    
+
       // Create a new vertex 
       G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
 
@@ -158,9 +153,11 @@ namespace mu2e {
 
   }
 
-
-  // A very simple track for debugging G4 volumes and graphics
+  // A very simple generator for debugging G4 volumes and graphics.
   void PrimaryGeneratorAction::testTrack(G4Event* event){ 
+
+    // Generator for uniform coverage of a restricted region on a unit sphere.
+    static RandomUnitSphere randomUnitSphere( *CLHEP::HepRandom::getTheEngine(), -0.7, 0.7 );
 
     // All tracks start from the same spot.
     G4ThreeVector const& position = _world->getMu2eDetectorOrigin();
@@ -169,7 +166,7 @@ namespace mu2e {
     G4double p0  = 50. + 100.*G4UniformRand();
 
     // Generate the momentum 3-vector.
-    G4ThreeVector momentum = p0 * _randomUnitSphere->shoot();
+    G4ThreeVector momentum = randomUnitSphere.fire(p0);
 
     /*
     // Status report.
