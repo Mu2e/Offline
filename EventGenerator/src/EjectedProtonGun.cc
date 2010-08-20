@@ -5,9 +5,9 @@
 // protons.  Production is uniform across the targets and uniform in time;
 // this model needs to be improved.
 //
-// $Id: EjectedProtonGun.cc,v 1.6 2010/08/19 22:03:11 kutschke Exp $ 
+// $Id: EjectedProtonGun.cc,v 1.7 2010/08/20 14:45:59 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/08/19 22:03:11 $
+// $Date: 2010/08/20 14:45:59 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -69,6 +69,8 @@ namespace mu2e {
   //static const double mProton = 938.272;
 
   EjectedProtonGun::EjectedProtonGun( edm::Run& run, const SimpleConfig& config ):
+
+    // Base class.
     GeneratorBase(),
     
     // Configurable parameters
@@ -82,13 +84,23 @@ namespace mu2e {
     _nbins(config.getInt("ejectedProtonGun.nbins",1000)),
     _doHistograms(config.getBool("ejectedProtonGun.doHistograms",true)),
 
-    // Initialize random number distributions.
+    // Initialize random number distributions; getEngine comes from the base class.
     _randFlat( getEngine() ),
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax),
 
     // See Note 3.
-    _shape( GeneratorBase::getEngine(), &(binnedEnergySpectrum()[0]), _nbins){
+    _shape( GeneratorBase::getEngine(), &(binnedEnergySpectrum()[0]), _nbins),
+
+    // Histogram pointers
+    _hMultiplicity(),
+    _hKE(),
+    _hKEZoom(),
+    _hMomentumMeV(),
+    _hzPosition(),
+    _hcz(),
+    _hphi(),
+    _htime(){
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
