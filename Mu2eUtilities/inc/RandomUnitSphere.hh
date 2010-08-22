@@ -5,9 +5,9 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.hh,v 1.5 2010/08/22 18:37:06 kutschke Exp $
+// $Id: RandomUnitSphere.hh,v 1.6 2010/08/22 20:09:52 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/22 18:37:06 $
+// $Date: 2010/08/22 20:09:52 $
 //
 // Original author Rob Kutschke
 //
@@ -27,8 +27,6 @@ namespace mu2e {
   class RandomUnitSphere {
 
   public:
-
-    RandomUnitSphere();
 
     explicit RandomUnitSphere( double czmin=-1.,
                                double czmax=1.,

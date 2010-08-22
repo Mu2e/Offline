@@ -2,9 +2,9 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.cc,v 1.3 2010/08/18 21:05:19 kutschke Exp $
+// $Id: RandomUnitSphere.cc,v 1.4 2010/08/22 20:09:52 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/18 21:05:19 $
+// $Date: 2010/08/22 20:09:52 $
 //
 // Original author Rob Kutschke
 //
@@ -19,14 +19,6 @@ using CLHEP::Hep3Vector;
 using CLHEP::RandFlat;
 
 namespace mu2e{ 
-
-  RandomUnitSphere::RandomUnitSphere():
-    _czmin(-1.),
-    _czmax( 1.),
-    _phimin(0.),
-    _phimax(CLHEP::twopi),
-    _randFlat( edm::Service<edm::RandomNumberGeneratorService>()->getEngine() ){
-  }
 
   RandomUnitSphere::RandomUnitSphere( double czmin,
                                       double czmax,
