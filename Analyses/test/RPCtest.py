@@ -2,9 +2,9 @@
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: RPCtest.py,v 1.1 2010/08/23 15:45:28 rhbob Exp $
+# $Id: RPCtest.py,v 1.2 2010/08/23 17:43:34 rhbob Exp $
 # $Author: rhbob $
-# $Date: 2010/08/23 15:45:28 $
+# $Date: 2010/08/23 17:43:34 $
 #
 # Original author Rob Kutschke
 #
@@ -18,7 +18,7 @@ process = mu2e.Process("RadiativePiTest")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(100)
+    input = mu2e.untracked.int32(10000)
 )
 
 # Load the standard message logger configuration.
@@ -54,7 +54,7 @@ process.source = mu2e.Source("EmptySource")
 # Make some generated tracks and add them to the event.
 process.generate = mu2e.EDProducer(
     "EventGenerator",
-    inputfile = mu2e.untracked.string("RadiativePiAnalyze/test/radiativePiConfig.txt")
+    inputfile = mu2e.untracked.string("Analyses/test/RPCconfig.txt")
 )
 
 # Run G4 and add its hits to the event.
@@ -67,7 +67,7 @@ process.g4run = mu2e.EDProducer(
 
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
-    "RadiativePi",
+    "RPC",
     g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
     maxFullPrint = mu2e.untracked.int32(5)

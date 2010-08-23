@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.cc,v 1.1 2010/08/23 15:45:28 rhbob Exp $
+// $Id: RPC_plugin.cc,v 1.2 2010/08/23 17:42:24 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/08/23 15:45:28 $
+// $Date: 2010/08/23 17:42:24 $
 //
 // Original author R. Bernstein
 //
@@ -18,14 +18,15 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Services/interface/TFileService.h"
 #include "FWCore/Framework/interface/TFileDirectory.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/Exception.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "DataFormats/Common/interface/Handle.h"
 
 // Root includes.
 #include "TFile.h"
@@ -64,14 +65,14 @@ namespace mu2e {
   //
   // 
 
-  class RadiativePi : public edm::EDProducer{
+  class RPC : public edm::EDProducer{
   public:
-    RadiativePi(edm::ParameterSet const& pset):
+    RPC(edm::ParameterSet const& pset):
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",10)),
       _nAnalyzed(0),
       _messageCategory("ToyHitInfo"){}
 
-    virtual ~RadiativePi() {}
+    virtual ~RPC() {}
 
     virtual void beginJob(edm::EventSetup const&);
     virtual void endJob();
@@ -98,6 +99,8 @@ namespace mu2e {
     TH1D* _piCaptureConvertedPositronCosTheta;
     TH1D* _piCaptureConvertedPositronCosThetaSignal;
 
+    TH1D* _fractionalEnergyOfElectron;
+
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
@@ -112,33 +115,33 @@ namespace mu2e {
     const std::string _hitCreatorName;
 
 
-    void RadiativePi::bookEventHistos(double const elow, double const ehigh);
-    void RadiativePi::fillEventHistos();
+    void RPC::bookEventHistos(double const elow, double const ehigh);
+    void RPC::fillEventHistos();
   };
 
 
-  void RadiativePi::beginJob(edm::EventSetup const& ){
+  void RPC::beginJob(edm::EventSetup const& ){
 
     // Get access to the TFile service.
     //    edm::Service<edm::TFileService> tfs;
 
   }
 
-  void RadiativePi::endJob(){
+  void RPC::endJob(){
   }
 
 
 
-  void RadiativePi::beginRun(edm::Run const& run,
+  void RPC::beginRun(edm::Run const& run,
 			     edm::EventSetup const& eSetup ){
   }
 
-  void RadiativePi::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
+  void RPC::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
 					 edm::EventSetup const&){
   }
 
 
-  void RadiativePi::produce(edm::Event& event, edm::EventSetup const&) {
+  void RPC::produce(edm::Event& event, edm::EventSetup const&) {
 
     static int ncalls(0);
     ++ncalls;
@@ -156,7 +159,7 @@ namespace mu2e {
     if ( ncalls == 1) bookEventHistos(elow,ehigh);
 
     edm::LogVerbatim log(_messageCategory);
-    log << "RadiativePi event #: " 
+    log << "RPC event #: " 
         << event.id();
 
     // 
@@ -180,35 +183,52 @@ namespace mu2e {
       for (uint32_t ithPart = 0; ithPart < simParticles->size(); ++ithPart){
         SimParticle const& sim = simParticles->at(ithPart);
 	PhysicalVolumeInfo const& startVol = volumes->at(sim.startVolumeIndex());
+	//
+	// is this the initial photon?
+	if (sim.parentId() == -1){
+	  if (sim.pdgId() != PDGCode::gamma) {
+	    //
+	    // this can't happen if we're studying RPCs so throw and die
+	    throw cms::Exception("GEOM")
+	      << "RPC with a parent not a photon, but parent PDG code is"
+	      << sim.pdgId();
+	  }
+	}
+	double photonEnergy = sim.startMomentum().e();
 	//	cout << " volumename = " << startVol.name() << endl;
 	//
 	// check three things:  (1) the mother is the original photon, (2) you're an e+ or e-, and (3) the photon converts in the foil
 	if ( sim.parentId() == 0 && startVol.name() == "TargetFoil_" ){
-	//	if ( sim.parentId() == 0 && startVol.name() == "ToyDSCoil" ){
+	  //	if ( sim.parentId() == 0 && startVol.name() == "ToyDSCoil" ){
 	  if (sim.pdgId() == PDGCode::e_minus) {
-	  CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
-	  //	  cout << "just a test: " << electronMomentum.invariantMass() << endl;
-	  double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
-	  _piCaptureConvertedElectronMomentum->Fill(momentum);
-	  _piCaptureConvertedElectronMomentumSignal->Fill(momentum);
-	  _piCaptureConvertedElectronCosTheta->Fill( electronMomentum.cosTheta() );
-	  if (momentum > elow && momentum < ehigh) _piCaptureConvertedElectronCosThetaSignal->Fill(electronMomentum.cosTheta() );
+	    CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
+	    //	  cout << "just a test: " << electronMomentum.invariantMass() << endl;
+	    double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+	    _piCaptureConvertedElectronMomentum->Fill(momentum);
+	    _piCaptureConvertedElectronMomentumSignal->Fill(momentum);
+	    _piCaptureConvertedElectronCosTheta->Fill( electronMomentum.cosTheta() );
+	    if (momentum > elow && momentum < ehigh) _piCaptureConvertedElectronCosThetaSignal->Fill(electronMomentum.cosTheta() );
+
+	    // 
+	    // check geant4's photon conversion
+	    _fractionalEnergyOfElectron->Fill( electronMomentum.e()/photonEnergy);
+
 	  
-	}
+	  }
 	  if (sim.pdgId() == PDGCode::e_plus) {
-	  CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
-	  //	  cout << "just a test: " << electronMomentum.invariantMass() << endl;
-	  double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
-	  _piCaptureConvertedPositronMomentum->Fill(momentum);
-	  _piCaptureConvertedPositronMomentumSignal->Fill(momentum);
-	  _piCaptureConvertedPositronCosTheta->Fill(electronMomentum.cosTheta() );
-	  if (momentum > elow && momentum < ehigh) _piCaptureConvertedPositronCosThetaSignal->Fill(electronMomentum.cosTheta() );
+	    CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
+	    //	  cout << "just a test: " << electronMomentum.invariantMass() << endl;
+	    double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+	    _piCaptureConvertedPositronMomentum->Fill(momentum);
+	    _piCaptureConvertedPositronMomentumSignal->Fill(momentum);
+	    _piCaptureConvertedPositronCosTheta->Fill(electronMomentum.cosTheta() );
+	    if (momentum > elow && momentum < ehigh) _piCaptureConvertedPositronCosThetaSignal->Fill(electronMomentum.cosTheta() );
 	  }
 	}
       }
     }
   }
-  void RadiativePi::bookEventHistos(double const elow, double const ehigh)
+  void RPC::bookEventHistos(double const elow, double const ehigh)
   {        
     //    cout << "booking histos" << endl; assert(2==1);
     edm::Service<edm::TFileService> tfs;
@@ -238,6 +258,8 @@ namespace mu2e {
       tfs->make<TH1D>( "piCaptureConvertedPositronCosThetaSignal",
 		       "Pi Capture Converted Positron CosThetaSignal", 200, -1., 1.);
 
+    _fractionalEnergyOfElectron = 
+      tfs->make<TH1D>("fractionalEnergyOfElectron","electron energy/photon energy (conversion check)", 100,0.,1.);
 
 
   } //bookEventHistos
@@ -246,4 +268,4 @@ namespace mu2e {
 } // namespace mu2e
 
 
-DEFINE_FWK_MODULE(RadiativePi);
+DEFINE_FWK_MODULE(RPC);
