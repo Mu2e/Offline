@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.1 2010/08/18 23:14:03 logash Exp $
+// $Id: MakeStrawHit_plugin.cc,v 1.2 2010/08/23 21:20:33 logash Exp $
 // $Author: logash $
-// $Date: 2010/08/18 23:14:03 $
+// $Date: 2010/08/23 21:20:33 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -130,6 +130,8 @@ namespace mu2e {
   void
   MakeStrawHit::produce(edm::Event& event, edm::EventSetup const&) {
 
+    if ( _diagLevel > 0 ) cout << "MakeCrudeStrawHit: produce() begin" << endl;
+      
     static int ncalls(0);
     ++ncalls;
 
@@ -270,7 +272,6 @@ namespace mu2e {
 
 	straw_hits.push_back(StepHit(hitRef,edep,hit_dca,driftTime,distanceToMiddle,hit_t1,hit_t2));
 
-
       } // loop over hits
 
       // Now that we calculated estimated signal time for all G4Steps, we can analyze
@@ -303,19 +304,17 @@ namespace mu2e {
       double digi_driftT = straw_hits[0]._driftTime;
       double digi_toMid  = straw_hits[0]._distanceToMid;
       double digi_dca    = straw_hits[0]._dca;
-
-      mcptrHits->push_back(StrawHitMCPtr());
-      StrawHitMCPtr & mcptr = mcptrHits->back();
+      StrawHitMCPtr mcptr;
       mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
-      
+
       for( int i=1; i<straw_hits.size(); i++ ) {
 	if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
 	  // The is bit time gap - save current data as a hit...
 	  crudeHits->push_back(StrawHit(straw_id,digi_time,digi_dt,digi_edep));
 	  truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
+	  mcptrHits->push_back(mcptr);
 	  // ...and create new hit
-	  mcptrHits->push_back(StrawHitMCPtr());
-	  mcptr = mcptrHits->back();
+	  mcptr.clear();
 	  mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
 	  digi_time   = straw_hits[i]._t1;
 	  digi_dt     = straw_hits[i]._t2 - straw_hits[i]._t1;
@@ -332,6 +331,7 @@ namespace mu2e {
 
       crudeHits->push_back(StrawHit(straw_id,digi_time,digi_dt,digi_edep));
       truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
+      mcptrHits->push_back(mcptr);
 
     }
     
@@ -351,6 +351,8 @@ namespace mu2e {
     event.put(crudeHits);
     event.put(truthHits);
     event.put(mcptrHits);
+
+    if ( _diagLevel > 0 ) cout << "MakeCrudeStrawHit: produce() end" << endl;
 
   } // end of ::analyze.
   

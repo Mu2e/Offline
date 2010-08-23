@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.1 2010/08/18 23:14:03 logash Exp $
+// $Id: ReadStrawHit_plugin.cc,v 1.2 2010/08/23 21:20:33 logash Exp $
 // $Author: logash $
-// $Date: 2010/08/18 23:14:03 $
+// $Date: 2010/08/23 21:20:33 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -118,11 +118,11 @@ namespace mu2e {
     _hHitTime      = tfs->make<TH1F>( "hHitTime",      "Hit Time (ns)", 200, 0., 2000. );
     _hHitDeltaTime = tfs->make<TH1F>( "hHitDeltaTime", "Hit Delta Time (ns)", 80, -20.0, 20. );
     _hHitEnergy    = tfs->make<TH1F>( "hHitEnergy",    "Hit Energy (keV)", 100, 0., 100. );
-    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 100, 0., 100. );
+    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0., 500. );
     _hNHitsPerWire = tfs->make<TH1F>( "hNHitsPerWire", "Number of hits per straw", 10, 0., 10. );
     _hDriftTime    = tfs->make<TH1F>( "hDriftTime",    "Drift time, ns", 100, 0., 100. );
     _hDriftDistance= tfs->make<TH1F>( "hDriftDistance","Drift Distance, mm", 100, 0., 3. );
-    _hDistanceToMid= tfs->make<TH1F>( "hDistanceToMid","Distance to wire center, mm", 100, 0., 2000. );
+    _hDistanceToMid= tfs->make<TH1F>( "hDistanceToMid","Distance to wire center, mm", 160, -1600., 1600. );
     _hNG4Steps     = tfs->make<TH1F>( "hNG4Steps",     "Number of G4Steps per hit", 100, 0., 100. );
     _hT0           = tfs->make<TH1F>( "hT0",           "T0, ns", 100, -50., 50. );
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
