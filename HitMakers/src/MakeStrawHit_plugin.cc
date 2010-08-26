@@ -1,10 +1,10 @@
 //
 // An EDProducer Module that reads StepPointMC objects and turns them into
-// CrudeStrawHit objects.
+// StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.2 2010/08/23 21:20:33 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/23 21:20:33 $
+// $Id: MakeStrawHit_plugin.cc,v 1.3 2010/08/26 19:15:51 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/26 19:15:51 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -31,7 +31,6 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
-#include "LTrackerGeom/inc/CrudeStrawHitCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHit.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
@@ -48,7 +47,6 @@
 
 using namespace std;
 using edm::Event;
-//using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -80,6 +78,8 @@ namespace mu2e {
   class MakeStrawHit : public edm::EDProducer {
   public:
     explicit MakeStrawHit(edm::ParameterSet const& pset) : 
+
+      // Parameters
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _t0Sigma(pset.getUntrackedParameter<double>("t0Sigma",5.0)), // ns
       _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
@@ -88,9 +88,14 @@ namespace mu2e {
       _driftSigma(pset.getUntrackedParameter<double>("driftSigma",0.1)),          // mm
       _minimumTimeGap(pset.getUntrackedParameter<double>("minimumTimeGap",100.0)),// ns
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _messageCategory("CrudeHitMaker"){
+      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
 
-      // A place holder.
+      // Random number distributions
+      _randGauss( createEngine( get_seed_value(pset)) ),
+
+      _messageCategory("StrawHitMaker"){
+
+      // Tell the framework what we make.
       produces<StrawHitCollection>();
       produces<StrawHitMCTruthCollection>();
       produces<StrawHitMCPtrCollection>();
@@ -117,6 +122,10 @@ namespace mu2e {
     double _driftVelocity;  
     double _driftSigma;
     double _minimumTimeGap; 
+    string _g4ModuleLabel;  // Name of the module that made these hits.
+
+    // Random number distributions
+    CLHEP::RandGauss _randGauss;
 
     // A category for the error logger.
     const std::string _messageCategory;
@@ -130,7 +139,7 @@ namespace mu2e {
   void
   MakeStrawHit::produce(edm::Event& event, edm::EventSetup const&) {
 
-    if ( _diagLevel > 0 ) cout << "MakeCrudeStrawHit: produce() begin" << endl;
+    if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() begin" << endl;
       
     static int ncalls(0);
     ++ncalls;
@@ -140,22 +149,19 @@ namespace mu2e {
     const Tracker& tracker = getTrackerOrThrow();
 
     // A container to hold the output hits.
-    auto_ptr<StrawHitCollection>        crudeHits(new StrawHitCollection);
+    auto_ptr<StrawHitCollection>        strawHits(new StrawHitCollection);
     auto_ptr<StrawHitMCTruthCollection> truthHits(new StrawHitMCTruthCollection);
     auto_ptr<StrawHitMCPtrCollection>   mcptrHits(new StrawHitMCPtrCollection);
 
-    // Instance name of the module that created the hits of interest;
-    static const string creatorName("g4run");
-
     // Ask the event to give us a handle to the requested hits.
     edm::Handle<StepPointMCCollection> points;
-    event.getByLabel(creatorName,points);
+    event.getByLabel(_g4ModuleLabel,points);
 
     // Product Id of the input points.
     edm::ProductID const& id(points.id());
 
     // Calculate T0 for this event
-    double t0 = CLHEP::RandGauss::shoot(0.,_t0Sigma);
+    double t0 = _randGauss.fire(0.,_t0Sigma);
 
     // Organize hits by straws
 
@@ -180,9 +186,9 @@ namespace mu2e {
     for(StrawHitMap::const_iterator istraw = hitmap.begin(); istraw != hitmap.end(); ++istraw) {
 
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-	cout << "MakeCrudeStrawHit: straw ID=" << istraw->first 
-	     << ": number of G4 step hits " << istraw->second.size() 
-	     << endl;
+        cout << "MakeStrawHit: straw ID=" << istraw->first 
+             << ": number of G4 step hits " << istraw->second.size() 
+             << endl;
       }
 
       // Get the straw information, also by reference.
@@ -201,76 +207,76 @@ namespace mu2e {
 
       for( int i=0; i<ihits.size(); i++ ) {
 
-	int hitRef = ihits[i];
-	StepPointMC const& hit = (*points)[hitRef];
-	CLHEP::Hep3Vector  const& pos = hit.position();
-	CLHEP::Hep3Vector  const& mom = hit.momentum();
-	double length  = hit.stepLength();
-	double edep    = hit.totalEDep();
-	double hitTime = hit.time();
+        int hitRef = ihits[i];
+        StepPointMC const& hit = (*points)[hitRef];
+        CLHEP::Hep3Vector  const& pos = hit.position();
+        CLHEP::Hep3Vector  const& mom = hit.momentum();
+        double length  = hit.stepLength();
+        double edep    = hit.totalEDep();
+        double hitTime = hit.time();
 
-	if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-	  cout << "MakeCrudeStrawHit: Hit #" << i << " : length=" << length 
-	       << " energy=" << edep << " time=" << hitTime 
-	       << endl;
-	}
-	
-	// Calculate the drift distance from this step. 
-	double hit_dca;
-	CLHEP::Hep3Vector hit_pca;
+        if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
+          cout << "MakeStrawHit: Hit #" << i << " : length=" << length 
+               << " energy=" << edep << " time=" << hitTime 
+               << endl;
+        }
+        
+        // Calculate the drift distance from this step. 
+        double hit_dca;
+        CLHEP::Hep3Vector hit_pca;
 
-	if( length < _minimumLength ) {
+        if( length < _minimumLength ) {
 
-	  // If step length is very small, consider it a point
+          // If step length is very small, consider it a point
 
-	  LinePointPCA pca(mid, w, pos);
-	  hit_dca = pca.dca();
-	  hit_pca = pca.pca();
-	  
-	} else {
+          LinePointPCA pca(mid, w, pos);
+          hit_dca = pca.dca();
+          hit_pca = pca.pca();
+          
+        } else {
 
-	  // Step is not a point. Calculate the distance between two lines. 
+          // Step is not a point. Calculate the distance between two lines. 
 
-	  TwoLinePCA pca( mid, w, pos, mom);
-	  CLHEP::Hep3Vector const& p2 = pca.point2();
+          TwoLinePCA pca( mid, w, pos, mom);
+          CLHEP::Hep3Vector const& p2 = pca.point2();
 
-	  if( (pos-p2).mag()<=length && (pos-p2).dot(mom)<=0 ) {
+          if( (pos-p2).mag()<=length && (pos-p2).dot(mom)<=0 ) {
 
-	    // If the point of closest approach is within the step and wire - thats it.
-	    hit_dca = pca.dca();
-	    hit_pca = pca.point1();
+            // If the point of closest approach is within the step and wire - thats it.
+            hit_dca = pca.dca();
+            hit_pca = pca.point1();
 
-	  } else {
-	    
-	    // The point of closest approach is not within the step. In this case
+          } else {
+            
+            // The point of closest approach is not within the step. In this case
             // the closes distance should be calculated from the ends
 
-	    LinePointPCA pca1(mid, w, pos);
-	    LinePointPCA pca2(mid, w, pos+mom.unit()*length);
-	    if( pca1.dca() < pca2.dca() ) {
-	      hit_dca = pca1.dca();
-	      hit_pca = pca1.pca();
-	    } else {
-	      hit_dca = pca2.dca();
-	      hit_pca = pca2.pca();
-	    } 
-	  
-	  }	  
+            LinePointPCA pca1(mid, w, pos);
+            LinePointPCA pca2(mid, w, pos+mom.unit()*length);
+            if( pca1.dca() < pca2.dca() ) {
+              hit_dca = pca1.dca();
+              hit_pca = pca1.pca();
+            } else {
+              hit_dca = pca2.dca();
+              hit_pca = pca2.pca();
+            } 
+          
+          }          
 
-	} // drift distance calculation
+        } // drift distance calculation
 
-	// Calculate signal time. It is Geant4 time + signal propagation time
-	// t1 is signal time at positive end (along w vector), 
-	// t2 - at negative end (opposite to w vector)
+        // Calculate signal time. It is Geant4 time + signal propagation time
+        // t1 is signal time at positive end (along w vector), 
+        // t2 - at negative end (opposite to w vector)
 
-	const double signalVelocity = 299.792458; // mm/ns
+        const double signalVelocity = 299.792458; // mm/ns
 
-	double driftTime = (hit_dca + CLHEP::RandGauss::shoot(0.,_driftSigma))/_driftVelocity;
-	double distanceToMiddle = (hit_pca-mid).dot(w);
-	double hit_t1 = t0 + hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
-	double hit_t2 = t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
+        double driftTime = (hit_dca + _randGauss.fire(0.,_driftSigma))/_driftVelocity;
+        double distanceToMiddle = (hit_pca-mid).dot(w);
+        double hit_t1 = t0 + hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
+        double hit_t2 = t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
 
-	straw_hits.push_back(StepHit(hitRef,edep,hit_dca,driftTime,distanceToMiddle,hit_t1,hit_t2));
+        straw_hits.push_back(StepHit(hitRef,edep,hit_dca,driftTime,distanceToMiddle,hit_t1,hit_t2));
 
       } // loop over hits
 
@@ -281,17 +287,17 @@ namespace mu2e {
       sort(straw_hits.begin(), straw_hits.end() );
 
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-	for( int i=0; i<straw_hits.size(); i++ ) {
-	  cout << "MakeCrudeStrawHit: StepHit #" << straw_hits[i]._hit_id 
-	       << " DCA=" << straw_hits[i]._dca
-	       << " driftT=" << straw_hits[i]._driftTime
-	       << " distToMid=" << straw_hits[i]._distanceToMid
-	       << " t1=" << straw_hits[i]._t1
-	       << " t2=" << straw_hits[i]._t2
-	       << " edep=" << straw_hits[i]._edep
-	       << " t0=" << t0
-	       << endl;
-	}
+        for( int i=0; i<straw_hits.size(); i++ ) {
+          cout << "MakeStrawHit: StepHit #" << straw_hits[i]._hit_id 
+               << " DCA=" << straw_hits[i]._dca
+               << " driftT=" << straw_hits[i]._driftTime
+               << " distToMid=" << straw_hits[i]._distanceToMid
+               << " t1=" << straw_hits[i]._t1
+               << " t2=" << straw_hits[i]._t2
+               << " edep=" << straw_hits[i]._edep
+               << " t0=" << t0
+               << endl;
+        }
       }
 
       // Now loop over all StepHits and create StrawHits as needed
@@ -308,56 +314,55 @@ namespace mu2e {
       mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
 
       for( int i=1; i<straw_hits.size(); i++ ) {
-	if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
-	  // The is bit time gap - save current data as a hit...
-	  crudeHits->push_back(StrawHit(straw_id,digi_time,digi_dt,digi_edep));
-	  truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
-	  mcptrHits->push_back(mcptr);
-	  // ...and create new hit
-	  mcptr.clear();
-	  mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
-	  digi_time   = straw_hits[i]._t1;
-	  digi_dt     = straw_hits[i]._t2 - straw_hits[i]._t1;
-	  digi_edep   = straw_hits[i]._edep;
-	  digi_driftT = straw_hits[i]._driftTime;
-	  digi_toMid  = straw_hits[i]._distanceToMid;
-	  digi_dca    = straw_hits[i]._dca;
-	} else {
-	  // Append existing hit
-	  digi_edep += straw_hits[i]._edep;
-	  mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
-	}
+        if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
+          // The is bit time gap - save current data as a hit...
+          strawHits->push_back(StrawHit(straw_id,digi_time,digi_dt,digi_edep));
+          truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
+          mcptrHits->push_back(mcptr);
+          // ...and create new hit
+          mcptr.clear();
+          mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
+          digi_time   = straw_hits[i]._t1;
+          digi_dt     = straw_hits[i]._t2 - straw_hits[i]._t1;
+          digi_edep   = straw_hits[i]._edep;
+          digi_driftT = straw_hits[i]._driftTime;
+          digi_toMid  = straw_hits[i]._distanceToMid;
+          digi_dca    = straw_hits[i]._dca;
+        } else {
+          // Append existing hit
+          digi_edep += straw_hits[i]._edep;
+          mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
+        }
       }
 
-      crudeHits->push_back(StrawHit(straw_id,digi_time,digi_dt,digi_edep));
+      strawHits->push_back(StrawHit(straw_id,digi_time,digi_dt,digi_edep));
       truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
 
     }
     
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-      cout << "MakeCrudeStrawHit: Total number of hit straws = " << crudeHits->size() << endl;
-      for( int i=0; i<crudeHits->size(); ++i ) {
-	cout << "MakeCrudeStrawHit: Straw #" << (*crudeHits)[i].strawIndex() 
-	     << " time="  << (*crudeHits)[i].time()
-	     << " dt="    << (*crudeHits)[i].dt()
-	     << " edep="  << (*crudeHits)[i].energyDep()
-	     << " nsteps="<< (*mcptrHits)[i].size()
-	     << endl;
+      cout << "MakeStrawHit: Total number of hit straws = " << strawHits->size() << endl;
+      for( int i=0; i<strawHits->size(); ++i ) {
+        cout << "MakeStrawHit: Straw #" << (*strawHits)[i].strawIndex() 
+             << " time="  << (*strawHits)[i].time()
+             << " dt="    << (*strawHits)[i].dt()
+             << " edep="  << (*strawHits)[i].energyDep()
+             << " nsteps="<< (*mcptrHits)[i].size()
+             << endl;
       }
     }
 
     // Add the output hit collection to the event
-    event.put(crudeHits);
+    event.put(strawHits);
     event.put(truthHits);
     event.put(mcptrHits);
 
-    if ( _diagLevel > 0 ) cout << "MakeCrudeStrawHit: produce() end" << endl;
+    if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() end" << endl;
 
   } // end of ::analyze.
   
 }
-
 
 using mu2e::MakeStrawHit;
 DEFINE_FWK_MODULE(MakeStrawHit);

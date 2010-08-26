@@ -1,9 +1,8 @@
-
-# Configuration file for Readback
+# Configuration file for making StrawHits.
 #
-# $Id: makehits.py,v 1.10 2010/08/18 23:14:03 logash Exp $
-# $Author: logash $
-# $Date: 2010/08/18 23:14:03 $
+# $Id: makehits.py,v 1.11 2010/08/26 19:15:52 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/08/26 19:15:52 $
 #
 # Original author Rob Kutschke
 #
@@ -31,7 +30,6 @@ process.TFileService = mu2e.Service("TFileService",
 )
 
 # Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
 process.add_(mu2e.Service("RandomNumberGeneratorService"))
 
 # Define the geometry.
@@ -40,29 +38,26 @@ process.GeometryService = mu2e.Service("GeometryService",
 )
 
 # Define and configure some modules to do work on each event.
-# Modules are just defined for now, the are scheduled later.
+# Modules are just defined for now, they are scheduled later.
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
 process.source = mu2e.Source("PoolSource",
    fileNames = mu2e.untracked.vstring("data_03.root")
 )
 
-# Form CrudeStrawHits (CSH).
-process.makeCSH = mu2e.EDProducer(
+# Form StrawHits (SH).
+process.makeSH = mu2e.EDProducer(
     "MakeStrawHit",
+    g4ModuleLabel = mu2e.string("g4run"),
+    seed=mu2e.untracked.vint32(7790),
     diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
 # Check the crudeStrawHits.
-process.testCSH = mu2e.EDAnalyzer("ReadStrawHit",
+process.testSH = mu2e.EDAnalyzer("ReadStrawHit",
+    makerModuleLabel = mu2e.string("makeSH"),
     diagLevel    = mu2e.untracked.int32(3),
-    maxFullPrint = mu2e.untracked.int32(5)
-)
-
-# Make some clusters.
-process.clustertest = mu2e.EDAnalyzer("ClusterHackv00",
-    diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
@@ -77,7 +72,6 @@ process.outfile = mu2e.OutputModule(
 # End of the section that defines and configures modules.
 
 # Tell the system to execute all paths.
-#process.output = mu2e.EndPath(  process.makeCSH*process.testCSH*process.clustertest*process.outfile );
-process.output = mu2e.EndPath(  process.makeCSH*process.testCSH*process.outfile );
+process.output = mu2e.EndPath(  process.makeSH*process.testSH*process.outfile );
 
 
