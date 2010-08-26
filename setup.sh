@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.9 2010/08/26 15:55:21 kutschke Exp $
+# $Id: setup.sh,v 1.10 2010/08/26 16:35:22 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/26 15:55:21 $
+# $Date: 2010/08/26 16:35:22 $
 #
 # Original author Rob Kutschke
 #
@@ -22,7 +22,7 @@ if [ "${MU2E}" = '' ];then
 fi
 
 # This will setup all products on which framework depends.
-setup framework v1_1_0
+setup framework v1_1_2
 
 # Chose version of G4 and its cross-section files.
 setup geant4 v4_9_3_p01 -q g77-OpenGL
