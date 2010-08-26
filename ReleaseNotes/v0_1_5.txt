@@ -1,11 +1,29 @@
 
            Release notes for Mu2e Offline software, v0_1_5
 
-  $Id: v0_1_5.txt,v 1.3 2010/08/26 15:50:25 kutschke Exp $
+  $Id: v0_1_5.txt,v 1.4 2010/08/26 16:04:20 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/08/26 15:50:25 $
+  $Date: 2010/08/26 16:04:20 $
 
-14) August 24, 2010 kutschke
+17) August 16, 2010 kutschke
+    Accidental commit of 
+      setup.sh and  Example02/src/Ex02MakeHits_plugin.cc;
+    These have been backed out.
+
+16) August 16, 2010 kutschke
+    Example02/src/SConscript
+     - add Mu2eUtilities .so to the link list
+
+15) August 26, 2010, kutschke
+     Mu2eG4/test/transportOnly.py;
+     Example02/test/ex02.py
+       Add seed to ParameterSet of modules where it is needed.
+
+     Example02/test/ex02.py
+       Remove target information ( never used in this example and it 
+       is now out of date ).
+
+14) August 24, 2010, kutschke
      Mu2eG4/test/geom_01.txt
       Get magnetic field maps from /grid/fermiapp/mu2e/mu2e/BFieldMaps .
 
