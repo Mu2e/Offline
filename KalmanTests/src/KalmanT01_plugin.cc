@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_plugin.cc,v 1.4 2010/06/18 19:24:05 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/18 19:24:05 $
+// $Id: KalmanT01_plugin.cc,v 1.5 2010/08/26 19:26:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/26 19:26:23 $
 //
 // Original author Rob Kutschke
 //
@@ -58,9 +58,6 @@
 #include "CLHEP/Random/RandGaussQ.h"
 
 using namespace std;
-using edm::Event;
-using CLHEP::Hep3Vector;
-
 
 namespace mu2e {
 
@@ -73,11 +70,17 @@ namespace mu2e {
   class KalmanT01 : public edm::EDAnalyzer {
   public:
     explicit KalmanT01(edm::ParameterSet const& pset) : 
+
+      // Parameters
       _generatorModuleLabel(pset.getUntrackedParameter<string>("generatorModuleLabel","g4run")),
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",1)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
       _hDriftDist(0),
       _hCheckPointRadius(0),
+
+      // Random number distributions
+      _gaussian( createEngine( get_seed_value(pset)) ),
+
       _messageCategory("FitTest"){
     }
     virtual ~KalmanT01() { }
@@ -96,6 +99,9 @@ namespace mu2e {
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
+
+    // Random number distributions.
+    CLHEP::RandGaussQ _gaussian;
 
     // Pointers to diagnostic histograms.
     TH1F* _hDriftDist;
@@ -227,7 +233,7 @@ namespace mu2e {
       // Compute straight line approximation of the drift distance.
       TwoLinePCA pca( mid, w, pos, mom);
       double dcaTrue = pca.dca();
-      double dca  = dcaTrue + CLHEP::RandGaussQ::shoot(0.,sigma);
+      double dca  = dcaTrue + _gaussian.fire(0.,sigma);
 
       // Arc length from poca to step point.
       double arc = (hit.time()-t0)*beta*CLHEP::c_light;
