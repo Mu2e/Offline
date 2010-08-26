@@ -3,9 +3,9 @@
 A producer module that makes a collection of overly simplified "hits"
 and adds them to the event.
 
-$Id: Ex02MakeHits_plugin.cc,v 1.8 2010/08/26 16:03:50 kutschke Exp $
+$Id: Ex02MakeHits_plugin.cc,v 1.9 2010/08/26 16:20:15 kutschke Exp $
 $Author: kutschke $
-$Date: 2010/08/26 16:03:50 $
+$Date: 2010/08/26 16:20:15 $
    
 Original author Rob Kutschke
 
@@ -87,10 +87,10 @@ namespace mu2e {
     // These are static so it is only done once, on the first call to
     // the function and is retained for all future calls.
     static double const czmax = 0.5;
-    static RandomUnitSphere ranunit(-czmax, czmax);
+    static RandomUnitSphere ranunit(*CLHEP::HepRandom::getTheEngine(), -czmax, czmax);
 
     // Generate a unit vector in the direction of one track from the origin.
-    CLHEP::Hep3Vector vunit(ranunit.shoot());
+    CLHEP::Hep3Vector vunit(ranunit.fire());
 
     // Radius of each layer of the tracker.
     // Access by reference so there is no copying.
