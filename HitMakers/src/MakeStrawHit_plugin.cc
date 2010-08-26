@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.3 2010/08/26 19:15:51 kutschke Exp $
+// $Id: MakeStrawHit_plugin.cc,v 1.4 2010/08/26 20:07:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/26 19:15:51 $
+// $Date: 2010/08/26 20:07:03 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -42,7 +42,7 @@
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 
 // Other includes.
-#include "CLHEP/Random/RandGauss.h"
+#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 using namespace std;
@@ -91,7 +91,7 @@ namespace mu2e {
       _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
 
       // Random number distributions
-      _randGauss( createEngine( get_seed_value(pset)) ),
+      _gaussian( createEngine( get_seed_value(pset)) ),
 
       _messageCategory("StrawHitMaker"){
 
@@ -125,7 +125,7 @@ namespace mu2e {
     string _g4ModuleLabel;  // Name of the module that made these hits.
 
     // Random number distributions
-    CLHEP::RandGauss _randGauss;
+    CLHEP::RandGaussQ _gaussian;
 
     // A category for the error logger.
     const std::string _messageCategory;
@@ -161,7 +161,7 @@ namespace mu2e {
     edm::ProductID const& id(points.id());
 
     // Calculate T0 for this event
-    double t0 = _randGauss.fire(0.,_t0Sigma);
+    double t0 = _gaussian.fire(0.,_t0Sigma);
 
     // Organize hits by straws
 
@@ -271,7 +271,7 @@ namespace mu2e {
 
         const double signalVelocity = 299.792458; // mm/ns
 
-        double driftTime = (hit_dca + _randGauss.fire(0.,_driftSigma))/_driftVelocity;
+        double driftTime = (hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
         double distanceToMiddle = (hit_pca-mid).dot(w);
         double hit_t1 = t0 + hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
         double hit_t2 = t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
