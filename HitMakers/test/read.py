@@ -1,9 +1,9 @@
 
-# Configuration file for Readback
+# Configuration file for reading back StrawHits from a file.
 #
-# $Id: read.py,v 1.5 2010/08/18 23:14:03 logash Exp $
-# $Author: logash $
-# $Date: 2010/08/18 23:14:03 $
+# $Id: read.py,v 1.6 2010/08/26 19:16:45 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/08/26 19:16:45 $
 #
 # Original author Rob Kutschke
 #
@@ -31,7 +31,6 @@ process.TFileService = mu2e.Service("TFileService",
 )
 
 # Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
 process.add_(mu2e.Service("RandomNumberGeneratorService"))
 
 # Define the geometry.
@@ -48,14 +47,14 @@ process.source = mu2e.Source("PoolSource",
 )
 
 # Check the crudeStrawHits.
-process.testCSH = mu2e.EDAnalyzer("ReadStrawHit",
+process.testSH = mu2e.EDAnalyzer("ReadStrawHit",
+    makerModuleLabel = mu2e.string("makeSH"),
     diagLevel    = mu2e.untracked.int32(3),
     maxFullPrint = mu2e.untracked.int32(100)
 )
 
-
 # End of the section that defines and configures modules.
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath( process.testCSH );
+process.output = mu2e.EndPath( process.testSH );
 

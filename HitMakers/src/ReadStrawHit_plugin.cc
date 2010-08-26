@@ -1,12 +1,10 @@
 //
-// Plugin to test that I can read back the persistent data
-// from crude straw hits.  Also tests:
-//   - CrudeStrawHitCollection
-//   - the mechanisms to look back at the precursor StepPointMC objects.
+// Plugin to test that I can read back the persistent data about straw hits.  
+// Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.2 2010/08/23 21:20:33 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/23 21:20:33 $
+// $Id: ReadStrawHit_plugin.cc,v 1.3 2010/08/26 19:16:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/26 19:16:45 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -50,7 +48,6 @@
 
 using namespace std;
 using edm::Event;
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -62,6 +59,7 @@ namespace mu2e {
     explicit ReadStrawHit(edm::ParameterSet const& pset):
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
       _hHitTime(0),
       _hHitDeltaTime(0),
       _hHitEnergy(0),
@@ -89,6 +87,9 @@ namespace mu2e {
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
+
+    // Label of the module that made the hits.
+    std::string _makerModuleLabel;
 
     // Some diagnostic histograms.
     TH1F* _hHitTime;
@@ -141,14 +142,11 @@ namespace mu2e {
     std::vector<edm::Provenance const*> edata;
     evt.getAllProvenance(edata);
     cout << "Event info: " 
-	 << evt.id().event() <<  " " 
-	 << " found " << edata.size() << " objects " 
-	 << endl;
+    << evt.id().event() <<  " " 
+    << " found " << edata.size() << " objects " 
+    << endl;
     for( int i=0; i<edata.size(); i++ ) cout << *(edata[i]) << endl;
     */
-
-    // Instance name of the module that created the hits of interest;
-    static const string creatorName("makeCSH");
 
     // Geometry info for the LTracker.
     // Get a reference to one of the L or T trackers.
@@ -156,22 +154,22 @@ namespace mu2e {
 
     const Tracker& tracker = getTrackerOrThrow();
 
-    // Get the persistent data about the CrudeStrawHits.
+    // Get the persistent data about the StrawHits.
 
     edm::Handle<StrawHitCollection> pdataHandle;
-    evt.getByLabel(creatorName,pdataHandle);
+    evt.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
     // Get the persistent data about the StrawHitsMCTruth.
 
     edm::Handle<StrawHitMCTruthCollection> truthHandle;
-    evt.getByLabel(creatorName,truthHandle);
+    evt.getByLabel(_makerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
     // Get the persistent data about pointers to StepPointMCs
 
     edm::Handle<StrawHitMCPtrCollection> mcptrHandle;
-    evt.getByLabel(creatorName,mcptrHandle);
+    evt.getByLabel(_makerModuleLabel,mcptrHandle);
     StrawHitMCPtrCollection const* hits_mcptr = mcptrHandle.product();
 
     // Get the persistent data about the StepPointMCs. More correct implementation
@@ -197,7 +195,7 @@ namespace mu2e {
       
       // Fill per-event histograms
       if( i==0 ) {
-	_hT0->Fill(truth.t0());
+        _hT0->Fill(truth.t0());
       }
 
       // Use data from hits
@@ -213,9 +211,9 @@ namespace mu2e {
       // Use data from G4 hits
       _hNG4Steps->Fill(mcptr.size());
       for( int j=0; j<mcptr.size(); ++j ) {
-	StepPointMC const& mchit = (*mchits)[mcptr[j].index];
-	_hG4StepLength->Fill(mchit.stepLength());
-	_hG4StepEdep->Fill(mchit.eDep()*1000.0);
+        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+        _hG4StepLength->Fill(mchit.stepLength());
+        _hG4StepEdep->Fill(mchit.eDep()*1000.0);
       }
 
       // Calculate number of hits per wire
