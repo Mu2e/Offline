@@ -1,9 +1,9 @@
 //
 // A hack at makeing a cluster finder driven from CrudeTrackerHit objects.
 //
-// $Id: ClusterHackv00_plugin.cc,v 1.2 2010/05/18 21:15:46 kutschke Exp $
+// $Id: ClusterHackv00_plugin.cc,v 1.3 2010/08/26 19:57:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/18 21:15:46 $
+// $Date: 2010/08/26 19:57:44 $
 //
 // Original author Rob Kutschke
 //
@@ -39,12 +39,7 @@
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
 #include "HitMakers/inc/growCluster.hh"
 
-// Other includes.
-#include "CLHEP/Random/RandGauss.h"
-
 using namespace std;
-using edm::Event;
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 

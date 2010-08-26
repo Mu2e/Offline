@@ -4,15 +4,16 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_plugin.cc,v 1.7 2010/06/18 19:24:05 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/18 19:24:05 $
+// $Id: MCSH_Test_plugin.cc,v 1.8 2010/08/26 19:57:44 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/26 19:57:44 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes.
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <cmath>
 
@@ -41,13 +42,8 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/resolveTransients.hh"
 
-// Other includes.
-#include "CLHEP/Random/RandGauss.h"
-
 
 using namespace std;
-using edm::Event;
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
