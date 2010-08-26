@@ -5,9 +5,9 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.hh,v 1.6 2010/08/22 20:09:52 kutschke Exp $
+// $Id: RandomUnitSphere.hh,v 1.7 2010/08/26 15:49:22 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/22 20:09:52 $
+// $Date: 2010/08/26 15:49:22 $
 //
 // Original author Rob Kutschke
 //
@@ -41,14 +41,12 @@ namespace mu2e {
 
     ~RandomUnitSphere(){}
 
-    CLHEP::Hep3Vector fire() const;
-    CLHEP::Hep3Vector fire( double magnitude ) const;
+    CLHEP::Hep3Vector fire();
 
-    // Depracated
-    CLHEP::Hep3Vector shoot() const{
-      return fire();
+    // Alternate fire syntax which modifies the magnitude of the vector.
+    CLHEP::Hep3Vector fire( double magnitude ){
+      return magnitude*fire();
     }
-
 
     void setczmin(double czmin){
       _czmin=czmin;
@@ -72,6 +70,10 @@ namespace mu2e {
     double phimin(){ return _phimin;}
     double phimax(){ return _phimax;}
 
+    CLHEP::HepRandomEngine& engine(){
+      return _randFlat.engine();
+    }
+
   private:
 
     double _czmin;
@@ -80,7 +82,7 @@ namespace mu2e {
     double _phimax;
 
     // The underlying uniform random number distribution.
-    mutable CLHEP::RandFlat _randFlat;
+    CLHEP::RandFlat _randFlat;
 
   };
 
