@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.3 2010/08/26 19:16:45 kutschke Exp $
+// $Id: ReadStrawHit_plugin.cc,v 1.4 2010/08/26 19:57:24 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/26 19:16:45 $
+// $Date: 2010/08/26 19:57:24 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -42,12 +42,7 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/resolveTransients.hh"
 
-// Other includes.
-#include "CLHEP/Random/RandGauss.h"
-
-
 using namespace std;
-using edm::Event;
 
 namespace mu2e {
 
@@ -217,7 +212,7 @@ namespace mu2e {
       }
 
       // Calculate number of hits per wire
-      nhperwire[hit.strawIndex()]++;
+      ++nhperwire[hit.strawIndex()];
 
     }
 
