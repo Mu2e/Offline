@@ -1,8 +1,8 @@
 # Configuration file for Example/02
 #
-# $Id: ex02.py,v 1.6 2010/08/18 05:12:34 kutschke Exp $
+# $Id: ex02.py,v 1.7 2010/08/26 15:50:25 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/18 05:12:34 $
+# $Date: 2010/08/26 15:50:25 $
 #
 # Original author Rob Kutschke
 #
@@ -46,7 +46,8 @@ process.source = mu2e.Source("EmptySource")
 # Make some hits and add them to the event.
 process.ex02hitmaker = mu2e.EDProducer(
     "Ex02MakeHits",
-    minPulseHeight=mu2e.double(6.5)
+    minPulseHeight=mu2e.double(6.5),
+    seed=mu2e.untracked.vint32(7790)
     )
 
 # Filter to select events with an odd event number.
