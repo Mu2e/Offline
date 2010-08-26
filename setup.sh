@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.10 2010/08/26 16:35:22 kutschke Exp $
+# $Id: setup.sh,v 1.11 2010/08/26 22:58:19 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/26 16:35:22 $
+# $Date: 2010/08/26 22:58:19 $
 #
 # Original author Rob Kutschke
 #
@@ -21,6 +21,10 @@ if [ "${MU2E}" = '' ];then
     exit
 fi
 
+# Define the directory in which this file lives as the root of a release.
+export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && echo \$PWD`
+echo "Base release directory is: " $MU2E_BASE_RELEASE
+
 # This will setup all products on which framework depends.
 setup framework v1_1_2
 
@@ -35,9 +39,12 @@ setup g4abla      v3_0
 # Other products
 setup heppdt      v3_04_01
 
-# Working area
-source bin/setup_mu2e_project.sh
+# Tell the framework to look in the local area to find modules.
+source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 
 # Build the symlink directories for the BaBar code.
-./BaBar/makeInclude.csh
-
+# Only do so if the BaBar package is checked out locally.
+if [  -f "./BaBar/makeInclude.csh" ]
+then
+  ./BaBar/makeInclude.csh
+fi
