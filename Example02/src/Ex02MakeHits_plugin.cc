@@ -3,9 +3,9 @@
 A producer module that makes a collection of overly simplified "hits"
 and adds them to the event.
 
-$Id: Ex02MakeHits_plugin.cc,v 1.10 2010/08/26 16:35:42 kutschke Exp $
+$Id: Ex02MakeHits_plugin.cc,v 1.11 2010/08/26 19:58:17 kutschke Exp $
 $Author: kutschke $
-$Date: 2010/08/26 16:35:42 $
+$Date: 2010/08/26 19:58:17 $
    
 Original author Rob Kutschke
 
@@ -45,7 +45,7 @@ Original author Rob Kutschke
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGauss.h"
+#include "CLHEP/Random/RandGaussQ.h"
 
 using namespace std;
 
@@ -77,8 +77,8 @@ namespace mu2e {
     // Parameters from run time configuration.
     double minPulseHeight_;
 
-    CLHEP::RandGauss _randGauss;
-    RandomUnitSphere _angularDistribution;
+    CLHEP::RandGaussQ _randGauss;
+    RandomUnitSphere  _angularDistribution;
 
   };
 

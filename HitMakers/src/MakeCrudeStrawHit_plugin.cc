@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.7 2010/06/18 19:24:05 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/18 19:24:05 $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.8 2010/08/26 19:58:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/26 19:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -41,12 +41,9 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 // Other includes.
-#include "CLHEP/Random/RandGauss.h"
-
+#include "CLHEP/Random/RandGaussQ.h"
 
 using namespace std;
-using edm::Event;
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -56,11 +53,19 @@ namespace mu2e {
   class MakeCrudeStrawHit : public edm::EDProducer {
   public:
     explicit MakeCrudeStrawHit(edm::ParameterSet const& pset) : 
+
+      // Parameters
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+
+      // Random number distributions
+      _gaussian( createEngine( get_seed_value(pset)) ),
+
+      // Histograms
       _hTime(0),
       _hDriftDist(0),
       _hCheckPointRadius(0),
+
       _messageCategory("HitMaker"){
 
       // A place holder.
@@ -80,6 +85,8 @@ namespace mu2e {
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
+
+    CLHEP::RandGaussQ _gaussian;
 
     // Pointers to diagnostic histograms.
     TH1F* _hTime;
@@ -150,7 +157,7 @@ namespace mu2e {
 
       // Compute drift time and smeared drift distance.
       double time = dcaTrue/driftVelocity;
-      double dca  = dcaTrue + CLHEP::RandGauss::shoot(0.,sigma);
+      double dca  = dcaTrue + _gaussian.fire(0.,sigma);
 
       // Add to the output collection.
       crudeHits->push_back( CrudeStrawHit( straw.Index(), 
