@@ -1,8 +1,8 @@
 # Variant of g4test_03 but with transport only.
 #
-# $Id: transportOnly.py,v 1.5 2010/08/26 15:50:25 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/08/26 15:50:25 $
+# $Id: transportOnly.py,v 1.6 2010/08/27 23:06:02 genser Exp $
+# $Author: genser $
+# $Date: 2010/08/27 23:06:02 $
 #
 # Original author Rob Kutschke
 #
@@ -16,7 +16,7 @@ process = mu2e.Process("transportOnly")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(200)
+    input = mu2e.untracked.int32(100)
 )
 
 # Load the standard message logger configuration.

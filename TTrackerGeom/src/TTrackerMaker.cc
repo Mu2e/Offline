@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.8 2010/08/12 21:10:11 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/12 21:10:11 $
+// $Id: TTrackerMaker.cc,v 1.9 2010/08/27 23:06:02 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/27 23:06:02 $
 //
 // Original author Rob Kutschke
 //
@@ -59,8 +59,8 @@ namespace mu2e {
     _envelopeInnerRadius  = config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
     _strawOuterRadius     = config.getDouble("ttracker.strawOuterRadius")*CLHEP::mm;
     _strawWallThickness   = config.getDouble("ttracker.strawWallThickness")*CLHEP::mm;
-    _deviceSeparation     = config.getDouble("ttracker.deviceSeparation")*CLHEP::mm;
-    _deviceSpacing        = config.getDouble("ttracker.deviceSpacing")*CLHEP::mm;
+    _deviceSpacing     = config.getDouble("ttracker.deviceSpacing")*CLHEP::mm;
+    _deviceHalfSeparation        = config.getDouble("ttracker.deviceHalfSeparation")*CLHEP::mm;
     _deviceRotation       = config.getDouble("ttracker.deviceRotation")*CLHEP::degree;
 
     _outerSupportRadius   = config.getDouble("ttracker.outerSupportRadius")*CLHEP::mm;
@@ -226,6 +226,25 @@ namespace mu2e {
     Sector& sector = dev._sectors.back();
     sector._layers.reserve(_layersPerSector);
 
+    // we should check here if the manifold is large enough to hold all the layers...
+    // closly packed straws need space of (in z) r*[2+(nlay-1)*sqrt(3)]
+
+    if (2*_manifoldHalfLengths.at(2)<_strawOuterRadius*(2.+(_layersPerSector-1.)*sqrt(3.))) {
+      cout << "2*_manifoldHalfLengths[2], straw space: " << 2*_manifoldHalfLengths.at(2) << ", " <<
+        _strawOuterRadius*(2.+(_layersPerSector-1.)*sqrt(3.)) << endl;
+      throw cms::Exception("GEOM")
+        << "Manifolds are to small for the number of straw layers. \n";
+    }
+
+    // check if the opposite sectors do not overlap
+    static double const pad = 0.05;
+    if ((2.*_manifoldHalfLengths.at(2)+_supportHalfThickness)>_deviceHalfSeparation + pad) {
+      cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _deviceHalfSeparation " << 
+        (2.*_manifoldHalfLengths.at(2)+_supportHalfThickness) << ", " <<_deviceHalfSeparation << endl;
+      throw cms::Exception("GEOM")
+        << "Devices are to close \n";
+    }
+
     makeManifolds( secId );
 
     for ( int ilay=0; ilay<_layersPerSector; ++ilay ){
@@ -249,6 +268,8 @@ namespace mu2e {
     int ilay = layId.getLayer();
     int isec = layId.getSector();
 
+    //    cout << "Debugging TTrackerMaker ilay: " << ilay << endl;
+
     // Start to populate the layer.
     layer._nStraws = _manifoldsPerEnd*_strawsPerManifold;
     layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
@@ -258,7 +279,11 @@ namespace mu2e {
 
     // |z| of straw center, relative to the center of the device.
     // Sign is taken care of elsewhere.
-    double zOffset = _supportHalfThickness + _manifoldHalfLengths.at(2);
+
+    // we should include the layer number here
+    //    double zOffset = _supportHalfThickness + _manifoldHalfLengths.at(2);
+
+    double zOffset = _supportHalfThickness + _strawOuterRadius*(1.+ilay*sqrt(3.));
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
@@ -281,9 +306,16 @@ namespace mu2e {
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
         ++istraw;
 
+        // "second" layer will have fewer straws (for now) check constructTTrackerv3
+        // no, it complicates StrawSD and TTrackerMaker 
+        // if( ilay == _layersPerSector && istr+1 == _strawsPerManifold && ilay%2==1) break;
+
         // Construct straw midpoint in its base position in the 
         // coord system of the device envelope.
-        double xstraw = xA + (1. + 2.*istr)*_strawOuterRadius ;
+        // we will shift the "second" layer from the manifold edge
+        double xstraw = (ilay%2==0) ? xA + (1. + 2.*istr)*_strawOuterRadius :
+          xA + 2.*(1+istr)*_strawOuterRadius;
+
         CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_sectorZSide.at(isec) );
         mid += device.origin();
         
@@ -391,7 +423,9 @@ namespace mu2e {
     }
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-      double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i - dx;
+      double xA = (_layersPerSector==1) ? 
+        _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i - dx :
+        _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i - dx + _strawOuterRadius;
       double yA = sqrt( square(_innerSupportRadius) - square(xA) );
       double yB = yA + _manifoldYOffset;
       // cout << "Straw Length: " << xA << " " << yB*2.0 << endl;
@@ -423,6 +457,8 @@ namespace mu2e {
     // get sector number
 
     int isec = sector.Id().getSector();
+    //    int idev = dev.Id();
+    //    cout << "Debugging TTrackerMaker isec,idev: " << isec << ", " << idev << endl;
 
     //  void  TTrackerMaker::computeSectorBoxParams(vector<double>& boxHalfLengths){
 
@@ -432,9 +468,14 @@ namespace mu2e {
     // the other dimentions are "z", the combined manifold width
     // the "thickness" of the trpezoid y, the layer thickness * number of layers 
 
-
     // z
-    double bz = _manifoldHalfLengths.at(0)*double(_manifoldsPerEnd);
+
+    // if there are more than one layer per sector, manifolds have a
+    // straw sticking out by a straw radius, but only the last one
+    // extends beyond the entire structure in the z direction
+
+    double bz = (_layersPerSector==1) ? (_manifoldHalfLengths.at(0)*double(_manifoldsPerEnd)) :
+      (_manifoldHalfLengths.at(0)*double(_manifoldsPerEnd) + _strawOuterRadius);
 
     // calculating "longer" x;
     // starting from the tng of the slope 
@@ -442,27 +483,48 @@ namespace mu2e {
     // calculate the largest slope starting from the longest straws manifold
     double maxtg = 0.0;
 
+    // the code below looks at the slope "seen" from the longest set of straws
     for (size_t i=1; i!=_manifoldsPerEnd; ++i) {
-      double ttg = (_manifoldHalfLengths.at(0)*double(i) ) /
-        ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i) );
+
+      double ttg = (_layersPerSector==1) ? 
+        ( ( _manifoldHalfLengths.at(0)*double(i) ) / 
+          ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i) ) ):
+        ( ( _manifoldHalfLengths.at(0)+_strawOuterRadius)*double(i) / 
+          ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i) ) );
+
       if (maxtg < ttg ) {
         maxtg = ttg;
       }
+
     }
 
     double slopeAlpha = atan(maxtg);
 
     // finally x (long, short)
-    double bxl = _manifoldHalfLengths.at(0)/tan(slopeAlpha)+_strawHalfLengths.at(0);
+    double bxl = (_layersPerSector==1) ?
+      _manifoldHalfLengths.at(0)/tan(slopeAlpha)+_strawHalfLengths.at(0) :
+      (_manifoldHalfLengths.at(0)+_strawOuterRadius)/tan(slopeAlpha)+_strawHalfLengths.at(0);      
     double bxs = bxl - bz/tan(slopeAlpha);
 
     // we need to make sure the trapezoids do not extend beyond the device envelope...
-    // we may need to do "volume subtraction"
 
+
+    // we will check if the dev envelope radius acomodates the new box
+    // need to rewrite box/manifold calc, also to be done only? once...
+
+//     cout << "Debugging _supportParams.outerRadius old:   " << _tt->_supportParams.outerRadius << endl;
+//     _tt->_supportParams.outerRadiusFudged = sqrt(square(_envelopeInnerRadius + bz)+square(bxs));
+//     cout << "Debugging _supportParams.outerRadius new:   " << _tt->_supportParams.outerRadiusFudged << endl;
+//     _tt->_supportParams.outerRadiusFudged = 
+//       max ( _tt->_supportParams.outerRadiusFudged,
+//             sqrt(square(_envelopeInnerRadius)+ square(bxl)) );
+//     cout << "Debugging _supportParams.outerRadius newer: " << _tt->_supportParams.outerRadiusFudged << endl;
+    
     // y
     // double by = _layersPerSector*_tt->_strawDetails.at(0).outerRadius();
     // manifold better be thicker than the straws:
-    double by = _layersPerSector* max(_manifoldHalfLengths.at(2),_tt->_strawDetails.at(0).outerRadius());
+    // double by = _layersPerSector* max(_manifoldHalfLengths.at(2),_tt->_strawDetails.at(0).outerRadius());
+    double by = _manifoldHalfLengths.at(2);
 
     // now push it all back into the vector
 
@@ -486,8 +548,7 @@ namespace mu2e {
     sector._boxRyAngle = 0.;
     sector._boxRzAngle = _sectorBaseRotations.at(isec) + dev.rotation();
 
-    double zOffset = _layersPerSector*(_supportHalfThickness + _manifoldHalfLengths.at(2))*
-      _sectorZSide.at(isec);
+    double zOffset = (_supportHalfThickness + _manifoldHalfLengths.at(2))*_sectorZSide.at(isec);
     
     double xOffset = _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd;
 
@@ -556,16 +617,16 @@ namespace mu2e {
 
 
     if ( _spacingPattern == 0 ) {
-      return idev * _deviceSeparation;
+      return idev * _deviceSpacing;
     }
 
     else if ( _spacingPattern == 1 ) {
       int station = idev/2;
       int k = idev%2;
       if (k == 0 ) {
-        return  station*_deviceSeparation - _deviceSpacing;
+        return  station*_deviceSpacing - _deviceHalfSeparation;
       } else if (k == 1 ) {
-        return  station*_deviceSeparation + _deviceSpacing;
+        return  station*_deviceSpacing + _deviceHalfSeparation;
       }
     }
     else {
@@ -578,12 +639,12 @@ namespace mu2e {
   double TTrackerMaker::findFirstDevZ0() const{
 
     if ( _spacingPattern == 0 ) {
-      return _deviceSeparation*double(_numDevices-1)/2.0;
+      return _deviceSpacing*double(_numDevices-1)/2.0;
     }
 
     else if ( _spacingPattern == 1 ) {
       int nStations = _numDevices/2;
-      return double(nStations-1)/2.0 * _deviceSeparation;
+      return double(nStations-1)/2.0 * _deviceSpacing;
     }
     else {
       throw cms::Exception("GEOM")

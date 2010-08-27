@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.4 2010/08/27 21:50:47 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.5 2010/08/27 23:06:02 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/27 21:50:47 $
+// $Date: 2010/08/27 23:06:02 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -114,6 +114,15 @@ namespace mu2e{
 
     G4String const devName = "TTrackerDeviceEnvelope";
 
+//     *** hack *** note the padding of the TTrackerDeviceEnvelope parameters
+//     devInfo.solid    = new G4Tubs(devName, 
+//                                   deviceEnvelopeParams.innerRadius-2.5,
+//                                   deviceEnvelopeParams.outerRadius+5.0,
+//                                   deviceEnvelopeParams.zHalfLength+3.0, 
+//                                   deviceEnvelopeParams.phi0, 
+//                                   deviceEnvelopeParams.phiMax  
+//                                   );
+    
     devInfo.solid    = new G4Tubs(devName, 
                                   deviceEnvelopeParams.innerRadius,
                                   deviceEnvelopeParams.outerRadius,
@@ -195,9 +204,17 @@ namespace mu2e{
 
     for ( size_t ilay =0; ilay<sector.nLayers(); ++ilay ){
 
+      // cout << "Debugging constructTTrackerv3 ilay: " << ilay << endl;
+
       const Layer& layer = sector.getLayer(ilay);
           
       for ( int istr=0; istr<layer.nStraws(); ++istr ){
+
+        // "second" layer will have fewer straws (for now) also see TTrackerMaker
+        // no, it complicates StrawSD and TTrackerMaker 
+        // if( ilay%2==1 && istr+1 == layer.nStraws() ) break;
+
+        // cout << "Debugging constructTTrackerv3 istr: " << istr << endl;
 
         const Straw& straw = layer.getStraw(istr);
 
@@ -228,7 +245,8 @@ namespace mu2e{
         // look at StrawSD to see how the straw index is reconstructed
 
         // make the straws more distinguishable when displayed
-        G4Color color = (istr%2 == 0) ? G4Color::Green() : G4Color::Yellow();
+        G4Color color = (ilay%2 == 0) ? ((istr%2 == 0) ? G4Color::Green() : G4Color::Yellow()) :
+          ((istr%2 == 0) ? G4Color::Red() : G4Color::Blue());
 
         VolumeInfo strawInfo  = nestTubs("TTrackerStraw",
                                          strawParams,
