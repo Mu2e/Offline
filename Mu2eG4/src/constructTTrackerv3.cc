@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.3 2010/08/10 19:06:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/10 19:06:58 $
+// $Id: constructTTrackerv3.cc,v 1.4 2010/08/27 21:50:47 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/27 21:50:47 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -96,8 +96,10 @@ namespace mu2e{
 
     TubsParams deviceEnvelopeParams = ttracker->getDeviceEnvelopeParams();
 
-    bool ttrackerDeviceEnvelopeVisible = config.getBool("ttracker.deviceEnvelopeVisible",true);
+    bool ttrackerDeviceEnvelopeVisible = config.getBool("ttracker.deviceEnvelopeVisible",false);
     bool ttrackerDeviceEnvelopeSolid = config.getBool("ttracker.deviceEnvelopeSolid",true);
+    bool ttrackerSectorEnvelopeVisible = config.getBool("ttracker.sectorEnvelopeVisible",false);
+    bool ttrackerSectorEnvelopeSolid = config.getBool("ttracker.sectorEnvelopeSolid",true);
     bool ttrackerStrawVisible          = config.getBool("ttracker.strawVisible",false);
     bool ttrackerStrawSolid          = config.getBool("ttracker.strawSolid",true);
 
@@ -171,14 +173,14 @@ namespace mu2e{
 
     secInfo.logical  = new G4LogicalVolume( secInfo.solid, envelopeMaterial, secName); 
     
-    if (!ttrackerDeviceEnvelopeVisible) {
-      devInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    if (!ttrackerSectorEnvelopeVisible) {
+      secInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
     } 
     else {
       // it will be allways Cyan if done this way
       G4Color color = (isec%2 == 1) ? G4Color::Blue() : G4Color::Cyan();
       G4VisAttributes* visAtt = new G4VisAttributes(true, color);
-      visAtt->SetForceSolid(ttrackerDeviceEnvelopeSolid);
+      visAtt->SetForceSolid(ttrackerSectorEnvelopeSolid);
       visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
       secInfo.logical->SetVisAttributes(visAtt);
     }
