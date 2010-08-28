@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.9 2010/06/18 18:45:57 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/18 18:45:57 $
+// $Id: ReadBack.cc,v 1.10 2010/08/28 18:31:51 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/28 18:31:51 $
 //
 // Original author Rob Kutschke
 //
@@ -35,8 +35,10 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 
 // Root includes.
+#include "TDirectory.h"
 #include "TH1F.h"
 #include "TNtuple.h"
+#include "TGraph.h"
 
 // Other includes.
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -49,9 +51,14 @@ using CLHEP::keV;
 namespace mu2e {
 
   ReadBack::ReadBack(edm::ParameterSet const& pset) : 
+
+    // Run time parameters
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
     _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
     _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+    _xyHitsMax(pset.getUntrackedParameter<int>("xyHitsMax",10000)),
+
+    // Histograms
     _nAnalyzed(0),
     _hRadius(0),
     _hTime(0),
@@ -62,7 +69,11 @@ namespace mu2e {
     _hzHit(0),
     _hHitNeighbours(0),
     _hCheckPointRadius(0),
-    _ntup(0){
+    _ntup(0),
+    _xyHits(0),
+
+    // Remaining member data
+    _xyHitCount(0){
   }
   
   void ReadBack::beginJob(edm::EventSetup const& ){
@@ -95,6 +106,15 @@ namespace mu2e {
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
                       "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId:edep:p:step");
+
+    // Create a TGraph; 
+    // - Syntax to set name and title is weird; that's just root.
+    // - Must append to the output file by hand.
+    _xyHits = tfs->make<TGraph>(_xyHitsMax);
+    _xyHits->SetName("xyHits");
+    _xyHits->SetTitle("Y vs X for StepPointMC");
+    gDirectory->Append(_xyHits);
+
   }
 
   void ReadBack::analyze(const edm::Event& event, edm::EventSetup const&) {
@@ -249,6 +269,11 @@ namespace mu2e {
       nt[17] = hit.stepLength();
 
       _ntup->Fill(nt);
+
+      // Fill the TGraph; need to manage size by hand.
+      if ( _xyHitCount < _xyHitsMax ){
+        _xyHits->SetPoint( _xyHitCount++, pos.x(), pos.y() );
+      }
 
       // Print out limited to the first few events.
       if ( _nAnalyzed < _maxFullPrint ){

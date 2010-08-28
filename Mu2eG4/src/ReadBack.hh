@@ -1,9 +1,10 @@
 //
-// An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
+// An EDAnalyzer module that reads back the hits created by G4 and makes 
+// histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.6 2010/05/18 22:06:19 kutschke Exp $
+// $Id: ReadBack.hh,v 1.7 2010/08/28 18:31:51 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/18 22:06:19 $
+// $Date: 2010/08/28 18:31:51 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +23,7 @@
 #include "ToyDP/inc/StepPointMCCollection.hh"
 
 class TH1F;
+class TGraph;
 class TNtuple;
 
 namespace mu2e {
@@ -41,6 +43,8 @@ namespace mu2e {
 
   private:
 
+    // Start: run time parameters
+
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
 
@@ -50,10 +54,15 @@ namespace mu2e {
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
+    // Limit the size of the TGraph.
+    int _xyHitsMax;
+
+    // End: run time parameters
+
     // Number of events analyzed.
     int _nAnalyzed;
 
-    // Pointers to histograms to be filled.
+    // Pointers to histograms, ntuples, TGraphs.
     TH1F* _hRadius;
     TH1F* _hEnergyDep;
     TH1F* _hTime;
@@ -68,6 +77,10 @@ namespace mu2e {
     TH1F* _hStepLength;
 
     TNtuple* _ntup;
+    TGraph*  _xyHits;
+
+    // Need to keep track of TGraph entries by hand.
+    int _xyHitCount;
 
     // Do the work specific to one of the trackers.
     void ReadBack::doLTracker(const edm::Event& event);
