@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.11 2010/08/26 22:58:19 kutschke Exp $
+# $Id: setup.sh,v 1.12 2010/08/28 18:31:16 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/26 22:58:19 $
+# $Date: 2010/08/28 18:31:16 $
 #
 # Original author Rob Kutschke
 #
@@ -26,7 +26,7 @@ export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && echo
 echo "Base release directory is: " $MU2E_BASE_RELEASE
 
 # This will setup all products on which framework depends.
-setup framework v1_1_2
+setup framework v1_1_3
 
 # Chose version of G4 and its cross-section files.
 setup geant4 v4_9_3_p01 -q g77-OpenGL
