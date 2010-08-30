@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.2 2010/04/06 23:07:07 kutschke Exp $
+// $Id: SteppingAction.hh,v 1.3 2010/08/30 22:21:13 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/06 23:07:07 $
+// $Date: 2010/08/30 22:21:13 $
 //
 // Original author Rob Kutschke
 //
@@ -44,8 +44,9 @@ namespace mu2e {
     
     G4double _zref;
     
-    // List of events for which to enable debug printout.
-    EventNumberList _debugList;
+    // Lists of events and tradcks for which to enable debug printout.
+    EventNumberList _debugEventList;
+    EventNumberList _debugTrackList;
 
   };
   

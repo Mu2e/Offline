@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.6 2010/06/02 04:08:51 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.7 2010/08/30 22:21:13 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/06/02 04:08:51 $
+// $Date: 2010/08/30 22:21:13 $
 //
 // Original author Rob Kutschke
 //
@@ -29,14 +29,27 @@ using namespace std;
 namespace mu2e {
 
   SteppingAction::SteppingAction( const SimpleConfig& config ):
-    _zref(){ 
+    _lastPosition(),
+    _lastMomentum(),
+    _zref(),
+    _debugEventList(),
+    _debugTrackList(){ 
 
     // Get list of events for which to make debug printout.
     string key("g4.steppingActionEventList");
     if ( config.hasName(key) ){
       vector<int> list;
       config.getVectorInt(key,list);
-      _debugList.add(list);
+      _debugEventList.add(list);
+    }
+
+    // Get list of tracks (within the above events) for which to make debug printout.
+    // If empty list, then make printout for all tracks.
+    string key2("g4.steppingActionTrackList");
+    if ( config.hasName(key2) ){
+      vector<int> list;
+      config.getVectorInt(key2,list);
+      _debugTrackList.add(list);
     }
 
   }
@@ -57,9 +70,19 @@ namespace mu2e {
 
 
   void SteppingAction::UserSteppingAction(const G4Step* step){  
-
+    
     // Do we want to do make debug printout for this event?
-    if ( !_debugList.inList() ) return;
+    if ( !_debugEventList.inList() ) return;
+
+    // Get information about this track.
+    G4Track* track = step->GetTrack();
+    G4int id       = track->GetTrackID();
+
+    // If no tracks are listed, then printout for all tracks.
+    // If some tracks are listed, then printout only for those tracks.
+    if ( _debugTrackList.size() > 0 ){
+      if ( !_debugTrackList.inList(id) ) return;
+    }
 
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
     int eventNo = event->GetEventID();
@@ -106,10 +129,6 @@ namespace mu2e {
     //if ( report ) G4cout << "Report point: " << G4endl;
 
     // Status report.
-    G4Track* track = step->GetTrack();
-
-    // Status report.
-    G4int id = step->GetTrack()->GetTrackID();
     printit ( "Pre: ", id, 
               prept->GetPosition(),
               prept->GetMomentum()
