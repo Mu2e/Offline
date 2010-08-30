@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: TrackingAction.cc,v 1.4 2010/08/30 22:23:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/08/30 22:23:16 $
 //
 // Original author Rob Kutschke
 //
@@ -38,7 +38,8 @@ namespace mu2e {
 
   TrackingAction::TrackingAction( const SimpleConfig& config):
     _debugList(),
-    _physVolHelper(0){
+    _physVolHelper(0),
+    _timer(){
 
     string name("g4.trackingActionEventList");
     if ( config.hasName(name) ){
@@ -59,14 +60,20 @@ namespace mu2e {
     if ( !_debugList.inList() ) return;
     printInfo( trk, "Start new Track: ");
 
+    _timer.reset();
+    _timer.start();
+
   }
 
   void TrackingAction::PostUserTrackingAction(const G4Track* trk){
 
+    // This is safe even if it was never started.
+    _timer.stop();
+
     saveSimParticleEnd(trk);
 
     if ( !_debugList.inList() ) return;
-    printInfo( trk, "End Track:       ");
+    printInfo( trk, "End Track:       ", true);
 
   }
 
@@ -154,7 +161,7 @@ namespace mu2e {
 
   }
 
-  void TrackingAction::printInfo(const G4Track* trk, const string& text){
+  void TrackingAction::printInfo(const G4Track* trk, const string& text, bool isEnd ){
 
     const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
@@ -179,8 +186,19 @@ namespace mu2e {
          << setw(8) << partName             << " | "
          << trk->GetPosition()-_mu2eOrigin  << " "
          << trk->GetMomentum()              << " "
-         << volName
-         << endl;
+         << volName                         << " ";
+
+    if ( isEnd ){
+      SimParticle& particle = _spmap[id];
+      cout << particle.endProperTime()*CLHEP::ns <<  " | ";
+      cout << particle.startGlobalTime()*CLHEP::ns <<  " ";
+      cout << particle.endGlobalTime()*CLHEP::ns <<  " | ";
+      cout << _timer.cpuTime() << " " 
+           << _timer.realTime() 
+           << endl;
+    }
+
+    cout << endl;
 
   }
 

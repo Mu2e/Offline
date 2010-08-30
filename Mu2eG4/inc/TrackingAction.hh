@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.2 2010/03/23 20:39:26 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.3 2010/08/30 22:23:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/03/23 20:39:26 $
+// $Date: 2010/08/30 22:23:16 $
 //
 // Original author Rob Kutschke
 //
@@ -15,6 +15,9 @@
 // C++ includes
 #include <string>
 #include <map>
+
+// Framework includes
+#include "FWCore/Utilities/interface/CPUTimer.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
@@ -65,7 +68,7 @@ namespace mu2e {
 
   private:
 
-    // List of events for which to enable debug printout.
+    // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugList;
 
     // Transient information collected during the event.
@@ -78,8 +81,10 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _mu2eOrigin;
 
+    edm::CPUTimer _timer;
+
     // Debug printout.
-    void printInfo(const G4Track* trk, const std::string& text);
+    void printInfo(const G4Track* trk, const std::string& text, bool isEnd=false);
 
 
   };
