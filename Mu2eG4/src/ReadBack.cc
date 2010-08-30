@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.10 2010/08/28 18:31:51 kutschke Exp $
+// $Id: ReadBack.cc,v 1.11 2010/08/30 22:27:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/28 18:31:51 $
+// $Date: 2010/08/30 22:27:22 $
 //
 // Original author Rob Kutschke
 //
@@ -105,7 +105,7 @@ namespace mu2e {
 
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
-                      "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId:edep:p:step");
+                      "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step");
 
     // Create a TGraph; 
     // - Syntax to set name and title is weird; that's just root.
@@ -181,7 +181,7 @@ namespace mu2e {
     }
 
     // ntuple buffer.
-    float nt[18];
+    float nt[_ntup->GetNvar()];
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
@@ -262,11 +262,12 @@ namespace mu2e {
       nt[10] = hit.time();
       nt[11] = straw.Id().getDevice();
       nt[12] = straw.Id().getSector();
-      nt[13] = pdgId;
-      nt[14] = genId.Id();
-      nt[15] = hit.eDep()/keV;
-      nt[16] = mom.mag();
-      nt[17] = hit.stepLength();
+      nt[13] = straw.Id().getLayer();
+      nt[14] = pdgId;
+      nt[15] = genId.Id();
+      nt[16] = hit.eDep()/keV;
+      nt[17] = mom.mag();
+      nt[18] = hit.stepLength();
 
       _ntup->Fill(nt);
 
