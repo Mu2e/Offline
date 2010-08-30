@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.9 2010/08/18 06:32:22 kutschke Exp $
+# $Id: g4test_03.py,v 1.10 2010/08/30 22:29:25 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/18 06:32:22 $
+# $Date: 2010/08/30 22:29:25 $
 #
 # Original author Rob Kutschke
 #
@@ -48,6 +48,18 @@ process.ConditionsService = mu2e.Service("ConditionsService",
        conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
 )
 
+# Enable per module timing
+process.Timing = mu2e.Service("Timing",
+    useJobReport = mu2e.untracked.bool(True)
+)
+
+# Enable memory use profiling
+process.SimpleMemoryCheck = mu2e.Service("SimpleMemoryCheck",
+    oncePerEventMode = mu2e.untracked.bool(False),
+    showMallocInfo = mu2e.untracked.bool(False),
+    ignoreTotal = mu2e.untracked.int32(5)
+)
+
 # Define and configure some modules to do work on each event.
 # Modules are just defined for now, the are scheduled later.
 
@@ -75,7 +87,7 @@ process.randomsaver = mu2e.EDAnalyzer("RandomNumberSaver")
 process.outfile = mu2e.OutputModule(
     "PoolOutputModule",
     fileName = mu2e.untracked.string('file:data_03.root'),
-    outputCommands = cms.untracked.vstring(
+    outputCommands = mu2e.untracked.vstring(
      'keep *_*_*_*',
 #     'drop mu2eSimParticles_*_*_*'   # Uncomment this line to reduce file size.
     ),
