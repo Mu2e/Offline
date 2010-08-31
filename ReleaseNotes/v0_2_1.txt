@@ -3,9 +3,17 @@
 
            Release notes for Mu2e Offline software, v0_2_1
 
-  $Id: v0_2_1.txt,v 1.4 2010/08/31 05:39:04 kutschke Exp $
+  $Id: v0_2_1.txt,v 1.5 2010/08/31 16:12:45 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/08/31 05:39:04 $
+  $Date: 2010/08/31 16:12:45 $
+
+ 4) August 31, 2010, kutschke
+    Bug fix to:
+      EventGenerator/src/FromG4BLFile.cc
+
+    Example of how to use FromG4BLFile:
+      Mu2eG4/test/beamline_genconfig.txt
+      Mu2eG4/test/beamline_geom.txt
 
  3) August 31, 2010, kutschke
     Next release of FromG4BLFile generator.  This still does not treat the
