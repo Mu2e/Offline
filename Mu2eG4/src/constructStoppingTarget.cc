@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.3 2010/06/23 23:32:09 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/23 23:32:09 $
+// $Id: constructStoppingTarget.cc,v 1.4 2010/08/31 16:13:15 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/31 16:13:15 $
 //
 // Original author Peter Shanahan
 //
@@ -41,7 +41,9 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructStoppingTarget( G4LogicalVolume* mother, double zOff ){
+  VolumeInfo constructStoppingTarget( G4LogicalVolume* mother, 
+                                      double zOff,
+                                      SimpleConfig const& config ){
 
     std::cout<<"In constructStoppingTarget"<<std::endl;
     // Master geometry for the Target assembly
@@ -86,7 +88,8 @@ namespace mu2e {
                                               targetName, 
                                               mother, 
                                               0, 
-                                              0);
+                                              0,
+                                              config.getBool("g4.doSurfaceCheck",false));
 
     // Visualization attributes of the the mother volume.
     {
@@ -124,19 +127,20 @@ namespace mu2e {
         G4ThreeVector foilOffset(foil.center()-G4ThreeVector(0.,0.,z0));
         cout<<"foil "<<itf<<" center="<<foil.center()<<", offset="<<foilOffset<<endl;
 
-        G4VPhysicalVolume* phys = new G4PVPlacement( rot
-                                                     , foilOffset
-                                                     , foilInfo.logical
-                                                     , "TargetFoil_"
-                                                     , targetInfo.logical
-                                                     , 0
-                                                     , itf
-                                                     );
+        G4VPhysicalVolume* phys = new G4PVPlacement( rot,
+                                                     foilOffset,
+                                                     foilInfo.logical,
+                                                     "TargetFoil_",
+                                                     targetInfo.logical,
+                                                     0,
+                                                     itf,
+                                                     config.getBool("g4.doSurfaceCheck",false));
 
+        // leak?
         G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Magenta() );
-        visAtt->SetForceSolid(true);
-        visAtt->SetForceAuxEdgeVisible (false);
-        visAtt->SetVisibility(true);
+        visAtt->SetVisibility(config.getBool("target.visible",true));
+        visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+        visAtt->SetForceSolid(config.getBool("target.solid",true));
         foilInfo.logical->SetVisAttributes(visAtt);
        
       }// target foils
