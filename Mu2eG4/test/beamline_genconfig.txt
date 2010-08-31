@@ -3,19 +3,23 @@
 // Run one of:
 //  - Primary proton gun 
 //  - Single particle gun, configured to shoot muons out of the production target.
+//  - Particles from G4beamline format input file.
 //
-// $Id: beamline_genconfig.txt,v 1.1 2010/08/20 20:22:57 kutschke Exp $
+// $Id: beamline_genconfig.txt,v 1.2 2010/08/31 15:52:31 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/20 20:22:57 $
+// $Date: 2010/08/31 15:52:31 $
 //
 // Original author Rob Kutschke
 
 // This is on by default.  Turn it off.
 bool conversionGun.do    = false;
 
-// Pick one or both.
+// Pick any combination.
+// If you enable fromG4BLFile you must NOT select 
+// g4.physicsListName = "Minimal" in the beamline_geom.txt
 bool primaryProtonGun.do = false;
-bool particleGun.do      = true;
+bool particleGun.do      = false;
+bool fromG4BLFile.do     = true;
 
 // Primary proton gun.
 // For the full set of parameters see EventGenerator/src/PrimaryProtonGun.cc
@@ -56,6 +60,17 @@ double         particleGun.czmax =  1.00;
 // Momentum range.
 double         particleGun.pmin  = 30.;
 double         particleGun.pmax  = 70.;
+
+//
+// --------------------------------------------------------------
+// 
+
+// FromG4BLFile
+// Read individual tracks
+
+double fromG4BLFile.mean         = -1;
+string fromG4BLFile.filename     = "/grid/data/mu2e/users/kutschke/G4BLFiles/N1HARPSS_Short.txt";
+bool   fromG4BLFile.doHistograms = true;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
