@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.15 2010/08/18 06:31:47 kutschke Exp $
+  $Id: EventGenerator_plugin.cc,v 1.16 2010/08/31 05:31:33 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/08/18 06:31:47 $
+  $Date: 2010/08/31 05:31:33 $
 
   Original author Rob Kutschke
 
@@ -66,6 +66,7 @@
 #include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
+#include "EventGenerator/inc/FromG4BLFile.hh"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>
@@ -142,6 +143,7 @@ namespace mu2e {
     bool doDIO                  = config.getBool( "decayinorbitGun.do",  false );
     bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
+    bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
@@ -153,6 +155,7 @@ namespace mu2e {
     if ( doEjectedProton)        _generators.push_back( GeneratorBasePtr( new EjectedProtonGun( run, config)) );
     if ( doPiEplusNu)            _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
     if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
+    if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );
 
     if ( _generators.size() == 0 ){
       edm::LogWarning("CONTROL")
