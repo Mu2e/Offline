@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.5 2010/08/31 00:24:51 logash Exp $
+// $Id: MakeStrawHit_plugin.cc,v 1.6 2010/08/31 00:46:46 logash Exp $
 // $Author: logash $
-// $Date: 2010/08/31 00:24:51 $
+// $Date: 2010/08/31 00:46:46 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -309,7 +309,7 @@ namespace mu2e {
       if( straw_hits.size()<1 ) continue; // This should never be needed. Added for safety.
 
       double digi_time   = straw_hits[0]._t1;
-      double digi_dt     = straw_hits[0]._t2 - straw_hits[0]._t1;
+      double digi_t2     = straw_hits[0]._t2;
       double digi_edep   = straw_hits[0]._edep;
       double digi_driftT = straw_hits[0]._driftTime;
       double digi_toMid  = straw_hits[0]._distanceToMid;
@@ -320,26 +320,27 @@ namespace mu2e {
       for( int i=1; i<straw_hits.size(); i++ ) {
         if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
           // The is bit time gap - save current data as a hit...
-          strawHits->push_back(StrawHit(straw_id,digi_time,digi_dt,digi_edep));
+          strawHits->push_back(StrawHit(straw_id,digi_time,digi_t2-digi_time,digi_edep));
           truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
           mcptrHits->push_back(mcptr);
           // ...and create new hit
           mcptr.clear();
           mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
           digi_time   = straw_hits[i]._t1;
-          digi_dt     = straw_hits[i]._t2 - straw_hits[i]._t1;
+          digi_t2     = straw_hits[i]._t2;
           digi_edep   = straw_hits[i]._edep;
           digi_driftT = straw_hits[i]._driftTime;
           digi_toMid  = straw_hits[i]._distanceToMid;
           digi_dca    = straw_hits[i]._dca;
         } else {
           // Append existing hit
+	  if( digi_t2 > straw_hits[i]._t2 ) digi_t2 = straw_hits[i]._t2;
           digi_edep += straw_hits[i]._edep;
           mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
         }
       }
 
-      strawHits->push_back(StrawHit(straw_id,digi_time,digi_dt,digi_edep));
+      strawHits->push_back(StrawHit(straw_id,digi_time,digi_t2-digi_time,digi_edep));
       truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
 
