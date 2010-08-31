@@ -1,8 +1,8 @@
 # Variant of g4test_03 but with transport only.
 #
-# $Id: transportOnly.py,v 1.6 2010/08/27 23:06:02 genser Exp $
+# $Id: transportOnly.py,v 1.7 2010/08/31 17:06:09 genser Exp $
 # $Author: genser $
-# $Date: 2010/08/27 23:06:02 $
+# $Date: 2010/08/31 17:06:09 $
 #
 # Original author Rob Kutschke
 #
@@ -61,7 +61,7 @@ process.g4run = mu2e.EDProducer(
     "G4",
     generatorModuleLabel = mu2e.string("generate"),
     rmvlevel = mu2e.untracked.int32(2),
-#    visMacro = mu2e.untracked.string("Mu2eG4/test/visxy.mac"),
+#    visMacro = mu2e.untracked.string("Mu2eG4/test/vis45.mac"),
     seed=mu2e.untracked.vint32(9877)
 )
 

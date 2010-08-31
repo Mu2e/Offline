@@ -1,0 +1,24 @@
+#
+# Macro file for setting up the graphics scene and the verbosity level: xy view
+#
+#
+# $Id: vis45.mac,v 1.1 2010/08/31 17:06:09 genser Exp $
+# $Author: genser $
+# $Date: 2010/08/31 17:06:09 $
+#
+# Original author Rob Kutschke
+
+/control/verbose 0
+/run/verbose 0
+/vis/open OGLIX 600x600-0+0
+/vis/viewer/set/viewpointThetaPhi 45 45
+/vis/viewer/zoom 1.0
+/vis/disable
+/vis/scene/create
+/vis/scene/add/volume world
+/vis/scene/add/trajectories
+/vis/sceneHandler/attach
+/vis/scene/endOfEventAction refresh
+/vis/enable 
+
+# Do NOT issue the /run/beamon command
