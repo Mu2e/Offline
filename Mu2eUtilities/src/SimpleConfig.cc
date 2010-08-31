@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.4 2010/05/17 21:47:32 genser Exp $
- * $Author: genser $ 
- * $Date: 2010/05/17 21:47:32 $
+ * $Id: SimpleConfig.cc,v 1.5 2010/08/31 21:49:40 kutschke Exp $
+ * $Author: kutschke $ 
+ * $Date: 2010/08/31 21:49:40 $
  *
  * Original author Rob Kutschke
  *
@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <iomanip>
 
 // Framework includes
 #include "FWCore/Utilities/interface/EDMException.h"
@@ -48,8 +49,7 @@ namespace mu2e {
    */
   SimpleConfig::SimpleConfig( const string& filename, 
                               bool allowReplacement,
-                              bool messageOnReplacement
- ):
+                              bool messageOnReplacement ):
     _inputfile(filename),
     _allowReplacement(allowReplacement),
     _messageOnReplacement(messageOnReplacement){
@@ -612,5 +612,111 @@ namespace mu2e {
     }
 
   }
+
+  // Some types used in printStatistics.
+  struct Stats{
+    int count;
+    int nValues;
+    Stats():
+      count(0),
+      nValues(0){
+    }
+  };
+  typedef std::map<string,Stats> StatMap;
+
+  // A helper function used in printStatistics.
+  // Find the length of the longest key in the map.
+  int maxKeySize ( const StatMap& m ){
+
+    int maxSize(0);
+
+    for ( StatMap::const_iterator i=m.begin();
+          i != m.end(); ++i ){
+
+      const string& key = i->first;
+      maxSize = ( key.size() > maxSize ) ? key.size() : maxSize;
+    }
+
+    return maxSize;
+
+  } // end maxKeySize
+
+
+  void SimpleConfig::printStatistics ( std::ostream& ost ){
+
+    // This will hold the accumlated information.
+    StatMap statMap;
+
+    // Loop over all records and accumulate stats.
+    for ( vector<SimpleConfigRecord>::size_type i=0;
+          i<_image.size(); ++i ){
+
+      // Only look at live records.
+      if ( !_image[i]->isCommentOrBlank() && 
+           !_image[i]->isSuperceded() ) {
+
+        const SimpleConfigRecord& record = *_image[i];
+        Stats& stats = statMap[record.getType()];
+
+        // Accumulate stats.
+        ++stats.count;
+        stats.nValues += record.size();
+
+      }
+    }
+
+    // Done computation; start printout.
+    ost << "\nStatistics for SimpleConfig file: " << _inputfile << endl;
+
+    if ( statMap.size() == 0 ) {
+      ost << "There were no live records in this file." << endl;
+      return;
+    }
+
+    // Count of records that are "live", not comments, blank or superceded.
+    int totalCount(0);
+
+    // Count total values in the file.
+    int totalValues(0);
+
+    // Compute the width of field that holds the name of the type.
+    int typeFieldWidth(maxKeySize(statMap));
+
+    // Make sure there is room for "Total" (in case we only have bool and int).
+    typeFieldWidth = ( typeFieldWidth > 5 ) ? typeFieldWidth : 5;
+
+    // Width of the other fields.
+    int countFieldWidth(8);
+    int nValuesFieldWidth(8);
+
+    ost << setw(typeFieldWidth)    << "Type"     << " "
+        << setw(countFieldWidth)   << "   Count" << " "
+        << setw(nValuesFieldWidth) << "  Values"
+        << endl;
+
+    // Print the information for each data type and accumulate totals.
+    for ( StatMap::const_iterator i=statMap.begin();
+            i != statMap.end(); ++i ){
+
+      const string& type = i->first;
+      const Stats& stats = i->second;
+
+      totalCount += stats.count;
+      totalValues += stats.nValues;
+
+      ost << setw(typeFieldWidth)    <<  type << " "
+          << setw(countFieldWidth)   << stats.count << " "
+          << setw(nValuesFieldWidth) << stats.nValues
+          << endl;
+    }
+
+    // Print totals.
+    ost << setw(typeFieldWidth)    << "Total"     << " "
+        << setw(countFieldWidth)   << totalCount  << " "
+        << setw(nValuesFieldWidth) << totalValues
+        << endl;
+
+  } // end printStatistics
+
 
 } // end namespace mu2e

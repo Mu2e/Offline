@@ -3,9 +3,9 @@
  * A class to hold one record within the primitive 
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.cc,v 1.3 2010/05/18 21:16:35 kutschke Exp $
+ * $Id: SimpleConfigRecord.cc,v 1.4 2010/08/31 21:49:40 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/05/18 21:16:35 $
+ * $Date: 2010/08/31 21:49:40 $
  *
  * Original author Rob Kutschke
  *
@@ -46,7 +46,7 @@ namespace mu2e {
   SimpleConfigRecord::SimpleConfigRecord( const string& record_a ):
     record(record_a),
     _isCommentOrBlank(false),
-    isVector(false),
+    _isVector(false),
     _superceded(false){
     Parse();
   }
@@ -121,7 +121,7 @@ namespace mu2e {
 
     //  try{
 
-    if ( isVector ) {
+    if ( _isVector ) {
       s << "{ ";
       if ( Type == "vector<int>" ){
         vector<int> V;
@@ -336,7 +336,7 @@ namespace mu2e {
   void SimpleConfigRecord::ParseValue(){
 
     // Check for a record that is a vector.
-    isVector = ( Type.find("vector<") != string::npos ) ? true: false;
+    _isVector = ( Type.find("vector<") != string::npos ) ? true: false;
   
     // Part of the string to parse.
     // Default is for non-vectors.
@@ -344,7 +344,7 @@ namespace mu2e {
     int iclose = Value.size();
   
     // If this is a vector, strip the enclosing {}.
-    if ( isVector ){
+    if ( _isVector ){
       iopen  = Value.find("{");
       iclose = Value.find_last_of("}");
       if ( ( iopen  == string::npos ) ||
@@ -563,7 +563,7 @@ namespace mu2e {
     
       // Last non-blank item was a non-quoted comma.
       // So add a blank item to the vector.
-    } else if ( isVector && state ==0 ){
+    } else if ( _isVector && state ==0 ){
       if ( Values.size() > 0 ){
         Values.push_back("");
       }
@@ -579,7 +579,7 @@ namespace mu2e {
     }
   
     // For a scalar record, make sure that there was exactly 1 item.
-    if ( !isVector ){
+    if ( !_isVector ){
       if( Values.size() != 1 ){
         // Test: fail13.conf, fail19.conf
         throw edm::Exception(edm::errors::Unknown)
@@ -725,5 +725,10 @@ namespace mu2e {
       << record;
 
   }
+
+  int SimpleConfigRecord::size() const{
+    if ( _isVector ) return Values.size();
+    return 1;
+  } // end size()
 
 } // end namespace mu2e

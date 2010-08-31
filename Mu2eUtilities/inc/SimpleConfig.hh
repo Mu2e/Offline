@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.5 2010/05/17 21:47:32 genser Exp $
- * $Author: genser $ 
- * $Date: 2010/05/17 21:47:32 $
+ * $Id: SimpleConfig.hh,v 1.6 2010/08/31 21:49:40 kutschke Exp $
+ * $Author: kutschke $ 
+ * $Date: 2010/08/31 21:49:40 $
  *
  * Original author Rob Kutschke
  *
@@ -22,8 +22,8 @@
  *     string name = "//This is not a comment"; 
  * 2) Does not escape new lines within a string properly.
  *
- *@author $Author: genser $
- *@version $Id: SimpleConfig.hh,v 1.5 2010/05/17 21:47:32 genser Exp $
+ *@author $Author: kutschke $
+ *@version $Id: SimpleConfig.hh,v 1.6 2010/08/31 21:49:40 kutschke Exp $
  *
  * Date $Date%
  *
@@ -65,7 +65,7 @@ namespace mu2e {
     
   private:
     // This class is not copyable.  These methods are not implemented.
-    // Need to deal with the auto_ptr and bare pointers to make it copyable.
+    // Need to deal with the pointers to make it copyable.
     SimpleConfig( const SimpleConfig& );
     SimpleConfig& operator=(const SimpleConfig&);
 
@@ -230,6 +230,13 @@ namespace mu2e {
      */
     void printFullImage( std::ostream& ost) const;
 
+    /**
+     * Print statistics about the configuration information.
+     *
+     * @return
+     */
+    void printStatistics ( std::ostream& ost );
+
 
     /**
      * Return the name of the input file.
@@ -333,7 +340,6 @@ namespace mu2e {
     void processInclude( const std::string& line);
     
   };  // end class SimpleConfig
-
 
   // Function to allow printing using the shift-in operator.
   inline std::ostream& operator<<(std::ostream& ost, const SimpleConfig& c){

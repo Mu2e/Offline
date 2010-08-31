@@ -6,9 +6,9 @@
  * A class to hold one record within the primitive 
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.hh,v 1.2 2010/05/05 12:45:45 kutschke Exp $
+ * $Id: SimpleConfigRecord.hh,v 1.3 2010/08/31 21:49:40 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/05/05 12:45:45 $
+ * $Date: 2010/08/31 21:49:40 $
  *
  * Original author Rob Kutschke
  *
@@ -78,6 +78,19 @@ class SimpleConfigRecord {
    * @return true if the record is a pure comment or is blank; false otherwise.
    */
   bool isCommentOrBlank() const { return _isCommentOrBlank;}
+
+  /**
+   * Returns true if the record is one of the vector types.
+   *
+   */
+  bool isVector() const { return _isVector; }
+
+  /**
+   * Return the number of values in the record; 1 for a scalar type
+   * and 0 or more for a vector type.
+   *
+   */
+  int size() const;
 
   // Accessors to return supported data types.
 
@@ -185,7 +198,7 @@ private:
   
   // State data.
   bool _isCommentOrBlank;
-  bool isVector;
+  bool _isVector;
   bool _superceded;
   
   //  Private methods.
