@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.10 2010/08/30 22:29:25 kutschke Exp $
+# $Id: g4test_03.py,v 1.11 2010/08/31 21:51:56 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/30 22:29:25 $
+# $Date: 2010/08/31 21:51:56 $
 #
 # Original author Rob Kutschke
 #
@@ -48,17 +48,17 @@ process.ConditionsService = mu2e.Service("ConditionsService",
        conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
 )
 
-# Enable per module timing
-process.Timing = mu2e.Service("Timing",
-    useJobReport = mu2e.untracked.bool(True)
-)
+# Uncomment to enable per module timing
+#process.Timing = mu2e.Service("Timing",
+#    useJobReport = mu2e.untracked.bool(True)
+#)
 
-# Enable memory use profiling
-process.SimpleMemoryCheck = mu2e.Service("SimpleMemoryCheck",
-    oncePerEventMode = mu2e.untracked.bool(False),
-    showMallocInfo = mu2e.untracked.bool(False),
-    ignoreTotal = mu2e.untracked.int32(5)
-)
+# Uncomment to enable memory use profiling
+#process.SimpleMemoryCheck = mu2e.Service("SimpleMemoryCheck",
+#    oncePerEventMode = mu2e.untracked.bool(False),
+#    showMallocInfo = mu2e.untracked.bool(False),
+#    ignoreTotal = mu2e.untracked.int32(5)
+#)
 
 # Define and configure some modules to do work on each event.
 # Modules are just defined for now, the are scheduled later.
