@@ -3,9 +3,43 @@
 
            Release notes for Mu2e Offline software, v0_2_1
 
-  $Id: v0_2_1.txt,v 1.5 2010/08/31 16:12:45 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/08/31 16:12:45 $
+  $Id: v0_2_1.txt,v 1.6 2010/08/31 21:22:32 genser Exp $
+  $Author: genser $
+  $Date: 2010/08/31 21:22:32 $
+
+ 5) August 31, 2010, genser
+
+    Added g4 vis macro with a different view point and absolute pad/zoom examples
+      Mu2eG4/test/vis45.mac
+    Commented out CRVFrontShield & HallSteelFrontHole volumes due to their overlaps with TS4
+    to be redone with volume subtraction
+      Mu2eG4/src/Mu2eWorld.cc
+
+    Enabled g4 surface check and extended handling of the g4 visibility attributes to more components
+      Mu2eG4/inc/constructStoppingTarget.hh               
+      Mu2eG4/inc/nestBox.hh                               
+      Mu2eG4/inc/nestTorus.hh                             
+      Mu2eG4/inc/nestTrp.hh                               
+      Mu2eG4/inc/nestTubs.hh                              
+      Mu2eG4/src/Mu2eWorld.cc                             
+      Mu2eG4/src/constructCalorimeter.cc                  
+      Mu2eG4/src/constructDummyStoppingTarget.cc          
+      Mu2eG4/src/constructDummyTracker.cc                 
+      Mu2eG4/src/constructLTrackerv3.cc                   
+      Mu2eG4/src/constructStoppingTarget.cc               
+      Mu2eG4/src/constructTTrackerv1.cc                   
+      Mu2eG4/src/constructTTrackerv2.cc                   
+      Mu2eG4/src/constructTTrackerv3.cc                   
+      Mu2eG4/src/nestBox.cc                               
+      Mu2eG4/src/nestTorus.cc                             
+      Mu2eG4/src/nestTrp.cc                               
+      Mu2eG4/src/nestTubs.cc                              
+      Mu2eG4/test/geom_01.txt                              
+      Mu2eG4/test/ltracker_v0.txt                          
+      Mu2eG4/test/ttracker_v0.txt
+
+    g4 surface check (a.k.a. overlap test is off by default, note that it draws random numbers)
+
 
  4) August 31, 2010, kutschke
     Bug fix to:
