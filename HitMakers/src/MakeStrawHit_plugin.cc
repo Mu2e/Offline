@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.4 2010/08/26 20:07:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/26 20:07:03 $
+// $Id: MakeStrawHit_plugin.cc,v 1.5 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -88,6 +88,7 @@ namespace mu2e {
       _driftSigma(pset.getUntrackedParameter<double>("driftSigma",0.1)),          // mm
       _minimumTimeGap(pset.getUntrackedParameter<double>("minimumTimeGap",100.0)),// ns
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
 
       // Random number distributions
@@ -114,6 +115,9 @@ namespace mu2e {
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
+
+    // Name of the tracker StepPoint collection
+    std::string _trackerStepPoints;
 
     // Parameters
     double _t0Sigma;        // T0 spread in ns
@@ -155,7 +159,7 @@ namespace mu2e {
 
     // Ask the event to give us a handle to the requested hits.
     edm::Handle<StepPointMCCollection> points;
-    event.getByLabel(_g4ModuleLabel,points);
+    event.getByLabel(_g4ModuleLabel,_trackerStepPoints,points);
 
     // Product Id of the input points.
     edm::ProductID const& id(points.id());

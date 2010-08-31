@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.5 2010/06/22 16:46:49 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/06/22 16:46:49 $
+# $Id: SConscript,v 1.6 2010/08/31 00:24:51 logash Exp $
+# $Author: logash $
+# $Date: 2010/08/31 00:24:51 $
 #
 # Original author Rob Kutschke.
 #
@@ -24,6 +24,8 @@ env.SharedLibrary(libname, non_plugin_cc,
                'ITrackerGeom',
                'TrackerGeom',
                'TargetGeom',
+               'BeamlineGeom',
+               'VirtualDetectorGeom',
                'CalorimeterGeom',
                'BFieldGeom',
                'DataFormatsProvenance',

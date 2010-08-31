@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.8 2010/08/26 19:58:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/26 19:58:17 $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.9 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -127,10 +127,11 @@ namespace mu2e {
 
     // Instance name of the module that created the hits of interest;
     static const string creatorName("g4run");
+    static const string collectionName("tracker");
 
     // Ask the event to give us a handle to the requested hits.
     edm::Handle<StepPointMCCollection> points;
-    event.getByLabel(creatorName,points);
+    event.getByLabel(creatorName,collectionName,points);
 
     // Product Id of the input points.
     edm::ProductID const& id(points.id());

@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.18 2010/08/10 18:10:25 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/10 18:10:25 $
+// $Id: Mu2eWorld.hh,v 1.19 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,7 @@
 #include <string>
 #include <memory>
 #include <list>
+#include <vector>
 #include <map>
 
 // Forward references.
@@ -94,6 +95,7 @@ namespace mu2e {
     void constructDS( const VolumeInfo& parent );
     void constructTS( const VolumeInfo& parent );
     void constructPS( const VolumeInfo& parent );
+    void constructVD( );
     VolumeInfo constructTracker();
     VolumeInfo constructTarget();
     void constructCal();
@@ -222,6 +224,32 @@ namespace mu2e {
                         );
     }
 
+    VolumeInfo nestCons2 ( std::string const& name,
+                           double params[7],
+                           G4Material* material,
+                           G4RotationMatrix* rot,
+                           const G4ThreeVector& offset,
+                           const VolumeInfo& parent,
+                           int copyNo,
+                           bool isVisible = false,
+                           G4Colour color = G4Colour::Black(),
+                           bool forceSolid = false
+                           );
+  
+    VolumeInfo nestExtrudedSolid2 ( std::string const& name,
+				    double hz,
+				    std::vector<double> &x,
+				    std::vector<double> &y,
+				    G4Material* material,
+				    G4RotationMatrix* rot,
+				    const G4ThreeVector& offset,
+				    const VolumeInfo& parent,
+				    int copyNo,
+				    bool isVisible = false,
+				    G4Colour color = G4Colour::Black(),
+				    bool forceSolid = false
+				    );
+  
     VolumeInfo nestTorus2 ( std::string const& name,
                             double halfDim[5],
                             G4Material* material,

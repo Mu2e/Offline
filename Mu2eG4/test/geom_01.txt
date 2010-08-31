@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.41 2010/08/30 22:42:46 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/30 22:42:46 $
+// $Id: geom_01.txt,v 1.42 2010/08/31 00:24:52 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/31 00:24:52 $
 //
 // Original author Rob Kutschke
 //
@@ -15,6 +15,7 @@ bool hasHall          = true;
 bool hasTarget        = true;
 bool hasCalorimeter   = true;
 bool hasBFieldManager = true;
+bool hasVirtualDetector = false;
 
 // Uncomment exactly one tracker.
 #include "Mu2eG4/test/ttracker_v0.txt"
@@ -66,7 +67,7 @@ vector<string> g4.materials =
     "G4_F",     "G4_Na",  "G4_Al", "G4_Si", "G4_Ar",
     "G4_Ca",    "G4_Ti",  "G4_Fe", "G4_Cu", "G4_Ta",
     "G4_W",     "G4_Pt",  "G4_Au", "G4_Pb", "G4_WATER",
-    "G4_PbWO4", "G4_AIR", "G4_Ag"
+    "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be"
   };
 
 // Load other materials defined specifically for Mu2e.
@@ -152,13 +153,56 @@ bool   toyPS.visible        = true;
 bool   toyPS.solid          = true;
 
 // Parameters for TS volumes.
-double toyTS.rVac        =  600.;          // Outer radius of vacuum volume
+double toyTS.rVac        =  240.;          // Outer radius of vacuum volume
 double toyTS.rCryo       =  700.;          // Outer radius of cryostat
 double toyTS.rTorus      = 2926.;          // Bend radius of the torus
 double toyTS1.halfLength =  500.;
 double toyTS5.halfLength =  500.;
 bool   toyTS.visible        = true;
 bool   toyTS.solid          = true;
+
+// PBAR Absorber
+
+double pbar.halfLength = 60.0e-3;
+string pbar.materialName = "G4_Be";
+
+// Collimators
+
+bool   coll.visible        = true;
+bool   coll.solid          = true;
+
+double coll1.halfLength = 500.0;
+double coll1.innerRadius1 = 150.0;
+double coll1.innerRadius2 = 170.0;
+string coll1.materialName = "G4_Cu";
+
+double coll3.halfLength = 400.0;
+double coll3.hole = 50.0;
+double coll3.rotationAngle = 0.0;
+string coll3.materialName = "G4_Cu";
+vector<double> coll3.x = { 0.0,     25.09,  49.9,   74.16,  97.62, 120.0, 141.07, 160.59, 178.35, 194.16, 
+			   207.85, 219.25, 228.25, 234.76, 238.69, 240.0, 238.69, 234.76, 228.25, 219.25,
+			   207.85, 194.16, 178.35, 160.59, 141.07, 120.0,  97.62,  74.16,  49.9,   25.09,
+			   0.0,      0.0,  111.8,  118.8,  125.16, 130.85, 135.85, 140.13, 143.66, 146.42,
+			   148.41, 149.6,  150.0,  149.6,  148.41, 146.42, 143.66, 140.13, 135.85, 130.85,
+			   125.16, 118.8, 111.8,     0.0 };
+vector<double> coll3.y = { 240.0,  238.685, 234.755, 228.254, 219.251, 207.846, 194.164, 178.355, 160.591, 141.068, 
+			   120.0,   97.617,  74.164,  49.899,  25.087,   0.0,   -25.087, -49.899, -74.164, -97.617, 
+			   -120.0,-141.068,-160.591,-178.355,-194.164,-207.846,-219.251,-228.254,-234.755,-238.685, 
+			   -240.0, -190.0, -190.0,  -181.583,-172.678,-163.333,-153.597,-143.523,-133.165,-122.576, 
+			   -111.814,-100.936,-90.0,  -79.064, -68.186, -57.424, -46.835, -36.477, -26.403, -16.667, 
+			   -7.322, 1.583, 10.0, 10.0 };
+
+
+double coll5.halfLength   = 500.0;
+double coll5.innerRadius  = 128.0;
+string coll5.materialName = "G4_Cu";
+
+// Virtual detectors
+
+double vd.halfLength     = 0.1; //mm
+bool   vd.visible        = true;
+bool   vd.solid          = true;
 
 // Production Target in PS:
 

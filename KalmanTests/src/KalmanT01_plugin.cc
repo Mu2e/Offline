@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_plugin.cc,v 1.5 2010/08/26 19:26:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/26 19:26:23 $
+// $Id: KalmanT01_plugin.cc,v 1.6 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -153,7 +153,8 @@ namespace mu2e {
 
     // Ask the event to give us a handle to the requested hits.
     edm::Handle<StepPointMCCollection> points;
-    event.getByLabel(_generatorModuleLabel,points);
+    static const string collectionName("tracker");
+    event.getByLabel(_generatorModuleLabel,collectionName,points);
 
     // Get handles to the generated and simulated particles.
     edm::Handle<ToyGenParticleCollection> gensHandle;

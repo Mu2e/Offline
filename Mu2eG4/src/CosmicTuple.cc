@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.6 2010/08/19 15:47:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/19 15:47:13 $
+// $Id: CosmicTuple.cc,v 1.7 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -80,8 +80,9 @@ namespace mu2e {
     }
 
     // Ask the event to give us a "handle" to the requested hits.
+    static const string collectionName("tracker");
     edm::Handle<StepPointMCCollection> hits;
-    event.getByLabel(_g4ModuleLabel,hits);
+    event.getByLabel(_g4ModuleLabel,collectionName,hits);
 
     // Get handles to the generated and simulated particles.
     edm::Handle<ToyGenParticleCollection> genParticles;

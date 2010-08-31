@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.4 2010/08/26 19:57:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/26 19:57:24 $
+// $Id: ReadStrawHit_plugin.cc,v 1.5 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -25,6 +25,7 @@
 #include "FWCore/Services/interface/TFileService.h"
 #include "FWCore/Framework/interface/TFileDirectory.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "DataFormats/Provenance/interface/Provenance.h"
 
 // Root includes.
 #include "TFile.h"
@@ -53,6 +54,7 @@ namespace mu2e {
   public:
     explicit ReadStrawHit(edm::ParameterSet const& pset):
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
+      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
       _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
       _hHitTime(0),
@@ -82,6 +84,9 @@ namespace mu2e {
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
+
+    // Name of the tracker StepPoint collection
+    std::string _trackerStepPoints;
 
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
@@ -172,7 +177,7 @@ namespace mu2e {
     // use producer name directly ("g4run"). 
 
     edm::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel("g4run",mchitsHandle);
+    evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
     StepPointMCCollection const* mchits = mchitsHandle.product();
 
     // Fill histograms

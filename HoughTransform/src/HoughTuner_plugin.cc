@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_plugin.cc,v 1.4 2010/05/18 21:15:52 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:15:52 $
+// $Id: HoughTuner_plugin.cc,v 1.5 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author P. Shanahan
 //
@@ -165,8 +165,9 @@ namespace mu2e {
     //    edm::Handle<StepPointMCCollection> hits;
     //evt.getByLabel(creatorName,hits);
     
+    static const string collectionName("tracker");
     edm::Handle<StepPointMCCollection> hitsHandle;
-    evt.getByLabel(_hitCreatorName,hitsHandle);
+    evt.getByLabel(_hitCreatorName,collectionName,hitsHandle);
     StepPointMCCollection const* hits = hitsHandle.product();
 
     edm::Handle<HoughCircleCollection> hcHandle;

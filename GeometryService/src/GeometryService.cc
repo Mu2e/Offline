@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.6 2010/06/22 16:46:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/06/22 16:46:07 $
+// $Id: GeometryService.cc,v 1.7 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,10 @@
 #include "CalorimeterGeom/inc/CalorimeterMaker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BFieldGeom/inc/BFieldManagerMaker.hh"
+#include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/BeamlineMaker.hh"
+#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "VirtualDetectorGeom/inc/VirtualDetectorMaker.hh"
 
 using namespace std;
 using namespace mu2e::calorimeter;
@@ -76,6 +80,9 @@ namespace mu2e {
     checkConfig();
 
     // Make a detector for every component present in the configuration.
+    BeamlineMaker beamlinem( *_config );
+    addDetector( beamlinem.getBeamlinePtr() );
+
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );
       addDetector( targm.getTargetPtr() );
@@ -105,6 +112,9 @@ namespace mu2e {
       BFieldManagerMaker bfmgr( *_config);
       addDetector( bfmgr.getBFieldManager() );
     }
+
+    VirtualDetectorMaker vdm( *_config );
+    addDetector( vdm.getVirtualDetectorPtr() );
 
   }
 

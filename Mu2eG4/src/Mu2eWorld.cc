@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.47 2010/08/20 20:18:09 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/20 20:18:09 $
+// $Id: Mu2eWorld.cc,v 1.48 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -43,6 +43,7 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
+#include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
@@ -50,6 +51,9 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/TransportSolenoid.hh"
+#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "Mu2eG4/inc/constructLTracker.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/constructDummyTracker.hh"
@@ -58,6 +62,7 @@
 #include "Mu2eG4/inc/constructCalorimeter.hh"
 
 // G4 includes
+#include "G4SDManager.hh"
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4LogicalVolumeStore.hh"
@@ -66,8 +71,11 @@
 #include "G4Paraboloid.hh"
 #include "G4Colour.hh"
 #include "G4Tubs.hh"
+#include "G4Cons.hh"
+#include "G4ExtrudedSolid.hh"
 #include "G4Torus.hh"
 #include "G4LogicalVolume.hh"
+#include "G4TwoVector.hh"
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
 #include "globals.hh"
@@ -146,11 +154,13 @@ namespace mu2e {
     // If you play with the order of these calls, you may break things.
     defineMu2eOrigin();
     VolumeInfo::setMu2eOriginInWorld( _mu2eOrigin );
+    VirtualDetectorSD::setMu2eOriginInWorld( _mu2eOrigin );
     VolumeInfo dirtInfo  = constructDirt();
     VolumeInfo hallInfo  = constructHall( dirtInfo );
     constructDS(hallInfo);
     constructTS(hallInfo);
     constructPS(hallInfo);
+    constructVD();
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
 
@@ -416,7 +426,8 @@ namespace mu2e {
 
     double dsz0          = _config->getDouble("toyDS.z0");
 
-    double solenoidOffset = _config->getDouble("mu2e.solenoidOffset");
+    GeomHandle<Beamline> beamg;
+    double solenoidOffset = beamg->solenoidOffset();
 
     G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight, dsz0+_mu2eOrigin.z());
 
@@ -467,14 +478,16 @@ namespace mu2e {
                                  _config->getDouble("toyDS.rOut"),
                                  _config->getDouble("toyDS.halfLength"));
 
+    GeomHandle<Beamline> beamg;
+    double solenoidOffset = beamg->solenoidOffset();
+    double rTorus         = beamg->getTS().torusRadius();
+    double rCryo          = beamg->getTS().outerRadius();
+    double ts5HalfLength  = beamg->getTS().getTS5().getHalfLength();
+
     double dsCoilZ0          = _config->getDouble("toyDS.z0");
-    double rTorus            = _config->getDouble("toyTS.rTorus");
-    double rCryo             = _config->getDouble("toyTS.rCryo");
     double ds1HalfLength     = _config->getDouble("toyDS1.halfLength");
     double ds2HalfLength     = _config->getDouble("toyDS2.halfLength");
     double ds3HalfLength     = _config->getDouble("toyDS3.halfLength");
-    double ts5HalfLength     = _config->getDouble("toyTS5.halfLength");
-    double solenoidOffset    = _config->getDouble("mu2e.solenoidOffset");
     double dsFrontHalfLength = _config->getDouble("toyDS.frontHalfLength");
 
     // All Vacuumn volumes fit inside the DS coil+cryostat package.
@@ -587,40 +600,60 @@ namespace mu2e {
     MaterialFinder materialFinder(*_config);
 
     // Extract base parameters from config information.
-    double solenoidOffset = _config->getDouble("mu2e.solenoidOffset");
+    GeomHandle<Beamline> beamg;
+    double solenoidOffset = beamg->solenoidOffset();
+    double rTorus         = beamg->getTS().torusRadius();
+    double rVac           = beamg->getTS().innerRadius();
+    double rCryo          = beamg->getTS().outerRadius();
+    double ts1HalfLength  = beamg->getTS().getTS1().getHalfLength();
+    double ts3HalfLength  = beamg->getTS().getTS3().getHalfLength();
+    double ts5HalfLength  = beamg->getTS().getTS5().getHalfLength();
 
-    double rTorus  = _config->getDouble("toyTS.rTorus");
-    double rVac    = _config->getDouble("toyTS.rVac");
-    double rCryo   = _config->getDouble("toyTS.rCryo");
+    bool toyTSVisible = _config->getBool("toyTS.visible",true);
+    bool toyTSSolid   = _config->getBool("toyTS.solid",true);
 
-    double ts1HalfLength = _config->getDouble("toyTS1.halfLength");
-    double ts5HalfLength = _config->getDouble("toyTS5.halfLength");
+    double coll1HalfLength     = beamg->getTS().getColl1().getHalfLength();
+    double coll31HalfLength    = beamg->getTS().getColl31().getHalfLength();
+    double coll32HalfLength    = beamg->getTS().getColl32().getHalfLength();
+    double coll5HalfLength     = beamg->getTS().getColl5().getHalfLength();
 
-    // Computed quantities.
-    double ts3HalfLength = (solenoidOffset - rTorus);
-    double ts1zOffset    = (-rTorus-ts1HalfLength);
-    double ts5zOffset    = ( rTorus+ts5HalfLength);
+    double coll1InnerRadius1   = _config->getDouble("coll1.innerRadius1");
+    double coll1InnerRadius2   = _config->getDouble("coll1.innerRadius2");
+    double coll5InnerRadius    = _config->getDouble("coll5.innerRadius");
+    vector<double> coll3x, coll3y;
+    _config->getVectorDouble("coll3.x",coll3x);
+    _config->getVectorDouble("coll3.y",coll3y);
+
+    G4Material* coll1Material  = materialFinder.get("coll1.materialName");
+    G4Material* coll3Material  = materialFinder.get("coll3.materialName");
+    G4Material* coll5Material  = materialFinder.get("coll5.materialName");
+
+    double coll3Hole           = _config->getDouble("coll3.hole");
+    double coll3RotationAngle  = _config->getDouble("coll3.rotationAngle");
+
+    bool collVisible          = _config->getBool("coll.visible",true);
+    bool collSolid            = _config->getBool("coll.solid",true);
 
     // For how all pieces are made from one of two types of material,
     // vacuum or average coils + cryostat material.
     G4Material* vacuumMaterial  = materialFinder.get("toyDS.insideMaterialName");
     G4Material* cryoMaterial    = materialFinder.get("toyDS.materialName");
 
+    GeomHandle<VirtualDetector> vdg;
+    double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
+
+    // Computed quantities.
+    double ts5zOffset    = ( rTorus+ts5HalfLength);
+
     // Build TS1.
     TubsParams ts1VacParams (   0.,  rVac, ts1HalfLength);
     TubsParams ts1CryoParams( rVac, rCryo, ts1HalfLength);
 
-    // Position in the Mu2e coordintate system.
-    G4ThreeVector ts1VacPosition( solenoidOffset, 0., ts1zOffset) ;
-
-    bool toyTSVisible = _config->getBool("toyTS.visible",true);
-    bool toyTSSolid   = _config->getBool("toyTS.solid",true);
-
     VolumeInfo ts1VacInfo = nestTubs2( "ToyTS1Vacuum",
                                        ts1VacParams,
                                        vacuumMaterial,
-                                       0,
-                                       ts1VacPosition-_hallOriginInMu2e,
+				       beamg->getTS().getTS1().getRotation(),
+                                       beamg->getTS().getTS1().getGlobal()-_hallOriginInMu2e,
                                        parent,
                                        0,
                                        toyTSVisible,
@@ -631,14 +664,33 @@ namespace mu2e {
     VolumeInfo ts1CryoInfo = nestTubs2( "ToyTS1Cryo",
                                         ts1CryoParams,
                                         cryoMaterial,
-                                        0,
-                                        ts1VacPosition-_hallOriginInMu2e,
+					beamg->getTS().getTS1().getRotation(),
+					beamg->getTS().getTS1().getGlobal()-_hallOriginInMu2e,
                                         parent,
                                         0,
                                         toyTSVisible,
                                         G4Color::Red(),
                                         toyTSSolid
                                         );
+
+    // Place collimator 1
+
+    double coll1Param[7] = { coll1InnerRadius1, rVac, 
+			     coll1InnerRadius2, rVac,
+			     coll1HalfLength-2*vdHalfLength, 
+			     0.0, 360.0*CLHEP::degree };
+
+    VolumeInfo coll1VacInfo = nestCons2( "Coll1",
+					 coll1Param,
+					 coll1Material,
+					 0,
+					 beamg->getTS().getColl1().getLocal(),
+					 ts1VacInfo,
+					 0,
+					 collVisible,
+					 G4Color::Blue(),
+					 collSolid
+					 );
 
     // Build TS2.
     double ts2VacParams[5]  = { 0.0,   rVac, rTorus, 1.5*M_PI, 0.5*M_PI };
@@ -678,18 +730,11 @@ namespace mu2e {
     TubsParams ts3VacParams (   0.,  rVac, ts3HalfLength);
     TubsParams ts3CryoParams( rVac, rCryo, ts3HalfLength);
     
-    // Position in the Mu2e coordintate system.
-    G4ThreeVector ts3VacPosition;
-
-    // Rotation that is good for both the vacuum and the coils+cryo mockup.
-    G4RotationMatrix* ts3Rot = new G4RotationMatrix();
-    ts3Rot->rotateY(90.*CLHEP::degree);
-
     VolumeInfo ts3VacInfo = nestTubs2( "ToyTS3Vacuum",
                                        ts3VacParams,
                                        vacuumMaterial,
-                                       ts3Rot,
-                                       ts3VacPosition-_hallOriginInMu2e,
+				       beamg->getTS().getTS3().getRotation(),
+				       beamg->getTS().getTS3().getGlobal()-_hallOriginInMu2e,
                                        parent,
                                        0,
                                        toyTSVisible,
@@ -700,8 +745,8 @@ namespace mu2e {
     VolumeInfo ts3CryoInfo = nestTubs2( "ToyTS3Cryo",
                                         ts3CryoParams,
                                         cryoMaterial,
-                                        ts3Rot,
-                                        ts3VacPosition-_hallOriginInMu2e,
+					beamg->getTS().getTS3().getRotation(),
+					beamg->getTS().getTS3().getGlobal()-_hallOriginInMu2e,
                                         parent,
                                         0,
                                         toyTSVisible,
@@ -709,11 +754,85 @@ namespace mu2e {
                                         toyTSSolid
                                         );
 
+    // Place collimator 3
+
+    G4RotationMatrix* coll31Rot = new G4RotationMatrix();
+    G4RotationMatrix* coll32Rot = new G4RotationMatrix();
+    coll31Rot->rotateZ((180.0+coll3RotationAngle)*CLHEP::degree);
+    coll32Rot->rotateZ((180.0+coll3RotationAngle)*CLHEP::degree);
+    coll32Rot->rotateY(180.0*CLHEP::degree);
+
+    VolumeInfo coll3Info1 = nestExtrudedSolid2 ( "Coll3_1",
+						 coll31HalfLength, coll3x, coll3y,
+						 coll3Material,
+						 coll31Rot,
+						 beamg->getTS().getColl31().getLocal(),
+						 ts3VacInfo,
+						 0,
+						 collVisible,
+						 G4Color::Blue(),
+						 collSolid
+						 );
+
+    VolumeInfo coll3Info2 = nestExtrudedSolid2 ( "Coll3_2",
+						 coll31HalfLength, coll3x, coll3y,
+						 coll3Material,
+						 coll32Rot,
+						 beamg->getTS().getColl31().getLocal(),
+						 ts3VacInfo,
+						 0,
+						 collVisible,
+						 G4Color::Blue(),
+						 collSolid
+						 );
+
+    VolumeInfo coll3Info3 = nestExtrudedSolid2 ( "Coll3_3",
+						 coll32HalfLength, coll3x, coll3y,
+						 coll3Material,
+						 coll31Rot,
+						 beamg->getTS().getColl32().getLocal(),
+						 ts3VacInfo,
+						 0,
+						 collVisible,
+						 G4Color::Blue(),
+						 collSolid
+						 );
+
+    VolumeInfo coll3Info4 = nestExtrudedSolid2 ( "Coll3_4",
+						 coll32HalfLength, coll3x, coll3y,
+						 coll3Material,
+						 coll32Rot,
+						 beamg->getTS().getColl32().getLocal(),
+						 ts3VacInfo,
+						 0,
+						 collVisible,
+						 G4Color::Blue(),
+						 collSolid
+						 );
+
+    double pbarHalfLength     = _config->getDouble("pbar.halfLength");
+    G4Material* pbarMaterial  = materialFinder.get("pbar.materialName");
+    double pbarParams[5]  = { 0.0,   rVac, pbarHalfLength, 0.0, 360.0*CLHEP::degree };
+
+    VolumeInfo pbarInfo = nestTubs2( "PbarAbs",
+				     pbarParams,
+				     pbarMaterial,
+				     0,
+				     G4ThreeVector(0.,0.,0.),
+				     ts3VacInfo,
+				     0,
+				     collVisible,
+				     G4Color::Yellow(),
+				     collSolid
+				     );
+
     // Build TS4.
+
     double ts4VacParams[5]  = { 0.0,  rVac, rTorus, 0.5*M_PI, 0.5*M_PI };
     double ts4CryoParams[5] = {rVac, rCryo, rTorus, 0.5*M_PI, 0.5*M_PI };
 
     // Position in the Mu2e coordintate system.
+
     G4ThreeVector ts4VacPosition( -ts3HalfLength, 0., rTorus);
 
     G4RotationMatrix* ts4Rot = new G4RotationMatrix();
@@ -744,17 +863,15 @@ namespace mu2e {
                                         );
     
     // Build TS5.
+
     TubsParams ts5VacParams (   0.,  rVac, ts5HalfLength);
     TubsParams ts5CryoParams( rVac, rCryo, ts5HalfLength);
-
-    // Position in the Mu2e coordintate system.
-    G4ThreeVector ts5VacPosition( -solenoidOffset, 0., ts5zOffset) ;
 
     VolumeInfo ts5VacInfo = nestTubs2( "ToyTS5Vacuum",
                                        ts5VacParams,
                                        vacuumMaterial,
-                                       0,
-                                       ts5VacPosition-_hallOriginInMu2e,
+				       beamg->getTS().getTS5().getRotation(),
+				       beamg->getTS().getTS5().getGlobal()-_hallOriginInMu2e,
                                        parent,
                                        0,
                                        toyTSVisible,
@@ -765,14 +882,31 @@ namespace mu2e {
     VolumeInfo ts5CryoInfo = nestTubs2( "ToyTS5Cryo",
                                         ts5CryoParams,
                                         cryoMaterial,
-                                        0,
-                                        ts5VacPosition-_hallOriginInMu2e,
+					beamg->getTS().getTS5().getRotation(),
+					beamg->getTS().getTS5().getGlobal()-_hallOriginInMu2e,
                                         parent,
                                         0,
                                         toyTSVisible,
                                         G4Color::Red(),
                                         toyTSSolid
                                         );
+
+    // Place collimator 5
+
+    double coll5Param[5] = { coll5InnerRadius, rVac, 
+			     coll5HalfLength-2*vdHalfLength, 0.0, 360.0*CLHEP::degree };
+
+    VolumeInfo coll5VacInfo = nestTubs2( "Coll5",
+					 coll5Param,
+					 coll5Material,
+					 0,
+					 beamg->getTS().getColl5().getLocal(),
+					 ts5VacInfo,
+					 0,
+					 collVisible,
+					 G4Color::Blue(),
+					 collSolid
+					 );
 
   } // end Mu2eWorld::constructTS
 
@@ -783,10 +917,12 @@ namespace mu2e {
 
     // Extract information from the config file.
     
-    double rTorus            = _config->getDouble("toyTS.rTorus");
+    GeomHandle<Beamline> beamg;
+    double solenoidOffset = beamg->solenoidOffset();
+    double rTorus         = beamg->getTS().torusRadius();
+    double ts1HalfLength  = beamg->getTS().getTS1().getHalfLength();
+
     double ps1HalfLength     = _config->getDouble("toyPS1.vacHalfLength");
-    double ts1HalfLength     = _config->getDouble("toyTS1.halfLength");
-    double solenoidOffset    = _config->getDouble("mu2e.solenoidOffset");
 
     // Build the barrel of the cryostat.
     TubsParams psCryoParams( _config->getDouble("toyPS.rIn"),
@@ -1181,7 +1317,10 @@ namespace mu2e {
     double HallSteelHalfLenXY = _config->getDouble("hall.HallSteelHalfLengthXY");
     double HallSteelHalfLenZ = _config->getDouble("hall.HallSteelHalfLengthZ");
     G4Material* HallSteelShieldMaterial = materialFinder.get("hall.HallSteelMaterialName");
-    double rCryo             = _config->getDouble("toyTS.rCryo");
+
+    GeomHandle<Beamline> beamg;
+    double rCryo = beamg->getTS().outerRadius();
+
     G4Material* FrontHoleMaterial = materialFinder.get("toyDS.insideMaterialName");
 
     // Compute dimensions of 5 sides in Mu2e coordinates
@@ -1221,7 +1360,8 @@ namespace mu2e {
 
     // Get positions of each side. Assuming view from target foils 
     double dsCoilZ0          = _config->getDouble("toyDS.z0");
-    double solenoidOffset    = _config->getDouble("mu2e.solenoidOffset");
+
+    double solenoidOffset = beamg->solenoidOffset();
 
     //G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., -dsCoilZ0);
     G4ThreeVector detSolCoilPosition(+solenoidOffset, 0., -dsCoilZ0);
@@ -1321,6 +1461,73 @@ namespace mu2e {
 
   } // end Mu2eWorld::constructSteel
 
+  // Construct the virtual detectors
+
+  void Mu2eWorld::constructVD( ){
+
+    // Place virtual detectors
+
+    G4SDManager* SDman   = G4SDManager::GetSDMpointer();
+    VirtualDetectorSD* vdSD     = new VirtualDetectorSD("VirtualDetector", *_config);
+    SDman->AddNewDetector(vdSD);
+
+    bool   vdVisible    = _config->getBool("vd.visible",true);
+    bool   vdSolid      = _config->getBool("vd.solid",true);
+    
+    GeomHandle<VirtualDetector> vdg;
+    if( vdg->nDet()<=0 ) return;
+
+    GeomHandle<Beamline> beamg;
+    double rVac           = beamg->getTS().innerRadius();
+
+    double vdHalfLength = vdg->getHalfLength();
+
+    MaterialFinder materialFinder(*_config);
+    G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
+
+    TubsParams vdParams(0,rVac,vdHalfLength);
+
+    // VD 1 and 2 are placed inside TS1
+
+    for( int id=1; id<=2; ++id) if( vdg->exist(id) ) {
+      VolumeInfo parent = locateVolInfo("ToyTS1Vacuum");
+      ostringstream name;
+      name << "VirtualDetector" << id;
+      VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
+				 vdg->getLocal(id),
+				 parent,
+				 id, vdVisible, G4Color::Red(), vdSolid );
+      vd.logical->SetSensitiveDetector(vdSD);
+    }
+
+    // VD 3-6 are placed inside TS3
+
+    for( int id=3; id<=6; ++id) if( vdg->exist(id) ) {
+      VolumeInfo parent = locateVolInfo("ToyTS3Vacuum");
+      ostringstream name;
+      name << "VirtualDetector" << id;
+      VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
+				 vdg->getLocal(id),
+				 parent,
+				 id, vdVisible, G4Color::Red(), vdSolid );
+      vd.logical->SetSensitiveDetector(vdSD);
+    }
+
+    // VD 7-8 are placed inside TS3
+
+    for( int id=7; id<=8; ++id) if( vdg->exist(id) ) {
+      VolumeInfo parent = locateVolInfo("ToyTS5Vacuum");
+      ostringstream name;
+      name << "VirtualDetector" << id;
+      VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
+				 vdg->getLocal(id),
+				 parent,
+				 id, vdVisible, G4Color::Red(), vdSolid );
+      vd.logical->SetSensitiveDetector(vdSD);
+    }
+
+  } //constructVD
+
   // Place a G4Box inside a logical volume.
   VolumeInfo Mu2eWorld::nestBox ( string const& name,
                                   double const halfDim[3],
@@ -1410,6 +1617,110 @@ namespace mu2e {
     return info;
   }  // end of Mu2eWorld::nestTubs
 
+  // Create and place a G4Cons inside a logical volume.
+  VolumeInfo Mu2eWorld::nestCons2 ( string const& name,
+                                    double param[7],
+                                    G4Material* material,
+                                    G4RotationMatrix* rot,
+                                    G4ThreeVector const& offset,
+                                    const VolumeInfo& parent,
+                                    int copyNo,
+                                    bool isVisible,
+                                    G4Colour color,
+                                    bool forceSolid
+                                    ){
+    
+    VolumeInfo info(name,offset,parent.centerInWorld);
+    
+    info.solid   = new G4Cons( name, param[0], param[1], param[2], param[3], 
+			             param[4], param[5], param[6]  );
+    
+    info.logical = new G4LogicalVolume( info.solid, material, name); 
+    
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+
+    if ( isVisible ){
+
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, color));
+      G4VisAttributes& visAtt = _visAttributes.back();
+
+      // If I do not do this, then the rendering depends on what happens in
+      // other parts of the code;  is there a G4 bug that causes something to be
+      // unitialized?
+      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+
+      // Finish the setting of visualization properties.
+      visAtt.SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
+
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
+
+    // Save the volume information in case someone else needs to access it by name.
+    addVolInfo(info);
+
+    return info;
+  }  // end of Mu2eWorld::nestCons
+
+  // Create and place a G4ExtrudedSolid inside a logical volume.
+  VolumeInfo Mu2eWorld::nestExtrudedSolid2 ( string const& name,
+					     double hz,
+					     vector<double> & x,
+					     vector<double> & y,
+					     G4Material* material,
+					     G4RotationMatrix* rot,
+					     G4ThreeVector const& offset,
+					     const VolumeInfo& parent,
+					     int copyNo,
+					     bool isVisible,
+					     G4Colour color,
+					     bool forceSolid
+					     ){
+    
+    VolumeInfo info(name,offset,parent.centerInWorld);
+
+    if( x.size()!=y.size() || x.size()==0 ) return info;
+
+    vector<G4TwoVector> polygon;
+    for( int i=0; i<x.size(); ++i ) polygon.push_back(G4TwoVector(x[i],y[i]));
+    
+    info.solid   = new G4ExtrudedSolid( name, polygon, hz,
+					G4TwoVector(0.0,0.0), 1.0,
+					G4TwoVector(0.0,0.0), 1.0 );
+    
+    info.logical = new G4LogicalVolume( info.solid, material, name); 
+    
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+
+    if ( isVisible ){
+
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, color));
+      G4VisAttributes& visAtt = _visAttributes.back();
+
+      // If I do not do this, then the rendering depends on what happens in
+      // other parts of the code;  is there a G4 bug that causes something to be
+      // unitialized?
+      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+
+      // Finish the setting of visualization properties.
+      visAtt.SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
+
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
+
+    // Save the volume information in case someone else needs to access it by name.
+    addVolInfo(info);
+
+    return info;
+  }  // end of Mu2eWorld::nestCons
+
 
   //
   // Create and place a G4Torus inside a logical volume.
@@ -1494,3 +1805,4 @@ namespace mu2e {
 
 
 } // end namespace mu2e
+

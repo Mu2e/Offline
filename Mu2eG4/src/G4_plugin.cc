@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.23 2010/08/18 04:10:34 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/18 04:10:34 $
+// $Id: G4_plugin.cc,v 1.24 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,7 @@
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/StepPointG4.hh"
 #include "Mu2eG4/inc/addStepPointMCs.hh"
+#include "Mu2eG4/inc/addVirtualDetectorPoints.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -105,9 +106,12 @@ namespace mu2e {
       _UI(0),
       _rmvlevel(pSet.getUntrackedParameter<int>("rmvlevel",0)),
       _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
-      _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")){
+      _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")),
+      _trackerOutputName("tracker"),
+      _vdOutputName("virtualdetector") {
 
-      produces<StepPointMCCollection>();
+      produces<StepPointMCCollection>(_trackerOutputName);
+      produces<StepPointMCCollection>(_vdOutputName);
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,edm::InRun>();
 
@@ -157,6 +161,10 @@ namespace mu2e {
 
     // Helps with indexology related to persisting info about G4 volumes.
     PhysicalVolumeHelper _physVolHelper;
+
+    // Names of output collections
+    const std::string _trackerOutputName;
+    const std::string      _vdOutputName;
 
   };
   
@@ -260,6 +268,7 @@ namespace mu2e {
     // Create empty data products.
     auto_ptr<StepPointMCCollection> outputHits(new StepPointMCCollection);
     auto_ptr<SimParticleCollection> simParticles(new SimParticleCollection);
+    auto_ptr<StepPointMCCollection> vdHits(new StepPointMCCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
@@ -271,11 +280,13 @@ namespace mu2e {
 
     // Populate the output data products.
     addStepPointMCs( g4event, *outputHits);
+    addVirtualDetectorPoints( g4event, *vdHits);
     _trackingAction->endEvent( *simParticles );
 
-    event.put(outputHits);
+    event.put(outputHits,_trackerOutputName);
+    event.put(vdHits,_vdOutputName);
     event.put(simParticles);
-
+    
     //     // Pause to see graphics. 
     //     if ( _visMacro.size() > 0 ) {
 

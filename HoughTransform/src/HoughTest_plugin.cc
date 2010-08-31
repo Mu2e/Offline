@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.12 2010/06/18 19:24:05 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/06/18 19:24:05 $
+// $Id: HoughTest_plugin.cc,v 1.13 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author R. Bernstein
 //
@@ -297,6 +297,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     //    edm::Handle<StepPointMCCollection> hits;
     //evt.getByLabel(creatorName,hits);
     edm::Handle<StepPointMCCollection> hitsHandle;
+    static const string collectionName("tracker");
 
     // someday hitClusters will be produced elsewhere, but for now,
     // we get them from StepPointMCs
@@ -304,7 +305,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     vector<mu2e::hitcluster::HitCluster> hitClusters;
 
     if (_useStepPointMC) {
-       evt.getByLabel(_hitCreatorName,hitsHandle);
+      evt.getByLabel(_hitCreatorName,collectionName,hitsHandle);
        StepPointMCCollection const* hits = hitsHandle.product();
        if (!hits->size()) return; // return with empty product
        HoughTransform::MakeClusters(hits,hitClusters);

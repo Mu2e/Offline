@@ -128,10 +128,11 @@ namespace mu2e {
 
     // Instance name of the module that created the hits of interest;
     static const string creatorName("g4run");
+    static const string collectionName("tracker");
 
     // Ask the event to give us a handle to the requested hits.
     edm::Handle<StepPointMCCollection> points;
-    event.getByLabel(creatorName,points);
+    event.getByLabel(creatorName,collectionName,points);
 
     // Product Id of the input points.
     edm::ProductID const& id( points.id() );

@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.11 2010/08/30 22:27:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/30 22:27:22 $
+// $Id: ReadBack.cc,v 1.12 2010/08/31 00:24:51 logash Exp $
+// $Author: logash $
+// $Date: 2010/08/31 00:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -54,6 +54,7 @@ namespace mu2e {
 
     // Run time parameters
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
+    _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
     _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
     _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
     _xyHitsMax(pset.getUntrackedParameter<int>("xyHitsMax",10000)),
@@ -141,7 +142,7 @@ namespace mu2e {
 
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<StepPointMCCollection> hits;
-    event.getByLabel(_g4ModuleLabel,hits);
+    event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
     edm::Handle<ToyGenParticleCollection> genParticles;
@@ -351,7 +352,7 @@ namespace mu2e {
 
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<StepPointMCCollection> hits;
-    event.getByLabel(creatorName,hits);
+    event.getByLabel(creatorName,_trackerStepPoints,hits);
 
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
