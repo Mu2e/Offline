@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.3 2010/08/31 15:21:18 kutschke Exp $
+// $Id: FromG4BLFile.cc,v 1.4 2010/08/31 15:52:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/31 15:21:18 $
+// $Date: 2010/08/31 15:52:07 $
 //
 // Original author Rob Kutschke
 //
@@ -78,6 +78,7 @@ namespace mu2e {
     }
 
     // This should really come from the geometry service, not directly from the config file.
+    // Or we should change this code so that its reference point is the production target midpoint
     edm::Service<GeometryService> geom;
     SimpleConfig const& geomConfig = geom->config();
     _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");
