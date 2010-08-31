@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.16 2010/08/31 05:31:33 kutschke Exp $
+  $Id: EventGenerator_plugin.cc,v 1.17 2010/08/31 21:50:37 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/08/31 05:31:33 $
+  $Date: 2010/08/31 21:50:37 $
 
   Original author Rob Kutschke
 
@@ -32,12 +32,9 @@
 */
 
 // C++ includes.
-#include <cassert>
-#include <cmath>
-#include <cstdlib>
 #include <iostream>
-#include <stdexcept>
 #include <string>
+#include <sstream>
 #include <vector>
 
 // Framework includes.
@@ -123,10 +120,28 @@ namespace mu2e {
     if ( ++ncalls > 1){
       edm::LogInfo("EventGenerator")
         << "EventGenerator does not change state at beginRun.  Hope that's OK.";
+      return;
     }
+
+    edm::LogInfo log("EventGenerator");
+    log << "Event generator configuration file: " 
+        << _configfile
+        << "\n\n";
 
     SimpleConfig config(_configfile);
     checkConfig(config);
+
+    if ( config.getBool("printConfig",false) ){
+      log << config;
+    }
+
+    if ( config.getBool("printConfigStats",false) ){
+      // Work around absence of << operator for this print method.
+      ostringstream os;
+      config.printStatistics(os);
+      log << os.str();
+    }
+
 
     // Change this to modify rather than delete and make an new one??
 

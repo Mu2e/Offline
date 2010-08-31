@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.cc,v 1.5 2010/05/18 21:15:29 kutschke Exp $
+// $Id: ConditionsService.cc,v 1.6 2010/08/31 21:50:37 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/18 21:15:29 $
+// $Date: 2010/08/31 21:50:37 $
 //
 // Original author Rob Kutschke
 //
@@ -38,6 +38,7 @@ namespace mu2e {
   ConditionsService::ConditionsService(edm::ParameterSet const& iPS, 
                                        edm::ActivityRegistry&iRegistry) :
     _conditionsFile(iPS.getUntrackedParameter<std::string>("conditionsfile","conditions.txt")),
+    _config(_conditionsFile),
     _entities(),
     _run_count()
   {
@@ -59,18 +60,23 @@ namespace mu2e {
     edm::LogInfo log("CONDITIONS");
     log << "Conditions input file is: " << _conditionsFile << "\n";
 
-    _config = auto_ptr<SimpleConfig>(new SimpleConfig(_conditionsFile));
+    if ( _config.getBool("printConfig",false) ){
+      log << "\n" << _config;
+    }
 
-    if ( _config->getBool("printConfig",false) ){
-      log << "\n" << *_config;
+    if ( _config.getBool("printConfigStats",false) ){
+      // Work around absence of << operator for this print method.
+      ostringstream os;
+      _config.printStatistics(os);
+      log << os.str();
     }
 
     checkConsistency();
 
     // Can we break the coupling to the entities?
-    addEntity( std::auto_ptr<ParticleDataTable>( new ParticleDataTable(*_config)) );
-    addEntity( std::auto_ptr<AcceleratorParams>( new AcceleratorParams(*_config)) );
-    addEntity( std::auto_ptr<DAQParams>        ( new DAQParams        (*_config)) );
+    addEntity( std::auto_ptr<ParticleDataTable>( new ParticleDataTable(_config)) );
+    addEntity( std::auto_ptr<AcceleratorParams>( new AcceleratorParams(_config)) );
+    addEntity( std::auto_ptr<DAQParams>        ( new DAQParams        (_config)) );
     
   }
 

@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.6 2010/05/18 20:28:00 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.7 2010/08/31 21:50:37 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/18 20:28:00 $
+// $Date: 2010/08/31 21:50:37 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,6 @@
 //
 // C++ include files
 #include <string>
-#include <memory>
 
 // Framework include files
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -47,13 +46,16 @@ namespace mu2e {
     void preBeginRun( edm::RunID const& id, edm::Timestamp const& ts);
     
     // Not sure if we really want this.  It might be abused more than used?
-    SimpleConfig const& config() const { return *_config;}
+    SimpleConfig const& config() const { return _config;}
 
   private:
+
+    // The name of the input file.  Later will be a db key or similar.
+    std::string _conditionsFile;
     
     // For how the conditions data is held in the file managed by
     // this config object.  It can later evolve to a database.
-    std::auto_ptr<SimpleConfig> _config;
+    SimpleConfig _config;
 
     // Perform any consistency checks.
     void checkConsistency();
@@ -92,8 +94,6 @@ namespace mu2e {
       return d;
     }
     
-    // The name of the input file.  Later will be a db key or similar.
-    std::string _conditionsFile;
 
     ConditionsMap _entities;
     int _run_count;

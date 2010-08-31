@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.7 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/08/31 00:24:51 $
+// $Id: GeometryService.cc,v 1.8 2010/08/31 21:50:37 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/08/31 21:50:37 $
 //
 // Original author Rob Kutschke
 //
@@ -76,7 +76,14 @@ namespace mu2e {
       log << *_config;
     }
 
-    // Throw if the configuration 
+    if ( _config->getBool("printConfigStats",false) ){
+      // Work around absence of << operator for this print method.
+      ostringstream os;
+      _config->printStatistics(os);
+      log << os.str();
+    }
+
+    // Throw if the configuration is not self consistent.
     checkConfig();
 
     // Make a detector for every component present in the configuration.
