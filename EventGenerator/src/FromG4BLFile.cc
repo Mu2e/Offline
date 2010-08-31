@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.2 2010/08/31 05:31:07 kutschke Exp $
+// $Id: FromG4BLFile.cc,v 1.3 2010/08/31 15:21:18 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/31 05:31:07 $
+// $Date: 2010/08/31 15:21:18 $
 //
 // Original author Rob Kutschke
 //
@@ -145,7 +145,7 @@ namespace mu2e {
 
       // 4 Momentum.
       double mass = pdt->particle(id).mass().value();
-      double e    = sqrt( pos.mag2() + mass*mass);
+      double e    = sqrt( px*px + py*py + pz*pz + mass*mass);
       CLHEP::HepLorentzVector p4(px,py,pz,e);
 
       // Add particle to the output collection.
