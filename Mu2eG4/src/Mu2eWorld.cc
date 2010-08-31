@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.49 2010/08/31 16:54:52 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.50 2010/08/31 16:59:26 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/08/31 16:59:26 $
 //
 // Original author Rob Kutschke
 //
@@ -1439,27 +1439,29 @@ namespace mu2e {
                                    G4Colour::Yellow()
                                    ); 
 
-    VolumeInfo FrontInfo = nestBox ("CRVFrontShield", 
-                                    HallSteelFrontDims, 
-                                    HallSteelShieldMaterial, 
-                                    0,  
-                                    FrontShield -_hallOriginInMu2e, 
-                                    parent, 
-                                    0,  
-                                    hallVisible, 
-                                    G4Colour::Yellow() 
-                                    ); 
+    // the code below should use volume subtraction to avoid overlaps, comment out for now
+
+//     VolumeInfo FrontInfo = nestBox ("CRVFrontShield", 
+//                                     HallSteelFrontDims, 
+//                                     HallSteelShieldMaterial, 
+//                                     0,  
+//                                     FrontShield -_hallOriginInMu2e, 
+//                                     parent, 
+//                                     0,  
+//                                     hallVisible, 
+//                                     G4Colour::Yellow() 
+//                                     ); 
     
-    VolumeInfo FrontHoleInfo = nestTubs2( "HallSteelFrontHole",
-                                          FrontHoleDims,
-                                          FrontHoleMaterial,
-                                          0,
-                                          FrontHole,
-                                          FrontInfo,
-                                          0,
-                                          hallVisible,
-                                          G4Colour::Red()
-                                          );
+//     VolumeInfo FrontHoleInfo = nestTubs2( "HallSteelFrontHole",
+//                                           FrontHoleDims,
+//                                           FrontHoleMaterial,
+//                                           0,
+//                                           FrontHole,
+//                                           FrontInfo,
+//                                           0,
+//                                           hallVisible,
+//                                           G4Colour::Red()
+//                                           );
 
   } // end Mu2eWorld::constructSteel
 
