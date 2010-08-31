@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.9 2010/08/18 06:30:52 kutschke Exp $
+// $Id: GenId.hh,v 1.10 2010/08/31 05:30:28 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/18 06:30:52 $
+// $Date: 2010/08/31 05:30:28 $
 //
 // Original author Rob Kutschke
 //
@@ -37,16 +37,16 @@ namespace mu2e {
       cosmicToy,     cosmicDYB,         cosmic,            dio1,
       dio2,          dio3,              pionCapture,
       muonCapture,   muonDecayInFlight, ejectedProtonGun, 
-      piEplusNuGun,  primaryProtonGun,  lastEnum
+      piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      lastEnum
     };
   
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
-    "unknown",     "particleGun",      "conversionGun",                 \
-      "cosmicToy",   "cosmicDYB",        "cosmic",           "dio1",    \
-      "dio2",        "dio3",             "pionCapture",                 \
-      "muonCapture", "muonDecayInFlight","ejectedProtonGun",            \
-      "piEplusNuGun", "primaryProtonGun"
+      "unknown",      "particleGun",       "conversionGun",             \
+      "cosmicToy",    "cosmicDYB",         "cosmic",           "dio1",  \
+      "dio2",         "dio3",              "pionCapture",               \
+      "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
+      "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"
 
   public:
 
