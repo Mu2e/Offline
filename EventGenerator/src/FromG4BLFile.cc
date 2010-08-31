@@ -1,14 +1,18 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.1 2010/08/30 22:50:00 kutschke Exp $
+// $Id: FromG4BLFile.cc,v 1.2 2010/08/31 05:31:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/30 22:50:00 $
+// $Date: 2010/08/31 05:31:07 $
 //
 // Original author Rob Kutschke
 //
 // The position is given in the Mu2e coordinate system.
 // 
+
+// Zlimits: 1685.84 1843.21
+//   Length = 157.37           ( halflength=80)
+//   Mid    = 1764.525
 
 #include <iostream>
 
@@ -23,26 +27,21 @@
 #include "EventGenerator/inc/FromG4BLFile.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
+#include "GeometryService/inc/GeometryService.hh"
+//#include "LTrackerGeom/inc/LTracker.hh"
+//#include "ITrackerGeom/inc/ITracker.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // Root includes
 #include "TH1F.h"
+#include "TNtuple.h"
 
 // Other external includes.
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace std;
-
-//using CLHEP::Hep3Vector;
-//using CLHEP::HepLorentzVector;
-//using CLHEP::RandFlat;
-//using CLHEP::twopi;
-
 
 namespace mu2e {
 
@@ -52,9 +51,10 @@ namespace mu2e {
     GeneratorBase(),
 
     // From run time configuration file.
-    _mean(config.getDouble("particleGun.mean",-1.)),
+    _mean(config.getDouble("fromG4BLFile.mean",-1.)),
+    _zOffset(config.getDouble("fromG4BLFile.zOffset",1764.5)),
     _inputFileName(config.getString("fromG4BLFile.filename")),
-    _doHistograms(config.getBool("particleGun.doHistograms", false)),
+    _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
 
     // Random number distributions; getEngine() comes from base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
@@ -70,7 +70,18 @@ namespace mu2e {
     _hY0(0),
     _hZ0(0),
     _hT0(0){
-    
+
+    // Sanity check.
+    if ( std::abs(_mean) > 99999. ) {
+      throw cms::Exception("RANGE")
+        << "FromG4BLFile has been asked to produce a crazily large number of particles.\n";
+    }
+
+    // This should really come from the geometry service, not directly from the config file.
+    edm::Service<GeometryService> geom;
+    SimpleConfig const& geomConfig = geom->config();
+    _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");
+
     // Book histograms if enabled.
     if ( !_doHistograms ) return;
 
@@ -81,12 +92,15 @@ namespace mu2e {
 
     _hMomentum     = tfdir.make<TH1F>( "hMomentum",     "From G4BL file: Momentum (MeV)",  100, 0., 1000. );
 
-    _hCz           = tfdir.make<TH1F>( "hCz",           "From G4BL file: cos(theta)",      100, -1.,  1.);
+    _hCz           = tfdir.make<TH1F>( "hCz", "From G4BL file: cos(theta)",  100, -1.,  1.);
 
-    _hX0           = tfdir.make<TH1F>( "hX0", "From G4BL file: X0",              100,  -4000.,    4000.);
-    _hY0           = tfdir.make<TH1F>( "hY0", "From G4BL file: Y0",              100,  -1000.,    1000.);
-    _hZ0           = tfdir.make<TH1F>( "hZ0", "From G4BL file: Z0",              100, -10000.,   10000.);
-    _hT0           = tfdir.make<TH1F>( "hT0", "From G4BL file: Time",            100,      0.,    1800.);
+    _hX0           = tfdir.make<TH1F>( "hX0", "From G4BL file: X0",   100,  -40.,  40.);
+    _hY0           = tfdir.make<TH1F>( "hY0", "From G4BL file: Y0",   100,  -20.,  20.);
+    _hZ0           = tfdir.make<TH1F>( "hZ0", "From G4BL file: Z0",   100, -100., 100.);
+    _hT0           = tfdir.make<TH1F>( "hT0", "From G4BL file: Time", 100, -500., 500.);
+
+    _ntup          = tfdir.make<TNtuple>( "ntup", "G4BL Track ntuple",
+                                          "x:y:z:p:cz:phi:pt:t:id:evtId:trkID:ParId:w");
 
   }
 
@@ -95,40 +109,78 @@ namespace mu2e {
 
   void FromG4BLFile::generate( ToyGenParticleCollection& genParts ){
 
+    // How many tracks in this event?
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
     if ( _doHistograms ){
       _hMultiplicity->Fill(n);
     }
 
+    // Particle data table.
+    ConditionsHandle<ParticleDataTable> pdt("ignored");
+
+    // Ntuple buffer.
+    float nt[_ntup->GetNvar()];
+
+    // Loop over all of the requested particles.
     for ( int j =0; j<n; ++j ){
 
-      CLHEP::Hep3Vector pos;
+      // Format of one line is: x y z Px Py Pz t PDGid EventID TrackID ParentID Weight
+      double x, y, z, px, py, pz, t,  weight;
+      int id, evtid, trkid, parentid;
+      _inputFile >> x >> y >> z >> px >> py >> pz >> t >> id >> evtid >> trkid >> parentid >> weight;
+      if ( !_inputFile ){
+        throw cms::Exception("EOF")
+          << "FromG4BLFile has reached an unexpected end of flie.\n";
+      }
+
+      // Put(0,0,0) at the center of the production target.
+      z -= _zOffset;
+      
+      // Express pdgId as the correct type.
+      PDGCode::type pdgId = static_cast<PDGCode::type>(id);
+
+      // 3D position in Mu2e coordinate system.
+      CLHEP::Hep3Vector pos(x,y,z);
+      pos += _prodTargetCenter;
 
       // 4 Momentum.
-      CLHEP::HepLorentzVector p4;
+      double mass = pdt->particle(id).mass().value();
+      double e    = sqrt( pos.mag2() + mass*mass);
+      CLHEP::HepLorentzVector p4(px,py,pz,e);
 
-      // Time
-      //double time = _tmin + _dt*_randFlat.fire();
-
-      //genParts.push_back( ToyGenParticle( _pdgId, GenId::particleGun, pos, p4, time));
-
-      /*
-      cout << "Generated position: " 
-           << pos << " "
-           << p4 << " "
-           << p4.vect().mag() << " "
-           << time
-           << endl;
+      // Add particle to the output collection.
+      genParts.push_back( ToyGenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );
 
       if ( _doHistograms ) {
+
+        // Magnitude of momentum, cos(theta) and azimuth.
+        double p   = p4.vect().mag();
+        double pt  = p4.vect().perp();
+        double cz  = p4.vect().cosTheta();
+        double phi = p4.vect().phi();
+
         _hMomentum->Fill(p);
-        _hCz->Fill( p4.vect().cosTheta());
-        _hX0->Fill( pos.x() );
-        _hY0->Fill( pos.y() );
-        _hZ0->Fill( pos.z() );
-        _hT0->Fill( time );
+        _hCz->Fill( cz );
+        _hX0->Fill( x );
+        _hY0->Fill( y );
+        _hZ0->Fill( z );
+        _hT0->Fill( t );
+
+        nt[0]  = x;
+        nt[1]  = y;
+        nt[2]  = z;
+        nt[3]  = p;
+        nt[4]  = cz;
+        nt[5]  = phi;
+        nt[6]  = pt;
+        nt[7]  = t;
+        nt[8]  = id;
+        nt[9]  = evtid;
+        nt[10] = trkid;
+        nt[11] = parentid;
+        nt[12] = weight;
+        _ntup->Fill(nt);
       }
-      */
 
     }
 

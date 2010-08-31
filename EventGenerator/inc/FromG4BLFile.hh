@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.1 2010/08/30 22:50:00 kutschke Exp $
+// $Id: FromG4BLFile.hh,v 1.2 2010/08/31 05:31:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/30 22:50:00 $
+// $Date: 2010/08/31 05:31:07 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,7 @@
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
 // External includes
+#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward references.
@@ -26,6 +27,7 @@ namespace edm{
   class Run;
 }
 class TH1F;
+class TNtuple;
 
 namespace mu2e {
 
@@ -49,6 +51,12 @@ namespace mu2e {
     // If negative, then exactly that number of particles per event.
     double _mean;
 
+    // The midpoint of the target in the coordinates used in the input file.
+    double _zOffset;
+
+    // The center of the production target, in the Mu2e coordinate system.
+    CLHEP::Hep3Vector _prodTargetCenter;
+
     // The name of the input file.
     std::string _inputFileName;
 
@@ -63,7 +71,7 @@ namespace mu2e {
     // The input file.
     std::ifstream _inputFile;
 
-    // Histogram information.
+    // Histogram and ntuple information.
     TH1F* _hMultiplicity;
     TH1F* _hMomentum;
     TH1F* _hCz;
@@ -71,6 +79,7 @@ namespace mu2e {
     TH1F* _hY0;
     TH1F* _hZ0;
     TH1F* _hT0;
+    TNtuple* _ntup;
 
   };
 
