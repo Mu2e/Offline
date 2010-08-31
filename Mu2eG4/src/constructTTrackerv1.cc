@@ -1,9 +1,9 @@
 //
 // Free function to construct version 1 of the TTracker
 //
-// $Id: constructTTrackerv1.cc,v 1.7 2010/07/30 19:43:25 genser Exp $
+// $Id: constructTTrackerv1.cc,v 1.8 2010/08/31 16:54:52 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/30 19:43:25 $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -54,6 +54,7 @@ namespace mu2e{
     // Only instantiate sectors to be drawn.
     int devDraw = config.getInt("ttracker.devDraw",-1);
     int secDraw = config.getInt("ttracker.secDraw",-1);
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
 
     // Master geometry for the TTracker.
     GeomHandle<TTracker> ttracker;
@@ -73,7 +74,8 @@ namespace mu2e{
                                 mother,
                                 0,
                                 G4Color::Blue(),
-                                config.getBool("ttracker.envelopeSolid",true)
+                                config.getBool("ttracker.envelopeSolid",true),
+                                doSurfaceCheck
                                 );
 
     if (!config.getBool("ttracker.envelopeVisible",false)) {
@@ -113,7 +115,8 @@ namespace mu2e{
                                      info.logical,
                                      idev,
                                      G4Color::Magenta(),
-                                     ttrackerDeviceEnvelopeSolid
+                                     ttrackerDeviceEnvelopeSolid,
+                                     doSurfaceCheck
                                      );
 
       if (!ttrackerDeviceEnvelopeVisible) {
@@ -160,7 +163,8 @@ namespace mu2e{
                                              devInfo.logical,
                                              straw.Index().asInt(),
                                              G4Color::Green(),
-                                             ttrackerStrawSolid
+                                             ttrackerStrawSolid,
+                                             doSurfaceCheck
                                              );
 
             // Make this straw a sensitive detector.

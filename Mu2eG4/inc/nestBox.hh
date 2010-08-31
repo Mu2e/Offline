@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 // 
-// $Id: nestBox.hh,v 1.3 2010/05/18 20:28:42 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:42 $
+// $Id: nestBox.hh,v 1.4 2010/08/31 16:54:52 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -33,8 +33,9 @@ namespace mu2e {
                        G4ThreeVector const& offset,
                        G4LogicalVolume* parent,
                        int copyNo,
-                       G4Colour color = G4Colour::Black(),
-                       bool forceSolid = false
+                       G4Colour color,
+                       bool forceSolid,
+                       bool doSurfaceCheck
                        );
   
 
@@ -47,8 +48,9 @@ namespace mu2e {
                               G4ThreeVector const& offset,
                               G4LogicalVolume* parent,
                               int copyNo,
-                              G4Colour color = G4Colour::Black(),
-                              bool forceSolid = false
+                              G4Colour color,
+                              bool forceSolid,
+                              bool doSurfaceCheck
                               ){
     return nestBox( name, 
                     &halfDim[0],
@@ -58,7 +60,8 @@ namespace mu2e {
                     parent,
                     copyNo,
                     color,
-                    forceSolid
+                    forceSolid,
+                    doSurfaceCheck
                     );
   }
 }

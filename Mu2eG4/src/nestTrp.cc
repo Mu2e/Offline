@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
 // 
-// $Id: nestTrp.cc,v 1.3 2010/08/10 19:06:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/10 19:06:58 $
+// $Id: nestTrp.cc,v 1.4 2010/08/31 16:54:52 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Krzysztof Genser based on Rob Kutschke' nestBox
 //
@@ -35,7 +35,8 @@ namespace mu2e {
                        G4LogicalVolume* parent,
                        int copyNo,
                        G4Colour color,
-                       bool forceSolid
+                       bool forceSolid,
+                       bool doSurfaceCheck
                        ){
     
     VolumeInfo info;
@@ -53,7 +54,14 @@ namespace mu2e {
 
     info.logical  = new G4LogicalVolume( info.solid, material, name); 
     
-    info.physical = new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo);
+    info.physical = new G4PVPlacement( rot,
+                                       offset,
+                                       info.logical,
+                                       name,
+                                       parent,
+                                       0,
+                                       copyNo, 
+                                       doSurfaceCheck);
     
     G4VisAttributes* visAtt = new G4VisAttributes(true, color);
     visAtt->SetForceSolid(forceSolid);

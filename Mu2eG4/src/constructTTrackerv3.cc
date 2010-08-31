@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.5 2010/08/27 23:06:02 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.6 2010/08/31 16:54:52 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/27 23:06:02 $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -56,6 +56,8 @@ namespace mu2e{
     // Only instantiate sectors to be drawn.
     int devDraw = config.getInt("ttracker.devDraw",-1);
     int secDraw = config.getInt("ttracker.secDraw",-1);
+    G4bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+
 
     // Master geometry for the TTracker.
     GeomHandle<TTracker> ttracker;
@@ -75,7 +77,8 @@ namespace mu2e{
                                       mother,
                                       0,
                                       G4Color::Blue(),
-                                      config.getBool("ttracker.envelopeSolid",true)
+                                      config.getBool("ttracker.envelopeSolid",true),
+                                      doSurfaceCheck
                                       );
 
     if (!config.getBool("ttracker.envelopeVisible",false)) {
@@ -256,7 +259,8 @@ namespace mu2e{
                                          secInfo.logical,
                                          straw.Index().asInt(),
                                          color,
-                                         ttrackerStrawSolid
+                                         ttrackerStrawSolid,
+                                         doSurfaceCheck
                                          );
 
         // Make this straw a sensitive detector.
@@ -299,8 +303,6 @@ namespace mu2e{
       
       // we may need to keep those pointers somewhre... (this is only the last one...)
 
-      G4bool doSurfCheck = false; // if true this draws random numbers
-
       secInfo.physical =  new G4PVPlacement(secRotation,
                                             origin,
                                             secInfo.logical,
@@ -308,7 +310,7 @@ namespace mu2e{
                                             devInfo.logical,
                                             false,
                                             isec,
-                                            doSurfCheck);
+                                            doSurfaceCheck);
 
     }       // end loop over sectors
 
@@ -331,8 +333,6 @@ namespace mu2e{
 
       // could we descend the final hierarchy and set the "true" copy numbers?
 
-      G4bool doSurfCheck = false; // if true this draws random numbers
-
       // we may need to keep those pointers somewhre... (this is only the last one...)
       devInfo.physical =  new G4PVPlacement(devRotation,
                                             device.origin(),
@@ -341,7 +341,7 @@ namespace mu2e{
                                             motherInfo.logical,
                                             false,
                                             idev,
-                                            doSurfCheck);
+                                            doSurfaceCheck);
 
 
     } // end loop over devices

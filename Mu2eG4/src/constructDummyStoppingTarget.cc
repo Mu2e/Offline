@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.cc,v 1.1 2010/04/16 14:45:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/16 14:45:34 $
+// $Id: constructDummyStoppingTarget.cc,v 1.2 2010/08/31 16:54:52 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,8 @@ namespace mu2e{
     double z0            = config.getDouble("dummyStoppingTarget.z0" ,        5900.);
     G4Material* material = materialFinder.get("dummyStoppingTarget.materialName","WAGVacuum");
 
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+
     // Parameters of a G4Tubs.
     TubsParams params(rIn, rOut, halfLength );
 
@@ -64,7 +66,8 @@ namespace mu2e{
                                 mother,
                                 0,
                                 G4Color::Yellow(),
-                                true
+                                true,
+                                doSurfaceCheck
                                 );
 
     return info;

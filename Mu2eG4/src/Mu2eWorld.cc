@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.48 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/08/31 00:24:51 $
+// $Id: Mu2eWorld.cc,v 1.49 2010/08/31 16:54:52 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -451,7 +451,8 @@ namespace mu2e {
                                                dirtCapName, 
                                                worldInfo.logical, 
                                                0, 
-                                               0);
+                                               0,
+                                               _config->getBool("g4.doSurfaceCheck",false));
 
     _visAttributes.push_back(G4VisAttributes(dirtCapVisible, G4Colour::Green()));
     G4VisAttributes& visAtt = _visAttributes.back();
@@ -1078,7 +1079,8 @@ namespace mu2e {
     if( _config->getBool("hasTarget",false) ){
 
       targetInfo = constructStoppingTarget( detSolUpstreamVacInfo.logical, 
-                                            z0DSup );
+                                            z0DSup,
+                                            *_config );
 
     } else {
 
@@ -1547,7 +1549,14 @@ namespace mu2e {
     
     info.logical = new G4LogicalVolume( info.solid, material, name); 
     
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+    info.physical =  new G4PVPlacement( rot, 
+                                        offset, 
+                                        info.logical, 
+                                        name, 
+                                        parent.logical, 
+                                        0, 
+                                        copyNo,
+                                        _config->getBool("g4.doSurfaceCheck",false));
 
     if ( isVisible ){
 
@@ -1589,7 +1598,14 @@ namespace mu2e {
     
     info.logical = new G4LogicalVolume( info.solid, material, name); 
     
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+    info.physical =  new G4PVPlacement( rot,
+                                        offset,
+                                        info.logical,
+                                        name,
+                                        parent.logical,
+                                        0,
+                                        copyNo,
+                                        _config->getBool("g4.doSurfaceCheck",false));
 
     if ( isVisible ){
 
@@ -1743,7 +1759,14 @@ namespace mu2e {
     
     info.logical = new G4LogicalVolume( info.solid, material, name); 
     
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
+    info.physical =  new G4PVPlacement( rot,
+                                        offset,
+                                        info.logical,
+                                        name,
+                                        parent.logical,
+                                        0,
+                                        copyNo,
+                                        _config->getBool("g4.doSurfaceCheck",false));
     
     if ( isVisible ){
 

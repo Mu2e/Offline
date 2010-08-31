@@ -25,14 +25,15 @@ namespace mu2e {
   // Create and place a G4Torus inside a logical volume.
   // 
   VolumeInfo nestTorus ( string const& name,
-                        double param[5],
-                        G4Material* material,
-                        G4RotationMatrix* rot,
-                        G4ThreeVector const& offset,
-                        G4LogicalVolume* parent,
-                        int copyNo,
-                        G4Colour color,
-                        bool forceSolid
+                         double param[5],
+                         G4Material* material,
+                         G4RotationMatrix* rot,
+                         G4ThreeVector const& offset,
+                         G4LogicalVolume* parent,
+                         int copyNo,
+                         G4Colour color,
+                         bool forceSolid,
+                         bool doSurfaceCheck
                         ){
     
     VolumeInfo info;
@@ -41,7 +42,7 @@ namespace mu2e {
     
     info.logical = new G4LogicalVolume( info.solid, material, name); 
     
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo);
+    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo, doSurfaceCheck);
     
     G4VisAttributes* visAtt = new G4VisAttributes(true, color);
     visAtt->SetForceSolid(forceSolid);

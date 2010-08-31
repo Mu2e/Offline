@@ -1,9 +1,9 @@
 //
 // Free function to construct version 2 of the TTracker
 //
-// $Id: constructTTrackerv2.cc,v 1.3 2010/07/30 19:43:25 genser Exp $
+// $Id: constructTTrackerv2.cc,v 1.4 2010/08/31 16:54:52 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/30 19:43:25 $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -54,6 +54,8 @@ namespace mu2e{
     // Only instantiate sectors to be drawn.
     int devDraw = config.getInt("ttracker.devDraw",-1);
     int secDraw = config.getInt("ttracker.secDraw",-1);
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
     // Master geometry for the TTracker.
     GeomHandle<TTracker> ttracker;
@@ -73,7 +75,8 @@ namespace mu2e{
                                 mother,
                                 0,
                                 G4Color::Blue(),
-                                config.getBool("ttracker.envelopeSolid",true)
+                                config.getBool("ttracker.envelopeSolid",true),
+                                doSurfaceCheck
                                 );
 
     if (!config.getBool("ttracker.envelopeVisible",false)) {
@@ -81,7 +84,7 @@ namespace mu2e{
     } else {
       // leak?
       G4VisAttributes* visAtt = new G4VisAttributes(info.logical->GetVisAttributes());
-      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+      visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
       info.logical->SetVisAttributes(visAtt);
     }
 
@@ -127,7 +130,7 @@ namespace mu2e{
     else {
       G4VisAttributes* visAtt = new G4VisAttributes(true, G4Color::Magenta());
       visAtt->SetForceSolid(ttrackerDeviceEnvelopeSolid);
-      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+      visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
       devInfo.logical->SetVisAttributes(visAtt);
     }
     // place straws etc... wrt the envelope
@@ -171,7 +174,8 @@ namespace mu2e{
                                            devInfo.logical,
                                            straw.Index().asInt(),
                                            G4Color::Green(),
-                                           ttrackerStrawSolid
+                                           ttrackerStrawSolid,
+                                           doSurfaceCheck
                                            );
 
           // Make this straw a sensitive detector.
@@ -181,7 +185,7 @@ namespace mu2e{
           } else {
             // leak?
             G4VisAttributes* visAtt = new G4VisAttributes(*strawInfo.logical->GetVisAttributes());
-            visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+            visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
             strawInfo.logical->SetVisAttributes(visAtt);
           }
 
@@ -212,7 +216,8 @@ namespace mu2e{
                                             devName,
                                             info.logical,
                                             false,
-                                            idev
+                                            idev,
+                                            doSurfaceCheck
                                             );
 
 

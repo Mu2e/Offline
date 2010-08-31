@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the tracker.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyTracker.cc,v 1.1 2010/04/16 14:45:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/16 14:45:34 $
+// $Id: constructDummyTracker.cc,v 1.2 2010/08/31 16:54:52 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,8 @@ namespace mu2e{
     double z0            = config.getDouble("dummytracker.z0" ,        10200.);
     G4Material* material = materialFinder.get("dummytracker.materialName","WAGVacuum");
 
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+
     // Parameters of a G4Tubs.
     TubsParams params(rIn, rOut, halfLength);
 
@@ -64,7 +66,8 @@ namespace mu2e{
                                 mother,
                                 0,
                                 G4Color::Red(),
-                                true
+                                true,
+                                doSurfaceCheck
                                 );
     return info;
   }

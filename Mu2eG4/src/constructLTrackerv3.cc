@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.8 2010/08/10 19:06:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/10 19:06:58 $
+// $Id: constructLTrackerv3.cc,v 1.9 2010/08/31 16:54:52 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -59,6 +59,11 @@ namespace mu2e{
     double zHalf = CLHEP::mm * ltracker->zHalfLength()+30.;
     double z0    = CLHEP::mm * ltracker->z0();
 
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool trackerVisible = config.getBool("ltracker.visible",true);
+    bool trackerSolid = config.getBool("ltracker.solid",true);
+    
+
     VolumeInfo trackerInfo;
 
     // Make the mother volume for the LTracker.
@@ -85,7 +90,8 @@ namespace mu2e{
                                                trackerName, 
                                                mother, 
                                                0, 
-                                               0);
+                                               0,
+                                               doSurfaceCheck);
 
     // Visualization attributes of the the mother volume.
     {
@@ -159,7 +165,9 @@ namespace mu2e{
                    sector.boxOffset(),
                    trackerInfo.logical,
                    0,
-                   G4Colour::Magenta())
+                   G4Colour::Magenta(),
+                   trackerSolid,
+                   doSurfaceCheck)
           :
           nestTrp( name,
                    sector.boxHalfLengths(),
@@ -168,7 +176,9 @@ namespace mu2e{
                    sector.boxOffset(),
                    trackerInfo.logical,
                    0,
-                   G4Colour::Yellow());
+                   G4Colour::Yellow(),
+                   trackerSolid,
+                   doSurfaceCheck);
 
 
         //      the code below changes the recorded hits
@@ -213,8 +223,8 @@ namespace mu2e{
                                  sname, 
                                  sectorBoxInfo.logical, 
                                  0, 
-                                 straw.Index().asInt()
-                                 ) 
+                                 straw.Index().asInt(),
+                                 doSurfaceCheck) 
               :
               new G4PVPlacement( rotft,
                                  trapezoidposition,
@@ -222,8 +232,8 @@ namespace mu2e{
                                  sname, 
                                  sectorBoxInfo.logical, 
                                  0, 
-                                 straw.Index().asInt()
-                                 );
+                                 straw.Index().asInt(),
+                                 doSurfaceCheck);
             
           } // loop over straws
         }   // loop over layers
@@ -238,16 +248,13 @@ namespace mu2e{
     strawInfo.logical->SetSensitiveDetector( strawSD );
 
 
-    {
+    if (config.getBool("ltracker.strawVisible",false)) {
+      
       //This leaks strawVisAtt.  
-      //G4VisAttributes* strawVisAtt = new G4VisAttributes(true, G4Colour::Green() );
-      //strawVisAtt->SetForceSolid(true);
-      //visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-      //strawVisAtt->SetVisibility(true);
-      //strawInfo.logical->SetVisAttributes(strawVisAtt);
-
-      // Do not draw straws since it is too time consuming.
-      strawInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+      G4VisAttributes* strawVisAtt = new G4VisAttributes(true, G4Colour::Green() );
+      strawVisAtt->SetForceSolid(config.getBool("ltracker.strawSolid",true));
+      strawVisAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+      strawInfo.logical->SetVisAttributes(strawVisAtt);
 
     }
     

@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 // 
-// $Id: nestBox.cc,v 1.3 2010/05/18 21:16:27 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:27 $
+// $Id: nestBox.cc,v 1.4 2010/08/31 16:54:52 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -34,7 +34,8 @@ namespace mu2e {
                        G4LogicalVolume* parent,
                        int copyNo,
                        G4Colour color,
-                       bool forceSolid
+                       bool forceSolid,
+                       bool doSurfaceCheck
                        ){
     
     VolumeInfo info;
@@ -43,7 +44,14 @@ namespace mu2e {
     
     info.logical = new G4LogicalVolume( info.solid, material, name); 
     
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo);
+    info.physical =  new G4PVPlacement(rot,
+                                       offset,
+                                       info.logical,
+                                       name,
+                                       parent,
+                                       0,
+                                       copyNo, 
+                                       doSurfaceCheck);
     
     G4VisAttributes* visAtt = new G4VisAttributes(true, color);
     visAtt->SetForceSolid(forceSolid);

@@ -4,7 +4,7 @@
 // Free function to create and place a new G4Torus, place inside a logical volume.
 // 
 // $Id: v 1.1.1.1
-// $Author: kutschke $ 
+// $Author: genser $ 
 // $Date: 2010/03/15
 //
 
@@ -32,8 +32,9 @@ namespace mu2e {
                          G4ThreeVector const& offset,
                          G4LogicalVolume* parent,
                          int copyNo,
-                         G4Colour color = G4Colour::Black(),
-                         bool forceSolid = false
+                         G4Colour color,
+                         bool forceSolid,
+                         bool doSurfaceCheck
                          );
   
 
@@ -47,8 +48,9 @@ namespace mu2e {
                                 G4ThreeVector& offset,
                                 G4LogicalVolume* parent,
                                 int copyNo,
-                                G4Colour color = G4Colour::Black(),
-                                bool forceSolid = false
+                                G4Colour color,
+                                bool forceSolid,
+                                bool doSurfaceCheck
                                 ){
     return nestTorus( name, 
                       &halfDim[0],
@@ -58,7 +60,8 @@ namespace mu2e {
                       parent,
                       copyNo,
                       color,
-                      forceSolid
+                      forceSolid,
+                      doSurfaceCheck
                       );
   }
 }

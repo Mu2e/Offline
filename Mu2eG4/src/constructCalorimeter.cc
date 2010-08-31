@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.2 2010/07/07 16:43:12 genser Exp $
+// $Id: constructCalorimeter.cc,v 1.3 2010/08/31 16:54:52 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/07 16:43:12 $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 // 
@@ -53,6 +53,7 @@ namespace mu2e {
     };
     
     bool calorimeterSolid = config.getBool("calorimeter.solid",true);
+    bool doSurfaceCheck   = config.getBool("g4.doSurfaceCheck",false);
 
     VolumeInfo calorimeterInfo = nestTubs( "CalorimeterMother",
                                            calorimeterParams,
@@ -62,7 +63,8 @@ namespace mu2e {
                                            mother,
                                            0,
                                            G4Colour::Yellow(),
-                                           calorimeterSolid
+                                           calorimeterSolid,
+                                           doSurfaceCheck
                                            );
     if (!config.getBool("calorimeter.visible",true)) {
       calorimeterInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);

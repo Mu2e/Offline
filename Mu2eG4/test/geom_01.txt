@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.42 2010/08/31 00:24:52 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/31 00:24:52 $
+// $Id: geom_01.txt,v 1.43 2010/08/31 16:54:52 genser Exp $
+// $Author: genser $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -79,6 +79,11 @@ vector<string> mu2e.materials =
 // Control printout of element and material lists.
 bool g4.printElements  = false;
 bool g4.printMaterials = false;
+
+// make detector volume structure visible where enabled
+bool g4.forceAuxEdgeVisible = true;
+// invoke volume overlap check where enabled (draws random numbers)
+bool g4.doSurfaceCheck = false;
 
 // Half lengths of the world box, (x,y,z) in mm.
 vector<double> world.halfLengths  = { 20000., 10000., 20000.};
@@ -239,6 +244,7 @@ string         target.fillMaterial    = "WAGVacuum";
 double target.z0             = -6100.0;
 double target.deltaZ         =    50.0;
 bool   target.visible        = true;
+bool   target.solid          = true;
 
 // all radii must be specified, i.e., nFoils is determined from the size 
 // of the radii vector.

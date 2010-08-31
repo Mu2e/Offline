@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.cc,v 1.4 2010/07/30 19:43:25 genser Exp $
+// $Id: nestTubs.cc,v 1.5 2010/08/31 16:54:52 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/07/30 19:43:25 $
+// $Date: 2010/08/31 16:54:52 $
 //
 // Original author Rob Kutschke
 //
@@ -37,7 +37,8 @@ namespace mu2e {
                         G4LogicalVolume* parent,
                         int copyNo,
                         G4Colour color,
-                        bool forceSolid
+                        bool forceSolid,
+                        bool doSurfCheck
                         ){
     
     VolumeInfo info;
@@ -46,8 +47,6 @@ namespace mu2e {
     
     info.logical = new G4LogicalVolume( info.solid, material, name); 
 
-    G4bool doSurfCheck = false; // if true this draws random numbers
-    
     info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo, 
                                         doSurfCheck);
 
