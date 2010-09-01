@@ -1,9 +1,9 @@
 //
-//  The hello world plugin, for a very basic introduction.
+//  The HelloWorld plugin; the first example of a module.
 //
-//  $Id: HelloWorld_plugin.cc,v 1.2 2010/04/16 15:17:48 kutschke Exp $
+//  $Id: HelloWorld_plugin.cc,v 1.3 2010/09/01 18:55:51 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2010/04/16 15:17:48 $
+//  $Date: 2010/09/01 18:55:51 $
 //   
 //  Original author Rob Kutschke
 //
@@ -13,10 +13,6 @@
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 using namespace std;
@@ -26,38 +22,15 @@ namespace mu2e {
   class HelloWorld : public edm::EDAnalyzer {
 
   public:
-    explicit HelloWorld(edm::ParameterSet const& pset){
-      cerr << "Hello, world.  From constructor. "
-           << "My magic number is: "
-           << pset.getUntrackedParameter<int>("magicNumber",-1)
-           << endl;
-    }
-    virtual ~HelloWorld() { }
+    explicit HelloWorld(edm::ParameterSet const& pset){}
 
-    virtual void beginJob(edm::EventSetup const&);
-
-    virtual void beginRun(edm::Run const &run, 
-                          edm::EventSetup const& eSetup );
- 
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const edm::Event& event, edm::EventSetup const&);
 
   private:
 
   };
 
-  void HelloWorld::beginJob(edm::EventSetup const& ){
-    cerr << "Hello, world.  From beginJob." << endl;
-  }
-
-  void HelloWorld::beginRun(edm::Run const& run,
-                            edm::EventSetup const& eSetup ){
-
-    cerr << "Hello, world.  From beginRun: "
-         << run.id().run()
-         << endl;
-  }
-
-  void HelloWorld::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void HelloWorld::analyze(const edm::Event& event, edm::EventSetup const&){
     cerr << "Hello, world.  From analyze: "
          << event.id()
          << endl;
