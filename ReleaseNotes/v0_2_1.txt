@@ -3,10 +3,16 @@
 
            Release notes for Mu2e Offline software, v0_2_1
 
-  $Id: v0_2_1.txt,v 1.7 2010/08/31 22:59:32 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/08/31 22:59:32 $
+  $Id: v0_2_1.txt,v 1.8 2010/09/01 20:02:49 genser Exp $
+  $Author: genser $
+  $Date: 2010/09/01 20:02:49 $
  
+ 9) September 01, 2010, genser
+    Corrected volume overlaps in the Aseet version of the TTracker in the multiple layer case
+      Mu2eG4/src/constructTTrackerv3.cc                   
+      TTrackerGeom/src/TTracker.cc
+      TTrackerGeom/src/TTrackerMaker.cc
+
  8) August 31, 2010, kutschke
     A version of the Aseet TTracker with 2 layers.
      Mu2eG4/test/ttracker_v1.txt
