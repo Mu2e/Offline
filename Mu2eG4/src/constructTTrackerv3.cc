@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.6 2010/08/31 16:54:52 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.7 2010/09/01 19:55:45 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/09/01 19:55:45 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -17,6 +17,7 @@
 
 // C++ includes
 #include <iostream>
+#include <iomanip>
 #include <string>
 
 // Framework includes
@@ -64,6 +65,17 @@ namespace mu2e{
 
     // Make the envelope volume that holds the full tracker.
     TubsParams envelopeParams = ttracker->getTrackerEnvelopeParams();
+
+//     int const oldp = cout.precision();
+//     int const oldw = cout.width();
+//     cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
+//       "   " << 
+//       fixed << setprecision(8) << setw(14) << envelopeParams.innerRadius << ", " <<
+//       fixed << setprecision(8) << setw(14) << envelopeParams.outerRadius << ", " <<
+//       fixed << setprecision(8) << setw(14) << envelopeParams.zHalfLength << ", " <<
+//       fixed << setprecision(8) << setw(14) << envelopeParams.phi0        << ", " <<
+//       fixed << setprecision(8) << setw(14) << envelopeParams.phiMax      << ", " <<
+//       endl;
 
     G4ThreeVector trackerOffset( 0., 0., ttracker->z0()-zOff );
 
@@ -117,21 +129,21 @@ namespace mu2e{
 
     G4String const devName = "TTrackerDeviceEnvelope";
 
-//     *** hack *** note the padding of the TTrackerDeviceEnvelope parameters
-//     devInfo.solid    = new G4Tubs(devName, 
-//                                   deviceEnvelopeParams.innerRadius-2.5,
-//                                   deviceEnvelopeParams.outerRadius+5.0,
-//                                   deviceEnvelopeParams.zHalfLength+3.0, 
-//                                   deviceEnvelopeParams.phi0, 
-//                                   deviceEnvelopeParams.phiMax  
-//                                   );
-    
+//     cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
+//       idev << ", " << 
+//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.innerRadius << ", " <<
+//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.outerRadius << ", " <<
+//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.zHalfLength << ", " <<
+//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.phi0        << ", " <<
+//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.phiMax      << ", " <<
+//       endl;
+
     devInfo.solid    = new G4Tubs(devName, 
                                   deviceEnvelopeParams.innerRadius,
                                   deviceEnvelopeParams.outerRadius,
                                   deviceEnvelopeParams.zHalfLength, 
                                   deviceEnvelopeParams.phi0, 
-                                  deviceEnvelopeParams.phiMax  
+                                  deviceEnvelopeParams.phiMax      
                                   );
     
     devInfo.logical  = new G4LogicalVolume( devInfo.solid, envelopeMaterial, devName);
@@ -174,14 +186,15 @@ namespace mu2e{
                                   sector.boxHalfLengths().at(2),
                                   sector.boxHalfLengths().at(1)
                                   );
+
 //     cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
 //       isec << ", " << 
-//       sector.boxHalfLengths().at(4) << ", " <<
-//       sector.boxHalfLengths().at(3) << ", " <<
-//       sector.boxHalfLengths().at(2) << ", " <<
-//       sector.boxHalfLengths().at(2) << ", " <<
-//       sector.boxHalfLengths().at(1) << ", " <<
-//       endl;
+//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(4) << ", " <<
+//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(3) << ", " <<
+//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(2) << ", " <<
+//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(2) << ", " <<
+//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(1) << ", " <<
+//       endl << setprecision(oldp) << setw(oldw);
 
     secInfo.logical  = new G4LogicalVolume( secInfo.solid, envelopeMaterial, secName); 
     
@@ -217,8 +230,6 @@ namespace mu2e{
         // no, it complicates StrawSD and TTrackerMaker 
         // if( ilay%2==1 && istr+1 == layer.nStraws() ) break;
 
-        // cout << "Debugging constructTTrackerv3 istr: " << istr << endl;
-
         const Straw& straw = layer.getStraw(istr);
 
         StrawDetail const& detail = straw.getDetail();
@@ -226,7 +237,7 @@ namespace mu2e{
         TubsParams strawParams( 0., detail.outerRadius(), detail.halfLength() );
 
         // we are placing the straw w.r.t the trapezoid...
-        // the trapezoid has a different coordinate system x->z, z->y, y->x
+        // the trapezoid aka device envelope has a different coordinate system x->z, z->y, y->x
 
         G4ThreeVector mid(straw.getMidPoint().y() - sector.boxOffset().y(),
                           straw.getMidPoint().z() - sector.boxOffset().z(),
@@ -239,7 +250,6 @@ namespace mu2e{
 //           ", device.origin " << device.origin() <<
 //           endl;
 
-
 //         cout << "Debugging istr: " << istr << " mid: " << 
 //           mid << ", halflenght " << detail.halfLength() << endl;
 
@@ -250,6 +260,11 @@ namespace mu2e{
         // make the straws more distinguishable when displayed
         G4Color color = (ilay%2 == 0) ? ((istr%2 == 0) ? G4Color::Green() : G4Color::Yellow()) :
           ((istr%2 == 0) ? G4Color::Red() : G4Color::Blue());
+
+//         cout << "Debugging Straw istr, RYForTrapezoids, midpoint: " <<
+//           istr << ", " << RYForTrapezoids << ", " <<
+//           fixed << setprecision(8) << setw(14) << mid << ", " <<
+//           endl << setprecision(oldp) << setw(oldw);
 
         VolumeInfo strawInfo  = nestTubs("TTrackerStraw",
                                          strawParams,
@@ -282,7 +297,7 @@ namespace mu2e{
 
       if ( secDraw > -1 && isec > secDraw ) continue;
 
-      //      cout << "Debugging sec: " << isec << " " << secName << " secDraw: " << secDraw << endl;
+      // cout << "Debugging sec: " << isec << " " << secName << " secDraw: " << secDraw << endl;
 
       const Sector& sector = device.getSector(isec);
 
@@ -299,7 +314,7 @@ namespace mu2e{
       // origin a.k.a offset wrt current mother volume
       CLHEP::Hep3Vector origin = sector.boxOffset() - device.origin();
 
-//       cout << "Debugging sec origin: " << isec << " " << secName << origin << endl;
+      // cout << "Debugging sec origin: " << isec << " " << secName << origin << endl;
       
       // we may need to keep those pointers somewhre... (this is only the last one...)
 
@@ -322,7 +337,7 @@ namespace mu2e{
 
       if ( devDraw > -1 && idev > devDraw ) continue;
 
-      // cout << "Debugging: " << idev << " " << devName << " devDraw: " << devDraw << endl;
+      //      cout << "Debugging dev: " << idev << " " << devName << " devDraw: " << devDraw << endl;
 
       const Device& device = ttracker->getDevice(idev);
 
@@ -330,6 +345,9 @@ namespace mu2e{
 
       // a leak?
       G4RotationMatrix* devRotation  = new G4RotationMatrix(RZ);
+
+      // cout << "Debugging -device.rotation(): " << -device.rotation() << " " << endl;
+      // cout << "Debugging device.origin(): " << device.origin() << " " << endl;
 
       // could we descend the final hierarchy and set the "true" copy numbers?
 

@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.9 2010/08/27 23:06:02 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.10 2010/09/01 19:55:45 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/27 23:06:02 $
+// $Date: 2010/09/01 19:55:45 $
 //
 // Original author Rob Kutschke
 //
@@ -237,7 +237,7 @@ namespace mu2e {
     }
 
     // check if the opposite sectors do not overlap
-    static double const pad = 0.05;
+    static double const pad = 0.00001;
     if ((2.*_manifoldHalfLengths.at(2)+_supportHalfThickness)>_deviceHalfSeparation + pad) {
       cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _deviceHalfSeparation " << 
         (2.*_manifoldHalfLengths.at(2)+_supportHalfThickness) << ", " <<_deviceHalfSeparation << endl;
@@ -280,9 +280,6 @@ namespace mu2e {
     // |z| of straw center, relative to the center of the device.
     // Sign is taken care of elsewhere.
 
-    // we should include the layer number here
-    //    double zOffset = _supportHalfThickness + _manifoldHalfLengths.at(2);
-
     double zOffset = _supportHalfThickness + _strawOuterRadius*(1.+ilay*sqrt(3.));
 
     // Rotation that puts wire direction and wire mid-point into their
@@ -300,19 +297,19 @@ namespace mu2e {
     for ( int iman=0; iman<_manifoldsPerEnd; ++iman ){
 
       // Inner edge of the innermost wire connected to this manifold.
+      // this is layer dependent, take care of it at xstraw below
       double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*iman - dx;
 
       // Add all of the straws connected to this manifold.
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
         ++istraw;
 
-        // "second" layer will have fewer straws (for now) check constructTTrackerv3
-        // no, it complicates StrawSD and TTrackerMaker 
-        // if( ilay == _layersPerSector && istr+1 == _strawsPerManifold && ilay%2==1) break;
+        // layers with fewer straws woul complicate StrawSD, constructTTrackerv, TTrackerMaker 
 
         // Construct straw midpoint in its base position in the 
         // coord system of the device envelope.
         // we will shift the "second" layer from the manifold edge
+
         double xstraw = (ilay%2==0) ? xA + (1. + 2.*istr)*_strawOuterRadius :
           xA + 2.*(1+istr)*_strawOuterRadius;
 
@@ -460,8 +457,6 @@ namespace mu2e {
     //    int idev = dev.Id();
     //    cout << "Debugging TTrackerMaker isec,idev: " << isec << ", " << idev << endl;
 
-    //  void  TTrackerMaker::computeSectorBoxParams(vector<double>& boxHalfLengths){
-
     // the box is a trapezoid 
     // shorter x             is the length of the straws in the top/last (shortest) manifold
     // longer  x is longer than the length of the straws in the longest manifold 
@@ -472,10 +467,14 @@ namespace mu2e {
 
     // if there are more than one layer per sector, manifolds have a
     // straw sticking out by a straw radius, but only the last one
-    // extends beyond the entire structure in the z direction
+    // extends beyond the entire structure in the z direction, however
+    // the other straws may affect the slope as well
+
+    // remember that those are "halfLengths", so the sticking out straw
+    // radius has to be divided by 2
 
     double bz = (_layersPerSector==1) ? (_manifoldHalfLengths.at(0)*double(_manifoldsPerEnd)) :
-      (_manifoldHalfLengths.at(0)*double(_manifoldsPerEnd) + _strawOuterRadius);
+      (_manifoldHalfLengths.at(0)*double(_manifoldsPerEnd) + _strawOuterRadius*0.5);
 
     // calculating "longer" x;
     // starting from the tng of the slope 
@@ -487,9 +486,11 @@ namespace mu2e {
     for (size_t i=1; i!=_manifoldsPerEnd; ++i) {
 
       double ttg = (_layersPerSector==1) ? 
+
         ( ( _manifoldHalfLengths.at(0)*double(i) ) / 
           ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i) ) ):
-        ( ( _manifoldHalfLengths.at(0)+_strawOuterRadius)*double(i) / 
+
+        ( ( _manifoldHalfLengths.at(0)+_strawOuterRadius*0.5)*double(i) / 
           ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i) ) );
 
       if (maxtg < ttg ) {
@@ -503,11 +504,10 @@ namespace mu2e {
     // finally x (long, short)
     double bxl = (_layersPerSector==1) ?
       _manifoldHalfLengths.at(0)/tan(slopeAlpha)+_strawHalfLengths.at(0) :
-      (_manifoldHalfLengths.at(0)+_strawOuterRadius)/tan(slopeAlpha)+_strawHalfLengths.at(0);      
+      (_manifoldHalfLengths.at(0)+_strawOuterRadius*0.5)/tan(slopeAlpha)+_strawHalfLengths.at(0);      
     double bxs = bxl - bz/tan(slopeAlpha);
 
     // we need to make sure the trapezoids do not extend beyond the device envelope...
-
 
     // we will check if the dev envelope radius acomodates the new box
     // need to rewrite box/manifold calc, also to be done only? once...
@@ -529,7 +529,7 @@ namespace mu2e {
     // now push it all back into the vector
 
     // Pad the box to be slightly larger than it needs to be
-    const double pad = 0.001; // this needs to be in the geom file...
+    const double pad = 0.00001; // this needs to be in the geom file...
 
     sector._boxHalfLengths.reserve(5);
 
@@ -550,7 +550,9 @@ namespace mu2e {
 
     double zOffset = (_supportHalfThickness + _manifoldHalfLengths.at(2))*_sectorZSide.at(isec);
     
-    double xOffset = _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd;
+    double xOffset = (_layersPerSector==1) ?
+      _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd : 
+      _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd + _strawOuterRadius*0.5;
 
     CLHEP::HepRotationZ RZ(sector._boxRzAngle);
 

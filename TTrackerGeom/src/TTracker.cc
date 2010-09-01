@@ -2,9 +2,9 @@
 // Geometry and identifier info about an TTracker.
 //
 //
-// $Id: TTracker.cc,v 1.2 2010/05/18 21:16:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:51 $
+// $Id: TTracker.cc,v 1.3 2010/09/01 19:55:45 genser Exp $
+// $Author: genser $
+// $Date: 2010/09/01 19:55:45 $
 //
 // Original author Rob Kutschke
 //
@@ -21,18 +21,18 @@ namespace mu2e {
     }
   }
 
-  // Envelope that holds one device:
+  // Envelope that holds one device ("TTrackerDeviceEnvelope")
   TubsParams TTracker::getDeviceEnvelopeParams() const{
 
     // Padding is half the size of the padding for the envelope of the full tracker.
-    double pad = 0.05;
+    static double const pad = 0.00005;
     double halfThick = _supportParams.halfThickness + 2.*_manifoldHalfLengths[2];
     return TubsParams( _envelopeInnerRadius-pad,
                        _supportParams.outerRadius+pad,
                        halfThick+pad);
   }
 
-  // Envelope that holds the full TTracker
+  // Envelope that holds the full TTracker ("TrackerMother")
   TubsParams TTracker::getTrackerEnvelopeParams() const{
 
     // Envelope of a single device.
@@ -44,7 +44,7 @@ namespace mu2e {
     // Remember the thickness of the devices.
     double halfLength = fullLength/2. + deviceEnvelope.zHalfLength;
 
-    double pad = 0.1;
+    static double const pad = 0.0001;
     return TubsParams( deviceEnvelope.innerRadius-pad,
                        deviceEnvelope.outerRadius+pad,
                        halfLength+pad);
