@@ -1,8 +1,8 @@
-# Tell the framework to run the hello world module.
+# Tell the framework to run the HelloWorld module.
 #
-# $Id: hello.py,v 1.1 2010/04/16 15:13:00 kutschke Exp $
+# $Id: hello.py,v 1.2 2010/09/01 18:56:29 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/04/16 15:13:00 $
+# $Date: 2010/09/01 18:56:29 $
 #
 # Original author Rob Kutschke
 #
@@ -17,12 +17,10 @@ process.maxEvents = mu2e.untracked.PSet(
     input = mu2e.untracked.int32(2)
 )
 
-# Configure the modules.
+# Configure two modules.
 process.source = mu2e.Source("EmptySource")
-process.hello  = mu2e.EDAnalyzer("HelloWorld",
-       magicNumber = mu2e.untracked.int32(42)
-)
+process.hello  = mu2e.EDAnalyzer("HelloWorld")
 
-# The the framework which modules to run.
+# Tell the framework which modules to run.
 process.output = mu2e.EndPath(process.hello);
 
