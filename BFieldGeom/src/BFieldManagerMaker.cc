@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.2 2010/06/23 23:18:10 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/06/23 23:18:10 $
+// $Id: BFieldManagerMaker.cc,v 1.3 2010/09/01 20:29:02 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/09/01 20:29:02 $
 //
 
 // Includes from C++
@@ -246,6 +246,7 @@ namespace mu2e {
       // Store the information into the 3d arrays.
       bfmap._grid.set (ix, iy, iz, CLHEP::Hep3Vector(r.x,r.y,r.z));
       bfmap._field.set(ix, iy, iz, CLHEP::Hep3Vector(r.bx,r.by,r.bz));
+      bfmap._isDefined.set(ix, iy, iz, true);
 
     }
 

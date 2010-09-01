@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.3 2010/08/12 16:38:45 genser Exp $
+// $Id: BFMap.hh,v 1.4 2010/09/01 20:29:02 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/12 16:38:45 $
+// $Date: 2010/09/01 20:29:02 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -34,7 +34,8 @@ namespace mu2e {
       _nz(),
       _origin(),
       _grid(),
-      _field(){
+      _field(),
+      _isDefined(){
     }
 
     BFMap( const std::string& key, bool warnIfOutside=false):
@@ -45,7 +46,8 @@ namespace mu2e {
       _nz(),
       _origin(),
       _grid(),
-      _field(){
+      _field(),
+      _isDefined(){
     }
 
     BFMap(std::string filename, 
@@ -61,7 +63,8 @@ namespace mu2e {
       _nz(nz),
       _origin(origin),
       _grid(_nx,_ny,_nz),
-      _field(_nx,_ny,_nz){
+      _field(_nx,_ny,_nz),
+      _isDefined(_nx,_ny,_nz,false){
     };
     
     ~BFMap(){};
@@ -111,6 +114,7 @@ namespace mu2e {
     // Vector arrays for gridpoints and field values
     mu2e::Container3D<CLHEP::Hep3Vector> _grid;
     mu2e::Container3D<CLHEP::Hep3Vector> _field;
+    mu2e::Container3D<bool> _isDefined;
 
     // Functions used internally and by the code that populates the maps.
 

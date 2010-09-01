@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.4 2010/08/12 19:39:58 genser Exp $
+// $Id: BFMap.cc,v 1.5 2010/09/01 20:29:02 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/12 19:39:58 $
+// $Date: 2010/09/01 20:29:02 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -208,6 +208,21 @@ namespace mu2e {
     dflag && cout << "Nearest Point:   " << _grid(ix,iy,iz) << endl
          << "Indices set to:  " << setw(4) << ix << " " << setw(4) << iy << " " << setw(4) << iz << endl
          << "Field:              " << _field(ix,iy,iz) << endl;
+
+
+    // check if the point had a field defined
+    
+    if ( ! _isDefined(ix,iy,iz) ){
+      // if ( _warnIfOutside ){
+      edm::LogWarning("GEOM")
+        << "Point's field is not defined in the map: " << _key << "\n"
+        << "Point in input coordinates: " << testpoint << "\n";
+      //}
+      return CLHEP::Hep3Vector(0.,0.,0.);
+    }
+
+
+
 
     // Get the BField values of the nearest grid neighbors to the point
     static CLHEP::Hep3Vector neighborsBF[3][3][3];
