@@ -3,17 +3,24 @@
 
            Release notes for Mu2e Offline software, v0_2_1
 
-  $Id: v0_2_1.txt,v 1.9 2010/09/01 20:50:16 genser Exp $
+  $Id: v0_2_1.txt,v 1.10 2010/09/02 20:53:49 genser Exp $
   $Author: genser $
-  $Date: 2010/09/01 20:50:16 $
+  $Date: 2010/09/02 20:53:49 $
  
+12) September 02, 2010, genser
+    rewrote construction of the CRVFrontShield using G4SubtractionSolid
+    decoupled CRV parameters from hall parameters, renamed it to fluxcrv, 
+    added more fluxcrv parameters to be able to avoid its overlaps with the TS4
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/test/geom_01.txt
+
 11) September 01, 2010, genser
     specialized Container3D for the bool case
     added a check if the point had a field defined
-     BFieldGeom/inc/Container3D.hh
-     BFieldGeom/src/BFMap.cc
-     BFieldGeom/inc/BFMap.hh
-     BFieldGeom/src/BFieldManagerMaker.cc
+      BFieldGeom/inc/Container3D.hh
+      BFieldGeom/src/BFMap.cc
+      BFieldGeom/inc/BFMap.hh
+      BFieldGeom/src/BFieldManagerMaker.cc
 
 10) September 01, 2010, genser
     Corrected volume overlaps in the Aseet version of the TTracker in the multiple layer case
