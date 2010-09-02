@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
-// $Id: PiCapture.hh,v 1.6 2010/08/22 18:42:13 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/22 18:42:13 $
+// $Id: PiCapture.hh,v 1.7 2010/09/02 18:26:11 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/09/02 18:26:11 $
 //
 // Original author Rob Kutschke, P. Shanahan
 // 
@@ -20,6 +20,7 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandExponential.h"
 
 // Forward declarations outside of namespace mu2e.
 class TH1D;
@@ -55,9 +56,14 @@ namespace mu2e {
     // Random number distributions
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
+    CLHEP::RandExponential _randExponential;
     RandomUnitSphere    _randomUnitSphere;
     CLHEP::RandGeneral  _spectrum;
 
+    //
+    // for exponential foil dropoff
+    int nFoils;
+    double foilMean;
     // Histograms.
     TH1D* _hMultiplicity;
     TH1D* _hEPhot;
@@ -66,6 +72,7 @@ namespace mu2e {
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _ht;
+    TH1D* _hFoilNumber;
 
     // Photon energy spectrum as a continuous function.
     const double energySpectrum(const double e);

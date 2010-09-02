@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.10 2010/08/22 18:42:13 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/22 18:42:13 $
+// $Id: PiCapture.cc,v 1.11 2010/09/02 18:26:02 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2010/09/02 18:26:02 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -61,6 +61,7 @@ namespace mu2e {
     // Random number distributions; getEngine is found in the base class.
     _randFlat( getEngine() ),
     _randPoissonQ( getEngine(), std::abs(_mean) ),
+    _randExponential( getEngine(), 1.),
     _randomUnitSphere( getEngine() ),
     _spectrum( getEngine(), &(binnedEnergySpectrum()[0]),_nbins){
 
@@ -85,14 +86,23 @@ namespace mu2e {
 
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "DIO Multiplicity",    20,     0.,      20. );
 
-      _hEPhot  = tfdir.make<TH1D>( "hEPhot",  "PiCapture E(Photon)",              200,     0.,   200. );
-      _hEPhotZ = tfdir.make<TH1D>( "hEPhotZ", "PiCapture E(Photon)(zoom)",        200,  _elow,   _ehi );
-      _hzPos   = tfdir.make<TH1D>( "hzPos",   "PiCap z Position (Tracker Coord)", 200, -6600., -5600. );
-      _hcz     = tfdir.make<TH1D>( "hcz",     "PiCap cos(theta)",                 100,    -1.,     1. );
-      _hphi    = tfdir.make<TH1D>( "hphi",    "PiCapture azimuth",                100,  -M_PI,   M_PI );
-      _ht      = tfdir.make<TH1D>( "ht",     "PiCapture time ",                  100,      0,  2000. );
+      _hEPhot      = tfdir.make<TH1D>( "hEPhot",  "PiCapture E(Photon)",              200,     0.,   200. );
+      _hEPhotZ     = tfdir.make<TH1D>( "hEPhotZ", "PiCapture E(Photon)(zoom)",        200,  _elow,   _ehi );
+      _hzPos       = tfdir.make<TH1D>( "hzPos",   "PiCap z Position (Tracker Coord)", 200, -6600., -5600. );
+      _hcz         = tfdir.make<TH1D>( "hcz",     "PiCap cos(theta)",                 100,    -1.,     1. );
+      _hphi        = tfdir.make<TH1D>( "hphi",    "PiCapture azimuth",                100,  -M_PI,   M_PI );
+      _ht          = tfdir.make<TH1D>( "ht",     "PiCapture time ",                  100,      0,  2000. );
+      _hFoilNumber = tfdir.make<TH1D>( "hFoilNumber", "Foil Number", 20,0.,20.);
 
     }
+     //
+      // set up exponential RNG for foils.  this code is a complete hack which is why I'm not dignifying it
+    // by putting something in the config file.
+
+    foilMean = 1./0.693;
+
+    //
+    // 24.5 is from Rick Coleman telling me the stopped pi's fall a factor of two over the 17 foils  
 
   } // end PiCapture::PiCapture
 
@@ -109,12 +119,19 @@ namespace mu2e {
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
-    int nFoils = target->nFoils();
+    nFoils = target->nFoils();
 
     for ( long i=0; i<n; ++i ){
 
-      // Pick a foil.
-      int ifoil = static_cast<int>(nFoils*_randFlat.fire());
+      // Pick a foil.  Exponentials can go past the number of foils, so have to do a trick (and recall foils numbered
+      // 0--16 so do while <17
+      //int ifoil = static_cast<int>(nFoils*_randFlat.fire());
+      uint32_t ifoil;
+      do{
+        ifoil = static_cast<int>(nFoils*_randExponential.fire());
+      }while(ifoil > nFoils-1);
+      //cout << "ifoil = " << ifoil << endl;
+      _hFoilNumber->Fill(static_cast<double>(ifoil));
       TargetFoil const& foil = target->foil(ifoil);
 
       // Foil properties.
