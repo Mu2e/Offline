@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.46 2010/09/01 20:37:04 genser Exp $
+// $Id: geom_01.txt,v 1.47 2010/09/02 20:50:31 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/01 20:37:04 $
+// $Date: 2010/09/02 20:50:31 $
 //
 // Original author Rob Kutschke
 //
@@ -331,11 +331,14 @@ bool   calorimeter.visible        = true;
 bool   calorimeter.solid          = true;
 
 // Dimensions of CRV steel, assuming constant thickness all around, and square shape.
-double hall.HallSteelHalfThick    = 250.;
-double hall.HallSteelHalfLengthXY = 2048.;
-double hall.HallSteelHalfLengthZ  = 7250;
-string hall.HallSteelMaterialName = "G4_Fe";
-
+double fluxcrv.HallSteelHalfThick    = 250.;
+double fluxcrv.HallSteelHalfLengthXY = 2048.;
+double fluxcrv.HallSteelHalfLengthZ  = 7150.;
+string fluxcrv.HallSteelMaterialName = "G4_Fe";
+double fluxcrv.HallSteelHoleRadius   = 850;
+vector<double> fluxcrv.HallSteelOffset  = {0.,0., -80.}; // mm
+bool   fluxcrv.visible          = true;
+bool   fluxcrv.solid            = false;
 
 // Magnetic field
 string bfield.dsFile = "/grid/fermiapp/mu2e/mu2e/BFieldMaps/MECO/dsmap_unfmt_rad100.dat";

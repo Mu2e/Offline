@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.50 2010/08/31 16:59:26 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.51 2010/09/02 20:50:31 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/08/31 16:59:26 $
+// $Date: 2010/09/02 20:50:31 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,7 @@
 
 // C++ includes
 #include <iostream>
+#include <vector>
 
 // Framework includes
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -74,6 +75,7 @@
 #include "G4Cons.hh"
 #include "G4ExtrudedSolid.hh"
 #include "G4Torus.hh"
+#include "G4SubtractionSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4TwoVector.hh"
 #include "G4ThreeVector.hh"
@@ -858,7 +860,7 @@ namespace mu2e {
                                         ts4VacPosition-_hallOriginInMu2e,
                                         parent,
                                         0,
-                                        toyTSVisible,
+                                        true,
                                         G4Color::Yellow(),
                                         toyTSSolid
                                         );
@@ -1315,10 +1317,10 @@ namespace mu2e {
     MaterialFinder materialFinder(*_config);
 
     // Extract information from the config file
-    double HallSteelHalfThick   = _config->getDouble("hall.HallSteelHalfThick");
-    double HallSteelHalfLenXY = _config->getDouble("hall.HallSteelHalfLengthXY");
-    double HallSteelHalfLenZ = _config->getDouble("hall.HallSteelHalfLengthZ");
-    G4Material* HallSteelShieldMaterial = materialFinder.get("hall.HallSteelMaterialName");
+    double HallSteelHalfThick   = _config->getDouble("fluxcrv.HallSteelHalfThick");
+    double HallSteelHalfLenXY = _config->getDouble("fluxcrv.HallSteelHalfLengthXY");
+    double HallSteelHalfLenZ = _config->getDouble("fluxcrv.HallSteelHalfLengthZ");
+    G4Material* HallSteelShieldMaterial = materialFinder.get("fluxcrv.HallSteelMaterialName");
 
     GeomHandle<Beamline> beamg;
     double rCryo = beamg->getTS().outerRadius();
@@ -1326,17 +1328,15 @@ namespace mu2e {
     G4Material* FrontHoleMaterial = materialFinder.get("toyDS.insideMaterialName");
 
     // Compute dimensions of 5 sides in Mu2e coordinates
-    double HallSteelTopHalfX = HallSteelHalfLenXY + HallSteelHalfThick;
-    double HallSteelTopHalfY = HallSteelHalfThick;
-    double HallSteelTopHalfZ = HallSteelHalfLenZ;
-    double HallSteelSideHalfX = HallSteelHalfThick;
-    double HallSteelSideHalfY = HallSteelHalfLenXY - HallSteelHalfThick;
-    double HallSteelSideHalfZ = HallSteelHalfLenZ; 
+    double HallSteelTopHalfX   = HallSteelHalfLenXY + HallSteelHalfThick;
+    double HallSteelTopHalfY   = HallSteelHalfThick;
+    double HallSteelTopHalfZ   = HallSteelHalfLenZ;
+    double HallSteelSideHalfX  = HallSteelHalfThick;
+    double HallSteelSideHalfY  = HallSteelHalfLenXY - HallSteelHalfThick;
+    double HallSteelSideHalfZ  = HallSteelHalfLenZ; 
     double HallSteelFrontHalfX = HallSteelHalfLenXY - HallSteelHalfThick;
     double HallSteelFrontHalfY = HallSteelHalfLenXY - HallSteelHalfThick;
     double HallSteelFrontHalfZ = HallSteelHalfThick;
-
-    // Store each in a std vector
 
     double HallSteelTopDims[3] ={
       HallSteelTopHalfX,
@@ -1356,7 +1356,7 @@ namespace mu2e {
       HallSteelFrontHalfZ                        
     };
     TubsParams FrontHoleDims(0.,
-                             rCryo,
+                             _config->getDouble("fluxcrv.HallSteelHoleRadius"),
                              HallSteelHalfThick
                              );
 
@@ -1368,19 +1368,26 @@ namespace mu2e {
     //G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., -dsCoilZ0);
     G4ThreeVector detSolCoilPosition(+solenoidOffset, 0., -dsCoilZ0);
 
-    _hallOriginInMu2e = parent.centerInWorld - _mu2eOrigin + detSolCoilPosition;
+    std::vector<double> HallSteelOffsetSTDV;
+    _config->getVectorDouble("fluxcrv.HallSteelOffset", HallSteelOffsetSTDV, 3);
+    G4ThreeVector HallSteelOffset(HallSteelOffsetSTDV[0],
+                                  HallSteelOffsetSTDV[1],
+                                  HallSteelOffsetSTDV[2]);
 
-    G4ThreeVector TopShield(0., HallSteelSideHalfY + HallSteelHalfThick, 0.);
-    G4ThreeVector BottomShield(0., -(HallSteelSideHalfY + HallSteelHalfThick), 0.);
-    G4ThreeVector LeftShield(HallSteelSideHalfY + HallSteelHalfThick,0., 0.);
-    G4ThreeVector RightShield(-(HallSteelSideHalfY + HallSteelHalfThick),0., 0.);
-    G4ThreeVector BackShield(0., 0., HallSteelSideHalfZ - HallSteelHalfThick);
-    G4ThreeVector FrontShield(0., 0., -(HallSteelSideHalfZ-HallSteelHalfThick));
+    _hallOriginInMu2e = parent.centerInWorld - _mu2eOrigin + detSolCoilPosition + HallSteelOffset;
+
+    G4ThreeVector TopShield   (0.,      HallSteelSideHalfY + HallSteelHalfThick, 0.);
+    G4ThreeVector BottomShield(0.,    -(HallSteelSideHalfY + HallSteelHalfThick), 0.);
+    G4ThreeVector LeftShield  (         HallSteelSideHalfY + HallSteelHalfThick,0., 0.);
+    G4ThreeVector RightShield (       -(HallSteelSideHalfY + HallSteelHalfThick),0., 0.);
+    G4ThreeVector BackShield  (0., 0.,  HallSteelSideHalfZ - HallSteelHalfThick);
+    G4ThreeVector FrontShield (0., 0.,-(HallSteelSideHalfZ - HallSteelHalfThick));
 
     //Hole in front shield for TS is centered in the shield
     G4ThreeVector FrontHole(0.,0.,0.);
 
-    bool hallVisible = _config->getBool("hall.visible",true);
+    bool hallSteelVisible = _config->getBool("fluxcrv.visible",true);
+    bool hallSteelSolid   = _config->getBool("fluxcrv.solid",false);
 
     // Place Boxes
 
@@ -1391,9 +1398,9 @@ namespace mu2e {
                                   TopShield -_hallOriginInMu2e,
                                   parent,
                                   0,
-                                  hallVisible,
-                                  G4Colour::Yellow()
-                                  );
+                                  hallSteelVisible,
+                                  G4Colour::Green(),
+                                  hallSteelSolid);
 
     VolumeInfo BottomInfo = nestBox ("HallSteelBottomShield",
                                      HallSteelTopDims, 
@@ -1402,9 +1409,9 @@ namespace mu2e {
                                      BottomShield -_hallOriginInMu2e,
                                      parent,
                                      0, 
-                                     hallVisible, 
-                                     G4Colour::Yellow() 
-                                     );
+                                     hallSteelVisible,
+                                     G4Colour::Green(), 
+                                     hallSteelSolid);
 
     VolumeInfo LeftInfo = nestBox ("HallSteelLeftShield",
                                    HallSteelSideDims,
@@ -1413,9 +1420,9 @@ namespace mu2e {
                                    LeftShield -_hallOriginInMu2e,
                                    parent,
                                    0, 
-                                   hallVisible,
-                                   G4Colour::Yellow()
-                                   ); 
+                                   hallSteelVisible,
+                                   G4Colour::Green(),
+                                   hallSteelSolid); 
 
     VolumeInfo RightInfo = nestBox ("HallSteelRightShield",
                                     HallSteelSideDims,
@@ -1424,9 +1431,9 @@ namespace mu2e {
                                     RightShield -_hallOriginInMu2e,
                                     parent,
                                     0, 
-                                    hallVisible,
-                                    G4Colour::Yellow()
-                                    ); 
+                                    hallSteelVisible,
+                                    G4Colour::Green(),
+                                    hallSteelSolid); 
 
     VolumeInfo BackInfo = nestBox ("HallSteelBackShield",
                                    HallSteelFrontDims,
@@ -1435,33 +1442,54 @@ namespace mu2e {
                                    BackShield -_hallOriginInMu2e,
                                    parent,
                                    0, 
-                                   hallVisible,
-                                   G4Colour::Yellow()
-                                   ); 
+                                   hallSteelVisible,
+                                   G4Colour::Green(),
+                                   hallSteelSolid); 
 
-    // the code below should use volume subtraction to avoid overlaps, comment out for now
+    // constructing "hollow" front shield
 
-//     VolumeInfo FrontInfo = nestBox ("CRVFrontShield", 
-//                                     HallSteelFrontDims, 
-//                                     HallSteelShieldMaterial, 
-//                                     0,  
-//                                     FrontShield -_hallOriginInMu2e, 
-//                                     parent, 
-//                                     0,  
-//                                     hallVisible, 
-//                                     G4Colour::Yellow() 
-//                                     ); 
+    G4Box* CRVBox = new G4Box("CRVFrontShieldBox", 
+                              HallSteelFrontDims[0], 
+                              HallSteelFrontDims[1], 
+                              HallSteelFrontDims[2]);
+
+    G4Tubs* HallSteelFrontHoleTubs = new G4Tubs("HallSteelFrontHoleTubs", 
+                                                FrontHoleDims.innerRadius,
+                                                FrontHoleDims.outerRadius,
+                                                FrontHoleDims.zHalfLength,
+                                                FrontHoleDims.phi0, 
+                                                FrontHoleDims.phiMax);
+
+    string const FrontShieldName = "CRVFrontShield";
+    VolumeInfo FrontShieldInfo;
+
+    FrontShieldInfo.solid = 
+      new G4SubtractionSolid(FrontShieldName, CRVBox, HallSteelFrontHoleTubs);
+
+    FrontShieldInfo.logical = new G4LogicalVolume( FrontShieldInfo.solid, 
+                                                   HallSteelShieldMaterial, 
+                                                   FrontShieldName); 
+
+    FrontShieldInfo.physical = new G4PVPlacement( 0,
+                                                  FrontShield -_hallOriginInMu2e, 
+                                                  FrontShieldInfo.logical,
+                                                  FrontShieldName,
+                                                  parent.logical,
+                                                  0,
+                                                  0,
+                                                  _config->getBool("g4.doSurfaceCheck",false));
     
-//     VolumeInfo FrontHoleInfo = nestTubs2( "HallSteelFrontHole",
-//                                           FrontHoleDims,
-//                                           FrontHoleMaterial,
-//                                           0,
-//                                           FrontHole,
-//                                           FrontInfo,
-//                                           0,
-//                                           hallVisible,
-//                                           G4Colour::Red()
-//                                           );
+    if ( hallSteelVisible ){
+      // We need to manage the lifetime of the G4VisAttributes object.
+      _visAttributes.push_back(G4VisAttributes(true, G4Colour::Green()));
+      G4VisAttributes& visAtt = _visAttributes.back();
+      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+      visAtt.SetForceSolid(hallSteelSolid);
+      FrontShieldInfo.logical->SetVisAttributes(&visAtt);
+    } 
+    else{
+      FrontShieldInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    }
 
   } // end Mu2eWorld::constructSteel
 
