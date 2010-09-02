@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.cc,v 1.2 2010/08/23 17:42:24 rhbob Exp $
+// $Id: RPC_plugin.cc,v 1.3 2010/09/02 18:59:50 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/08/23 17:42:24 $
+// $Date: 2010/09/02 18:59:50 $
 //
 // Original author R. Bernstein
 //
@@ -99,7 +99,7 @@ namespace mu2e {
     TH1D* _piCaptureConvertedPositronCosTheta;
     TH1D* _piCaptureConvertedPositronCosThetaSignal;
 
-    TH1D* _fractionalEnergyOfElectron;
+    TH1D* _conversionAsymmetry;
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
@@ -133,11 +133,11 @@ namespace mu2e {
 
 
   void RPC::beginRun(edm::Run const& run,
-			     edm::EventSetup const& eSetup ){
+		     edm::EventSetup const& eSetup ){
   }
 
   void RPC::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
-					 edm::EventSetup const&){
+				 edm::EventSetup const&){
   }
 
 
@@ -149,7 +149,7 @@ namespace mu2e {
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
-    //    cout << "ncalls = " << ncalls << endl; assert(2==1);
+    cout << "ncalls = " << ncalls << endl; //assert(2==1);
 
 
     // Book histogram on the first call regardless
@@ -179,6 +179,10 @@ namespace mu2e {
       haveSimPart = !(simParticles->empty() || volumes->empty());
     }
 
+    double photonEnergy = 0.;
+    double electronEnergy = 0.;
+    double positronEnergy = 0.;
+
     if (haveSimPart){
       for (uint32_t ithPart = 0; ithPart < simParticles->size(); ++ithPart){
         SimParticle const& sim = simParticles->at(ithPart);
@@ -190,11 +194,14 @@ namespace mu2e {
 	    //
 	    // this can't happen if we're studying RPCs so throw and die
 	    throw cms::Exception("GEOM")
-	      << "RPC with a parent not a photon, but parent PDG code is"
+	      << "RPC with a parent not a photon, but parent PDG code is "
 	      << sim.pdgId();
-	  }
+	  } else
+	    {	CLHEP::HepLorentzVector photonMomentum = sim.startMomentum();
+	      photonEnergy = photonMomentum.e();
+	    }
+
 	}
-	double photonEnergy = sim.startMomentum().e();
 	//	cout << " volumename = " << startVol.name() << endl;
 	//
 	// check three things:  (1) the mother is the original photon, (2) you're an e+ or e-, and (3) the photon converts in the foil
@@ -202,22 +209,19 @@ namespace mu2e {
 	  //	if ( sim.parentId() == 0 && startVol.name() == "ToyDSCoil" ){
 	  if (sim.pdgId() == PDGCode::e_minus) {
 	    CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
-	    //	  cout << "just a test: " << electronMomentum.invariantMass() << endl;
+	    electronEnergy = electronMomentum.e();
 	    double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
 	    _piCaptureConvertedElectronMomentum->Fill(momentum);
 	    _piCaptureConvertedElectronMomentumSignal->Fill(momentum);
 	    _piCaptureConvertedElectronCosTheta->Fill( electronMomentum.cosTheta() );
 	    if (momentum > elow && momentum < ehigh) _piCaptureConvertedElectronCosThetaSignal->Fill(electronMomentum.cosTheta() );
 
-	    // 
-	    // check geant4's photon conversion
-	    _fractionalEnergyOfElectron->Fill( electronMomentum.e()/photonEnergy);
 
 	  
 	  }
 	  if (sim.pdgId() == PDGCode::e_plus) {
 	    CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
-	    //	  cout << "just a test: " << electronMomentum.invariantMass() << endl;
+	    positronEnergy = electronMomentum.e();
 	    double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
 	    _piCaptureConvertedPositronMomentum->Fill(momentum);
 	    _piCaptureConvertedPositronMomentumSignal->Fill(momentum);
@@ -225,6 +229,11 @@ namespace mu2e {
 	    if (momentum > elow && momentum < ehigh) _piCaptureConvertedPositronCosThetaSignal->Fill(electronMomentum.cosTheta() );
 	  }
 	}
+      }
+      // 
+      // check geant4's photon conversion.  if there was no conversion you won't see anything so check
+      if (simParticles->size() >= 3 && electronEnergy > 0. && positronEnergy > 0. && photonEnergy > 0.){
+	_conversionAsymmetry->Fill( abs(electronEnergy - positronEnergy)/ (electronEnergy + positronEnergy) );
       }
     }
   }
@@ -258,8 +267,8 @@ namespace mu2e {
       tfs->make<TH1D>( "piCaptureConvertedPositronCosThetaSignal",
 		       "Pi Capture Converted Positron CosThetaSignal", 200, -1., 1.);
 
-    _fractionalEnergyOfElectron = 
-      tfs->make<TH1D>("fractionalEnergyOfElectron","electron energy/photon energy (conversion check)", 100,0.,1.);
+    _conversionAsymmetry = 
+      tfs->make<TH1D>("conversionAsymmetry","electron-positron/ephoton", 100,0.,1.);
 
 
   } //bookEventHistos
