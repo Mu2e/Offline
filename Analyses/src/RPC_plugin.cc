@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.cc,v 1.3 2010/09/02 18:59:50 rhbob Exp $
+// $Id: RPC_plugin.cc,v 1.4 2010/09/02 20:08:41 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/09/02 18:59:50 $
+// $Date: 2010/09/02 20:08:41 $
 //
 // Original author R. Bernstein
 //
@@ -149,7 +149,7 @@ namespace mu2e {
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
-    cout << "ncalls = " << ncalls << endl; //assert(2==1);
+    //cout << "ncalls = " << ncalls << endl; //assert(2==1);
 
 
     // Book histogram on the first call regardless
