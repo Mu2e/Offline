@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.10 2010/09/01 19:55:45 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.11 2010/09/03 21:20:41 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/01 19:55:45 $
+// $Date: 2010/09/03 21:20:41 $
 //
 // Original author Rob Kutschke
 //
@@ -507,19 +507,42 @@ namespace mu2e {
       (_manifoldHalfLengths.at(0)+_strawOuterRadius*0.5)/tan(slopeAlpha)+_strawHalfLengths.at(0);      
     double bxs = bxl - bz/tan(slopeAlpha);
 
+    // Pad the trapezoid to be slightly larger than it needs to be
+    const double pad = 0.00001; // this needs to be in the geom file...
+
     // we need to make sure the trapezoids do not extend beyond the device envelope...
 
-    // we will check if the dev envelope radius acomodates the new box
+    // we will check if the dev envelope radius acomodates the newly created box
     // need to rewrite box/manifold calc, also to be done only? once...
 
-//     cout << "Debugging _supportParams.outerRadius old:   " << _tt->_supportParams.outerRadius << endl;
-//     _tt->_supportParams.outerRadiusFudged = sqrt(square(_envelopeInnerRadius + bz)+square(bxs));
-//     cout << "Debugging _supportParams.outerRadius new:   " << _tt->_supportParams.outerRadiusFudged << endl;
-//     _tt->_supportParams.outerRadiusFudged = 
-//       max ( _tt->_supportParams.outerRadiusFudged,
-//             sqrt(square(_envelopeInnerRadius)+ square(bxl)) );
-//     cout << "Debugging _supportParams.outerRadius newer: " << _tt->_supportParams.outerRadiusFudged << endl;
-    
+    double outerSupportRadiusRequireds = (_layersPerSector==1) ? 
+      sqrt(square(_envelopeInnerRadius + 2.0*(bz+pad))+square(bxs+pad)) :
+      sqrt(square(_envelopeInnerRadius + 2.0*(bz+pad)+_strawOuterRadius*0.5)+square(bxs+pad)) ;
+    double outerSupportRadiusRequiredl = (_layersPerSector==1) ? 
+      max ( outerSupportRadiusRequireds,
+            sqrt(square(_envelopeInnerRadius-pad)+ square(bxl+pad)) ) :
+      max ( outerSupportRadiusRequireds,
+            sqrt(square(_envelopeInnerRadius-pad+_strawOuterRadius*0.5)+ square(bxl+pad)) );
+
+//     if (true) {
+//       cout << "Debugging _strawHalfLengths: ";
+//       for (size_t i=0; i!=_manifoldsPerEnd; ++i) {        
+//         cout << _strawHalfLengths.at(i)  << ", ";
+//       }
+//       cout << endl;
+//       cout << "Debugging _supportParams.innerRadius   :   " << _tt->_supportParams.innerRadius << endl;
+//       cout << "Debugging _supportParams.outerRadius   :   " << _tt->_supportParams.outerRadius << endl;
+//       cout << "Debugging _supportParams.outerRadius rs:   " << outerSupportRadiusRequireds << endl;
+//       cout << "Debugging _supportParams.outerRadius rl:   " << outerSupportRadiusRequiredl << endl;
+//     }
+   
+    if (_tt->_supportParams.outerRadius < outerSupportRadiusRequiredl) {
+      cout << " _supportParams.outerRadius         :   " << _tt->_supportParams.outerRadius << endl;
+      cout << " _supportParams.outerRadius required:   " << outerSupportRadiusRequiredl << endl;
+      throw cms::Exception("GEOM")
+        << "outerSupportRadius is to small given other paramters \n";
+    }
+
     // y
     // double by = _layersPerSector*_tt->_strawDetails.at(0).outerRadius();
     // manifold better be thicker than the straws:
@@ -527,9 +550,6 @@ namespace mu2e {
     double by = _manifoldHalfLengths.at(2);
 
     // now push it all back into the vector
-
-    // Pad the box to be slightly larger than it needs to be
-    const double pad = 0.00001; // this needs to be in the geom file...
 
     sector._boxHalfLengths.reserve(5);
 
