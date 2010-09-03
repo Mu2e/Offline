@@ -3,10 +3,15 @@
 
            Release notes for Mu2e Offline software, v0_2_1
 
-  $Id: v0_2_1.txt,v 1.10 2010/09/02 20:53:49 genser Exp $
+  $Id: v0_2_1.txt,v 1.11 2010/09/03 21:23:18 genser Exp $
   $Author: genser $
-  $Date: 2010/09/02 20:53:49 $
+  $Date: 2010/09/03 21:23:18 $
  
+13) September 03, 2010, genser
+    Added a check requiring the sector container to fit inside the
+    device container, effectively connecting the three radii involved
+      TTrackerGeom/src/TTrackerMaker.cc
+
 12) September 02, 2010, genser
     rewrote construction of the CRVFrontShield using G4SubtractionSolid
     decoupled CRV parameters from hall parameters, renamed it to fluxcrv, 
