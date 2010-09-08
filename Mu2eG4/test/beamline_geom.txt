@@ -1,9 +1,9 @@
 //
 // Variation on the geometry for debugging the beamline.
 //
-// $Id: beamline_geom.txt,v 1.3 2010/09/08 00:07:27 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/08 00:07:27 $
+// $Id: beamline_geom.txt,v 1.4 2010/09/08 20:13:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/08 20:13:23 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,12 @@ bool hasVirtualDetector = true;
 //vector<int> g4.steppingActionTrackList = { 156, 157, 158 };
 //vector<int> g4.strawSDEventList        = { 0, 1, 2, 3 };
 //vector<int> g4.trackingActionEventList = { 0, 1, 2, 3 };
+
+// Kill uninteresting particles in Stepping Action.
+bool   g4SteppingAction.killLowEKine  = true;
+bool   g4SteppingAction.killInHallAir = true;
+bool   g4SteppingAction.killerVerbose = true;
+double g4SteppingAction.eKineMin      = 1.0;    // Kinetic energy in MeV
 
 //
 // This tells emacs to view this file in c++ mode.
