@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.47 2010/09/02 20:50:31 genser Exp $
-// $Author: genser $
-// $Date: 2010/09/02 20:50:31 $
+// $Id: geom_01.txt,v 1.48 2010/09/08 20:13:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/08 20:13:05 $
 //
 // Original author Rob Kutschke
 //
@@ -29,6 +29,12 @@ bool hasVirtualDetector = false;
 //vector<int> g4.steppingActionTrackList = { 156, 157, 158 };
 //vector<int> g4.strawSDEventList        = { 0, 1, 2, 3 };
 //vector<int> g4.trackingActionEventList = { 0, 1, 2, 3, 4, 5};
+
+// Enable/disable code that kills uninteresting tracks in SteppingAction or TrackingAction.
+bool   g4SteppingAction.killLowEKine  = false;
+bool   g4SteppingAction.killInHallAir = false;
+bool   g4SteppingAction.killerVerbose = false;
+double g4SteppingAction.eKineMin      = 0.1;    // Kinetic energy in MeV
 
 //form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
 int detSolFieldForm = 2;
