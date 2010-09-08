@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.24 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/08/31 00:24:51 $
+// $Id: G4_plugin.cc,v 1.25 2010/09/08 20:10:15 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/08 20:10:15 $
 //
 // Original author Rob Kutschke
 //
@@ -259,6 +259,7 @@ namespace mu2e {
     // Some of the user actions have beginRun methods.
     _genAction->setWorld(world);
     _trackingAction->beginRun( _physVolHelper, _mu2eOrigin );
+    stepping_action->beginRun();
 
   }
 
