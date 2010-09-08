@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.3 2010/08/30 22:21:13 kutschke Exp $
+// $Id: SteppingAction.hh,v 1.4 2010/09/08 20:11:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/30 22:21:13 $
+// $Date: 2010/09/08 20:11:07 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,9 @@
 #include "G4UserSteppingAction.hh"
 #include "G4ThreeVector.hh"
 
+// Forward declarations outside of mu2e namespace.
+class G4VPhysicalVolume;
+class G4Track;
 
 namespace mu2e {
 
@@ -31,6 +34,9 @@ namespace mu2e {
     
     void UserSteppingAction(const G4Step*);
 
+    // Called by G4_plugin.
+    void beginRun();
+    
     G4ThreeVector const& lastPosition() const { return _lastPosition; }
     G4ThreeVector const& lastMomentum() const { return _lastMomentum; }
 
@@ -39,14 +45,34 @@ namespace mu2e {
     }
   
   private:
-    G4ThreeVector _lastPosition;
-    G4ThreeVector _lastMomentum;
-    
-    G4double _zref;
-    
-    // Lists of events and tradcks for which to enable debug printout.
+
+    // Start: information from the run time configuration.
+
+    // Which killers will be enabled?
+    bool _doKillLowEKine;
+    bool _doKillInHallAir;
+    bool _killerVerbose;
+
+    // Minimum energy cut.
+    double _eKineMin;
+
+    // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugEventList;
     EventNumberList _debugTrackList;
+
+    // End: information from the run time configuration.
+
+    // Address of the physical volume object for the hall air.
+    G4VPhysicalVolume* _hallAirPhysVol;
+
+    // Used in the turn around code.
+    G4ThreeVector _lastPosition;
+    G4ThreeVector _lastMomentum;
+    G4double      _zref;
+
+    // Two functions to decide whether or not to kill tracks.
+    bool killLowEKine ( const G4Track* );
+    bool killInHallAir( const G4Track* );
 
   };
   

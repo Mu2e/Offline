@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.7 2010/08/30 22:21:13 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.8 2010/09/08 20:11:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/30 22:21:13 $
+// $Date: 2010/09/08 20:11:07 $
 //
 // Original author Rob Kutschke
 //
@@ -15,25 +15,42 @@
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 
 // G4 includes
+#include "G4Event.hh"
+#include "G4EventManager.hh"
+#include "G4PhysicalVolumeStore.hh"
 #include "G4RunManager.hh"
 #include "G4SteppingManager.hh"
-#include "G4EventManager.hh"
-#include "G4Event.hh"
 #include "G4String.hh"
-
 
 using namespace std;
 
 namespace mu2e {
 
   SteppingAction::SteppingAction( const SimpleConfig& config ):
+
+    // Parameters from the run time configuration.
+    _doKillLowEKine(false),
+    _doKillInHallAir(false),
+    _killerVerbose(false),
+    _eKineMin(0.1),
+    _debugEventList(),
+    _debugTrackList(),
+
+    // Other parameters.
+    _hallAirPhysVol(0),
     _lastPosition(),
     _lastMomentum(),
-    _zref(),
-    _debugEventList(),
-    _debugTrackList(){ 
+    _zref(0.){ 
+
+    _doKillLowEKine  = config.getBool("g4SteppingAction.killLowEKine",  _doKillLowEKine);
+    _doKillInHallAir = config.getBool("g4SteppingAction.killInHallAir", _doKillInHallAir);
+    _killerVerbose   = config.getBool("g4SteppingAction.killerVerbose", _killerVerbose);
+
+    _eKineMin        = config.getDouble("g4SteppingAction.eKineMin", _eKineMin );
 
     // Get list of events for which to make debug printout.
     string key("g4.steppingActionEventList");
@@ -52,31 +69,45 @@ namespace mu2e {
       _debugTrackList.add(list);
     }
 
+
   }
 
   // A helper function to manage the printout.
   void printit( G4String const& s, 
                 G4int id,
                 G4ThreeVector const& pos,
-                G4ThreeVector const& mom){
+                G4ThreeVector const& mom,
+                double localTime,
+                double globalTime ){
 
     // It is easier to line up printout in columns with printf than with cout.
-    printf ( "%-8s %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f\n",
+    printf ( "%-8s %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %13.4f %13.4f\n",
              s.data(), id,
              pos.x(), pos.y(), pos.z(), 
              mom.x(), mom.y(), mom.z(),
-             mom.mag());
+             mom.mag(),
+             localTime, globalTime);
   }
 
+  void SteppingAction::beginRun(){
+    _hallAirPhysVol  = getPhysicalVolumeOrThrow("HallAir");
+  }
 
   void SteppingAction::UserSteppingAction(const G4Step* step){  
+
+    G4Track* track = step->GetTrack();
+
+    if ( _doKillInHallAir &&  killInHallAir(track) ){
+      track->SetTrackStatus(fStopAndKill);
+    } else if ( _doKillLowEKine && killLowEKine(track) ){
+      track->SetTrackStatus(fStopAndKill);
+    }
     
     // Do we want to do make debug printout for this event?
     if ( !_debugEventList.inList() ) return;
 
     // Get information about this track.
-    G4Track* track = step->GetTrack();
-    G4int id       = track->GetTrackID();
+    G4int id = track->GetTrackID();
 
     // If no tracks are listed, then printout for all tracks.
     // If some tracks are listed, then printout only for those tracks.
@@ -125,25 +156,28 @@ namespace mu2e {
       _lastMomentum = prept->GetMomentum();
     }
 
-    //  if ( save   ) G4cout << "Save point: " << G4endl;
-    //if ( report ) G4cout << "Report point: " << G4endl;
-
     // Status report.
     printit ( "Pre: ", id, 
               prept->GetPosition(),
-              prept->GetMomentum()
+              prept->GetMomentum(),
+              track->GetLocalTime(),
+              track->GetGlobalTime()
               );
 
 
     printit ( "Step:", id, 
               track->GetPosition(),
-              track->GetMomentum()
+              track->GetMomentum(),
+              track->GetLocalTime(),
+              track->GetGlobalTime()
               );
 
 
     printit ( "Post: ", id, 
               postpt->GetPosition(),
-              postpt->GetMomentum()
+              postpt->GetMomentum(),
+              track->GetLocalTime(),
+              track->GetGlobalTime()
               );
     fflush(stdout);
 
@@ -153,6 +187,33 @@ namespace mu2e {
     printf ( "\n");
     fflush(stdout);
 
+  } // end UserSteppingAction
+
+
+  // Kill tracks that drop below the kinetic energy cut.
+  // It might be smarter to program G4 to do this itself?
+  bool SteppingAction::killLowEKine ( const G4Track* trk ){
+    if ( trk->GetKineticEnergy() < _eKineMin ){
+      if ( _killerVerbose ){
+        cout << "Killed track: low energy." << endl;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  // Kill tracks that enter the hall air.
+  bool SteppingAction::killInHallAir( const G4Track* trk ){
+
+    // If we are not in the hall air, keep the track.
+    if ( trk->GetVolume() != _hallAirPhysVol ) { 
+      return false; 
+    }
+
+    if ( _killerVerbose ){
+      cout << "Killed track: in Hall Air." << endl;
+    }
+    return true;
   }
 
 } // end namespace mu2e
