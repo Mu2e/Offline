@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.4 2010/08/30 22:23:16 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.5 2010/09/08 20:09:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/30 22:23:16 $
+// $Date: 2010/09/08 20:09:23 $
 //
 // Original author Rob Kutschke
 //
@@ -186,6 +186,7 @@ namespace mu2e {
          << setw(8) << partName             << " | "
          << trk->GetPosition()-_mu2eOrigin  << " "
          << trk->GetMomentum()              << " "
+         << trk->GetKineticEnergy()         << " "
          << volName                         << " ";
 
     if ( isEnd ){
