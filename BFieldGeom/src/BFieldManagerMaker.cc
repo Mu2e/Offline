@@ -1,18 +1,22 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.3 2010/09/01 20:29:02 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/09/01 20:29:02 $
+// $Id: BFieldManagerMaker.cc,v 1.4 2010/09/08 00:07:27 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/08 00:07:27 $
 //
 
 // Includes from C++
 #include <iostream>
+#include <fstream>
 #include <set>
 
 // Includes from C ( needed for block IO ).
 #include <fcntl.h>
 #include <sys/stat.h>
+
+// Includes from boost
+#include <boost/regex.hpp>
 
 // Framework includes
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -38,10 +42,44 @@ namespace mu2e {
     // Instantiate an empty BFieldManager.
     _bfmgr = auto_ptr<BFieldManager>(new BFieldManager() );
 
-    // Add the DS, TS and PS field maps.
-    loadGMC( "DS", "bfield.dsFile", "bfield.dsDimensions" );
-    loadGMC( "TS", "bfield.tsFile", "bfield.tsDimensions" );
-    loadGMC( "PS", "bfield.psFile", "bfield.psDimensions" );
+    string format = _config.getString("bfield.format","GMC");
+
+    if( format=="GMC" ) {
+
+      // Add the DS, TS and PS field maps.
+      loadGMC( "DS", "bfield.dsFile", "bfield.dsDimensions" );
+      loadGMC( "TS", "bfield.tsFile", "bfield.tsDimensions" );
+      loadGMC( "PS", "bfield.psFile", "bfield.psDimensions" );
+      
+      //throw cms::Exception("GEOM") << "Temporal end." << "\n";
+
+    } else if( format=="G4BL" ) {
+
+      // These maps require torus radius of 2929 mm
+      std::string torusName("toyTS.rTorus");
+      const double torusRadius = 2929.0; // Required number
+      if( fabs(_config.getDouble(torusName,0.0)-torusRadius)>0.1 ){
+	throw cms::Exception("GEOM")
+	  << "The G4BL magnetic field files require torus radius of 2929 mm."
+	  << " Check " << torusName << " value in the config file." 
+	  << " Maps are not loaded.\n";
+      }
+
+      // Add the DS, TSu, TSd and PS field maps.
+      loadG4BL( "DS",  "bfield.dsFile"  );
+      loadG4BL( "PS",  "bfield.psFile"  );
+      loadG4BL( "TSu", "bfield.tsuFile" );
+      loadG4BL( "TSd", "bfield.tsdFile" );
+      
+      //throw cms::Exception("GEOM") << "Temporal end." << "\n";
+
+    } else {
+
+      throw cms::Exception("GEOM")
+        << "Unknown format of file with magnetic field maps: " << format
+        << "\n";
+
+    }
 
     // Special case for the uniform DS field.
     loadUniformDS();
@@ -70,13 +108,116 @@ namespace mu2e {
 
     // Create an empty map.
     BFMap& dsmap = _bfmgr->addBFMap( key,
-                                     CLHEP::Hep3Vector(),
                                      dim[0],
                                      dim[1],
                                      dim[2] );
 
     // Fill the map.
     readGMCMap( filename, dsmap );
+
+    //dsmap.print(std::cout);
+  }
+
+  // Parse the config file to learn about one magnetic field map.
+  // Create an empty map and call the code to load the map from the file.
+  void BFieldManagerMaker::loadG4BL( const std::string& key,  
+				     const std::string& fileKey ) {
+
+    if ( ! _config.hasName(fileKey) ){
+      cout << "No magnetic field file specified for: "
+           << fileKey
+           << "   Hope that's OK." << endl;
+      return;
+    }
+
+    // Get filename
+    string filename = _config.getString(fileKey);
+    cout << "Read " << filename << endl;
+
+    // Open the input file.
+    ifstream fin;
+    fin.open(filename.c_str());
+    if ( !fin.is_open() ) {
+      throw cms::Exception("GEOM")
+        << "Could not open file containing the magnetic field data. "
+        << "Filename: " 
+        << filename
+        << "\n";
+    }
+
+    // Parse the string with parameters
+    char cbuf[128];
+    boost::regex re("^\\s*grid"
+		    "\\s+X0=([eE\\d\\-\\+\\.]+)\\s+Y0=([eE\\d\\-\\+\\.]+)\\s+Z0=([eE\\d\\-\\+\\.]+)"
+		    "\\s+nX=([eE\\d\\-\\+\\.]+)\\s+nY=([eE\\d\\-\\+\\.]+)\\s+nZ=([eE\\d\\-\\+\\.]+)"
+		    "\\s+dX=([eE\\d\\-\\+\\.]+)\\s+dY=([eE\\d\\-\\+\\.]+)\\s+dZ=([eE\\d\\-\\+\\.]+)"
+		    ".*$");
+    boost::cmatch matches;
+    bool paramFound = false;
+    int nread=100; // Optimization - don't read more than 100 lines
+    while( (!fin.eof()) && (--nread>0) ) {
+      fin.getline(cbuf,128);
+      if( boost::regex_match(cbuf,matches,re) ) {
+	paramFound = true;
+	break;
+      }
+    }
+    fin.close();
+
+    if( ! paramFound ) {
+      throw cms::Exception("GEOM")
+        << "Could not find param string in magnetic firld map. "
+        << "Filename: " << filename
+	<< ", found " << matches.size() << " items."
+        << "\n";
+    }
+
+    vector<double> X0;
+    vector<int> dim;
+    vector<double> dX;
+
+    for( int i=1; i<=3; i++ ) {
+      double value;
+      istringstream sin(string(matches[i].first, matches[i].second));
+      sin >> value; 
+      X0.push_back(value);
+    }
+
+    for( int i=4; i<=6; i++ ) {
+      int value;
+      istringstream sin(string(matches[i].first, matches[i].second));
+      sin >> value; 
+      dim.push_back(value);
+    }
+
+    for( int i=7; i<=9; i++ ) {
+      double value;
+      istringstream sin(string(matches[i].first, matches[i].second));
+      sin >> value; 
+      dX.push_back(value);
+    }
+
+    // Set the offset
+    CLHEP::Hep3Vector G4BL_offset(-3904.0,0.0,7929.0);
+    X0[0] = X0[0] - G4BL_offset.x();
+    X0[1] = X0[1] - G4BL_offset.y();
+    X0[2] = X0[2] - G4BL_offset.z();
+
+    // Create an empty map.
+    BFMap& dsmap = _bfmgr->addBFMap( key,
+                                     dim[0],
+                                     dim[1],
+                                     dim[2] );
+
+    // Set defined region for the map
+    dsmap.setLimits(X0[0],X0[0]+(dim[0]-1)*dX[0],
+		    X0[1],X0[1]+(dim[1]-1)*dX[1],
+		    X0[2],X0[2]+(dim[2]-1)*dX[2]);
+
+    // Fill the map.
+    readG4BLMap( filename, dsmap, G4BL_offset );
+    
+    //dsmap.print(std::cout);
 
   }
 
@@ -136,10 +277,6 @@ namespace mu2e {
     // Tool to find min and max values of grid points.
     MinMax mmX, mmY, mmZ;
 
-    // Offset needed to put this map into the Mu2e coordinate system.
-    // ( Origin at center of TS ).
-    const CLHEP::Hep3Vector& offset = bfmap._origin;
-
     // Collect distinct values of (X,Y,Z) on the grid points.
     set<float> X, Y, Z;
 
@@ -164,11 +301,6 @@ namespace mu2e {
       r.by *= ratio; 
       r.bz *= ratio; 
 
-      // Re-centering. - not sure if we really want this here?
-      r.x += offset.x(); 
-      r.y += offset.y(); 
-      r.z += offset.z();
- 
       // The one check I can do.
       if ( r.head != r.tail ){
         throw cms::Exception("GEOM")
@@ -248,6 +380,72 @@ namespace mu2e {
       bfmap._field.set(ix, iy, iz, CLHEP::Hep3Vector(r.bx,r.by,r.bz));
       bfmap._isDefined.set(ix, iy, iz, true);
 
+    }
+
+    return;
+
+  }
+
+  //
+  // Read one magnetic field map file in G4BL (TD) format.
+  //
+
+  void BFieldManagerMaker::readG4BLMap( const string& filename,
+					BFMap& bfmap,
+					CLHEP::Hep3Vector G4BL_offset ){
+
+
+    // Open the input file.
+    ifstream fin;
+    fin.open(filename.c_str());
+    if ( !fin.is_open() ) throw cms::Exception("GEOM")<<"Could not open file "<<filename<<"\n";
+
+    // Skip lines until "data" keyword
+    char cbuf[128];
+    boost::regex re("^\\s*data.*$");
+    while( ! fin.eof() ) {
+      fin.getline(cbuf,128);
+      if( boost::regex_match(cbuf,re) ) break;
+    }
+    if( fin.eof() ) throw cms::Exception("GEOM")<<"Can't find data keyword in "<<filename<<"\n";
+
+    // Expected grid dimentsions.
+    const int nx = bfmap._nx;
+    const int ny = bfmap._ny;
+    const int nz = bfmap._nz;
+
+    // Calculate expected number of lines to read
+    const int nrecord = nx*ny*nz;
+
+    // Read data
+    double x[3], b[3];
+    int nread = 0;
+    while( (!fin.eof()) && (nread<nrecord) ) {
+
+      // Calculate indexes
+      int ix = (nread/(ny*nz));
+      int iy = (nread/nz)%ny;
+      int iz = nread%nz;
+
+      // Read and parse line
+      nread++;
+      fin.getline(cbuf,128);
+      istringstream sin(cbuf);
+      if( (sin>>x[0]>>x[1]>>x[2]>>b[0]>>b[1]>>b[2]).fail() ) break;
+
+      // Store the information into the 3d arrays.
+      CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(x[0],x[1],x[2])-G4BL_offset;
+      bfmap._grid.set (ix, iy, iz, pos);
+      bfmap._field.set(ix, iy, iz, CLHEP::Hep3Vector(b[0],b[1],b[2]));
+      bfmap._isDefined.set(ix, iy, iz, true);
+
+    }
+
+    if( nread!=nrecord ) {
+      throw cms::Exception("GEOM")
+	<<"Error while reading "<<filename<<"\n"
+	<<"Read "<<nread<<" out of expected "<<nrecord<<" lines.\n"
+	<<"Last line:\n"<<cbuf<<"\n";
     }
 
     return;

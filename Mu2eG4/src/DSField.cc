@@ -1,9 +1,9 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: DSField.cc,v 1.4 2010/06/22 16:42:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/22 16:42:22 $
+// $Id: DSField.cc,v 1.5 2010/09/08 00:07:27 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/08 00:07:27 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite by Rob Kutschke at version 1.4
@@ -14,7 +14,7 @@
 
 // Mu2e includes.
 #include "Mu2eG4/inc/DSField.hh"
-#include "BFieldGeom/inc/BFMap.hh"
+#include "BFieldGeom/inc/BFMapBase.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 
@@ -46,6 +46,13 @@ namespace mu2e {
     Bfield[0] = bf.x()*CLHEP::tesla;
     Bfield[1] = bf.y()*CLHEP::tesla;
     Bfield[2] = bf.z()*CLHEP::tesla;
+
+    /*
+    cout << "DSField map=" << _map->getKey() 
+	 << " point=("<<point.x()<<","<<point.y()<<","<<point.z()<<")"
+	 << " field=("<<Bfield[0]<<","<<Bfield[1]<<","<<Bfield[2]<<")"
+	 << endl;
+    */
 
   }
 

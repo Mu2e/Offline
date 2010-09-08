@@ -2,9 +2,9 @@
 # Configuration file for Beamline 01.
 # This can be used to debug the muon beamline.
 #
-# $Id: beamline_01.py,v 1.1 2010/08/20 20:22:57 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/08/20 20:22:57 $
+# $Id: beamline_01.py,v 1.2 2010/09/08 00:07:27 logash Exp $
+# $Author: logash $
+# $Date: 2010/09/08 00:07:27 $
 #
 # Original author Rob Kutschke
 #
@@ -73,6 +73,9 @@ process.checkhits = mu2e.EDAnalyzer(
     maxFullPrint  = mu2e.untracked.int32(201)
 )
 
+# Look at the hits from virtual detectors
+process.readvd = mu2e.EDAnalyzer("ReadVirtualDetector")
+
 # Save state of random numbers to the event.
 process.randomsaver = mu2e.EDAnalyzer("RandomNumberSaver")
 
@@ -90,6 +93,6 @@ process.outfile = mu2e.OutputModule(
 # End of the section that defines and configures modules.
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate*process.g4run*
+process.output = mu2e.EndPath(  process.generate*process.g4run*process.readvd*
                                 process.randomsaver*
                                 process.outfile );

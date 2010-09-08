@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.19 2010/08/31 00:24:51 logash Exp $
+// $Id: Mu2eWorld.hh,v 1.20 2010/09/08 00:07:27 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/08/31 00:24:51 $
+// $Date: 2010/09/08 00:07:27 $
 //
 // Original author Rob Kutschke
 //
@@ -102,7 +102,8 @@ namespace mu2e {
     void constructMagnetYoke();
     void constructCRV();
     void constructSteel( const VolumeInfo& parent );
-    void constructBFieldAndManagers();
+    void constructBFieldAndManagers();  // MECO field maps
+    void constructBFieldAndManagers2(); // G4BL field maps
     void constructStepLimiters();
 
     // The world coordinates of the center of the cosmic ray reference plane.
@@ -312,6 +313,7 @@ namespace mu2e {
     std::auto_ptr<FieldMgr> _dsUniform;
     std::auto_ptr<FieldMgr> _psFull;
     std::auto_ptr<FieldMgr> _tsFull;
+    std::auto_ptr<FieldMgr> _hallFull;
 
     // Allow access to the volume information by volume name.  See note 1.
     std::map<std::string,VolumeInfo> _volumeInfoList;

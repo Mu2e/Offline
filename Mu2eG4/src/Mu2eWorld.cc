@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.51 2010/09/02 20:50:31 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/09/02 20:50:31 $
+// $Id: Mu2eWorld.cc,v 1.52 2010/09/08 00:07:27 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/08 00:07:27 $
 //
 // Original author Rob Kutschke
 //
@@ -187,7 +187,12 @@ namespace mu2e {
     log << "Hall Origin in Mu2e:  " << _hallOriginInMu2e     << "\n";
 
     // Create magnetic fields and managers only after all volumes have been defined.
-    constructBFieldAndManagers();
+    // Eventually constructBFieldAndManagers2() will be the only BField constructor.
+    if( _config->getString("bfield.format","GMC") == "GMC" ) {
+      constructBFieldAndManagers();
+    } else {
+      constructBFieldAndManagers2();
+    }
     constructStepLimiters();
 
   }
@@ -1231,6 +1236,98 @@ namespace mu2e {
     _psFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
     _psFull->chordFinder()->SetDeltaChord(deltaChord);
 
+
+  } // end Mu2eWorld::constructBFieldAndManagers
+
+  // Construct the magnetic field managers and attach them to
+  // the relevant volumes - alternative version.
+  void Mu2eWorld::constructBFieldAndManagers2(){
+
+    // Figure out which magnetic field managers are needed.
+    int dsFieldForm    = _config->getInt("detSolFieldForm", dsModelUniform); 
+
+    // Decide on the G4 Stepper
+
+    bool needDSUniform = (dsFieldForm == dsModelSplit || dsFieldForm == dsModelUniform );
+
+    string stepper = _config->getString("g4.stepper","G4SimpleRunge");
+
+    // Create field manager for the uniform DS field.
+    if ( needDSUniform){
+      // Handle to the BField manager.
+      GeomHandle<BFieldManager> bfMgr;
+      _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue(), _mu2eOrigin );
+    }
+
+    // Create field managers for the PS and TS.
+
+    if ( stepper  == "G4ClassicalRK4" ) {
+      _hallFull = FieldMgr::forMappedField<G4ClassicalRK4>( "", _mu2eOrigin );
+    } else if ( stepper  == "G4ImplicitEuler" ) {
+      _hallFull = FieldMgr::forMappedField<G4ImplicitEuler>( "", _mu2eOrigin );
+    } else if ( stepper  == "G4ExplicitEuler" ) {
+      _hallFull = FieldMgr::forMappedField<G4ExplicitEuler>( "", _mu2eOrigin );
+    } else if ( stepper  == "G4SimpleHeum" ) {
+      _hallFull = FieldMgr::forMappedField<G4SimpleHeum>( "", _mu2eOrigin );
+    } else if ( stepper  == "G4HelixImplicitEuler" ) {
+      _hallFull = FieldMgr::forMappedField<G4HelixImplicitEuler>( "", _mu2eOrigin );
+    } else if ( stepper  == "G4HelixSimpleRunge" ) {
+      _hallFull = FieldMgr::forMappedField<G4HelixSimpleRunge>( "", _mu2eOrigin );
+    } else {
+      _hallFull = FieldMgr::forMappedField<G4SimpleRunge>( "", _mu2eOrigin );
+    } 
+
+    // Get pointers to logical volumes.
+    G4LogicalVolume* ds2Vacuum = locateVolInfo("ToyDS2Vacuum").logical;
+    G4LogicalVolume* ds3Vacuum = locateVolInfo("ToyDS3Vacuum").logical;
+
+    vector<G4LogicalVolume*> psVacua;
+    psVacua.push_back( locateVolInfo("PS1Vacuum").logical );
+
+    vector<G4LogicalVolume*> tsVacua;
+    tsVacua.push_back( locateVolInfo("ToyTS1Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS2Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS3Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS4Vacuum").logical );
+    tsVacua.push_back( locateVolInfo("ToyTS5Vacuum").logical );
+
+    // Attach field managers to the appropriate logical volumes.
+    if (dsFieldForm == dsModelFull  ){
+      ds2Vacuum->SetFieldManager( _hallFull->manager(), true);
+      ds3Vacuum->SetFieldManager( _hallFull->manager(), true);
+    } else if ( dsFieldForm == dsModelSplit ){
+      ds2Vacuum->SetFieldManager( _hallFull->manager(), true);
+      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+    } else {
+      ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
+      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+    }
+
+    for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
+          i!=psVacua.end(); ++i ){
+      (**i).SetFieldManager( _hallFull->manager(), true);
+    }
+    
+    for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
+          i!=tsVacua.end(); ++i ){
+      (**i).SetFieldManager( _hallFull->manager(), true);
+    }
+
+    // Adjust properties of the integrators to control accuracy vs time.
+    G4double singleValue         = 0.5e-01*CLHEP::mm;
+    G4double newUpstreamDeltaI   = singleValue;
+    G4double newDownstreamDeltaI = singleValue;
+    G4double deltaOneStep        = singleValue;
+    G4double deltaChord          = singleValue;
+
+    if ( _dsUniform.get() != 0 ){
+      G4double deltaIntersection = 0.00001*CLHEP::mm;
+      _dsUniform->manager()->SetDeltaIntersection(deltaIntersection);
+    }
+
+    _hallFull->manager()->SetDeltaOneStep(deltaOneStep);
+    _hallFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
+    _hallFull->chordFinder()->SetDeltaChord(deltaChord);
 
   } // end Mu2eWorld::constructBFieldAndManagers
 

@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.5 2010/09/01 20:29:02 genser Exp $
-// $Author: genser $
-// $Date: 2010/09/01 20:29:02 $
+// $Id: BFMap.cc,v 1.6 2010/09/08 00:07:27 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/08 00:07:27 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -26,6 +26,7 @@
 
 // Other includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "math.h"
 
 //using CLHEP::Hep3Vector;
 //using mu2e::Container3D;
@@ -33,12 +34,12 @@ using namespace std;
 
 namespace mu2e {
 
-  // function to determine if the point is in the map
+  // function to determine if the point is in the map; take into account Y-symmetry
   bool BFMap::isValid(CLHEP::Hep3Vector const& point) const{
     if (point.x() < _xmin || point.x() > _xmax) {
       return false;
     }
-    if (point.y() < _ymin || point.y() > _ymax) {
+    if (fabs(point.y()) < _ymin || fabs(point.y()) > _ymax) {
       return false;
     }
     if (point.z() < _zmin || point.z() > _zmax) {
@@ -148,22 +149,15 @@ namespace mu2e {
     // Allow y-symmetry (grid is only defined for y > 0);
     int sign(1);
     CLHEP::Hep3Vector point(testpoint.x(), testpoint.y(), testpoint.z());
-    if (testpoint.y() < _origin.y()){
+    if (testpoint.y() < 0 ) {
       sign = -1;
-      double y = -(testpoint.y() - _origin.y()) + _origin.y();
+      double y = -testpoint.y();
       point.setY(y);
     }
     
     dflag && cout 
       << "Testpoint:          " << testpoint << endl
-      << "Point:              " << point << " "
-      << "Origin:             " << _origin << endl;
-
-
-//     LogDebug("BFIELD")
-//       << "Testpoint:          " << testpoint << " "
-//       << "Point:              " << point << " "
-//       << "Origin:             " << _origin;
+      << "Point:              " << point << endl;
 
     // Check validity.  Return a zero field and optionally print a warning.
     if ( !isValid(point) ){

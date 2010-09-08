@@ -4,9 +4,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.1 2010/06/22 16:44:25 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/06/22 16:44:25 $
+// $Id: BFieldManager.hh,v 1.2 2010/09/08 00:07:27 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/08 00:07:27 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -23,11 +23,12 @@
 
 // Includes from Mu2e
 #include "GeometryService/inc/Detector.hh"
+#include "BFieldGeom/inc/BFMapBase.hh"
 #include "BFieldGeom/inc/BFMap.hh"
 
 namespace mu2e {
 
-  class BFieldManager : public Detector{
+  class BFieldManager : public Detector, public BFMapBase {
 
   public:
 
@@ -41,11 +42,16 @@ namespace mu2e {
 
     virtual std::string name() const { return "BFieldManager";}
 
-    // Get field at an arbitrary point.  Not yet implemented.
-    CLHEP::Hep3Vector getField( const CLHEP::Hep3Vector& point ) const;
+    // Get field at an arbitrary point.
+    CLHEP::Hep3Vector getBField( const CLHEP::Hep3Vector& point ) const;
+
+    // Check if point belongs to any map
+    bool isValid(CLHEP::Hep3Vector const& point) const;
+    
+    const std::string& getKey() const { return _key; };
 
     // Get an arbitrary map.  Throw if it cannot be found.
-    const BFMap& getMapByName( const std::string key ) const;
+    const BFMapBase& getMapByName( const std::string key ) const;
 
     // The uniform field in the DS is a special case.
     const CLHEP::Hep3Vector getDSUniformValue() const{
@@ -59,6 +65,9 @@ namespace mu2e {
 
   private:
 
+    // Name of the manager
+    std::string _key;
+
     // Maps for various parts of the detector.
     typedef  std::map<std::string,BFMap> MapType;
     MapType _map;
@@ -68,7 +77,6 @@ namespace mu2e {
 
     // Add an empty map to the list.  Used by BFieldManagerMaker.
     BFMap& addBFMap( const std::string& key,
-                     CLHEP::Hep3Vector const& origin,
                      int const nx, 
                      int const ny, 
                      int const nz );
@@ -78,6 +86,9 @@ namespace mu2e {
     // receive it into a const reference and making a copy instead ).
     BFieldManager( const BFieldManager& );
     BFieldManager& operator=( const BFieldManager& );
+
+    // Use this pointer to cache access to maps collection
+    mutable const BFMap * _last_map;
 
   }; // end class BFieldManager
 

@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.4 2010/09/01 20:29:02 genser Exp $
-// $Author: genser $
-// $Date: 2010/09/01 20:29:02 $
+// $Id: BFMap.hh,v 1.5 2010/09/08 00:07:27 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/08 00:07:27 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -16,11 +16,12 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include "BFieldGeom/inc/BFMapBase.hh"
 #include "BFieldGeom/inc/Container3D.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
-  class BFMap {
+  class BFMap : public BFMapBase {
 
   public:
 
@@ -32,7 +33,6 @@ namespace mu2e {
       _nx(),
       _ny(),
       _nz(),
-      _origin(),
       _grid(),
       _field(),
       _isDefined(){
@@ -44,14 +44,12 @@ namespace mu2e {
       _nx(),
       _ny(),
       _nz(),
-      _origin(),
       _grid(),
       _field(),
       _isDefined(){
     }
 
     BFMap(std::string filename, 
-          CLHEP::Hep3Vector const& origin,
           int const nx, 
           int const ny, 
           int const nz,
@@ -61,7 +59,6 @@ namespace mu2e {
       _nx(nx),
       _ny(ny),
       _nz(nz),
-      _origin(origin),
       _grid(_nx,_ny,_nz),
       _field(_nx,_ny,_nz),
       _isDefined(_nx,_ny,_nz,false){
@@ -71,6 +68,9 @@ namespace mu2e {
 
     // Accessors
     CLHEP::Hep3Vector getBField(CLHEP::Hep3Vector const& point) const;
+
+    // Validity checker
+    bool isValid(CLHEP::Hep3Vector const& point) const;
 
     int nx() const { return _nx; }
     int ny() const { return _ny; }
@@ -108,18 +108,12 @@ namespace mu2e {
     // Distance between points.
     double _dx, _dy, _dz;
 
-    // Origin from external setup
-    CLHEP::Hep3Vector _origin;
-
     // Vector arrays for gridpoints and field values
     mu2e::Container3D<CLHEP::Hep3Vector> _grid;
     mu2e::Container3D<CLHEP::Hep3Vector> _field;
     mu2e::Container3D<bool> _isDefined;
 
     // Functions used internally and by the code that populates the maps.
-
-    // Validity checker
-    bool isValid(CLHEP::Hep3Vector const& point) const;
 
     // method to store the neighbors
     void getNeighbors(int ix, int iy, int iz, CLHEP::Hep3Vector neighborsBF[3][3][3]) const;

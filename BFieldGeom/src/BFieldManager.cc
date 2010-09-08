@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.1 2010/06/22 16:44:25 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/06/22 16:44:25 $
+// $Id: BFieldManager.cc,v 1.2 2010/09/08 00:07:27 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/08 00:07:27 $
 //
 
 // Includes from C++
@@ -21,40 +21,73 @@ using namespace std;
 namespace mu2e {
 
   BFieldManager::BFieldManager():
-    _dsUniformValue(){
+    _dsUniformValue(), _last_map(0),_key("") {
   }
 
   BFieldManager::~BFieldManager(){
   }
 
+  // Check if point belongs to any map
+  bool BFieldManager::isValid(CLHEP::Hep3Vector const& point) const {
+
+    // First check cached map
+    if( _last_map!=0 && _last_map->isValid(point) ) return true;
+
+    // Loop over all maps
+    for( MapType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
+      if( im->second.isValid(point) ) {
+	_last_map = &(im->second);
+	return true;
+      }
+    }
+
+    return false;
+
+  }
+
+
   // Get field at an arbitrary point.  Not yet implemented.
   // When written, this code will figure out which map to use
   // and will then look up the field in that map.
-  CLHEP::Hep3Vector BFieldManager::getField( const CLHEP::Hep3Vector& point ) const{
-    throw cms::Exception("GEOM")
-      << "The getField method of BFieldManager is not yet implemented.\n"
-      << "You can get a specific map and use the getField method of that map.\n";
+  CLHEP::Hep3Vector BFieldManager::getBField( const CLHEP::Hep3Vector& point ) const{
+
+    // First check cached map
+    if( _last_map!=0 && _last_map->isValid(point) ) return _last_map->getBField(point);
+
+    // Loop over all maps and check if point belongs to them. Use first found map.
+    for( MapType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
+      if( im->second.isValid(point) ) {
+	_last_map = &(im->second);
+	return im->second.getBField(point);
+      }
+    }
+
+    return CLHEP::Hep3Vector(0.,0.,0.);
+
   }
 
   // Get an arbitrary map, throw if it cannot be found.
-  const BFMap& BFieldManager::getMapByName( const std::string key ) const{
+  const BFMapBase& BFieldManager::getMapByName( const std::string key ) const{
+
+    if( key == _key ) return (*this);
+
     MapType::const_iterator i = _map.find(key);
     if ( i == _map.end() ){
       throw cms::Exception("GEOM")
         << "Requested map not found: " << key << "\n";      
     }
     return i->second;
+
   }
 
   // Create a new BFMap in the container of BFMaps.
   BFMap& BFieldManager::addBFMap( const std::string& key,
-                                  CLHEP::Hep3Vector const& origin,
                                   int const nx, 
                                   int const ny, 
                                   int const nz ){
 
     // Construct an empty BFMap.
-    BFMap bfmap(key, origin, nx, ny, nz);
+    BFMap bfmap(key, nx, ny, nz);
 
     // Add it to the container of BFMaps.
     pair<MapType::iterator,bool> retval = _map.insert( MapType::value_type(key,bfmap) );

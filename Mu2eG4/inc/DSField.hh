@@ -3,9 +3,9 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: DSField.hh,v 1.4 2010/06/22 16:42:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/22 16:42:22 $
+// $Id: DSField.hh,v 1.5 2010/09/08 00:07:27 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/08 00:07:27 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite Rob Kutschke at version 1.4
@@ -20,7 +20,7 @@
 namespace mu2e {
 
   // Forward references
-  class BFMap;
+  class BFMapBase;
 
   class DSField: public G4MagneticField {
 
@@ -49,7 +49,7 @@ namespace mu2e {
     G4ThreeVector _mapOrigin;
 
     // Non-owning pointer to the field map object (it is owned by the geometry service).
-    const BFMap* _map;
+    const BFMapBase* _map;
 
   };
 }
