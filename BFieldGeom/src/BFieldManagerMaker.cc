@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.4 2010/09/08 00:07:27 logash Exp $
+// $Id: BFieldManagerMaker.cc,v 1.5 2010/09/13 23:43:58 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/08 00:07:27 $
+// $Date: 2010/09/13 23:43:58 $
 //
 
 // Includes from C++
@@ -17,6 +17,9 @@
 
 // Includes from boost
 #include <boost/regex.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 
 // Framework includes
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -35,6 +38,19 @@
 using namespace std;
 
 namespace mu2e {
+
+  //
+  // Utility function which adds filter to decompress file if neccessary
+  //
+  void decompressFile(const string& filename, boost::iostreams::filtering_istream & in) {
+    boost::regex re_gz("^.*\\.gz\\s*$");
+    boost::regex re_bz("^.*\\.bz2\\s*$");
+    if( boost::regex_match(filename.c_str(),re_gz) ) {
+      in.push (boost::iostreams::gzip_decompressor());
+    } else if( boost::regex_match(filename.c_str(),re_bz) ) {
+      in.push (boost::iostreams::bzip2_decompressor());
+    }
+  }
 
   BFieldManagerMaker::BFieldManagerMaker( const SimpleConfig& config ):
     _config(config){
@@ -144,6 +160,9 @@ namespace mu2e {
         << filename
         << "\n";
     }
+    boost::iostreams::filtering_istream in;
+    decompressFile(filename,in);
+    in.push(fin);
 
     // Parse the string with parameters
     char cbuf[128];
@@ -155,13 +174,14 @@ namespace mu2e {
     boost::cmatch matches;
     bool paramFound = false;
     int nread=100; // Optimization - don't read more than 100 lines
-    while( (!fin.eof()) && (--nread>0) ) {
-      fin.getline(cbuf,128);
+    while( (!in.eof()) && (--nread>0) ) {
+      in.getline(cbuf,128);
       if( boost::regex_match(cbuf,matches,re) ) {
 	paramFound = true;
 	break;
       }
     }
+    in.pop();
     fin.close();
 
     if( ! paramFound ) {
@@ -395,19 +415,37 @@ namespace mu2e {
 					CLHEP::Hep3Vector G4BL_offset ){
 
 
+    // Debug print
+    /*
+    ifstream fin1;
+    string fname("/tmp/logash/Mu2e_Rotated_Coils_DSMap.txt.bz2");
+    fin1.open(fname.c_str());
+    boost::iostreams::filtering_istream in;
+    decompressFile(fname,in);
+    in.push(fin1);
+    char cbuf1[128];
+    cout << "Debug file: " << endl;
+    for( int i=0; i<5; i++ ) { in.getline(cbuf1,128); cout << cbuf1 << endl; }
+    in.pop();
+    fin1.close();
+    */
+
     // Open the input file.
     ifstream fin;
     fin.open(filename.c_str());
     if ( !fin.is_open() ) throw cms::Exception("GEOM")<<"Could not open file "<<filename<<"\n";
 
     // Skip lines until "data" keyword
+    boost::iostreams::filtering_istream in;
+    decompressFile(filename,in);
+    in.push(fin);
     char cbuf[128];
     boost::regex re("^\\s*data.*$");
-    while( ! fin.eof() ) {
-      fin.getline(cbuf,128);
+    while( ! in.eof() ) {
+      in.getline(cbuf,128);
       if( boost::regex_match(cbuf,re) ) break;
     }
-    if( fin.eof() ) throw cms::Exception("GEOM")<<"Can't find data keyword in "<<filename<<"\n";
+    if( in.eof() ) throw cms::Exception("GEOM")<<"Can't find data keyword in "<<filename<<"\n";
 
     // Expected grid dimentsions.
     const int nx = bfmap._nx;
@@ -420,7 +458,7 @@ namespace mu2e {
     // Read data
     double x[3], b[3];
     int nread = 0;
-    while( (!fin.eof()) && (nread<nrecord) ) {
+    while( (!in.eof()) && (nread<nrecord) ) {
 
       // Calculate indexes
       int ix = (nread/(ny*nz));
@@ -429,7 +467,7 @@ namespace mu2e {
 
       // Read and parse line
       nread++;
-      fin.getline(cbuf,128);
+      in.getline(cbuf,128);
       istringstream sin(cbuf);
       if( (sin>>x[0]>>x[1]>>x[2]>>b[0]>>b[1]>>b[2]).fail() ) break;
 

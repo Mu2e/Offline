@@ -3,9 +3,29 @@
  
            Release notes for Mu2e Offline software, v0_2_2
 
-  $Id: v0_2_2.txt,v 1.2 2010/09/08 00:07:27 logash Exp $
+  $Id: v0_2_2.txt,v 1.3 2010/09/13 23:43:58 logash Exp $
   $Author: logash $
-  $Date: 2010/09/08 00:07:27 $
+  $Date: 2010/09/13 23:43:58 $
+
+ 2) September 13, 2010, logash
+
+    The framework is now ready for beamline studies. List of changes:
+
+    - New generator G4BeamlineGenerator_plugin.cc. It is based on the
+      same FromG4BLFile generator, but adds additional collection 
+      to the output stream - G4BeamlineInfo - which contains extra 
+      information, provided in the input file (in particular, weights).
+
+    - BFieldManagerMaker can now read compressed G4Beamline field maps. 
+      File names ended with .gz or .bz2 will be automatically 
+      decompressed on-the-fly.
+
+    - Additional new data member in StepPointMC - proper time. This is 
+      needed in some beamline studies. All modules which produce 
+      StepPointMCs or StepPointG4, were updated correspondingly. 
+
+    - It is possible now to switch off decays of particles of particular 
+      type in the configuration file. Example is shown in beamline_geom.txt
 
  1) September 7, 2010, logash
 

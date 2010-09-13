@@ -2,9 +2,9 @@
 # Configuration file for Beamline 01.
 # This can be used to debug the muon beamline.
 #
-# $Id: beamline_01.py,v 1.3 2010/09/08 20:14:55 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/09/08 20:14:55 $
+# $Id: beamline_01.py,v 1.4 2010/09/13 23:43:58 logash Exp $
+# $Author: logash $
+# $Date: 2010/09/13 23:43:58 $
 #
 # Original author Rob Kutschke
 #
@@ -57,6 +57,14 @@ process.generate = mu2e.EDProducer(
     seed=mu2e.untracked.vint32(7789)
 )
 
+#  Use this generator instead of the one above if using G4Beamline input files
+#process.generate = mu2e.EDProducer(
+#    "G4BeamlineGenerator",
+#    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
+#    seed=mu2e.untracked.vint32(7789)
+#)
+
+
 # Run G4 and add its hits to the event.
 process.g4run = mu2e.EDProducer(
     "G4",
@@ -76,7 +84,8 @@ process.checkhits = mu2e.EDAnalyzer(
 # Look at the hits from virtual detectors
 process.readvd = mu2e.EDAnalyzer(
     "ReadVirtualDetector",
-    vdStepPoints = mu2e.untracked.string("virtualdetector")
+    vdStepPoints = mu2e.untracked.string("virtualdetector"),
+    savePDG = mu2e.untracked.vint32(13,-211)
 )
 
 # Save state of random numbers to the event.

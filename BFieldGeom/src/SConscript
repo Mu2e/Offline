@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.1 2010/06/22 16:44:25 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/06/22 16:44:25 $
+# $Id: SConscript,v 1.2 2010/09/13 23:43:58 logash Exp $
+# $Author: logash $
+# $Date: 2010/09/13 23:43:58 $
 #
 # Original author Rob Kutschke.
 #
@@ -23,6 +23,7 @@ if non_plugin_cc:
                       LIBS=[ 'FWCoreFramework',
                              'Mu2eUtilities',
                              'GeneralUtilities',
+                             'boost_iostreams-gcc34'
                              ],
                       )
     libs=[ '#/lib/' + local_lib_name ]

@@ -7,9 +7,9 @@
 //
 // For details, see: ToyDP/inc/StepPointMC.hh .
 // 
-// $Id: StepPointG4.hh,v 1.2 2010/04/04 20:35:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/04 20:35:13 $
+// $Id: StepPointG4.hh,v 1.3 2010/09/13 23:43:58 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/13 23:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -41,9 +41,10 @@ namespace mu2e {
                  G4ThreeVector const& position,
                  G4ThreeVector const& momentum,
                  G4double time,
+                 G4double proper,
                  G4double stepLength
                  ):
-      _hit(trackId,volumeId,edep,time,position,momentum,stepLength){
+      _hit(trackId,volumeId,edep,time,proper,position,momentum,stepLength){
     }
     
     // Accept compiler generated versions of:
@@ -68,6 +69,7 @@ namespace mu2e {
     inline G4ThreeVector const&       position() const { return _hit.position(); }
     inline G4ThreeVector const&       momentum() const { return _hit.momentum(); }
     inline G4double                   time()     const { return _hit.time();     }
+    inline G4double                   properTime()     const { return _hit.properTime();     }
     inline StepPointMC::VolumeId_type volumeId() const { return _hit.volumeId(); }
 
   private:

@@ -138,6 +138,7 @@ namespace mu2e {
                       prePosTracker,
                       preMomWorld,
                      aStep->GetPreStepPoint()->GetGlobalTime(),
+                     aStep->GetPreStepPoint()->GetProperTime(),
                      aStep->GetStepLength()
                       );
 

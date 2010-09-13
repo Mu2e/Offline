@@ -163,6 +163,7 @@ G4bool ITGasLayerSD_v2::ProcessHits(G4Step* aStep,G4TouchableHistory*){
                                                 prePosTracker,
                                                 preMomWorld,
                                                 aStep->GetPreStepPoint()->GetGlobalTime(),
+                                                aStep->GetPreStepPoint()->GetProperTime(),
                                                 aStep->GetStepLength()
                                 );
 

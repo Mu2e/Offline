@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.2 2010/08/31 05:31:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/31 05:31:07 $
+// $Id: FromG4BLFile.hh,v 1.3 2010/09/13 23:43:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/13 23:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,7 @@
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "ToyDP/inc/G4BeamlineInfoCollection.hh"
 
 // External includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -41,6 +42,7 @@ namespace mu2e {
     virtual ~FromG4BLFile();
 
     virtual void generate( ToyGenParticleCollection&  );
+    void generate( ToyGenParticleCollection& , G4BeamlineInfoCollection*  );
 
   private:
 
@@ -52,7 +54,7 @@ namespace mu2e {
     double _mean;
 
     // The midpoint of the target in the coordinates used in the input file.
-    double _zOffset;
+    CLHEP::Hep3Vector _offset;
 
     // The center of the production target, in the Mu2e coordinate system.
     CLHEP::Hep3Vector _prodTargetCenter;

@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.4 2010/08/31 15:52:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/31 15:52:07 $
+// $Id: FromG4BLFile.cc,v 1.5 2010/09/13 23:43:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/13 23:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -28,10 +28,9 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeometryService.hh"
-//#include "LTrackerGeom/inc/LTracker.hh"
-//#include "ITrackerGeom/inc/ITracker.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ToyDP/inc/G4BeamlineInfoCollection.hh"
 
 // Root includes
 #include "TH1F.h"
@@ -52,7 +51,6 @@ namespace mu2e {
 
     // From run time configuration file.
     _mean(config.getDouble("fromG4BLFile.mean",-1.)),
-    _zOffset(config.getDouble("fromG4BLFile.zOffset",1764.5)),
     _inputFileName(config.getString("fromG4BLFile.filename")),
     _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
 
@@ -75,6 +73,12 @@ namespace mu2e {
     if ( std::abs(_mean) > 99999. ) {
       throw cms::Exception("RANGE")
         << "FromG4BLFile has been asked to produce a crazily large number of particles.\n";
+    }
+    
+    if ( config.hasName("fromG4BLFile.offset") ) {
+      _offset = config.getHep3Vector("fromG4BLFile.offset");
+    } else {
+      _offset = CLHEP::Hep3Vector(0.0,0.0,1764.5);
     }
 
     // This should really come from the geometry service, not directly from the config file.
@@ -108,7 +112,11 @@ namespace mu2e {
   FromG4BLFile::~FromG4BLFile(){
   }
 
-  void FromG4BLFile::generate( ToyGenParticleCollection& genParts ){
+  void FromG4BLFile::generate(ToyGenParticleCollection& genParts) {
+    generate(genParts,0);
+  }
+
+  void FromG4BLFile::generate( ToyGenParticleCollection& genParts, G4BeamlineInfoCollection *extra ){
 
     // How many tracks in this event?
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
@@ -134,15 +142,13 @@ namespace mu2e {
           << "FromG4BLFile has reached an unexpected end of flie.\n";
       }
 
-      // Put(0,0,0) at the center of the production target.
-      z -= _zOffset;
-      
       // Express pdgId as the correct type.
       PDGCode::type pdgId = static_cast<PDGCode::type>(id);
 
       // 3D position in Mu2e coordinate system.
       CLHEP::Hep3Vector pos(x,y,z);
-      pos += _prodTargetCenter;
+      pos -= _offset;           // Move to target coordinate system
+      pos += _prodTargetCenter; // Move to Mu2e coordinate system
 
       // 4 Momentum.
       double mass = pdt->particle(id).mass().value();
@@ -151,6 +157,11 @@ namespace mu2e {
 
       // Add particle to the output collection.
       genParts.push_back( ToyGenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );
+
+      // Add extra information to the output collection.
+      if( extra ) {
+	extra->push_back( G4BeamlineInfo(evtid,trkid,weight) );
+      }
 
       if ( _doHistograms ) {
 

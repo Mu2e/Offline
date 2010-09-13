@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.10 2010/04/04 20:35:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/04 20:35:13 $
+// $Id: StepPointMC.hh,v 1.11 2010/09/13 23:43:58 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/13 23:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -40,6 +40,7 @@ namespace mu2e {
       _position(),
       _momentum(),
       _time(0.),
+      _proper(0.),
       _stepLength(0.){
     }
     
@@ -47,6 +48,7 @@ namespace mu2e {
                  VolumeId_type            volumeId,
                  double                   totalEDep,
                  double                   time,
+                 double                   proper,
                  CLHEP::Hep3Vector const& position,
                  CLHEP::Hep3Vector const& momentum,
                  double                   stepLength
@@ -57,6 +59,7 @@ namespace mu2e {
       _position(position),
       _momentum(momentum),
       _time(time),
+      _proper(proper),
       _stepLength(stepLength){
     }
     
@@ -74,6 +77,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const& position()   const { return _position;  }
     CLHEP::Hep3Vector const& momentum()   const { return _momentum;  }
     double                   time()       const { return _time;      }
+    double                   properTime() const { return _proper;      }
     double                   stepLength() const { return _stepLength;}
 
     // Kept for backwards compatibility.
@@ -91,6 +95,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _position;
     CLHEP::Hep3Vector _momentum;
     double            _time;
+    double            _proper;
     double            _stepLength;
     
   };

@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.12 2010/07/30 16:16:01 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/07/30 16:16:01 $
+// $Id: StrawSD.cc,v 1.13 2010/09/13 23:43:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/13 23:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -214,6 +214,7 @@ namespace mu2e {
                       prePosTracker,
                       preMomWorld,
                       aStep->GetPreStepPoint()->GetGlobalTime(),
+                      aStep->GetPreStepPoint()->GetProperTime(),
                       step
                       );
     

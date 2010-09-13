@@ -6,9 +6,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.cc,v 1.3 2010/04/04 20:35:13 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/04 20:35:13 $
+// $Id: StepPointMC.cc,v 1.4 2010/09/13 23:43:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/13 23:43:58 $
 //
 // Original author Rob Kutschke
 
@@ -27,6 +27,7 @@ namespace mu2e {
         << "  position: "          << _position
         << "  momentum: "          << _momentum
         << "  time: "              << _time
+        << "  proper time: "       << _proper
         << "  step length: "       << _stepLength;
 
     if ( doEndl ){

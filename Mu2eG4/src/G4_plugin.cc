@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.25 2010/09/08 20:10:15 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/08 20:10:15 $
+// $Id: G4_plugin.cc,v 1.26 2010/09/13 23:43:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/13 23:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -43,6 +43,7 @@
 #include "G4NistManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4SDManager.hh"
+#include "G4ParticleTable.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
@@ -137,6 +138,8 @@ namespace mu2e {
       iDesc.setAllowAnything();
     }
     
+    void switchDecayOff(const SimpleConfig&);
+
   private:
     auto_ptr<Mu2eG4RunManager> _runManager;
 
@@ -221,6 +224,9 @@ namespace mu2e {
 
     // Initialize G4 for this run.
     _runManager->Initialize();
+
+    // Switch off the decay of some particles
+    switchDecayOff(config);
 
     // At this point G4 geometry has been initialized.  So it is safe to initialize
     // objects that depend on G4 geometry.
@@ -360,6 +366,46 @@ namespace mu2e {
   }
 
   void G4::endJob(){
+  }
+
+  void G4::switchDecayOff(const SimpleConfig& config) {
+
+    // Read list of particles for which the decay should be switched off
+    vector<int> plist;
+    if( ! config.hasName("g4.noDecay") ) return;
+    config.getVectorInt("g4.noDecay",plist);
+    
+    G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
+    for( int i=0; i<plist.size(); ++i ) {
+      int pdg = plist[i];
+      G4ParticleDefinition* particle = theParticleTable->FindParticle(pdg);
+      if( particle==0 ) {
+	cout << "SwitchDecayOff: cannot find particle pdgId=" << pdg << endl;
+      } else {
+	G4ProcessManager* pmanager = particle->GetProcessManager();
+	G4ProcessVector * pVector  = pmanager->GetProcessList();
+	G4VProcess *decayProcess = 0;
+	for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) {
+	  if( (*pVector)[j]->GetProcessName() == "Decay" ) {
+	    decayProcess = (*pVector)[j];
+	    break;
+	  }
+	}
+	if( decayProcess==0 ) {
+	  cout << "SwitchDecayOff: cannot find decay process for particle pdgId=" << pdg 
+	       << " (" << particle->GetParticleName() << ")" << endl;
+	} else {
+	  pmanager->RemoveProcess(decayProcess);
+	  cout << "SwitchDecayOff: decay process is removed for particle pdgId=" << pdg 
+	       << " (" << particle->GetParticleName() << ")" << endl;
+	}
+	cout << "SwitchDecayOff: list of processes defined for particle pdgId=" << pdg 
+	     << " (" << particle->GetParticleName() << "):" << endl;
+	for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) 
+	  cout << (*pVector)[j]->GetProcessName() << endl;
+      }
+    }
+
   }
  
 } // End of namespace mu2e

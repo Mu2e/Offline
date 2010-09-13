@@ -190,7 +190,7 @@ std::cout<<"numberOfNoiseHits="<<numberOfNoiseHits<<"\n\n"<<std::endl;
         // Safe dummy value.
         double stepLength(1.0);
 
-        newPoints->push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,timeNoise,mid,momentumNoise,stepLength));
+        newPoints->push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,timeNoise,0,mid,momentumNoise,stepLength));
       } // noise hit ia
 
     } // non-zero noise rate

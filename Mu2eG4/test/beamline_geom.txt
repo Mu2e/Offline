@@ -1,9 +1,9 @@
 //
 // Variation on the geometry for debugging the beamline.
 //
-// $Id: beamline_geom.txt,v 1.4 2010/09/08 20:13:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/08 20:13:23 $
+// $Id: beamline_geom.txt,v 1.5 2010/09/13 23:43:58 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/13 23:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -32,6 +32,10 @@ int detSolFieldForm = 0;
 
 bool hasVirtualDetector = true;
 
+//Use this line to switch off pion decays
+
+//vector<int> g4.noDecay = { -211 };
+
 // Uncomment these to endable debug printout.
 //vector<int> g4.steppingActionEventList = { 0, 1, 2, 3 };
 //vector<int> g4.steppingActionTrackList = { 156, 157, 158 };
@@ -41,7 +45,7 @@ bool hasVirtualDetector = true;
 // Kill uninteresting particles in Stepping Action.
 bool   g4SteppingAction.killLowEKine  = true;
 bool   g4SteppingAction.killInHallAir = true;
-bool   g4SteppingAction.killerVerbose = true;
+bool   g4SteppingAction.killerVerbose = false;
 double g4SteppingAction.eKineMin      = 1.0;    // Kinetic energy in MeV
 
 //
