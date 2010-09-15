@@ -113,7 +113,8 @@ namespace mu2e {
 		    "evt:trk:pdg:"
 		    "time:gtime:x:y:z:px:py:pz:"
 		    "isstop:tstop:gtstop:xstop:ystop:zstop:"
-		    "g4bl_evt:g4bl_trk:g4bl_weight:nvd:isvd[10]:"
+		    "g4bl_evt:g4bl_trk:g4bl_weight:g4bl_time:"
+		    "nvd:isvd[10]:"
 		    "tvd[10]:gtvd[10]:xvd[10]:yvd[10]:zvd[10]:"
 		    "pxvd[10]:pyvd[10]:pzvd[10]:"
 		    "xlvd[10]:ylvd[10]:zlvd[10]");
@@ -219,7 +220,7 @@ namespace mu2e {
     if( haveSimPart && pdg_save.size()>0 ) {
 
       const int nvdet = 10;
-      const int id0 = 20;
+      const int id0 = 21;
 
       // Clean the buffer 
       for( int i=0; i<(id0+12*nvdet); ++i ) nt[i]=0;
@@ -262,6 +263,7 @@ namespace mu2e {
 	  nt[17] = extra.eventId();
 	  nt[18] = extra.trackId();
 	  nt[19] = extra.weight();
+	  nt[20] = extra.time();
 	}
 
 	nt[id0] = nvdet;

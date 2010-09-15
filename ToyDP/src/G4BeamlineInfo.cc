@@ -16,8 +16,9 @@ namespace mu2e {
 
     ost << "G4Beamline extra data:"
         << " eventId: "      << _event_id
-        << " trackId: "     << _track_id
-        << " weight: "       << _weight;
+        << " trackId: "      << _track_id
+        << " weight: "       << _weight
+	<< " time: "         << _time;
 
     if ( doEndl ){
       ost << endl;

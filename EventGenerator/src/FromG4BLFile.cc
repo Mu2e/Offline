@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.5 2010/09/13 23:43:58 logash Exp $
+// $Id: FromG4BLFile.cc,v 1.6 2010/09/15 23:28:48 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/13 23:43:58 $
+// $Date: 2010/09/15 23:28:48 $
 //
 // Original author Rob Kutschke
 //
@@ -160,7 +160,7 @@ namespace mu2e {
 
       // Add extra information to the output collection.
       if( extra ) {
-	extra->push_back( G4BeamlineInfo(evtid,trkid,weight) );
+	extra->push_back( G4BeamlineInfo(evtid,trkid,weight,t) );
       }
 
       if ( _doHistograms ) {
