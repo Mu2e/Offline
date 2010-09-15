@@ -3,9 +3,19 @@
  
            Release notes for Mu2e Offline software, v0_2_2
 
-  $Id: v0_2_2.txt,v 1.4 2010/09/15 15:16:32 kutschke Exp $
+  $Id: v0_2_2.txt,v 1.5 2010/09/15 23:18:27 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/09/15 15:16:32 $
+  $Date: 2010/09/15 23:18:27 $
+
+ 5) September 14, 2010, kutschke
+    Analyses/src/InteractiveRoot_plugin.cc 
+    Analyses/test/InteractiveRoot.py 
+
+    This is an example module to show how to run interactive root 
+    from within a module.  If several modules want to do this, they need to
+    figure out how to cooperate so that only one module creates the
+    TApplication.  Probably we should make the TApplication a feature
+    of the TFileService ( optional, selectable at run-time, feature?).
 
  4) September 13, 2010, logash
 
