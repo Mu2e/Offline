@@ -3,11 +3,11 @@
  
            Release notes for Mu2e Offline software, v0_2_2
 
-  $Id: v0_2_2.txt,v 1.3 2010/09/13 23:43:58 logash Exp $
-  $Author: logash $
-  $Date: 2010/09/13 23:43:58 $
+  $Id: v0_2_2.txt,v 1.4 2010/09/15 15:16:32 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/09/15 15:16:32 $
 
- 2) September 13, 2010, logash
+ 4) September 13, 2010, logash
 
     The framework is now ready for beamline studies. List of changes:
 
@@ -26,6 +26,30 @@
 
     - It is possible now to switch off decays of particles of particular 
       type in the configuration file. Example is shown in beamline_geom.txt
+
+ 3) September 8, 2010, kutschke 
+
+    The event number lists have a new behaviour; it is possible to enable
+    printout for all events.  This is selected by making a list with
+    a single entry with a value of -1 ( an illegal event number).
+     Mu2eG4/src/EventNumberList.cc
+
+ 2) September 8, 2010, kutschke
+
+    Added code in the user stepping action to kill tracks if:
+        - their kinetic energy has dropped below a given cutoff
+     or - they enter the hall air volume
+
+    This code can be enabled by variables added to geom_01.txt.  
+    They are off by default in geom_01txt .  
+    In beamline_geom.txt they are on by default
+
+    There is probably a smarter way to implement the low kinetic
+    energy cut off but the present solution works.
+
+    Mu2eG4/src/SteppingAction.cc  
+    Mu2eG4/inc/SteppingAction.hh
+    Mu2eG4/src/G4_plugin.cc
 
  1) September 7, 2010, logash
 
