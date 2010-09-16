@@ -222,9 +222,6 @@ namespace mu2e {
       const int nvdet = 10;
       const int id0 = 21;
 
-      // Clean the buffer 
-      for( int i=0; i<(id0+12*nvdet); ++i ) nt[i]=0;
-
       // Go through SimParticle container and analyze one particle at a time
       for( int isp=0; isp<simParticles->size(); ++isp ) {
 
@@ -233,6 +230,9 @@ namespace mu2e {
 	// It particle PDG ID is not in the list - skip it
 	if( pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
 	bool toSave = false;
+
+	// Clean the buffer 
+	for( int i=0; i<(id0+12*nvdet); ++i ) nt[i]=0;
 
 	// Save SimParticle info
 	nt[0] = event.id().event();    // event_id
@@ -250,13 +250,15 @@ namespace mu2e {
 	nt[10]= mom_start.z();
 
 	// Check id of the volume there particle dies
-	if( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() ) nt[11] = 1;
-	nt[12] = sim.endGlobalTime();
-	nt[13] = sim.endProperTime();
-	CLHEP::Hep3Vector const & pos_end = sim.endPosition();
-	nt[14] = pos_end.x();
-	nt[15] = pos_end.y();
-	nt[16] = pos_end.z();
+	if( sim.endDefined() ) {
+	  if( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() ) nt[11] = 1;
+	  nt[12] = sim.endGlobalTime();
+	  nt[13] = sim.endProperTime();
+	  CLHEP::Hep3Vector const & pos_end = sim.endPosition();
+	  nt[14] = pos_end.x();
+	  nt[15] = pos_end.y();
+	  nt[16] = pos_end.z();
+	}
 
 	if( haveG4BL ) {
 	  G4BeamlineInfo const& extra = g4beamlineData->at(0);
