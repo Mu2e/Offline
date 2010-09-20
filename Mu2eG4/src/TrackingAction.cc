@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.5 2010/09/08 20:09:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/08 20:09:23 $
+// $Id: TrackingAction.cc,v 1.6 2010/09/20 02:57:05 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/20 02:57:05 $
 //
 // Original author Rob Kutschke
 //
@@ -21,6 +21,7 @@
 #include <iostream>
 
 // Framework includes
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e includes
@@ -36,9 +37,12 @@ using namespace std;
 
 namespace mu2e {
 
+  int TrackingAction::_sizeLimit=0;
+
   TrackingAction::TrackingAction( const SimpleConfig& config):
     _debugList(),
     _physVolHelper(0),
+    _currentSize(0),
     _timer(){
 
     string name("g4.trackingActionEventList");
@@ -79,6 +83,7 @@ namespace mu2e {
 
   void TrackingAction::beginEvent(){
        _spmap.clear();
+       _currentSize=0;
   }
 
 
@@ -88,6 +93,16 @@ namespace mu2e {
 
   // Save start of track info to the transient store.
   void TrackingAction::saveSimParticleStart(const G4Track* trk){
+
+    _currentSize += 1;
+
+    if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
+      if( (_currentSize - _sizeLimit)==1 ) {
+	edm::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: " 
+			      << _currentSize << endl;
+      }
+      return;
+    }
 
     // Persistent info uses in 0-based indices; G4 uses 1-based indices.
     uint32_t id       = trk->GetTrackID()-1;
@@ -135,6 +150,8 @@ namespace mu2e {
 
   // Append end of track information to the transient store.
   void TrackingAction::saveSimParticleEnd(const G4Track* trk){
+
+    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
 
     // Persistent info uses in 0-based indices; G4 uses 1-based indices.
     uint32_t id       = trk->GetTrackID()-1;
@@ -206,6 +223,19 @@ namespace mu2e {
 
   // Copy transient information to the event.
   void TrackingAction::saveSimParticleCopy( SimParticleCollection& simParticles ){
+
+    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
+      edm::LogWarning("G4") << "Total of " << _currentSize 
+			    << " particles were generated in the event." 
+			    << endl
+			    << "Only " << _sizeLimit << " are saved in output collection." 
+			    << endl;
+      cout << "Total of " << _currentSize 
+	   << " particles were generated in the event." 
+	   << endl
+	   << "Only " << _sizeLimit << " are saved in output collection." 
+	   << endl;
+    }
 
     // Copy transient information to the persistent form.
     simParticles.clear();

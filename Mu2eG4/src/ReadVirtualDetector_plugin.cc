@@ -188,8 +188,12 @@ namespace mu2e {
       int trackId = hit.trackId();
       int pdgId = 0;
       if ( haveSimPart ){
-        SimParticle const& sim = simParticles->at(trackId);
-        pdgId = sim.pdgId();
+	if( trackId >= simParticles->size() ) {
+	  pdgId = 0;
+	} else {
+	  SimParticle const& sim = simParticles->at(trackId);
+	  pdgId = sim.pdgId();
+	}
       }
 
       // Fill the ntuple.

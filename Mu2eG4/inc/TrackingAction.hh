@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.3 2010/08/30 22:23:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/30 22:23:16 $
+// $Id: TrackingAction.hh,v 1.4 2010/09/20 02:57:05 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/20 02:57:05 $
 //
 // Original author Rob Kutschke
 //
@@ -65,6 +65,10 @@ namespace mu2e {
       _mu2eOrigin    =  mu2eOrigin;
     }
 
+    static void setSizeLimit(int sizeLimit) {
+      _sizeLimit = sizeLimit;
+    }
+
 
   private:
 
@@ -86,6 +90,9 @@ namespace mu2e {
     // Debug printout.
     void printInfo(const G4Track* trk, const std::string& text, bool isEnd=false);
 
+    // Limit maximum size of the steps collection
+    static int _sizeLimit;
+    int _currentSize;
 
   };
 

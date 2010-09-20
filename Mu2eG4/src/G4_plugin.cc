@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.26 2010/09/13 23:43:58 logash Exp $
+// $Id: G4_plugin.cc,v 1.27 2010/09/20 02:57:05 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/13 23:43:58 $
+// $Date: 2010/09/20 02:57:05 $
 //
 // Original author Rob Kutschke
 //
@@ -65,6 +65,9 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 
+#include "Mu2eG4/inc/VirtualDetectorSD.hh"
+#include "Mu2eG4/inc/StrawSD.hh"
+
 #include "ITrackerGeom/inc/ITracker.hh"
 
 // Data products that will be produced by this module.
@@ -109,6 +112,8 @@ namespace mu2e {
       _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")),
       _trackerOutputName("tracker"),
+      _stepsSizeLimit(pSet.getUntrackedParameter<int>("stepsSizeLimit",10000)),
+      _particlesSizeLimit(pSet.getUntrackedParameter<int>("particlesSizeLimit",10000)),
       _vdOutputName("virtualdetector") {
 
       produces<StepPointMCCollection>(_trackerOutputName);
@@ -150,6 +155,10 @@ namespace mu2e {
     G4VisManager *_visManager;
     G4UImanager  *_UI;
     int _rmvlevel;
+
+    // Limits for collections size
+    int _stepsSizeLimit;
+    int _particlesSizeLimit;
 
     // Position, in G4 world coord, of (0,0,0) of the mu2e coordinate system.
     CLHEP::Hep3Vector _mu2eOrigin;
@@ -210,12 +219,12 @@ namespace mu2e {
     _genAction = new PrimaryGeneratorAction(_generatorModuleLabel);
     _runManager->SetUserAction(_genAction);
 
-    G4UserEventAction* event_action = new EventAction;
-    _runManager->SetUserAction(event_action);
-    
     SteppingAction* stepping_action = new SteppingAction(config);
     _runManager->SetUserAction(stepping_action);
 
+    G4UserEventAction* event_action = new EventAction(stepping_action);
+    _runManager->SetUserAction(event_action);
+    
     StackingAction* stacking_action = new StackingAction(config);
     _runManager->SetUserAction(stacking_action);
 
@@ -235,6 +244,11 @@ namespace mu2e {
     Mu2eWorld const* world = allMu2e->getWorld();
     _mu2eOrigin          = world->getMu2eOrigin();
     _mu2eDetectorOrigin    = world->getMu2eDetectorOrigin();
+
+    // Limit size of output collections
+    StrawSD::setSizeLimit(_stepsSizeLimit);
+    VirtualDetectorSD::setSizeLimit(_stepsSizeLimit);
+    TrackingAction::setSizeLimit(_particlesSizeLimit);
 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {

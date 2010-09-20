@@ -3,12 +3,13 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.4 2010/09/08 20:11:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/08 20:11:07 $
+// $Id: SteppingAction.hh,v 1.5 2010/09/20 02:57:05 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/20 02:57:05 $
 //
 // Original author Rob Kutschke
 //
+#include <vector>
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
@@ -34,6 +35,9 @@ namespace mu2e {
     
     void UserSteppingAction(const G4Step*);
 
+    void BeginOfEvent();
+    void EndOfEvent();
+
     // Called by G4_plugin.
     void beginRun();
     
@@ -55,6 +59,12 @@ namespace mu2e {
 
     // Minimum energy cut.
     double _eKineMin;
+
+    // List of particles to remove (others will be kept)
+    std::vector<int> _pdgToDrop;
+    // Maximum allowed number of steps per event
+    int _maxSteps;
+    int _nSteps;
 
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugEventList;

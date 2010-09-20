@@ -36,6 +36,10 @@ namespace mu2e {
       _mu2eOrigin = origin;
     }
 
+    static void setSizeLimit(int sizeLimit) {
+      _sizeLimit = sizeLimit;
+    }
+
   private:
 
     G4ThreeVector GetTrackerOrigin(const G4TouchableHandle & touchableHandle);
@@ -47,6 +51,10 @@ namespace mu2e {
 
     // Mu2e point of origin
     static G4ThreeVector _mu2eOrigin;
+
+    // Limit maximum size of the steps collection
+    static int _sizeLimit;
+    int _currentSize;
     
   };
 

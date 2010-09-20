@@ -6,6 +6,10 @@
 
 #include <cstdio>
 
+// Framework includes
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/Exception.h"
+
 // Mu2e incldues
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
@@ -25,6 +29,7 @@ using namespace std;
 namespace mu2e {
 
   G4ThreeVector VirtualDetectorSD::_mu2eOrigin;
+  int VirtualDetectorSD::_sizeLimit=0;
 
   VirtualDetectorSD::VirtualDetectorSD(G4String name, const SimpleConfig& config) :G4VSensitiveDetector(name){
     G4String HCname("VDCollection");
@@ -37,6 +42,8 @@ namespace mu2e {
       config.getVectorInt(key,list);
       _debugList.add(list);
     }
+
+    _currentSize = 0;
 
   }
 
@@ -53,10 +60,22 @@ namespace mu2e {
     }
     HCE->AddHitsCollection( HCID, _collection ); 
 
+    _currentSize=0;
+
   }
   
 
   G4bool VirtualDetectorSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
+
+    _currentSize += 1;
+
+    if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
+      if( (_currentSize - _sizeLimit)==1 ) {
+	edm::LogWarning("G4") << "Maximum number of particles reached in VirtualDetectorSD: " 
+			      << _currentSize << endl;
+      }
+      return false;
+    }
 
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
@@ -86,6 +105,19 @@ namespace mu2e {
   }
 
   void VirtualDetectorSD::EndOfEvent(G4HCofThisEvent*){
+
+    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
+      edm::LogWarning("G4") << "Total of " << _currentSize 
+			    << " virtual detector hits were generated in the event." 
+			    << endl
+			    << "Only " << _sizeLimit << " are saved in output collection." 
+			    << endl;
+      cout << "Total of " << _currentSize 
+	   << " virtual detector hits were generated in the event." 
+	   << endl
+	   << "Only " << _sizeLimit << " are saved in output collection." 
+	   << endl;
+    }
 
     if (verboseLevel>0) { 
       G4int NbHits = _collection->entries();

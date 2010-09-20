@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.8 2010/09/08 20:11:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/08 20:11:07 $
+// $Id: SteppingAction.cc,v 1.9 2010/09/20 02:57:05 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/20 02:57:05 $
 //
 // Original author Rob Kutschke
 //
@@ -11,6 +11,10 @@
 // C++ includes
 #include <cstdio>
 #include <cmath>
+
+// Framework includes
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
@@ -69,6 +73,22 @@ namespace mu2e {
       _debugTrackList.add(list);
     }
 
+    // Get list of particles to keep or to drop in stepping action
+    if ( config.hasName("g4.steppingActionDropPDG") ){
+      config.getVectorInt("g4.steppingActionDropPDG",_pdgToDrop);
+    }
+    if( _pdgToDrop.size()>0 ) {
+      cout << "Drop these particles in the SteppingAction: ";
+      for( int i=0; i<_pdgToDrop.size(); ++i ) cout << _pdgToDrop[i] << ",";
+      cout << endl;
+    }
+
+    // Get maximum allowed number of steps per event
+    _maxSteps = config.getInt("g4.steppingActionMaxSteps", 0);
+    if( _maxSteps>0 ) {
+      cout << "Limit maximum number of steps in SteppingAction to "
+	   << _maxSteps << endl;
+    }
 
   }
 
@@ -95,7 +115,28 @@ namespace mu2e {
 
   void SteppingAction::UserSteppingAction(const G4Step* step){  
 
+    _nSteps++;
+
     G4Track* track = step->GetTrack();
+
+
+    // Do we reached maximum allowed number of steps per event?
+    if( _maxSteps>0 && _nSteps>_maxSteps ) {
+      cout << "SteppingAction: kill particle pdg=" 
+	   << track->GetDefinition()->GetPDGEncoding()
+	   << " due to large number of steps." << endl;
+      track->SetTrackStatus(fStopAndKill);
+
+    // If particle is in the drop list - drop it
+    } else if( _pdgToDrop.size()>0 ) {
+      
+      for( int i=0; i<_pdgToDrop.size(); ++i ) {
+	if( track->GetDefinition()->GetPDGEncoding() == _pdgToDrop[i] ) {
+	  track->SetTrackStatus(fStopAndKill);
+	  break;
+	}
+      }
+    }	  
 
     if ( _doKillInHallAir &&  killInHallAir(track) ){
       track->SetTrackStatus(fStopAndKill);
@@ -214,6 +255,13 @@ namespace mu2e {
       cout << "Killed track: in Hall Air." << endl;
     }
     return true;
+  }
+
+  void SteppingAction::BeginOfEvent() {
+    _nSteps = 0;
+  }
+  
+  void SteppingAction::EndOfEvent() {
   }
 
 } // end namespace mu2e

@@ -1,9 +1,9 @@
 //
 // Variation on the geometry for debugging the beamline.
 //
-// $Id: beamline_geom.txt,v 1.5 2010/09/13 23:43:58 logash Exp $
+// $Id: beamline_geom.txt,v 1.6 2010/09/20 02:57:05 logash Exp $
 // $Author: logash $
-// $Date: 2010/09/13 23:43:58 $
+// $Date: 2010/09/20 02:57:05 $
 //
 // Original author Rob Kutschke
 //
@@ -46,7 +46,7 @@ bool hasVirtualDetector = true;
 bool   g4SteppingAction.killLowEKine  = true;
 bool   g4SteppingAction.killInHallAir = true;
 bool   g4SteppingAction.killerVerbose = false;
-double g4SteppingAction.eKineMin      = 1.0;    // Kinetic energy in MeV
+double g4SteppingAction.eKineMin      = 0.1;    // Kinetic energy in MeV
 
 //
 // This tells emacs to view this file in c++ mode.

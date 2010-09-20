@@ -2,14 +2,18 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.13 2010/09/13 23:43:58 logash Exp $
+// $Id: StrawSD.cc,v 1.14 2010/09/20 02:57:05 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/13 23:43:58 $
+// $Date: 2010/09/20 02:57:05 $
 //
 // Original author Rob Kutschke
 //
 
 #include <cstdio>
+
+// Framework includes
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e incldues
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -40,6 +44,8 @@ using namespace std;
 
 namespace mu2e {
 
+  int StrawSD::_sizeLimit=0;
+
   StrawSD::StrawSD(G4String name, const SimpleConfig& config ) :G4VSensitiveDetector(name){
     G4String HCname("StepPointG4Collection");
     collectionName.insert(HCname);
@@ -51,6 +57,8 @@ namespace mu2e {
       config.getVectorInt(key,list);
       _debugList.add(list);
     }
+
+    _currentSize = 0;
 
     edm::Service<GeometryService> geom;
 
@@ -109,10 +117,22 @@ namespace mu2e {
     }
     HCE->AddHitsCollection( HCID, _collection ); 
 
+    _currentSize=0;
+
   }
   
 
   G4bool StrawSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
+
+    _currentSize += 1;
+
+    if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
+      if( (_currentSize - _sizeLimit)==1 ) {
+	edm::LogWarning("G4") << "Maximum number of particles reached in StrawSD: " 
+			      << _currentSize << endl;
+      }
+      return false;
+    }
 
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
@@ -323,6 +343,19 @@ namespace mu2e {
   }
 
   void StrawSD::EndOfEvent(G4HCofThisEvent*){
+
+    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
+      edm::LogWarning("G4") << "Total of " << _currentSize 
+			    << " straw hits were generated in the event." 
+			    << endl
+			    << "Only " << _sizeLimit << " are saved in output collection." 
+			    << endl;
+      cout << "Total of " << _currentSize 
+	   << " straw hits were generated in the event." 
+	   << endl
+	   << "Only " << _sizeLimit << " are saved in output collection." 
+	   << endl;
+    }
 
     if (verboseLevel>0) { 
       G4int NbHits = _collection->entries();
