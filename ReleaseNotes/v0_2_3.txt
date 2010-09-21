@@ -3,10 +3,17 @@
  
            Release notes for Mu2e Offline software, v0_2_3
 
-  $Id: v0_2_3.txt,v 1.2 2010/09/21 03:09:36 genser Exp $
+  $Id: v0_2_3.txt,v 1.3 2010/09/21 19:44:41 genser Exp $
   $Author: genser $
-  $Date: 2010/09/21 03:09:36 $
+  $Date: 2010/09/21 19:44:41 $
 
+
+ 2) September 21, 2010, genser
+    Added getSupportParams
+       TTrackerGeom/inc/TTracker.hh
+    Factored out _sectorBoxHalfLengths calculations
+       TTrackerGeom/inc/TTrackerMaker.hh
+       TTrackerGeom/src/TTrackerMaker.cc       
 
  1) September 20, 2010, genser
 
