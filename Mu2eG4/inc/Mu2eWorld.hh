@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.20 2010/09/08 00:07:27 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/08 00:07:27 $
+// $Id: Mu2eWorld.hh,v 1.21 2010/09/21 21:54:31 avdhesh Exp $
+// $Author: avdhesh $ 
+// $Date: 2010/09/21 21:54:31 $
 //
 // Original author Rob Kutschke
 //
@@ -98,6 +98,7 @@ namespace mu2e {
     void constructVD( );
     VolumeInfo constructTracker();
     VolumeInfo constructTarget();
+    void constructProtonAbs();
     void constructCal();
     void constructMagnetYoke();
     void constructCRV();

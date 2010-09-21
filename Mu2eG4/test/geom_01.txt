@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.49 2010/09/13 23:43:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/13 23:43:58 $
+// $Id: geom_01.txt,v 1.50 2010/09/21 21:54:31 avdhesh Exp $
+// $Author: avdhesh $
+// $Date: 2010/09/21 21:54:31 $
 //
 // Original author Rob Kutschke
 //
@@ -13,6 +13,7 @@ string detector.name  = "g4geom_v00";
 
 bool hasHall          = true;
 bool hasTarget        = true;
+bool hasProtonAbsorber  = true;
 bool hasCalorimeter   = true;
 bool hasBFieldManager = true;
 bool hasVirtualDetector = false;
@@ -353,6 +354,17 @@ string bfield.tsFile = "/grid/fermiapp/mu2e/mu2e/BFieldMaps/MECO/tsmap_unfmt_rot
 vector<int> bfield.tsDimensions = { 425, 18, 388 };
 string bfield.psFile = "/grid/fermiapp/mu2e/mu2e/BFieldMaps/MECO/psmap_unfmt.dat";
 vector<int> bfield.psDimensions = {  76, 38, 251 };
+
+// Proton Absorber
+string protonabsorber.materialName = "G4_POLYETHYLENE";
+double protonabsorber.InRadius1    =  384.7;
+double protonabsorber.OutRadius1   =  385.2;
+double protonabsorber.InRadius0    =  334.7;
+double protonabsorber.OutRadius0   =  335.2;
+double protonabsorber.halfLength   = 1250.0;
+double protonabsorber.thickness    =    0.5;
+bool   protonabsorber.visible      = true;
+bool   protonabsorber.solid        = true;
 
 //
 //

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.53 2010/09/21 20:13:20 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/09/21 20:13:20 $
+// $Id: Mu2eWorld.cc,v 1.54 2010/09/21 21:54:31 avdhesh Exp $
+// $Author: avdhesh $ 
+// $Date: 2010/09/21 21:54:31 $
 //
 // Original author Rob Kutschke
 //
@@ -165,6 +165,7 @@ namespace mu2e {
     constructVD();
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
+    constructProtonAbs();  //this is to construct proton absorber
 
     // These are just placeholders for now - and might be misnamed.
     constructCal();
@@ -1087,6 +1088,88 @@ namespace mu2e {
 
     return targetInfo;
   } // end Mu2eWorld::constructTarget
+
+  //construct proton absorber
+  void Mu2eWorld::constructProtonAbs(){
+    
+    VolumeInfo parent1 = locateVolInfo("ToyDS2Vacuum");
+    VolumeInfo parent2 = locateVolInfo("ToyDS3Vacuum");
+    double pabs1rIn0   = _config->getDouble("protonabsorber.InRadius0");
+    double pabs1rOut0  = _config->getDouble("protonabsorber.OutRadius0");
+    double pabs2rIn1   = _config->getDouble("protonabsorber.InRadius1");
+    double pabs2rOut1  = _config->getDouble("protonabsorber.OutRadius1");
+    double zLen   = _config->getDouble("protonabsorber.halfLength");
+    double thick  = _config->getDouble("protonabsorber.thickness");
+    double trkMinr= _config->getDouble("ttracker.envelopeInnerRadius");
+    pabs1rIn0 = pabs1rOut0 - thick;
+    pabs2rOut1 = trkMinr;  pabs2rIn1 = trkMinr - thick;
+    
+    MaterialFinder materialFinder(*_config);
+    G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
+    
+    double z0DSup   = parent1.centerInWorld.z()+_hallOriginInMu2e.z();
+    vector<double> targetRadius;  _config->getVectorDouble("target.radii", targetRadius);
+    double numoftf = (targetRadius.size()-1)/2.0;
+    double foilwid=_config->getDouble("target.deltaZ"); double taglen =(foilwid*numoftf) + 5.0;
+    double z0valt =_config->getDouble("target.z0");     double tagoff =z0valt - z0DSup + 12000.0;
+    double targetEnd = tagoff + taglen;
+    double ds2halflen = _config->getDouble("toyDS2.halfLength");
+    double pabs1len = ds2halflen - targetEnd;
+    G4ThreeVector  pabs1Offset(0.0, 0.0, (pabs1len/2.0) + targetEnd);
+    
+    double pabs1rOut1 = ((pabs2rOut1 - pabs1rOut0)*(pabs1len/(2.0*zLen))) + pabs1rOut0;
+    double pabs1rIn1  = pabs1rOut1 - thick;
+    double ds3halflen = _config->getDouble("toyDS3.halfLength");
+    double pabs2len  = (2.0*zLen) - pabs1len;
+    double pabs2zoff = (pabs2len/2.0) - ds3halflen;
+    G4ThreeVector  pabs2Offset(0.0, 0.0, pabs2zoff);
+    
+    // proton absorber in DS2
+    double pabs1Param[7] = { pabs1rIn0, pabs1rOut0, pabs1rIn1, pabs1rOut1, pabs1len/2.0, 0.0, 360.0*CLHEP::degree };
+    bool pabsVisible = _config->getBool("protonabsorber.visible",true);
+    bool pabsSolid   = _config->getBool("protonabsorber.solid",true);
+    
+    if( _config->getBool("hasProtonAbsorber", true) ){
+      
+      edm::LogInfo log("GEOM");
+      log << "Constructing Proton Absorber -- \n";
+      log << "Proton Abs Offset in DS2:  " << pabs1Offset <<"\n";
+      log << "rIn,  rOut (-z): "<< pabs1rIn0 <<"  "<< pabs1rOut0<<"  ";
+      log << "rIn,  rOut (+z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
+      log << "halflength: "<< pabs1len/2.0 <<"\n";
+      log << "Proton Abs Offset in DS3:  " << pabs2Offset <<"\n";
+      log << "rIn,  rOut (-z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
+      log << "rIn,  rOut (+z): "<< pabs2rIn1 <<"  "<< pabs2rOut1<<"  ";
+      log << "halflength: "<< pabs2len/2.0 <<"\n";
+      
+      VolumeInfo protonabs1Info = nestCons2( "protonabs1",
+					     pabs1Param,
+					     pabsMaterial,
+					     0,
+					     pabs1Offset,
+					     parent1,
+					     0,
+					     pabsVisible,
+					     G4Color::White(),
+					     pabsSolid
+					     );
+      
+      // proton absorber in DS3
+      double pabs2Param[7] = { pabs1rIn1, pabs1rOut1, pabs2rIn1, pabs2rOut1, pabs2len/2.0, 0.0, 360.0*CLHEP::degree };
+      
+      VolumeInfo protonabs2Info = nestCons2( "protonabs2",
+					     pabs2Param,
+					     pabsMaterial,
+					     0,
+					     pabs2Offset,
+					     parent2,
+					     0,
+					     pabsVisible,
+					     G4Color::Magenta(),
+					     pabsSolid
+					     );
+    }
+  } // end of Mu2eWorld::constructProtonAbs;
 
   // Construct the magnetic field managers and attach them to
   // the relevant volumes.
