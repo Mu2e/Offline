@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.11 2010/09/03 21:20:41 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.12 2010/09/21 03:06:23 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/03 21:20:41 $
+// $Date: 2010/09/21 03:06:23 $
 //
 // Original author Rob Kutschke
 //
@@ -298,7 +298,7 @@ namespace mu2e {
 
       // Inner edge of the innermost wire connected to this manifold.
       // this is layer dependent, take care of it at xstraw below
-      double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*iman - dx;
+      double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*iman + dx;
 
       // Add all of the straws connected to this manifold.
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
@@ -421,8 +421,8 @@ namespace mu2e {
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
       double xA = (_layersPerSector==1) ? 
-        _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i - dx :
-        _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i - dx + _strawOuterRadius;
+        _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + dx :
+        _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + dx + _strawOuterRadius;
       double yA = sqrt( square(_innerSupportRadius) - square(xA) );
       double yB = yA + _manifoldYOffset;
       // cout << "Straw Length: " << xA << " " << yB*2.0 << endl;
