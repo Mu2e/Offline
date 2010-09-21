@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.12 2010/09/21 03:06:23 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.13 2010/09/21 19:39:01 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/21 03:06:23 $
+// $Date: 2010/09/21 19:39:01 $
 //
 // Original author Rob Kutschke
 //
@@ -37,9 +37,7 @@ namespace mu2e {
   // Constructor that gets information from the config file instead of
   // from arguments.
   TTrackerMaker::TTrackerMaker( SimpleConfig const& config){
-    
     parseConfig(config);
-
     buildIt( );
   }
   
@@ -182,6 +180,8 @@ namespace mu2e {
     _nStrawsToReserve = _numDevices * _sectorsPerDevice * _layersPerSector * 
       _manifoldsPerEnd * _strawsPerManifold;
     //_tt->_allStraws.reserve(_nStrawsToReserve); // see makeLayer
+
+    computeConstantSectorBoxParams();
 
     _tt->_devices.reserve(_numDevices);
     // Construct the devices and their internals.
@@ -457,7 +457,55 @@ namespace mu2e {
     //    int idev = dev.Id();
     //    cout << "Debugging TTrackerMaker isec,idev: " << isec << ", " << idev << endl;
 
-    // the box is a trapezoid 
+    // we copy precalculated _sectorBoxHalfLengths into the sector
+    sector._boxHalfLengths = _sectorBoxHalfLengths;
+
+    // Now calculate the rotations and placement of the sector envelope
+
+    sector._boxRxAngle = 0.;
+    sector._boxRyAngle = 0.;
+    sector._boxRzAngle = _sectorBaseRotations.at(isec) + dev.rotation();
+
+    double zOffset = (_supportHalfThickness + _manifoldHalfLengths.at(2))*_sectorZSide.at(isec);
+    
+    double xOffset = (_layersPerSector==1) ?
+      _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd : 
+      _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd + _strawOuterRadius*0.5;
+
+    CLHEP::HepRotationZ RZ(sector._boxRzAngle);
+
+    sector._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + dev.origin());
+
+    // we may want to set to 0.0 some values smaller than say 10-6...
+    const double max0val = 1.e-06;
+    for (int ii=0; ii!=sector._boxOffset.SIZE; ++ii) {
+      if (abs(sector._boxOffset[ii])<max0val) sector._boxOffset[ii]=0.0;
+    }
+
+//     cout << "Debugging sector box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
+//       isec << ", " << 
+//       by << ", " <<
+//       bz << ", " <<
+//       bxl << ", " <<
+//       bxs << ", " <<
+//       sector._boxRzAngle << ", " <<
+//       sector._boxOffset << 
+//       endl;
+
+//     cout << "Debugging sector box isec, straw lengths: ";
+//     for ( int i=0; i<_manifoldsPerEnd; ++i ){
+//       cout << i << " " << _strawHalfLengths.at(i);
+//     }
+//     cout << endl;
+
+    return;
+
+  }
+
+  void TTrackerMaker::computeConstantSectorBoxParams() {
+
+    // the box is a trapezoid ; note that G4 has it own coordinate convetion for each solid
+
     // shorter x             is the length of the straws in the top/last (shortest) manifold
     // longer  x is longer than the length of the straws in the longest manifold 
     // the other dimentions are "z", the combined manifold width
@@ -550,59 +598,30 @@ namespace mu2e {
     double by = _manifoldHalfLengths.at(2);
 
     // now push it all back into the vector
+    // std::vector<double> _sectorBoxHalfLengths;
 
-    sector._boxHalfLengths.reserve(5);
+    static const int sectorBoxHalfLengthsSize= 5;
+
+    _sectorBoxHalfLengths.reserve(sectorBoxHalfLengthsSize);
 
     // the order is forced by the LTracker and nestTrp/G4Trd and Sector data
 
-    sector._boxHalfLengths.push_back(0.0); //dummy to be compatible with LTracker
-    sector._boxHalfLengths.push_back(bz+pad);
-    sector._boxHalfLengths.push_back(by+pad);
+    _sectorBoxHalfLengths.push_back(0.0); //dummy to be compatible with LTracker
+    _sectorBoxHalfLengths.push_back(bz+pad);
+    _sectorBoxHalfLengths.push_back(by+pad);
 
-    sector._boxHalfLengths.push_back(bxs+pad);
-    sector._boxHalfLengths.push_back(bxl+pad);
+    _sectorBoxHalfLengths.push_back(bxs+pad);
+    _sectorBoxHalfLengths.push_back(bxl+pad);
 
-    // Now calculate the rotations and placement of the sector envelope
-
-    sector._boxRxAngle = 0.;
-    sector._boxRyAngle = 0.;
-    sector._boxRzAngle = _sectorBaseRotations.at(isec) + dev.rotation();
-
-    double zOffset = (_supportHalfThickness + _manifoldHalfLengths.at(2))*_sectorZSide.at(isec);
-    
-    double xOffset = (_layersPerSector==1) ?
-      _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd : 
-      _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd + _strawOuterRadius*0.5;
-
-    CLHEP::HepRotationZ RZ(sector._boxRzAngle);
-
-    sector._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + dev.origin());
-
-    // we may want to set to 0.0 some values smaller than say 10-6...
-    const double max0val = 1.e-06;
-    for (int ii=0; ii!=sector._boxOffset.SIZE; ++ii) {
-      if (abs(sector._boxOffset[ii])<max0val) sector._boxOffset[ii]=0.0;
+    if (_sectorBoxHalfLengths.size()!=sectorBoxHalfLengthsSize) {
+      cout << " _sectorBoxHalfLengths.size() sould be " << sectorBoxHalfLengthsSize << 
+        ", is : " << _sectorBoxHalfLengths.size() << endl;
+      throw cms::Exception("GEOM")
+        << "something is wrong with sector _sectorBoxHalfLengths calculations \n";
     }
-
-//     cout << "Debugging sector box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
-//       isec << ", " << 
-//       by << ", " <<
-//       bz << ", " <<
-//       bxl << ", " <<
-//       bxs << ", " <<
-//       sector._boxRzAngle << ", " <<
-//       sector._boxOffset << 
-//       endl;
-
-//     cout << "Debugging sector box isec, straw lengths: ";
-//     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-//       cout << i << " " << _strawHalfLengths.at(i);
-//     }
-//     cout << endl;
-
     return;
-
   }
+
 
   // Compute the rotation for the given device.
   double TTrackerMaker::chooseDeviceRotation( int idev ) const{
