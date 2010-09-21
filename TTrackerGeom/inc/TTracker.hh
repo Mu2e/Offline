@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.2 2010/05/18 20:29:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:29:20 $
+// $Id: TTracker.hh,v 1.3 2010/09/21 19:38:34 genser Exp $
+// $Author: genser $
+// $Date: 2010/09/21 19:38:34 $
 //
 // Original author Rob Kutschke
 //
@@ -114,6 +114,10 @@ namespace mu2e {
 
     const std::vector<StrawDetail>& getStrawDetails() const{
       return _strawDetails;
+    }
+
+    const Support& getSupportParams () const{
+      return _supportParams;
     }
 
     // Shape parameters of an envelop holding one device.
