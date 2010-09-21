@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.52 2010/09/08 00:07:27 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/08 00:07:27 $
+// $Id: Mu2eWorld.cc,v 1.53 2010/09/21 20:13:20 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/09/21 20:13:20 $
 //
 // Original author Rob Kutschke
 //
@@ -1041,25 +1041,14 @@ namespace mu2e {
     if( _config->getBool("hasLTracker",false) ){
       int ver = _config->getInt("LTrackerVersion",3);
       //cout << "LTracker version: " << ver << "\n";
-      if ( ver == 1 ){
-        trackerInfo = constructLTrackerv1( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
-      }
-      else if ( ver == 2 ) {
-        trackerInfo = constructLTrackerv2( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
-      } else {
+      if ( ver == 3 ){
         trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
       }
     } else if ( _config->getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
     } else if ( _config->getBool("hasTTracker",false) ) {
-      int ver = _config->getInt("TTrackerVersion",1);
-      if ( ver == 1 ){
-        trackerInfo = constructTTrackerv1( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
-      }
-      else if ( ver == 2 ) {
-        trackerInfo = constructTTrackerv2( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
-      }        
-      else if ( ver == 3 ) {
+      int ver = _config->getInt("TTrackerVersion",3);
+      if ( ver == 3 ){
         trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
       }        
     } else {
