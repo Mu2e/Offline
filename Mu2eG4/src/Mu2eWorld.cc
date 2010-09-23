@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.54 2010/09/21 21:54:31 avdhesh Exp $
-// $Author: avdhesh $ 
-// $Date: 2010/09/21 21:54:31 $
+// $Id: Mu2eWorld.cc,v 1.55 2010/09/23 15:34:37 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/09/23 15:34:37 $
 //
 // Original author Rob Kutschke
 //
@@ -866,7 +866,7 @@ namespace mu2e {
                                         ts4VacPosition-_hallOriginInMu2e,
                                         parent,
                                         0,
-                                        true,
+                                        toyTSVisible,
                                         G4Color::Yellow(),
                                         toyTSSolid
                                         );
