@@ -3,12 +3,22 @@
  
            Release notes for Mu2e Offline software, v0_2_3
 
-  $Id: v0_2_3.txt,v 1.4 2010/09/21 20:31:09 genser Exp $
+  $Id: v0_2_3.txt,v 1.5 2010/09/23 16:55:19 genser Exp $
   $Author: genser $
-  $Date: 2010/09/21 20:31:09 $
+  $Date: 2010/09/23 16:55:19 $
 
+ 5) September 23 2010, genser
 
- 3) September 21, 2010, genser
+    Removed references to Trackerv1 & 2 for both L & T tracker
+    Only v3 can be used now
+       Mu2eG4/src/StrawSD.cc
+
+ 4) September 23 2010, genser
+
+    Fixed typo in ToyTS4Cryo visibility attribute
+       Mu2eG4/src/Mu2eWorld.cc
+
+ 3) September 21 2010, genser
 
     Removed invocation of construct?Trackerv1 & 2; 
     Made v3 the default for both L & T tracker
