@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.14 2010/09/20 02:57:05 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/20 02:57:05 $
+// $Id: StrawSD.cc,v 1.15 2010/09/23 16:49:57 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/09/23 16:49:57 $
 //
 // Original author Rob Kutschke
 //
@@ -78,11 +78,11 @@ namespace mu2e {
       _nStrawsPerSector = sector.nLayers()  * layer.nStraws();
       _nStrawsPerDevice = device.nSectors() * _nStrawsPerSector;
 
-      _TrackerVersion = config.getInt("TTrackerVersion",1);
+      _TrackerVersion = config.getInt("TTrackerVersion",3);
 
-      if ( _TrackerVersion != 1 && _TrackerVersion != 2 && _TrackerVersion != 3) {
+      if ( _TrackerVersion != 3) {
         throw cms::Exception("StrawSD")
-          << "Expected one TTrackerVersion of 1,2,3 but found " << _TrackerVersion <<endl;
+          << "Expected TTrackerVersion of 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
 
@@ -94,9 +94,9 @@ namespace mu2e {
 
       _TrackerVersion = config.getInt("LTrackerVersion",3); // also see Mu2eWorld.cc
 
-      if ( _TrackerVersion != 1 && _TrackerVersion != 2 && _TrackerVersion != 3) {
+      if ( _TrackerVersion != 3) {
         throw cms::Exception("StrawSD")
-          << "Expected one LTrackerVersion of 1,2,3 but found " << _TrackerVersion <<endl;
+          << "Expected LTrackerVersion of 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
 
@@ -198,19 +198,7 @@ namespace mu2e {
 
     G4int sdcn = 0;
 
-    if ( _TrackerVersion == 1) {
-
-      // this will also work for LTracker 1,2,3
-      sdcn = touchableHandle->GetCopyNumber();
-
-    } else if ( _TrackerVersion == 2) {
-      
-      //      cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
-
-      sdcn = touchableHandle->GetCopyNumber(0) + 
-        _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(1));
-
-    } else if ( _TrackerVersion == 3) {
+    if ( _TrackerVersion == 3) {
       
       //      cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
 
@@ -221,7 +209,7 @@ namespace mu2e {
     } else {
 
       throw cms::Exception("GEOM")
-        << "Expected one TTrackerVersion of 1,2,3 but found " << _TrackerVersion << endl;
+        << "Expected TrackerVersion of 3 but found " << _TrackerVersion << endl;
       
     }
 
@@ -376,11 +364,7 @@ namespace mu2e {
 
     edm::Service<GeometryService> geom;
     if ( geom->hasElement<TTracker>() ) {
-      if ( _TrackerVersion == 1 ) {
-        td = 2;
-      } else if ( _TrackerVersion == 2 ||  _TrackerVersion == 3 ) {
-        td =_TrackerVersion;
-      }
+      td =_TrackerVersion;
     }
 
     //    cout << "Debugging: tracker depth/version: " << td << "/" << _TrackerVersion << endl;
