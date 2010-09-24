@@ -1,17 +1,52 @@
 //
-// A plugin to test using root interactively.
+// A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_plugin.cc,v 1.1 2010/09/15 23:14:13 kutschke Exp $
+// $Id: InteractiveRoot_plugin.cc,v 1.2 2010/09/24 17:01:53 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/15 23:14:13 $
+// $Date: 2010/09/24 17:01:53 $
 //
 // Original author Rob Kutschke
 //
-
+// Notes
+// 1) The key to making this work is the management of the TApplication instance.
+//    In order for ROOT interactive graphics to work, exactly one instance
+//    of TApplication must be created somewhere in the job.  If several 
+//    modules wish to do ROOT graphics then exactly one of them needs to 
+//    create the TApplication; which ever module does this must also
+//    delete the TApplication at end of job.  In this module, the test
+//    to see if the TApplication was created relies on the value of gApplication.
+//    The auto_ptr will look after deletion at destructor-time.
+//
+// 2) ROOT requires that TCanvas objects have unique names, even if we create
+//    them in different modules or write them to different TDirectory's. If we
+//    don't respect this, ROOT will crash.  I presume this is because TCanvas's 
+//    are all owned by the TApplication, which no knowledge of modules or TDirectories.
+//    In the framework the module label is guaranteed to be unique within a job.
+//    So this example embeds the module label into the canvas name.  Making the titles
+//    unique if for convenience.
+//
+// 3) There is a deficiency in TFileService. It correctly does management of ROOT directories
+//    for beginJob, analyze and some other methods. It does not do this correctly for
+//    endJob.  So we need to do the directory management ourselves, hence the existence
+//    of the _directory data member.  This must be initialized after TFileService has
+//    created the directory for this module, which occurs on the first call to tfs->make<T>(...).
+//    This should be corrected in a new version of TFileService.
+//
+// 4) For background see http://mu2e.fnal.gov/atwork/computing/ROOTFAQ.shtml .
+//    There is something broken in the interactions among ROOT, TFileService, the EDM and the 
+//    framework.  I expected to be able to code the following right after instantiating the
+//    canvas:
+//       gDirectory->Append(_canvas)
+//    Then we would not need anything in the endJob method.  I am not sure why but
+//    this causes a crash at the end of the job; the current guess is that there is a 
+//    double delete of the histogram in the canvas, once when the histogram is deleted and
+//    once when the canvas is deleted.  The hack solution is to do a Write() in endJob.
+//    
 
 // C++ includes.
 #include <iostream>
 #include <string>
+#include <memory>
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -53,51 +88,78 @@ namespace mu2e {
 
     // Start: run time parameters
 
+    // The module label of this module.
+    std::string _moduleLabel;
+
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
 
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
 
+    // Number of events to accumulate between prompts.
+    int _nAccumulate;
+
+    // End: run time parameters
+
     // Pointers to histograms, ntuples, TGraphs.
     TH1F*         _hMultiplicity;
     TCanvas*      _canvas;
-    TApplication* _application;
-    
+
+    // Some ugly but necessary ROOT related bookkeeping:
+
+    // The job needs exactly one instance of TApplication.  See note 1.
+    auto_ptr<TApplication> _application;
+
+    // Save directory from beginJob so that we can go there in endJob. See note 3.
+    TDirectory* _directory;
+
   };
 
   InteractiveRoot::InteractiveRoot(edm::ParameterSet const& pset) : 
 
     // Run time parameters
+    _moduleLabel(pset.getParameter<string>("@module_label")),
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
     _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
+    _nAccumulate(pset.getUntrackedParameter<int>("nAccumulate",20)),
 
-    // ROOT objects
+    // ROOT objects that are the main focus of this example.
     _hMultiplicity(0),
+    _canvas(0),
+
+    // Some ugly but necessary ROOT related bookkeeping.
     _application(0),
-    _canvas(0){
+    _directory(0){
+
   }
-  
+
   void InteractiveRoot::beginJob(edm::EventSetup const& ){
 
-    // Get access to the TFile service.
+    // Get access to the TFile service and save current directory for later use.
     edm::Service<edm::TFileService> tfs;
 
     // Create a histogram.
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event", 100,  0.,  100. );
 
-    // Create a root interactive environment.
-    // This may be done only once per job.  If multiple modules need to make TCanvases, then
-    // we need to find a way to coordinate this step; move it to the TFileService?
-    int    tmp_argc(0);
-    char** tmp_argv(0);
-    _application = new TApplication( "noapplication", &tmp_argc, tmp_argv );
+    // If needed, create the ROOT interactive environment. See note 1.
+    if ( !gApplication ){
+      int    tmp_argc(0);
+      char** tmp_argv(0);
+      _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+    }
 
-    // Create a canvas
-    _canvas = new TCanvas("canvas","My Canvas",200,10,700,700);
+    // Create a canvas with a unique name.  See note 2.
+    TString name  = "canvas_"     + _moduleLabel;
+    TString title = "Canvas for " + _moduleLabel;
+    int window_size(700);
+    _canvas = tfs->make<TCanvas>(name,title,window_size,window_size);
 
-    // Draw the still empty histogram.
+    // Draw the still empty histogram. It will be updated later.
     _hMultiplicity->Draw();
+
+    // See note 3.
+    _directory = gDirectory;
 
   }
 
@@ -112,11 +174,11 @@ namespace mu2e {
     _hMultiplicity->Fill(hits.size());
 
     // Periodically update the displayed histogram.
-    if ( event.id().event()%10==0 ){
+    if ( event.id().event()%_nAccumulate==0 ){
       _canvas->Modified();
       _canvas->Update();
 
-      cerr << "Double click in the Canvas to continue:" ;
+      cerr << "Double click in the Canvas " << _moduleLabel << " to continue:" ;
       _canvas->WaitPrimitive();
       cerr << endl;
 
@@ -125,6 +187,16 @@ namespace mu2e {
   } // end analyze
 
   void InteractiveRoot::endJob(){
+
+    // cd() to correct root directory. See note 3.
+    TDirectory* save = gDirectory;
+    _directory->cd();
+
+    // Write canvas.  See note 4.
+    _canvas->Write();
+
+    // cd() back to where we were.  See note 3.
+    save->cd();
 
   }
 
