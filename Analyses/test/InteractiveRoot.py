@@ -1,8 +1,11 @@
-# Configuration file for testing interactive root.
+# An example of how to run a modules which creates a TCanvas.
+# You need to in the TCanvas to move the job along.
+# It requires the existence of the input file data_03.root, that was
+# made by g4test_03.py
 #
-# $Id: InteractiveRoot.py,v 1.2 2010/09/24 17:02:29 kutschke Exp $
+# $Id: InteractiveRoot.py,v 1.3 2010/09/24 17:06:53 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/24 17:02:29 $
+# $Date: 2010/09/24 17:06:53 $
 #
 # Original author Rob Kutschke
 #
