@@ -1,8 +1,8 @@
 # Configuration file for testing interactive root.
 #
-# $Id: InteractiveRoot.py,v 1.1 2010/09/15 23:14:13 kutschke Exp $
+# $Id: InteractiveRoot.py,v 1.2 2010/09/24 17:02:29 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/15 23:14:13 $
+# $Date: 2010/09/24 17:02:29 $
 #
 # Original author Rob Kutschke
 #
@@ -25,7 +25,7 @@ process.load("Config/MessageLogger_cfi")
 
 # Load the service that manages root files for histograms.
 process.TFileService = mu2e.Service("TFileService",
-                       fileName = mu2e.string("readback.root"),
+                       fileName = mu2e.string("InteractiveRoot.root"),
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
@@ -38,7 +38,7 @@ process.source = mu2e.Source("PoolSource",
 )
 
 # Look at the hits from G4.
-process.checkhits = mu2e.EDAnalyzer(
+process.root1 = mu2e.EDAnalyzer(
     "InteractiveRoot",
     g4ModuleLabel = mu2e.string("g4run"),
 )
@@ -46,5 +46,5 @@ process.checkhits = mu2e.EDAnalyzer(
 # End of the section that defines and configures modules.
 
 # Tell the system to execute the modules.
-process.output = mu2e.EndPath(  process.checkhits );
+process.output = mu2e.EndPath(  process.root1 );
 
