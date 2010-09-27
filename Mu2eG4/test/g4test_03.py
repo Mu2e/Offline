@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.11 2010/08/31 21:51:56 kutschke Exp $
+# $Id: g4test_03.py,v 1.12 2010/09/27 20:01:46 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/31 21:51:56 $
+# $Date: 2010/09/27 20:01:46 $
 #
 # Original author Rob Kutschke
 #
@@ -27,7 +27,7 @@ process.maxEvents = mu2e.untracked.PSet(
 
 # Load the standard message logger configuration.
 # Threshold=Info. Limit of 5 per category; then exponential backoff.
-process.load("Config/MessageLogger_cfi")
+process.load("MessageLogger_cfi")
 
 # Load the service that manages root files for histograms.
 process.TFileService = mu2e.Service("TFileService",

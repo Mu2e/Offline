@@ -1,8 +1,8 @@
 # Drop all information except the saved random number engine state.
 #
-# $Id: drop.py,v 1.2 2010/08/18 05:12:34 kutschke Exp $
+# $Id: drop.py,v 1.3 2010/09/27 20:01:46 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/18 05:12:34 $
+# $Date: 2010/09/27 20:01:46 $
 #
 # Original author Rob Kutschke
 #
@@ -26,7 +26,7 @@ process.maxEvents = mu2e.untracked.PSet(
 
 # Load the standard message logger configuration.
 # Threshold=Info. Limit of 5 per category; then exponential backoff.
-process.load("Config/MessageLogger_cfi")
+process.load("MessageLogger_cfi")
 
 
 # Start each new event with an empty event.
