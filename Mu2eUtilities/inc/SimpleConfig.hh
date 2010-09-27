@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.6 2010/08/31 21:49:40 kutschke Exp $
+ * $Id: SimpleConfig.hh,v 1.7 2010/09/27 19:42:30 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/08/31 21:49:40 $
+ * $Date: 2010/09/27 19:42:30 $
  *
  * Original author Rob Kutschke
  *
@@ -23,7 +23,7 @@
  * 2) Does not escape new lines within a string properly.
  *
  *@author $Author: kutschke $
- *@version $Id: SimpleConfig.hh,v 1.6 2010/08/31 21:49:40 kutschke Exp $
+ *@version $Id: SimpleConfig.hh,v 1.7 2010/09/27 19:42:30 kutschke Exp $
  *
  * Date $Date%
  *
@@ -44,6 +44,11 @@
 
 // Mu2e includes
 
+// Forward declarations outside mu2e namespace.
+namespace edm{
+  class FileInPath;
+}
+
 namespace mu2e {
 
   // Forward declaration.
@@ -58,6 +63,10 @@ namespace mu2e {
      *
      */
     SimpleConfig( const std::string& filename = "runtime.conf",
+                  bool allowReplacement=true,
+                  bool messageOnReplacement=true);
+
+    SimpleConfig( const edm::FileInPath& fileInPath,
                   bool allowReplacement=true,
                   bool messageOnReplacement=true);
     

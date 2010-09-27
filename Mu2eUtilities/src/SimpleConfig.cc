@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.5 2010/08/31 21:49:40 kutschke Exp $
+ * $Id: SimpleConfig.cc,v 1.6 2010/09/27 19:42:30 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/08/31 21:49:40 $
+ * $Date: 2010/09/27 19:42:30 $
  *
  * Original author Rob Kutschke
  *
@@ -25,8 +25,9 @@
 #include <iomanip>
 
 // Framework includes
-#include "FWCore/Utilities/interface/EDMException.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
+#include "FWCore/Utilities/interface/EDMException.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -34,7 +35,6 @@
 #include "Mu2eUtilities/src/SimpleConfigRecord.hh"
 
 using namespace std;
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
   //
@@ -44,13 +44,25 @@ namespace mu2e {
   // 2) Check presumed eof conditions to make sure that they are eof, not errors.
 
   /**
-   * The only constructor.
+   * The constructors.
    *
    */
   SimpleConfig::SimpleConfig( const string& filename, 
                               bool allowReplacement,
                               bool messageOnReplacement ):
-    _inputfile(filename),
+    _allowReplacement(allowReplacement),
+    _messageOnReplacement(messageOnReplacement){
+
+    edm::FileInPath fip(filename);
+    _inputfile = fip.fullPath();
+    ReadFile();
+
+  }
+
+  SimpleConfig::SimpleConfig( const edm::FileInPath& fileInPath,
+                              bool allowReplacement,
+                              bool messageOnReplacement):
+    _inputfile(fileInPath.fullPath()),
     _allowReplacement(allowReplacement),
     _messageOnReplacement(messageOnReplacement){
     ReadFile();
