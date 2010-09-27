@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.12 2010/08/28 18:31:16 kutschke Exp $
+# $Id: setup.sh,v 1.13 2010/09/27 19:37:16 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/08/28 18:31:16 $
+# $Date: 2010/09/27 19:37:16 $
 #
 # Original author Rob Kutschke
 #
@@ -25,6 +25,11 @@ fi
 export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && echo \$PWD`
 echo "Base release directory is: " $MU2E_BASE_RELEASE
 
+# These are needed by FileInPath.
+unset  FW_BASE
+export FW_RELEASE_BASE=$MU2E_BASE_RELEASE
+export FW_SEARCH_PATH=$FW_RELEASE_BASE/:$FW_DATA_PATH/
+
 # This will setup all products on which framework depends.
 setup framework v1_1_3
 
@@ -38,6 +43,8 @@ setup g4abla      v3_0
 
 # Other products
 setup heppdt      v3_04_01
+
+#
 
 # Tell the framework to look in the local area to find modules.
 source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
