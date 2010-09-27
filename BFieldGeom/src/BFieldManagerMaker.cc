@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.5 2010/09/13 23:43:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/13 23:43:58 $
+// $Id: BFieldManagerMaker.cc,v 1.6 2010/09/27 19:38:08 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/27 19:38:08 $
 //
 
 // Includes from C++
@@ -23,6 +23,7 @@
 
 // Framework includes
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
 // Includes from Mu2e
@@ -152,7 +153,7 @@ namespace mu2e {
 
     // Open the input file.
     ifstream fin;
-    fin.open(filename.c_str());
+    fin.open(edm::FileInPath(filename).fullPath().c_str());
     if ( !fin.is_open() ) {
       throw cms::Exception("GEOM")
         << "Could not open file containing the magnetic field data. "
@@ -257,7 +258,7 @@ namespace mu2e {
                                        BFMap& bfmap ){
 
     // Open the input file.
-    int fd = open( filename.c_str(), O_RDONLY );
+    int fd = open( edm::FileInPath(filename).fullPath().c_str(), O_RDONLY );
     if ( !fd ) {
       throw cms::Exception("GEOM")
         << "Could not open file containing the magnetic filed map for: "
@@ -432,7 +433,7 @@ namespace mu2e {
 
     // Open the input file.
     ifstream fin;
-    fin.open(filename.c_str());
+    fin.open(edm::FileInPath(filename).fullPath().c_str());
     if ( !fin.is_open() ) throw cms::Exception("GEOM")<<"Could not open file "<<filename<<"\n";
 
     // Skip lines until "data" keyword

@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.cc,v 1.4 2010/04/14 18:00:46 kutschke Exp $
+//   $Id: ParticleDataTable.cc,v 1.5 2010/09/27 19:38:44 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2010/04/14 18:00:46 $
+//   $Date: 2010/09/27 19:38:44 $
 //
 //
 // 1) In changeUnits and improveData I want to loop over all elements in the 
@@ -31,8 +31,9 @@
 #include <iomanip>
 
 // Framework include files.
-#include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e include files
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -68,12 +69,14 @@ namespace mu2e {
   ParticleDataTable::ParticleDataTable( SimpleConfig const& config ):
     _pdt("Mu2eParticleData"),
     _unitsChanged(false){
-    
-    _tableFilename = config.getString("particleDataTable.filename",
-                                      "ConditionsService/data/particle.tbl");
 
-    _auxillaryFilename = config.getString("particleDataTable.auxillaryFilename",
-                                          "ConditionsService/data/mass_width_2008.mc");
+    edm::FileInPath tableFiP(config.getString("particleDataTable.filename",
+                                              "ConditionsService/data/particle.tbl"));
+    _tableFilename = tableFiP.fullPath();
+
+    edm::FileInPath auxFiP(config.getString("particleDataTable.auxillaryFilename",
+                                            "ConditionsService/data/mass_width_2008.mc"));
+    _auxillaryFilename = auxFiP.fullPath();
     
     loadTableFromFile();
   }
