@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.27 2010/09/20 02:57:05 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/20 02:57:05 $
+// $Id: G4_plugin.cc,v 1.28 2010/09/27 21:15:45 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/27 21:15:45 $
 //
 // Original author Rob Kutschke
 //
@@ -32,6 +32,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -257,9 +258,12 @@ namespace mu2e {
 
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
+      
+      edm::FileInPath visPath(_visMacro);
 
       G4String command("/control/execute ");
-      command += _visMacro;
+      command += visPath.fullPath();
+
       _UI->ApplyCommand( command );
       
     }
