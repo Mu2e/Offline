@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.5 2010/09/21 19:39:02 genser Exp $
+// $Id: TTrackerMaker.hh,v 1.6 2010/09/28 21:43:04 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/21 19:39:02 $
+// $Date: 2010/09/28 21:43:04 $
 //
 // Original author Rob Kutschke
 //
@@ -73,6 +73,7 @@ private:
   double _envelopeInnerRadius;         // Inner radius of inside of innermost straw.
   double _strawOuterRadius;            // Radius of each straw.
   double _strawWallThickness;          // Thickness of each straw.
+  double _strawGap;                    // Gap between straws.
   double _deviceSpacing;               // Z-separation between adjacent stations.
   double _deviceHalfSeparation;        // Z-separation between adjacent devices.
   double _deviceRotation;              // Relative rotation of each succesive device.
@@ -106,6 +107,8 @@ private:
   // Z Location of the first device.
   double _z0;
 
+  // global straw counter (will be used per sector)
+  int _istraw;
 
 };
 

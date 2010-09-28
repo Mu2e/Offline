@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.13 2010/09/21 19:39:01 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.14 2010/09/28 21:43:04 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/21 19:39:01 $
+// $Date: 2010/09/28 21:43:04 $
 //
 // Original author Rob Kutschke
 //
@@ -57,8 +57,9 @@ namespace mu2e {
     _envelopeInnerRadius  = config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
     _strawOuterRadius     = config.getDouble("ttracker.strawOuterRadius")*CLHEP::mm;
     _strawWallThickness   = config.getDouble("ttracker.strawWallThickness")*CLHEP::mm;
-    _deviceSpacing     = config.getDouble("ttracker.deviceSpacing")*CLHEP::mm;
-    _deviceHalfSeparation        = config.getDouble("ttracker.deviceHalfSeparation")*CLHEP::mm;
+    _strawGap             = config.getDouble("ttracker.strawGap")*CLHEP::mm;
+    _deviceSpacing        = config.getDouble("ttracker.deviceSpacing")*CLHEP::mm;
+    _deviceHalfSeparation = config.getDouble("ttracker.deviceHalfSeparation")*CLHEP::mm;
     _deviceRotation       = config.getDouble("ttracker.deviceRotation")*CLHEP::degree;
 
     _outerSupportRadius   = config.getDouble("ttracker.outerSupportRadius")*CLHEP::mm;
@@ -222,6 +223,9 @@ namespace mu2e {
 
   void TTrackerMaker::makeSector( const SectorId& secId, Device& dev ){
 
+    // Straw number within the sector; does not reset to zero at each layer/manifold.
+    _istraw = -1;
+
     dev._sectors.push_back( Sector(secId) );
     Sector& sector = dev._sectors.back();
     sector._layers.reserve(_layersPerSector);
@@ -229,9 +233,15 @@ namespace mu2e {
     // we should check here if the manifold is large enough to hold all the layers...
     // closly packed straws need space of (in z) r*[2+(nlay-1)*sqrt(3)]
 
-    if (2*_manifoldHalfLengths.at(2)<_strawOuterRadius*(2.+(_layersPerSector-1.)*sqrt(3.))) {
-      cout << "2*_manifoldHalfLengths[2], straw space: " << 2*_manifoldHalfLengths.at(2) << ", " <<
-        _strawOuterRadius*(2.+(_layersPerSector-1.)*sqrt(3.)) << endl;
+    double strawSpace = 2.0*_strawOuterRadius + 
+      (_layersPerSector-1) * 
+      sqrt(3.0*square(_strawOuterRadius)+3.0*_strawOuterRadius*_strawGap-0.25*square(_strawGap));
+
+    if ( 2.0*_manifoldHalfLengths.at(2) < strawSpace) {
+
+      cout << " 2*_manifoldHalfLengths[2], straw space: " << 2*_manifoldHalfLengths.at(2) << ", " <<
+        strawSpace << endl;
+
       throw cms::Exception("GEOM")
         << "Manifolds are to small for the number of straw layers. \n";
     }
@@ -275,12 +285,15 @@ namespace mu2e {
     layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
 
     // Space between first/last straw and edge of manifold.
-    double dx = _manifoldHalfLengths.at(0) - _strawOuterRadius*_strawsPerManifold;
+    double dx = _manifoldHalfLengths.at(0) - 
+      _strawOuterRadius*_strawsPerManifold - 
+      _strawGap*(_strawsPerManifold-1)*0.5;
 
     // |z| of straw center, relative to the center of the device.
     // Sign is taken care of elsewhere.
 
-    double zOffset = _supportHalfThickness + _strawOuterRadius*(1.+ilay*sqrt(3.));
+    double zOffset = _supportHalfThickness + _strawOuterRadius + 
+      ilay*sqrt(3.0*square(_strawOuterRadius)+3.0*_strawOuterRadius*_strawGap-0.25*square(_strawGap));
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
@@ -291,7 +304,7 @@ namespace mu2e {
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
 
     // Straw number within the layer; does not reset to zero at each manifold.
-    int istraw(-1);
+    //    int _istraw(-1);
 
     // Add all of the straws
     for ( int iman=0; iman<_manifoldsPerEnd; ++iman ){
@@ -302,7 +315,7 @@ namespace mu2e {
 
       // Add all of the straws connected to this manifold.
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
-        ++istraw;
+        ++_istraw;
 
         // layers with fewer straws woul complicate StrawSD, constructTTrackerv, TTrackerMaker 
 
@@ -310,8 +323,8 @@ namespace mu2e {
         // coord system of the device envelope.
         // we will shift the "second" layer from the manifold edge
 
-        double xstraw = (ilay%2==0) ? xA + (1. + 2.*istr)*_strawOuterRadius :
-          xA + 2.*(1+istr)*_strawOuterRadius;
+        double xstraw = (ilay%2==0) ? xA + (1. + 2.*istr)*_strawOuterRadius + istr*_strawGap :
+          xA + 2.*(1+istr)*_strawOuterRadius + istr*_strawGap;
 
         CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_sectorZSide.at(isec) );
         mid += device.origin();
@@ -321,7 +334,7 @@ namespace mu2e {
 
         StrawIndex index(allStraws.size());
 
-        allStraws.push_back( Straw( StrawId( layId, istraw),
+        allStraws.push_back( Straw( StrawId( layId, _istraw),
                                     index,
                                     offset,
                                     &_tt->_strawDetails.at(iman),
@@ -338,7 +351,7 @@ namespace mu2e {
 //           layId << " | " << setw(3) <<
 //           iman << " " << setw(3) <<
 //           istr                << " | " << setw(3) <<
-//           istraw << " " << fixed << setprecision(2) << setw(8) <<
+//           _istraw << " " << fixed << setprecision(2) << setw(8) <<
 //           xstraw << " " << fixed << setprecision(2) << setw(8) <<
 //           2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
 //           mid << " " << fixed << setprecision(2) << setw(8) <<
@@ -408,7 +421,9 @@ namespace mu2e {
     static const double tolerance = 1.e-4*CLHEP::mm;
 
     // Space between first/last straw and edge of manifold.
-    double dx = _manifoldHalfLengths.at(0) - _strawOuterRadius*_strawsPerManifold;
+    double dx = _manifoldHalfLengths.at(0) -
+      _strawOuterRadius*_strawsPerManifold - 
+      _strawGap*(_strawsPerManifold-1)*0.5;
 
     // Check for a legal size.
     if ( dx < 0.0 ){
