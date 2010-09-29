@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.2 2010/09/08 00:07:27 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/08 00:07:27 $
+// $Id: BFieldManager.cc,v 1.3 2010/09/29 22:51:43 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/29 22:51:43 $
 //
 
 // Includes from C++
@@ -21,7 +21,7 @@ using namespace std;
 namespace mu2e {
 
   BFieldManager::BFieldManager():
-    _dsUniformValue(), _last_map(0),_key("") {
+    _key(""), _dsUniformValue(), _last_map(0) {
   }
 
   BFieldManager::~BFieldManager(){

@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.6 2010/09/27 19:38:08 kutschke Exp $
+// $Id: BFieldManagerMaker.cc,v 1.7 2010/09/29 22:51:43 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/27 19:38:08 $
+// $Date: 2010/09/29 22:51:43 $
 //
 
 // Includes from C++
@@ -346,9 +346,9 @@ namespace mu2e {
     }
 
     // Expected grid dimentsions.
-    const int nx = bfmap._nx;
-    const int ny = bfmap._ny;
-    const int nz = bfmap._nz;
+    const size_t nx = bfmap._nx;
+    const size_t ny = bfmap._ny;
+    const size_t nz = bfmap._nz;
 
     // Cross-check that the grid read from the file has the size we expected.
     // This is not really a perfect check since there could be round off error
@@ -496,7 +496,7 @@ namespace mu2e {
 
     // Get the file size, in bytes, ( info.st_size ).
     struct stat info;
-    int stat = fstat( fd, &info);
+    fstat( fd, &info);
 
     // Check that an integral number of records fits in the file.
     int remainder = info.st_size % sizeof(DiskRecord);

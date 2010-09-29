@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.5 2010/09/08 00:07:27 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/08 00:07:27 $
+// $Id: BFMap.hh,v 1.6 2010/09/29 22:51:43 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/29 22:51:43 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -64,7 +64,7 @@ namespace mu2e {
       _isDefined(_nx,_ny,_nz,false){
     };
     
-    ~BFMap(){};
+    virtual ~BFMap();
 
     // Accessors
     CLHEP::Hep3Vector getBField(CLHEP::Hep3Vector const& point) const;
