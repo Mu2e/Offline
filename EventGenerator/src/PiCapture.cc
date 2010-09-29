@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.11 2010/09/02 18:26:02 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/09/02 18:26:02 $
+// $Id: PiCapture.cc,v 1.12 2010/09/29 22:59:09 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/29 22:59:09 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -54,16 +54,22 @@ namespace mu2e {
     _nbins(config.getInt("picapture.nbins",  1000)),
     _doHistograms(config.getBool("picapture.doHistograms",true)),
 
-    // Histograms
-    _hEPhot(0),
-    _hEPhotZ(0),
-
     // Random number distributions; getEngine is found in the base class.
     _randFlat( getEngine() ),
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randExponential( getEngine(), 1.),
     _randomUnitSphere( getEngine() ),
-    _spectrum( getEngine(), &(binnedEnergySpectrum()[0]),_nbins){
+    _spectrum( getEngine(), &(binnedEnergySpectrum()[0]),_nbins),
+
+    // Histograms
+    _hMultiplicity(0),
+    _hEPhot(0),
+    _hEPhotZ(0),
+    _hzPos(0),
+    _hcz(0),
+    _hphi(0),
+    _ht(0),
+    _hFoilNumber(0){
 
     // Sanity checks
     if ( std::abs(_mean) > 99999. ) {
@@ -126,7 +132,7 @@ namespace mu2e {
       // Pick a foil.  Exponentials can go past the number of foils, so have to do a trick (and recall foils numbered
       // 0--16 so do while <17
       //int ifoil = static_cast<int>(nFoils*_randFlat.fire());
-      uint32_t ifoil;
+      int ifoil;
       do{
         ifoil = static_cast<int>(nFoils*_randExponential.fire());
       }while(ifoil > nFoils-1);
