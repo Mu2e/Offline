@@ -134,9 +134,6 @@ namespace mu2e {
     edm::Handle<StepPointMCCollection> points;
     event.getByLabel(creatorName,collectionName,points);
 
-    // Product Id of the input points.
-    edm::ProductID const& id( points.id() );
-
     // first, apply inefficiency
     for ( int ih = 0, sz = points->size(); ih != sz; ++ih ) {
       bool keepPoint = true;
