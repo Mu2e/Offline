@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_plugin.cc,v 1.1 2010/09/21 21:30:57 avdhesh Exp $
-// $Author: avdhesh $ 
-// $Date: 2010/09/21 21:30:57 $
+// $Id: Histforpabs_plugin.cc,v 1.2 2010/09/29 22:34:44 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/29 22:34:44 $
 //
 // Original author Rob Kutschke
 //
@@ -130,7 +130,7 @@ namespace mu2e {
       
     } // end loop over hits.
 
-    for ( int i=0; i<simParticles->size(); ++ i){
+    for ( size_t i=0; i<simParticles->size(); ++ i){
       SimParticle const& sim = simParticles->at(i);
       if(!sim.madeInG4())_hEnergysim->Fill(sim.startMomentum().e());
     }
