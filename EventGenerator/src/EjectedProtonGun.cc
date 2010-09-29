@@ -5,9 +5,9 @@
 // protons.  Production is uniform across the targets and uniform in time;
 // this model needs to be improved.
 //
-// $Id: EjectedProtonGun.cc,v 1.7 2010/08/20 14:45:59 kutschke Exp $ 
+// $Id: EjectedProtonGun.cc,v 1.8 2010/09/29 22:55:06 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2010/08/20 14:45:59 $
+// $Date: 2010/09/29 22:55:06 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -222,11 +222,6 @@ namespace mu2e {
     //   u capture in Si.  JEPT 33(1971)11 and PRL 20(1967)569
     
     //these numbers are in MeV!!!!
-    static const double emx = 1000.;
-    static const double fac = 8.4;
-    // 8.4 twice avoids stupid static problem in C++; fac cannot appear in a const
-    // expression, and either I can do it here or put it in the class.  need constexpr in the standard!!
-    static const double xnorm = 350.*8.4; 
     static const double emn = 1.4; // replacing par1 from GMC
     static const double par2 = 1.3279;
     static const double par3=17844.0;
