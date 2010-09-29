@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.6 2010/09/08 00:07:27 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/08 00:07:27 $
+// $Id: BFMap.cc,v 1.7 2010/09/29 22:43:54 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/29 22:43:54 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -33,6 +33,9 @@
 using namespace std;
 
 namespace mu2e {
+
+  // Destructor
+  BFMap::~BFMap(){}
 
   // function to determine if the point is in the map; take into account Y-symmetry
   bool BFMap::isValid(CLHEP::Hep3Vector const& point) const{
@@ -155,9 +158,11 @@ namespace mu2e {
       point.setY(y);
     }
     
-    dflag && cout 
+    if ( dflag ){ 
+      cout 
       << "Testpoint:          " << testpoint << endl
       << "Point:              " << point << endl;
+    }
 
     // Check validity.  Return a zero field and optionally print a warning.
     if ( !isValid(point) ){
@@ -170,19 +175,21 @@ namespace mu2e {
     }
 
     // Get the indices of the nearest grid point
-    int ix = static_cast<int>((point.x() - _xmin)/_dx + 0.5);
-    int iy = static_cast<int>((point.y() - _ymin)/_dy + 0.5);
-    int iz = static_cast<int>((point.z() - _zmin)/_dz + 0.5);
+    unsigned int ix = static_cast<int>((point.x() - _xmin)/_dx + 0.5);
+    unsigned int iy = static_cast<int>((point.y() - _ymin)/_dy + 0.5);
+    unsigned int iz = static_cast<int>((point.z() - _zmin)/_dz + 0.5);
     
-    dflag && cout << "Initial ix,iy,iz " << endl
-         << "& dx, dy, dy:    " 
-         << setw(4) << ix << " "  
-         << setw(4) << iy << " " 
-         << setw(4) << iz << " " << endl
-         << setw(4) << _dx << " "
-         << setw(4) << _dy << " "
-         << setw(4) << _dz << " "
-         << endl;
+    if ( dflag ){
+      cout << "Initial ix,iy,iz " << endl
+           << "& dx, dy, dy:    " 
+           << setw(4) << ix << " "  
+           << setw(4) << iy << " " 
+           << setw(4) << iz << " " << endl
+           << setw(4) << _dx << " "
+           << setw(4) << _dy << " "
+           << setw(4) << _dz << " "
+           << endl;
+    }
     
     // Correct for edge points by moving their NGPt just inside the edge
     if (ix ==     0){++ix;}
@@ -192,17 +199,16 @@ namespace mu2e {
     if (iz ==     0){++iz;}
     if (iz == _nz-1){--iz;}
     
-    dflag && cout << "Final ix,iy,iz:  " 
-         << setw(4) << ix << " "
-         << setw(4) << iy << " "
-         << setw(4) << iz << " "
-         << endl;
-    
-  
-    dflag && cout << "Nearest Point:   " << _grid(ix,iy,iz) << endl
-         << "Indices set to:  " << setw(4) << ix << " " << setw(4) << iy << " " << setw(4) << iz << endl
-         << "Field:              " << _field(ix,iy,iz) << endl;
-
+    if ( dflag ) {
+      cout << "Final ix,iy,iz:  " 
+           << setw(4) << ix << " "
+           << setw(4) << iy << " "
+           << setw(4) << iz << " "
+           << endl;
+      cout << "Nearest Point:   " << _grid(ix,iy,iz) << endl
+           << "Indices set to:  " << setw(4) << ix << " " << setw(4) << iy << " " << setw(4) << iz << endl
+           << "Field:              " << _field(ix,iy,iz) << endl;
+    }
 
     // check if the point had a field defined
     
@@ -233,13 +239,16 @@ namespace mu2e {
     int yindex = iy-1; 
     int zindex = iz-1;
 
-    dflag && cout << "Used   x, y, z:  " 
-         << setw(4) << xindex << " "
-         << setw(4) << yindex << " "
-         << setw(4) << zindex << " "
-         << endl;
+    if ( dflag ){
+      cout << "Used   x, y, z:  " 
+           << setw(4) << xindex << " "
+           << setw(4) << yindex << " "
+           << setw(4) << zindex << " "
+           << endl;
 
-    dflag && cout << "Used Point:      " << _grid(xindex,yindex,zindex) << endl;
+      cout << "Used Point:      " << _grid(xindex,yindex,zindex) << endl;
+    }
+
 
     double frac[] = {
       (point.x() - _grid(xindex,yindex,zindex).x())/_dx,
@@ -249,7 +258,9 @@ namespace mu2e {
 
     // Run the interpolator
     CLHEP::Hep3Vector testBF = interpolate(neighborsBF,frac);
-    dflag && cout << "Interpolated Field: " << testBF << endl;
+    if( dflag ){
+      cout << "Interpolated Field: " << testBF << endl;
+    }
 
     // Reassign y sign
     if (sign == -1){
