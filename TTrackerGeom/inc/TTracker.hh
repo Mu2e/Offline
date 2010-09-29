@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.3 2010/09/21 19:38:34 genser Exp $
+// $Id: TTracker.hh,v 1.4 2010/09/29 02:49:55 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/21 19:38:34 $
+// $Date: 2010/09/29 02:49:55 $
 //
 // Original author Rob Kutschke
 //
@@ -118,6 +118,10 @@ namespace mu2e {
 
     const Support& getSupportParams () const{
       return _supportParams;
+    }
+
+    const std::vector<double>& getManifoldHalfLengths () const{
+      return _manifoldHalfLengths;
     }
 
     // Shape parameters of an envelop holding one device.
