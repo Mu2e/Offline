@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.52 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: geom_01.txt,v 1.53 2010/09/29 20:59:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/29 20:59:58 $
 //
 // Original author Rob Kutschke
 //
@@ -11,11 +11,11 @@
 
 string detector.name  = "g4geom_v00";
 
-bool hasHall          = true;
-bool hasTarget        = true;
+bool hasHall            = true;
+bool hasTarget          = true;
 bool hasProtonAbsorber  = true;
-bool hasCalorimeter   = true;
-bool hasBFieldManager = true;
+bool hasCalorimeter     = true;
+bool hasBFieldManager   = true;
 bool hasVirtualDetector = false;
 
 // Uncomment exactly one tracker.
@@ -67,7 +67,7 @@ bool printConfig = false;
 bool printConfigStats = false;
 
 // Choose a PhysicsList
-string g4.physicsListName = "N02";
+string g4.physicsListName = "QGSP_BERT";
 
 // Enable the code to kill low p secondaries from cosmics.
 bool g4.doCosmicKiller = false;
