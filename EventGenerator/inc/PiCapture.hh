@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
-// $Id: PiCapture.hh,v 1.7 2010/09/02 18:26:11 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/09/02 18:26:11 $
+// $Id: PiCapture.hh,v 1.8 2010/09/29 22:59:59 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/29 22:59:59 $
 //
 // Original author Rob Kutschke, P. Shanahan
 // 
@@ -64,6 +64,7 @@ namespace mu2e {
     // for exponential foil dropoff
     int nFoils;
     double foilMean;
+
     // Histograms.
     TH1D* _hMultiplicity;
     TH1D* _hEPhot;
