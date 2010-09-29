@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.12 2010/08/31 00:24:51 logash Exp $
+// $Id: ReadBack.cc,v 1.13 2010/09/29 19:37:58 logash Exp $
 // $Author: logash $
-// $Date: 2010/08/31 00:24:51 $
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -29,10 +29,13 @@
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
+#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 
 // Root includes.
 #include "TDirectory.h"
@@ -72,6 +75,10 @@ namespace mu2e {
     _hCheckPointRadius(0),
     _ntup(0),
     _xyHits(0),
+    _hEdep(0),
+    _hEdepMC(0),
+    _hNcrystal(0),
+
 
     // Remaining member data
     _xyHitCount(0){
@@ -104,6 +111,10 @@ namespace mu2e {
     _hStepLength = tfs->make<TH1F>( "hStepLength",  "G4 Step Length in Sensitive Detector; (mm)",
                                     100, 0., 10. );
 
+    _hEdep     = tfs->make<TH1F>( "hEdep",     "Total energy deposition in calorimeter", 1200, 0., 1200. );
+    _hEdepMC   = tfs->make<TH1F>( "hEdepMC",   "True energy deposition in calorimeter", 200, 0., 200. );
+    _hNcrystal = tfs->make<TH1F>( "hNcrystal", "Total energy deposition in calorimeter", 50, 0., 50. );
+
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
                       "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step");
@@ -131,6 +142,42 @@ namespace mu2e {
     else if ( geom->hasElement<ITracker>() ){
       doITracker(event);
     }
+
+    doCalorimeter(event);
+
+  }
+
+  void ReadBack::doCalorimeter(const edm::Event& event) {
+    
+    // Get handles to calorimeter collections
+    edm::Handle<CaloHitCollection> caloHits;
+    edm::Handle<CaloHitMCTruthCollection> caloMC;
+    event.getByType(caloHits);
+    event.getByType(caloMC);
+    bool haveCalo = ( caloHits.isValid() && caloMC.isValid() );
+
+    if( ! haveCalo) return;
+
+    edm::Service<GeometryService> geom;
+    if( ! geom->hasElement<Calorimeter>() ) return;
+    GeomHandle<Calorimeter> cg;
+
+    double totalEdep = 0;
+    double simEdep = 0;
+    map<int,int> hit_crystals;
+
+    for ( int i=0; i<caloHits->size(); ++i ) {
+      totalEdep += caloHits->at(i).energyDep();
+      simEdep += caloMC->at(i).energyDep();
+
+      int roid = caloHits->at(i).roId();
+      int cid = cg->getCrystalByRO(roid);
+      hit_crystals[cid] = 1;
+    }
+
+    _hEdep->Fill(totalEdep);
+    _hEdepMC->Fill(simEdep);
+    _hNcrystal->Fill(hit_crystals.size());
 
   }
 

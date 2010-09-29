@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.3 2010/04/11 15:16:55 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/11 15:16:55 $
+// $Id: physicsListDecider.cc,v 1.4 2010/09/29 19:37:58 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke 
 //
@@ -41,6 +41,7 @@
 // G4 includes
 #include "G4PhysListFactory.hh"
 #include "G4VUserPhysicsList.hh"
+#include "QGSP.hh"
 
 using namespace std;
 
@@ -59,6 +60,12 @@ namespace mu2e{
 
     else if ( name == "N02" ){
       physicsList = dynamic_cast<G4VUserPhysicsList*>(new PhysicsList(config) );
+    }
+
+    else if ( name == "QGSP" ){
+      G4VModularPhysicsList* tmp = new QGSP();
+      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
+      physicsList = tmp;
     }
 
     // General case

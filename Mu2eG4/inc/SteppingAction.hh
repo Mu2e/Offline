@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.5 2010/09/20 02:57:05 logash Exp $
+// $Id: SteppingAction.hh,v 1.6 2010/09/29 19:37:58 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/20 02:57:05 $
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,9 @@ namespace mu2e {
 
     void BeginOfEvent();
     void EndOfEvent();
+
+    void BeginOfTrack();
+    void EndOfTrack();
 
     // Called by G4_plugin.
     void beginRun();

@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.8 2010/08/31 21:50:37 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/31 21:50:37 $
+// $Id: GeometryService.cc,v 1.9 2010/09/29 19:37:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,6 @@
 #include "VirtualDetectorGeom/inc/VirtualDetectorMaker.hh"
 
 using namespace std;
-using namespace mu2e::calorimeter;
 
 namespace mu2e {
 

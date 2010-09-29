@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.9 2010/09/20 02:57:05 logash Exp $
+// $Id: SteppingAction.cc,v 1.10 2010/09/29 19:37:58 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/20 02:57:05 $
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -198,6 +198,8 @@ namespace mu2e {
     }
 
     // Status report.
+    printf ( "Step number: %d\n", _nSteps ); 
+
     printit ( "Pre: ", id, 
               prept->GetPosition(),
               prept->GetMomentum(),
@@ -258,10 +260,17 @@ namespace mu2e {
   }
 
   void SteppingAction::BeginOfEvent() {
-    _nSteps = 0;
+    //_nSteps = 0;
   }
   
   void SteppingAction::EndOfEvent() {
+  }
+
+  void SteppingAction::BeginOfTrack() {
+    _nSteps = 0;
+  }
+  
+  void SteppingAction::EndOfTrack() {
   }
 
 } // end namespace mu2e

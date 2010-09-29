@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.15 2010/09/23 16:49:57 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/09/23 16:49:57 $
+// $Id: StrawSD.cc,v 1.16 2010/09/29 19:37:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -44,8 +44,6 @@ using namespace std;
 
 namespace mu2e {
 
-  int StrawSD::_sizeLimit=0;
-
   StrawSD::StrawSD(G4String name, const SimpleConfig& config ) :G4VSensitiveDetector(name){
     G4String HCname("StepPointG4Collection");
     collectionName.insert(HCname);
@@ -58,6 +56,7 @@ namespace mu2e {
       _debugList.add(list);
     }
 
+    _sizeLimit = config.getInt("g4.stepsSizeLimit",0);
     _currentSize = 0;
 
     edm::Service<GeometryService> geom;

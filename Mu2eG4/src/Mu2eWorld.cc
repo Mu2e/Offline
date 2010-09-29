@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.55 2010/09/23 15:34:37 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/09/23 15:34:37 $
+// $Id: Mu2eWorld.cc,v 1.56 2010/09/29 19:37:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,7 @@
 #include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
+#include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
@@ -157,6 +158,7 @@ namespace mu2e {
     defineMu2eOrigin();
     VolumeInfo::setMu2eOriginInWorld( _mu2eOrigin );
     VirtualDetectorSD::setMu2eOriginInWorld( _mu2eOrigin );
+    CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
     VolumeInfo dirtInfo  = constructDirt();
     VolumeInfo hallInfo  = constructHall( dirtInfo );
     constructDS(hallInfo);
@@ -1458,18 +1460,15 @@ namespace mu2e {
   // Construct calorimeter if needed.
   void Mu2eWorld::constructCal(){
 
-    if ( _config->getBool("hasCalorimeter",false) ){
+    if ( ! _config->getBool("hasCalorimeter",false) ) return;
 
-      VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
 
-      // z Position of the center of the DS solenoid downstream part, given in the Mu2e coordinate system.
-      double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+    double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
 
-      VolumeInfo calorimeterInfo = constructCalorimeter( detSolDownstreamVacInfo.logical,
-                                                         -z0DSdown,
-                                                         *_config );
-    }
-
+    constructCalorimeter( detSolDownstreamVacInfo.logical,
+			  -z0DSdown,
+			  *_config );
   }
 
 

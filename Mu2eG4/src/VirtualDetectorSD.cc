@@ -29,7 +29,6 @@ using namespace std;
 namespace mu2e {
 
   G4ThreeVector VirtualDetectorSD::_mu2eOrigin;
-  int VirtualDetectorSD::_sizeLimit=0;
 
   VirtualDetectorSD::VirtualDetectorSD(G4String name, const SimpleConfig& config) :G4VSensitiveDetector(name){
     G4String HCname("VDCollection");
@@ -43,6 +42,7 @@ namespace mu2e {
       _debugList.add(list);
     }
 
+    _sizeLimit = config.getInt("g4.stepsSizeLimit",0);
     _currentSize = 0;
 
   }
@@ -122,7 +122,7 @@ namespace mu2e {
     if (verboseLevel>0) { 
       G4int NbHits = _collection->entries();
       G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
-             << " hits in the straw chambers: " << G4endl;
+             << " hits in the virtual detectors: " << G4endl;
       for (G4int i=0;i<NbHits;i++) (*_collection)[i]->Print();
     } 
 

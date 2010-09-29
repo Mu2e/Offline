@@ -4,9 +4,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.hh,v 1.6 2010/09/20 02:57:05 logash Exp $
+// $Id: StrawSD.hh,v 1.7 2010/09/29 19:37:58 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/20 02:57:05 $
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -36,10 +36,6 @@ namespace mu2e {
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
   
-    static void setSizeLimit(int sizeLimit) {
-      _sizeLimit = sizeLimit;
-    }
-
   private:
 
     G4ThreeVector GetTrackerOrigin(const G4TouchableHandle & touchableHandle);
@@ -53,7 +49,7 @@ namespace mu2e {
     int _TrackerVersion;
 
     // Limit maximum size of the steps collection
-    static int _sizeLimit;
+    int _sizeLimit;
     int _currentSize;
 
   };

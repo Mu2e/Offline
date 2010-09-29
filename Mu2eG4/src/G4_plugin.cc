@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.28 2010/09/27 21:15:45 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/27 21:15:45 $
+// $Id: G4_plugin.cc,v 1.29 2010/09/29 19:37:58 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -53,6 +53,7 @@
 #include "Mu2eG4/inc/StepPointG4.hh"
 #include "Mu2eG4/inc/addStepPointMCs.hh"
 #include "Mu2eG4/inc/addVirtualDetectorPoints.hh"
+#include "Mu2eG4/inc/addCalorimeterHits.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -66,9 +67,6 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 
-#include "Mu2eG4/inc/VirtualDetectorSD.hh"
-#include "Mu2eG4/inc/StrawSD.hh"
-
 #include "ITrackerGeom/inc/ITracker.hh"
 
 // Data products that will be produced by this module.
@@ -76,6 +74,8 @@
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
+#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -113,14 +113,14 @@ namespace mu2e {
       _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")),
       _trackerOutputName("tracker"),
-      _stepsSizeLimit(pSet.getUntrackedParameter<int>("stepsSizeLimit",10000)),
-      _particlesSizeLimit(pSet.getUntrackedParameter<int>("particlesSizeLimit",10000)),
       _vdOutputName("virtualdetector") {
 
       produces<StepPointMCCollection>(_trackerOutputName);
       produces<StepPointMCCollection>(_vdOutputName);
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,edm::InRun>();
+      produces<CaloHitCollection>();
+      produces<CaloHitMCTruthCollection>();
 
       // The string "G4Engine" is magic; see the docs for RandomNumberGeneratorService.
       createEngine( get_seed_value(pSet), "G4Engine");
@@ -156,10 +156,6 @@ namespace mu2e {
     G4VisManager *_visManager;
     G4UImanager  *_UI;
     int _rmvlevel;
-
-    // Limits for collections size
-    int _stepsSizeLimit;
-    int _particlesSizeLimit;
 
     // Position, in G4 world coord, of (0,0,0) of the mu2e coordinate system.
     CLHEP::Hep3Vector _mu2eOrigin;
@@ -229,7 +225,7 @@ namespace mu2e {
     StackingAction* stacking_action = new StackingAction(config);
     _runManager->SetUserAction(stacking_action);
 
-    _trackingAction = new TrackingAction(config);
+    _trackingAction = new TrackingAction(config,stepping_action);
     _runManager->SetUserAction(_trackingAction);
 
     // Initialize G4 for this run.
@@ -245,11 +241,6 @@ namespace mu2e {
     Mu2eWorld const* world = allMu2e->getWorld();
     _mu2eOrigin          = world->getMu2eOrigin();
     _mu2eDetectorOrigin    = world->getMu2eDetectorOrigin();
-
-    // Limit size of output collections
-    StrawSD::setSizeLimit(_stepsSizeLimit);
-    VirtualDetectorSD::setSizeLimit(_stepsSizeLimit);
-    TrackingAction::setSizeLimit(_particlesSizeLimit);
 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
@@ -291,9 +282,11 @@ namespace mu2e {
   void G4::produce(edm::Event& event, edm::EventSetup const&) {
 
     // Create empty data products.
-    auto_ptr<StepPointMCCollection> outputHits(new StepPointMCCollection);
-    auto_ptr<SimParticleCollection> simParticles(new SimParticleCollection);
-    auto_ptr<StepPointMCCollection> vdHits(new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>    outputHits(new StepPointMCCollection);
+    auto_ptr<SimParticleCollection>    simParticles(new SimParticleCollection);
+    auto_ptr<StepPointMCCollection>    vdHits(new StepPointMCCollection);
+    auto_ptr<CaloHitCollection>        caloHits(new CaloHitCollection);
+    auto_ptr<CaloHitMCTruthCollection> caloMCHits(new CaloHitMCTruthCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
@@ -306,11 +299,14 @@ namespace mu2e {
     // Populate the output data products.
     addStepPointMCs( g4event, *outputHits);
     addVirtualDetectorPoints( g4event, *vdHits);
+    addCalorimeterHits( g4event, *caloHits, *caloMCHits );
     _trackingAction->endEvent( *simParticles );
 
     event.put(outputHits,_trackerOutputName);
     event.put(vdHits,_vdOutputName);
     event.put(simParticles);
+    event.put(caloHits);
+    event.put(caloMCHits);
     
     //     // Pause to see graphics. 
     //     if ( _visMacro.size() > 0 ) {

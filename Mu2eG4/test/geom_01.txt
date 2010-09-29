@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.51 2010/09/27 19:41:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/27 19:41:34 $
+// $Id: geom_01.txt,v 1.52 2010/09/29 19:37:58 logash Exp $
+// $Author: logash $
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,12 @@ bool hasVirtualDetector = false;
 //vector<int> g4.steppingActionTrackList = { 156, 157, 158 };
 //vector<int> g4.strawSDEventList        = { 0, 1, 2, 3 };
 //vector<int> g4.trackingActionEventList = { 0, 1, 2, 3, 4, 5};
+
+// Some G4 controls which does not allow it to consume all the memory 
+// or to spend all the time tracking one bad particle
+int g4.steppingActionMaxSteps = 10000;
+int g4.stepsSizeLimit = 10000;
+int g4.particlesSizeLimit = 10000;
 
 // Enable/disable code that kills uninteresting tracks in SteppingAction or TrackingAction.
 bool   g4SteppingAction.killLowEKine  = false;
@@ -299,41 +305,34 @@ vector<double> target.xCos  =
 vector<double> target.yCos  =    
     { 0.};
 
-// Crystal calorimeter - MECO style.
-double calorimeter.innerRadius  = 360.;
-double calorimeter.outerRadius  = 720.;
-double calorimeter.halfLength   = 770.;
-string calorimeter.fillMaterial = "WAGVacuum";
-double calorimeter.z0           = 12700.;
+// Crystal calorimeter
 
-
-// calorimeter 
-int    calorimeter.numberOfVanes                           =  4;
-double calorimeter.crystalHalfTrans                        = 15.; 
-double calorimeter.crystalHalfLong                         = 60.;
-int    calorimeter.nCrystalRSlices                         =  2;
-int    calorimeter.nCrystalZSlices                         =  2;
 vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};
-vector<double> calorimeter.calorimeterCenterOffset         = {0.,0.,0.};
 double calorimeter.rInscribed                              = 360.;
-double calorimeter.phi0                                    =  0.;
-double calorimeter.theta0                                  =  0.;
-vector<double> calorimeter.calorimeterVaneRotationsPhi     = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneRotationsTheta   = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneRotationsPsi     = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneOffsetsX         = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneOffsetsY         = {0.,0.,0.,0.};
-vector<double> calorimeter.calorimeterVaneOffsetsZ         = {0.,0.,0.,0.};
-string calorimeter.crystalMaterial                         = "G4_PbWO4";
-string calorimeter.crystalWrapper                          = "G4_POLYETHYLENE"; // until I get around to defining Tyvek with Ti02.
 string calorimeter.calorimeterFillMaterial                 = "WAGVacuum";
 
-double calorimeter.crystalWrapperHalfThickness             = 0.01 ;             // totally made up
+int    calorimeter.numberOfVanes    =  4;
+int    calorimeter.nCrystalRSlices  =  10;
+int    calorimeter.nCrystalZSlices  =  50;
+
+double calorimeter.crystalHalfLong  = 50.;
+double calorimeter.crystalHalfTrans = 15.; 
+string calorimeter.crystalMaterial                         = "G4_PbWO4";
+
+string calorimeter.crystalWrapper                          = "G4_POLYETHYLENE";
+double calorimeter.crystalWrapperHalfThickness             = 0.01 ;
 
 string calorimeter.crystalReadoutMaterial                  = "G4_Si";
-double calorimeter.crystalReadoutHalfTrans                 = 15.;
-double calorimeter.crystalReadoutHalfThickness             = 10.; 
-int    calorimeter.crystalReadoutChannelCount              = 1;                 // number of APD's for example per crystal
+double calorimeter.crystalReadoutHalfTrans                 = 5.;
+double calorimeter.crystalReadoutHalfThickness             = 5.; 
+int    calorimeter.crystalReadoutChannelCount              = 2; // APDs per crystal
+
+double calorimeter.crystalNonUniformity  = 0.0; // -2 to 2
+                                                // (A(ro)-A(front))/A(middle)
+double calorimeter.timeGap               = 100.0;  // ns
+double calorimeter.electronDepositionAPD = 1000.0; // MeV
+double calorimeter.electronMinEnergyAPD  = 0.1;    // MeV
+
 bool   calorimeter.visible        = true;
 bool   calorimeter.solid          = true;
 

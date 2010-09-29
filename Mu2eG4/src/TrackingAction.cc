@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.6 2010/09/20 02:57:05 logash Exp $
+// $Id: TrackingAction.cc,v 1.7 2010/09/29 19:37:58 logash Exp $
 // $Author: logash $
-// $Date: 2010/09/20 02:57:05 $
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 
@@ -37,13 +38,14 @@ using namespace std;
 
 namespace mu2e {
 
-  int TrackingAction::_sizeLimit=0;
-
-  TrackingAction::TrackingAction( const SimpleConfig& config):
+  TrackingAction::TrackingAction( const SimpleConfig& config,
+				  SteppingAction *stepping_action ):
     _debugList(),
     _physVolHelper(0),
     _currentSize(0),
     _timer(){
+
+    _stepping = stepping_action;
 
     string name("g4.trackingActionEventList");
     if ( config.hasName(name) ){
@@ -52,6 +54,7 @@ namespace mu2e {
       _debugList.add(list);
     }
 
+    _sizeLimit = config.getInt("g4.particlesSizeLimit",0);
   }
   
   TrackingAction::~TrackingAction(){
@@ -60,7 +63,8 @@ namespace mu2e {
   void TrackingAction::PreUserTrackingAction(const G4Track* trk){
 
     saveSimParticleStart(trk);
-
+    _stepping->BeginOfTrack();
+  
     if ( !_debugList.inList() ) return;
     printInfo( trk, "Start new Track: ");
 
@@ -75,6 +79,7 @@ namespace mu2e {
     _timer.stop();
 
     saveSimParticleEnd(trk);
+    _stepping->EndOfTrack();
 
     if ( !_debugList.inList() ) return;
     printInfo( trk, "End Track:       ", true);

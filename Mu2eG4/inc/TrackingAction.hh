@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.4 2010/09/20 02:57:05 logash Exp $
+// $Id: TrackingAction.hh,v 1.5 2010/09/29 19:37:58 logash Exp $
 // $Author: logash $
-// $Date: 2010/09/20 02:57:05 $
+// $Date: 2010/09/29 19:37:58 $
 //
 // Original author Rob Kutschke
 //
@@ -34,12 +34,13 @@ namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
+  class SteppingAction;
 
   class TrackingAction: public G4UserTrackingAction{
 
   public:
 
-    TrackingAction( const SimpleConfig& config);
+    TrackingAction( const SimpleConfig& config, SteppingAction *);
     virtual ~TrackingAction();
 
     // These methods are required by G4
@@ -65,11 +66,6 @@ namespace mu2e {
       _mu2eOrigin    =  mu2eOrigin;
     }
 
-    static void setSizeLimit(int sizeLimit) {
-      _sizeLimit = sizeLimit;
-    }
-
-
   private:
 
     // Lists of events and tracks for which to enable debug printout.
@@ -91,8 +87,11 @@ namespace mu2e {
     void printInfo(const G4Track* trk, const std::string& text, bool isEnd=false);
 
     // Limit maximum size of the steps collection
-    static int _sizeLimit;
+    int _sizeLimit;
     int _currentSize;
+
+    // Pointer to stepping action
+    SteppingAction * _stepping; 
 
   };
 
