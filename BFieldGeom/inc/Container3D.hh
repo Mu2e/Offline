@@ -5,9 +5,9 @@
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
-// $Id: Container3D.hh,v 1.4 2010/09/01 20:25:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/09/01 20:25:33 $
+// $Id: Container3D.hh,v 1.5 2010/09/29 22:36:26 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/29 22:36:26 $
 //
 
 #include <vector>
@@ -167,6 +167,7 @@ namespace mu2e {
       _ny = rhs._ny;
       _nz = rhs._nz;
       _vec  = rhs._vec;
+      return *this;
     }
 
     ~Container3D() { }
