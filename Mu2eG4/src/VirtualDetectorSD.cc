@@ -77,12 +77,11 @@ namespace mu2e {
       return false;
     }
 
-    G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
-
-    const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
-    G4int eventId = event->GetEventID();
-    G4int trackId = aStep->GetTrack()->GetTrackID()-1;
-    G4int copyNo = touchableHandle->GetCopyNumber();
+    //G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
+    //const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
+    //G4int eventId = event->GetEventID();
+    //G4int trackId = aStep->GetTrack()->GetTrackID()-1;
+    //G4int copyNo = touchableHandle->GetCopyNumber();
 
     // The points coordinates are saved in the mu2e world
 
