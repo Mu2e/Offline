@@ -7,9 +7,9 @@
 // of straws in the system.  This works for both the LTracker
 // and the TTracker.
 //
-// $Id: StrawIndex.hh,v 1.3 2010/05/18 20:29:05 kutschke Exp $
+// $Id: StrawIndex.hh,v 1.4 2010/09/30 02:08:30 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/18 20:29:05 $
+// $Date: 2010/09/30 02:08:30 $
 //
 // Original author Rob Kutschke
 //
@@ -43,9 +43,10 @@ namespace mu2e {
     // Compiler generated versions are OK for:
     // copy c'tor, destructor, operator=
 
-    // Return the value as an int.
+    // Return the value as an int or as an unsigned in
     // Do not want automatic conversion to an int.
-    int32_t asInt() const { return _idx;}
+    int32_t  asInt() const { return _idx;}
+    uint32_t asUint() const { return static_cast<uint32_t>(_idx);}
 
     bool operator==( StrawIndex const& rhs) const{
       return (_idx == rhs._idx);
