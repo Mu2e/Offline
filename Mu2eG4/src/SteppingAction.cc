@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.10 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/29 19:37:58 $
+// $Id: SteppingAction.cc,v 1.11 2010/09/30 03:26:22 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/30 03:26:22 $
 //
 // Original author Rob Kutschke
 //
@@ -79,7 +79,7 @@ namespace mu2e {
     }
     if( _pdgToDrop.size()>0 ) {
       cout << "Drop these particles in the SteppingAction: ";
-      for( int i=0; i<_pdgToDrop.size(); ++i ) cout << _pdgToDrop[i] << ",";
+      for( size_t i=0; i<_pdgToDrop.size(); ++i ) cout << _pdgToDrop[i] << ",";
       cout << endl;
     }
 
@@ -130,7 +130,7 @@ namespace mu2e {
     // If particle is in the drop list - drop it
     } else if( _pdgToDrop.size()>0 ) {
       
-      for( int i=0; i<_pdgToDrop.size(); ++i ) {
+      for( size_t i=0; i<_pdgToDrop.size(); ++i ) {
 	if( track->GetDefinition()->GetPDGEncoding() == _pdgToDrop[i] ) {
 	  track->SetTrackStatus(fStopAndKill);
 	  break;
@@ -157,7 +157,6 @@ namespace mu2e {
     }
 
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
-    int eventNo = event->GetEventID();
 
     // Pre and post stepping points.
     G4StepPoint const* prept  = step->GetPreStepPoint();
@@ -189,7 +188,7 @@ namespace mu2e {
 
     // On the backward trace, report the position when at the first 
     // reporting volume.
-    bool report = (std::abs(pos.z()-_zref)<0.0001) && (mom.z() < 0.);
+    //bool report = (std::abs(pos.z()-_zref)<0.0001) && (mom.z() < 0.);
 
     // Save the status.
     if ( save ){
