@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.13 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: ReadBack.cc,v 1.14 2010/09/30 19:25:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 19:25:15 $
 //
 // Original author Rob Kutschke
 //
@@ -73,11 +73,11 @@ namespace mu2e {
     _hzHit(0),
     _hHitNeighbours(0),
     _hCheckPointRadius(0),
-    _ntup(0),
-    _xyHits(0),
     _hEdep(0),
     _hEdepMC(0),
     _hNcrystal(0),
+    _ntup(0),
+    _xyHits(0),
 
 
     // Remaining member data
@@ -166,7 +166,7 @@ namespace mu2e {
     double simEdep = 0;
     map<int,int> hit_crystals;
 
-    for ( int i=0; i<caloHits->size(); ++i ) {
+    for ( size_t i=0; i<caloHits->size(); ++i ) {
       totalEdep += caloHits->at(i).energyDep();
       simEdep += caloMC->at(i).energyDep();
 
@@ -350,7 +350,7 @@ namespace mu2e {
 
       ConditionsHandle<ParticleDataTable> pdt("ignored");
 
-      for ( int i=0; i<simParticles->size(); ++ i){
+      for ( size_t i=0; i<simParticles->size(); ++ i){
 
         SimParticle const& sim = simParticles->at(i);
 
