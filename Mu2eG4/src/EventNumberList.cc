@@ -1,9 +1,9 @@
 //
 // Utility class to select listed events within G4.
 //
-// $Id: EventNumberList.cc,v 1.3 2010/09/08 20:11:50 kutschke Exp $
+// $Id: EventNumberList.cc,v 1.4 2010/09/30 02:44:43 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/08 20:11:50 $
+// $Date: 2010/09/30 02:44:43 $
 //
 // Original author Rob Kutschke
 //
@@ -52,7 +52,7 @@ namespace mu2e {
 
   bool EventNumberList::inList() const{
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
-    inList(event->GetEventID());
+    return inList(event->GetEventID());
   }
 
   bool EventNumberList::inList( int eventNumber) const{
