@@ -280,7 +280,7 @@ namespace mu2e {
 	  const StepPointMC& hit = (*hits)[i];
 	  
 	  // Only use hits associated with current particle
-	  int trackId = hit.trackId();
+	  size_t trackId = hit.trackId();
 	  if( trackId != isp ) continue;
 
 	  // Get the hit information.

@@ -1,9 +1,9 @@
 //
 // header for Analyzer.C 
 
-// $Id: Analyzer.h,v 1.3 2010/06/29 17:43:35 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/29 17:43:35 $
+// $Id: Analyzer.h,v 1.4 2010/09/30 22:48:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 22:48:58 $
 //
 // Original author KLG
 //
@@ -86,7 +86,7 @@ class Analyzer {
   Double_t _minimumEnergy;
 
   // Limit on number of events for which there will be full printout.
-  int _maxFullPrint;
+  ULong64_t _maxFullPrint;
 
   // Number of events analyzed.
   ULong64_t _nAnalyzed;
