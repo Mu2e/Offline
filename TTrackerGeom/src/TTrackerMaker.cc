@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.14 2010/09/28 21:43:04 genser Exp $
-// $Author: genser $
-// $Date: 2010/09/28 21:43:04 $
+// $Id: TTrackerMaker.cc,v 1.15 2010/09/30 03:35:14 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 03:35:14 $
 //
 // Original author Rob Kutschke
 //
@@ -70,7 +70,7 @@ namespace mu2e {
     
     _manifoldYOffset      = config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
     config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
-    for ( int i=0; i<_manifoldHalfLengths.size(); ++i ){
+    for ( size_t i=0; i<_manifoldHalfLengths.size(); ++i ){
       _manifoldHalfLengths.at(i) *= CLHEP::mm;
     }
     
@@ -546,7 +546,7 @@ namespace mu2e {
     double maxtg = 0.0;
 
     // the code below looks at the slope "seen" from the longest set of straws
-    for (size_t i=1; i!=_manifoldsPerEnd; ++i) {
+    for (int i=1; i!=_manifoldsPerEnd; ++i) {
 
       double ttg = (_layersPerSector==1) ? 
 
@@ -615,7 +615,7 @@ namespace mu2e {
     // now push it all back into the vector
     // std::vector<double> _sectorBoxHalfLengths;
 
-    static const int sectorBoxHalfLengthsSize= 5;
+    static const size_t sectorBoxHalfLengthsSize= 5;
 
     _sectorBoxHalfLengths.reserve(sectorBoxHalfLengthsSize);
 
@@ -685,10 +685,9 @@ namespace mu2e {
         return  station*_deviceSpacing + _deviceHalfSeparation;
       }
     }
-    else {
-      throw cms::Exception("GEOM")
-        << "Unrecognized separation pattern in TTrackerMaker. \n";
-    }
+
+    throw cms::Exception("GEOM")
+      << "Unrecognized separation pattern in TTrackerMaker. \n";
   
   }
 
