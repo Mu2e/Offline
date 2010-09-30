@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.4 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: constructCalorimeter.cc,v 1.5 2010/09/30 21:34:10 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 21:34:10 $
 //
 // Original author Rob Kutschke
 // 
@@ -48,15 +48,14 @@ namespace mu2e {
     GeomHandle<Calorimeter> cg;
 
     // Read parameters from config file
-
-    bool isVisible = config.getBool("calorimeter.visible",true);
+    //bool isVisible = config.getBool("calorimeter.visible",true);
     bool isSolid   = config.getBool("calorimeter.solid",true);
 
     G4Material* fillMaterial = materialFinder.get("calorimeter.calorimeterFillMaterial");
     //G4Material* fillMaterial = materialFinder.get("calorimeter.crystalMaterial");
 
     // Create vanes. Do not create mother volume for calorimeter - 
-    // add vanes directly to DS3 (mother). 
+    // add vanes directly to DS3 (mother).
 
     const int nvane = cg->nVane();
 
