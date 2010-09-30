@@ -3,9 +3,9 @@
 A producer module that makes a collection of overly simplified "hits"
 and adds them to the event.
 
-$Id: Ex02MakeHits_plugin.cc,v 1.11 2010/08/26 19:58:17 kutschke Exp $
+$Id: Ex02MakeHits_plugin.cc,v 1.12 2010/09/30 01:55:52 kutschke Exp $
 $Author: kutschke $
-$Date: 2010/08/26 19:58:17 $
+$Date: 2010/09/30 01:55:52 $
    
 Original author Rob Kutschke
 
@@ -87,9 +87,6 @@ namespace mu2e {
 
     // Geometry information about the CTracker.
     GeomHandle<CTracker> ctracker;
-
-    // Extract the event number from the event.
-    int eventNumber = event.id().event();
 
     // Make the collection to hold the hits that we will make.
     auto_ptr<ToyHitCollection> p(new ToyHitCollection);
