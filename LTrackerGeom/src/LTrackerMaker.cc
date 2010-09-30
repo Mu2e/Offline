@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.11 2010/06/04 22:07:22 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/06/04 22:07:22 $
+// $Id: LTrackerMaker.cc,v 1.12 2010/09/30 02:34:07 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/30 02:34:07 $
 //
 // Original author Rob Kutschke
 //
@@ -99,9 +99,9 @@ namespace mu2e {
   // Constructor that gets information from the config file instead of
   // from arguments.
   LTrackerMaker::LTrackerMaker( SimpleConfig const& config):
-    _center(),
     _sideInfo(),
-    _vaneInfo(){
+    _vaneInfo(),
+    _center(){
 
     _nSides          = config.getInt("ltracker.nSides");
     _r0              = config.getDouble("ltracker.r0");
@@ -129,12 +129,12 @@ namespace mu2e {
     LayerInfo::Stype edge = LayerInfo::nonconductive;
     LayerInfo::Stype mid  = LayerInfo::conductive;
     
-    for ( int i=0; i<nStrawsSide.size(); ++i ){
+    for ( size_t i=0; i<nStrawsSide.size(); ++i ){
       LayerInfo::Stype stype = ( i == 0 || i == nStrawsSide.size()-1 ) ? edge : mid;
       _sideInfo.push_back( LayerInfo( nStrawsSide[i], stype) );
     }
     
-    for ( int i=0; i<nStrawsVane.size(); ++i ){
+    for ( size_t i=0; i<nStrawsVane.size(); ++i ){
       LayerInfo::Stype stype = ( i == 0 || i == nStrawsVane.size()-1 ) ? edge : mid;
       _vaneInfo.push_back( LayerInfo( nStrawsVane[i], stype) );
     }
@@ -704,10 +704,6 @@ namespace mu2e {
 
     edm::LogInfo log("GEOM");
 
-    // Print a header to the message logger if and only if
-    // at least one warning occurs.
-    double firstMessage(true);
-
     // "Safety" margins for "close to overlap" warnings
     // and for warnings of a real overlap.  Both in mm.
     const double infoMargin(0.1);
@@ -720,7 +716,7 @@ namespace mu2e {
 
     // Loop over all pairs of straws.
     deque<Straw> const & allStraws = _ltt->_allStraws;
-    for ( int i=0; i<allStraws.size()-1; ++i){
+    for ( size_t i=0; i<allStraws.size()-1; ++i){
 
       Straw const& strawI    = allStraws[i];
       CLHEP::Hep3Vector const& midi = strawI.getMidPoint();
@@ -728,7 +724,7 @@ namespace mu2e {
       double radiusI         = strawI.getDetail().outerRadius();
       double halfLengthI     = strawI.getDetail().halfLength();
 
-      for ( int j=i+1; j<allStraws.size(); ++j ){
+      for ( size_t j=i+1; j<allStraws.size(); ++j ){
         Straw const& strawJ = allStraws[j];
 
         // Skip straws in the same sector.
