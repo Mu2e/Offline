@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.13 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/08/31 00:24:51 $
+// $Id: HoughTest_plugin.cc,v 1.14 2010/09/30 21:59:33 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/30 21:59:33 $
 //
 // Original author R. Bernstein
 //
@@ -82,16 +82,16 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
   class HoughTest : public edm::EDProducer {
   public:
     explicit HoughTest(edm::ParameterSet const& pset) : 
-      _hitCreatorName(pset.getParameter<string>("hitCreatorName")),
-      _nPeakSearch(pset.getParameter<uint32_t>("NPeakSearch")),
-      _useStepPointMC(pset.getParameter<bool>("UseMCHits")),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",10)),
+      _nPeakSearch(pset.getParameter<uint32_t>("NPeakSearch")),
       _nAnalyzed(0),
       _hRadius(0),
       _hTime(0),
       _hMultiplicity(0),
       _hDriftDist(0),
-      _messageCategory("ToyHitInfo")
+      _messageCategory("ToyHitInfo"),
+      _hitCreatorName(pset.getParameter<string>("hitCreatorName")),
+      _useStepPointMC(pset.getParameter<bool>("UseMCHits"))
     {
         produces<HoughCircleCollection>();
     }
@@ -319,7 +319,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     HoughTransform houghHelper(hitClusters);
     
 
-    double InitialRadius=-1;
+    // double InitialRadius=-1;
 /*
     // if were using a radius from a first pass, get it here
     if (_InitialRadiusCreater!="none") {
@@ -386,7 +386,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
 
-    int minHitsforHough = 3;
+    size_t minHitsforHough = 3;
     if (hitClusters.size() > minHitsforHough)
       {
         mu2e::houghtransform::HoughTransform::houghCandidates houghTracks;
@@ -402,7 +402,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
         // and make a pair of histos that looks at accumulator space in radius 
         // and center
 
-        for (int ithHough = 0; ithHough < houghTracks.size(); ++ithHough)
+        for (size_t ithHough = 0; ithHough < houghTracks.size(); ++ithHough)
           {
             // only look at circles that have reasonable number of straws; three per passage-> 1 cluster, times three passages, 
             //is enough to give three points (clusters) which is what you need to get a helix =9  
@@ -703,7 +703,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
              i = hits->begin(),
              e = hits->end(); i!=e ; ++i ) {
         const StepPointMC& hit = *i;
-        if ( hit.volumeId() == idx.asInt() ){
+        if ( hit.volumeId() == idx.asUint() ){
           ++count;
           break;
         }
