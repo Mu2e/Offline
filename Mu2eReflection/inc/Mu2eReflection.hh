@@ -83,7 +83,7 @@ namespace mu2e{
 
     double Mu2eReflection::Distance(const G4ThreeVector a, const G4ThreeVector b)
     {
-      safeSqrt( pow<2>(a.x() - b.x()) + pow<2>(a.y() - b.y()) + pow<2>(a.z() - b.z()) );
+      return safeSqrt( pow<2>(a.x() - b.x()) + pow<2>(a.y() - b.y()) + pow<2>(a.z() - b.z()) );
     }
 
   };
