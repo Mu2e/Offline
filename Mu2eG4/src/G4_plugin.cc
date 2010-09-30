@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.29 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/29 19:37:58 $
+// $Id: G4_plugin.cc,v 1.30 2010/09/30 02:54:23 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/30 02:54:23 $
 //
 // Original author Rob Kutschke
 //
@@ -390,7 +390,7 @@ namespace mu2e {
     config.getVectorInt("g4.noDecay",plist);
     
     G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
-    for( int i=0; i<plist.size(); ++i ) {
+    for( size_t i=0; i<plist.size(); ++i ) {
       int pdg = plist[i];
       G4ParticleDefinition* particle = theParticleTable->FindParticle(pdg);
       if( particle==0 ) {
