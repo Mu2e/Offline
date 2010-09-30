@@ -2,9 +2,9 @@
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: RPCtest.py,v 1.3 2010/09/30 16:42:41 rhbob Exp $
+# $Id: isoRPCtest.py,v 1.1 2010/09/30 16:42:30 rhbob Exp $
 # $Author: rhbob $
-# $Date: 2010/09/30 16:42:41 $
+# $Date: 2010/09/30 16:42:30 $
 #
 # Original author Rob Kutschke
 #
@@ -32,7 +32,7 @@ process.load("Config/MessageLogger_cfi")
 
 # Load the service that manages root files for histograms.
 process.TFileService = mu2e.Service("TFileService",
-                       fileName = mu2e.string("radiativePiTest.root"),
+                       fileName = mu2e.string("isoRPC.root"),
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
