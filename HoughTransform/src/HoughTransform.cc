@@ -2,9 +2,9 @@
 // code for finding HoughTransform for circles in the L-tracker
 // 
 //
-// $Id: HoughTransform.cc,v 1.6 2010/05/18 21:15:51 kutschke Exp $
+// $Id: HoughTransform.cc,v 1.7 2010/09/30 21:53:35 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 21:15:51 $
+// $Date: 2010/09/30 21:53:35 $
 //
 // Original author R.Bernstein
 //
@@ -320,7 +320,7 @@ namespace mu2e{
                i = hits->begin(),
                e = hits->end(); i!=e ; ++i ) {
           const StepPointMC& hit = *i;
-          if ( hit.volumeId() == idx.asInt() ){
+          if ( hit.volumeId() == idx.asUint() ){
             ++count;
             break;
           }
