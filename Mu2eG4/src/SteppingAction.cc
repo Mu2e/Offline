@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.11 2010/09/30 03:26:22 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.12 2010/09/30 21:25:00 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 03:26:22 $
+// $Date: 2010/09/30 21:25:00 $
 //
 // Original author Rob Kutschke
 //
@@ -156,7 +156,7 @@ namespace mu2e {
       if ( !_debugTrackList.inList(id) ) return;
     }
 
-    G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
+    //G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
     // Pre and post stepping points.
     G4StepPoint const* prept  = step->GetPreStepPoint();
