@@ -1,9 +1,9 @@
 # Script to build this release.
 
 #
-# $Id: SConstruct,v 1.7 2010/08/12 21:05:43 genser Exp $
-# $Author: genser $
-# $Date: 2010/08/12 21:05:43 $
+# $Id: SConstruct,v 1.8 2010/09/30 14:14:27 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/09/30 14:14:27 $
 #
 # Original author Rob Kutschke.
 #
@@ -81,6 +81,7 @@ env.Append(BUILDERS = {'DictionarySource' : genreflex})
 env.MergeFlags('-g')
 env.MergeFlags('-O2')
 env.MergeFlags('-rdynamic')
+env.MergeFlags('-Wall')
 
 ff = os.popen('g++ --version'); ll = ff.readline(); ff.close()
 gcc_version = ll[10:13]
