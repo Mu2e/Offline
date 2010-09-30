@@ -1,9 +1,9 @@
 #ifndef HOUGHTRANSFORM_HH
 #define HOUGHTRANSFORM_HH
 //
-// $Id: HoughTransform.hh,v 1.8 2010/08/21 23:23:28 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/08/21 23:23:28 $
+// $Id: HoughTransform.hh,v 1.9 2010/09/30 21:52:58 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/30 21:52:58 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.  
@@ -63,12 +63,12 @@ namespace mu2e{
       typedef std::vector<mu2e::hitcluster::HitCluster> ClusterList;
 
       HoughTransform(ClusterList& clusters) :
-       _hitClusters(clusters), goodHoughTracks(false), numberOfHoughTracks(0){
+       goodHoughTracks(false), numberOfHoughTracks(0), _hitClusters(clusters){
            FindCenters(); };
 
       ~HoughTransform(){};
 
-      virtual std::string name() const {return "HoughTransform";}
+      std::string name() const {return "HoughTransform";}
 
       static void MakeClusters(StepPointMCCollection const* hits,
                                   ClusterList& clusters);
