@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.4 2010/08/31 16:13:15 genser Exp $
-// $Author: genser $
-// $Date: 2010/08/31 16:13:15 $
+// $Id: constructStoppingTarget.cc,v 1.5 2010/09/30 17:32:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 17:32:46 $
 //
 // Original author Peter Shanahan
 //
@@ -22,7 +22,6 @@
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -127,14 +126,15 @@ namespace mu2e {
         G4ThreeVector foilOffset(foil.center()-G4ThreeVector(0.,0.,z0));
         cout<<"foil "<<itf<<" center="<<foil.center()<<", offset="<<foilOffset<<endl;
 
-        G4VPhysicalVolume* phys = new G4PVPlacement( rot,
-                                                     foilOffset,
-                                                     foilInfo.logical,
-                                                     "TargetFoil_",
-                                                     targetInfo.logical,
-                                                     0,
-                                                     itf,
-                                                     config.getBool("g4.doSurfaceCheck",false));
+        // G4 manages the lifetime of this object.
+        new G4PVPlacement( rot,
+                           foilOffset,
+                           foilInfo.logical,
+                           "TargetFoil_",
+                           targetInfo.logical,
+                           0,
+                           itf,
+                           config.getBool("g4.doSurfaceCheck",false));
 
         // leak?
         G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Magenta() );
