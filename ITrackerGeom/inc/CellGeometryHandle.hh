@@ -19,7 +19,7 @@ protected:
 
 public:
 
-        ~CellGeometryHandle();
+        virtual ~CellGeometryHandle();
 
         virtual void  SelectCell(int SupLayer, int CelLayer, int Cell)         {}
         virtual void  SelectWireDet(unsigned long det)                                         {
