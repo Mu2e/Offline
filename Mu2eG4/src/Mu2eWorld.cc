@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.56 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/29 19:37:58 $
+// $Id: Mu2eWorld.cc,v 1.57 2010/09/30 03:04:35 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/30 03:04:35 $
 //
 // Original author Rob Kutschke
 //
@@ -378,7 +378,7 @@ namespace mu2e {
     // the earthen overburden.
     double floorThick           = CLHEP::mm * _config->getDouble("hall.floorThick");
     double ceilingThick         = CLHEP::mm * _config->getDouble("hall.ceilingThick");
-    double wallThick            = CLHEP::mm * _config->getDouble("hall.wallThick");
+    //double wallThick            = CLHEP::mm * _config->getDouble("hall.wallThick");
     double overburdenDepth      = CLHEP::mm * _config->getDouble("dirt.overburdenDepth");
     vector<double> hallInHLen;
     _config->getVectorDouble("hall.insideHalfLengths",hallInHLen,3);
@@ -1287,7 +1287,6 @@ namespace mu2e {
     // Adjust properties of the integrators to control accuracy vs time.
     G4double singleValue         = 0.5e-01*CLHEP::mm;
     G4double newUpstreamDeltaI   = singleValue;
-    G4double newDownstreamDeltaI = singleValue;
     G4double deltaOneStep        = singleValue;
     G4double deltaChord          = singleValue;
 
@@ -1390,7 +1389,6 @@ namespace mu2e {
     // Adjust properties of the integrators to control accuracy vs time.
     G4double singleValue         = 0.5e-01*CLHEP::mm;
     G4double newUpstreamDeltaI   = singleValue;
-    G4double newDownstreamDeltaI = singleValue;
     G4double deltaOneStep        = singleValue;
     G4double deltaChord          = singleValue;
 
@@ -1491,9 +1489,6 @@ namespace mu2e {
     G4Material* HallSteelShieldMaterial = materialFinder.get("fluxcrv.HallSteelMaterialName");
 
     GeomHandle<Beamline> beamg;
-    double rCryo = beamg->getTS().outerRadius();
-
-    G4Material* FrontHoleMaterial = materialFinder.get("toyDS.insideMaterialName");
 
     // Compute dimensions of 5 sides in Mu2e coordinates
     double HallSteelTopHalfX   = HallSteelHalfLenXY + HallSteelHalfThick;
@@ -1899,7 +1894,7 @@ namespace mu2e {
     if( x.size()!=y.size() || x.size()==0 ) return info;
 
     vector<G4TwoVector> polygon;
-    for( int i=0; i<x.size(); ++i ) polygon.push_back(G4TwoVector(x[i],y[i]));
+    for( size_t i=0; i<x.size(); ++i ) polygon.push_back(G4TwoVector(x[i],y[i]));
     
     info.solid   = new G4ExtrudedSolid( name, polygon, hz,
 					G4TwoVector(0.0,0.0), 1.0,
