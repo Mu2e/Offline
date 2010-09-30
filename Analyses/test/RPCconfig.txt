@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: RPCconfig.txt,v 1.1 2010/08/23 15:45:28 rhbob Exp $
+// $Id: RPCconfig.txt,v 1.2 2010/09/30 16:43:05 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2010/08/23 15:45:28 $
+// $Date: 2010/09/30 16:43:05 $
 //
 // Original author Rob Kutschke
 
@@ -23,7 +23,7 @@ double conversionGun.tmax  = 1694.;
 
 // Mean multiplicities for the two background generators.
 double cosmictoy.mean   =   0.0;
-double picapture.mean   =   -1.0;
+double picapture.mean   =   -1.0; // guarantees exactly 1
 
 // Configure Daya Bay Cosmic generator.
 // Startup time is very sensitive to muEMin.  
