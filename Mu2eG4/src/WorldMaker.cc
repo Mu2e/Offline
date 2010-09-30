@@ -1,9 +1,9 @@
 //
 // The Mu2e version of G4VUserDetectorConstruction.
 // 
-// $Id: WorldMaker.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: WorldMaker.cc,v 1.2 2010/09/30 19:27:52 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2010/09/30 19:27:52 $
 //
 // Original author Rob Kutschke
 //
@@ -24,8 +24,6 @@
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/ConstructMaterials.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 
 // G4 includes
 #include "G4GeometryManager.hh"
@@ -53,10 +51,6 @@ namespace mu2e {
 
     // Clean old geometry, if any
     Clean();
-
-    // Get access to the master geometry system and its run time config.
-    edm::Service<GeometryService> geom;
-    SimpleConfig const& config = geom->config();
 
     _materials = auto_ptr<ConstructMaterials>(new ConstructMaterials());
     _world     = auto_ptr<Mu2eWorld>(new Mu2eWorld());
