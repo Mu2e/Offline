@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.7 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: TrackingAction.cc,v 1.8 2010/09/30 17:34:44 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 17:34:44 $
 //
 // Original author Rob Kutschke
 //
@@ -42,8 +42,8 @@ namespace mu2e {
 				  SteppingAction *stepping_action ):
     _debugList(),
     _physVolHelper(0),
-    _currentSize(0),
-    _timer(){
+    _timer(),
+    _currentSize(0){
 
     _stepping = stepping_action;
 
