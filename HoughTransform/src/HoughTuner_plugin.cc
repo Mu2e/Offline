@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_plugin.cc,v 1.5 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/08/31 00:24:51 $
+// $Id: HoughTuner_plugin.cc,v 1.6 2010/09/30 22:36:08 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/30 22:36:08 $
 //
 // Original author P. Shanahan
 //
@@ -71,10 +71,10 @@ namespace mu2e {
   class HoughTuner : public edm::EDAnalyzer {
   public:
     explicit HoughTuner(edm::ParameterSet const& pset) : 
-      _hitCreatorName(pset.getParameter<string>("hitCreatorName")),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",10)),
       _nAnalyzed(0),
-      _messageCategory("ToyHitInfo")
+      _messageCategory("ToyHitInfo"),
+      _hitCreatorName(pset.getParameter<string>("hitCreatorName"))
     { }
     virtual ~HoughTuner() { }
 
@@ -198,7 +198,7 @@ namespace mu2e {
 // draw circles
      std::vector<TEllipse*> circles; // to be able to delete them when done
 std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
-     for (int ihc=0; ihc<hcHandle->size(); ihc++) {
+     for (size_t ihc=0; ihc<hcHandle->size(); ihc++) {
          const HoughCircle& hc=hcHandle->at(ihc);
          TEllipse *circle=new TEllipse(hc.Center().x(),hc.Center().y(),hc.Radius());
          circles.push_back(circle);
@@ -219,7 +219,7 @@ std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
      double rmean[2]={0,0};
 
 // loop over hits
-     for (int ih=0; ih<hits->size(); ih++)
+     for (size_t ih=0; ih<hits->size(); ih++)
      {
           
          const StepPointMC& hit=hits->at(ih);
@@ -250,7 +250,7 @@ std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
 
      delete tp[kPhys];
      delete tp[kNoise];
-     for (int ic=0; ic<circles.size(); ic++) delete circles[ic];
+     for (size_t ic=0; ic<circles.size(); ic++) delete circles[ic];
 
      
      if (hcp) {
