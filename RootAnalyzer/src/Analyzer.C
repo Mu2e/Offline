@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example 
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.4 2010/06/29 17:43:35 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/29 17:43:35 $
+// $Id: Analyzer.C,v 1.5 2010/09/30 21:44:57 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 21:44:57 $
 //
 // Original author KLG
 //
@@ -54,9 +54,9 @@ Analyzer::Analyzer (char const * file,
   //  _g4ModuleLabel(g4ModuleLabel),
   _minimumEnergy(minEnergy),
   _maxFullPrint(maxFullPrint),
+  _nAnalyzed(0),
   _outputFileNamePrefix("Analyzer"),
   _canvasPrintFormat(cformat),
-  _nAnalyzed(0),
   _hRadius(0),
   _hEnergyDep(0),
   _hTime(0),
@@ -556,7 +556,7 @@ void Analyzer::analyze() {
 
     //     ConditionsHandle<ParticleDataTable> pdt("ignored");
 
-    for ( int i=0; i<simParticles->size(); ++ i){
+    for ( size_t i=0; i<simParticles->size(); ++ i){
 
       mu2e::SimParticle const& sim = simParticles->at(i);
 
