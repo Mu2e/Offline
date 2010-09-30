@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.6 2010/08/31 00:46:46 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/31 00:46:46 $
+// $Id: MakeStrawHit_plugin.cc,v 1.7 2010/09/30 02:15:39 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 02:15:39 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -81,14 +81,14 @@ namespace mu2e {
 
       // Parameters
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
+      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _t0Sigma(pset.getUntrackedParameter<double>("t0Sigma",5.0)), // ns
       _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
       _minimumLength(pset.getUntrackedParameter<double>("minimumLength",0.01)),   // mm
       _driftVelocity(pset.getUntrackedParameter<double>("driftVelocity",0.05)),   // mm/ns
       _driftSigma(pset.getUntrackedParameter<double>("driftSigma",0.1)),          // mm
       _minimumTimeGap(pset.getUntrackedParameter<double>("minimumTimeGap",100.0)),// ns
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
 
       // Random number distributions
@@ -171,7 +171,7 @@ namespace mu2e {
 
     typedef std::map<StrawIndex,std::vector<int> > StrawHitMap;
     StrawHitMap hitmap;
-    for ( int i=0; i<points->size(); ++i){
+    for ( size_t i=0; i<points->size(); ++i){
       StepPointMC const& hit = (*points)[i];
       if( hit.totalEDep()<_minimumEnergy ) continue; // Skip steps with very low energy deposition
       StrawIndex straw_id = hit.strawIndex();
@@ -209,7 +209,7 @@ namespace mu2e {
 
       vector<int> const& ihits = istraw->second;
 
-      for( int i=0; i<ihits.size(); i++ ) {
+      for( size_t i=0; i<ihits.size(); i++ ) {
 
         int hitRef = ihits[i];
         StepPointMC const& hit = (*points)[hitRef];
@@ -291,7 +291,7 @@ namespace mu2e {
       sort(straw_hits.begin(), straw_hits.end() );
 
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-        for( int i=0; i<straw_hits.size(); i++ ) {
+        for( size_t i=0; i<straw_hits.size(); i++ ) {
           cout << "MakeStrawHit: StepHit #" << straw_hits[i]._hit_id 
                << " DCA=" << straw_hits[i]._dca
                << " driftT=" << straw_hits[i]._driftTime
@@ -317,7 +317,7 @@ namespace mu2e {
       StrawHitMCPtr mcptr;
       mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
 
-      for( int i=1; i<straw_hits.size(); i++ ) {
+      for( size_t i=1; i<straw_hits.size(); i++ ) {
         if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
           // The is bit time gap - save current data as a hit...
           strawHits->push_back(StrawHit(straw_id,digi_time,digi_t2-digi_time,digi_edep));
@@ -348,7 +348,7 @@ namespace mu2e {
     
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
       cout << "MakeStrawHit: Total number of hit straws = " << strawHits->size() << endl;
-      for( int i=0; i<strawHits->size(); ++i ) {
+      for( size_t i=0; i<strawHits->size(); ++i ) {
         cout << "MakeStrawHit: Straw #" << (*strawHits)[i].strawIndex() 
              << " time="  << (*strawHits)[i].time()
              << " dt="    << (*strawHits)[i].dt()
