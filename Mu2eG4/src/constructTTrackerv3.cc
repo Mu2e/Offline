@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.7 2010/09/01 19:55:45 genser Exp $
-// $Author: genser $
-// $Date: 2010/09/01 19:55:45 $
+// $Id: constructTTrackerv3.cc,v 1.8 2010/09/30 17:33:08 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 17:33:08 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -28,7 +28,6 @@
 #include "Mu2eG4/inc/constructTTracker.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -218,7 +217,7 @@ namespace mu2e{
     //leak?
     G4RotationMatrix* rotTub = new G4RotationMatrix(RYForTrapezoids);
 
-    for ( size_t ilay =0; ilay<sector.nLayers(); ++ilay ){
+    for ( int ilay =0; ilay<sector.nLayers(); ++ilay ){
 
       // cout << "Debugging constructTTrackerv3 ilay: " << ilay << endl;
 
@@ -293,7 +292,7 @@ namespace mu2e{
 
     // We have constructed one sector, Now place the sectors (in the logical device)
 
-    for ( size_t isec = 0; isec<device.nSectors(); ++isec){
+    for ( int isec = 0; isec<device.nSectors(); ++isec){
 
       if ( secDraw > -1 && isec > secDraw ) continue;
 
@@ -331,7 +330,7 @@ namespace mu2e{
 
     // we have constructed one logical device above, we need to place it a few times now...
 
-    for ( size_t idev=0; idev<ttracker->nDevices(); ++idev ){
+    for ( int idev=0; idev<ttracker->nDevices(); ++idev ){
 
       // we still need to modify StrawSD
 

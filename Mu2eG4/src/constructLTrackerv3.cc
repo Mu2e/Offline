@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.9 2010/08/31 16:54:52 genser Exp $
-// $Author: genser $
-// $Date: 2010/08/31 16:54:52 $
+// $Id: constructLTrackerv3.cc,v 1.10 2010/09/30 17:32:10 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 17:32:10 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,6 @@
 #include "Mu2eG4/inc/constructLTracker.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
-#include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -205,7 +204,7 @@ namespace mu2e{
           CLHEP::Hep3Vector const& origin = sector.getBasePosition().at(ilay);
           CLHEP::Hep3Vector const trapezoidorigin = CLHEP::Hep3Vector(origin.x(),origin.z(),origin.y());
 
-          for ( std::size_t istr =0; istr<layer.nStraws(); ++istr){
+          for ( int istr =0; istr<layer.nStraws(); ++istr){
             Straw const& straw = layer.getStraw(istr);
 
             // Position within the sector box.
