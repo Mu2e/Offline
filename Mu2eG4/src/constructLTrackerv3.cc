@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.10 2010/09/30 17:32:10 kutschke Exp $
+// $Id: constructLTrackerv3.cc,v 1.11 2010/09/30 19:31:30 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/30 17:32:10 $
+// $Date: 2010/09/30 19:31:30 $
 //
 // Original author Rob Kutschke
 //
@@ -59,8 +59,8 @@ namespace mu2e{
     double z0    = CLHEP::mm * ltracker->z0();
 
     bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
-    bool trackerVisible = config.getBool("ltracker.visible",true);
     bool trackerSolid = config.getBool("ltracker.solid",true);
+    //bool trackerVisible = config.getBool("ltracker.visible",true);
     
 
     VolumeInfo trackerInfo;
@@ -214,8 +214,8 @@ namespace mu2e{
             // Name of this physical volume.
             string sname = straw.name( "LTrackerStraw_");
 
-            G4VPhysicalVolume* phys = (device.Id() ==  LTracker::vane) ?
-              // G4VPhysicalVolume* phys = ( true ) ?
+            // G4 takes ownershop of whichever object is created.
+            if (device.Id() ==  LTracker::vane) {
               new G4PVPlacement( rotfb,
                                  position,
                                  strawInfo.logical,
@@ -223,8 +223,8 @@ namespace mu2e{
                                  sectorBoxInfo.logical, 
                                  0, 
                                  straw.Index().asInt(),
-                                 doSurfaceCheck) 
-              :
+                                 doSurfaceCheck);
+            }else{
               new G4PVPlacement( rotft,
                                  trapezoidposition,
                                  strawInfo.logical,
@@ -233,6 +233,7 @@ namespace mu2e{
                                  0, 
                                  straw.Index().asInt(),
                                  doSurfaceCheck);
+            }
             
           } // loop over straws
         }   // loop over layers
