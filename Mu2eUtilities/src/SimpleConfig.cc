@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.6 2010/09/27 19:42:30 kutschke Exp $
+ * $Id: SimpleConfig.cc,v 1.7 2010/09/30 14:43:55 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/09/27 19:42:30 $
+ * $Date: 2010/09/30 14:43:55 $
  *
  * Original author Rob Kutschke
  *
@@ -201,7 +201,7 @@ namespace mu2e {
   void SimpleConfig::getVectorString ( const string& name, vector<string>& v, int nRequired ) const{
     getRecord(name).getVectorString(v);
     if ( nRequired < 0 ) return;
-    if ( v.size() != nRequired){
+    if ( v.size() != static_cast<size_t>(nRequired) ){
       throw edm::Exception(edm::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<string> "
         << name 
@@ -222,7 +222,7 @@ namespace mu2e {
   void SimpleConfig::getVectorInt ( const string& name, vector<int>& v, int nRequired ) const{
     getRecord(name).getVectorInt(v);
     if ( nRequired < 0 ) return;
-    if ( v.size() != nRequired){
+    if ( v.size() != static_cast<size_t>(nRequired) ){
       throw edm::Exception(edm::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<int> "
         << name 
@@ -246,7 +246,7 @@ namespace mu2e {
                                        int nRequired ) const{
     getRecord(name).getVectorDouble(v);
     if ( nRequired < 0 ) return;
-    if ( v.size() != nRequired){
+    if ( v.size() != static_cast<size_t>(nRequired) ){
       throw edm::Exception(edm::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<String> "
         << name 
@@ -513,7 +513,7 @@ namespace mu2e {
    * @return true if this record is incomplete and false if it is complete.
    */
   bool SimpleConfig::WantsExtension( string s){
-    int icomment = s.find("//");
+    string::size_type icomment = s.find("//");
     string line = ( icomment == string::npos ) ? s : s.substr(0,icomment);
     TrimInPlace(line);
 
@@ -640,7 +640,7 @@ namespace mu2e {
   // Find the length of the longest key in the map.
   int maxKeySize ( const StatMap& m ){
 
-    int maxSize(0);
+    size_t maxSize(0);
 
     for ( StatMap::const_iterator i=m.begin();
           i != m.end(); ++i ){

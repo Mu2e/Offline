@@ -3,9 +3,9 @@
  * A class to hold one record within the primitive 
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.cc,v 1.4 2010/08/31 21:49:40 kutschke Exp $
+ * $Id: SimpleConfigRecord.cc,v 1.5 2010/09/30 14:43:58 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/08/31 21:49:40 $
+ * $Date: 2010/09/30 14:43:58 $
  *
  * Original author Rob Kutschke
  *
@@ -73,7 +73,7 @@ namespace mu2e {
 
   void SimpleConfigRecord::getVectorString( vector<string>& v) const{
     AnyVector();
-    for ( int i=0; i<Values.size(); ++i){
+    for ( size_t i=0; i<Values.size(); ++i){
       v.push_back(Values[i]);
     }
   }
@@ -273,8 +273,8 @@ namespace mu2e {
     //   - the first equals sign in the line must not be the last
     //      non-whitespace character in the line.
     // Remember that barerecord has leading and trailing spaces trimmed.
-    int iequal = barerecord.find('=');
-    if ( iequal < 3 || iequal >= barerecord.size()-1){
+    size_t iequal = barerecord.find('=');
+    if ( iequal < 3 || iequal+1 >= barerecord.size() ){
 
       // Test: fail04.conf
       throw edm::Exception(edm::errors::Unknown)
@@ -291,10 +291,10 @@ namespace mu2e {
     TrimInPlace(tmp);
 
     // White space that separates the type and name.
-    int white = tmp.find_first_of(" \t");
-    if ( white == string::npos || 
+    size_t white = tmp.find_first_of(" \t");
+    if ( white == string::npos ||
          white < 1             ||
-         white > tmp.size()-2 ){
+         white+2 > tmp.size() ){
 
       // Test: fail05.conf, fail06.conf
       throw edm::Exception(edm::errors::Unknown)
@@ -317,7 +317,7 @@ namespace mu2e {
   
     // There should be no more white space;  
     // Trailing white space has already been trimmed.
-    int check = Name.find_first_of(" \t");
+    string::size_type check = Name.find_first_of(" \t");
     if ( check != string::npos ){
 
       // Test: fail07.conf
@@ -340,8 +340,8 @@ namespace mu2e {
   
     // Part of the string to parse.
     // Default is for non-vectors.
-    int iopen  = 0;
-    int iclose = Value.size();
+    string::size_type iopen  = 0;
+    string::size_type iclose = Value.size();
   
     // If this is a vector, strip the enclosing {}.
     if ( _isVector ){
@@ -350,7 +350,7 @@ namespace mu2e {
       if ( ( iopen  == string::npos ) ||
            ( iclose == string::npos ) ||
            ( iclose < (iopen+1) ) ){
-
+        
         // Test: fail08.conf, fail09.conf
         throw edm::Exception(edm::errors::Unknown)
           << "SimpleConfigRecord: "
@@ -385,9 +385,8 @@ namespace mu2e {
     // 13: last character was an escape, otherwise in state 3
     
     int state(0);
-    int i(-1);
-    while (++i<listpart.size()){
-    
+    for ( string::size_type i=0; i<listpart.size(); ++i ){
+
       // Next character, both as a char and as a string.
       char c = listpart[i];
       string sc(1,c);
