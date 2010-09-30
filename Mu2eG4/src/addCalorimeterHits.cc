@@ -100,7 +100,7 @@ namespace mu2e{
 
       vector<int> const& ihits = ro->second;
 
-      for( int i=0; i<ihits.size(); i++ ) {
+      for( size_t i=0; i<ihits.size(); i++ ) {
 
         int hitRef = ihits[i];
 	StepPointG4* h = (*hits)[hitRef];
@@ -133,7 +133,7 @@ namespace mu2e{
       double h_edepc   = ro_hits[0]._edep_corr;
       int    h_charged = ro_hits[0]._charged;
 
-      for( int i=1; i<ro_hits.size(); ++i ) {
+      for( size_t i=1; i<ro_hits.size(); ++i ) {
 	if( (ro_hits[i]._time-ro_hits[i-1]._time) > timeGap ) {
 	  // Save current hit
 	  outputHits.push_back(CaloHit(roid,h_time,h_edepc+h_charged*addEdep));

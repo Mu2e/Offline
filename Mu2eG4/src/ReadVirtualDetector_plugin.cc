@@ -58,7 +58,7 @@ namespace mu2e {
       vint const & pdg_ids = pset.getUntrackedParameter<vint>("savePDG", vint());
       if( pdg_ids.size()>0 ) {
 	cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
-	for( int i=0; i<pdg_ids.size(); ++i ) {
+	for( size_t i=0; i<pdg_ids.size(); ++i ) {
 	  pdg_save.insert(pdg_ids[i]);
 	  cout << pdg_ids[i] << ", ";
 	}
@@ -128,7 +128,7 @@ namespace mu2e {
     run.getByType(physVolumes);
     if( physVolumes.isValid() ) {
 
-      for ( int i=0; i<physVolumes->size(); ++i ) {
+      for ( size_t i=0; i<physVolumes->size(); ++i ) {
 	if( (*physVolumes)[i].name() == "TargetFoil_" ) {
 	  vid_stop[i] = (*physVolumes)[i].copyNo();
 	  cout << "ReadVirtualDetector: register stopping target volume " << i << " = "
@@ -185,7 +185,7 @@ namespace mu2e {
       }
 
       // Get track info
-      int trackId = hit.trackId();
+      size_t trackId = hit.trackId();
       int pdgId = 0;
       if ( haveSimPart ){
 	if( trackId >= simParticles->size() ) {
@@ -227,13 +227,12 @@ namespace mu2e {
       const int id0 = 21;
 
       // Go through SimParticle container and analyze one particle at a time
-      for( int isp=0; isp<simParticles->size(); ++isp ) {
+      for( size_t isp=0; isp<simParticles->size(); ++isp ) {
 
         SimParticle const& sim = simParticles->at(isp);
 
 	// It particle PDG ID is not in the list - skip it
 	if( pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
-	bool toSave = false;
 
 	// Clean the buffer 
 	for( int i=0; i<(id0+12*nvdet); ++i ) nt[i]=0;

@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.5 2010/09/30 17:32:46 kutschke Exp $
+// $Id: constructStoppingTarget.cc,v 1.6 2010/09/30 21:34:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/30 17:32:46 $
+// $Date: 2010/09/30 21:34:58 $
 //
 // Original author Peter Shanahan
 //
@@ -99,7 +99,7 @@ namespace mu2e {
 
     // now create the individual targets
 
-    for (unsigned int itf=0; itf<target->nFoils(); itf++)
+    for (int itf=0; itf<target->nFoils(); itf++)
       {
 
         TargetFoil foil=target->foil(itf);
