@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_plugin.cc,v 1.8 2010/08/26 19:57:44 kutschke Exp $
+// $Id: MCSH_Test_plugin.cc,v 1.9 2010/09/30 02:10:26 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/26 19:57:44 $
+// $Date: 2010/09/30 02:10:26 $
 //
 // Original author Rob Kutschke
 //
@@ -151,7 +151,7 @@ namespace mu2e {
       Straw const&              straw(ltracker->getStraw(hit.strawIndex));
 
       // The list of nearest neighbours of this straw.
-      vector<StrawIndex> const& nearest(straw.nearestNeighboursByIndex());
+      //vector<StrawIndex> const& nearest(straw.nearestNeighboursByIndex());
 
       // Fill diagnostic histogram.
       if ( _diagLevel > 0){
