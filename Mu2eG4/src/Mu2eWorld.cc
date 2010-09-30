@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.57 2010/09/30 03:04:35 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.58 2010/09/30 17:31:49 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 03:04:35 $
+// $Date: 2010/09/30 17:31:49 $
 //
 // Original author Rob Kutschke
 //
@@ -42,7 +42,6 @@
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/StrawPlacer.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
