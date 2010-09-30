@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.16 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/29 19:37:58 $
+// $Id: StrawSD.cc,v 1.17 2010/09/30 17:36:29 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/09/30 17:36:29 $
 //
 // Original author Rob Kutschke
 //
@@ -249,16 +249,14 @@ namespace mu2e {
     // Angle between the directed chord and the momentum.
     G4ThreeVector dT( deltaWorld.x(), deltaWorld.y(), 0.);
     G4ThreeVector pT( preMomWorld.x(), preMomWorld.y(), 0. );
-    G4double dot = dT.unit().dot(pT.unit());
-    G4double angle = dT.angle(pT);
+    //G4double angle = dT.angle(pT);
 
     G4ThreeVector dTLocal( deltaLocal.x(), deltaLocal.y(), 0.);
     G4ThreeVector pTLocal( preMomLocal.x(), preMomLocal.y(), 0. );
-    G4double dotLocal = dTLocal.unit().dot(pTLocal.unit());
-    G4double angleLocal = dTLocal.angle(pTLocal);
+    //G4double angleLocal = dTLocal.angle(pTLocal);
 
     // This is took big. O(1.e-5 CLHEP::radians) or about 1% of the value. Why?
-    G4double diffAngle = angle-angleLocal;
+    //G4double diffAngle = angle-angleLocal;
 
     G4ThreeVector localOrigin(0.,0.,0.);
     G4ThreeVector worldOrigin = toWorld.TransformPoint(localOrigin) - detectorOrigin;
