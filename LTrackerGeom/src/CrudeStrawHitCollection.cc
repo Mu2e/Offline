@@ -44,7 +44,7 @@ namespace mu2e{
     
     // Fill the fast indexing array.
     _index.assign( nChannels, -1 );
-    for ( int i=0; i<_hits->size(); ++i){
+    for ( size_t i=0; i<_hits->size(); ++i){
       CrudeStrawHit const& hit = (*_hits)[i];
       StrawIndex idx = hit.strawIndex;
       _index[idx.asInt()] = i;
