@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.9 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/31 00:24:51 $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.10 2010/09/30 02:16:34 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 02:16:34 $
 //
 // Original author Rob Kutschke
 //
@@ -136,7 +136,7 @@ namespace mu2e {
     // Product Id of the input points.
     edm::ProductID const& id(points.id());
 
-    for ( int i=0; i<points->size(); ++i){
+    for ( size_t i=0; i<points->size(); ++i){
       
       // Aliases (references), used for readability.
       StepPointMC const& hit = (*points)[i];
