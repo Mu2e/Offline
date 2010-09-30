@@ -54,7 +54,7 @@ namespace mu2e {
 
   G4bool CaloReadoutSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
-    G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
+    //G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 

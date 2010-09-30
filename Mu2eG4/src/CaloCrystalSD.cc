@@ -82,11 +82,11 @@ namespace mu2e {
       return false;
     }
 
-    G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
+    //G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
+    //G4int eventId = event->GetEventID();
+    //G4int trackId = aStep->GetTrack()->GetTrackID()-1;
 
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
-    G4int eventId = event->GetEventID();
-    G4int trackId = aStep->GetTrack()->GetTrackID()-1;
 
     // Get calorimeter geometry description
     GeomHandle<Calorimeter> cg;
