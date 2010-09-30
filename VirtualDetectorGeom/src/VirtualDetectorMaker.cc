@@ -37,7 +37,7 @@ namespace mu2e {
 
     // VD 1 and 2 are at the front and back of collimator 1, which is placed inside TS1.
 
-    double ts1HL   = bg->getTS().getTS1().getHalfLength();
+    //double ts1HL   = bg->getTS().getTS1().getHalfLength();
     double coll1HL = bg->getTS().getColl1().getHalfLength();
 
     HepRotation *ts1rot = bg->getTS().getTS1().getRotation();
@@ -50,7 +50,7 @@ namespace mu2e {
 
     // VD 3-6 are placed around two sections of collimator 3
 
-    double ts3HL   = bg->getTS().getTS1().getHalfLength();
+    //double ts3HL   = bg->getTS().getTS1().getHalfLength();
     double coll31HL = bg->getTS().getColl31().getHalfLength();
     double coll32HL = bg->getTS().getColl32().getHalfLength();
 
@@ -69,7 +69,7 @@ namespace mu2e {
 
     // VD 7 and 8 are at the front and back of collimator 5, which is placed inside TS5.
 
-    double ts5HL   = bg->getTS().getTS5().getHalfLength();
+    //double ts5HL   = bg->getTS().getTS5().getHalfLength();
     double coll5HL = bg->getTS().getColl5().getHalfLength();
 
     HepRotation *ts5rot = bg->getTS().getTS5().getRotation();

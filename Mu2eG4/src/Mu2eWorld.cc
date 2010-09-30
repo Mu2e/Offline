@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.58 2010/09/30 17:31:49 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.59 2010/09/30 22:47:59 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 17:31:49 $
+// $Date: 2010/09/30 22:47:59 $
 //
 // Original author Rob Kutschke
 //
@@ -611,7 +611,7 @@ namespace mu2e {
 
     // Extract base parameters from config information.
     GeomHandle<Beamline> beamg;
-    double solenoidOffset = beamg->solenoidOffset();
+    //double solenoidOffset = beamg->solenoidOffset();
     double rTorus         = beamg->getTS().torusRadius();
     double rVac           = beamg->getTS().innerRadius();
     double rCryo          = beamg->getTS().outerRadius();
@@ -638,7 +638,7 @@ namespace mu2e {
     G4Material* coll3Material  = materialFinder.get("coll3.materialName");
     G4Material* coll5Material  = materialFinder.get("coll5.materialName");
 
-    double coll3Hole           = _config->getDouble("coll3.hole");
+    //double coll3Hole           = _config->getDouble("coll3.hole");
     double coll3RotationAngle  = _config->getDouble("coll3.rotationAngle");
 
     bool collVisible          = _config->getBool("coll.visible",true);
@@ -653,7 +653,7 @@ namespace mu2e {
     double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
 
     // Computed quantities.
-    double ts5zOffset    = ( rTorus+ts5HalfLength);
+    //double ts5zOffset    = ( rTorus+ts5HalfLength);
 
     // Build TS1.
     TubsParams ts1VacParams (   0.,  rVac, ts1HalfLength);
