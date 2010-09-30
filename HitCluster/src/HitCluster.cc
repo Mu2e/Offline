@@ -1,8 +1,8 @@
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.cc,v 1.2 2010/05/18 21:15:45 kutschke Exp $
+// $Id: HitCluster.cc,v 1.3 2010/09/30 02:07:01 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 21:15:45 $
+// $Date: 2010/09/30 02:07:01 $
 //
 //original author R. Bernstein
 //
@@ -11,6 +11,7 @@ using namespace std;
 namespace mu2e{
   namespace hitcluster{
 
+    HitCluster::~HitCluster(){};
   
     HitCluster::hitNeighbours HitCluster::findHitNeighbours()
     {
@@ -34,7 +35,7 @@ namespace mu2e{
           {
             //            const StepPointMC&  nextHit = (**_hits)[ithhit];//dereference handle to get pointer,then dereference pointer
             const StepPointMC&  nextHit = (*_hits)[ithhit];//dereference pointer
-            if ( nextHit.volumeId() == idx.asInt() ){
+            if ( nextHit.volumeId() == idx.asUint() ){
               Candidate _nextCand;
               _nextCand.id = idx.asInt();
               _nextCand.hitPointer = _hit;
