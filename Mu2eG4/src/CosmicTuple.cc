@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.7 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/31 00:24:51 $
+// $Id: CosmicTuple.cc,v 1.8 2010/09/30 02:47:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 02:47:48 $
 //
 // Original author Rob Kutschke
 //
@@ -204,7 +204,7 @@ namespace mu2e {
           GenId idGen;
           int pidGen = -1;
 
-          if ( haveSimPart && oldTrk >= 0 && oldTrk < simParticles->size() ){
+          if ( haveSimPart && oldTrk >= 0 && static_cast<size_t>(oldTrk) < simParticles->size() ){
             const SimParticle* sim = &(simParticles->at(oldTrk));
 
             // PDG Particle Id of the sim particle that made this hit.
@@ -217,7 +217,7 @@ namespace mu2e {
             while ( gTrk < 0 && depth < 100 ) {
               if ( p->hasParent() ) {
                 int pId = p->parentId();
-                if ( pId < 0 || pId >= simParticles->size() ) break;
+                if ( pId < 0 || static_cast<size_t>(pId) >= simParticles->size() ) break;
                 p = &(simParticles->at(pId));
                 gTrk = p->generatorIndex();
                 depth++;
@@ -227,7 +227,7 @@ namespace mu2e {
             }
 
             // store generator info
-            if ( gTrk >= 0 && gTrk < genParticles->size() ) {
+            if ( gTrk >= 0 && static_cast<size_t>(gTrk) < genParticles->size() ) {
               ToyGenParticle const& genpart = genParticles->at(gTrk);
               idGen = genpart._generatorId;
               pidGen = genpart._pdgId;
