@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.4 2010/09/30 02:42:03 kutschke Exp $
+// $Id: ConstructMaterials.cc,v 1.5 2010/09/30 17:31:21 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 02:42:03 $
+// $Date: 2010/09/30 17:31:21 $
 //
 // Original author Rob Kutschke
 //
@@ -218,6 +218,8 @@ namespace mu2e {
       G4double density     = universe_mean_density;
       G4double pressure    = 3.e-18*pascal;
       G4double temperature = 2.73*kelvin;
+
+      // G4 takes ownership of this object and manages its lifetime.
       new G4Material( mat.name, 1., 1.01 *g/mole,
                       density, kStateGas, temperature, pressure);
     }
