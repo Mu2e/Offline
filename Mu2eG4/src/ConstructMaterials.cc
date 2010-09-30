@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.3 2010/05/18 21:16:11 kutschke Exp $
+// $Id: ConstructMaterials.cc,v 1.4 2010/09/30 02:42:03 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:11 $
+// $Date: 2010/09/30 02:42:03 $
 //
 // Original author Rob Kutschke
 //
@@ -90,9 +90,6 @@ namespace mu2e {
       config.getVectorString("g4.elements",elementsToLoad);
     }
     
-    // G4 manager for elements and materials.
-    G4NistManager* nistMan = G4NistManager::Instance();
-    
     // Load the elements.
     for ( vector<string>::const_iterator i=elementsToLoad.begin();
           i!=elementsToLoad.end(); ++i ){
@@ -120,8 +117,6 @@ namespace mu2e {
   //    The element keeps track of how many times it is used - so the first
   //    arugment cannot be const*.
   void ConstructMaterials::constructMu2eMaterials(SimpleConfig const& config){
-
-    G4NistManager* nistMan = G4NistManager::Instance();
 
     // List of requested Mu2e specific materials from the config file.
     vector<string> materialsToLoad;
@@ -223,9 +218,8 @@ namespace mu2e {
       G4double density     = universe_mean_density;
       G4double pressure    = 3.e-18*pascal;
       G4double temperature = 2.73*kelvin;
-      G4Material* Vacuum = 
-        new G4Material( mat.name, 1., 1.01 *g/mole,
-                        density, kStateGas, temperature, pressure);
+      new G4Material( mat.name, 1., 1.01 *g/mole,
+                      density, kStateGas, temperature, pressure);
     }
 
     mat = isNeeded(materialsToLoad, "MBOverburden");
@@ -246,7 +240,6 @@ namespace mu2e {
     if ( mat.doit ){
       //He/C4H10-gas-mixture
 
-      G4double a, z;
       G4double density, temperature, pressure;
       G4int nel;
 
