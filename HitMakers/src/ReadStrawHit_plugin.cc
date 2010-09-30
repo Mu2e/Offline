@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.5 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/31 00:24:51 $
+// $Id: ReadStrawHit_plugin.cc,v 1.6 2010/09/30 02:20:10 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/09/30 02:20:10 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -54,8 +54,8 @@ namespace mu2e {
   public:
     explicit ReadStrawHit(edm::ParameterSet const& pset):
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
       _hHitTime(0),
       _hHitDeltaTime(0),
@@ -151,8 +151,7 @@ namespace mu2e {
     // Geometry info for the LTracker.
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
-
-    const Tracker& tracker = getTrackerOrThrow();
+    // const Tracker& tracker = getTrackerOrThrow();
 
     // Get the persistent data about the StrawHits.
 
@@ -186,7 +185,7 @@ namespace mu2e {
 
     std::map<StrawIndex,int> nhperwire;
 
-    for ( int i=0; i<hits->size(); ++i ) {
+    for ( size_t i=0; i<hits->size(); ++i ) {
 
       // Access data
       StrawHit        const&      hit(hits->at(i));
@@ -210,7 +209,7 @@ namespace mu2e {
 
       // Use data from G4 hits
       _hNG4Steps->Fill(mcptr.size());
-      for( int j=0; j<mcptr.size(); ++j ) {
+      for( size_t j=0; j<mcptr.size(); ++j ) {
         StepPointMC const& mchit = (*mchits)[mcptr[j].index];
         _hG4StepLength->Fill(mchit.stepLength());
         _hG4StepEdep->Fill(mchit.eDep()*1000.0);
