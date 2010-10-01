@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.6 2010/09/30 02:20:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 02:20:10 $
+// $Id: ReadStrawHit_plugin.cc,v 1.7 2010/10/01 19:49:52 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2010/10/01 19:49:52 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -30,6 +30,7 @@
 // Root includes.
 #include "TFile.h"
 #include "TH1F.h"
+#include "TNtuple.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -68,7 +69,8 @@ namespace mu2e {
       _hNG4Steps(0),
       _hT0(0),
       _hG4StepLength(0),
-      _hG4StepEdep(0)
+      _hG4StepEdep(0),
+      _ntup(0)
     {
     }
     virtual ~ReadStrawHit() { }
@@ -104,6 +106,7 @@ namespace mu2e {
     TH1F* _hT0;
     TH1F* _hG4StepLength;
     TH1F* _hG4StepEdep;
+    TNtuple* _ntup;
 
   };
 
@@ -128,7 +131,8 @@ namespace mu2e {
     _hT0           = tfs->make<TH1F>( "hT0",           "T0, ns", 100, -50., 50. );
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
-
+    _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple", 
+                      "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid");
   }
 
   void
@@ -151,7 +155,7 @@ namespace mu2e {
     // Geometry info for the LTracker.
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
-    // const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = getTrackerOrThrow();
 
     // Get the persistent data about the StrawHits.
 
@@ -214,7 +218,34 @@ namespace mu2e {
         _hG4StepLength->Fill(mchit.stepLength());
         _hG4StepEdep->Fill(mchit.eDep()*1000.0);
       }
-
+      StrawIndex si = hit.strawIndex();
+      Straw str = tracker.getStraw(si);
+      StrawId sid = str.Id();
+      LayerId lid = sid.getLayerId();
+      DeviceId did = sid.getDeviceId();
+      SectorId secid = sid.getSectorId();
+      float nt[17];
+      const CLHEP::Hep3Vector vec3junk = str.getMidPoint();
+      const CLHEP::Hep3Vector vec3junk1 = str.getDirection();
+      // Fill the ntuple:
+      nt[0]  = evt.id().event();
+      nt[1]  = lid.getLayer();
+      nt[2]  = did;
+      nt[3]  = secid.getSector();
+      nt[4]  = str.getHalfLength();
+      nt[5]  = vec3junk.getX();
+      nt[6]  = vec3junk.getY();
+      nt[7]  = vec3junk.getZ();
+      nt[8]  = vec3junk1.getX();
+      nt[9]  = vec3junk1.getY();
+      nt[10] = vec3junk1.getZ();
+      nt[11] = hit.time();
+      nt[12] = hit.dt();
+      nt[13] = hit.energyDep();
+      nt[14] = truth.driftTime();
+      nt[15] = truth.driftDistance();
+      nt[16] = truth.distanceToMid();
+      _ntup->Fill(nt);
       // Calculate number of hits per wire
       ++nhperwire[hit.strawIndex()];
 
