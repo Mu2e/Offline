@@ -7,14 +7,14 @@ using namespace std;
 namespace mu2e {
 
   ITLayer::ITLayer():
-        _layerType(undefined),
     _id(ITLayerId()),
     _detailIndex(0),
+    _layerType(undefined),
     _nCells(0),
     _nFiledWires(0),
+    _voxelizationFactor(2),
     _cells(0x0),
-    _fieldWires(0x0),
-    _voxelizationFactor(2)
+    _fieldWires(0x0)
   {
   }
 
@@ -25,12 +25,12 @@ namespace mu2e {
                          std::vector<boost::shared_ptr<Wire> > &fieldWires
 
                ):
-    _layerType(undefined),
     _id(id),
     _detailIndex(detailIndex),
+    _layerType(undefined),
+    _voxelizationFactor(2),
     _cells(cells),
-    _fieldWires(fieldWires),
-    _voxelizationFactor(2)
+    _fieldWires(fieldWires)
   {
           _detail=detail;
 

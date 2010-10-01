@@ -8,8 +8,8 @@ namespace mu2e {
                    std::vector<std::string> & materialNames,
                double halfLength
                            ):
-    _shellsThicknesses(thicknesses),
     _materialNames(materialNames),
+    _shellsThicknesses(thicknesses),
     _halfLength(halfLength)
   {
           _radius=0.;
