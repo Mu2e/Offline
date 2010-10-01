@@ -8,11 +8,11 @@ using CLHEP::Hep3Vector;
 namespace mu2e {
 
 Wire::Wire():
-  _wireType(undefined),
   _id(WireId()),
-  _pos(0x0),
+  _wireType(undefined),
   _c(CLHEP::Hep3Vector(0.,0.,0.)),
   _w(CLHEP::Hep3Vector(0.,0.,1.)),
+  _pos(0x0),
   _invpos(HepGeom::Transform3D()),
   _epsilon(0.0),
   _alpha(0.0)
@@ -28,10 +28,10 @@ Wire::Wire( WireId id,
                 Wtype wireType
             ):
   _id(id),
+  _wireType(wireType),
   _pos(pos),
   _epsilon(epsilon),
-  _alpha(alpha),
-  _wireType(wireType)
+  _alpha(alpha)
 {
   _detail=detail;
   _c.set(_pos->dx(), _pos->dy(), _pos->dz());
