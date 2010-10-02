@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.8 2010/09/30 17:33:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 17:33:08 $
+// $Id: constructTTrackerv3.cc,v 1.9 2010/10/02 03:05:36 genser Exp $
+// $Author: genser $
+// $Date: 2010/10/02 03:05:36 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -209,8 +209,10 @@ namespace mu2e{
       secInfo.logical->SetVisAttributes(visAtt);
     }
 
-    double const tRAngle = M_PI_2;
+    static double const tRAngle  = M_PI_2;
+    static double const tRAngle2 = M_PI;
     CLHEP::HepRotationX RXForTrapezoids(tRAngle);
+    CLHEP::HepRotationX RX2ForTrapezoids(tRAngle2);
     CLHEP::HepRotationY RYForTrapezoids(tRAngle);
     CLHEP::HepRotationZ RZForTrapezoids(tRAngle);
     
@@ -219,7 +221,7 @@ namespace mu2e{
 
     for ( int ilay =0; ilay<sector.nLayers(); ++ilay ){
 
-      // cout << "Debugging constructTTrackerv3 ilay: " << ilay << endl;
+//      cout << "Debugging constructTTrackerv3 ilay: " << ilay << endl;
 
       const Layer& layer = sector.getLayer(ilay);
           
@@ -255,6 +257,9 @@ namespace mu2e{
         G4Material* strawGas = findMaterialOrThrow(detail.gasMaterialName());
 
         // look at StrawSD to see how the straw index is reconstructed
+
+//         cout << "Debugging straw.Id(), straw.Index() " << 
+//           straw.Id() << ", " << straw.Index() << endl;
 
         // make the straws more distinguishable when displayed
         G4Color color = (ilay%2 == 0) ? ((istr%2 == 0) ? G4Color::Green() : G4Color::Yellow()) :
@@ -296,7 +301,7 @@ namespace mu2e{
 
       if ( secDraw > -1 && isec > secDraw ) continue;
 
-      // cout << "Debugging sec: " << isec << " " << secName << " secDraw: " << secDraw << endl;
+//       cout << "Debugging sector: " << isec << " " << secName << " secDraw: " << secDraw << endl;
 
       const Sector& sector = device.getSector(isec);
 
@@ -306,14 +311,18 @@ namespace mu2e{
 
 //       cout << "Debugging sector.boxRzAngle(), device.rotation(): " << sector.boxRzAngle() << " " << 
 //         device.rotation() << endl;      
-
+      
       // a leak?
-      G4RotationMatrix* secRotation = new G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RZ.inverse());
+      // we add an 180deg rotation for even sectors
+      G4RotationMatrix* secRotation = ((isec%2)==1) ? 
+        new G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RZ.inverse()):
+        new G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*RZ.inverse());
 
       // origin a.k.a offset wrt current mother volume
       CLHEP::Hep3Vector origin = sector.boxOffset() - device.origin();
 
-      // cout << "Debugging sec origin: " << isec << " " << secName << origin << endl;
+//       cout << "Debugging sector.origin:      "   << isec << " " << secName << origin << endl;
+//       cout << "Debugging sector.boxOffset(): " << isec << " " << secName << sector.boxOffset() << endl;
       
       // we may need to keep those pointers somewhre... (this is only the last one...)
 
@@ -332,11 +341,11 @@ namespace mu2e{
 
     for ( int idev=0; idev<ttracker->nDevices(); ++idev ){
 
-      // we still need to modify StrawSD
+      // changes here affect StrawSD
 
       if ( devDraw > -1 && idev > devDraw ) continue;
 
-      //      cout << "Debugging dev: " << idev << " " << devName << " devDraw: " << devDraw << endl;
+//      cout << "Debugging dev: " << idev << " " << devName << " devDraw: " << devDraw << endl;
 
       const Device& device = ttracker->getDevice(idev);
 
