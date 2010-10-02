@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.17 2010/09/30 17:36:29 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/30 17:36:29 $
+// $Id: StrawSD.cc,v 1.18 2010/10/02 03:03:42 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/10/02 03:03:42 $
 //
 // Original author Rob Kutschke
 //
@@ -44,7 +44,16 @@ using namespace std;
 
 namespace mu2e {
 
-  StrawSD::StrawSD(G4String name, const SimpleConfig& config ) :G4VSensitiveDetector(name){
+  StrawSD::StrawSD(G4String name, const SimpleConfig& config ):
+    G4VSensitiveDetector(name),
+    _collection(0),
+    _debugList(0),
+    _nStrawsPerDevice(0),
+    _nStrawsPerSector(0),
+    _TrackerVersion(0),
+    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
+    _currentSize(0)
+  {
     G4String HCname("StepPointG4Collection");
     collectionName.insert(HCname);
 
@@ -55,9 +64,6 @@ namespace mu2e {
       config.getVectorInt(key,list);
       _debugList.add(list);
     }
-
-    _sizeLimit = config.getInt("g4.stepsSizeLimit",0);
-    _currentSize = 0;
 
     edm::Service<GeometryService> geom;
 
@@ -169,13 +175,15 @@ namespace mu2e {
 //     cout << "Debugging history depth " << 
 //       setw(4) << theTouchable->GetHistoryDepth() << endl;
 
-//     cout << "Debugging replica 0 replica 1 " <<
+//     cout << "Debugging replica 0 1 2 " <<
 //       setw(4) << theTouchable->GetReplicaNumber(0) <<
-//       setw(4) << theTouchable->GetReplicaNumber(1) << endl;
+//       setw(4) << theTouchable->GetReplicaNumber(1) <<
+//       setw(4) << theTouchable->GetReplicaNumber(2) << endl;
 
-//     cout << "Debugging replica 0 replica 1 " <<
+//     cout << "Debugging replica 0 1 2 " <<
 //       setw(4) << touchableHandle->GetReplicaNumber(0) <<
-//       setw(4) << touchableHandle->GetReplicaNumber(1) << endl;
+//       setw(4) << touchableHandle->GetReplicaNumber(1) <<
+//       setw(4) << touchableHandle->GetReplicaNumber(2) << endl;
 
 //     cout << "Debugging PV Name Mother Name" <<
 //       theTouchable->GetVolume(0)->GetName() << " " <<
@@ -199,7 +207,8 @@ namespace mu2e {
 
     if ( _TrackerVersion == 3) {
       
-      //      cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
+//       cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
+//       cout << "Debugging _nStrawsPerSector " << _nStrawsPerSector << endl;
 
       sdcn = touchableHandle->GetCopyNumber(0) + 
         _nStrawsPerSector*(touchableHandle->GetReplicaNumber(1)) +
@@ -212,7 +221,7 @@ namespace mu2e {
       
     }
 
-    // cout << "Debugging sdcn " << sdcn << endl;
+//     cout << "Debugging sdcn " << sdcn << endl;
 
     StepPointG4* newHit = 
       new StepPointG4(aStep->GetTrack()->GetTrackID()-1,
@@ -264,7 +273,9 @@ namespace mu2e {
     G4ThreeVector localZUnit(0.,0.,1.);
     G4ThreeVector worldZUnit = toWorld.TransformAxis(localZUnit);
 
-    int copy = touchableHandle->GetCopyNumber();
+    // make sure it works with the constructTTrackerv3
+    //    int copy = touchableHandle->GetCopyNumber();
+    int copy = sdcn;
     int eventNo = event->GetEventID();
 
 
@@ -282,49 +293,88 @@ namespace mu2e {
     // Reconstruction Geometry for the LTracker.
     // Need to make this work for the TTracker too.
     edm::Service<GeometryService> geom;
-    if ( !geom->hasElement<LTracker>() ) return true;
+    if ( geom->hasElement<LTracker>() ) {
 
-    GeomHandle<LTracker> ltracker;
-    Straw const& straw = ltracker->getStraw( StrawIndex(copy) );
-    G4ThreeVector mid  = straw.getMidPoint();
-    G4ThreeVector w    = straw.getDirection();
+      GeomHandle<LTracker> ltracker;
+      Straw const& straw = ltracker->getStraw( StrawIndex(copy) );
+      G4ThreeVector mid  = straw.getMidPoint();
+      G4ThreeVector w    = straw.getDirection();
 
-    // Point of closest approach of track to wire.
-    // Straight line approximation.
-    TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);
+      // Point of closest approach of track to wire.
+      // Straight line approximation.
+      TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);
     
-    // Point on the wire that is closest to the step point.
-    LinePointPCA lppca( mid, w, prePosTracker);
-    double ddd = lppca.unit().cosTheta(preMomWorld);
+      // Point on the wire that is closest to the step point.
+      LinePointPCA lppca( mid, w, prePosTracker);
+      double ddd = lppca.unit().cosTheta(preMomWorld);
 
-    double ttt = lppca.unit().cosTheta(w);
+      double ttt = lppca.unit().cosTheta(w);
 
-    printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f | %10.7f %10.7f\n",
-             eventNo,  _collection->entries(), copy,
-             aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
-             prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
-             preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
-             prePosLocal.perp(),  postPosLocal.perp()  );
-    fflush(stdout);
+      printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f | %10.7f %10.7f\n",
+               eventNo,  _collection->entries(), copy,
+               aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
+               prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
+               preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
+               prePosLocal.perp(),  postPosLocal.perp()  );
+      fflush(stdout);
 
-    // This works.  uvw.perp() is always 2.500000000xxxx or 2.499999999xxxx
-    // Note that uhat and vhat are not the same as the local (xhat, yhat)
-    // from G4.  They differ by a rotation about the local zhat.
-    G4ThreeVector z(0.,0.,1.);
-    G4ThreeVector v = worldZUnit.cross(z).unit();
-    G4ThreeVector u = v.cross(worldZUnit);
-    G4ThreeVector detLocal( prePosTracker-mid);
-    double u0 = detLocal.dot(u);
-    double v0 = detLocal.dot(v);
-    double w0 = detLocal.dot(w);
-    G4ThreeVector uvw(u0, v0, w0);
+      // This works.  uvw.perp() is always 2.500000000xxxx or 2.499999999xxxx
+      // Note that uhat and vhat are not the same as the local (xhat, yhat)
+      // from G4.  They differ by a rotation about the local zhat.
+      G4ThreeVector z(0.,0.,1.);
+      G4ThreeVector v = worldZUnit.cross(z).unit();
+      G4ThreeVector u = v.cross(worldZUnit);
+      G4ThreeVector detLocal( prePosTracker-mid);
+      double u0 = detLocal.dot(u);
+      double v0 = detLocal.dot(v);
+      double w0 = detLocal.dot(w);
+      G4ThreeVector uvw(u0, v0, w0);
+
+    } else if ( geom->hasElement<TTracker>() ) {
+
+      GeomHandle<TTracker> ttracker;
+      Straw const& straw = ttracker->getStraw( StrawIndex(copy) );
+      G4ThreeVector mid  = straw.getMidPoint();
+      G4ThreeVector w    = straw.getDirection();
+
+      // Point of closest approach of track to wire.
+      // Straight line approximation.
+      TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);    
+    
+      // Check that the radius of the reference point in the local
+      // coordinates of the straw.  Should be 2.5 mm.
+      double s = w.dot(prePosTracker-mid);
+      CLHEP::Hep3Vector point = prePosTracker - (mid + s*w);
+
+      StrawDetail const& strawDetail = straw.getDetail();
+      // this works with transporOnly.py
+      if (pca.dca()>strawDetail.outerRadius() || abs(point.mag()-strawDetail.outerRadius())>1.e-6 ) {
+
+        cerr << "*** Bad hit?: eid "
+             << event->GetEventID()    << ", cs "
+             << _collection->GetSize() << " tid "
+             << newHit->trackId()      << " vid "
+             << newHit->volumeId()     << " "
+             << straw.Id()         << " | "
+             << pca.dca()          << " "
+             << prePosTracker      << " "
+             << preMomWorld        << " "
+             << point.mag()        << " "
+             << newHit->eDep()     << " "
+             << s                  << " | "
+             << mid                
+             << endl;
+      }
+
+    }
 
     // End of debug section.
 
-    //newHit->Print();
-    //newHit->Draw();
+    //    newHit->Print();
+    //    newHit->Draw();
     
     return true;
+
   }
 
   void StrawSD::EndOfEvent(G4HCofThisEvent*){
