@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.15 2010/09/30 03:35:14 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 03:35:14 $
+// $Id: TTrackerMaker.cc,v 1.16 2010/10/02 03:11:42 genser Exp $
+// $Author: genser $
+// $Date: 2010/10/02 03:11:42 $
 //
 // Original author Rob Kutschke
 //
@@ -317,7 +317,7 @@ namespace mu2e {
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
         ++_istraw;
 
-        // layers with fewer straws woul complicate StrawSD, constructTTrackerv, TTrackerMaker 
+        // layers with fewer straws would complicate StrawSD, constructTTrackerv, TTrackerMaker 
 
         // Construct straw midpoint in its base position in the 
         // coord system of the device envelope.
@@ -345,20 +345,22 @@ namespace mu2e {
         layer._straws.push_back(&allStraws.back());
         layer._indices.push_back(index);
         
-
-//           if ( layId.getDevice() != -1 ){
+        
+//         if ( layId.getDevice() != -1 ){
 //           cout << "Position: " << setw(3) <<
-//           layId << " | " << setw(3) <<
-//           iman << " " << setw(3) <<
-//           istr                << " | " << setw(3) <<
-//           _istraw << " " << fixed << setprecision(2) << setw(8) <<
-//           xstraw << " " << fixed << setprecision(2) << setw(8) <<
-//           2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
-//           mid << " " << fixed << setprecision(2) << setw(8) <<
-//           device.origin() << " | "  << setw(3) <<
-//           index <<  " " << setw(3) <<
-//           allStraws.size() << " "  << setw(3) <<
-//           layer._straws.size() << " "
+//             layId << " | " << setw(3) <<
+//             iman << " " << setw(3) <<
+//             istr                << " | " << setw(3) <<
+//             _istraw << " " << fixed << setprecision(2) << setw(8) <<
+//             xstraw << " " << fixed << setprecision(2) << setw(8) <<
+//             2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
+//             mid << " " << fixed << setprecision(2) << setw(8) <<
+//             device.origin() << " | "  << setw(3) <<
+//             index <<  " " << setw(3) <<
+//             allStraws.size() << " "  << setw(3) <<
+//             layer._straws.size() << " | " << setw(5) <<
+//             (allStraws.back()).Id() << ", " << setw(5) <<
+//             (allStraws.back()).Index() 
 //           << endl;
 //           }
 
@@ -481,7 +483,13 @@ namespace mu2e {
     sector._boxRyAngle = 0.;
     sector._boxRzAngle = _sectorBaseRotations.at(isec) + dev.rotation();
 
-    double zOffset = (_supportHalfThickness + _manifoldHalfLengths.at(2))*_sectorZSide.at(isec);
+    // dz - the equivalent of the dx,  is the distance bwtween the wall
+    // of the manifold and the first/last straw layer
+
+    double dz = _manifoldHalfLengths.at(2) - _strawOuterRadius - 0.5*(_layersPerSector-1)*
+      sqrt(3.0*square(_strawOuterRadius)+3.0*_strawOuterRadius*_strawGap-0.25*square(_strawGap));
+
+    double zOffset = (_supportHalfThickness + _manifoldHalfLengths.at(2) - dz)*_sectorZSide.at(isec);
     
     double xOffset = (_layersPerSector==1) ?
       _envelopeInnerRadius + _manifoldHalfLengths.at(0)*_manifoldsPerEnd : 
@@ -524,7 +532,7 @@ namespace mu2e {
     // shorter x             is the length of the straws in the top/last (shortest) manifold
     // longer  x is longer than the length of the straws in the longest manifold 
     // the other dimentions are "z", the combined manifold width
-    // the "thickness" of the trpezoid y, the layer thickness * number of layers 
+    // the "thickness" of the trpezoid y, ~ the layer thickness * number of layers 
 
     // z
 
