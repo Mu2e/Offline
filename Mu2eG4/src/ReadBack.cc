@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.14 2010/09/30 19:25:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 19:25:15 $
+// $Id: ReadBack.cc,v 1.15 2010/10/02 02:29:16 genser Exp $
+// $Author: genser $
+// $Date: 2010/10/02 02:29:16 $
 //
 // Original author Rob Kutschke
 //
@@ -68,11 +68,16 @@ namespace mu2e {
     _hTime(0),
     _hMultiplicity(0),
     _hDriftDist(0),
+    _hDriftDistW(0),
     _hxHit(0),
     _hyHit(0),
     _hzHit(0),
     _hHitNeighbours(0),
     _hCheckPointRadius(0),
+    _hCheckPointRadiusW(0),
+    _hCheckPointWireZ(0),
+    _hMomentumG4(0),
+    _hStepLength(0),
     _hEdep(0),
     _hEdepMC(0),
     _hNcrystal(0),
@@ -95,6 +100,7 @@ namespace mu2e {
     _hTime         = tfs->make<TH1F>( "hTime",         "Pulse Height;(ns)",       100,  0., 2000. );
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",          100,  0.,  100. );
     _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)",  100,  0.,   3.  );
+    _hDriftDistW   = tfs->make<TH1F>( "hDriftDistW", "Normalized Crude Drift Distance", 150,  0., 1.5 );
 
     _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(mm)",                  100, -1000., 1000. );
     _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(mm)",                  100, -1000., 1000. );
@@ -103,8 +109,12 @@ namespace mu2e {
     _hHitNeighbours    = tfs->make<TH1F>( "hHitNeighbours",  "Number of hit neighbours",
                                           10, 0., 10. );
 
-    _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
-                                          100, 2.25, 2.75 );
+    _hCheckPointRadius  = tfs->make<TH1F>( "hCheckPointRadius", "Radius of Reference point; (mm)",
+                                           100, 2.25, 2.75 );
+    _hCheckPointRadiusW = tfs->make<TH1F>( "hCheckPointRadiusW","Normalized Radius of Reference point",
+                                           200, 0., 2. );
+    _hCheckPointWireZ   = tfs->make<TH1F>( "hCheckPointWireZ",  "Normalized Wire Z of Reference point",
+                                           300, -1.5, 1.5 );
 
     _hMomentumG4 = tfs->make<TH1F>( "hMomentumG4",  "Mommenta of particles created inside G4; (MeV)",
                                     100, 0., 100. );
@@ -117,7 +127,7 @@ namespace mu2e {
 
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
-                      "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step");
+                      "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
 
     // Create a TGraph; 
     // - Syntax to set name and title is weird; that's just root.
@@ -263,6 +273,28 @@ namespace mu2e {
       // The simulated particle that made this hit.
       int trackId = hit.trackId();
 
+      // Debug info
+      
+      StrawDetail const& strawDetail = straw.getDetail();
+
+//       // remove this for production, intended for transporOnly.py
+//       if (pca.dca()>strawDetail.outerRadius() || abs(point.mag()- strawDetail.outerRadius())>1.e-6 ) {
+
+//         cerr << "*** Bad hit?: "
+//              << event.id().event() << " "
+//              << i                  <<  " "
+//              << hit.trackId()      << "   "
+//              << hit.volumeId()     << " "
+//              << straw.Id()         << " | "
+//              << pca.dca()          << " "
+//              << pos                << " "
+//              << mom                << " "
+//              << point.mag()        << " "
+//              << hit.eDep()         << " "
+//              << s
+//              << endl;
+//       }
+
       // Default values for these, in case information is not available.
       int pdgId(0);
       GenId genId;
@@ -287,12 +319,15 @@ namespace mu2e {
       _hTime->Fill(hit.time());
       _hHitNeighbours->Fill(nNeighbours);
       _hCheckPointRadius->Fill(point.mag());
+      _hCheckPointRadiusW->Fill(point.mag()/strawDetail.outerRadius());
+      _hCheckPointWireZ->Fill(s/straw.getHalfLength());
       
       _hxHit->Fill(pos.x());
       _hyHit->Fill(pos.y());
       _hzHit->Fill(pos.z());
 
       _hDriftDist->Fill(pca.dca());
+      _hDriftDistW->Fill(pca.dca()/strawDetail.outerRadius());
 
       _hStepLength->Fill( hit.stepLength() );
 
@@ -316,6 +351,7 @@ namespace mu2e {
       nt[16] = hit.eDep()/keV;
       nt[17] = mom.mag();
       nt[18] = hit.stepLength();
+      nt[19] = s/straw.getHalfLength();
 
       _ntup->Fill(nt);
 
