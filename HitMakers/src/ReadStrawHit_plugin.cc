@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.7 2010/10/01 19:49:52 wenzel Exp $
+// $Id: ReadStrawHit_plugin.cc,v 1.8 2010/10/05 21:17:28 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2010/10/01 19:49:52 $
+// $Date: 2010/10/05 21:17:28 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -70,7 +70,8 @@ namespace mu2e {
       _hT0(0),
       _hG4StepLength(0),
       _hG4StepEdep(0),
-      _ntup(0)
+      _ntup(0),
+      _detntup(0)
     {
     }
     virtual ~ReadStrawHit() { }
@@ -107,6 +108,7 @@ namespace mu2e {
     TH1F* _hG4StepLength;
     TH1F* _hG4StepEdep;
     TNtuple* _ntup;
+    TNtuple* _detntup;
 
   };
 
@@ -133,6 +135,8 @@ namespace mu2e {
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
     _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple", 
                       "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid");
+   _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple", 
+                      "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
   }
 
   void
@@ -159,6 +163,51 @@ namespace mu2e {
 
     // Get the persistent data about the StrawHits.
 
+    if (ncalls==1){
+      const std::deque<Straw>& allstraws = tracker.getAllStraws();    
+      float detnt[11];
+      cout<<"Number of straws:  "<< allstraws.size()<<endl;
+      for (int i = 0;i<allstraws.size();i++)
+	{
+	  Straw str = allstraws[i];
+	  StrawId sid = str.Id();
+	  LayerId lid = sid.getLayerId();
+	  DeviceId did = sid.getDeviceId();
+	  SectorId secid = sid.getSectorId();
+	  
+	  //cout << "index: "  << i << " Layer: "<< lid.getLayer()<< " Device: "<< did <<"  Sector:  "<<secid.getSector()<<endl;
+	  //cout<<str.getHalfLength()<<endl;
+	  const CLHEP::Hep3Vector vec3j = str.getMidPoint();
+	  const CLHEP::Hep3Vector vec3j1 = str.getDirection();
+	  /*
+	  cout << i <<
+	    ","<<lid.getLayer()<<
+	    ","<<did <<
+	    ","<<secid.getSector()<<
+	    ","<<str.getHalfLength()<<
+	    ","<<vec3j.getX()<<
+	    ","<<vec3j.getY()<<
+	    ","<<vec3j.getZ()<<
+	    ","<<vec3j1.getX()<<
+	    ","<<vec3j1.getY()<<
+	    ","<<vec3j1.getZ()<<
+	    endl;
+	  */
+	  // Fill the ntuple.
+	  detnt[0]  = i;
+	  detnt[1]  = lid.getLayer();
+	  detnt[2]  = did;
+	  detnt[3]  = secid.getSector();
+	  detnt[4]  = str.getHalfLength();
+	  detnt[5]  = vec3j.getX();
+	  detnt[6]  = vec3j.getY();
+	  detnt[7]  = vec3j.getZ();
+	  detnt[8]  = vec3j1.getX();
+	  detnt[9]  = vec3j1.getY();
+	  detnt[10] = vec3j1.getZ();
+	  _detntup->Fill(detnt);
+	}
+    }
     edm::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
