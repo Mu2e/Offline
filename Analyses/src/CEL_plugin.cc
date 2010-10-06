@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_plugin.cc,v 1.3 2010/10/06 19:09:51 rhbob Exp $
+// $Id: CEL_plugin.cc,v 1.4 2010/10/06 19:15:06 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/10/06 19:09:51 $
+// $Date: 2010/10/06 19:15:06 $
 //
 // Original author R. Bernstein
 //
@@ -303,11 +303,11 @@ namespace mu2e {
 	if ( sim.parentId() == -1 && startVol.name() == "TargetFoil_" && sim.pdgId() == PDGCode::e_minus){
           bool electronHitTracker = false;
           bool electronAccepted = false;
-          bool hitEnoughStraws = false;
+          //bool hitEnoughStraws = false;
           double zmin = +99999.;
           double zmax = -99999.;
 
-          //const CLHEP::HepLorentzVector& electronMomentum = sim.startMomentum();
+          const CLHEP::HepLorentzVector& electronMomentum = sim.startMomentum();
           //double electronEnergy = electronMomentum.e();
           //cout << "again this had better be 105. " << electronMomentum.e() << endl;
 
@@ -344,7 +344,7 @@ namespace mu2e {
               if (firstHitOnElectronTrack){
                 firstHitOnElectronTrack = false;
                 momentumAtEntranceToTracker = hit.momentum();
-                double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+                //double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
                 //                  cout << "momentum at entrance to tracker = " << momentumAtEntranceToTracker.mag() << endl;
                 //cout << "original momentum was           = " << momentum << endl;
                 //cout << "track Id                        = " << trackId  << endl;

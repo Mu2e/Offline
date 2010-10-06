@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.cc,v 1.7 2010/10/06 18:59:19 rhbob Exp $
+// $Id: RPC_plugin.cc,v 1.8 2010/10/06 19:17:40 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/10/06 18:59:19 $
+// $Date: 2010/10/06 19:17:40 $
 //
 // Original author R. Bernstein
 //
@@ -309,7 +309,7 @@ namespace mu2e {
 	  if (sim.pdgId() == PDGCode::e_minus) {
             bool electronHitTracker = false;
             bool electronAccepted = false;
-            bool hitEnoughStraws = false;
+            //bool hitEnoughStraws = false;
             double zmin = +99999.;
             double zmax = -99999.;
 
@@ -349,7 +349,7 @@ namespace mu2e {
                 if (firstHitOnElectronTrack){
                   firstHitOnElectronTrack = false;
                   momentumAtEntranceToTracker = hit.momentum();
-                  double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+                  //double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
                   //                  cout << "momentum at entrance to tracker = " << momentumAtEntranceToTracker.mag() << endl;
                   //cout << "original momentum was           = " << momentum << endl;
                   //cout << "track Id                        = " << trackId  << endl;
