@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_plugin.cc,v 1.2 2010/10/06 18:59:25 rhbob Exp $
+// $Id: CEL_plugin.cc,v 1.3 2010/10/06 19:09:51 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/10/06 18:59:25 $
+// $Date: 2010/10/06 19:09:51 $
 //
 // Original author R. Bernstein
 //
@@ -307,9 +307,9 @@ namespace mu2e {
           double zmin = +99999.;
           double zmax = -99999.;
 
-          const CLHEP::HepLorentzVector& electronMomentum = sim.startMomentum();
-          double electronEnergy = electronMomentum.e();
-          //cout << "again this had better be 105. " << electronEnergy << endl;
+          //const CLHEP::HepLorentzVector& electronMomentum = sim.startMomentum();
+          //double electronEnergy = electronMomentum.e();
+          //cout << "again this had better be 105. " << electronMomentum.e() << endl;
 
           //
           // i want the momentum at the tracker, not the momentum at birth.  CELs can smear
@@ -580,7 +580,7 @@ namespace mu2e {
   const double CEL::energyLossSpectrum(const double e){
     //
     // all this from fitting energy loss plotted elsewhere in this job and fitting
-    double loss;
+    double loss = 0.;
     if (e <= 10.)
       { loss = 4691.*TMath::Landau(e,1.29229,.38467);}// fudge numbers from histo in denom
     if (e >= 2.8 && e <= 20) {loss = TMath::Exp(6.28+ -0.264*(e)); }
