@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.cc,v 1.6 2010/09/30 16:40:19 rhbob Exp $
+// $Id: RPC_plugin.cc,v 1.7 2010/10/06 18:59:19 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/09/30 16:40:19 $
+// $Date: 2010/10/06 18:59:19 $
 //
 // Original author R. Bernstein
 //
@@ -237,7 +237,7 @@ namespace mu2e {
       bookEventHistos(elow,ehigh);
       //
       // fill energy loss histo for future use
-      vector<double> energyLossVector = binnedEnergyLossSpectrum();
+      vector<double> energyLossVector = isotropicBinnedEnergyLossSpectrum();
       double binsize = (_dEdXehi - _dEdXelow)/_dEdXnbins;
       for (int i = 0; i<=_dEdXnbins; ++i){
         _piCaptureEnergyLossSpectrum->Fill(_dEdXelow + i*binsize + binsize/2.,energyLossVector[i]);
@@ -280,7 +280,7 @@ namespace mu2e {
     double electronEnergy = 0.;
     double positronEnergy = 0.;
 
-    CLHEP::Hep3Vector  momentumAtEntranceToTracker;
+    CLHEP::Hep3Vector  momentumAtEntranceToTracker = CLHEP::Hep3Vector();
 
     if (haveSimPart){
       for (uint32_t ithPart = 0; ithPart < simParticles->size(); ++ithPart){
@@ -401,7 +401,7 @@ namespace mu2e {
             // here is a weight function from a fit, documented separately.
             // the idea is I have an acceptance function from GMC, and then weight the electrons by their acceptance
             // as a function of cos theta
-            double weight;
+            double weight = 0.;
 
             // 
             // the integrals of these weight functions over d(cos theta) from 0 to 1 and -1 to 0 are .150 and .133 respectively, 
@@ -413,19 +413,23 @@ namespace mu2e {
 
             //one has to be very careful with these weights.  The weight is for 105 MeV conversion electrons, so if I look in a restricted region
             // where the acceptance is about the same as conversion electrons, it's fine. 
+
+            //
+            // last factor of two is because \int_1^1 d(cos theta) = 2 so I need this to give me 19% acceptance.  I'm essentially multiplying
+            // the PDF by the bin width.  This ends up being the number accepted/number generated as a function of cos theta, and that's what we want
+            // for a weight.
             if (cost >= 0){
               weight = 2.*(19./29.)*(1/.04)*(1.48E-02)*TMath::Exp( - TMath::Power((cost - 0.200),2)/(2.*.19*.19));
-              //             cout << "cos, weight for + " << cost << " " << weight << endl;
             }
             if (cost < 0 && cost >= -0.54) {
               weight = 2.*(19./29.)*(1/.04)*( (1.04e-02) - 3.19e-02*cost - 9.3e-02*cost*cost);
-              //              cout << "cos, weight for - " << cost << " " << weight << endl;
-            }
-            if (cost < -0.54) {weight = 0.;}
+           }
+            if (cost < -0.54 || weight < 0.) {weight = 0.;}
 
 
             //
-            // and final weight fudge, based on isotropic conversion electrons entering tracker. That will make acceptance match Rashid's memo.
+            // and final weight fudge, based on energy loss for
+            // isotropic conversion electrons entering tracker. That will make acceptance match Rashid's memo.
             // RPCs lose more energy but too bad for them, that's not the factor I want.   Not perfect since entering tracker isn't necessarily
             // a good representation of reconstructed events, but not wrong either.  Really 1.50 within errors
             weight *= 1.5;
@@ -615,10 +619,11 @@ namespace mu2e {
   const double RPC::energyLossSpectrum(const double e){
     //
     // all this from fitting energy loss plotted elsewhere in this job and fitting
-    double loss;
-    if (e <= 10.)
-      { loss = 4691.*TMath::Landau(e,1.29229,.38467);}// fudge numbers from histo in denom
-    if (e >= 2.8 && e <= 20) {loss = TMath::Exp(6.28+ -0.264*(e)); }
+    double loss = 0.;
+    if (e <= 2.5)
+      { loss = 2177.6*TMath::Landau(e,1.25,.37463);}// fudge numbers from histo in denom
+    if (e >= 2.5 && e <= 10) {loss = TMath::Exp(6.40 + -0.5899*(e) + .02638*e*e); }
+    if (e > 10) {loss = 0.;}
     if (e<0){
       throw cms::Exception("RANGE") 
         << "Nonsense energy in RPC_plugin.cc="
@@ -628,7 +633,8 @@ namespace mu2e {
 
 
     // normalize loss histo to unity (above depended on statistics of particular job)
-    return loss/225968.;
+    // this is done anyway in GetRandom method, just useful to do it here
+    return loss/10032.;
   }
 
   // Compute a binned representation of the energy loss spectrum.
@@ -663,10 +669,11 @@ namespace mu2e {
   const double RPC::isotropicEnergyLossSpectrum(const double e){
     //
     // all this from fitting energy loss plotted elsewhere in this job and fitting
-    double loss;
+    double loss = 0.;
     if (e <= 4.)
-      { loss = 54071.*TMath::Landau(e,0.9123,.2086);}// fudge numbers from histo in denom
-    if (e >= 4.0 && e <= 20) {loss = TMath::Exp(10.342+ -0.70217*(e) + 3.2559E-02*e*e); }
+      { loss = 2567.38*TMath::Landau(e,0.89539,.202878);}// fudge numbers from histo in denom
+    if (e > 4.0 && e <= 10) {loss = TMath::Exp(4.5029+ -0.6358*(e) + 2.619E-02*(e)*(e)); }
+    if (e>10){loss = 0.;}
     if (e<0){
       throw cms::Exception("RANGE") 
         << "Nonsense energy in RPC_plugin.cc="
@@ -676,7 +683,8 @@ namespace mu2e {
 
 
     // normalize loss histo to unity (above depended on statistics of particular job)
-    return loss/562100.;
+    // done later anyway in GetRandom() but nice to have here
+    return loss/5170.;
   }
 
   // Compute a binned representation of the energy loss spectrum.
@@ -700,7 +708,7 @@ namespace mu2e {
     for (int ib=0; ib<_dEdXnbins; ib++) {
       double x = _dEdXelow+(ib+0.5) * dE;
       sum += x;
-      spectrum.push_back(energyLossSpectrum(x));
+      spectrum.push_back(isotropicEnergyLossSpectrum(x));
     }
     cout << "summed energy loss " << sum << endl;
     return spectrum;

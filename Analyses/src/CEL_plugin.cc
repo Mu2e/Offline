@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_plugin.cc,v 1.1 2010/09/30 16:40:01 rhbob Exp $
+// $Id: CEL_plugin.cc,v 1.2 2010/10/06 18:59:25 rhbob Exp $
 // $Author: rhbob $ 
-// $Date: 2010/09/30 16:40:01 $
+// $Date: 2010/10/06 18:59:25 $
 //
 // Original author R. Bernstein
 //
@@ -15,6 +15,7 @@
 #include <set>
 #include <utility>
 #include <ctime>
+#include <cstdlib>
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -261,6 +262,8 @@ namespace mu2e {
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
 
+
+
     // Other files might have empty collections.
     if ( haveSimPart ){
       haveSimPart = !(simParticles->empty() || volumes->empty());
@@ -273,8 +276,8 @@ namespace mu2e {
 
 
 
-    CLHEP::Hep3Vector  momentumAtEntranceToTracker;
-
+    CLHEP::Hep3Vector  momentumAtEntranceToTracker = CLHEP::Hep3Vector();
+    cout << "have sim particle" << endl;
     if (haveSimPart){
       for (uint32_t ithPart = 0; ithPart < simParticles->size(); ++ithPart){
         SimParticle const& sim = simParticles->at(ithPart);
@@ -291,7 +294,7 @@ namespace mu2e {
 	  } else
 	    {	CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
 	      double electronEnergy = electronMomentum.e();
-              //cout << " this had better be 105: " << electronEnergy << endl;
+              cout << " this had better be 105: " << electronEnergy << endl;
 	    }
 
 	}
@@ -391,7 +394,7 @@ namespace mu2e {
           // here is a weight function from a fit, documented separately.
           // the idea is I have an acceptance function from GMC, and then weight the electrons by their acceptance
           // as a function of cos theta
-          double weight;
+          double weight = 0.;
 
           // 
           // the integrals of these weight functions over d(cos theta)from 0 to 1 and from 0 to -1
@@ -399,6 +402,13 @@ namespace mu2e {
           //
           // See doc-db 1087: needs to end up with 19% in signal box so energy loss is the
           // source of the final fudge factor -- we don't know what it looks like at this point in the code.  
+
+
+          //
+          // last factor of two is because \int_1^1 d(cos theta) = 2 so I need this to give me 19% acceptance.  I'm essentially multiplying
+          // the PDF by the bin width.  This ends up being the number accepted/number generated as a function of cos theta, and that's what we want
+          // for a weight
+
           if (cost >= 0){
             weight = 2.*(19./29.)*(1/.04)*(1.48E-02)*TMath::Exp( - TMath::Power((cost - 0.200),2)/(2.*.19*.19));
             //             cout << "cos, weight for + " << cost << " " << weight << endl;
@@ -407,15 +417,16 @@ namespace mu2e {
           }
           if (cost < 0 && cost >= -0.5) {
             weight = 2.*(19./29.)*(1/.04)*( (1.04e-02) - 3.19e-02*cost - 9.3e-02*cost*cost);
-            //            weight  = 0.5;
+
             //if (weight < 0){cout <<"negative weight cost < 0: " << cost << " " << weight << endl;assert(2==1);}
 
             //              cout << "cos, weight for - " << cost << " " << weight << endl;
           }
-          if (cost < -0.5) {weight = 0.;}
+          if (cost < -0.5 || weight < 0.) {weight = 0.;}
 
           //
-          // and final weight fudge, based on isotropic conversion electrons entering tracker.  Not perfect since entering tracker isn't necessarily
+          // and final weight fudge, based on energy loss for 
+          //isotropic conversion electrons entering tracker.  Not perfect since entering tracker isn't necessarily
           // a good representation of reconstructed events, but not wrong either.  Really 1.50 within errors
           weight *= 1.5;
 
@@ -424,6 +435,7 @@ namespace mu2e {
           // all electrons but weighted
           _cELConvertedElectronMomentumWeighted->Fill(momentum,weight);
           _cELConvertedElectronCosThetaWeighted->Fill(cost,weight );
+          cout << "costheta, weight = " << cost << " " << weight << endl;
           if (momentum > elow && momentum < ehigh){
             _cELConvertedElectronMomentumWeightedSignal->Fill(momentum,weight);
             _cELConvertedElectronCosThetaWeightedSignal->Fill(cost,weight );
