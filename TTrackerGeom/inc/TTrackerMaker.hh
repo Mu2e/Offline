@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.6 2010/09/28 21:43:04 genser Exp $
+// $Id: TTrackerMaker.hh,v 1.7 2010/10/08 19:05:12 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/28 21:43:04 $
+// $Date: 2010/10/08 19:05:12 $
 //
 // Original author Rob Kutschke
 //
@@ -53,6 +53,7 @@ private:
   void computeStrawHalfLengths();
   void computeSectorBoxParams(Sector& sector, Device& dev);
   void computeConstantSectorBoxParams();
+  double layerSpacing();
 
   // Do the work of constructing it.
   void buildIt();

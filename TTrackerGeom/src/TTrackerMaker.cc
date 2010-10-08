@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.16 2010/10/02 03:11:42 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.17 2010/10/08 19:05:12 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/02 03:11:42 $
+// $Date: 2010/10/08 19:05:12 $
 //
 // Original author Rob Kutschke
 //
@@ -233,9 +233,7 @@ namespace mu2e {
     // we should check here if the manifold is large enough to hold all the layers...
     // closly packed straws need space of (in z) r*[2+(nlay-1)*sqrt(3)]
 
-    double strawSpace = 2.0*_strawOuterRadius + 
-      (_layersPerSector-1) * 
-      sqrt(3.0*square(_strawOuterRadius)+3.0*_strawOuterRadius*_strawGap-0.25*square(_strawGap));
+    double strawSpace = 2.0*_strawOuterRadius + (_layersPerSector-1)*layerSpacing();
 
     if ( 2.0*_manifoldHalfLengths.at(2) < strawSpace) {
 
@@ -251,14 +249,82 @@ namespace mu2e {
     if ((2.*_manifoldHalfLengths.at(2)+_supportHalfThickness)>_deviceHalfSeparation + pad) {
       cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _deviceHalfSeparation " << 
         (2.*_manifoldHalfLengths.at(2)+_supportHalfThickness) << ", " <<_deviceHalfSeparation << endl;
-      throw cms::Exception("GEOM")
-        << "Devices are to close \n";
+      throw cms::Exception("GEOM")  << "Devices are to close \n";
     }
 
     makeManifolds( secId );
 
+    double strawSpacing = _strawGap+2.*_strawOuterRadius;
+
+    static double const tolerance = 1.e-6; // this should be in a config file
+
     for ( int ilay=0; ilay<_layersPerSector; ++ilay ){
       makeLayer( LayerId(secId,ilay), sector );
+
+      // checking spacing of the individual layers 
+      // are the manifolds sized correctly for the straws?
+
+      Layer const & layer = sector.getLayer(ilay);
+      //      cout << "Debugging looking at the layer   : " << layer.Id() << endl;
+      for (int ns = 0; ns!=layer.nStraws()-1; ++ns) {
+        double layerDeltaMag = 
+          (layer.getStraw(ns+1).getMidPoint() - layer.getStraw(ns).getMidPoint()).mag();
+        if ( abs(layerDeltaMag-strawSpacing)> tolerance ) {
+          cout << "Layer straw spacing is (mm)   : " << layerDeltaMag 
+               << " for layer " << layer.Id() << " straw " << layer.getStraw(ns).Id()  << endl;
+          cout << "It should be                  : " << strawSpacing << " diff: " 
+               << (layerDeltaMag-strawSpacing) << endl;
+
+          throw cms::Exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes rtc..\n";
+
+        }
+      }
+    }
+
+    // check spacing between layers/straws
+
+    if (_layersPerSector>1) {
+      
+      Layer const & layer0 = sector.getLayer(0);
+      Layer const & layer1 = sector.getLayer(1);
+      // cout << "Debugging looking at the layers   : " << layer0.Id() << ", " << layer1.Id() << endl;
+
+      for (int ns = 0; ns!=layer0.nStraws(); ++ns) {
+        double xLayerDeltaMag = 
+          (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns).getMidPoint()).mag();
+        if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
+          cout << "xLayer straw spacing is (mm)   : " 
+               << xLayerDeltaMag 
+               << " for straws: " 
+               << layer0.getStraw(ns).Id() << ", " << layer1.getStraw(ns).Id()  
+               << endl;
+          cout << "It should be                   : " 
+               << strawSpacing << " diff: " 
+               << (xLayerDeltaMag-strawSpacing) << endl;
+
+          throw cms::Exception("GEOM")  << "Incorrect interlayer straw spacing \n";
+
+        }
+      }
+
+
+      for (int ns = 1; ns!=layer0.nStraws(); ++ns) {
+        double xLayerDeltaMag = 
+          (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns-1).getMidPoint()).mag();
+        if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
+          cout << "xLayer straw spacing is (mm)   : " 
+               << xLayerDeltaMag 
+               << " for straws: " 
+               << layer0.getStraw(ns).Id() << ", " << layer1.getStraw(ns-1).Id()  
+               << endl;
+          cout << "It should be                   : " 
+               << strawSpacing << " diff: " 
+               << (xLayerDeltaMag-strawSpacing) << endl;
+
+          throw cms::Exception("GEOM")  << "Incorrect interlayer straw spacing \n";
+
+        }
+      }
     }
 
     // calculate/make a sector envelope
@@ -285,6 +351,7 @@ namespace mu2e {
     layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
 
     // Space between first/last straw and edge of manifold.
+
     double dx = _manifoldHalfLengths.at(0) - 
       _strawOuterRadius*_strawsPerManifold - 
       _strawGap*(_strawsPerManifold-1)*0.5;
@@ -292,8 +359,9 @@ namespace mu2e {
     // |z| of straw center, relative to the center of the device.
     // Sign is taken care of elsewhere.
 
+    // see similar calc in makeSector for strawSpace & computeSectorBoxParams
     double zOffset = _supportHalfThickness + _strawOuterRadius + 
-      ilay*sqrt(3.0*square(_strawOuterRadius)+3.0*_strawOuterRadius*_strawGap-0.25*square(_strawGap));
+      ilay*layerSpacing();
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
@@ -311,6 +379,7 @@ namespace mu2e {
 
       // Inner edge of the innermost wire connected to this manifold.
       // this is layer dependent, take care of it at xstraw below
+
       double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*iman + dx;
 
       // Add all of the straws connected to this manifold.
@@ -323,8 +392,9 @@ namespace mu2e {
         // coord system of the device envelope.
         // we will shift the "second" layer from the manifold edge
 
-        double xstraw = (ilay%2==0) ? xA + (1. + 2.*istr)*_strawOuterRadius + istr*_strawGap :
-          xA + 2.*(1+istr)*_strawOuterRadius + istr*_strawGap;
+        double xstraw = (ilay%2==0) ? 
+          xA + (1 + 2*istr)*_strawOuterRadius + istr*_strawGap :
+          xA +  2.*(1+istr)*_strawOuterRadius + istr*_strawGap + 0.5*_strawGap;
 
         CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_sectorZSide.at(isec) );
         mid += device.origin();
@@ -486,8 +556,8 @@ namespace mu2e {
     // dz - the equivalent of the dx,  is the distance bwtween the wall
     // of the manifold and the first/last straw layer
 
-    double dz = _manifoldHalfLengths.at(2) - _strawOuterRadius - 0.5*(_layersPerSector-1)*
-      sqrt(3.0*square(_strawOuterRadius)+3.0*_strawOuterRadius*_strawGap-0.25*square(_strawGap));
+    double dz = _manifoldHalfLengths.at(2) - _strawOuterRadius - 
+      0.5*(_layersPerSector-1)*layerSpacing();
 
     double zOffset = (_supportHalfThickness + _manifoldHalfLengths.at(2) - dz)*_sectorZSide.at(isec);
     
@@ -522,6 +592,12 @@ namespace mu2e {
 //     cout << endl;
 
     return;
+
+  }
+
+  double TTrackerMaker::layerSpacing(){
+
+    return sqrt(3.0*(square(_strawOuterRadius)+_strawOuterRadius*_strawGap+0.25*square(_strawGap)));
 
   }
 
