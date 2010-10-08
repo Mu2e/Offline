@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.3 2010/10/05 21:46:07 genser Exp $
+// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.4 2010/10/08 20:55:11 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/10/05 21:46:07 $
+// $Date: 2010/10/08 20:55:11 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -116,13 +116,17 @@ namespace mu2e {
 
     void drawEnvelopesSupport(bool dolabels);
     void drawSector(bool dolabels);
-    void drawSectorXZdetail(bool dolabels, 
-			    double spanx=std::numeric_limits<double>::max(), 
-			    double spanz=std::numeric_limits<double>::max());
+    void drawSectorXZdetail(size_t dolabels, 
+			    double lx=-std::numeric_limits<double>::max(), 
+			    double ux= std::numeric_limits<double>::max(),
+			    double lz=-std::numeric_limits<double>::max(), 
+			    double uz= std::numeric_limits<double>::max());
     void drawStraws(bool dolabels);
-    void drawStrawsXZdetail(bool dolabels, 
-			    double spanx=std::numeric_limits<double>::max(), 
-			    double spanz=std::numeric_limits<double>::max());
+    void drawStrawsXZdetail(bool dolabels,
+			    double lx=-std::numeric_limits<double>::max(), 
+			    double ux= std::numeric_limits<double>::max(),
+			    double lz=-std::numeric_limits<double>::max(), 
+			    double uz= std::numeric_limits<double>::max());
 
     void drawManifolds(bool dolabels);
 
@@ -132,9 +136,9 @@ namespace mu2e {
 			     std::string const label,
 			     short markerStyle=1, short markerColor=1, double xshift=5, double yshift=15);
 
-    void labelPoint(double xt, double yt, std::string const label);
+    void labelPoint(double xt, double yt, std::string const label, double xshift=0, double yshift=0);
 
-    void boundit(double& x1,double spanx);
+    void boundit(double& x,double lx, double ux);
 
 
   };
@@ -343,7 +347,7 @@ namespace mu2e {
 //                                );
 
     frame = _canvas->DrawFrame(
-                               _drawingOrigin.x()-_spanz,
+                               _drawingOrigin.x()-_spanx,
                                _drawingOrigin.z()-_spanz,
                                _drawingOrigin.x()+_spanx, 
                                _drawingOrigin.z()+_spanz
@@ -363,8 +367,11 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(true);
+    drawSectorXZdetail(1);
     drawStrawsXZdetail(false);
+
+    _canvas->Modified();
+    _canvas->Update();
 
     std::cerr << "Double click on the Canvas to close it" ;
     _canvas->WaitPrimitive();
@@ -372,7 +379,7 @@ namespace mu2e {
 
     // xz detail
 
-    _canvas = tfs->make<TCanvas>("c2", "zy detail canvas", 0, 0, cpsize, cpsize );
+    _canvas = tfs->make<TCanvas>("c3", "zy detail canvas", 0, 0, cpsize, cpsize );
 
     gDirectory->Append(_canvas);
 
@@ -380,7 +387,7 @@ namespace mu2e {
     _spanz = 10.0;
 
     frame = _canvas->DrawFrame(
-                               _drawingOrigin.x()-_spanz,
+                               _drawingOrigin.x()-_spanx,
                                _drawingOrigin.z()-_spanz,
                                _drawingOrigin.x()+_spanx, 
                                _drawingOrigin.z()+_spanz
@@ -392,8 +399,39 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(true, _spanx, _spanz);
-    drawStrawsXZdetail(true, _spanx, _spanz);
+    drawSectorXZdetail(2,    -_spanx, _spanx, -_spanz, _spanz);
+    drawStrawsXZdetail(true, -_spanx, _spanx, -_spanz, _spanz);
+
+    std::cerr << "Double click on the Canvas to close it" ;
+    _canvas->WaitPrimitive();
+    std::cerr << std::endl;
+
+    // xz left detail
+
+    _canvas = tfs->make<TCanvas>("c4", "zy left detail canvas", 0, 0, cpsize, cpsize );
+
+    gDirectory->Append(_canvas);
+
+    double _lx = -152.;
+    double _ux = -132.;
+    double _lz =  -10.;
+    double _uz =   10.;
+
+    frame = _canvas->DrawFrame(
+                               _drawingOrigin.x()+_lx,
+                               _drawingOrigin.z()+_lz,
+                               _drawingOrigin.x()+_ux, 
+                               _drawingOrigin.z()+_uz
+                               );
+    gPad->SetGridx(kTRUE);
+    gPad->SetGridy(kTRUE);
+
+    frame->SetTitle(";X(mm);Z(mm)");
+
+    // here we do the geometry drawings
+
+    drawSectorXZdetail(3,   _lx, _ux, _lz, _uz);
+    drawStrawsXZdetail(true,_lx, _ux, _lz, _uz);
 
     std::cerr << "Double click on the Canvas to close it" ;
     _canvas->WaitPrimitive();
@@ -404,7 +442,10 @@ namespace mu2e {
 
   }
 
-  void TTrackerGeomIntRootPlots::drawSectorXZdetail(bool dolabels, double spanx, double spanz){
+  void TTrackerGeomIntRootPlots::drawSectorXZdetail(size_t dolabels, 
+                                                    double lx, double ux, 
+                                                    double lz, double uz
+                                                    ){
 
     TLine* line   = new TLine();
     line->SetLineColor(kRed);
@@ -436,43 +477,62 @@ namespace mu2e {
 
     // we do it arround "0" e.g. sector.boxOffset() as we have done the straws
 
-    double x1 = -sector.boxHalfLengths()[1];
+    double x1 = _drawingOrigin.x()-sector.boxHalfLengths()[1];
     double x2 = x1;
-    double z1 = -sector.boxHalfLengths()[2];
-    double z2 =  sector.boxHalfLengths()[2];
+    double z1 = _drawingOrigin.z()-sector.boxHalfLengths()[2];
+    double z2 = _drawingOrigin.z()+sector.boxHalfLengths()[2];
 
     std::cout << "x1, z1 :" << 
       x1 << " " << 
       z1 << " " << std::endl;
 
-    boundit (x1,spanx);
-    boundit (z1,spanz);
+    boundit (x1,lx,ux);
+    boundit (z1,lz,uz);
 
-    boundit (x2,spanx);
-    boundit (z2,spanz);
+    boundit (x2,lx,ux);
+    boundit (z2,lz,uz);
 
     printAndDraw(line,x1,z1,x2,z2);
 
-    double x3 =  sector.boxHalfLengths()[1];
-    double z3 =  sector.boxHalfLengths()[2];
+    double x3 = _drawingOrigin.x()+sector.boxHalfLengths()[1];
+    double z3 = _drawingOrigin.z()+sector.boxHalfLengths()[2];
 
-    boundit (x3,spanx);
-    boundit (z3,spanz);
+    boundit (x3,lx,ux);
+    boundit (z3,lz,uz);
 
     printAndDraw(line,x2,z2,x3,z3);
 
-    double x4 =  sector.boxHalfLengths()[1];
-    double z4 = -sector.boxHalfLengths()[2];
+    double x4 = _drawingOrigin.x()+sector.boxHalfLengths()[1];
+    double z4 = _drawingOrigin.z()-sector.boxHalfLengths()[2];
 
-    boundit (x4,spanx);
-    boundit (z4,spanz);
+    boundit (x4,lx,ux);
+    boundit (z4,lz,uz);
 
     printAndDraw(line,x3,z3,x4,z4);
 
     printAndDraw(line,x1,z1,x4,z4);
 
 
-    if (dolabels) {
+    if (dolabels==1) {
+
+      labelPoint(x1,z1,"PilE",0.,-7.);
+      labelPoint(x2,z2,"PiuE",0., 3.);
+
+      labelPoint(_drawingOrigin.x(),z1,"PilEm",-5.,-7.);
+      labelPoint(_drawingOrigin.x(),z2,"PiuEm",-5., 3.);
+
+      labelPoint(x3,z3,"PiuE",-10., 3.);
+      labelPoint(x4,z4,"PilE",-10.,-7.);
+
+    } else if (dolabels=2) {
+
+      labelPoint(_drawingOrigin.x(),z1,"PilEm", -0.3,-0.5);
+      labelPoint(_drawingOrigin.x(),z2,"PiuEm", -0.3, 0.25);
+
+    } else if (dolabels=3) {
+
+      labelPoint(x1,z1,"PilE",0.,0.);
+      labelPoint(x2,z2,"PiuE",0.,0.);      
 
     }
 
@@ -482,8 +542,10 @@ namespace mu2e {
 
   }
 
-  void TTrackerGeomIntRootPlots::drawStrawsXZdetail(bool dolabels, double spanx, double spanz) {
-
+  void TTrackerGeomIntRootPlots::drawStrawsXZdetail(bool dolabels, 
+                                                    double lx, double ux, 
+                                                    double lz, double uz
+                                                    ){
     //    int _strawsPerManifold  = _config->getInt("ttracker.strawsPerManifold");
 
     TLine* line   = new TLine();
@@ -540,7 +602,7 @@ namespace mu2e {
           sx << " " << 
           sz << " " << std::endl; 
 
-	if ( sx>spanx || sz>spanz || sx<-spanx || sz<-spanz ) continue;
+	if ( sx>ux || sz>uz || sx<lx || sz<lz ) continue;
 
         arc->DrawArc(sx,sz,strawDetail.outerRadius(),0.,360.,"only");
         poly->DrawPolyMarker( 1, &sx, &sz ); 
@@ -554,7 +616,7 @@ namespace mu2e {
           mlab << "l" << ilay;
           mlab << "s" << istr;
 
-	  labelPoint(sx,sz,mlab.str());
+	  labelPoint(sx,sz,mlab.str(),-0.75,0.3);
 
         }
  
@@ -568,7 +630,9 @@ namespace mu2e {
 
   }
 
-  void TTrackerGeomIntRootPlots::labelPoint(double xt, double yt, std::string const label){
+  void TTrackerGeomIntRootPlots::labelPoint(double xt, double yt, std::string const label,
+					    double xshift, double yshift
+					    ){
 
     // Label the Point
 
@@ -577,7 +641,7 @@ namespace mu2e {
     //    std::cout << "Old Text Size : " << ts << std::endl;
     text->SetTextSize(ts*0.25);
 
-    text->DrawText( xt, yt, label.c_str());
+    text->DrawText( xt+xshift, yt+yshift, label.c_str());
 
     delete text;
 
@@ -680,9 +744,9 @@ namespace mu2e {
         line->SetLineColor(kBlack);
       }
       
-      // draw manifolds (based on the first straw & manifold size)            ----------------
+      // drawing manifolds (based on the first straw & manifold size)
 
-      // get strawGap
+      // deriving the strawGap
 
       static const int istr0=0;
       static const int istr1=1;
@@ -780,6 +844,11 @@ namespace mu2e {
     angle = calculateDrawingAngle(_span, supportParams.outerRadius);
     arc->DrawArc(_drawingOrigin.x(),_drawingOrigin.y(),
                  supportParams.outerRadius,0.,angle,"only");
+
+    double testCircleRadius = 720.0;
+    angle = calculateDrawingAngle(_span, testCircleRadius);
+    arc->DrawArc(_drawingOrigin.x(),_drawingOrigin.y(),
+                 testCircleRadius,0.,angle,"only");
 
     if (dolabels) {
 
@@ -894,11 +963,11 @@ namespace mu2e {
     if (dolabels) {
 
       double radius = sqrt(square(x2)+square(y2));
-      drawArrowFromOrigin( x2, radius, "PlE", kFullCircle, kRed);
-      drawArrowFromOrigin( x2, x2,     "PlM", kFullCircle, kRed,-50.);
+      drawArrowFromOrigin( x2, radius, "PiE", kFullCircle, kRed);
+      drawArrowFromOrigin( x2, x2,     "PiM", kFullCircle, kRed,-50.);
       radius =  sqrt(square(x3)+square(y3));
-      drawArrowFromOrigin( x3, radius, "PsE", kFullCircle, kRed);
-      drawArrowFromOrigin( x3, x3,     "PsM", kFullCircle, kRed);
+      drawArrowFromOrigin( x3, radius, "PoE", kFullCircle, kRed);
+      drawArrowFromOrigin( x3, x3,     "PoM", kFullCircle, kRed);
     }
 
     delete line;
@@ -917,10 +986,10 @@ namespace mu2e {
     
   }
 
-  void TTrackerGeomIntRootPlots::boundit(double& x1,double spanx) {
+  void TTrackerGeomIntRootPlots::boundit(double& x,double lx, double ux) {
 
-    if (x1 >  spanx) x1 =  spanx;
-    if (x1 < -spanx) x1 = -spanx;
+    if (x > ux) x = ux;
+    if (x < lx) x = lx;
 
   }
 
