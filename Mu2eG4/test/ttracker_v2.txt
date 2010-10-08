@@ -3,9 +3,9 @@
 // but with two layers of straws in each sector.
 // See:  Mu2e-doc-888
 //
-// $Id: ttracker_v2.txt,v 1.1 2010/09/29 02:56:21 genser Exp $
+// $Id: ttracker_v2.txt,v 1.2 2010/10/08 19:03:56 genser Exp $
 // $Author: genser $
-// $Date: 2010/09/29 02:56:21 $
+// $Date: 2010/10/08 19:03:56 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,7 @@ int    ttracker.manifoldsPerEnd             =    5;
 int    ttracker.strawsPerManifold           =   10;
 double ttracker.strawGap                    =   1.0;
 double ttracker.deviceHalfSeparation        =   15.0;
-vector<double> ttracker.manifoldHalfLengths = { 30.0, 5.0, 5.05};  // mm
+vector<double> ttracker.manifoldHalfLengths = { 30.0, 5.0, 5.1};  // mm
 
 //
 // This tells emacs to view this file in c++ mode.
