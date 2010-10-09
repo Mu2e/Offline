@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.17 2010/10/08 19:05:12 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.18 2010/10/09 21:17:55 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/08 19:05:12 $
+// $Date: 2010/10/09 21:17:55 $
 //
 // Original author Rob Kutschke
 //
@@ -223,9 +223,6 @@ namespace mu2e {
 
   void TTrackerMaker::makeSector( const SectorId& secId, Device& dev ){
 
-    // Straw number within the sector; does not reset to zero at each layer/manifold.
-    _istraw = -1;
-
     dev._sectors.push_back( Sector(secId) );
     Sector& sector = dev._sectors.back();
     sector._layers.reserve(_layersPerSector);
@@ -372,7 +369,7 @@ namespace mu2e {
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
 
     // Straw number within the layer; does not reset to zero at each manifold.
-    //    int _istraw(-1);
+    int _istraw(-1);
 
     // Add all of the straws
     for ( int iman=0; iman<_manifoldsPerEnd; ++iman ){

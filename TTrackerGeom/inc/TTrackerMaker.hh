@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.7 2010/10/08 19:05:12 genser Exp $
+// $Id: TTrackerMaker.hh,v 1.8 2010/10/09 21:17:55 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/08 19:05:12 $
+// $Date: 2010/10/09 21:17:55 $
 //
 // Original author Rob Kutschke
 //
@@ -107,9 +107,6 @@ private:
 
   // Z Location of the first device.
   double _z0;
-
-  // global straw counter (will be used per sector)
-  int _istraw;
 
 };
 
