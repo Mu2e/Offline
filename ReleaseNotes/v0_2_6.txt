@@ -3,9 +3,18 @@
 
            Release notes for Mu2e Offline software, v0_2_6
 
-  $Id: v0_2_6.txt,v 1.3 2010/10/08 19:05:32 genser Exp $
+  $Id: v0_2_6.txt,v 1.4 2010/10/09 21:27:32 genser Exp $
   $Author: genser $
-  $Date: 2010/10/08 19:05:32 $
+  $Date: 2010/10/09 21:27:32 $
+
+ 3) October 8 2010, genser
+      Corrected TTracker StrawId for the multilayer case
+        TTrackerGeom/src/TTrackerMaker.cc
+        TTrackerGeom/inc/TTrackerMaker.hh
+      Changed warning printout level
+        Mu2eG4/src/ReadBack.cc
+      Removed debug printout
+        Mu2eG4/src/StrawSD.cc
 
  2) October 8 2010, genser
       Corrected TTracker sector (aka panel) layer placement
