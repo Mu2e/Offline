@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.18 2010/10/02 03:03:42 genser Exp $
+// $Id: StrawSD.cc,v 1.19 2010/10/09 13:11:58 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/10/02 03:03:42 $
+// $Date: 2010/10/09 13:11:58 $
 //
 // Original author Rob Kutschke
 //
@@ -346,25 +346,25 @@ namespace mu2e {
       double s = w.dot(prePosTracker-mid);
       CLHEP::Hep3Vector point = prePosTracker - (mid + s*w);
 
-      StrawDetail const& strawDetail = straw.getDetail();
-      // this works with transporOnly.py
-      if (pca.dca()>strawDetail.outerRadius() || abs(point.mag()-strawDetail.outerRadius())>1.e-6 ) {
+//      this works with transporOnly.py
+//      StrawDetail const& strawDetail = straw.getDetail();
+//       if (pca.dca()>strawDetail.outerRadius() || abs(point.mag()-strawDetail.outerRadius())>1.e-6 ) {
 
-        cerr << "*** Bad hit?: eid "
-             << event->GetEventID()    << ", cs "
-             << _collection->GetSize() << " tid "
-             << newHit->trackId()      << " vid "
-             << newHit->volumeId()     << " "
-             << straw.Id()         << " | "
-             << pca.dca()          << " "
-             << prePosTracker      << " "
-             << preMomWorld        << " "
-             << point.mag()        << " "
-             << newHit->eDep()     << " "
-             << s                  << " | "
-             << mid                
-             << endl;
-      }
+//         cerr << "*** Bad hit?: eid "
+//              << event->GetEventID()    << ", cs "
+//              << _collection->GetSize() << " tid "
+//              << newHit->trackId()      << " vid "
+//              << newHit->volumeId()     << " "
+//              << straw.Id()         << " | "
+//              << pca.dca()          << " "
+//              << prePosTracker      << " "
+//              << preMomWorld        << " "
+//              << point.mag()        << " "
+//              << newHit->eDep()     << " "
+//              << s                  << " | "
+//              << mid                
+//              << endl;
+//       }
 
     }
 
