@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.15 2010/10/02 02:29:16 genser Exp $
+// $Id: ReadBack.cc,v 1.16 2010/10/09 21:17:09 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/02 02:29:16 $
+// $Date: 2010/10/09 21:17:09 $
 //
 // Original author Rob Kutschke
 //
@@ -224,7 +224,7 @@ namespace mu2e {
     _hMultiplicity->Fill(hits->size());
       
     // A silly example just to show that we have a messsage logger.
-    if ( hits->size() > 75 ){
+    if ( hits->size() > 100 ){
       edm::LogWarning("HitInfo")
         << "Number of hits "
         << hits->size() 
