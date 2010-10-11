@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.18 2010/10/09 21:17:55 genser Exp $
-// $Author: genser $
-// $Date: 2010/10/09 21:17:55 $
+// $Id: TTrackerMaker.cc,v 1.19 2010/10/11 14:34:53 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2010/10/11 14:34:53 $
 //
 // Original author Rob Kutschke
 //
@@ -192,6 +192,8 @@ namespace mu2e {
 
     // Fill all of the non-persistent information.
     _tt->fillPointers();
+
+    identifyNeighbourStraws();
 
     //_tt->forAllLayers( lptest);
     //_tt->forAllDevices( devtest);
@@ -788,6 +790,73 @@ namespace mu2e {
     }
   }
 
+
+  // Identify the neighbour straws for all straws in the tracker  
+  void TTrackerMaker::identifyNeighbourStraws() {
+    
+    deque<Straw>& allStraws = _tt->_allStraws;
+
+    for (deque<Straw>::iterator i = allStraws.begin(); 
+	 i != allStraws.end(); ++i) {
+    // throw exception if more than 2 layers per sector
+      if (_tt->getSector(i->Id().getSectorId()).nLayers() > 2 ) {
+	throw cms::Exception("GEOM")
+	  << "The code works with no more than 2 layers per sector. \n";
+      }
+      LayerId lId = i->Id().getLayerId();
+      int layer = lId._layer;
+      int nStrawLayer = _tt->getLayer(lId)._nStraws;
+
+      //  cout << lId << " has " << nStrawLayer << " straws" << endl; 
+      //  cout << "Analyzed straw: " << i->Id() << '\t' << i->Index() << endl;
+
+      // add the "same layer" n-1 neighbours straw (if exist)
+      if ( i->Id()._n ) {
+	const StrawId nsId(lId, (i->Id()._n)-1 );
+	i->_nearestById.push_back( nsId );
+	// Straw temp = _tt->getStraw( nsId );
+	// cout << "Neighbour left straw: " << temp.Id() << '\t' << temp.Index() << endl;
+	i->_nearestByIndex.push_back( _tt->getStraw(nsId).Index() );
+      }
+
+      // add the "same layer" n+1 neighbours straw (if exist)
+      if ( i->Id()._n < (nStrawLayer-1) ) {
+	const StrawId nsId(lId, (i->Id()._n)+ 1 );
+	i->_nearestById.push_back( nsId );
+	// Straw temp = _tt->getStraw( nsId );
+	// cout << "Neighbour right straw: " << temp.Id() << '\t' << temp.Index() << endl;
+	i->_nearestByIndex.push_back( _tt->getStraw(nsId).Index() );
+      }
+
+      // add the "opposite layer" n neighbours straw (if more than 1 layer)
+      if (_layersPerSector == 2) { 
+	const StrawId nsId( i->Id().getSectorId(), (layer+1)%2, (i->Id()._n) );
+
+	// throw exception if the two layer of the same sector have different
+	// number of straws 
+	if (_tt->getLayer(lId)._nStraws != nStrawLayer) {
+	  throw cms::Exception("GEOM")
+	    << "The code works only with the same number of straws "
+	    << "per layer in the same sector. \n";
+	}
+
+	i->_nearestById.push_back( nsId );
+	// Straw temp = _tt->getStraw( nsId );
+	// cout << "Neighbour opposite straw: " << temp.Id() << '\t' << temp.Index() << endl;
+	i->_nearestByIndex.push_back( _tt->getStraw( nsId ).Index() );
+
+      // add the "opposite layer" n+-1 neighbours straw (if exist)
+	if ( i->Id()._n > 0 && i->Id()._n < nStrawLayer-1 ) {
+	  const StrawId nsId( i->Id().getSectorId(), (layer+1)%2, 
+			      (i->Id()._n) + (layer?-1:1));
+	  i->_nearestById.push_back( nsId );
+	  // Straw temp = _tt->getStraw( nsId );
+	  // cout << "Neighbour opposite +- 1 straw: " << temp.Id() << '\t' << temp.Index() << endl;
+	  i->_nearestByIndex.push_back( _tt->getStraw( nsId ).Index() );
+	}
+      }
+    }
+  }
 
 
 } // namespace mu2e

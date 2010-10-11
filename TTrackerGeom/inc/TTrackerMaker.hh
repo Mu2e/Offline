@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.8 2010/10/09 21:17:55 genser Exp $
-// $Author: genser $
-// $Date: 2010/10/09 21:17:55 $
+// $Id: TTrackerMaker.hh,v 1.9 2010/10/11 14:34:53 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2010/10/11 14:34:53 $
 //
 // Original author Rob Kutschke
 //
@@ -54,6 +54,7 @@ private:
   void computeSectorBoxParams(Sector& sector, Device& dev);
   void computeConstantSectorBoxParams();
   double layerSpacing();
+  void identifyNeighbourStraws();
 
   // Do the work of constructing it.
   void buildIt();
