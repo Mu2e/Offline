@@ -3,9 +3,9 @@
 #   - Run it through G4
 #   - Event display with xy view.
 #
-# $Id: g4test_01.py,v 1.8 2010/09/27 19:40:48 kutschke Exp $
+# $Id: g4test_01.py,v 1.9 2010/10/13 23:18:50 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/27 19:40:48 $
+# $Date: 2010/10/13 23:18:50 $
 #
 # Original author Rob Kutschke
 #
@@ -32,9 +32,8 @@ process.TFileService = mu2e.Service("TFileService",
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
-process.add_(mu2e.Service("RandomNumberGeneratorService"))
+# Define the random number generator service.
+process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorService")
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",

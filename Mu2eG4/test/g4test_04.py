@@ -1,9 +1,9 @@
 # Configuration file for G4Test04
 # Similar to g4test_03.py but do fewer events and do not make the output file.
 #
-# $Id: g4test_04.py,v 1.7 2010/09/27 20:01:46 kutschke Exp $
+# $Id: g4test_04.py,v 1.8 2010/10/13 23:23:32 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/27 20:01:46 $
+# $Date: 2010/10/13 23:23:32 $
 #
 # Original author Rob Kutschke
 #
@@ -20,19 +20,19 @@ process.maxEvents = mu2e.untracked.PSet(
     input = mu2e.untracked.int32(2)
 )
 
-# Load the standard message logger configuration.
+
+# Define the standard message logger configuration.
 # Threshold=Info. Limit of 5 per category; then exponential backoff.
 process.load("MessageLogger_cfi")
 
-# Load the service that manages root files for histograms.
+# Define the service that manages root files for histograms.
 process.TFileService = mu2e.Service("TFileService",
                        fileName = mu2e.string("g4test_04.root"),
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
-process.add_(mu2e.Service("RandomNumberGeneratorService"))
+# Define the random number generator service.
+process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorService")
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
@@ -44,6 +44,21 @@ process.ConditionsService = mu2e.Service("ConditionsService",
        conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
 )
 
+# Uncomment to enable per module timing
+#process.Timing = mu2e.Service("Timing",
+#    useJobReport = mu2e.untracked.bool(True)
+#)
+
+# Uncomment to enable memory use profiling
+#process.SimpleMemoryCheck = mu2e.Service("SimpleMemoryCheck",
+#    oncePerEventMode = mu2e.untracked.bool(False),
+#    showMallocInfo = mu2e.untracked.bool(False),
+#    ignoreTotal = mu2e.untracked.int32(5)
+#)
+
+# Uncomment to enable trace printout to show what the framework calls when.
+# process.Tracer = mu2e.Service("Tracer")
+
 # Define and configure some modules to do work on each event.
 # Modules are just defined for now, the are scheduled later.
 
@@ -53,7 +68,8 @@ process.source = mu2e.Source("EmptySource")
 #  Make some generated tracks and add them to the event.
 process.generate = mu2e.EDProducer(
     "EventGenerator",
-    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_02.txt")
+    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_02.txt"),
+    seed=mu2e.untracked.vint32(7789)
 )
 
 # Run G4 and add its hits to the event.
@@ -61,6 +77,15 @@ process.g4run = mu2e.EDProducer(
     "G4",
     generatorModuleLabel = mu2e.string("generate"),
     seed=mu2e.untracked.vint32(9877)
+    )
+
+# Form StrawHits (SH).
+process.makeSH = mu2e.EDProducer(
+    "MakeStrawHit",
+    g4ModuleLabel = mu2e.string("g4run"),
+    seed=mu2e.untracked.vint32(7790),
+    diagLevel    = mu2e.untracked.int32(0),
+    maxFullPrint = mu2e.untracked.int32(5)
 )
 
 # Look at the hits from G4.
@@ -68,8 +93,11 @@ process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
     g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
-    maxFullPrint  = mu2e.untracked.int32(5)
+    maxFullPrint  = mu2e.untracked.int32(201)
 )
+
+# Save state of random numbers to the event.
+process.randomsaver = mu2e.EDAnalyzer("RandomNumberSaver")
 
 # End of the section that defines and configures modules.
 
@@ -82,4 +110,5 @@ process.MessageLogger.categories.append("ToyHitInfo")
 process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate*process.g4run*process.checkhits );
+process.output = mu2e.EndPath(  process.generate*process.g4run*process.makeSH*process.randomsaver*
+                                process.checkhits);
