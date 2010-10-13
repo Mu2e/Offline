@@ -5,9 +5,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: runCosmic.py,v 1.4 2010/09/27 20:01:46 kutschke Exp $
+# $Id: runCosmic.py,v 1.5 2010/10/13 23:39:21 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/27 20:01:46 $
+# $Date: 2010/10/13 23:39:21 $
 #
 # Original author Rob Kutschke
 #
@@ -34,9 +34,8 @@ process.TFileService = mu2e.Service("TFileService",
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
-process.add_(mu2e.Service("RandomNumberGeneratorService"))
+# Define the random number generator service.
+process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorService")
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",

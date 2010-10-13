@@ -4,9 +4,9 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: runCosmicGraf.py,v 1.3 2010/09/27 20:01:46 kutschke Exp $
+# $Id: runCosmicGraf.py,v 1.4 2010/10/13 23:39:26 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/27 20:01:46 $
+# $Date: 2010/10/13 23:39:26 $
 #
 # Original author Rob Kutschke
 #
@@ -33,9 +33,8 @@ process.TFileService = mu2e.Service("TFileService",
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
-process.add_(mu2e.Service("RandomNumberGeneratorService"))
+# Define the random number generator service.
+process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorService")
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",

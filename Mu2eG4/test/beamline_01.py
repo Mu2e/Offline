@@ -2,9 +2,9 @@
 # Configuration file for Beamline 01.
 # This can be used to debug the muon beamline.
 #
-# $Id: beamline_01.py,v 1.5 2010/09/27 20:01:46 kutschke Exp $
+# $Id: beamline_01.py,v 1.6 2010/10/13 23:39:40 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/27 20:01:46 $
+# $Date: 2010/10/13 23:39:40 $
 #
 # Original author Rob Kutschke
 #
@@ -31,8 +31,8 @@ process.TFileService = mu2e.Service("TFileService",
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Define the random number service.
-process.add_(mu2e.Service("RandomNumberGeneratorService"))
+# Define the random number generator service.
+process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorService")
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",

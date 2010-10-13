@@ -1,8 +1,8 @@
 # Same as replayAll.py, except skip the first 10 events.
 #
-# $Id: replayWithSkip.py,v 1.5 2010/09/27 20:01:46 kutschke Exp $
+# $Id: replayWithSkip.py,v 1.6 2010/10/13 23:38:50 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/27 20:01:46 $
+# $Date: 2010/10/13 23:38:50 $
 #
 # Original author Rob Kutschke
 #
@@ -35,9 +35,10 @@ process.TFileService = mu2e.Service("TFileService",
 )
 
 # State of random number engines will be restored from the input event.
-process.add_(mu2e.Service("RandomNumberGeneratorService",
-            restoreStateLabel=mu2e.untracked.string("randomsaver")
-))
+# Define the random number generator service.
+process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorService",
+                                       restoreStateLabel=mu2e.untracked.string("randomsaver")
+)
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",

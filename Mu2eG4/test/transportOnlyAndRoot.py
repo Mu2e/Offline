@@ -1,8 +1,8 @@
 # Variant of g4test_03 but with transport only.
 #
-# $Id: transportOnlyAndRoot.py,v 1.1 2010/09/29 02:56:21 genser Exp $
-# $Author: genser $
-# $Date: 2010/09/29 02:56:21 $
+# $Id: transportOnlyAndRoot.py,v 1.2 2010/10/13 23:40:06 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/10/13 23:40:06 $
 #
 # Original author Rob Kutschke
 #
@@ -29,9 +29,8 @@ process.TFileService = mu2e.Service("TFileService",
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Initialize the random number sequences.
-# This just changes the seed for the global CLHEP random engine.
-process.add_(mu2e.Service("RandomNumberGeneratorService"))
+# Define the random number generator service.
+process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorService")
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
