@@ -1,14 +1,15 @@
 # Configuration file for G4Test03
-#  - Generate 10 events including one conversion electron plus
+#  - Generate 200 events including one conversion electron plus
 #    some number of background processes.
 #  - Run these through G4.
 #  - No event display.
+#  - Form StrawHits from StepPointMC objects
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.12 2010/09/27 20:01:46 kutschke Exp $
+# $Id: g4test_03.py,v 1.13 2010/10/13 23:09:31 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/27 20:01:46 $
+# $Date: 2010/10/13 23:09:31 $
 #
 # Original author Rob Kutschke
 #
@@ -25,18 +26,18 @@ process.maxEvents = mu2e.untracked.PSet(
     input = mu2e.untracked.int32(200)
 )
 
-# Load the standard message logger configuration.
+# Define the standard message logger configuration.
 # Threshold=Info. Limit of 5 per category; then exponential backoff.
 process.load("MessageLogger_cfi")
 
-# Load the service that manages root files for histograms.
+# Define the service that manages root files for histograms.
 process.TFileService = mu2e.Service("TFileService",
                        fileName = mu2e.string("g4test_03.root"),
                        closeFileFast = mu2e.untracked.bool(False)
 )
 
-# Define the random number service.
-process.add_(mu2e.Service("RandomNumberGeneratorService"))
+# Define the random number generator service.
+process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorService")
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
@@ -60,6 +61,9 @@ process.ConditionsService = mu2e.Service("ConditionsService",
 #    ignoreTotal = mu2e.untracked.int32(5)
 #)
 
+# Uncomment to enable trace printout to show what the framework calls when.
+# process.Tracer = mu2e.Service("Tracer")
+
 # Define and configure some modules to do work on each event.
 # Modules are just defined for now, the are scheduled later.
 
@@ -80,6 +84,23 @@ process.g4run = mu2e.EDProducer(
     seed=mu2e.untracked.vint32(9877)
     )
 
+# Form StrawHits (SH).
+process.makeSH = mu2e.EDProducer(
+    "MakeStrawHit",
+    g4ModuleLabel = mu2e.string("g4run"),
+    seed=mu2e.untracked.vint32(7790),
+    diagLevel    = mu2e.untracked.int32(0),
+    maxFullPrint = mu2e.untracked.int32(5)
+)
+
+# Look at the hits from G4.
+process.checkhits = mu2e.EDAnalyzer(
+    "ReadBack",
+    g4ModuleLabel = mu2e.string("g4run"),
+    minimumEnergy = mu2e.double(0.001),
+    maxFullPrint  = mu2e.untracked.int32(201)
+)
+
 # Save state of random numbers to the event.
 process.randomsaver = mu2e.EDAnalyzer("RandomNumberSaver")
 
@@ -94,13 +115,6 @@ process.outfile = mu2e.OutputModule(
 
 )
 
-# Look at the hits from G4.
-process.checkhits = mu2e.EDAnalyzer(
-    "ReadBack",
-    g4ModuleLabel = mu2e.string("g4run"),
-    minimumEnergy = mu2e.double(0.001),
-    maxFullPrint  = mu2e.untracked.int32(201)
-)
 
 # End of the section that defines and configures modules.
 
@@ -113,5 +127,5 @@ process.MessageLogger.categories.append("ToyHitInfo")
 process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate*process.g4run*process.randomsaver*
+process.output = mu2e.EndPath(  process.generate*process.g4run*process.makeSH*process.randomsaver*
                                 process.checkhits*process.outfile );
