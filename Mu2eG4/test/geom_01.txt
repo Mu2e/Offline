@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.53 2010/09/29 20:59:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/29 20:59:58 $
+// $Id: geom_01.txt,v 1.54 2010/10/13 18:50:10 genser Exp $
+// $Author: genser $
+// $Date: 2010/10/13 18:50:10 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@ bool hasBFieldManager   = true;
 bool hasVirtualDetector = false;
 
 // Uncomment exactly one tracker.
-#include "Mu2eG4/test/ttracker_v0.txt"
+#include "Mu2eG4/test/ttracker_v2.txt"
 //#include "Mu2eG4/test/ttracker_meco.txt"
 //#include "Mu2eG4/test/ltracker_v0.txt"
 //#include "Mu2eG4/test/itracker_v0.txt"
