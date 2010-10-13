@@ -3,9 +3,33 @@
 
            Release notes for Mu2e Offline software, v0_2_6
 
-  $Id: v0_2_6.txt,v 1.5 2010/10/13 18:50:23 genser Exp $
-  $Author: genser $
-  $Date: 2010/10/13 18:50:23 $
+  $Id: v0_2_6.txt,v 1.6 2010/10/13 23:49:15 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/10/13 23:49:15 $
+
+ 7) October 13 2010, kutschke
+    A new script to read data_03.root and write a new output file containing only the
+    save random number state.  This file is used by replay*.py.
+      Mu2eG4/test/drop03.py
+
+ 6) October 13 2010, kutschke
+    In all of the .py files the syntax for defining the RandomNumberGeneratorService
+    was different than that for all other Services.  This was due to requirements imposed
+    by an older version of the framework; this constraint has been removed and it can
+    now be defined in the normal way and I have done this.
+ 
+    Mu2eG4/test/*.py
+
+    Except for:
+      Mu2eG4/test/readback.py
+
+    in which I removed the random number generator entirely.
+
+ 5) October 13 2010, kutschke
+    Add a new stripped down first example with much less complexity than ReadBack.cc
+      Mu2eG4/src/ReadBack0_plugin.cc
+      Mu2eG4/test/readback0.py
+      Mu2eG4/test/readback0.cint
 
  4) October 13 2010, genser
       Made the two layer TTracker the default
