@@ -3,11 +3,15 @@
 
            Release notes for Mu2e Offline software, v0_2_6
 
-  $Id: v0_2_6.txt,v 1.4 2010/10/09 21:27:32 genser Exp $
+  $Id: v0_2_6.txt,v 1.5 2010/10/13 18:50:23 genser Exp $
   $Author: genser $
-  $Date: 2010/10/09 21:27:32 $
+  $Date: 2010/10/13 18:50:23 $
 
- 3) October 8 2010, genser
+ 4) October 13 2010, genser
+      Made the two layer TTracker the default
+        Mu2eG4/test/geom_01.txt (using ttracker_v2.txt)
+
+ 3) October 9 2010, genser
       Corrected TTracker StrawId for the multilayer case
         TTrackerGeom/src/TTrackerMaker.cc
         TTrackerGeom/inc/TTrackerMaker.hh
