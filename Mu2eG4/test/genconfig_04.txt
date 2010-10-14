@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_04.txt,v 1.2 2010/01/31 20:56:09 kutschke Exp $
+// $Id: genconfig_04.txt,v 1.3 2010/10/14 22:46:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/01/31 20:56:09 $
+// $Date: 2010/10/14 22:46:04 $
 //
 // Original author Rob Kutschke
 // added DecayInOrbitGun process
@@ -13,8 +13,8 @@ bool conversionGun.do = 0;
 bool decayinorbitGun.do = 1;
 
 // Limits on cos(polar angle):
-double conversionGun.czmin = 0.5;
-double conversionGun.czmax = 0.7;
+double conversionGun.czmin = -0.5;
+double conversionGun.czmax =  0.5;
 double decayinorbitGun.czmin = 0.5;
 double decayinorbitGun.czmax = 0.7;
 
