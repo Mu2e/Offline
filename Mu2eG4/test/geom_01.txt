@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.54 2010/10/13 18:50:10 genser Exp $
-// $Author: genser $
-// $Date: 2010/10/13 18:50:10 $
+// $Id: geom_01.txt,v 1.55 2010/10/14 22:35:01 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/10/14 22:35:01 $
 //
 // Original author Rob Kutschke
 //
@@ -44,7 +44,7 @@ bool   g4SteppingAction.killerVerbose = false;
 double g4SteppingAction.eKineMin      = 0.1;    // Kinetic energy in MeV
 
 //form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
-int detSolFieldForm = 2;
+int detSolFieldForm = 1;
 
 // current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
 
