@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.4 2010/10/08 20:55:11 genser Exp $
+// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.5 2010/10/18 21:15:44 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/10/08 20:55:11 $
+// $Date: 2010/10/18 21:15:44 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -53,7 +53,10 @@
 #include "TArc.h"
 #include "TArrow.h"
 #include "TText.h"
+#include "TLatex.h"
 #include "TLine.h"
+
+#include "TString.h"
 
 #include "TPolyMarker.h"
 
@@ -279,8 +282,8 @@ namespace mu2e {
     // Create a canvas for the xy view
 
     int cpsize = 1100;
-
-    _canvas = tfs->make<TCanvas>("c1", "xy canvas", 0, 0, cpsize, cpsize );
+    TString canvasName = "c1xy";
+    _canvas = tfs->make<TCanvas>("c1", "xy", 0, 0, cpsize, cpsize );
 
     gDirectory->Append(_canvas);
 
@@ -324,9 +327,13 @@ namespace mu2e {
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
 
+    _canvas->Print(canvasName+".pdf","pdf");
+
+
     // xz
 
-    _canvas = tfs->make<TCanvas>("c2", "zy canvas", 0, 0, cpsize, cpsize );
+    canvasName = "c2xz";
+    _canvas = tfs->make<TCanvas>("c2", "xz", 0, 0, cpsize, cpsize );
 
     gDirectory->Append(_canvas);
 
@@ -334,31 +341,18 @@ namespace mu2e {
     double _spanz = 155.0;
 
     TubsParams envelopeParams = _ttracker->getTrackerEnvelopeParams();
+
     //    double xf = int(_drawingOrigin.x()+envelopeParams.innerRadius/10.)*10.;
 
     //     std::cout << "xf :" << 
     //       xf << " " << std::endl;
     
-//     frame = _canvas->DrawFrame(
-//                                xf,
-//                                _mu2eDetectorOrigin.z()-_spanz,
-//                                _mu2eDetectorOrigin.x()+_spanx, 
-//                                _mu2eDetectorOrigin.z()+_spanz
-//                                );
-
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()-_spanx,
                                _drawingOrigin.z()-_spanz,
                                _drawingOrigin.x()+_spanx, 
                                _drawingOrigin.z()+_spanz
                                );
-
-//     frame = _canvas->DrawFrame(
-//                                -_spanx,
-//                                -_spanz,
-//                                 _spanx, 
-//                                 _spanz
-//                                );
 
     gPad->SetGridx(kTRUE);
     gPad->SetGridy(kTRUE);
@@ -367,19 +361,22 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(1);
+    drawSectorXZdetail(2);
     drawStrawsXZdetail(false);
 
     _canvas->Modified();
     _canvas->Update();
 
-    std::cerr << "Double click on the Canvas to close it" ;
+    std::cerr << "Double click on the Canvas to go to the next one" ;
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
+    _canvas->Print(canvasName+".pdf","pdf");
+
 
     // xz detail
 
-    _canvas = tfs->make<TCanvas>("c3", "zy detail canvas", 0, 0, cpsize, cpsize );
+    canvasName = "c3xzcenter";
+    _canvas = tfs->make<TCanvas>("c3", "xz center detail", 0, 0, cpsize, cpsize );
 
     gDirectory->Append(_canvas);
 
@@ -399,16 +396,18 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(2,    -_spanx, _spanx, -_spanz, _spanz);
+    drawSectorXZdetail(3,    -_spanx, _spanx, -_spanz, _spanz);
     drawStrawsXZdetail(true, -_spanx, _spanx, -_spanz, _spanz);
 
-    std::cerr << "Double click on the Canvas to close it" ;
+    std::cerr << "Double click on the Canvas to go to the next one" ;
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
+    _canvas->Print(canvasName+".pdf","pdf");
 
-    // xz left detail
+    // xz inner/left detail
 
-    _canvas = tfs->make<TCanvas>("c4", "zy left detail canvas", 0, 0, cpsize, cpsize );
+    canvasName = "c4xzinner";
+    _canvas = tfs->make<TCanvas>("c4", "xz inner detail", 0, 0, cpsize, cpsize );
 
     gDirectory->Append(_canvas);
 
@@ -430,14 +429,49 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(3,   _lx, _ux, _lz, _uz);
+    drawSectorXZdetail(4,   _lx, _ux, _lz, _uz);
     drawStrawsXZdetail(true,_lx, _ux, _lz, _uz);
 
     std::cerr << "Double click on the Canvas to close it" ;
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
+    _canvas->Print(canvasName+".pdf","pdf");
+
+    // xz outer/right detail
+
+    canvasName = "c5xzinner";
+    _canvas = tfs->make<TCanvas>("c5", "xz outer detail", 0, 0, cpsize, cpsize );
+
+    gDirectory->Append(_canvas);
+
+    _lx =  132.;
+    _ux =  152.;
+    _lz =  -10.;
+    _uz =   10.;
+
+    frame = _canvas->DrawFrame(
+                               _drawingOrigin.x()+_lx,
+                               _drawingOrigin.z()+_lz,
+                               _drawingOrigin.x()+_ux, 
+                               _drawingOrigin.z()+_uz
+                               );
+    gPad->SetGridx(kTRUE);
+    gPad->SetGridy(kTRUE);
+
+    frame->SetTitle(";X(mm);Z(mm)");
+
+    // here we do the geometry drawings
+
+    drawSectorXZdetail(5,   _lx, _ux, _lz, _uz);
+    drawStrawsXZdetail(true,_lx, _ux, _lz, _uz);
+
+    std::cerr << "Double click on the Canvas to close it" ;
+    _canvas->WaitPrimitive();
+    std::cerr << std::endl;
+    _canvas->Print(canvasName+".pdf","pdf");
 
     gROOT->GetListOfCanvases()->Write();
+
     gROOT->GetListOfCanvases()->Delete();
 
   }
@@ -513,7 +547,7 @@ namespace mu2e {
     printAndDraw(line,x1,z1,x4,z4);
 
 
-    if (dolabels==1) {
+    if (dolabels==2) {
 
       labelPoint(x1,z1,"PilE",0.,-7.);
       labelPoint(x2,z2,"PiuE",0., 3.);
@@ -524,15 +558,20 @@ namespace mu2e {
       labelPoint(x3,z3,"PiuE",-10., 3.);
       labelPoint(x4,z4,"PilE",-10.,-7.);
 
-    } else if (dolabels=2) {
+    } else if (dolabels=3) {
 
       labelPoint(_drawingOrigin.x(),z1,"PilEm", -0.3,-0.5);
       labelPoint(_drawingOrigin.x(),z2,"PiuEm", -0.3, 0.25);
 
-    } else if (dolabels=3) {
+    } else if (dolabels=4) {
 
       labelPoint(x1,z1,"PilE",0.,0.);
       labelPoint(x2,z2,"PiuE",0.,0.);      
+
+    } else if (dolabels=5) {
+
+      labelPoint(x1,z1,"PolE",0.,0.);
+      labelPoint(x2,z2,"PouE",0.,0.);      
 
     }
 
@@ -550,11 +589,9 @@ namespace mu2e {
 
     TLine* line   = new TLine();
     line->SetLineStyle(kSolid);
-
     TArc* arc = new TArc();
     arc->SetFillStyle(0);
     arc->SetLineColor(kBlue);
-
     TPolyMarker* poly = new TPolyMarker();
 
     poly->SetMarkerSize(0.5);
@@ -563,7 +600,6 @@ namespace mu2e {
     
     const size_t idev = 0;
     const Device& device = _ttracker->getDevice(idev);
-
     const size_t isec = 0;
     const Sector& sector = device.getSector(isec);
 
@@ -589,9 +625,6 @@ namespace mu2e {
         const Straw& straw = layer.getStraw(istr);
 
         StrawDetail const& strawDetail = straw.getDetail();
-
-//         double sx = _mu2eDetectorOrigin.x() + straw.getMidPoint().x();
-//         double sz = _mu2eDetectorOrigin.z() + straw.getMidPoint().z();
 
         std::cout << "straw.getMidPoint() " << straw.getMidPoint() << std::endl;
 
@@ -629,25 +662,6 @@ namespace mu2e {
     delete poly;
 
   }
-
-  void TTrackerGeomIntRootPlots::labelPoint(double xt, double yt, std::string const label,
-					    double xshift, double yshift
-					    ){
-
-    // Label the Point
-
-    TText* text   = new TText();
-    double ts = text->GetTextSize();
-    //    std::cout << "Old Text Size : " << ts << std::endl;
-    text->SetTextSize(ts*0.25);
-
-    text->DrawText( xt+xshift, yt+yshift, label.c_str());
-
-    delete text;
-
-  }
-
-
 
   void TTrackerGeomIntRootPlots::drawStraws(bool dolabels) {
 
@@ -798,8 +812,8 @@ namespace mu2e {
           //mlab.fill('0');
           mlab << "m" << iman;
           
-          double radius = sqrt(square(sx1)+square(sy1));
-          drawArrowFromOrigin( sx1, radius, mlab.str(), kFullCircle, kOrange);
+          labelPoint(sx1,sy1,mlab.str(),15.);
+
         }
 
       }
@@ -845,64 +859,20 @@ namespace mu2e {
     arc->DrawArc(_drawingOrigin.x(),_drawingOrigin.y(),
                  supportParams.outerRadius,0.,angle,"only");
 
-    double testCircleRadius = 720.0;
-    angle = calculateDrawingAngle(_span, testCircleRadius);
-    arc->DrawArc(_drawingOrigin.x(),_drawingOrigin.y(),
-                 testCircleRadius,0.,angle,"only");
+//     double testCircleRadius = 720.0;
+//     angle = calculateDrawingAngle(_span, testCircleRadius);
+//     arc->DrawArc(_drawingOrigin.x(),_drawingOrigin.y(),
+//                  testCircleRadius,0.,angle,"only");
 
     if (dolabels) {
 
-      drawArrowFromOrigin( 75., envelopeParams.innerRadius, "EiR",kFullCircle,kRed);
-      drawArrowFromOrigin(200., supportParams.innerRadius,  "SiR",kFullCircle,kRed);
-      drawArrowFromOrigin(300., supportParams.outerRadius,  "SoR",kFullCircle,kRed);
+      drawArrowFromOrigin( 75., envelopeParams.innerRadius, "IER",kFullCircle,kRed);
+      drawArrowFromOrigin(200., supportParams.innerRadius,  "ISR",kFullCircle,kRed);
+      drawArrowFromOrigin(300., supportParams.outerRadius,  "OSR",kFullCircle,kRed);
       
     }
 
     return;
-
-  }
-
-  void TTrackerGeomIntRootPlots::drawArrowFromOrigin(double xt, double radius, 
-						     std::string const label, 
-						     short markerStyle, short markerColor, 
-						     double xshift, double yshift){
-
-    // Label the Radii
-
-    TText* text   = new TText();
-    TPolyMarker* poly = new TPolyMarker();
-
-    poly->SetMarkerStyle(markerStyle);
-    poly->SetMarkerSize(0.75);
-    poly->SetMarkerColor(markerColor);
-    
-    double ts = text->GetTextSize();
-    //    std::cout << "Old Text Size : " << ts << std::endl;
-    text->SetTextSize(ts*0.5);
-
-    double yt = sqrt(square(radius)-square(xt));
-
-    text->DrawText( xt+xshift, yt+yshift, label.c_str());
-
-    poly->DrawPolyMarker( 1, &xt, &yt   ); 
-
-    TArrow* arrow = new TArrow();
-    arrow->DrawArrow( _drawingOrigin.x(), _drawingOrigin.y(), xt, yt, 0.025, ">");
-    //size & Option_t* option = "|>")
-
-    delete poly;
-    delete text;
-    delete arrow;
-
-  }
-
-  double TTrackerGeomIntRootPlots::calculateDrawingAngle(double span, double radius) {
-  
-    if (span<0. || radius<0.) return 0.;
-    double angle = (span<radius) ? 90.0 - acos(span/radius)*180./M_PI :
-      90.0;
-
-    return angle;
 
   }
 
@@ -964,6 +934,9 @@ namespace mu2e {
 
       double radius = sqrt(square(x2)+square(y2));
       drawArrowFromOrigin( x2, radius, "PiE", kFullCircle, kRed);
+
+      labelPoint( x2, y2, "#alpha",5.,-20.);
+
       drawArrowFromOrigin( x2, x2,     "PiM", kFullCircle, kRed,-50.);
       radius =  sqrt(square(x3)+square(y3));
       drawArrowFromOrigin( x3, radius, "PoE", kFullCircle, kRed);
@@ -973,6 +946,23 @@ namespace mu2e {
     delete line;
 
     return;
+
+  }
+
+  void TTrackerGeomIntRootPlots::labelPoint(double xt, double yt, std::string const label,
+					    double xshift, double yshift
+					    ){
+
+    // Label the Point
+
+    TLatex* text   = new TLatex();
+    double ts = text->GetTextSize();
+    //    std::cout << "Old Text Size : " << ts << std::endl;
+    text->SetTextSize(ts*0.25);
+
+    text->DrawLatex( xt+xshift, yt+yshift, label.c_str());
+
+    delete text;
 
   }
 
@@ -990,6 +980,50 @@ namespace mu2e {
 
     if (x > ux) x = ux;
     if (x < lx) x = lx;
+
+  }
+
+  void TTrackerGeomIntRootPlots::drawArrowFromOrigin(double xt, double radius, 
+						     std::string const label, 
+						     short markerStyle, short markerColor, 
+						     double xshift, double yshift){
+
+    // Label the Radii
+
+    TText* text   = new TText();
+    TPolyMarker* poly = new TPolyMarker();
+
+    poly->SetMarkerStyle(markerStyle);
+    poly->SetMarkerSize(0.75);
+    poly->SetMarkerColor(markerColor);
+    
+    double ts = text->GetTextSize();
+    //    std::cout << "Old Text Size : " << ts << std::endl;
+    text->SetTextSize(ts*0.5);
+
+    double yt = sqrt(square(radius)-square(xt));
+
+    text->DrawText( xt+xshift, yt+yshift, label.c_str());
+
+    poly->DrawPolyMarker( 1, &xt, &yt   ); 
+
+    TArrow* arrow = new TArrow();
+    arrow->DrawArrow( _drawingOrigin.x(), _drawingOrigin.y(), xt, yt, 0.025, ">");
+    //size & Option_t* option = "|>")
+
+    delete poly;
+    delete text;
+    delete arrow;
+
+  }
+
+  double TTrackerGeomIntRootPlots::calculateDrawingAngle(double span, double radius) {
+  
+    if (span<0. || radius<0.) return 0.;
+    double angle = (span<radius) ? 90.0 - acos(span/radius)*180./M_PI :
+      90.0;
+
+    return angle;
 
   }
 
