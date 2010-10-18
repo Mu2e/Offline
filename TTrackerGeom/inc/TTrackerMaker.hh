@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.9 2010/10/11 14:34:53 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2010/10/11 14:34:53 $
+// $Id: TTrackerMaker.hh,v 1.10 2010/10/18 21:15:16 genser Exp $
+// $Author: genser $
+// $Date: 2010/10/18 21:15:16 $
 //
 // Original author Rob Kutschke
 //
@@ -53,7 +53,9 @@ private:
   void computeStrawHalfLengths();
   void computeSectorBoxParams(Sector& sector, Device& dev);
   void computeConstantSectorBoxParams();
-  double layerSpacing();
+  void computeLayerSpacingAndShift();
+  void computeManifoldEdgeExcessSpace();
+
   void identifyNeighbourStraws();
 
   // Do the work of constructing it.
@@ -105,6 +107,20 @@ private:
 
   // sector box half lengths
   std::vector<double> _sectorBoxHalfLengths;
+
+  // sector box offset magnitudes
+  double _sectorBoxXOffsetMag;
+  double _sectorBoxZOffsetMag;
+
+  // distance between layers (in Z)
+  double _layerHalfSpacing;
+  // relative layer shift (in X)
+  double _layerHalfShift;
+
+  // Space between first/last straw and edge of manifold 
+  double _manifoldXEdgeExcessSpace;
+  double _manifoldZEdgeExcessSpace;
+
 
   // Z Location of the first device.
   double _z0;
