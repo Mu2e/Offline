@@ -1,31 +1,14 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.10 2010/08/20 14:45:09 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2010/08/20 14:45:09 $
+// $Id: DecayInOrbitGun.cc,v 1.11 2010/10/25 19:50:21 onoratog Exp $ 
+// $Author: onoratog $
+// $Date: 2010/10/25 19:50:21 $
 //
 // Original author Rob Kutschke
 // 
 //
-// Notes
-// 1) This code uses a incorrect model of the distribution of DIO's over the
-//    targets.  It is uniform in target number and uniform across each target.
-//    At a future date this needs to be made more realistic.
-// 2) This code uses an incorrect model of the distribution of DIO's in time.
-//    At a future date this needs to be made more realistic.
-// 3) This codes uses (Emax-E)**5 for the momentum distribution.  At a future
-//    date this needs to be improved.
-// 4) About the initialization of _shape.
-//    The c'tor of RandGeneral wants, as its second argument, the starting
-//    address of an array of doubles that describes the required shape.
-//    The method binnedEnergySpectrum returns, by value, a std::vector<double>.
-//    We can get the required argument by taking the address of the first element 
-//    of the std::vector. There is a subtlety about the return value of
-//    binnedEnergySpectrum:  it returns by value to a temporary variable that
-//    we cannot see; this variable goes out of scope after the c'tor completes;
-//    therefore its lifetime is managed properly.
-//
+// 
 
 // C++ includes.
 #include <iostream>
@@ -39,16 +22,11 @@
 // Mu2e includes
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
-#include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
-// General Utilities
-#include "GeneralUtilities/inc/pow.hh"
 
 //ROOT includes
 #include "TH1D.h"
@@ -66,10 +44,6 @@ using namespace std;
 
 namespace mu2e {
 
-  // Mass of the electron.
-  // Once we have the HepPDT package installed, get this number from there.
-  static const double mElectron = 0.510999;
-  
   // Need a Conditions entity to hold info about conversions:
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
@@ -92,13 +66,8 @@ namespace mu2e {
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
 
     // Random number distributions; getEngine comes from the base class.
-    _randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax),
-    _randFlat( getEngine() ),
     _randPoissonQ( getEngine(), std::abs(_mean) ),
-
-    // See Note 4.
-    _shape( GeneratorBase::getEngine(), &(binnedEnergySpectrum()[0]), _nbins),
-
+  
     // Histograms.
     _hMultiplicity(0),
     _hEElec(0),
@@ -129,7 +98,7 @@ namespace mu2e {
     // Make ROOT subdirectory to hold diagnostic histograms; book those histograms.
     if ( _doHistograms ){
       edm::Service<edm::TFileService> tfs;
-      edm::TFileDirectory tfdir = tfs->mkdir( "DecayInOribt" );
+      edm::TFileDirectory tfdir = tfs->mkdir( "DecayInOrbit" );
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "DIO Multiplicity",                20,     0.,   20.    );
       _hEElec        = tfdir.make<TH1D>( "hEElec",        "DIO Electron Energy",             10,  _elow,    0.105 );
       _hEElecZ       = tfdir.make<TH1D>( "hEElecZ",       "DIO Electron Energy (zoom)",     200,  _elow, _ehi     );
@@ -138,6 +107,23 @@ namespace mu2e {
       _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 200, 0, 2000. );
     }
+
+    
+    FoilParticleGenerator generator(PDGCode::e_minus, GenId::dio1);
+    fGenerator = generator;
+    fGenerator._elow = _elow;
+    fGenerator._ehi = _ehi;
+    fGenerator._nbins = _nbins;
+    fGenerator._czmin = _czmin;
+    fGenerator._czmax = _czmax;
+    fGenerator._phimin = _phimin;
+    fGenerator._phimax = _phimax;
+    fGenerator._tmin = _tmin;
+    fGenerator._tmax = _tmax;
+    fGenerator._conversionEnergyAluminum = conversionEnergyAluminum;
+
+    fGenerator.setRandomEngine (GeneratorBase::getEngine() ); 
+    
   }
 
   DecayInOrbitGun::~DecayInOrbitGun(){
@@ -147,94 +133,29 @@ namespace mu2e {
 
     // Choose the number of electrons to generate this event.
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
-    if ( _doHistograms ) { 
-      _hMultiplicity->Fill(n); 
-    }
-
-    // Get information about the target system.
-    GeomHandle<Target> target;
-    int nFoils = target->nFoils();
-
-    // Length of the live-time.
-    double _dt = ( _tmax - _tmin);
-
-    for ( int i=0; i<n; ++i ){
-    
-      // Pick a foil.
-      int ifoil = static_cast<int>(nFoils*_randFlat.fire());
-      TargetFoil const& foil = target->foil(ifoil);
-
-      // Foil properties.
-      CLHEP::Hep3Vector const& center = foil.center();
-      const double r1 = foil.rIn();
-      const double dr = foil.rOut() - r1;
-
-      // A random point within the foil.
-      const double r   = r1 + dr*_randFlat.fire();
-      const double dz  = (-1.+2.*_randFlat.fire())*foil.halfThickness();
-      const double phi = CLHEP::twopi*_randFlat.fire();
-      CLHEP::Hep3Vector pos( center.x()+r*cos(phi),
-                             center.y()+r*sin(phi),
-                             center.z()+dz );
-          
-      // This should not be uniform but it is for now.
-      const double time = _tmin + _dt*_randFlat.fire();
-
-      // Pick a random energy from the energy spectrum.  Compute momentum too.
-      const double ee = _elow + _shape.fire() * ( _ehi - _elow );
-      double pe = safeSqrt(ee*ee - mElectron*mElectron);
-
-      // Pick random 3 vector with the requested momentum.
-      CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(pe);
-  
-      // Add the electron to  the list.
-      CLHEP::HepLorentzVector mom( p3.x(), p3.y(), p3.z(), ee);
-      genParts.push_back( ToyGenParticle( PDGCode::e_minus, GenId::dio1, pos, mom, time));
-
-      if( _doHistograms ){
-        _hEElec    ->Fill(ee);
-        _hEElecZ   ->Fill(ee);
-        _hzPosition->Fill(pos.z());
-        _hcz       ->Fill(p3.cosTheta());
-        _hphi      ->Fill(p3.phi());
-        _ht        ->Fill(time);
-        
+      if ( _doHistograms ) { 
+        _hMultiplicity->Fill(n); 
       }
 
-    } // end loop over generated DIO electrons
- 
-  } // DecayInOrbitGun::generate
+      size_t genPartsEntries = genParts.size();    
 
-  // Energy spectrum of the electron from DIO.
-  double DecayInOrbitGun::energySpectrum( double e )
-  {
-    return pow<5>(conversionEnergyAluminum - e) ;
-  } 
-
-  // Compute a binned representation of the energy spectrum of the electron from DIO.
-  std::vector<double> DecayInOrbitGun::binnedEnergySpectrum(){
-
-    // Sanity check.
-    if (_nbins <= 0) {
-      throw cms::Exception("RANGE") 
-        << "Nonsense DecayInOrbitGun.nbins requested="
-        << _nbins
-        << "\n";
-    }
-
-    // Bin width.
-    double dE = (_ehi - _elow) / _nbins;
-
-    // Vector to hold the binned representation of the energy spectrum.
-    std::vector<double> spectrum;
-    spectrum.reserve(_nbins);
+      fGenerator.generateFromFoil( genParts, n );
     
-    for (int ib=0; ib<_nbins; ib++) {
-      double x = _elow+(ib+0.5) * dE;
-      spectrum.push_back(energySpectrum(x));
-    }
+      if( _doHistograms ){
+        for( size_t i=genPartsEntries; i<n+genPartsEntries ; i++) {     
 
-    return spectrum;
-  } // DecayInOrbitGun::binnedEnergySpectrum
+          ToyGenParticle& particle = genParts[i];  
+
+          _hEElec    ->Fill( particle._momentum.e() );
+          _hEElecZ   ->Fill( particle._momentum.e() );
+          _hzPosition->Fill( particle._position.z() );
+          _hcz       ->Fill( particle._momentum.vect().cosTheta() );
+          _hphi      ->Fill( particle._momentum.vect().phi() );
+          _ht        ->Fill( particle._time );
+        
+        }
+      }
+
+  } // DecayInOrbitGun::generate
 
 }

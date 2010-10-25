@@ -3,26 +3,20 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.4 2010/08/19 22:02:51 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/19 22:02:51 $
+// $Id: DecayInOrbitGun.hh,v 1.5 2010/10/25 19:50:21 onoratog Exp $
+// $Author: onoratog $ 
+// $Date: 2010/10/25 19:50:21 $
 //
-// For now this is limited to:
-//  - Uniform over the targets.
-//  - Uniform within each target.
-//  - Uniform in time during the requested time interval.
-//  - All of the above need to be improved at a later date.
-//  - Limits on cos(theta) and phi but uniform within the range.
+// 
 
 // Framework includes
 #include "FWCore/Framework/interface/Run.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // CLHEP includes
-#include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandFlat.h"
 
@@ -47,7 +41,9 @@ namespace mu2e {
 
   private:
 
-    // Start: parameters that can be configured from the config file.
+    // Class for generate particles from target
+
+    FoilParticleGenerator fGenerator;
 
     // Mean number of dio electrons to generate in each event.
     // If positive, use this as the mean of a Poisson distribution.
@@ -76,10 +72,7 @@ namespace mu2e {
     // End: parameters that can be configured from the config file.
 
     // Random number generators.
-    RandomUnitSphere    _randomUnitSphere;
-    CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
-    CLHEP::RandGeneral  _shape;
 
     // Diagnostic histograms.
     TH1D* _hMultiplicity;
@@ -89,12 +82,6 @@ namespace mu2e {
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _ht;
-
-    // Compute the value of the energy spectrum at given energy.
-    double energySpectrum(double e);
-
-    // Build a binned representation of the energy spectrum.
-    std::vector<double> binnedEnergySpectrum();
 
   };
 

@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.4 2010/08/18 06:33:00 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/18 06:33:00 $
+// $Id: ConversionGun.hh,v 1.5 2010/10/25 19:50:21 onoratog Exp $
+// $Author: onoratog $ 
+// $Date: 2010/10/25 19:50:21 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -18,9 +18,7 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-
-// CLHEP includes
-#include "CLHEP/Random/RandFlat.h"
+#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // Forward references in other namespaces.
 namespace edm {
@@ -42,14 +40,15 @@ namespace mu2e {
 
   private:
 
+    // Generator of particle from target
+    FoilParticleGenerator fGenerator;
+
+
     // simulation conversions?
     bool _doConvs;
 
     // Conversion momentum.
     double _p;
-
-    // Electron mass
-    double _mass;
 
     // Limits on the generated direction.
     double _czmin;
@@ -60,14 +59,6 @@ namespace mu2e {
     // Limits on the generated time.
     double _tmin;
     double _tmax;
-
-    // Range for the above.
-    double _dcz;
-    double _dphi;
-    double _dt;
-
-    // A distribution used in many places in this class.
-    CLHEP::RandFlat _randFlat;
 
   };
 
