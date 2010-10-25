@@ -36,6 +36,7 @@ namespace mu2e {
 
     friend class ConversionGun;
     friend class DecayInOrbitGun;
+    friend class EjectedProtonGun;
 
   public: 
     

@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.5 2010/10/25 19:50:21 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.6 2010/10/25 21:12:44 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/10/25 19:50:21 $
+// $Date: 2010/10/25 21:12:44 $
 //
 // 
 
@@ -18,7 +18,6 @@
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
-#include "CLHEP/Random/RandFlat.h"
 
 // Forward declarations outside of mu2e namespace.
 class TH1D;

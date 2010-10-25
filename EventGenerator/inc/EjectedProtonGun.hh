@@ -7,9 +7,9 @@
 // protons.  Production is uniform across the targets and uniform in time;
 // this model needs to be improved.
 //
-// $Id: EjectedProtonGun.hh,v 1.4 2010/08/19 22:03:11 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/19 22:03:11 $
+// $Id: EjectedProtonGun.hh,v 1.5 2010/10/25 21:12:44 onoratog Exp $
+// $Author: onoratog $ 
+// $Date: 2010/10/25 21:12:44 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -19,12 +19,10 @@
 
 // Framework includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // CLHEP includes
-#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
-#include "CLHEP/Random/RandGeneral.h"
 
 // Forward declarations outside of namespace mu2e
 class TH1D;
@@ -47,6 +45,11 @@ namespace mu2e {
 
   private:
 
+
+    // Class for generate particles from target
+    FoilParticleGenerator fGenerator;
+
+
     // Start: parameters that can be configured from the config file.
 
     double _mean;    // Mean number of protons per event
@@ -67,13 +70,8 @@ namespace mu2e {
 
     // end: parameters that can be configured from the config file.
 
-    CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
-    RandomUnitSphere    _randomUnitSphere;
-    CLHEP::RandGeneral  _shape;
 
-    // Mass of the proton (taken from particle data table).
-    double _mProton;
 
     TH1D* _hMultiplicity;
     TH1D* _hKE;
@@ -83,12 +81,6 @@ namespace mu2e {
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _htime;
-
-    // Compute the value of the energy spectrum at given energy.
-    double energySpectrum(double e);
-
-    // Build a binned representation of the energy spectrum.
-    std::vector<double> binnedEnergySpectrum();
 
   };
 

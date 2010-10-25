@@ -46,6 +46,9 @@
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
 
+//ROOT Includes
+#include "TMath.h"
+
 using namespace std;
 
 
@@ -78,11 +81,11 @@ namespace mu2e {
     _randFoils = auto_ptr<CLHEP::RandGeneral> ( new CLHEP::RandGeneral( engine, &(binnedFoilsVolume()[0]), _nfoils) ); 
     _randomUnitSphere = auto_ptr<RandomUnitSphere> ( new RandomUnitSphere( engine, _czmin, _czmax, _phimin, _phimax) );
     _randTime = auto_ptr<CLHEP::RandExponential> (new CLHEP::RandExponential( engine ) );
-    if (_genId == GenId::dio1) {
+    if (_genId == GenId::dio1 || _genId == GenId::ejectedProtonGun) {
       // See Note 4.
       _shape = auto_ptr<CLHEP::RandGeneral> ( new CLHEP::RandGeneral( engine , &(binnedEnergySpectrum()[0]), _nbins) );
     } else {
-      //  _shape = 0;
+      // _shape = 0;
     }
   }
 
@@ -93,16 +96,16 @@ namespace mu2e {
     _dphi = ( _phimax - _phimin);
     _dt   = (   _tmax -   _tmin);
   
-
+    
     // Get access to the geometry system.
     GeomHandle<Target> target;
-
+    
     // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {
       throw cms::Exception("GEOM")
         << "no foils are present";
     }
-
+    
     for (int i=0; i<nParticles; i++) {
       
       // Pick a foil with a probability proportional to the volumes.
@@ -136,6 +139,12 @@ namespace mu2e {
         e = sqrt( _p*_p + _mass*_mass );
       }
 
+      if (_genId == GenId::ejectedProtonGun) {
+        double eKine = _elow + _shape->fire() * ( _ehi - _elow );
+        e   = eKine + _mass;
+        _p = safeSqrt(e*e - _mass*_mass);
+      }
+      
       if (_genId == GenId::dio1) {
         e  = _elow + _shape->fire() * (_ehi - _elow);
         _p = safeSqrt(e*e - _mass*_mass);
@@ -150,28 +159,82 @@ namespace mu2e {
       
       // Add the particle to  the list.
       genParts.push_back( ToyGenParticle( _pdgId, _genId, pos, mom, time));
-
+      
     } // end loop over generated DIO electrons
- 
+    
   }
-
+  
   // Energy spectrum of the electron from DIO.
+  // Input energy in MeV
   double FoilParticleGenerator::energySpectrum( double e )
   {
-    return pow<5>(_conversionEnergyAluminum - e) ;
-  } 
 
+    double spectrumWeight;
+
+    if (_genId == GenId::dio1) {
+     
+      spectrumWeight = pow<5>(_conversionEnergyAluminum - e) ;
+    
+    }
+    
+    if (_genId == GenId::ejectedProtonGun) {
+      //taken from GMC 
+      //
+      //   Ed Hungerford  Houston University May 17 1999 
+      //   Rashid Djilkibaev New York University (modified) May 18 1999 
+      //
+      //   ep - proton kinetic energy (MeV)
+      //   pp - proton Momentum (MeV/c)
+      // 
+      //   Generates a proton spectrum similar to that observed in
+      //   u capture in Si.  JEPT 33(1971)11 and PRL 20(1967)569
+      
+      //these numbers are in MeV!!!!
+      static const double emn = 1.4; // replacing par1 from GMC
+      static const double par2 = 1.3279;
+      static const double par3=17844.0;
+      static const double par4=.32218;
+      static const double par5=100.;
+      static const double par6=10.014;
+      static const double par7=1050.;
+      static const double par8=5.103;
+      
+      if (e >= 20)
+        {
+          spectrumWeight=par5*TMath::Exp(-(e-20.)/par6);
+        }
+      
+      else if(e >= 8.0 && e <= 20.0)
+        {
+          spectrumWeight=par7*exp(-(e-8.)/par8);
+        }
+      else if (e > emn)
+        {
+          double xw=(1.-emn/e);
+          double xu=TMath::Power(xw,par2);
+          double xv=par3*TMath::Exp(-par4*e);
+          spectrumWeight=xv*xu;
+        }
+      else 
+        {
+          spectrumWeight = 0.;
+        }
+    }
+    return spectrumWeight;
+  } 
+  
   // Compute a binned representation of the energy spectrum of the electron from DIO.
   std::vector<double> FoilParticleGenerator::binnedEnergySpectrum(){
-
+    
     // Sanity check.
     if (_nbins <= 0) {
       throw cms::Exception("RANGE") 
-        << "Nonsense DecayInOrbitGun.nbins requested="
+        << "Nonsense nbins requested in "
+        << _genId << " = "
         << _nbins
         << "\n";
     }
-
+    
     // Bin width.
     double dE = (_ehi - _elow) / _nbins;
 
