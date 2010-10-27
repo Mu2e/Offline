@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.6 2010/10/25 21:12:44 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.7 2010/10/27 16:42:56 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/10/25 21:12:44 $
+// $Date: 2010/10/27 16:42:56 $
 //
 // 
 
@@ -14,10 +14,13 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "EventGenerator/inc/FoilParticleGenerator.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandGeneral.h"
+
 
 // Forward declarations outside of mu2e namespace.
 class TH1D;
@@ -40,10 +43,6 @@ namespace mu2e {
 
   private:
 
-    // Class for generate particles from target
-
-    FoilParticleGenerator fGenerator;
-
     // Mean number of dio electrons to generate in each event.
     // If positive, use this as the mean of a Poisson distribution.
     // If negative, generate exactly std::abs(mean) every time.
@@ -65,6 +64,10 @@ namespace mu2e {
     double _tmin;
     double _tmax;
 
+    double _p; //particle momentum
+
+    double _mass; //Particle mass
+
     // Histogram control.
     bool _doHistograms;
 
@@ -72,6 +75,8 @@ namespace mu2e {
 
     // Random number generators.
     CLHEP::RandPoissonQ _randPoissonQ;
+    RandomUnitSphere _randomUnitSphere;
+    CLHEP::RandGeneral _shape;
 
     // Diagnostic histograms.
     TH1D* _hMultiplicity;
@@ -81,6 +86,10 @@ namespace mu2e {
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _ht;
+
+    //Functions used to calculate energy spectrum of the electron
+    std::vector<double> binnedEnergySpectrum();
+    double energySpectrum( double e );
 
   };
 

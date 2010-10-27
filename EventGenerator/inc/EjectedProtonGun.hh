@@ -4,25 +4,23 @@
 //
 // Simulate the protons that come from the stopping target when muons capture
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
-// protons.  Production is uniform across the targets and uniform in time;
-// this model needs to be improved.
+// protons.  
 //
-// $Id: EjectedProtonGun.hh,v 1.5 2010/10/25 21:12:44 onoratog Exp $
+// $Id: EjectedProtonGun.hh,v 1.6 2010/10/27 16:42:56 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/10/25 21:12:44 $
+// $Date: 2010/10/27 16:42:56 $
 //
-// For now this is limited to:
-//  - Uniform over the targets.
-//  - Uniform in time during the requested interval.
-//  - Limits on cos(theta) and phi but uniform within the range.
 //
 
 // Framework includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "EventGenerator/inc/FoilParticleGenerator.hh"
+
+// Mu2e includes
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandGeneral.h"
 
 // Forward declarations outside of namespace mu2e
 class TH1D;
@@ -45,11 +43,6 @@ namespace mu2e {
 
   private:
 
-
-    // Class for generate particles from target
-    FoilParticleGenerator fGenerator;
-
-
     // Start: parameters that can be configured from the config file.
 
     double _mean;    // Mean number of protons per event
@@ -61,6 +54,10 @@ namespace mu2e {
     double _phimax;
     int    _nbins;   // number of bins in proton energy pdf
 
+    double _mass; //Particle mass
+
+    double _p; //Particle momentum
+
     // Limits on the generated time.
     double _tmin;
     double _tmax;
@@ -70,7 +67,10 @@ namespace mu2e {
 
     // end: parameters that can be configured from the config file.
 
+    //Random generators
     CLHEP::RandPoissonQ _randPoissonQ;
+    RandomUnitSphere    _randomUnitSphere;
+    CLHEP::RandGeneral _shape;
 
 
     TH1D* _hMultiplicity;
@@ -81,6 +81,11 @@ namespace mu2e {
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _htime;
+
+
+    //Functions used to calculate the energy spectrum of the proton
+    std::vector<double> binnedEnergySpectrum();
+    double energySpectrum( double e );
 
   };
 
