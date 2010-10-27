@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.11 2010/08/20 14:45:09 kutschke Exp $
+// $Id: CosmicDYB.cc,v 1.12 2010/10/27 19:56:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/08/20 14:45:09 $
+// $Date: 2010/10/27 19:56:07 $
 //
 // Original author Yury Kolomensky
 //
@@ -84,7 +84,7 @@ namespace mu2e {
   , _muCosThMin( config.getDouble("cosmicDYB.muCosThMin",0.00366518) )
   , _muCosThMax( config.getDouble("cosmicDYB.muCosThMax",1.0) )
 
-    // half area to generate events (cm)
+    // half area to generate events (mm)
   , _dx( config.getDouble("cosmicDYB.dx",5000) )
   , _dz( config.getDouble("cosmicDYB.dz",5000) )
   , _y0( config.getDouble("cosmicDYB.y0",0) )

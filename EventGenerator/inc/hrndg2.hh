@@ -3,9 +3,9 @@
 //
 // Interface to the fortran subroutine hrndg2.
 //
-// $Id: hrndg2.hh,v 1.1 2010/03/15 21:27:24 kutschke Exp $
+// $Id: hrndg2.hh,v 1.2 2010/10/27 19:56:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/15 21:27:24 $
+// $Date: 2010/10/27 19:56:07 $
 //
 // Original author Rob Kutschke
 // 
@@ -13,10 +13,10 @@
 // 1) Inside hrndg2, the working space is:
 //     double work[nth][ne];
 //    In the default configuration this working space is 3.2 MB
-//    so we want it on the heap, on the stack.  The use of 
+//    so we want it on the heap, not on the stack.  The use of
 //    the vector is just an convenient way to do this.
 //    The vector must have memory allocated for nth*ne elements.
-//    
+//
 
 #include <vector>
 
