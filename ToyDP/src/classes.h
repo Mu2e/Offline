@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.13 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: classes.h,v 1.14 2010/10/28 20:43:58 genser Exp $
+// $Author: genser $
+// $Date: 2010/10/28 20:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -38,6 +38,8 @@
 #include "ToyDP/inc/G4BeamlineInfoCollection.hh"
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ToyDP/inc/CaloCrystalHitCollection.hh"
+#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
 
 //
 // Only include objects that we would like to be able to put into the event.
@@ -58,3 +60,5 @@ template class edm::Wrapper<mu2e::G4BeamlineInfo>;
 template class edm::Wrapper<mu2e::G4BeamlineInfoCollection>;
 template class edm::Wrapper<mu2e::CaloHitCollection>;
 template class edm::Wrapper<mu2e::CaloHitMCTruthCollection>;
+template class edm::Wrapper<mu2e::CaloCrystalHitCollection>;
+template class edm::Wrapper<mu2e::CaloCrystalHitMCTruthCollection>;

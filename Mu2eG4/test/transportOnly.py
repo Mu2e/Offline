@@ -1,8 +1,8 @@
 # Variant of g4test_03 but with transport only.
 #
-# $Id: transportOnly.py,v 1.9 2010/10/13 23:40:46 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/10/13 23:40:46 $
+# $Id: transportOnly.py,v 1.10 2010/10/28 20:43:58 genser Exp $
+# $Author: genser $
+# $Date: 2010/10/28 20:43:58 $
 #
 # Original author Rob Kutschke
 #
@@ -78,6 +78,16 @@ process.outfile = mu2e.OutputModule(
 
 )
 
+# Form CaloCrystalHits
+process.makeCaloCrystalHits =  mu2e.EDProducer(
+    "MakeCaloCrystalHits",
+    diagLevel = mu2e.untracked.int32(0),
+    maxFullPrint  = mu2e.untracked.int32(201),
+    g4ModuleLabel = mu2e.string("g4run"),
+    minimumEnergy = mu2e.untracked.double(0.0),
+    minimumTimeGap = mu2e.untracked.double(100.0)
+)
+
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
@@ -97,5 +107,6 @@ process.MessageLogger.categories.append("ToyHitInfo")
 process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate*process.g4run*process.randomsaver*
+process.output = mu2e.EndPath(  process.generate*process.g4run*
+                                process.randomsaver*
                                 process.checkhits*process.outfile );

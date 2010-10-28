@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.10 2010/10/02 02:29:00 genser Exp $
+// $Id: ReadBack.hh,v 1.11 2010/10/28 20:43:58 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/02 02:29:00 $
+// $Date: 2010/10/28 20:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -45,12 +45,18 @@ namespace mu2e {
 
     // Start: run time parameters
 
+    // Diagnostics printout level
+    int _diagLevel;
+
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
 
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
 
+    // Module which made the CaloCrystalHits
+    std::string _caloCrystalHitsMaker;
+ 
     // Cut on the minimum energy.
     double _minimumEnergy;
 
@@ -85,6 +91,10 @@ namespace mu2e {
     TH1F* _hEdep;
     TH1F* _hEdepMC;
     TH1F* _hNcrystal;
+
+    TH1F* _hRCEdep;
+    TH1F* _hRCTime;
+    TH1F* _hRCNCrystals;
 
     TNtuple* _ntup;
     TGraph*  _xyHits;

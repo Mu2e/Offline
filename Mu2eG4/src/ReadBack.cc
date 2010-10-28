@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.16 2010/10/09 21:17:09 genser Exp $
+// $Id: ReadBack.cc,v 1.17 2010/10/28 20:43:58 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/09 21:17:09 $
+// $Date: 2010/10/28 20:43:58 $
 //
 // Original author Rob Kutschke
 //
@@ -31,6 +31,7 @@
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -56,6 +57,7 @@ namespace mu2e {
   ReadBack::ReadBack(edm::ParameterSet const& pset) : 
 
     // Run time parameters
+    _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
     _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
     _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
@@ -81,9 +83,11 @@ namespace mu2e {
     _hEdep(0),
     _hEdepMC(0),
     _hNcrystal(0),
+    _hRCEdep(0),
+    _hRCTime(0),
+    _hRCNCrystals(0),
     _ntup(0),
     _xyHits(0),
-
 
     // Remaining member data
     _xyHitCount(0){
@@ -124,6 +128,18 @@ namespace mu2e {
     _hEdep     = tfs->make<TH1F>( "hEdep",     "Total energy deposition in calorimeter", 1200, 0., 1200. );
     _hEdepMC   = tfs->make<TH1F>( "hEdepMC",   "True energy deposition in calorimeter", 200, 0., 200. );
     _hNcrystal = tfs->make<TH1F>( "hNcrystal", "Total energy deposition in calorimeter", 50, 0., 50. );
+
+    _hRCEdep    = tfs->make<TH1F>( "hRCEdep", 
+                                  "Total energy deposition in calorimeter reconstructed from APDs", 
+                                  1200, 0., 1200. );
+
+    _hRCTime    = tfs->make<TH1F>( "hRCTime", 
+                                  "Hit time in calorimeter reconstructed from APDs", 
+                                  1200, 0., 1200. );
+
+    _hRCNCrystals = tfs->make<TH1F>( "hRCNCrystals", 
+                                    "Number of crystals reconstructed from APDs", 
+                                    50, 0., 50. );
 
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
@@ -188,6 +204,57 @@ namespace mu2e {
     _hEdep->Fill(totalEdep);
     _hEdepMC->Fill(simEdep);
     _hNcrystal->Fill(hit_crystals.size());
+
+    edm::Handle<CaloCrystalHitCollection>  caloCrystalHits;
+
+    event.getByType(caloCrystalHits);
+    if (!caloCrystalHits.isValid()) {
+      _diagLevel > 0 && cout << "Debugging ReadBack: NO CaloCrystalHits" << endl;
+      return;
+    }
+
+    totalEdep = 0;
+    simEdep = 0;
+
+    typedef multimap<int,size_t> hitCrystalsMultiMap;
+    multimap<int,size_t> hitCrystals;
+
+    _diagLevel > 0 && 
+      cout << "Debugging ReadBack: caloCrystalHits->size() " << caloCrystalHits->size() << endl;
+
+    for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
+
+      CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
+
+      totalEdep += hit.energyDep();
+      _diagLevel > 0 && cout << "Debugging ReadBack: (*caloCrystalHits)[i].crystalId(): " 
+                             << hit.crystalId() << endl;
+
+      // check if the crystal is there already (it may be ok if the timing is different)
+
+      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.crystalId());
+
+      if ( pos != hitCrystals.end() ) {
+
+        _diagLevel > 0 && 
+          cout << "Debugging ReadBack: Already saw " 
+               << (*caloCrystalHits).at(pos->second) << endl;
+        
+      }
+
+      _diagLevel > 0 && 
+          cout << "Debugging ReadBack: Inserting   " << hit << endl;
+
+      hitCrystals.insert(pair<int,size_t>(hit.crystalId(),i));
+      _hRCTime->Fill(hit.time());
+
+    }
+    
+     _diagLevel > 0 && 
+       cout << "Debugging ReadBack: hitCrystals.size()     " << hitCrystals.size() << endl;
+     
+     _hRCEdep->Fill(totalEdep);
+     _hRCNCrystals->Fill(hitCrystals.size());
 
   }
 

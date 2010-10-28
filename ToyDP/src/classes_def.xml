@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.15 2010/09/29 19:37:58 logash Exp $     -->
-<!--  $Author: logash $ -->
-<!--  $Date: 2010/09/29 19:37:58 $   -->
+<!--  $Id: classes_def.xml,v 1.16 2010/10/28 20:43:58 genser Exp $     -->
+<!--  $Author: genser $ -->
+<!--  $Date: 2010/10/28 20:43:58 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.15 $$Date: 2010/09/29 19:37:58 $"; -->
+<!--  rev="$Revision: 1.16 $$Date: 2010/10/28 20:43:58 $"; -->
 
 <!--  Only include edm::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the edm::Wrapper lines and     -->
@@ -58,8 +58,12 @@
  <class name="mu2e::G4BeamlineInfoCollection"/>
  <class name="mu2e::CaloHit"/>
  <class name="mu2e::CaloHitCollection"/>
+ <class name="mu2e::CaloCrystalHit"/>
+ <class name="mu2e::CaloCrystalHitCollection"/>
  <class name="mu2e::CaloHitMCTruth"/>
  <class name="mu2e::CaloHitMCTruthCollection"/>
+ <class name="mu2e::CaloCrystalHitMCTruth"/>
+ <class name="mu2e::CaloCrystalHitMCTruthCollection"/>
  <class name="edm::Wrapper<mu2e::ToyHitCollection>"/>
  <class name="edm::Wrapper<mu2e::ToyGenParticleCollection>"/>
  <class name="edm::Wrapper<mu2e::StepPointMCCollection>"/>
@@ -74,4 +78,6 @@
  <class name="edm::Wrapper<mu2e::G4BeamlineInfoCollection>"/>
  <class name="edm::Wrapper<mu2e::CaloHitCollection>"/>
  <class name="edm::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
+ <class name="edm::Wrapper<mu2e::CaloCrystalHitCollection>"/>
+ <class name="edm::Wrapper<mu2e::CaloCrystalHitMCTruthCollection>"/>
 </lcgdict>

@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.13 2010/10/13 23:09:31 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/10/13 23:09:31 $
+# $Id: g4test_03.py,v 1.14 2010/10/28 20:43:58 genser Exp $
+# $Author: genser $
+# $Date: 2010/10/28 20:43:58 $
 #
 # Original author Rob Kutschke
 #
@@ -93,12 +93,23 @@ process.makeSH = mu2e.EDProducer(
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
+# Form CaloCrystalHits
+process.CaloCrystalHitsMaker =  mu2e.EDProducer(
+    "MakeCaloCrystalHits",
+    diagLevel      = mu2e.untracked.int32(0),
+    maxFullPrint   = mu2e.untracked.int32(201),
+    g4ModuleLabel  = mu2e.string("g4run"),
+    minimumEnergy  = mu2e.untracked.double(0.0),
+    minimumTimeGap = mu2e.untracked.double(100.0)
+)
+
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
-    g4ModuleLabel = mu2e.string("g4run"),
-    minimumEnergy = mu2e.double(0.001),
-    maxFullPrint  = mu2e.untracked.int32(201)
+    diagLevel            = mu2e.untracked.int32(0),
+    g4ModuleLabel        = mu2e.string("g4run"),
+    minimumEnergy        = mu2e.double(0.001),
+    maxFullPrint         = mu2e.untracked.int32(201)
 )
 
 # Save state of random numbers to the event.
@@ -127,5 +138,6 @@ process.MessageLogger.categories.append("ToyHitInfo")
 process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate*process.g4run*process.makeSH*process.randomsaver*
-                                process.checkhits*process.outfile );
+process.output = mu2e.EndPath(  process.generate*process.g4run*process.makeSH*
+                                process.CaloCrystalHitsMaker*
+                                process.randomsaver*process.checkhits*process.outfile );
