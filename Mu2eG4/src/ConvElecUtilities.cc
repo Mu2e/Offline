@@ -52,6 +52,7 @@ namespace mu2e {
           //      << _genParticles->at(sim.generatorIndex())._generatorId.name() << endl;
           if (_genParticles->at(sim.generatorIndex())._generatorId.name() == "conversionGun") {
             _convTrackId = sim.id();
+            cout << i << " and " << _convTrackId << endl;
             _nconv++;
             //  cout << "conv track id is " << _convTrackId << endl;
           }
@@ -60,6 +61,13 @@ namespace mu2e {
     } else { cout << "No SimParticles in the event" << endl; }
   }
   
+  const SimParticle& ConvElecUtilities::simConvElec() {
+    return _simParticles->at(_convTrackId);
+  }
+
+  const ToyGenParticle& ConvElecUtilities::genConvElec() {
+    return _genParticles->at(_simParticles->at(_convTrackId).generatorIndex());
+  }
 
   //Loop through the hits. Identify hits made by conv electron
   //and earliest hit
