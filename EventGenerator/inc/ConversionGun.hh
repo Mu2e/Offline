@@ -7,14 +7,18 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.6 2010/10/27 16:42:56 onoratog Exp $
+// $Id: ConversionGun.hh,v 1.7 2010/10/28 20:28:24 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/10/27 16:42:56 $
+// $Date: 2010/10/28 20:28:24 $
 //
+
+// C++ includes
+#include <memory>
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // Forward references in other namespaces.
 namespace edm {
@@ -41,6 +45,9 @@ namespace mu2e {
 
     // Conversion momentum.
     double _p;
+
+    // Class object to generate position and time of the particle
+    std::auto_ptr<FoilParticleGenerator> _fGenerator;
 
     //Particle mass
     double _mass;

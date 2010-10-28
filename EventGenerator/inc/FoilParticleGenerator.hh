@@ -18,45 +18,40 @@
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-
+#include "Mu2eUtilities/inc/RandomLimitedExpo.hh"
 
 //CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Random/RandExponential.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
   class FoilParticleGenerator {
 
-    friend class ConversionGun;
-    friend class DecayInOrbitGun;
-    friend class EjectedProtonGun;
-
   public: 
     
-    FoilParticleGenerator( edm::RandomNumberGeneratorService::base_engine_t& engine );
-    
+    FoilParticleGenerator( edm::RandomNumberGeneratorService::base_engine_t& engine,
+                           double tmin, double tmax );
+
     ~FoilParticleGenerator();
 
     void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time);
 
   private:
 
-    // Random numbers generators
-    CLHEP::RandFlat     _randFlat;
-    CLHEP::RandExponential     _randTime;
-    CLHEP::RandGeneral  _randFoils;
+    // time generation range
+    double _tmin, _tmax;
 
     //number of foils
     int _nfoils;
 
-    //Spatial and temporal variables
-    double _FPGczmin, _FPGczmax, _FPGphimin, _FPGphimax, _FPGtmin, _FPGtmax;
-
-    //Range for the above
-    double _dcz, _dphi, _dt;
+    // Random numbers generators
+    CLHEP::RandFlat     _randFlat;
+    //    CLHEP::RandExponential     _randTime;
+    RandomLimitedExpo _randTime;
+    CLHEP::RandGeneral  _randFoils;
 
     //Build a binned representation of foils volume
     std::vector<double> binnedFoilsVolume();

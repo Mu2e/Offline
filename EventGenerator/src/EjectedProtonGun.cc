@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.cc,v 1.10 2010/10/27 16:42:56 onoratog Exp $ 
+// $Id: EjectedProtonGun.cc,v 1.11 2010/10/28 20:28:24 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2010/10/27 16:42:56 $
+// $Date: 2010/10/28 20:28:24 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -32,7 +32,6 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
-#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // General Utilities
 #include "GeneralUtilities/inc/pow.hh"
@@ -116,6 +115,8 @@ namespace mu2e {
       _htime         = tfdir.make<TH1D>( "htime",         "Proton time ",                      200,      0,  2000. );
     }
 
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax));
+
   }
   
   EjectedProtonGun::~EjectedProtonGun(){
@@ -129,14 +130,6 @@ namespace mu2e {
       _hMultiplicity->Fill(n); 
     }
     
-    FoilParticleGenerator fGenerator(getEngine());
-    fGenerator._FPGczmin = _czmin;
-    fGenerator._FPGczmax = _czmax;
-    fGenerator._FPGphimin = _phimin;
-    fGenerator._FPGphimax = _phimax;
-    fGenerator._FPGtmin = _tmin;
-    fGenerator._FPGtmax = _tmax;
-    
     //Loop over particles to generate
     
     for (int i=0; i<n; ++i) {
@@ -144,7 +137,7 @@ namespace mu2e {
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
-      fGenerator.generatePositionAndTime(pos, time);
+      _fGenerator->generatePositionAndTime(pos, time);
       
       //Pick up energy
       double eKine = _elow + _shape.fire() * ( _ehi - _elow );

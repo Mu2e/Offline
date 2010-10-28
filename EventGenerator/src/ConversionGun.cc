@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.15 2010/10/27 16:42:56 onoratog Exp $ 
+// $Id: ConversionGun.cc,v 1.16 2010/10/28 20:28:24 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2010/10/27 16:42:56 $
+// $Date: 2010/10/28 20:28:24 $
 //
 // Original author Rob Kutschke
 // 
@@ -19,7 +19,6 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/ConversionGun.hh"
-#include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -75,7 +74,9 @@ namespace mu2e {
 
     _tmin = config.getDouble("conversionGun.tmin",  _tmin );
     _tmax = config.getDouble("conversionGun.tmax",  _tmax );
-
+    
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax));
+    
   }
   
   ConversionGun::~ConversionGun(){
@@ -83,30 +84,17 @@ namespace mu2e {
   
   void ConversionGun::generate( ToyGenParticleCollection& genParts ){
     
-    if (!_doConvs) return;
-
     //Pick up position and momentum
     double time;
     CLHEP::Hep3Vector pos(0,0,0);
-    
-    FoilParticleGenerator fGenerator(getEngine());
-    fGenerator._FPGczmin = _czmin;
-    fGenerator._FPGczmax = _czmax;
-    fGenerator._FPGphimin = _phimin;
-    fGenerator._FPGphimax = _phimax;
-    fGenerator._FPGtmin = _tmin;
-    fGenerator._FPGtmax = _tmax;
-    fGenerator.generatePositionAndTime(pos, time);
+    _fGenerator->generatePositionAndTime(pos, time);
 
     //Pick up momentum vector
 
     CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
 
     //Pick up energy
-    double e(0);
-    e = sqrt( _p*_p + _mass*_mass );    
-
-
+    double e = sqrt( _p*_p + _mass*_mass );    
 
     //Set four-momentum
 

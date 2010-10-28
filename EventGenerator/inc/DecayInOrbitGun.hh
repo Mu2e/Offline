@@ -3,11 +3,14 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.7 2010/10/27 16:42:56 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.8 2010/10/28 20:28:24 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/10/27 16:42:56 $
+// $Date: 2010/10/28 20:28:24 $
 //
 // 
+
+// C++ includes
+#include <memory>
 
 // Framework includes
 #include "FWCore/Framework/interface/Run.h"
@@ -15,7 +18,7 @@
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-
+#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -53,6 +56,9 @@ namespace mu2e {
     double _elow;
     double _ehi;
     int    _nbins;
+
+    // Class object to generate position and time of the particle 
+    std::auto_ptr<FoilParticleGenerator> _fGenerator;
 
     // Limits on the generated direction.
     double _czmin;

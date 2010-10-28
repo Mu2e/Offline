@@ -28,27 +28,34 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
 
-//ROOT Includes
-#include "TMath.h"
-
 using namespace std;
-
 
 namespace mu2e {
 
-  FoilParticleGenerator::FoilParticleGenerator(edm::RandomNumberGeneratorService::base_engine_t& engine ):
+  FoilParticleGenerator::FoilParticleGenerator(edm::RandomNumberGeneratorService::base_engine_t& engine,
+                                               double tmin, double tmax):
+    // time generation range
+    _tmin ( tmin ),
+    _tmax ( tmax ),
+    // number of foils of the target
+    _nfoils ( GeomHandle<Target>()->nFoils() ),
     // Random number distributions; getEngine comes from the base class.
     _randFlat ( engine ) ,
     _randTime ( engine ),
     _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils )
   {
+    // Check if nfoils is bigger than 0;
+    if (_nfoils < 1) {
+      throw cms::Exception("GEOM")
+        << "no foils are present";
+    }
   }
     
-
   FoilParticleGenerator::~FoilParticleGenerator()
   {
   }
@@ -56,20 +63,8 @@ namespace mu2e {
   void FoilParticleGenerator::generatePositionAndTime(CLHEP::Hep3Vector& pos,
                                                       double& time) {
 
-    // Calculate spatial and temporal ranges
-    _dcz  = (  _FPGczmax -  _FPGczmin);
-    _dphi = ( _FPGphimax - _FPGphimin);
-    _dt   = (   _FPGtmax -   _FPGtmin);
-  
-    
     // Get access to the geometry system.
     GeomHandle<Target> target;
-    
-    // Check if nfoils is bigger than 0;
-    if (_nfoils < 1) {
-      throw cms::Exception("GEOM")
-        << "no foils are present";
-    }
     
     // Pick a foil with a probability proportional to the volumes.
     int ifoil = static_cast<int>(_nfoils*_randFoils.fire());
@@ -84,15 +79,18 @@ namespace mu2e {
     const double r   = r1 + dr*_randFlat.fire();
     const double dz  = (-1.+2.*_randFlat.fire())*foil.halfThickness();
     const double phi = CLHEP::twopi*_randFlat.fire();
-    CLHEP::Hep3Vector tpos( center.x()+r*cos(phi), 
-                             center.y()+r*sin(phi), 
-                             center.z()+dz );
-
-    pos = tpos;
-
-    // Pick up a time random from am exponential distribution. To improve
-    double ttime = _FPGtmin   +  _dt*(_randTime.fire(1/(_FPGtmax)));
-    time = ttime;
+    pos = CLHEP::Hep3Vector ( center.x()+r*cos(phi), 
+                              center.y()+r*sin(phi), 
+                              center.z()+dz );
+    
+    // Pick up a time random from am exponential distribution, with a given lifetime and in a defined range.
+    ConditionsHandle<PhysicsParams> phyPar("ignored");
+    double tau = phyPar->decayTime; 
+    if (tau < 0 || tau > 3500) { //bigger than muon decay time
+      throw cms::Exception("RANGE")
+        << "nonsense decay time of bound state"; 
+    }
+    time = (_randTime.fire(_tmin, _tmax, tau));
   }
   
   
@@ -100,13 +98,12 @@ namespace mu2e {
     
     vector<double> volumes;
     GeomHandle<Target> target;
-    _nfoils = target->nFoils();
-    for (int i=0; i< _nfoils; i++) {
+    for (int i=0; i< _nfoils; ++i) {
       TargetFoil const& foil = target->foil(i);
       double rout = foil.rOut();
       double rin = foil.rIn();
       double halfthick = foil.halfThickness();
-      double volume = CLHEP::pi*(rout-rin)*(rout-rin)*2*halfthick;
+      double volume = CLHEP::pi*(rout-rin)*(rout-rin)*2.*halfthick;
       volumes.push_back(volume);
       // cout << "Foil " << i+1 << "  volume  " << volume << endl;
     }

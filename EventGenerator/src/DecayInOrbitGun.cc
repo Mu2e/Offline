@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.12 2010/10/27 16:42:56 onoratog Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.13 2010/10/28 20:28:24 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2010/10/27 16:42:56 $
+// $Date: 2010/10/28 20:28:24 $
 //
 // Original author Rob Kutschke
 // 
@@ -34,7 +34,6 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
-#include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -133,6 +132,9 @@ namespace mu2e {
       _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 200, 0, 2000. );
     }
+
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax));
+
   }
 
   DecayInOrbitGun::~DecayInOrbitGun(){
@@ -146,14 +148,6 @@ namespace mu2e {
       _hMultiplicity->Fill(n); 
     }
     
-    FoilParticleGenerator fGenerator( getEngine() );
-    fGenerator._FPGczmin = _czmin;
-    fGenerator._FPGczmax = _czmax;
-    fGenerator._FPGphimin = _phimin;
-    fGenerator._FPGphimax = _phimax;
-    fGenerator._FPGtmin = _tmin;
-    fGenerator._FPGtmax = _tmax;
-    
     //Loop over particles to generate
     
     for (int i=0; i<n; ++i) {
@@ -161,7 +155,7 @@ namespace mu2e {
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
-      fGenerator.generatePositionAndTime(pos, time);
+      _fGenerator->generatePositionAndTime(pos, time);
       
       //Pick up energy
       double e  = _elow + _shape.fire() * (_ehi - _elow);
