@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.cc,v 1.6 2010/08/31 21:50:37 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/31 21:50:37 $
+// $Id: ConditionsService.cc,v 1.7 2010/10/28 20:34:12 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2010/10/28 20:34:12 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,7 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
 
 using namespace std;
 
@@ -77,7 +78,7 @@ namespace mu2e {
     addEntity( std::auto_ptr<ParticleDataTable>( new ParticleDataTable(_config)) );
     addEntity( std::auto_ptr<AcceleratorParams>( new AcceleratorParams(_config)) );
     addEntity( std::auto_ptr<DAQParams>        ( new DAQParams        (_config)) );
-    
+    addEntity( std::auto_ptr<PhysicsParams>    ( new PhysicsParams    (_config)) );
   }
 
   // Check that the configuration is self consistent.
