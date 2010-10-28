@@ -47,13 +47,11 @@ namespace mu2e {
     size_t hasStepPointMC() const;
     StepPointMC const& firstHit();
     StrawIndex earliestStrawIndex() const;
-
-    //    CLHEP::Hep3Vector getStartingPosition();
-    // CLHEP::Hep3Vector getStartingMomentum();
-  
+    const SimParticle& simConvElec();
+    const ToyGenParticle& genConvElec();
 
   private:
-
+    
     void checkConvElec(const edm::Event & event);
     void lookAtHits(const edm::Event & event);
     int _nconv;
@@ -65,7 +63,6 @@ namespace mu2e {
     std::string _g4ModuleLabel, _trackerStepPoints;
     uint32_t _convTrackId;
     size_t _earliestidx;
-    //    StrawIndex _earliestStrawIndex(0);
 
   }; //end of class ConvElecUtilities
 
