@@ -2,9 +2,9 @@
 // Geometry description of the MECO version of the TTracker.
 // See:  Mu2e-doc-726 ( originally MECO-TRK-05-001 )
 //
-// $Id: ttracker_meco.txt,v 1.1 2010/08/12 22:49:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/12 22:49:40 $
+// $Id: ttracker_meco.txt,v 1.2 2010/10/29 01:25:37 genser Exp $
+// $Author: genser $
+// $Date: 2010/10/29 01:25:37 $
 //
 // Original author Rob Kutschke
 //
@@ -26,20 +26,28 @@ double ttracker.z0                   = 10200.0;
 double ttracker.envelopeInnerRadius  =   380.0;
 double ttracker.strawOuterRadius     =     2.5;
 double ttracker.strawWallThickness   =     0.015;
-double ttracker.deviceSeparation     =    57.;
-double ttracker.deviceSpacing        =    49.;
+double ttracker.strawGap             =     0.0;
+double ttracker.deviceSpacing        =    57.;
+double ttracker.deviceHalfSeparation =    49.;
 double ttracker.deviceRotation       =    60.;
 double ttracker.outerSupportRadius   =   830.0;
 double ttracker.innerSupportRadius   =   700.0;
 double ttracker.supportHalfThickness =    10.0;
 double ttracker.wireRadius           =     0.0125;
 double ttracker.manifoldYOffset      =    10.;
+
+
 bool   ttracker.envelopeVisible      =  true;
-//bool   ttracker.envelopeSolid      =  true;
+bool   ttracker.envelopeSolid        =  false;
+
 bool   ttracker.deviceEnvelopeVisible = true;
-//bool   ttracker.deviceEnvelopeSolid = true;
+bool   ttracker.deviceEnvelopeSolid   = false;
+
+bool   ttracker.sectorEnvelopeVisible = true;
+bool   ttracker.sectorEnvelopeSolid   = false;
+
 bool   ttracker.strawVisible         =  false;
-//bool   ttracker.strawSolid         =  true;
+bool   ttracker.strawSolid           =  false;
 
 vector<double> ttracker.manifoldHalfLengths  = { 40.0, 35.0, 5.25};
 vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGas", "G4_W" };
