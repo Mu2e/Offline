@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.12 2010/09/29 22:59:09 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/29 22:59:09 $
+// $Id: PiCapture.cc,v 1.13 2010/11/01 16:55:31 onoratog Exp $
+// $Author: onoratog $ 
+// $Date: 2010/11/01 16:55:31 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -22,12 +22,9 @@
 #include "EventGenerator/inc/PiCapture.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
-//#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TargetGeom/inc/Target.hh"
 
 // CLHEP includes
-#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoisson.h"
 
 // ROOT includes
@@ -55,9 +52,7 @@ namespace mu2e {
     _doHistograms(config.getBool("picapture.doHistograms",true)),
 
     // Random number distributions; getEngine is found in the base class.
-    _randFlat( getEngine() ),
     _randPoissonQ( getEngine(), std::abs(_mean) ),
-    _randExponential( getEngine(), 1.),
     _randomUnitSphere( getEngine() ),
     _spectrum( getEngine(), &(binnedEnergySpectrum()[0]),_nbins),
 
@@ -101,15 +96,17 @@ namespace mu2e {
       _hFoilNumber = tfdir.make<TH1D>( "hFoilNumber", "Foil Number", 20,0.,20.);
 
     }
-     //
+     // UNUSED CODE. 
       // set up exponential RNG for foils.  this code is a complete hack which is why I'm not dignifying it
     // by putting something in the config file.
 
-    foilMean = 1./0.693;
+    //    foilMean = 1./0.693;
 
     //
     // 24.5 is from Rick Coleman telling me the stopped pi's fall a factor of two over the 17 foils  
 
+    _fGenerator = auto_ptr<FoilParticleGenerator>( new FoilParticleGenerator(getEngine(), 0 ,tcycle));
+    
   } // end PiCapture::PiCapture
 
   PiCapture::~PiCapture(){
@@ -123,42 +120,18 @@ namespace mu2e {
       _hMultiplicity->Fill(n); 
     }
 
-    // Get access to the geometry system.
-    GeomHandle<Target> target;
-    nFoils = target->nFoils();
-
     for ( long i=0; i<n; ++i ){
 
-      // Pick a foil.  Exponentials can go past the number of foils, so have to do a trick (and recall foils numbered
-      // 0--16 so do while <17
-      //int ifoil = static_cast<int>(nFoils*_randFlat.fire());
-      int ifoil;
-      do{
-        ifoil = static_cast<int>(nFoils*_randExponential.fire());
-      }while(ifoil > nFoils-1);
-      //cout << "ifoil = " << ifoil << endl;
-      _hFoilNumber->Fill(static_cast<double>(ifoil));
-      TargetFoil const& foil = target->foil(ifoil);
+      //Pick up position and momentum
+      CLHEP::Hep3Vector pos(0,0,0);
+      double time;
+      bool foilRndExpo = true;
+      _fGenerator->generatePositionAndTime(pos, time, foilRndExpo );
 
-      // Foil properties.
-      CLHEP::Hep3Vector const& center = foil.center();
-      const double r1 = foil.rIn();
-      const double dr = foil.rOut() - r1;
-
-      // A random point within the foil.
-      const double r   = r1 + dr*_randFlat.fire();
-      const double dz  = 2.*(0.5-_randFlat.fire())*foil.halfThickness();
-      const double phi = 2.*M_PI*_randFlat.fire();
-      CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
-                             center.y()+r*sin(phi), 
-                             center.z()+dz );
+      _hFoilNumber->Fill(static_cast<double>(_fGenerator->iFoil()));
 
       // Pick a random photon energy from the spectrum.
       const double e = _elow + _spectrum.fire() * ( _ehi - _elow );
-
-      // This should reflect the model of the tails of the beam
-      // and the out-of-time protons.
-      const double time = 1694*_randFlat.fire();
 
       // Make the 4 vector.
       CLHEP::HepLorentzVector mom( _randomUnitSphere.fire(e), e);

@@ -37,7 +37,9 @@ namespace mu2e {
 
     ~FoilParticleGenerator();
 
-    void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time);
+    void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time, bool foilRndExpo = false);
+
+    int iFoil();
 
   private:
 
@@ -47,14 +49,18 @@ namespace mu2e {
     //number of foils
     int _nfoils;
 
+    //extracted foil.
+    int _ifoil;
+
     // Random numbers generators
     CLHEP::RandFlat     _randFlat;
-    //    CLHEP::RandExponential     _randTime;
-    RandomLimitedExpo _randTime;
+    RandomLimitedExpo   _randTime;
     CLHEP::RandGeneral  _randFoils;
+    CLHEP::RandGeneral  _randExpoFoils;
 
     //Build a binned representation of foils volume
     std::vector<double> binnedFoilsVolume();
+    std::vector<double> weightedBinnedFoilsVolume();
 
 
   };

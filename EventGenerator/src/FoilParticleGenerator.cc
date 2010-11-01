@@ -36,7 +36,7 @@
 using namespace std;
 
 namespace mu2e {
-
+  
   FoilParticleGenerator::FoilParticleGenerator(edm::RandomNumberGeneratorService::base_engine_t& engine,
                                                double tmin, double tmax):
     // time generation range
@@ -46,8 +46,9 @@ namespace mu2e {
     _nfoils ( GeomHandle<Target>()->nFoils() ),
     // Random number distributions; getEngine comes from the base class.
     _randFlat ( engine ) ,
-    _randTime ( engine ),
-    _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils )
+    _randTime( engine ),
+    _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils ),
+    _randExpoFoils ( engine, &(weightedBinnedFoilsVolume()[0]), _nfoils )
   {
     // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {
@@ -55,20 +56,25 @@ namespace mu2e {
         << "no foils are present";
     }
   }
-    
+  
   FoilParticleGenerator::~FoilParticleGenerator()
   {
   }
 
   void FoilParticleGenerator::generatePositionAndTime(CLHEP::Hep3Vector& pos,
-                                                      double& time) {
+                                                      double& time, bool foilRndExpo) {
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
     
     // Pick a foil with a probability proportional to the volumes.
-    int ifoil = static_cast<int>(_nfoils*_randFoils.fire());
-    TargetFoil const& foil = target->foil(ifoil);
+    if (foilRndExpo) {
+      _ifoil = static_cast<int>(_nfoils*_randExpoFoils.fire());
+    } else {
+      _ifoil = static_cast<int>(_nfoils*_randFoils.fire());
+    }
+
+    TargetFoil const& foil = target->foil(_ifoil);
     
     // Foil properties.
     CLHEP::Hep3Vector const& center = foil.center();
@@ -93,6 +99,10 @@ namespace mu2e {
     time = (_randTime.fire(_tmin, _tmax, tau));
   }
   
+
+  int FoilParticleGenerator::iFoil() {
+    return _ifoil;
+  }
   
   vector<double> FoilParticleGenerator::binnedFoilsVolume() {
     
@@ -110,4 +120,36 @@ namespace mu2e {
     return volumes;
   } //FoilParticleGenerator::binnedFoilsVolume() 
   
+  
+  //For Pi Capture production: the previous code used a randexponential to describe
+  // the generation in foils. Lambda of the distribution was 1. Since the dist
+  // output goes over 1, it was forced to regenerate the rnd number if bigger than 1.
+  //Now I include thisproduction in the "foil volume weighted" frame.
+  //The 0-1 output of the exponential generation is divided in (_nfoils) bins.
+  //The integral of the exponential between i/_nfoils and (i+1)/_nfoils, divided for
+  //the x-axis step of the integral (1/_nfoils), is the mean value of the exponential
+  //function in the bin corresponding to a foil. I use this value as a weight for
+  //the foil volume associated to the bin. 
+  //Procedure surely to refine.
+  
+  vector<double> FoilParticleGenerator::weightedBinnedFoilsVolume() {
+    
+    vector<double> volumes = binnedFoilsVolume();
+    if (volumes.size()!= (size_t) _nfoils) {
+      throw cms::Exception("GEOM")
+        << "something wrong in number of foils";
+    }
+    double step = 1./_nfoils;
+    for (int i=0; i< _nfoils; ++i) {
+      cout << volumes[i] << '\t';
+      double weight = (exp(-(step*i))*(1-(exp(-step))))/step;
+      cout << weight << '\t';
+      volumes[i] = volumes[i]*weight;
+      cout << volumes[i] << endl;
+    }
+    return volumes;
+  } //FoilParticleGenerator::weightedBinnedFoilsVolume() 
+  
 }
+
+

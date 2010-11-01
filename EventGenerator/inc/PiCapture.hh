@@ -5,16 +5,20 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
-// $Id: PiCapture.hh,v 1.8 2010/09/29 22:59:59 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/29 22:59:59 $
+// $Id: PiCapture.hh,v 1.9 2010/11/01 16:55:31 onoratog Exp $
+// $Author: onoratog $ 
+// $Date: 2010/11/01 16:55:31 $
 //
 // Original author Rob Kutschke, P. Shanahan
 // 
 
+//C++ includes
+#include<memory>
+
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
@@ -53,17 +57,16 @@ namespace mu2e {
 
     // End: parameters from run time configuration/
 
+
+
+    //Class object to pick up random position and time
+    std::auto_ptr<FoilParticleGenerator> _fGenerator;
+
+
     // Random number distributions
-    CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
-    CLHEP::RandExponential _randExponential;
     RandomUnitSphere    _randomUnitSphere;
     CLHEP::RandGeneral  _spectrum;
-
-    //
-    // for exponential foil dropoff
-    int nFoils;
-    double foilMean;
 
     // Histograms.
     TH1D* _hMultiplicity;
