@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.9 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/29 19:37:58 $
+// $Id: GeometryService.cc,v 1.10 2010/11/02 19:23:27 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/11/02 19:23:27 $
 //
 // Original author Rob Kutschke
 //
@@ -86,8 +86,10 @@ namespace mu2e {
     checkConfig();
 
     // Make a detector for every component present in the configuration.
-    BeamlineMaker beamlinem( *_config );
-    addDetector( beamlinem.getBeamlinePtr() );
+    if(_config->getBool("hasBeamline",false)){
+      BeamlineMaker beamlinem( *_config );
+      addDetector( beamlinem.getBeamlinePtr() );
+    }
 
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );
@@ -119,8 +121,10 @@ namespace mu2e {
       addDetector( bfmgr.getBFieldManager() );
     }
 
-    VirtualDetectorMaker vdm( *_config );
-    addDetector( vdm.getVirtualDetectorPtr() );
+    if(_config->getBool("hasVirtualDetector",false)){
+      VirtualDetectorMaker vdm( *_config );
+      addDetector( vdm.getVirtualDetectorPtr() );
+    }
 
   }
 
