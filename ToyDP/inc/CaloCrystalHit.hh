@@ -1,9 +1,9 @@
 #ifndef CaloCrystalHit_H
 #define CaloCrystalHit_H
 
-// $Id: CaloCrystalHit.hh,v 1.1 2010/10/28 20:43:58 genser Exp $
+// $Id: CaloCrystalHit.hh,v 1.2 2010/11/02 03:19:33 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/28 20:43:58 $
+// $Date: 2010/11/02 03:19:33 $
 //
 // Original author KLG
 
@@ -20,7 +20,7 @@ namespace mu2e {
 
   class CaloHit;
 
-  struct CaloCrystalHit{
+  class CaloCrystalHit{
 
   public:
 
@@ -28,6 +28,7 @@ namespace mu2e {
       _crystalId(-1),
       _time(0.),
       _energyDep(0.), 
+      _energyDepTotal(0.), 
       _numberOfROIdsUsed(0)
     {}
 
@@ -35,9 +36,10 @@ namespace mu2e {
 
     // Accessors
 
-    int              crystalId() const { return _crystalId; }
+    int              Id() const { return _crystalId; }
     float            time()      const { return _time;      }
     float            energyDep() const { return _energyDep; }
+    float            energyDepTotal() const { return _energyDepTotal; }
     int              numberOfROIdsUsed() const { return _numberOfROIdsUsed; }
     std::vector<DPIndex> const & roIds() const { return _roIds; }
 
@@ -48,6 +50,8 @@ namespace mu2e {
 
     // almost operator += CaloHit
     CaloCrystalHit& add(edm::ProductID const & caloHitCollId, CaloHit const & hit);
+
+    CaloCrystalHit& addEnergyToTot(edm::ProductID const & caloHitCollId, CaloHit const & hit);
 
     // almost like one of the constructors, plays a role of a two
     // argument assignment operator
@@ -60,6 +64,7 @@ namespace mu2e {
     int              _crystalId;
     float            _time;               // (ns)
     float            _energyDep;          // (MeV)
+    float            _energyDepTotal;     // (MeV)
     int              _numberOfROIdsUsed;  // roIds used to calculate _energyDep
     std::vector<DPIndex> _roIds;
 

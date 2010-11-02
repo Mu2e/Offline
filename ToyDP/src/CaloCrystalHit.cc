@@ -1,9 +1,9 @@
 // 
 // CaloCrystalHit to be created based on CaloHit's 
 //
-// $Id: CaloCrystalHit.cc,v 1.1 2010/10/28 20:43:58 genser Exp $
+// $Id: CaloCrystalHit.cc,v 1.2 2010/11/02 03:19:50 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/28 20:43:58 $
+// $Date: 2010/11/02 03:19:50 $
 //
 
 // C++ includes
@@ -26,6 +26,7 @@ namespace mu2e {
     _crystalId(crystalId),
     _time(hit.time()),
     _energyDep(hit.energyDep()),
+    _energyDepTotal(hit.energyDep()),
     _numberOfROIdsUsed(1)
   {
     _roIds.push_back(DPIndex(caloHitCollId,hit.roId()));
@@ -35,7 +36,13 @@ namespace mu2e {
   CaloCrystalHit& CaloCrystalHit::add(edm::ProductID const & caloHitCollId, CaloHit const & hit) {
     _roIds.push_back(DPIndex(caloHitCollId,hit.roId()));
     _energyDep += hit.energyDep();
+    _energyDepTotal += hit.energyDep();
     ++_numberOfROIdsUsed;
+    return *this;
+  }
+
+  CaloCrystalHit& CaloCrystalHit::addEnergyToTot(edm::ProductID const & caloHitCollId, CaloHit const & hit) {
+    _energyDepTotal += hit.energyDep();
     return *this;
   }
 
@@ -45,6 +52,7 @@ namespace mu2e {
     _crystalId = crystalId;
     _time = hit.time();
     _energyDep = hit.energyDep();
+    _energyDepTotal = hit.energyDep();
     _roIds.clear();
     _roIds.push_back(DPIndex(caloHitCollId,hit.roId()));
     _numberOfROIdsUsed = 1;
@@ -54,10 +62,11 @@ namespace mu2e {
   // Print the information found in this hit.
   void CaloCrystalHit::print( ostream& ost, bool doEndl ) const {
 
-    ost << "Calorimeter Crystal Hit:"
+    ost << "Calorimeter Crystal Hit:   "
         << " crystal id: "  << _crystalId
         << " time "         << _time
-        << " energy dep: "  << _energyDep
+        << " energyDep: "  << _energyDep
+        << " energyDepT: "  << _energyDepTotal
         << " used roids: "  << _numberOfROIdsUsed
         << " crystal roids:";
     for (size_t i=0; i!=_roIds.size(); ++i) {
