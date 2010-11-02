@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_plugin.cc,v 1.1 2010/10/28 20:43:58 genser Exp $
+// $Id: MakeCaloCrystalHits_plugin.cc,v 1.2 2010/11/02 03:17:46 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/28 20:43:58 $
+// $Date: 2010/11/02 03:17:46 $
 //
 // Original author KLG
 //
@@ -37,7 +37,7 @@
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
-//#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
 
 
 using namespace std;
@@ -47,11 +47,12 @@ namespace mu2e {
 
   // utility functor to sort hits by time
 
-  class lessByIdAndTimeCaloHits {
+  template <typename CaloHitT>
+  class lessByIdAndTime {
 
   public:
     
-    bool operator() (const CaloHit& a, const CaloHit& b) const {
+    bool operator() (const CaloHitT& a, const CaloHitT& b) const {
       return (a.roId() < b.roId() ||
               (a.roId() == b.roId() &&
                a.time() < b.time() 
@@ -77,13 +78,18 @@ namespace mu2e {
     {
       // Tell the framework what we make.
       produces<CaloCrystalHitCollection>();
-      //      produces<CaloCrystalHitMCTruthCollection>();
+      produces<CaloCrystalHitMCTruthCollection>();
     }
     virtual ~MakeCaloCrystalHits() { }
 
     virtual void beginJob(edm::EventSetup const&);
  
     void produce( edm::Event& e, edm::EventSetup const&);
+
+    template<typename InpHitsColT, typename OutHitsColT> 
+    void MakeCaloCrystalHits::produceCaloCrystalHits(edm::Event& event,
+                                                     edm::Handle<InpHitsColT> & caloHits,
+                                                     auto_ptr<OutHitsColT> caloCrystalHits);
 
   private:
     
@@ -110,28 +116,47 @@ namespace mu2e {
 
   void MakeCaloCrystalHits::produce(edm::Event& event, edm::EventSetup const&) {
 
-    if ( _diagLevel > 0 ) cout << "MakeCaloCrystalHits: produce() begin" << endl;
+    // Source of the info
+    edm::Handle<CaloHitCollection> caloHits;
+    // A container to hold the output hits.
+    auto_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
+    // we are transferring the ownership, so we will not use the pointer afterwards
+    produceCaloCrystalHits<CaloHitCollection,CaloCrystalHitCollection>(event, caloHits, caloCrystalHits);
+
+    // same for MCTruth
+
+    // Source of the info
+    edm::Handle<CaloHitMCTruthCollection> caloHitsMCTruth;
+    // A container to hold the output hits.
+    auto_ptr<CaloCrystalHitMCTruthCollection> 
+      caloCrystalHitsMCTruth(new CaloCrystalHitMCTruthCollection);
+    // we are transferring the ownership, so we will not use the pointer afterwards
+    produceCaloCrystalHits<CaloHitMCTruthCollection,CaloCrystalHitMCTruthCollection>
+      (event, caloHitsMCTruth, caloCrystalHitsMCTruth);
+
+  }
+
+  template<typename InpHitsColT, typename OutHitsColT> 
+  void MakeCaloCrystalHits::produceCaloCrystalHits(edm::Event& event,
+                                                   edm::Handle<InpHitsColT> & caloHits,
+                                                   auto_ptr<OutHitsColT> caloCrystalHits) {    
+
+    if ( _diagLevel > 0 ) cout << __func__ << ": begin" << endl;
       
     static int ncalls(0);
     ++ncalls;
 
-    // Get handles to calorimeter (RO aka APD) collections
-    edm::Handle<CaloHitCollection>        caloHits;
-    //    edm::Handle<CaloHitMCTruthCollection> caloHitsMCTruth;
+    // Get handles to calorimeter (RO aka APD) collection
+
     event.getByType(caloHits);
-    //    event.getByType(caloMC);
-    //    bool haveCalo = ( caloHits.isValid() && caloMC.isValid() );
     bool haveCalo = caloHits.isValid();
 
-    if ( _diagLevel > -1 && !haveCalo) cout << "MakeCaloCrystalHits: No CaloHits" << endl;
+    if ( _diagLevel > -1 && !haveCalo) cout << __func__ << ": No CaloHits" << endl;
 
     if( !haveCalo) return;
 
-    // A container to hold the output hits.
-    auto_ptr<CaloCrystalHitCollection>        caloCrystalHits(new CaloCrystalHitCollection);
-
     if (caloHits->size()<=0) {
-      if ( _diagLevel > 0 ) cout << "MakeCaloCrystalHits: 0 CaloHits" << endl;
+      if ( _diagLevel > 0 ) cout << __func__ << ": 0 CaloHits" << endl;
       // Add the empty hit collection to the event
       event.put(caloCrystalHits);
       return;
@@ -148,10 +173,10 @@ namespace mu2e {
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
       _diagLevel > 0 && 
-        cout << "MakeCaloCrystalHits: Total number of hit RO = " << caloHits->size() << endl;
+        cout << __func__ << ": Total number of hit RO = " << caloHits->size() << endl;
       for( size_t i=0; i<caloHits->size(); ++i ) {
         _diagLevel > 0 && 
-          cout << "MakeCaloCrystalHits: " << (*caloHits)[i]
+          cout << __func__ << ": " << (*caloHits)[i]
                << " CrystalId: " << cg->getCrystalByRO((*caloHits)[i].roId()) << endl;
       }
     }
@@ -159,78 +184,79 @@ namespace mu2e {
     // hits should be organized by crystal
     // should they be also separated by time?
 
-    //    auto_ptr<CaloCrystalHitMCTruthCollection> truthHits(new CaloCrystalHitMCTruthCollection);
-
     // Product Id of the input points.
     edm::ProductID const& caloHitCollId(caloHits.id());
     //mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
 
-    // Instatiate caloHitsTO from caloHits which is const, we may do it with pointers to hits later instead
-    CaloHitCollection caloHitsTO(*caloHits);
+    // Instatiate caloHitsSorted from caloHits which is const, 
+    //  we may do it with pointers to hits later instead
+    InpHitsColT caloHitsSorted(*caloHits);
 
     // Sort them by id & time
-    sort(caloHitsTO.begin(), caloHitsTO.end(), lessByIdAndTimeCaloHits() );
+    sort(caloHitsSorted.begin(), caloHitsSorted.end(), 
+         lessByIdAndTime<typename InpHitsColT::value_type>() );
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-      cout << "MakeCaloCrystalHits: Total number of hit RO TO = " << caloHitsTO.size() << endl;
-      for(CaloHitCollection::const_iterator i = caloHitsTO.begin(); i != caloHitsTO.end(); ++i) {
-        //      for( size_t i=0; i<caloHitsTO.size(); ++i ) {
-        cout << "MakeCaloCrystalHits: ";
+      cout << __func__ << ": Total number of hit RO Sorted = " << caloHitsSorted.size() << endl;
+      for(typename InpHitsColT::const_iterator i = caloHitsSorted.begin(); 
+          i != caloHitsSorted.end(); ++i) {
+        //      for( size_t i=0; i<caloHitsSorted.size(); ++i ) {
+        cout << __func__ << ": ";
         i->print(cout,false);
         cout << " CrystalId: " << cg->getCrystalByRO(i->roId()) << endl;
       }
     }
 
     // generate the CaloCrystalHits
-    // collect same time/crystal id hits
+    // collect same crystal id/time hits
 
-    CaloHit const & hit0 = caloHitsTO[0];
-    _diagLevel > 0 && cout << "MakeCaloCrystalHits: Original APD hit:  " << hit0 <<endl;
+    typename InpHitsColT::value_type const & hit0 = caloHitsSorted[0];
+    _diagLevel > 0 && cout << __func__ << ": Original APD hit:  " << hit0 <<endl;
 
-    CaloCrystalHit caloCrystalHit(cg->getCrystalByRO(hit0.roId()), caloHitCollId, hit0);
+    typename OutHitsColT::value_type caloCrystalHit(cg->getCrystalByRO(hit0.roId()), caloHitCollId, hit0);
     
-    _diagLevel > 0 && cout << "MakeCaloCrystalHits: As in CaloCrystalHit: "
+    _diagLevel > 0 && cout << __func__ << ": As in CaloCrystalHit: "
                            << caloCrystalHit << endl;
 
-    for( size_t i=1; i<caloHitsTO.size(); ++i) {
+    for( size_t i=1; i<caloHitsSorted.size(); ++i) {
       
-      CaloHit const & hit = caloHitsTO.at(i);
+      typename InpHitsColT::value_type const & hit = caloHitsSorted.at(i);
 
-      _diagLevel > 0 && cout << "MakeCaloCrystalHits: Original APD hit: " << hit << endl;
+      _diagLevel > 0 && cout << __func__ << ": Original APD hit: " << hit << endl;
       
       int cid = cg->getCrystalByRO(hit.roId());
 
       _diagLevel > 0 && 
-        cout << "MakeCaloCrystalHits: old, new cid:  " << caloCrystalHit.crystalId() << ", " << cid << endl;
+        cout << __func__ << ": old, new cid:  " << caloCrystalHit.Id() << ", " << cid << endl;
       _diagLevel > 0 && 
-        cout << "MakeCaloCrystalHits: old, new time: " << caloCrystalHit.time() << ", " << hit.time() << endl;
+        cout << __func__ << ": old, new time: " << caloCrystalHit.time() << ", " << hit.time() << endl;
 
       _diagLevel > 0 && 
-        cout << "MakeCaloCrystalHits: time difference, gap: " 
+        cout << __func__ << ": time difference, gap: " 
              << (hit.time() - caloCrystalHit.time()) << ", "
              << _minimumTimeGap << endl;
 
-      if (caloCrystalHit.crystalId() == cid && 
+      if (caloCrystalHit.Id() == cid && 
           (( hit.time() - caloCrystalHit.time()) < _minimumTimeGap) ) {
 
         caloCrystalHit.add(caloHitCollId, hit);
-        _diagLevel > 0 && cout << "MakeCaloCrystalHits: Added to the hit:  " << caloCrystalHit << endl;
+        _diagLevel > 0 && cout << __func__ << ": Added to the hit:  " << caloCrystalHit << endl;
 
       } else {
 
-        _diagLevel > 0 && cout << "MakeCaloCrystalHits: Inserting old hit: " << caloCrystalHit << endl;
+        _diagLevel > 0 && cout << __func__ << ": Inserting old hit: " << caloCrystalHit << endl;
 
         (*caloCrystalHits).push_back(caloCrystalHit);
         // this resets the caloCrystalHit and sets its id and puts one hit in
         caloCrystalHit.assign(cid, caloHitCollId, hit);
-        _diagLevel > 0 && cout << "MakeCaloCrystalHits: Created new hit:   " << caloCrystalHit << endl;
+        _diagLevel > 0 && cout << __func__ << ": Created new hit:   " << caloCrystalHit << endl;
 
       }
 
     }
 
     if (_diagLevel > 1) {
-      cout << "MakeCaloCrystalHits: roIds of last old hit:";
+      cout << __func__ << ": roIds of last old hit:";
       cout << " size: " << caloCrystalHit.roIds().size();
       for( size_t i=0; i<caloCrystalHit.roIds().size(); ++i) {
         cout  << " " << i << ": " << caloCrystalHit.roIds()[i];
@@ -238,18 +264,18 @@ namespace mu2e {
       cout << endl;
     }
 
-    _diagLevel > 0 && cout << "MakeCaloCrystalHits: Inserting last old hit: " << caloCrystalHit << endl;
+    _diagLevel > 0 && cout << __func__ << ": Inserting last old hit: " << caloCrystalHit << endl;
 
     (*caloCrystalHits).push_back(caloCrystalHit);
   
-    if ( _diagLevel > 0 ) cout << "MakeCaloCrystalHits: (*caloCrystalHits).size() " 
+    if ( _diagLevel > 0 ) cout << __func__ << ": (*caloCrystalHits).size() " 
                                << (*caloCrystalHits).size() << endl;
 
     // Add the output hit collection to the event (invalidates caloCrystalHits handle)
     event.put(caloCrystalHits);
 
-    if ( _diagLevel > 0 ) cout << "MakeCaloCrystalHits: ncalls " << ncalls << endl;
-    if ( _diagLevel > 0 ) cout << "MakeCaloCrystalHits: produce() end" << endl;
+    if ( _diagLevel > 0 ) cout << __func__ << ": ncalls " << ncalls << endl;
+    if ( _diagLevel > 0 ) cout << __func__ << ": produce() end" << endl;
     return;
 
   } // end of ::analyze.
