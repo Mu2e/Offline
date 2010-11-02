@@ -3,9 +3,24 @@
 
            Release notes for Mu2e Offline software, v0_2_7
 
-  $Id: v0_2_7.txt,v 1.6 2010/10/29 01:28:07 genser Exp $
+  $Id: v0_2_7.txt,v 1.7 2010/11/02 03:41:39 genser Exp $
   $Author: genser $
-  $Date: 2010/10/29 01:28:07 $
+  $Date: 2010/11/02 03:41:39 $
+
+7) November 1, 2010 genser
+
+     added CaloCrystalHitMCTruthCollection, used templates for CaloCrystalHits etc...
+     added printout of CaloHits etc..., , used __func__ in printouts
+        HitMakers/src/MakeCaloCrystalHits_plugin.cc
+        Mu2eG4/src/ReadBack.cc
+        Mu2eG4/src/ReadBack.hh
+        ToyDP/inc/CaloCrystalHit.hh
+        ToyDP/inc/CaloCrystalHitMCTruth.hh
+        ToyDP/inc/CaloHitMCTruth.hh
+        ToyDP/src/CaloCrystalHit.cc
+        ToyDP/src/CaloCrystalHitMCTruth.cc
+        ToyDP/src/CaloHit.cc
+        ToyDP/src/CaloHitMCTruth.cc
 
 6) October 28, 2010 genser
      made 
@@ -15,6 +30,7 @@
 5) October 28, 2010 genser
 
      Initial version of CaloCrystalHit maker:
+        HitMakers/src/MakeCaloCrystalHits_plugin.cc
         ToyDP/inc/CaloCrystalHit.hh
         ToyDP/inc/CaloCrystalHitCollection.hh
         ToyDP/inc/CaloCrystalHitMCTruth.hh
