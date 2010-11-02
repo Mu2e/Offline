@@ -1,6 +1,12 @@
 #ifndef CaloHitMCTruth_H
 #define CaloHitMCTruth_H
 
+// $Id: CaloHitMCTruth.hh,v 1.2 2010/11/02 03:27:55 genser Exp $
+// $Author: genser $
+// $Date: 2010/11/02 03:27:55 $
+//
+// Original author Ivan Logashenko
+
 // C++ includes
 #include <iostream>
 #include <vector>
@@ -31,10 +37,11 @@ namespace mu2e {
     }
 
     // Accessors
-    int  roId() const { return _roId; }
-    float      time()       const { return _time;}
-    float      energyDep()  const { return _energyDep; }
-    bool   isCharged() const { return _charged>0; }
+    int   roId()      const { return _roId; }
+    float time()      const { return _time;}
+    float energyDep() const { return _energyDep; }
+    bool  isCharged() const { return _charged>0; }
+    int   charge()    const { return _charged; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
     
