@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.17 2010/10/28 20:43:58 genser Exp $
+// $Id: ReadBack.cc,v 1.18 2010/11/02 03:18:26 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/28 20:43:58 $
+// $Date: 2010/11/02 03:18:26 $
 //
 // Original author Rob Kutschke
 //
@@ -32,6 +32,7 @@
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
+#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -86,6 +87,9 @@ namespace mu2e {
     _hRCEdep(0),
     _hRCTime(0),
     _hRCNCrystals(0),
+    _hRCEdepMC(0),
+    _hRCTimeMC(0),
+    _hRCNCrystalsMC(0),
     _ntup(0),
     _xyHits(0),
 
@@ -129,6 +133,7 @@ namespace mu2e {
     _hEdepMC   = tfs->make<TH1F>( "hEdepMC",   "True energy deposition in calorimeter", 200, 0., 200. );
     _hNcrystal = tfs->make<TH1F>( "hNcrystal", "Total energy deposition in calorimeter", 50, 0., 50. );
 
+
     _hRCEdep    = tfs->make<TH1F>( "hRCEdep", 
                                   "Total energy deposition in calorimeter reconstructed from APDs", 
                                   1200, 0., 1200. );
@@ -139,6 +144,18 @@ namespace mu2e {
 
     _hRCNCrystals = tfs->make<TH1F>( "hRCNCrystals", 
                                     "Number of crystals reconstructed from APDs", 
+                                    50, 0., 50. );
+
+    _hRCEdepMC  = tfs->make<TH1F>( "hRCEdepMC", 
+                                  "Total energy deposition in calorimeter reconstructed from APDs MC", 
+                                  1200, 0., 1200. );
+
+    _hRCTimeMC  = tfs->make<TH1F>( "hRCTimeMC", 
+                                  "Hit time in calorimeter reconstructed from APDs MC", 
+                                  1200, 0., 1200. );
+
+    _hRCNCrystalsMC = tfs->make<TH1F>( "hRCNCrystalsMC", 
+                                    "Number of crystals reconstructed from APDs MC", 
                                     50, 0., 50. );
 
     // Create an ntuple.
@@ -205,11 +222,28 @@ namespace mu2e {
     _hEdepMC->Fill(simEdep);
     _hNcrystal->Fill(hit_crystals.size());
 
+
+    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+      for ( size_t i=0; i<caloHits->size(); ++i ) {
+        CaloHit const & hit = (*caloHits).at(i);
+        cout << "Readback: " << hit << endl;
+      }
+    }
+
+    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+      for ( size_t i=0; i<caloMC->size(); ++i ) {
+        CaloHitMCTruth const & hit = (*caloMC).at(i);
+        cout << "Readback: " << hit << endl;
+      }
+    }
+
+
+    // caloCrystalHits
     edm::Handle<CaloCrystalHitCollection>  caloCrystalHits;
 
     event.getByType(caloCrystalHits);
     if (!caloCrystalHits.isValid()) {
-      _diagLevel > 0 && cout << "Debugging ReadBack: NO CaloCrystalHits" << endl;
+      _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalHits" << endl;
       return;
     }
 
@@ -220,41 +254,103 @@ namespace mu2e {
     multimap<int,size_t> hitCrystals;
 
     _diagLevel > 0 && 
-      cout << "Debugging ReadBack: caloCrystalHits->size() " << caloCrystalHits->size() << endl;
+      cout << __func__ << ": caloCrystalHits->size() " << caloCrystalHits->size() << endl;
 
     for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
 
       CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
 
       totalEdep += hit.energyDep();
-      _diagLevel > 0 && cout << "Debugging ReadBack: (*caloCrystalHits)[i].crystalId(): " 
-                             << hit.crystalId() << endl;
+      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHits)[i].Id(): " 
+                             << hit.Id() << endl;
 
       // check if the crystal is there already (it may be ok if the timing is different)
 
-      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.crystalId());
+      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.Id());
 
       if ( pos != hitCrystals.end() ) {
 
-        _diagLevel > 0 && 
-          cout << "Debugging ReadBack: Already saw " 
+        _diagLevel > 0 && cout << __func__ << ": Already saw " 
                << (*caloCrystalHits).at(pos->second) << endl;
         
       }
 
-      _diagLevel > 0 && 
-          cout << "Debugging ReadBack: Inserting   " << hit << endl;
+      _diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
 
-      hitCrystals.insert(pair<int,size_t>(hit.crystalId(),i));
+      hitCrystals.insert(pair<int,size_t>(hit.Id(),i));
       _hRCTime->Fill(hit.time());
 
     }
     
-     _diagLevel > 0 && 
-       cout << "Debugging ReadBack: hitCrystals.size()     " << hitCrystals.size() << endl;
+    _diagLevel > 0 && cout << __func__ << ": hitCrystals.size()     " 
+                           << hitCrystals.size() << endl;
      
-     _hRCEdep->Fill(totalEdep);
-     _hRCNCrystals->Fill(hitCrystals.size());
+    _hRCEdep->Fill(totalEdep);
+    _hRCNCrystals->Fill(hitCrystals.size());
+
+    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+      for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
+        CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
+        cout << "Readback: " << hit << endl;
+      }
+    }
+
+    // templetize it?
+    // caloCrystalHitMCTruths
+    edm::Handle<CaloCrystalHitMCTruthCollection>  caloCrystalHitMCTruths;
+
+    event.getByType(caloCrystalHitMCTruths);
+    if (!caloCrystalHitMCTruths.isValid()) {
+      _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalHitMCTruths" << endl;
+      return;
+    }
+
+    simEdep = 0;
+
+    typedef multimap<int,size_t> hitCrystalsMultiMap;
+    hitCrystals.clear();
+
+    _diagLevel > 0 && 
+      cout << __func__ << ": caloCrystalHitMCTruths->size() " << caloCrystalHitMCTruths->size() << endl;
+
+    for ( size_t i=0; i<caloCrystalHitMCTruths->size(); ++i ) {
+
+      CaloCrystalHitMCTruth const & hit = (*caloCrystalHitMCTruths).at(i);
+
+      simEdep += hit.energyDep();
+      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHitMCTruths)[i].Id(): " 
+                             << hit.Id() << endl;
+
+      // check if the crystal is there already (it may be ok if the timing is different)
+
+      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.Id());
+
+      if ( pos != hitCrystals.end() ) {
+
+        _diagLevel > 0 && cout << __func__ << ": Already saw " 
+               << (*caloCrystalHitMCTruths).at(pos->second) << endl;
+        
+      }
+
+      _diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
+
+      hitCrystals.insert(pair<int,size_t>(hit.Id(),i));
+      _hRCTimeMC->Fill(hit.time());
+
+    }
+    
+    _diagLevel > 0 && cout << __func__ << ": hitCrystals.size()     " 
+                           << hitCrystals.size() << endl;
+     
+    _hRCEdepMC->Fill(simEdep);
+    _hRCNCrystalsMC->Fill(hitCrystals.size());
+
+    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+      for ( size_t i=0; i<caloCrystalHitMCTruths->size(); ++i ) {
+        CaloCrystalHitMCTruth const & hit = (*caloCrystalHitMCTruths).at(i);
+        cout << "Readback: " << hit << endl;
+      }
+    }
 
   }
 
@@ -291,11 +387,11 @@ namespace mu2e {
     _hMultiplicity->Fill(hits->size());
       
     // A silly example just to show that we have a messsage logger.
-    if ( hits->size() > 100 ){
+    if ( hits->size() > 300 ){
       edm::LogWarning("HitInfo")
         << "Number of hits "
         << hits->size() 
-        << " is too large.";
+        << " may be too large.";
     }
 
     // A silly example just to show how to throw.
@@ -430,7 +526,8 @@ namespace mu2e {
       // Print out limited to the first few events.
       if ( _nAnalyzed < _maxFullPrint ){
 
-        cerr << "Readback hit: "
+        cerr << "Readback"
+             << " hit: "
              << event.id().event() << " "
              << i                  <<  " "
              << hit.trackId()      << "   "
@@ -473,7 +570,10 @@ namespace mu2e {
           // Physical volume in which this track started.
           PhysicalVolumeInfo const& volInfo = volumes->at(sim.startVolumeIndex());
 
-          cerr << "Simulated Particle: " 
+          // (it would print doLTracker, which is confusing...)
+          // cerr << __func__ 
+          cerr << "Readback"
+               << " Simulated Particle: " 
                << i                   << " "
                << pdgId               << " "
                << genId.name()        << " "
@@ -586,7 +686,8 @@ namespace mu2e {
 
       // Print out limited to the first few events.
       if ( _nAnalyzed < _maxFullPrint ){
-        cerr << "Readback hit: "
+        cerr << "ReadBack"
+             << " hit: "
              << event.id().event() << " "
              << n++ <<  " "
              << hit.trackId()    << "   "

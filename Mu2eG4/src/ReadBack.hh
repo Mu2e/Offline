@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.11 2010/10/28 20:43:58 genser Exp $
+// $Id: ReadBack.hh,v 1.12 2010/11/02 03:18:26 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/28 20:43:58 $
+// $Date: 2010/11/02 03:18:26 $
 //
 // Original author Rob Kutschke
 //
@@ -95,6 +95,10 @@ namespace mu2e {
     TH1F* _hRCEdep;
     TH1F* _hRCTime;
     TH1F* _hRCNCrystals;
+
+    TH1F* _hRCEdepMC;
+    TH1F* _hRCTimeMC;
+    TH1F* _hRCNCrystalsMC;
 
     TNtuple* _ntup;
     TGraph*  _xyHits;
