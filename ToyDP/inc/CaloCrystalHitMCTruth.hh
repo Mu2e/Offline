@@ -1,9 +1,9 @@
 #ifndef CaloCrystalHitMCTruth_H
 #define CaloCrystalHitMCTruth_H
 
-// $Id: CaloCrystalHitMCTruth.hh,v 1.1 2010/10/28 20:43:58 genser Exp $
+// $Id: CaloCrystalHitMCTruth.hh,v 1.2 2010/11/02 03:24:23 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/28 20:43:58 $
+// $Date: 2010/11/02 03:24:23 $
 //
 // Original author KLG
 
@@ -18,9 +18,9 @@ class edm::ProductID;
 
 namespace mu2e { 
 
-  class CaloHit;
+  class CaloHitMCTruth;
 
-  struct CaloCrystalHitMCTruth{
+  class CaloCrystalHitMCTruth{
 
   public:
 
@@ -28,16 +28,20 @@ namespace mu2e {
       _crystalId(-1),
       _time(0.),
       _energyDep(0.),
-      _charged(0), 
-      _numberOfROIdsUsed(0) 
+      _energyDepTotal(0.),
+      _numberOfROIdsUsed(0),
+      _charge(0)
     {}
 
+    CaloCrystalHitMCTruth(int crystalId, edm::ProductID const & caloHitCollId, CaloHitMCTruth const & hit);
     // Accessors
 
-    int              crystalId() const { return _crystalId; }
+    int              Id() const { return _crystalId; }
     float            time()      const { return _time; }
     float            energyDep() const { return _energyDep; }
-    bool             isCharged() const { return _charged>0; }
+    float            energyDepTotal() const { return _energyDepTotal; }
+    bool             isCharged() const { return _charge>0; }
+    int              charge()    const { return _charge; }
     int              numberOfROIdsUsed() const { return _numberOfROIdsUsed; }
     std::vector<DPIndex> const & roIds() const { return _roIds; }
 
@@ -46,14 +50,22 @@ namespace mu2e {
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
-  private:
+    // almost operator += CaloHitMCTruth
+    CaloCrystalHitMCTruth& add(edm::ProductID const & caloHitCollId, CaloHitMCTruth const & hit);
+
+    // almost like one of the constructors, plays a role of a two
+    // argument assignment operator
+    void assign(int crystalId, edm::ProductID const & caloHitCollId, CaloHitMCTruth const & hit);
+
+   private:
 
     int              _crystalId;
     float            _time;             // (ns)
     float            _energyDep;        // (MeV)
-    int              _charged;
+    float            _energyDepTotal;     // (MeV)
     int              _numberOfROIdsUsed;  // roIds used to calculate _energyDep
     std::vector<DPIndex> _roIds;
+    int              _charge;
 
   };
 
