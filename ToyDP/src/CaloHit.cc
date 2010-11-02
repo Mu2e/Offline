@@ -1,3 +1,10 @@
+//
+// $Id: CaloHit.cc,v 1.2 2010/11/02 03:25:37 genser Exp $
+// $Author: genser $
+// $Date: 2010/11/02 03:25:37 $
+//
+// Original author Ivan Logashenko
+//
 
 // C++ includes
 #include <ostream>
@@ -15,10 +22,10 @@ namespace mu2e {
   // Print the information found in this hit.
   void CaloHit::print( ostream& ost, bool doEndl ) const {
 
-    ost << "Calorimeter Hit:"
+    ost << "Calorimeter Hit:   "
         << " RO id: "    << _roId
         << " time: "     << _time
-        << " eDep: "     << _energyDep;
+        << " energyDep: "     << _energyDep;
 
     if ( doEndl ){
       ost << endl;
