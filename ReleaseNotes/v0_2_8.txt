@@ -3,6 +3,18 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.1 2010/11/02 19:47:33 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/11/02 19:47:33 $
+  $Id: v0_2_8.txt,v 1.2 2010/11/04 16:17:34 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2010/11/04 16:17:34 $
+
+1) November 4 2010, onoratog
+
+   FoilParticleGenerator now has three different enum types.
+   They identify the random generator algorithms for foil extraction,
+   position extraction and time extraction. 
+   Moreover each different random extraction has its own method, which
+   is called in a case statement within the method "generatePositionAndTime". 
+   The random algorithms to be used are required in the c'tor, now.
+   Generators that use the FPG class have been adapted to the new
+   syntax.
+
