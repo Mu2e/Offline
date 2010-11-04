@@ -26,7 +26,6 @@
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TargetGeom/inc/Target.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
 
@@ -38,10 +37,17 @@ using namespace std;
 namespace mu2e {
   
   FoilParticleGenerator::FoilParticleGenerator(edm::RandomNumberGeneratorService::base_engine_t& engine,
-                                               double tmin, double tmax):
+                                               double tmin, double tmax, 
+                                               foilGen_enum foilAlgo, 
+                                               posGen_enum  posAlgo, 
+                                               timeGen_enum  timeAlgo):
     // time generation range
     _tmin ( tmin ),
     _tmax ( tmax ),
+    // selected algorithm for foils 
+    _foilAlgo ( foilAlgo ),
+    _posAlgo ( posAlgo ),
+    _timeAlgo ( timeAlgo ),
     // number of foils of the target
     _nfoils ( GeomHandle<Target>()->nFoils() ),
     // Random number distributions; getEngine comes from the base class.
@@ -62,41 +68,49 @@ namespace mu2e {
   }
 
   void FoilParticleGenerator::generatePositionAndTime(CLHEP::Hep3Vector& pos,
-                                                      double& time, bool foilRndExpo) {
+                                                      double& time) {
+
+    
+    // Pick a foil 
+    
+    switch (_foilAlgo) {
+    case flatFoil:
+      _ifoil = getFlatRndFoil();
+      break;
+    case volWeightFoil:
+      _ifoil = getVolumeRndFoil();
+      break;
+    case expoVolWeightFoil:
+      _ifoil = getVolumeAndExpoRndFoil();
+      break;
+    default:
+      break;
+    }
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
-    
-    // Pick a foil with a probability proportional to the volumes.
-    if (foilRndExpo) {
-      _ifoil = static_cast<int>(_nfoils*_randExpoFoils.fire());
-    } else {
-      _ifoil = static_cast<int>(_nfoils*_randFoils.fire());
+    TargetFoil const& foil = target->foil(_ifoil);
+
+    //Pick up position
+    switch (_posAlgo) {
+    case flatPos:
+      pos = getFlatRndPos(foil);
+      break;
+    default:
+      break;
     }
 
-    TargetFoil const& foil = target->foil(_ifoil);
-    
-    // Foil properties.
-    CLHEP::Hep3Vector const& center = foil.center();
-    const double r1 = foil.rIn();
-    const double dr = foil.rOut() - r1;
-    
-    // A random point within the foil. To change.
-    const double r   = r1 + dr*_randFlat.fire();
-    const double dz  = (-1.+2.*_randFlat.fire())*foil.halfThickness();
-    const double phi = CLHEP::twopi*_randFlat.fire();
-    pos = CLHEP::Hep3Vector ( center.x()+r*cos(phi), 
-                              center.y()+r*sin(phi), 
-                              center.z()+dz );
-    
-    // Pick up a time random from am exponential distribution, with a given lifetime and in a defined range.
-    ConditionsHandle<PhysicsParams> phyPar("ignored");
-    double tau = phyPar->decayTime; 
-    if (tau < 0 || tau > 3500) { //bigger than muon decay time
-      throw cms::Exception("RANGE")
-        << "nonsense decay time of bound state"; 
+    //Pick up time
+    switch (_timeAlgo) {
+    case flatTime:
+      time = getFlatRndTime();
+      break;
+    case limitedExpoTime:
+      time = getLimitedExpRndTime();
+      break;
+    default:
+      break;
     }
-    time = (_randTime.fire(_tmin, _tmax, tau));
   }
   
 
@@ -150,6 +164,59 @@ namespace mu2e {
     return volumes;
   } //FoilParticleGenerator::weightedBinnedFoilsVolume() 
   
+
+  // Pick up a random foil from a flat distribution
+  int FoilParticleGenerator::getFlatRndFoil() {
+    return static_cast<int>(_nfoils*_randFlat.fire());
+  }
+
+  // Pick up a random foil from a flat distribution 
+  // weighted by foil volume
+  int FoilParticleGenerator::getVolumeRndFoil() {
+    return  static_cast<int>(_nfoils*_randFoils.fire());
+  }
+
+  // Pick up a random foil from a negative exponential 
+  // distribution weighted by foil volume 
+  int FoilParticleGenerator::getVolumeAndExpoRndFoil() {
+    return static_cast<int>(_nfoils*_randExpoFoils.fire());
+  }
+
+  // Pick up a random position within the foil
+  CLHEP::Hep3Vector FoilParticleGenerator::getFlatRndPos(TargetFoil const& theFoil) {
+    
+    // Foil properties.
+    CLHEP::Hep3Vector const& center = theFoil.center();
+    const double r1 = theFoil.rIn();
+    const double dr = theFoil.rOut() - r1;
+    
+    // A random point within the foil.
+    const double r   = r1 + dr*_randFlat.fire();
+    const double dz  = (-1.+2.*_randFlat.fire())*theFoil.halfThickness();
+    const double phi = CLHEP::twopi*_randFlat.fire();
+    return CLHEP::Hep3Vector ( center.x()+r*cos(phi), 
+                               center.y()+r*sin(phi), 
+                               center.z()+dz );
+
+  }
+
+  // Pick up a random generation time from a flat distribution
+  double FoilParticleGenerator::getFlatRndTime() {
+    return _tmin + _randFlat.fire() * (_tmax-_tmin);
+  }
+
+  // Pick up a time random from am exponential distribution, 
+  // with a given lifetime and in a defined range.
+  double FoilParticleGenerator::getLimitedExpRndTime() {
+    ConditionsHandle<PhysicsParams> phyPar("ignored");
+    double tau = phyPar->decayTime; 
+    if (tau < 0 || tau > 3500) { //bigger than muon decay time
+      throw cms::Exception("RANGE")
+        << "nonsense decay time of bound state"; 
+    }
+    return _randTime.fire(_tmin, _tmax, tau);
+    
+  }
 }
 
 

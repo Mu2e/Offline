@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.16 2010/10/28 20:28:24 onoratog Exp $ 
+// $Id: ConversionGun.cc,v 1.17 2010/11/04 15:47:31 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2010/10/28 20:28:24 $
+// $Date: 2010/11/04 15:47:31 $
 //
 // Original author Rob Kutschke
 // 
@@ -50,7 +50,6 @@ namespace mu2e {
     _czmax (config.getDouble("conversionGun.czmax",  0.6)),
     _phimin(config.getDouble("conversionGun.phimin", 0. )),
     _phimax(config.getDouble("conversionGun.phimax", CLHEP::twopi )),
-
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax )
    
   {
@@ -75,7 +74,10 @@ namespace mu2e {
     _tmin = config.getDouble("conversionGun.tmin",  _tmin );
     _tmax = config.getDouble("conversionGun.tmax",  _tmax );
     
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax));
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
+                                                                             FoilParticleGenerator::volWeightFoil, 
+                                                                             FoilParticleGenerator::flatPos, 
+                                                                             FoilParticleGenerator::limitedExpoTime));
     
   }
   

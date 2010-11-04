@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.13 2010/11/01 16:55:31 onoratog Exp $
+// $Id: PiCapture.cc,v 1.14 2010/11/04 15:47:31 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/11/01 16:55:31 $
+// $Date: 2010/11/04 15:47:31 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -105,7 +105,10 @@ namespace mu2e {
     //
     // 24.5 is from Rick Coleman telling me the stopped pi's fall a factor of two over the 17 foils  
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>( new FoilParticleGenerator(getEngine(), 0 ,tcycle));
+    _fGenerator = auto_ptr<FoilParticleGenerator>( new FoilParticleGenerator(getEngine(), 0 ,tcycle, 
+                                                                             FoilParticleGenerator::expoVolWeightFoil, 
+                                                                             FoilParticleGenerator::flatPos, 
+                                                                             FoilParticleGenerator::limitedExpoTime));
     
   } // end PiCapture::PiCapture
 
@@ -125,8 +128,7 @@ namespace mu2e {
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
-      bool foilRndExpo = true;
-      _fGenerator->generatePositionAndTime(pos, time, foilRndExpo );
+      _fGenerator->generatePositionAndTime(pos, time);
 
       _hFoilNumber->Fill(static_cast<double>(_fGenerator->iFoil()));
 

@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.cc,v 1.11 2010/10/28 20:28:24 onoratog Exp $ 
+// $Id: EjectedProtonGun.cc,v 1.12 2010/11/04 15:47:31 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2010/10/28 20:28:24 $
+// $Date: 2010/11/04 15:47:31 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -115,10 +115,13 @@ namespace mu2e {
       _htime         = tfdir.make<TH1D>( "htime",         "Proton time ",                      200,      0,  2000. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax));
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
+                                                                             FoilParticleGenerator::volWeightFoil, 
+                                                                             FoilParticleGenerator::flatPos, 
+                                                                             FoilParticleGenerator::limitedExpoTime));
 
   }
-  
+
   EjectedProtonGun::~EjectedProtonGun(){
   }
   

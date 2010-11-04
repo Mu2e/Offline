@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.13 2010/10/28 20:28:24 onoratog Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.14 2010/11/04 15:47:31 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2010/10/28 20:28:24 $
+// $Date: 2010/11/04 15:47:31 $
 //
 // Original author Rob Kutschke
 // 
@@ -133,7 +133,10 @@ namespace mu2e {
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 200, 0, 2000. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax));
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
+                                                                             FoilParticleGenerator::volWeightFoil, 
+                                                                             FoilParticleGenerator::flatPos, 
+                                                                             FoilParticleGenerator::limitedExpoTime));
 
   }
 

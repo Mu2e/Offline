@@ -19,6 +19,7 @@
 // Mu2e includes
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomLimitedExpo.hh"
+#include "TargetGeom/inc/Target.hh"
 
 //CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
@@ -32,19 +33,39 @@ namespace mu2e {
 
   public: 
     
+    enum foilGen_enum {
+      flatFoil, volWeightFoil, expoFoil, expoVolWeightFoil
+    };
+
+    enum posGen_enum {
+      flatPos
+    };
+
+    enum timeGen_enum {
+      flatTime, limitedExpoTime
+    };
+
+
+
     FoilParticleGenerator( edm::RandomNumberGeneratorService::base_engine_t& engine,
-                           double tmin, double tmax );
-
+                           double tmin, double tmax, foilGen_enum foilAlgo, 
+                           posGen_enum  posAlgo, timeGen_enum  timeAlgo);
+    
     ~FoilParticleGenerator();
-
-    void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time, bool foilRndExpo = false);
-
+    
+    void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time); 
+    
     int iFoil();
 
   private:
 
     // time generation range
     double _tmin, _tmax;
+
+    // foil, position and time random algorithm
+    foilGen_enum  _foilAlgo;
+    posGen_enum   _posAlgo;
+    timeGen_enum  _timeAlgo;
 
     //number of foils
     int _nfoils;
@@ -62,7 +83,15 @@ namespace mu2e {
     std::vector<double> binnedFoilsVolume();
     std::vector<double> weightedBinnedFoilsVolume();
 
-
+    // methods to extract foil, position and time w.r.t. the chosen algorithm
+    int FoilParticleGenerator::getFlatRndFoil() ;
+    int FoilParticleGenerator::getVolumeRndFoil() ;
+    int FoilParticleGenerator::getExpoRndFoil() ;
+    int FoilParticleGenerator::getVolumeAndExpoRndFoil() ;
+    CLHEP::Hep3Vector FoilParticleGenerator::getFlatRndPos(TargetFoil const& theFoil) ;
+    double FoilParticleGenerator::getFlatRndTime() ;
+    double FoilParticleGenerator::getLimitedExpRndTime() ;
+    
   };
 } // end namespace mu2e,
 
