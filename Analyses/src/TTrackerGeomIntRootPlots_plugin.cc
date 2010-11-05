@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.5 2010/10/18 21:15:44 genser Exp $
+// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.6 2010/11/05 18:53:49 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/10/18 21:15:44 $
+// $Date: 2010/11/05 18:53:49 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -337,8 +337,12 @@ namespace mu2e {
 
     gDirectory->Append(_canvas);
 
-    double _spanx = 155.0; // mm
-    double _spanz = 155.0;
+    // xspan should be 161 for MECO 152 for 2 layer TTracker for now
+    static double const xspan = 152; // mm
+    static double const zspan = 10; // mm
+
+    double _spanx = xspan;
+    double _spanz = xspan;
 
     TubsParams envelopeParams = _ttracker->getTrackerEnvelopeParams();
 
@@ -380,8 +384,8 @@ namespace mu2e {
 
     gDirectory->Append(_canvas);
 
-    _spanx = 10.0; // mm
-    _spanz = 10.0;
+    _spanx = zspan;
+    _spanz = zspan;
 
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()-_spanx,
@@ -411,10 +415,10 @@ namespace mu2e {
 
     gDirectory->Append(_canvas);
 
-    double _lx = -152.;
-    double _ux = -132.;
-    double _lz =  -10.;
-    double _uz =   10.;
+    double _lx = -xspan;
+    double _ux = -xspan + 2*zspan;
+    double _lz = -zspan;
+    double _uz =  zspan;
 
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()+_lx,
@@ -439,15 +443,15 @@ namespace mu2e {
 
     // xz outer/right detail
 
-    canvasName = "c5xzinner";
+    canvasName = "c5xzouter";
     _canvas = tfs->make<TCanvas>("c5", "xz outer detail", 0, 0, cpsize, cpsize );
 
     gDirectory->Append(_canvas);
 
-    _lx =  132.;
-    _ux =  152.;
-    _lz =  -10.;
-    _uz =   10.;
+    _lx =  xspan - 2*zspan;
+    _ux =  xspan;
+    _lz = -zspan;
+    _uz =  zspan;
 
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()+_lx,
