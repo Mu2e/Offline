@@ -1,6 +1,10 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
+//  $Id: ReadVirtualDetector_plugin.cc,v 1.8 2010/11/05 03:14:55 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2010/11/05 03:14:55 $
+//
 // Original author Ivan Logashenko
 //
 
@@ -49,13 +53,15 @@ namespace mu2e {
   class ReadVirtualDetector : public edm::EDAnalyzer {
   public:
 
-    typedef vector<int> vint;
+    typedef vector<int> Vint;
 
     explicit ReadVirtualDetector::ReadVirtualDetector(edm::ParameterSet const& pset) : 
       _vdStepPoints(pset.getUntrackedParameter<string>("vdStepPoints","virtualdetector")),
+      _nAnalyzed(0),
+      _maxPrint(pset.getUntrackedParameter<int>("maxPrint",0)),
       _ntvd(0), _ntpart(0) {
       
-      vint const & pdg_ids = pset.getUntrackedParameter<vint>("savePDG", vint());
+      Vint const & pdg_ids = pset.getUntrackedParameter<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
 	cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
 	for( size_t i=0; i<pdg_ids.size(); ++i ) {
@@ -80,6 +86,10 @@ namespace mu2e {
 
     // Name of the VD StepPoint collection
     std::string _vdStepPoints;
+
+    // Control printed output.
+    int _nAnalyzed;
+    int _maxPrint;
 
     TNtuple* _ntvd;
     TTree* _ntpart;
@@ -141,6 +151,8 @@ namespace mu2e {
   }
 
   void ReadVirtualDetector::analyze(const edm::Event& event, edm::EventSetup const&) {
+
+    ++_nAnalyzed;
 
     // Access virtual detectors geometry information
     // If not virtual detectors are defined, skip the rest
@@ -217,6 +229,18 @@ namespace mu2e {
       nt[17] = hit.properTime();
 
       _ntvd->Fill(nt);
+
+      if ( _nAnalyzed < _maxPrint){
+        cout << "VD hit: " 
+             << event.id().event() << " | "
+             << hit.volumeId()     << " "
+             << pdgId              << " | "
+             << hit.time()         << " "
+             << lpos               << " "
+             << mom.mag()
+             << endl;
+          
+      }
 
     } // end loop over hits.
 
