@@ -3,9 +3,29 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.2 2010/11/04 16:17:34 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2010/11/04 16:17:34 $
+  $Id: v0_2_8.txt,v 1.3 2010/11/05 03:55:07 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/11/05 03:55:07 $
+
+3) November 4, 2010 kutschke
+   Create printout to be used to check that the beamline behaviour is unchanged when it is
+   supposed to be unchanged.  
+    Mu2eG4/src/ReadVirtualDetector_plugin.cc
+      - Add optional printout that can be enabled at run time.
+    Mu2eG4/test/beamline_02.py 
+      - New file. The same as beamline_01.py but with no graphics and with printout.
+    Mu2eG4/test/beamline_02.py 
+      - Default event generator is the G4BeamlineGenerator.
+    Mu2eG4/test/beamline_geom.txt
+      - Since beamline_genconfig.txt defaults to G4BL input.  Make this default too.
+      - Also change the settings for the particle gun.
+
+2) November 4, 2010 kutschke
+   The data member _hallOriginInMu2e was incorrectly redefined in the method constructSteel.
+   All that is needed is to use a local data member.
+   The error was introduced when constructSteel was first created.  
+      Mu2eG4/src/Mu2eWorld.cc
+
 
 1) November 4 2010, onoratog
 
