@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.22 2010/10/18 21:15:16 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.23 2010/11/05 19:58:33 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/18 21:15:16 $
+// $Date: 2010/11/05 19:58:33 $
 //
 // Original author Rob Kutschke
 //
@@ -234,20 +234,6 @@ namespace mu2e {
     Sector& sector = dev._sectors.back();
     sector._layers.reserve(_layersPerSector);
 
-    // we should check here if the manifold is large enough to hold all the layers...
-    // closly packed straws need space of (in z) r*[2+(nlay-1)*sqrt(3)]
-
-    double strawSpace = 2.0*(_strawOuterRadius + (_layersPerSector-1)*_layerHalfSpacing);
-
-    if ( 2.0*_manifoldHalfLengths.at(2) < strawSpace) {
-
-      cout << " 2*_manifoldHalfLengths[2], straw space: " << 2*_manifoldHalfLengths.at(2) << ", " <<
-        strawSpace << endl;
-
-      throw cms::Exception("GEOM")
-        << "Manifolds are to small for the number of straw layers. \n";
-    }
-
     // check if the opposite sectors do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file
 
@@ -356,7 +342,7 @@ namespace mu2e {
     // |z| of straw center, relative to the center of the device.
     // Sign is taken care of elsewhere.
 
-    // see similar calc in makeSector for strawSpace & computeSectorBoxParams
+    // see similar calc in computeSectorBoxParams
     //    double zOffset = _supportHalfThickness + _strawOuterRadius + ilay*2.*_layerHalfSpacing;
     // the above commented out calculation places the straws at the edge of the manifold in Z
 
