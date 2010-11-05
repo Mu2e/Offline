@@ -1,9 +1,9 @@
 #
 # Configuration file for Beamline 02.
 #
-# $Id: beamline_02.py,v 1.1 2010/11/05 03:17:17 kutschke Exp $
+# $Id: beamline_02.py,v 1.2 2010/11/05 03:48:13 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/11/05 03:17:17 $
+# $Date: 2010/11/05 03:48:13 $
 #
 # Original author Rob Kutschke
 #
@@ -50,19 +50,18 @@ process.ConditionsService = mu2e.Service("ConditionsService",
 process.source = mu2e.Source("EmptySource")
 
 #  Make some generated tracks and add them to the event.
-process.generate = mu2e.EDProducer(
-    "EventGenerator",
-    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
-    seed=mu2e.untracked.vint32(7789)
-)
-
-#  Use this generator instead of the one above if using G4Beamline input files
 #process.generate = mu2e.EDProducer(
-#    "G4BeamlineGenerator",
+#    "EventGenerator",
 #    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
 #    seed=mu2e.untracked.vint32(7789)
 #)
 
+#  Use this generator instead of the one above if using G4Beamline input files
+process.generate = mu2e.EDProducer(
+    "G4BeamlineGenerator",
+    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
+    seed=mu2e.untracked.vint32(7789)
+)
 
 # Run G4 and add its hits to the event.
 process.g4run = mu2e.EDProducer(
@@ -106,6 +105,7 @@ process.outfile = mu2e.OutputModule(
 # Tell the system to execute all paths.
 process.output = mu2e.EndPath(  process.generate*
                                 process.g4run*
+                                process.checkhits*
                                 process.readvd*
                                 process.randomsaver*
                                 process.outfile );

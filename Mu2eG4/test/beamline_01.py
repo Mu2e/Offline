@@ -2,9 +2,9 @@
 # Configuration file for Beamline 01.
 # This can be used to debug the muon beamline.
 #
-# $Id: beamline_01.py,v 1.6 2010/10/13 23:39:40 kutschke Exp $
+# $Id: beamline_01.py,v 1.7 2010/11/05 03:48:10 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/10/13 23:39:40 $
+# $Date: 2010/11/05 03:48:10 $
 #
 # Original author Rob Kutschke
 #
@@ -51,18 +51,18 @@ process.ConditionsService = mu2e.Service("ConditionsService",
 process.source = mu2e.Source("EmptySource")
 
 #  Make some generated tracks and add them to the event.
-process.generate = mu2e.EDProducer(
-    "EventGenerator",
-    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
-    seed=mu2e.untracked.vint32(7789)
-)
-
-#  Use this generator instead of the one above if using G4Beamline input files
 #process.generate = mu2e.EDProducer(
-#    "G4BeamlineGenerator",
+#    "EventGenerator",
 #    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
 #    seed=mu2e.untracked.vint32(7789)
 #)
+
+#  Use this generator instead of the one above if using G4Beamline input files
+process.generate = mu2e.EDProducer(
+    "G4BeamlineGenerator",
+    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
+    seed=mu2e.untracked.vint32(7789)
+)
 
 
 # Run G4 and add its hits to the event.
@@ -72,14 +72,6 @@ process.g4run = mu2e.EDProducer(
     visMacro = mu2e.untracked.string("Mu2eG4/test/beamline_xz.mac"),
     seed=mu2e.untracked.vint32(9877)
     )
-
-# Look at the hits from G4.
-process.checkhits = mu2e.EDAnalyzer(
-    "ReadBack",
-    g4ModuleLabel = mu2e.string("g4run"),
-    minimumEnergy = mu2e.double(0.00),
-    maxFullPrint  = mu2e.untracked.int32(201)
-)
 
 # Look at the hits from virtual detectors
 process.readvd = mu2e.EDAnalyzer(
