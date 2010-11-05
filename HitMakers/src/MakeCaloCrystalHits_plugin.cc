@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_plugin.cc,v 1.2 2010/11/02 03:17:46 genser Exp $
+// $Id: MakeCaloCrystalHits_plugin.cc,v 1.3 2010/11/05 19:03:21 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/02 03:17:46 $
+// $Date: 2010/11/05 19:03:21 $
 //
 // Original author KLG
 //
@@ -114,6 +114,7 @@ namespace mu2e {
   void MakeCaloCrystalHits::beginJob(edm::EventSetup const& ){
   }
 
+  
   void MakeCaloCrystalHits::produce(edm::Event& event, edm::EventSetup const&) {
 
     // Source of the info
@@ -278,7 +279,7 @@ namespace mu2e {
     if ( _diagLevel > 0 ) cout << __func__ << ": produce() end" << endl;
     return;
 
-  } // end of ::analyze.
+  } // end of ::produceCaloCrystalHits
   
 }
 
