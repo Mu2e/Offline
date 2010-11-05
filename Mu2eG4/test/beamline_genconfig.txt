@@ -5,9 +5,9 @@
 //  - Single particle gun, configured to shoot muons out of the production target.
 //  - Particles from G4beamline format input file.
 //
-// $Id: beamline_genconfig.txt,v 1.3 2010/09/08 20:24:12 kutschke Exp $
+// $Id: beamline_genconfig.txt,v 1.4 2010/11/05 03:50:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/08 20:24:12 $
+// $Date: 2010/11/05 03:50:13 $
 //
 // Original author Rob Kutschke
 
@@ -46,8 +46,15 @@ double primaryProtonGun.tmax  =  100.;
 // Particle gun configured to shoot muons out of the target towards the TS.
 // For the full set of parameters see EventGenerator/src/ParticleGun.cc
 
+// PDG code for mu_minus
+int particleGun.id = 13;
+
 // The middle of the production target; in Mu2e coordinates in mm.
-vector<double> particleGun.point = { 3904., 0., -6564.5 };
+//vector<double> particleGun.point = { 3904., 0., -6564.5 };
+
+// 100 cm upstream of the middle of the production target.
+// ( so that muons are not all absorbed in the target ).
+vector<double> particleGun.point = { 3904., 0., -6464.5 };
 
 // Particles will be made uniformly in a box, centered on the above point.
 // Half sides of the box are in mm.
