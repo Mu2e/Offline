@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.59 2010/09/30 22:47:59 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.60 2010/11/05 03:13:22 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 22:47:59 $
+// $Date: 2010/11/05 03:13:22 $
 //
 // Original author Rob Kutschke
 //
@@ -1536,7 +1536,9 @@ namespace mu2e {
                                   HallSteelOffsetSTDV[1],
                                   HallSteelOffsetSTDV[2]);
 
-    _hallOriginInMu2e = parent.centerInWorld - _mu2eOrigin + detSolCoilPosition + HallSteelOffset;
+    // Imagine a box that exactly contains the flux return steel.
+    // This is the center of that box, in the coordinate system of the mother volume(the hall air).
+    CLHEP::Hep3Vector boxCenter = -(parent.centerInWorld - _mu2eOrigin + detSolCoilPosition + HallSteelOffset);
 
     G4ThreeVector TopShield   (0.,      HallSteelSideHalfY + HallSteelHalfThick, 0.);
     G4ThreeVector BottomShield(0.,    -(HallSteelSideHalfY + HallSteelHalfThick), 0.);
@@ -1557,7 +1559,7 @@ namespace mu2e {
                                   HallSteelTopDims,
                                   HallSteelShieldMaterial,
                                   0,
-                                  TopShield -_hallOriginInMu2e,
+                                  TopShield + boxCenter,
                                   parent,
                                   0,
                                   hallSteelVisible,
@@ -1568,7 +1570,7 @@ namespace mu2e {
                                      HallSteelTopDims, 
                                      HallSteelShieldMaterial,
                                      0,
-                                     BottomShield -_hallOriginInMu2e,
+                                     BottomShield + boxCenter,
                                      parent,
                                      0, 
                                      hallSteelVisible,
@@ -1579,7 +1581,7 @@ namespace mu2e {
                                    HallSteelSideDims,
                                    HallSteelShieldMaterial,
                                    0, 
-                                   LeftShield -_hallOriginInMu2e,
+                                   LeftShield + boxCenter,
                                    parent,
                                    0, 
                                    hallSteelVisible,
@@ -1590,7 +1592,7 @@ namespace mu2e {
                                     HallSteelSideDims,
                                     HallSteelShieldMaterial,
                                     0, 
-                                    RightShield -_hallOriginInMu2e,
+                                    RightShield + boxCenter,
                                     parent,
                                     0, 
                                     hallSteelVisible,
@@ -1601,7 +1603,7 @@ namespace mu2e {
                                    HallSteelFrontDims,
                                    HallSteelShieldMaterial,
                                    0, 
-                                   BackShield -_hallOriginInMu2e,
+                                   BackShield + boxCenter,
                                    parent,
                                    0, 
                                    hallSteelVisible,
@@ -1633,7 +1635,7 @@ namespace mu2e {
                                                    FrontShieldName); 
 
     FrontShieldInfo.physical = new G4PVPlacement( 0,
-                                                  FrontShield -_hallOriginInMu2e, 
+                                                  FrontShield  + boxCenter, 
                                                   FrontShieldInfo.logical,
                                                   FrontShieldName,
                                                   parent.logical,
