@@ -1,9 +1,9 @@
 //
 // Variation on the geometry for debugging the beamline.
 //
-// $Id: beamline_geom.txt,v 1.8 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: beamline_geom.txt,v 1.9 2010/11/05 03:16:20 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/05 03:16:20 $
 //
 // Original author Rob Kutschke
 //
@@ -12,25 +12,20 @@
 // The standard geometry.
 #include "Mu2eG4/test/geom_01.txt"
 
-// Transportation only or full physics.
+// Uncomment to get transportation only. 
 //string g4.physicsListName = "Minimal";
-string g4.physicsListName = "QGSP_BERT";
 
 // Form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
 int detSolFieldForm = 0;
 
-// Use this to read G4BL files
+// For G4BL input files you must use the G4BL field maps.
 
-//double toyTS.rTorus = 2929;
-//bool   bfield.format  = "G4BL";
-//string bfield.dsFile  = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_DSMap.txt";
-//string bfield.psFile  = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_PSMap.txt";
-//string bfield.tsuFile = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSuMap.txt";
-//string bfield.tsdFile = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSdMap.txt";
-
-// Use this to switch on virtual detectors
-
-bool hasVirtualDetector = true;
+double toyTS.rTorus = 2929;
+bool   bfield.format  = "G4BL";
+string bfield.dsFile  = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_DSMap.txt";
+string bfield.psFile  = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_PSMap.txt";
+string bfield.tsuFile = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSuMap.txt";
+string bfield.tsdFile = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSdMap.txt";
 
 //Use this line to switch off pion decays
 
