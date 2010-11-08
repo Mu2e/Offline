@@ -3,11 +3,60 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.3 2010/11/05 03:55:07 kutschke Exp $
+  $Id: v0_2_8.txt,v 1.4 2010/11/08 23:57:45 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/11/05 03:55:07 $
+  $Date: 2010/11/08 23:57:45 $
 
-3) November 4, 2010 kutschke
+
+8) November 8, 2010 kutschke
+   Switch SimParticleCollection to be a MapVector
+
+     ToyDP/inc/SimParticleCollection.hh
+       - redefine the type .
+
+     Mu2eG4/src/G4_plugin.cc
+       - Pass data product reference at the start of the event, not the end.
+
+     Mu2eG4/inc/TrackingAction.hh
+     Mu2eG4/src/TrackingAction.cc
+       - Major rewrite.  No longer need a transient map.  Fill the data product
+         directly during the course of the event.
+       - Add consistency check that will be run at the end of the event
+         if debugging is enabled.
+
+     Mu2eG4/src/ReadBack.cc
+       - A few syntax changes needed for the new type.
+ 
+7) November 8, 2010 kutschke
+   ToyDP/inc/SimParticle.hh
+     - Remove superfluous include
+
+6) November 8, 2010 kutschke
+   If I want to create a data product of type mu2e::MapVector<T>
+   I must add lines for std::pair<uint32_t,T> and std::map<uint32_t,T> to both:
+      ToyDP/src/classes.h
+      ToyDP/src/classes_def.xml
+   for each concrete class T that might be added to the event.  This was done for
+   T=SimParticle, in preparation for step 7.
+
+5) November 8, 2010 kutschke
+   GeneralUtilities/inc/MapVector.hh
+   The version committed today is the first properly working version.
+   The three big changes were that swap was missing a template parameter in its argument list,
+   that erase was missing a return statement and that one of the insert methods required a
+   templated argument type:
+
+   template <class InputIterator>
+   iterator insert ( InputIterator position, const value_type& value ){
+
+   Also fixed a lot of typos.
+
+4) November 5, 2010 kutschke
+   GeneralUtilities/inc/MapVector.hh
+   GeneralUtilities/test/testMapVector1.cc
+     First versions.  Not yet working and not used by any code.
+
+3) November 5, 2010 kutschke
    Create printout to be used to check that the beamline behaviour is unchanged when it is
    supposed to be unchanged.  
     Mu2eG4/src/ReadVirtualDetector_plugin.cc
@@ -20,12 +69,11 @@
       - Since beamline_genconfig.txt defaults to G4BL input.  Make this default too.
       - Also change the settings for the particle gun.
 
-2) November 4, 2010 kutschke
+2) November 5, 2010 kutschke
    The data member _hallOriginInMu2e was incorrectly redefined in the method constructSteel.
    All that is needed is to use a local data member.
    The error was introduced when constructSteel was first created.  
       Mu2eG4/src/Mu2eWorld.cc
-
 
 1) November 4 2010, onoratog
 
