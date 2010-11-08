@@ -4,9 +4,9 @@
 //
 // A temporary class to hold particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.3 2010/03/31 19:54:06 kutschke Exp $
+// $Id: SimParticle.hh,v 1.4 2010/11/08 23:54:25 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/31 19:54:06 $
+// $Date: 2010/11/08 23:54:25 $
 //
 // Original author Rob Kutschke
 //
@@ -17,9 +17,6 @@
 //
 
 #include <vector>
-
-// Mu2e includes
-#include "Mu2eUtilities/inc/PDGCode.hh"
 
 // Includes from external packages.
 #include "CLHEP/Vector/ThreeVector.h"
