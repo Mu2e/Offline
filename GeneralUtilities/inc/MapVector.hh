@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.2 2010/11/08 21:51:33 kutschke Exp $
+// $Id: MapVector.hh,v 1.3 2010/11/08 23:51:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/08 21:51:33 $
+// $Date: 2010/11/08 23:51:08 $
 //
 //   Original author Rob Kutschke
 //
@@ -30,12 +30,32 @@
 //      - Alternate syntax for the previous method.
 //      - Needed since existing user code uses it
 //
+//   bool has( key_type key ) const;
+//      - Return true if the key exists in the map.
+//      - Otherwise return false.
+//
 //  iterator insertOrThrow ( const value_type& value );
 //      - If the key does not exist in the map, insert the pair and return
 //        an iterator to the pair
 //      - If the key already exists in the map, throw.
 //
-// Notes:
+// Usage notes:
+//  NEVER write a loop like:
+//      SimParticleCollection const& col = ....;
+//      for ( size_t i=0; i<col.end(); ++i){
+//        SimParticle const& s = col[i].
+//      }
+//  This will usually throw since the the accessor [i] looks for a map entry
+//  whose key is i; it does not look for the i'th entry from the start of the map.
+//  
+//  The correct way to write a loop is:
+//      for ( SimParticleCollection::const_iterator i=simParticles->begin();
+//             i!=simParticles->end(); ++i ){
+//           SimParticle const& s = i->second;
+//      }
+//
+//
+// Other Notes:
 // This class is designed to address the following use case:
 //
 // 1) I have some objects of type T, each of which has an identifier,
@@ -58,15 +78,13 @@
 // 6) In the future we can replace the underlying container with 
 //    a different implementation that is better optimized for lookup.
 //
-//
 // Todo:
 //  1) Add c'tor allowing use specified Compare and Allocator.
-//  2) Do I really want insertOrThrow?
-//  3) Are there better names for findOrThrow and insertOrThrow
-//  4) Is uint32_t the right key_type (root persistence?) ?
-//  5) Which methods should I comment out since they are not likely to be in the final MapVector?
-//  6) Any other methods that I want?
-//  7) Do I want to hide sstream to avoid it being in the header?
+//  2) Are there better names for findOrThrow and insertOrThrow
+//  3) Is uint32_t the right key_type (root persistence?) ?
+//  4) Which methods should I comment out since they are not likely to be in the final MapVector?
+//  5) Any other methods that I want?
+//  6) Do I want to hide sstream to avoid it being in the header?
 //
 #include <map>
 #include <stdexcept>
@@ -142,6 +160,12 @@ public:
 
   VALUE const& at( key_type key ) const{
     return findOrThrow(key);
+  }
+
+  // Check to see if the key exists in the map.
+  bool has( key_type key ) const{
+    const_iterator i = _map.find(key);
+    return ( i != _map.end() );
   }
 
   // Insert the requested pair or throw if the key already exists.
