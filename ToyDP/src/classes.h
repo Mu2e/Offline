@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.14 2010/10/28 20:43:58 genser Exp $
-// $Author: genser $
-// $Date: 2010/10/28 20:43:58 $
+// $Id: classes.h,v 1.15 2010/11/08 22:04:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/08 22:04:15 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,9 @@
 // Only include objects that we would like to be able to put into the event.
 // Do not include the objects they contain internally.
 //
+
+template class std::pair<uint32_t,mu2e::SimParticle>;
+template class std::map<uint32_t,mu2e::SimParticle>;
 
 template class edm::Wrapper<mu2e::ToyHitCollection>;
 template class edm::Wrapper<mu2e::ToyGenParticleCollection>;
