@@ -2,28 +2,36 @@
 #define MapVector_HH
 //
 // An STL-like class template that looks and feels std::map<size_t,T>,
-// with the exception that it is as a few extra modifier and accessor
-// functions described below.  So far as I know, all methods of std::map
-// work.
+// with the exception that it is has a few extra modifier and accessor
+// functions described below.  So far as I know, all accessor and 
+// modifier methods of std::map work; I have not implemented the
+// constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.1 2010/11/05 15:19:21 kutschke Exp $
+// $Id: MapVector.hh,v 1.2 2010/11/08 21:51:33 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/05 15:19:21 $
+// $Date: 2010/11/08 21:51:33 $
 //
 //   Original author Rob Kutschke
 //
 //  The additional methods are:
-//  VALUE&       findOrThrow   ( key_type key );
+//  VALUE&       findOrThrow( key_type key );
 //      - If the key exists, it returns a reference to the value.
 //      - If the key does not exist it throws.
-//  VALUE const& findOrThrow   ( key_type key ) const;
+//
+//  VALUE const& findOrThrow( key_type key ) const;
 //      - same as the previous method except that it may run on a 
 //        const MapVector and returns a const reference.
-//  VALUE const& operator[]    ( key_type key ) const;
+//
+//  VALUE const& operator[]( key_type key ) const;
 //      - Alternate syntax for the previous method.
 //      - This is the original use case for this class.
-//  iterator     insertOrThrow ( const value_type& value );
-//      - If the does not exist in the map, insert the pair and return
+//
+//  VALUE const& at( key_type key ) const;
+//      - Alternate syntax for the previous method.
+//      - Needed since existing user code uses it
+//
+//  iterator insertOrThrow ( const value_type& value );
+//      - If the key does not exist in the map, insert the pair and return
 //        an iterator to the pair
 //      - If the key already exists in the map, throw.
 //
@@ -52,10 +60,10 @@
 //
 //
 // Todo:
-//  1) Fix c'tor syntax with Allocator and Compare.
-//  2) do I really want insertOrThrow?
+//  1) Add c'tor allowing use specified Compare and Allocator.
+//  2) Do I really want insertOrThrow?
 //  3) Are there better names for findOrThrow and insertOrThrow
-//  4) Is size_t the right key_type (root persistence?) ?
+//  4) Is uint32_t the right key_type (root persistence?) ?
 //  5) Which methods should I comment out since they are not likely to be in the final MapVector?
 //  6) Any other methods that I want?
 //  7) Do I want to hide sstream to avoid it being in the header?
@@ -69,20 +77,20 @@ class MapVector{
 
 public:
 
-  typedef std::size_t                       key_type;
+  typedef uint32_t                          key_type;
   typedef VALUE                          mapped_type;
   typedef std::pair<key_type,mapped_type> value_type;
   typedef std::map<key_type,VALUE>           MapType;
 
   typedef typename MapType::size_type             size_type;
   typedef typename MapType::difference_type difference_type;
-
+  
   typedef typename MapType::iterator                             iterator;
   typedef typename MapType::const_iterator                 const_iterator;
   typedef typename MapType::reverse_iterator             reverse_iterator;
   typedef typename MapType::const_reverse_iterator const_reverse_iterator;
 
-  typedef typename MapType::key_compare key_compare;
+  typedef typename MapType::key_compare     key_compare;
   typedef typename MapType::value_compare value_compare;
 
   typedef typename MapType::allocator_type                   allocator_type;
@@ -96,12 +104,6 @@ public:
 
   template <class InputIterator>
   MapVector ( InputIterator first, InputIterator last):_map(first,last){}
-
-  // Not able to get these to work:
-  //explicit MapVector ( const Compare& comp = Compare(),
-  // const Allocator& = Allocator() ):_map(){}
-  //MapVector ( InputIterator first, InputIterator last,
-  //    const Compare& comp = Compare(), const Allocator& = Allocator() );
 
   // Compiler generated d'tor, copy c'tor and assignment operator are OK.
 
@@ -132,9 +134,13 @@ public:
     return i->second;
   }
 
-  // A handy synonym for the const findOrThrow;
+  // Two handy synonyms for the const findOrThrow;
   // This method is the original reason for this class.
   VALUE const& operator[] ( key_type key ) const{
+    return findOrThrow(key);
+  }
+
+  VALUE const& at( key_type key ) const{
     return findOrThrow(key);
   }
 
@@ -150,11 +156,9 @@ public:
     return _map.insert(value).first;
   }
 
-
   // Everything below here just forwards to std::map.
 
   // Modifiers:
-
   VALUE& operator[] ( key_type key ){
     return _map[key];
   }
@@ -163,7 +167,8 @@ public:
     return _map.insert(value);
   }
 
-  iterator insert ( iterator position, const value_type& value ){
+  template <class InputIterator>
+  iterator insert ( InputIterator position, const value_type& value ){
     return _map( position, value);
   }
 
@@ -172,14 +177,14 @@ public:
   }
 
   size_type erase ( key_type key ){
-    _map.erase(key);
+    return _map.erase(key);
   }
 
   void erase ( iterator first, iterator last ){
     _map.erase(first,last);
   }
 
-  void swap ( MapVector& mv ){
+  void swap ( MapVector<VALUE>& mv ){
     _map.swap(mv._map);
   }
 
@@ -253,7 +258,7 @@ public:
   const_iterator upper_bound ( key_type key ) const{
     return _map.upper_bound(key);
   }
-  
+
   std::pair<iterator,iterator> equal_range ( key_type key ){
     return _map.equal_range(key);
   }
@@ -263,11 +268,11 @@ public:
   }
 
   key_compare key_comp ( ) const{
-    return _map.keycomp();
+    return _map.key_comp();
   }
 
   value_compare value_comp ( ) const{
-    return _map.valuecomp();
+    return _map.value_comp();
   }
 
   allocator_type get_allocator() const{
