@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.30 2010/09/30 02:54:23 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.31 2010/11/08 23:52:33 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 02:54:23 $
+// $Date: 2010/11/08 23:52:33 $
 //
 // Original author Rob Kutschke
 //
@@ -289,7 +289,8 @@ namespace mu2e {
     auto_ptr<CaloHitMCTruthCollection> caloMCHits(new CaloHitMCTruthCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
-    _trackingAction->beginEvent();
+    //_trackingAction->beginEvent();
+    _trackingAction->beginEvent( *simParticles);
     _genAction->setEvent(event);
     
     // Run G4 for this event and access the completed event.
@@ -300,35 +301,15 @@ namespace mu2e {
     addStepPointMCs( g4event, *outputHits);
     addVirtualDetectorPoints( g4event, *vdHits);
     addCalorimeterHits( g4event, *caloHits, *caloMCHits );
-    _trackingAction->endEvent( *simParticles );
+
+    // Run self consistency checks if enabled.
+    _trackingAction->endEvent();
 
     event.put(outputHits,_trackerOutputName);
     event.put(vdHits,_vdOutputName);
     event.put(simParticles);
     event.put(caloHits);
     event.put(caloMCHits);
-    
-    //     // Pause to see graphics. 
-    //     if ( _visMacro.size() > 0 ) {
-
-    //       _UI->ApplyCommand( "/vis/scene/endOfEventAction refresh");
-
-    //       // Prompt to continue and wait for reply.
-    //       cout << "Enter a character to see next event: "; 
-    //       string junk;
-    //       cin >> junk;
-      
-    //       // Check if user is requesting an early termination of the event loop.
-    //       if ( !junk.empty() ){
-
-    //       // Checks only the first character; we should check first non-blank.
-    //       char c = tolower( junk[0] );
-    //       if ( c == 'q' ){
-    //         throw cms::Exception("CONTROL")
-    //           << "Early end of event loop requested inside G4, \n";
-    //       }
-    //       }
-    //     }
 
     // Pause to see graphics. 
     if ( _visMacro.size() > 0 ) {

@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.5 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: TrackingAction.hh,v 1.6 2010/11/08 23:52:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/08 23:52:33 $
 //
 // Original author Rob Kutschke
 //
@@ -35,6 +35,7 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimpleConfig;
   class SteppingAction;
+  //class SimParticleCollection;
 
   class TrackingAction: public G4UserTrackingAction{
 
@@ -50,14 +51,13 @@ namespace mu2e {
     // All methods after here are Mu2e specific.
 
     // Do all things that need to be done at the beginning/end of an event.
-    void endEvent( SimParticleCollection& simParticles );
-    void beginEvent();
+    void beginEvent( SimParticleCollection& simParticles );
+    void endEvent();
 
     // Record start and end points of each track created by G4.
     // Copy to the event data.
     void saveSimParticleStart(const G4Track* trk);
     void saveSimParticleEnd  (const G4Track* trk);
-    void saveSimParticleCopy (SimParticleCollection& simParticles);
 
     // Receive persistent volume information and save it for the duration of the run.
     void beginRun( const PhysicalVolumeHelper& physVolHelper, 
@@ -66,15 +66,18 @@ namespace mu2e {
       _mu2eOrigin    =  mu2eOrigin;
     }
 
+    // Check consistency of mother-daughter pointers.
+    bool checkCrossReferences( bool doPrint, bool doThrow);
+
   private:
 
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugList;
 
-    // Transient information collected during the event.
-    // Tracks are not processed in order, hence the map.
-    // Used by saveSimParticle*
-    std::map<uint32_t,SimParticle> _spmap;
+    // Non-owning pointer to the collection of information about SimParticles.
+    // G4_plugin owns the collection but this class is responsible for filling it.
+    // G4_plugin sets this pointer at the start of each event.
+    SimParticleCollection* _spmap;
 
     // Utility to translate between transient and persistent representations.
     const PhysicalVolumeHelper* _physVolHelper;
@@ -90,7 +93,7 @@ namespace mu2e {
     int _sizeLimit;
     int _currentSize;
 
-    // Pointer to stepping action
+    // Non-owning pointer to stepping action.
     SteppingAction * _stepping; 
 
   };

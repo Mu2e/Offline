@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.18 2010/11/02 03:18:26 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/02 03:18:26 $
+// $Id: ReadBack.cc,v 1.19 2010/11/08 23:53:08 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/08 23:53:08 $
 //
 // Original author Rob Kutschke
 //
@@ -550,9 +550,10 @@ namespace mu2e {
 
       ConditionsHandle<ParticleDataTable> pdt("ignored");
 
-      for ( size_t i=0; i<simParticles->size(); ++ i){
+      for ( SimParticleCollection::const_iterator i=simParticles->begin();
+            i!=simParticles->end(); ++i ){
 
-        SimParticle const& sim = simParticles->at(i);
+        SimParticle const& sim = i->second;
 
         if ( sim.madeInG4() ) {
 
@@ -570,11 +571,9 @@ namespace mu2e {
           // Physical volume in which this track started.
           PhysicalVolumeInfo const& volInfo = volumes->at(sim.startVolumeIndex());
 
-          // (it would print doLTracker, which is confusing...)
-          // cerr << __func__ 
           cerr << "Readback"
                << " Simulated Particle: " 
-               << i                   << " "
+               << i->first            << " "
                << pdgId               << " "
                << genId.name()        << " "
                << sim.startPosition() << " "

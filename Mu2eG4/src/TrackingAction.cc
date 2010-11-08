@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.8 2010/09/30 17:34:44 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.9 2010/11/08 23:53:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/30 17:34:44 $
+// $Date: 2010/11/08 23:53:08 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +39,7 @@ using namespace std;
 namespace mu2e {
 
   TrackingAction::TrackingAction( const SimpleConfig& config,
-				  SteppingAction *stepping_action ):
+                                  SteppingAction *stepping_action ):
     _debugList(),
     _physVolHelper(0),
     _timer(),
@@ -86,25 +86,26 @@ namespace mu2e {
 
   }
 
-  void TrackingAction::beginEvent(){
-       _spmap.clear();
-       _currentSize=0;
+  void TrackingAction::beginEvent(SimParticleCollection& sims){
+    _spmap = &sims;
+    _currentSize=0;
+  }
+
+  void TrackingAction::endEvent(){
+    if ( !_debugList.inList() ) return;
+    checkCrossReferences(true,false);
   }
 
 
-  void TrackingAction::endEvent( SimParticleCollection& simParticles ){
-    saveSimParticleCopy(simParticles);
-  }
-
-  // Save start of track info to the transient store.
+  // Save start of track info.
   void TrackingAction::saveSimParticleStart(const G4Track* trk){
 
     _currentSize += 1;
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	edm::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: " 
-			      << _currentSize << endl;
+        edm::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: " 
+                              << _currentSize << endl;
       }
       return;
     }
@@ -116,71 +117,45 @@ namespace mu2e {
     // Indices into the GenParticleCollection are also 0 based.
     int32_t generatorIndex = ( parentId == -1 ) ? int32_t(id): -1;
 
-    // Track should not yet be in the map.  Add a debug clause to skip this test?
-    if ( _spmap.find(id) != _spmap.end() ){
-      throw cms::Exception("RANGE")
-        << "SimParticle already in the event.  This should never happen. id is: "
-        << id
-        << "\n";
-    }
-
-    // Add this track to the transient data.
+    // Add this track; the track should not yet be in the map.
     CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
-    _spmap.insert(std::make_pair(id,SimParticle( id,
-                                                 parentId,
-                                                 trk->GetDefinition()->GetPDGEncoding(),
-                                                 generatorIndex,
-                                                 trk->GetPosition()-_mu2eOrigin,
-                                                 p4,
-                                                 trk->GetGlobalTime(),
-                                                 trk->GetProperTime(),
-                                                 _physVolHelper->index(trk),
-                                                 trk->GetTrackStatus(),
-                                                 trk->GetWeight()
-                                                 )));
+    _spmap->insertOrThrow(std::make_pair(id,SimParticle( id,
+                                                         parentId,
+                                                         trk->GetDefinition()->GetPDGEncoding(),
+                                                         generatorIndex,
+                                                         trk->GetPosition()-_mu2eOrigin,
+                                                         p4,
+                                                         trk->GetGlobalTime(),
+                                                         trk->GetProperTime(),
+                                                         _physVolHelper->index(trk),
+                                                         trk->GetTrackStatus(),
+                                                         trk->GetWeight()
+                                                         )));
     
     // If this track has a parent, tell the parent about this track.
     if ( parentId != -1 ){
-      std::map<uint32_t,SimParticle>::iterator i(_spmap.find(parentId));
-      if ( i == _spmap.end() ){
-        throw cms::Exception("RANGE")
-          << "Could not find parent SimParticle in PreUserTrackingAction.  id: "
-          << id
-          << "\n";
-      } 
-      i->second.addDaughter(id);
+      _spmap->findOrThrow(parentId).addDaughter(id);
     }
 
   }
 
-  // Append end of track information to the transient store.
+  // Append end of track information to the existing SimParticle.
   void TrackingAction::saveSimParticleEnd(const G4Track* trk){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
 
     // Persistent info uses in 0-based indices; G4 uses 1-based indices.
-    uint32_t id       = trk->GetTrackID()-1;
+    uint32_t id = trk->GetTrackID()-1;
 
-    // Find the particle in the map.
-    std::map<uint32_t,SimParticle>::iterator i(_spmap.find(id));
-    if ( i == _spmap.end() ){
-      throw cms::Exception("RANGE")
-        << "Could not find existing SimParticle in PostUserTrackingAction.  id: "
-        << id
-        << "\n";
-    }
-    SimParticle& particle = i->second;
-
-    // Add info about the end of the track.
+    // Add info about the end of the track.  Throw if SimParticle not already there.
     CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
-    particle.addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                         p4,
-                         trk->GetGlobalTime(),
-                         trk->GetProperTime(),
-                         _physVolHelper->index(trk),
-                         trk->GetTrackStatus()
-                         );
-
+    _spmap->findOrThrow(id).addEndInfo( trk->GetPosition()-_mu2eOrigin,
+                                        p4,
+                                        trk->GetGlobalTime(),
+                                        trk->GetProperTime(),
+                                        _physVolHelper->index(trk),
+                                        trk->GetTrackStatus()
+                                        );
   }
 
   void TrackingAction::printInfo(const G4Track* trk, const string& text, bool isEnd ){
@@ -212,7 +187,7 @@ namespace mu2e {
          << volName                         << " ";
 
     if ( isEnd ){
-      SimParticle& particle = _spmap[id];
+      SimParticle const& particle = _spmap->at(id);
       cout << particle.endProperTime()*CLHEP::ns <<  " | ";
       cout << particle.startGlobalTime()*CLHEP::ns <<  " ";
       cout << particle.endGlobalTime()*CLHEP::ns <<  " | ";
@@ -225,67 +200,64 @@ namespace mu2e {
 
   }
 
+  bool TrackingAction::checkCrossReferences( bool doPrint, bool doThrow ){
 
-  // Copy transient information to the event.
-  void TrackingAction::saveSimParticleCopy( SimParticleCollection& simParticles ){
+    // Start by assuming we are ok; any error will turn this to false.
+    bool ok(true);
 
-    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      edm::LogWarning("G4") << "Total of " << _currentSize 
-			    << " particles were generated in the event." 
-			    << endl
-			    << "Only " << _sizeLimit << " are saved in output collection." 
-			    << endl;
-      cout << "Total of " << _currentSize 
-	   << " particles were generated in the event." 
-	   << endl
-	   << "Only " << _sizeLimit << " are saved in output collection." 
-	   << endl;
-    }
+    // Loop over all simulated particles.
+    for ( SimParticleCollection::MapType::const_iterator i=_spmap->begin();
+          i!=_spmap->end(); ++i ){
 
-    // Copy transient information to the persistent form.
-    simParticles.clear();
-    simParticles.reserve(_spmap.size());
-    for ( std::map<uint32_t,SimParticle>::iterator i=_spmap.begin(), e=_spmap.end();
-          i!=e; ++i){
-      simParticles.push_back(i->second);
-    }
+      // The next particle to look at.
+      SimParticle const& sim = i->second;
 
-    // Debug printout.
-    /*
-    PhysicalVolumeInfoCollection const& volumes = _physVolHelper->persistentInfo();
-    cout << "Copy check: "
-         << _spmap.size() << " "
-         << simParticles.size() << " "
-         << _spmap[2].startPosition() << " " 
-         << simParticles[2].startPosition() << " "
-         << endl;
-
-    for ( std::map<uint32_t,SimParticle>::iterator i=_spmap.begin(), e=_spmap.end();
-          i!=e; ++i){
-
-      const vector<uint32_t>& v = i->second.daughterIds();
-      size_t ndau = v.size();
-      cout << "Loop:" 
-           << i->first << " "
-           << i->second.id() << " " 
-           << i->second.parentId() << " " 
-           << ndau;
-      if ( ndau != 0 ){
-        cout << " (";
-        for ( size_t i=0; i<ndau; ++i){
-          cout << " " << v[i];
+      // Check that daughters point to the mother.
+      std::vector<uint32_t> const& dau = sim.daughterIds();
+      for ( size_t j=0; j<dau.size(); ++j ){
+        int parentId = _spmap->at(dau[j]).parentId();
+        if ( parentId != int(sim.id()) ){
+          
+          // Daughter does not point back to the parent.
+          ok = false;
+          if ( doPrint ){
+            edm::LogError("G4") 
+              << "TrackingAction::checkCrossReferences: daughter does not point back to mother.\n";
+          }
+          if ( doThrow ){
+            throw cms::Exception("MU2EG4") 
+              << "TrackingAction::checkCrossReferences: daughter does not point back to mother.\n";
+          }
         }
-        cout << ")";
       }
-      cout << "  |   " 
-           << i->second.startVolumeIndex()  << " ";
-      PhysicalVolumeInfo const& pvol = volumes.at(i->second.startVolumeIndex());
-      cout << pvol.name << " "
-           << pvol.copyNo;
-      cout << endl;
-      
+
+      // Check that this particle is in the list of its parent's daughters.
+      int parentId = sim.parentId();
+      if ( parentId != -1 ){
+
+        // Find all daughters of this particle's mother.
+        std::vector<uint32_t> const& mdau = _spmap->at(parentId).daughterIds();
+        bool inList(false);
+        for ( size_t j=0; j<mdau.size(); ++j ){
+          if ( mdau[j] == sim.id() ){
+            inList = true;
+            break;
+          }
+        }
+        if ( !inList ){
+          ok = false;
+          if ( doPrint ){
+            edm::LogError("G4") 
+              << "TrackingAction::checkCrossReferences: daughter is not found amoung mother's daughters.\n";
+          }
+          if ( doThrow ){
+            throw cms::Exception("MU2EG4") 
+              << "TrackingAction::checkCrossReferences: daughter is not found amoung mother's daughters.\n";
+          }
+        }
+      }
     }
-    */
+    return ok;
 
   }
 
