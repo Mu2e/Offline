@@ -4,9 +4,9 @@
 //
 // A temporary class to hold particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.4 2010/11/08 23:54:25 kutschke Exp $
+// $Id: SimParticle.hh,v 1.5 2010/11/09 20:12:18 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/08 23:54:25 $
+// $Date: 2010/11/09 20:12:18 $
 //
 // Original author Rob Kutschke
 //
@@ -26,11 +26,13 @@ namespace mu2e {
 
   struct SimParticle {
 
+    typedef MapVectorKey key_type;
+
     // This c'tor is required for ROOT.
     SimParticle(){};
 
-    SimParticle( uint32_t                       aid,
-                 int32_t                        aparentId,
+    SimParticle( key_type                       aid,
+                 key_type                       aparentId,
                  int32_t                        apdgId,
                  int32_t                        agenIndex,
                  const CLHEP::Hep3Vector&       aposition,
@@ -71,18 +73,19 @@ namespace mu2e {
       _endG4Status     = aendG4Status;
     }
 
-    void addDaughter( uint32_t id ){
+    void addDaughter( key_type id ){
       _daughterIds.push_back(id);
     }
+
 
     // Accessors
 
     // Index of this track.
-    uint32_t id() const {return _id;}
+    key_type id() const {return _id;}
 
     // Index of the parent of this track.
-    int32_t  parentId()  const { return _parentId;}
-    bool     hasParent() const { return (_parentId != -1); }
+    key_type  parentId()  const { return _parentId;}
+    bool      hasParent() const { return (_parentId != key_type(-1)); }
 
     // PDG particle ID code.  See note 1.
     int32_t pdgId() const {return _pdgId;}
@@ -110,7 +113,7 @@ namespace mu2e {
     uint32_t endG4Status()    const { return _endG4Status;}
 
     // SimParticle indices of daughters of this track.
-    std::vector<uint32_t> const& daughterIds() const { return _daughterIds;}
+    std::vector<key_type> const& daughterIds() const { return _daughterIds;}
 
     // Weight
     double weight() const { return  _weight;}
@@ -121,8 +124,8 @@ namespace mu2e {
   private:
     // Id (serial number) of this track and of its parent.  
     // Tracks do not reach TrackingAction in order.
-    uint32_t _id;
-    int32_t  _parentId;
+    key_type _id;
+    key_type _parentId;
 
     // PDG particle ID code.  See note 1.
     int32_t _pdgId;
@@ -146,8 +149,8 @@ namespace mu2e {
     uint32_t                _endVolumeIndex;
     uint32_t                _endG4Status;
 
-    // SimParticle indices of daughters of this track.
-    std::vector<uint32_t>   _daughterIds;
+    // SimParticle IDs of daughters of this track.
+    std::vector<key_type>  _daughterIds;
 
     // Weight
     double _weight;

@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.11 2010/09/13 23:43:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/13 23:43:58 $
+// $Id: StepPointMC.hh,v 1.12 2010/11/09 20:12:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/09 20:12:18 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,7 @@
 #include <ostream>
 
 // Mu2e includes
+#include "GeneralUtilities/inc/MapVectorKey.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 
 // CLHEP includes
@@ -34,7 +35,7 @@ namespace mu2e {
     typedef unsigned long VolumeId_type;
 
     StepPointMC():
-      _trackId(0),
+      _trackId(MapVectorKey()),
       _volumeId(0),
       _totalEDep(0.),
       _position(),
@@ -53,7 +54,7 @@ namespace mu2e {
                  CLHEP::Hep3Vector const& momentum,
                  double                   stepLength
                  ):
-      _trackId(trackId),
+      _trackId(MapVectorKey(trackId)),
       _volumeId(volumeId),
       _totalEDep(totalEDep),
       _position(position),
@@ -71,7 +72,7 @@ namespace mu2e {
     void print( std::ostream& ost, bool doEndl = true ) const;
     void print() const { print(std::cout); }
 
-    uint32_t                 trackId()    const { return _trackId;   }
+    MapVectorKey             trackId()    const { return _trackId;   }
     VolumeId_type            volumeId()   const { return _volumeId;  }
     double                   totalEDep()  const { return _totalEDep; } 
     CLHEP::Hep3Vector const& position()   const { return _position;  }
@@ -89,7 +90,7 @@ namespace mu2e {
 
   private:
   
-    uint32_t          _trackId;
+    MapVectorKey      _trackId;
     VolumeId_type     _volumeId;
     double            _totalEDep;
     CLHEP::Hep3Vector _position;
