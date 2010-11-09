@@ -1,15 +1,15 @@
-#ifndef MapVector_HH
-#define MapVector_HH
+#ifndef Generalutilities_MapVector_hh
+#define Generalutilities_MapVector_hh
 //
-// An STL-like class template that looks and feels std::map<size_t,T>,
+// An STL-like class template that looks and feels std::map<key_type,T>,
 // with the exception that it is has a few extra modifier and accessor
 // functions described below.  So far as I know, all accessor and 
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.6 2010/11/09 04:53:27 kutschke Exp $
+// $Id: MapVector.hh,v 1.7 2010/11/09 20:10:32 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 04:53:27 $
+// $Date: 2010/11/09 20:10:32 $
 //
 //   Original author Rob Kutschke
 //
@@ -22,11 +22,11 @@
 //      - same as the previous method except that it may run on a 
 //        const MapVector and returns a const reference.
 //
-//  VALUE*       findOrThrow( key_type key );
+//  VALUE*       findOrNull( key_type key );
 //      - If the key exists, it returns a non-owning pointer to the value.
 //      - If the key does not exist it returns a null pointer.
 //
-//  VALUE const* findOrThrow( key_type key ) const;
+//  VALUE const* findOrNull( key_type key ) const;
 //      - same as the previous method except that it may run on a 
 //        const MapVector and returns a const pointer.
 //
@@ -44,7 +44,7 @@
 //
 //  iterator insertOrThrow ( const value_type& value );
 //      - If the key does not exist in the map, insert the pair and return
-//        an iterator to the pair
+//        an iterator to the pair.
 //      - If the key already exists in the map, throw.
 //
 // Usage notes:
@@ -99,12 +99,15 @@
 #include <stdexcept>
 #include <sstream>
 
+// Mu2e includes
+#include "GeneralUtilities/inc/MapVectorKey.hh"
+
 template<typename VALUE>
 class MapVector{
 
 public:
 
-  typedef uint32_t                          key_type;
+  typedef MapVectorKey                      key_type;
   typedef VALUE                          mapped_type;
   typedef std::pair<key_type,mapped_type> value_type;
   typedef std::map<key_type,VALUE>           MapType;
