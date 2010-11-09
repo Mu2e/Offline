@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_plugin.cc,v 1.6 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/31 00:24:51 $
+// $Id: KalmanT01_plugin.cc,v 1.7 2010/11/09 03:45:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/09 03:45:24 $
 //
 // Original author Rob Kutschke
 //
@@ -168,7 +168,12 @@ namespace mu2e {
     // Eventually get this from a calibration DB.
     static const double sigma=0.1*CLHEP::mm;
 
-    const SimParticle& sim = sims.front();
+    if ( sims.empty() ) {
+      cerr << "No hits. Skipping event." << endl;
+      return;
+    }
+
+    const SimParticle& sim = sims.begin()->second;
 
     // COnvert to BaBar style helix params.
     // To test that I know how to use the tools.
