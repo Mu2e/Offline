@@ -1,3 +1,12 @@
+//
+// $Id: ConvElecUtilities.cc,v 1.4 2010/11/09 21:06:04 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2010/11/09 21:06:04 $
+//
+// Original author Gianni Onorato
+//
+
+
 // Framework includes
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/FileInPath.h"
@@ -56,9 +65,10 @@ namespace mu2e {
         if ( sim.fromGenerator() ) {
           //   cout << "index " << sim.generatorIndex() << " and " 
           //      << _genParticles->at(sim.generatorIndex())._generatorId.name() << endl;
-          if (_genParticles->at(sim.generatorIndex())._generatorId.name() == "conversionGun") {
+          if (_genParticles->at(sim.generatorIndex())._generatorId == GenId::conversionGun) {
             _convTrackId = sim.id();
-            cout << n << " and " << _convTrackId << endl;
+            _simParticle = auto_ptr<SimParticle>( new SimParticle(sim) );
+            //  cout << n << " and " << _convTrackId << endl;
             _nconv++;
             //  cout << "conv track id is " << _convTrackId << endl;
           }
@@ -67,8 +77,8 @@ namespace mu2e {
     } else { cout << "No SimParticles in the event" << endl; }
   }
   
-  const SimParticle& ConvElecUtilities::simConvElec() {
-    return _simParticles->at(_convTrackId);
+  const SimParticle& ConvElecUtilities::simConvElec() const{
+    return *_simParticle;
   }
 
   const ToyGenParticle& ConvElecUtilities::genConvElec() {
@@ -85,8 +95,6 @@ namespace mu2e {
     _earliestidx = 10000; // dummy value
     for (size_t i=0; i<hits->size(); ++i) {
       StepPointMC const& hit = (*hits)[i];
-      //      cout << "Hit " << i+1 << " : " << hit.trackId() 
-      //     << "   " << hit.volumeId() << endl;
       if ( hit.trackId() == _convTrackId ) {
         if (hit.time()<time) {
           time = hit.time();
@@ -101,11 +109,6 @@ namespace mu2e {
     }
   }
 
-  //Returns how many hits come from the convElectron
-  size_t ConvElecUtilities::hasStepPointMC() const {
-    return _convElecHits.size();
-  }
-
   //Return a reference to the earliest ConvElectron Hit
   StepPointMC const& ConvElecUtilities::firstHit() {
     if (hasStepPointMC()) {
@@ -118,28 +121,13 @@ namespace mu2e {
 
   //return the strawindex of the earliest hit of the conversion electron
   StrawIndex ConvElecUtilities::earliestStrawIndex() const {
+    if (hasStepPointMC()) {
     return (*hits)[_earliestidx].strawIndex();
+    } else { 
+      throw cms::Exception("RANGE")
+        << "No hit associated to Conversion Electron track.";
+    }
   }
-
-
-  //Number of Conversion Electrons. Used as a check
-  int ConvElecUtilities::nConvElec() const {
-    return _nconv;
-  }
-
-
-  //return a vector of index related to the stepPointMCCollection
-  //identifying hits of the conversion electron
-  vector<size_t> ConvElecUtilities::convElecHitsIdx() {
-    return _convElecHits;
-  } //maybe it could be transformed in a vector of references to event hits 
-
-
-
-  //return a vector of StrawIndex related to hits of the conversion electron
-  vector<StrawIndex> ConvElecUtilities::convElecStrawIdx() {
-    return _convElecStrawIdx;
-  }
-
-
+  
+  
 } // end namespace mu2e

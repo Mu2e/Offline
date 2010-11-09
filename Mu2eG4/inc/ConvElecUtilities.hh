@@ -1,3 +1,11 @@
+//
+// $Id: ConvElecUtilities.hh,v 1.4 2010/11/09 21:06:04 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2010/11/09 21:06:04 $
+//
+// Original author Gianni Onorato
+//
+
 #ifndef CONVELECUTILITIES_HH
 #define CONVELECUTILITIES_HH
 
@@ -7,6 +15,7 @@
 #include <vector>
 #include <map>
 #include <cstdlib>
+#include <memory>
 
 // Framework includes
 #include "FWCore/Framework/interface/Event.h"
@@ -43,14 +52,34 @@ namespace mu2e {
     
   public:
 
-    int nConvElec() const;
-    std::vector<size_t> convElecHitsIdx();
-    std::vector<StrawIndex> convElecStrawIdx();
-    size_t hasStepPointMC() const;
     StepPointMC const& firstHit();
     StrawIndex earliestStrawIndex() const;
-    const SimParticle& simConvElec();
+    const SimParticle& simConvElec() const;
     const ToyGenParticle& genConvElec();
+
+
+    //Trivial accessors defined here
+
+    //Number of Conversion Electrons. Used as a check
+    int ConvElecUtilities::nConvElec() const {
+      return _nconv;
+    }
+    
+    //Returns how many hits come from the convElectron
+    size_t ConvElecUtilities::hasStepPointMC() const {
+      return _convElecHits.size();
+    }
+        
+    //return a vector of index related to the stepPointMCCollection
+    //identifying hits of the conversion electron
+    const std::vector<size_t> & ConvElecUtilities::convElecHitsIdx() const {
+      return _convElecHits;
+    } //maybe it could be transformed in a vector of references to event hits 
+    
+    //return a vector of StrawIndex related to hits of the conversion electron
+    const std::vector<StrawIndex> & ConvElecUtilities::convElecStrawIdx() const {
+      return _convElecStrawIdx;
+    }
 
   private:
     
@@ -65,6 +94,8 @@ namespace mu2e {
     std::string _g4ModuleLabel, _trackerStepPoints;
     key_type _convTrackId;
     size_t _earliestidx;
+    std::auto_ptr<SimParticle> _simParticle;
+
 
   }; //end of class ConvElecUtilities
 
