@@ -7,9 +7,9 @@
 //
 // For details, see: ToyDP/inc/StepPointMC.hh .
 // 
-// $Id: StepPointG4.hh,v 1.3 2010/09/13 23:43:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/13 23:43:58 $
+// $Id: StepPointG4.hh,v 1.4 2010/11/09 20:25:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author Rob Kutschke
 //
@@ -64,7 +64,7 @@ namespace mu2e {
   public:
   
     inline mu2e::StepPointMC const&   hit()      const { return _hit; }
-    inline G4int                      trackId()  const { return _hit.trackId();  }
+    inline G4int                      trackId()  const { return _hit.trackId().asInt();  }
     inline G4double                   eDep()     const { return _hit.eDep();     }
     inline G4ThreeVector const&       position() const { return _hit.position(); }
     inline G4ThreeVector const&       momentum() const { return _hit.momentum(); }

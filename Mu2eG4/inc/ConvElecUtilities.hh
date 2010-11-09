@@ -26,6 +26,8 @@
 namespace mu2e {
 
   class ConvElecUtilities{
+    
+    typedef SimParticleCollection::key_type key_type;
 
   public:
     
@@ -61,7 +63,7 @@ namespace mu2e {
     std::vector<size_t> _convElecHits; 
     std::vector<StrawIndex> _convElecStrawIdx;
     std::string _g4ModuleLabel, _trackerStepPoints;
-    uint32_t _convTrackId;
+    key_type _convTrackId;
     size_t _earliestidx;
 
   }; //end of class ConvElecUtilities

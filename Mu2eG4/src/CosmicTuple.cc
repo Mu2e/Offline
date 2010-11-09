@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.9 2010/11/09 04:34:58 kutschke Exp $
+// $Id: CosmicTuple.cc,v 1.10 2010/11/09 20:25:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 04:34:58 $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author Rob Kutschke
 //
@@ -70,6 +70,7 @@ namespace mu2e {
 
   bool CosmicTuple::filter(edm::Event& event, edm::EventSetup const&) {
     
+    typedef SimParticleCollection::key_type key_type;
 
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
@@ -130,7 +131,7 @@ namespace mu2e {
     // ntuple buffer.
     float ntT[23];   
 
-    int oldTrk = -1;
+    key_type oldTrk(-1);
     bool first = true;
     CLHEP::Hep3Vector ptrk(0,0,0);
     int nHits = 0;
@@ -176,7 +177,7 @@ namespace mu2e {
 
  
       // The simulated particle that made this hit.
-      int trackId = hit.trackId();
+      key_type trackId = hit.trackId();
 
       if ( oldTrk != trackId || i == hits->size()-1 ) {
         // special case
@@ -216,8 +217,7 @@ namespace mu2e {
             int depth = 0;
             while ( gTrk < 0 && depth < 100 ) {
               if ( p->hasParent() ) {
-                int pId = p->parentId();
-                p = simParticles->findOrNull(pId);
+                p = simParticles->findOrNull(p->parentId());
                 if ( !p ) break;
                 gTrk = p->generatorIndex();
                 depth++;
@@ -241,7 +241,7 @@ namespace mu2e {
           }
 
           ntT[0]  = event.id().event();
-          ntT[1]  = oldTrk;
+          ntT[1]  = oldTrk.asInt();
           ntT[2]  = pdgId;
           ntT[3]  = ptrk.x();
           ntT[4]  = ptrk.y();

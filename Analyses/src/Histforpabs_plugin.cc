@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_plugin.cc,v 1.3 2010/11/09 03:38:36 kutschke Exp $
+// $Id: Histforpabs_plugin.cc,v 1.4 2010/11/09 20:24:22 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/09 03:38:36 $
+// $Date: 2010/11/09 20:24:22 $
 //
 // Original author Rob Kutschke
 //
@@ -120,7 +120,8 @@ namespace mu2e {
       // Skip hits with low pulse height.
       if ( hit.eDep() < _minimumEnergy ) continue;
      
-      const CLHEP::Hep3Vector& mom = hit.momentum();  int trackId = hit.trackId();
+      const CLHEP::Hep3Vector& mom = hit.momentum();  
+      SimParticleCollection::key_type trackId = hit.trackId();
 
       // Fill some histograms
       SimParticle const& simfm = simParticles->at(trackId);  

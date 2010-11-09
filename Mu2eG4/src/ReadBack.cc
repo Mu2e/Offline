@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.19 2010/11/08 23:53:08 kutschke Exp $
+// $Id: ReadBack.cc,v 1.20 2010/11/09 20:25:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/08 23:53:08 $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author Rob Kutschke
 //
@@ -434,7 +434,7 @@ namespace mu2e {
       CLHEP::Hep3Vector point = pos - (mid + s*w);
 
       // The simulated particle that made this hit.
-      int trackId = hit.trackId();
+      SimParticleCollection::key_type trackId(hit.trackId());
 
       // Debug info
       
@@ -496,7 +496,7 @@ namespace mu2e {
 
       // Fill the ntuple.
       nt[0]  = event.id().event();
-      nt[1]  = hit.trackId();
+      nt[1]  = hit.trackId().asInt();
       nt[2]  = hit.volumeId();
       nt[3]  = pos.x();
       nt[4]  = pos.y();
@@ -664,7 +664,7 @@ namespace mu2e {
       
       // Fill the ntuple.
       nt[0]  = event.id().event();
-      nt[1]  = hit.trackId();
+      nt[1]  = hit.trackId().asInt();
       nt[2]  = hit.volumeId();
       nt[3]  = pos.x();
       nt[4]  = pos.y();
@@ -689,7 +689,7 @@ namespace mu2e {
              << " hit: "
              << event.id().event() << " "
              << n++ <<  " "
-             << hit.trackId()    << "   "
+             << hit.trackId()  << "   "
              << hit.volumeId() << " | "
           /*<< pca.dca()   << " "*/
              << pos  << " "

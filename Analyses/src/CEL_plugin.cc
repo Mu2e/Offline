@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_plugin.cc,v 1.5 2010/11/09 03:22:14 kutschke Exp $
+// $Id: CEL_plugin.cc,v 1.6 2010/11/09 20:24:14 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/09 03:22:14 $
+// $Date: 2010/11/09 20:24:14 $
 //
 // Original author R. Bernstein
 //
@@ -84,6 +84,9 @@ namespace mu2e {
 
   class CEL : public edm::EDAnalyzer{
   public:
+
+    typedef SimParticleCollection::key_type key_type;
+
     CEL(edm::ParameterSet const& pset):
 
       //
@@ -287,7 +290,7 @@ namespace mu2e {
 	PhysicalVolumeInfo const& startVol = volumes->at(sim.startVolumeIndex());
 	//
 	// is this the initial electron?
-	if (sim.parentId() == -1){
+	if ( !sim.hasParent() ){
 	  if (sim.pdgId() != PDGCode::e_minus) {
 	    //
 	    // this can't happen if we're studying CELs so throw and die
@@ -303,7 +306,7 @@ namespace mu2e {
 	}
 	//
 	// check you're the original electron and you were born in the foil
-	if ( sim.parentId() == -1 && startVol.name() == "TargetFoil_" && sim.pdgId() == PDGCode::e_minus){
+	if ( !sim.hasParent() && startVol.name() == "TargetFoil_" && sim.pdgId() == PDGCode::e_minus){
           bool electronHitTracker = false;
           bool electronAccepted = false;
           //bool hitEnoughStraws = false;
@@ -323,7 +326,7 @@ namespace mu2e {
             const StepPointMC& hit = (*hits)[i];
 
             //step point mc associated with generated electrons     
-            int trackId = hit.trackId();
+            key_type trackId = hit.trackId();
             //
             // now I have the track Id of this hit.  
             SimParticle const& simParticleHit = simParticles->at(trackId);

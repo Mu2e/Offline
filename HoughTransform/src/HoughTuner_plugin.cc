@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_plugin.cc,v 1.6 2010/09/30 22:36:08 kutschke Exp $
+// $Id: HoughTuner_plugin.cc,v 1.7 2010/11/09 20:25:41 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 22:36:08 $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author P. Shanahan
 //
@@ -227,7 +227,7 @@ std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
 
           // add hit to noise or physics TPolyMarker and stats as appropriate
          unsigned int kType=kPhys;
-         if ( 2==hit.trackId() && TMath::Abs(hit.totalEDep()-0)<1e-10) 
+         if ( 2==hit.trackId().asInt() && TMath::Abs(hit.totalEDep()-0)<1e-10) 
                                                               kType=kNoise;
          tp[kType]->SetPoint(npm[kType]++,hit.position()[0],hit.position()[1]);
 

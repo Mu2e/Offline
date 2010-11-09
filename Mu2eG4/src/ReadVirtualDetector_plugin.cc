@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_plugin.cc,v 1.9 2010/11/09 04:09:55 kutschke Exp $
+//  $Id: ReadVirtualDetector_plugin.cc,v 1.10 2010/11/09 20:25:41 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2010/11/09 04:09:55 $
+//  $Date: 2010/11/09 20:25:41 $
 //
 // Original author Ivan Logashenko
 //
@@ -54,6 +54,7 @@ namespace mu2e {
   public:
 
     typedef vector<int> Vint;
+    typedef SimParticleCollection::key_type key_type;
 
     explicit ReadVirtualDetector::ReadVirtualDetector(edm::ParameterSet const& pset) : 
       _vdStepPoints(pset.getUntrackedParameter<string>("vdStepPoints","virtualdetector")),
@@ -197,10 +198,10 @@ namespace mu2e {
       }
 
       // Get track info
-      size_t trackId = hit.trackId();
+      key_type trackId = hit.trackId();
       int pdgId = 0;
       if ( haveSimPart ){
-	if( trackId >= simParticles->size() ) {
+	if( !simParticles->has(trackId) ) {
 	  pdgId = 0;
 	} else {
 	  SimParticle const& sim = simParticles->at(trackId);
@@ -210,7 +211,7 @@ namespace mu2e {
 
       // Fill the ntuple.
       nt[0]  = event.id().event();
-      nt[1]  = trackId;
+      nt[1]  = trackId.asInt();
       nt[2]  = hit.volumeId();
       nt[3]  = pdgId;
       nt[4]  = hit.time();
@@ -263,7 +264,7 @@ namespace mu2e {
 
 	// Save SimParticle info
 	nt[0] = event.id().event();    // event_id
-	nt[1] = sim.id();              // track_id
+	nt[1] = sim.id().asInt();      // track_id
 	nt[2] = sim.pdgId();           // PDG id
 	nt[3] = sim.startGlobalTime(); // start time
 	nt[4] = sim.startProperTime(); // start time
@@ -304,7 +305,7 @@ namespace mu2e {
 	  const StepPointMC& hit = (*hits)[i];
 	  
 	  // Only use hits associated with current particle
-	  size_t trackId = hit.trackId();
+	  key_type trackId = hit.trackId();
 	  if( trackId != isp->first ) continue;
 
 	  // Get the hit information.

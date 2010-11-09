@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.14 2010/09/30 21:59:33 kutschke Exp $
+// $Id: HoughTest_plugin.cc,v 1.15 2010/11/09 20:25:41 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 21:59:33 $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author R. Bernstein
 //
@@ -546,7 +546,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
                                           +TMath::Power(centY[ipc]-pos.y(),2));
                        _hRHitFromHTCenterMC->Fill(radFromCenter);
                        _hRHitFromCircleMC->Fill(radFromCenter-rad2D[ipr]);
-                       if (hit.trackId()==2) {
+                       if (hit.trackId().asInt() == 2) {
                           _hRNoiseHitFromHTCenterMC->Fill(radFromCenter);
                           _hRNoiseHitFromCircleMC->Fill(radFromCenter-rad2D[ipr]);
                        } else {
@@ -646,7 +646,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
         /*
         // Fill the ntuple.
         nt[0]  = evt.id().event();
-        nt[1]  = hit.trackId();
+        nt[1]  = hit.trackId().asInt();
         nt[2]  = hit.volumeId();
         nt[3]  = pos.x();
         nt[4]  = pos.y();

@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example 
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.5 2010/09/30 21:44:57 kutschke Exp $
+// $Id: Analyzer.C,v 1.6 2010/11/09 20:25:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/30 21:44:57 $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author KLG
 //
@@ -395,8 +395,10 @@ void Analyzer::analyze() {
 
       cout << "EventAuxiliaryWrppd->id().event()  " << EventAuxiliaryWrppd->id().event() << endl;
 
+      key_type zero(0);
+
       cout << "Event i " << i << " SimParticle _endPosition.dx " << 
-        SimParticleWrppd->product()->at(0).endPosition().x() << endl;
+        SimParticleWrppd->product()->at(zero).endPosition().x() << endl;
       cout << "Event i " << i << " StepPointMC    _position.dx " 
            << StepPointMCWrppd->product()->at(0).position().x() << endl;
       cout << "Event i " << i << " ToyGenParticle _position.dx " 
@@ -473,7 +475,7 @@ void Analyzer::analyze() {
       //     CLHEP::Hep3Vector point = pos - (mid + s*w);
 
       // The simulated particle that made this hit.
-      int trackId = hit.trackId();
+      key_type trackId = hit.trackId();
 
       // Default values for these, in case information is not available.
       int pdgId(0);
@@ -510,7 +512,7 @@ void Analyzer::analyze() {
 
       // Fill the ntuple. (we comment out the elemets requiring the geometry service)
       nt[0]  = event.id().event();
-      nt[1]  = hit.trackId();
+      nt[1]  = hit.trackId().asInt();
       nt[2]  = hit.volumeId();
       nt[3]  = pos.x();
       nt[4]  = pos.y();
@@ -556,9 +558,12 @@ void Analyzer::analyze() {
 
     //     ConditionsHandle<ParticleDataTable> pdt("ignored");
 
-    for ( size_t i=0; i<simParticles->size(); ++ i){
+    for ( mu2e::SimParticleCollection::const_iterator i=simParticles->begin();
+          i!=simParticles->end(); ++i ){
 
-      mu2e::SimParticle const& sim = simParticles->at(i);
+      mu2e::SimParticle const& sim = i->second;
+      //    for ( size_t i=0; i<simParticles->size(); ++ i){
+      //mu2e::SimParticle const& sim = simParticles->at(i);
 
       if ( sim.madeInG4() ) {
 

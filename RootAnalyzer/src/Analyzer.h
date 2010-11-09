@@ -1,9 +1,9 @@
 //
 // header for Analyzer.C 
 
-// $Id: Analyzer.h,v 1.4 2010/09/30 22:48:58 kutschke Exp $
+// $Id: Analyzer.h,v 1.5 2010/11/09 20:25:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/30 22:48:58 $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author KLG
 //
@@ -31,6 +31,8 @@
 class Analyzer {
 
  public:
+
+  typedef mu2e::SimParticleCollection::key_type key_type;
 
 //   cint may not be able to handle more complicated defaults in the Dict ...
 //   we can't use  TString file="data_03.root",  so we use char const *

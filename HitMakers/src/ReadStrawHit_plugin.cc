@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.8 2010/10/05 21:17:28 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2010/10/05 21:17:28 $
+// $Id: ReadStrawHit_plugin.cc,v 1.9 2010/11/09 20:25:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -167,7 +167,7 @@ namespace mu2e {
       const std::deque<Straw>& allstraws = tracker.getAllStraws();    
       float detnt[11];
       cout<<"Number of straws:  "<< allstraws.size()<<endl;
-      for (int i = 0;i<allstraws.size();i++)
+      for (size_t i = 0;i<allstraws.size();i++)
 	{
 	  Straw str = allstraws[i];
 	  StrawId sid = str.Id();

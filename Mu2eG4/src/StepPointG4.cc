@@ -1,9 +1,9 @@
 //
 // A class to hold hits created by G4 in most sensitive detectors.
 // 
-// $Id: StepPointG4.cc,v 1.3 2010/09/13 23:43:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/13 23:43:58 $
+// $Id: StepPointG4.cc,v 1.4 2010/11/09 20:25:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/09 20:25:41 $
 //
 // Original author Rob Kutschke
 //
@@ -45,7 +45,7 @@ namespace mu2e {
 
   void StepPointG4::Print(){
 
-    if ( _hit.trackId() != 1 ){
+    if ( _hit.trackId().asInt() != 1 ){
 
       // There is no units category for momentum, so use energy.
       G4cout << "  trackId: "        << _hit.trackId()
@@ -54,7 +54,7 @@ namespace mu2e {
              << "  position: "       << G4BestUnit(_hit.position(),"Length") 
              << "  momentum: "       << G4BestUnit(_hit.momentum(),"Energy") 
              << "  time: "           << G4BestUnit(_hit.time(),"Time") 
-             << "  proper time: "           << G4BestUnit(_hit.properTime(),"Time") 
+             << "  proper time: "    << G4BestUnit(_hit.properTime(),"Time") 
              << "  step Length: "    << G4BestUnit(_hit.stepLength(),"Length")
              << G4endl;
     }
