@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.5 2010/11/09 04:47:17 kutschke Exp $
+// $Id: MapVector.hh,v 1.6 2010/11/09 04:53:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 04:47:17 $
+// $Date: 2010/11/09 04:53:27 $
 //
 //   Original author Rob Kutschke
 //
@@ -48,19 +48,20 @@
 //      - If the key already exists in the map, throw.
 //
 // Usage notes:
+//  The ONLY way to write a loop over a MapVector is:
+//      MapVector<T> const& mvt = ....;
+//      for ( SimParticleCollection::const_iterator i=mvt->begin();
+//             i!=mvt->end(); ++i ){
+//           T const& t = i->second;
+//      }
+
 //  NEVER write a loop like:
-//      SimParticleCollection const& col = ....;
+//      MapVector<T> const& col = ....;
 //      for ( size_t i=0; i<col.end(); ++i){
-//        SimParticle const& s = col[i].
+//        T const& t = col[i].
 //      }
-//  This will usually throw since the the accessor [i] looks for a map entry
-//  whose key is i; it does not look for the i'th entry from the start of the map.
-//  
-//  The correct way to write a loop is:
-//      for ( SimParticleCollection::const_iterator i=simParticles->begin();
-//             i!=simParticles->end(); ++i ){
-//           SimParticle const& s = i->second;
-//      }
+//  This will accidentally work if and only if the set of keys is dense and starts at 0.
+//  Recall that the argument of [] is a key, not an index.
 //
 //
 // Other Notes:
