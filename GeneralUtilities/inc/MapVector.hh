@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.4 2010/11/09 04:35:29 kutschke Exp $
+// $Id: MapVector.hh,v 1.5 2010/11/09 04:47:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 04:35:29 $
+// $Date: 2010/11/09 04:47:17 $
 //
 //   Original author Rob Kutschke
 //
@@ -21,6 +21,14 @@
 //  VALUE const& findOrThrow( key_type key ) const;
 //      - same as the previous method except that it may run on a 
 //        const MapVector and returns a const reference.
+//
+//  VALUE*       findOrThrow( key_type key );
+//      - If the key exists, it returns a non-owning pointer to the value.
+//      - If the key does not exist it returns a null pointer.
+//
+//  VALUE const* findOrThrow( key_type key ) const;
+//      - same as the previous method except that it may run on a 
+//        const MapVector and returns a const pointer.
 //
 //  VALUE const& operator[]( key_type key ) const;
 //      - Alternate syntax for the previous method.
@@ -152,7 +160,7 @@ public:
     return i->second;
   }
 
-  // Return a pointer to the value corresponding to an existing key,
+  // Return a non-owning pointer to the value corresponding to an existing key,
   // Return a null pointer if the key does not exist.
   VALUE* findOrNull( key_type key ){
     iterator i = _map.find(key);
@@ -163,6 +171,7 @@ public:
     return &(i->second);
   }
 
+  // Const version of the above.
   VALUE const * findOrNull( key_type key ) const{
     const_iterator i = _map.find(key);
 
@@ -173,7 +182,7 @@ public:
   }
 
   // Two handy synonyms for the const findOrThrow;
-  // This method is the original reason for this class.
+  // These methods are the original reason for this class.
   VALUE const& operator[] ( key_type key ) const{
     return findOrThrow(key);
   }
