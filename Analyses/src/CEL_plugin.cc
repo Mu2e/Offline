@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_plugin.cc,v 1.4 2010/10/06 19:15:06 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/10/06 19:15:06 $
+// $Id: CEL_plugin.cc,v 1.5 2010/11/09 03:22:14 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/11/09 03:22:14 $
 //
 // Original author R. Bernstein
 //
@@ -279,8 +279,11 @@ namespace mu2e {
     CLHEP::Hep3Vector  momentumAtEntranceToTracker = CLHEP::Hep3Vector();
     cout << "have sim particle" << endl;
     if (haveSimPart){
-      for (uint32_t ithPart = 0; ithPart < simParticles->size(); ++ithPart){
-        SimParticle const& sim = simParticles->at(ithPart);
+      for ( SimParticleCollection::const_iterator i=simParticles->begin();
+            i!=simParticles->end(); ++i ){
+
+        SimParticle const& sim = i->second;
+
 	PhysicalVolumeInfo const& startVol = volumes->at(sim.startVolumeIndex());
 	//
 	// is this the initial electron?
