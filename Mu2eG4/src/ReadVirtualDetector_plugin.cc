@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_plugin.cc,v 1.8 2010/11/05 03:14:55 kutschke Exp $
+//  $Id: ReadVirtualDetector_plugin.cc,v 1.9 2010/11/09 04:09:55 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2010/11/05 03:14:55 $
+//  $Date: 2010/11/09 04:09:55 $
 //
 // Original author Ivan Logashenko
 //
@@ -251,9 +251,9 @@ namespace mu2e {
       const int id0 = 21;
 
       // Go through SimParticle container and analyze one particle at a time
-      for( size_t isp=0; isp<simParticles->size(); ++isp ) {
-
-        SimParticle const& sim = simParticles->at(isp);
+      for ( SimParticleCollection::const_iterator isp=simParticles->begin();
+            isp!=simParticles->end(); ++isp ){
+        SimParticle const& sim = isp->second;
 
 	// It particle PDG ID is not in the list - skip it
 	if( pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
@@ -263,7 +263,7 @@ namespace mu2e {
 
 	// Save SimParticle info
 	nt[0] = event.id().event();    // event_id
-	nt[1] = isp;                   //track_id
+	nt[1] = sim.id();              // track_id
 	nt[2] = sim.pdgId();           // PDG id
 	nt[3] = sim.startGlobalTime(); // start time
 	nt[4] = sim.startProperTime(); // start time
@@ -305,7 +305,7 @@ namespace mu2e {
 	  
 	  // Only use hits associated with current particle
 	  size_t trackId = hit.trackId();
-	  if( trackId != isp ) continue;
+	  if( trackId != isp->first ) continue;
 
 	  // Get the hit information.
 	  
