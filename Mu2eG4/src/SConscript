@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.8 2010/09/13 23:43:58 logash Exp $
-# $Author: logash $
-# $Date: 2010/09/13 23:43:58 $
+# $Id: SConscript,v 1.9 2010/11/09 20:05:53 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/11/09 20:05:53 $
 #
 # Original author Rob Kutschke.
 #
@@ -136,7 +136,6 @@ else:
 
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
-    print g4inc
     env.SharedLibrary( libname, cc,
                      LIBS=[ 'FWCoreFramework', libs, 'Mu2eUtilities', 'ConditionsService_plugin', G4GRANULARLIBS,
                            'CLHEP', OPENGL_LIBS, 'Tree' 
