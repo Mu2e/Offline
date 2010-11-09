@@ -1,9 +1,9 @@
 # Script to build this release.
 
 #
-# $Id: SConstruct,v 1.8 2010/09/30 14:14:27 kutschke Exp $
+# $Id: SConstruct,v 1.9 2010/11/09 20:04:24 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/30 14:14:27 $
+# $Date: 2010/11/09 20:04:24 $
 #
 # Original author Rob Kutschke.
 #
@@ -96,6 +96,9 @@ for root,dirs,files in os.walk('.'):
         if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
         pass
     pass
+
+# Temporarily remove things known to be broken but not needed for standard builds.
+ss.remove('RootAnalyzer/src/SConscript')
 
 # scons to bulid all of the SConscript files
 env.SConscript(ss)
