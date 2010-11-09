@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.9 2010/11/08 23:53:08 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.10 2010/11/09 20:14:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/08 23:53:08 $
+// $Date: 2010/11/09 20:14:58 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,8 @@
 using namespace std;
 
 namespace mu2e {
+
+  typedef SimParticleCollection::key_type key_type;
 
   TrackingAction::TrackingAction( const SimpleConfig& config,
                                   SteppingAction *stepping_action ):
@@ -111,16 +113,16 @@ namespace mu2e {
     }
 
     // Persistent info uses in 0-based indices; G4 uses 1-based indices.
-    uint32_t id       = trk->GetTrackID()-1;
-    int32_t parentId  = trk->GetParentID()-1;
+    int id       = trk->GetTrackID()-1;
+    int parentId = trk->GetParentID()-1;
 
     // Indices into the GenParticleCollection are also 0 based.
     int32_t generatorIndex = ( parentId == -1 ) ? int32_t(id): -1;
 
     // Add this track; the track should not yet be in the map.
     CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
-    _spmap->insertOrThrow(std::make_pair(id,SimParticle( id,
-                                                         parentId,
+    _spmap->insertOrThrow(std::make_pair(id,SimParticle( key_type(id),
+                                                         key_type(parentId),
                                                          trk->GetDefinition()->GetPDGEncoding(),
                                                          generatorIndex,
                                                          trk->GetPosition()-_mu2eOrigin,
@@ -134,9 +136,8 @@ namespace mu2e {
     
     // If this track has a parent, tell the parent about this track.
     if ( parentId != -1 ){
-      _spmap->findOrThrow(parentId).addDaughter(id);
+      _spmap->findOrThrow(key_type(parentId)).addDaughter(key_type(id));
     }
-
   }
 
   // Append end of track information to the existing SimParticle.
@@ -145,7 +146,7 @@ namespace mu2e {
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
 
     // Persistent info uses in 0-based indices; G4 uses 1-based indices.
-    uint32_t id = trk->GetTrackID()-1;
+    key_type id(trk->GetTrackID()-1);
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
@@ -187,7 +188,7 @@ namespace mu2e {
          << volName                         << " ";
 
     if ( isEnd ){
-      SimParticle const& particle = _spmap->at(id);
+      SimParticle const& particle = _spmap->at(key_type(id));
       cout << particle.endProperTime()*CLHEP::ns <<  " | ";
       cout << particle.startGlobalTime()*CLHEP::ns <<  " ";
       cout << particle.endGlobalTime()*CLHEP::ns <<  " | ";
@@ -213,10 +214,10 @@ namespace mu2e {
       SimParticle const& sim = i->second;
 
       // Check that daughters point to the mother.
-      std::vector<uint32_t> const& dau = sim.daughterIds();
+      std::vector<key_type> const& dau = sim.daughterIds();
       for ( size_t j=0; j<dau.size(); ++j ){
-        int parentId = _spmap->at(dau[j]).parentId();
-        if ( parentId != int(sim.id()) ){
+        key_type parentId = _spmap->at(key_type(dau[j])).parentId();
+        if ( parentId != sim.id() ){
           
           // Daughter does not point back to the parent.
           ok = false;
@@ -232,14 +233,14 @@ namespace mu2e {
       }
 
       // Check that this particle is in the list of its parent's daughters.
-      int parentId = sim.parentId();
-      if ( parentId != -1 ){
+      if ( sim.hasParent() ){
+        key_type parentId = sim.parentId();
 
         // Find all daughters of this particle's mother.
-        std::vector<uint32_t> const& mdau = _spmap->at(parentId).daughterIds();
+        std::vector<key_type> const& mdau = _spmap->at(parentId).daughterIds();
         bool inList(false);
         for ( size_t j=0; j<mdau.size(); ++j ){
-          if ( mdau[j] == sim.id() ){
+          if ( key_type(mdau[j]) == sim.id() ){
             inList = true;
             break;
           }
@@ -262,3 +263,4 @@ namespace mu2e {
   }
 
 } // end namespace mu2e
+
