@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.8 2010/09/30 02:47:48 kutschke Exp $
+// $Id: CosmicTuple.cc,v 1.9 2010/11/09 04:34:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/30 02:47:48 $
+// $Date: 2010/11/09 04:34:58 $
 //
 // Original author Rob Kutschke
 //
@@ -204,8 +204,8 @@ namespace mu2e {
           GenId idGen;
           int pidGen = -1;
 
-          if ( haveSimPart && oldTrk >= 0 && static_cast<size_t>(oldTrk) < simParticles->size() ){
-            const SimParticle* sim = &(simParticles->at(oldTrk));
+          const SimParticle* sim = simParticles->findOrNull(oldTrk);
+          if ( haveSimPart && sim ){
 
             // PDG Particle Id of the sim particle that made this hit.
             pdgId = sim->pdgId();
@@ -217,8 +217,8 @@ namespace mu2e {
             while ( gTrk < 0 && depth < 100 ) {
               if ( p->hasParent() ) {
                 int pId = p->parentId();
-                if ( pId < 0 || static_cast<size_t>(pId) >= simParticles->size() ) break;
-                p = &(simParticles->at(pId));
+                p = simParticles->findOrNull(pId);
+                if ( !p ) break;
                 gTrk = p->generatorIndex();
                 depth++;
               } else {
