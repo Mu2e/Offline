@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.7 2010/11/09 20:10:32 kutschke Exp $
+// $Id: MapVector.hh,v 1.8 2010/11/09 20:53:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 20:10:32 $
+// $Date: 2010/11/09 20:53:58 $
 //
 //   Original author Rob Kutschke
 //
@@ -50,19 +50,19 @@
 // Usage notes:
 //  The ONLY way to write a loop over a MapVector is:
 //      MapVector<T> const& mvt = ....;
-//      for ( SimParticleCollection::const_iterator i=mvt->begin();
+//      for ( MapVector<T>::const_iterator i=mvt->begin();
 //             i!=mvt->end(); ++i ){
 //           T const& t = i->second;
 //      }
-
-//  NEVER write a loop like:
+//
+//  If you write a loop like:
 //      MapVector<T> const& col = ....;
 //      for ( size_t i=0; i<col.end(); ++i){
 //        T const& t = col[i].
 //      }
-//  This will accidentally work if and only if the set of keys is dense and starts at 0.
-//  Recall that the argument of [] is a key, not an index.
-//
+//  This will give a compiler error because there is no operator[] that takes
+//  an int as an argument, only an operator[] that takes a 
+//  MapVector<T>::key_type as an argument.
 //
 // Other Notes:
 // This class is designed to address the following use case:
@@ -88,12 +88,11 @@
 //    a different implementation that is better optimized for lookup.
 //
 // Todo:
-//  1) Add c'tor allowing use specified Compare and Allocator.
+//  1) Add c'tor allowing use specified Compare and Allocator??
 //  2) Are there better names for findOrThrow and insertOrThrow
-//  3) Is uint32_t the right key_type (root persistence?) ?
-//  4) Which methods should I comment out since they are not likely to be in the final MapVector?
-//  5) Any other methods that I want?
-//  6) Do I want to hide sstream to avoid it being in the header?
+//  3) Which methods should I comment out since they are not likely to be in the final MapVector?
+//  4) Any other methods that I want?
+//  5) Do I want to hide sstream to avoid it being in the header?
 //
 #include <map>
 #include <stdexcept>
