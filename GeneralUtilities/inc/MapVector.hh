@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.3 2010/11/08 23:51:08 kutschke Exp $
+// $Id: MapVector.hh,v 1.4 2010/11/09 04:35:29 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/08 23:51:08 $
+// $Date: 2010/11/09 04:35:29 $
 //
 //   Original author Rob Kutschke
 //
@@ -150,6 +150,26 @@ public:
       throw std::out_of_range( out.str() );
     }
     return i->second;
+  }
+
+  // Return a pointer to the value corresponding to an existing key,
+  // Return a null pointer if the key does not exist.
+  VALUE* findOrNull( key_type key ){
+    iterator i = _map.find(key);
+
+    if ( i == _map.end() ){
+      return 0;
+    }
+    return &(i->second);
+  }
+
+  VALUE const * findOrNull( key_type key ) const{
+    const_iterator i = _map.find(key);
+
+    if ( i == _map.end() ){
+      return 0;
+    }
+    return &(i->second);
   }
 
   // Two handy synonyms for the const findOrThrow;
