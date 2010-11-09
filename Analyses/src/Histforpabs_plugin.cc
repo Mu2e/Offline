@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_plugin.cc,v 1.2 2010/09/29 22:34:44 kutschke Exp $
+// $Id: Histforpabs_plugin.cc,v 1.3 2010/11/09 03:38:36 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/29 22:34:44 $
+// $Date: 2010/11/09 03:38:36 $
 //
 // Original author Rob Kutschke
 //
@@ -130,8 +130,10 @@ namespace mu2e {
       
     } // end loop over hits.
 
-    for ( size_t i=0; i<simParticles->size(); ++ i){
-      SimParticle const& sim = simParticles->at(i);
+    for ( SimParticleCollection::const_iterator i=simParticles->begin();
+          i!=simParticles->end(); ++i ){
+
+      SimParticle const& sim = i->second;
       if(!sim.madeInG4())_hEnergysim->Fill(sim.startMomentum().e());
     }
   } // end FillHistograms

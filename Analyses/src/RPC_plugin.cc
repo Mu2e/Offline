@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.cc,v 1.8 2010/10/06 19:17:40 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/10/06 19:17:40 $
+// $Id: RPC_plugin.cc,v 1.9 2010/11/09 03:38:36 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/11/09 03:38:36 $
 //
 // Original author R. Bernstein
 //
@@ -283,8 +283,10 @@ namespace mu2e {
     CLHEP::Hep3Vector  momentumAtEntranceToTracker = CLHEP::Hep3Vector();
 
     if (haveSimPart){
-      for (uint32_t ithPart = 0; ithPart < simParticles->size(); ++ithPart){
-        SimParticle const& sim = simParticles->at(ithPart);
+      for ( SimParticleCollection::const_iterator ithPart=simParticles->begin();
+            ithPart!=simParticles->end(); ++ithPart ){
+
+        SimParticle const& sim = ithPart->second;
 	PhysicalVolumeInfo const& startVol = volumes->at(sim.startVolumeIndex());
 	//
 	// is this the initial photon?
