@@ -41,8 +41,14 @@ namespace mu2e {
     event.getByType(_genParticles);
     event.getByType(_simParticles);
     if (_simParticles.isValid() && !_simParticles->empty()) {
-      for (size_t i=0; i<_simParticles->size(); ++i) {
-        SimParticle const& sim = _simParticles->at(i);
+
+      int n(0);
+      for ( SimParticleCollection::const_iterator i=_simParticles->begin();
+            i!=_simParticles->end(); ++i ){
+
+        SimParticle const& sim = i->second;
+        ++n;
+
         //        cout << "Id = " << sim.id() << "\t" << "PID = " 
         //     << sim.pdgId() << " from " 
         //     << (sim.fromGenerator()?"generator":"")
@@ -52,7 +58,7 @@ namespace mu2e {
           //      << _genParticles->at(sim.generatorIndex())._generatorId.name() << endl;
           if (_genParticles->at(sim.generatorIndex())._generatorId.name() == "conversionGun") {
             _convTrackId = sim.id();
-            cout << i << " and " << _convTrackId << endl;
+            cout << n << " and " << _convTrackId << endl;
             _nconv++;
             //  cout << "conv track id is " << _convTrackId << endl;
           }
