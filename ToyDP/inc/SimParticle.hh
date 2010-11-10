@@ -2,21 +2,33 @@
 #define ToyDP_SimParticle_hh
 
 //
-// A temporary class to hold particles created by Geant4.
+// Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.5 2010/11/09 20:12:18 kutschke Exp $
+// $Id: SimParticle.hh,v 1.6 2010/11/10 23:43:44 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/09 20:12:18 $
+// $Date: 2010/11/10 23:43:44 $
 //
 // Original author Rob Kutschke
 //
 // Notes:
-// 1) I would like to make the PDG id code of type PDGCode::type.  
+// 1) Internally G4 numbers tracks 1...N.  An earlier version of TrackingAction
+//    renumbered them 0...(N-1); this was an artifact of the SimParticleCollection 
+//    class being a std::vector, which starts at 0. But now SimParticleCollection 
+//    is a MapVector, so it is no longer necessary to do the renumbering.  
+//    Therefore the correct test to see if a particle has a parent is
+//
+// 2) The trackId, parentIds and daughterIds are all of the correct type to be
+//    used to find the corresponding information in SimParticleCollection
+// 
+// 3) I would like to make the PDG id code of type PDGCode::type.  
 //    However I am worried that this might screw up the persistency
 //    mechanism if it resolves to different types on different machines.
 //
 
 #include <vector>
+
+// Mu2e includes
+#include "ToyDP/inc/StoppingCode.hh"
 
 // Includes from external packages.
 #include "CLHEP/Vector/ThreeVector.h"
@@ -63,7 +75,8 @@ namespace mu2e {
                      double                  aendGlobalTime,
                      double                  aendProperTime,
                      uint32_t                aendVolumeIndex,
-                     uint32_t                aendG4Status){
+                     uint32_t                aendG4Status,
+                     StoppingCode            astoppingCode){
       _endDefined      = true;
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
@@ -71,23 +84,23 @@ namespace mu2e {
       _endProperTime   = aendProperTime;
       _endVolumeIndex  = aendVolumeIndex;
       _endG4Status     = aendG4Status;
+      _stoppingCode    = astoppingCode;
     }
 
     void addDaughter( key_type id ){
       _daughterIds.push_back(id);
     }
 
-
     // Accessors
 
-    // Index of this track.
+    // Index of this track.  See notes 1 and 2.
     key_type id() const {return _id;}
 
     // Index of the parent of this track.
     key_type  parentId()  const { return _parentId;}
-    bool      hasParent() const { return (_parentId != key_type(-1)); }
+    bool      hasParent() const { return (_parentId != key_type(0)); }
 
-    // PDG particle ID code.  See note 1.
+    // PDG particle ID code.  See note 3.
     int32_t pdgId() const {return _pdgId;}
 
     // Index into the container of generated tracks; 
@@ -122,8 +135,8 @@ namespace mu2e {
     bool endDefined() const { return _endDefined;}
 
   private:
-    // Id (serial number) of this track and of its parent.  
-    // Tracks do not reach TrackingAction in order.
+    // G4 ID number of this track and of its parent.  
+    // See notes 1 and 2.
     key_type _id;
     key_type _parentId;
 
@@ -142,12 +155,16 @@ namespace mu2e {
     uint32_t                _startVolumeIndex;
     uint32_t                _startG4Status;
 
+    // Information at the end fo the track.
     CLHEP::Hep3Vector       _endPosition;
     CLHEP::HepLorentzVector _endMomentum;
     double                  _endGlobalTime;
     double                  _endProperTime;
     uint32_t                _endVolumeIndex;
     uint32_t                _endG4Status;
+
+    // The reason that the particle stopped.  Dummy for now.
+    StoppingCode            _stoppingCode;
 
     // SimParticle IDs of daughters of this track.
     std::vector<key_type>  _daughterIds;
