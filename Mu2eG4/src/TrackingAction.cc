@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.10 2010/11/09 20:14:58 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.11 2010/11/10 23:50:12 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 20:14:58 $
+// $Date: 2010/11/10 23:50:12 $
 //
 // Original author Rob Kutschke
 //
@@ -16,6 +16,13 @@
 //    methods or classes that will themselves to the real work.
 //
 // 2) Same comment as 1 for the beginEvent and endEvent methods.
+//
+// 3) Internally G4 numbers tracks 1...N.  An earlier version of this class
+//    renumbered them 0...(N-1); this was an artifact of the 
+//    SimParticleCollection class being a std::vector, which starts at 0.
+//    But now SimParticleCollection is a MapVector, so it is no longer
+//    necessary to do the renumbering.  
+//
 
 // C++ includes
 #include <iostream>
@@ -25,10 +32,11 @@
 #include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/SteppingAction.hh"
+#include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StoppingCode.hh"
 
 // G4 incldues
 #include "globals.hh"
@@ -37,8 +45,6 @@
 using namespace std;
 
 namespace mu2e {
-
-  typedef SimParticleCollection::key_type key_type;
 
   TrackingAction::TrackingAction( const SimpleConfig& config,
                                   SteppingAction *stepping_action ):
@@ -88,16 +94,16 @@ namespace mu2e {
 
   }
 
-  void TrackingAction::beginEvent(SimParticleCollection& sims){
-    _spmap = &sims;
+  void TrackingAction::beginEvent(){
     _currentSize=0;
   }
 
-  void TrackingAction::endEvent(){
-    if ( !_debugList.inList() ) return;
+  void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
+    persistentSims.insert( _transientMap.begin(), _transientMap.end() );
+    _transientMap.clear();
     checkCrossReferences(true,false);
+    if ( !_debugList.inList() ) return;
   }
-
 
   // Save start of track info.
   void TrackingAction::saveSimParticleStart(const G4Track* trk){
@@ -112,16 +118,28 @@ namespace mu2e {
       return;
     }
 
-    // Persistent info uses in 0-based indices; G4 uses 1-based indices.
-    int id       = trk->GetTrackID()-1;
-    int parentId = trk->GetParentID()-1;
+    int id       = trk->GetTrackID();
+    int parentId = trk->GetParentID();
 
-    // Indices into the GenParticleCollection are also 0 based.
-    int32_t generatorIndex = ( parentId == -1 ) ? int32_t(id): -1;
+    // Also need the ID in this format.
+    key_type kid(id);
 
-    // Add this track; the track should not yet be in the map.
+    // Indices into the GenParticleCollection are 0 based.
+    // The first n particles in the G4 track list are the same as the first n particles
+    // from the generator.
+    int32_t generatorIndex = ( parentId == 0 ) ? id-1: -1;
+
+    // Track should not yet be in the map.  Add a debug clause to skip this test?
+    if ( _transientMap.find(kid) != _transientMap.end() ){
+      throw cms::Exception("RANGE")
+        << "SimParticle already in the event.  This should never happen. id is: "
+        << id
+        << "\n";
+    }
+
+    // Add this track to the transient data.
     CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
-    _spmap->insertOrThrow(std::make_pair(id,SimParticle( key_type(id),
+    _transientMap.insert(std::make_pair(kid,SimParticle( kid,
                                                          key_type(parentId),
                                                          trk->GetDefinition()->GetPDGEncoding(),
                                                          generatorIndex,
@@ -135,8 +153,15 @@ namespace mu2e {
                                                          )));
     
     // If this track has a parent, tell the parent about this track.
-    if ( parentId != -1 ){
-      _spmap->findOrThrow(key_type(parentId)).addDaughter(key_type(id));
+    if ( parentId != 0 ){
+      map_type::iterator i(_transientMap.find(key_type(parentId)));
+      if ( i == _transientMap.end() ){
+        throw cms::Exception("RANGE")
+          << "Could not find parent SimParticle in PreUserTrackingAction.  id: "
+          << id
+          << "\n";
+      } 
+      i->second.addDaughter(kid);
     }
   }
 
@@ -145,18 +170,29 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
 
-    // Persistent info uses in 0-based indices; G4 uses 1-based indices.
-    key_type id(trk->GetTrackID()-1);
+    key_type id(trk->GetTrackID());
+
+    // Find the particle in the map.
+    map_type::iterator i(_transientMap.find(id));
+    if ( i == _transientMap.end() ){
+      throw cms::Exception("RANGE")
+        << "Could not find existing SimParticle in PostUserTrackingAction.  id: "
+        << id
+        << "\n";
+    }
+
+    // Reason why tracking stopped, decay, range out, etc.  Dummy for now.
+    StoppingCode stoppingCode(0);
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
-    CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
-    _spmap->findOrThrow(id).addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                                        p4,
-                                        trk->GetGlobalTime(),
-                                        trk->GetProperTime(),
-                                        _physVolHelper->index(trk),
-                                        trk->GetTrackStatus()
-                                        );
+    i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
+                          CLHEP::HepLorentzVector(trk->GetMomentum(),trk->GetTotalEnergy()),
+                          trk->GetGlobalTime(),
+                          trk->GetProperTime(),
+                          _physVolHelper->index(trk),
+                          trk->GetTrackStatus(),
+                          stoppingCode
+                          );
   }
 
   void TrackingAction::printInfo(const G4Track* trk, const string& text, bool isEnd ){
@@ -172,10 +208,8 @@ namespace mu2e {
     G4String partName = (pdef !=0) ?
       pdef->GetParticleName() : "Unknown Particle";
 
-    // Persistent info uses in 0-based indices; G4 uses 1-based indices.
-    // Use the 0-based indices in the printout.
-    uint32_t id       = trk->GetTrackID()-1;
-    int32_t parentId  = trk->GetParentID()-1;
+    int id       = trk->GetTrackID();
+    int parentId = trk->GetParentID();
 
     cout << text
          << setw(5) << event->GetEventID()  << " "
@@ -188,7 +222,7 @@ namespace mu2e {
          << volName                         << " ";
 
     if ( isEnd ){
-      SimParticle const& particle = _spmap->at(key_type(id));
+      SimParticle const& particle = _transientMap[key_type(id)];
       cout << particle.endProperTime()*CLHEP::ns <<  " | ";
       cout << particle.startGlobalTime()*CLHEP::ns <<  " ";
       cout << particle.endGlobalTime()*CLHEP::ns <<  " | ";
@@ -207,8 +241,8 @@ namespace mu2e {
     bool ok(true);
 
     // Loop over all simulated particles.
-    for ( SimParticleCollection::MapType::const_iterator i=_spmap->begin();
-          i!=_spmap->end(); ++i ){
+    for ( map_type::const_iterator i=_transientMap.begin();
+          i!=_transientMap.end(); ++i ){
 
       // The next particle to look at.
       SimParticle const& sim = i->second;
@@ -216,7 +250,7 @@ namespace mu2e {
       // Check that daughters point to the mother.
       std::vector<key_type> const& dau = sim.daughterIds();
       for ( size_t j=0; j<dau.size(); ++j ){
-        key_type parentId = _spmap->at(key_type(dau[j])).parentId();
+        key_type parentId = _transientMap[(key_type(dau[j]))].parentId();
         if ( parentId != sim.id() ){
           
           // Daughter does not point back to the parent.
@@ -237,7 +271,7 @@ namespace mu2e {
         key_type parentId = sim.parentId();
 
         // Find all daughters of this particle's mother.
-        std::vector<key_type> const& mdau = _spmap->at(parentId).daughterIds();
+        std::vector<key_type> const& mdau = _transientMap[parentId].daughterIds();
         bool inList(false);
         for ( size_t j=0; j<mdau.size(); ++j ){
           if ( key_type(mdau[j]) == sim.id() ){
@@ -257,7 +291,9 @@ namespace mu2e {
           }
         }
       }
+
     }
+
     return ok;
 
   }

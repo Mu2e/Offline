@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.6 2010/11/08 23:52:33 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.7 2010/11/10 23:53:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/08 23:52:33 $
+// $Date: 2010/11/10 23:53:13 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,7 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimpleConfig;
   class SteppingAction;
-  //class SimParticleCollection;
+
 
   class TrackingAction: public G4UserTrackingAction{
 
@@ -51,8 +51,8 @@ namespace mu2e {
     // All methods after here are Mu2e specific.
 
     // Do all things that need to be done at the beginning/end of an event.
-    void beginEvent( SimParticleCollection& simParticles );
-    void endEvent();
+    void beginEvent();
+    void endEvent( SimParticleCollection& simParticles );
 
     // Record start and end points of each track created by G4.
     // Copy to the event data.
@@ -71,13 +71,11 @@ namespace mu2e {
 
   private:
 
+    typedef SimParticleCollection::key_type key_type;
+    typedef SimParticleCollection::map_type map_type;
+
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugList;
-
-    // Non-owning pointer to the collection of information about SimParticles.
-    // G4_plugin owns the collection but this class is responsible for filling it.
-    // G4_plugin sets this pointer at the start of each event.
-    SimParticleCollection* _spmap;
 
     // Utility to translate between transient and persistent representations.
     const PhysicalVolumeHelper* _physVolHelper;
@@ -85,6 +83,10 @@ namespace mu2e {
     CLHEP::Hep3Vector _mu2eOrigin;
 
     edm::CPUTimer _timer;
+
+    // Information about SimParticles is collected in this map
+    // during the operation of G4.  This is not persistent.
+    map_type _transientMap;
 
     // Debug printout.
     void printInfo(const G4Track* trk, const std::string& text, bool isEnd=false);
@@ -95,6 +97,9 @@ namespace mu2e {
 
     // Non-owning pointer to stepping action.
     SteppingAction * _stepping; 
+
+    // Some helper functions.
+    void insertOrThrow(std::pair<int,SimParticle> const& value);
 
   };
 
