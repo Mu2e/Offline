@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.8 2010/11/09 20:53:58 kutschke Exp $
+// $Id: MapVector.hh,v 1.9 2010/11/10 23:54:46 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 20:53:58 $
+// $Date: 2010/11/10 23:54:46 $
 //
 //   Original author Rob Kutschke
 //
@@ -109,24 +109,26 @@ public:
   typedef MapVectorKey                      key_type;
   typedef VALUE                          mapped_type;
   typedef std::pair<key_type,mapped_type> value_type;
-  typedef std::map<key_type,VALUE>           MapType;
 
-  typedef typename MapType::size_type             size_type;
-  typedef typename MapType::difference_type difference_type;
+  // This one is not a standard std::map definition; the others are.
+  typedef std::map<key_type,VALUE>          map_type;
+
+  typedef typename map_type::size_type             size_type;
+  typedef typename map_type::difference_type difference_type;
   
-  typedef typename MapType::iterator                             iterator;
-  typedef typename MapType::const_iterator                 const_iterator;
-  typedef typename MapType::reverse_iterator             reverse_iterator;
-  typedef typename MapType::const_reverse_iterator const_reverse_iterator;
+  typedef typename map_type::iterator                             iterator;
+  typedef typename map_type::const_iterator                 const_iterator;
+  typedef typename map_type::reverse_iterator             reverse_iterator;
+  typedef typename map_type::const_reverse_iterator const_reverse_iterator;
 
-  typedef typename MapType::key_compare     key_compare;
-  typedef typename MapType::value_compare value_compare;
+  typedef typename map_type::key_compare     key_compare;
+  typedef typename map_type::value_compare value_compare;
 
-  typedef typename MapType::allocator_type                   allocator_type;
-  typedef typename MapType::allocator_type::pointer                 pointer;
-  typedef typename MapType::allocator_type::const_pointer     const_pointer;
-  typedef typename MapType::allocator_type::reference             reference;
-  typedef typename MapType::allocator_type::const_reference const_reference;
+  typedef typename map_type::allocator_type                   allocator_type;
+  typedef typename map_type::allocator_type::pointer                 pointer;
+  typedef typename map_type::allocator_type::const_pointer     const_pointer;
+  typedef typename map_type::allocator_type::reference             reference;
+  typedef typename map_type::allocator_type::const_reference const_reference;
 
   // Constructors
   MapVector():_map(){}
@@ -211,6 +213,14 @@ public:
     }
     return _map.insert(value).first;
   }
+
+  template <class InputIterator>
+  void insert( InputIterator first, InputIterator last){
+    for ( InputIterator i=first; i!=last; ++i){
+      _map.insert(*i);
+    }
+  }
+
 
   // Everything below here just forwards to std::map.
 
