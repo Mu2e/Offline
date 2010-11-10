@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.cc,v 1.10 2010/11/09 20:25:41 kutschke Exp $
+// $Id: RPC_plugin.cc,v 1.11 2010/11/10 23:56:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/09 20:25:41 $
+// $Date: 2010/11/10 23:56:46 $
 //
 // Original author R. Bernstein
 //
@@ -309,8 +309,8 @@ namespace mu2e {
 	//	cout << " volumename = " << startVol.name() << endl;
 	//
 	// check three things:  (1) the mother is the original photon, (2) you're an e+ or e-, and (3) the photon converts in the foil
-	if ( sim.parentId().asInt() == 0 && startVol.name() == "TargetFoil_" ){
-	  //	if ( sim.parentId() == 0 && startVol.name() == "ToyDSCoil" ){
+	if ( sim.parentId().asInt() == 1 && startVol.name() == "TargetFoil_" ){
+	  //	if ( sim.parentId() == 1 && startVol.name() == "ToyDSCoil" ){
 	  if (sim.pdgId() == PDGCode::e_minus) {
             bool electronHitTracker = false;
             bool electronAccepted = false;
