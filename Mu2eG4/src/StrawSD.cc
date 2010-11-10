@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.19 2010/10/09 13:11:58 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/10/09 13:11:58 $
+// $Id: StrawSD.cc,v 1.20 2010/11/10 23:51:29 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/11/10 23:51:29 $
 //
 // Original author Rob Kutschke
 //
@@ -165,7 +165,7 @@ namespace mu2e {
     G4ThreeVector preMomWorld = aStep->GetPreStepPoint()->GetMomentum();
 
 //     G4int en = event->GetEventID();
-//     G4int ti = aStep->GetTrack()->GetTrackID()-1;
+//     G4int ti = aStep->GetTrack()->GetTrackID();
 //     G4int cn = touchableHandle->GetCopyNumber();
 //     G4int rn = touchableHandle->GetReplicaNumber();
 
@@ -224,7 +224,7 @@ namespace mu2e {
 //     cout << "Debugging sdcn " << sdcn << endl;
 
     StepPointG4* newHit = 
-      new StepPointG4(aStep->GetTrack()->GetTrackID()-1,
+      new StepPointG4(aStep->GetTrack()->GetTrackID(),
                       sdcn,
                       edep,
                       prePosTracker,

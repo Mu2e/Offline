@@ -84,7 +84,7 @@ namespace mu2e {
 
     //G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
     //G4int eventId = event->GetEventID();
-    //G4int trackId = aStep->GetTrack()->GetTrackID()-1;
+    //G4int trackId = aStep->GetTrack()->GetTrackID();
 
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
@@ -111,7 +111,7 @@ namespace mu2e {
 
     for( int i=0; i<nro; ++i ) {
       StepPointG4* newHit = 
-	new StepPointG4(aStep->GetTrack()->GetTrackID()-1,
+	new StepPointG4(aStep->GetTrack()->GetTrackID(),
 			copyNo*nro+i,
 			edep,
 			posLocal,
@@ -156,7 +156,7 @@ namespace mu2e {
 
   void CaloCrystalSD::AddReadoutHit(G4Step* aStep, int idro, double time, double edep) {
     StepPointG4* newHit = 
-      new StepPointG4(aStep->GetTrack()->GetTrackID()-1,
+      new StepPointG4(aStep->GetTrack()->GetTrackID(),
 		      idro,
 		      -edep,
 		      G4ThreeVector(0,0,0),
