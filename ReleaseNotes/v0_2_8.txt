@@ -3,9 +3,17 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.6 2010/11/09 20:45:22 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/11/09 20:45:22 $
+  $Id: v0_2_8.txt,v 1.7 2010/11/10 15:58:35 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2010/11/10 15:58:35 $
+
+
+14) November 9, 2010 onoratog
+    Mu2eG4/inc/ConvElecUtilities.hh and Mu2eG4/src/ConvElecUtilities.cc have been 
+    corrected to increase speed. 
+    The trivial accessors have been moved to the .hh file, and the access to the simulated particle
+    does not loop over all simParticles, asking for the trackId, but is given by a bare pointer
+    to the particle itself. The reason of this change is the new type for SimParticleCollection (now it is a map).
 
 
 13) November 9, 2010 kutschke
