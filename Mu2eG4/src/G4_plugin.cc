@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.31 2010/11/08 23:52:33 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.32 2010/11/11 00:07:09 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/08 23:52:33 $
+// $Date: 2010/11/11 00:07:09 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,7 @@
 #include "G4VisExecutive.hh"
 #include "G4SDManager.hh"
 #include "G4ParticleTable.hh"
+#include "G4Run.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
@@ -92,7 +93,6 @@
 //./Mu2eUtilities/inc/PDGCode.hh:222: error: expected unqualified-id before numeric constant
 //      B0 = 511 ,
 #include "G4UIExecutive.hh"
-
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -260,7 +260,7 @@ namespace mu2e {
     }
     
     // Start a run
-    _runManager->BeamOnBeginRun();
+    _runManager->BeamOnBeginRun( run.id().run() );
 
     // Helps with indexology related to persisting G4 volume information.
     _physVolHelper.beginRun();
@@ -289,12 +289,11 @@ namespace mu2e {
     auto_ptr<CaloHitMCTruthCollection> caloMCHits(new CaloHitMCTruthCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
-    //_trackingAction->beginEvent();
-    _trackingAction->beginEvent( *simParticles);
+    _trackingAction->beginEvent();
     _genAction->setEvent(event);
     
     // Run G4 for this event and access the completed event.
-    _runManager->BeamOnDoOneEvent();
+    _runManager->BeamOnDoOneEvent( event.id().event() );
     G4Event const* g4event = _runManager->getCurrentEvent();
 
     // Populate the output data products.
@@ -303,7 +302,7 @@ namespace mu2e {
     addCalorimeterHits( g4event, *caloHits, *caloMCHits );
 
     // Run self consistency checks if enabled.
-    _trackingAction->endEvent();
+    _trackingAction->endEvent(*simParticles);
 
     event.put(outputHits,_trackerOutputName);
     event.put(vdHits,_vdOutputName);
