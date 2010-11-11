@@ -1,8 +1,8 @@
 # Variant of g4test_03 but with transport only.
 #
-# $Id: transportOnly.py,v 1.11 2010/10/28 21:13:04 genser Exp $
+# $Id: transportOnly.py,v 1.12 2010/11/11 22:11:09 genser Exp $
 # $Author: genser $
-# $Date: 2010/10/28 21:13:04 $
+# $Date: 2010/11/11 22:11:09 $
 #
 # Original author Rob Kutschke
 #
@@ -93,6 +93,7 @@ process.CaloCrystalHitsMaker =  mu2e.EDProducer(
     diagLevel = mu2e.untracked.int32(0),
     maxFullPrint  = mu2e.untracked.int32(201),
     g4ModuleLabel = mu2e.string("g4run"),
+    maximumEnergy = mu2e.untracked.double(1000.0),
     minimumEnergy = mu2e.untracked.double(0.0),
     minimumTimeGap = mu2e.untracked.double(100.0)
 )
