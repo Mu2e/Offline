@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.32 2010/11/11 00:07:09 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/11/11 00:07:09 $
+// $Id: G4_plugin.cc,v 1.33 2010/11/11 21:22:03 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/11/11 21:22:03 $
 //
 // Original author Rob Kutschke
 //
@@ -77,6 +77,7 @@
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -121,6 +122,7 @@ namespace mu2e {
       produces<PhysicalVolumeInfoCollection,edm::InRun>();
       produces<CaloHitCollection>();
       produces<CaloHitMCTruthCollection>();
+      produces<CaloCrystalHitMCTruthCollection>();
 
       // The string "G4Engine" is magic; see the docs for RandomNumberGeneratorService.
       createEngine( get_seed_value(pSet), "G4Engine");
@@ -287,6 +289,7 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>    vdHits(new StepPointMCCollection);
     auto_ptr<CaloHitCollection>        caloHits(new CaloHitCollection);
     auto_ptr<CaloHitMCTruthCollection> caloMCHits(new CaloHitMCTruthCollection);
+    auto_ptr<CaloCrystalHitMCTruthCollection> caloCrystalMCHits(new CaloCrystalHitMCTruthCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
@@ -299,7 +302,7 @@ namespace mu2e {
     // Populate the output data products.
     addStepPointMCs( g4event, *outputHits);
     addVirtualDetectorPoints( g4event, *vdHits);
-    addCalorimeterHits( g4event, *caloHits, *caloMCHits );
+    addCalorimeterHits( g4event, *caloHits, *caloMCHits, *caloCrystalMCHits);
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);
@@ -309,7 +312,8 @@ namespace mu2e {
     event.put(simParticles);
     event.put(caloHits);
     event.put(caloMCHits);
-
+    event.put(caloCrystalMCHits);
+    
     // Pause to see graphics. 
     if ( _visMacro.size() > 0 ) {
 
