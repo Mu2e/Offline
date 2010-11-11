@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.14 2010/10/28 20:43:58 genser Exp $
+# $Id: g4test_03.py,v 1.15 2010/11/11 21:59:05 genser Exp $
 # $Author: genser $
-# $Date: 2010/10/28 20:43:58 $
+# $Date: 2010/11/11 21:59:05 $
 #
 # Original author Rob Kutschke
 #
@@ -100,6 +100,7 @@ process.CaloCrystalHitsMaker =  mu2e.EDProducer(
     maxFullPrint   = mu2e.untracked.int32(201),
     g4ModuleLabel  = mu2e.string("g4run"),
     minimumEnergy  = mu2e.untracked.double(0.0),
+    maximumEnergy  = mu2e.untracked.double(1000.0),
     minimumTimeGap = mu2e.untracked.double(100.0)
 )
 
