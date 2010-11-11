@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.20 2010/11/09 20:25:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/09 20:25:41 $
+// $Id: ReadBack.cc,v 1.21 2010/11/11 21:23:47 genser Exp $
+// $Author: genser $
+// $Date: 2010/11/11 21:23:47 $
 //
 // Original author Rob Kutschke
 //
@@ -61,6 +61,7 @@ namespace mu2e {
     _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
     _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
+    _caloCrystalHitsMaker(pset.getUntrackedParameter<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
     _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
     _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
     _xyHitsMax(pset.getUntrackedParameter<int>("xyHitsMax",10000)),
@@ -129,33 +130,33 @@ namespace mu2e {
     _hStepLength = tfs->make<TH1F>( "hStepLength",  "G4 Step Length in Sensitive Detector; (mm)",
                                     100, 0., 10. );
 
-    _hEdep     = tfs->make<TH1F>( "hEdep",     "Total energy deposition in calorimeter", 1200, 0., 1200. );
-    _hEdepMC   = tfs->make<TH1F>( "hEdepMC",   "True energy deposition in calorimeter", 200, 0., 200. );
-    _hNcrystal = tfs->make<TH1F>( "hNcrystal", "Total energy deposition in calorimeter", 50, 0., 50. );
+    _hEdep     = tfs->make<TH1F>( "hEdep",     "Total energy deposition in calorimeter", 2400, 0., 2400. );
+    _hEdepMC   = tfs->make<TH1F>( "hEdepMC",   "True energy deposition in calorimeter",  240,  0., 240. );
+    _hNcrystal = tfs->make<TH1F>( "hNcrystal", "Total energy deposition in calorimeter",   50, 0.,   50. );
 
 
     _hRCEdep    = tfs->make<TH1F>( "hRCEdep", 
-                                  "Total energy deposition in calorimeter reconstructed from APDs", 
-                                  1200, 0., 1200. );
+                                  "Total energy deposition in calorimeter reconstructed from ROs", 
+                                  2400, 0., 2400. );
 
     _hRCTime    = tfs->make<TH1F>( "hRCTime", 
-                                  "Hit time in calorimeter reconstructed from APDs", 
-                                  1200, 0., 1200. );
+                                  "Hit time in calorimeter reconstructed from ROs", 
+                                  2400, 0., 2400. );
 
     _hRCNCrystals = tfs->make<TH1F>( "hRCNCrystals", 
-                                    "Number of crystals reconstructed from APDs", 
+                                    "Number of crystals reconstructed from ROs", 
                                     50, 0., 50. );
 
     _hRCEdepMC  = tfs->make<TH1F>( "hRCEdepMC", 
-                                  "Total energy deposition in calorimeter reconstructed from APDs MC", 
-                                  1200, 0., 1200. );
+                                  "Total energy deposition in calorimeter reconstructed from raw ROs MC", 
+                                  240, 0., 240. );
 
     _hRCTimeMC  = tfs->make<TH1F>( "hRCTimeMC", 
-                                  "Hit time in calorimeter reconstructed from APDs MC", 
-                                  1200, 0., 1200. );
+                                  "Hit time in calorimeter reconstructed from raw ROs MC", 
+                                  2400, 0., 2400. );
 
     _hRCNCrystalsMC = tfs->make<TH1F>( "hRCNCrystalsMC", 
-                                    "Number of crystals reconstructed from APDs MC", 
+                                    "Number of crystals reconstructed from raw ROs MC", 
                                     50, 0., 50. );
 
     // Create an ntuple.
@@ -205,8 +206,8 @@ namespace mu2e {
     if( ! geom->hasElement<Calorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
 
-    double totalEdep = 0;
-    double simEdep = 0;
+    double totalEdep = 0.0;
+    double simEdep = 0.0;
     map<int,int> hit_crystals;
 
     for ( size_t i=0; i<caloHits->size(); ++i ) {
@@ -247,8 +248,8 @@ namespace mu2e {
       return;
     }
 
-    totalEdep = 0;
-    simEdep = 0;
+    totalEdep = 0.0;
+    simEdep = 0.0;
 
     typedef multimap<int,size_t> hitCrystalsMultiMap;
     multimap<int,size_t> hitCrystals;
@@ -261,12 +262,12 @@ namespace mu2e {
       CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
 
       totalEdep += hit.energyDep();
-      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHits)[i].Id(): " 
-                             << hit.Id() << endl;
+      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHits)[i].id(): " 
+                             << hit.id() << endl;
 
       // check if the crystal is there already (it may be ok if the timing is different)
 
-      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.Id());
+      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.id());
 
       if ( pos != hitCrystals.end() ) {
 
@@ -277,7 +278,7 @@ namespace mu2e {
 
       _diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
 
-      hitCrystals.insert(pair<int,size_t>(hit.Id(),i));
+      hitCrystals.insert(pair<int,size_t>(hit.id(),i));
       _hRCTime->Fill(hit.time());
 
     }
@@ -305,7 +306,7 @@ namespace mu2e {
       return;
     }
 
-    simEdep = 0;
+    simEdep = 0.0;
 
     typedef multimap<int,size_t> hitCrystalsMultiMap;
     hitCrystals.clear();
@@ -318,12 +319,12 @@ namespace mu2e {
       CaloCrystalHitMCTruth const & hit = (*caloCrystalHitMCTruths).at(i);
 
       simEdep += hit.energyDep();
-      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHitMCTruths)[i].Id(): " 
-                             << hit.Id() << endl;
+      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHitMCTruths)[i].id(): " 
+                             << hit.id() << endl;
 
       // check if the crystal is there already (it may be ok if the timing is different)
 
-      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.Id());
+      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.id());
 
       if ( pos != hitCrystals.end() ) {
 
@@ -334,7 +335,7 @@ namespace mu2e {
 
       _diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
 
-      hitCrystals.insert(pair<int,size_t>(hit.Id(),i));
+      hitCrystals.insert(pair<int,size_t>(hit.id(),i));
       _hRCTimeMC->Fill(hit.time());
 
     }
