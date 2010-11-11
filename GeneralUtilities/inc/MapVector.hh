@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.9 2010/11/10 23:54:46 kutschke Exp $
+// $Id: MapVector.hh,v 1.10 2010/11/11 23:21:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/10 23:54:46 $
+// $Date: 2010/11/11 23:21:53 $
 //
 //   Original author Rob Kutschke
 //
@@ -202,25 +202,12 @@ public:
     return ( i != _map.end() );
   }
 
-  // Insert the requested pair or throw if the key already exists.
-  iterator insertOrThrow ( const value_type& value ){
-    const_iterator i = _map.find(value.first);
-    
-    if ( i != _map.end() ){
-      std::ostringstream out;
-      out << "Found key: " << value.first << " when no key was expected.";
-      throw std::out_of_range( out.str() );
-    }
-    return _map.insert(value).first;
-  }
-
   template <class InputIterator>
   void insert( InputIterator first, InputIterator last){
     for ( InputIterator i=first; i!=last; ++i){
       _map.insert(*i);
     }
   }
-
 
   // Everything below here just forwards to std::map.
 
@@ -229,27 +216,7 @@ public:
     return _map[key];
   }
 
-  std::pair<iterator,bool> insert ( const value_type& value ){
-    return _map.insert(value);
-  }
-
-  template <class InputIterator>
-  iterator insert ( InputIterator position, const value_type& value ){
-    return _map( position, value);
-  }
-
-  void erase ( iterator position ){
-    _map.erase(position);
-  }
-
-  size_type erase ( key_type key ){
-    return _map.erase(key);
-  }
-
-  void erase ( iterator first, iterator last ){
-    _map.erase(first,last);
-  }
-
+  // Need this 
   void swap ( MapVector<VALUE>& mv ){
     _map.swap(mv._map);
   }
