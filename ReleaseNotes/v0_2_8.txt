@@ -3,10 +3,62 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.7 2010/11/10 15:58:35 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2010/11/10 15:58:35 $
+  $Id: v0_2_8.txt,v 1.8 2010/11/11 00:07:40 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/11/11 00:07:40 $
 
+
+18) November 10, 2010 kutschke
+    The G4 internal run and event number match those of the framework event.
+    Also removed some commented out obsolete code. 
+      Mu2eG4/inc/Mu2eG4RunManager.hh
+      Mu2eG4/src/Mu2eG4RunManager.cc
+      Mu2eG4/src/G4_plugin.cc
+
+17) November 10, 2010 kutschke
+    Changes to match the switch from 0 based indices in item 16.
+
+    The hit makers all reference the track that created them.  Fix indexing.
+      Mu2eG4/src/CaloCrystalSD.cc 
+      Mu2eG4/src/StrawSD.cc 
+      Mu2eG4/src/VirtualDetectorSD.cc
+
+    This class explicity wants to look for the first SimParticle in the event.
+    So it needs to know about the switch to 1 based indexing.
+    Analyses/src/RPC_plugin.cc
+
+
+16) November 10, 2010 kutschke
+    One big change and two small changes to: 
+      Mu2eG4/src/TrackingAction.cc
+      Mu2eG4/inc/TrackingAction.hh
+
+    The big change:
+       - In SimParticleCollection, IDs start at 1, not 0.
+       - This matches G4's usage.  So an ID seen from the framework is the
+         same as the G4 internal ID.
+
+    The small changes:
+       - Accumulate the map of SimParticles in a transient local map and copy to
+         the SimParticleCollection at the end of the event.  This 
+         anticipates the change of SimParticleCollection to something
+         optimized for reading and persistency.
+       - Add a dummy StoppingCode to the SimParticles.
+
+    GeneralUtilities/inc/MapVector.hh 
+       - Add a new insert method to support the filling of the SimParticleCollection
+         from the transient local representation.
+
+15) November 10, 2010 kutschke
+    Define a new enum class to hold a code that describes why G4 stopped
+    tracking a particle, decay, ranged out, capture, and so on.  Just
+    a place holder for now.
+      ToyDP/inc/StoppingCode.hh 
+      ToyDP/src/StoppingCode.cc
+
+    Add an instance of StoppingCode as a data member to SimParticle.
+     ToyDP/inc/SimParticle.hh 
+     ToyDP/src/classes_def.xml
 
 14) November 9, 2010 onoratog
     Mu2eG4/inc/ConvElecUtilities.hh and Mu2eG4/src/ConvElecUtilities.cc have been 
