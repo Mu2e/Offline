@@ -1,5 +1,9 @@
 //
-// Populate output collection for calorimeter
+// Populate output collections for calorimeter
+//
+// $Id: addCalorimeterHits.cc,v 1.3 2010/11/11 21:19:19 genser Exp $
+// $Author: genser $
+// $Date: 2010/11/11 21:19:19 $
 //
 // Original author Ivan Logashenko
 //
@@ -42,8 +46,9 @@ namespace mu2e{
   };
 
   void addCalorimeterHits ( const G4Event *g4event, 
-			    CaloHitCollection &outputHits, 
-			    CaloHitMCTruthCollection& mchits ) {
+			    CaloHitCollection &caloHits, 
+			    CaloHitMCTruthCollection& caloHitsMCTruth,
+                            CaloCrystalHitMCTruthCollection& caloCrystalHitsMCTruth) {
 
     // Get calorimeter geometry description
     edm::Service<GeometryService> geom;
@@ -78,13 +83,13 @@ namespace mu2e{
 
     typedef std::map<int,std::vector<int> > HitMap;
     HitMap hitmap;
-    for ( int i=0; i<hits->entries(); ++i){
+    for ( int i=0; i<nHits; ++i){
       StepPointG4* h = (*hits)[i];
       vector<int> &hits_id = hitmap[h->volumeId()];
       hits_id.push_back(i);
     }
 
-    // Loop over all readout elements
+    // Loop over all readout elements to form ro hits
 
     vector<ROHit> ro_hits;
 
@@ -93,7 +98,7 @@ namespace mu2e{
       // readout ID
       int roid = ro->first;
 
-      // Prepare info for hit creation
+      // Prepare info for hit creation before the next iteration
       ro_hits.clear();
 
       // Loop over all hits found for this readout element
@@ -105,28 +110,33 @@ namespace mu2e{
         int hitRef = ihits[i];
 	StepPointG4* h = (*hits)[hitRef];
         CLHEP::Hep3Vector const& pos = h->position();
-        double edep    = h->eDep()/nro;
+        double edep    = h->eDep()/nro; // each ro has its crystal energy deposit assigned to it
         double hitTime = h->time();
 	int charged = 0;
 
 	// Calculate correction for edep; edep<0 means energy deposition in APD, not in crystal
 
 	double edep_corr=0;
-	if( edep>=0 ) {
-	  edep_corr = edep * (1+(pos.z()/length)*nonUniform/2);
+	if( edep>0.0 ) {
+	  edep_corr = edep * (1.0+(pos.z()/length)*nonUniform/2.0);
+        } else if ( edep==0.0 ) {
+          if ( pos == CLHEP::Hep3Vector(0.0,0.0,0.0) ) {
+            // it is most likely directly hit ro with no energy deposit, should it be "charged" ?
+            charged=1;
+          }
 	} else { 
-	  charged=1; 
-	  edep=0; 
+	  charged=1;
+	  edep=0.0; 
 	}
 	
 	ro_hits.push_back(ROHit(hitRef,edep,edep_corr,charged,hitTime));
 
       }
 
-      // Sort this hits in time
+      // Sort hits by time
       sort(ro_hits.begin(), ro_hits.end());
 
-      // Loop over sorted hits and form complete calorimeter hits
+      // Loop over sorted hits and form complete ro/calorimeter hits
 
       double h_time    = ro_hits[0]._time;
       double h_edep    = ro_hits[0]._edep;
@@ -136,8 +146,15 @@ namespace mu2e{
       for( size_t i=1; i<ro_hits.size(); ++i ) {
 	if( (ro_hits[i]._time-ro_hits[i-1]._time) > timeGap ) {
 	  // Save current hit
-	  outputHits.push_back(CaloHit(roid,h_time,h_edepc+h_charged*addEdep));
-	  mchits.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
+	  caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_charged*addEdep));
+	  caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
+
+          if (roid%nro==0 && h_charged==0) {
+            caloCrystalHitsMCTruth.push_back(CaloCrystalHitMCTruth(cg->getCrystalByRO(roid),
+                                                                   h_time,
+                                                                   h_edep*nro));
+          }
+
 	  // ...and create new hit	  
 	  h_time    = ro_hits[i]._time;
 	  h_edep    = ro_hits[i]._edep;
@@ -147,7 +164,7 @@ namespace mu2e{
 	  // Append data to hit
 	  h_edep  += ro_hits[i]._edep;
 	  h_edepc += ro_hits[i]._edep_corr;
-	  if( ro_hits[i]._charged>0 ) h_charged = 1;
+	  if( ro_hits[i]._charged>0 ) h_charged = 1; // this does not count the charge...
 	}
       }
 
@@ -160,8 +177,14 @@ namespace mu2e{
 	   << endl;
       */
 
-      outputHits.push_back(CaloHit(roid,h_time,h_edepc+h_charged*addEdep));
-      mchits.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
+      caloHits.push_back(       CaloHit(roid,h_time,h_edepc+h_charged*addEdep));
+      caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
+
+      if (roid%nro==0 && h_charged==0) {
+        caloCrystalHitsMCTruth.push_back(CaloCrystalHitMCTruth(cg->getCrystalByRO(roid),
+                                                               h_time,
+                                                               h_edep*nro));
+      }
       
     }
 
