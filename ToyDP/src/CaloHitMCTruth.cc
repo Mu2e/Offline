@@ -1,10 +1,9 @@
 // 
 // This is a place to put additional information produced by HitMaker,
-// like true drift distance, signal propagation time, etc.
 //
-// $Id: CaloHitMCTruth.cc,v 1.2 2010/11/02 03:28:10 genser Exp $
+// $Id: CaloHitMCTruth.cc,v 1.3 2010/11/11 21:17:49 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/02 03:28:10 $
+// $Date: 2010/11/11 21:17:49 $
 //
 // Original author Ivan Logashenko
 //
@@ -27,8 +26,9 @@ namespace mu2e {
 
     ost << "Calorimeter Hit MC:"
         << " RO id: "      << _roId
-        << " time: "     << _time
-        << " energyDep: "      << _energyDep;
+        << " time: "       << _time
+        << " energyDep: "  << _energyDep
+        << " charge: "     << _charged;
 
     if ( doEndl ){
       ost << endl;
