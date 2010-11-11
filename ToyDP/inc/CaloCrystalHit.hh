@@ -1,9 +1,9 @@
 #ifndef CaloCrystalHit_H
 #define CaloCrystalHit_H
 
-// $Id: CaloCrystalHit.hh,v 1.2 2010/11/02 03:19:33 genser Exp $
+// $Id: CaloCrystalHit.hh,v 1.3 2010/11/11 21:15:46 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/02 03:19:33 $
+// $Date: 2010/11/11 21:15:46 $
 //
 // Original author KLG
 
@@ -36,7 +36,7 @@ namespace mu2e {
 
     // Accessors
 
-    int              Id() const { return _crystalId; }
+    int              id() const { return _crystalId; }
     float            time()      const { return _time;      }
     float            energyDep() const { return _energyDep; }
     float            energyDepTotal() const { return _energyDepTotal; }
@@ -56,6 +56,10 @@ namespace mu2e {
     // almost like one of the constructors, plays a role of a two
     // argument assignment operator
     void assign(int crystalId, edm::ProductID const & caloHitCollId, CaloHit const & hit);
+
+    void assignEnergyToTot(int crystalId, edm::ProductID const & caloHitCollId, CaloHit const & hit);
+
+    void setEnergyDep(double energy);
 
   private:
 
