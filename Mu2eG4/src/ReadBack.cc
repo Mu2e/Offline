@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.21 2010/11/11 21:23:47 genser Exp $
+// $Id: ReadBack.cc,v 1.22 2010/11/12 21:46:22 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/11 21:23:47 $
+// $Date: 2010/11/12 21:46:22 $
 //
 // Original author Rob Kutschke
 //
@@ -214,7 +214,7 @@ namespace mu2e {
       totalEdep += caloHits->at(i).energyDep();
       simEdep += caloMC->at(i).energyDep();
 
-      int roid = caloHits->at(i).roId();
+      int roid = caloHits->at(i).id();
       int cid = cg->getCrystalByRO(roid);
       hit_crystals[cid] = 1;
     }
@@ -252,7 +252,7 @@ namespace mu2e {
     simEdep = 0.0;
 
     typedef multimap<int,size_t> hitCrystalsMultiMap;
-    multimap<int,size_t> hitCrystals;
+    hitCrystalsMultiMap hitCrystals;
 
     _diagLevel > 0 && 
       cout << __func__ << ": caloCrystalHits->size() " << caloCrystalHits->size() << endl;
@@ -308,7 +308,6 @@ namespace mu2e {
 
     simEdep = 0.0;
 
-    typedef multimap<int,size_t> hitCrystalsMultiMap;
     hitCrystals.clear();
 
     _diagLevel > 0 && 

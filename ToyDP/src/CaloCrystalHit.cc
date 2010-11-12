@@ -1,9 +1,9 @@
 // 
 // CaloCrystalHit to be created based on CaloHit's 
 //
-// $Id: CaloCrystalHit.cc,v 1.3 2010/11/11 21:15:46 genser Exp $
+// $Id: CaloCrystalHit.cc,v 1.4 2010/11/12 21:44:58 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/11 21:15:46 $
+// $Date: 2010/11/12 21:44:58 $
 //
 
 // C++ includes
@@ -28,12 +28,12 @@ namespace mu2e {
     _energyDep(hit.energyDep()),
     _energyDepTotal(hit.energyDep()),
     _numberOfROIdsUsed(1),
-    _roIds(1,DPIndex(caloHitCollId,hit.roId()))
+    _roIds(1,DPIndex(caloHitCollId,hit.id()))
   {}
 
   // operator += CaloHit
   CaloCrystalHit& CaloCrystalHit::add(edm::ProductID const & caloHitCollId, CaloHit const & hit) {
-    _roIds.push_back(DPIndex(caloHitCollId,hit.roId()));
+    _roIds.push_back(DPIndex(caloHitCollId,hit.id()));
     _energyDep += hit.energyDep();
     _energyDepTotal += hit.energyDep();
     ++_numberOfROIdsUsed;
@@ -53,7 +53,7 @@ namespace mu2e {
     _energyDep = hit.energyDep();
     _energyDepTotal = hit.energyDep();
     _roIds.clear();
-    _roIds.push_back(DPIndex(caloHitCollId,hit.roId()));
+    _roIds.push_back(DPIndex(caloHitCollId,hit.id()));
     _numberOfROIdsUsed = 1;
     return;
   }

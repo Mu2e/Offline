@@ -1,6 +1,12 @@
 #ifndef CaloHit_H
 #define CaloHit_H
 
+// $Id: CaloHit.hh,v 1.2 2010/11/12 21:44:58 genser Exp $
+// $Author: genser $
+// $Date: 2010/11/12 21:44:58 $
+//
+// Original author Ivan Logashenko
+
 // C++ includes
 #include <iostream>
 #include <vector>
@@ -19,16 +25,16 @@ namespace mu2e {
       _energyDep(0.) {
     }
 
-    CaloHit( int roId,
-              float            time,
-              float            energyDep  ):
+    CaloHit( int   roId,
+             float time,
+             float energyDep  ):
       _roId(roId),
       _time(time),
       _energyDep(energyDep) {
     }
 
     // Accessors
-    int  roId() const { return _roId; }
+    int        id()         const { return _roId; }
     float      time()       const { return _time;}
     float      energyDep()  const { return _energyDep; }
 
@@ -39,9 +45,9 @@ namespace mu2e {
 
   private:
 
-    int _roId;
-    float            _time;             // (ns)
-    float            _energyDep;        // (MeV)
+    int       _roId;
+    float     _time;             // (ns)
+    float     _energyDep;        // (MeV)
 
   };
 

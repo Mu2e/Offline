@@ -1,9 +1,9 @@
 #ifndef CaloCrystalHit_H
 #define CaloCrystalHit_H
 
-// $Id: CaloCrystalHit.hh,v 1.3 2010/11/11 21:15:46 genser Exp $
+// $Id: CaloCrystalHit.hh,v 1.4 2010/11/12 21:44:58 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/11 21:15:46 $
+// $Date: 2010/11/12 21:44:58 $
 //
 // Original author KLG
 
@@ -36,10 +36,10 @@ namespace mu2e {
 
     // Accessors
 
-    int              id() const { return _crystalId; }
-    float            time()      const { return _time;      }
-    float            energyDep() const { return _energyDep; }
-    float            energyDepTotal() const { return _energyDepTotal; }
+    int              id()                const { return _crystalId; }
+    float            time()              const { return _time;      }
+    float            energyDep()         const { return _energyDep; }
+    float            energyDepTotal()    const { return _energyDepTotal; }
     int              numberOfROIdsUsed() const { return _numberOfROIdsUsed; }
     std::vector<DPIndex> const & roIds() const { return _roIds; }
 
