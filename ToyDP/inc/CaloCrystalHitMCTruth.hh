@@ -1,9 +1,9 @@
 #ifndef CaloCrystalHitMCTruth_H
 #define CaloCrystalHitMCTruth_H
 
-// $Id: CaloCrystalHitMCTruth.hh,v 1.3 2010/11/11 21:16:53 genser Exp $
+// $Id: CaloCrystalHitMCTruth.hh,v 1.4 2010/11/12 21:43:54 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/11 21:16:53 $
+// $Date: 2010/11/12 21:43:54 $
 //
 // Original author KLG
 
@@ -44,6 +44,8 @@ namespace mu2e {
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
     
+    void setEnergyDep(double energy);
+
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
