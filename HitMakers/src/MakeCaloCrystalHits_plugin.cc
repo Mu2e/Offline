@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_plugin.cc,v 1.4 2010/11/11 21:21:24 genser Exp $
+// $Id: MakeCaloCrystalHits_plugin.cc,v 1.5 2010/11/12 21:45:27 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/11 21:21:24 $
+// $Date: 2010/11/12 21:45:27 $
 //
 // Original author KLG
 //
@@ -34,49 +34,14 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 #include "ToyDP/inc/CaloHitCollection.hh"
-
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
+
+#include "Mu2eUtilities/inc/sort_functors.hh"
 
 using namespace std;
 using edm::Event;
 
 namespace mu2e {
-
-  // utility functor to sort hits by time
-
-  template <typename CaloHitT>
-  class lessByIdAndTime {
-
-  public:
-    
-    bool operator() (const CaloHitT& a, const CaloHitT& b) const {
-      return (a.roId() < b.roId() ||
-              (a.roId() == b.roId() &&
-               a.time() < b.time() 
-               ) 
-              );
-    }
-
-  };
-
-  template <typename CaloHitT>
-  class lessByCIdAndTime {
-
-  public:
-    
-    // explicit lessByCIdAndTime(GeomHandle<Calorimeter> cg) _cg(cg) {} // GeomHandle is not copyable
-
-    bool operator() (const CaloHitT& a, const CaloHitT& b) const {
-      
-      GeomHandle<Calorimeter> _cg;
-      return ( _cg->getCrystalByRO(a.roId()) < _cg->getCrystalByRO(b.roId()) ||
-               (_cg->getCrystalByRO(a.roId()) == _cg->getCrystalByRO(b.roId()) &&
-                a.time() < b.time() 
-                ) 
-               );
-    }
-
-  };
 
   class MakeCaloCrystalHits : public edm::EDProducer {
 
@@ -209,7 +174,7 @@ namespace mu2e {
       for( size_t i=0; i<caloHits->size(); ++i ) {
         _diagLevel > 0 && 
           cout << __func__ << ": " << (*caloHits)[i]
-               << " CrystalId: " << cg->getCrystalByRO((*caloHits)[i].roId()) << endl;
+               << " CrystalId: " << cg->getCrystalByRO((*caloHits)[i].id()) << endl;
       }
     }
 
@@ -235,7 +200,7 @@ namespace mu2e {
         //      for( size_t i=0; i<caloHitsSorted.size(); ++i ) {
         cout << __func__ << ": ";
         i->print(cout,false);
-        cout << " CrystalId: " << cg->getCrystalByRO(i->roId()) << endl;
+        cout << " CrystalId: " << cg->getCrystalByRO(i->id()) << endl;
       }
     }
 
@@ -253,9 +218,9 @@ namespace mu2e {
     CaloCrystalHitCollection::value_type caloCrystalHit;
 
     if ( hit0.energyDep()>= _minimumEnergy && hit0.energyDep() < _maximumEnergy ) {
-      caloCrystalHit.assign(cg->getCrystalByRO(hit0.roId()),caloHitCollId,hit0);
+      caloCrystalHit.assign(cg->getCrystalByRO(hit0.id()),caloHitCollId,hit0);
     } else {
-      caloCrystalHit.assignEnergyToTot(cg->getCrystalByRO(hit0.roId()),caloHitCollId,hit0);
+      caloCrystalHit.assignEnergyToTot(cg->getCrystalByRO(hit0.id()),caloHitCollId,hit0);
     }
     
     _diagLevel > 0 && cout << __func__ << ": As in CaloCrystalHit: "
@@ -268,7 +233,7 @@ namespace mu2e {
 
       _diagLevel > 0 && cout << __func__ << ": Original RO hit: " << hit << endl;
       
-      int cid = cg->getCrystalByRO(hit.roId());
+      int cid = cg->getCrystalByRO(hit.id());
 
       _diagLevel > 0 && 
         cout << __func__ << ": old, new cid:  " << caloCrystalHit.id() << ", " << cid << endl;
