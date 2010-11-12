@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_plugin.cc,v 1.1 2010/10/13 23:02:39 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/10/13 23:02:39 $
+// $Id: ReadBack0_plugin.cc,v 1.2 2010/11/12 21:46:33 genser Exp $
+// $Author: genser $
+// $Date: 2010/11/12 21:46:33 $
 //
 // Original author Rob Kutschke
 //
@@ -134,7 +134,7 @@ namespace mu2e {
     for ( size_t i=0; i<caloHits.size(); ++i ) {
       totalEdep += caloHits[i].energyDep();
 
-      int roid = caloHits[i].roId();
+      int roid = caloHits[i].id();
       int cid = calGeom->getCrystalByRO(roid);
       hit_crystals.insert(cid);
     }
