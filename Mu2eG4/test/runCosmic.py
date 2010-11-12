@@ -5,9 +5,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: runCosmic.py,v 1.5 2010/10/13 23:39:21 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/10/13 23:39:21 $
+# $Id: runCosmic.py,v 1.6 2010/11/12 22:35:13 genser Exp $
+# $Author: genser $
+# $Date: 2010/11/12 22:35:13 $
 #
 # Original author Rob Kutschke
 #
@@ -80,6 +80,26 @@ process.outfile = mu2e.OutputModule(
 
 )
 
+# Form StrawHits (SH).
+process.makeSH = mu2e.EDProducer(
+    "MakeStrawHit",
+    g4ModuleLabel = mu2e.string("g4run"),
+    seed=mu2e.untracked.vint32(7790),
+    diagLevel    = mu2e.untracked.int32(0),
+    maxFullPrint = mu2e.untracked.int32(5)
+)
+
+# Form CaloCrystalHits
+process.CaloCrystalHitsMaker =  mu2e.EDProducer(
+    "MakeCaloCrystalHits",
+    diagLevel      = mu2e.untracked.int32(3),
+    maxFullPrint   = mu2e.untracked.int32(201),
+    g4ModuleLabel  = mu2e.string("g4run"),
+    minimumEnergy  = mu2e.untracked.double(0.0),
+    maximumEnergy  = mu2e.untracked.double(1000.0),
+    minimumTimeGap = mu2e.untracked.double(100.0)
+)
+
 # Look at the hits from G4.
 process.checkhits = mu2e.EDFilter(
     "CosmicTuple",
@@ -112,5 +132,7 @@ process.MessageLogger.categories.append("GEOM")
 #)
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate*process.g4run*process.randomsaver*
+process.output = mu2e.EndPath(  process.generate*process.g4run*process.makeSH*
+                                process.CaloCrystalHitsMaker*
+                                process.randomsaver*
                                 process.checkhits*process.outfile );
