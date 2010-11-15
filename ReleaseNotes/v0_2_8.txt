@@ -3,10 +3,14 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.12 2010/11/12 22:13:43 genser Exp $
+  $Id: v0_2_8.txt,v 1.13 2010/11/15 16:25:34 genser Exp $
   $Author: genser $
-  $Date: 2010/11/12 22:13:43 $
+  $Date: 2010/11/15 16:25:34 $
 
+
+23) November 12, 2010 genser
+
+    added makeSH and CaloCrystalHitsMaker to Mu2eG4/test/runCosmic.py
 
 22) November 12, 2010 genser
 
