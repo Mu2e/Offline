@@ -1,8 +1,8 @@
 # Variant of g4test_03 but with transport only.
 #
-# $Id: transportOnly.py,v 1.12 2010/11/11 22:11:09 genser Exp $
-# $Author: genser $
-# $Date: 2010/11/11 22:11:09 $
+# $Id: transportOnly.py,v 1.13 2010/11/15 23:42:20 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/11/15 23:42:20 $
 #
 # Original author Rob Kutschke
 #
@@ -41,6 +41,9 @@ process.GeometryService = mu2e.Service("GeometryService",
 process.ConditionsService = mu2e.Service("ConditionsService",
        conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
 )
+
+# A helper for our interface with G4.
+process.G4Helper = mu2e.Service("G4Helper")
 
 # Define and configure some modules to do work on each event.
 # Modules are just defined for now, the are scheduled later.

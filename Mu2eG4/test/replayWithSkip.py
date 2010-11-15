@@ -1,8 +1,8 @@
 # Same as replayAll.py, except skip the first 10 events.
 #
-# $Id: replayWithSkip.py,v 1.6 2010/10/13 23:38:50 kutschke Exp $
+# $Id: replayWithSkip.py,v 1.7 2010/11/15 23:42:20 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/10/13 23:38:50 $
+# $Date: 2010/11/15 23:42:20 $
 #
 # Original author Rob Kutschke
 #
@@ -49,6 +49,9 @@ process.GeometryService = mu2e.Service("GeometryService",
 process.ConditionsService = mu2e.Service("ConditionsService",
        conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
 )
+
+# A helper for our interface with G4.
+process.G4Helper = mu2e.Service("G4Helper")
 
 # Define and configure some modules to do work on each event.
 # Modules are just defined for now, the are scheduled later.

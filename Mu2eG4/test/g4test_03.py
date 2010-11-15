@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.15 2010/11/11 21:59:05 genser Exp $
-# $Author: genser $
-# $Date: 2010/11/11 21:59:05 $
+# $Id: g4test_03.py,v 1.16 2010/11/15 23:42:20 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2010/11/15 23:42:20 $
 #
 # Original author Rob Kutschke
 #
@@ -44,10 +44,14 @@ process.GeometryService = mu2e.Service("GeometryService",
        inputfile=mu2e.untracked.string("Mu2eG4/test/geom_01.txt")
 )
 
+
 # Access the conditions data.
 process.ConditionsService = mu2e.Service("ConditionsService",
        conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
 )
+
+# A helper for our interface with G4.
+process.G4Helper = mu2e.Service("G4Helper")
 
 # Uncomment to enable per module timing
 #process.Timing = mu2e.Service("Timing",

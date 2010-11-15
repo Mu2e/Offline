@@ -4,9 +4,9 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: runCosmicGraf.py,v 1.4 2010/10/13 23:39:26 kutschke Exp $
+# $Id: runCosmicGraf.py,v 1.5 2010/11/15 23:42:20 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/10/13 23:39:26 $
+# $Date: 2010/11/15 23:42:20 $
 #
 # Original author Rob Kutschke
 #
@@ -45,6 +45,9 @@ process.GeometryService = mu2e.Service("GeometryService",
 process.ConditionsService = mu2e.Service("ConditionsService",
        conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
 )
+
+# A helper for our interface with G4.
+process.G4Helper = mu2e.Service("G4Helper")
 
 # Define and configure some modules to do work on each event.
 # Modules are just defined for now, the are scheduled later.
