@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.60 2010/11/05 03:13:22 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.61 2010/11/15 23:27:53 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/05 03:13:22 $
+// $Date: 2010/11/15 23:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -40,6 +40,7 @@
 #include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e includes
+#include "Mu2eG4/inc/G4Helper.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -61,6 +62,7 @@
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructCalorimeter.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 // G4 includes
 #include "G4SDManager.hh"
@@ -137,7 +139,6 @@ namespace mu2e {
 
     // In case this is called a second time within a job.
     _volumeInfoList.clear();
-    _visAttributes.clear();
     
     // Get access to the master geometry system and its run time config.
     edm::Service<GeometryService> geom;
@@ -196,6 +197,10 @@ namespace mu2e {
       constructBFieldAndManagers2();
     }
     constructStepLimiters();
+
+    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    reg.print();
+
 
   }
 
@@ -462,12 +467,12 @@ namespace mu2e {
                                                0, 
                                                0,
                                                _config->getBool("g4.doSurfaceCheck",false));
-
-    _visAttributes.push_back(G4VisAttributes(dirtCapVisible, G4Colour::Green()));
-    G4VisAttributes& visAtt = _visAttributes.back();
-    visAtt.SetForceSolid(dirtCapSolid);
-    visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
-    dirtCapInfo.logical->SetVisAttributes(&visAtt);
+    
+    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    G4VisAttributes* visAtt = reg.add( G4VisAttributes(dirtCapVisible, G4Colour::Green()) );
+    visAtt->SetForceSolid(dirtCapSolid);
+    visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+    dirtCapInfo.logical->SetVisAttributes(visAtt);
 
     addVolInfo( dirtCapInfo );
 
@@ -1032,6 +1037,8 @@ namespace mu2e {
   // Choose the selected tracker and build it.
   VolumeInfo Mu2eWorld::constructTracker(){
 
+    GeomHandle<TTracker> ttHandle; 
+
     // The tracker is built inside this volume.
     VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
 
@@ -1431,9 +1438,11 @@ namespace mu2e {
     tsVacua.push_back( locateVolInfo("ToyTS5Vacuum").logical );
 
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
-    _stepLimits.push_back( G4UserLimits(maxStep) );
-    G4UserLimits* stepLimit = &(_stepLimits.back());
-
+    //_stepLimits.push_back( G4UserLimits(maxStep) );
+    //G4UserLimits* stepLimit = &(_stepLimits.back());
+    //G4VisAttributes* visAtt = reg.add( new G4VisAttributes(dirtCapVisible, G4Colour::Green()) );
+    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    G4UserLimits* stepLimit = reg.add( G4UserLimits(maxStep) );
     ds2Vacuum->SetUserLimits( stepLimit );
     ds3Vacuum->SetUserLimits( stepLimit );
 
@@ -1644,12 +1653,13 @@ namespace mu2e {
                                                   _config->getBool("g4.doSurfaceCheck",false));
     
     if ( hallSteelVisible ){
+
       // We need to manage the lifetime of the G4VisAttributes object.
-      _visAttributes.push_back(G4VisAttributes(true, G4Colour::Green()));
-      G4VisAttributes& visAtt = _visAttributes.back();
-      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
-      visAtt.SetForceSolid(hallSteelSolid);
-      FrontShieldInfo.logical->SetVisAttributes(&visAtt);
+      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Green()));
+      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+      visAtt->SetForceSolid(hallSteelSolid);
+      FrontShieldInfo.logical->SetVisAttributes(visAtt);
     } 
     else{
       FrontShieldInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
@@ -1755,12 +1765,12 @@ namespace mu2e {
     if ( isVisible ){
 
       // We need to manage the lifetime of the G4VisAttributes object.
-      _visAttributes.push_back(G4VisAttributes(true, color));
-      G4VisAttributes& visAtt = _visAttributes.back();
+      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
 
       // Finish the setting of visualization properties.
-      visAtt.SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(&visAtt);
+      visAtt->SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(visAtt);
     } 
     else{
 
@@ -1804,17 +1814,17 @@ namespace mu2e {
     if ( isVisible ){
 
       // We need to manage the lifetime of the G4VisAttributes object.
-      _visAttributes.push_back(G4VisAttributes(true, color));
-      G4VisAttributes& visAtt = _visAttributes.back();
+      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
 
       // If I do not do this, then the rendering depends on what happens in
       // other parts of the code;  is there a G4 bug that causes something to be
       // unitialized?
-      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
 
       // Finish the setting of visualization properties.
-      visAtt.SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(&visAtt);
+      visAtt->SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(visAtt);
     } 
     else{
 
@@ -1852,17 +1862,17 @@ namespace mu2e {
     if ( isVisible ){
 
       // We need to manage the lifetime of the G4VisAttributes object.
-      _visAttributes.push_back(G4VisAttributes(true, color));
-      G4VisAttributes& visAtt = _visAttributes.back();
+      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
 
       // If I do not do this, then the rendering depends on what happens in
       // other parts of the code;  is there a G4 bug that causes something to be
       // unitialized?
-      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
 
       // Finish the setting of visualization properties.
-      visAtt.SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(&visAtt);
+      visAtt->SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(visAtt);
     } 
     else{
 
@@ -1908,17 +1918,17 @@ namespace mu2e {
     if ( isVisible ){
 
       // We need to manage the lifetime of the G4VisAttributes object.
-      _visAttributes.push_back(G4VisAttributes(true, color));
-      G4VisAttributes& visAtt = _visAttributes.back();
+      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
 
       // If I do not do this, then the rendering depends on what happens in
       // other parts of the code;  is there a G4 bug that causes something to be
       // unitialized?
-      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
 
       // Finish the setting of visualization properties.
-      visAtt.SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(&visAtt);
+      visAtt->SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(visAtt);
     } 
     else{
 
@@ -1965,17 +1975,17 @@ namespace mu2e {
     if ( isVisible ){
 
       // We need to manage the lifetime of the G4VisAttributes object.
-      _visAttributes.push_back(G4VisAttributes(true, color));
-      G4VisAttributes& visAtt = _visAttributes.back();
+      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
 
       // If I do not do this, then the rendering depends on what happens in
       // other parts of the code;  is there a G4 bug that causes something to be
       // unitialized?
-      visAtt.SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
+      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
 
       // Finish the setting of visualization properties.
-      visAtt.SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(&visAtt);
+      visAtt->SetForceSolid(forceSolid);
+      info.logical->SetVisAttributes(visAtt);
     } 
     else{
 

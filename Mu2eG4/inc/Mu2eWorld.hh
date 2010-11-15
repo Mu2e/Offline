@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.21 2010/09/21 21:54:31 avdhesh Exp $
-// $Author: avdhesh $ 
-// $Date: 2010/09/21 21:54:31 $
+// $Id: Mu2eWorld.hh,v 1.22 2010/11/15 23:27:53 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/11/15 23:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,6 @@
 
 #include <string>
 #include <memory>
-#include <list>
 #include <vector>
 #include <map>
 
@@ -318,12 +317,6 @@ namespace mu2e {
 
     // Allow access to the volume information by volume name.  See note 1.
     std::map<std::string,VolumeInfo> _volumeInfoList;
-
-    // Manage the lifetime of various objects whose lifetimes match that of the
-    // G4 geometry.  Use a list not a vector since push_back invalidates iterators for
-    // vectors but not for a list.
-    std::list<G4VisAttributes> _visAttributes;
-    std::list<G4UserLimits>    _stepLimits;
 
   };
 
