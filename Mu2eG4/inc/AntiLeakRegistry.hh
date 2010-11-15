@@ -1,56 +1,72 @@
 #ifndef MU2EG4_ANTILEAKREGISTRY_H
 #define MU2EG4_ANTILEAKREGISTRY_H
 //
-// The Mu2e anti-leak system for G4.
+// An anti-leak system to aid in using G4 from the Mu2e framework.
 //
-// $Id: AntiLeakRegistry.hh,v 1.1 2010/11/11 23:19:41 kutschke Exp $
+// $Id: AntiLeakRegistry.hh,v 1.2 2010/11/15 22:52:28 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/11 23:19:41 $
+// $Date: 2010/11/15 22:52:28 $
 //
 // Original author Rob Kutschke
 //
 // This header defines an object registry that is used to avoid memory leaks in G4.
-// The G4 examples often contain code like:
+// The API for G4 often requires that user code create a new object on the heap and
+// pass a pointer to that object to G4.  In a few cases, G4 takes ownership of the
+// newly created object and deletes it at the appropriate time.  In most cases,
+// however, G4 does not take ownership of the object and it is the responsibility of
+// the user code to delete the object when appropriate.  In most cases, the appropriate
+// time is either at the end of a G4 run or at the end of the job; for Mu2e these
+// cases are not distinguished because we do not intend to run multiple G4 runs within
+// one framework job.
 //
-//    G4LogicalVolume v = ...;
-//    v->SetVisAttributes(  new G4VisAttributes(true, color) );
+// One diffculty with this API is that the author of the Mu2e code just has to know whether
+// or not G4 will take ownership of a particular object.  The anti-leak registry does not
+// help with that problem; you still just have to know.  The anti-leak registry does
+// provide a mechanism to register an object so that it will be deleted when the registry
+// goes out of scope at the end of the job.  If the correct time to delete your object is
+// not at the end of job, then you will need to find another way to manage its lifetime.
 //
-// This works fine in the limited cases that G4 takes ownership of the new'ed object.
+// This registry is accessed via the G4Helper service.
 //
-// In most cases, however, G4 does not take ownership of the new'ed object, which 
-// creates a memory leak.  In Mu2e, the recommended practice for this situation is:
+// Here is an example of a call to G4 that leaks memory:
 //
-//      AntiLeakRegistry& reg(Mu2eG4RunManager::AntiLeakRegistry());
+//    G4LogicalVolume lvol = ...;
+//    lvol->SetVisAttributes(  new G4VisAttributes(true, color) );
+//
+// The logical volume does not take ownership of the G4VisAttributes object.
+// The recommended practice for this situation is:
+//
+//      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
 //      G4LogicalVolume v = ...;
 //
-//      G4VisAttributes* va = v->SetVisAttributes( reg.add(G4VisAttributes(true, color)) );
+//      lvol->SetVisAttributes( reg.add(G4VisAttributes(true, color)) );
 // or
-//      v->SetVisAttributes( reg.addByPointer( new G4VisAttributes(true, color)) );
+//      lvol->SetVisAttributes( reg.add( new G4VisAttributes(true, color)) );
 // or
 //      G4VisAttributes* visAtt = new G4VisAttributes(true, color);
-//      v->SetVisAttributes( reg.addByPointer( visAtt ) );
+//      visAtt->Set ... ; // modify some property.
+//      lvol->SetVisAttributes( reg.add( visAtt ) );
 //
-// where the first form is prefered provided that the new'ed object is safely copyable.
+// There are two distinct add methods, one of which takes an object by const reference
+// and one of which takes an object by pointer.  The first add method will make a copy of 
+// its argument, placing that copy in a std::list of the correct type and will return a 
+// pointer to the object in the list. The type std::list was chosen ( not, for example, 
+// std::vector ) because subsequent insertions into the list do not invalidate the pointer 
+// that was returned.
 //
-// The add method will make a copy of its argument, placing that copy in
-// a std::list of the correct type and will return a pointer to the object in the list.
-// The type std::list was chosen ( not, for example, std::vector ) because subsequent
-// insertions into the list do not invalidate the pointer that was returned.
+// The second add method puts a shared pointer to the object into a list of the correct type.
+// So no copy is necessary and the returned pointer points directly to the new'ed object.
 //
-// The addByPtr method puts a shared pointer to the object into a list of the correct type.
-// So there is no copy and the returned pointer points directly to the new'ed object.
-//
-// The first method has the disadvantage that it requires a copy. This has two sorts of
-// potential problems. The big problem is if the type T is not copyable ( or should
-// not be copyable because copying breaks something).  In that case use one of the
-// other methods.  The lesser problem is that the copy is wasteful of time and memory; 
-// however each add operation is usually done once at the start of the job,
-// which makes the waste a minor consideration; with C++0X, which supports move aware objects, 
-// we may be able to remove this objection.
+// The first method has the advantage that the interface is cleaner but it has the
+// disadvantage that it requires a copy, which has two sorts of potential problems. The big 
+// problem is if the type T is not copyable ( or should not be copyable because copying 
+// breaks smething); the solution is that must use add a pointer to the object.  The lesser 
+// problem is that the copy operation is wasteful of time and memory; however the add 
+// operations are done once at the start of the job, which makes the waste a minor consideration; 
+// with C++0X, which supports move aware objects,  we may be able to remove this objection too.
 //
 
 #include <iostream>
-#include <iomanip>
 #include <list>
 #include <map>
 #include <string>
@@ -61,7 +77,11 @@
 namespace mu2e
 {
 
-  // Base class that defines an interface obeyed by the concrete classes.
+  class AntiLeakRegistry {
+
+  private:
+
+  // Base class that defines an interface obeyed by the concrete list classes.
   // The concrete classes are held in the collection as pointer to base.
   class ObjectListBase{
   public:
@@ -82,8 +102,6 @@ namespace mu2e
 
   };
 
-  class AntiLeakRegistry {
-    
   public:
     AntiLeakRegistry():
       _mapOfLists(),
@@ -91,90 +109,73 @@ namespace mu2e
 
     ~AntiLeakRegistry(){}
 
+    // Place a copy of the argument in the list and return a pointer to the
+    // object in the list.
     template< class T>
-    T* add( T& p ){
+    T* add( T const& p ){
+
+      // Get the correct list
+      ObjectList<T>* olt = findOrCreateList<T>();
+
+      // Add the object to be managed; this does a copy.
+      olt->list.push_back(p);
+
+      // Return the address of the copy of the object.
+      return &olt->list.back();
+    }
+
+    // Take ownership of the object pointed to by p.  Place a shared pointer to the
+    // object into the list.  Return the original pointer.
+    template< class T>
+    T* add( T* p ){
+
+      // Object will be stored by shared pointer so that deletion is automatic.
+      typedef boost::shared_ptr<T> SPtr;
+
+      // Get the correct list
+      ObjectList<SPtr>* olt = findOrCreateList<SPtr>();
+
+      // Add shared pointer to the object.
+      olt->list.push_back(SPtr(p));
+
+      // Return the address of the object.
+      //return olt->list.back().get();
+      return p;
+    }
+
+    // Clear everything; calls all destructors.
+    void clear();
+
+    // Print information about types and numbers of saved objects.
+    void print( std::ostream& ost = std::cout ) const;
+
+    // How many types of objects have we stored?
+    size_t size() const { return _mapOfLists.size(); }
+
+  private:
+
+    // A helper function to find or create the relevant list.
+    template< class T>
+    ObjectList<T>* findOrCreateList(){
 
       // This will be the key in the map.
       std::string name(typeid(T).name());
 
+      // Keep track of the length of the names.
       _maxNameLength = ( name.size() > _maxNameLength ) 
         ? name.size() : _maxNameLength;
       
       // Find the key in the map; if absent, create a new entry in the map.
       ListMap::iterator i = _mapOfLists.find(name);
       if ( i == _mapOfLists.end() ){
-        ListPtr ol(new ObjectList<T>());
-        std::pair<ListMap::iterator,bool> x = _mapOfLists.insert( std::make_pair(name,ol));
-        i = x.first;
+        std::pair<ListMap::iterator,bool> r = 
+          _mapOfLists.insert( std::make_pair(name,ListPtr(new ObjectList<T>())));
+        i = r.first;
       }
 
-      // Get a pointer to the list object of the right type.
-      ObjectList<T>* olt = dynamic_cast<ObjectList<T>*>(i->second.get());
-
-      // Add the object to be managed; this does a copy.
-      olt->list.push_back(p);
-
-      // Return the address of the object.
-      return &olt->list.back();
+      // Return a pointer to the list object of the right type.
+      return dynamic_cast<ObjectList<T>*>(i->second.get());
     }
-
-    template< class T>
-    T* addByPointer( T* p ){
-
-      // Object will be stored by shared pointer so that deletion is automatic.
-      typedef boost::shared_ptr<T> SPtr;
-
-      // The key in the map is the full name.
-      std::string name(typeid(SPtr).name());
-
-      _maxNameLength = ( name.size() > _maxNameLength ) 
-        ? name.size() : _maxNameLength;
-
-      // Find the key in the map; if absent, create a new entry in the map.
-      ListMap::iterator i = _mapOfLists.find(name);
-      if ( i == _mapOfLists.end() ){
-        ListPtr ol(new ObjectList<SPtr>());
-        std::pair<ListMap::iterator,bool> x = _mapOfLists.insert( std::make_pair(name,ol));
-        i = x.first;
-      }
-
-      // Get a pointer to the list object of the right type.
-      ObjectList<SPtr>* olt = dynamic_cast<ObjectList<SPtr>*>(i->second.get());
-
-      // Add the object to be managed; this does a copy.
-      olt->list.push_back(SPtr(p));
-
-      // Return the address of the object.
-      return olt->list.back().get();
-    }
-
-    // Clear everything; calls all destructors.
-    void clear(){
-      _mapOfLists.clear();
-      _maxNameLength = 0;
-    }
-
-    // Print information about types and numbers of saved objects.
-    void print( std::ostream& ost = std::cout ) const{
-
-      ost << "\nMu2e Registry for G4 objects " << std::endl;
-      ost << "Number of entries: " << _mapOfLists.size() << std::endl;
-
-      for ( ListMap::const_iterator i = _mapOfLists.begin();
-            i != _mapOfLists.end(); ++i ){
-        ost << "  Data type: "
-            << std::setw(_maxNameLength)
-            << i->first << " "
-            << i->second->size() << " Number of entries: "
-            << std::endl;
-      }
-
-    }
-
-    // How many types of objects have we stored?
-    size_t size() const { return _mapOfLists.size(); }
-
-  private:
 
     // This object should not be copyable.
     AntiLeakRegistry( AntiLeakRegistry const&);
@@ -185,7 +186,6 @@ namespace mu2e
 
     // The actual registry is this.
     ListMap _mapOfLists;
-
 
     // Keep track of string lengths for nice printout.
     size_t _maxNameLength;
