@@ -1,12 +1,14 @@
 #ifndef SORT_FUNCTORS_HH
 #define SORT_FUNCTORS_HH
 //
-// $Id: sort_functors.hh,v 1.1 2010/11/12 19:40:51 genser Exp $
+// $Id: sort_functors.hh,v 1.2 2010/11/15 17:16:53 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/11/12 19:40:51 $
+// $Date: 2010/11/15 17:16:53 $
 //
 // Original author KLG
 //
+
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 
 namespace mu2e {
 
@@ -17,20 +19,20 @@ namespace mu2e {
 
   public:
     
-    bool operator() (const HitT& a, const HitT& b) const {
+    bool operator() (HitT const & a, HitT const & b) const {
       return ( a.time() < b.time() );
     }
 
   };
 
-  // utility functor to sort hits by id & time
+  // utility functor to sort hits by id and time
 
   template <typename HitT>
   class lessByIdAndTime {
 
   public:
     
-    bool operator() (const HitT& a, const HitT& b) const {
+    bool operator() (HitT const & a, HitT const & b) const {
       return (a.id() < b.id() ||
               (a.id() == b.id() &&
                a.time() < b.time() 
@@ -40,25 +42,28 @@ namespace mu2e {
 
   };
 
-  // utility functor to sort hits by crystal id & time
+  // utility functor to sort hits by crystal id and time
 
   template <typename HitT>
   class lessByCIdAndTime {
 
   public:
     
-    // explicit lessByCIdAndTime(GeomHandle<Calorimeter> cg) _cg(cg) {} 
-    // GeomHandle is not copyable
 
-    bool operator() (const HitT& a, const HitT& b) const {
+    explicit lessByCIdAndTime(Calorimeter const & cal): _cal(cal) {}
+
+    bool operator() (HitT const & a, HitT const & b) const {
       
-      GeomHandle<Calorimeter> _cg;
-      return ( _cg->getCrystalByRO(a.id()) < _cg->getCrystalByRO(b.id()) ||
-               (_cg->getCrystalByRO(a.id()) == _cg->getCrystalByRO(b.id()) &&
+      return ( _cal.getCrystalByRO(a.id()) < _cal.getCrystalByRO(b.id()) ||
+               (_cal.getCrystalByRO(a.id()) == _cal.getCrystalByRO(b.id()) &&
                 a.time() < b.time() 
                 ) 
                );
     }
+
+  private:
+
+    Calorimeter const & _cal;
 
   };
   

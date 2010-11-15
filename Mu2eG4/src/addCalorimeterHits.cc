@@ -1,9 +1,9 @@
 //
 // Populate output collections for calorimeter
 //
-// $Id: addCalorimeterHits.cc,v 1.4 2010/11/12 21:49:26 genser Exp $
+// $Id: addCalorimeterHits.cc,v 1.5 2010/11/15 17:16:53 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/12 21:49:26 $
+// $Date: 2010/11/15 17:16:53 $
 //
 // Original author Ivan Logashenko
 //
@@ -54,8 +54,9 @@ namespace mu2e{
     // Get calorimeter geometry description
     edm::Service<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return;
-    GeomHandle<Calorimeter> cg;
 
+    Calorimeter const & cal = *(GeomHandle<Calorimeter>());
+    
     // G4 Hit collections for this event.
 
     G4HCofThisEvent* hce = g4event->GetHCofThisEvent();
@@ -74,11 +75,11 @@ namespace mu2e{
 
     if( nHits<=0 ) return;
 
-    double length     = cg->crystalHalfLength();
-    double nonUniform = cg->getNonuniformity();
-    double timeGap    = cg->getTimeGap();
-    double addEdep    = cg->getElectronEdep();
-    int    nro        = cg->nROPerCrystal();
+    double length     = cal.crystalHalfLength();
+    double nonUniform = cal.getNonuniformity();
+    double timeGap    = cal.getTimeGap();
+    double addEdep    = cal.getElectronEdep();
+    int    nro        = cal.nROPerCrystal();
 
     // Organize hits by readout elements
 
@@ -188,7 +189,7 @@ namespace mu2e{
       // reject all RO hit directly
       if (h->eDep()<0.0) continue;
       if (h->eDep()==0.0 && h->position()==CLHEP::Hep3Vector(0.0,0.0,0.0)) continue;
-      hitmap[cg->getCrystalByRO(h->volumeId())].push_back(i);
+      hitmap[cal.getCrystalByRO(h->volumeId())].push_back(i);
     }
 
     CaloCrystalHitMCTruthCollection cr_hits;
