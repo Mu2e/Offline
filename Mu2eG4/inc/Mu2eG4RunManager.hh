@@ -4,9 +4,9 @@
 // Override the G4RunManager class so that the Mu2e framework can drive
 // the event loop. 
 //
-// $Id: Mu2eG4RunManager.hh,v 1.4 2010/11/11 23:20:17 kutschke Exp $
+// $Id: Mu2eG4RunManager.hh,v 1.5 2010/11/15 23:24:42 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/11 23:20:17 $
+// $Date: 2010/11/15 23:24:42 $
 //
 // Original author Rob Kutschke
 //
@@ -35,9 +35,6 @@
 //
 //     3) The original G4RunManager had a local variable _i_event
 
-// Mu2e includes.
-#include "Mu2eG4/inc/AntiLeakRegistry.hh"
-
 // Included from G4
 #include "G4RunManager.hh"
 
@@ -46,22 +43,19 @@ namespace mu2e {
   class Mu2eG4RunManager : public G4RunManager{
 
   public:
+  
     Mu2eG4RunManager();
     virtual ~Mu2eG4RunManager();
-  
-  public: 
 
-    // The four methods needed by Mu2e.
+    // The four methods that break up BeamOn into 4 pieces.
     virtual void BeamOnBeginRun( unsigned int runNumber, const char* macroFile=0, G4int n_select=-1);
     virtual void BeamOnDoOneEvent( int eventNumber );
     virtual void BeamOnEndEvent();
     virtual void BeamOnEndRun();
- 
-    G4Event const* getCurrentEvent() { return currentEvent; }
 
-    AntiLeakRegistry& getAntiLeakRegistry(){
-      return _antiLeakRegistry;
-    }
+
+    // Mu2e specific accessors.
+    G4Event const* getCurrentEvent() { return currentEvent; }
 
   private:
 
@@ -96,9 +90,6 @@ namespace mu2e {
 
     // The command that executes the macro file.
     G4String _msg;
-
-    // This is a new feature, not found in the original G4.
-    AntiLeakRegistry _antiLeakRegistry;
 
   };
 
