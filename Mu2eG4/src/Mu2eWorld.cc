@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.62 2010/11/16 14:43:11 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.63 2010/11/16 15:15:50 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/16 14:43:11 $
+// $Date: 2010/11/16 15:15:50 $
 //
 // Original author Rob Kutschke
 //
@@ -140,9 +140,6 @@ namespace mu2e {
     edm::Service<G4Helper> helper;
     _helper = &(*helper);
 
-    // In case this is called a second time within a job.
-    _volumeInfoList.clear();
-    
     // Get access to the master geometry system and its run time config.
     edm::Service<GeometryService> geom;
     SimpleConfig const& config = geom->config();
@@ -200,10 +197,6 @@ namespace mu2e {
       constructBFieldAndManagers2();
     }
     constructStepLimiters();
-
-    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
-    reg.print();
-
 
   }
 
