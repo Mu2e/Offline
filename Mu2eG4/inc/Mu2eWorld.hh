@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.22 2010/11/15 23:27:53 kutschke Exp $
+// $Id: Mu2eWorld.hh,v 1.23 2010/11/16 14:43:11 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/15 23:27:53 $
+// $Date: 2010/11/16 14:43:11 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,7 @@ class G4UserLimits;
 #include "Mu2eG4/inc/WorldInfo.hh"
 #include "Mu2eG4/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
+#include "Mu2eG4/inc/G4Helper.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
 //G4 includes 
@@ -290,10 +291,6 @@ namespace mu2e {
                          );
     }
 
-    // Versions of the map [] operator that check for errors.
-    VolumeInfo& locateVolInfo( const std::string key);
-    void addVolInfo( const VolumeInfo& info );
-    
     // Stash a pointer to the config object so that all methods can get at it easily.
     SimpleConfig const* _config;
 
@@ -315,8 +312,8 @@ namespace mu2e {
     std::auto_ptr<FieldMgr> _tsFull;
     std::auto_ptr<FieldMgr> _hallFull;
 
-    // Allow access to the volume information by volume name.  See note 1.
-    std::map<std::string,VolumeInfo> _volumeInfoList;
+    // Access to the G4HelperService.
+    G4Helper * _helper;
 
   };
 

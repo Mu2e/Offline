@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.61 2010/11/15 23:27:53 kutschke Exp $
+// $Id: Mu2eWorld.cc,v 1.62 2010/11/16 14:43:11 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/15 23:27:53 $
+// $Date: 2010/11/16 14:43:11 $
 //
 // Original author Rob Kutschke
 //
@@ -137,6 +137,9 @@ namespace mu2e {
   // This is the callback called by G4.
   WorldInfo const* Mu2eWorld::construct(){
 
+    edm::Service<G4Helper> helper;
+    _helper = &(*helper);
+
     // In case this is called a second time within a job.
     _volumeInfoList.clear();
     
@@ -180,8 +183,8 @@ namespace mu2e {
     // Hack alert: These belong in constructTracker and constructTarget.
     trackerInfo.name = "TrackerMother";
     targetInfo.name  = "StoppingTargetMother";
-    addVolInfo(trackerInfo);
-    addVolInfo(targetInfo);
+    _helper->addVolInfo(trackerInfo);
+    _helper->addVolInfo(targetInfo);
 
     edm::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << _mu2eOrigin           << "\n";
@@ -474,7 +477,7 @@ namespace mu2e {
     visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
     dirtCapInfo.logical->SetVisAttributes(visAtt);
 
-    addVolInfo( dirtCapInfo );
+    _helper->addVolInfo( dirtCapInfo );
 
     return dirtInfo;
 
@@ -1040,7 +1043,7 @@ namespace mu2e {
     GeomHandle<TTracker> ttHandle; 
 
     // The tracker is built inside this volume.
-    VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
     // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
     double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
@@ -1074,7 +1077,7 @@ namespace mu2e {
 
 
     // The target is built inside this volume.
-    VolumeInfo detSolUpstreamVacInfo   = locateVolInfo("ToyDS2Vacuum");
+    VolumeInfo detSolUpstreamVacInfo   = _helper->locateVolInfo("ToyDS2Vacuum");
 
     // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
     double z0DSup   = detSolUpstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
@@ -1100,8 +1103,8 @@ namespace mu2e {
   //construct proton absorber
   void Mu2eWorld::constructProtonAbs(){
     
-    VolumeInfo parent1 = locateVolInfo("ToyDS2Vacuum");
-    VolumeInfo parent2 = locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo parent1 = _helper->locateVolInfo("ToyDS2Vacuum");
+    VolumeInfo parent2 = _helper->locateVolInfo("ToyDS3Vacuum");
     double pabs1rIn0   = _config->getDouble("protonabsorber.InRadius0");
     double pabs1rOut0  = _config->getDouble("protonabsorber.OutRadius0");
     double pabs2rIn1   = _config->getDouble("protonabsorber.InRadius1");
@@ -1255,18 +1258,18 @@ namespace mu2e {
     }
 
     // Get pointers to logical volumes.
-    G4LogicalVolume* ds2Vacuum = locateVolInfo("ToyDS2Vacuum").logical;
-    G4LogicalVolume* ds3Vacuum = locateVolInfo("ToyDS3Vacuum").logical;
+    G4LogicalVolume* ds2Vacuum = _helper->locateVolInfo("ToyDS2Vacuum").logical;
+    G4LogicalVolume* ds3Vacuum = _helper->locateVolInfo("ToyDS3Vacuum").logical;
 
     vector<G4LogicalVolume*> psVacua;
-    psVacua.push_back( locateVolInfo("PS1Vacuum").logical );
+    psVacua.push_back( _helper->locateVolInfo("PS1Vacuum").logical );
 
     vector<G4LogicalVolume*> tsVacua;
-    tsVacua.push_back( locateVolInfo("ToyTS1Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS2Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS3Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS4Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS5Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS1Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS2Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS3Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS4Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS5Vacuum").logical );
 
     // Attach field managers to the appropriate logical volumes.
     if (dsFieldForm == dsModelFull  ){
@@ -1357,18 +1360,18 @@ namespace mu2e {
     } 
 
     // Get pointers to logical volumes.
-    G4LogicalVolume* ds2Vacuum = locateVolInfo("ToyDS2Vacuum").logical;
-    G4LogicalVolume* ds3Vacuum = locateVolInfo("ToyDS3Vacuum").logical;
+    G4LogicalVolume* ds2Vacuum = _helper->locateVolInfo("ToyDS2Vacuum").logical;
+    G4LogicalVolume* ds3Vacuum = _helper->locateVolInfo("ToyDS3Vacuum").logical;
 
     vector<G4LogicalVolume*> psVacua;
-    psVacua.push_back( locateVolInfo("PS1Vacuum").logical );
+    psVacua.push_back( _helper->locateVolInfo("PS1Vacuum").logical );
 
     vector<G4LogicalVolume*> tsVacua;
-    tsVacua.push_back( locateVolInfo("ToyTS1Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS2Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS3Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS4Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS5Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS1Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS2Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS3Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS4Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS5Vacuum").logical );
 
     // Attach field managers to the appropriate logical volumes.
     if (dsFieldForm == dsModelFull  ){
@@ -1422,20 +1425,20 @@ namespace mu2e {
     // Maximum step length, in mm.
     double maxStep = _config->getDouble("bfield.maxStep", 20.);
 
-    G4LogicalVolume* ds2Vacuum      = locateVolInfo("ToyDS2Vacuum").logical;
-    G4LogicalVolume* ds3Vacuum      = locateVolInfo("ToyDS3Vacuum").logical;
-    G4LogicalVolume* tracker        = locateVolInfo("TrackerMother").logical;
-    G4LogicalVolume* stoppingtarget = locateVolInfo("StoppingTargetMother").logical;
+    G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("ToyDS2Vacuum").logical;
+    G4LogicalVolume* ds3Vacuum      = _helper->locateVolInfo("ToyDS3Vacuum").logical;
+    G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
+    G4LogicalVolume* stoppingtarget = _helper->locateVolInfo("StoppingTargetMother").logical;
 
     vector<G4LogicalVolume*> psVacua;
-    psVacua.push_back( locateVolInfo("PS1Vacuum").logical );
+    psVacua.push_back( _helper->locateVolInfo("PS1Vacuum").logical );
 
     vector<G4LogicalVolume*> tsVacua;
-    tsVacua.push_back( locateVolInfo("ToyTS1Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS2Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS3Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS4Vacuum").logical );
-    tsVacua.push_back( locateVolInfo("ToyTS5Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS1Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS2Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS3Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS4Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("ToyTS5Vacuum").logical );
 
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
     //_stepLimits.push_back( G4UserLimits(maxStep) );
@@ -1468,7 +1471,7 @@ namespace mu2e {
 
     if ( ! _config->getBool("hasCalorimeter",false) ) return;
 
-    VolumeInfo detSolDownstreamVacInfo = locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
     double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
 
@@ -1696,7 +1699,7 @@ namespace mu2e {
     // VD 1 and 2 are placed inside TS1
 
     for( int id=1; id<=2; ++id) if( vdg->exist(id) ) {
-      VolumeInfo parent = locateVolInfo("ToyTS1Vacuum");
+      VolumeInfo parent = _helper->locateVolInfo("ToyTS1Vacuum");
       ostringstream name;
       name << "VirtualDetector" << id;
       VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
@@ -1709,7 +1712,7 @@ namespace mu2e {
     // VD 3-6 are placed inside TS3
 
     for( int id=3; id<=6; ++id) if( vdg->exist(id) ) {
-      VolumeInfo parent = locateVolInfo("ToyTS3Vacuum");
+      VolumeInfo parent = _helper->locateVolInfo("ToyTS3Vacuum");
       ostringstream name;
       name << "VirtualDetector" << id;
       VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
@@ -1722,7 +1725,7 @@ namespace mu2e {
     // VD 7-8 are placed inside TS3
 
     for( int id=7; id<=8; ++id) if( vdg->exist(id) ) {
-      VolumeInfo parent = locateVolInfo("ToyTS5Vacuum");
+      VolumeInfo parent = _helper->locateVolInfo("ToyTS5Vacuum");
       ostringstream name;
       name << "VirtualDetector" << id;
       VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
@@ -1778,7 +1781,7 @@ namespace mu2e {
     }
 
     // Save the volume information in case someone else needs to access it by name.
-    addVolInfo(info);
+    _helper->addVolInfo(info);
 
     return info;
   }  // end of Mu2eWorld::nestBox
@@ -1832,7 +1835,7 @@ namespace mu2e {
     }
 
     // Save the volume information in case someone else needs to access it by name.
-    addVolInfo(info);
+    _helper->addVolInfo(info);
 
     return info;
   }  // end of Mu2eWorld::nestTubs
@@ -1880,7 +1883,7 @@ namespace mu2e {
     }
 
     // Save the volume information in case someone else needs to access it by name.
-    addVolInfo(info);
+    _helper->addVolInfo(info);
 
     return info;
   }  // end of Mu2eWorld::nestCons
@@ -1936,7 +1939,7 @@ namespace mu2e {
     }
 
     // Save the volume information in case someone else needs to access it by name.
-    addVolInfo(info);
+    _helper->addVolInfo(info);
 
     return info;
   }  // end of Mu2eWorld::nestCons
@@ -1993,43 +1996,10 @@ namespace mu2e {
     }
 
     // Save the volume information in case someone else needs to access it by name.
-    addVolInfo(info);
+    _helper->addVolInfo(info);
 
     return info;
   } // end of Mu2eWorld::nestTorus
-
-  // Return the volume info mapped to the given key, throw if the key does not exist.
-  // The syntax:
-  //    VolumeInfo& xx =_volumeInfoList[key];
-  // does not throw if the key does not exist.
-  VolumeInfo& Mu2eWorld::locateVolInfo( const std::string key){
-    std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(key);
-    if ( i == _volumeInfoList.end() ){
-      throw cms::Exception("GEOM")
-        << "locateVolInfo cannot find the volume named: "
-        << key 
-        << "\n";
-    }
-    return i->second;
-  } // end of Mu2eWorld::locateVolInfo
-
-  // If the key already exists, throw. Otherwise add the (key, value) pair
-  // to the map.
-  // The syntax:
-  //    VolumeInfo& xx;
-  //   _volumeInfoList[key] = xx;
-  // does not throw if the key already exists.
-  void Mu2eWorld::addVolInfo( const VolumeInfo& info ){
-    std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(info.name);
-    if ( i != _volumeInfoList.end() ){
-      throw cms::Exception("GEOM")
-        << "locateVolInfo already has the key: "
-        << info.name
-        << "\n";
-    }
-    _volumeInfoList[info.name] = info;
-  } // end of Mu2eWorld::addVolInfo
-
 
 } // end namespace mu2e
 

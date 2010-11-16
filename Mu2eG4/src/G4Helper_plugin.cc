@@ -1,9 +1,9 @@
 //
 // G4Helper plugin.
 //
-// $Id: G4Helper_plugin.cc,v 1.1 2010/11/15 23:20:06 kutschke Exp $
+// $Id: G4Helper_plugin.cc,v 1.2 2010/11/16 14:43:11 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/15 23:20:06 $
+// $Date: 2010/11/16 14:43:11 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,30 @@ namespace mu2e {
   G4Helper::~G4Helper(){
   }
 
+  // Return the volume info mapped to the given key, throw if the key does not exist.
+  VolumeInfo& G4Helper::locateVolInfo( const std::string key){
+    std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(key);
+    if ( i == _volumeInfoList.end() ){
+      throw cms::Exception("GEOM")
+        << "G4Helper::locateVolInfo cannot find the volume named: "
+        << key 
+        << "\n";
+    }
+    return i->second;
+  } // end of G4Helper::locateVolInfo
+
+  // If the key already exists, throw. Otherwise add the (key, value) pair
+  // to the map.
+  void G4Helper::addVolInfo( const VolumeInfo& info ){
+    std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(info.name);
+    if ( i != _volumeInfoList.end() ){
+      throw cms::Exception("GEOM")
+        << "locateVolInfo already has the key: "
+        << info.name
+        << "\n";
+    }
+    _volumeInfoList[info.name] = info;
+  } // end of G4Helper::addVolInfo
 
 } // end namespace mu2e
 

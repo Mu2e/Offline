@@ -8,16 +8,22 @@
 // support of G4.  For technical reasons, this cannot be done by making 
 // Mu2eG4RunManager a singleton.
 //
-// $Id: G4Helper.hh,v 1.1 2010/11/15 23:20:06 kutschke Exp $
+// $Id: G4Helper.hh,v 1.2 2010/11/16 14:43:11 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/15 23:20:06 $
+// $Date: 2010/11/16 14:43:11 $
 //
 // Original author Rob Kutschke
 //
 
+// C++ includes
+#include <map>
+#include <string>
+
 // Framework include files
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
+// Mu2e includes
+#include "Mu2eG4/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/AntiLeakRegistry.hh"
 
 namespace mu2e {
@@ -28,10 +34,16 @@ namespace mu2e {
     ~G4Helper();
     
     AntiLeakRegistry& antiLeakRegistry(){ return _antiLeakRegistry; }
+
+    // Versions of the map [] operator that check for errors.
+    VolumeInfo& locateVolInfo( const std::string key);
+    void addVolInfo( const VolumeInfo& info );
     
   private:
 
     AntiLeakRegistry _antiLeakRegistry;
+
+    std::map<std::string,VolumeInfo> _volumeInfoList;
 
   };
 
