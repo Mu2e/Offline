@@ -3,9 +3,9 @@
 //
 // An object to be the key in a MapVector.
 //
-// $Id: MapVectorKey.hh,v 1.1 2010/11/09 20:00:30 kutschke Exp $
+// $Id: MapVectorKey.hh,v 1.2 2010/11/16 21:18:32 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 20:00:30 $
+// $Date: 2010/11/16 21:18:32 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,8 @@ class MapVectorKey{
 
 public:
 
-  // No default c'tor by design.
+  // Default c'tor needed for ROOT persistency. 
+  // Otherwise I would prefer that we not have one.
   MapVectorKey():_key(-1){}
 
   // No automatic conversion of int or unsigned int to MapVectorKey.
