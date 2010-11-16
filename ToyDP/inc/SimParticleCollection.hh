@@ -4,14 +4,12 @@
 //
 // Define a type for a collection of SimParticle objects.
 //
-// $Id: SimParticleCollection.hh,v 1.2 2010/11/08 23:51:55 kutschke Exp $
+// $Id: SimParticleCollection.hh,v 1.3 2010/11/16 21:18:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/08 23:51:55 $
+// $Date: 2010/11/16 21:18:10 $
 //
 // Original author Rob Kutschke
 //
-
-#include <vector>
 
 #include "GeneralUtilities/inc/MapVector.hh"
 #include "ToyDP/inc/SimParticle.hh"
