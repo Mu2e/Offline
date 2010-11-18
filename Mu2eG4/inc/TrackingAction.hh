@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.7 2010/11/10 23:53:13 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.8 2010/11/18 07:24:50 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/10 23:53:13 $
+// $Date: 2010/11/18 07:24:50 $
 //
 // Original author Rob Kutschke
 //
@@ -97,6 +97,12 @@ namespace mu2e {
 
     // Non-owning pointer to stepping action.
     SteppingAction * _stepping; 
+
+    // Control the saving of trajectories.
+    // The first method does the big picture bookkeeping.
+    // The second method decides yes/no for storing the trajectory of one track.
+    void controlTrajectorySaving( const G4Track* trk);
+    bool saveThisTrajectory( const G4Track* trk );
 
     // Some helper functions.
     void insertOrThrow(std::pair<int,SimParticle> const& value);

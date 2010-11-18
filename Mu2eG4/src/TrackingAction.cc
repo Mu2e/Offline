@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.11 2010/11/10 23:50:12 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.12 2010/11/18 07:24:50 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/10 23:50:12 $
+// $Date: 2010/11/18 07:24:50 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,7 @@
 // G4 incldues
 #include "globals.hh"
 #include "G4RunManager.hh"
+#include "G4EventManager.hh"
 
 using namespace std;
 
@@ -70,7 +71,10 @@ namespace mu2e {
 
   void TrackingAction::PreUserTrackingAction(const G4Track* trk){
 
+    // saveSimParticle must be called before controlTrajectorySaving.
     saveSimParticleStart(trk);
+    controlTrajectorySaving(trk);
+
     _stepping->BeginOfTrack();
   
     if ( !_debugList.inList() ) return;
@@ -194,6 +198,34 @@ namespace mu2e {
                           stoppingCode
                           );
   }
+
+  // Enable/disable storing of trajectories based on several considerations
+  void TrackingAction::controlTrajectorySaving( const G4Track* trk){
+
+    // Do not add the trajectory if the corresponding SimParticle is missing.
+    if( _sizeLimit>0 && _currentSize>_sizeLimit ) return;
+
+    bool keep = saveThisTrajectory(trk);
+    G4TrackingManager* trkmgr = G4EventManager::GetEventManager()->GetTrackingManager();
+    if ( keep ) {
+      trkmgr->SetStoreTrajectory(true);
+    } else{
+      trkmgr->SetStoreTrajectory(false);
+    }
+  }
+
+  // The per track decision on whether or not to store trajectories.
+  bool TrackingAction::saveThisTrajectory( const G4Track* trk ){
+
+    // This is a guess at what might be useful.  Feel free to improve it.
+    // We might want to change the momentum cut depending on which volume
+    // the track starts in.
+    CLHEP::Hep3Vector const& mom = trk->GetMomentum();
+    bool keep = ( mom.mag() > 50.*CLHEP::MeV );
+
+    return keep;
+  }
+
 
   void TrackingAction::printInfo(const G4Track* trk, const string& text, bool isEnd ){
 
