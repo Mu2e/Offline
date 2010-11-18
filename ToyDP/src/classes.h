@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.16 2010/11/09 20:10:32 kutschke Exp $
+// $Id: classes.h,v 1.17 2010/11/18 07:22:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 20:10:32 $
+// $Date: 2010/11/18 07:22:08 $
 //
 // Original author Rob Kutschke
 //
@@ -40,14 +40,23 @@
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/PointTrajectoryCollection.hh"
 
 //
-// Only include objects that we would like to be able to put into the event.
-// Do not include the objects they contain internally.
+// I am not 100% clear what needs to be here.  I do know:
+//
+// 1) There must be a line for every Wrapper that appears
+//    in classes_def.xml
+// 2) For any map that appears in classes_def.xml, there
+//    must be two lines in this file: one for the map
+//    and one for the underlying pair type.
 //
 
 template class std::pair<MapVectorKey,mu2e::SimParticle>;
 template class std::map<MapVectorKey,mu2e::SimParticle>;
+template class std::pair<MapVectorKey,mu2e::PointTrajectory>;
+template class std::map<MapVectorKey,mu2e::PointTrajectory>;
+
 
 template class edm::Wrapper<mu2e::ToyHitCollection>;
 template class edm::Wrapper<mu2e::ToyGenParticleCollection>;
@@ -65,3 +74,4 @@ template class edm::Wrapper<mu2e::CaloHitCollection>;
 template class edm::Wrapper<mu2e::CaloHitMCTruthCollection>;
 template class edm::Wrapper<mu2e::CaloCrystalHitCollection>;
 template class edm::Wrapper<mu2e::CaloCrystalHitMCTruthCollection>;
+template class edm::Wrapper<mu2e::PointTrajectoryCollection>;
