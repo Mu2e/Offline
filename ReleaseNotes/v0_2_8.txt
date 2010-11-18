@@ -3,9 +3,9 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.18 2010/11/18 07:27:54 kutschke Exp $
+  $Id: v0_2_8.txt,v 1.19 2010/11/18 07:39:08 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/11/18 07:27:54 $
+  $Date: 2010/11/18 07:39:08 $
 
 28) November 17, 2010 kutschke
     Enable the storing of trajectories as data products.
@@ -22,6 +22,11 @@
      Mu2eG4/src/TrackingAction.cc
      ToyDP/src/classes.h
      ToyDP/src/classes_def.xml
+
+    By default do not write out this new data product.
+     Mu2eG4/test/g4test_03.py
+
+
 
 27) November 16, 2010 kutschke
     Remove _volumeInfoList from Mu2eWorld and add equivalent functionality
