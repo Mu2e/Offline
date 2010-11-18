@@ -3,9 +3,25 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.17 2010/11/16 14:50:55 kutschke Exp $
+  $Id: v0_2_8.txt,v 1.18 2010/11/18 07:27:54 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/11/16 14:50:55 $
+  $Date: 2010/11/18 07:27:54 $
+
+28) November 17, 2010 kutschke
+    Enable the storing of trajectories as data products.
+
+    New files:
+     ToyDP/inc/PointTrajectory.hh
+     ToyDP/inc/PointTrajectoryCollection.hh
+     Mu2eG4/inc/addPointTrajectories.hh
+     Mu2eG4/src/addPointTrajectories.cc
+
+    Modified files:
+     Mu2eG4/inc/TrackingAction.hh
+     Mu2eG4/src/G4_plugin.cc
+     Mu2eG4/src/TrackingAction.cc
+     ToyDP/src/classes.h
+     ToyDP/src/classes_def.xml
 
 27) November 16, 2010 kutschke
     Remove _volumeInfoList from Mu2eWorld and add equivalent functionality
