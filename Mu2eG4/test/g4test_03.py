@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.py,v 1.16 2010/11/15 23:42:20 kutschke Exp $
+# $Id: g4test_03.py,v 1.17 2010/11/18 07:38:04 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/11/15 23:42:20 $
+# $Date: 2010/11/18 07:38:04 $
 #
 # Original author Rob Kutschke
 #
@@ -126,6 +126,7 @@ process.outfile = mu2e.OutputModule(
     fileName = mu2e.untracked.string('file:data_03.root'),
     outputCommands = mu2e.untracked.vstring(
      'keep *_*_*_*',
+     'drop mu2ePointTrajectoryMapVector_*_*_*',
 #     'drop mu2eSimParticles_*_*_*'   # Uncomment this line to reduce file size.
     ),
 
