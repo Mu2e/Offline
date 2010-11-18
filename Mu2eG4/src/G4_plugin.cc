@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.33 2010/11/11 21:22:03 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/11/11 21:22:03 $
+// $Id: G4_plugin.cc,v 1.34 2010/11/18 07:25:42 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/11/18 07:25:42 $
 //
 // Original author Rob Kutschke
 //
@@ -51,12 +51,11 @@
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "Mu2eG4/inc/StepPointG4.hh"
 #include "Mu2eG4/inc/addStepPointMCs.hh"
 #include "Mu2eG4/inc/addVirtualDetectorPoints.hh"
 #include "Mu2eG4/inc/addCalorimeterHits.hh"
+#include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
@@ -68,8 +67,6 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 
-#include "ITrackerGeom/inc/ITracker.hh"
-
 // Data products that will be produced by this module.
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -78,6 +75,7 @@
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/PointTrajectoryCollection.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -123,6 +121,7 @@ namespace mu2e {
       produces<CaloHitCollection>();
       produces<CaloHitMCTruthCollection>();
       produces<CaloCrystalHitMCTruthCollection>();
+      produces<PointTrajectoryCollection>();
 
       // The string "G4Engine" is magic; see the docs for RandomNumberGeneratorService.
       createEngine( get_seed_value(pSet), "G4Engine");
@@ -241,7 +240,7 @@ namespace mu2e {
 
     // Copy some information about the G4 world to people who need it.
     Mu2eWorld const* world = allMu2e->getWorld();
-    _mu2eOrigin          = world->getMu2eOrigin();
+    _mu2eOrigin            = world->getMu2eOrigin();
     _mu2eDetectorOrigin    = world->getMu2eDetectorOrigin();
 
     // Setup the graphics if requested.
@@ -284,12 +283,13 @@ namespace mu2e {
   void G4::produce(edm::Event& event, edm::EventSetup const&) {
 
     // Create empty data products.
-    auto_ptr<StepPointMCCollection>    outputHits(new StepPointMCCollection);
-    auto_ptr<SimParticleCollection>    simParticles(new SimParticleCollection);
-    auto_ptr<StepPointMCCollection>    vdHits(new StepPointMCCollection);
-    auto_ptr<CaloHitCollection>        caloHits(new CaloHitCollection);
-    auto_ptr<CaloHitMCTruthCollection> caloMCHits(new CaloHitMCTruthCollection);
+    auto_ptr<StepPointMCCollection>           outputHits(new StepPointMCCollection);
+    auto_ptr<SimParticleCollection>           simParticles(new SimParticleCollection);
+    auto_ptr<StepPointMCCollection>           vdHits(new StepPointMCCollection);
+    auto_ptr<CaloHitCollection>               caloHits(new CaloHitCollection);
+    auto_ptr<CaloHitMCTruthCollection>        caloMCHits(new CaloHitMCTruthCollection);
     auto_ptr<CaloCrystalHitMCTruthCollection> caloCrystalMCHits(new CaloCrystalHitMCTruthCollection);
+    auto_ptr<PointTrajectoryCollection>       pointTrajectories( new PointTrajectoryCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
@@ -303,6 +303,7 @@ namespace mu2e {
     addStepPointMCs( g4event, *outputHits);
     addVirtualDetectorPoints( g4event, *vdHits);
     addCalorimeterHits( g4event, *caloHits, *caloMCHits, *caloCrystalMCHits);
+    addPointTrajectories( g4event, *pointTrajectories, _mu2eDetectorOrigin);
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);
@@ -313,6 +314,7 @@ namespace mu2e {
     event.put(caloHits);
     event.put(caloMCHits);
     event.put(caloCrystalMCHits);
+    event.put(pointTrajectories);
     
     // Pause to see graphics. 
     if ( _visMacro.size() > 0 ) {
