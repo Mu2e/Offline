@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.63 2010/11/16 15:15:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/11/16 15:15:50 $
+// $Id: Mu2eWorld.cc,v 1.64 2010/11/22 05:18:35 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/11/22 05:18:35 $
 //
 // Original author Rob Kutschke
 //
@@ -1033,8 +1033,6 @@ namespace mu2e {
   // Choose the selected tracker and build it.
   VolumeInfo Mu2eWorld::constructTracker(){
 
-    GeomHandle<TTracker> ttHandle; 
-
     // The tracker is built inside this volume.
     VolumeInfo detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
@@ -1098,16 +1096,19 @@ namespace mu2e {
     
     VolumeInfo parent1 = _helper->locateVolInfo("ToyDS2Vacuum");
     VolumeInfo parent2 = _helper->locateVolInfo("ToyDS3Vacuum");
-    double pabs1rIn0   = _config->getDouble("protonabsorber.InRadius0");
+    // double pabs1rIn0   = _config->getDouble("protonabsorber.InRadius0"); // removed, see below
     double pabs1rOut0  = _config->getDouble("protonabsorber.OutRadius0");
-    double pabs2rIn1   = _config->getDouble("protonabsorber.InRadius1");
-    double pabs2rOut1  = _config->getDouble("protonabsorber.OutRadius1");
+    // double pabs2rIn1   = _config->getDouble("protonabsorber.InRadius1"); // removed, see below
+    double pabs2rOut1  = _config->getDouble("protonabsorber.OutRadius1");   // set to trkMinr
     double zLen   = _config->getDouble("protonabsorber.halfLength");
     double thick  = _config->getDouble("protonabsorber.thickness");
-    double trkMinr= _config->getDouble("ttracker.envelopeInnerRadius");
-    pabs1rIn0 = pabs1rOut0 - thick;
-    pabs2rOut1 = trkMinr;  pabs2rIn1 = trkMinr - thick;
-    
+    //    double trkMinr= _config->getDouble("ttracker.envelopeInnerRadius");// used OutRadius1 instead
+    double pabs1rIn0 = pabs1rOut0 - thick;
+    //    pabs2rOut1 = trkMinr;  
+    //    pabs2rIn1 = trkMinr - thick;
+ 
+    double pabs2rIn1 = pabs2rOut1 - thick;
+   
     MaterialFinder materialFinder(*_config);
     G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
     
