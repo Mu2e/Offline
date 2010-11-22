@@ -3,9 +3,9 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.20 2010/11/22 05:22:41 genser Exp $
+  $Id: v0_2_8.txt,v 1.21 2010/11/22 05:28:00 genser Exp $
   $Author: genser $
-  $Date: 2010/11/22 05:22:41 $
+  $Date: 2010/11/22 05:28:00 $
 
 29) November 21, 2010 genser
 
@@ -14,10 +14,12 @@
     Restored runability of LTracker in Mu2eWorld.cc
     Made protonabsorber constructable for both TT & LT tracker
     Changed protonabsorber parameters to be compatible with the new Mu2eWorld.cc
+    Changed tracker plots to be compatible with Straws having a wall
       Mu2eG4/src/Mu2eWorld.cc
       Mu2eG4/src/StrawSD.cc
       Mu2eG4/src/constructLTrackerv3.cc
       Mu2eG4/src/constructTTrackerv3.cc
+      Mu2eG4/src/ReadBack.cc
       Mu2eG4/test/geom_01.txt
 
 
