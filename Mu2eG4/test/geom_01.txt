@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.56 2010/11/02 19:24:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/02 19:24:51 $
+// $Id: geom_01.txt,v 1.57 2010/11/22 05:19:14 genser Exp $
+// $Author: genser $
+// $Date: 2010/11/22 05:19:14 $
 //
 // Original author Rob Kutschke
 //
@@ -357,9 +357,7 @@ vector<int> bfield.psDimensions = {  76, 38, 251 };
 
 // Proton Absorber
 string protonabsorber.materialName = "G4_POLYETHYLENE";
-double protonabsorber.InRadius1    =  384.7;
-double protonabsorber.OutRadius1   =  385.2;
-double protonabsorber.InRadius0    =  334.7;
+double protonabsorber.OutRadius1   =  380.0;
 double protonabsorber.OutRadius0   =  335.2;
 double protonabsorber.halfLength   = 1250.0;
 double protonabsorber.thickness    =    0.5;
