@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.22 2010/11/12 21:46:22 genser Exp $
+// $Id: ReadBack.cc,v 1.23 2010/11/22 05:27:34 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/12 21:46:22 $
+// $Date: 2010/11/22 05:27:34 $
 //
 // Original author Rob Kutschke
 //
@@ -440,8 +440,8 @@ namespace mu2e {
       
       StrawDetail const& strawDetail = straw.getDetail();
 
-//       // remove this for production, intended for transporOnly.py
-//       if (pca.dca()>strawDetail.outerRadius() || abs(point.mag()- strawDetail.outerRadius())>1.e-6 ) {
+//       // remove this for production, intended for transportOnly.py
+//       if (pca.dca()>strawDetail.innerRadius() || abs(point.mag()- strawDetail.innerRadius())>1.e-6 ) {
 
 //         cerr << "*** Bad hit?: "
 //              << event.id().event() << " "
@@ -482,7 +482,7 @@ namespace mu2e {
       _hTime->Fill(hit.time());
       _hHitNeighbours->Fill(nNeighbours);
       _hCheckPointRadius->Fill(point.mag());
-      _hCheckPointRadiusW->Fill(point.mag()/strawDetail.outerRadius());
+      _hCheckPointRadiusW->Fill(point.mag()/strawDetail.innerRadius());
       _hCheckPointWireZ->Fill(s/straw.getHalfLength());
       
       _hxHit->Fill(pos.x());
@@ -490,7 +490,7 @@ namespace mu2e {
       _hzHit->Fill(pos.z());
 
       _hDriftDist->Fill(pca.dca());
-      _hDriftDistW->Fill(pca.dca()/strawDetail.outerRadius());
+      _hDriftDistW->Fill(pca.dca()/strawDetail.innerRadius());
 
       _hStepLength->Fill( hit.stepLength() );
 
