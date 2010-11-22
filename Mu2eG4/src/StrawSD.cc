@@ -2,9 +2,9 @@
 // Define a sensitive detector for Straws.
 // ( Not sure yet if I can use this for both LTracker and TTracker?)
 // 
-// $Id: StrawSD.cc,v 1.20 2010/11/10 23:51:29 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/11/10 23:51:29 $
+// $Id: StrawSD.cc,v 1.21 2010/11/22 05:20:50 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/11/22 05:20:50 $
 //
 // Original author Rob Kutschke
 //
@@ -169,8 +169,8 @@ namespace mu2e {
 //     G4int cn = touchableHandle->GetCopyNumber();
 //     G4int rn = touchableHandle->GetReplicaNumber();
 
-//      G4TouchableHistory* theTouchable = 
-//        (G4TouchableHistory*)( aStep->GetPreStepPoint()->GetTouchable() );
+//     G4TouchableHistory* theTouchable = 
+//       (G4TouchableHistory*)( aStep->GetPreStepPoint()->GetTouchable() );
 
 //     cout << "Debugging history depth " << 
 //       setw(4) << theTouchable->GetHistoryDepth() << endl;
@@ -180,20 +180,26 @@ namespace mu2e {
 //       setw(4) << theTouchable->GetReplicaNumber(1) <<
 //       setw(4) << theTouchable->GetReplicaNumber(2) << endl;
 
-//     cout << "Debugging replica 0 1 2 " <<
+//     cout << "Debugging replica 0 1 2 3 4" <<
 //       setw(4) << touchableHandle->GetReplicaNumber(0) <<
 //       setw(4) << touchableHandle->GetReplicaNumber(1) <<
-//       setw(4) << touchableHandle->GetReplicaNumber(2) << endl;
+//       setw(4) << touchableHandle->GetReplicaNumber(2) <<
+//       setw(4) << touchableHandle->GetReplicaNumber(3) <<
+//       setw(4) << touchableHandle->GetReplicaNumber(4) << endl;
 
 //     cout << "Debugging PV Name Mother Name" <<
 //       theTouchable->GetVolume(0)->GetName() << " " <<
 //       theTouchable->GetVolume(1)->GetName() << " " <<
-//       theTouchable->GetVolume(2)->GetName() << endl;
+//       theTouchable->GetVolume(2)->GetName() << " " <<
+//       theTouchable->GetVolume(3)->GetName() << " " <<
+//       theTouchable->GetVolume(4)->GetName() << endl;
 
 //     cout << "Debugging PV Name Mother Name" <<
 //       touchableHandle->GetVolume(0)->GetName() << " " <<
 //       touchableHandle->GetVolume(1)->GetName() << " " <<
-//       touchableHandle->GetVolume(2)->GetName() << endl;
+//       touchableHandle->GetVolume(2)->GetName() << " " <<
+//       touchableHandle->GetVolume(3)->GetName() << " " <<
+//       touchableHandle->GetVolume(4)->GetName() << endl;
 
 //     cout << "Debugging hit info event track copyn replican: " << 
 //       setw(4) << en << " " << 
@@ -210,9 +216,9 @@ namespace mu2e {
 //       cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
 //       cout << "Debugging _nStrawsPerSector " << _nStrawsPerSector << endl;
 
-      sdcn = touchableHandle->GetCopyNumber(0) + 
-        _nStrawsPerSector*(touchableHandle->GetReplicaNumber(1)) +
-        _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(2));
+      sdcn = touchableHandle->GetCopyNumber(1) + 
+        _nStrawsPerSector*(touchableHandle->GetReplicaNumber(2)) +
+        _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(3));
 
     } else {
 
@@ -221,7 +227,7 @@ namespace mu2e {
       
     }
 
-//     cout << "Debugging sdcn " << sdcn << endl;
+    //    cout << "Debugging sdcn " << sdcn << endl;
 
     StepPointG4* newHit = 
       new StepPointG4(aStep->GetTrack()->GetTrackID(),
@@ -404,14 +410,14 @@ namespace mu2e {
 
     // how deep in the hierachy is the tracker a.k.a tracker depth
     // (depends on the tracker version)
-    // for LTracker 1,2,3 it is 2 
+    // for LTracker 1,2,3 it is 3 
     // the tracker version is set in the constructor
 
-    size_t td = 2;
+    size_t td = 3;
 
     edm::Service<GeometryService> geom;
     if ( geom->hasElement<TTracker>() ) {
-      td =_TrackerVersion;
+      td =_TrackerVersion +1;
     }
 
     //    cout << "Debugging: tracker depth/version: " << td << "/" << _TrackerVersion << endl;
