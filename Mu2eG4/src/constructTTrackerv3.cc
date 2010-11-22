@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.9 2010/10/02 03:05:36 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.10 2010/11/22 05:21:22 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/02 03:05:36 $
+// $Date: 2010/11/22 05:21:22 $
 //
 // Original author KLG based on RKK using different methodology
 //
@@ -60,25 +60,26 @@ namespace mu2e{
 
 
     // Master geometry for the TTracker.
-    GeomHandle<TTracker> ttracker;
+    //    GeomHandle<TTracker> ttracker;
+    TTracker const & ttracker = *(GeomHandle<TTracker>());
 
     // Make the envelope volume that holds the full tracker.
-    TubsParams envelopeParams = ttracker->getTrackerEnvelopeParams();
+    TubsParams envelopeParams = ttracker.getTrackerEnvelopeParams();
 
-//     int const oldp = cout.precision();
-//     int const oldw = cout.width();
-//     cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
-//       "   " << 
-//       fixed << setprecision(8) << setw(14) << envelopeParams.innerRadius << ", " <<
-//       fixed << setprecision(8) << setw(14) << envelopeParams.outerRadius << ", " <<
-//       fixed << setprecision(8) << setw(14) << envelopeParams.zHalfLength << ", " <<
-//       fixed << setprecision(8) << setw(14) << envelopeParams.phi0        << ", " <<
-//       fixed << setprecision(8) << setw(14) << envelopeParams.phiMax      << ", " <<
-//       endl;
+    //     int const oldp = cout.precision();
+    //     int const oldw = cout.width();
+    //     cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
+    //       "   " << 
+    //       fixed << setprecision(8) << setw(14) << envelopeParams.innerRadius << ", " <<
+    //       fixed << setprecision(8) << setw(14) << envelopeParams.outerRadius << ", " <<
+    //       fixed << setprecision(8) << setw(14) << envelopeParams.zHalfLength << ", " <<
+    //       fixed << setprecision(8) << setw(14) << envelopeParams.phi0        << ", " <<
+    //       fixed << setprecision(8) << setw(14) << envelopeParams.phiMax      << ", " <<
+    //       endl;
 
-    G4ThreeVector trackerOffset( 0., 0., ttracker->z0()-zOff );
+    G4ThreeVector trackerOffset( 0., 0., ttracker.z0()-zOff );
 
-    G4Material* envelopeMaterial = findMaterialOrThrow(ttracker->envelopeMaterial());
+    G4Material* envelopeMaterial = findMaterialOrThrow(ttracker.envelopeMaterial());
 
     VolumeInfo motherInfo = nestTubs( "TrackerMother",
                                       envelopeParams,
@@ -108,7 +109,7 @@ namespace mu2e{
     StrawSD* strawSD     = new StrawSD( strawSDname, config );
     SDman->AddNewDetector( strawSD );
 
-    TubsParams deviceEnvelopeParams = ttracker->getDeviceEnvelopeParams();
+    TubsParams deviceEnvelopeParams = ttracker.getDeviceEnvelopeParams();
 
     bool ttrackerDeviceEnvelopeVisible = config.getBool("ttracker.deviceEnvelopeVisible",false);
     bool ttrackerDeviceEnvelopeSolid = config.getBool("ttracker.deviceEnvelopeSolid",true);
@@ -122,20 +123,20 @@ namespace mu2e{
     //nestSomething create a physical volume, we need a logical one first
 
     size_t idev = 0;
-    const Device& device = ttracker->getDevice(idev);
+    const Device& device = ttracker.getDevice(idev);
 
     VolumeInfo devInfo;
 
     G4String const devName = "TTrackerDeviceEnvelope";
 
-//     cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
-//       idev << ", " << 
-//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.innerRadius << ", " <<
-//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.outerRadius << ", " <<
-//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.zHalfLength << ", " <<
-//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.phi0        << ", " <<
-//       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.phiMax      << ", " <<
-//       endl;
+    //     cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
+    //       idev << ", " << 
+    //       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.innerRadius << ", " <<
+    //       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.outerRadius << ", " <<
+    //       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.zHalfLength << ", " <<
+    //       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.phi0        << ", " <<
+    //       fixed << setprecision(8) << setw(14) << deviceEnvelopeParams.phiMax      << ", " <<
+    //       endl;
 
     devInfo.solid    = new G4Tubs(devName, 
                                   deviceEnvelopeParams.innerRadius,
@@ -186,14 +187,14 @@ namespace mu2e{
                                   sector.boxHalfLengths().at(1)
                                   );
 
-//     cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
-//       isec << ", " << 
-//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(4) << ", " <<
-//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(3) << ", " <<
-//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(2) << ", " <<
-//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(2) << ", " <<
-//       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(1) << ", " <<
-//       endl << setprecision(oldp) << setw(oldw);
+    //     cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
+    //       isec << ", " << 
+    //       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(4) << ", " <<
+    //       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(3) << ", " <<
+    //       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(2) << ", " <<
+    //       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(2) << ", " <<
+    //       fixed << setprecision(8) << setw(14) << sector.boxHalfLengths().at(1) << ", " <<
+    //       endl << setprecision(oldp) << setw(oldw);
 
     secInfo.logical  = new G4LogicalVolume( secInfo.solid, envelopeMaterial, secName); 
     
@@ -221,7 +222,7 @@ namespace mu2e{
 
     for ( int ilay =0; ilay<sector.nLayers(); ++ilay ){
 
-//      cout << "Debugging constructTTrackerv3 ilay: " << ilay << endl;
+      //      cout << "Debugging constructTTrackerv3 ilay: " << ilay << endl;
 
       const Layer& layer = sector.getLayer(ilay);
           
@@ -235,63 +236,118 @@ namespace mu2e{
 
         StrawDetail const& detail = straw.getDetail();
 
-        TubsParams strawParams( 0., detail.outerRadius(), detail.halfLength() );
+        TubsParams strawWallParams( 0.0,                  detail.outerRadius(), detail.halfLength() );
+        TubsParams strawGasParams ( 0.0,                  detail.innerRadius(), detail.halfLength() );
+        TubsParams strawWireParams( 0.0,                  detail.wireRadius(),  detail.halfLength() );
 
         // we are placing the straw w.r.t the trapezoid...
         // the trapezoid aka device envelope has a different coordinate system x->z, z->y, y->x
 
-        G4ThreeVector mid(straw.getMidPoint().y() - sector.boxOffset().y(),
-                          straw.getMidPoint().z() - sector.boxOffset().z(),
-                          straw.getMidPoint().x() - sector.boxOffset().x());
+        G4ThreeVector const mid(straw.getMidPoint().y() - sector.boxOffset().y(),
+                                straw.getMidPoint().z() - sector.boxOffset().z(),
+                                straw.getMidPoint().x() - sector.boxOffset().x());
 
-//         cout << "Debugging istr: " << istr << 
-//           " mid: " << mid << 
-//           ", straw.MidPoint " << straw.getMidPoint() << 
-//           ", sector.boxOffset " <<  sector.boxOffset() << 
-//           ", device.origin " << device.origin() <<
-//           endl;
+        G4ThreeVector const zeroVector(0.0,0.0,0.0);
 
-//         cout << "Debugging istr: " << istr << " mid: " << 
-//           mid << ", halflenght " << detail.halfLength() << endl;
+        //         cout << "Debugging istr: " << istr << 
+        //           " mid: " << mid << 
+        //           ", straw.MidPoint " << straw.getMidPoint() << 
+        //           ", sector.boxOffset " <<  sector.boxOffset() << 
+        //           ", device.origin " << device.origin() <<
+        //           endl;
 
-        G4Material* strawGas = findMaterialOrThrow(detail.gasMaterialName());
+        //         cout << "Debugging istr: " << istr << " mid: " << 
+        //           mid << ", halflenght " << detail.halfLength() << endl;
 
         // look at StrawSD to see how the straw index is reconstructed
 
-//         cout << "Debugging straw.Id(), straw.Index() " << 
-//           straw.Id() << ", " << straw.Index() << endl;
+        //         cout << "Debugging straw.Id(), straw.Index() " << 
+        //           straw.Id() << ", " << straw.Index() << endl;
 
         // make the straws more distinguishable when displayed
-        G4Color color = (ilay%2 == 0) ? ((istr%2 == 0) ? G4Color::Green() : G4Color::Yellow()) :
+        G4Color wallColor = (ilay%2 == 1) ? 
+          ((istr%2 == 0) ? G4Color::Green() : G4Color::Yellow()) :
           ((istr%2 == 0) ? G4Color::Red() : G4Color::Blue());
 
-//         cout << "Debugging Straw istr, RYForTrapezoids, midpoint: " <<
-//           istr << ", " << RYForTrapezoids << ", " <<
-//           fixed << setprecision(8) << setw(14) << mid << ", " <<
-//           endl << setprecision(oldp) << setw(oldw);
+        G4Color gasColor = (ilay%2 == 0) ? 
+          ((istr%2 == 0) ? G4Color::Green() : G4Color::Yellow()) :
+          ((istr%2 == 0) ? G4Color::Red() : G4Color::Blue());
 
-        VolumeInfo strawInfo  = nestTubs("TTrackerStraw",
-                                         strawParams,
-                                         strawGas,
-                                         rotTub,
-                                         mid,
-                                         secInfo.logical,
-                                         straw.Index().asInt(),
-                                         color,
-                                         ttrackerStrawSolid,
-                                         doSurfaceCheck
-                                         );
+        G4Color wireColor = G4Color::Cyan();
 
-        // Make this straw a sensitive detector.
-        strawInfo.logical->SetSensitiveDetector( strawSD );
+        //         cout << "Debugging Straw istr, RYForTrapezoids, midpoint: " <<
+        //           istr << ", " << RYForTrapezoids << ", " <<
+        //           fixed << setprecision(8) << setw(14) << mid << ", " <<
+        //           endl << setprecision(oldp) << setw(oldw);
+
+        bool strawAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+
+        VolumeInfo strawWallInfo  = nestTubs("TTrackerStrawWall",
+                                             strawWallParams,
+                                             findMaterialOrThrow(detail.wallMaterialName() ),
+                                             rotTub,
+                                             mid,
+                                             secInfo.logical,
+                                             straw.Index().asInt(),
+                                             wallColor,
+                                             ttrackerStrawSolid,
+                                             doSurfaceCheck
+                                             );
+
         if (!ttrackerStrawVisible) {
-          strawInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+          strawWallInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           // leak?
-          G4VisAttributes* visAtt = new G4VisAttributes(*strawInfo.logical->GetVisAttributes());
-          visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-          strawInfo.logical->SetVisAttributes(visAtt);
+          G4VisAttributes* visAtt = new G4VisAttributes(*strawWallInfo.logical->GetVisAttributes());
+          visAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
+          strawWallInfo.logical->SetVisAttributes(visAtt);
         }
+
+        VolumeInfo strawGasInfo  = nestTubs("TTrackerStrawGas",
+                                            strawGasParams,
+                                            findMaterialOrThrow(detail.gasMaterialName()),
+                                            0,
+                                            zeroVector,
+                                            strawWallInfo.logical,
+                                            straw.Index().asInt(),
+                                            gasColor,
+                                            ttrackerStrawSolid,
+                                            doSurfaceCheck
+                                            );
+
+        if (!ttrackerStrawVisible) {
+          strawGasInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+        } else {
+          // leak?
+          G4VisAttributes* visAtt = new G4VisAttributes(*strawGasInfo.logical->GetVisAttributes());
+          visAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
+          strawGasInfo.logical->SetVisAttributes(visAtt);
+        }
+
+        VolumeInfo strawWireInfo  = nestTubs("TTrackerStrawWire",
+                                             strawWireParams,
+                                             findMaterialOrThrow(detail.wireMaterialName()),
+                                             0,
+                                             zeroVector,
+                                             strawGasInfo.logical,
+                                             straw.Index().asInt(),
+                                             wireColor,
+                                             ttrackerStrawSolid,
+                                             doSurfaceCheck
+                                             );
+
+        if (!ttrackerStrawVisible) {
+          strawWireInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+        } else {
+          // leak?
+          G4VisAttributes* visAtt = new G4VisAttributes(*strawWireInfo.logical->GetVisAttributes());
+          visAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
+          strawWireInfo.logical->SetVisAttributes(visAtt);
+        }
+
+        // Make gas of this straw a sensitive detector.
+        strawGasInfo.logical->SetSensitiveDetector( strawSD );
+
       }   // end loop over straws
     }     // end loop over layers
 
@@ -301,7 +357,7 @@ namespace mu2e{
 
       if ( secDraw > -1 && isec > secDraw ) continue;
 
-//       cout << "Debugging sector: " << isec << " " << secName << " secDraw: " << secDraw << endl;
+      //       cout << "Debugging sector: " << isec << " " << secName << " secDraw: " << secDraw << endl;
 
       const Sector& sector = device.getSector(isec);
 
@@ -309,8 +365,8 @@ namespace mu2e{
 
       CLHEP::HepRotationZ RZ(sector.boxRzAngle() - device.rotation()); // well we know it is only arround z...
 
-//       cout << "Debugging sector.boxRzAngle(), device.rotation(): " << sector.boxRzAngle() << " " << 
-//         device.rotation() << endl;      
+      //       cout << "Debugging sector.boxRzAngle(), device.rotation(): " << sector.boxRzAngle() << " " << 
+      //         device.rotation() << endl;      
       
       // a leak?
       // we add an 180deg rotation for even sectors
@@ -321,8 +377,8 @@ namespace mu2e{
       // origin a.k.a offset wrt current mother volume
       CLHEP::Hep3Vector origin = sector.boxOffset() - device.origin();
 
-//       cout << "Debugging sector.origin:      "   << isec << " " << secName << origin << endl;
-//       cout << "Debugging sector.boxOffset(): " << isec << " " << secName << sector.boxOffset() << endl;
+      //       cout << "Debugging sector.origin:      "   << isec << " " << secName << origin << endl;
+      //       cout << "Debugging sector.boxOffset(): " << isec << " " << secName << sector.boxOffset() << endl;
       
       // we may need to keep those pointers somewhre... (this is only the last one...)
 
@@ -339,15 +395,15 @@ namespace mu2e{
 
     // we have constructed one logical device above, we need to place it a few times now...
 
-    for ( int idev=0; idev<ttracker->nDevices(); ++idev ){
+    for ( int idev=0; idev<ttracker.nDevices(); ++idev ){
 
       // changes here affect StrawSD
 
       if ( devDraw > -1 && idev > devDraw ) continue;
 
-//      cout << "Debugging dev: " << idev << " " << devName << " devDraw: " << devDraw << endl;
+      //      cout << "Debugging dev: " << idev << " " << devName << " devDraw: " << devDraw << endl;
 
-      const Device& device = ttracker->getDevice(idev);
+      const Device& device = ttracker.getDevice(idev);
 
       CLHEP::HepRotationZ RZ(-device.rotation()); //It is arround z
 
