@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.7 2010/09/29 22:51:43 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/29 22:51:43 $
+// $Id: BFieldManagerMaker.cc,v 1.8 2010/11/24 22:47:26 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/11/24 22:47:26 $
 //
 
 // Includes from C++
@@ -97,6 +97,14 @@ namespace mu2e {
         << "\n";
 
     }
+
+    // For debug purposes: print the field in the target region
+    CLHEP::Hep3Vector b = _bfmgr->getBField(CLHEP::Hep3Vector(3900.0,0.0,-6550.0));
+    cout << "B-field at the proton target: ("
+	 << b.x() << ","
+	 << b.y() << ","
+	 << b.z() << ")"
+	 << endl;
 
     // Special case for the uniform DS field.
     loadUniformDS();

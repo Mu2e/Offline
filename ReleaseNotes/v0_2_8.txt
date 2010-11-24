@@ -3,9 +3,9 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.22 2010/11/24 01:11:50 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/11/24 01:11:50 $
+  $Id: v0_2_8.txt,v 1.23 2010/11/24 22:47:26 logash Exp $
+  $Author: logash $
+  $Date: 2010/11/24 22:47:26 $
 
 30) November 23, 2010 kutschke
     A new class that allows direct access to StrawHits arranged by which
@@ -25,6 +25,44 @@
       Analyses/src/SimParticlesWithHitsExample_plugin.cc
       Analyses/test/simParticlesWithHitsExample.py
       Mu2eG4/test/multiDIO.txt
+
+30) November 24, 2010 logash
+
+    1. Refactoring of the code to produce calorimeter hits: G4_plugin now 
+       creates yet another output collection of StepPointMCs, named 
+       "CaloCollection". The calorimeter hits (CaloHit, CaloHitMCTruth, 
+       CaloCrystalHitMCTruth) are how created in the separate plugin:
+
+       HitMakers/src/MakeCaloReadoutHits_plugin.cc
+
+       using StepPointMCs as input. This plugin should be added to execution
+       chain between G4_plugin and MakeCaloCrystalHits_plugin.cc. The 
+       algorithm itself of how hits are created didn't change. The code is 
+       fully functioning and produces the same output collections as before 
+       (when all of these was done in G4_plugin). 
+
+       More changes in the same are are expected in near future. 
+
+    2. Replaced addVirtualDetectorHits and addCalorimeterHits in Mu2eG4/ 
+       with more generic copyStepPointG4toMC.
+
+    New and updated files: 
+
+     Mu2eG4/src/G4_plugin.cc
+     HitMakers/src/MakeCaloReadoutHits_plugin.cc
+     Mu2eG4/inc/copyStepPointG4toMC.hh
+     Mu2eG4/src/copyStepPointG4toMC.cc
+     Mu2eG4/test/g4test_03.py
+     Mu2eG4/test/g4test_04.py
+     Mu2eG4/test/runCosmic.py
+     Mu2eG4/test/transportOnly.py
+
+    Removed files:
+
+     Mu2eG4/inc/addCalorimeterHits.hh
+     Mu2eG4/src/addCalorimeterHits.cc
+     Mu2eG4/inc/addVirtualDetectorPoints.hh
+     Mu2eG4/src/addVirtualDetectorPoints.cc
 
 29) November 21, 2010 genser
 

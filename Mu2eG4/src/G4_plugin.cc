@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.34 2010/11/18 07:25:42 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/11/18 07:25:42 $
+// $Id: G4_plugin.cc,v 1.35 2010/11/24 22:47:26 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/11/24 22:47:26 $
 //
 // Original author Rob Kutschke
 //
@@ -52,8 +52,7 @@
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/addStepPointMCs.hh"
-#include "Mu2eG4/inc/addVirtualDetectorPoints.hh"
-#include "Mu2eG4/inc/addCalorimeterHits.hh"
+#include "Mu2eG4/inc/copyStepPointG4toMC.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
@@ -72,9 +71,6 @@
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
-#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
 
 // ROOT includes
@@ -112,15 +108,14 @@ namespace mu2e {
       _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")),
       _trackerOutputName("tracker"),
-      _vdOutputName("virtualdetector") {
+      _vdOutputName("virtualdetector"),
+      _caloOutputName("calorimeter") {
 
       produces<StepPointMCCollection>(_trackerOutputName);
       produces<StepPointMCCollection>(_vdOutputName);
+      produces<StepPointMCCollection>(_caloOutputName);
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,edm::InRun>();
-      produces<CaloHitCollection>();
-      produces<CaloHitMCTruthCollection>();
-      produces<CaloCrystalHitMCTruthCollection>();
       produces<PointTrajectoryCollection>();
 
       // The string "G4Engine" is magic; see the docs for RandomNumberGeneratorService.
@@ -175,6 +170,7 @@ namespace mu2e {
     // Names of output collections
     const std::string _trackerOutputName;
     const std::string      _vdOutputName;
+    const std::string    _caloOutputName;
 
   };
   
@@ -286,9 +282,7 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>           outputHits(new StepPointMCCollection);
     auto_ptr<SimParticleCollection>           simParticles(new SimParticleCollection);
     auto_ptr<StepPointMCCollection>           vdHits(new StepPointMCCollection);
-    auto_ptr<CaloHitCollection>               caloHits(new CaloHitCollection);
-    auto_ptr<CaloHitMCTruthCollection>        caloMCHits(new CaloHitMCTruthCollection);
-    auto_ptr<CaloCrystalHitMCTruthCollection> caloCrystalMCHits(new CaloCrystalHitMCTruthCollection);
+    auto_ptr<StepPointMCCollection>           caloHits(new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection>       pointTrajectories( new PointTrajectoryCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
@@ -301,8 +295,8 @@ namespace mu2e {
 
     // Populate the output data products.
     addStepPointMCs( g4event, *outputHits);
-    addVirtualDetectorPoints( g4event, *vdHits);
-    addCalorimeterHits( g4event, *caloHits, *caloMCHits, *caloCrystalMCHits);
+    copyStepPointG4toMC( g4event, "VDCollection", *vdHits);
+    copyStepPointG4toMC( g4event, "CaloCollection", *caloHits);
     addPointTrajectories( g4event, *pointTrajectories, _mu2eDetectorOrigin);
 
     // Run self consistency checks if enabled.
@@ -311,9 +305,7 @@ namespace mu2e {
     event.put(outputHits,_trackerOutputName);
     event.put(vdHits,_vdOutputName);
     event.put(simParticles);
-    event.put(caloHits);
-    event.put(caloMCHits);
-    event.put(caloCrystalMCHits);
+    event.put(caloHits,_caloOutputName);
     event.put(pointTrajectories);
     
     // Pause to see graphics. 

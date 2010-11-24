@@ -1,12 +1,12 @@
 //
-// Populate output collection for virtual detectors hits
+// Helper function to copy StepPointG4s to output StepPointMC collection
 //
 // Original author Ivan Logashenko
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/addStepPointMCs.hh"
 #include "Mu2eG4/inc/StepPointG4.hh"
+#include "Mu2eG4/inc/copyStepPointG4toMC.hh"
 
 // G4 includes
 #include "G4Event.hh"
@@ -14,7 +14,9 @@
 
 namespace mu2e{
 
-  void addVirtualDetectorPoints( const G4Event* g4event, StepPointMCCollection& outputHits  ){
+  void  copyStepPointG4toMC ( const G4Event* g4event, 
+			      const std::string name,
+			      StepPointMCCollection& outputHits  ){
 
     // G4 Hit collections for this event.
 
@@ -23,7 +25,7 @@ namespace mu2e{
     // Get the collection ID for the VD hits.
 
     G4SDManager* SDman = G4SDManager::GetSDMpointer();
-    G4int colId = SDman->GetCollectionID("VDCollection");
+    G4int colId = SDman->GetCollectionID(name);
     
     // Copy hits from G4 collection to output Mu2e collection
 

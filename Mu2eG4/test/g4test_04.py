@@ -1,9 +1,9 @@
 # Configuration file for G4Test04
 # Similar to g4test_03.py but do fewer events and do not make the output file.
 #
-# $Id: g4test_04.py,v 1.9 2010/11/15 23:42:20 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/11/15 23:42:20 $
+# $Id: g4test_04.py,v 1.10 2010/11/24 22:47:26 logash Exp $
+# $Author: logash $
+# $Date: 2010/11/24 22:47:26 $
 #
 # Original author Rob Kutschke
 #
@@ -17,7 +17,7 @@ process = mu2e.Process("G4Test04")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(2)
+    input = mu2e.untracked.int32(200)
 )
 
 
@@ -92,6 +92,25 @@ process.makeSH = mu2e.EDProducer(
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
+# Form CaloHits (APD hits)
+process.CaloReadoutHitsMaker =  mu2e.EDProducer(
+    "MakeCaloReadoutHits",
+    diagLevel      = mu2e.untracked.int32(0),
+    maxFullPrint   = mu2e.untracked.int32(201),
+    g4ModuleLabel = mu2e.string("g4run")
+)
+
+# Form CaloCrystalHits (reconstruct crystals from APDs)
+process.CaloCrystalHitsMaker =  mu2e.EDProducer(
+    "MakeCaloCrystalHits",
+    diagLevel      = mu2e.untracked.int32(0),
+    maxFullPrint   = mu2e.untracked.int32(201),
+    g4ModuleLabel  = mu2e.string("g4run"),
+    minimumEnergy  = mu2e.untracked.double(0.0),
+    maximumEnergy  = mu2e.untracked.double(1000.0),
+    minimumTimeGap = mu2e.untracked.double(100.0)
+)
+
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
@@ -114,5 +133,9 @@ process.MessageLogger.categories.append("ToyHitInfo")
 process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.generate*process.g4run*process.makeSH*process.randomsaver*
+process.output = mu2e.EndPath(  process.generate*process.g4run*
+                                process.makeSH*
+                                process.CaloReadoutHitsMaker*
+                                process.CaloCrystalHitsMaker*
+                                process.randomsaver*
                                 process.checkhits);
