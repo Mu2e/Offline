@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.13 2010/11/24 22:40:35 onoratog Exp $
+// $Id: TrackingAction.cc,v 1.14 2010/11/24 22:41:43 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2010/11/24 22:40:35 $
+// $Date: 2010/11/24 22:41:43 $
 //
 // Original author Rob Kutschke
 //
@@ -139,11 +139,6 @@ namespace mu2e {
         << "SimParticle already in the event.  This should never happen. id is: "
         << id
         << "\n";
-    }
-
-    if ( trk->GetDefinition()->GetPDGEncoding() > 100000) {
-      cout << trk->GetDefinition()->GetParticleName() << " and mass is "
-	   << trk->GetDefinition()->GetPDGMass() << endl;
     }
 
     // Add this track to the transient data.
