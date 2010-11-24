@@ -1,0 +1,22 @@
+//
+// Enable multiple DIO electrons per event. To test
+// code that needs many tracks in the detector.
+//
+// $Id: multiDIO.txt,v 1.1 2010/11/24 01:07:57 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/11/24 01:07:57 $
+//
+// Original author Rob Kutschke
+
+bool conversionGun.do   = false;
+bool decayinorbitGun.do = true;
+
+double decayinorbitGun.mean  = -5;
+double decayinorbitGun.czmin = -0.5;
+double decayinorbitGun.czmax = +0.5;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
+
