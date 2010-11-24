@@ -3,9 +3,28 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.21 2010/11/22 05:28:00 genser Exp $
-  $Author: genser $
-  $Date: 2010/11/22 05:28:00 $
+  $Id: v0_2_8.txt,v 1.22 2010/11/24 01:11:50 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2010/11/24 01:11:50 $
+
+30) November 23, 2010 kutschke
+    A new class that allows direct access to StrawHits arranged by which
+    SimParticle create them.
+       Mu2eUtilities/inc/SimParticlesWithHits.hh
+       Mu2eUtilities/src/SimParticlesWithHits.cc
+
+    Support classes for the above:
+       Mu2eUtilities/inc/SimParticleInfo.hh
+       Mu2eUtilities/src/StrawHitMCInfo.cc
+       Mu2eUtilities/inc/StrawHitMCInfo.hh
+
+    Add ToyDP as a link library; needed by the above
+       Mu2eUtilities/src/SConscript
+
+    An example of how to use the new class:
+      Analyses/src/SimParticlesWithHitsExample_plugin.cc
+      Analyses/test/simParticlesWithHitsExample.py
+      Mu2eG4/test/multiDIO.txt
 
 29) November 21, 2010 genser
 
