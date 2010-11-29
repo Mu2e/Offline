@@ -11,7 +11,6 @@
 // Mu2e includes
 #include "Mu2eG4/inc/StepPointG4.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // G4 includes
@@ -28,18 +27,33 @@ namespace mu2e {
   class CaloReadoutSD : public G4VSensitiveDetector{
 
   public:
-    CaloReadoutSD(G4String, const SimpleConfig& config, CaloCrystalSD *);
+    CaloReadoutSD(G4String, const SimpleConfig& config);
     ~CaloReadoutSD();
     
     void Initialize(G4HCofThisEvent*);
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
   
+    static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
+      _mu2eOrigin = origin;
+    }
+
   private:
 
-    CaloCrystalSD *crystalSD;
+    StepPointG4Collection* _collection;
+
+    // Mu2e point of origin
+    static G4ThreeVector _mu2eOrigin;
+
     int _nro;
     double _minE;
+
+    // List of events for which to enable debug printout.
+    EventNumberList _debugList;
+
+    // Limit maximum size of the steps collection
+    int _sizeLimit;
+    int _currentSize;
   };
 
 } // namespace mu2e

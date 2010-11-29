@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.6 2010/11/15 21:17:14 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/15 21:17:14 $
+// $Id: constructCalorimeter.cc,v 1.7 2010/11/29 19:54:46 logash Exp $
+// $Author: logash $
+// $Date: 2010/11/29 19:54:46 $
 //
 // Original author Rob Kutschke
 // 
@@ -132,7 +132,7 @@ namespace mu2e {
     CaloCrystalSD* crysSD = new CaloCrystalSD("CaloCrystal", config);
     SDman->AddNewDetector(crysSD);
 
-    CaloReadoutSD* roSD = new CaloReadoutSD("CaloReadout", config, crysSD);
+    CaloReadoutSD* roSD = new CaloReadoutSD("CaloReadout", config);
     SDman->AddNewDetector(roSD);
 
     // Create logical volumes

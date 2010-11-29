@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.64 2010/11/22 05:18:35 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/11/22 05:18:35 $
+// $Id: Mu2eWorld.cc,v 1.65 2010/11/29 19:54:46 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/11/29 19:54:46 $
 //
 // Original author Rob Kutschke
 //
@@ -46,6 +46,7 @@
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
+#include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
@@ -159,6 +160,7 @@ namespace mu2e {
     VolumeInfo::setMu2eOriginInWorld( _mu2eOrigin );
     VirtualDetectorSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
+    CaloReadoutSD::setMu2eOriginInWorld( _mu2eOrigin );
     VolumeInfo dirtInfo  = constructDirt();
     VolumeInfo hallInfo  = constructHall( dirtInfo );
     constructDS(hallInfo);

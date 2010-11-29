@@ -24,22 +24,6 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimpleConfig;
 
-  // Utility class to hold intermediate data
-
-  class ReadoutHitG4 {
-  public:
-    int _idro;
-    double _edep;
-    double _edepMC;
-    double _t1;
-    double _t2;
-    int _ncharge;
-    ReadoutHitG4(int idro, double edep, double edepMC, double t1, double t2, int ncharge) :
-      _idro(idro), _edep(edep),_edepMC(edepMC), _t1(t1), _t2(t2), _ncharge(ncharge) { }
-  };
-
-  typedef std::map<int, std::vector<ReadoutHitG4> > ROHitsCollection;
-
   class CaloCrystalSD : public G4VSensitiveDetector{
 
   public:
@@ -49,8 +33,6 @@ namespace mu2e {
     void Initialize(G4HCofThisEvent*);
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
-
-    void AddReadoutHit(G4Step*,int,double,double);
 
     static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
       _mu2eOrigin = origin;

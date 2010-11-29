@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.35 2010/11/24 22:47:26 logash Exp $
+// $Id: G4_plugin.cc,v 1.36 2010/11/29 19:54:46 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/11/24 22:47:26 $
+// $Date: 2010/11/29 19:54:46 $
 //
 // Original author Rob Kutschke
 //
@@ -109,11 +109,13 @@ namespace mu2e {
       _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")),
       _trackerOutputName("tracker"),
       _vdOutputName("virtualdetector"),
-      _caloOutputName("calorimeter") {
+      _caloOutputName("calorimeter"),
+      _caloROOutputName("calorimeterRO") {
 
       produces<StepPointMCCollection>(_trackerOutputName);
       produces<StepPointMCCollection>(_vdOutputName);
       produces<StepPointMCCollection>(_caloOutputName);
+      produces<StepPointMCCollection>(_caloROOutputName);
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,edm::InRun>();
       produces<PointTrajectoryCollection>();
@@ -171,6 +173,7 @@ namespace mu2e {
     const std::string _trackerOutputName;
     const std::string      _vdOutputName;
     const std::string    _caloOutputName;
+    const std::string    _caloROOutputName;
 
   };
   
@@ -283,6 +286,7 @@ namespace mu2e {
     auto_ptr<SimParticleCollection>           simParticles(new SimParticleCollection);
     auto_ptr<StepPointMCCollection>           vdHits(new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>           caloHits(new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>           caloROHits(new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection>       pointTrajectories( new PointTrajectoryCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
@@ -297,6 +301,7 @@ namespace mu2e {
     addStepPointMCs( g4event, *outputHits);
     copyStepPointG4toMC( g4event, "VDCollection", *vdHits);
     copyStepPointG4toMC( g4event, "CaloCollection", *caloHits);
+    copyStepPointG4toMC( g4event, "CaloROCollection", *caloROHits);
     addPointTrajectories( g4event, *pointTrajectories, _mu2eDetectorOrigin);
 
     // Run self consistency checks if enabled.
@@ -306,6 +311,7 @@ namespace mu2e {
     event.put(vdHits,_vdOutputName);
     event.put(simParticles);
     event.put(caloHits,_caloOutputName);
+    event.put(caloROHits,_caloROOutputName);
     event.put(pointTrajectories);
     
     // Pause to see graphics. 

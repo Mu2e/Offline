@@ -3,12 +3,40 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.24 2010/11/29 15:57:41 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2010/11/29 15:57:41 $
+  $Id: v0_2_8.txt,v 1.25 2010/11/29 19:54:46 logash Exp $
+  $Author: logash $
+  $Date: 2010/11/29 19:54:46 $
 
 
-31) November 23, 2010 onoratog
+33) November 29, 2010 logash
+
+    More changed in calorimeter area: 
+
+    1. G4_plugin now produces two collections of StepPointMCs: 
+       "CaloCollection" for hits with energy deposition in the crystal and
+       "CaloROCollection" for hits with energy deposition in the readout
+       (APD). The steps in CaloCollection are not duplicated for each APD.
+       MakeCaloReadoutHits_plugin.cc uses both StepPointMCs collections to 
+       generate calorimeter hits.
+    2. The Mu2e coordinate system is used in both CaloCollection and 
+       CaloROCollection (before the local crystal frame was used). The 
+       transformation to local crystal frame is performed as needed using
+       Calorimeter geometry service (see example in MakeCaloReadoutHits_plugin.cc).
+    3. CaloCrystalSD and CaloReadoutSD are not truly independent sensitive 
+       detectors.
+
+    Updated files:
+
+      Mu2eG4/src/G4_plugin.cc
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/constructCalorimeter.cc
+      Mu2eG4/inc/CaloReadoutSD.hh
+      Mu2eG4/src/CaloReadoutSD.cc
+      Mu2eG4/inc/CaloCrystalSD.hh
+      Mu2eG4/src/CaloCrystalSD.cc
+      HitMakers/src/MakeCaloReadoutHits_plugin.cc
+
+32) November 23, 2010 onoratog
     
     Added a plugin used to evaluate background rates in tracker and calorimeter. It is a first prototype and needs several upgrade to achieve the desired form.
     It is located in 
@@ -21,7 +49,7 @@
        Analyses/test/genconfig_Bkg.txt
 
 
-30) November 23, 2010 kutschke
+31) November 23, 2010 kutschke
     A new class that allows direct access to StrawHits arranged by which
     SimParticle create them.
        Mu2eUtilities/inc/SimParticlesWithHits.hh

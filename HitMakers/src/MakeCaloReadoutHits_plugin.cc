@@ -10,6 +10,9 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <map>
+#include <vector>
+#include <utility>
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDProducer.h"
@@ -72,6 +75,7 @@ namespace mu2e {
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
       _stepPoints(pset.getUntrackedParameter<string>("calorimeterStepPoints","calorimeter")),
+      _rostepPoints(pset.getUntrackedParameter<string>("calorimeterROStepPoints","calorimeterRO")),
       _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
 
       _messageCategory("CaloReadoutHitsMaker"){
@@ -98,6 +102,7 @@ namespace mu2e {
 
     // Name of the StepPoint collection
     std::string _stepPoints;
+    std::string _rostepPoints;
 
     // Parameters
     string _g4ModuleLabel;  // Name of the module that made these hits.
@@ -106,6 +111,7 @@ namespace mu2e {
     const std::string _messageCategory;
 
     void makeCalorimeterHits (const edm::Handle<StepPointMCCollection>&, 
+			      const edm::Handle<StepPointMCCollection>&, 
 			      CaloHitCollection &, 
 			      CaloHitMCTruthCollection&,
 			      CaloCrystalHitMCTruthCollection&);
@@ -134,15 +140,20 @@ namespace mu2e {
     auto_ptr<CaloCrystalHitMCTruthCollection> caloCrystalMCHits(new CaloCrystalHitMCTruthCollection);
 
     // Ask the event to give us a handle to the requested hits.
+
     edm::Handle<StepPointMCCollection> points;
     event.getByLabel(_g4ModuleLabel,_stepPoints,points);
     int nHits = points->size();
 
+    edm::Handle<StepPointMCCollection> rohits;
+    event.getByLabel(_g4ModuleLabel,_rostepPoints,rohits);
+    int nroHits = rohits->size();
+
     // Product Id of the input points.
     edm::ProductID const& id(points.id());
 
-    if( nHits>0 ) {
-      makeCalorimeterHits(points, *caloHits, *caloMCHits, *caloCrystalMCHits);
+    if( nHits>0 || nroHits>0 ) {
+      makeCalorimeterHits(points, rohits, *caloHits, *caloMCHits, *caloCrystalMCHits);
     }
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
@@ -163,10 +174,11 @@ namespace mu2e {
 
   } // end of ::analyze.
  
-  void MakeCaloReadoutHits::makeCalorimeterHits (const edm::Handle<StepPointMCCollection>& hits, 
-			     CaloHitCollection &caloHits, 
-			     CaloHitMCTruthCollection& caloHitsMCTruth,
-			     CaloCrystalHitMCTruthCollection& caloCrystalHitsMCTruth) {
+  void MakeCaloReadoutHits::makeCalorimeterHits (const edm::Handle<StepPointMCCollection>& steps, 
+				      const edm::Handle<StepPointMCCollection>& rosteps, 
+				      CaloHitCollection &caloHits, 
+				      CaloHitMCTruthCollection& caloHitsMCTruth,
+				      CaloCrystalHitMCTruthCollection& caloCrystalHitsMCTruth) {
 
     // Get calorimeter geometry description
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
@@ -177,16 +189,28 @@ namespace mu2e {
     double addEdep    = cal.getElectronEdep();
     int    nro        = cal.nROPerCrystal();
 
-    // Organize hits by readout elements
+    // Organize steps by readout elements
 
-    int nHits = hits->size();
+    int nSteps   = steps->size();
+    int nroSteps = rosteps->size();
 
-    typedef std::map<int,std::vector<int> > HitMap;
+    // First vector is list of crystal steps, associated with parcular readout element.
+    // Second vector is list of readout steps, associated with parcular readout element.
+    typedef std::map<int,std::pair<std::vector<int>,std::vector<int> > > HitMap;
     HitMap hitmap;
-    for ( int i=0; i<nHits; ++i){
-      StepPointMC const& h = (*hits)[i];
-      vector<int> &hits_id = hitmap[h.volumeId()];
-      hits_id.push_back(i);
+
+    for ( int i=0; i<nSteps; ++i){
+      StepPointMC const& h = (*steps)[i];
+      for( int j=0; j<nro; ++j ) {
+	vector<int> &steps_id = hitmap[h.volumeId()*nro+j].first;
+	steps_id.push_back(i);
+      }
+    }
+
+    for ( int i=0; i<nroSteps; ++i){
+      StepPointMC const& h = (*rosteps)[i];
+      vector<int> &steps_id = hitmap[h.volumeId()].second;
+      steps_id.push_back(i);
     }
 
     // Loop over all readout elements to form ro hits
@@ -203,33 +227,42 @@ namespace mu2e {
 
       // Loop over all hits found for this readout element
 
-      vector<int> const& ihits = ro->second;
+      vector<int> const& isteps = ro->second.first;
+      vector<int> const& irosteps = ro->second.second;
 
-      for( size_t i=0; i<ihits.size(); i++ ) {
+      // Loop over steps inside the crystal
 
-        int hitRef = ihits[i];
-	StepPointMC const& h = (*hits)[hitRef];
-        CLHEP::Hep3Vector const& pos = h.position();
+      for( size_t i=0; i<isteps.size(); i++ ) {
+
+        int hitRef = isteps[i];
+	StepPointMC const& h = (*steps)[hitRef];
+
         double edep    = h.eDep()/nro; // each ro has its crystal energy deposit assigned to it
+	if( edep<=0.0 ) continue; // Do not create hit if there is no energy deposition
+
+	// Hit position in Mu2e frame
+        CLHEP::Hep3Vector const& pos = h.position();
+	// Hit position in local crystal frame
+        CLHEP::Hep3Vector posLocal = cal.toCrystalFrame(roid,pos);
+	// Calculate correction for edep
+	double edep_corr = edep * (1.0+(posLocal.z()/length)*nonUniform/2.0);
+
+	ro_hits.push_back(ROHit(hitRef,edep,edep_corr,0,h.time()));
+
+      }
+
+      // Loop over steps inside the readout (direct energy deposition in APD)
+
+      for( size_t i=0; i<irosteps.size(); i++ ) {
+
+        int hitRef = irosteps[i];
+	StepPointMC const& h = (*rosteps)[hitRef];
+
+	// There is no cut on energy deposition here - may be, we need to add one?
+
         double hitTime = h.time();
-	int charged = 0;
 
-	// Calculate correction for edep; edep<0 means energy deposition in APD, not in crystal
-
-	double edep_corr=0;
-	if( edep>0.0 ) {
-	  edep_corr = edep * (1.0+(pos.z()/length)*nonUniform/2.0);
-        } else if ( edep==0.0 ) {
-          if ( pos == CLHEP::Hep3Vector(0.0,0.0,0.0) ) {
-            // it is most likely directly hit ro with no energy deposit, should it be "charged" ?
-            charged=1;
-          }
-	} else { 
-	  charged=1;
-	  edep=0.0; 
-	}
-	
-	ro_hits.push_back(ROHit(hitRef,edep,edep_corr,charged,hitTime));
+	ro_hits.push_back(ROHit(hitRef,0,0,1,hitTime));
 
       }
 
@@ -280,14 +313,9 @@ namespace mu2e {
 
     hitmap.clear();
 
-    for ( int i=0; i<nHits; ++i){
-      StepPointMC const& h = (*hits)[i];
-      // reject all "non" first RO
-      if (h.volumeId()%nro==0) continue;
-      // reject all RO hit directly
-      if (h.eDep()<0.0) continue;
-      if (h.eDep()==0.0 && h.position()==CLHEP::Hep3Vector(0.0,0.0,0.0)) continue;
-      hitmap[cal.getCrystalByRO(h.volumeId())].push_back(i);
+    for ( int i=0; i<nSteps; ++i){
+      StepPointMC const& h = (*steps)[i];
+      hitmap[h.volumeId()].first.push_back(i);
     }
 
     CaloCrystalHitMCTruthCollection cr_hits;
@@ -301,10 +329,10 @@ namespace mu2e {
       cr_hits.clear();
 
       // Loop over all hits found for this crystal
-      vector<int> const& ihits = cr->second;
+      vector<int> const& isteps = cr->second.first;
 
-      for( size_t i=0; i<ihits.size(); i++ ) {
-	StepPointMC const& h = (*hits)[ihits[i]];
+      for( size_t i=0; i<isteps.size(); i++ ) {
+	StepPointMC const& h = (*steps)[isteps[i]];
 	cr_hits.push_back(CaloCrystalHitMCTruth(cid,h.time(),h.eDep()));        
       }
 

@@ -88,49 +88,32 @@ namespace mu2e {
 
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
-    // Get calorimeter geometry description
-    GeomHandle<Calorimeter> cg;
-
     // Get crystal ID
     G4int copyNo = touchableHandle->GetCopyNumber(2);
-    G4int nro = cg->nROPerCrystal();
 
-    G4double time = aStep->GetPreStepPoint()->GetGlobalTime();
-
+    // Originally the hit position was saved in local crystal frame. 
+    // Not it is saved in Mu2e frame, hence the following code is
+    // commented out. 
     // Calculate enerdy deposition position along the crystal
-    G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
+    // G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
     //G4AffineTransform        toWorld = toLocal.Inverse();
-    G4ThreeVector posWorld = aStep->GetPreStepPoint()->GetPosition();
-    G4ThreeVector posLocal = toLocal.TransformPoint(posWorld);
+    // G4ThreeVector posWorld = aStep->GetPreStepPoint()->GetPosition();
+    // G4ThreeVector posLocal = toLocal.TransformPoint(posWorld);
 
-    // The points coordinates are saved in the local crystal coordinates.
-    // If neccessary, the points can be saved in Mu2e coordinates (like 
-    // it is done in VirtualDetectorSD or StrawSD), and transfered to local
-    // crystal frame in addCalorimeterHits() using CalorimeterGeom service.
-    // Add hits to every readout element.
+    StepPointG4* newHit = 
+      new StepPointG4(aStep->GetTrack()->GetTrackID(), 
+		      copyNo,
+                      edep,
+                      aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                      aStep->GetPreStepPoint()->GetMomentum(),
+                      aStep->GetPreStepPoint()->GetGlobalTime(),
+                      aStep->GetPreStepPoint()->GetProperTime(),
+                      aStep->GetStepLength()
+                      );
 
-    for( int i=0; i<nro; ++i ) {
-      StepPointG4* newHit = 
-	new StepPointG4(aStep->GetTrack()->GetTrackID(),
-			copyNo*nro+i,
-			edep,
-			posLocal,
-			0,
-			time,
-			0,
-			aStep->GetStepLength()
-			);
-
-      // The collection takes ownership of the hit. 
-      _collection->insert( newHit );
+    // The collection takes ownership of the hit. 
+    _collection->insert( newHit );
       
-      /*
-	cout << " CaloCrystalSD: idro=" << (copyNo*nro+i)
-	<< " edep=" << edep << " time=" << time << endl;
-      */
-
-    }
-
     return true;
 
   }
@@ -152,21 +135,6 @@ namespace mu2e {
       for (G4int i=0;i<NbHits;i++) (*_collection)[i]->Print();
     } 
 
-  }
-
-  void CaloCrystalSD::AddReadoutHit(G4Step* aStep, int idro, double time, double edep) {
-    StepPointG4* newHit = 
-      new StepPointG4(aStep->GetTrack()->GetTrackID(),
-		      idro,
-		      -edep,
-		      G4ThreeVector(0,0,0),
-		      0,
-		      time,
-		      0,
-		      aStep->GetStepLength()
-		      );
-    
-    _collection->insert( newHit );
   }
 
 } //namespace mu2e

@@ -30,13 +30,23 @@ using namespace std;
 
 namespace mu2e {
 
-  CaloReadoutSD::CaloReadoutSD(G4String name, const SimpleConfig& config, CaloCrystalSD *sd)
+  G4ThreeVector CaloReadoutSD::_mu2eOrigin;
+
+  CaloReadoutSD::CaloReadoutSD(G4String name, const SimpleConfig& config)
     : G4VSensitiveDetector(name) {
 
     G4String HCname("CaloROCollection");
     collectionName.insert(HCname);
     
-    crystalSD = sd;
+    // Get list of events for which to make debug printout.
+    string key("g4.calorimeterSDEventList");
+    if ( config.hasName(key) ){
+      vector<int> list;
+      config.getVectorInt(key,list);
+      _debugList.add(list);
+    }
+
+    _sizeLimit = config.getInt("g4.stepsSizeLimit",0);
 
   }
 
@@ -44,6 +54,16 @@ namespace mu2e {
   CaloReadoutSD::~CaloReadoutSD(){ }
 
   void CaloReadoutSD::Initialize(G4HCofThisEvent* HCE){
+
+    _collection = new StepPointG4Collection
+      (SensitiveDetectorName,collectionName[0]); 
+    static G4int HCID = -1;
+    if(HCID<0){ 
+      HCID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]); 
+    }
+    HCE->AddHitsCollection( HCID, _collection ); 
+
+    _currentSize=0;
 
     GeomHandle<Calorimeter> cg;
     _nro  = cg->nROPerCrystal();
@@ -59,33 +79,62 @@ namespace mu2e {
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
     // Only handle charged events with kinetic energy > 0.1 MeV
+
     if( aStep->GetTrack()->GetDefinition()->GetPDGCharge() == 0 ) return false;
     if( aStep->GetTrack()->GetKineticEnergy() < _minE ) return false;
+
+    // Check that number of steps did not exceed the limit 
+
+    _currentSize += 1;
+
+    if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
+      if( (_currentSize - _sizeLimit)==1 ) {
+	edm::LogWarning("G4") << "Maximum number of particles reached in CaloCrystalSD: " 
+			      << _currentSize << endl;
+      }
+      return false;
+    }
 
     // Get readout ID
     int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(1)*_nro;
 
-    // Ask CaloCrystalSD to create hit
+    // The points coordinates are saved in the mu2e world
 
-    G4double time = aStep->GetPreStepPoint()->GetGlobalTime();
-    G4double edep = aStep->GetTotalEnergyDeposit();
+    StepPointG4* newHit = 
+      new StepPointG4(aStep->GetTrack()->GetTrackID(), 
+		      idro,
+                      aStep->GetTotalEnergyDeposit(),
+                      aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                      aStep->GetPreStepPoint()->GetMomentum(),
+                      aStep->GetPreStepPoint()->GetGlobalTime(),
+                      aStep->GetPreStepPoint()->GetProperTime(),
+                      aStep->GetStepLength()
+                      );
 
-    crystalSD->AddReadoutHit(aStep, idro, time, edep);
-
-    /*
-    cout << "CaloReadoutSD: copyNo0=" << touchableHandle->GetCopyNumber(0)
-	 << " copyNo1=" << touchableHandle->GetCopyNumber(1)
-	 << " time=" << time << " edep=" << edep 
-	 << " idro=" << idro 
-	 << " charge=" << aStep->GetTrack()->GetDefinition()->GetPDGCharge()
-	 << endl;
-    */
+    // The collection takes ownership of the hit. 
+    _collection->insert( newHit );
 
     return true;
 
   }
 
   void CaloReadoutSD::EndOfEvent(G4HCofThisEvent*){
+
+    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
+      edm::LogWarning("G4") << "Total of " << _currentSize 
+			    << " calorimeter RO hits were generated in the event." 
+			    << endl
+			    << "Only " << _sizeLimit << " are saved in output collection." 
+			    << endl;
+    }
+
+    if (verboseLevel>0) { 
+      G4int NbHits = _collection->entries();
+      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
+             << " RO hits in the calorimeter: " << G4endl;
+      for (G4int i=0;i<NbHits;i++) (*_collection)[i]->Print();
+    } 
+
   }
 
 } //namespace mu2e
