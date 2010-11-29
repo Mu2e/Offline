@@ -3,9 +3,23 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.23 2010/11/24 22:47:26 logash Exp $
-  $Author: logash $
-  $Date: 2010/11/24 22:47:26 $
+  $Id: v0_2_8.txt,v 1.24 2010/11/29 15:57:41 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2010/11/29 15:57:41 $
+
+
+31) November 23, 2010 onoratog
+    
+    Added a plugin used to evaluate background rates in tracker and calorimeter. It is a first prototype and needs several upgrade to achieve the desired form.
+    It is located in 
+       Analyses/src/BkgRates_plugin.cc
+    It uses a filter
+       Analyses/src/FilterEmptyEvents_plugin.cc
+    and it is executed by
+       Analyses/test/BkgRatesCounter.py
+    using the generator config file
+       Analyses/test/genconfig_Bkg.txt
+
 
 30) November 23, 2010 kutschke
     A new class that allows direct access to StrawHits arranged by which
