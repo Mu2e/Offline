@@ -11,9 +11,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.hh,v 1.1 2010/11/24 01:04:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/24 01:04:28 $
+// $Id: SimParticlesWithHits.hh,v 1.2 2010/11/30 02:51:36 logash Exp $
+// $Author: logash $
+// $Date: 2010/11/30 02:51:36 $
 //
 // Original author Rob Kutschke.
 //
@@ -24,7 +24,7 @@
 
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimParticleInfo.hh"
-#include "ToyDP/inc/StrawHitMCPtrCollection.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
@@ -85,7 +85,7 @@ namespace mu2e {
 
     // Pointers to some collections within the event; needed
     // by both the c'tor and selfTest().
-    StrawHitMCPtrCollection   const* _hits_mcptr;
+    DPIndexVectorCollection   const* _hits_mcptr;
     StepPointMCCollection     const* _stepPointsMC;
 
     // Check that the object was built correctly.

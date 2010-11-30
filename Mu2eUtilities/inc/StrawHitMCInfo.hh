@@ -7,9 +7,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle. 
 //
-// $Id: StrawHitMCInfo.hh,v 1.1 2010/11/24 01:04:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/24 01:04:28 $
+// $Id: StrawHitMCInfo.hh,v 1.2 2010/11/30 02:51:36 logash Exp $
+// $Author: logash $
+// $Date: 2010/11/30 02:51:36 $
 //
 // Original author Rob Kutschke.
 //
@@ -24,7 +24,7 @@
 
 // Mu2e includes.
 #include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StrawHitMCPtr.hh"
+#include "ToyDP/inc/DPIndexVector.hh"
 
 // Forward declarations.
 namespace edm{
@@ -52,7 +52,7 @@ namespace mu2e {
                     size_t                 index,
                     StrawHit        const& strawHit,
                     StrawHitMCTruth const& strawHitMCTruth,
-                    StrawHitMCPtr   const& strawHitMCPtr,
+                    DPIndexVector   const& strawHitMCPtr,
                     int                    nSimParticles ):
       _index(index),
       _hit(&strawHit),
@@ -69,7 +69,7 @@ namespace mu2e {
     size_t                 index()          const { return  _index;   }
     StrawHit        const& hit()            const { return *_hit;}
     StrawHitMCTruth const& truth()          const { return *_truth;}
-    StrawHitMCPtr   const& stepsByDPIndex() const { return *_mcPtr;}
+    DPIndexVector   const& stepsByDPIndex() const { return *_mcPtr;}
     bool                   isShared()       const { return  _nSimParticles>1;}
     double                 time()           const { return  _time; }
 
@@ -88,13 +88,13 @@ namespace mu2e {
   private:
 
     // Index into:
-    // StrawHitCollection, StrawHitMCTruthCollection, StrawHitMCPtrCollection
+    // StrawHitCollection, StrawHitMCTruthCollection, DPIndexVectorCollection
     size_t _index;
 
-    // Non-owning pointers to the StrawHit, StrawHitMCTruth and StrawHitMCPtr.
+    // Non-owning pointers to the StrawHit, StrawHitMCTruth and DPIndexVector.
     StrawHit        const* _hit;
     StrawHitMCTruth const* _truth;
-    StrawHitMCPtr   const* _mcPtr;
+    DPIndexVector   const* _mcPtr;
 
     // Non-owning pointers to all StepPointMCs that contributed to this track.
     std::vector<StepPointMC const *> _stepPointMCs;

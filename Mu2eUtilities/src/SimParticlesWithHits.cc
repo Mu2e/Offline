@@ -9,9 +9,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.cc,v 1.1 2010/11/24 01:04:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/24 01:04:28 $
+// $Id: SimParticlesWithHits.cc,v 1.2 2010/11/30 02:51:36 logash Exp $
+// $Author: logash $
+// $Date: 2010/11/30 02:51:36 $
 //
 // Original author Rob Kutschke.
 //
@@ -49,8 +49,8 @@ namespace mu2e{
     evt.getByLabel(_hitMakerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const& hits_truth = *truthHandle;
 
-    edm::Handle<StrawHitMCPtrCollection> mcptrHandle;
-    evt.getByLabel(_hitMakerModuleLabel,mcptrHandle);
+    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    evt.getByLabel(_hitMakerModuleLabel,"StrawHitMCPtr",mcptrHandle);
     _hits_mcptr = mcptrHandle.product();
 
     edm::Handle<StepPointMCCollection> mchitsHandle;
@@ -67,7 +67,7 @@ namespace mu2e{
       // Data and MC truth for this hit.
       StrawHit        const&   hit(hits.at(ihit));
       StrawHitMCTruth const& truth(hits_truth.at(ihit));
-      StrawHitMCPtr   const& mcptr(_hits_mcptr->at(ihit));
+      DPIndexVector   const& mcptr(_hits_mcptr->at(ihit));
 
       // Skip hits with too little energy deposited in the straw.
       if ( hit.energyDep() < minEnergyDep ){
@@ -147,7 +147,7 @@ namespace mu2e{
       vector<StrawHitMCInfo> const& v = i->second.strawHitInfos();
       for ( size_t j=0; j<v.size(); ++j ){
         StrawHitMCInfo const& info = v[j];
-        StrawHitMCPtr const& mcptr(_hits_mcptr->at(info.index()));
+        DPIndexVector const& mcptr(_hits_mcptr->at(info.index()));
         bool ok = false;
         for ( size_t k=0; k<mcptr.size(); ++k ){
           StepPointMC const& step = _stepPointsMC->at(mcptr.at(k).index);

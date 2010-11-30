@@ -1,5 +1,5 @@
-#ifndef StrawHitMCPtr_H
-#define StrawHitMCPtr_H
+#ifndef DPIndexVector_H
+#define DPIndexVector_H
 // 
 // This vector has links to original G4Steps
 //
@@ -14,7 +14,7 @@
 
 namespace mu2e { 
 
-  typedef std::vector<mu2e::DPIndex> StrawHitMCPtr;
+  typedef std::vector<mu2e::DPIndex> DPIndexVector;
 
 } // namespace mu2e
 

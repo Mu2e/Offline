@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.7 2010/09/30 02:15:39 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 02:15:39 $
+// $Id: MakeStrawHit_plugin.cc,v 1.8 2010/11/30 02:51:36 logash Exp $
+// $Author: logash $
+// $Date: 2010/11/30 02:51:36 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -36,8 +36,8 @@
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruth.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/StrawHitMCPtr.hh"
-#include "ToyDP/inc/StrawHitMCPtrCollection.hh"
+#include "ToyDP/inc/DPIndexVector.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 
@@ -99,7 +99,7 @@ namespace mu2e {
       // Tell the framework what we make.
       produces<StrawHitCollection>();
       produces<StrawHitMCTruthCollection>();
-      produces<StrawHitMCPtrCollection>();
+      produces<DPIndexVectorCollection>("StrawHitMCPtr");
 
     }
     virtual ~MakeStrawHit() { }
@@ -155,7 +155,7 @@ namespace mu2e {
     // A container to hold the output hits.
     auto_ptr<StrawHitCollection>        strawHits(new StrawHitCollection);
     auto_ptr<StrawHitMCTruthCollection> truthHits(new StrawHitMCTruthCollection);
-    auto_ptr<StrawHitMCPtrCollection>   mcptrHits(new StrawHitMCPtrCollection);
+    auto_ptr<DPIndexVectorCollection>   mcptrHits(new DPIndexVectorCollection);
 
     // Ask the event to give us a handle to the requested hits.
     edm::Handle<StepPointMCCollection> points;
@@ -314,7 +314,7 @@ namespace mu2e {
       double digi_driftT = straw_hits[0]._driftTime;
       double digi_toMid  = straw_hits[0]._distanceToMid;
       double digi_dca    = straw_hits[0]._dca;
-      StrawHitMCPtr mcptr;
+      DPIndexVector mcptr;
       mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
 
       for( size_t i=1; i<straw_hits.size(); i++ ) {
@@ -361,7 +361,7 @@ namespace mu2e {
     // Add the output hit collection to the event
     event.put(strawHits);
     event.put(truthHits);
-    event.put(mcptrHits);
+    event.put(mcptrHits,"StrawHitMCPtr");
 
     if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() end" << endl;
 

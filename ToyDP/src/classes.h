@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.17 2010/11/18 07:22:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/18 07:22:08 $
+// $Id: classes.h,v 1.18 2010/11/30 02:51:37 logash Exp $
+// $Author: logash $
+// $Date: 2010/11/30 02:51:37 $
 //
 // Original author Rob Kutschke
 //
@@ -31,7 +31,7 @@
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/StrawHitMCPtrCollection.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/ToyHitCollection.hh"
 #include "ToyDP/inc/G4BeamlineInfo.hh"
@@ -67,7 +67,6 @@ template class edm::Wrapper<mu2e::SimParticleCollection>;
 template class edm::Wrapper<mu2e::HoughCircleCollection>;
 template class edm::Wrapper<mu2e::StrawHitCollection>;
 template class edm::Wrapper<mu2e::StrawHitMCTruthCollection>;
-template class edm::Wrapper<mu2e::StrawHitMCPtrCollection>;
 template class edm::Wrapper<mu2e::G4BeamlineInfo>;
 template class edm::Wrapper<mu2e::G4BeamlineInfoCollection>;
 template class edm::Wrapper<mu2e::CaloHitCollection>;
@@ -75,3 +74,4 @@ template class edm::Wrapper<mu2e::CaloHitMCTruthCollection>;
 template class edm::Wrapper<mu2e::CaloCrystalHitCollection>;
 template class edm::Wrapper<mu2e::CaloCrystalHitMCTruthCollection>;
 template class edm::Wrapper<mu2e::PointTrajectoryCollection>;
+template class edm::Wrapper<mu2e::DPIndexVectorCollection>;

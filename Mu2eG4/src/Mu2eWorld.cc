@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.65 2010/11/29 19:54:46 logash Exp $
+// $Id: Mu2eWorld.cc,v 1.66 2010/11/30 02:51:36 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/11/29 19:54:46 $
+// $Date: 2010/11/30 02:51:36 $
 //
 // Original author Rob Kutschke
 //
@@ -166,10 +166,11 @@ namespace mu2e {
     constructDS(hallInfo);
     constructTS(hallInfo);
     constructPS(hallInfo);
-    constructVD();
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
     constructProtonAbs();  //this is to construct proton absorber
+
+    constructVD();
 
     // These are just placeholders for now - and might be misnamed.
     constructCal();
@@ -1683,14 +1684,18 @@ namespace mu2e {
     if( vdg->nDet()<=0 ) return;
 
     GeomHandle<Beamline> beamg;
-    double rVac           = beamg->getTS().innerRadius();
+    double rVac           = CLHEP::mm * beamg->getTS().innerRadius();
 
-    double vdHalfLength = vdg->getHalfLength();
+    GeomHandle<Target> target;
+    double rTarget  = CLHEP::mm * target->cylinderRadius();
+
+    double vdHalfLength = CLHEP::mm * vdg->getHalfLength();
 
     MaterialFinder materialFinder(*_config);
     G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
 
     TubsParams vdParams(0,rVac,vdHalfLength);
+    TubsParams vdParamsTarget(0,rTarget,vdHalfLength);
 
     // VD 1 and 2 are placed inside TS1
 

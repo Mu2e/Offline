@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.23 2010/11/22 05:27:34 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/22 05:27:34 $
+// $Id: ReadBack.cc,v 1.24 2010/11/30 02:51:36 logash Exp $
+// $Author: logash $
+// $Date: 2010/11/30 02:51:36 $
 //
 // Original author Rob Kutschke
 //
@@ -14,6 +14,7 @@
 #include <cmath>
 
 // Framework includes.
+#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Services/interface/TFileService.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -33,6 +34,8 @@
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/DPIndexVector.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -85,6 +88,9 @@ namespace mu2e {
     _hEdep(0),
     _hEdepMC(0),
     _hNcrystal(0),
+    _hNcrstep(0),
+    _hNrostep(0),
+    _hEdepROMC(0),
     _hRCEdep(0),
     _hRCTime(0),
     _hRCNCrystals(0),
@@ -133,6 +139,9 @@ namespace mu2e {
     _hEdep     = tfs->make<TH1F>( "hEdep",     "Total energy deposition in calorimeter", 2400, 0., 2400. );
     _hEdepMC   = tfs->make<TH1F>( "hEdepMC",   "True energy deposition in calorimeter",  240,  0., 240. );
     _hNcrystal = tfs->make<TH1F>( "hNcrystal", "Total energy deposition in calorimeter",   50, 0.,   50. );
+    _hNcrstep  = tfs->make<TH1F>( "hNcrstep", "Number of G4 steps in crystal, per APD", 100, 0., 500. );
+    _hNrostep  = tfs->make<TH1F>( "hNrostep", "Number of G4 steps in APD, per APD", 10, 0., 10. );
+    _hEdepROMC = tfs->make<TH1F>( "hEdepROMC", "Direct energy deposition in the APD", 100, 0., 10. );
 
 
     _hRCEdep    = tfs->make<TH1F>( "hRCEdep", 
@@ -198,6 +207,28 @@ namespace mu2e {
     edm::Handle<CaloHitMCTruthCollection> caloMC;
     event.getByType(caloHits);
     event.getByType(caloMC);
+
+    // Find pointers to the original G4 steps
+    edm::Handle<DPIndexVectorCollection> crystalPtr;
+    edm::Handle<DPIndexVectorCollection> readoutPtr;
+
+    // One can use simple approach - find collection directly by label, e.g.:
+    // event.getByLabel("CaloReadoutHitsMaker","CaloHitMCCrystalPtr",crystalPtr);
+    // event.getByLabel("CaloReadoutHitsMaker","CaloHitMCReadoutPtr",readoutPtr);
+    // The following code shows how to find collection only by name, not knowing 
+    // the producer module name
+
+    vector<edm::Handle<DPIndexVectorCollection> > ptr_coll;
+    event.getManyByType(ptr_coll);
+    for( size_t i=0; i<ptr_coll.size(); ++i ) {
+      if(ptr_coll[i].provenance()->productInstanceName()=="CaloHitMCCrystalPtr") crystalPtr = ptr_coll[i];
+      if(ptr_coll[i].provenance()->productInstanceName()=="CaloHitMCReadoutPtr") readoutPtr = ptr_coll[i];
+    }
+
+    // Find original G4 steps in the APDs
+    edm::Handle<StepPointMCCollection> rohits;
+    event.getByLabel(_g4ModuleLabel,"calorimeterRO",rohits);
+
     bool haveCalo = ( caloHits.isValid() && caloMC.isValid() );
 
     if( ! haveCalo) return;
@@ -223,6 +254,35 @@ namespace mu2e {
     _hEdepMC->Fill(simEdep);
     _hNcrystal->Fill(hit_crystals.size());
 
+    // Fill number of G4 steps in crystal and APD, per APD
+    if( crystalPtr.isValid() && readoutPtr.isValid() ) {
+      for ( size_t i=0; i<caloHits->size(); ++i ) {
+	_hNcrstep->Fill(crystalPtr->at(i).size());
+	_hNrostep->Fill(readoutPtr->at(i).size());
+      }
+    }
+
+    // Calculate direct energy deposition in the APD
+    // This is an example how one can propagate back to the original 
+    // G4 data
+    if( readoutPtr.isValid() && rohits.isValid() ) {
+      for ( size_t i=0; i<caloHits->size(); ++i ) {
+	// Get vector of pointer to G4 steps in APDs for calorimeter hit #i
+	const DPIndexVector & ptr = readoutPtr->at(i);
+	// Skip calorimeter hits without G4 step in APD (for these hit 
+        // no charged particle crossed APD)
+	if( ptr.size()<=0 ) continue;
+	// Accumulator to count total energy deposition
+	double esum = 0;
+	// Loop over that vector, get each G4 step and accumulate energy deposition
+	for( size_t j=0; j<ptr.size(); j++ ) {
+	  const StepPointMC & rohit = rohits->at(ptr[j].index);
+	  esum += rohit.eDep();
+	}
+	// Fill histogram
+	_hEdepROMC->Fill(esum);
+      }
+    }
 
     if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<caloHits->size(); ++i ) {

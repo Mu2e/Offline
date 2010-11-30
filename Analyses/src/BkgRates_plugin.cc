@@ -31,7 +31,7 @@
 #include "TrackerGeom/inc/Straw.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/StrawHitMCPtrCollection.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
@@ -209,12 +209,12 @@ namespace mu2e {
 
     // Get the persistent data about pointers to StepPointMCs
 
-    edm::Handle<StrawHitMCPtrCollection> mcptrHandle;
-    evt.getByLabel(_makerModuleLabel,mcptrHandle);
-    StrawHitMCPtrCollection const* hits_mcptr = mcptrHandle.product();
+    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
+    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in StrawHitMCPtrCollection, rather than 
+    // should look for product ids in DPIndexVectorCollection, rather than 
     // use producer name directly ("g4run"). 
 
     edm::Handle<StepPointMCCollection> mchitsHandle;
@@ -268,7 +268,7 @@ namespace mu2e {
       // Access data
       StrawHit        const&      hit(hits->at(i));
       StrawHitMCTruth const&    truth(hits_truth->at(i));
-      StrawHitMCPtr   const&    mcptr(hits_mcptr->at(i));
+      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
 
       //Get hit straw
       StrawIndex si = hit.strawIndex();

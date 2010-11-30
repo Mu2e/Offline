@@ -3,26 +3,85 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.25 2010/11/29 19:54:46 logash Exp $
+  $Id: v0_2_8.txt,v 1.26 2010/11/30 02:51:36 logash Exp $
   $Author: logash $
-  $Date: 2010/11/29 19:54:46 $
+  $Date: 2010/11/30 02:51:36 $
 
+
+34) November 29, 2010 logash
+
+    1. Classes StrawHitMCPtr and StrawHitMCPtrCollection are replaced 
+       with more generic DPIndexVector and DPIndexVectorCollection. 
+       Code which uses StrawHitMCPtr is changed correspondingly.
+       Class interface hasn't changed.
+
+    2. Two more DPIndexVectorCollections are produced in MakeCaloReadoutHits,
+       which provide links from CaloHitMCTruth to original G4 steps 
+       (StepPointMCs). "CaloHitMCCrystalPtr" collection points to G4 steps 
+       with energy deposition in the crystal, saved in StepPointMCCollection
+       named "calorimeter". "CaloHitMCReadoutPtr" collection points to G4 
+       steps with energy deposition in the APD, saved in StepPointMCCollection
+       named "calorimeterRO". Using these collections one can propagate back 
+       from calorimeter hit to original Monte-Carlo data.
+
+       There is example in ReadBack.cc, which shows how to propagate back to 
+       G4 steps.
+
+    3. Since now there are 3 DPIndexVectorCollections produced in simulation,
+       in order to access them, one needs to add additional agrument to 
+       getByLabel. Use the following code to access these collections:
+
+       edm::Handle<DPIndexVectorCollection> mcptrHandle;
+       // Pointers from StrawHitMCTruth to StepPointMCs, old StrawHitMCPtr
+       evt.getByLabel("makeSH","StrawHitMCPtr",mcptrHandle);
+       // Pointers from CaloHitMCTruth to "calorimeter" StepPointMCs
+       evt.getByLabel("CaloReadoutHitsMaker","CaloHitMCCrystalPtr",mcptrHandle);
+       // Pointers from CaloHitMCTruth to "calorimeterRO" StepPointMCs
+       evt.getByLabel("CaloReadoutHitsMaker","CaloHitMCReadoutPtr",mcptrHandle);
+     
+    New Files:
+
+      ToyDP/inc/DPIndexVector.hh
+      ToyDP/inc/DPIndexVectorCollection.hh
+
+    Files removed:
+
+      ToyDP/inc/StrawHitMCPtr.hh
+      ToyDP/inc/StrawHitMCPtrCollection.hh
+
+    Files updated       
+
+      Analyses/src/BkgRates_plugin.cc
+      HitMakers/src/MakeCaloReadoutHits_plugin.cc
+      HitMakers/src/MakeStrawHit_plugin.cc
+      HitMakers/src/ReadStrawHit_plugin.cc
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/ReadBack.cc
+      Mu2eG4/src/ReadBack.hh
+      Mu2eG4/test/geom_01.txt
+      Mu2eUtilities/inc/SimParticlesWithHits.hh
+      Mu2eUtilities/inc/StrawHitMCInfo.hh
+      Mu2eUtilities/src/SimParticlesWithHits.cc
+      Mu2eUtilities/src/StrawHitMCInfo.cc
+      ToyDP/src/classes.h
+      ToyDP/src/classes_def.xml
 
 33) November 29, 2010 logash
 
     More changed in calorimeter area: 
 
     1. G4_plugin now produces two collections of StepPointMCs: 
-       "CaloCollection" for hits with energy deposition in the crystal and
-       "CaloROCollection" for hits with energy deposition in the readout
+       "calorimeter" for hits with energy deposition in the crystal and
+       "calorimeterRO" for hits with energy deposition in the readout
        (APD). The steps in CaloCollection are not duplicated for each APD.
        MakeCaloReadoutHits_plugin.cc uses both StepPointMCs collections to 
        generate calorimeter hits.
-    2. The Mu2e coordinate system is used in both CaloCollection and 
-       CaloROCollection (before the local crystal frame was used). The 
-       transformation to local crystal frame is performed as needed using
-       Calorimeter geometry service (see example in MakeCaloReadoutHits_plugin.cc).
-    3. CaloCrystalSD and CaloReadoutSD are not truly independent sensitive 
+    2. The Mu2e coordinate system is used in both "calorimeter" and 
+       "calorimeterRO" collections (before the local crystal frame was used).
+       The transformation to local crystal frame is performed as needed 
+       using Calorimeter geometry service (see example in 
+       MakeCaloReadoutHits_plugin.cc).
+    3. CaloCrystalSD and CaloReadoutSD are now truly independent sensitive 
        detectors.
 
     Updated files:
@@ -83,7 +142,7 @@
        fully functioning and produces the same output collections as before 
        (when all of these was done in G4_plugin). 
 
-       More changes in the same are are expected in near future. 
+       More changes in the same area are expected in near future. 
 
     2. Replaced addVirtualDetectorHits and addCalorimeterHits in Mu2eG4/ 
        with more generic copyStepPointG4toMC.

@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.9 2010/11/09 20:25:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/09 20:25:41 $
+// $Id: ReadStrawHit_plugin.cc,v 1.10 2010/11/30 02:51:36 logash Exp $
+// $Author: logash $
+// $Date: 2010/11/30 02:51:36 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -39,7 +39,7 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/StrawHitMCPtrCollection.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/resolveTransients.hh"
@@ -220,12 +220,12 @@ namespace mu2e {
 
     // Get the persistent data about pointers to StepPointMCs
 
-    edm::Handle<StrawHitMCPtrCollection> mcptrHandle;
-    evt.getByLabel(_makerModuleLabel,mcptrHandle);
-    StrawHitMCPtrCollection const* hits_mcptr = mcptrHandle.product();
+    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
+    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in StrawHitMCPtrCollection, rather than 
+    // should look for product ids in DPIndexVectorCollection, rather than 
     // use producer name directly ("g4run"). 
 
     edm::Handle<StepPointMCCollection> mchitsHandle;
@@ -243,7 +243,7 @@ namespace mu2e {
       // Access data
       StrawHit        const&      hit(hits->at(i));
       StrawHitMCTruth const&    truth(hits_truth->at(i));
-      StrawHitMCPtr   const&    mcptr(hits_mcptr->at(i));
+      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
       
       // Fill per-event histograms
       if( i==0 ) {

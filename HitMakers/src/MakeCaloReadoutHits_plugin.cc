@@ -34,6 +34,8 @@
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/DPIndexVector.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "Mu2eUtilities/inc/sort_functors.hh"
 
 // Other includes.
@@ -84,6 +86,8 @@ namespace mu2e {
       produces<CaloHitCollection>();
       produces<CaloHitMCTruthCollection>();
       produces<CaloCrystalHitMCTruthCollection>();
+      produces<DPIndexVectorCollection>("CaloHitMCCrystalPtr");
+      produces<DPIndexVectorCollection>("CaloHitMCReadoutPtr");
 
     }
     virtual ~MakeCaloReadoutHits() { }
@@ -114,7 +118,9 @@ namespace mu2e {
 			      const edm::Handle<StepPointMCCollection>&, 
 			      CaloHitCollection &, 
 			      CaloHitMCTruthCollection&,
-			      CaloCrystalHitMCTruthCollection&);
+			      CaloCrystalHitMCTruthCollection&,
+			      DPIndexVectorCollection&,
+			      DPIndexVectorCollection&);
 
   };
 
@@ -138,6 +144,8 @@ namespace mu2e {
     auto_ptr<CaloHitCollection>               caloHits(new CaloHitCollection);
     auto_ptr<CaloHitMCTruthCollection>        caloMCHits(new CaloHitMCTruthCollection);
     auto_ptr<CaloCrystalHitMCTruthCollection> caloCrystalMCHits(new CaloCrystalHitMCTruthCollection);
+    auto_ptr<DPIndexVectorCollection>         caloMCptrHits(new DPIndexVectorCollection);
+    auto_ptr<DPIndexVectorCollection>         caloMCroptrHits(new DPIndexVectorCollection);
 
     // Ask the event to give us a handle to the requested hits.
 
@@ -149,11 +157,10 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,_rostepPoints,rohits);
     int nroHits = rohits->size();
 
-    // Product Id of the input points.
-    edm::ProductID const& id(points.id());
-
     if( nHits>0 || nroHits>0 ) {
-      makeCalorimeterHits(points, rohits, *caloHits, *caloMCHits, *caloCrystalMCHits);
+      makeCalorimeterHits(points, rohits, 
+			  *caloHits, *caloMCHits, *caloCrystalMCHits,
+			  *caloMCptrHits, *caloMCroptrHits);
     }
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
@@ -169,6 +176,8 @@ namespace mu2e {
     event.put(caloHits);
     event.put(caloMCHits);
     event.put(caloCrystalMCHits);
+    event.put(caloMCptrHits,"CaloHitMCCrystalPtr");
+    event.put(caloMCroptrHits,"CaloHitMCReadoutPtr");
 
     if ( _diagLevel > 0 ) cout << "MakeCaloReadoutHits: produce() end" << endl;
 
@@ -178,7 +187,13 @@ namespace mu2e {
 				      const edm::Handle<StepPointMCCollection>& rosteps, 
 				      CaloHitCollection &caloHits, 
 				      CaloHitMCTruthCollection& caloHitsMCTruth,
-				      CaloCrystalHitMCTruthCollection& caloCrystalHitsMCTruth) {
+				      CaloCrystalHitMCTruthCollection& caloCrystalHitsMCTruth,
+				      DPIndexVectorCollection& caloHitsMCCrystalPtr,
+				      DPIndexVectorCollection& caloHitsMCReadoutPtr ) {
+
+    // Product Id of the input points.
+    edm::ProductID const& crystal_id(steps.id());
+    edm::ProductID const& readout_id(rosteps.id());
 
     // Get calorimeter geometry description
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
@@ -275,13 +290,29 @@ namespace mu2e {
       double h_edep    = ro_hits[0]._edep;
       double h_edepc   = ro_hits[0]._edep_corr;
       int    h_charged = ro_hits[0]._charged;
+      DPIndexVector mcptr_crystal;
+      DPIndexVector mcptr_readout;
+      if( ro_hits[0]._charged==0 ) {
+	mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[0]._hit_id));
+      } else {
+	mcptr_readout.push_back(DPIndex(readout_id,ro_hits[0]._hit_id));
+      }
 
       for( size_t i=1; i<ro_hits.size(); ++i ) {
 	if( (ro_hits[i]._time-ro_hits[i-1]._time) > timeGap ) {
 	  // Save current hit
 	  caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_charged*addEdep));
 	  caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
+	  caloHitsMCCrystalPtr.push_back(mcptr_crystal);
+	  caloHitsMCReadoutPtr.push_back(mcptr_readout);
 	  // ...and create new hit	  
+	  mcptr_crystal.clear();
+	  mcptr_readout.clear();
+	  if( ro_hits[i]._charged==0 ) {
+	    mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[i]._hit_id));
+	  } else {
+	    mcptr_readout.push_back(DPIndex(readout_id,ro_hits[i]._hit_id));
+	  }
 	  h_time    = ro_hits[i]._time;
 	  h_edep    = ro_hits[i]._edep;
 	  h_edepc   = ro_hits[i]._edep_corr;
@@ -291,6 +322,11 @@ namespace mu2e {
 	  h_edep  += ro_hits[i]._edep;
 	  h_edepc += ro_hits[i]._edep_corr;
 	  if( ro_hits[i]._charged>0 ) h_charged = 1; // this does not count the charge...
+	  if( ro_hits[i]._charged==0 ) {
+	    mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[i]._hit_id));
+	  } else {
+	    mcptr_readout.push_back(DPIndex(readout_id,ro_hits[i]._hit_id));
+	  }
 	}
       }
 
@@ -305,6 +341,8 @@ namespace mu2e {
 
       caloHits.push_back(       CaloHit(roid,h_time,h_edepc+h_charged*addEdep));
       caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
+      caloHitsMCCrystalPtr.push_back(mcptr_crystal);
+      caloHitsMCReadoutPtr.push_back(mcptr_readout);
       
     }
 
