@@ -3,9 +3,29 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.26 2010/11/30 02:51:36 logash Exp $
-  $Author: logash $
-  $Date: 2010/11/30 02:51:36 $
+  $Id: v0_2_8.txt,v 1.27 2010/11/30 17:04:32 genser Exp $
+  $Author: genser $
+  $Date: 2010/11/30 17:04:32 $
+
+
+35) November 30, 2010 genser
+
+    Used of G4Helper AntiLeakRegistry and addVolInfo in
+    constructLTrackerv3.cc, constructTTrackerv3.cc, nestTubs etc...
+    Extended nestTubs parameter list for a cleaner interface
+    Moved/added setting the VolumeInfo name for Trackers and Targets outside of Mu2eWorld.cc
+    Added ltracker and ttracker verbosityLevel
+
+      Mu2eG4/inc/nestTubs.hh
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/constructDummyStoppingTarget.cc
+      Mu2eG4/src/constructDummyTracker.cc
+      Mu2eG4/src/constructLTrackerv3.cc
+      Mu2eG4/src/constructStoppingTarget.cc
+      Mu2eG4/src/constructTTrackerv3.cc
+      Mu2eG4/src/nestTubs.cc
+      Mu2eG4/test/ltracker_v0.txt
+      Mu2eG4/test/ttracker_v0.txt
 
 
 34) November 29, 2010 logash
