@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.hh,v 1.5 2010/08/31 16:54:52 genser Exp $
+// $Id: nestTubs.hh,v 1.6 2010/11/30 16:38:07 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/11/30 16:38:07 $
 //
 // Original author Rob Kutschke
 //
@@ -35,8 +35,11 @@ namespace mu2e {
                         const G4ThreeVector& offset,
                         G4LogicalVolume* parent,
                         int copyNo,
+                        bool isVisible,
                         G4Colour color,
                         bool forceSolid,
+                        bool forceAuxEdgeVisible,
+                        bool placePV,
                         bool doSurfaceCheck
                         );
   
@@ -50,8 +53,11 @@ namespace mu2e {
                                const G4ThreeVector& offset,
                                G4LogicalVolume* parent,
                                int copyNo,
+                               bool isVisible,
                                G4Colour color,
                                bool forceSolid,
+                               bool forceAuxEdgeVisible,
+                               bool placePV,
                                bool doSurfaceCheck
                                ){
     return nestTubs( name, 
@@ -61,8 +67,11 @@ namespace mu2e {
                      offset,
                      parent,
                      copyNo,
+                     isVisible,
                      color,
                      forceSolid,
+                     forceAuxEdgeVisible,
+                     placePV,
                      doSurfaceCheck
                      );
   }
@@ -75,8 +84,11 @@ namespace mu2e {
                                const G4ThreeVector& offset,
                                G4LogicalVolume* parent,
                                int copyNo,
+                               bool isVisible,
                                G4Colour color,
                                bool forceSolid,
+                               bool forceAuxEdgeVisible,
+                               bool placePV,
                                bool doSurfaceCheck
                                ){
     return nestTubs( name, 
@@ -86,8 +98,11 @@ namespace mu2e {
                      offset,
                      parent,
                      copyNo,
+                     isVisible,
                      color,
                      forceSolid,
+                     forceAuxEdgeVisible,
+                     placePV,
                      doSurfaceCheck
                      );
   }

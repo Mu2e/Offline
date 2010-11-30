@@ -1,20 +1,20 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.cc,v 1.5 2010/08/31 16:54:52 genser Exp $
+// $Id: nestTubs.cc,v 1.6 2010/11/30 16:38:24 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/11/30 16:38:24 $
 //
 // Original author Rob Kutschke
 //
-// Notes:
-// 1) See note in Mu2eWorld about how G4VisAttributes leaks memory.
-//    Should address this sometime.
 
 #include <string>
 
+// Mu2e includes
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/G4Helper.hh"
 
+// G4 includes
 #include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
@@ -36,30 +36,50 @@ namespace mu2e {
                         G4ThreeVector const& offset,
                         G4LogicalVolume* parent,
                         int copyNo,
+                        bool isVisible,
                         G4Colour color,
                         bool forceSolid,
+                        bool forceAuxEdgeVisible,
+                        bool placePV,
                         bool doSurfCheck
                         ){
     
+
+    G4Helper    & _helper = *(edm::Service<G4Helper>());
+    AntiLeakRegistry & reg = _helper.antiLeakRegistry();
+
     VolumeInfo info;
     
-    info.solid   = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
+    info.solid    = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
     
-    info.logical = new G4LogicalVolume( info.solid, material, name); 
+    info.logical  = new G4LogicalVolume( info.solid, material, name); 
 
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo, 
-                                        doSurfCheck);
+    info.physical  =  placePV ?
+      info.physical = new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo, 
+                                         doSurfCheck)
+      :
+      0;
 
-    // This leaks. See note 1.
-    G4VisAttributes* visAtt = new G4VisAttributes(true, color);
-    visAtt->SetForceSolid(forceSolid);
+    info.name     = name;
 
-    // If I do not do this, then the rendering depends on what happens in
-    // other parts of the code;  is there a G4 bug that causes something to be
-    // unitialized?
-    visAtt->SetForceAuxEdgeVisible(false);
+    if (!isVisible) {
 
-    info.logical->SetVisAttributes(visAtt);
+      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+
+    } else {
+      
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
+      visAtt->SetForceSolid(forceSolid);
+      // If I do not do this, then the rendering depends on what happens in
+      // other parts of the code;  is there a G4 bug that causes something to be
+      // unitialized?
+      visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+      info.logical->SetVisAttributes(visAtt);
+
+    }
+
+    // Save the volume information in case someone else needs to access it by name.
+    _helper.addVolInfo(info);
 
     return info;
   }
