@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the tracker.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyTracker.cc,v 1.2 2010/08/31 16:54:52 genser Exp $
+// $Id: constructDummyTracker.cc,v 1.3 2010/11/30 16:39:55 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/11/30 16:39:55 $
 //
 // Original author Rob Kutschke
 //
@@ -65,7 +65,10 @@ namespace mu2e{
                                 trackerOffset,
                                 mother,
                                 0,
+                                true,
                                 G4Color::Red(),
+                                false,
+                                true,
                                 true,
                                 doSurfaceCheck
                                 );

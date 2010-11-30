@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.cc,v 1.2 2010/08/31 16:54:52 genser Exp $
+// $Id: constructDummyStoppingTarget.cc,v 1.3 2010/11/30 16:39:27 genser Exp $
 // $Author: genser $
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/11/30 16:39:27 $
 //
 // Original author Rob Kutschke
 //
@@ -58,14 +58,17 @@ namespace mu2e{
     // Position of the tracker within its mother volume.
     G4ThreeVector offset(0.,0.,z0-zOff);
 
-    VolumeInfo info = nestTubs( "TargetMother",
+    VolumeInfo info = nestTubs( "StoppingTargetMother",
                                 params,
                                 material,
                                 0,
                                 offset,
                                 mother,
                                 0,
+                                config.getBool("target.visible",true),
                                 G4Color::Yellow(),
+                                config.getBool("target.solid",true),
+                                config.getBool("g4.forceAuxEdgeVisible",false),
                                 true,
                                 doSurfaceCheck
                                 );
