@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.12 2010/11/22 05:21:22 genser Exp $
+// $Id: constructLTrackerv3.cc,v 1.13 2010/11/30 16:41:25 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/22 05:21:22 $
+// $Date: 2010/11/30 16:41:25 $
 //
 // Original author Rob Kutschke
 //
@@ -23,6 +23,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructLTracker.hh"
+#include "Mu2eG4/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -48,6 +49,11 @@ namespace mu2e{
                                   double zOff,
                                   SimpleConfig const& config ){
 
+    G4Helper    & _helper = *(edm::Service<G4Helper>());
+    AntiLeakRegistry & reg = _helper.antiLeakRegistry();
+
+    int verbosityLevel = config.getInt("ltracker.verbosityLevel",0);
+
     // Master geometry for the LTracker.
     // GeomHandle<LTracker> ltracker;
     LTracker const & ltracker = *(GeomHandle<LTracker>());
@@ -61,45 +67,46 @@ namespace mu2e{
 
     bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
     bool trackerSolid = config.getBool("ltracker.solid",true);
-    //bool trackerVisible = config.getBool("ltracker.visible",true);
     
-
     VolumeInfo trackerInfo;
 
     // Make the mother volume for the LTracker.
-    string trackerName("TrackerMother");
+    trackerInfo.name = "TrackerMother";
     G4Material* fillMaterial = findMaterialOrThrow(ltracker.fillMaterial());
     G4ThreeVector trackerOffset(0.,0.,z0-zOff);
 
-    /*
+    verbosityLevel > 0 && 
       cout << "Tracker Offset: z0, zOff, z0-zOff: " 
-      << z0 << " "
-      << zOff << " "
-      << z0-zOff << " "
-      << endl;
-    */
+           << z0 << " "
+           << zOff << " "
+           << z0-zOff << " "
+           << endl;
 
-    trackerInfo.solid  = new G4Tubs( trackerName,
+    trackerInfo.solid  = new G4Tubs( trackerInfo.name,
                                      0., rOut, zHalf, 0., 2.*M_PI );
     
-    trackerInfo.logical = new G4LogicalVolume( trackerInfo.solid, fillMaterial, trackerName); 
+    trackerInfo.logical = new G4LogicalVolume( trackerInfo.solid, fillMaterial, trackerInfo.name); 
     
     trackerInfo.physical =  new G4PVPlacement( 0, 
                                                trackerOffset, 
                                                trackerInfo.logical, 
-                                               trackerName, 
+                                               trackerInfo.name, 
                                                mother, 
                                                0, 
                                                0,
                                                doSurfaceCheck);
 
+    _helper.addVolInfo(trackerInfo);
+
+
     // Visualization attributes of the the mother volume.
-    {
-      G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Green() );
-      visAtt->SetForceSolid(true);
-      // visAtt->SetForceSolid(false);
+
+    if (!config.getBool("ltracker.visible",false)) {
+      trackerInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+    } else {
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Green() ));
+      visAtt->SetForceSolid(trackerSolid);
       visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-      visAtt->SetVisibility(true);
       trackerInfo.logical->SetVisAttributes(visAtt);
     }
 
@@ -115,17 +122,17 @@ namespace mu2e{
     VolumeInfo strawWall;
       
     strawWall.solid  = new G4Tubs(strawWallName
-                                 ,0.0
-                                 ,detail.outerRadius() * CLHEP::mm
-                                 ,detail.halfLength() * CLHEP::mm
-                                 ,0.
-                                 ,CLHEP::twopi*CLHEP::radian
-                                 );
+                                  ,0.0
+                                  ,detail.outerRadius() * CLHEP::mm
+                                  ,detail.halfLength() * CLHEP::mm
+                                  ,0.
+                                  ,CLHEP::twopi*CLHEP::radian
+                                  );
     
     strawWall.logical = new G4LogicalVolume( strawWall.solid
-                                            ,findMaterialOrThrow(detail.wallMaterialName())
-                                            ,strawWallName
-                                            );
+                                             ,findMaterialOrThrow(detail.wallMaterialName())
+                                             ,strawWallName
+                                             );
 
     // Build logical volume for straw gas.
     string strawGasName("StrawGas");
@@ -154,17 +161,17 @@ namespace mu2e{
     VolumeInfo strawWire;
       
     strawWire.solid  = new G4Tubs(strawWireName
-                                 ,0.0
-                                 ,detail.wireRadius() * CLHEP::mm
-                                 ,detail.halfLength() * CLHEP::mm
-                                 ,0.
-                                 ,CLHEP::twopi*CLHEP::radian
-                                 );
+                                  ,0.0
+                                  ,detail.wireRadius() * CLHEP::mm
+                                  ,detail.halfLength() * CLHEP::mm
+                                  ,0.
+                                  ,CLHEP::twopi*CLHEP::radian
+                                  );
     
     strawWire.logical = new G4LogicalVolume( strawWire.solid
-                                            ,findMaterialOrThrow(detail.wireMaterialName())
-                                            ,strawWireName
-                                            );
+                                             ,findMaterialOrThrow(detail.wireMaterialName())
+                                             ,strawWireName
+                                             );
 
     strawWire.physical =  new G4PVPlacement( 0, zeroVector, 
                                              strawWire.logical, strawWireName , 
@@ -177,19 +184,19 @@ namespace mu2e{
       bool strawAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
       //This leaks strawWallVisAtt.  
-      G4VisAttributes* strawWallVisAtt = new G4VisAttributes(true, G4Colour::Yellow() );
+      G4VisAttributes* strawWallVisAtt = reg.add(G4VisAttributes(true, G4Colour::Yellow() ));
       strawWallVisAtt->SetForceSolid(strawSolid);
       strawWallVisAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
       strawWall.logical->SetVisAttributes(strawWallVisAtt);
 
       //This leaks strawGasVisAtt.  
-      G4VisAttributes* strawGasVisAtt = new G4VisAttributes(true, G4Colour::Green() );
+      G4VisAttributes* strawGasVisAtt = reg.add(G4VisAttributes(true, G4Colour::Green() ));
       strawGasVisAtt->SetForceSolid(strawSolid);
       strawGasVisAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
       strawGas.logical->SetVisAttributes(strawGasVisAtt);
 
       //This leaks strawWireVisAtt.  
-      G4VisAttributes* strawWireVisAtt = new G4VisAttributes(true, G4Colour::Red() );
+      G4VisAttributes* strawWireVisAtt = reg.add(G4VisAttributes(true, G4Colour::Red() ));
       strawWireVisAtt->SetForceSolid(strawSolid);
       strawWireVisAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
       strawWire.logical->SetVisAttributes(strawWireVisAtt);
@@ -216,15 +223,15 @@ namespace mu2e{
         double const trapezoidRxAngle = M_PI_2;
         CLHEP::HepRotationX RForTrapezoids(trapezoidRxAngle);
 
-        G4RotationMatrix* rotft = new G4RotationMatrix(RForTrapezoids.inverse());
+        G4RotationMatrix* rotft = reg.add(G4RotationMatrix(RForTrapezoids.inverse()));
 
         G4RotationMatrix* rotfb = 0;
 
         CLHEP::HepRotationX RX(-sector.boxRxAngle());
         CLHEP::HepRotationY RY(-sector.boxRyAngle());
         CLHEP::HepRotationZ RZ(-sector.boxRzAngle());
-        G4RotationMatrix* rot   = new G4RotationMatrix( RY*RX*RZ);
-        G4RotationMatrix* rottr = new G4RotationMatrix( RForTrapezoids*RY*RX*RZ);
+        G4RotationMatrix* rot   = reg.add(G4RotationMatrix( RY*RX*RZ));
+        G4RotationMatrix* rottr = reg.add(G4RotationMatrix( RForTrapezoids*RY*RX*RZ));
 
         // Make a physical volume for this sector.  Same material as the 
         // main LTracker volume ( some sort of vacuum ).
@@ -259,7 +266,7 @@ namespace mu2e{
         //     std::cout << "Overlap while placing " << name << std::endl;
         //  }
 
-        G4VisAttributes* visAtt = new G4VisAttributes(*tmp.logical->GetVisAttributes());
+        G4VisAttributes* visAtt = reg.add(G4VisAttributes(*tmp.logical->GetVisAttributes()));
         visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
         tmp.logical->SetVisAttributes(visAtt);
 
