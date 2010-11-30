@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.66 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/11/30 02:51:36 $
+// $Id: Mu2eWorld.cc,v 1.67 2010/11/30 16:39:01 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/11/30 16:39:01 $
 //
 // Original author Rob Kutschke
 //
@@ -138,13 +138,11 @@ namespace mu2e {
   // This is the callback called by G4.
   WorldInfo const* Mu2eWorld::construct(){
 
-    edm::Service<G4Helper> helper;
-    _helper = &(*helper);
+    _helper = &(*(edm::Service<G4Helper>()));
 
     // Get access to the master geometry system and its run time config.
     edm::Service<GeometryService> geom;
-    SimpleConfig const& config = geom->config();
-    _config = &config;
+    _config = &(geom->config());
 
     // Construct all of the Mu2e world, hall, detectors, beamline ...
     constructWorld();
@@ -179,12 +177,6 @@ namespace mu2e {
 
     // This does real work.
     constructSteel(hallInfo);
-
-    // Hack alert: These belong in constructTracker and constructTarget.
-    trackerInfo.name = "TrackerMother";
-    targetInfo.name  = "StoppingTargetMother";
-    _helper->addVolInfo(trackerInfo);
-    _helper->addVolInfo(targetInfo);
 
     edm::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << _mu2eOrigin           << "\n";
@@ -467,7 +459,7 @@ namespace mu2e {
                                                0,
                                                _config->getBool("g4.doSurfaceCheck",false));
     
-    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = _helper->antiLeakRegistry();
     G4VisAttributes* visAtt = reg.add( G4VisAttributes(dirtCapVisible, G4Colour::Green()) );
     visAtt->SetForceSolid(dirtCapSolid);
     visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
@@ -1052,6 +1044,9 @@ namespace mu2e {
       }
     } else if ( _config->getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
+    // Hack alert: These belong in constructTracker
+      trackerInfo.name = "TrackerMother"; // this belongs to construct..., some of them do it now
+      _helper->addVolInfo(trackerInfo);
     } else if ( _config->getBool("hasTTracker",false) ) {
       int ver = _config->getInt("TTrackerVersion",3);
       if ( ver == 3 ){
