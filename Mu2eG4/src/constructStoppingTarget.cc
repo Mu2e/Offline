@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.6 2010/09/30 21:34:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 21:34:58 $
+// $Id: constructStoppingTarget.cc,v 1.7 2010/11/30 16:40:35 genser Exp $
+// $Author: genser $
+// $Date: 2010/11/30 16:40:35 $
 //
 // Original author Peter Shanahan
 //
@@ -24,7 +24,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
+//#include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/G4Helper.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -48,6 +49,9 @@ namespace mu2e {
     // Master geometry for the Target assembly
     GeomHandle<Target> target;
 
+    G4Helper    & _helper = *(edm::Service<G4Helper>());
+    AntiLeakRegistry & reg = _helper.antiLeakRegistry();
+
     double rOut  = CLHEP::mm * target->cylinderRadius();
     double zHalf = CLHEP::mm * target->cylinderLength()/2.;
 
@@ -57,7 +61,7 @@ namespace mu2e {
     VolumeInfo targetInfo;
 
     // Make the mother volume for the Target
-    string targetName("StoppingTargetMother");
+    targetInfo.name = "StoppingTargetMother";
     std::cout<<"Looking for material "<<target->fillMaterial()<<std::endl;
     G4Material* fillMaterial = findMaterialOrThrow(target->fillMaterial());
     std::cout<<"Done Looking for material "<<target->fillMaterial()<<std::endl;
@@ -71,10 +75,10 @@ namespace mu2e {
    
 
 
-    targetInfo.solid  = new G4Tubs( targetName,
+    targetInfo.solid  = new G4Tubs( targetInfo.name,
                                     0., rOut, zHalf, 0., 2.*M_PI );
     
-    targetInfo.logical = new G4LogicalVolume( targetInfo.solid, fillMaterial, targetName); 
+    targetInfo.logical = new G4LogicalVolume( targetInfo.solid, fillMaterial, targetInfo.name); 
     
     std::cout<<"targetOffset="<<targetOffset<<std::endl;
     std::cout<<"mother has "<<mother->GetNoDaughters()<<" daughters"<<std::endl;
@@ -84,7 +88,7 @@ namespace mu2e {
     targetInfo.physical =  new G4PVPlacement( 0, 
                                               targetOffset, 
                                               targetInfo.logical, 
-                                              targetName, 
+                                              targetInfo.name, 
                                               mother, 
                                               0, 
                                               0,
@@ -93,8 +97,7 @@ namespace mu2e {
     // Visualization attributes of the the mother volume.
     {
       // i.e., none...
-      G4VisAttributes* visAtt = new G4VisAttributes(false);
-      targetInfo.logical->SetVisAttributes(visAtt);
+      targetInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
     }
 
     // now create the individual targets
@@ -105,9 +108,9 @@ namespace mu2e {
         TargetFoil foil=target->foil(itf);
         VolumeInfo foilInfo;
         G4Material* foilMaterial = findMaterialOrThrow( foil.material() );
-        string foilName("Foil");
+        foilInfo.name = "Foil";
 
-        foilInfo.solid = new G4Tubs(foilName
+        foilInfo.solid = new G4Tubs(foilInfo.name
                                     ,foil.rIn()
                                     ,foil.rOut()
                                     ,foil.halfThickness()
@@ -117,7 +120,7 @@ namespace mu2e {
 
         foilInfo.logical = new G4LogicalVolume( foilInfo.solid
                                                 , foilMaterial
-                                                , foilName
+                                                , foilInfo.name
                                                 );
 
         // rotation matrix... 
@@ -136,14 +139,18 @@ namespace mu2e {
                            itf,
                            config.getBool("g4.doSurfaceCheck",false));
 
-        // leak?
-        G4VisAttributes* visAtt = new G4VisAttributes(true, G4Colour::Magenta() );
-        visAtt->SetVisibility(config.getBool("target.visible",true));
-        visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-        visAtt->SetForceSolid(config.getBool("target.solid",true));
-        foilInfo.logical->SetVisAttributes(visAtt);
-       
+        if (!config.getBool("target.visible",true)) {
+          foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+        } else {
+          G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Magenta()));
+          visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+          visAtt->SetForceSolid(config.getBool("target.solid",true));
+          foilInfo.logical->SetVisAttributes(visAtt);
+        }
       }// target foils
+
+    // Save the volume information in case someone else needs to access it by name.
+    _helper.addVolInfo(targetInfo);
 
     return targetInfo;
   }
