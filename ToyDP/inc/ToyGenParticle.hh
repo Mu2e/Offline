@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: ToyGenParticle.hh,v 1.3 2010/03/16 22:58:57 kutschke Exp $
+// $Id: ToyGenParticle.hh,v 1.4 2010/12/01 23:04:26 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/16 22:58:57 $
+// $Date: 2010/12/01 23:04:26 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,6 @@
 // Includes from external packages.
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
-
 
 namespace mu2e {
 
@@ -59,8 +58,23 @@ namespace mu2e {
       _time(time){
     }
 
+    // Accept compiler written versions of copy c'tor and assignment operator.
 
+    // This was virtual for historical reasons.  Make it non-virtual next time it
+    // is OK to break backwards compatibility.
     virtual ~ToyGenParticle(){};
+
+    // PDG particle ID code.
+    PDGCode::type pdgId()       const { return _pdgId; }
+    GenId         generatorId() const { return _generatorId; }
+    double        time()        const { return _time;}
+
+    CLHEP::Hep3Vector const&       position() const { return _position;}
+    CLHEP::HepLorentzVector const& momentum() const { return _momentum;}
+
+    // Some day the data members will become private.
+    // For now they are public for backwards compatibility.
+    //private:
 
     // PDG particle ID code.
     PDGCode::type _pdgId;
