@@ -327,7 +327,7 @@ namespace mu2e {
           // This default constructs to "unknown".
           if ( sim.fromGenerator() ){
             ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
-            genId = gen._generatorId;
+            genId = gen.generatorId();
           } 
         } 
 

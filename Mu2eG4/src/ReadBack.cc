@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.24 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:36 $
+// $Id: ReadBack.cc,v 1.25 2010/12/01 23:05:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/12/01 23:05:18 $
 //
 // Original author Rob Kutschke
 //
@@ -532,7 +532,7 @@ namespace mu2e {
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
           ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
-          genId = gen._generatorId;
+          genId = gen.generatorId();
         }
       }
 
@@ -626,7 +626,7 @@ namespace mu2e {
           
           // Information about generated particle.
           ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
-          GenId genId(gen._generatorId);
+          GenId genId(gen.generatorId());
 
           // Physical volume in which this track started.
           PhysicalVolumeInfo const& volInfo = volumes->at(sim.startVolumeIndex());

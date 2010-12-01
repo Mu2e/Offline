@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.36 2010/11/29 19:54:46 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/11/29 19:54:46 $
+// $Id: G4_plugin.cc,v 1.37 2010/12/01 23:05:18 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/12/01 23:05:18 $
 //
 // Original author Rob Kutschke
 //
@@ -67,7 +67,6 @@
 #include "Mu2eG4/inc/physicsListDecider.hh"
 
 // Data products that will be produced by this module.
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"

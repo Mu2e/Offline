@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter 
 
-$Id: FilterEmptyEvents_plugin.cc,v 1.1 2010/11/24 22:40:35 onoratog Exp $
-$Author: onoratog $
-$Date: 2010/11/24 22:40:35 $
+$Id: FilterEmptyEvents_plugin.cc,v 1.2 2010/12/01 23:05:18 kutschke Exp $
+$Author: kutschke $
+$Date: 2010/12/01 23:05:18 $
    
 Original author Giovanni Onorato
 
@@ -101,7 +101,7 @@ namespace mu2e {
     _nGenParticles += genParticles->size();
     /*  for (ToyGenParticleCollection::const_iterator i = genParticles->begin();
         i!=genParticles->end(); ++i) {
-        cout << "Particle type: " << i->_generatorId 
+        cout << "Particle type: " << i->generatorId() 
         << "\nposition: " << i->_position << endl;
         }*/
     

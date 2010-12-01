@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.10 2010/11/09 20:25:41 kutschke Exp $
+// $Id: CosmicTuple.cc,v 1.11 2010/12/01 23:05:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/09 20:25:41 $
+// $Date: 2010/12/01 23:05:18 $
 //
 // Original author Rob Kutschke
 //
@@ -229,13 +229,13 @@ namespace mu2e {
             // store generator info
             if ( gTrk >= 0 && static_cast<size_t>(gTrk) < genParticles->size() ) {
               ToyGenParticle const& genpart = genParticles->at(gTrk);
-              idGen = genpart._generatorId;
-              pidGen = genpart._pdgId;
-              CLHEP::HepLorentzVector p4gen = genpart._momentum;
+              idGen = genpart.generatorId();
+              pidGen = genpart.pdgId();
+              CLHEP::HepLorentzVector p4gen = genpart.momentum();
               CLHEP::Hep3Vector y(0,-1,0);
               eGen = p4gen.e();
               thGen = y.angle(p4gen.vect());
-              posGen = genpart._position;
+              posGen = genpart.position();
             }
 
           }

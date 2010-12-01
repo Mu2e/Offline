@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.16 2010/08/31 05:33:13 kutschke Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.17 2010/12/01 23:05:18 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/31 05:33:13 $
+// $Date: 2010/12/01 23:05:18 $
 //
 // Original author Rob Kutschke
 //
@@ -103,42 +103,42 @@ namespace mu2e {
       ToyGenParticle const& genpart = (*handle)[i];
 
       // Transform from generator coordinate system G4 world coordinate system.
-      G4ThreeVector      pos(genpart._position);
-      G4ThreeVector momentum(genpart._momentum.v());
+      G4ThreeVector      pos(genpart.position());
+      G4ThreeVector momentum(genpart.momentum().v());
 
-      if( genpart._generatorId == GenId::conversionGun    ||
-          genpart._generatorId == GenId::dio1             ||
-          genpart._generatorId == GenId::ejectedProtonGun ||
-          genpart._generatorId == GenId::pionCapture      ||
-          genpart._generatorId == GenId::piEplusNuGun){
+      if( genpart.generatorId() == GenId::conversionGun    ||
+          genpart.generatorId() == GenId::dio1             ||
+          genpart.generatorId() == GenId::ejectedProtonGun ||
+          genpart.generatorId() == GenId::pionCapture      ||
+          genpart.generatorId() == GenId::piEplusNuGun){
         pos += detectorOrigin;
-      } else if ( genpart._generatorId == GenId::cosmicToy ||
-                  genpart._generatorId == GenId::cosmicDYB || 
-                  genpart._generatorId == GenId::cosmic ){
+      } else if ( genpart.generatorId() == GenId::cosmicToy ||
+                  genpart.generatorId() == GenId::cosmicDYB || 
+                  genpart.generatorId() == GenId::cosmic ){
         pos += cosmicReferencePlane;
-      } else if ( genpart._generatorId == GenId::primaryProtonGun ){
+      } else if ( genpart.generatorId() == GenId::primaryProtonGun ){
         pos = primaryProtonGunRotation*pos + primaryProtonGunOrigin;
         momentum = primaryProtonGunRotation*momentum;
-      } else if ( genpart._generatorId == GenId::particleGun ||
-                  genpart._generatorId == GenId::fromG4BLFile ){
+      } else if ( genpart.generatorId() == GenId::particleGun ||
+                  genpart.generatorId() == GenId::fromG4BLFile ){
         pos += mu2eOrigin;
       } else {
         edm::LogError("KINEMATICS")
           << "Do not know what to do with this generator id: " 
-          << genpart._generatorId
+          << genpart.generatorId()
           << "  Skipping this track.";
         continue;
       }
 
       // Create a new vertex 
-      G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart._time);
+      G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart.time());
 
       G4PrimaryParticle* particle =
-        new G4PrimaryParticle(genpart._pdgId,
+        new G4PrimaryParticle(genpart.pdgId(),
                               momentum.x(),
                               momentum.y(),
                               momentum.z(),
-                              genpart._momentum.e() );
+                              genpart.momentum().e() );
     
       // Set the charge.  Do I really need to do this?
       G4ParticleDefinition const* g4id = particle->GetG4code();
