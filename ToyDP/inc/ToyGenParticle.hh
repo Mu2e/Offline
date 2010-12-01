@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: ToyGenParticle.hh,v 1.4 2010/12/01 23:04:26 kutschke Exp $
+// $Id: ToyGenParticle.hh,v 1.5 2010/12/01 23:25:45 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/01 23:04:26 $
+// $Date: 2010/12/01 23:25:45 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,9 @@
 
 namespace mu2e {
 
-  struct ToyGenParticle {
+  class ToyGenParticle {
+
+  public:
 
     // This c'tor is required for ROOT.
     ToyGenParticle(){};
@@ -58,11 +60,7 @@ namespace mu2e {
       _time(time){
     }
 
-    // Accept compiler written versions of copy c'tor and assignment operator.
-
-    // This was virtual for historical reasons.  Make it non-virtual next time it
-    // is OK to break backwards compatibility.
-    virtual ~ToyGenParticle(){};
+    // Accept compiler written versions of d'tor, copy c'tor and assignment operator.
 
     // PDG particle ID code.
     PDGCode::type pdgId()       const { return _pdgId; }
