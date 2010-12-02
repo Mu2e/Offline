@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.7 2010/11/29 19:54:46 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/29 19:54:46 $
+// $Id: constructCalorimeter.cc,v 1.8 2010/12/02 17:49:21 genser Exp $
+// $Author: genser $
+// $Date: 2010/12/02 17:49:21 $
 //
 // Original author Rob Kutschke
 // 
@@ -52,6 +52,7 @@ namespace mu2e {
     bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     bool isSolid   = config.getBool("calorimeter.solid",true);
     G4bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool const placePV = true;
 
     G4Material* fillMaterial = materialFinder.get("calorimeter.calorimeterFillMaterial");
     //G4Material* fillMaterial = materialFinder.get("calorimeter.crystalMaterial");
@@ -74,24 +75,24 @@ namespace mu2e {
 
       double dim[3] = { size.x(), size.y(), size.z() };
 
-      cout << "Vane position: (" << pos.x() << "," << pos.y() << "," << pos.z() << ")" << endl;
+      cout << "Calorimeter Vane position: (" << pos.x() << "," << pos.y() << "," << pos.z() << ")" << endl;
 
       ostringstream name;
-      name << "Vane" << i;
+      name << "CalorimeterVane_" << i;
 
-      vaneInfo[i] = nestBox(name.str(), dim, fillMaterial,
-			    cal.getVane(i).getRotation(), pos,
-			    mother, i,
-			    G4Colour::Yellow(), isSolid, doSurfaceCheck );
-
-      if (!isVisible) {
-	vaneInfo[i].logical->SetVisAttributes(G4VisAttributes::Invisible);
-      } else {
-        // leak?
-        G4VisAttributes* visAtt = new G4VisAttributes(vaneInfo[i].logical->GetVisAttributes());
-        visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
-        vaneInfo[i].logical->SetVisAttributes(visAtt);
-      }
+      vaneInfo[i] = nestBox(name.str(), 
+                            dim,
+                            fillMaterial,
+			    cal.getVane(i).getRotation(), 
+                            pos,
+			    mother, 
+                            i,
+                            isVisible,
+			    G4Colour::Yellow(), 
+                            isSolid,
+                            forceAuxEdgeVisible,
+                            placePV,
+                            doSurfaceCheck );
 
     }
 
