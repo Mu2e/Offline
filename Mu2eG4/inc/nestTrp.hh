@@ -3,11 +3,11 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
 // 
-// $Id: nestTrp.hh,v 1.2 2010/08/31 16:54:52 genser Exp $
+// $Id: nestTrp.hh,v 1.3 2010/12/02 17:46:06 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/12/02 17:46:06 $
 //
-// Original author Rob Kutschke
+// Original author Krzysztof Genser based on Rob Kutschke's nestBox
 //
 
 #include <string>
@@ -33,9 +33,12 @@ namespace mu2e {
                        G4ThreeVector const& offset,
                        G4LogicalVolume* parent,
                        int copyNo,
-                       G4Colour color,
-                       bool forceSolid,
-                       bool doSurfaceCheck
+                       bool const isVisible,
+                       G4Colour const color,
+                       bool const forceSolid,
+                       bool const forceAuxEdgeVisible,
+                       bool const placePV,
+                       bool const doSurfaceCheck
                        );
   
 
@@ -48,9 +51,12 @@ namespace mu2e {
                               G4ThreeVector const& offset,
                               G4LogicalVolume* parent,
                               int copyNo,
-                              G4Colour color,
-                              bool forceSolid,
-                              bool doSurfaceCheck
+                              bool const isVisible,
+                              G4Colour const color,
+                              bool const forceSolid,
+                              bool const forceAuxEdgeVisible,
+                              bool const placePV,
+                              bool const doSurfaceCheck
                               ){
     return nestTrp( name, 
                     &halfDim[0],
@@ -59,8 +65,11 @@ namespace mu2e {
                     offset,
                     parent,
                     copyNo,
+                    isVisible,
                     color,
                     forceSolid,
+                    forceAuxEdgeVisible,
+                    placePV,
                     doSurfaceCheck
                     );
   }

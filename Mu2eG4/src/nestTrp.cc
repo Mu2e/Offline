@@ -1,24 +1,22 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
 // 
-// $Id: nestTrp.cc,v 1.4 2010/08/31 16:54:52 genser Exp $
+// $Id: nestTrp.cc,v 1.5 2010/12/02 17:46:19 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/12/02 17:46:19 $
 //
-// Original author Krzysztof Genser based on Rob Kutschke' nestBox
+// Original author Krzysztof Genser based on Rob Kutschke's nestBox
 //
 
 #include <string>
 
 #include "Mu2eG4/inc/nestTrp.hh"
+#include "Mu2eG4/inc/finishNesting.hh"
 
-//#include "G4Trap.hh"
 #include "G4Trd.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
-#include "G4PVPlacement.hh"
 #include "G4ThreeVector.hh"
-#include "G4VisAttributes.hh"
 
 using namespace std;
 
@@ -34,12 +32,17 @@ namespace mu2e {
                        G4ThreeVector const& offset,
                        G4LogicalVolume* parent,
                        int copyNo,
-                       G4Colour color,
-                       bool forceSolid,
-                       bool doSurfaceCheck
+                       bool const isVisible,
+                       G4Colour const color,
+                       bool const forceSolid,
+                       bool const forceAuxEdgeVisible,
+                       bool const placePV,
+                       bool const doSurfaceCheck
                        ){
     
     VolumeInfo info;
+
+    info.name     = name;
 
 //    info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
 //    z,y,x, smallerx
@@ -52,23 +55,21 @@ namespace mu2e {
                                 halfDim[1]
                                 );
 
-    info.logical  = new G4LogicalVolume( info.solid, material, name); 
-    
-    info.physical = new G4PVPlacement( rot,
-                                       offset,
-                                       info.logical,
-                                       name,
-                                       parent,
-                                       0,
-                                       copyNo, 
-                                       doSurfaceCheck);
-    
-    G4VisAttributes* visAtt = new G4VisAttributes(true, color);
-    visAtt->SetForceSolid(forceSolid);
-    visAtt->SetForceAuxEdgeVisible(false);
-    info.logical->SetVisAttributes(visAtt);
-    
-    return info;
+     finishNesting(info,
+                   material,
+                   rot,
+                   offset,
+                   parent,
+                   copyNo,
+                   isVisible,
+                   color,
+                   forceSolid,
+                   forceAuxEdgeVisible,
+                   placePV,
+                   doSurfaceCheck
+                   );
+
+     return info;
   }
 
 }
