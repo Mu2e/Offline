@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.67 2010/11/30 16:39:01 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.68 2010/12/02 17:48:57 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/11/30 16:39:01 $
+// $Date: 2010/12/02 17:48:57 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -306,6 +307,10 @@ namespace mu2e {
     bool hallVisible = _config->getBool("hall.visible",true);
     bool hallSolid   = _config->getBool("hall.solid",false);
 
+    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const placePV             = true;
+
     // Concrete walls of the hall.
     VolumeInfo wallInfo = nestBox( "HallWalls",
                                    hallOutHLen,
@@ -316,7 +321,10 @@ namespace mu2e {
                                    0,
                                    hallVisible,
                                    G4Colour::Red(),
-                                   hallSolid
+                                   hallSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   doSurfaceCheck
                                    );
     
     // Air volume inside of the hall.
@@ -329,7 +337,10 @@ namespace mu2e {
                                    0,
                                    hallVisible,
                                    G4Colour::Red(),
-                                   hallSolid
+                                   hallSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   doSurfaceCheck
                                    );
 
     // Define the hall origin in Mu2e coordinates.
@@ -354,6 +365,10 @@ namespace mu2e {
     bool worldBoxVisible = _config->getBool("world.boxVisible",true);
     bool worldBoxSolid   = _config->getBool("world.boxSolid",false);
 
+    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const placePV             = true;
+
     // Construct the world volume.  The dummy is needed because the interface
     // to nestBox requires a mother even if this is the top level.
     VolumeInfo dummy("MotherofTheWorld", G4ThreeVector(), G4ThreeVector());
@@ -365,7 +380,11 @@ namespace mu2e {
                                     dummy,
                                     0,
                                     worldBoxVisible,
-                                    worldBoxSolid
+                                    G4Colour::Red(),
+                                    worldBoxSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false
                                     );
     _info.worldPhys  = worldInfo.physical;
 
@@ -421,7 +440,10 @@ namespace mu2e {
                                    0,
                                    dirtVisible,
                                    G4Colour::Magenta(),
-                                   dirtSolid
+                                   dirtSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   doSurfaceCheck
                                    );
 
     // Dirt cap is modeled as a paraboloid.
@@ -532,70 +554,88 @@ namespace mu2e {
 
     // Single volume representing the DS coils + cryostat in an average way.
 
-    bool toyDSVisible = _config->getBool("toyDS.visible",true);
-    bool toyDSSolid   = _config->getBool("toyDS.solid",true);
+    bool toyDSVisible        = _config->getBool("toyDS.visible",true);
+    bool toyDSSolid          = _config->getBool("toyDS.solid",true);
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const placePV       = true;
 
-    VolumeInfo detSolCoilInfo = nestTubs2( "ToyDSCoil",
-                                           detSolCoilParams,
-                                           detSolCoilMaterial,
-                                           0,
-                                           detSolCoilPosition-_hallOriginInMu2e,
-                                           parent,
-                                           0,
-                                           toyDSVisible,
-                                           G4Color::Magenta(),
-                                           toyDSSolid
-                                           );
+    VolumeInfo detSolCoilInfo = nestTubs( "ToyDSCoil",
+                                          detSolCoilParams,
+                                          detSolCoilMaterial,
+                                          0,
+                                          detSolCoilPosition-_hallOriginInMu2e,
+                                          parent,
+                                          0,
+                                          toyDSVisible,
+                                          G4Color::Magenta(),
+                                          toyDSSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
 
     // Upstream face of the DS coils+cryo.
-    VolumeInfo dsFrontInfo = nestTubs2( "ToyDSFront",
-                                        dsFrontParams,
-                                        detSolCoilMaterial,
-                                        0,
-                                        dsFrontPosition-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        toyDSVisible,
-                                        G4Color::Blue(),
-                                        toyDSSolid
-                                        );
+    VolumeInfo dsFrontInfo    = nestTubs( "ToyDSFront",
+                                          dsFrontParams,
+                                          detSolCoilMaterial,
+                                          0,
+                                          dsFrontPosition-_hallOriginInMu2e,
+                                          parent,
+                                          0,
+                                          toyDSVisible,
+                                          G4Color::Blue(),
+                                          toyDSSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
 
 
-    VolumeInfo ds1VacInfo   = nestTubs2( "ToyDS1Vacuum",
-                                         ds1VacParams,
-                                         vacuumMaterial,
-                                         0,
-                                         ds1Position-_hallOriginInMu2e,
-                                         parent,
-                                         0,
-                                         toyDSVisible,
-                                         G4Colour::Green(),
-                                         toyDSSolid
-                                         );
+    VolumeInfo ds1VacInfo     = nestTubs( "ToyDS1Vacuum",
+                                          ds1VacParams,
+                                          vacuumMaterial,
+                                          0,
+                                          ds1Position-_hallOriginInMu2e,
+                                          parent,
+                                          0,
+                                          toyDSVisible,
+                                          G4Colour::Green(),
+                                          toyDSSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
 
-    VolumeInfo ds2VacInfo   = nestTubs2( "ToyDS2Vacuum",
-                                         ds2VacParams,
-                                         vacuumMaterial,
-                                         0,
-                                         ds2Position-_hallOriginInMu2e,
-                                         parent,
-                                         0,
-                                         toyDSVisible,
-                                         G4Colour::Yellow(),
-                                         toyDSSolid
-                                         );
+    VolumeInfo ds2VacInfo     = nestTubs( "ToyDS2Vacuum",
+                                          ds2VacParams,
+                                          vacuumMaterial,
+                                          0,
+                                          ds2Position-_hallOriginInMu2e,
+                                          parent,
+                                          0,
+                                          toyDSVisible,
+                                          G4Colour::Yellow(),
+                                          toyDSSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
 
-    VolumeInfo ds3VacInfo = nestTubs2( "ToyDS3Vacuum",
-                                       ds3VacParams,
-                                       vacuumMaterial,
-                                       0,
-                                       ds3Position-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       toyDSVisible,
-                                       G4Color::Blue(),
-                                       toyDSSolid
-                                       );
+    VolumeInfo ds3VacInfo     = nestTubs( "ToyDS3Vacuum",
+                                          ds3VacParams,
+                                          vacuumMaterial,
+                                          0,
+                                          ds3Position-_hallOriginInMu2e,
+                                          parent,
+                                          0,
+                                          toyDSVisible,
+                                          G4Color::Blue(),
+                                          toyDSSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
 
   } // end of Mu2eWorld::constructDS;
 
@@ -637,8 +677,11 @@ namespace mu2e {
     //double coll3Hole           = _config->getDouble("coll3.hole");
     double coll3RotationAngle  = _config->getDouble("coll3.rotationAngle");
 
-    bool collVisible          = _config->getBool("coll.visible",true);
-    bool collSolid            = _config->getBool("coll.solid",true);
+    bool collVisible         = _config->getBool("coll.visible",true);
+    bool collSolid           = _config->getBool("coll.solid",true);
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const placePV       = true;
 
     // For how all pieces are made from one of two types of material,
     // vacuum or average coils + cryostat material.
@@ -655,29 +698,35 @@ namespace mu2e {
     TubsParams ts1VacParams (   0.,  rVac, ts1HalfLength);
     TubsParams ts1CryoParams( rVac, rCryo, ts1HalfLength);
 
-    VolumeInfo ts1VacInfo = nestTubs2( "ToyTS1Vacuum",
-                                       ts1VacParams,
-                                       vacuumMaterial,
-				       beamg->getTS().getTS1().getRotation(),
+    VolumeInfo ts1VacInfo = nestTubs( "ToyTS1Vacuum",
+                                      ts1VacParams,
+                                      vacuumMaterial,
+                                      beamg->getTS().getTS1().getRotation(),
+                                      beamg->getTS().getTS1().getGlobal()-_hallOriginInMu2e,
+                                      parent,
+                                      0,
+                                      toyTSVisible,
+                                      G4Color::Red(),
+                                      toyTSSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
+
+    VolumeInfo ts1CryoInfo = nestTubs( "ToyTS1Cryo",
+                                       ts1CryoParams,
+                                       cryoMaterial,
+                                       beamg->getTS().getTS1().getRotation(),
                                        beamg->getTS().getTS1().getGlobal()-_hallOriginInMu2e,
                                        parent,
                                        0,
                                        toyTSVisible,
                                        G4Color::Red(),
-                                       toyTSSolid
+                                       toyTSSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       doSurfaceCheck
                                        );
-
-    VolumeInfo ts1CryoInfo = nestTubs2( "ToyTS1Cryo",
-                                        ts1CryoParams,
-                                        cryoMaterial,
-					beamg->getTS().getTS1().getRotation(),
-					beamg->getTS().getTS1().getGlobal()-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        toyTSVisible,
-                                        G4Color::Red(),
-                                        toyTSSolid
-                                        );
 
     // Place collimator 1
 
@@ -736,29 +785,35 @@ namespace mu2e {
     TubsParams ts3VacParams (   0.,  rVac, ts3HalfLength);
     TubsParams ts3CryoParams( rVac, rCryo, ts3HalfLength);
     
-    VolumeInfo ts3VacInfo = nestTubs2( "ToyTS3Vacuum",
-                                       ts3VacParams,
-                                       vacuumMaterial,
-				       beamg->getTS().getTS3().getRotation(),
-				       beamg->getTS().getTS3().getGlobal()-_hallOriginInMu2e,
+    VolumeInfo ts3VacInfo = nestTubs( "ToyTS3Vacuum",
+                                      ts3VacParams,
+                                      vacuumMaterial,
+                                      beamg->getTS().getTS3().getRotation(),
+                                      beamg->getTS().getTS3().getGlobal()-_hallOriginInMu2e,
+                                      parent,
+                                      0,
+                                      toyTSVisible,
+                                      G4Color::Green(),
+                                      toyTSSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
+
+    VolumeInfo ts3CryoInfo = nestTubs( "ToyTS3Cryo",
+                                       ts3CryoParams,
+                                       cryoMaterial,
+                                       beamg->getTS().getTS3().getRotation(),
+                                       beamg->getTS().getTS3().getGlobal()-_hallOriginInMu2e,
                                        parent,
                                        0,
                                        toyTSVisible,
                                        G4Color::Green(),
-                                       toyTSSolid
+                                       toyTSSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       doSurfaceCheck
                                        );
-
-    VolumeInfo ts3CryoInfo = nestTubs2( "ToyTS3Cryo",
-                                        ts3CryoParams,
-                                        cryoMaterial,
-					beamg->getTS().getTS3().getRotation(),
-					beamg->getTS().getTS3().getGlobal()-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        toyTSVisible,
-                                        G4Color::Green(),
-                                        toyTSSolid
-                                        );
 
     // Place collimator 3
 
@@ -820,17 +875,20 @@ namespace mu2e {
     G4Material* pbarMaterial  = materialFinder.get("pbar.materialName");
     double pbarParams[5]  = { 0.0,   rVac, pbarHalfLength, 0.0, 360.0*CLHEP::degree };
 
-    VolumeInfo pbarInfo = nestTubs2( "PbarAbs",
-				     pbarParams,
-				     pbarMaterial,
-				     0,
-				     G4ThreeVector(0.,0.,0.),
-				     ts3VacInfo,
-				     0,
-				     collVisible,
-				     G4Color::Yellow(),
-				     collSolid
-				     );
+    VolumeInfo pbarInfo = nestTubs( "PbarAbs",
+                                    pbarParams,
+                                    pbarMaterial,
+                                    0,
+                                    G4ThreeVector(0.,0.,0.),
+                                    ts3VacInfo,
+                                    0,
+                                    collVisible,
+                                    G4Color::Yellow(),
+                                    collSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    doSurfaceCheck
+                                    );
 
     // Build TS4.
 
@@ -873,46 +931,55 @@ namespace mu2e {
     TubsParams ts5VacParams (   0.,  rVac, ts5HalfLength);
     TubsParams ts5CryoParams( rVac, rCryo, ts5HalfLength);
 
-    VolumeInfo ts5VacInfo = nestTubs2( "ToyTS5Vacuum",
-                                       ts5VacParams,
-                                       vacuumMaterial,
-				       beamg->getTS().getTS5().getRotation(),
-				       beamg->getTS().getTS5().getGlobal()-_hallOriginInMu2e,
+    VolumeInfo ts5VacInfo = nestTubs( "ToyTS5Vacuum",
+                                      ts5VacParams,
+                                      vacuumMaterial,
+                                      beamg->getTS().getTS5().getRotation(),
+                                      beamg->getTS().getTS5().getGlobal()-_hallOriginInMu2e,
+                                      parent,
+                                      0,
+                                      toyTSVisible,
+                                      G4Color::Red(),
+                                      toyTSSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
+
+    VolumeInfo ts5CryoInfo = nestTubs( "ToyTS5Cryo",
+                                       ts5CryoParams,
+                                       cryoMaterial,
+                                       beamg->getTS().getTS5().getRotation(),
+                                       beamg->getTS().getTS5().getGlobal()-_hallOriginInMu2e,
                                        parent,
                                        0,
                                        toyTSVisible,
                                        G4Color::Red(),
-                                       toyTSSolid
+                                       toyTSSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       doSurfaceCheck
                                        );
-
-    VolumeInfo ts5CryoInfo = nestTubs2( "ToyTS5Cryo",
-                                        ts5CryoParams,
-                                        cryoMaterial,
-					beamg->getTS().getTS5().getRotation(),
-					beamg->getTS().getTS5().getGlobal()-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        toyTSVisible,
-                                        G4Color::Red(),
-                                        toyTSSolid
-                                        );
 
     // Place collimator 5
 
     double coll5Param[5] = { coll5InnerRadius, rVac, 
 			     coll5HalfLength-2*vdHalfLength, 0.0, 360.0*CLHEP::degree };
 
-    VolumeInfo coll5VacInfo = nestTubs2( "Coll5",
-					 coll5Param,
-					 coll5Material,
-					 0,
-					 beamg->getTS().getColl5().getLocal(),
-					 ts5VacInfo,
-					 0,
-					 collVisible,
-					 G4Color::Blue(),
-					 collSolid
-					 );
+    VolumeInfo coll5VacInfo = nestTubs( "Coll5",
+                                        coll5Param,
+                                        coll5Material,
+                                        0,
+                                        beamg->getTS().getColl5().getLocal(),
+                                        ts5VacInfo,
+                                        0,
+                                        collVisible,
+                                        G4Color::Blue(),
+                                        collSolid,
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        doSurfaceCheck
+                                        );
 
   } // end Mu2eWorld::constructTS
 
@@ -940,22 +1007,27 @@ namespace mu2e {
     double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength;
     G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
     
-    bool toyPSVisible = _config->getBool("toyPS.visible",true);
-    bool toyPSSolid   = _config->getBool("toyPS.solid",true);
-
+    bool toyPSVisible        = _config->getBool("toyPS.visible",true);
+    bool toyPSSolid          = _config->getBool("toyPS.solid",true);
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const placePV       = true;
     
     // Toy model of the PS coils + cryostat. It needs real structure.
-    VolumeInfo psCryoInfo = nestTubs2( "PSCryo",
-                                       psCryoParams,
-                                       psCryoMaterial,
-                                       0,
-                                       psCryoPosition-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       toyPSVisible,
-                                       G4Color::Cyan(),
-                                       toyPSSolid
-                                       );
+    VolumeInfo psCryoInfo = nestTubs( "PSCryo",
+                                      psCryoParams,
+                                      psCryoMaterial,
+                                      0,
+                                      psCryoPosition-_hallOriginInMu2e,
+                                      parent,
+                                      0,
+                                      toyPSVisible,
+                                      G4Color::Cyan(),
+                                      toyPSSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
 
     // Build the main PS vacuum body.
     TubsParams ps1VacParams( 0.,
@@ -967,17 +1039,20 @@ namespace mu2e {
     double ps1Z0     = -rTorus + -2.*ts1HalfLength - ps1HalfLength;
     G4ThreeVector ps1Position( solenoidOffset, 0., ps1Z0);    
     
-    VolumeInfo ps1VacInfo   = nestTubs2( "PS1Vacuum",
-                                         ps1VacParams,
-                                         vacuumMaterial,
-                                         0,
-                                         ps1Position-_hallOriginInMu2e,
-                                         parent,
-                                         0,
-                                         toyPSVisible,
-                                         G4Colour::Green(),
-                                         toyPSSolid
-                                         );
+    VolumeInfo ps1VacInfo   = nestTubs( "PS1Vacuum",
+                                        ps1VacParams,
+                                        vacuumMaterial,
+                                        0,
+                                        ps1Position-_hallOriginInMu2e,
+                                        parent,
+                                        0,
+                                        toyPSVisible,
+                                        G4Colour::Green(),
+                                        toyPSSolid,
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        doSurfaceCheck
+                                        );
     
     // Build the production target.
     TubsParams prodTargetParams( 0.,
@@ -1001,17 +1076,20 @@ namespace mu2e {
     bool prodTargetVisible = _config->getBool("targetPS.visible",true);
     bool prodTargetSolid   = _config->getBool("targetPS.solid",true);
 
-    VolumeInfo prodTargetInfo   = nestTubs2( "ProductionTarget",
-                                             prodTargetParams,
-                                             prodTargetMaterial,
-                                             prodTargetRotation,
-                                             prodTargetPosition-ps1Position,
-                                             ps1VacInfo,
-                                             0,
-                                             prodTargetVisible,
-                                             G4Colour::Magenta(),
-                                             prodTargetSolid
-                                             );
+    VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
+                                            prodTargetParams,
+                                            prodTargetMaterial,
+                                            prodTargetRotation,
+                                            prodTargetPosition-ps1Position,
+                                            ps1VacInfo,
+                                            0,
+                                            prodTargetVisible,
+                                            G4Colour::Magenta(),
+                                            prodTargetSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
 
     
     // Set the parameters of the transformation from the PrimaryProtonGun
@@ -1044,7 +1122,7 @@ namespace mu2e {
       }
     } else if ( _config->getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
-    // Hack alert: These belong in constructTracker
+      // Hack alert: These belong in constructTracker
       trackerInfo.name = "TrackerMother"; // this belongs to construct..., some of them do it now
       _helper->addVolInfo(trackerInfo);
     } else if ( _config->getBool("hasTTracker",false) ) {
@@ -1557,6 +1635,10 @@ namespace mu2e {
     bool hallSteelVisible = _config->getBool("fluxcrv.visible",true);
     bool hallSteelSolid   = _config->getBool("fluxcrv.solid",false);
 
+    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const placePV             = true;
+
     // Place Boxes
 
     VolumeInfo TopInfo = nestBox ("HallSteelTopShield",
@@ -1568,7 +1650,11 @@ namespace mu2e {
                                   0,
                                   hallSteelVisible,
                                   G4Colour::Green(),
-                                  hallSteelSolid);
+                                  hallSteelSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  doSurfaceCheck
+                                  );
 
     VolumeInfo BottomInfo = nestBox ("HallSteelBottomShield",
                                      HallSteelTopDims, 
@@ -1579,7 +1665,11 @@ namespace mu2e {
                                      0, 
                                      hallSteelVisible,
                                      G4Colour::Green(), 
-                                     hallSteelSolid);
+                                     hallSteelSolid,
+                                     forceAuxEdgeVisible,
+                                     placePV,
+                                     doSurfaceCheck
+                                     );
 
     VolumeInfo LeftInfo = nestBox ("HallSteelLeftShield",
                                    HallSteelSideDims,
@@ -1590,7 +1680,11 @@ namespace mu2e {
                                    0, 
                                    hallSteelVisible,
                                    G4Colour::Green(),
-                                   hallSteelSolid); 
+                                   hallSteelSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   doSurfaceCheck
+                                   ); 
 
     VolumeInfo RightInfo = nestBox ("HallSteelRightShield",
                                     HallSteelSideDims,
@@ -1601,7 +1695,11 @@ namespace mu2e {
                                     0, 
                                     hallSteelVisible,
                                     G4Colour::Green(),
-                                    hallSteelSolid); 
+                                    hallSteelSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    doSurfaceCheck
+                                    ); 
 
     VolumeInfo BackInfo = nestBox ("HallSteelBackShield",
                                    HallSteelFrontDims,
@@ -1612,7 +1710,11 @@ namespace mu2e {
                                    0, 
                                    hallSteelVisible,
                                    G4Colour::Green(),
-                                   hallSteelSolid); 
+                                   hallSteelSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   doSurfaceCheck
+                                   ); 
 
     // constructing "hollow" front shield
 
@@ -1672,8 +1774,11 @@ namespace mu2e {
     VirtualDetectorSD* vdSD     = new VirtualDetectorSD("VirtualDetector", *_config);
     SDman->AddNewDetector(vdSD);
 
-    bool   vdVisible    = _config->getBool("vd.visible",true);
-    bool   vdSolid      = _config->getBool("vd.solid",true);
+    bool vdVisible           = _config->getBool("vd.visible",true);
+    bool vdSolid             = _config->getBool("vd.solid",true);
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const placePV       = true;
     
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
@@ -1698,10 +1803,13 @@ namespace mu2e {
       VolumeInfo parent = _helper->locateVolInfo("ToyTS1Vacuum");
       ostringstream name;
       name << "VirtualDetector" << id;
-      VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
-				 vdg->getLocal(id),
-				 parent,
-				 id, vdVisible, G4Color::Red(), vdSolid );
+      VolumeInfo vd = nestTubs( name.str(), vdParams, vacuumMaterial, 0,
+                                vdg->getLocal(id),
+                                parent,
+                                id, vdVisible, G4Color::Red(), vdSolid,
+                                forceAuxEdgeVisible,
+                                placePV,
+                                doSurfaceCheck );
       vd.logical->SetSensitiveDetector(vdSD);
     }
 
@@ -1711,10 +1819,13 @@ namespace mu2e {
       VolumeInfo parent = _helper->locateVolInfo("ToyTS3Vacuum");
       ostringstream name;
       name << "VirtualDetector" << id;
-      VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
-				 vdg->getLocal(id),
-				 parent,
-				 id, vdVisible, G4Color::Red(), vdSolid );
+      VolumeInfo vd = nestTubs( name.str(), vdParams, vacuumMaterial, 0,
+                                vdg->getLocal(id),
+                                parent,
+                                id, vdVisible, G4Color::Red(), vdSolid,
+                                forceAuxEdgeVisible,
+                                placePV,
+                                doSurfaceCheck );
       vd.logical->SetSensitiveDetector(vdSD);
     }
 
@@ -1724,117 +1835,17 @@ namespace mu2e {
       VolumeInfo parent = _helper->locateVolInfo("ToyTS5Vacuum");
       ostringstream name;
       name << "VirtualDetector" << id;
-      VolumeInfo vd = nestTubs2( name.str(), vdParams, vacuumMaterial, 0,
-				 vdg->getLocal(id),
-				 parent,
-				 id, vdVisible, G4Color::Red(), vdSolid );
+      VolumeInfo vd = nestTubs( name.str(), vdParams, vacuumMaterial, 0,
+                                vdg->getLocal(id),
+                                parent,
+                                id, vdVisible, G4Color::Red(), vdSolid,
+                                forceAuxEdgeVisible,
+                                placePV,
+                                doSurfaceCheck );
       vd.logical->SetSensitiveDetector(vdSD);
     }
 
   } //constructVD
-
-  // Place a G4Box inside a logical volume.
-  VolumeInfo Mu2eWorld::nestBox ( string const& name,
-                                  double const halfDim[3],
-                                  G4Material* material,
-                                  G4RotationMatrix* rot,
-                                  G4ThreeVector const& offset,
-                                  const VolumeInfo& parent,
-                                  int copyNo,
-                                  bool isVisible,
-                                  G4Colour color,
-                                  bool forceSolid
-                                  ){
-    
-    VolumeInfo info(name,offset,parent.centerInWorld);
-    
-    info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
-    
-    info.logical = new G4LogicalVolume( info.solid, material, name); 
-    
-    info.physical =  new G4PVPlacement( rot, 
-                                        offset, 
-                                        info.logical, 
-                                        name, 
-                                        parent.logical, 
-                                        0, 
-                                        copyNo,
-                                        _config->getBool("g4.doSurfaceCheck",false));
-
-    if ( isVisible ){
-
-      // We need to manage the lifetime of the G4VisAttributes object.
-      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
-
-      // Finish the setting of visualization properties.
-      visAtt->SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(visAtt);
-    } 
-    else{
-
-      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    }
-
-    // Save the volume information in case someone else needs to access it by name.
-    _helper->addVolInfo(info);
-
-    return info;
-  }  // end of Mu2eWorld::nestBox
-
-  // Create and place a G4Tubs inside a logical volume.
-  VolumeInfo Mu2eWorld::nestTubs2 ( string const& name,
-                                    double param[5],
-                                    G4Material* material,
-                                    G4RotationMatrix* rot,
-                                    G4ThreeVector const& offset,
-                                    const VolumeInfo& parent,
-                                    int copyNo,
-                                    bool isVisible,
-                                    G4Colour color,
-                                    bool forceSolid
-                                    ){
-    
-    VolumeInfo info(name,offset,parent.centerInWorld);
-    
-    info.solid   = new G4Tubs( name, param[0], param[1], param[2], param[3], param[4]  );
-    
-    info.logical = new G4LogicalVolume( info.solid, material, name); 
-    
-    info.physical =  new G4PVPlacement( rot,
-                                        offset,
-                                        info.logical,
-                                        name,
-                                        parent.logical,
-                                        0,
-                                        copyNo,
-                                        _config->getBool("g4.doSurfaceCheck",false));
-
-    if ( isVisible ){
-
-      // We need to manage the lifetime of the G4VisAttributes object.
-      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
-
-      // If I do not do this, then the rendering depends on what happens in
-      // other parts of the code;  is there a G4 bug that causes something to be
-      // unitialized?
-      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
-
-      // Finish the setting of visualization properties.
-      visAtt->SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(visAtt);
-    } 
-    else{
-
-      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    }
-
-    // Save the volume information in case someone else needs to access it by name.
-    _helper->addVolInfo(info);
-
-    return info;
-  }  // end of Mu2eWorld::nestTubs
 
   // Create and place a G4Cons inside a logical volume.
   VolumeInfo Mu2eWorld::nestCons2 ( string const& name,
@@ -1852,7 +1863,7 @@ namespace mu2e {
     VolumeInfo info(name,offset,parent.centerInWorld);
     
     info.solid   = new G4Cons( name, param[0], param[1], param[2], param[3], 
-			             param[4], param[5], param[6]  );
+                               param[4], param[5], param[6]  );
     
     info.logical = new G4LogicalVolume( info.solid, material, name); 
     
@@ -1998,4 +2009,3 @@ namespace mu2e {
   } // end of Mu2eWorld::nestTorus
 
 } // end namespace mu2e
-
