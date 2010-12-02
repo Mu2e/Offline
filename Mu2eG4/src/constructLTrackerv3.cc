@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.13 2010/11/30 16:41:25 genser Exp $
+// $Id: constructLTrackerv3.cc,v 1.14 2010/12/02 17:49:10 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/30 16:41:25 $
+// $Date: 2010/12/02 17:49:10 $
 //
 // Original author Rob Kutschke
 //
@@ -65,9 +65,13 @@ namespace mu2e{
     double zHalf = CLHEP::mm * ltracker.zHalfLength()+30.;
     double z0    = CLHEP::mm * ltracker.z0();
 
-    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
-    bool trackerSolid = config.getBool("ltracker.solid",true);
+    bool trackerSolid        = config.getBool("ltracker.solid",true);
+    bool trackerVisible      = config.getBool("ltracker.visible",true);
     
+    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    bool const placePV = true;
+
     VolumeInfo trackerInfo;
 
     // Make the mother volume for the LTracker.
@@ -101,12 +105,12 @@ namespace mu2e{
 
     // Visualization attributes of the the mother volume.
 
-    if (!config.getBool("ltracker.visible",false)) {
+    if (!trackerVisible) {
       trackerInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
     } else {
       G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Green() ));
       visAtt->SetForceSolid(trackerSolid);
-      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+      visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
       trackerInfo.logical->SetVisAttributes(visAtt);
     }
 
@@ -181,24 +185,20 @@ namespace mu2e{
     if (config.getBool("ltracker.strawVisible",false)) {
       
       bool strawSolid = config.getBool("ltracker.strawSolid",true);
-      bool strawAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
-      //This leaks strawWallVisAtt.  
       G4VisAttributes* strawWallVisAtt = reg.add(G4VisAttributes(true, G4Colour::Yellow() ));
       strawWallVisAtt->SetForceSolid(strawSolid);
-      strawWallVisAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
+      strawWallVisAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
       strawWall.logical->SetVisAttributes(strawWallVisAtt);
 
-      //This leaks strawGasVisAtt.  
       G4VisAttributes* strawGasVisAtt = reg.add(G4VisAttributes(true, G4Colour::Green() ));
       strawGasVisAtt->SetForceSolid(strawSolid);
-      strawGasVisAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
+      strawGasVisAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
       strawGas.logical->SetVisAttributes(strawGasVisAtt);
 
-      //This leaks strawWireVisAtt.  
       G4VisAttributes* strawWireVisAtt = reg.add(G4VisAttributes(true, G4Colour::Red() ));
       strawWireVisAtt->SetForceSolid(strawSolid);
-      strawWireVisAtt->SetForceAuxEdgeVisible(strawAuxEdgeVisible);
+      strawWireVisAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
       strawWire.logical->SetVisAttributes(strawWireVisAtt);
 
     }
@@ -245,8 +245,11 @@ namespace mu2e{
                    sector.boxOffset(),
                    trackerInfo.logical,
                    0,
+                   trackerVisible,
                    G4Colour::Magenta(),
                    trackerSolid,
+                   forceAuxEdgeVisible,
+                   placePV,
                    doSurfaceCheck)
           :
           nestTrp( name,
@@ -256,19 +259,17 @@ namespace mu2e{
                    sector.boxOffset(),
                    trackerInfo.logical,
                    0,
+                   trackerVisible,
                    G4Colour::Yellow(),
                    trackerSolid,
+                   forceAuxEdgeVisible,
+                   placePV,
                    doSurfaceCheck);
-
 
         // the CheckOverlaps code below changes the recorded hits
         // if (tmp.physical->CheckOverlaps(1000,0.0,false)){
         //     std::cout << "Overlap while placing " << name << std::endl;
         //  }
-
-        G4VisAttributes* visAtt = reg.add(G4VisAttributes(*tmp.logical->GetVisAttributes()));
-        visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-        tmp.logical->SetVisAttributes(visAtt);
 
         vinfo.push_back(tmp);
         VolumeInfo const& sectorBoxInfo = vinfo.back();
