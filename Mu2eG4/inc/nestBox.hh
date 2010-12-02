@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 // 
-// $Id: nestBox.hh,v 1.4 2010/08/31 16:54:52 genser Exp $
+// $Id: nestBox.hh,v 1.5 2010/12/02 17:46:39 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/08/31 16:54:52 $
+// $Date: 2010/12/02 17:46:39 $
 //
 // Original author Rob Kutschke
 //
@@ -30,27 +30,31 @@ namespace mu2e {
                        double const halfDim[3],
                        G4Material* material,
                        G4RotationMatrix* rot,
-                       G4ThreeVector const& offset,
+                       G4ThreeVector const & offset,
                        G4LogicalVolume* parent,
                        int copyNo,
-                       G4Colour color,
-                       bool forceSolid,
-                       bool doSurfaceCheck
+                       bool const isVisible,
+                       G4Colour const color,
+                       bool const forceSolid,
+                       bool const forceAuxEdgeVisible,
+                       bool const placePV,
+                       bool const doSurfaceCheck
                        );
-  
-
 
   // Alternate argument list, using a vector for the half dimensions.
   inline VolumeInfo nestBox ( std::string const& name,
                               std::vector<double> const&  halfDim,
                               G4Material* material,
                               G4RotationMatrix* rot,
-                              G4ThreeVector const& offset,
+                              G4ThreeVector const & offset,
                               G4LogicalVolume* parent,
                               int copyNo,
-                              G4Colour color,
-                              bool forceSolid,
-                              bool doSurfaceCheck
+                              bool const isVisible,
+                              G4Colour const color,
+                              bool const forceSolid,
+                              bool const forceAuxEdgeVisible,
+                              bool const placePV,
+                              bool const doSurfaceCheck
                               ){
     return nestBox( name, 
                     &halfDim[0],
@@ -59,11 +63,64 @@ namespace mu2e {
                     offset,
                     parent,
                     copyNo,
+                    isVisible,
                     color,
                     forceSolid,
+                    forceAuxEdgeVisible,
+                    placePV,
                     doSurfaceCheck
                     );
   }
+
+  // Alternate argument list (and different behavior) 
+  // using VolumeInfo object
+  VolumeInfo nestBox ( std::string const& name,
+                       double const halfDim[3],
+                       G4Material* material,
+                       G4RotationMatrix* rot,
+                       G4ThreeVector const& offset,
+                       VolumeInfo const & parent,
+                       int copyNo,
+                       bool const isVisible,
+                       G4Colour const color,
+                       bool const forceSolid,
+                       bool const forceAuxEdgeVisible,
+                       bool const placePV,
+                       bool const doSurfaceCheck
+                       );
+
+  // Alternate argument list, (and different behavior) 
+  // using VolumeInfo object and using a vector for the half dimensions.
+  inline VolumeInfo nestBox ( std::string const& name,
+                              std::vector<double> const&  halfDim,
+                              G4Material* material,
+                              G4RotationMatrix* rot,
+                              G4ThreeVector const & offset,
+                              VolumeInfo const & parent,
+                              int copyNo,
+                              bool const isVisible,
+                              G4Colour const color,
+                              bool const forceSolid,
+                              bool const forceAuxEdgeVisible,
+                              bool const placePV,
+                              bool const doSurfaceCheck
+                              ){
+    return nestBox( name, 
+                    &halfDim[0],
+                    material,
+                    rot,
+                    offset,
+                    parent,
+                    copyNo,
+                    isVisible,
+                    color,
+                    forceSolid,
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck
+                    );
+  }
+
 }
 
 #endif
