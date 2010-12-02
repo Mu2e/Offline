@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.23 2010/11/16 14:43:11 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/11/16 14:43:11 $
+// $Id: Mu2eWorld.hh,v 1.24 2010/12/02 17:48:39 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/12/02 17:48:39 $
 //
 // Original author Rob Kutschke
 //
@@ -125,106 +125,6 @@ namespace mu2e {
 
     // Utility functions.
     void setUnits( std::vector<double>& V, G4double unit );
-    VolumeInfo nestBox ( std::string const& name,
-                         double const halfDim[3],
-                         G4Material* material,
-                         G4RotationMatrix* rot,
-                         G4ThreeVector const& offset,
-                         const VolumeInfo& parent,
-                         int copyNo,
-                         bool isVisible = false,
-                         G4Colour color = G4Colour::Black(),
-                         bool forceSolid = false
-                         );
-
-    // Alternate argument list, using a vector for the half dimensions.
-    VolumeInfo nestBox ( std::string const& name,
-                         std::vector<double> const&  halfDim,
-                         G4Material* material,
-                         G4RotationMatrix* rot,
-                         G4ThreeVector const& offset,
-                         const VolumeInfo& parent,
-                         int copyNo,
-                         bool isVisible = false,
-                         G4Colour color = G4Colour::Black(),
-                         bool forceSolid = false
-                         ){
-      return nestBox( name, 
-                      &halfDim[0],
-                      material,
-                      rot,
-                      offset,
-                      parent,
-                      copyNo,
-                      isVisible,
-                      color,
-                      forceSolid
-                      );
-    }
-
-    VolumeInfo nestTubs2 ( std::string const& name,
-                           double params[5],
-                           G4Material* material,
-                           G4RotationMatrix* rot,
-                           const G4ThreeVector& offset,
-                           const VolumeInfo& parent,
-                           int copyNo,
-                           bool isVisible = false,
-                           G4Colour color = G4Colour::Black(),
-                           bool forceSolid = false
-                           );
-  
-
-
-    // Alternate argument list, using a vector for the parameters.
-    inline VolumeInfo nestTubs2 ( std::string const& name,
-                                  std::vector<double>&  params,
-                                  G4Material* material,
-                                  G4RotationMatrix* rot,
-                                  const G4ThreeVector& offset,
-                                  const VolumeInfo& parent,
-                                  int copyNo,
-                                  bool isVisible = false,
-                                  G4Colour color = G4Colour::Black(),
-                                  bool forceSolid = false
-                                  ){
-      return nestTubs2( name, 
-                        &params[0],
-                        material,
-                        rot,
-                        offset,
-                        parent,
-                        copyNo,
-                        isVisible,
-                        color,
-                        forceSolid
-                        );
-    }
-
-    // Alternate argument list, using a TubsParams object for the parameters.
-    inline VolumeInfo nestTubs2 ( std::string const& name,
-                                  TubsParams& params,
-                                  G4Material* material,
-                                  G4RotationMatrix* rot,
-                                  const G4ThreeVector& offset,
-                                  const VolumeInfo& parent,
-                                  int copyNo,
-                                  bool isVisible = false,
-                                  G4Colour color = G4Colour::Black(),
-                                  bool forceSolid = false
-                                  ){
-      return nestTubs2( name, 
-                        &params.innerRadius,
-                        material,
-                        rot,
-                        offset,
-                        parent,
-                        copyNo,
-                        isVisible,
-                        color,
-                        forceSolid
-                        );
-    }
 
     VolumeInfo nestCons2 ( std::string const& name,
                            double params[7],
