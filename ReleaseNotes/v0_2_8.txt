@@ -3,9 +3,32 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.29 2010/12/01 23:26:12 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/12/01 23:26:12 $
+  $Id: v0_2_8.txt,v 1.30 2010/12/02 18:02:08 genser Exp $
+  $Author: genser $
+  $Date: 2010/12/02 18:02:08 $
+
+38) December 2, 2010 genser
+
+    Introduced finishNesting an auxiliary function for
+    nest... functions factorizing out common code;
+    Unified nestBox and nestTrp with recently changed nestTubs;
+    Removed nestBox and nestTubs2 from Mu2eWorld and used the new free
+    functions instead;
+    Used the new nestBox & nestTrp in constructLTrackerv3 & constructCalorimeter;
+    Renamed Vane to CalorimeterVane_ to disambiguate from LTracker vane
+
+      Mu2eG4/inc/Mu2eWorld.hh
+      Mu2eG4/inc/finishNesting.hh
+      Mu2eG4/inc/nestBox.hh
+      Mu2eG4/inc/nestTrp.hh
+      Mu2eG4/inc/nestTubs.hh
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/constructCalorimeter.cc
+      Mu2eG4/src/constructLTrackerv3.cc
+      Mu2eG4/src/finishNesting.cc
+      Mu2eG4/src/nestBox.cc
+      Mu2eG4/src/nestTrp.cc
+      Mu2eG4/src/nestTubs.cc
 
 37) November 30, 2010 kutschke
     Previously ToyGenParticle was just a struct with public data.  This confused people.
