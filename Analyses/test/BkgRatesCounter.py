@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.py,v 1.1 2010/11/24 22:40:35 onoratog Exp $
+# $Id: BkgRatesCounter.py,v 1.2 2010/12/02 23:51:41 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2010/11/24 22:40:35 $
+# $Date: 2010/12/02 23:51:41 $
 #
 # Original author Gianni Onorato.
 #
@@ -22,7 +22,7 @@ process = mu2e.Process("BkgRatesCounter")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(10000)
+    input = mu2e.untracked.int32(20000)
 )
 
 # Define the standard message logger configuration.
@@ -106,6 +106,17 @@ process.CaloCrystalHitsMaker =  mu2e.EDProducer(
     minimumTimeGap = mu2e.untracked.double(100.0)
 )
 
+# Form CaloROHits
+process.CaloROHitsMaker =  mu2e.EDProducer(
+    "MakeCaloReadoutHits",
+    diagLevel      = mu2e.untracked.int32(0),
+    maxFullPrint   = mu2e.untracked.int32(201),
+    g4ModuleLabel  = mu2e.string("g4run"),
+    minimumEnergy  = mu2e.untracked.double(0.0),
+    maximumEnergy  = mu2e.untracked.double(1000.0),
+    minimumTimeGap = mu2e.untracked.double(100.0)
+)
+
 #Filter module. Do not write events with no Tracker or calo hits
 process.filterEmpty = mu2e.EDFilter(
     "FilterEmptyEvents",
@@ -153,6 +164,7 @@ process.MessageLogger.categories.append("GEOM")
 # Tell the system to execute all paths.
 process.output = mu2e.EndPath(  process.generate*process.g4run*
                                 process.makeSH*
+                                process.CaloROHitsMaker*
                                 process.CaloCrystalHitsMaker*
                                 process.CountRates*
                                 process.filterEmpty*

@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.1 2010/11/24 22:40:35 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.2 2010/12/02 23:51:42 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2010/11/24 22:40:35 $
+// $Date: 2010/12/02 23:51:42 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
@@ -43,7 +43,7 @@ double conversionGun.tmin  =  700.;
 double conversionGun.tmax  = 1694.;
 double decayinorbitGun.tmin  =  700.;
 double decayinorbitGun.tmax  = 1694.;
-double ejectedProtonGun.tmin  =  700.;
+double ejectedProtonGun.tmin  =  0.;
 double ejectedProtonGun.tmax  = 1694.;
 double primaryProtonGun.tmin  =  700.;
 double primaryProtonGun.tmax  = 1694.;

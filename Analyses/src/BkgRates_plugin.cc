@@ -60,6 +60,7 @@ namespace mu2e {
       _hRateU(0),
       _hRateUT(0),
       _hRateMaxU(0),
+      _hCaloHitMult(0),
       _tNtup(0),
       _cNtup(0),
       _nGenParticles(0),
@@ -118,7 +119,8 @@ namespace mu2e {
     TH1F* _hRateU;
     TH2F* _hRateUT;
     TH1F* _hRateMaxU;
-    
+    TH1F* _hCaloHitMult;    
+
     TNtuple* _tNtup;
     TNtuple* _cNtup;
 
@@ -132,11 +134,19 @@ namespace mu2e {
 
   };
 
+
+  bool SortByEnergy(const pair<size_t,double> & a,
+                    const pair<size_t,double> & b ) {
+    return a.second < b.second;
+  }
+  
+
   void BkgRates::beginJob(edm::EventSetup const& ) {
 
     edm::Service<edm::TFileService> tfs;
 
     _hHitMult     = tfs->make<TH1F>( "hHitMult",    "Multiplicity of g4 hit per Straw ", 100,  0.,  100. );
+    _hCaloHitMult = tfs->make<TH1F>( "hCaloHitMult",    "Multiplicity of g4 hit per Crystal ", 100,  0.,  100. );
     _hStrawEvt    = tfs->make<TH1F>( "hStrawEvt",   "Multiplicity of straws per event ", 200,  0.,  200. );
     _hRateUZ      = tfs->make<TH2F>( "hRateUZ",     "Straw hit in u and z coordinates",  80,  380.,  690., 40, -1550., 1550.);
     _hRateU       = tfs->make<TH1F>( "hRateU",      "Straw hit in u coordinate",         100,  380.,  690. ); 
@@ -144,9 +154,9 @@ namespace mu2e {
     //    _hRateMaxU    = tfs->make<TH1F>( "hRateMaxU",      ask Asset
 
     _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                        "evt:time:dt:eDep:lay:dev:sec:strawId:hLeng:dirX:dirY:dirZ:x:y:u:v:z:wireX:wireY:pdgId:genId" );
+                                        "evt:time:dt:eDep:lay:dev:sec:strawId:hLeng:dirX:dirY:dirZ:strawX:strawY:hitX:hitY:MChitX:MChitY:u:v:vMC:z:nTrk:t1trkId:t1pdgId:t1genId:t1en:t2trkId:t2pdgId:t2genId:t2en:t3trkId:t3pdgId:t3genId:t3en:driftTime:driftDist" );
     _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
-                                        "evt:crTime:crE:crId:hTime:hE:hId:crX:crY:crZ" );
+                                        "evt:crTime:crE:crId:crVane:crX:crY:crZ:nTrk:trkId:pdgId:genId" );
 
     for (int i=0; i<_nDevices; ++i) {
       stringstream name, descr;
@@ -191,24 +201,23 @@ namespace mu2e {
   } // end of analyze
 
   void BkgRates::doTracker(edm::Event const& evt) {
-
+    
     // Geometry info for the LTracker.
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
-
+    
     edm::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
     // Get the persistent data about the StrawHitsMCTruth.
-
+    
     edm::Handle<StrawHitMCTruthCollection> truthHandle;
     evt.getByLabel(_makerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
     // Get the persistent data about pointers to StepPointMCs
-
     edm::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
@@ -278,100 +287,164 @@ namespace mu2e {
       DeviceId did = sid.getDeviceId();
       SectorId secid = sid.getSectorId();
       
+      //Get coordinates of the hit:
+
+      //X, Y and Z coordinate of the straw middle point
+
       const CLHEP::Hep3Vector stMidPoint3 = str.getMidPoint();
-      const CLHEP::Hep3Vector stDirection3 = str.getDirection();
       double xc = stMidPoint3.getX();
       double yc = stMidPoint3.getY();
-      double u = sqrt((xc*xc)+(yc*yc));
       double z = stMidPoint3.getZ();
+
+      //u coordinate (radial from the center)
+      double u = sqrt((xc*xc)+(yc*yc));
+
+      //time of the hit
+      double hitTime = hit.time(); 
+
+
+      //direction of the straw
+      const CLHEP::Hep3Vector stDirection3 = str.getDirection();
 
       //here the rates
       _hStrawRates[did]->Fill(sid.getStraw(),2*(secid.getSector())+lid.getLayer());
+      _hRateUZ->Fill(u,z);
+      _hRateU->Fill(u);
+      _hRateUT->Fill(u,hitTime);
 
-      // Use MC truth data
+      // Get MC truth data
       double driftTime = truth.driftTime();
       double driftDistance = truth.driftDistance();
-      double distanceToMid = truth.distanceToMid();
+
+      //Position along the wire using mctruth info
+      double vMC = truth.distanceToMid();
+
+      //Position along the wire using dt and propagation velocity (c)
+      const double signalVelocity = 299.792458; // mm/ns
+      double v = 10e4 * hit.dt()/(2*signalVelocity); 
+
+      const CLHEP::Hep3Vector HitPoint = stMidPoint3 + (v/stDirection3.mag())*stDirection3;
+      const CLHEP::Hep3Vector MCHitPoint = stMidPoint3 + (vMC/stDirection3.mag())*stDirection3;
+      
+      if (fabs(v) > str.getHalfLength()) {
+        cout << "Position along the wire bigger than halflength" << endl;
+      }
 
       size_t nHitsPerStraw = mcptr.size();
       _hHitMult->Fill(nHitsPerStraw);
 
-      //Get related G4 hits
-      for (size_t j = 0; j < mcptr.size(); ++j) {
+      float tntpArray[37];
+      int idx(0);
+      tntpArray[idx++] = evt.id().event();
+      tntpArray[idx++] = hitTime;
+      tntpArray[idx++] = hit.dt();
+      tntpArray[idx++] = hit.energyDep();
+      tntpArray[idx++] = lid.getLayer();
+      tntpArray[idx++] = did;
+      tntpArray[idx++] = secid.getSector();
+      tntpArray[idx++] = sid.getStraw();
+      tntpArray[idx++] = str.getHalfLength();
+      tntpArray[idx++] = stDirection3.getX();
+      tntpArray[idx++] = stDirection3.getY();
+      tntpArray[idx++] = stDirection3.getZ();
+      tntpArray[idx++] = xc;
+      tntpArray[idx++] = yc;
+      tntpArray[idx++] = HitPoint.getX();
+      tntpArray[idx++] = HitPoint.getY();
+      tntpArray[idx++] = MCHitPoint.getX();
+      tntpArray[idx++] = MCHitPoint.getY();
+      tntpArray[idx++] = u;
+      tntpArray[idx++] = v;
+      tntpArray[idx++] = vMC;
+      tntpArray[idx++] = z;
 
+      //Get related G4 hits to identify the track. 
+
+      //Containers of trackId contributing to the straw hit.
+      //the set avoid multiple entries of the same straw
+      set<SimParticleCollection::key_type> StrawTracks;
+     
+      //list of Collection index and energy deposition of the StrawTracks elements. Will be used to sort
+      list<pair<size_t, double> > HitsEnergyDep;
+      
+      for (size_t j = 0; j < mcptr.size(); ++j) {
+        
         StepPointMC const& mchit = (*mchits)[mcptr[j].index];
         
-        //Get v coordinate (radial to the center of the panel)
-        //Check if x,y origin are in the center of the panel
+        // The simulated particle that made this hit.
+        SimParticleCollection::key_type trackId(mchit.trackId());
         
-        const CLHEP::Hep3Vector& hitPos3 = mchit.position();
+        //if the contributing track id does not exist in the container
+        //add an element to the energy map and the pdgId and genId vectors
+        
+        if (StrawTracks.insert(trackId).second) {
+          HitsEnergyDep.push_back(pair<size_t,double>(j,mchit.eDep()));
+        }
+      }        
+      HitsEnergyDep.sort(SortByEnergy);      
+      
+      int nTrkPerStraw = HitsEnergyDep.size();
+      
+      if (nTrkPerStraw > 3) {
+        cout << "More than 3 different tracks contribute to the straw:"
+             << "\nonly the first three with higher e deposit will be stored" << endl;
+      }
 
-        double v = stDirection3.dot(hitPos3-stMidPoint3);
+      tntpArray[idx++] = nTrkPerStraw;
+      int counter = 0;
 
-        const CLHEP::Hep3Vector& point  = stMidPoint3 + v*stDirection3.unit();
+      for (list<pair<size_t,double> >::reverse_iterator it = HitsEnergyDep.rbegin();
+           it != HitsEnergyDep.rend(); ++it) {
+        if (counter == 3) break;        
+
+        StepPointMC const& mchit = (*mchits)[mcptr[it->first].index];
 
         // The simulated particle that made this hit.
         SimParticleCollection::key_type trackId(mchit.trackId());
         
-        // Default values for these, in case information is not available.
-        int pdgId(0);
-        GenId genId;
-
+        tntpArray[idx++] = trackId.asInt();
+        
         if ( haveSimPart ){
           SimParticle const& sim = simParticles->at(trackId);
-
+          
           // PDG Particle Id of the sim particle that made this hit.
-          pdgId = sim.pdgId();
-      
+          tntpArray[idx++] = sim.pdgId();
+          
           // If this is a generated particle, which generator did it come from?
           // This default constructs to "unknown".
           if ( sim.fromGenerator() ){
             ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
-            genId = gen.generatorId();
-          } 
-        } 
-
-        float hitTime = hit.time();
-
-        _hRateUZ->Fill(u,z);
-        _hRateU->Fill(u);
-        _hRateUT->Fill(u,hitTime);
-
-        float tntpArray[23];
-        int idx(0);
-        tntpArray[idx++] = evt.id().event();
-        tntpArray[idx++] = hitTime;
-        tntpArray[idx++] = hit.dt();
-        tntpArray[idx++] = hit.energyDep();
-        tntpArray[idx++] = lid.getLayer();
-        tntpArray[idx++] = did;
-        tntpArray[idx++] = secid.getSector();
-        tntpArray[idx++] = sid.getStraw();
-        tntpArray[idx++] = str.getHalfLength();
-        tntpArray[idx++] = stDirection3.getX();
-        tntpArray[idx++] = stDirection3.getY();
-        tntpArray[idx++] = stDirection3.getZ();
-        tntpArray[idx++] = xc;
-        tntpArray[idx++] = yc;
-        tntpArray[idx++] = u;
-        tntpArray[idx++] = v;
-        tntpArray[idx++] = z;
-        tntpArray[idx++] = point.getX();
-        tntpArray[idx++] = point.getY();
-        tntpArray[idx++] = pdgId;
-        tntpArray[idx++] = genId.Id();
-        tntpArray[idx++] = driftTime;
-        tntpArray[idx++] = driftDistance;
-        tntpArray[idx++] = distanceToMid;
+            tntpArray[idx++] = gen.generatorId().Id();
+          } else if ( !sim.fromGenerator() ){ //if sim and gen info are not available set them to zero
+            tntpArray[idx++] = 0;
+          }
+        } else if ( !haveSimPart) {
+          tntpArray[idx++] = 0;
+          tntpArray[idx++] = 0;
+        }
+        tntpArray[idx++] = it->second;
+        counter++;
+      }
+    
       
-
-
-        _tNtup->Fill(tntpArray);
-
-      } // end of steppointhits loop
-
+      //Fill with 0 the rest of the ntupla leaves 
+      //if there are less than 3 tracks contributing
+      //to the straw hit
+      
+      for (int add_idx = 0; add_idx < 3 - counter; ++add_idx) {
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+      }
+      
+      tntpArray[idx++] = driftTime;
+      tntpArray[idx++] = driftDistance;
+      
+      _tNtup->Fill(tntpArray);
+      
     } //end of Strawhits loop
-
+  
   } // end of doTracker
 
   void BkgRates::doCalorimeter(edm::Event const& evt) {
@@ -381,36 +454,23 @@ namespace mu2e {
     if( ! geom->hasElement<Calorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
 
-
-    //Test printout of Calorimeter geometry and classification
-    /*   
-         cout << "Calorimeter geometry: " << endl;
-         //    for (int nv=0; nv<cg->nVane(); ++nv) {
-         //  for (int nc=0; nc<cg->nCrystalPerVane(); ++nc) {
-         int iCry = -1;
-         for (size_t nRO=0; nRO<cg->nRO(); ++nRO) {
-         int tiCry = cg->getCrystalByRO(nRO);
-         if (tiCry != iCry) {
-         cout << "\nVane n. " << cg->getVaneByRO(nRO)
-         << "\tCrystal (within a vane) n. " << cg->getCrystalVaneByRO(nRO)
-         << "\tCrystal n. " << cg->getCrystalByRO(nRO) 
-         << "\nPosition " << cg->getCrystalOriginByRO(nRO)
-         << "\t RO n. " << flush;
-         iCry = tiCry;
-         }
-         cout << '\t' << nRO << flush;  
-         }
-    */
-
     // Get handles to calorimeter collections
     edm::Handle<CaloHitCollection> caloHits;
     edm::Handle<CaloHitMCTruthCollection> caloMC; //unused
     edm::Handle<CaloCrystalHitCollection>  caloCrystalHits;
 
+    // Get the persistent data about pointers to StepPointMCs
+    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    edm::Handle<StepPointMCCollection> steps;
+
+    evt.getByLabel("CaloROHitsMaker","CaloHitMCCrystalPtr",mcptrHandle);
+    evt.getByLabel("g4run","calorimeter",steps);
     evt.getByType(caloHits);
     evt.getByType(caloMC);
     evt.getByType(caloCrystalHits);
 
+    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
+    StepPointMCCollection const* mchits = steps.product();
     if (!( caloHits.isValid() && caloMC.isValid())) {
       return;
     }
@@ -420,6 +480,27 @@ namespace mu2e {
       return;
     }
 
+
+    // Get handles to the generated and simulated particles.
+    edm::Handle<ToyGenParticleCollection> genParticles;
+    evt.getByType(genParticles);
+
+    edm::Handle<SimParticleCollection> simParticles;
+    evt.getByType(simParticles);
+    
+    // Handle to information about G4 physical volumes.
+    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    evt.getRun().getByType(volumes);
+    
+    // Some files might not have the SimParticle and volume information.
+    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+    
+    // Other files might have empty collections.
+    if ( haveSimPart ){
+      haveSimPart = !(simParticles->empty() || volumes->empty());
+    }
+    
+    
     typedef multimap<int,size_t> crystalsHitsMultiMap;
     crystalsHitsMultiMap crystalsHits;
 
@@ -437,24 +518,23 @@ namespace mu2e {
     }
 
     for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
-
+      
       CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
       int cid = hit.id();
-
+      
       CLHEP::Hep3Vector cryCenter(0,0,0);
-
+      
       pair<multimap<int,size_t>::iterator,multimap<int,size_t>::iterator> itRange; 
       itRange = crystalsHits.equal_range(cid);
-
+      
       multimap<int,size_t>::iterator it;
-
+      
       bool readCryOnce(false);
-
-
-
-
+      float cntpArray[12];
+      int idx(0);
+      
       for (it = itRange.first; it!= itRange.second; ++it) {
-
+        
         CaloHit const & clHit = caloHits->at(it->second);  
         
         if (!readCryOnce) {
@@ -463,35 +543,108 @@ namespace mu2e {
           int Zcry = cg->getCrystalZByRO(clHit.id());
           int Rcry = cg->getCrystalRByRO(clHit.id());
           _hCrystalRates[vane]->Fill(Zcry,Rcry);
-          readCryOnce = true;
+          cntpArray[idx++] = evt.id().event();
+          cntpArray[idx++] = hit.time();
+          cntpArray[idx++] = hit.energyDep();
+          cntpArray[idx++] = cid;
+          cntpArray[idx++]  = vane;
+          cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
+          cntpArray[idx++] = cryCenter.getY();
+          cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
         }
         
-        float cntpArray[10];
-        int idx(0);
-
-        cntpArray[idx++] = evt.id().event();
-        cntpArray[idx++] = hit.time();
-        cntpArray[idx++] = hit.energyDep();
-        cntpArray[idx++] = cid;
-        cntpArray[idx++] = clHit.time();
-        cntpArray[idx++] = clHit.energyDep();
-        cntpArray[idx++] = clHit.id();
-        cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
-        cntpArray[idx++] = cryCenter.getY();
-        cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
-
-        /*        cout << "form ntupla :\n"
-                  << "cry id " << cid << '\n' 
-                  << "cry e " << hit.energyDep() << '\n'
-                  << "cry time " << hit.time() << '\n'
-                  << "caloHit id " << clHit.id() << '\n'
-                  << "caloHit e " << clHit.energyDep() << '\n'
-                  << "caloHit time " << clHit.time() << endl;
-        */
-
-        _cNtup->Fill(cntpArray);        
         
+        //Loop over mc step points that made the hit
+        
+        DPIndexVector const & mcptr(hits_mcptr->at(it->second)); 
+        
+        size_t nHitsPerCrystal = mcptr.size();
+        _hCaloHitMult->Fill(nHitsPerCrystal);
+        
+        //Get related G4 hits to identify the track. 
+        
+        //Containers of trackId contributing to the straw hit.
+        //the set avoid multiple entries of the same straw
+        set<SimParticleCollection::key_type> CrystalTracks;
+        
+        //list of Collection index and energy deposition of the StrawTracks elements. Will be used to sort
+        list<pair<size_t, double> > HitsEnergyDep;
+        
+        for (size_t j=0; j<nHitsPerCrystal; ++j) {
+          
+          StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+          // The simulated particle that made this hit.
+          SimParticleCollection::key_type trackId(mchit.trackId());
+          
+          //if the contributing track id does not exist in the container
+          //add an element to the energy map and the pdgId and genId vectors
+          
+          if (CrystalTracks.insert(trackId).second) {
+            HitsEnergyDep.push_back(pair<size_t,double>(j,mchit.eDep()));
+          }
+        }    
+        
+        HitsEnergyDep.sort(SortByEnergy);      
+        
+        int nTrkPerCrystal = HitsEnergyDep.size();
+        
+        if (nTrkPerCrystal > 1) {
+          cout << "Different tracks contribute to the Crystal hit:"
+               << "\nonly the first with higher e deposit will be stored" << endl;
+        }
+      
+        if (!readCryOnce) {
+          cntpArray[idx++] = nTrkPerCrystal;
+        }
+         
+        int counter = 0;
+        
+        for (list<pair<size_t,double> >::reverse_iterator it = HitsEnergyDep.rbegin();
+             it != HitsEnergyDep.rend(); ++it) {
+          if (counter == 1) break;        
+          
+          StepPointMC const& mchit = (*mchits)[mcptr[it->first].index];
+          
+          // The simulated particle that made this hit.
+          SimParticleCollection::key_type trackId(mchit.trackId());
+          
+          if (!readCryOnce) {
+            cntpArray[idx++] = trackId.asInt();
+          }
+          if ( haveSimPart ){
+            SimParticle const& sim = simParticles->at(trackId);
+            
+            // PDG Particle Id of the sim particle that made this hit.
+            if (!readCryOnce) {
+              cntpArray[idx++] = sim.pdgId(); 
+            }
+            // If this is a generated particle, which generator did it come from?
+            // This default constructs to "unknown".
+            if ( sim.fromGenerator() ){
+              ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+              if (!readCryOnce) {
+                cntpArray[idx++] = gen.generatorId().Id();
+              }
+            } else if ( !sim.fromGenerator() ){ //if sim and gen info are not available set them to zero
+              if (!readCryOnce) {
+                cntpArray[idx++] = 0;
+              }
+            }
+          } else if ( !haveSimPart) {
+            if (!readCryOnce) {
+              cntpArray[idx++] = 0;
+              cntpArray[idx++] = 0;   
+            }
+          }
+          if (!readCryOnce) {           
+            cntpArray[idx++] = it->second;
+            readCryOnce = true;
+          }
+        }
+        counter++;
       } // end of loop on hits coming from the same crystal
+              
+      _cNtup->Fill(cntpArray);        
       
     } // end of loop on crystal hits
     
@@ -506,7 +659,7 @@ namespace mu2e {
     
     
   } // end of doCalorimeter
-
+  
 }
 
 using mu2e::BkgRates;
