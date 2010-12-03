@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.14 2010/11/04 15:47:31 onoratog Exp $
+// $Id: PiCapture.cc,v 1.15 2010/12/03 18:06:04 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/11/04 15:47:31 $
+// $Date: 2010/12/03 18:06:04 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -92,7 +92,7 @@ namespace mu2e {
       _hzPos       = tfdir.make<TH1D>( "hzPos",   "PiCap z Position (Tracker Coord)", 200, -6600., -5600. );
       _hcz         = tfdir.make<TH1D>( "hcz",     "PiCap cos(theta)",                 100,    -1.,     1. );
       _hphi        = tfdir.make<TH1D>( "hphi",    "PiCapture azimuth",                100,  -M_PI,   M_PI );
-      _ht          = tfdir.make<TH1D>( "ht",     "PiCapture time ",                  100,      0,  2000. );
+      _ht          = tfdir.make<TH1D>( "ht",     "PiCapture time ",                  210,   -200.,  2000. );
       _hFoilNumber = tfdir.make<TH1D>( "hFoilNumber", "Foil Number", 20,0.,20.);
 
     }
