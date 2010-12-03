@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.57 2010/11/22 05:19:14 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/22 05:19:14 $
+// $Id: geom_01.txt,v 1.58 2010/12/03 00:51:57 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/12/03 00:51:57 $
 //
 // Original author Rob Kutschke
 //
@@ -146,7 +146,9 @@ bool   hall.solid              = false;
 vector<double> hall.offset = { -1525., 0., 0. };
 
 // X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
-double mu2e.solenoidOffset = 3904.;
+// The origin of the detector coordinate system is on the DS axis at the specified z.
+double mu2e.solenoidOffset   =  3904.;   // mm
+double mu2e.detectorSystemZ0 = 10200.;   // mm
 
 // A toy model of the DS, cyrostats+coils, vacuum
 double toyDS.rIn                = 1000;
