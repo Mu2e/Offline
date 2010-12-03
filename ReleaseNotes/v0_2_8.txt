@@ -3,9 +3,25 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.31 2010/12/03 00:55:45 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/12/03 00:55:45 $
+  $Id: v0_2_8.txt,v 1.32 2010/12/03 19:40:23 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2010/12/03 19:40:23 $
+
+41) December 3, 2010 onoratog
+    In particle generator modules, all the histograms related to time
+    generation have now a lower bound set to -200 ns. This has been made 
+    in order to include future changes that will shift t=0 at the middle
+    of the proton bunch and so will include also negative time.
+    
+
+40) December 2, 2010 onoratog
+    Modified BkgRates_plugin.cc. For the Tracker ntupla: now each entry is
+    a StrawHit. The first three StepPointMC with higher energy deposition
+    are stored with pdgId and trackId informations. Position of the hit along
+    the wire is calculated using time difference among straw head and tail 
+    signal. Also MCTruth information is stored to compare the two values.
+    For the Calorimeter ntupla: each entry is a Crystal hit. Now also MC info
+    about track who made the hit is stored.
 
 39) December 2, 2010 kutschke
     Add a geometry manager class to define the detector
