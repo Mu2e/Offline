@@ -1,9 +1,9 @@
 #ifndef NESTTORUS_HH
 #define NESTTORUS_HH
 //
-// Free function to create and place a new G4Torus, place inside a logical volume.
+// Free function to create and place a new G4Torus inside a logical volume.
 // 
-// $Id: v 1.1.1.1
+// $Id: nestTorus.hh,v 1.4 2010/12/06 22:29:23 genser Exp $
 // $Author: genser $ 
 // $Date: 2010/03/15
 //
@@ -26,21 +26,23 @@ class G4CSGSolid;
 namespace mu2e {
 
   VolumeInfo nestTorus ( std::string const& name,
-                         double halfDim[5],
+                         double const halfDim[5],
                          G4Material* material,
                          G4RotationMatrix* rot,
                          G4ThreeVector const& offset,
                          G4LogicalVolume* parent,
                          int copyNo,
-                         G4Colour color,
-                         bool forceSolid,
-                         bool doSurfaceCheck
+                         bool const isVisible,
+                         G4Colour const color,
+                         bool const forceSolid,
+                         bool const forceAuxEdgeVisible,
+                         bool const placePV,
+                         bool const doSurfaceCheck
                          );
   
 
 
   // Alternate argument list, using a vector for the half dimensions.
-  //
   inline VolumeInfo nestTorus ( std::string const& name,
                                 std::vector<double>&  halfDim,
                                 G4Material* material,
@@ -48,9 +50,12 @@ namespace mu2e {
                                 G4ThreeVector& offset,
                                 G4LogicalVolume* parent,
                                 int copyNo,
-                                G4Colour color,
-                                bool forceSolid,
-                                bool doSurfaceCheck
+                                bool const isVisible,
+                                G4Colour const color,
+                                bool const forceSolid,
+                                bool const forceAuxEdgeVisible,
+                                bool const placePV,
+                                bool const doSurfaceCheck
                                 ){
     return nestTorus( name, 
                       &halfDim[0],
@@ -59,11 +64,66 @@ namespace mu2e {
                       offset,
                       parent,
                       copyNo,
+                      isVisible,
                       color,
                       forceSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
                       doSurfaceCheck
                       );
   }
+
+
+  // Alternate argument list (and different behavior)
+  // using  VolumeInfo object 
+  VolumeInfo nestTorus ( std::string const& name,
+                         double const halfDim[5],
+                         G4Material* material,
+                         G4RotationMatrix* rot,
+                         G4ThreeVector const& offset,
+                         const VolumeInfo& parent,
+                         int copyNo,
+                         bool const isVisible,
+                         G4Colour const color,
+                         bool const forceSolid,
+                         bool const forceAuxEdgeVisible,
+                         bool const placePV,
+                         bool const doSurfaceCheck
+                         );
+  
+
+  // Alternate argument list, using (and different behavior)
+  // using  VolumeInfo object aand vector for the half dimensions.
+  inline VolumeInfo nestTorus ( std::string const& name,
+                                std::vector<double>&  halfDim,
+                                G4Material* material,
+                                G4RotationMatrix* rot,
+                                G4ThreeVector& offset,
+                                const VolumeInfo& parent,
+                                int copyNo,
+                                bool const isVisible,
+                                G4Colour const color,
+                                bool const forceSolid,
+                                bool const forceAuxEdgeVisible,
+                                bool const placePV,
+                                bool const doSurfaceCheck
+                                ){
+    return nestTorus( name, 
+                      &halfDim[0],
+                      material,
+                      rot,
+                      offset,
+                      parent,
+                      copyNo,
+                      isVisible,
+                      color,
+                      forceSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck
+                      );
+  }
+
 }
 
 #endif

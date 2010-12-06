@@ -1,21 +1,20 @@
 //
 // Free function to create and place a new G4Torus, place inside a logical volume.
 // 
-// $Id: nestTorus.cc,v 1.1.1.1
-// $Author: A Chandra
+// $Id: nestTorus.cc,v 1.4 2010/12/06 22:29:35 genser Exp $
+// $Author: genser $ 
 // $Date: 2010/03/15
 //
 
 #include <string>
 
 #include "Mu2eG4/inc/nestTorus.hh"
+#include "Mu2eG4/inc/finishNesting.hh"
 
 #include "G4Torus.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
-#include "G4PVPlacement.hh"
 #include "G4ThreeVector.hh"
-#include "G4VisAttributes.hh"
 
 using namespace std;
 
@@ -25,33 +24,80 @@ namespace mu2e {
   // Create and place a G4Torus inside a logical volume.
   // 
   VolumeInfo nestTorus ( string const& name,
-                         double param[5],
+                         double const halfDim[5],
                          G4Material* material,
                          G4RotationMatrix* rot,
                          G4ThreeVector const& offset,
                          G4LogicalVolume* parent,
                          int copyNo,
-                         G4Colour color,
-                         bool forceSolid,
-                         bool doSurfaceCheck
-                        ){
+                         bool const isVisible,
+                         G4Colour const color,
+                         bool const forceSolid,
+                         bool const forceAuxEdgeVisible,
+                         bool const placePV,
+                         bool const doSurfaceCheck
+                         ){
     
     VolumeInfo info;
-    
-    info.solid   = new G4Torus( name, param[0], param[1], param[2], param[3], param[4]  );
-    
-    info.logical = new G4LogicalVolume( info.solid, material, name); 
-    
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent, 0, copyNo, doSurfaceCheck);
-    
-    G4VisAttributes* visAtt = new G4VisAttributes(true, color);
-    visAtt->SetForceSolid(forceSolid);
 
-    visAtt->SetForceAuxEdgeVisible (false);
+    info.name     = name;
+    
+    info.solid   = new G4Torus( name, halfDim[0], halfDim[1], halfDim[2], halfDim[3], halfDim[4]  );
 
-    info.logical->SetVisAttributes(visAtt);
+    finishNesting(info,
+                  material,
+                  rot,
+                  offset,
+                  parent,
+                  copyNo,
+                  isVisible,
+                  color,
+                  forceSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
     return info;
+  }
+
+
+  VolumeInfo nestTorus ( string const & name,
+                         double const halfDim[5],
+                         G4Material* material,
+                         G4RotationMatrix* rot,
+                         G4ThreeVector const & offset,
+                         VolumeInfo const & parent,
+                         int copyNo,
+                         bool const isVisible,
+                         G4Colour const color,
+                         bool const forceSolid,
+                         bool const forceAuxEdgeVisible,
+                         bool const placePV,
+                         bool const doSurfaceCheck
+                         ){
+    
+
+    VolumeInfo info(name,offset,parent.centerInWorld);
+    
+    info.solid    = new G4Torus( name, halfDim[0], halfDim[1], halfDim[2], halfDim[3], halfDim[4] );
+    
+    finishNesting(info,
+                  material,
+                  rot,
+                  offset,
+                  parent.logical,
+                  copyNo,
+                  isVisible,
+                  color,
+                  forceSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
+
+    return info;
+
   }
 
 }
