@@ -52,9 +52,10 @@ namespace mu2e {
   class BkgRates : public edm::EDAnalyzer {
   public:
     explicit BkgRates(edm::ParameterSet const& pset):
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
+      _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
       _nAnalyzed(0),
       _hHitMult(0),
       _hStrawEvt(0),
@@ -102,14 +103,16 @@ namespace mu2e {
 
     void doCalorimeter(edm::Event const& evt);
 
-    // Limit on number of events for which there will be full printout.
-    int _maxFullPrint;
+    // Diagnostic level
+    int _diagLevel;
 
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
 
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
+
+    double _minimumEnergy; //minimum energy deposition of hits
 
     //number of analyzed events
     int _nAnalyzed;
@@ -287,6 +290,11 @@ namespace mu2e {
       StrawHitMCTruth const&    truth(hits_truth->at(i));
       DPIndexVector   const&    mcptr(hits_mcptr->at(i));
 
+      double hitEnergy = hit.energyDep();
+
+      //Skip the straw if the energy of the hit is smaller than the minimum required
+      if (hitEnergy < _minimumEnergy) continue;
+
       //Get hit straw
       StrawIndex si = hit.strawIndex();
       Straw str = tracker.getStraw(si);
@@ -335,7 +343,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector MCHitPoint = stMidPoint3 + (vMC/stDirection3.mag())*stDirection3;
       
       if (fabs(v) > str.getHalfLength()) {
-        cout << "Position along the wire bigger than halflength" << endl;
+        if (_diagLevel > 0) cout << "Position along the wire bigger than halflength" << endl;
       }
 
       size_t nHitsPerStraw = mcptr.size();
@@ -346,7 +354,7 @@ namespace mu2e {
       tntpArray[idx++] = evt.id().event();
       tntpArray[idx++] = hitTime;
       tntpArray[idx++] = hit.dt();
-      tntpArray[idx++] = hit.energyDep();
+      tntpArray[idx++] = hitEnergy;
       tntpArray[idx++] = lid.getLayer();
       tntpArray[idx++] = did;
       tntpArray[idx++] = secid.getSector();
@@ -403,9 +411,10 @@ namespace mu2e {
           //insert track id in the trackId vector
           StrawTracksMap.insert(pair<SimParticleCollection::key_type, size_t>(trackId,trackIdx));
 
-          //insert trackId, and energy deposition in the list          
+          //insert trackId, and energy deposition in the list     
           TracksEDep.push_back(pair<SimParticleCollection::key_type, double>(trackId,mchit.eDep()));
 
+          
           if ( haveSimPart ){
             SimParticle const& sim = simParticles->at(trackId);
             
@@ -447,8 +456,10 @@ namespace mu2e {
       int nTrkPerStraw = TracksEDep.size();
       
       if (nTrkPerStraw > 3) {
-        cout << "More than 3 different tracks contribute to the straw:"
-             << "\nonly the first three with higher e deposit will be stored" << endl;
+        if (_diagLevel > 0) {
+          cout << "More than 3 different tracks contribute to the straw:"
+               << "\nonly the first three with higher e deposit will be stored" << endl;
+        }
       }
 
       tntpArray[idx++] = nTrkPerStraw;
@@ -552,14 +563,9 @@ namespace mu2e {
     for ( size_t i=0; i<caloHits->size(); ++i ) {
 
       int cid = cg->getCrystalByRO(caloHits->at(i).id());
+      //      if (caloHits->at(i).energyDep()>=_minimumEnergy) {
       crystalsHits.insert(pair<int,size_t>(cid,i));
-      
-      /*      cout << "inserting info on map:\n" 
-              << "CryId " << cid << '\t' << "hit index " << caloHits->at(i).id() << '\n'
-              << "energy " << hit.energyDep() << '\n'
-              << "time " << hit.time() << endl;
-      */
-      
+      //  }
     }
 
     for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
@@ -577,6 +583,8 @@ namespace mu2e {
       bool readCryOnce(false);
       float cntpArray[12];
       int idx(0);
+     
+      if (hit.energyDep() < _minimumEnergy) continue;
       
       for (it = itRange.first; it!= itRange.second; ++it) {
         
@@ -634,10 +642,12 @@ namespace mu2e {
         int nTrkPerCrystal = HitsEnergyDep.size();
         
         if (nTrkPerCrystal > 1) {
-          cout << "Different tracks contribute to the Crystal hit:"
-               << "\nonly the first with higher e deposit will be stored" << endl;
+          if (_diagLevel >0 ) {
+            cout << "Different tracks contribute to the Crystal hit:"
+                 << "\nonly the first with higher e deposit will be stored" << endl;
+          }
         }
-      
+        
         if (!readCryOnce) {
           cntpArray[idx++] = nTrkPerCrystal;
         }

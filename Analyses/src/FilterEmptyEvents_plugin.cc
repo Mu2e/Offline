@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter 
 
-$Id: FilterEmptyEvents_plugin.cc,v 1.2 2010/12/01 23:05:18 kutschke Exp $
-$Author: kutschke $
-$Date: 2010/12/01 23:05:18 $
+$Id: FilterEmptyEvents_plugin.cc,v 1.3 2010/12/06 18:04:02 onoratog Exp $
+$Author: onoratog $
+$Date: 2010/12/06 18:04:02 $
    
 Original author Giovanni Onorato
 
@@ -51,9 +51,9 @@ namespace mu2e {
   class FilterEmptyEvents : public edm::EDFilter {
   public:
     explicit FilterEmptyEvents(edm::ParameterSet const& pset):
+      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _keepTrackOrCalo(pset.getUntrackedParameter<int>("keepTrackOrCalo",1)),
       _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")){
-      _nGenParticles = 0;
     }
     virtual ~FilterEmptyEvents() {
     }
@@ -64,14 +64,14 @@ namespace mu2e {
     // Control parameter: 0 to filter both tracker and calorimeter
     //                    1 to filter only tracker
     //                    2 to filter only calorimeter
+
+    int _diagLevel;
     int _keepTrackOrCalo;
     string _makerModuleLabel;
     
     bool _hasTHits;
     bool _hasCHits;
     
-    int _nGenParticles;
-
   };
   
   bool FilterEmptyEvents::filter(edm::Event& e, edm::EventSetup const&) {
@@ -98,15 +98,10 @@ namespace mu2e {
     edm::Handle<ToyGenParticleCollection> genParticles;
     e.getByType(genParticles);
 
-    _nGenParticles += genParticles->size();
-    /*  for (ToyGenParticleCollection::const_iterator i = genParticles->begin();
-        i!=genParticles->end(); ++i) {
-        cout << "Particle type: " << i->generatorId() 
-        << "\nposition: " << i->_position << endl;
-        }*/
-    
     if (!_hasTHits) {
-      cout << "Event " << e.id().event() << " has no hits in the tracker" << endl;
+      if (_diagLevel > 0) {
+        cout << "Event " << e.id().event() << " has no hits in the tracker" << endl;
+      }
     }
     
     //Get handle to the calorimeter
@@ -121,14 +116,14 @@ namespace mu2e {
       _hasCHits = (caloHits.isValid() && (caloHits->size() > 0));
       
       if (!_hasCHits) {
-        cout << "Event " << e.id().event() << " has no hits in the calorimeter" << endl;
+        if (_diagLevel > 0) {
+          cout << "Event " << e.id().event() << " has no hits in the calorimeter" << endl;
+        }
       }
     } else { 
-      
       //Set a boolean false if there is no Calorimeter
       _hasCHits = false;
       cout << "No calorimeter in the geometry" << endl;
-      
     }
     
     if (_keepTrackOrCalo == 1) {
