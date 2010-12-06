@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.cc,v 1.7 2010/12/02 17:47:14 genser Exp $
+// $Id: nestTubs.cc,v 1.8 2010/12/06 22:29:46 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/02 17:47:14 $
+// $Date: 2010/12/06 22:29:46 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +39,7 @@ namespace mu2e {
                         bool const forceSolid,
                         bool const forceAuxEdgeVisible,
                         bool const placePV,
-                        bool const doSurfCheck
+                        bool const doSurfaceCheck
                         ){
     
 
@@ -60,7 +60,7 @@ namespace mu2e {
                   forceSolid,
                   forceAuxEdgeVisible,
                   placePV,
-                  doSurfCheck
+                  doSurfaceCheck
                   );
 
     return info;
@@ -79,7 +79,7 @@ namespace mu2e {
                         bool const forceSolid,
                         bool const forceAuxEdgeVisible,
                         bool const placePV,
-                        bool const doSurfCheck
+                        bool const doSurfaceCheck
                         ){
     
 
@@ -98,7 +98,7 @@ namespace mu2e {
                   forceSolid,
                   forceAuxEdgeVisible,
                   placePV,
-                  doSurfCheck
+                  doSurfaceCheck
                   );
 
     return info;
