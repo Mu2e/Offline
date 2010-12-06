@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.24 2010/12/02 17:48:39 genser Exp $
+// $Id: Mu2eWorld.hh,v 1.25 2010/12/06 22:31:11 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/02 17:48:39 $
+// $Date: 2010/12/06 22:31:11 $
 //
 // Original author Rob Kutschke
 //
@@ -125,71 +125,6 @@ namespace mu2e {
 
     // Utility functions.
     void setUnits( std::vector<double>& V, G4double unit );
-
-    VolumeInfo nestCons2 ( std::string const& name,
-                           double params[7],
-                           G4Material* material,
-                           G4RotationMatrix* rot,
-                           const G4ThreeVector& offset,
-                           const VolumeInfo& parent,
-                           int copyNo,
-                           bool isVisible = false,
-                           G4Colour color = G4Colour::Black(),
-                           bool forceSolid = false
-                           );
-  
-    VolumeInfo nestExtrudedSolid2 ( std::string const& name,
-				    double hz,
-				    std::vector<double> &x,
-				    std::vector<double> &y,
-				    G4Material* material,
-				    G4RotationMatrix* rot,
-				    const G4ThreeVector& offset,
-				    const VolumeInfo& parent,
-				    int copyNo,
-				    bool isVisible = false,
-				    G4Colour color = G4Colour::Black(),
-				    bool forceSolid = false
-				    );
-  
-    VolumeInfo nestTorus2 ( std::string const& name,
-                            double halfDim[5],
-                            G4Material* material,
-                            G4RotationMatrix* rot,
-                            G4ThreeVector const& offset,
-                            const VolumeInfo& parent,
-                            int copyNo,
-                            bool isVisible = false,
-                            G4Colour color = G4Colour::Black(),
-                            bool forceSolid = false
-                            );
-  
-
-
-    // Alternate argument list, using a vector for the half dimensions.
-    inline VolumeInfo nestTorus2 ( std::string const& name,
-                                   std::vector<double>&  halfDim,
-                                   G4Material* material,
-                                   G4RotationMatrix* rot,
-                                   G4ThreeVector& offset,
-                                   const VolumeInfo& parent,
-                                   int copyNo,
-                                   bool isVisible = false,
-                                   G4Colour color = G4Colour::Black(),
-                                   bool forceSolid = false
-                                   ){
-      return nestTorus2( name, 
-                         &halfDim[0],
-                         material,
-                         rot,
-                         offset,
-                         parent,
-                         copyNo,
-                         isVisible,
-                         color,
-                         forceSolid
-                         );
-    }
 
     // Stash a pointer to the config object so that all methods can get at it easily.
     SimpleConfig const* _config;
