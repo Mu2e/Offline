@@ -3,9 +3,18 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.32 2010/12/03 19:40:23 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2010/12/03 19:40:23 $
+  $Id: v0_2_8.txt,v 1.33 2010/12/06 22:46:41 genser Exp $
+  $Author: genser $
+  $Date: 2010/12/06 22:46:41 $
+
+42) December 6, 2010 genser
+
+    Modified/added free mest... functions: nestTorus, nestCons,
+    nestExtrudedSolid similar to the previously changed nestTubs;
+    Removed nestTorus2, nestCons2, nestExtrudedSolid2 from Mu2eWorld
+    and used the new free functions instead; used finishNesting more;
+    Added optional printout in finishNesting depending on the verbose flag;
+
 
 41) December 3, 2010 onoratog
     In particle generator modules, all the histograms related to time
@@ -13,6 +22,18 @@
     in order to include future changes that will shift t=0 at the middle
     of the proton bunch and so will include also negative time.
     
+      Mu2eG4/inc/Mu2eWorld.hh
+      Mu2eG4/inc/finishNesting.hh
+      Mu2eG4/inc/nestCons.hh
+      Mu2eG4/inc/nestExtrudedSolid.hh
+      Mu2eG4/inc/nestTorus.hh
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/finishNesting.cc
+      Mu2eG4/src/nestCons.cc
+      Mu2eG4/src/nestExtrudedSolid.cc
+      Mu2eG4/src/nestTorus.cc
+      Mu2eG4/src/nestTubs.cc
+
 
 40) December 2, 2010 onoratog
     Modified BkgRates_plugin.cc. For the Tracker ntupla: now each entry is
