@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.68 2010/12/02 17:48:57 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.69 2010/12/06 22:31:24 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/02 17:48:57 $
+// $Date: 2010/12/06 22:31:24 $
 //
 // Original author Rob Kutschke
 //
@@ -21,14 +21,6 @@
 //  The Earth overburden is modeled in two parts: a box that extends
 //  to the surface of the earth plus a cap above grade.  The cap is shaped
 //  as a G4Paraboloid.
-//
-// Notes:
-// 1) When a G4VisAttributes is given to a G4LogicalVolume, the logical volume
-//    object does not take ownership of the G4VisAttributes object; so the caller
-//    who called SetVisAttributes needs to manage the lifetime of the G4VisAttributes
-//    object.  We do this by putting them into a list that has a lifetime as long
-//    as Mu2eWorld.  Note that push_back() on a list does not invalidate pointers
-//    to previous entries in the list.
 //
 
 // C++ includes
@@ -49,7 +41,11 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestTorus.hh"
 #include "Mu2eG4/inc/nestBox.hh"
+#include "Mu2eG4/inc/nestCons.hh"
+#include "Mu2eG4/inc/nestExtrudedSolid.hh"
+#include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -76,16 +72,16 @@
 #include "G4Paraboloid.hh"
 #include "G4Colour.hh"
 #include "G4Tubs.hh"
-#include "G4Cons.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4Torus.hh"
+//#include "G4Cons.hh"
+//#include "G4ExtrudedSolid.hh"
+//#include "G4Torus.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4TwoVector.hh"
 #include "G4ThreeVector.hh"
-#include "G4PVPlacement.hh"
+//#include "G4PVPlacement.hh"
 #include "globals.hh"
-#include "G4VisAttributes.hh"
+//#include "G4VisAttributes.hh"
 #include "G4UniformMagField.hh"
 #include "G4FieldManager.hh"
 #include "G4Mag_UsualEqRhs.hh"
@@ -468,26 +464,19 @@ namespace mu2e {
 
     dirtCapInfo.solid = new G4Paraboloid( dirtCapName, capHalfHeight, capTopR, capBottomR);
     
-    dirtCapInfo.logical= new G4LogicalVolume( dirtCapInfo.solid, 
-                                              dirtMaterial, 
-                                              dirtCapName);
-    
-    dirtCapInfo.physical =  new G4PVPlacement( dirtCapRot, 
-                                               dirtCapOffset,
-                                               dirtCapInfo.logical,
-                                               dirtCapName, 
-                                               worldInfo.logical, 
-                                               0, 
-                                               0,
-                                               _config->getBool("g4.doSurfaceCheck",false));
-    
-    AntiLeakRegistry& reg = _helper->antiLeakRegistry();
-    G4VisAttributes* visAtt = reg.add( G4VisAttributes(dirtCapVisible, G4Colour::Green()) );
-    visAtt->SetForceSolid(dirtCapSolid);
-    visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
-    dirtCapInfo.logical->SetVisAttributes(visAtt);
-
-    _helper->addVolInfo( dirtCapInfo );
+    finishNesting(dirtCapInfo,
+                  dirtMaterial,
+                  dirtCapRot,
+                  dirtCapOffset,
+                  worldInfo.logical,
+                  0,
+                  dirtCapVisible,
+                  G4Colour::Green(),
+                  dirtCapSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
     return dirtInfo;
 
@@ -735,17 +724,20 @@ namespace mu2e {
 			     coll1HalfLength-2*vdHalfLength, 
 			     0.0, 360.0*CLHEP::degree };
 
-    VolumeInfo coll1VacInfo = nestCons2( "Coll1",
-					 coll1Param,
-					 coll1Material,
-					 0,
-					 beamg->getTS().getColl1().getLocal(),
-					 ts1VacInfo,
-					 0,
-					 collVisible,
-					 G4Color::Blue(),
-					 collSolid
-					 );
+    VolumeInfo coll1VacInfo = nestCons( "Coll1",
+                                        coll1Param,
+                                        coll1Material,
+                                        0,
+                                        beamg->getTS().getColl1().getLocal(),
+                                        ts1VacInfo,
+                                        0,
+                                        collVisible,
+                                        G4Color::Blue(),
+                                        collSolid,
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        doSurfaceCheck
+                                        );
 
     // Build TS2.
     double ts2VacParams[5]  = { 0.0,   rVac, rTorus, 1.5*M_PI, 0.5*M_PI };
@@ -757,31 +749,38 @@ namespace mu2e {
     G4RotationMatrix* ts2Rot = new G4RotationMatrix();
     ts2Rot->rotateX(90.0*CLHEP::degree);
 
-    VolumeInfo ts2VacInfo = nestTorus2("ToyTS2Vacuum",
-                                       ts2VacParams,
-                                       vacuumMaterial,
+    VolumeInfo ts2VacInfo = nestTorus("ToyTS2Vacuum",
+                                      ts2VacParams,
+                                      vacuumMaterial,
+                                      ts2Rot,
+                                      ts2VacPosition-_hallOriginInMu2e,
+                                      parent,
+                                      0,
+                                      toyTSVisible,
+                                      G4Color::Yellow(),
+                                      toyTSSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
+
+    VolumeInfo ts2CryoInfo = nestTorus("ToyTS2Cryo",
+                                       ts2CryoParams,
+                                       cryoMaterial,
                                        ts2Rot,
                                        ts2VacPosition-_hallOriginInMu2e,
                                        parent,
                                        0,
                                        toyTSVisible,
                                        G4Color::Yellow(),
-                                       toyTSSolid
+                                       toyTSSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       doSurfaceCheck
                                        );
 
-    VolumeInfo ts2CryoInfo = nestTorus2("ToyTS2Cryo",
-                                        ts2CryoParams,
-                                        cryoMaterial,
-                                        ts2Rot,
-                                        ts2VacPosition-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        toyTSVisible,
-                                        G4Color::Yellow(),
-                                        toyTSSolid
-                                        );
-
     // Build TS3.
+
     TubsParams ts3VacParams (   0.,  rVac, ts3HalfLength);
     TubsParams ts3CryoParams( rVac, rCryo, ts3HalfLength);
     
@@ -808,7 +807,7 @@ namespace mu2e {
                                        parent,
                                        0,
                                        toyTSVisible,
-                                       G4Color::Green(),
+                                       G4Color::Cyan(),
                                        toyTSSolid,
                                        forceAuxEdgeVisible,
                                        placePV,
@@ -823,53 +822,65 @@ namespace mu2e {
     coll32Rot->rotateZ((180.0+coll3RotationAngle)*CLHEP::degree);
     coll32Rot->rotateY(180.0*CLHEP::degree);
 
-    VolumeInfo coll3Info1 = nestExtrudedSolid2 ( "Coll3_1",
-						 coll31HalfLength, coll3x, coll3y,
-						 coll3Material,
-						 coll31Rot,
-						 beamg->getTS().getColl31().getLocal(),
-						 ts3VacInfo,
-						 0,
-						 collVisible,
-						 G4Color::Blue(),
-						 collSolid
-						 );
+    VolumeInfo coll3Info1 = nestExtrudedSolid( "Coll3_1",
+                                               coll31HalfLength, coll3x, coll3y,
+                                               coll3Material,
+                                               coll31Rot,
+                                               beamg->getTS().getColl31().getLocal(),
+                                               ts3VacInfo,
+                                               0,
+                                               collVisible,
+                                               G4Color::Gray(),
+                                               collSolid,
+                                               forceAuxEdgeVisible,
+                                               placePV,
+                                               doSurfaceCheck
+                                               );
 
-    VolumeInfo coll3Info2 = nestExtrudedSolid2 ( "Coll3_2",
-						 coll31HalfLength, coll3x, coll3y,
-						 coll3Material,
-						 coll32Rot,
-						 beamg->getTS().getColl31().getLocal(),
-						 ts3VacInfo,
-						 0,
-						 collVisible,
-						 G4Color::Blue(),
-						 collSolid
-						 );
+    VolumeInfo coll3Info2 = nestExtrudedSolid( "Coll3_2",
+                                               coll31HalfLength, coll3x, coll3y,
+                                               coll3Material,
+                                               coll32Rot,
+                                               beamg->getTS().getColl31().getLocal(),
+                                               ts3VacInfo,
+                                               0,
+                                               collVisible,
+                                               G4Color::Yellow(),
+                                               collSolid,
+                                               forceAuxEdgeVisible,
+                                               placePV,
+                                               doSurfaceCheck
+                                               );
 
-    VolumeInfo coll3Info3 = nestExtrudedSolid2 ( "Coll3_3",
-						 coll32HalfLength, coll3x, coll3y,
-						 coll3Material,
-						 coll31Rot,
-						 beamg->getTS().getColl32().getLocal(),
-						 ts3VacInfo,
-						 0,
-						 collVisible,
-						 G4Color::Blue(),
-						 collSolid
-						 );
+    VolumeInfo coll3Info3 = nestExtrudedSolid( "Coll3_3",
+                                               coll32HalfLength, coll3x, coll3y,
+                                               coll3Material,
+                                               coll31Rot,
+                                               beamg->getTS().getColl32().getLocal(),
+                                               ts3VacInfo,
+                                               0,
+                                               collVisible,
+                                               G4Color::Red(),
+                                               collSolid,
+                                               forceAuxEdgeVisible,
+                                               placePV,
+                                               doSurfaceCheck
+                                               );
 
-    VolumeInfo coll3Info4 = nestExtrudedSolid2 ( "Coll3_4",
-						 coll32HalfLength, coll3x, coll3y,
-						 coll3Material,
-						 coll32Rot,
-						 beamg->getTS().getColl32().getLocal(),
-						 ts3VacInfo,
-						 0,
-						 collVisible,
-						 G4Color::Blue(),
-						 collSolid
-						 );
+    VolumeInfo coll3Info4 = nestExtrudedSolid( "Coll3_4",
+                                               coll32HalfLength, coll3x, coll3y,
+                                               coll3Material,
+                                               coll32Rot,
+                                               beamg->getTS().getColl32().getLocal(),
+                                               ts3VacInfo,
+                                               0,
+                                               collVisible,
+                                               G4Color::Cyan(),
+                                               collSolid,
+                                               forceAuxEdgeVisible,
+                                               placePV,
+                                               doSurfaceCheck
+                                               );
 
     double pbarHalfLength     = _config->getDouble("pbar.halfLength");
     G4Material* pbarMaterial  = materialFinder.get("pbar.materialName");
@@ -902,29 +913,35 @@ namespace mu2e {
     G4RotationMatrix* ts4Rot = new G4RotationMatrix();
     ts4Rot->rotateX(90.0*CLHEP::degree);
 
-    VolumeInfo ts4VacInfo = nestTorus2("ToyTS4Vacuum",
-                                       ts4VacParams,
-                                       vacuumMaterial,
+    VolumeInfo ts4VacInfo = nestTorus("ToyTS4Vacuum",
+                                      ts4VacParams,
+                                      vacuumMaterial,
+                                      ts4Rot,
+                                      ts4VacPosition-_hallOriginInMu2e,
+                                      parent,
+                                      0,
+                                      toyTSVisible,
+                                      G4Color::Yellow(),
+                                      toyTSSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
+
+    VolumeInfo ts4CryoInfo = nestTorus("ToyTS4Cryo",
+                                       ts4CryoParams,
+                                       cryoMaterial,
                                        ts4Rot,
                                        ts4VacPosition-_hallOriginInMu2e,
                                        parent,
                                        0,
                                        toyTSVisible,
                                        G4Color::Yellow(),
-                                       toyTSSolid
+                                       toyTSSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       doSurfaceCheck
                                        );
-
-    VolumeInfo ts4CryoInfo = nestTorus2("ToyTS4Cryo",
-                                        ts4CryoParams,
-                                        cryoMaterial,
-                                        ts4Rot,
-                                        ts4VacPosition-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        toyTSVisible,
-                                        G4Color::Yellow(),
-                                        toyTSSolid
-                                        );
     
     // Build TS5.
 
@@ -1209,6 +1226,11 @@ namespace mu2e {
     double pabs1Param[7] = { pabs1rIn0, pabs1rOut0, pabs1rIn1, pabs1rOut1, pabs1len/2.0, 0.0, 360.0*CLHEP::degree };
     bool pabsVisible = _config->getBool("protonabsorber.visible",true);
     bool pabsSolid   = _config->getBool("protonabsorber.solid",true);
+
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const placePV       = true;
+    
     
     if( _config->getBool("hasProtonAbsorber", true) ){
       
@@ -1223,32 +1245,38 @@ namespace mu2e {
       log << "rIn,  rOut (+z): "<< pabs2rIn1 <<"  "<< pabs2rOut1<<"  ";
       log << "halflength: "<< pabs2len/2.0 <<"\n";
       
-      VolumeInfo protonabs1Info = nestCons2( "protonabs1",
-					     pabs1Param,
-					     pabsMaterial,
-					     0,
-					     pabs1Offset,
-					     parent1,
-					     0,
-					     pabsVisible,
-					     G4Color::White(),
-					     pabsSolid
-					     );
+      VolumeInfo protonabs1Info = nestCons( "protonabs1",
+                                            pabs1Param,
+                                            pabsMaterial,
+                                            0,
+                                            pabs1Offset,
+                                            parent1,
+                                            0,
+                                            pabsVisible,
+                                            G4Color::White(),
+                                            pabsSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
       
       // proton absorber in DS3
       double pabs2Param[7] = { pabs1rIn1, pabs1rOut1, pabs2rIn1, pabs2rOut1, pabs2len/2.0, 0.0, 360.0*CLHEP::degree };
       
-      VolumeInfo protonabs2Info = nestCons2( "protonabs2",
-					     pabs2Param,
-					     pabsMaterial,
-					     0,
-					     pabs2Offset,
-					     parent2,
-					     0,
-					     pabsVisible,
-					     G4Color::Magenta(),
-					     pabsSolid
-					     );
+      VolumeInfo protonabs2Info = nestCons( "protonabs2",
+                                            pabs2Param,
+                                            pabsMaterial,
+                                            0,
+                                            pabs2Offset,
+                                            parent2,
+                                            0,
+                                            pabsVisible,
+                                            G4Color::Magenta(),
+                                            pabsSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
     }
   } // end of Mu2eWorld::constructProtonAbs;
 
@@ -1513,7 +1541,7 @@ namespace mu2e {
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
     //_stepLimits.push_back( G4UserLimits(maxStep) );
     //G4UserLimits* stepLimit = &(_stepLimits.back());
-    //G4VisAttributes* visAtt = reg.add( new G4VisAttributes(dirtCapVisible, G4Colour::Green()) );
+
     AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(maxStep) );
     ds2Vacuum->SetUserLimits( stepLimit );
@@ -1730,37 +1758,26 @@ namespace mu2e {
                                                 FrontHoleDims.phi0, 
                                                 FrontHoleDims.phiMax);
 
-    string const FrontShieldName = "CRVFrontShield";
     VolumeInfo FrontShieldInfo;
 
+    FrontShieldInfo.name = "CRVFrontShield";
+
     FrontShieldInfo.solid = 
-      new G4SubtractionSolid(FrontShieldName, CRVBox, HallSteelFrontHoleTubs);
+      new G4SubtractionSolid(FrontShieldInfo.name, CRVBox, HallSteelFrontHoleTubs);
 
-    FrontShieldInfo.logical = new G4LogicalVolume( FrontShieldInfo.solid, 
-                                                   HallSteelShieldMaterial, 
-                                                   FrontShieldName); 
-
-    FrontShieldInfo.physical = new G4PVPlacement( 0,
-                                                  FrontShield  + boxCenter, 
-                                                  FrontShieldInfo.logical,
-                                                  FrontShieldName,
-                                                  parent.logical,
-                                                  0,
-                                                  0,
-                                                  _config->getBool("g4.doSurfaceCheck",false));
-    
-    if ( hallSteelVisible ){
-
-      // We need to manage the lifetime of the G4VisAttributes object.
-      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Green()));
-      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
-      visAtt->SetForceSolid(hallSteelSolid);
-      FrontShieldInfo.logical->SetVisAttributes(visAtt);
-    } 
-    else{
-      FrontShieldInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    }
+    finishNesting(FrontShieldInfo,
+                  HallSteelShieldMaterial,
+                  0,
+                  FrontShield  + boxCenter, 
+                  parent.logical,
+                  0,
+                  hallSteelVisible,
+                  G4Colour::Green(),
+                  hallSteelSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
   } // end Mu2eWorld::constructSteel
 
@@ -1829,7 +1846,7 @@ namespace mu2e {
       vd.logical->SetSensitiveDetector(vdSD);
     }
 
-    // VD 7-8 are placed inside TS3
+    // VD 7-8 are placed inside TS5
 
     for( int id=7; id<=8; ++id) if( vdg->exist(id) ) {
       VolumeInfo parent = _helper->locateVolInfo("ToyTS5Vacuum");
@@ -1846,166 +1863,5 @@ namespace mu2e {
     }
 
   } //constructVD
-
-  // Create and place a G4Cons inside a logical volume.
-  VolumeInfo Mu2eWorld::nestCons2 ( string const& name,
-                                    double param[7],
-                                    G4Material* material,
-                                    G4RotationMatrix* rot,
-                                    G4ThreeVector const& offset,
-                                    const VolumeInfo& parent,
-                                    int copyNo,
-                                    bool isVisible,
-                                    G4Colour color,
-                                    bool forceSolid
-                                    ){
-    
-    VolumeInfo info(name,offset,parent.centerInWorld);
-    
-    info.solid   = new G4Cons( name, param[0], param[1], param[2], param[3], 
-                               param[4], param[5], param[6]  );
-    
-    info.logical = new G4LogicalVolume( info.solid, material, name); 
-    
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
-
-    if ( isVisible ){
-
-      // We need to manage the lifetime of the G4VisAttributes object.
-      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
-
-      // If I do not do this, then the rendering depends on what happens in
-      // other parts of the code;  is there a G4 bug that causes something to be
-      // unitialized?
-      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
-
-      // Finish the setting of visualization properties.
-      visAtt->SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(visAtt);
-    } 
-    else{
-
-      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    }
-
-    // Save the volume information in case someone else needs to access it by name.
-    _helper->addVolInfo(info);
-
-    return info;
-  }  // end of Mu2eWorld::nestCons
-
-  // Create and place a G4ExtrudedSolid inside a logical volume.
-  VolumeInfo Mu2eWorld::nestExtrudedSolid2 ( string const& name,
-					     double hz,
-					     vector<double> & x,
-					     vector<double> & y,
-					     G4Material* material,
-					     G4RotationMatrix* rot,
-					     G4ThreeVector const& offset,
-					     const VolumeInfo& parent,
-					     int copyNo,
-					     bool isVisible,
-					     G4Colour color,
-					     bool forceSolid
-					     ){
-    
-    VolumeInfo info(name,offset,parent.centerInWorld);
-
-    if( x.size()!=y.size() || x.size()==0 ) return info;
-
-    vector<G4TwoVector> polygon;
-    for( size_t i=0; i<x.size(); ++i ) polygon.push_back(G4TwoVector(x[i],y[i]));
-    
-    info.solid   = new G4ExtrudedSolid( name, polygon, hz,
-					G4TwoVector(0.0,0.0), 1.0,
-					G4TwoVector(0.0,0.0), 1.0 );
-    
-    info.logical = new G4LogicalVolume( info.solid, material, name); 
-    
-    info.physical =  new G4PVPlacement( rot, offset, info.logical, name, parent.logical, 0, copyNo);
-
-    if ( isVisible ){
-
-      // We need to manage the lifetime of the G4VisAttributes object.
-      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
-
-      // If I do not do this, then the rendering depends on what happens in
-      // other parts of the code;  is there a G4 bug that causes something to be
-      // unitialized?
-      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
-
-      // Finish the setting of visualization properties.
-      visAtt->SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(visAtt);
-    } 
-    else{
-
-      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    }
-
-    // Save the volume information in case someone else needs to access it by name.
-    _helper->addVolInfo(info);
-
-    return info;
-  }  // end of Mu2eWorld::nestCons
-
-
-  //
-  // Create and place a G4Torus inside a logical volume.
-  // 
-  VolumeInfo Mu2eWorld::nestTorus2 ( string const& name,
-                                     double param[5],
-                                     G4Material* material,
-                                     G4RotationMatrix* rot,
-                                     G4ThreeVector const& offset,
-                                     const VolumeInfo& parent,
-                                     int copyNo,
-                                     bool isVisible,
-                                     G4Colour color,
-                                     bool forceSolid
-                                     ){
-    
-    VolumeInfo info(name,offset,parent.centerInWorld);
-    
-    info.solid   = new G4Torus( name, param[0], param[1], param[2], param[3], param[4]  );
-    
-    info.logical = new G4LogicalVolume( info.solid, material, name); 
-    
-    info.physical =  new G4PVPlacement( rot,
-                                        offset,
-                                        info.logical,
-                                        name,
-                                        parent.logical,
-                                        0,
-                                        copyNo,
-                                        _config->getBool("g4.doSurfaceCheck",false));
-    
-    if ( isVisible ){
-
-      // We need to manage the lifetime of the G4VisAttributes object.
-      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
-
-      // If I do not do this, then the rendering depends on what happens in
-      // other parts of the code;  is there a G4 bug that causes something to be
-      // unitialized?
-      visAtt->SetForceAuxEdgeVisible(_config->getBool("g4.forceAuxEdgeVisible",false));
-
-      // Finish the setting of visualization properties.
-      visAtt->SetForceSolid(forceSolid);
-      info.logical->SetVisAttributes(visAtt);
-    } 
-    else{
-
-      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    }
-
-    // Save the volume information in case someone else needs to access it by name.
-    _helper->addVolInfo(info);
-
-    return info;
-  } // end of Mu2eWorld::nestTorus
 
 } // end namespace mu2e
