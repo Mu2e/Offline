@@ -3,6 +3,8 @@
 #include <string>
 #include <cmath>
 #include <deque>
+#include <map>
+#include <list>
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -135,11 +137,17 @@ namespace mu2e {
   };
 
 
-  bool SortByEnergy(const pair<size_t,double> & a,
+  bool SortByEnergyC(const pair<size_t,double> & a,
                     const pair<size_t,double> & b ) {
     return a.second < b.second;
   }
+
+  bool SortByEnergyT(const pair<SimParticleCollection::key_type,double> & a,
+                    const pair<SimParticleCollection::key_type,double> & b ) {
+    return a.second < b.second;
+  }
   
+
 
   void BkgRates::beginJob(edm::EventSetup const& ) {
 
@@ -154,7 +162,7 @@ namespace mu2e {
     //    _hRateMaxU    = tfs->make<TH1F>( "hRateMaxU",      ask Asset
 
     _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                        "evt:time:dt:eDep:lay:dev:sec:strawId:hLeng:dirX:dirY:dirZ:strawX:strawY:hitX:hitY:MChitX:MChitY:u:v:vMC:z:nTrk:t1trkId:t1pdgId:t1genId:t1en:t2trkId:t2pdgId:t2genId:t2en:t3trkId:t3pdgId:t3genId:t3en:driftTime:driftDist" );
+                                        "evt:time:dt:eDep:lay:dev:sec:strawId:hLeng:dirX:dirY:dirZ:strawX:strawY:hitX:hitY:MChitX:MChitY:u:v:vMC:z:nTrk:t1trkId:t1pdgId:t1genId:t1en:t1genE:t1genP:t2trkId:t2pdgId:t2genId:t2en:t2genE:t2genP:t3trkId:t3pdgId:t3genId:t3en:t3genE:t3genP:driftTime:driftDist" );
     _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
                                         "evt:crTime:crE:crId:crVane:crX:crY:crZ:nTrk:trkId:pdgId:genId" );
 
@@ -333,7 +341,7 @@ namespace mu2e {
       size_t nHitsPerStraw = mcptr.size();
       _hHitMult->Fill(nHitsPerStraw);
 
-      float tntpArray[37];
+      float tntpArray[43];
       int idx(0);
       tntpArray[idx++] = evt.id().event();
       tntpArray[idx++] = hitTime;
@@ -360,30 +368,83 @@ namespace mu2e {
 
       //Get related G4 hits to identify the track. 
 
-      //Containers of trackId contributing to the straw hit.
-      //the set avoid multiple entries of the same straw
-      set<SimParticleCollection::key_type> StrawTracks;
-     
-      //list of Collection index and energy deposition of the StrawTracks elements. Will be used to sort
-      list<pair<size_t, double> > HitsEnergyDep;
-      
+
+      //Map of track id as key, and vector index as value
+      map<SimParticleCollection::key_type , size_t > StrawTracksMap;
+
+      //Vectors of pdgId and GenId of the tracks associated to the strawhit
+      vector<int>     PdgIdTracks;
+      vector<int>     GenIdTracks;
+      vector<double>  GenPartEnergy;
+      vector<double>  GenPartMomentum;
+
+      //List of trackId and energy deposition
+      typedef  list< pair <SimParticleCollection::key_type , double> >  PairList;
+      PairList TracksEDep;
+
+      //common index for vectors
+      size_t trackIdx(0);      
+
       for (size_t j = 0; j < mcptr.size(); ++j) {
         
         StepPointMC const& mchit = (*mchits)[mcptr[j].index];
         
         // The simulated particle that made this hit.
         SimParticleCollection::key_type trackId(mchit.trackId());
-        
-        //if the contributing track id does not exist in the container
-        //add an element to the energy map and the pdgId and genId vectors
-        
-        if (StrawTracks.insert(trackId).second) {
-          HitsEnergyDep.push_back(pair<size_t,double>(j,mchit.eDep()));
+
+        //Find in the map if the track is already stored
+        map<SimParticleCollection::key_type , size_t >::iterator it;
+        it = StrawTracksMap.find(trackId);
+
+        //if the contributing track id does not exist in the map
+        //add an element to the map itself, energy to the list and pdgId and genId to the vectors
+        if (it==StrawTracksMap.end()) {
+
+          //insert track id in the trackId vector
+          StrawTracksMap.insert(pair<SimParticleCollection::key_type, size_t>(trackId,trackIdx));
+
+          //insert trackId, and energy deposition in the list          
+          TracksEDep.push_back(pair<SimParticleCollection::key_type, double>(trackId,mchit.eDep()));
+
+          if ( haveSimPart ){
+            SimParticle const& sim = simParticles->at(trackId);
+            
+            // PDG Particle Id of the sim particle that made this hit.
+            PdgIdTracks.push_back(sim.pdgId()); 
+            
+            // If this is a generated particle, which generator did it come from?
+            // This default constructs to "unknown".
+            if ( sim.fromGenerator() ){
+              ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+              GenIdTracks.push_back(gen.generatorId().Id());
+              GenPartEnergy.push_back(gen.momentum().e());
+              GenPartMomentum.push_back(gen.momentum().vect().mag());
+            } else if ( !sim.fromGenerator() ){ //if sim and gen info are not available set them to zero
+              GenIdTracks.push_back(0);
+              GenPartEnergy.push_back(0);
+              GenPartMomentum.push_back(0);
+            }
+          } else if ( !haveSimPart) {
+            PdgIdTracks.push_back(0);
+            GenIdTracks.push_back(0);
+            GenPartEnergy.push_back(0);
+            GenPartMomentum.push_back(0);
+          }
+
+          //increment index
+          trackIdx++;
+        } else if (it != StrawTracksMap.end()) {          
+          for (PairList::iterator it2 = TracksEDep.begin(); it2 != TracksEDep.end(); ++it2) {
+            if (it2->first == trackId) {
+              it2->second += mchit.eDep();
+            }
+          }
         }
-      }        
-      HitsEnergyDep.sort(SortByEnergy);      
+      }
+    
+      TracksEDep.sort(SortByEnergyT);      
       
-      int nTrkPerStraw = HitsEnergyDep.size();
+      int nTrkPerStraw = TracksEDep.size();
       
       if (nTrkPerStraw > 3) {
         cout << "More than 3 different tracks contribute to the straw:"
@@ -393,36 +454,18 @@ namespace mu2e {
       tntpArray[idx++] = nTrkPerStraw;
       int counter = 0;
 
-      for (list<pair<size_t,double> >::reverse_iterator it = HitsEnergyDep.rbegin();
-           it != HitsEnergyDep.rend(); ++it) {
+      for (PairList::reverse_iterator it = TracksEDep.rbegin();
+           it != TracksEDep.rend(); ++it) {
         if (counter == 3) break;        
-
-        StepPointMC const& mchit = (*mchits)[mcptr[it->first].index];
-
-        // The simulated particle that made this hit.
-        SimParticleCollection::key_type trackId(mchit.trackId());
         
-        tntpArray[idx++] = trackId.asInt();
-        
-        if ( haveSimPart ){
-          SimParticle const& sim = simParticles->at(trackId);
-          
-          // PDG Particle Id of the sim particle that made this hit.
-          tntpArray[idx++] = sim.pdgId();
-          
-          // If this is a generated particle, which generator did it come from?
-          // This default constructs to "unknown".
-          if ( sim.fromGenerator() ){
-            ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
-            tntpArray[idx++] = gen.generatorId().Id();
-          } else if ( !sim.fromGenerator() ){ //if sim and gen info are not available set them to zero
-            tntpArray[idx++] = 0;
-          }
-        } else if ( !haveSimPart) {
-          tntpArray[idx++] = 0;
-          tntpArray[idx++] = 0;
-        }
+        size_t vec_idx = StrawTracksMap[it->first];
+
+        tntpArray[idx++] = it->first.asInt();
+        tntpArray[idx++] = PdgIdTracks[vec_idx];
+        tntpArray[idx++] = GenIdTracks[vec_idx];
         tntpArray[idx++] = it->second;
+        tntpArray[idx++] = GenPartEnergy[vec_idx];
+        tntpArray[idx++] = GenPartMomentum[vec_idx];
         counter++;
       }
     
@@ -432,6 +475,8 @@ namespace mu2e {
       //to the straw hit
       
       for (int add_idx = 0; add_idx < 3 - counter; ++add_idx) {
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
@@ -584,7 +629,7 @@ namespace mu2e {
           }
         }    
         
-        HitsEnergyDep.sort(SortByEnergy);      
+        HitsEnergyDep.sort(SortByEnergyC);      
         
         int nTrkPerCrystal = HitsEnergyDep.size();
         
