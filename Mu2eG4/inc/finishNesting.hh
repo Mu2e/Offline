@@ -3,9 +3,9 @@
 //
 // Free function to be used by the nest... functions
 // 
-// $Id: finishNesting.hh,v 1.1 2010/12/02 17:43:54 genser Exp $
+// $Id: finishNesting.hh,v 1.2 2010/12/06 22:30:30 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/02 17:43:54 $
+// $Date: 2010/12/06 22:30:30 $
 //
 // Original author KLG
 //
@@ -35,7 +35,8 @@ namespace mu2e {
                      bool const forceSolid,
                      bool const forceAuxEdgeVisible,
                      bool const placePV,
-                     bool const doSurfCheck
+                     bool const doSurfaceCheck,
+                     bool const verbose = false
                      );
 
 }
