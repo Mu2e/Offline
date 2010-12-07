@@ -1,11 +1,11 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.11 2010/11/30 16:42:00 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.12 2010/12/07 18:17:21 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/30 16:42:00 $
+// $Date: 2010/12/07 18:17:21 $
 //
-// Original author KLG based on RKK using different methodology
+// Original author KLG based on RKK's version using different methodology
 //
 // Notes
 
@@ -32,17 +32,18 @@
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestTrp.hh"
 
 // G4 includes
 #include "G4Material.hh"
 #include "G4Colour.hh"
 #include "G4String.hh"
-#include "G4Tubs.hh"
-#include "G4Trd.hh"
-#include "G4LogicalVolume.hh"
+//#include "G4Tubs.hh"
+//#include "G4Trd.hh"
+//#include "G4LogicalVolume.hh"
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
-#include "G4VisAttributes.hh"
+//#include "G4VisAttributes.hh"
 #include "G4SDManager.hh"
 
 using namespace std;
@@ -62,7 +63,10 @@ namespace mu2e{
     // Only instantiate sectors to be drawn.
     int devDraw = config.getInt("ttracker.devDraw",-1);
     int secDraw = config.getInt("ttracker.secDraw",-1);
-    G4bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool const doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+
+    G4ThreeVector const zeroVector(0.0,0.0,0.0);
 
     // Master geometry for the TTracker.
     TTracker const & ttracker = *(GeomHandle<TTracker>());
@@ -97,9 +101,9 @@ namespace mu2e{
                                       mother,
                                       0,
                                       config.getBool("ttracker.envelopeVisible",false),
-                                      G4Color::Blue(),
+                                      G4Colour::Blue(),
                                       config.getBool("ttracker.envelopeSolid",true),
-                                      config.getBool("g4.forceAuxEdgeVisible",false),
+                                      forceAuxEdgeVisible,
                                       true,
                                       doSurfaceCheck
                                       );
@@ -126,9 +130,21 @@ namespace mu2e{
     size_t idev = 0;
     const Device& device = ttracker.getDevice(idev);
 
-    VolumeInfo devInfo;
+    VolumeInfo devInfo = nestTubs( "TTrackerDeviceEnvelope",
+                                   deviceEnvelopeParams,
+                                   envelopeMaterial,
+                                   0,
+                                   zeroVector,
+                                   0,
+                                   0,
+                                   ttrackerDeviceEnvelopeVisible,
+                                   G4Colour::Magenta(),
+                                   ttrackerDeviceEnvelopeSolid,
+                                   forceAuxEdgeVisible,
+                                   false,
+                                   doSurfaceCheck
+                                   );
 
-    G4String const devName = "TTrackerDeviceEnvelope";
 
     verbosityLevel > 0 && 
       cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
@@ -140,31 +156,9 @@ namespace mu2e{
       fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.phiMax      << ", " <<
       endl;
 
-    devInfo.solid    = new G4Tubs(devName, 
-                                  deviceEnvelopeParams.innerRadius,
-                                  deviceEnvelopeParams.outerRadius,
-                                  deviceEnvelopeParams.zHalfLength, 
-                                  deviceEnvelopeParams.phi0, 
-                                  deviceEnvelopeParams.phiMax      
-                                  );
-    
-    devInfo.logical  = new G4LogicalVolume( devInfo.solid, envelopeMaterial, devName);
-    
-    if (!ttrackerDeviceEnvelopeVisible) {
-      devInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    } 
-    else {
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Color::Magenta()));
-      visAtt->SetForceSolid(ttrackerDeviceEnvelopeSolid);
-      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-      devInfo.logical->SetVisAttributes(visAtt);
-    }
     // place straws etc... wrt the envelope
 
     // create a "sector" volume
-
-    VolumeInfo secInfo;
-    secInfo.name = "TTrackerSectorEnvelope";
 
     // Construct One sector logical volume (and then place it N times)
 
@@ -178,14 +172,20 @@ namespace mu2e{
 
     // reuse device attributes for now
 
-    // we need to "unfold" nestTrp;
-
-    secInfo.solid   = new G4Trd ( secInfo.name,
-                                  sector.boxHalfLengths().at(4),
-                                  sector.boxHalfLengths().at(3),
-                                  sector.boxHalfLengths().at(2),
-                                  sector.boxHalfLengths().at(2),
-                                  sector.boxHalfLengths().at(1)
+    // false for placing physical volume
+    VolumeInfo secInfo = nestTrp( "TTrackerSectorEnvelope",
+                                  sector.boxHalfLengths(),
+                                  envelopeMaterial,
+                                  0,
+                                  zeroVector,
+                                  0,
+                                  0,
+                                  ttrackerSectorEnvelopeVisible,
+                                  G4Colour::Cyan(),
+                                  ttrackerSectorEnvelopeSolid,
+                                  forceAuxEdgeVisible,
+                                  false,
+                                  doSurfaceCheck
                                   );
 
     verbosityLevel > 0 && 
@@ -198,20 +198,6 @@ namespace mu2e{
       fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(1) << ", " <<
       endl << setprecision(oldpr) << setw(oldwdth);
 
-    secInfo.logical  = new G4LogicalVolume( secInfo.solid, envelopeMaterial, secInfo.name); 
-    
-    if (!ttrackerSectorEnvelopeVisible) {
-      secInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    } 
-    else {
-      // it will be allways Cyan if done this way, anyway...
-      G4Color color = (isec%2 == 1) ? G4Color::Blue() : G4Color::Cyan();
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
-      visAtt->SetForceSolid(ttrackerSectorEnvelopeSolid);
-      visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-      secInfo.logical->SetVisAttributes(visAtt);
-    }
-
     static double const tRAngle  = M_PI_2;
     static double const tRAngle2 = M_PI;
     CLHEP::HepRotationX RXForTrapezoids(tRAngle);
@@ -220,8 +206,6 @@ namespace mu2e{
     CLHEP::HepRotationZ RZForTrapezoids(tRAngle);
     
     G4RotationMatrix* rotTub = reg.add(G4RotationMatrix(RYForTrapezoids));
-
-    bool strawAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
     for ( int ilay =0; ilay<sector.nLayers(); ++ilay ){
 
@@ -272,15 +256,15 @@ namespace mu2e{
         }
 
         // make the straws more distinguishable when displayed
-        G4Color wallColor = (ilay%2 == 1) ? 
-          ((istr%2 == 0) ? G4Color::Green() : G4Color::Yellow()) :
-          ((istr%2 == 0) ? G4Color::Red() : G4Color::Blue());
+        G4Colour wallColor = (ilay%2 == 1) ? 
+          ((istr%2 == 0) ? G4Colour::Green() : G4Colour::Yellow()) :
+          ((istr%2 == 0) ? G4Colour::Red() : G4Colour::Blue());
 
-        G4Color gasColor = (ilay%2 == 0) ? 
-          ((istr%2 == 0) ? G4Color::Green() : G4Color::Yellow()) :
-          ((istr%2 == 0) ? G4Color::Red() : G4Color::Blue());
+        G4Colour gasColor = (ilay%2 == 0) ? 
+          ((istr%2 == 0) ? G4Colour::Green() : G4Colour::Yellow()) :
+          ((istr%2 == 0) ? G4Colour::Red() : G4Colour::Blue());
 
-        G4Color wireColor = G4Color::Cyan();
+        G4Colour wireColor = G4Colour::Cyan();
 
         verbosityLevel > 2 &&
           cout << "Debugging Straw istr, RYForTrapezoids, midpoint: " <<
@@ -298,7 +282,7 @@ namespace mu2e{
                                              ttrackerStrawVisible,
                                              wallColor,
                                              ttrackerStrawSolid,
-                                             strawAuxEdgeVisible,
+                                             forceAuxEdgeVisible,
                                              true,
                                              doSurfaceCheck
                                              );
@@ -316,7 +300,7 @@ namespace mu2e{
                                             ttrackerStrawVisible,
                                             gasColor,
                                             ttrackerStrawSolid,
-                                            strawAuxEdgeVisible,
+                                            forceAuxEdgeVisible,
                                             true,
                                             doSurfaceCheck
                                             );
@@ -331,7 +315,7 @@ namespace mu2e{
                                              ttrackerStrawVisible,
                                              wireColor,
                                              ttrackerStrawSolid,
-                                             strawAuxEdgeVisible,
+                                             forceAuxEdgeVisible,
                                              true,
                                              doSurfaceCheck
                                              );
@@ -396,7 +380,7 @@ namespace mu2e{
       if ( devDraw > -1 && idev > devDraw ) continue;
       
       verbosityLevel > 1 && 
-        cout << "Debugging dev: " << idev << " " << devName << " devDraw: " << devDraw << endl;
+        cout << "Debugging dev: " << idev << " " << devInfo.name << " devDraw: " << devDraw << endl;
 
       const Device& device = ttracker.getDevice(idev);
 
@@ -415,7 +399,7 @@ namespace mu2e{
       devInfo.physical =  new G4PVPlacement(devRotation,
                                             device.origin(),
                                             devInfo.logical,
-                                            devName,
+                                            devInfo.name,
                                             motherInfo.logical,
                                             false,
                                             idev,
