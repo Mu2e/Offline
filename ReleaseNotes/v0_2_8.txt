@@ -3,9 +3,34 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.34 2010/12/07 18:19:58 genser Exp $
-  $Author: genser $
-  $Date: 2010/12/07 18:19:58 $
+  $Id: v0_2_8.txt,v 1.35 2010/12/07 18:37:09 logash Exp $
+  $Author: logash $
+  $Date: 2010/12/07 18:37:09 $
+
+44) December 7, 2010 logash
+
+    1. Added information about parent particle to particles ntuple 
+       (ntpart), produced by ReadVirtualDetector_plugin. That enables 
+       range of beamline studies, like comparison between different
+       pion production models, calculation of the weights,...
+
+    2. Rewrote construction of weird-shaped collimator 3. It is now 
+       constructed exactly as described in the MECO design (docdb 853).
+       The following new parameters in geom_01.txt define the shape 
+       and position of the hole in the collimator:
+	   double coll3.holeRadius       = 150.0;
+	   double coll3.holeHalfHeight   = 100.0;
+	   double coll3.holeDisplacement = 90.0;
+       Function nestExtrudedSolid is not used anymore.
+
+    3. Fixed problem with volume overlaps between virtual detectors 
+       and collimators, and collimator 3 and vacuum chamber.
+
+    Updated files:
+
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/ReadVirtualDetector_plugin.cc
+      Mu2eG4/test/geom_01.txt
 
 43) December 7, 2010 genser
 
@@ -506,7 +531,11 @@
     changes to classes_def.xml and classes.h.  A side effect is that, in the classes 
     SimParticle and StepPointMC the trackId data members, and their accessors, and input 
     arguments must change to this new type.  A next order side effect is that code that gets 
-    trackIds from these classes must change variables to use this new type. The bulk of the 
+    trackIds from these classes must change variables to use this newbel("makeSH","StrawHitMCPtr",mcptrHandle);
+       // Pointers from CaloHitMCTruth to "calorimeter" StepPointMCs
+       evt.getByLabel("CaloReadoutHitsMaker","CaloHitMCCrystalPtr",mcptrHandle);
+       // Pointers from CaloHitMCTruth to "calorimeterRO" StepPointMCs
+       evt.getByLabel("CaloReadoutHitsMaker","CaloHitMCReadoutPtr",mcptrHandle);qZZ type. The bulk of the 
     changes are of this last type.
 
     Much of the code that accesses this information in the event contains the line:

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.70 2010/12/07 18:16:55 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/07 18:16:55 $
+// $Id: Mu2eWorld.cc,v 1.71 2010/12/07 18:37:09 logash Exp $
+// $Author: logash $ 
+// $Date: 2010/12/07 18:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -44,7 +44,6 @@
 #include "Mu2eG4/inc/nestTorus.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestCons.hh"
-#include "Mu2eG4/inc/nestExtrudedSolid.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -73,8 +72,8 @@
 #include "G4Colour.hh"
 #include "G4Tubs.hh"
 //#include "G4Cons.hh"
-//#include "G4ExtrudedSolid.hh"
 //#include "G4Torus.hh"
+#include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4TwoVector.hh"
@@ -656,16 +655,16 @@ namespace mu2e {
     double coll1InnerRadius1   = _config->getDouble("coll1.innerRadius1");
     double coll1InnerRadius2   = _config->getDouble("coll1.innerRadius2");
     double coll5InnerRadius    = _config->getDouble("coll5.innerRadius");
-    vector<double> coll3x, coll3y;
-    _config->getVectorDouble("coll3.x",coll3x);
-    _config->getVectorDouble("coll3.y",coll3y);
 
     G4Material* coll1Material  = materialFinder.get("coll1.materialName");
     G4Material* coll3Material  = materialFinder.get("coll3.materialName");
     G4Material* coll5Material  = materialFinder.get("coll5.materialName");
 
-    //double coll3Hole           = _config->getDouble("coll3.hole");
-    double coll3RotationAngle  = _config->getDouble("coll3.rotationAngle");
+    // Special parameters for coll3
+    double coll3RotationAngle    = _config->getDouble("coll3.rotationAngle");
+    double coll3HoleRadius       = _config->getDouble("coll3.holeRadius");
+    double coll3HoleHalfHeight   = _config->getDouble("coll3.holeHalfHeight");
+    double coll3HoleDisplacement = _config->getDouble("coll3.holeDisplacement");
 
     bool collVisible         = _config->getBool("coll.visible",true);
     bool collSolid           = _config->getBool("coll.solid",true);
@@ -815,74 +814,90 @@ namespace mu2e {
                                        placePV,
                                        doSurfaceCheck
                                        );
-
+    
     // Place collimator 3
+    
+    // Collimator 3 has peculiar shape, described in doc_db 853.
+    // Construct this shape using boolean functions on solids
+   
+    // First, construct hole; make it slightly longer that any collimator
+    double hDz = coll31HalfLength;
+    if( hDz<coll32HalfLength ) hDz=coll32HalfLength;
+    // Hole is the intersection of box and circles
+    G4Box* coll3_hole_box = new G4Box("coll3_hole_box",
+				      coll3HoleRadius+5.0,coll3HoleHalfHeight,hDz+1.0);
+    G4Tubs* coll3_hole_circle = new G4Tubs("coll3_hole_circle",
+					   0.0,coll3HoleRadius,hDz+1.0,
+					   0.0, 360.0*CLHEP::degree );
+    G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
+							      coll3_hole_box,
+							      coll3_hole_circle);
+    
+    // Make collimators themselves. At this moment the collimators 
+    // coll31 and coll32 are the same size. But it is possible to make them
+    // different length. Therefore two solids are created, but the same hole 
+    // is subtracted from both solids.
+    
+    VolumeInfo coll31Info;
+    VolumeInfo coll32Info;
+    
+    coll31Info.name = "Coll31";
+    coll32Info.name = "Coll32";
+    
+    G4Tubs* coll31_mother = new G4Tubs("Coll31_mother",
+				       0, rVac, coll31HalfLength-2*vdHalfLength,
+				       0.0, 360.0*CLHEP::degree );
+    
+    G4Tubs* coll32_mother = new G4Tubs("Coll32_mother",
+				       0, rVac, coll32HalfLength-2*vdHalfLength,
+				       0.0, 360.0*CLHEP::degree );
+    
+    coll31Info.solid = new G4SubtractionSolid(coll31Info.name,
+					      coll31_mother,
+					      coll3_hole,
+					      0,
+					      G4ThreeVector(0,coll3HoleDisplacement,0));
+    
+    coll32Info.solid = new G4SubtractionSolid(coll32Info.name,
+					      coll32_mother,
+					      coll3_hole,
+					      0,
+					      G4ThreeVector(0,coll3HoleDisplacement,0));
+    
+    // Now use finishNesting to place collimators 31 and 32
+    
+    G4RotationMatrix* coll31Rot = new G4RotationMatrix();
+    G4RotationMatrix* coll32Rot = new G4RotationMatrix();
+    coll31Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
+    coll32Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
+    
+    finishNesting(coll31Info,
+		  coll3Material,
+		  coll31Rot,
+		  beamg->getTS().getColl31().getLocal(),
+		  ts3VacInfo.logical,
+		  0,
+		  collVisible,
+		  G4Color::Gray(),
+		  collSolid,
+		  forceAuxEdgeVisible,
+		  placePV,
+		  doSurfaceCheck);
 
-    G4RotationMatrix* coll31Rot = reg.add(G4RotationMatrix());
-    G4RotationMatrix* coll32Rot = reg.add(G4RotationMatrix());
-    coll31Rot->rotateZ((180.0+coll3RotationAngle)*CLHEP::degree);
-    coll32Rot->rotateZ((180.0+coll3RotationAngle)*CLHEP::degree);
-    coll32Rot->rotateY(180.0*CLHEP::degree);
-
-    VolumeInfo coll3Info1 = nestExtrudedSolid( "Coll3_1",
-                                               coll31HalfLength, coll3x, coll3y,
-                                               coll3Material,
-                                               coll31Rot,
-                                               beamg->getTS().getColl31().getLocal(),
-                                               ts3VacInfo,
-                                               0,
-                                               collVisible,
-                                               G4Color::Gray(),
-                                               collSolid,
-                                               forceAuxEdgeVisible,
-                                               placePV,
-                                               doSurfaceCheck
-                                               );
-
-    VolumeInfo coll3Info2 = nestExtrudedSolid( "Coll3_2",
-                                               coll31HalfLength, coll3x, coll3y,
-                                               coll3Material,
-                                               coll32Rot,
-                                               beamg->getTS().getColl31().getLocal(),
-                                               ts3VacInfo,
-                                               0,
-                                               collVisible,
-                                               G4Color::Yellow(),
-                                               collSolid,
-                                               forceAuxEdgeVisible,
-                                               placePV,
-                                               doSurfaceCheck
-                                               );
-
-    VolumeInfo coll3Info3 = nestExtrudedSolid( "Coll3_3",
-                                               coll32HalfLength, coll3x, coll3y,
-                                               coll3Material,
-                                               coll31Rot,
-                                               beamg->getTS().getColl32().getLocal(),
-                                               ts3VacInfo,
-                                               0,
-                                               collVisible,
-                                               G4Color::Red(),
-                                               collSolid,
-                                               forceAuxEdgeVisible,
-                                               placePV,
-                                               doSurfaceCheck
-                                               );
-
-    VolumeInfo coll3Info4 = nestExtrudedSolid( "Coll3_4",
-                                               coll32HalfLength, coll3x, coll3y,
-                                               coll3Material,
-                                               coll32Rot,
-                                               beamg->getTS().getColl32().getLocal(),
-                                               ts3VacInfo,
-                                               0,
-                                               collVisible,
-                                               G4Color::Cyan(),
-                                               collSolid,
-                                               forceAuxEdgeVisible,
-                                               placePV,
-                                               doSurfaceCheck
-                                               );
+    finishNesting(coll32Info,
+		  coll3Material,
+		  coll32Rot,
+		  beamg->getTS().getColl32().getLocal(),
+		  ts3VacInfo.logical,
+		  0,
+		  collVisible,
+		  G4Color::Gray(),
+		  collSolid,
+		  forceAuxEdgeVisible,
+		  placePV,
+		  doSurfaceCheck);
+  
+    // Place Pbar absorber between Coll31 and Coll32
 
     double pbarHalfLength     = _config->getDouble("pbar.halfLength");
     G4Material* pbarMaterial  = materialFinder.get("pbar.materialName");
@@ -999,9 +1014,9 @@ namespace mu2e {
                                         placePV,
                                         doSurfaceCheck
                                         );
-
+    
   } // end Mu2eWorld::constructTS
-
+  
   void Mu2eWorld::constructPS( const VolumeInfo& parent ){
 
     // A helper class.

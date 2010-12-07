@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_plugin.cc,v 1.10 2010/11/09 20:25:41 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2010/11/09 20:25:41 $
+//  $Id: ReadVirtualDetector_plugin.cc,v 1.11 2010/12/07 18:37:09 logash Exp $
+//  $Author: logash $
+//  $Date: 2010/12/07 18:37:09 $
 //
 // Original author Ivan Logashenko
 //
@@ -95,8 +95,8 @@ namespace mu2e {
     TNtuple* _ntvd;
     TTree* _ntpart;
 
-    float *nt; // Need this buffer to fill TTree
-    
+    float *nt; // Need this buffer to fill TTree ntvd
+
     // Pointers to the physical volumes we are interested in
     // -- stopping target
     map<int,int> vid_stop;
@@ -125,10 +125,14 @@ namespace mu2e {
 		    "time:gtime:x:y:z:px:py:pz:"
 		    "isstop:tstop:gtstop:xstop:ystop:zstop:"
 		    "g4bl_evt:g4bl_trk:g4bl_weight:g4bl_time:"
+		    "parent_id:parent_pdg:"
+		    "parent_x:parent_y:parent_z:"
+		    "parent_px:parent_py:parent_pz:"
 		    "nvd:isvd[10]:"
 		    "tvd[10]:gtvd[10]:xvd[10]:yvd[10]:zvd[10]:"
 		    "pxvd[10]:pyvd[10]:pzvd[10]:"
-		    "xlvd[10]:ylvd[10]:zlvd[10]");
+		    "xlvd[10]:ylvd[10]:zlvd[10]"
+		    );
 
   }
 
@@ -249,7 +253,7 @@ namespace mu2e {
     if( haveSimPart && pdg_save.size()>0 ) {
 
       const int nvdet = 10;
-      const int id0 = 21;
+      const int id0 = 29;
 
       // Go through SimParticle container and analyze one particle at a time
       for ( SimParticleCollection::const_iterator isp=simParticles->begin();
@@ -296,6 +300,25 @@ namespace mu2e {
 	  nt[20] = extra.time();
 	}
 
+	// Parent info
+	if( sim.hasParent() ) {
+	  nt[21] = sim.parentId().asInt();
+	  SimParticle const* sim_parent = simParticles->findOrNull(sim.parentId());
+	  if( sim_parent ) {
+	    nt[22] = sim_parent->pdgId();
+	    CLHEP::Hep3Vector const & pos_parent = sim_parent->startPosition();
+	    CLHEP::Hep3Vector const & mom_parent = sim_parent->startMomentum();
+	    nt[23] = pos_parent.x();
+	    nt[24] = pos_parent.y();
+	    nt[25] = pos_parent.z();
+	    nt[26] = mom_parent.x();
+	    nt[27] = mom_parent.y();
+	    nt[28]= mom_parent.z();
+	  }
+	} else {
+	  nt[21]=-1;
+	}
+	  
 	nt[id0] = nvdet;
       
 	// Loop over all virtual detectors and fill corresponding data
