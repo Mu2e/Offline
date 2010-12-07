@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.69 2010/12/06 22:31:24 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.70 2010/12/07 18:16:55 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/06 22:31:24 $
+// $Date: 2010/12/07 18:16:55 $
 //
 // Original author Rob Kutschke
 //
@@ -454,7 +454,8 @@ namespace mu2e {
 
     G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight, dsz0+_mu2eOrigin.z());
 
-    G4RotationMatrix* dirtCapRot = new G4RotationMatrix();
+    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    G4RotationMatrix* dirtCapRot = reg.add(G4RotationMatrix());
     dirtCapRot->rotateX( -90*CLHEP::degree);
 
     string dirtCapName("DirtCap");
@@ -746,7 +747,8 @@ namespace mu2e {
     // Position in the Mu2e coordintate system.
     G4ThreeVector ts2VacPosition( ts3HalfLength, 0., -rTorus);
 
-    G4RotationMatrix* ts2Rot = new G4RotationMatrix();
+    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    G4RotationMatrix* ts2Rot = reg.add(G4RotationMatrix());
     ts2Rot->rotateX(90.0*CLHEP::degree);
 
     VolumeInfo ts2VacInfo = nestTorus("ToyTS2Vacuum",
@@ -816,8 +818,8 @@ namespace mu2e {
 
     // Place collimator 3
 
-    G4RotationMatrix* coll31Rot = new G4RotationMatrix();
-    G4RotationMatrix* coll32Rot = new G4RotationMatrix();
+    G4RotationMatrix* coll31Rot = reg.add(G4RotationMatrix());
+    G4RotationMatrix* coll32Rot = reg.add(G4RotationMatrix());
     coll31Rot->rotateZ((180.0+coll3RotationAngle)*CLHEP::degree);
     coll32Rot->rotateZ((180.0+coll3RotationAngle)*CLHEP::degree);
     coll32Rot->rotateY(180.0*CLHEP::degree);
@@ -910,7 +912,7 @@ namespace mu2e {
 
     G4ThreeVector ts4VacPosition( -ts3HalfLength, 0., rTorus);
 
-    G4RotationMatrix* ts4Rot = new G4RotationMatrix();
+    G4RotationMatrix* ts4Rot = reg.add(G4RotationMatrix());
     ts4Rot->rotateX(90.0*CLHEP::degree);
 
     VolumeInfo ts4VacInfo = nestTorus("ToyTS4Vacuum",
@@ -1086,7 +1088,8 @@ namespace mu2e {
 
     // G4 takes ownership of this G4RotationMatrix object.
     // Passive rotation. See Mu2e-doc-938.
-    G4RotationMatrix* prodTargetRotation = new G4RotationMatrix;
+    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    G4RotationMatrix* prodTargetRotation = reg.add(G4RotationMatrix());
     prodTargetRotation->rotateY( -targetPS_rotY);
     prodTargetRotation->rotateX( -targetPS_rotX);
 
