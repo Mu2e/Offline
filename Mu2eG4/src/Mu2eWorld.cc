@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.71 2010/12/07 18:37:09 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/12/07 18:37:09 $
+// $Id: Mu2eWorld.cc,v 1.72 2010/12/07 19:13:58 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/12/07 19:13:58 $
 //
 // Original author Rob Kutschke
 //
@@ -71,16 +71,12 @@
 #include "G4Paraboloid.hh"
 #include "G4Colour.hh"
 #include "G4Tubs.hh"
-//#include "G4Cons.hh"
-//#include "G4Torus.hh"
 #include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4TwoVector.hh"
 #include "G4ThreeVector.hh"
-//#include "G4PVPlacement.hh"
 #include "globals.hh"
-//#include "G4VisAttributes.hh"
 #include "G4UniformMagField.hh"
 #include "G4FieldManager.hh"
 #include "G4Mag_UsualEqRhs.hh"
@@ -866,8 +862,8 @@ namespace mu2e {
     
     // Now use finishNesting to place collimators 31 and 32
     
-    G4RotationMatrix* coll31Rot = new G4RotationMatrix();
-    G4RotationMatrix* coll32Rot = new G4RotationMatrix();
+    G4RotationMatrix* coll31Rot = reg.add(G4RotationMatrix());
+    G4RotationMatrix* coll32Rot = reg.add(G4RotationMatrix());
     coll31Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
     coll32Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
     
