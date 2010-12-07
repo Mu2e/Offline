@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.14 2010/12/02 17:49:10 genser Exp $
+// $Id: constructLTrackerv3.cc,v 1.15 2010/12/07 18:17:09 genser Exp $
 // $Author: genser $
-// $Date: 2010/12/02 17:49:10 $
+// $Date: 2010/12/07 18:17:09 $
 //
 // Original author Rob Kutschke
 //
@@ -30,15 +30,16 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTrp.hh"
+#include "Mu2eG4/inc/nestTubs.hh"
 
 // G4 includes
 #include "G4Material.hh"
 #include "G4Colour.hh"
-#include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
+//#include "G4Tubs.hh"
+//#include "G4LogicalVolume.hh"
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
-#include "G4VisAttributes.hh"
+//#include "G4VisAttributes.hh"
 #include "G4SDManager.hh"
 
 using namespace std;
@@ -65,17 +66,19 @@ namespace mu2e{
     double zHalf = CLHEP::mm * ltracker.zHalfLength()+30.;
     double z0    = CLHEP::mm * ltracker.z0();
 
-    bool trackerSolid        = config.getBool("ltracker.solid",true);
-    bool trackerVisible      = config.getBool("ltracker.visible",true);
+    bool const trackerSolid        = config.getBool("ltracker.solid",true);
+    bool const trackerVisible      = config.getBool("ltracker.visible",true);
     
-    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    bool const strawVisible        = config.getBool("ltracker.strawVisible",false); 
+    bool const strawSolid          = config.getBool("ltracker.strawSolid",true);
+
+
+    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV = true;
 
-    VolumeInfo trackerInfo;
-
     // Make the mother volume for the LTracker.
-    trackerInfo.name = "TrackerMother";
+
     G4Material* fillMaterial = findMaterialOrThrow(ltracker.fillMaterial());
     G4ThreeVector trackerOffset(0.,0.,z0-zOff);
 
@@ -86,33 +89,23 @@ namespace mu2e{
            << z0-zOff << " "
            << endl;
 
-    trackerInfo.solid  = new G4Tubs( trackerInfo.name,
-                                     0., rOut, zHalf, 0., 2.*M_PI );
-    
-    trackerInfo.logical = new G4LogicalVolume( trackerInfo.solid, fillMaterial, trackerInfo.name); 
-    
-    trackerInfo.physical =  new G4PVPlacement( 0, 
-                                               trackerOffset, 
-                                               trackerInfo.logical, 
-                                               trackerInfo.name, 
-                                               mother, 
-                                               0, 
-                                               0,
-                                               doSurfaceCheck);
 
-    _helper.addVolInfo(trackerInfo);
+    TubsParams envelopeParams( 0., rOut, zHalf);
 
-
-    // Visualization attributes of the the mother volume.
-
-    if (!trackerVisible) {
-      trackerInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
-    } else {
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Green() ));
-      visAtt->SetForceSolid(trackerSolid);
-      visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
-      trackerInfo.logical->SetVisAttributes(visAtt);
-    }
+    VolumeInfo trackerInfo = nestTubs( "TrackerMother",
+                                       envelopeParams,
+                                       fillMaterial,
+                                       0,
+                                       trackerOffset,
+                                       mother,
+                                       0,
+                                       trackerVisible,
+                                       G4Colour::Green(),
+                                       trackerSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       doSurfaceCheck
+                                       );
 
     Straw const& straw        = ltracker.getStraw( StrawId( LTracker::wedge, 0, 0, 0) );
     StrawDetail const& detail = straw.getDetail();
@@ -121,88 +114,63 @@ namespace mu2e{
 
     // Build logical volumes related to the straw: wall, gas, wire
 
-    // Build logical volume for straw wall.
-    string strawWallName("StrawWall");
-    VolumeInfo strawWall;
-      
-    strawWall.solid  = new G4Tubs(strawWallName
-                                  ,0.0
-                                  ,detail.outerRadius() * CLHEP::mm
-                                  ,detail.halfLength() * CLHEP::mm
-                                  ,0.
-                                  ,CLHEP::twopi*CLHEP::radian
-                                  );
-    
-    strawWall.logical = new G4LogicalVolume( strawWall.solid
-                                             ,findMaterialOrThrow(detail.wallMaterialName())
-                                             ,strawWallName
-                                             );
+    // Build logical volume for straw wall with Gas & Wire inside it
 
-    // Build logical volume for straw gas.
-    string strawGasName("StrawGas");
-    VolumeInfo strawGas;
-      
-    strawGas.solid  = new G4Tubs(strawGasName
-                                 ,0.0
-                                 ,detail.innerRadius() * CLHEP::mm
-                                 ,detail.halfLength() * CLHEP::mm
-                                 ,0.
-                                 ,CLHEP::twopi*CLHEP::radian
-                                 );
-    
-    strawGas.logical = new G4LogicalVolume( strawGas.solid
-                                            ,findMaterialOrThrow(detail.gasMaterialName())
-                                            ,strawGasName
-                                            );
+    TubsParams strawWallTubeParams(0., detail.outerRadius() * CLHEP::mm, detail.halfLength() * CLHEP::mm);
 
-    strawGas.physical =  new G4PVPlacement( 0, zeroVector, 
-                                            strawGas.logical, strawGasName,
-                                            strawWall.logical, false, 0, 
-                                            doSurfaceCheck);
+    VolumeInfo strawWall = nestTubs( "StrawWall",
+                                     strawWallTubeParams,
+                                     findMaterialOrThrow(detail.wallMaterialName()),
+                                     0,
+                                     zeroVector,
+                                     0,
+                                     0,
+                                     strawVisible,
+                                     G4Colour::Yellow(),
+                                     strawSolid,
+                                     forceAuxEdgeVisible,
+                                     false,
+                                     doSurfaceCheck
+                                     );
+                                     
+    // Place straw gas inside StrawWall
 
-    // Build logical volume for straw wire.
-    string strawWireName("StrawWire");
-    VolumeInfo strawWire;
-      
-    strawWire.solid  = new G4Tubs(strawWireName
-                                  ,0.0
-                                  ,detail.wireRadius() * CLHEP::mm
-                                  ,detail.halfLength() * CLHEP::mm
-                                  ,0.
-                                  ,CLHEP::twopi*CLHEP::radian
-                                  );
-    
-    strawWire.logical = new G4LogicalVolume( strawWire.solid
-                                             ,findMaterialOrThrow(detail.wireMaterialName())
-                                             ,strawWireName
-                                             );
+    TubsParams strawGasTubeParams(0., detail.innerRadius() * CLHEP::mm, detail.halfLength() * CLHEP::mm);
 
-    strawWire.physical =  new G4PVPlacement( 0, zeroVector, 
-                                             strawWire.logical, strawWireName , 
-                                             strawGas.logical, false, 0, 
-                                             doSurfaceCheck);
+    VolumeInfo strawGas = nestTubs( "StrawGas", 
+                                    strawGasTubeParams,
+                                    findMaterialOrThrow(detail.gasMaterialName()),
+                                    0,
+                                    zeroVector,
+                                    strawWall.logical,
+                                    0,
+                                    strawVisible,
+                                    G4Colour::Green(),
+                                    strawSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    doSurfaceCheck
+                                    );
 
-    if (config.getBool("ltracker.strawVisible",false)) {
-      
-      bool strawSolid = config.getBool("ltracker.strawSolid",true);
+    // Place straw wire inside StrawGas
 
-      G4VisAttributes* strawWallVisAtt = reg.add(G4VisAttributes(true, G4Colour::Yellow() ));
-      strawWallVisAtt->SetForceSolid(strawSolid);
-      strawWallVisAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
-      strawWall.logical->SetVisAttributes(strawWallVisAtt);
+    TubsParams strawWireTubeParams(0., detail.wireRadius() * CLHEP::mm, detail.halfLength() * CLHEP::mm);
 
-      G4VisAttributes* strawGasVisAtt = reg.add(G4VisAttributes(true, G4Colour::Green() ));
-      strawGasVisAtt->SetForceSolid(strawSolid);
-      strawGasVisAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
-      strawGas.logical->SetVisAttributes(strawGasVisAtt);
+    VolumeInfo strawWire = nestTubs( "StrawWire",
+                                     strawWireTubeParams,
+                                     findMaterialOrThrow(detail.wireMaterialName()),
+                                     0,
+                                     zeroVector,
+                                     strawGas.logical,
+                                     0,
+                                     strawVisible,
+                                     G4Colour::Red(),
+                                     strawSolid,
+                                     forceAuxEdgeVisible,
+                                     placePV,
+                                     doSurfaceCheck
+                                     );
 
-      G4VisAttributes* strawWireVisAtt = reg.add(G4VisAttributes(true, G4Colour::Red() ));
-      strawWireVisAtt->SetForceSolid(strawSolid);
-      strawWireVisAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
-      strawWire.logical->SetVisAttributes(strawWireVisAtt);
-
-    }
-    
     vector<VolumeInfo> vinfo;
 
     // device loop
