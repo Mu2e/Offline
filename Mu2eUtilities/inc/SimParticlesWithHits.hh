@@ -11,9 +11,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.hh,v 1.2 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:36 $
+// $Id: SimParticlesWithHits.hh,v 1.3 2010/12/09 15:54:37 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/12/09 15:54:37 $
 //
 // Original author Rob Kutschke.
 //
@@ -74,6 +74,9 @@ namespace mu2e {
     // Iterators over the collection.
     const_iterator begin() const { return _hitsPerTrack.begin(); }
     const_iterator end()   const { return _hitsPerTrack.end(); }
+    
+    // Number of particles with hits.
+    size_t size() const { return _hitsPerTrack.size(); }
 
     // Access all of the information
     map_type const& getMap() const { return _hitsPerTrack; }
