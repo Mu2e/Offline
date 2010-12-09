@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.14 2010/11/24 22:41:43 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2010/11/24 22:41:43 $
+// $Id: TrackingAction.cc,v 1.15 2010/12/09 16:07:25 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/12/09 16:07:25 $
 //
 // Original author Rob Kutschke
 //
@@ -76,7 +76,7 @@ namespace mu2e {
     controlTrajectorySaving(trk);
 
     _stepping->BeginOfTrack();
-  
+
     if ( !_debugList.inList() ) return;
     printInfo( trk, "Start new Track: ");
 
@@ -155,7 +155,7 @@ namespace mu2e {
                                                          trk->GetTrackStatus(),
                                                          trk->GetWeight()
                                                          )));
-    
+
     // If this track has a parent, tell the parent about this track.
     if ( parentId != 0 ){
       map_type::iterator i(_transientMap.find(key_type(parentId)));
@@ -254,10 +254,16 @@ namespace mu2e {
          << volName                         << " ";
 
     if ( isEnd ){
-      SimParticle const& particle = _transientMap[key_type(id)];
-      cout << particle.endProperTime()*CLHEP::ns <<  " | ";
-      cout << particle.startGlobalTime()*CLHEP::ns <<  " ";
-      cout << particle.endGlobalTime()*CLHEP::ns <<  " | ";
+      cout << trk->GetProperTime() <<  " | ";
+      map_type::iterator i(_transientMap.find(key_type(id)));
+      if ( i != _transientMap.end() ){
+        SimParticle const& particle = i->second;
+        cout << particle.startGlobalTime() <<  " ";
+      } else {
+        cout << -1. <<  " ";
+      }
+
+      cout << trk->GetGlobalTime() << " | ";
       cout << _timer.cpuTime() << " " 
            << _timer.realTime() 
            << endl;
