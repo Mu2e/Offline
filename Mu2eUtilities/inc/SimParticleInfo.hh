@@ -5,9 +5,9 @@
 // associated with hit.  This is a building block of the
 // the class SimParticlesWithHits.
 //
-// $Id: SimParticleInfo.hh,v 1.2 2010/12/09 15:30:07 kutschke Exp $
+// $Id: SimParticleInfo.hh,v 1.3 2010/12/10 00:47:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/09 15:30:07 $
+// $Date: 2010/12/10 00:47:13 $
 //
 // Original author Rob Kutschke.
 //
@@ -46,6 +46,8 @@ namespace mu2e {
 
     key_type id() const { return _simId; }
     SimParticle const& simParticle() const { return *_simParticle; }
+
+    size_t nHits() const { return _hitInfos.size(); }
 
     vector<StrawHitMCInfo>&      strawHitInfos()       { return _hitInfos; }
     vector<StrawHitMCInfo>const& strawHitInfos() const { return _hitInfos; }
