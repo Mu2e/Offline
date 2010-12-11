@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.25 2010/12/01 23:05:18 kutschke Exp $
+// $Id: ReadBack.cc,v 1.26 2010/12/11 00:41:30 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/01 23:05:18 $
+// $Date: 2010/12/11 00:41:30 $
 //
 // Original author Rob Kutschke
 //
@@ -36,6 +36,7 @@
 #include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
 #include "ToyDP/inc/DPIndexVector.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/StatusG4.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -113,7 +114,7 @@ namespace mu2e {
     _hRadius       = tfs->make<TH1F>( "hRadius",       "Radius of Hits;(mm)",     100,  0., 1000. );
     _hEnergyDep    = tfs->make<TH1F>( "hEnergyDep",    "Energy Deposited;(keV)",  100,  0.,   10. );
     _hTime         = tfs->make<TH1F>( "hTime",         "Pulse Height;(ns)",       100,  0., 2000. );
-    _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",          100,  0.,  100. );
+    _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",          100,  0.,  300. );
     _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)",  100,  0.,   3.  );
     _hDriftDistW   = tfs->make<TH1F>( "hDriftDistW", "Normalized Crude Drift Distance", 150,  0., 1.5 );
 
@@ -420,6 +421,10 @@ namespace mu2e {
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
 
+    edm::Handle<StatusG4> g4StatusHandle;
+    event.getByLabel( _g4ModuleLabel, g4StatusHandle);
+    StatusG4 const& g4Status = *g4StatusHandle;
+
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
@@ -460,6 +465,11 @@ namespace mu2e {
         << "Way too many hits in this event.  Something is really wrong."
         << hits->size();
     }
+
+    if ( _nAnalyzed < _maxFullPrint ){
+      cerr << g4Status << endl;
+    }
+
 
     // ntuple buffer.
     float nt[_ntup->GetNvar()];
