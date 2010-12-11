@@ -3,9 +3,37 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.36 2010/12/09 19:25:12 kutschke Exp $
+  $Id: v0_2_8.txt,v 1.37 2010/12/11 00:46:25 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/12/09 19:25:12 $
+  $Date: 2010/12/11 00:46:25 $
+
+
+
+47) December 10, 2010 kutschke
+    Add the DetectorSystem object to the GeometryService
+      GeometryService/src/GeometryService.cc
+
+46) December 10, 2010 kutschke
+    New data product to hold information about the status of G4 for each event.
+     ToyDP/inc/StatusG4.hh   
+     ToyDP/src/StatusG4.cc
+
+    Tell root persistency about these new classes:
+       ToyDP/src/classes.h
+       ToyDP/src/classes_def.xml
+
+    Fill the new class and add it to the event
+       Mu2eG4/src/G4_plugin.cc
+
+    Add StatusG4 to the standard example
+       Mu2eG4/src/ReadBack.cc
+
+    Modifications needed to access information that was put into StatusG4.
+       Mu2eG4/inc/Mu2eG4RunManager.hh
+       Mu2eG4/inc/SteppingAction.hh
+       Mu2eG4/src/SteppingAction.cc 
+       Mu2eG4/inc/TrackingAction.hh
+       Mu2eG4/src/TrackingAction.cc
 
 45) December 9, 2010 kutschke
     Added some new accessors 
