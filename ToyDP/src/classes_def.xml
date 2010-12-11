@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.21 2010/11/30 02:51:37 logash Exp $     -->
-<!--  $Author: logash $ -->
-<!--  $Date: 2010/11/30 02:51:37 $   -->
+<!--  $Id: classes_def.xml,v 1.22 2010/12/11 00:48:23 kutschke Exp $     -->
+<!--  $Author: kutschke $ -->
+<!--  $Date: 2010/12/11 00:48:23 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.21 $$Date: 2010/11/30 02:51:37 $"; -->
+<!--  rev="$Revision: 1.22 $$Date: 2010/12/11 00:48:23 $"; -->
 
 <!--  Only include edm::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the edm::Wrapper lines and     -->
@@ -73,7 +73,8 @@
  <class name="mu2e::PointTrajectory"/>
  <class name="std::pair<MapVectorKey,mu2e::PointTrajectory>"/>
  <class name="std::map<MapVectorKey,mu2e::PointTrajectory>"/>
- <class name="mu2e::PointTrajectoryCollection"/>
+ <class name="mu2e::PointTrajectoryCollection"/> 
+ <class name="mu2e::StatusG4"/>
  <class name="edm::Wrapper<mu2e::ToyHitCollection>"/>
  <class name="edm::Wrapper<mu2e::ToyGenParticleCollection>"/>
  <class name="edm::Wrapper<mu2e::StepPointMCCollection>"/>
@@ -91,4 +92,5 @@
  <class name="edm::Wrapper<mu2e::CaloCrystalHitCollection>"/>
  <class name="edm::Wrapper<mu2e::CaloCrystalHitMCTruthCollection>"/>
  <class name="edm::Wrapper<mu2e::PointTrajectoryCollection>"/>
+ <class name="edm::Wrapper<mu2e::StatusG4>"/>
 </lcgdict>

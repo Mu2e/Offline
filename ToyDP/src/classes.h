@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.18 2010/11/30 02:51:37 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:37 $
+// $Id: classes.h,v 1.19 2010/12/11 00:48:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/12/11 00:48:23 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,7 @@
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
+#include "ToyDP/inc/StatusG4.hh"
 
 //
 // I am not 100% clear what needs to be here.  I do know:
@@ -75,3 +76,4 @@ template class edm::Wrapper<mu2e::CaloCrystalHitCollection>;
 template class edm::Wrapper<mu2e::CaloCrystalHitMCTruthCollection>;
 template class edm::Wrapper<mu2e::PointTrajectoryCollection>;
 template class edm::Wrapper<mu2e::DPIndexVectorCollection>;
+template class edm::Wrapper<mu2e::StatusG4>;
