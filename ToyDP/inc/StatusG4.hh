@@ -3,12 +3,22 @@
 // 
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.hh,v 1.1 2010/12/11 00:31:03 kutschke Exp $
+// $Id: StatusG4.hh,v 1.2 2010/12/11 00:59:24 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/11 00:31:03 $
+// $Date: 2010/12/11 00:59:24 $
 //
 // Original author Rob Kutschke
 //
+// Notes
+// 1) If the _status data member is intended as a summary of the more detailed information available
+//    in this class.  If it has a value of 0 then G4 completed with no signficant error or warning.
+//    If it has a positive value then some issue arose during the run of G4 for this event;
+//    the larger the number the worse the problem.  There are no negative values.
+//    For the intial relase the allowed values are:
+//     1  - one or more tracks were stopped in SteppingAction because they took too many steps.
+//          Usually these are particles trapped in the field.
+//     10 - The SimParticleCollection has overflowed.  So there can be hits that point back to
+//          a Simparticle that is not in the collection. 
 
 // C++ includes
 #include <iosfwd>
@@ -56,13 +66,10 @@ namespace mu2e {
     int      nKilledStepLimit() const { return _nKilledStepLimit; }
     float             cpuTime() const { return _cpuTime; }
     float            realTime() const { return _realTime; }
-
     
   private:
 
-    // Status=0 is all good.  Higher numbers indicate some issue has occured.
-    // The user must check the other information to learn if the condition is a problem for his
-    // work.
+    // Status=0 is all good.  Higher numbers indicate some issue has occured. See note 1.
     int _status;
 
     // Total number of G4 tracks that reach TrackingAction.  
@@ -74,7 +81,8 @@ namespace mu2e {
     int _nKilledStepLimit;
 
     // Execution time, in seconds.  CPU time is the sum of user time plus system time.
-    // The times come from G4Timer - not sure what is underneath that or the resolution.
+    // The times come from G4Timer - the least count is 10 ms and it appears that the resolution
+    // is on the scale of the least count.
     float _cpuTime;
     float _realTime;
 
