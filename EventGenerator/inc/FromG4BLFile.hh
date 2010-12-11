@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.3 2010/09/13 23:43:58 logash Exp $
+// $Id: FromG4BLFile.hh,v 1.4 2010/12/11 04:50:10 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/13 23:43:58 $
+// $Date: 2010/12/11 04:50:10 $
 //
 // Original author Rob Kutschke
 //
@@ -64,6 +64,9 @@ namespace mu2e {
 
     // Enable histograms
     bool _doHistograms;
+
+    // Is target frame used in the file?
+    bool _targetFrame;
 
     // End: Information from the run time configuration.
 

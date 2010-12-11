@@ -3,11 +3,42 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.37 2010/12/11 00:46:25 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2010/12/11 00:46:25 $
+  $Id: v0_2_8.txt,v 1.38 2010/12/11 04:50:10 logash Exp $
+  $Author: logash $
+  $Date: 2010/12/11 04:50:10 $
 
 
+48) December 10, 2010 logash
+
+    Added ability to do beamline simulation in several stages.
+    1. New run-time parameter of ReadVirtualDetector_plugin:
+         saveVD  = mu2e.untracked.vint32(7,8)
+       that allows to specify list of virtuat detector, from 
+       which the data will be saved to the ntuple. By default
+       data from all virtual detectors is saved.
+    2. New configuration parameter of FromG4BLFile generator:
+          bool   fromG4BLFile.targetFrame  = false;
+       that allows to specify if what frame the particle position
+       is defined in the input file. True value means that position 
+       is defined in the local frame of the production target; false 
+       value means the position is defined in Mu2e frame.
+    3. Add new script makeGeneratorFile.py, which can read virtual 
+       detector ntuple and produce data file which can be used by 
+       FromG4BLFile generator.
+
+    For example, it is now possible to start from protons and save all 
+    electrons above certain momentum as they enter to DS. Then the
+    separate simulation can use these electrons as input.
+
+    Updated files:
+
+       EventGenerator/inc/FromG4BLFile.hh
+       EventGenerator/src/FromG4BLFile.cc
+       Mu2eG4/src/ReadVirtualDetector_plugin.cc
+
+    New files:
+
+       Mu2eG4/test/makeGeneratorFile.py
 
 47) December 10, 2010 kutschke
     Add the DetectorSystem object to the GeometryService

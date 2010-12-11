@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.6 2010/09/15 23:28:48 logash Exp $
+// $Id: FromG4BLFile.cc,v 1.7 2010/12/11 04:50:10 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/09/15 23:28:48 $
+// $Date: 2010/12/11 04:50:10 $
 //
 // Original author Rob Kutschke
 //
@@ -53,6 +53,7 @@ namespace mu2e {
     _mean(config.getDouble("fromG4BLFile.mean",-1.)),
     _inputFileName(config.getString("fromG4BLFile.filename")),
     _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
+    _targetFrame(config.getBool("fromG4BLFile.targetFrame", true)),
 
     // Random number distributions; getEngine() comes from base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
@@ -147,13 +148,17 @@ namespace mu2e {
 
       // 3D position in Mu2e coordinate system.
       CLHEP::Hep3Vector pos(x,y,z);
-      pos -= _offset;           // Move to target coordinate system
-      pos += _prodTargetCenter; // Move to Mu2e coordinate system
+      if( _targetFrame ) {
+	pos -= _offset;           // Move to target coordinate system
+	pos += _prodTargetCenter; // Move to Mu2e coordinate system
+      }
 
       // 4 Momentum.
       double mass = pdt->particle(id).mass().value();
       double e    = sqrt( px*px + py*py + pz*pz + mass*mass);
       CLHEP::HepLorentzVector p4(px,py,pz,e);
+
+      std::cout <<x<<" "<<y<<" "<<z<<" "<<px<<" "<<py<<" "<<pz<<" "<<mass<<" "<<e<<endl;
 
       // Add particle to the output collection.
       genParts.push_back( ToyGenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );

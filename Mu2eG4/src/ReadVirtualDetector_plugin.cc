@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_plugin.cc,v 1.11 2010/12/07 18:37:09 logash Exp $
+//  $Id: ReadVirtualDetector_plugin.cc,v 1.12 2010/12/11 04:50:10 logash Exp $
 //  $Author: logash $
-//  $Date: 2010/12/07 18:37:09 $
+//  $Date: 2010/12/11 04:50:10 $
 //
 // Original author Ivan Logashenko
 //
@@ -72,6 +72,16 @@ namespace mu2e {
 	cout << endl;
       }
 
+      Vint const & vd_ids = pset.getUntrackedParameter<Vint>("saveVD", Vint());
+      if( vd_ids.size()>0 ) {
+	cout << "ReadVirtualDetector: save data from the following virtual detectors: ";
+	for( size_t i=0; i<vd_ids.size(); ++i ) {
+	  vd_save.insert(vd_ids[i]);
+	  cout << vd_ids[i] << ", ";
+	}
+	cout << endl;
+      }
+
       nt = new float[200];
 
     }
@@ -103,6 +113,9 @@ namespace mu2e {
 
     // List of particles of interest for the particles ntuple
     set<int> pdg_save;
+
+    // List of virtual detectors to be saved
+    set<int> vd_save;
 
   };
   
@@ -190,6 +203,9 @@ namespace mu2e {
       // Get the hit information.
 
       int id = hit.volumeId();
+
+      // If virtual detector id is not in the list - skip it
+      if( vd_save.size()>0 && vd_save.find(id) == vd_save.end() ) continue;
 
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
