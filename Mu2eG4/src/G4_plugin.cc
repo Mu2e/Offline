@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.37 2010/12/01 23:05:18 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.38 2010/12/11 00:40:13 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/01 23:05:18 $
+// $Date: 2010/12/11 00:40:13 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@
 // 1) According to Sunanda Banerjee, the various SetUserAction methods
 //    take ownership of the object that is passed to it.  So we must
 //    not delete them.
-// 
+//
 
 // C++ includes.
 #include <iostream>
@@ -46,6 +46,7 @@
 #include "G4SDManager.hh"
 #include "G4ParticleTable.hh"
 #include "G4Run.hh"
+#include "G4Timer.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
@@ -71,6 +72,7 @@
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
+#include "ToyDP/inc/StatusG4.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -100,6 +102,7 @@ namespace mu2e {
       _runManager(0),
       _genAction(0),
       _trackingAction(0),
+      _steppingAction(0),
       _session(0),
       _visManager(0),
       _UI(0),
@@ -118,6 +121,7 @@ namespace mu2e {
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,edm::InRun>();
       produces<PointTrajectoryCollection>();
+      produces<StatusG4>();
 
       // The string "G4Engine" is magic; see the docs for RandomNumberGeneratorService.
       createEngine( get_seed_value(pSet), "G4Engine");
@@ -148,7 +152,8 @@ namespace mu2e {
 
     PrimaryGeneratorAction* _genAction;
     TrackingAction*       _trackingAction;
-    
+    SteppingAction*       _steppingAction;
+
     G4UIsession  *_session;
     G4VisManager *_visManager;
     G4UImanager  *_UI;
@@ -215,16 +220,16 @@ namespace mu2e {
     _genAction = new PrimaryGeneratorAction(_generatorModuleLabel);
     _runManager->SetUserAction(_genAction);
 
-    SteppingAction* stepping_action = new SteppingAction(config);
-    _runManager->SetUserAction(stepping_action);
+    _steppingAction = new SteppingAction(config);
+    _runManager->SetUserAction(_steppingAction);
 
-    G4UserEventAction* event_action = new EventAction(stepping_action);
+    G4UserEventAction* event_action = new EventAction(_steppingAction);
     _runManager->SetUserAction(event_action);
     
     StackingAction* stacking_action = new StackingAction(config);
     _runManager->SetUserAction(stacking_action);
 
-    _trackingAction = new TrackingAction(config,stepping_action);
+    _trackingAction = new TrackingAction(config,_steppingAction);
     _runManager->SetUserAction(_trackingAction);
 
     // Initialize G4 for this run.
@@ -273,12 +278,13 @@ namespace mu2e {
     // Some of the user actions have beginRun methods.
     _genAction->setWorld(world);
     _trackingAction->beginRun( _physVolHelper, _mu2eOrigin );
-    stepping_action->beginRun();
+    _steppingAction->beginRun();
 
   }
 
   // Create one G4 event and copy its output to the edm::event.
   void G4::produce(edm::Event& event, edm::EventSetup const&) {
+
 
     // Create empty data products.
     auto_ptr<StepPointMCCollection>           outputHits(new StepPointMCCollection);
@@ -306,12 +312,31 @@ namespace mu2e {
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);
 
+    // Fill the status object.
+    G4Timer const* timer = _runManager->getG4Timer();
+    float cpuTime  = timer->GetSystemElapsed()+timer->GetUserElapsed();
+
+    int status(0);
+    if (  _steppingAction->nKilledStepLimit() > 0 ) status =  1;
+    if (  _trackingAction->overflowSimParticles() ) status = 10;
+
+    auto_ptr<StatusG4> g4stat(new StatusG4( status,
+                                            _trackingAction->nG4Tracks(),
+                                            _trackingAction->overflowSimParticles(),
+                                            _steppingAction->nKilledStepLimit(),
+                                            cpuTime,
+                                            timer->GetRealElapsed() ) 
+                              );
+
+    // Add data products to the event.
+    event.put(g4stat);
     event.put(outputHits,_trackerOutputName);
     event.put(vdHits,_vdOutputName);
     event.put(simParticles);
     event.put(caloHits,_caloOutputName);
     event.put(caloROHits,_caloROOutputName);
     event.put(pointTrajectories);
+
     
     // Pause to see graphics. 
     if ( _visMacro.size() > 0 ) {
