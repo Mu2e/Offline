@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.12 2010/09/30 21:25:00 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.13 2010/12/11 00:42:51 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/09/30 21:25:00 $
+// $Date: 2010/12/11 00:42:51 $
 //
 // Original author Rob Kutschke
 //
@@ -120,12 +120,13 @@ namespace mu2e {
     G4Track* track = step->GetTrack();
 
 
-    // Do we reached maximum allowed number of steps per event?
+    // Have we reached maximum allowed number of steps per track?
     if( _maxSteps>0 && _nSteps>_maxSteps ) {
       cout << "SteppingAction: kill particle pdg=" 
 	   << track->GetDefinition()->GetPDGEncoding()
 	   << " due to large number of steps." << endl;
       track->SetTrackStatus(fStopAndKill);
+      ++_nKilledStepLimit;
 
     // If particle is in the drop list - drop it
     } else if( _pdgToDrop.size()>0 ) {
@@ -259,7 +260,7 @@ namespace mu2e {
   }
 
   void SteppingAction::BeginOfEvent() {
-    //_nSteps = 0;
+    _nKilledStepLimit = 0;
   }
   
   void SteppingAction::EndOfEvent() {

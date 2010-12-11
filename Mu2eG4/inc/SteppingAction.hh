@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.6 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/29 19:37:58 $
+// $Id: SteppingAction.hh,v 1.7 2010/12/11 00:42:51 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2010/12/11 00:42:51 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,8 @@ namespace mu2e {
     void BeginOfTrack();
     void EndOfTrack();
 
+    int nKilledStepLimit() const { return _nKilledStepLimit; }
+
     // Called by G4_plugin.
     void beginRun();
     
@@ -68,6 +70,7 @@ namespace mu2e {
     // Maximum allowed number of steps per event
     int _maxSteps;
     int _nSteps;
+    int _nKilledStepLimit;
 
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugEventList;
