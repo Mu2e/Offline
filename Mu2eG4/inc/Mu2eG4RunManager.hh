@@ -4,9 +4,9 @@
 // Override the G4RunManager class so that the Mu2e framework can drive
 // the event loop. 
 //
-// $Id: Mu2eG4RunManager.hh,v 1.5 2010/11/15 23:24:42 kutschke Exp $
+// $Id: Mu2eG4RunManager.hh,v 1.6 2010/12/11 00:34:25 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/15 23:24:42 $
+// $Date: 2010/12/11 00:34:25 $
 //
 // Original author Rob Kutschke
 //
@@ -55,7 +55,12 @@ namespace mu2e {
 
 
     // Mu2e specific accessors.
-    G4Event const* getCurrentEvent() { return currentEvent; }
+    G4Event const* getCurrentEvent() const { return currentEvent; }
+    G4Timer const*      getG4Timer() const { return timer; }
+
+    G4double   realElapsedTime() const { return _realElapsed;   }
+    G4double systemElapsedTime() const { return _systemElapsed; }
+    G4double   userElapsedTime() const { return _userElapsed;   }
 
   private:
 
