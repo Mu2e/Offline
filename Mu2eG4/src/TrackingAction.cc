@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.15 2010/12/09 16:07:25 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.16 2010/12/11 00:44:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/09 16:07:25 $
+// $Date: 2010/12/11 00:44:07 $
 //
 // Original author Rob Kutschke
 //
@@ -52,7 +52,8 @@ namespace mu2e {
     _debugList(),
     _physVolHelper(0),
     _timer(),
-    _currentSize(0){
+    _currentSize(0),
+    _overflowSimParticles(false){
 
     _stepping = stepping_action;
 
@@ -100,6 +101,8 @@ namespace mu2e {
 
   void TrackingAction::beginEvent(){
     _currentSize=0;
+    _overflowSimParticles = false;
+
   }
 
   void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
@@ -118,6 +121,7 @@ namespace mu2e {
       if( (_currentSize - _sizeLimit)==1 ) {
         edm::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: " 
                               << _currentSize << endl;
+        _overflowSimParticles = true;
       }
       return;
     }

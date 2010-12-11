@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.8 2010/11/18 07:24:50 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.9 2010/12/11 00:44:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/18 07:24:50 $
+// $Date: 2010/12/11 00:44:07 $
 //
 // Original author Rob Kutschke
 //
@@ -69,6 +69,11 @@ namespace mu2e {
     // Check consistency of mother-daughter pointers.
     bool checkCrossReferences( bool doPrint, bool doThrow);
 
+    // Accessors for status information.
+    int             nG4Tracks() const { return _currentSize;}
+    bool overflowSimParticles() const { return _overflowSimParticles; }
+    
+
   private:
 
     typedef SimParticleCollection::key_type key_type;
@@ -94,6 +99,7 @@ namespace mu2e {
     // Limit maximum size of the steps collection
     int _sizeLimit;
     int _currentSize;
+    bool _overflowSimParticles;
 
     // Non-owning pointer to stepping action.
     SteppingAction * _stepping; 
