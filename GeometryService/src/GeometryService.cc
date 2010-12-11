@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.10 2010/11/02 19:23:27 kutschke Exp $
+// $Id: GeometryService.cc,v 1.11 2010/12/11 00:46:03 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/02 19:23:27 $
+// $Date: 2010/12/11 00:46:03 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,8 @@
 
 // Mu2e include files
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+#include "GeometryService/src/DetectorSystemMaker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/TargetMaker.hh"
 #include "CTrackerGeom/inc/CTracker.hh"
@@ -84,6 +86,9 @@ namespace mu2e {
 
     // Throw if the configuration is not self consistent.
     checkConfig();
+
+    // This must be the first detector added since other makers may wish to use it.
+    addDetector( DetectorSystemMaker( *_config).getDetectorSystemPtr() );
 
     // Make a detector for every component present in the configuration.
     if(_config->getBool("hasBeamline",false)){
