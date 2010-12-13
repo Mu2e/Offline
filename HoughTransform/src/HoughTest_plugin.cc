@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.15 2010/11/09 20:25:41 kutschke Exp $
+// $Id: HoughTest_plugin.cc,v 1.16 2010/12/13 17:02:32 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/09 20:25:41 $
+// $Date: 2010/12/13 17:02:32 $
 //
 // Original author R. Bernstein
 //
@@ -52,14 +52,8 @@
 #include "GeneralUtilities/inc/RootNameTitleHelper.hh"
 #include "GeneralUtilities/inc/pow.hh"
 
-//CLHEP includes
-#include "CLHEP/Random/RandPoisson.h"
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/Randomize.h"
-
 using namespace std;
 using CLHEP::Hep3Vector;
-using CLHEP::RandPoisson;
 using namespace mu2e;
 using namespace mu2e::houghtransform;
 namespace mu2e {
