@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.19 2010/12/11 00:48:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/11 00:48:23 $
+// $Id: classes.h,v 1.20 2010/12/13 06:10:33 logash Exp $
+// $Author: logash $
+// $Date: 2010/12/13 06:10:33 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +39,7 @@
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
-#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
 #include "ToyDP/inc/StatusG4.hh"
 
@@ -73,7 +73,7 @@ template class edm::Wrapper<mu2e::G4BeamlineInfoCollection>;
 template class edm::Wrapper<mu2e::CaloHitCollection>;
 template class edm::Wrapper<mu2e::CaloHitMCTruthCollection>;
 template class edm::Wrapper<mu2e::CaloCrystalHitCollection>;
-template class edm::Wrapper<mu2e::CaloCrystalHitMCTruthCollection>;
+template class edm::Wrapper<mu2e::CaloCrystalOnlyHitCollection>;
 template class edm::Wrapper<mu2e::PointTrajectoryCollection>;
 template class edm::Wrapper<mu2e::DPIndexVectorCollection>;
 template class edm::Wrapper<mu2e::StatusG4>;

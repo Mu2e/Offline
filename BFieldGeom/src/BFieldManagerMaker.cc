@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.8 2010/11/24 22:47:26 logash Exp $
+// $Id: BFieldManagerMaker.cc,v 1.9 2010/12/13 06:10:33 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/11/24 22:47:26 $
+// $Date: 2010/12/13 06:10:33 $
 //
 
 // Includes from C++
@@ -82,12 +82,39 @@ namespace mu2e {
 	  << " Maps are not loaded.\n";
       }
 
-      // Add the DS, TSu, TSd and PS field maps.
-      loadG4BL( "DS",  "bfield.dsFile"  );
-      loadG4BL( "PS",  "bfield.psFile"  );
-      loadG4BL( "TSu", "bfield.tsuFile" );
-      loadG4BL( "TSd", "bfield.tsdFile" );
-      
+      // Read list of files with maps from the config file
+      // The list can be specified directly with
+      // bfield.files = { ... }
+      // or using old style bfield.dsFile=... etc.
+
+      vector<string> filesToLoad;
+      if ( config.hasName("bfield.files") ){
+	config.getVectorString("bfield.files",filesToLoad);
+      } else {
+	vector<string> keysToLoad;
+	keysToLoad.push_back("bfield.dsFile");
+	keysToLoad.push_back("bfield.psFile");
+	keysToLoad.push_back("bfield.tsuFile");
+	keysToLoad.push_back("bfield.tsdFile");
+	for( unsigned int i=0; i<keysToLoad.size(); ++i ) {
+	  if ( ! _config.hasName(keysToLoad[i]) ){
+	    cout << "No magnetic field file specified for: "
+		 << keysToLoad[i]
+		 << "   Hope that's OK." << endl;
+	  } else {
+	    filesToLoad.push_back(_config.getString(keysToLoad[i]));
+	  }
+	}
+      }
+
+      for( unsigned int i=0; i<filesToLoad.size(); ++i ) {
+	string filename = filesToLoad[i]; 
+	cout << "Read " << filename << endl;
+	ostringstream mapkey;
+	mapkey << "bfield" << i;
+	loadG4BL( mapkey.str(),  filename  );
+      }
+
       //throw cms::Exception("GEOM") << "Temporal end." << "\n";
 
     } else {
@@ -146,18 +173,7 @@ namespace mu2e {
   // Parse the config file to learn about one magnetic field map.
   // Create an empty map and call the code to load the map from the file.
   void BFieldManagerMaker::loadG4BL( const std::string& key,  
-				     const std::string& fileKey ) {
-
-    if ( ! _config.hasName(fileKey) ){
-      cout << "No magnetic field file specified for: "
-           << fileKey
-           << "   Hope that's OK." << endl;
-      return;
-    }
-
-    // Get filename
-    string filename = _config.getString(fileKey);
-    cout << "Read " << filename << endl;
+				     const std::string& filename ) {
 
     // Open the input file.
     ifstream fin;

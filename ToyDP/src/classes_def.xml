@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.22 2010/12/11 00:48:23 kutschke Exp $     -->
-<!--  $Author: kutschke $ -->
-<!--  $Date: 2010/12/11 00:48:23 $   -->
+<!--  $Id: classes_def.xml,v 1.23 2010/12/13 06:10:33 logash Exp $     -->
+<!--  $Author: logash $ -->
+<!--  $Date: 2010/12/13 06:10:33 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.22 $$Date: 2010/12/11 00:48:23 $"; -->
+<!--  rev="$Revision: 1.23 $$Date: 2010/12/13 06:10:33 $"; -->
 
 <!--  Only include edm::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the edm::Wrapper lines and     -->
@@ -63,8 +63,8 @@
  <class name="mu2e::CaloCrystalHitCollection"/>
  <class name="mu2e::CaloHitMCTruth"/>
  <class name="mu2e::CaloHitMCTruthCollection"/>
- <class name="mu2e::CaloCrystalHitMCTruth"/>
- <class name="mu2e::CaloCrystalHitMCTruthCollection"/>
+ <class name="mu2e::CaloCrystalOnlyHit"/>
+ <class name="mu2e::CaloCrystalOnlyHitCollection"/>
  <class name="mu2e::SimParticle"/>
  <class name="std::pair<MapVectorKey,mu2e::SimParticle>"/>
  <class name="std::map<MapVectorKey,mu2e::SimParticle>"/>
@@ -90,7 +90,7 @@
  <class name="edm::Wrapper<mu2e::CaloHitCollection>"/>
  <class name="edm::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
  <class name="edm::Wrapper<mu2e::CaloCrystalHitCollection>"/>
- <class name="edm::Wrapper<mu2e::CaloCrystalHitMCTruthCollection>"/>
+ <class name="edm::Wrapper<mu2e::CaloCrystalOnlyHitCollection>"/>
  <class name="edm::Wrapper<mu2e::PointTrajectoryCollection>"/>
  <class name="edm::Wrapper<mu2e::StatusG4>"/>
 </lcgdict>

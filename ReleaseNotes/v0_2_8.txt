@@ -3,10 +3,44 @@
 
            Release notes for Mu2e Offline software, v0_2_8
 
-  $Id: v0_2_8.txt,v 1.38 2010/12/11 04:50:10 logash Exp $
+  $Id: v0_2_8.txt,v 1.39 2010/12/13 06:10:33 logash Exp $
   $Author: logash $
-  $Date: 2010/12/11 04:50:10 $
+  $Date: 2010/12/13 06:10:33 $
 
+49) December 12, 2010 logash
+
+    1. Renamed CaloCrystalHitMCTruth to CaloCrystalOnlyHit, to 
+       avoid confusion. All *MCTruth objects suppose to hold 
+       MC information about corresponding object, e.g. 
+       CaloHitMCTruth holds MC data (energy deposition, for example)
+       for the corresponding CaloHit objects. This was not true 
+       for CaloCrystalHitMCTruth. CaloCrystalHit is a crystal hit, 
+       reconstructed from corresponding APD hits (CaloHit), but 
+       CaloCrystalHitMCTruth is a crystal hit, created directly from 
+       G4 steps only in the crystal (and not in corresponding APDs), 
+       independent on corresponding APD hits.
+
+    2. It is now possible to provide list of B-field maps, e.g. instead
+       of this in the config file:
+
+  string bfield.dsFile  = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_DSMap.txt";
+  string bfield.psFile  = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_PSMap.txt";
+  string bfield.tsuFile = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSuMap.txt";
+  string bfield.tsdFile = "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSdMap.txt";
+
+       one can use:
+
+  vector<string> bfield.files = {
+	       "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_DSMap.txt",
+	       "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_PSMap.txt",
+	       "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSuMap.txt",
+	       "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSdMap.txt"
+  };
+
+       Old style works as well, but if bfield.files is present in the 
+       config file, the old parameters like bfield.dsFile are ignored. 
+
+       This works only for G4BL format of the field maps!
 
 48) December 10, 2010 logash
 

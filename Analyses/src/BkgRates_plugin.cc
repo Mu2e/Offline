@@ -41,7 +41,7 @@
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
-#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 using namespace std;
@@ -704,11 +704,11 @@ namespace mu2e {
     } // end of loop on crystal hits
     
     
-    // Unused caloCrystalHitMCTruths
-    edm::Handle<CaloCrystalHitMCTruthCollection>  caloCrystalHitMCTruths;
-    evt.getByType(caloCrystalHitMCTruths);
-    if (!caloCrystalHitMCTruths.isValid()) {
-      cout << ": NO CaloCrystalHitMCTruths" << endl;
+    // Unused caloCrystalOnlyHits
+    edm::Handle<CaloCrystalOnlyHitCollection>  caloCrystalOnlyHits;
+    evt.getByType(caloCrystalOnlyHits);
+    if (!caloCrystalOnlyHits.isValid()) {
+      cout << ": NO CaloCrystalOnlyHits" << endl;
       return;
     }
     

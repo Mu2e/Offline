@@ -1,9 +1,9 @@
-#ifndef CaloCrystalHitMCTruth_H
-#define CaloCrystalHitMCTruth_H
+#ifndef CaloCrystalOnlyHit_H
+#define CaloCrystalOnlyHit_H
 
-// $Id: CaloCrystalHitMCTruth.hh,v 1.4 2010/11/12 21:43:54 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/12 21:43:54 $
+// $Id: CaloCrystalOnlyHit.hh,v 1.1 2010/12/13 06:10:33 logash Exp $
+// $Author: logash $
+// $Date: 2010/12/13 06:10:33 $
 //
 // Original author KLG
 
@@ -18,19 +18,17 @@ class edm::ProductID;
 
 namespace mu2e { 
 
-  class CaloHitMCTruth;
-
-  class CaloCrystalHitMCTruth{
+  class CaloCrystalOnlyHit{
 
   public:
 
-    CaloCrystalHitMCTruth():
+    CaloCrystalOnlyHit():
       _crystalId(-1),
       _time(0.),
       _energyDep(0.)
     {}
 
-    CaloCrystalHitMCTruth(int crystalId,double time, double energy):
+    CaloCrystalOnlyHit(int crystalId,double time, double energy):
       _crystalId(crystalId),
       _time(time),
       _energyDep(energy)
@@ -58,7 +56,7 @@ namespace mu2e {
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
-                                   CaloCrystalHitMCTruth const& hit){
+                                   CaloCrystalOnlyHit const& hit){
     hit.print(ost,false);
     return ost;
   }

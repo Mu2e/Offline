@@ -1,9 +1,9 @@
 // 
 // Crystal hit info plus possible additional information produced by HitMaker
 //
-// $Id: CaloCrystalHitMCTruth.cc,v 1.4 2010/11/12 21:43:54 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/12 21:43:54 $
+// $Id: CaloCrystalOnlyHit.cc,v 1.1 2010/12/13 06:10:33 logash Exp $
+// $Author: logash $
+// $Date: 2010/12/13 06:10:33 $
 //
 
 // C++ includes
@@ -13,21 +13,20 @@
 #include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e includes
-#include "ToyDP/inc/CaloCrystalHitMCTruth.hh"
-#include "ToyDP/inc/CaloHitMCTruth.hh"
+#include "ToyDP/inc/CaloCrystalOnlyHit.hh"
 #include "ToyDP/inc/DPIndex.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  void CaloCrystalHitMCTruth::setEnergyDep(double energy) {
+  void CaloCrystalOnlyHit::setEnergyDep(double energy) {
     _energyDep = energy;
     return;
   }
 
   // Print the information found in this hit.
-  void CaloCrystalHitMCTruth::print( ostream& ost, bool doEndl ) const {
+  void CaloCrystalOnlyHit::print( ostream& ost, bool doEndl ) const {
 
     ost << "Calorimeter Crystal Hit MC:"
         << " crystal id: "  << _crystalId

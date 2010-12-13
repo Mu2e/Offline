@@ -1,6 +1,6 @@
 //
 // An EDProducer Module that reads StepPointMC objects and turns them into
-// CaloHit, CaloHitMCTruth, CaloHitMCPtr, CrystalHitMCTruth, CrystalHitMCPtr
+// CaloHit, CaloHitMCTruth, CaloHitMCPtr, CrystalOnlyHit, CrystalHitMCPtr
 // objects.
 //
 // Original author Ivan Logashenko.
@@ -33,7 +33,7 @@
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
-#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
 #include "ToyDP/inc/DPIndexVector.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "Mu2eUtilities/inc/sort_functors.hh"
@@ -85,7 +85,7 @@ namespace mu2e {
       // Tell the framework what we make.
       produces<CaloHitCollection>();
       produces<CaloHitMCTruthCollection>();
-      produces<CaloCrystalHitMCTruthCollection>();
+      produces<CaloCrystalOnlyHitCollection>();
       produces<DPIndexVectorCollection>("CaloHitMCCrystalPtr");
       produces<DPIndexVectorCollection>("CaloHitMCReadoutPtr");
 
@@ -118,7 +118,7 @@ namespace mu2e {
 			      const edm::Handle<StepPointMCCollection>&, 
 			      CaloHitCollection &, 
 			      CaloHitMCTruthCollection&,
-			      CaloCrystalHitMCTruthCollection&,
+			      CaloCrystalOnlyHitCollection&,
 			      DPIndexVectorCollection&,
 			      DPIndexVectorCollection&);
 
@@ -143,7 +143,7 @@ namespace mu2e {
     // A container to hold the output hits.
     auto_ptr<CaloHitCollection>               caloHits(new CaloHitCollection);
     auto_ptr<CaloHitMCTruthCollection>        caloMCHits(new CaloHitMCTruthCollection);
-    auto_ptr<CaloCrystalHitMCTruthCollection> caloCrystalMCHits(new CaloCrystalHitMCTruthCollection);
+    auto_ptr<CaloCrystalOnlyHitCollection> caloCrystalMCHits(new CaloCrystalOnlyHitCollection);
     auto_ptr<DPIndexVectorCollection>         caloMCptrHits(new DPIndexVectorCollection);
     auto_ptr<DPIndexVectorCollection>         caloMCroptrHits(new DPIndexVectorCollection);
 
@@ -187,7 +187,7 @@ namespace mu2e {
 				      const edm::Handle<StepPointMCCollection>& rosteps, 
 				      CaloHitCollection &caloHits, 
 				      CaloHitMCTruthCollection& caloHitsMCTruth,
-				      CaloCrystalHitMCTruthCollection& caloCrystalHitsMCTruth,
+				      CaloCrystalOnlyHitCollection& caloCrystalHitsMCTruth,
 				      DPIndexVectorCollection& caloHitsMCCrystalPtr,
 				      DPIndexVectorCollection& caloHitsMCReadoutPtr ) {
 
@@ -346,7 +346,7 @@ namespace mu2e {
       
     }
 
-    // now CaloCrystalHitMCTruth
+    // now CaloCrystalOnlyHit
     // Organize hits by crystal id; reject all but first RO; reject all RO hit directly
 
     hitmap.clear();
@@ -356,7 +356,7 @@ namespace mu2e {
       hitmap[h.volumeId()].first.push_back(i);
     }
 
-    CaloCrystalHitMCTruthCollection cr_hits;
+    CaloCrystalOnlyHitCollection cr_hits;
 
     for(HitMap::const_iterator cr = hitmap.begin(); cr != hitmap.end(); ++cr) {
 
@@ -371,14 +371,14 @@ namespace mu2e {
 
       for( size_t i=0; i<isteps.size(); i++ ) {
 	StepPointMC const& h = (*steps)[isteps[i]];
-	cr_hits.push_back(CaloCrystalHitMCTruth(cid,h.time(),h.eDep()));        
+	cr_hits.push_back(CaloCrystalOnlyHit(cid,h.time(),h.eDep()));        
       }
 
-      sort(cr_hits.begin(), cr_hits.end(), lessByTime<CaloCrystalHitMCTruthCollection::value_type>());
+      sort(cr_hits.begin(), cr_hits.end(), lessByTime<CaloCrystalOnlyHitCollection::value_type>());
 
       // now form final hits if they are close enough in time
 
-      CaloCrystalHitMCTruthCollection::value_type cHitMCTruth  = cr_hits[0];
+      CaloCrystalOnlyHitCollection::value_type cHitMCTruth  = cr_hits[0];
 
       for ( size_t i=1; i<cr_hits.size(); ++i ) {
 

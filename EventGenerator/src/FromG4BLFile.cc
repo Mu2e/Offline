@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.7 2010/12/11 04:50:10 logash Exp $
+// $Id: FromG4BLFile.cc,v 1.8 2010/12/13 06:10:33 logash Exp $
 // $Author: logash $ 
-// $Date: 2010/12/11 04:50:10 $
+// $Date: 2010/12/13 06:10:33 $
 //
 // Original author Rob Kutschke
 //
@@ -157,8 +157,6 @@ namespace mu2e {
       double mass = pdt->particle(id).mass().value();
       double e    = sqrt( px*px + py*py + pz*pz + mass*mass);
       CLHEP::HepLorentzVector p4(px,py,pz,e);
-
-      std::cout <<x<<" "<<y<<" "<<z<<" "<<px<<" "<<py<<" "<<pz<<" "<<mass<<" "<<e<<endl;
 
       // Add particle to the output collection.
       genParts.push_back( ToyGenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );

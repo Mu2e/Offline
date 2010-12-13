@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.26 2010/12/11 00:41:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/11 00:41:30 $
+// $Id: ReadBack.cc,v 1.27 2010/12/13 06:10:33 logash Exp $
+// $Author: logash $
+// $Date: 2010/12/13 06:10:33 $
 //
 // Original author Rob Kutschke
 //
@@ -33,7 +33,7 @@
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
-#include "ToyDP/inc/CaloCrystalHitMCTruthCollection.hh"
+#include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
 #include "ToyDP/inc/DPIndexVector.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/StatusG4.hh"
@@ -358,12 +358,12 @@ namespace mu2e {
     }
 
     // templetize it?
-    // caloCrystalHitMCTruths
-    edm::Handle<CaloCrystalHitMCTruthCollection>  caloCrystalHitMCTruths;
+    // caloCrystalOnlyHits
+    edm::Handle<CaloCrystalOnlyHitCollection>  caloCrystalOnlyHits;
 
-    event.getByType(caloCrystalHitMCTruths);
-    if (!caloCrystalHitMCTruths.isValid()) {
-      _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalHitMCTruths" << endl;
+    event.getByType(caloCrystalOnlyHits);
+    if (!caloCrystalOnlyHits.isValid()) {
+      _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalOnlyHits" << endl;
       return;
     }
 
@@ -372,14 +372,14 @@ namespace mu2e {
     hitCrystals.clear();
 
     _diagLevel > 0 && 
-      cout << __func__ << ": caloCrystalHitMCTruths->size() " << caloCrystalHitMCTruths->size() << endl;
+      cout << __func__ << ": caloCrystalOnlyHits->size() " << caloCrystalOnlyHits->size() << endl;
 
-    for ( size_t i=0; i<caloCrystalHitMCTruths->size(); ++i ) {
+    for ( size_t i=0; i<caloCrystalOnlyHits->size(); ++i ) {
 
-      CaloCrystalHitMCTruth const & hit = (*caloCrystalHitMCTruths).at(i);
+      CaloCrystalOnlyHit const & hit = (*caloCrystalOnlyHits).at(i);
 
       simEdep += hit.energyDep();
-      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHitMCTruths)[i].id(): " 
+      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalOnlyHits)[i].id(): " 
                              << hit.id() << endl;
 
       // check if the crystal is there already (it may be ok if the timing is different)
@@ -389,7 +389,7 @@ namespace mu2e {
       if ( pos != hitCrystals.end() ) {
 
         _diagLevel > 0 && cout << __func__ << ": Already saw " 
-               << (*caloCrystalHitMCTruths).at(pos->second) << endl;
+               << (*caloCrystalOnlyHits).at(pos->second) << endl;
         
       }
 
@@ -407,8 +407,8 @@ namespace mu2e {
     _hRCNCrystalsMC->Fill(hitCrystals.size());
 
     if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
-      for ( size_t i=0; i<caloCrystalHitMCTruths->size(); ++i ) {
-        CaloCrystalHitMCTruth const & hit = (*caloCrystalHitMCTruths).at(i);
+      for ( size_t i=0; i<caloCrystalOnlyHits->size(); ++i ) {
+        CaloCrystalOnlyHit const & hit = (*caloCrystalOnlyHits).at(i);
         cout << "Readback: " << hit << endl;
       }
     }
