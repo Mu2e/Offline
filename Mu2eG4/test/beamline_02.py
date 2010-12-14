@@ -1,9 +1,9 @@
 #
 # Configuration file for Beamline 02.
 #
-# $Id: beamline_02.py,v 1.3 2010/11/15 23:42:20 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/11/15 23:42:20 $
+# $Id: beamline_02.py,v 1.4 2010/12/14 01:03:39 logash Exp $
+# $Author: logash $
+# $Date: 2010/12/14 01:03:39 $
 #
 # Original author Rob Kutschke
 #
@@ -53,18 +53,18 @@ process.G4Helper = mu2e.Service("G4Helper")
 process.source = mu2e.Source("EmptySource")
 
 #  Make some generated tracks and add them to the event.
-#process.generate = mu2e.EDProducer(
-#    "EventGenerator",
-#    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
-#    seed=mu2e.untracked.vint32(7789)
-#)
-
-#  Use this generator instead of the one above if using G4Beamline input files
 process.generate = mu2e.EDProducer(
-    "G4BeamlineGenerator",
+    "EventGenerator",
     inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
     seed=mu2e.untracked.vint32(7789)
 )
+
+#  Use this generator instead of the one above if using G4Beamline input files
+#process.generate = mu2e.EDProducer(
+#    "G4BeamlineGenerator",
+#    inputfile = mu2e.untracked.string("Mu2eG4/test/beamline_genconfig.txt"),
+#    seed=mu2e.untracked.vint32(7789)
+#)
 
 # Run G4 and add its hits to the event.
 process.g4run = mu2e.EDProducer(
