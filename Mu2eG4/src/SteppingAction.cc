@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.13 2010/12/11 00:42:51 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.14 2010/12/17 22:14:55 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/11 00:42:51 $
+// $Date: 2010/12/17 22:14:55 $
 //
 // Original author Rob Kutschke
 //
@@ -73,16 +73,6 @@ namespace mu2e {
       _debugTrackList.add(list);
     }
 
-    // Get list of particles to keep or to drop in stepping action
-    if ( config.hasName("g4.steppingActionDropPDG") ){
-      config.getVectorInt("g4.steppingActionDropPDG",_pdgToDrop);
-    }
-    if( _pdgToDrop.size()>0 ) {
-      cout << "Drop these particles in the SteppingAction: ";
-      for( size_t i=0; i<_pdgToDrop.size(); ++i ) cout << _pdgToDrop[i] << ",";
-      cout << endl;
-    }
-
     // Get maximum allowed number of steps per event
     _maxSteps = config.getInt("g4.steppingActionMaxSteps", 0);
     if( _maxSteps>0 ) {
@@ -119,32 +109,23 @@ namespace mu2e {
 
     G4Track* track = step->GetTrack();
 
-
     // Have we reached maximum allowed number of steps per track?
     if( _maxSteps>0 && _nSteps>_maxSteps ) {
       cout << "SteppingAction: kill particle pdg=" 
 	   << track->GetDefinition()->GetPDGEncoding()
 	   << " due to large number of steps." << endl;
-      track->SetTrackStatus(fStopAndKill);
+      killTrack( track, StoppingCode::mu2eMaxSteps, fStopAndKill);
       ++_nKilledStepLimit;
-
-    // If particle is in the drop list - drop it
-    } else if( _pdgToDrop.size()>0 ) {
-      
-      for( size_t i=0; i<_pdgToDrop.size(); ++i ) {
-	if( track->GetDefinition()->GetPDGEncoding() == _pdgToDrop[i] ) {
-	  track->SetTrackStatus(fStopAndKill);
-	  break;
-	}
-      }
-    }	  
+    }
 
     if ( _doKillInHallAir &&  killInHallAir(track) ){
-      track->SetTrackStatus(fStopAndKill);
+      killTrack( track, StoppingCode::mu2eHallAir, fStopAndKill);
     } else if ( _doKillLowEKine && killLowEKine(track) ){
-      track->SetTrackStatus(fStopAndKill);
+      killTrack( track, StoppingCode::mu2eLowEKine, fStopAndKill);
+    } else if ( _maxSteps>0 && killTooManySteps(track) ) {
+      killTrack( track, StoppingCode::mu2eMaxSteps, fStopAndKill);
     }
-    
+
     // Do we want to do make debug printout for this event?
     if ( !_debugEventList.inList() ) return;
 
@@ -207,14 +188,12 @@ namespace mu2e {
               track->GetGlobalTime()
               );
 
-
     printit ( "Step:", id, 
               track->GetPosition(),
               track->GetMomentum(),
               track->GetLocalTime(),
               track->GetGlobalTime()
               );
-
 
     printit ( "Post: ", id, 
               postpt->GetPosition(),
@@ -232,13 +211,12 @@ namespace mu2e {
 
   } // end UserSteppingAction
 
-
   // Kill tracks that drop below the kinetic energy cut.
   // It might be smarter to program G4 to do this itself?
   bool SteppingAction::killLowEKine ( const G4Track* trk ){
     if ( trk->GetKineticEnergy() < _eKineMin ){
       if ( _killerVerbose ){
-        cout << "Killed track: low energy." << endl;
+        cout << "Killed track: low energy. " << trk->GetTrackID() << endl;
       }
       return true;
     }
@@ -254,24 +232,53 @@ namespace mu2e {
     }
 
     if ( _killerVerbose ){
-      cout << "Killed track: in Hall Air." << endl;
+      cout << "Killed track: in Hall Air. " << trk->GetTrackID() << endl;
     }
     return true;
+  }
+
+  // Kill tracks that take too many steps.
+  bool SteppingAction::killTooManySteps( const G4Track* track ){
+
+    if( _nSteps <= _maxSteps ) {
+      return false;
+    }
+
+    if ( _killerVerbose ) {
+      cout << "SteppingAction: kill particle pdg=" 
+           << track->GetDefinition()->GetPDGEncoding()
+           << " due to large number of steps." << endl;
+    }
+    ++_nKilledStepLimit;
+    return true;
+  }
+
+  // Record why the track is to be killed, then kill it.
+  void SteppingAction::killTrack( G4Track* track, StoppingCode::enum_type code, G4TrackStatus status ){
+
+    // Get user track informaton object from the track.
+    G4VUserTrackInformation* info = track->GetUserInformation();
+    UserTrackInformation* tinfo = (UserTrackInformation*)info;
+
+    // Record why the track was killed.
+    tinfo->setStoppingCode(StoppingCode(code));
+
+    // Kill the track
+    track->SetTrackStatus(status);
   }
 
   void SteppingAction::BeginOfEvent() {
     _nKilledStepLimit = 0;
   }
-  
+
   void SteppingAction::EndOfEvent() {
   }
 
   void SteppingAction::BeginOfTrack() {
     _nSteps = 0;
   }
-  
+
   void SteppingAction::EndOfTrack() {
   }
 
 } // end namespace mu2e
-

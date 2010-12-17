@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.7 2010/12/11 00:42:51 kutschke Exp $
+// $Id: SteppingAction.hh,v 1.8 2010/12/17 22:14:55 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/11 00:42:51 $
+// $Date: 2010/12/17 22:14:55 $
 //
 // Original author Rob Kutschke
 //
@@ -13,9 +13,12 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
+#include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "ToyDP/inc/StoppingCode.hh"
 
 // G4 includes
 #include "G4UserSteppingAction.hh"
+#include "G4TrackStatus.hh"
 #include "G4ThreeVector.hh"
 
 // Forward declarations outside of mu2e namespace.
@@ -65,8 +68,6 @@ namespace mu2e {
     // Minimum energy cut.
     double _eKineMin;
 
-    // List of particles to remove (others will be kept)
-    std::vector<int> _pdgToDrop;
     // Maximum allowed number of steps per event
     int _maxSteps;
     int _nSteps;
@@ -86,9 +87,13 @@ namespace mu2e {
     G4ThreeVector _lastMomentum;
     G4double      _zref;
 
-    // Two functions to decide whether or not to kill tracks.
-    bool killLowEKine ( const G4Track* );
-    bool killInHallAir( const G4Track* );
+    // Functions to decide whether or not to kill tracks.
+    bool killTooManySteps ( const G4Track* );
+    bool killLowEKine     ( const G4Track* );
+    bool killInHallAir    ( const G4Track* );
+
+    // A helper function to kill the track and record the reason for killing it.
+    void killTrack( G4Track* track, StoppingCode::enum_type code, G4TrackStatus status );
 
   };
   
