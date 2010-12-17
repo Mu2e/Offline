@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.5 2010/05/18 21:16:23 kutschke Exp $
+// $Id: StackingAction.cc,v 1.6 2010/12/17 22:10:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/18 21:16:23 $
+// $Date: 2010/12/17 22:10:41 $
 //
 // Original author Rob Kutschke
 //
@@ -49,12 +49,24 @@ namespace mu2e {
     nevents(0),
     doCosmicKiller(false),
     killLevel(0),
+    _pdgToDrop(),
     dirtBodyPhysVol(0),
     dirtCapPhysVol(0){
 
     // Get control info from run time configuration.
     doCosmicKiller = config.getBool("g4.doCosmicKiller",false);
     killLevel = config.getInt("g4.cosmicKillLevel",0);
+
+    // Get list of particles to keep or to drop in stepping action
+    if ( config.hasName("g4.steppingActionDropPDG") ){
+      config.getVectorInt("g4.steppingActionDropPDG",_pdgToDrop);
+    }
+    if( _pdgToDrop.size()>0 ) {
+      cout << "Drop these particles in the SteppingAction: ";
+      for( size_t i=0; i<_pdgToDrop.size(); ++i ) cout << _pdgToDrop[i] << ",";
+      cout << endl;
+    }
+
   }
 
   StackingAction::~StackingAction(){
@@ -72,9 +84,14 @@ namespace mu2e {
       }
     }
 
+    if ( !_pdgToDrop.empty() ){
+      if ( dropByPDGId(trk) ){
+        return fKill;
+      }
+    }
+
     return fUrgent;
   }
-  
 
   void StackingAction::NewStage(){
   }
@@ -152,6 +169,19 @@ namespace mu2e {
 
 
     return killit;
+  }
+
+  // Return true if the particle Id of this track is in the list.
+  bool StackingAction::dropByPDGId( G4Track const* track ){
+    
+    int id(track->GetDefinition()->GetPDGEncoding()); 
+    for( size_t i=0; i<_pdgToDrop.size(); ++i ) {
+      if( _pdgToDrop[i] == id ) {
+        cout << "Killing track from list: " << id << endl;
+        return true;
+      }
+    }
+    return false;
   }
 
 } // end namespace mu2e

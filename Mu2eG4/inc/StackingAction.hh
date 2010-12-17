@@ -5,12 +5,14 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.3 2010/04/17 23:58:31 yury Exp $
-// $Author: yury $
-// $Date: 2010/04/17 23:58:31 $
+// $Id: StackingAction.hh,v 1.4 2010/12/17 22:10:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2010/12/17 22:10:41 $
 //
 // Original author Rob Kutschke
 //
+
+#include <vector>
 
 #include "globals.hh"
 #include "G4UserStackingAction.hh"
@@ -45,12 +47,18 @@ namespace mu2e {
     bool doCosmicKiller;
     int  killLevel;
 
+    // List of particles to remove (others will be kept)
+    std::vector<int> _pdgToDrop;
+
     // Pointers to some physical volumes of interest.
     G4VPhysicalVolume * dirtBodyPhysVol;
     G4VPhysicalVolume * dirtCapPhysVol;
 
     // Check to see if we kill low p tracks in the dirt or other shielding.
     bool cosmicKiller( const G4Track* aTrack);
+
+    // Drop tracks from a list of PDG Id's.
+    bool StackingAction::dropByPDGId( G4Track const *);
 
   };
 
