@@ -1,9 +1,9 @@
 // 
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.cc,v 1.1 2010/12/11 00:31:04 kutschke Exp $
+// $Id: StatusG4.cc,v 1.2 2010/12/17 22:25:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/11 00:31:04 $
+// $Date: 2010/12/17 22:25:05 $
 //
 // Original author Rob Kutschke
 //
@@ -26,14 +26,17 @@ namespace mu2e{
     std::swap( _realTime,             rhs._realTime);
   }
 
-  void StatusG4::print ( ostream& ost ) const {
+  void StatusG4::print ( ostream& ost, bool newLine ) const {
     ost << "G4 status: " << _status
-        << "; Number G4 Tracks: " << _nG4Tracks;
+        << "; Number G4 Tracks: " 
+        << _nG4Tracks << ";";
     if ( _overflowSimParticles ){
-      ost << "; SimParticleCollection overflowed";
+      ost << " SimParticleCollection overflowed;";
     }
-    ost << "\n   Number killed by too many steps: " << _nKilledStepLimit
-        << "; Time (CPU/Real): "
-        << _cpuTime << "/" << _realTime;
+    ost << "   Number killed by too many steps: " << _nKilledStepLimit
+        << ";";
+    if ( newLine ){
+      ost << endl;
+    }
   }
 }
