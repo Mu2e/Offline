@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.38 2010/12/11 00:40:13 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.39 2010/12/17 22:21:01 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/11 00:40:13 $
+// $Date: 2010/12/17 22:21:01 $
 //
 // Original author Rob Kutschke
 //
@@ -297,7 +297,7 @@ namespace mu2e {
     // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
     _genAction->setEvent(event);
-    
+
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );
     G4Event const* g4event = _runManager->getCurrentEvent();
@@ -383,6 +383,7 @@ namespace mu2e {
   void G4::endRun(edm::Run & run, edm::EventSetup const&){
     _runManager->BeamOnEndRun();
     _physVolHelper.endRun();
+    _trackingAction->endRun();
 
     if ( _visManager ) delete _visManager;
   }
