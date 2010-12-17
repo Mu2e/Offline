@@ -3,9 +3,9 @@
 // 
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.hh,v 1.2 2010/12/11 00:59:24 kutschke Exp $
+// $Id: StatusG4.hh,v 1.3 2010/12/17 22:26:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/11 00:59:24 $
+// $Date: 2010/12/17 22:26:44 $
 //
 // Original author Rob Kutschke
 //
@@ -58,7 +58,7 @@ namespace mu2e {
     // Accept compiler written versions of d'tor, copy c'tor and assignment operator.
 
     void swap( StatusG4& );
-    void print ( std::ostream& ) const;
+    void print ( std::ostream&, bool newLine=true ) const;
 
     int                status() const { return _status; }
     int             nG4Tracks() const { return _nG4Tracks; }
@@ -90,7 +90,7 @@ namespace mu2e {
 
   inline std::ostream& operator<<( std::ostream& ost,
                                    StatusG4 const& stat){
-    stat.print(ost);
+    stat.print(ost,false);
     return ost;
   }
 
