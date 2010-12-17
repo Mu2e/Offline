@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.9 2010/12/11 00:44:07 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.10 2010/12/17 22:18:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/11 00:44:07 $
+// $Date: 2010/12/17 22:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -23,6 +23,7 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
 // G4 includes.
 #include "G4UserTrackingAction.hh"
@@ -35,7 +36,6 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimpleConfig;
   class SteppingAction;
-
 
   class TrackingAction: public G4UserTrackingAction{
 
@@ -61,10 +61,10 @@ namespace mu2e {
 
     // Receive persistent volume information and save it for the duration of the run.
     void beginRun( const PhysicalVolumeHelper& physVolHelper, 
-                   CLHEP::Hep3Vector const& mu2eOrigin ){
-      _physVolHelper = &physVolHelper;
-      _mu2eOrigin    =  mu2eOrigin;
-    }
+                   CLHEP::Hep3Vector const& mu2eOrigin );
+
+    // Clean up at end of run.
+    void endRun();
 
     // Check consistency of mother-daughter pointers.
     bool checkCrossReferences( bool doPrint, bool doThrow);
@@ -102,7 +102,13 @@ namespace mu2e {
     bool _overflowSimParticles;
 
     // Non-owning pointer to stepping action.
-    SteppingAction * _stepping; 
+    SteppingAction * _steppingAction;
+
+    // Non-owning pointer to the information about physical processes.
+    PhysicsProcessInfo  _processInfo;
+
+    // Do we print the summary of the process information at the end of the job.
+    bool _printPhysicsProcessSummary;
 
     // Control the saving of trajectories.
     // The first method does the big picture bookkeeping.
@@ -112,6 +118,7 @@ namespace mu2e {
 
     // Some helper functions.
     void insertOrThrow(std::pair<int,SimParticle> const& value);
+    G4String findProcessName(G4Track const* track);
 
   };
 

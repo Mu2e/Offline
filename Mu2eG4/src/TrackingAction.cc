@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.16 2010/12/11 00:44:07 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.17 2010/12/17 22:18:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/11 00:44:07 $
+// $Date: 2010/12/17 22:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -34,6 +34,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/StoppingCode.hh"
@@ -48,14 +49,15 @@ using namespace std;
 namespace mu2e {
 
   TrackingAction::TrackingAction( const SimpleConfig& config,
-                                  SteppingAction *stepping_action ):
+                                  SteppingAction     * steppingAction ):
     _debugList(),
     _physVolHelper(0),
     _timer(),
+    _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
     _currentSize(0),
-    _overflowSimParticles(false){
-
-    _stepping = stepping_action;
+    _overflowSimParticles(false),
+    _steppingAction(steppingAction),
+    _printPhysicsProcessSummary(config.getBool("g4.printPhysicsProcessSummary",false)){
 
     string name("g4.trackingActionEventList");
     if ( config.hasName(name) ){
@@ -64,11 +66,26 @@ namespace mu2e {
       _debugList.add(list);
     }
 
-    _sizeLimit = config.getInt("g4.particlesSizeLimit",0);
+    
   }
   
   TrackingAction::~TrackingAction(){
   }
+
+  // Receive persistent volume information and save it for the duration of the run.
+  void TrackingAction::beginRun( const PhysicalVolumeHelper& physVolHelper, 
+                                 CLHEP::Hep3Vector const& mu2eOrigin ){
+    _physVolHelper = &physVolHelper;
+    _mu2eOrigin    =  mu2eOrigin;
+    _processInfo.beginRun();
+  }
+
+  void TrackingAction::endRun(){
+    if ( _printPhysicsProcessSummary ){
+      _processInfo.endRun();
+    }
+  }
+
 
   void TrackingAction::PreUserTrackingAction(const G4Track* trk){
 
@@ -76,7 +93,12 @@ namespace mu2e {
     saveSimParticleStart(trk);
     controlTrajectorySaving(trk);
 
-    _stepping->BeginOfTrack();
+    // Create a user trackinformation object and attach it to the track.
+    // Need to cast away const-ness to do this.
+    UserTrackInformation* ti =  new UserTrackInformation();
+    ((G4Track *)trk)->SetUserInformation(ti);
+
+    _steppingAction->BeginOfTrack();
 
     if ( !_debugList.inList() ) return;
     printInfo( trk, "Start new Track: ");
@@ -92,7 +114,7 @@ namespace mu2e {
     _timer.stop();
 
     saveSimParticleEnd(trk);
-    _stepping->EndOfTrack();
+    _steppingAction->EndOfTrack();
 
     if ( !_debugList.inList() ) return;
     printInfo( trk, "End Track:       ", true);
@@ -187,10 +209,11 @@ namespace mu2e {
         << "Could not find existing SimParticle in PostUserTrackingAction.  id: "
         << id
         << "\n";
-    }
+    }   
 
-    // Reason why tracking stopped, decay, range out, etc.  Dummy for now.
-    StoppingCode stoppingCode(0);
+    // Reason why tracking stopped, decay, range out, etc.
+    G4String pname(findProcessName(trk));
+    StoppingCode stoppingCode(_processInfo.findAndCount(pname));
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
@@ -201,6 +224,7 @@ namespace mu2e {
                           trk->GetTrackStatus(),
                           stoppingCode
                           );
+
   }
 
   // Enable/disable storing of trajectories based on several considerations
@@ -339,6 +363,24 @@ namespace mu2e {
     return ok;
 
   }
+
+  // Find the name of the process that stopped this track.  
+  G4String TrackingAction::findProcessName( G4Track const* track){
+
+    // First check to see if Mu2e code killed this track.
+    G4VUserTrackInformation* info = track->GetUserInformation();
+    UserTrackInformation* tinfo   = (UserTrackInformation*)info;
+
+    if ( tinfo->isForced() ){
+      return tinfo->code().name();
+    }
+
+    // Otherwise, G4 killed this track.
+    G4VProcess  const* process = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep();
+
+    return process->GetProcessName();
+  }
+
 
 } // end namespace mu2e
 
