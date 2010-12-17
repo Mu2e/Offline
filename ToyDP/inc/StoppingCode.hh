@@ -1,15 +1,19 @@
 #ifndef ToyDP_StoppingCode_hh
 #define ToyDP_StoppingCode_hh
 //
-// An enum-matched-to-names class for stopping codes from G4.
+// An enum-matched-to-names class for physics processes from G4,
+// plus mu2e defined reasons for stopping particles.
 //
-// $Id: StoppingCode.hh,v 1.1 2010/11/10 23:42:27 kutschke Exp $
+// $Id: StoppingCode.hh,v 1.2 2010/12/17 22:21:43 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/10 23:42:27 $
+// $Date: 2010/12/17 22:21:43 $
 //
 // Original author Rob Kutschke
 //
 // Notes:
+// 0) The names starting with mu2e represent actions taken by SteppingAction.
+//    The other codes are the names of G4 processes.
+//
 // 1) The enum_type is in the class.  There are other classes
 //    that follow this model and lastEnum must be specific to each.
 //
@@ -35,47 +39,85 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     // Add new elements just before lastEnum; do not insert new elements
     // prior to this - it will break backwards compatibility.
-    // 
-    // No real values yet - just a placeholder.
-    //
     enum enum_type {
-      unknown,
+      unknown,                AlphaInelastic,          annihil,             AntiLambdaInelastic,
+      AntiNeutronInelastic,   AntiOmegaMinusInelastic, AntiProtonInelastic, AntiSigmaMinusInelastic,
+      AntiSigmaPlusInelastic, AntiXiMinusInelastic,    AntiXiZeroInelastic, CHIPSNuclearCaptureAtRest,
+      compt,                  conv,                    Decay,               DeuteronInelastic,
+      eBrem,                  eIoni,                   ElectroNuclear,      hBrems,
+      hElastic,               hIoni,                   hPairProd,           ionIoni,
+      KaonMinusInelastic,     KaonPlusInelastic,       KaonZeroLInelastic,  KaonZeroSInelastic,
+      LambdaInelastic,        msc,                     muBrems,             muIoni,
+      muMinusCaptureAtRest,   muMsc,                   muPairProd,          nCapture,
+      NeutronInelastic,       nFission,                nKiller,             OmegaMinusInelastic,
+      phot,                   PhotonInelastic,         PionMinusInelastic,  PionPlusInelastic,
+      PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic,
+      StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic,
+      XiZeroInelastic,        mu2eLowEKine,            mu2eHallAir,         mu2eMaxSteps,
       lastEnum
     };
   
-    // Keep this in sync with the enum. Used in StoppingCode.cc
-#define STOPPINGCODE_NAMES                                                     \
-      "unknown"
+    // Keep this list of names in sync with the enum. Used in StoppingCode.cc
+    // lastEnum does not appear in this list of names.
+#define STOPPINGCODE_NAMES                                                                                   \
+    "unknown",                "AlphaInelastic",          "annihil",             "AntiLambdaInelastic",       \
+    "AntiNeutronInelastic",   "AntiOmegaMinusInelastic", "AntiProtonInelastic", "AntiSigmaMinusInelastic",   \
+    "AntiSigmaPlusInelastic", "AntiXiMinusInelastic",    "AntiXiZeroInelastic", "CHIPSNuclearCaptureAtRest", \
+    "compt",                  "conv",                    "Decay",               "DeuteronInelastic",         \
+    "eBrem",                  "eIoni",                   "ElectroNuclear",      "hBrems",                    \
+    "hElastic",               "hIoni",                   "hPairProd",           "ionIoni",                   \
+    "KaonMinusInelastic",     "KaonPlusInelastic",       "KaonZeroLInelastic",  "KaonZeroSInelastic",        \
+    "LambdaInelastic",        "msc",                     "muBrems",             "muIoni",                    \
+    "muMinusCaptureAtRest",   "muMsc",                   "muPairProd",          "nCapture",                  \
+    "NeutronInelastic",       "nFission",                "nKiller",             "OmegaMinusInelastic",       \
+    "phot",                   "PhotonInelastic",         "PionMinusInelastic",  "PionPlusInelastic",         \
+    "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic",        \
+    "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic",          \
+    "XiZeroInelastic",        "mu2eLowEKine",            "mu2eHallAir",         "mu2eMaxSteps"
 
   public:
 
     // The most important c'tor and accessor methods are first.
-    explicit StoppingCode( enum_type id):
+    StoppingCode( enum_type id):
       _id(id)
-    {};
+    {}
 
-    // Constructor from an int; should not be needed often.
-    explicit StoppingCode( int id):
-      _id(static_cast<enum_type>(id)){
-      if ( !isValid() ){
-        // throw or something
-        exit(-1);
-      }
-    }
+    // Constructor from an int; should not be needed often.  This checks for validity and throws.
+    explicit StoppingCode( int id);
 
     // ROOT requires a default c'tor.
     StoppingCode():
       _id(unknown){
-    };
+    }
 
     // Accept compiler supplied d'tor, copy c'tor and assignment operator.
     
     enum_type id() const { return _id;}
-    
+
+    // Return the name that corresponds to this enum.
     const std::string name() const { 
       return std::string( _name[_id] );
     }
-    
+
+    // Return the stopping code that corresponds to this name.
+    // Return StoppingCode(unknown) if there is no such string.
+    static StoppingCode findByName ( std::string const& name);
+
+    // Stopping Code a;
+    // enum_type b;
+    // a = b;
+    StoppingCode& operator=(StoppingCode::enum_type const& c){
+      _id = c;
+      return *this;
+    }
+
+    // Stopping Code a;
+    // enum_type b = a;
+    operator StoppingCode::enum_type ()const{
+      return _id;
+    }
+
+    // Tests for equality.
     bool operator==(const StoppingCode g) const{
       return ( _id == g._id );
     }
@@ -99,7 +141,16 @@ namespace mu2e {
       return true;
     }
 
+    // Number of valid codes, not including lastEnum, but including "unknown".
+    static size_t size(){
+      return lastEnum;
+    }
+
+    // Print all valid codes and their text strings.
     static void printAll( std::ostream& ost = std::cout);
+
+    // Return a list of codes that are mu2e specific.
+    static std::vector<StoppingCode> mu2eCodes();
 
     // Member function version of static functions.
     bool isValid() const{
@@ -118,9 +169,9 @@ namespace mu2e {
     // files that have different versions?  Should I use cvs version instead?
     // This is really an edm question not a question for the class itself.
     static const uint32_t _version = 1000;
-    
+
   };
-  
+
   // Shift left (printing) operator.
   inline std::ostream& operator<<(std::ostream& ost,
                                   const StoppingCode& id ){

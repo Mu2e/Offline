@@ -1,14 +1,17 @@
 //
-// An enum-matched-to-names class for stopping codes from G4.
+// An enum-matched-to-names class for physics processes from G4,
+// plus mu2e defined reasons for stopping particles.
 //
-// $Id: StoppingCode.cc,v 1.1 2010/11/10 23:42:28 kutschke Exp $
+// $Id: StoppingCode.cc,v 1.2 2010/12/17 22:21:43 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/10 23:42:28 $
+// $Date: 2010/12/17 22:21:43 $
 //
 // Original author Rob Kutschke
 
 #include <iostream>
+#include <sstream>
 #include <iomanip>
+#include <stdexcept>
 
 #include "ToyDP/inc/StoppingCode.hh"
 
@@ -28,5 +31,38 @@ namespace mu2e {
       ost << setw(2) << i << " " << _name[i] << std::endl;
     }
   }
+
+  StoppingCode::StoppingCode( int id ):
+    _id(static_cast<enum_type>(id)){
+    if ( !isValid() ){
+      ostringstream os;
+      os << "Invalid StoppingCode::enum_type: " << id;
+      throw std::logic_error ( os.str());
+    }
+  }
+  
+  StoppingCode StoppingCode::findByName ( std::string const& name){
+
+    // Size must be at least 2 (for unknown and lastEnum).
+    for ( size_t i=0; i<size(); ++i ){
+      if ( _name[i] == name ){
+        return StoppingCode(i);
+      }
+    }
+    return StoppingCode(unknown);
+  }
+
+  // Return a vector of the codes that are mu2e specific.
+  std::vector<StoppingCode> StoppingCode::mu2eCodes(){
+    std::vector<StoppingCode> codes;
+    for ( size_t i=0; i<size(); ++i ){
+      string name = _name[i];
+      if ( name.substr(0,4) == "mu2e" ){
+        codes.push_back(StoppingCode(i));
+      }
+    }
+    return codes;
+  }
+
 
 }
