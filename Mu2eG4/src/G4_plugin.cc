@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.39 2010/12/17 22:21:01 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/12/17 22:21:01 $
+// $Id: G4_plugin.cc,v 1.40 2010/12/21 21:47:59 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/12/21 21:47:59 $
 //
 // Original author Rob Kutschke
 //
@@ -52,6 +52,7 @@
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/addStepPointMCs.hh"
 #include "Mu2eG4/inc/copyStepPointG4toMC.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
@@ -66,6 +67,10 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
+#include "Mu2eG4/inc/StrawSD.hh"
+#include "Mu2eG4/inc/VirtualDetectorSD.hh"
+#include "Mu2eG4/inc/CaloCrystalSD.hh"
+#include "Mu2eG4/inc/CaloReadoutSD.hh"
 
 // Data products that will be produced by this module.
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -287,26 +292,42 @@ namespace mu2e {
 
 
     // Create empty data products.
-    auto_ptr<StepPointMCCollection>           outputHits(new StepPointMCCollection);
-    auto_ptr<SimParticleCollection>           simParticles(new SimParticleCollection);
-    auto_ptr<StepPointMCCollection>           vdHits(new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>           caloHits(new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>           caloROHits(new StepPointMCCollection);
-    auto_ptr<PointTrajectoryCollection>       pointTrajectories( new PointTrajectoryCollection);
+    auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
+    auto_ptr<StepPointMCCollection>     outputHits(        new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>     vdHits(            new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>     caloHits(          new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
+    auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
     _genAction->setEvent(event);
+
+    // enable Sensitive Detectors to store the Framework Data Products
+
+    G4SDManager* SDman      = G4SDManager::GetSDMpointer();
+
+    static_cast<StrawSD*>
+      (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
+      beforeG4Event(*outputHits);
+
+    static_cast<VirtualDetectorSD*>
+      (SDman->FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()))->
+      beforeG4Event(*vdHits);
+
+    static_cast<CaloCrystalSD*>
+      (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
+      beforeG4Event(*caloHits);
+
+    static_cast<CaloReadoutSD*>
+      (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()))->
+      beforeG4Event(*caloROHits);
 
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );
     G4Event const* g4event = _runManager->getCurrentEvent();
 
     // Populate the output data products.
-    addStepPointMCs( g4event, *outputHits);
-    copyStepPointG4toMC( g4event, "VDCollection", *vdHits);
-    copyStepPointG4toMC( g4event, "CaloCollection", *caloHits);
-    copyStepPointG4toMC( g4event, "CaloROCollection", *caloROHits);
     addPointTrajectories( g4event, *pointTrajectories, _mu2eDetectorOrigin);
 
     // Run self consistency checks if enabled.
@@ -344,7 +365,8 @@ namespace mu2e {
       _UI->ApplyCommand( "/vis/scene/endOfEventAction refresh");
 
       // Prompt to continue and wait for reply.
-      cout << "Enter a character to go to the next event (q quits, v enters G4 interactive session)" << endl;
+      cout << "Enter a character to go to the next event (q quits, v enters G4 interactive session)" << 
+        endl;
       cout << "(Once in G4 interactive session to quit it type exit): ";
       string userinput;
       cin >> userinput;
