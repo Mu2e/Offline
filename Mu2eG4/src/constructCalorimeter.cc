@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.8 2010/12/02 17:49:21 genser Exp $
+// $Id: constructCalorimeter.cc,v 1.9 2010/12/21 21:48:40 genser Exp $
 // $Author: genser $
-// $Date: 2010/12/02 17:49:21 $
+// $Date: 2010/12/21 21:48:40 $
 //
 // Original author Rob Kutschke
 // 
@@ -15,6 +15,7 @@
 
 // Mu2e includes.
 #include "Mu2eG4/inc/constructCalorimeter.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -126,16 +127,6 @@ namespace mu2e {
     int ncrysR = cal.nCrystalR();
     int ncrysZ = cal.nCrystalZ();
 
-    // Create sensitive detectors
-
-    G4SDManager* SDman    = G4SDManager::GetSDMpointer();
-
-    CaloCrystalSD* crysSD = new CaloCrystalSD("CaloCrystal", config);
-    SDman->AddNewDetector(crysSD);
-
-    CaloReadoutSD* roSD = new CaloReadoutSD("CaloReadout", config);
-    SDman->AddNewDetector(roSD);
-
     // Create logical volumes
 	
     G4LogicalVolume * l_shell = new G4LogicalVolume( shell, fillMaterial, "l_CrystalShell"); 
@@ -153,7 +144,10 @@ namespace mu2e {
 
     G4LogicalVolume * l_crys  = new G4LogicalVolume( crys,  crysMaterial, "l_Crystal"); 
     l_crys->SetVisAttributes(new G4VisAttributes(false,G4Colour::Green()));
-    l_crys->SetSensitiveDetector(crysSD);
+
+    G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
+    l_crys->SetSensitiveDetector(ccSD);
 
     G4LogicalVolume * l_ro = new G4LogicalVolume( ro,    readMaterial,  "l_CrystalRO" ); 
     if(!isVisible) {
@@ -164,7 +158,10 @@ namespace mu2e {
       ro_visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
       l_ro->SetVisAttributes(ro_visAtt);
     }
-    l_ro->SetSensitiveDetector(roSD);
+
+    G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
+    l_ro->SetSensitiveDetector(crSD);
 
     //
     // Create single crystal

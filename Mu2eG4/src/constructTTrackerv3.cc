@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.12 2010/12/07 18:17:21 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.13 2010/12/21 21:48:40 genser Exp $
 // $Author: genser $
-// $Date: 2010/12/07 18:17:21 $
+// $Date: 2010/12/21 21:48:40 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -27,6 +27,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/G4Helper.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -38,12 +39,8 @@
 #include "G4Material.hh"
 #include "G4Colour.hh"
 #include "G4String.hh"
-//#include "G4Tubs.hh"
-//#include "G4Trd.hh"
-//#include "G4LogicalVolume.hh"
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
-//#include "G4VisAttributes.hh"
 #include "G4SDManager.hh"
 
 using namespace std;
@@ -107,12 +104,6 @@ namespace mu2e{
                                       true,
                                       doSurfaceCheck
                                       );
-
-    // Define the straws to be sensitive detectors.  Does this leak the StrawSD?
-    G4SDManager* SDman   = G4SDManager::GetSDMpointer();
-    G4String strawSDname = "StrawGasVolume";
-    StrawSD* strawSD     = new StrawSD( strawSDname, config );
-    SDman->AddNewDetector( strawSD );
 
     TubsParams deviceEnvelopeParams = ttracker.getDeviceEnvelopeParams();
 
@@ -321,7 +312,10 @@ namespace mu2e{
                                              );
 
         // Make gas of this straw a sensitive detector.
-        strawGasInfo.logical->SetSensitiveDetector( strawSD );
+
+        strawGasInfo.logical->
+          SetSensitiveDetector(G4SDManager::GetSDMpointer()->
+                               FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()) );
 
       }   // end loop over straws
     }     // end loop over layers
