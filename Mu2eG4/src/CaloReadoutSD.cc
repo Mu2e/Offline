@@ -1,6 +1,10 @@
 //
-// Define a sensitive detector for virtual detectors 
+// Define a sensitive detector for calorimetric readout
 // 
+// $Id: CaloReadoutSD.cc,v 1.4 2010/12/21 21:49:20 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/12/21 21:49:20 $
+//
 // Original author Ivan Logashenko
 //
 
@@ -19,11 +23,9 @@
 
 // G4 includes
 #include "G4RunManager.hh"
-#include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
-#include "G4SDManager.hh"
 #include "G4ios.hh"
 
 using namespace std;
@@ -33,11 +35,15 @@ namespace mu2e {
   G4ThreeVector CaloReadoutSD::_mu2eOrigin;
 
   CaloReadoutSD::CaloReadoutSD(G4String name, const SimpleConfig& config)
-    : G4VSensitiveDetector(name) {
+    : G4VSensitiveDetector(name),
+      _collection(0),
+      _nro(0),
+      _minE(0.0),
+      _debugList(0),
+      _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
+      _currentSize(0)
+  {
 
-    G4String HCname("CaloROCollection");
-    collectionName.insert(HCname);
-    
     // Get list of events for which to make debug printout.
     string key("g4.calorimeterSDEventList");
     if ( config.hasName(key) ){
@@ -46,22 +52,12 @@ namespace mu2e {
       _debugList.add(list);
     }
 
-    _sizeLimit = config.getInt("g4.stepsSizeLimit",0);
-
   }
 
 
   CaloReadoutSD::~CaloReadoutSD(){ }
 
   void CaloReadoutSD::Initialize(G4HCofThisEvent* HCE){
-
-    _collection = new StepPointG4Collection
-      (SensitiveDetectorName,collectionName[0]); 
-    static G4int HCID = -1;
-    if(HCID<0){ 
-      HCID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]); 
-    }
-    HCE->AddHitsCollection( HCID, _collection ); 
 
     _currentSize=0;
 
@@ -100,23 +96,22 @@ namespace mu2e {
 
     // The points coordinates are saved in the mu2e world
 
-    StepPointG4* newHit = 
-      new StepPointG4(aStep->GetTrack()->GetTrackID(), 
-		      idro,
-                      aStep->GetTotalEnergyDeposit(),
-                      aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
-                      aStep->GetPreStepPoint()->GetMomentum(),
-                      aStep->GetPreStepPoint()->GetGlobalTime(),
-                      aStep->GetPreStepPoint()->GetProperTime(),
-                      aStep->GetStepLength()
-                      );
-
-    // The collection takes ownership of the hit. 
-    _collection->insert( newHit );
+    // we add the hit to the framework collection
+    _collection->
+      push_back(StepPointMC(aStep->GetTrack()->GetTrackID(), 
+                            idro,
+                            aStep->GetTotalEnergyDeposit(),
+                            aStep->GetPreStepPoint()->GetGlobalTime(),
+                            aStep->GetPreStepPoint()->GetProperTime(),
+                            aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                            aStep->GetPreStepPoint()->GetMomentum(),
+                            aStep->GetStepLength()
+                            ));
 
     return true;
 
   }
+
 
   void CaloReadoutSD::EndOfEvent(G4HCofThisEvent*){
 
@@ -129,12 +124,19 @@ namespace mu2e {
     }
 
     if (verboseLevel>0) { 
-      G4int NbHits = _collection->entries();
+      G4int NbHits = _collection->size();
       G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
              << " RO hits in the calorimeter: " << G4endl;
-      for (G4int i=0;i<NbHits;i++) (*_collection)[i]->Print();
+      for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
     } 
 
   }
+
+
+  void CaloReadoutSD::beforeG4Event(StepPointMCCollection& outputHits) {
+    _collection = &outputHits;
+    return;
+  } // end of beforeG4Event
+
 
 } //namespace mu2e

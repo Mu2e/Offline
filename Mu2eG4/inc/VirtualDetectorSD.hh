@@ -3,13 +3,16 @@
 //
 // Define a sensitive detector for virtual detectors (like G4Beamline)
 // 
+// $Id: VirtualDetectorSD.hh,v 1.4 2010/12/21 21:49:20 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/12/21 21:49:20 $
+//
 // Original author Ivan Logashenko
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/StepPointG4.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"
@@ -32,6 +35,8 @@ namespace mu2e {
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
   
+    void beforeG4Event(StepPointMCCollection& outputHits);
+
     static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
       _mu2eOrigin = origin;
     }
@@ -40,13 +45,13 @@ namespace mu2e {
 
     G4ThreeVector GetTrackerOrigin(const G4TouchableHandle & touchableHandle);
 
-    StepPointG4Collection* _collection;
-
-    // List of events for which to enable debug printout.
-    EventNumberList _debugList;
+    StepPointMCCollection* _collection;
 
     // Mu2e point of origin
     static G4ThreeVector _mu2eOrigin;
+
+    // List of events for which to enable debug printout.
+    EventNumberList _debugList;
 
     // Limit maximum size of the steps collection
     int _sizeLimit;
