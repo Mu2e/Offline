@@ -1,10 +1,11 @@
 //
 // Define a sensitive detector for Straws.
-// ( Not sure yet if I can use this for both LTracker and TTracker?)
+// This version does not use G4HCofThisEvent etc...
+// Framwork DataProducts are used instead
 // 
-// $Id: StrawSD.cc,v 1.21 2010/11/22 05:20:50 genser Exp $
+// $Id: StrawSD.cc,v 1.22 2010/12/21 21:47:51 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/11/22 05:20:50 $
+// $Date: 2010/12/21 21:47:51 $
 //
 // Original author Rob Kutschke
 //
@@ -28,10 +29,8 @@
 
 // G4 includes
 #include "G4RunManager.hh"
-#include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
 #include "G4ThreeVector.hh"
-#include "G4SDManager.hh"
 #include "G4ios.hh"
 
 //
@@ -47,16 +46,13 @@ namespace mu2e {
   StrawSD::StrawSD(G4String name, const SimpleConfig& config ):
     G4VSensitiveDetector(name),
     _collection(0),
-    _debugList(0),
     _nStrawsPerDevice(0),
     _nStrawsPerSector(0),
     _TrackerVersion(0),
+    _debugList(0),
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0)
   {
-    G4String HCname("StepPointG4Collection");
-    collectionName.insert(HCname);
-
     // Get list of events for which to make debug printout.
     string key("g4.strawSDEventList");
     if ( config.hasName(key) ){
@@ -114,14 +110,6 @@ namespace mu2e {
 
   void StrawSD::Initialize(G4HCofThisEvent* HCE){
 
-    _collection = new StepPointG4Collection
-      (SensitiveDetectorName,collectionName[0]); 
-    static G4int HCID = -1;
-    if(HCID<0){ 
-      HCID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]); 
-    }
-    HCE->AddHitsCollection( HCID, _collection ); 
-
     _currentSize=0;
 
   }
@@ -138,8 +126,6 @@ namespace mu2e {
       }
       return false;
     }
-
-    G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
     G4double edep = aStep->GetTotalEnergyDeposit();
     G4double step = aStep->GetStepLength();
@@ -163,6 +149,8 @@ namespace mu2e {
     G4ThreeVector prePosTracker = prePosWorld - detectorOrigin;
 
     G4ThreeVector preMomWorld = aStep->GetPreStepPoint()->GetMomentum();
+
+    G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
 //     G4int en = event->GetEventID();
 //     G4int ti = aStep->GetTrack()->GetTrackID();
@@ -229,19 +217,17 @@ namespace mu2e {
 
     //    cout << "Debugging sdcn " << sdcn << endl;
 
-    StepPointG4* newHit = 
-      new StepPointG4(aStep->GetTrack()->GetTrackID(),
-                      sdcn,
-                      edep,
-                      prePosTracker,
-                      preMomWorld,
-                      aStep->GetPreStepPoint()->GetGlobalTime(),
-                      aStep->GetPreStepPoint()->GetProperTime(),
-                      step
-                      );
-    
-    // The collection takes ownership of the hit. 
-    _collection->insert( newHit );
+    // We add the hit object to the framework strawHit collection created in produce
+
+    _collection->push_back( StepPointMC(aStep->GetTrack()->GetTrackID(),
+                                        sdcn,
+                                        edep,
+                                        aStep->GetPreStepPoint()->GetGlobalTime(),
+                                        aStep->GetPreStepPoint()->GetProperTime(),
+                                        prePosTracker,
+                                        preMomWorld,
+                                        step
+                                        ));
 
     // Some debugging tests.
     if ( !_debugList.inList() ) return true;
@@ -288,7 +274,7 @@ namespace mu2e {
     /*
       // Works for both TTracker and LTracker.
     printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %10.7f %10.7f\n",
-             eventNo,  _collection->entries(), copy,
+             eventNo,  _collection->size(), copy,
              aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
              prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
              preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(),
@@ -317,7 +303,7 @@ namespace mu2e {
       double ttt = lppca.unit().cosTheta(w);
 
       printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f | %10.7f %10.7f\n",
-               eventNo,  _collection->entries(), copy,
+               eventNo,  _collection->size(), copy,
                aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
                prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
                preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
@@ -399,10 +385,10 @@ namespace mu2e {
     }
 
     if (verboseLevel>0) { 
-      G4int NbHits = _collection->entries();
+      G4int NbHits = _collection->size();
       G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
              << " hits in the straw chambers: " << G4endl;
-      for (G4int i=0;i<NbHits;i++) (*_collection)[i]->Print();
+      for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
     } 
   }
 
@@ -449,5 +435,10 @@ namespace mu2e {
     return cdo;
 
   }
+
+  void StrawSD::beforeG4Event(StepPointMCCollection& outputHits) {
+    _collection = &outputHits;
+    return;
+  } // end of beforeG4Event
   
 } //namespace mu2e
