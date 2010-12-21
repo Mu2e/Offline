@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.72 2010/12/07 19:13:58 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.73 2010/12/21 21:48:09 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/07 19:13:58 $
+// $Date: 2010/12/21 21:48:09 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/G4Helper.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -151,6 +152,9 @@ namespace mu2e {
     VirtualDetectorSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloReadoutSD::setMu2eOriginInWorld( _mu2eOrigin );
+
+    instantiateSensitiveDetectors();
+
     VolumeInfo dirtInfo  = constructDirt();
     VolumeInfo hallInfo  = constructHall( dirtInfo );
     constructDS(hallInfo);
@@ -1801,10 +1805,6 @@ namespace mu2e {
 
     // Place virtual detectors
 
-    G4SDManager* SDman   = G4SDManager::GetSDMpointer();
-    VirtualDetectorSD* vdSD     = new VirtualDetectorSD("VirtualDetector", *_config);
-    SDman->AddNewDetector(vdSD);
-
     bool vdVisible           = _config->getBool("vd.visible",true);
     bool vdSolid             = _config->getBool("vd.solid",true);
     bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
@@ -1829,6 +1829,9 @@ namespace mu2e {
     TubsParams vdParamsTarget(0,rTarget,vdHalfLength);
 
     // VD 1 and 2 are placed inside TS1
+
+    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
 
     for( int id=1; id<=2; ++id) if( vdg->exist(id) ) {
       VolumeInfo parent = _helper->locateVolInfo("ToyTS1Vacuum");
@@ -1877,5 +1880,28 @@ namespace mu2e {
     }
 
   } //constructVD
+
+  // instantiateSensitiveDetectors
+
+  void Mu2eWorld::instantiateSensitiveDetectors(){
+
+    G4SDManager* SDman      = G4SDManager::GetSDMpointer();
+
+    // G4 takes ownership and will delete the detectors at the job end
+
+    StrawSD* strawSD        = new StrawSD(          SensitiveDetectorName::StrawGasVolume(),  *_config);
+    //strawSD->SetVerboseLevel(1);
+    SDman->AddNewDetector(strawSD); 
+
+    VirtualDetectorSD* vdSD = new VirtualDetectorSD(SensitiveDetectorName::VirtualDetector(), *_config);
+    SDman->AddNewDetector(vdSD);
+
+    CaloCrystalSD* ccSD     = new CaloCrystalSD(    SensitiveDetectorName::CaloCrystal(),     *_config);
+    SDman->AddNewDetector(ccSD);
+
+    CaloReadoutSD* crSD     = new CaloReadoutSD(    SensitiveDetectorName::CaloReadout(),     *_config);
+    SDman->AddNewDetector(crSD);
+
+  } // instantiateSensitiveDetectors
 
 } // end namespace mu2e

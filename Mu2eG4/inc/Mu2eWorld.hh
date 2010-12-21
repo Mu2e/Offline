@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.25 2010/12/06 22:31:11 genser Exp $
+// $Id: Mu2eWorld.hh,v 1.26 2010/12/21 21:48:09 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/06 22:31:11 $
+// $Date: 2010/12/21 21:48:09 $
 //
 // Original author Rob Kutschke
 //
@@ -106,6 +106,8 @@ namespace mu2e {
     void constructBFieldAndManagers();  // MECO field maps
     void constructBFieldAndManagers2(); // G4BL field maps
     void constructStepLimiters();
+
+    void instantiateSensitiveDetectors();
 
     // The world coordinates of the center of the cosmic ray reference plane.
     G4ThreeVector _cosmicReferencePoint;
