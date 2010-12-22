@@ -3,9 +3,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.hh,v 1.2 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: constructCalorimeter.hh,v 1.3 2010/12/22 17:37:57 genser Exp $
+// $Author: genser $
+// $Date: 2010/12/22 17:37:57 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,7 @@
 //    3 - geometry file
 
 // Mu2e includes.
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 // Forward references.
 class G4LogicalVolume;

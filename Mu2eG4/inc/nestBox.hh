@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 // 
-// $Id: nestBox.hh,v 1.5 2010/12/02 17:46:39 genser Exp $
+// $Id: nestBox.hh,v 1.6 2010/12/22 17:37:57 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/02 17:46:39 $
+// $Date: 2010/12/22 17:37:57 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 class G4Material;
 class G4LogicalVolume;

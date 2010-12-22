@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.7 2010/11/30 16:40:35 genser Exp $
+// $Id: constructStoppingTarget.cc,v 1.8 2010/12/22 17:38:19 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/30 16:40:35 $
+// $Date: 2010/12/22 17:38:19 $
 //
 // Original author Peter Shanahan
 //
@@ -25,7 +25,7 @@
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 //#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/G4Helper.hh"
+#include "G4Helper/inc/G4Helper.hh"
 
 // G4 includes
 #include "G4Material.hh"

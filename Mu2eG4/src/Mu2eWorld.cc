@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.73 2010/12/21 21:48:09 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.74 2010/12/22 17:38:19 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/21 21:48:09 $
+// $Date: 2010/12/22 17:38:19 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@
 #include "FWCore/Utilities/interface/Exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/G4Helper.hh"
+#include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"

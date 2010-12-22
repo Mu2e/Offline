@@ -1,9 +1,9 @@
 //
 // G4Helper plugin.
 //
-// $Id: G4Helper_plugin.cc,v 1.2 2010/11/16 14:43:11 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/11/16 14:43:11 $
+// $Id: G4Helper_plugin.cc,v 1.1 2010/12/22 17:36:49 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/12/22 17:36:49 $
 //
 // Original author Rob Kutschke
 //
@@ -12,7 +12,7 @@
 #include "FWCore/ServiceRegistry/interface/ServiceMaker.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/G4Helper.hh"
+#include "G4Helper/inc/G4Helper.hh"
 
 using namespace std;
 

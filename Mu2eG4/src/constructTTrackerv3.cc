@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.13 2010/12/21 21:48:40 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.14 2010/12/22 17:38:19 genser Exp $
 // $Author: genser $
-// $Date: 2010/12/21 21:48:40 $
+// $Date: 2010/12/22 17:38:19 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -26,7 +26,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructTTracker.hh"
-#include "Mu2eG4/inc/G4Helper.hh"
+#include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"

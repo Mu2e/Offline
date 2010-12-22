@@ -3,14 +3,14 @@
 //
 // Free functions to construct various versions of the TTracker.
 //
-// $Id: constructTTracker.hh,v 1.3 2010/07/29 21:02:43 genser Exp $
+// $Id: constructTTracker.hh,v 1.4 2010/12/22 17:37:57 genser Exp $
 // $Author: genser $
-// $Date: 2010/07/29 21:02:43 $
+// $Date: 2010/12/22 17:37:57 $
 //
 // Original author Rob Kutschke
 //
 
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 class G4LogicalVolume;
 

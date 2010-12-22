@@ -3,7 +3,7 @@
 //
 // Free function to create and place a new G4Torus inside a logical volume.
 // 
-// $Id: nestTorus.hh,v 1.4 2010/12/06 22:29:23 genser Exp $
+// $Id: nestTorus.hh,v 1.5 2010/12/22 17:37:57 genser Exp $
 // $Author: genser $ 
 // $Date: 2010/03/15
 //
@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 class G4Material;
 class G4LogicalVolume;

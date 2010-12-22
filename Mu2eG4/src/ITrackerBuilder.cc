@@ -17,6 +17,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_ExtWireData.hh"

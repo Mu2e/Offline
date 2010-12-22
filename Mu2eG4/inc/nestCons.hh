@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Cons inside a logical volume.
 // 
-// $Id: nestCons.hh,v 1.1 2010/12/06 22:27:44 genser Exp $
+// $Id: nestCons.hh,v 1.2 2010/12/22 17:37:57 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/06 22:27:44 $
+// $Date: 2010/12/22 17:37:57 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 class G4Material;
 class G4LogicalVolume;

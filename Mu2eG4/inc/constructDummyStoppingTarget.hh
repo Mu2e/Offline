@@ -4,14 +4,14 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.hh,v 1.1 2010/04/16 14:45:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/16 14:45:34 $
+// $Id: constructDummyStoppingTarget.hh,v 1.2 2010/12/22 17:37:57 genser Exp $
+// $Author: genser $
+// $Date: 2010/12/22 17:37:57 $
 //
 // Original author Rob Kutschke
 //
 
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 class G4LogicalVolume;
 class G4Material;

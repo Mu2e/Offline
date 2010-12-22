@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.16 2010/12/21 21:48:40 genser Exp $
+// $Id: constructLTrackerv3.cc,v 1.17 2010/12/22 17:38:19 genser Exp $
 // $Author: genser $
-// $Date: 2010/12/21 21:48:40 $
+// $Date: 2010/12/22 17:38:19 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructLTracker.hh"
-#include "Mu2eG4/inc/G4Helper.hh"
+#include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"

@@ -3,9 +3,9 @@
 //
 // An anti-leak system to aid in using G4 from the Mu2e framework.
 //
-// $Id: AntiLeakRegistry.hh,v 1.2 2010/11/15 22:52:28 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/11/15 22:52:28 $
+// $Id: AntiLeakRegistry.hh,v 1.1 2010/12/22 17:36:49 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/12/22 17:36:49 $
 //
 // Original author Rob Kutschke
 //

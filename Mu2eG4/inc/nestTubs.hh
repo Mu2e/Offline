@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.hh,v 1.7 2010/12/02 17:47:05 genser Exp $
+// $Id: nestTubs.hh,v 1.8 2010/12/22 17:37:57 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/02 17:47:05 $
+// $Date: 2010/12/22 17:37:57 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
 class G4Material;

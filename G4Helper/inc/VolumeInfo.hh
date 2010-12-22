@@ -6,16 +6,16 @@
 // and is useful only for the top few levels of the detector.
 // 
 // 
-// $Id: VolumeInfo.hh,v 1.4 2010/08/19 15:46:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/19 15:46:07 $
+// $Id: VolumeInfo.hh,v 1.1 2010/12/22 17:36:49 genser Exp $
+// $Author: genser $ 
+// $Date: 2010/12/22 17:36:49 $
 //
 // Original author Rob Kutschke
 //
 
 #include <string>
 
-#include "G4ThreeVector.hh"
+#include "CLHEP/Vector/ThreeVector.h"
 
 class G4VSolid;
 class G4LogicalVolume;
@@ -52,18 +52,18 @@ namespace mu2e {
     G4VPhysicalVolume* physical;
     
     // Location information in two coordinate systems.
-    G4ThreeVector      centerInParent;
-    G4ThreeVector      centerInWorld;
+    CLHEP::Hep3Vector      centerInParent;
+    CLHEP::Hep3Vector      centerInWorld;
 
-    G4ThreeVector centerInMu2e() const { return centerInWorld-_Mu2eOriginInWorld; }
+    CLHEP::Hep3Vector centerInMu2e() const { return centerInWorld-_Mu2eOriginInWorld; }
 
-    static void setMu2eOriginInWorld( const G4ThreeVector& origin ){
+    static void setMu2eOriginInWorld( const CLHEP::Hep3Vector& origin ){
       _Mu2eOriginInWorld = origin;
     }
 
   private:
 
-    static G4ThreeVector _Mu2eOriginInWorld;
+    static CLHEP::Hep3Vector _Mu2eOriginInWorld;
 
   };
 

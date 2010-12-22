@@ -9,7 +9,7 @@
 #define ITRACKERBUILDER_H_
 
 #include "ITrackerGeom/inc/ITracker.hh"
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 // G4 includes
 #include "G4LogicalVolume.hh"

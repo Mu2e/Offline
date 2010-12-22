@@ -1,9 +1,9 @@
 //
 // Free function to be used by the nest... functions
 // 
-// $Id: finishNesting.cc,v 1.2 2010/12/06 22:30:41 genser Exp $
+// $Id: finishNesting.cc,v 1.3 2010/12/22 17:38:19 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/06 22:30:41 $
+// $Date: 2010/12/22 17:38:19 $
 //
 // Original author KLG based on nest... functions
 //
@@ -14,8 +14,8 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/VolumeInfo.hh"
-#include "Mu2eG4/inc/G4Helper.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
+#include "G4Helper/inc/G4Helper.hh"
 
 // G4 includes
 #include "G4LogicalVolume.hh"

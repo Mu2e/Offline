@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
 // 
-// $Id: nestTrp.hh,v 1.3 2010/12/02 17:46:06 genser Exp $
+// $Id: nestTrp.hh,v 1.4 2010/12/22 17:37:57 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/02 17:46:06 $
+// $Date: 2010/12/22 17:37:57 $
 //
 // Original author Krzysztof Genser based on Rob Kutschke's nestBox
 //
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 class G4Material;
 class G4LogicalVolume;

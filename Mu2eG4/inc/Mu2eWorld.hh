@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.26 2010/12/21 21:48:09 genser Exp $
+// $Id: Mu2eWorld.hh,v 1.27 2010/12/22 17:37:57 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/21 21:48:09 $
+// $Date: 2010/12/22 17:37:57 $
 //
 // Original author Rob Kutschke
 //
@@ -35,9 +35,9 @@ class G4UserLimits;
 
 // Mu2e includes
 #include "Mu2eG4/inc/WorldInfo.hh"
-#include "Mu2eG4/inc/VolumeInfo.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
-#include "Mu2eG4/inc/G4Helper.hh"
+#include "G4Helper/inc/G4Helper.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
 //G4 includes 
