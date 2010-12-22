@@ -3,9 +3,53 @@
 
            Release notes for Mu2e Offline software, v0_3_0
 
-  $Id: v0_3_0.txt,v 1.4 2010/12/21 21:56:57 genser Exp $
+  $Id: v0_3_0.txt,v 1.5 2010/12/22 17:39:11 genser Exp $
   $Author: genser $
-  $Date: 2010/12/21 21:56:57 $
+  $Date: 2010/12/22 17:39:11 $
+
+ 5) December 22, 2010 genser
+
+    Moved G4Helper, AntiLeakRegistry, VolumeInfo from Mu2eG4 to a
+    separate G4Helper directory tree;
+    Replaced G4ThreeVector with CLHEP::Hep3Vector to remove G4 dependence:
+
+      Added    G4Helper/inc/AntiLeakRegistry.hh
+      Added    G4Helper/inc/G4Helper.hh
+      Added    G4Helper/inc/VolumeInfo.hh
+
+      Added    G4Helper/src/AntiLeakRegistry.cc
+      Added    G4Helper/src/G4Helper_plugin.cc
+      Added    G4Helper/src/SConscript
+      Added    G4Helper/src/VolumeInfo.cc
+
+      Removed  Mu2eG4/inc/AntiLeakRegistry.hh
+      Removed  Mu2eG4/inc/G4Helper.hh
+      Modified Mu2eG4/inc/ITrackerBuilder.hh
+      Modified Mu2eG4/inc/Mu2eWorld.hh
+      Removed  Mu2eG4/inc/VolumeInfo.hh
+      Modified Mu2eG4/inc/constructCalorimeter.hh
+      Modified Mu2eG4/inc/constructDummyStoppingTarget.hh
+      Modified Mu2eG4/inc/constructDummyTracker.hh
+      Modified Mu2eG4/inc/constructLTracker.hh
+      Modified Mu2eG4/inc/constructStoppingTarget.hh
+      Modified Mu2eG4/inc/constructTTracker.hh
+      Modified Mu2eG4/inc/nestBox.hh
+      Modified Mu2eG4/inc/nestCons.hh
+      Modified Mu2eG4/inc/nestExtrudedSolid.hh
+      Modified Mu2eG4/inc/nestTorus.hh
+      Modified Mu2eG4/inc/nestTrp.hh
+      Modified Mu2eG4/inc/nestTubs.hh
+
+      Removed  Mu2eG4/src/AntiLeakRegistry.cc
+      Removed  Mu2eG4/src/G4Helper_plugin.cc
+      Modified Mu2eG4/src/ITrackerBuilder.cc
+      Modified Mu2eG4/src/Mu2eWorld.cc
+      Modified Mu2eG4/src/SConscript
+      Removed  Mu2eG4/src/VolumeInfo.cc
+      Modified Mu2eG4/src/constructLTrackerv3.cc
+      Modified Mu2eG4/src/constructStoppingTarget.cc
+      Modified Mu2eG4/src/constructTTrackerv3.cc
+      Modified Mu2eG4/src/finishNesting.cc
 
 
  4) December 21, 2010 genser
