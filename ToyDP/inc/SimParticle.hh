@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.6 2010/11/10 23:43:44 kutschke Exp $
+// $Id: SimParticle.hh,v 1.7 2010/12/29 18:15:41 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/10 23:43:44 $
+// $Date: 2010/12/29 18:15:41 $
 //
 // Original author Rob Kutschke
 //
@@ -117,13 +117,14 @@ namespace mu2e {
     uint32_t startVolumeIndex() const { return _startVolumeIndex;}
     uint32_t startG4Status()    const { return _startG4Status;}
 
-    // Information at the start of the track.
+    // Information at the end of the track.
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
     CLHEP::HepLorentzVector const& endMomentum() const { return _endMomentum;}
-    double   endGlobalTime()  const { return _endGlobalTime;}
-    double   endProperTime()  const { return _endProperTime;}
-    uint32_t endVolumeIndex() const { return _endVolumeIndex;}
-    uint32_t endG4Status()    const { return _endG4Status;}
+    double       endGlobalTime()  const { return _endGlobalTime; }
+    double       endProperTime()  const { return _endProperTime; }
+    uint32_t     endVolumeIndex() const { return _endVolumeIndex;}
+    uint32_t     endG4Status()    const { return _endG4Status;   }
+    StoppingCode stoppingCode()   const { return _stoppingCode;  }
 
     // SimParticle indices of daughters of this track.
     std::vector<key_type> const& daughterIds() const { return _daughterIds;}
@@ -163,7 +164,7 @@ namespace mu2e {
     uint32_t                _endVolumeIndex;
     uint32_t                _endG4Status;
 
-    // The reason that the particle stopped.  Dummy for now.
+    // The reason that the particle stopped.
     StoppingCode            _stoppingCode;
 
     // SimParticle IDs of daughters of this track.
