@@ -1,41 +1,17 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.cc,v 1.1 2010/12/17 22:05:56 kutschke Exp $
+// $Id: PhysicsProcessInfo.cc,v 1.2 2011/01/04 22:10:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/17 22:05:56 $
+// $Date: 2011/01/04 22:10:23 $
 //
 // Original author Rob Kutschke
 //
 // Notes
-// 1) About the iterator class:
+// 1) For notes about the iterator class:
 //      G4ParticleTable::G4PTblDicIterator
-//    The G4ParticleTable class internally contains a 
-//      std::map<G4String,ParticleDefinition*>
-//    Users of the class need to be able to loop over the map.  To provide 
-//    this functionality the designers of the class chose to provide a 
-//    custom written iterator.  ( Current best practice would be to provide
-//    a typedef to the underlying stl iterator type.  It is possible that
-//    this design was frozen before std::map was robust and that this class
-//    provides a work around that once had been necessary. )
+//    See http://mu2e.fnal.gov/atwork/computing/G4Notes.shtml .
 //
-//    The rules for using this iterator are:
-//     1) You must call reset() before starting the loop.
-//        If you forget you will usually, but not always, start the iteration
-//        past the end of the map, which produces undefined behaviour.
-//     2) The call to operator ():
-//          a) on the first call after reset, it will initialize an internal 
-//             iterator to point at the first element of the map.
-//          b) on subsequent calls it will increment the internal iterator.
-//          c) On all calls it will return true(false) if the interal iterator
-//             is !=(==) to the .end() of the map.
-//     3) At any time, a call to key() or to value() will return the information
-//        pointed to by the interally held iterator.
-//
-//     A particularly bizarre feature is that the G4ParticleTable class holds
-//     its own iterator.  When you ask for an iterator, you actually get a pointer
-//     to this one iterator.  Therefore nested loops over the map have totally
-//     unexpected behaviour.
 
 // C++ includes
 #include <iostream>
@@ -70,6 +46,9 @@ namespace mu2e{
 
     _allProcesses.clear();
 
+    // Number of processes that are not known to the ProcessCode enum.
+    int nUnknownProcesses(0);
+
     // Get an iterator over existing particles. See note 1.
 
     G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
@@ -90,18 +69,19 @@ namespace mu2e{
 
         G4VProcess const* proc = (*pVector)[j];
         G4String const& name  = proc->GetProcessName();
+
         map_type::iterator jj = _allProcesses.find(name);
         
         // If not already in the map, then create it.
         if ( jj == _allProcesses.end() ){
           _longestName = (name.size() > _longestName) ? name.size() : _longestName;
 
-          StoppingCode code = StoppingCode::findByName(name);
-          if ( code.id() == StoppingCode::unknown ){
-            throw cms::Exception("RANGE")
-              << "Phyics process named: " << name
-              << " is not known to the StoppingCode enum.\n"
-              << "Please extend to the enum to add this process.\n";
+          ProcessCode code = ProcessCode::findByName(name);
+          if ( code.id() == ProcessCode::unknown ){
+            ++nUnknownProcesses;
+            cout << "Phyics process named: " << name
+                 << " is not known to the ProcessCode enum."
+                 << endl;
           }
 
           pair<map_type::iterator,bool> result = _allProcesses.insert( 
@@ -117,13 +97,19 @@ namespace mu2e{
       } // end loop over processes
     }   // end loop over particle table
 
-    std::vector<StoppingCode> mu2eCodes = StoppingCode::mu2eCodes();
+    if (nUnknownProcesses > 0 ){
+      throw cms::Exception("RANGE")
+        << "There was one or more phyics processes that are not in the ProcessCode enum.\n"
+        << "Number of processes: " << nUnknownProcesses
+        << "\nPlease extend to the enum to add these processes and recompile.\n";
+    }
+
+    std::vector<ProcessCode> mu2eCodes = ProcessCode::mu2eCodes();
     for ( size_t i=0; i<mu2eCodes.size(); ++i){
-      StoppingCode code = mu2eCodes[i];
+      ProcessCode code = mu2eCodes[i];
       G4String name = code.name();
       _allProcesses.insert(std::make_pair(name,ProcInfo(code.name(),code) ));
     }
-
 
   } // PhysicsProcessInfo::beginRun 
 
@@ -132,7 +118,7 @@ namespace mu2e{
   }
 
   // This can possibly be sped up considerably by checking frequently occuring names first.
-  StoppingCode PhysicsProcessInfo::findAndCount( G4String const& name ){
+  ProcessCode PhysicsProcessInfo::findAndCount( G4String const& name ){
     map_type::iterator i = _allProcesses.find(name);
     if ( i == _allProcesses.end() ){
       throw cms::Exception("RANGE")
