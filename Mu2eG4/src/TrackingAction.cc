@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.17 2010/12/17 22:18:44 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.18 2011/01/04 22:09:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/17 22:18:44 $
+// $Date: 2011/01/04 22:09:27 $
 //
 // Original author Rob Kutschke
 //
@@ -37,7 +37,7 @@
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StoppingCode.hh"
+#include "ToyDP/inc/ProcessCode.hh"
 
 // G4 incldues
 #include "globals.hh"
@@ -159,6 +159,9 @@ namespace mu2e {
     // from the generator.
     int32_t generatorIndex = ( parentId == 0 ) ? id-1: -1;
 
+    // Find the physics process that created this track.
+    ProcessCode creationCode = findCreationCode(trk);
+
     // Track should not yet be in the map.  Add a debug clause to skip this test?
     if ( _transientMap.find(kid) != _transientMap.end() ){
       throw cms::Exception("RANGE")
@@ -179,6 +182,7 @@ namespace mu2e {
                                                          trk->GetProperTime(),
                                                          _physVolHelper->index(trk),
                                                          trk->GetTrackStatus(),
+                                                         creationCode,
                                                          trk->GetWeight()
                                                          )));
 
@@ -212,8 +216,8 @@ namespace mu2e {
     }   
 
     // Reason why tracking stopped, decay, range out, etc.
-    G4String pname(findProcessName(trk));
-    StoppingCode stoppingCode(_processInfo.findAndCount(pname));
+    G4String pname  = findStoppingProcess(trk);
+    ProcessCode stoppingCode(_processInfo.findAndCount(pname));
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
@@ -364,23 +368,36 @@ namespace mu2e {
 
   }
 
-  // Find the name of the process that stopped this track.  
-  G4String TrackingAction::findProcessName( G4Track const* track){
+  // Find the name of the process that stopped this track.
+  G4String TrackingAction::findStoppingProcess( G4Track const* track){
 
     // First check to see if Mu2e code killed this track.
     G4VUserTrackInformation* info = track->GetUserInformation();
-    UserTrackInformation* tinfo   = (UserTrackInformation*)info;
+    UserTrackInformation const* tinfo   = (UserTrackInformation*)info;
 
     if ( tinfo->isForced() ){
       return tinfo->code().name();
     }
 
     // Otherwise, G4 killed this track.
-    G4VProcess  const* process = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep();
+    G4VProcess const* process = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep();
 
     return process->GetProcessName();
   }
 
+  // Find the name of the code for the process that created this track.
+  ProcessCode TrackingAction::findCreationCode( G4Track const* trk){
+    G4VProcess const* process = trk->GetCreatorProcess();
+
+    // If there is no creator process, then the G4Track was created by PrimaryGenerator action.
+    if ( process == 0 ){
+      return ProcessCode::mu2ePrimary;
+    }
+
+    // Extract the name from the process and look up the code.
+    string name = process->GetProcessName();
+    return ProcessCode::findByName(name);
+  }
+
 
 } // end namespace mu2e
-
