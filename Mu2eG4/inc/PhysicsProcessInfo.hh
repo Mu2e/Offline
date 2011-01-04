@@ -2,11 +2,10 @@
 #define PhysicsProcessInfo_H 
 //
 // Information about physics processes.
-// Used by 
 //
-// $Id: PhysicsProcessInfo.hh,v 1.1 2010/12/17 22:05:56 kutschke Exp $
+// $Id: PhysicsProcessInfo.hh,v 1.2 2011/01/04 22:07:20 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/17 22:05:56 $
+// $Date: 2011/01/04 22:07:20 $
 //
 // Original author Rob Kutschke
 //
@@ -16,12 +15,9 @@
 #include <map>
 #include <string>
 
-#include "ToyDP/inc/StoppingCode.hh"
+#include "ToyDP/inc/ProcessCode.hh"
 
 #include "G4String.hh"
-
-// Forward declarations
-//class G4VProcess;
 
 namespace mu2e {
 
@@ -39,9 +35,9 @@ namespace mu2e {
     // Clear information at end of run and write summary printout.
     void endRun();
 
-    // Locate a process by its name, return the corresponding stopping code and 
+    // Locate a process by its name, return the corresponding process code and
     // increment the counter.
-    StoppingCode findAndCount( G4String const& name );
+    ProcessCode findAndCount( G4String const& name );
     
     void printAll ( std::ostream& os) const;
     void printSummary ( std::ostream& os) const;
@@ -50,7 +46,7 @@ namespace mu2e {
     struct ProcInfo{
       ProcInfo():procName(""),particleNames(),code(),count(0){}
       ProcInfo( std::string aprocName,
-             StoppingCode acode ):
+             ProcessCode acode ):
         procName(aprocName),
         particleNames(),
         code(acode),
@@ -58,7 +54,7 @@ namespace mu2e {
       
       std::string procName;
       std::vector<std::string> particleNames;
-      StoppingCode code;
+      ProcessCode code;
       size_t count;
     };
 

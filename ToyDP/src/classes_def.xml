@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.23 2010/12/13 06:10:33 logash Exp $     -->
-<!--  $Author: logash $ -->
-<!--  $Date: 2010/12/13 06:10:33 $   -->
+<!--  $Id: classes_def.xml,v 1.24 2011/01/04 22:07:37 kutschke Exp $     -->
+<!--  $Author: kutschke $ -->
+<!--  $Date: 2011/01/04 22:07:37 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.23 $$Date: 2010/12/13 06:10:33 $"; -->
+<!--  rev="$Revision: 1.24 $$Date: 2011/01/04 22:07:37 $"; -->
 
 <!--  Only include edm::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the edm::Wrapper lines and     -->
@@ -20,7 +20,7 @@
  <class name="mu2e::PhysicalVolumeInfoCollection"/>
  <class name="uint32_t"/>
  <class name="int32_t"/>
- <class name="mu2e::StoppingCode"/>
+ <class name="mu2e::ProcessCode"/>
  <class name="std::vector<uint32_t>"/>
  <class name="std::string"/>
  <class name="MapVectorKey"/>

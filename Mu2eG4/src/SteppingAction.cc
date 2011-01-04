@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.14 2010/12/17 22:14:55 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.15 2011/01/04 22:07:20 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/17 22:14:55 $
+// $Date: 2011/01/04 22:07:20 $
 //
 // Original author Rob Kutschke
 //
@@ -114,16 +114,16 @@ namespace mu2e {
       cout << "SteppingAction: kill particle pdg=" 
 	   << track->GetDefinition()->GetPDGEncoding()
 	   << " due to large number of steps." << endl;
-      killTrack( track, StoppingCode::mu2eMaxSteps, fStopAndKill);
+      killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
       ++_nKilledStepLimit;
     }
 
     if ( _doKillInHallAir &&  killInHallAir(track) ){
-      killTrack( track, StoppingCode::mu2eHallAir, fStopAndKill);
+      killTrack( track, ProcessCode::mu2eHallAir, fStopAndKill);
     } else if ( _doKillLowEKine && killLowEKine(track) ){
-      killTrack( track, StoppingCode::mu2eLowEKine, fStopAndKill);
+      killTrack( track, ProcessCode::mu2eLowEKine, fStopAndKill);
     } else if ( _maxSteps>0 && killTooManySteps(track) ) {
-      killTrack( track, StoppingCode::mu2eMaxSteps, fStopAndKill);
+      killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
     }
 
     // Do we want to do make debug printout for this event?
@@ -254,14 +254,14 @@ namespace mu2e {
   }
 
   // Record why the track is to be killed, then kill it.
-  void SteppingAction::killTrack( G4Track* track, StoppingCode::enum_type code, G4TrackStatus status ){
+  void SteppingAction::killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status ){
 
     // Get user track informaton object from the track.
     G4VUserTrackInformation* info = track->GetUserInformation();
     UserTrackInformation* tinfo = (UserTrackInformation*)info;
 
     // Record why the track was killed.
-    tinfo->setStoppingCode(StoppingCode(code));
+    tinfo->setProcessCode(ProcessCode(code));
 
     // Kill the track
     track->SetTrackStatus(status);

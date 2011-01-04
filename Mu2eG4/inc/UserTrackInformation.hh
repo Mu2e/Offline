@@ -3,15 +3,15 @@
 //
 // Mu2e specific information about one G4 track.
 //
-// $Id: UserTrackInformation.hh,v 1.1 2010/12/17 22:07:56 kutschke Exp $
+// $Id: UserTrackInformation.hh,v 1.2 2011/01/04 22:07:20 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/17 22:07:56 $
+// $Date: 2011/01/04 22:07:20 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes
-#include "ToyDP/inc/StoppingCode.hh"
+#include "ToyDP/inc/ProcessCode.hh"
 
 // Geant4 includes
 #include "G4VUserTrackInformation.hh"
@@ -24,23 +24,23 @@ namespace mu2e{
     UserTrackInformation();
     virtual ~UserTrackInformation();
 
-    void setStoppingCode ( StoppingCode code){
-      _forcedStop =  true;
+    void setProcessCode ( ProcessCode code){
+      _forcedStop = true;
       _code = code;
     }
 
-    bool         isForced() const { return _forcedStop; }
-    StoppingCode code()     const { return _code; }
+    bool       isForced() const { return _forcedStop; }
+    ProcessCode code()    const { return _code; }
 
     virtual void Print() const;
 
   private:
 
-    // Did Mu2e stepping action force a stop?
+    // Did Mu2e user stepping action force a stop?
     bool _forcedStop;
 
     // If it did, then this is the reason why.
-    StoppingCode _code;
+    ProcessCode _code;
 
   };
 

@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.8 2010/12/17 22:14:55 kutschke Exp $
+// $Id: SteppingAction.hh,v 1.9 2011/01/04 22:07:20 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/17 22:14:55 $
+// $Date: 2011/01/04 22:07:20 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
-#include "ToyDP/inc/StoppingCode.hh"
+#include "ToyDP/inc/ProcessCode.hh"
 
 // G4 includes
 #include "G4UserSteppingAction.hh"
@@ -93,7 +93,7 @@ namespace mu2e {
     bool killInHallAir    ( const G4Track* );
 
     // A helper function to kill the track and record the reason for killing it.
-    void killTrack( G4Track* track, StoppingCode::enum_type code, G4TrackStatus status );
+    void killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status );
 
   };
   

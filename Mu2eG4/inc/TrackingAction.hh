@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.10 2010/12/17 22:18:44 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.11 2011/01/04 22:07:20 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/12/17 22:18:44 $
+// $Date: 2011/01/04 22:07:20 $
 //
 // Original author Rob Kutschke
 //
@@ -118,7 +118,8 @@ namespace mu2e {
 
     // Some helper functions.
     void insertOrThrow(std::pair<int,SimParticle> const& value);
-    G4String findProcessName(G4Track const* track);
+    G4String findStoppingProcess(G4Track const* track);
+    ProcessCode findCreationCode(G4Track const* track);
 
   };
 
