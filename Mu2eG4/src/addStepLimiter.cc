@@ -1,41 +1,16 @@
 //
 // Free functions to add step limiters to some particles.
 //
-// $Id: addStepLimiter.cc,v 1.3 2010/05/17 21:47:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:33 $
+// $Id: addStepLimiter.cc,v 1.4 2011/01/04 22:07:56 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/01/04 22:07:56 $
 //
 // Original author Rob Kutschke
 //
 // Notes
-// 1) About the iterator class:
+// 1) For notes about the iterator class:
 //      G4ParticleTable::G4PTblDicIterator
-//    The G4ParticleTable class internally contains a 
-//      std::map<G4String,ParticleDefinition*>
-//    Users of the class need to be able to loop over the map.  To provide 
-//    this functionality the designers of the class chose to provide a 
-//    custom written iterator.  ( Current best practice would be to provide
-//    a typedef to the underlying stl iterator type.  It is possible that
-//    this design was frozen before std::map was robust and that this class
-//    provides a work around that once had been necessary. )
-//
-//    The rules for using this iterator are:
-//     1) You must call reset() before starting the loop.
-//        If you forget you will usually, but not always, start the iteration
-//        past the end of the map, which produces undefined behaviour.
-//     2) The call to operator ():
-//          a) on the first call after reset, it will initialize an internal 
-//             iterator to point at the first element of the map.
-//          b) on subsequent calls it will increment the internal iterator.
-//          c) On all calls it will return true(false) if the interal iterator
-//             is !=(==) to the .end() of the map.
-//     3) At any time, a call to key() or to value() will return the information
-//        pointed to by the interally held iterator.
-//
-//     A particularly bizarre feature is that the G4ParticleTable class holds
-//     its own iterator.  When you ask for an iterator, you actually get a pointer
-//     to this one iterator.  Therefore nested loops over the map have totally
-//     unexpected behaviour.
+//    See http://mu2e.fnal.gov/atwork/computing/G4Notes.shtml .
 
 // C++ includes
 #include <vector>
