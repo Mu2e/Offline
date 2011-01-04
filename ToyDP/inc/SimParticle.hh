@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.7 2010/12/29 18:15:41 kutschke Exp $
+// $Id: SimParticle.hh,v 1.8 2011/01/04 22:08:36 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/29 18:15:41 $
+// $Date: 2011/01/04 22:08:36 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,7 @@
 #include <vector>
 
 // Mu2e includes
-#include "ToyDP/inc/StoppingCode.hh"
+#include "ToyDP/inc/ProcessCode.hh"
 
 // Includes from external packages.
 #include "CLHEP/Vector/ThreeVector.h"
@@ -53,6 +53,7 @@ namespace mu2e {
                  double                         astartProperTime,
                  uint32_t                       astartVolumeIndex,
                  uint32_t                       astartG4Status,
+                 ProcessCode                    acreationCode,
                  double                         aweight=1.):
       _id(aid),
       _parentId(aparentId),
@@ -64,6 +65,7 @@ namespace mu2e {
       _startProperTime(astartProperTime),
       _startVolumeIndex(astartVolumeIndex),
       _startG4Status(astartG4Status),
+      _creationCode(acreationCode),
       _weight(aweight),
       _endDefined(false)
     {}
@@ -76,7 +78,7 @@ namespace mu2e {
                      double                  aendProperTime,
                      uint32_t                aendVolumeIndex,
                      uint32_t                aendG4Status,
-                     StoppingCode            astoppingCode){
+                     ProcessCode             astoppingCode){
       _endDefined      = true;
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
@@ -112,10 +114,11 @@ namespace mu2e {
     // Information at the start of the track.
     CLHEP::Hep3Vector const& startPosition()       const { return _startPosition;}
     CLHEP::HepLorentzVector const& startMomentum() const { return _startMomentum;}
-    double   startGlobalTime()  const { return _startGlobalTime;}
-    double   startProperTime()  const { return _startProperTime;}
-    uint32_t startVolumeIndex() const { return _startVolumeIndex;}
-    uint32_t startG4Status()    const { return _startG4Status;}
+    double      startGlobalTime()  const { return _startGlobalTime;}
+    double      startProperTime()  const { return _startProperTime;}
+    uint32_t    startVolumeIndex() const { return _startVolumeIndex;}
+    uint32_t    startG4Status()    const { return _startG4Status;}
+    ProcessCode creationCode()      const { return _creationCode;  }
 
     // Information at the end of the track.
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
@@ -124,7 +127,7 @@ namespace mu2e {
     double       endProperTime()  const { return _endProperTime; }
     uint32_t     endVolumeIndex() const { return _endVolumeIndex;}
     uint32_t     endG4Status()    const { return _endG4Status;   }
-    StoppingCode stoppingCode()   const { return _stoppingCode;  }
+    ProcessCode  stoppingCode()   const { return _stoppingCode;  }
 
     // SimParticle indices of daughters of this track.
     std::vector<key_type> const& daughterIds() const { return _daughterIds;}
@@ -164,8 +167,9 @@ namespace mu2e {
     uint32_t                _endVolumeIndex;
     uint32_t                _endG4Status;
 
-    // The reason that the particle stopped.
-    StoppingCode            _stoppingCode;
+    // The reason that the particle was created and why it stopped.
+    ProcessCode             _creationCode;
+    ProcessCode             _stoppingCode;
 
     // SimParticle IDs of daughters of this track.
     std::vector<key_type>  _daughterIds;
