@@ -3,7 +3,35 @@
 
            Release notes for Mu2e Offline software, v0_3_1
 
-  $Id: v0_3_1.txt,v 1.1 2011/01/04 16:20:24 kutschke Exp $
+  $Id: v0_3_1.txt,v 1.2 2011/01/04 22:19:16 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/01/04 16:20:24 $
+  $Date: 2011/01/04 22:19:16 $
 
+1) January 4, 2011 kutschke
+   Remove StoppingCode class and replace with ProcessCode.  The ProcessCode
+   class is used to report both stopping codes and creation codes for SimParticles.
+   The ProcessCode also contains an extra item: mu2ePrimary which is the creation
+   code for particles from the event generator.
+     inc/StoppingCode.hh 
+     src/StoppingCode.cc
+     inc/ProcessCode.hh 
+     src/ProcessCode.cc
+
+   Replace StoppingCode with ProcessCode. Add creationCode data member and accessor
+     ToyDP/inc/SimParticle.hh
+
+   Replace StoppingCode with ProcessCode
+      ToyDP/src/classes_def.xml
+      Mu2eG4/inc/PhysicsProcessInfo.hh 
+      Mu2eG4/inc/UserTrackInformation.hh 
+      Mu2eG4/inc/SteppingAction.hh 
+      Mu2eG4/src/SteppingAction.cc  
+
+    Replace  StoppingCode with ProcessCode.  Also change the beginRun code to report
+    all unknown processes before throwing (used to throw on each).  Changed comment
+    to refer to a web page.
+       Mu2eG4/src/PhysicsProcessInfo.cc
+
+    Replace StoppingCode with ProcessCode.  Also add creationCode to SimParticles.
+      Mu2eG4/inc/TrackingAction.hh
+      Mu2eG4/src/TrackingAction.cc
