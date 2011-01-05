@@ -3,9 +3,42 @@
 
            Release notes for Mu2e Offline software, v0_3_1
 
-  $Id: v0_3_1.txt,v 1.2 2011/01/04 22:19:16 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/01/04 22:19:16 $
+  $Id: v0_3_1.txt,v 1.3 2011/01/05 21:25:42 genser Exp $
+  $Author: genser $
+  $Date: 2011/01/05 21:25:42 $
+
+2) January 5, 2011 genser
+
+   Moved constructWorldVolume, constructDirt, constructHall,
+   constructProtonAbsorber, constructSteel, constructVirtualDetectors,
+   constructDS, constructTS, constructPS out of Mu2eWorld to make them
+   free functions in separate files; factored out constructWorldVolume
+   from constructDirt.
+   Added getMu2eOriginInWorld() to G4Helper/inc/VolumeInfo.hh
+
+     G4Helper/inc/VolumeInfo.hh    
+     Mu2eG4/inc/Mu2eWorld.hh
+     Mu2eG4/inc/constructDS.hh
+     Mu2eG4/inc/constructDirt.hh
+     Mu2eG4/inc/constructHall.hh
+     Mu2eG4/inc/constructPS.hh
+     Mu2eG4/inc/constructProtonAbsorber.hh
+     Mu2eG4/inc/constructSteel.hh
+     Mu2eG4/inc/constructTS.hh
+     Mu2eG4/inc/constructVirtualDetectors.hh
+     Mu2eG4/inc/constructWorldVolume.hh
+     Mu2eG4/src/Mu2eWorld.cc
+     Mu2eG4/src/constructDS.cc
+     Mu2eG4/src/constructDirt.cc
+     Mu2eG4/src/constructHall.cc
+     Mu2eG4/src/constructPS.cc
+     Mu2eG4/src/constructProtonAbsorber.cc
+     Mu2eG4/src/constructSteel.cc
+     Mu2eG4/src/constructTS.cc
+     Mu2eG4/src/constructVirtualDetectors.cc
+     Mu2eG4/src/constructWorldVolume.cc
+
+   Replaced G4Helper with G4Helper_plugin in Mu2eG4/src/SConscript   
 
 1) January 4, 2011 kutschke
    Remove StoppingCode class and replace with ProcessCode.  The ProcessCode
