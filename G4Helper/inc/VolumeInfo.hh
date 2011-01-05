@@ -6,9 +6,9 @@
 // and is useful only for the top few levels of the detector.
 // 
 // 
-// $Id: VolumeInfo.hh,v 1.1 2010/12/22 17:36:49 genser Exp $
+// $Id: VolumeInfo.hh,v 1.2 2011/01/05 20:54:34 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/22 17:36:49 $
+// $Date: 2011/01/05 20:54:34 $
 //
 // Original author Rob Kutschke
 //
@@ -59,6 +59,10 @@ namespace mu2e {
 
     static void setMu2eOriginInWorld( const CLHEP::Hep3Vector& origin ){
       _Mu2eOriginInWorld = origin;
+    }
+
+    static CLHEP::Hep3Vector getMu2eOriginInWorld() {
+      return _Mu2eOriginInWorld;
     }
 
   private:
