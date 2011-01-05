@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.27 2010/12/22 17:37:57 genser Exp $
+// $Id: Mu2eWorld.hh,v 1.28 2011/01/05 21:04:31 genser Exp $
 // $Author: genser $ 
-// $Date: 2010/12/22 17:37:57 $
+// $Date: 2011/01/05 21:04:31 $
 //
 // Original author Rob Kutschke
 //
@@ -90,19 +90,11 @@ namespace mu2e {
 
     // Break the big task into many smaller ones.
     void defineMu2eOrigin();
-    VolumeInfo constructDirt();
-    VolumeInfo constructHall( const VolumeInfo& parent );
-    void constructDS( const VolumeInfo& parent );
-    void constructTS( const VolumeInfo& parent );
-    void constructPS( const VolumeInfo& parent );
-    void constructVD( );
     VolumeInfo constructTracker();
     VolumeInfo constructTarget();
-    void constructProtonAbs();
     void constructCal();
     void constructMagnetYoke();
     void constructCRV();
-    void constructSteel( const VolumeInfo& parent );
     void constructBFieldAndManagers();  // MECO field maps
     void constructBFieldAndManagers2(); // G4BL field maps
     void constructStepLimiters();
