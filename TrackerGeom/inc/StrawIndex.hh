@@ -7,9 +7,9 @@
 // of straws in the system.  This works for both the LTracker
 // and the TTracker.
 //
-// $Id: StrawIndex.hh,v 1.4 2010/09/30 02:08:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 02:08:30 $
+// $Id: StrawIndex.hh,v 1.5 2011/01/06 23:12:37 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2011/01/06 23:12:37 $
 //
 // Original author Rob Kutschke
 //
@@ -55,7 +55,9 @@ namespace mu2e {
     bool operator<( StrawIndex const& rhs) const{
       return ( _idx < rhs._idx);
     }
-
+    bool operator>( StrawIndex const& rhs) const{
+      return ( _idx > rhs._idx);
+    }
   private:
 
     int32_t _idx;
