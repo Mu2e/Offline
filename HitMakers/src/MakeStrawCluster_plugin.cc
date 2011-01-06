@@ -2,11 +2,11 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MakeStrawCluster_plugin.cc,v 1.1 2011/01/06 00:11:48 wenzel Exp $
+// $Id: MakeStrawCluster_plugin.cc,v 1.2 2011/01/06 23:51:25 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/01/06 00:11:48 $
+// $Date: 2011/01/06 23:51:25 $
 //
-// Original author Rob Kutschke. Updated by Ivan Logashenko.
+// Original author Hans Wenzel
 //
 
 // C++ includes.
@@ -55,9 +55,6 @@ namespace mu2e {
 class straw{
 
  public:
-  //const int spdev   = 600;
-  //const int sppanel = 100;
-  //const int splay   = 50;
     Int_t   evt;
     Int_t   id;
     Int_t   lay;
@@ -187,20 +184,7 @@ public:
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
-      _hHitTime(0),
-      _hHitDeltaTime(0),
-      _hHitEnergy(0),
-      _hNHits(0),
-      _hNHitsPerWire(0),
-      _hDriftTime(0),
-      _hDriftDistance(0),
-      _hDistanceToMid(0),
-      _hNG4Steps(0),
-      _hT0(0),
-      _hG4StepLength(0),
-      _hG4StepEdep(0),
-      _ntup(0)
+      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel"))
     {
     }
     virtual ~MakeStrawCluster() { }
@@ -223,23 +207,13 @@ public:
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
 
-    // Some diagnostic histograms.
-    TH1F* _hHitTime;
-    TH1F* _hHitDeltaTime;
-    TH1F* _hHitEnergy;
-    TH1F* _hNHits;
-    TH1F* _hNHitsPerWire;
-    TH1F* _hDriftTime;
-    TH1F* _hDriftDistance;
-    TH1F* _hDistanceToMid;
-    TH1F* _hNG4Steps;
-    TH1F* _hT0;
-    TH1F* _hG4StepLength;
-    TH1F* _hG4StepEdep;
-    TNtuple* _ntup;
-    vector<int>  ListofNeighbors(int straw);
-    vector<StrawId>  nListofNeighbors(StrawId si);
-    //void nListofNeighbors(StrawId si);
+
+    vector<StrawId>  ListofNeighbors(StrawId si);
+    vector<StrawId>  createStrawCluster(StrawId si);
+
+
+    //    vector<vector<StrawId>> StrawCluster(
+
   };
 
   void MakeStrawCluster::beginJob(edm::EventSetup const& ){
@@ -251,20 +225,7 @@ public:
 
     edm::Service<edm::TFileService> tfs;
 
-    _hHitTime      = tfs->make<TH1F>( "hHitTime",      "Hit Time (ns)", 200, 0., 2000. );
-    _hHitDeltaTime = tfs->make<TH1F>( "hHitDeltaTime", "Hit Delta Time (ns)", 80, -20.0, 20. );
-    _hHitEnergy    = tfs->make<TH1F>( "hHitEnergy",    "Hit Energy (keV)", 100, 0., 100. );
-    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0., 500. );
-    _hNHitsPerWire = tfs->make<TH1F>( "hNHitsPerWire", "Number of hits per straw", 10, 0., 10. );
-    _hDriftTime    = tfs->make<TH1F>( "hDriftTime",    "Drift time, ns", 100, 0., 100. );
-    _hDriftDistance= tfs->make<TH1F>( "hDriftDistance","Drift Distance, mm", 100, 0., 3. );
-    _hDistanceToMid= tfs->make<TH1F>( "hDistanceToMid","Distance to wire center, mm", 160, -1600., 1600. );
-    _hNG4Steps     = tfs->make<TH1F>( "hNG4Steps",     "Number of G4Steps per hit", 100, 0., 100. );
-    _hT0           = tfs->make<TH1F>( "hT0",           "T0, ns", 100, -50., 50. );
-    _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
-    _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
-    _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple", 
-                      "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid");
+;
   }
 
   void
@@ -303,11 +264,6 @@ public:
     edm::Handle<StepPointMCCollection> mchitsHandle;
     evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
     StepPointMCCollection const* mchits = mchitsHandle.product();
-
-    // Fill histograms
-
-    _hNHits->Fill(hits->size());
-
     std::map<StrawIndex,int> nhperwire;
 
     for ( size_t i=0; i<hits->size(); ++i ) {
@@ -318,110 +274,107 @@ public:
       DPIndexVector   const&    mcptr(hits_mcptr->at(i));
       
       // Fill per-event histograms
-      if( i==0 ) {
-        _hT0->Fill(truth.t0());
-      }
+      //      if( i==0 ) {
+      //  _hT0->Fill(truth.t0());
+      //}
 
       // Use data from hits
-      _hHitTime->Fill(hit.time());
-      _hHitDeltaTime->Fill(hit.dt());
-      _hHitEnergy->Fill(hit.energyDep()*1000.0);
+      //_hHitTime->Fill(hit.time());
+      //_hHitDeltaTime->Fill(hit.dt());
+      //_hHitEnergy->Fill(hit.energyDep()*1000.0);
 
       // Use MC truth data
-      _hDriftTime->Fill(truth.driftTime());
-      _hDriftDistance->Fill(truth.driftDistance());
-      _hDistanceToMid->Fill(truth.distanceToMid());
+      //_hDriftTime->Fill(truth.driftTime());
+      //_hDriftDistance->Fill(truth.driftDistance());
+      //_hDistanceToMid->Fill(truth.distanceToMid());
 
       // Use data from G4 hits
-      _hNG4Steps->Fill(mcptr.size());
+      //_hNG4Steps->Fill(mcptr.size());
       for( size_t j=0; j<mcptr.size(); ++j ) {
         StepPointMC const& mchit = (*mchits)[mcptr[j].index];
-        _hG4StepLength->Fill(mchit.stepLength());
-        _hG4StepEdep->Fill(mchit.eDep()*1000.0);
+        //_hG4StepLength->Fill(mchit.stepLength());
+        //_hG4StepEdep->Fill(mchit.eDep()*1000.0);
       }
       StrawIndex si = hit.strawIndex();
       int sindex = si.asInt();
-      Straw str = tracker.getStraw(si);	
+      Straw str = tracker.getStraw(si);	 
+      const std::vector<StrawIndex> nearest= str.nearestNeighboursByIndex();
       StrawId sid = str.Id();
-      vector<StrawId> nneighbors = nListofNeighbors(sid);
-      cout<< " number of neighbors: " << nneighbors.size()<<endl;
+      cout << "Straw: " << sid<< endl;
+      cout << "nr of neighbors:  " << nearest.size()<<endl;
+      vector<StrawIndex>::const_iterator ncis;
+      for(ncis=nearest.begin(); ncis!=nearest.end(); ncis++)
+	{
+	  cout << "StrawIndex: " <<*ncis << endl;
+	}
+      const std::vector<StrawId> nearid= str.nearestNeighboursById();
+      //cout << "nr of neighbors:  " << nearid.size()<<endl;
+      vector<StrawId>::const_iterator ncid;
+      for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
+	{
+	  cout << "StrawId: " <<*ncid << endl;
+	  for ( size_t jj=0; jj<hits->size(); ++jj ) {
+	    StrawHit        const&      hit(hits->at(jj));
+	    StrawIndex nsi = hit.strawIndex();	    
+	    Straw nstr = tracker.getStraw(nsi);	 
+	    StrawId nsid = nstr.Id();
+	    if (nsid==*ncid)
+	      {
+		cout<< " fired"<<endl;
+	      }
+	  }
+	  
+	}
+      
+      // 		  vector<int>::iterator it = find (tmpcluster.begin(), tmpcluster.end(), id);
+      //		  if (it!=tmpcluster.end()) used = true;
+
+      vector<StrawId> cluster = createStrawCluster(sid);
       vector<StrawId>::const_iterator ncii;
-      for(ncii=nneighbors.begin(); ncii!=nneighbors.end(); ncii++)
+      for(ncii=cluster.begin(); ncii!=cluster.end(); ncii++)
 	{
-	  cout << "Straw index: " <<*ncii << endl;
+	  cout << "Hans Straw index: " <<*ncii << endl;
 	}
+
+      //vector<int>::iterator it = find (tmpcluster.begin(), tmpcluster.end(), id);
+      //if (it!=tmpcluster.end()) used = true;
+
+
+
       LayerId lid = sid.getLayerId();
-      vector<int> neighbors =  ListofNeighbors(sid.getStraw());
-      vector<int>::const_iterator cii;
-      for(cii=neighbors.begin(); cii!=neighbors.end(); cii++)
-	{
-	  cout << "Straw index: " <<sindex << "   Neighbor:  "<<*cii << endl;
-	}
+      //      vector<int> neighbors =  ListofNeighbors(sid.getStraw());
+      //vector<int>::const_iterator cii;
+      //for(cii=neighbors.begin(); cii!=neighbors.end(); cii++)
+      //	{
+      //	  cout << "Straw index: " <<sindex << "   Neighbor:  "<<*cii << endl;
+      //	}
       DeviceId did = sid.getDeviceId();
       SectorId secid = sid.getSectorId();
-      float nt[17];
-      const CLHEP::Hep3Vector vec3junk = str.getMidPoint();
-      const CLHEP::Hep3Vector vec3junk1 = str.getDirection();
-      // Fill the ntuple:
-      nt[0]  = evt.id().event();
-      nt[1]  = lid.getLayer();
-      nt[2]  = did;
-      nt[3]  = secid.getSector();
-      nt[4]  = str.getHalfLength();
-      nt[5]  = vec3junk.getX();
-      nt[6]  = vec3junk.getY();
-      nt[7]  = vec3junk.getZ();
-      nt[8]  = vec3junk1.getX();
-      nt[9]  = vec3junk1.getY();
-      nt[10] = vec3junk1.getZ();
-      nt[11] = hit.time();
-      nt[12] = hit.dt();
-      nt[13] = hit.energyDep();
-      nt[14] = truth.driftTime();
-      nt[15] = truth.driftDistance();
-      nt[16] = truth.distanceToMid();
-      _ntup->Fill(nt);
+
       // Calculate number of hits per wire
       ++nhperwire[hit.strawIndex()];
 
     }
 
-    for( std::map<StrawIndex,int>::iterator it=nhperwire.begin(); it!= nhperwire.end(); ++it ) {
-      _hNHitsPerWire->Fill(it->second);
-    }
 
   } // end of ::analyze.
 
- vector<int>   MakeStrawCluster::ListofNeighbors(int straw)
- {
-   // some info about the ttracker:
-   const int spdev   = 600;   // number of straws per device
-   const int sppanel = 100;   // number of straws per panel 
-   const int splay   = 50;    // number of straws per panel layer
-   vector<int> neighbors;
-   int did = straw/spdev;
-   int sec = (straw-(did*spdev))/sppanel;
-   int lay = (straw-(did*spdev)-(sec*sppanel))/splay;
-   int ind =  straw-(did*spdev)-(sec*sppanel);
+vector<StrawId>   MakeStrawCluster::createStrawCluster(StrawId sid)
+ { 
+   vector<StrawId> neighbors = ListofNeighbors(sid);
+   // cout<< " number of neighbors: " << neighbors.size()<<endl;
+   //vector<StrawId>::const_iterator ncii;
+   //   for(ncii=neighbors.begin(); ncii!=neighbors.end(); ncii++)
+   //  {
+   //    cout << "Straw index: " <<*ncii << endl;
+   //  }
+    return neighbors;    
 
-   if (lay==0) 
-     {
-       if ((ind-1)>-1)              neighbors.push_back(did*spdev+sec*sppanel+ind-1);
-       if ((ind+1)<splay)           neighbors.push_back(did*spdev+sec*sppanel+ind+1);
-       if ((ind+splay-1)>(splay-1)) neighbors.push_back(did*spdev+sec*sppanel+ind+splay-1);
-       if ((ind+splay)<sppanel)     neighbors.push_back(did*spdev+sec*sppanel+ind+splay);
-     }
-   else 
-     {
-       if ((ind-splay)>-1)          neighbors.push_back(did*spdev+sec*sppanel+ind-splay);
-       if ((ind-splay+1)<splay)     neighbors.push_back(did*spdev+sec*sppanel+ind-splay+1);
-       if ((ind-1)>(splay-1))       neighbors.push_back(did*spdev+sec*sppanel+ind-1);
-       if ((ind+1)<sppanel)         neighbors.push_back(did*spdev+sec*sppanel+ind+1);
-     }
-
-   return neighbors; 
-}//end of ListofNeighbors 
-vector<StrawId>   MakeStrawCluster::nListofNeighbors(StrawId sid)
+}//end createStrawCluster
+//
+// use for now in the end we probably want a straw to be able what it's neighbors are. 
+//
+vector<StrawId>   MakeStrawCluster::ListofNeighbors(StrawId sid)
  {   
    LayerId lid      = sid.getLayerId();
    SectorId   secid = sid.getSectorId();
@@ -470,35 +423,7 @@ vector<StrawId>   MakeStrawCluster::nListofNeighbors(StrawId sid)
      }
     return neighbors;    
 
-   // some info about the ttracker:
-     //   const int spdev   = 600;   // number of straws per device
-     //const int sppanel = 100;   // number of straws per panel 
-     //const int splay   = 50;    // number of straws per panel layer
-   //   vector<StrawId> neighbors;
-   //int did = straw/spdev;
-   //int sec = (straw-(did*spdev))/sppanel;
-   //int lay = (straw-(did*spdev)-(sec*sppanel))/splay;
-   //int ind =  straw-(did*spdev)-(sec*sppanel);
-   /* 
-   if (lay==0) 
-     {
-       if ((ind-1)>-1)              neighbors.push_back(did*spdev+sec*sppanel+ind-1);
-       if ((ind+1)<splay)           neighbors.push_back(did*spdev+sec*sppanel+ind+1);
-       if ((ind+splay-1)>(splay-1)) neighbors.push_back(did*spdev+sec*sppanel+ind+splay-1);
-       if ((ind+splay)<sppanel)     neighbors.push_back(did*spdev+sec*sppanel+ind+splay);
-     }
-   else 
-     {
-       if ((ind-splay)>-1)          neighbors.push_back(did*spdev+sec*sppanel+ind-splay);
-       if ((ind-splay+1)<splay)     neighbors.push_back(did*spdev+sec*sppanel+ind-splay+1);
-       if ((ind-1)>(splay-1))       neighbors.push_back(did*spdev+sec*sppanel+ind-1);
-       if ((ind+1)<sppanel)         neighbors.push_back(did*spdev+sec*sppanel+ind+1);
-     }
-
-   return neighbors;
-*/ 
-}//end of nListofNeighbors 
-
+}//end of ListofNeighbors 
 }
 
 
