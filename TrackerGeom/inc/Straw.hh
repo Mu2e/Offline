@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.3 2010/04/18 00:31:55 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/18 00:31:55 $
+// $Id: Straw.hh,v 1.4 2011/01/06 22:37:11 wenzel Exp $
+// $Author: wenzel $ 
+// $Date: 2011/01/06 22:37:11 $
 //
 // Original author Rob Kutschke
 //
@@ -75,7 +75,9 @@ namespace mu2e {
     const std::vector<StrawIndex>& nearestNeighboursByIndex() const{
       return _nearestByIndex;
     }
-
+    const std::vector<StrawId>& nearestNeighboursById() const{
+      return _nearestById;
+    }
     // Formatted string embedding the id of the straw.
     std::string name( std::string const& base ) const;
   
