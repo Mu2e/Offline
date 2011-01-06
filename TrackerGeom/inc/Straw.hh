@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.4 2011/01/06 22:37:11 wenzel Exp $
+// $Id: Straw.hh,v 1.5 2011/01/06 23:12:59 wenzel Exp $
 // $Author: wenzel $ 
-// $Date: 2011/01/06 22:37:11 $
+// $Date: 2011/01/06 23:12:59 $
 //
 // Original author Rob Kutschke
 //
@@ -124,7 +124,30 @@ namespace mu2e {
     void fillPointers ( const Tracker& tracker ) const;
 
     int hack;
-
+    bool operator==(const Straw other) const {
+      if (_index == other.Index()) {
+	return true;
+      }
+      else{
+	return false;
+      }
+    }
+    bool operator>(const Straw other) const {
+      if (_index > other.Index()) {
+	return true;
+      }
+      else{
+	return false;
+      }
+    }
+   bool operator<(const Straw other) const {
+      if (_index < other.Index()) {
+	return true;
+      }
+      else{
+	return false;
+      }
+   }
  protected:
 
     // Identifier
