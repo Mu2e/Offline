@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MakeStrawCluster_plugin.cc,v 1.2 2011/01/06 23:51:25 wenzel Exp $
+// $Id: MakeStrawCluster_plugin.cc,v 1.3 2011/01/07 18:08:23 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/01/06 23:51:25 $
+// $Date: 2011/01/07 18:08:23 $
 //
 // Original author Hans Wenzel
 //
@@ -206,10 +206,8 @@ public:
 
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
-
-
-    vector<StrawId>  ListofNeighbors(StrawId si);
-    vector<StrawId>  createStrawCluster(StrawId si);
+    //    vector<StrawId>  ListofNeighbors(StrawId si);
+    // vector<StrawId>  createStrawCluster(StrawId si);
 
 
     //    vector<vector<StrawId>> StrawCluster(
@@ -233,147 +231,113 @@ public:
 
     static int ncalls(0);
     ++ncalls;
-
+    vector<StrawId> Cluster;
+    vector<StrawId> tmpCluster;
+    vector<StrawId>::const_iterator strawIter;
+    vector<vector<StrawId> > listofClusters;
+    vector<vector<StrawId> >::const_iterator ClusterIter;
 
     // Geometry info for the LTracker.
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
-
-  
     edm::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
-
-    // Get the persistent data about the StrawHitsMCTruth.
-
-    edm::Handle<StrawHitMCTruthCollection> truthHandle;
-    evt.getByLabel(_makerModuleLabel,truthHandle);
-    StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
-
-    // Get the persistent data about pointers to StepPointMCs
-
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
-    evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
-    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
-
-    // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in DPIndexVectorCollection, rather than 
-    // use producer name directly ("g4run"). 
-
-    edm::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
-    StepPointMCCollection const* mchits = mchitsHandle.product();
-    std::map<StrawIndex,int> nhperwire;
-
     for ( size_t i=0; i<hits->size(); ++i ) {
-
       // Access data
       StrawHit        const&      hit(hits->at(i));
-      StrawHitMCTruth const&    truth(hits_truth->at(i));
-      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
-      
-      // Fill per-event histograms
-      //      if( i==0 ) {
-      //  _hT0->Fill(truth.t0());
-      //}
-
-      // Use data from hits
-      //_hHitTime->Fill(hit.time());
-      //_hHitDeltaTime->Fill(hit.dt());
-      //_hHitEnergy->Fill(hit.energyDep()*1000.0);
-
-      // Use MC truth data
-      //_hDriftTime->Fill(truth.driftTime());
-      //_hDriftDistance->Fill(truth.driftDistance());
-      //_hDistanceToMid->Fill(truth.distanceToMid());
-
-      // Use data from G4 hits
-      //_hNG4Steps->Fill(mcptr.size());
-      for( size_t j=0; j<mcptr.size(); ++j ) {
-        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
-        //_hG4StepLength->Fill(mchit.stepLength());
-        //_hG4StepEdep->Fill(mchit.eDep()*1000.0);
-      }
       StrawIndex si = hit.strawIndex();
-      int sindex = si.asInt();
+      //int sindex = si.asInt();
       Straw str = tracker.getStraw(si);	 
-      const std::vector<StrawIndex> nearest= str.nearestNeighboursByIndex();
       StrawId sid = str.Id();
       cout << "Straw: " << sid<< endl;
-      cout << "nr of neighbors:  " << nearest.size()<<endl;
-      vector<StrawIndex>::const_iterator ncis;
-      for(ncis=nearest.begin(); ncis!=nearest.end(); ncis++)
-	{
-	  cout << "StrawIndex: " <<*ncis << endl;
-	}
+      //      vector<StrawId> cluster = createStrawCluster(sid);
       const std::vector<StrawId> nearid= str.nearestNeighboursById();
-      //cout << "nr of neighbors:  " << nearid.size()<<endl;
+      cout << "nr of neighbors:  " << nearid.size()<<endl;
       vector<StrawId>::const_iterator ncid;
       for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
 	{
-	  cout << "StrawId: " <<*ncid << endl;
-	  for ( size_t jj=0; jj<hits->size(); ++jj ) {
-	    StrawHit        const&      hit(hits->at(jj));
-	    StrawIndex nsi = hit.strawIndex();	    
-	    Straw nstr = tracker.getStraw(nsi);	 
-	    StrawId nsid = nstr.Id();
-	    if (nsid==*ncid)
-	      {
-		cout<< " fired"<<endl;
-	      }
-	  }
+	  cout << "cc StrawId: " <<*ncid << endl;
+	  bool used =false;
+	  for(ClusterIter=listofClusters.begin();ClusterIter!=listofClusters.end(); ClusterIter++)
+	    {
+	      tmpCluster= *ClusterIter;
+	      for(strawIter=tmpCluster.begin();strawIter!=tmpCluster.end(); strawIter++)
+		{
+		  if (sid == *strawIter)
+		    {
+		      used = true;
+		      break;
+		    }
+		}
+	    }
+	  if ( used==false ) Cluster.push_back(sid);
+	  for ( size_t jj=0; jj<hits->size(); ++jj ) 
+	    {
+	      StrawHit        const&      hit(hits->at(jj));
+	      StrawIndex nsi = hit.strawIndex();	    
+	      Straw nstr = tracker.getStraw(nsi);	 
+	      StrawId nsid = nstr.Id();
+	      if (nsid==*ncid)
+		{
+		  cout<< " fired"<<endl;
+		}
+	    }
 	  
 	}
-      
-      // 		  vector<int>::iterator it = find (tmpcluster.begin(), tmpcluster.end(), id);
-      //		  if (it!=tmpcluster.end()) used = true;
-
-      vector<StrawId> cluster = createStrawCluster(sid);
-      vector<StrawId>::const_iterator ncii;
-      for(ncii=cluster.begin(); ncii!=cluster.end(); ncii++)
-	{
-	  cout << "Hans Straw index: " <<*ncii << endl;
-	}
-
-      //vector<int>::iterator it = find (tmpcluster.begin(), tmpcluster.end(), id);
-      //if (it!=tmpcluster.end()) used = true;
-
-
-
-      LayerId lid = sid.getLayerId();
-      //      vector<int> neighbors =  ListofNeighbors(sid.getStraw());
-      //vector<int>::const_iterator cii;
-      //for(cii=neighbors.begin(); cii!=neighbors.end(); cii++)
-      //	{
-      //	  cout << "Straw index: " <<sindex << "   Neighbor:  "<<*cii << endl;
-      //	}
-      DeviceId did = sid.getDeviceId();
-      SectorId secid = sid.getSectorId();
-
-      // Calculate number of hits per wire
-      ++nhperwire[hit.strawIndex()];
-
     }
 
 
   } // end of ::analyze.
-
+/*
 vector<StrawId>   MakeStrawCluster::createStrawCluster(StrawId sid)
  { 
-   vector<StrawId> neighbors = ListofNeighbors(sid);
+   //   vector<StrawId> neighbors = ListofNeighbors(sid);
    // cout<< " number of neighbors: " << neighbors.size()<<endl;
    //vector<StrawId>::const_iterator ncii;
    //   for(ncii=neighbors.begin(); ncii!=neighbors.end(); ncii++)
    //  {
    //    cout << "Straw index: " <<*ncii << endl;
    //  }
-    return neighbors;    
+
+   const Tracker& tracker = getTrackerOrThrow();
+   edm::Handle<StrawHitCollection> pdataHandle;
+   evt.getByLabel(_makerModuleLabel,pdataHandle);
+   StrawHitCollection const* hits = pdataHandle.product();
+   Straw str = tracker.getStraw(sid);	 
+   //StrawId sid = str.Id();
+   const std::vector<StrawId> nearid= str.nearestNeighboursById();
+   cout << "nr of neighbors:  " << nearid.size()<<endl;
+   vector<StrawId>::const_iterator ncid;
+   for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
+     {
+       cout << "cc StrawId: " <<*ncid << endl;
+       for ( size_t jj=0; jj<hits->size(); ++jj ) {
+	 StrawHit        const&      hit(hits->at(jj));
+	 StrawIndex nsi = hit.strawIndex();	    
+	 Straw nstr = tracker.getStraw(nsi);	 
+	 StrawId nsid = nstr.Id();
+	 if (nsid==*ncid)
+	   {
+	     cout<< " fired"<<endl;
+	   }
+       }
+       
+     }
+   
+
+
+
+
+    return nearid;    
 
 }//end createStrawCluster
+*/
 //
 // use for now in the end we probably want a straw to be able what it's neighbors are. 
 //
+/*
 vector<StrawId>   MakeStrawCluster::ListofNeighbors(StrawId sid)
  {   
    LayerId lid      = sid.getLayerId();
@@ -423,7 +387,8 @@ vector<StrawId>   MakeStrawCluster::ListofNeighbors(StrawId sid)
      }
     return neighbors;    
 
-}//end of ListofNeighbors 
+}//end of ListofNeighbors
+*/ 
 }
 
 
