@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MakeStrawCluster_plugin.cc,v 1.3 2011/01/07 18:08:23 wenzel Exp $
+// $Id: MakeStrawCluster_plugin.cc,v 1.4 2011/01/07 21:00:06 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/01/07 18:08:23 $
+// $Date: 2011/01/07 21:00:06 $
 //
 // Original author Hans Wenzel
 //
@@ -14,9 +14,9 @@
 #include <string>
 #include <cmath>
 #include <cmath>
-#include <algorithm>
-#include <utility>
-#include <map>
+//#include <algorithm>
+//#include <utility>
+
 
 
 // Framework includes.
@@ -43,79 +43,10 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/resolveTransients.hh"
 
 using namespace std;
 
 namespace mu2e {
-class straw{
-
- public:
-    Int_t   evt;
-    Int_t   id;
-    Int_t   lay;
-    Int_t   did;
-    Int_t   sec;
-    Float_t hl;
-    Float_t mpx;
-    Float_t mpy;
-    Float_t mpz;
-    Float_t dirx;
-    Float_t diry;
-    Float_t dirz;
-    Int_t PanelIndex()
-    { 
-    const int spdev   = 600;
-    const int sppanel = 100;
-    //const int splay   = 50;
-      return id-(did*spdev)-(sec*sppanel);
-    }
-    bool operator>(const straw other) const {
-      if (id > other.id) {
-	return true;
-      }
-      else{
-	return false;
-      }
-    }
-   bool operator<(const straw other) const {
-      if (id < other.id) {
-	return true;
-      }
-      else{
-	return false;
-      }
-   }
-   bool operator==(const straw other) const {
-      if (id == other.id) {
-	return true;
-      }
-      else{
-	return false;
-      }
-   }
-    void Print()
-    {
-      cout<< "Straw:  " <<endl;
-      cout<< "======  " <<endl;
-      cout<< "Event:  "<<evt<<endl;
-      cout<< "SID:  "<<id<<endl;
-      cout<< "Layer:  "<<lay<<endl;
-      cout<< "DID:    "<<did<<endl;
-      cout<< "Sector: "<< sec<<endl;
-      //    cout<< ":"<<hl<<endl;
-      //cout<< "evt:"<<mpx<<endl;
-      //cout<< "evt:"<< mpy<<endl;
-      //cout<< "evt:"<<mpz<<endl;
-      //cout<< "evt:"<< dirx<<endl;
-      //cout<< "evt:"<<diry<<endl;
-      //cout<< "evt:"<<dirz<<endl;     
-    }
- };
 
 
 class Vector
@@ -206,11 +137,7 @@ public:
 
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
-    //    vector<StrawId>  ListofNeighbors(StrawId si);
-    // vector<StrawId>  createStrawCluster(StrawId si);
 
-
-    //    vector<vector<StrawId>> StrawCluster(
 
   };
 
@@ -222,8 +149,6 @@ public:
          << endl;
 
     edm::Service<edm::TFileService> tfs;
-
-;
   }
 
   void
@@ -252,7 +177,6 @@ public:
       Straw str = tracker.getStraw(si);	 
       StrawId sid = str.Id();
       cout << "Straw: " << sid<< endl;
-      //      vector<StrawId> cluster = createStrawCluster(sid);
       const std::vector<StrawId> nearid= str.nearestNeighboursById();
       cout << "nr of neighbors:  " << nearid.size()<<endl;
       vector<StrawId>::const_iterator ncid;
@@ -290,105 +214,7 @@ public:
 
 
   } // end of ::analyze.
-/*
-vector<StrawId>   MakeStrawCluster::createStrawCluster(StrawId sid)
- { 
-   //   vector<StrawId> neighbors = ListofNeighbors(sid);
-   // cout<< " number of neighbors: " << neighbors.size()<<endl;
-   //vector<StrawId>::const_iterator ncii;
-   //   for(ncii=neighbors.begin(); ncii!=neighbors.end(); ncii++)
-   //  {
-   //    cout << "Straw index: " <<*ncii << endl;
-   //  }
 
-   const Tracker& tracker = getTrackerOrThrow();
-   edm::Handle<StrawHitCollection> pdataHandle;
-   evt.getByLabel(_makerModuleLabel,pdataHandle);
-   StrawHitCollection const* hits = pdataHandle.product();
-   Straw str = tracker.getStraw(sid);	 
-   //StrawId sid = str.Id();
-   const std::vector<StrawId> nearid= str.nearestNeighboursById();
-   cout << "nr of neighbors:  " << nearid.size()<<endl;
-   vector<StrawId>::const_iterator ncid;
-   for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
-     {
-       cout << "cc StrawId: " <<*ncid << endl;
-       for ( size_t jj=0; jj<hits->size(); ++jj ) {
-	 StrawHit        const&      hit(hits->at(jj));
-	 StrawIndex nsi = hit.strawIndex();	    
-	 Straw nstr = tracker.getStraw(nsi);	 
-	 StrawId nsid = nstr.Id();
-	 if (nsid==*ncid)
-	   {
-	     cout<< " fired"<<endl;
-	   }
-       }
-       
-     }
-   
-
-
-
-
-    return nearid;    
-
-}//end createStrawCluster
-*/
-//
-// use for now in the end we probably want a straw to be able what it's neighbors are. 
-//
-/*
-vector<StrawId>   MakeStrawCluster::ListofNeighbors(StrawId sid)
- {   
-   LayerId lid      = sid.getLayerId();
-   SectorId   secid = sid.getSectorId();
-   int lay          = sid.getLayer();
-   int sec          = sid.getSector(); 
-   int did          = sid.getDevice(); 
-   int ind          = sid.getStraw();
-   StrawId si;
-   const int splay  = 50;    // number of straws per panel layer
-   vector<StrawId> neighbors;
-   
-   cout << "layer:  "<<lay<<"  Sector:  "<<sec<<"  Device:  "<< did<<" Straw:  "<<ind<<endl;
-   if (lay==0)
-     {
-       if (ind-1>0)
-	 {
-	   si = StrawId(lid,ind-1);
-	   neighbors.push_back(si);
-	   si = StrawId(secid,lay+1,ind-1);
-	   neighbors.push_back(si);
-	 }
-       if (ind+1<splay)
-	 {
-	   si = StrawId(lid,ind+1);
-	   neighbors.push_back(si);
-	 } 
-	   si = StrawId(secid,lay+1,ind);
-	   neighbors.push_back(si);
-     }
-   else
-     {
-       if (ind-1>0)
-	 {
-	   si = StrawId(lid,ind-1);
-	   neighbors.push_back(si);
-	 }
-       if (ind+1<splay)
-	 {
-	   si = StrawId(lid,ind+1);
-	   neighbors.push_back(si);
-	   si = StrawId(secid,lay-1,ind+1);
-	   neighbors.push_back(si);
-	 }       
-       si = StrawId(secid,lay-1,ind);
-       neighbors.push_back(si);	
-     }
-    return neighbors;    
-
-}//end of ListofNeighbors
-*/ 
 }
 
 
