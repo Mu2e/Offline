@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.10 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:36 $
+// $Id: ReadStrawHit_plugin.cc,v 1.11 2011/01/11 17:37:48 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2011/01/11 17:37:48 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -134,7 +134,7 @@ namespace mu2e {
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
     _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple", 
-                      "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid");
+                      "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
    _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple", 
                       "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
   }
@@ -268,12 +268,13 @@ namespace mu2e {
         _hG4StepEdep->Fill(mchit.eDep()*1000.0);
       }
       StrawIndex si = hit.strawIndex();
+      const  uint32_t id = si.asUint();
       Straw str = tracker.getStraw(si);
       StrawId sid = str.Id();
       LayerId lid = sid.getLayerId();
       DeviceId did = sid.getDeviceId();
       SectorId secid = sid.getSectorId();
-      float nt[17];
+      float nt[18];
       const CLHEP::Hep3Vector vec3junk = str.getMidPoint();
       const CLHEP::Hep3Vector vec3junk1 = str.getDirection();
       // Fill the ntuple:
@@ -294,6 +295,7 @@ namespace mu2e {
       nt[14] = truth.driftTime();
       nt[15] = truth.driftDistance();
       nt[16] = truth.distanceToMid();
+      nt[17] = id;
       _ntup->Fill(nt);
       // Calculate number of hits per wire
       ++nhperwire[hit.strawIndex()];
