@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MakeStrawCluster_plugin.cc,v 1.4 2011/01/07 21:00:06 wenzel Exp $
+// $Id: MakeStrawCluster_plugin.cc,v 1.5 2011/01/11 17:16:27 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/01/07 21:00:06 $
+// $Date: 2011/01/11 17:16:27 $
 //
 // Original author Hans Wenzel
 //
@@ -14,9 +14,6 @@
 #include <string>
 #include <cmath>
 #include <cmath>
-//#include <algorithm>
-//#include <utility>
-
 
 
 // Framework includes.
@@ -47,65 +44,65 @@
 using namespace std;
 
 namespace mu2e {
-
-
-class Vector
-{
-public:
-  float x_, y_;  
-  Vector(float f = 0.0f)
-    : x_(f), y_(f) {}
   
-  Vector(float x, float y)
-    : x_(x), y_(y) {}
-};
-
-class LineSegment
-{
-public:
-  Vector begin_;
-  Vector end_;
   
-  LineSegment(const Vector& begin, const Vector& end)
-    : begin_(begin), end_(end) {}
-  
-  enum IntersectResult { PARALLEL, COINCIDENT, NOT_INTERSECTING, INTERSECTING };
-  
-  IntersectResult Intersect(const LineSegment& other_line, Vector& intersection)
+  class Vector
   {
-    float denom = ((other_line.end_.y_ - other_line.begin_.y_)*(end_.x_ - begin_.x_)) -
-      ((other_line.end_.x_ - other_line.begin_.x_)*(end_.y_ - begin_.y_));
+  public:
+    float x_, y_;  
+    Vector(float f = 0.0f)
+      : x_(f), y_(f) {}
     
-    float nume_a = ((other_line.end_.x_ - other_line.begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
-      ((other_line.end_.y_ - other_line.begin_.y_)*(begin_.x_ - other_line.begin_.x_));
+    Vector(float x, float y)
+      : x_(x), y_(y) {}
+  };
+  
+  class LineSegment
+  {
+  public:
+    Vector begin_;
+    Vector end_;
     
-    float nume_b = ((end_.x_ - begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
-      ((end_.y_ - begin_.y_)*(begin_.x_ - other_line.begin_.x_));
+    LineSegment(const Vector& begin, const Vector& end)
+      : begin_(begin), end_(end) {}
     
-    if(denom == 0.0f)
-      {
-	if(nume_a == 0.0f && nume_b == 0.0f)
-	  {
-	    return COINCIDENT;
-	  }
-	return PARALLEL;
-      }
+    enum IntersectResult { PARALLEL, COINCIDENT, NOT_INTERSECTING, INTERSECTING };
     
-    float ua = nume_a / denom;
-    float ub = nume_b / denom;
-    
-    if(ua >= 0.0f && ua <= 1.0f && ub >= 0.0f && ub <= 1.0f)
-      {
-	// Get the intersection point.
-	intersection.x_ = begin_.x_ + ua*(end_.x_ - begin_.x_);
-	intersection.y_ = begin_.y_ + ua*(end_.y_ - begin_.y_);
-	
-	return INTERSECTING;
-      }
-    
-    return NOT_INTERSECTING;
-  }
-};
+    IntersectResult Intersect(const LineSegment& other_line, Vector& intersection)
+    {
+      float denom = ((other_line.end_.y_ - other_line.begin_.y_)*(end_.x_ - begin_.x_)) -
+	((other_line.end_.x_ - other_line.begin_.x_)*(end_.y_ - begin_.y_));
+      
+      float nume_a = ((other_line.end_.x_ - other_line.begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
+	((other_line.end_.y_ - other_line.begin_.y_)*(begin_.x_ - other_line.begin_.x_));
+      
+      float nume_b = ((end_.x_ - begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
+	((end_.y_ - begin_.y_)*(begin_.x_ - other_line.begin_.x_));
+      
+      if(denom == 0.0f)
+	{
+	  if(nume_a == 0.0f && nume_b == 0.0f)
+	    {
+	      return COINCIDENT;
+	    }
+	  return PARALLEL;
+	}
+      
+      float ua = nume_a / denom;
+      float ub = nume_b / denom;
+      
+      if(ua >= 0.0f && ua <= 1.0f && ub >= 0.0f && ub <= 1.0f)
+	{
+	  // Get the intersection point.
+	  intersection.x_ = begin_.x_ + ua*(end_.x_ - begin_.x_);
+	  intersection.y_ = begin_.y_ + ua*(end_.y_ - begin_.y_);
+	  
+	  return INTERSECTING;
+	}
+      
+      return NOT_INTERSECTING;
+    }
+  };
   //--------------------------------------------------------------------
   //
   // 
@@ -119,50 +116,52 @@ public:
     {
     }
     virtual ~MakeStrawCluster() { }
-
+    
     virtual void beginJob(edm::EventSetup const&);
-
+    
     void analyze( edm::Event const& e, edm::EventSetup const&);
-
+    
   private:
     
     // Diagnostics level.
     int _diagLevel;
-
+    
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
-
+    
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
-
+    
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
-
-
+    
   };
-
+  
   void MakeStrawCluster::beginJob(edm::EventSetup const& ){
-
+    
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint 
          << endl;
-
+    
     edm::Service<edm::TFileService> tfs;
   }
-
+  
   void
   MakeStrawCluster::analyze(edm::Event const& evt, edm::EventSetup const&) {
-
+     
     static int ncalls(0);
     ++ncalls;
     vector<StrawId> Cluster;
     vector<StrawId> tmpCluster;
-    vector<StrawId>::const_iterator strawIter;
     vector<vector<StrawId> > listofClusters;
-    vector<vector<StrawId> >::const_iterator ClusterIter;
-
-    // Geometry info for the LTracker.
+    vector<StrawId>::const_iterator ostrawIter;
+    vector<vector<StrawId> >::const_iterator oClusterIter;
+    
+    vector<StrawId>::const_iterator istrawIter;
+    vector<vector<StrawId> >::const_iterator iClusterIter;
+    
+    // Geometry info for the TTracker.
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
@@ -173,48 +172,136 @@ public:
       // Access data
       StrawHit        const&      hit(hits->at(i));
       StrawIndex si = hit.strawIndex();
-      //int sindex = si.asInt();
       Straw str = tracker.getStraw(si);	 
       StrawId sid = str.Id();
-      cout << "Straw: " << sid<< endl;
-      const std::vector<StrawId> nearid= str.nearestNeighboursById();
-      cout << "nr of neighbors:  " << nearid.size()<<endl;
-      vector<StrawId>::const_iterator ncid;
-      for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
+      // first check if  straw already has been used
+      bool used =false;
+      for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
 	{
-	  cout << "cc StrawId: " <<*ncid << endl;
-	  bool used =false;
-	  for(ClusterIter=listofClusters.begin();ClusterIter!=listofClusters.end(); ClusterIter++)
+	  tmpCluster= *oClusterIter;
+	  for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
 	    {
-	      tmpCluster= *ClusterIter;
-	      for(strawIter=tmpCluster.begin();strawIter!=tmpCluster.end(); strawIter++)
+	      if (sid == *ostrawIter)
 		{
-		  if (sid == *strawIter)
-		    {
-		      used = true;
-		      break;
-		    }
+		  used = true;
+		  break;
 		}
 	    }
-	  if ( used==false ) Cluster.push_back(sid);
-	  for ( size_t jj=0; jj<hits->size(); ++jj ) 
-	    {
-	      StrawHit        const&      hit(hits->at(jj));
-	      StrawIndex nsi = hit.strawIndex();	    
-	      Straw nstr = tracker.getStraw(nsi);	 
-	      StrawId nsid = nstr.Id();
-	      if (nsid==*ncid)
-		{
-		  cout<< " fired"<<endl;
-		}
-	    }
-	  
 	}
-    }
-
-
+      if ( !used )
+	{
+	  Cluster.push_back(sid);
+	  // get list of neighbors and check if they fired:
+	  const std::vector<StrawId> nearid= str.nearestNeighboursById();
+	  vector<StrawId>::const_iterator ncid;
+	  for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
+	    {
+	      for ( size_t jj=0; jj<hits->size(); ++jj ) 
+		{
+		  StrawHit        const&      hit(hits->at(jj));
+		  StrawIndex nsi = hit.strawIndex();	    
+		  Straw nstr = tracker.getStraw(nsi);	 
+		  StrawId nsid = nstr.Id();
+		  if (nsid==*ncid)
+		    {
+		      bool nused =false;
+		      for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
+			{
+			  tmpCluster= *oClusterIter;
+			  for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
+			    {
+			      if (nsid == *ostrawIter)
+				{
+				  nused = true;
+				  break;
+				}
+			    }
+			}
+		      if ( !nused) Cluster.push_back(nsid);
+		    } 
+		} // end loop over all hits 
+	    } // end loop over neighbors 
+	  bool added=false; 
+	  if (Cluster.size()>1) added = true;
+	  while (added)
+	    {
+	      added = false;
+	      for(size_t kk=0;kk<Cluster.size(); kk++)
+		{
+		  Straw straw = tracker.getStraw(Cluster[kk]);		      
+		  const std::vector<StrawId> nnearid= straw.nearestNeighboursById();
+		  vector<StrawId>::const_iterator nncid;
+		  for(nncid=nnearid.begin(); nncid!=nnearid.end(); nncid++)
+		    {
+		      //
+		      // first check if not already part of the cluster
+		      //
+		      vector<StrawId>::const_iterator sIter;
+		      bool usedincl=false;
+		      for(sIter=Cluster.begin();sIter!=Cluster.end(); sIter++)
+			{
+			  if (*sIter==*nncid) 
+			    {
+			      usedincl=true;
+			      break;
+			    }
+			}
+		      if (!usedincl)
+			{
+			  for ( size_t jj=0; jj<hits->size(); jj++ ) 
+			    {
+			      StrawHit        const&      hit(hits->at(jj));
+			      StrawIndex nsi = hit.strawIndex();	    
+			      Straw nstr = tracker.getStraw(nsi);	 
+			      StrawId nsid = nstr.Id();
+			      if (nsid==*nncid)
+				{
+				  bool nused =false;
+				  for(iClusterIter=listofClusters.begin();iClusterIter!=listofClusters.end(); iClusterIter++)
+				    {
+				      tmpCluster= *iClusterIter;
+				      for(istrawIter=tmpCluster.begin();istrawIter!=tmpCluster.end(); istrawIter++)
+					{
+					  if (nsid == *istrawIter)
+					    {
+					      nused = true;
+					      break;
+					    }
+					}
+				    }
+				  if ( !nused)
+				    {
+				      Cluster.push_back(nsid);
+				      added = true;
+				    }
+				}
+			    } // end loop over all straws that fired
+			}  // end used in cluster     
+		    }// end loop over neighbors
+		} // end loop over straws in cluster
+	    } // end while added
+	  if (Cluster.size()>0) 
+	    {
+	      listofClusters.push_back(Cluster);
+	    }
+	  Cluster.clear();
+	}// loop over all straws that fired.
+    }     
+    if (_diagLevel>2){
+      cout << " Nr of Hits:  "<< hits->size()<<endl;
+      cout << " nr of clusters:  " <<listofClusters.size()<<endl;
+      for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
+	{
+	  tmpCluster= *oClusterIter;
+	  cout <<" Cluster length: "<< tmpCluster.size()<<endl;
+	  for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
+	    {
+	      cout<<*ostrawIter<<endl;
+	    }
+	}
+    }			
   } // end of ::analyze.
-
+  
 }
 
 
