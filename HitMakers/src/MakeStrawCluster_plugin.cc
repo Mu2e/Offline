@@ -1,10 +1,7 @@
 //
-// Plugin to test that I can read back the persistent data about straw hits.  
-// Also tests the mechanisms to look back at the precursor StepPointMC objects.
-//
-// $Id: MakeStrawCluster_plugin.cc,v 1.5 2011/01/11 17:16:27 wenzel Exp $
+// $Id: MakeStrawCluster_plugin.cc,v 1.6 2011/01/13 17:45:36 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/01/11 17:16:27 $
+// $Date: 2011/01/13 17:45:36 $
 //
 // Original author Hans Wenzel
 //
@@ -17,7 +14,8 @@
 
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+//#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
@@ -40,7 +38,8 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
-
+#include "ToyDP/inc/StrawCluster.hh"
+#include "ToyDP/inc/StrawClusterCollection.hh"
 using namespace std;
 
 namespace mu2e {
@@ -106,20 +105,23 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class MakeStrawCluster : public edm::EDAnalyzer {
+  class MakeStrawCluster : public edm::EDProducer {
   public:
     explicit MakeStrawCluster(edm::ParameterSet const& pset):
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel"))
-    {
+      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
+      _messageCategory("StrawClusterMaker"){
+
+      // Tell the framework what we make.
+      produces<StrawClusterCollection>();
     }
     virtual ~MakeStrawCluster() { }
     
     virtual void beginJob(edm::EventSetup const&);
-    
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void produce( edm::Event& e, edm::EventSetup const&);
+    //  void analyze( edm::Event const& e, edm::EventSetup const&);
     
   private:
     
@@ -134,9 +136,12 @@ namespace mu2e {
     
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
+
+    // A category for the error logger.
+    const std::string _messageCategory;
     
   };
-  
+     
   void MakeStrawCluster::beginJob(edm::EventSetup const& ){
     
     cout << "Diaglevel: " 
@@ -146,98 +151,100 @@ namespace mu2e {
     
     edm::Service<edm::TFileService> tfs;
   }
-  
-  void
-  MakeStrawCluster::analyze(edm::Event const& evt, edm::EventSetup const&) {
+   void MakeStrawCluster::produce(edm::Event& evt, edm::EventSetup const&)
+   {
+     if ( _diagLevel > 0 ) cout << "MakeStrawCluster: produce() begin" << endl;
+     static int ncalls(0);
+     ++ncalls;
+     // A container to hold the output hits.
+     auto_ptr<StrawClusterCollection>        listofClusterspointer(new StrawClusterCollection);
      
-    static int ncalls(0);
-    ++ncalls;
-    vector<StrawId> Cluster;
-    vector<StrawId> tmpCluster;
-    vector<vector<StrawId> > listofClusters;
-    vector<StrawId>::const_iterator ostrawIter;
-    vector<vector<StrawId> >::const_iterator oClusterIter;
-    
-    vector<StrawId>::const_iterator istrawIter;
-    vector<vector<StrawId> >::const_iterator iClusterIter;
-    
-    // Geometry info for the TTracker.
-    // Get a reference to one of the L or T trackers.
-    // Throw exception if not successful.
-    const Tracker& tracker = getTrackerOrThrow();
-    edm::Handle<StrawHitCollection> pdataHandle;
-    evt.getByLabel(_makerModuleLabel,pdataHandle);
-    StrawHitCollection const* hits = pdataHandle.product();
-    for ( size_t i=0; i<hits->size(); ++i ) {
-      // Access data
-      StrawHit        const&      hit(hits->at(i));
-      StrawIndex si = hit.strawIndex();
-      Straw str = tracker.getStraw(si);	 
-      StrawId sid = str.Id();
-      // first check if  straw already has been used
-      bool used =false;
-      for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
-	{
-	  tmpCluster= *oClusterIter;
-	  for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
-	    {
-	      if (sid == *ostrawIter)
-		{
-		  used = true;
-		  break;
-		}
-	    }
-	}
-      if ( !used )
-	{
-	  Cluster.push_back(sid);
-	  // get list of neighbors and check if they fired:
-	  const std::vector<StrawId> nearid= str.nearestNeighboursById();
-	  vector<StrawId>::const_iterator ncid;
-	  for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
-	    {
-	      for ( size_t jj=0; jj<hits->size(); ++jj ) 
-		{
-		  StrawHit        const&      hit(hits->at(jj));
-		  StrawIndex nsi = hit.strawIndex();	    
-		  Straw nstr = tracker.getStraw(nsi);	 
-		  StrawId nsid = nstr.Id();
-		  if (nsid==*ncid)
-		    {
-		      bool nused =false;
-		      for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
-			{
-			  tmpCluster= *oClusterIter;
-			  for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
-			    {
-			      if (nsid == *ostrawIter)
-				{
-				  nused = true;
-				  break;
+     StrawCluster Cluster;
+     StrawCluster tmpCluster;
+     StrawClusterCollection&  listofClusters = *listofClusterspointer;
+
+     StrawCluster::const_iterator ostrawIter;
+     StrawClusterCollection::const_iterator oClusterIter;    
+     StrawCluster::const_iterator istrawIter;
+     StrawClusterCollection::const_iterator iClusterIter;
+     
+     // Geometry info for the TTracker.
+     // Get a reference to one of the L or T trackers.
+     // Throw exception if not successful.
+     const Tracker& tracker = getTrackerOrThrow();
+     edm::Handle<StrawHitCollection> pdataHandle;
+     evt.getByLabel(_makerModuleLabel,pdataHandle);
+     StrawHitCollection const* hits = pdataHandle.product();
+     for ( size_t i=0; i<hits->size(); ++i ) {
+       // Access data
+       StrawHit        const&      hit(hits->at(i));
+       StrawIndex si = hit.strawIndex();
+       Straw str = tracker.getStraw(si);	 
+       StrawId sid = str.Id();
+       // first check if  straw already has been used
+       bool used =false;
+       for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
+	 {
+	   tmpCluster= *oClusterIter;
+	   for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
+	     {
+	       if (sid == *ostrawIter)
+		 {
+		   used = true;
+		   break;
+		 }
+	     }
+	 }
+       if ( !used )
+	 {
+	   Cluster.push_back(sid);
+	   // get list of neighbors and check if they fired:
+	   const std::vector<StrawId> nearid= str.nearestNeighboursById();
+	   vector<StrawId>::const_iterator ncid;
+	   for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
+	     {
+	       for ( size_t jj=0; jj<hits->size(); ++jj ) 
+		 {
+		   StrawHit        const&      hit(hits->at(jj));
+		   StrawIndex nsi = hit.strawIndex();	    
+		   Straw nstr = tracker.getStraw(nsi);	 
+		   StrawId nsid = nstr.Id();
+		   if (nsid==*ncid)
+		     {
+		       bool nused =false;
+		       for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
+			 {
+			   tmpCluster= *oClusterIter;
+			   for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
+			     {
+			       if (nsid == *ostrawIter)
+				 {
+				   nused = true;
+				   break;
 				}
-			    }
-			}
-		      if ( !nused) Cluster.push_back(nsid);
-		    } 
-		} // end loop over all hits 
-	    } // end loop over neighbors 
-	  bool added=false; 
-	  if (Cluster.size()>1) added = true;
-	  while (added)
-	    {
-	      added = false;
-	      for(size_t kk=0;kk<Cluster.size(); kk++)
-		{
-		  Straw straw = tracker.getStraw(Cluster[kk]);		      
-		  const std::vector<StrawId> nnearid= straw.nearestNeighboursById();
-		  vector<StrawId>::const_iterator nncid;
-		  for(nncid=nnearid.begin(); nncid!=nnearid.end(); nncid++)
-		    {
-		      //
-		      // first check if not already part of the cluster
-		      //
-		      vector<StrawId>::const_iterator sIter;
-		      bool usedincl=false;
+			     }
+			 }
+		       if ( !nused) Cluster.push_back(nsid);
+		     } 
+		 } // end loop over all hits 
+	     } // end loop over neighbors 
+	   bool added=false; 
+	   if (Cluster.size()>1) added = true;
+	   while (added)
+	     {
+	       added = false;
+	       for(size_t kk=0;kk<Cluster.size(); kk++)
+		 {
+		   Straw straw = tracker.getStraw(Cluster[kk]);		      
+		   const std::vector<StrawId> nnearid= straw.nearestNeighboursById();
+		   vector<StrawId>::const_iterator nncid;
+		   for(nncid=nnearid.begin(); nncid!=nnearid.end(); nncid++)
+		     {
+		       //
+		       // first check if not already part of the cluster
+		       //
+		       vector<StrawId>::const_iterator sIter;
+		       bool usedincl=false;
 		      for(sIter=Cluster.begin();sIter!=Cluster.end(); sIter++)
 			{
 			  if (*sIter==*nncid) 
@@ -286,7 +293,10 @@ namespace mu2e {
 	    }
 	  Cluster.clear();
 	}// loop over all straws that fired.
-    }     
+    }
+    // Add the output hit collection to the event
+    //evt.put(listofClusterspointer);
+     
     if (_diagLevel>2){
       cout << " Nr of Hits:  "<< hits->size()<<endl;
       cout << " nr of clusters:  " <<listofClusters.size()<<endl;
@@ -299,7 +309,8 @@ namespace mu2e {
 	      cout<<*ostrawIter<<endl;
 	    }
 	}
-    }			
+    }
+    evt.put(listofClusterspointer);			
   } // end of ::analyze.
   
 }
