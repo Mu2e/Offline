@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.25 2011/01/11 20:41:19 wenzel Exp $     -->
+<!--  $Id: classes_def.xml,v 1.26 2011/01/13 17:43:44 wenzel Exp $     -->
 <!--  $Author: wenzel $ -->
-<!--  $Date: 2011/01/11 20:41:19 $   -->
+<!--  $Date: 2011/01/13 17:43:44 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.25 $$Date: 2011/01/11 20:41:19 $"; -->
+<!--  rev="$Revision: 1.26 $$Date: 2011/01/13 17:43:44 $"; -->
 
 <!--  Only include edm::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the edm::Wrapper lines and     -->
@@ -51,6 +51,10 @@
  <class name="mu2e::HoughCircleCollection"/>
  <class name="mu2e::StrawHit"/>
  <class name="mu2e::StrawHitCollection"/>
+ <class name="mu2e::LayerId"/>
+ <class name="mu2e::SectorId"/>
+ <class name="mu2e::DeviceId"/>
+ <class name="mu2e::StrawId"/>
  <class name="mu2e::StrawCluster"/>
  <class name="mu2e::StrawClusterCollection"/>
  <class name="mu2e::StrawHitMCTruth"/>
@@ -86,6 +90,7 @@
  <class name="edm::Wrapper<mu2e::HoughCircleCollection>"/>
  <class name="edm::Wrapper<mu2e::StrawHitCollection>"/>
  <class name="edm::Wrapper<mu2e::StrawHitMCTruthCollection>"/>
+ <class name="edm::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="edm::Wrapper<mu2e::DPIndexVectorCollection>"/>
  <class name="edm::Wrapper<mu2e::G4BeamlineInfo>"/>
  <class name="edm::Wrapper<mu2e::G4BeamlineInfoCollection>"/>
