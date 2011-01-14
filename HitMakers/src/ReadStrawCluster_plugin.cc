@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_plugin.cc,v 1.1 2011/01/13 23:26:59 wenzel Exp $
+// $Id: ReadStrawCluster_plugin.cc,v 1.2 2011/01/14 21:30:15 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/01/13 23:26:59 $
+// $Date: 2011/01/14 21:30:15 $
 //
 // Original author Hans Wenzel
 //
@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <map>
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -39,7 +40,6 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawClusterCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
@@ -48,6 +48,120 @@
 using namespace std;
 
 namespace mu2e {
+ class Vector
+  {
+  public:
+    float x_, y_;  
+    Vector(float f = 0.0f)
+      : x_(f), y_(f) {}
+    
+    Vector(float x, float y)
+      : x_(x), y_(y) {}
+  };
+  
+  class LineSegment
+  {
+  public:
+    Vector begin_;
+    Vector end_;
+    
+    LineSegment(const Vector& begin, const Vector& end)
+      : begin_(begin), end_(end) {}
+    
+    enum IntersectResult { PARALLEL, COINCIDENT, NOT_INTERSECTING, INTERSECTING };
+    
+    IntersectResult Intersect(const LineSegment& other_line, Vector& intersection)
+    {
+      float denom = ((other_line.end_.y_ - other_line.begin_.y_)*(end_.x_ - begin_.x_)) -
+	((other_line.end_.x_ - other_line.begin_.x_)*(end_.y_ - begin_.y_));
+      
+      float nume_a = ((other_line.end_.x_ - other_line.begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
+	((other_line.end_.y_ - other_line.begin_.y_)*(begin_.x_ - other_line.begin_.x_));
+      
+      float nume_b = ((end_.x_ - begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
+	((end_.y_ - begin_.y_)*(begin_.x_ - other_line.begin_.x_));
+      
+      if(denom == 0.0f)
+	{
+	  if(nume_a == 0.0f && nume_b == 0.0f)
+	    {
+	      return COINCIDENT;
+	    }
+	  return PARALLEL;
+	}
+      
+      float ua = nume_a / denom;
+      float ub = nume_b / denom;
+      
+      if(ua >= 0.0f && ua <= 1.0f && ub >= 0.0f && ub <= 1.0f)
+	{
+	  // Get the intersection point.
+	  intersection.x_ = begin_.x_ + ua*(end_.x_ - begin_.x_);
+	  intersection.y_ = begin_.y_ + ua*(end_.y_ - begin_.y_);
+	  
+	  return INTERSECTING;
+	}
+      
+      return NOT_INTERSECTING;
+    }
+  };
+ class pstraw{
+   //
+   // pseudo straw class 
+   //
+ public:
+   Int_t   lay;
+   Int_t   did;
+   Int_t   sec;
+   Float_t hl;
+   Float_t mpx;
+   Float_t mpy;
+   Float_t mpz;
+   Float_t dirx;
+   Float_t diry;
+   Float_t dirz; // should always be 0 
+   /*
+    bool operator>(const pstraw other) const {
+      if (id > other.id) {
+	return true;
+      }
+      else{
+	return false;
+      }
+    }
+   bool operator<(const pstraw other) const {
+      if (id < other.id) {
+	return true;
+      }
+      else{
+	return false;
+      }
+   }
+   bool operator==(const straw other) const {
+      if (id == other.id) {
+	return true;
+      }
+      else{
+	return false;
+      }
+   }
+   */
+    void Print()
+    {
+      cout<< "Straw:  " << endl;
+      cout<< "======  " << endl;
+      cout<< "Layer:  " << lay  <<endl;
+      cout<< "DID:    " << did  <<endl;
+      cout<< "Sector: " << sec  <<endl;
+      cout<< "hl:     " << hl   <<endl;
+      cout<< "mpx:    " << mpx  <<endl;
+      cout<< "mpy:    " << mpy  <<endl;
+      cout<< "mpz:    " << mpz  <<endl;
+      cout<< "dirx:   " << dirx <<endl;
+      cout<< "diry:   " << diry <<endl;
+      cout<< "dirz:   " << dirz <<endl;     
+    }
+ };
 
   //--------------------------------------------------------------------
   //
@@ -57,273 +171,193 @@ namespace mu2e {
     explicit ReadStrawCluster(edm::ParameterSet const& pset):
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
       _clmakerModuleLabel(pset.getParameter<std::string>("clmakerModuleLabel")),
-      _hHitTime(0),
-      _hHitDeltaTime(0),
-      _hHitEnergy(0),
-      _hNHits(0),
+      _hNInter(0),
       _hNClusters(0),
-      _hNHitsPerWire(0),
-      _hDriftTime(0),
-      _hDriftDistance(0),
-      _hDistanceToMid(0),
-      _hNG4Steps(0),
-      _hT0(0),
-      _hG4StepLength(0),
-      _hG4StepEdep(0),
-      _ntup(0),
-      _detntup(0)
+      _hNStraws(0)
     {
     }
     virtual ~ReadStrawCluster() { }
-
+    
     virtual void beginJob(edm::EventSetup const&);
-
+    
     void analyze( edm::Event const& e, edm::EventSetup const&);
-
+    
   private:
     
     // Diagnostics level.
     int _diagLevel;
-
+    
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
-
-    // Name of the tracker StepPoint collection
-    std::string _trackerStepPoints;
-
-    // Label of the module that made the hits.
-    std::string _makerModuleLabel;
+    
     // Label of the module that made the Clusters.
     std::string _clmakerModuleLabel;
     // Some diagnostic histograms.
-    TH1F* _hHitTime;
-    TH1F* _hHitDeltaTime;
-    TH1F* _hHitEnergy;
-    TH1F* _hNHits;
+    TH1F* _hNInter;
     TH1F* _hNClusters;
-    TH1F* _hNHitsPerWire;
-    TH1F* _hDriftTime;
-    TH1F* _hDriftDistance;
-    TH1F* _hDistanceToMid;
-    TH1F* _hNG4Steps;
-    TH1F* _hT0;
-    TH1F* _hG4StepLength;
-    TH1F* _hG4StepEdep;
-    TNtuple* _ntup;
-    TNtuple* _detntup;
-
+    TH1F* _hNStraws;
   };
-
+  
   void ReadStrawCluster::beginJob(edm::EventSetup const& ){
-
+    
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint 
          << endl;
-
+    
     edm::Service<edm::TFileService> tfs;
+    _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );  
+    _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 500, 0., 500. );
+    _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );  
 
-    _hHitTime      = tfs->make<TH1F>( "hHitTime",      "Hit Time (ns)", 200, 0., 2000. );
-    _hHitDeltaTime = tfs->make<TH1F>( "hHitDeltaTime", "Hit Delta Time (ns)", 80, -20.0, 20. );
-    _hHitEnergy    = tfs->make<TH1F>( "hHitEnergy",    "Hit Energy (keV)", 100, 0., 100. );
-    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0., 500. );
-    _hNClusters    = tfs->make<TH1F>( "hNClusters",     "Number of straw clusters", 500, 0., 500. );
-    _hNHitsPerWire = tfs->make<TH1F>( "hNHitsPerWire", "Number of hits per straw", 10, 0., 10. );
-    _hDriftTime    = tfs->make<TH1F>( "hDriftTime",    "Drift time, ns", 100, 0., 100. );
-    _hDriftDistance= tfs->make<TH1F>( "hDriftDistance","Drift Distance, mm", 100, 0., 3. );
-    _hDistanceToMid= tfs->make<TH1F>( "hDistanceToMid","Distance to wire center, mm", 160, -1600., 1600. );
-    _hNG4Steps     = tfs->make<TH1F>( "hNG4Steps",     "Number of G4Steps per hit", 100, 0., 100. );
-    _hT0           = tfs->make<TH1F>( "hT0",           "T0, ns", 100, -50., 50. );
-    _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
-    _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
-    _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple", 
-                      "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
-   _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple", 
-                      "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
   }
-
-  void
-  ReadStrawCluster::analyze(edm::Event const& evt, edm::EventSetup const&) {
-    if ( _diagLevel > 0 ) cout << "ReadStrawCluster: analyze() begin"<<endl;
+  
+  void ReadStrawCluster::analyze(edm::Event const& evt, edm::EventSetup const&) {
+    if ( _diagLevel > 2 ) cout << "ReadStrawCluster: analyze() begin"<<endl;
     static int ncalls(0);
     ++ncalls;
-
-    /*
-    // Print the content of current event
-    std::vector<edm::Provenance const*> edata;
-    evt.getAllProvenance(edata);
-    cout << "Event info: " 
-    << evt.id().event() <<  " " 
-    << " found " << edata.size() << " objects " 
-    << endl;
-    for( int i=0; i<edata.size(); i++ ) cout << *(edata[i]) << endl;
-    */
-
-    // Geometry info for the LTracker.
-    // Get a reference to one of the L or T trackers.
+ 
+    // Geometry info for the TTracker.
+    // Get a reference to one of the T trackers.
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
-
-    // Get the persistent data about the StrawHits.
-
-    if (ncalls==1){
-      const std::deque<Straw>& allstraws = tracker.getAllStraws();    
-      float detnt[11];
-      cout<<"Number of straws:  "<< allstraws.size()<<endl;
-      for (size_t i = 0;i<allstraws.size();i++)
-	{
-	  Straw str = allstraws[i];
-	  StrawId sid = str.Id();
-	  LayerId lid = sid.getLayerId();
-	  DeviceId did = sid.getDeviceId();
-	  SectorId secid = sid.getSectorId();
-	  
-	  //cout << "index: "  << i << " Layer: "<< lid.getLayer()<< " Device: "<< did <<"  Sector:  "<<secid.getSector()<<endl;
-	  //cout<<str.getHalfLength()<<endl;
-	  const CLHEP::Hep3Vector vec3j = str.getMidPoint();
-	  const CLHEP::Hep3Vector vec3j1 = str.getDirection();
-	  /*
-	  cout << i <<
-	    ","<<lid.getLayer()<<
-	    ","<<did <<
-	    ","<<secid.getSector()<<
-	    ","<<str.getHalfLength()<<
-	    ","<<vec3j.getX()<<
-	    ","<<vec3j.getY()<<
-	    ","<<vec3j.getZ()<<
-	    ","<<vec3j1.getX()<<
-	    ","<<vec3j1.getY()<<
-	    ","<<vec3j1.getZ()<<
-	    endl;
-	  */
-	  // Fill the ntuple.
-	  detnt[0]  = i;
-	  detnt[1]  = lid.getLayer();
-	  detnt[2]  = did;
-	  detnt[3]  = secid.getSector();
-	  detnt[4]  = str.getHalfLength();
-	  detnt[5]  = vec3j.getX();
-	  detnt[6]  = vec3j.getY();
-	  detnt[7]  = vec3j.getZ();
-	  detnt[8]  = vec3j1.getX();
-	  detnt[9]  = vec3j1.getY();
-	  detnt[10] = vec3j1.getZ();
-	  _detntup->Fill(detnt);
-	}
-    }
-    edm::Handle<StrawHitCollection> pdataHandle;
-    evt.getByLabel(_makerModuleLabel,pdataHandle);
-    StrawHitCollection const* hits = pdataHandle.product();
+    multimap<int,pstraw> mpstraws;
+    mpstraws.clear();
+    vector<double> X;
+    vector<double> Y;
+    vector<double> R;
+    vector<double> Z;
+    X.clear();
+    Y.clear();
+    R.clear();
+    Z.clear();
+    // Get the persistent data about the StrawClusters.
     //
     edm::Handle<StrawClusterCollection> pclusterdataHandle;
     evt.getByLabel(_clmakerModuleLabel,pclusterdataHandle);
     StrawClusterCollection const* clusters = pclusterdataHandle.product();
-    // Get the persistent data about the StrawHitsMCTruth.
-
-    edm::Handle<StrawHitMCTruthCollection> truthHandle;
-    evt.getByLabel(_makerModuleLabel,truthHandle);
-    StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
-
-    // Get the persistent data about pointers to StepPointMCs
-
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
-    evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
-    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
-
-    // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in DPIndexVectorCollection, rather than 
-    // use producer name directly ("g4run"). 
-
-    edm::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
-    StepPointMCCollection const* mchits = mchitsHandle.product();
     cout << " Nr of Clusters: " << clusters->size()<<endl;
     _hNClusters->Fill(clusters->size());
-
-    //std::map<StrawIndex,int> nhperwire;
-
-    //    for ( size_t i=0; i<clusters->size(); ++i ) {
-
-      // Access data
-    // StrawCluster        const&      hit(hits->at(i));
- 
-    // Fill histograms
-
-    _hNHits->Fill(hits->size());
-
-    std::map<StrawIndex,int> nhperwire;
-
-    for ( size_t i=0; i<hits->size(); ++i ) {
-
-      // Access data
-      StrawHit        const&      hit(hits->at(i));
-      StrawHitMCTruth const&    truth(hits_truth->at(i));
-      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+    StrawCluster::const_iterator strawIter;
+    CLHEP::Hep3Vector dvec;
+    for ( size_t i=0; i<clusters->size(); ++i ) {
       
-      // Fill per-event histograms
-      if( i==0 ) {
-        _hT0->Fill(truth.t0());
-      }
-
-      // Use data from hits
-      _hHitTime->Fill(hit.time());
-      _hHitDeltaTime->Fill(hit.dt());
-      _hHitEnergy->Fill(hit.energyDep()*1000.0);
-
-      // Use MC truth data
-      _hDriftTime->Fill(truth.driftTime());
-      _hDriftDistance->Fill(truth.driftDistance());
-      _hDistanceToMid->Fill(truth.distanceToMid());
-
-      // Use data from G4 hits
-      _hNG4Steps->Fill(mcptr.size());
-      for( size_t j=0; j<mcptr.size(); ++j ) {
-        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
-        _hG4StepLength->Fill(mchit.stepLength());
-        _hG4StepEdep->Fill(mchit.eDep()*1000.0);
-      }
-      StrawIndex si = hit.strawIndex();
-      const  uint32_t id = si.asUint();
-      Straw str = tracker.getStraw(si);
-      StrawId sid = str.Id();
-      LayerId lid = sid.getLayerId();
-      DeviceId did = sid.getDeviceId();
-      SectorId secid = sid.getSectorId();
-      float nt[18];
-      const CLHEP::Hep3Vector vec3junk = str.getMidPoint();
-      const CLHEP::Hep3Vector vec3junk1 = str.getDirection();
-      // Fill the ntuple:
-      nt[0]  = evt.id().event();
-      nt[1]  = lid.getLayer();
-      nt[2]  = did;
-      nt[3]  = secid.getSector();
-      nt[4]  = str.getHalfLength();
-      nt[5]  = vec3junk.getX();
-      nt[6]  = vec3junk.getY();
-      nt[7]  = vec3junk.getZ();
-      nt[8]  = vec3junk1.getX();
-      nt[9]  = vec3junk1.getY();
-      nt[10] = vec3junk1.getZ();
-      nt[11] = hit.time();
-      nt[12] = hit.dt();
-      nt[13] = hit.energyDep();
-      nt[14] = truth.driftTime();
-      nt[15] = truth.driftDistance();
-      nt[16] = truth.distanceToMid();
-      nt[17] = id;
-      _ntup->Fill(nt);
-      // Calculate number of hits per wire
-      ++nhperwire[hit.strawIndex()];
-
+      // Access data
+      StrawCluster        const&      cluster(clusters->at(i));
+      _hNStraws->Fill(cluster.size());
+      //cout << "Length of Cluster:  " << cluster.size()<<endl;
+      CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
+      double hlen=9999999.;
+      StrawId nsid;
+      Straw str;
+      StrawId sid;
+      LayerId lid;
+      DeviceId did;
+      SectorId secid;
+      for(strawIter=cluster.begin();strawIter!=cluster.end(); strawIter++)
+	{
+	  nsid=*strawIter;
+	  str = tracker.getStraw(nsid);
+	  sid = str.Id();
+	  lid = sid.getLayerId();
+	  did = sid.getDeviceId();
+	  secid = sid.getSectorId();
+	  const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+	  const CLHEP::Hep3Vector dirvec = str.getDirection();
+	  dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
+	  pvec = pvec + mpvec;
+	  if (str.getHalfLength()<hlen)
+	    {
+	      hlen=str.getHalfLength();
+	    }
+	  /* cout 
+	       << " Layer:  " << lid.getLayer()
+	       << " DID:    " << did
+	       << " Sector: " << secid.getSector()
+	       << " hlen:   " << str.getHalfLength()
+	       << " mp:     "<< mpvec
+	       << " dir:    "<< dvec
+	       << endl;
+	  */
+	}
+      double a = 1./double(cluster.size());
+      pvec = pvec*a;
+      //cout << pvec<<endl;
+      pstraw pstr;
+      pstr.lay=lid.getLayer();
+      pstr.did=did;
+      pstr.sec=secid.getSector();
+      pstr.hl=hlen;
+      pstr.mpx=pvec.getX();
+      pstr.mpy=pvec.getY();
+      pstr.mpz=pvec.getZ();
+      pstr.dirx=dvec.getX();
+      pstr.diry=dvec.getY();
+      pstr.dirz=dvec.getZ();
+      mpstraws.insert(pair<int,pstraw>(did,pstr));
+      //pstr.Print();
     }
+    cout << " size of pseudo straw map: " <<mpstraws.size()<<endl; 
 
-    for( std::map<StrawIndex,int>::iterator it=nhperwire.begin(); it!= nhperwire.end(); ++it ) {
-      _hNHitsPerWire->Fill(it->second);
-    }
+    Int_t nint = 0;
+    for (int i = 0;i<36;i++)
+      {
+	if (mpstraws.count(i)>1) 
+	  {
+	    pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
+	    ppp1 = mpstraws.equal_range(i);
+	    multimap<int,pstraw>::iterator first1 = ppp1.first;
+	    multimap<int,pstraw>::iterator first2 = ppp1.first;
+	    multimap<int,pstraw>::iterator last1 = ppp1.second;
+	    last1--;
+	    multimap<int,pstraw>::iterator last2 = ppp1.second;
+	    for (first1;first1 != last1;++first1)
+	      {
+		first2=first1;
+		first2++;
+		for (first2;first2 != last2;++first2)
+		  {
+		  pstraw junk  = (*first1).second;
+		  pstraw pjunk = (*first2).second;
+		  const Vector p0= Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
+		  const Vector p1= Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
+		  const Vector p2= Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry); 
+		  const Vector p3= Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
+		  LineSegment linesegment0(p0, p1);
+		  LineSegment linesegment1(p2, p3);
+		  Vector intersection;
+		  switch(linesegment0.Intersect(linesegment1, intersection))
+		    {
+		    case LineSegment::PARALLEL:
+		      //std::cout << "The lines are parallel\n\n";
+		      break;
+		    case LineSegment::COINCIDENT:
+		      //std::cout << "The lines are coincident\n\n";
+		      break;
+		    case LineSegment::NOT_INTERSECTING:
+		      //std::cout << "The lines do not intersect\n\n";
+		      break;
+		    case LineSegment::INTERSECTING:
+		      //std::cout << "The lines intersect at (" << intersection.x_ << ", " << intersection.y_ << ")\n\n";
+		      X.push_back(intersection.x_);
+		      Y.push_back(intersection.y_);
+		      Z.push_back(0.5*(junk.mpz+pjunk.mpz));
+		      R.push_back(sqrt(intersection.x_*intersection.x_ + intersection.y_+intersection.y_));
+		      nint ++;
+		      //cout<<nint<<endl;
+		      break;
+		    }  // end switch 
+		} // end for first2
+	    }// end for first1
+	}// end count >1
+      //cout<<nint<<endl;
+	  // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
+	  //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
 
+      }   ///endloop over all devices
+    cout<<nint<<endl;
+   _hNInter->Fill(X.size());
   } // end of ::analyze.
   
 }
