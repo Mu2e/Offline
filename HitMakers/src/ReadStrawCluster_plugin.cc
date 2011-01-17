@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_plugin.cc,v 1.2 2011/01/14 21:30:15 wenzel Exp $
+// $Id: ReadStrawCluster_plugin.cc,v 1.3 2011/01/17 05:29:20 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/01/14 21:30:15 $
+// $Date: 2011/01/17 05:29:20 $
 //
 // Original author Hans Wenzel
 //
@@ -31,7 +31,19 @@
 // Root includes.
 #include "TFile.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TNtuple.h"
+#include <TStyle.h>
+#include <TEllipse.h>
+#include <TCanvas.h>
+#include <TGraph.h>
+#include <TColor.h>
+#include <iostream>
+#include <map>
+#include <utility>
+#include "TVirtualFitter.h"
+#include "TMath.h"
+#include "TArc.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -48,6 +60,21 @@
 using namespace std;
 
 namespace mu2e {
+  TGraph *gr;
+void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
+   //minimisation function computing the sum of squares of residuals
+   Int_t np = gr->GetN();
+   f = 0;
+   Double_t *x = gr->GetX();
+   Double_t *y = gr->GetY();
+   for (Int_t i=0;i<np;i++) {
+      Double_t u = x[i] - par[0];
+      Double_t v = y[i] - par[1];
+      Double_t dr = par[2] - TMath::Sqrt(u*u+v*v);
+      f += dr*dr;
+   }
+}
+
  class Vector
   {
   public:
@@ -174,7 +201,9 @@ namespace mu2e {
       _clmakerModuleLabel(pset.getParameter<std::string>("clmakerModuleLabel")),
       _hNInter(0),
       _hNClusters(0),
-      _hNStraws(0)
+      _hNStraws(0),
+      _R_rec(0),
+      _x0y0(0)
     {
     }
     virtual ~ReadStrawCluster() { }
@@ -182,7 +211,7 @@ namespace mu2e {
     virtual void beginJob(edm::EventSetup const&);
     
     void analyze( edm::Event const& e, edm::EventSetup const&);
-    
+    void FitCircle(    vector<double> X,vector<double> Y);
   private:
     
     // Diagnostics level.
@@ -197,6 +226,8 @@ namespace mu2e {
     TH1F* _hNInter;
     TH1F* _hNClusters;
     TH1F* _hNStraws;
+    TH1F* _R_rec;
+    TH2F* _x0y0;
   };
   
   void ReadStrawCluster::beginJob(edm::EventSetup const& ){
@@ -209,7 +240,9 @@ namespace mu2e {
     edm::Service<edm::TFileService> tfs;
     _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );  
     _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 500, 0., 500. );
-    _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );  
+    _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
+    _R_rec         = tfs->make<TH1F>( "R_rec",  "reconstructed track radius", 100, 250., 350. );
+    _x0y0          = tfs->make<TH2F>( "x0y0","x0 of circle vs y0 of circle ", 500,-650.,650.,500.,-650.,650.);
 
   }
   
@@ -357,9 +390,66 @@ namespace mu2e {
 
       }   ///endloop over all devices
     cout<<nint<<endl;
-   _hNInter->Fill(X.size());
+    _hNInter->Fill(X.size());
+    FitCircle(X, Y);
+
   } // end of ::analyze.
-  
+  void ReadStrawCluster::FitCircle(    vector<double> X,vector<double> Y)
+  {
+    Int_t n = X.size();
+    Double_t x[n];
+    Double_t y[n];
+    for ( size_t i=0; i<X.size(); ++i ) {
+      x[i]=X[i];
+      y[i]=Y[i];
+    }
+    gr = new TGraph(n,x,y);
+    //   TCanvas *c1 = new TCanvas("c1","A Simple Graph Example",700,700);
+    //c1->SetGrid();
+    // c1->DrawFrame(-700.,-700.,700.,700.);
+
+    //TEllipse el1(0.,0.,380.,380.);
+    //TEllipse *ellipse = new TEllipse(0,0,680,680,0,360,0);
+    //Int_t ci;   // for color index setting
+    //Int_t ci = TColor::GetColor("#ffffcc");
+    //ellipse->SetFillColor(ci);
+    //ellipse->Draw();
+    
+    //el1.Draw("SAME");
+    //gr->SetLineColor(2);
+    //gr->SetLineWidth(4);
+    //gr->SetMarkerColor(4);
+    //gr->SetMarkerStyle(21);
+    //gr->SetTitle("x-y projection");
+    //gr->GetXaxis()->SetTitle("x [mm]");
+    //gr->GetYaxis()->SetTitle("y [mm]");
+    //gr->Draw("P");
+    //Fit a circle to the graph points
+    TVirtualFitter::SetDefaultFitter("Minuit");  //default is Minuit
+    TVirtualFitter *fitter = TVirtualFitter::Fitter(0, 3);
+    fitter->SetFCN(myfcn);
+    fitter->SetParameter(0, "x0",   0, 0.1, 0,0);
+    fitter->SetParameter(1, "y0",   0, 0.1, 0,0);
+    fitter->SetParameter(2, "R",    175., 0.1, 0,0);
+    //	      fitter->SetParameter(3, "omega",    175., 0.1, 0,0);
+    //	      fitter->SetParameter(4, "phase",    175., 0.1, 0,0);
+    Double_t arglist[1] = {0};
+    fitter->ExecuteCommand("MIGRAD", arglist, 0);
+    cout << "x0:   " << fitter->GetParameter(0)
+	 << " y0:  " << fitter->GetParameter(1)
+	 << " r:   " << fitter->GetParameter(2)
+    <<endl;
+    _x0y0->Fill(fitter->GetParameter(0),fitter->GetParameter(1));
+    _R_rec->Fill(fitter->GetParameter(2));
+    //Draw the circle on top of the points
+    //TArc *arc = new TArc(fitter->GetParameter(0),
+    //			 fitter->GetParameter(1),fitter->GetParameter(2));
+  //arc->SetLineColor(kRed);
+  //arc->SetLineWidth(4);
+  // arc->Draw();
+  //int age;
+  //cin >> age;
+  }
 }
 
 
