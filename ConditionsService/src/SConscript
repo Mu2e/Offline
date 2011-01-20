@@ -1,6 +1,6 @@
-# $Id: SConscript,v 1.4 2010/11/09 20:05:53 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/11/09 20:05:53 $
+# $Id: SConscript,v 1.5 2011/01/20 21:26:12 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/01/20 21:26:12 $
 #
 # Original author Rob Kutschke.
 #
@@ -26,6 +26,7 @@ env.SharedLibrary(libname, non_plugin_cc,
                'FWCorePluginManager',
                'FWCoreRootAutoLibraryLoader',
                'FWCoreUtilities',
+               'GeometryService',
                'HepPDT',
                'boost_thread-gcc%s-mt'%(env.gcc_ver,),
                'Core',
