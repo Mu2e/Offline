@@ -5,6 +5,7 @@
 #include <deque>
 #include <map>
 #include <list>
+#include <memory>
 
 // Framework includes.
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -138,7 +139,7 @@ namespace mu2e {
     vector<TH2F*> _hStrawRates; 
     vector<TH2F*> _hCrystalRates;
 
-    MCCaloUtilities* CaloManager;
+    std::auto_ptr<MCCaloUtilities> CaloManager;
 
   };
 
@@ -146,7 +147,7 @@ namespace mu2e {
 
 
 
-  bool SortByEnergyT(const pair<SimParticleCollection::key_type,double> & a,
+  bool SortByEnergy(const pair<SimParticleCollection::key_type,double> & a,
                     const pair<SimParticleCollection::key_type,double> & b ) {
     return a.second < b.second;
   }
@@ -168,7 +169,7 @@ namespace mu2e {
 
   void BkgRates::beginJob(edm::EventSetup const& ) {
 
-    CaloManager = new MCCaloUtilities();
+    CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
 
     edm::Service<edm::TFileService> tfs;
 
@@ -457,7 +458,7 @@ namespace mu2e {
         }
       }
     
-      TracksEDep.sort(SortByEnergyT);      
+      TracksEDep.sort(SortByEnergy);      
       
       int nTrkPerStraw = TracksEDep.size();
       
@@ -511,7 +512,7 @@ namespace mu2e {
 
   void BkgRates::doCalorimeter(edm::Event const& evt) {
 
-    //    CaloManager->printOutCaloInfo();
+    //CaloManager->printOutCaloInfo();
 
     //Get handle to the calorimeter
     edm::Service<GeometryService> geom;
@@ -664,8 +665,8 @@ namespace mu2e {
         }
       }
       
-      OutsideEDep.sort(SortByEnergyT);
-      GeneratedEDep.sort(SortByEnergyT);
+      OutsideEDep.sort(SortByEnergy);
+      GeneratedEDep.sort(SortByEnergy);
       
       nOutsideTrk = OutsideEDep.size();
       nGeneratedTrk = GeneratedEDep.size();
