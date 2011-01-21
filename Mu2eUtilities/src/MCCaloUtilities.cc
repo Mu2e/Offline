@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.cc,v 1.1 2011/01/20 21:28:39 onoratog Exp $
+// $Id: MCCaloUtilities.cc,v 1.2 2011/01/21 06:17:27 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/01/20 21:28:39 $
+// $Date: 2011/01/21 06:17:27 $
 //
 // Original author Gianni Onorato
 //
@@ -50,23 +50,24 @@ namespace mu2e {
     
     double Hsize = cg->crystalHalfSize();
     double Hleng = cg->crystalHalfLength();
-    
     double ROsize = cg->roHalfSize();
     
     cout << "Crystal HSize " << Hsize
          << "\nCrystal HLeng " << Hleng 
          << "\nRO size " << ROsize << endl;
     
-    int nRO = cg->nRO();
-    
-    double minc[4][3], maxc[4][3];
-    
     for (int i=0; i<4; ++i) {
-      for (int k=0; k<4; ++k) {
-        minc[i][k] = 100000;
-        maxc[i][k] = -100000;
-      }
+
+      Vane const& thevane = cg->getVane(i);
+      cout << "Vane " << i << " : " 
+           << "\nOrigin: " << thevane.getOrigin()
+           << "\nLocal origin: " << thevane.getOriginLocal()
+           << "\nSize: " << thevane.getSize()
+           << "\nRotation: " << *(thevane.getRotation()) << endl;
+
     }
+
+    int nRO = cg->nRO();
     
     for (int j=0; j< nRO/2; ++j) {
       
@@ -86,46 +87,20 @@ namespace mu2e {
            << "\tYaxis " << Yaxis;
            
       CLHEP::Hep3Vector toLeftC = ( (-Hsize) * Yaxis ) + ( (-Hleng) * Xaxis ) + ( (-Hsize) * Zaxis );
-
+      
       CLHEP::Hep3Vector toRightC = ( (Hsize) * Yaxis ) + ( (Hleng+(2*ROsize)) * Xaxis ) + ( (Hsize) * Zaxis );
-
-      cout << "toleft" << toLeftC
-           << "\ttoright" << toRightC;
+      
+      //cout << "toleft" << toLeftC
+      //     << "\ttoright" << toRightC;
 
       
       CLHEP::Hep3Vector lcorner = cntr + toLeftC;
       CLHEP::Hep3Vector rcorner = cntr + toRightC;
       
-      cout << "\tlcrn " << lcorner << "\trcrn " << rcorner << endl;
+      cout << "\tleft corner " << lcorner << "\tright corner " << rcorner << endl;
       
-      if (minc[thevane][0] > lcorner.getX()) minc[thevane][0] = lcorner.getX();
-      if (minc[thevane][0] > rcorner.getX()) minc[thevane][0] = rcorner.getX();
-      if (minc[thevane][1] > lcorner.getY()) minc[thevane][1] = lcorner.getY();
-      if (minc[thevane][1] > rcorner.getY()) minc[thevane][1] = rcorner.getY();
-      if (minc[thevane][2] > lcorner.getZ()) minc[thevane][2] = lcorner.getZ();
-      if (minc[thevane][2] > rcorner.getZ()) minc[thevane][2] = rcorner.getZ();
-      
-      if (maxc[thevane][0] < lcorner.getX()) maxc[thevane][0] = lcorner.getX();
-      if (maxc[thevane][0] < rcorner.getX()) maxc[thevane][0] = rcorner.getX();
-      if (maxc[thevane][1] < lcorner.getY()) maxc[thevane][1] = lcorner.getY();
-      if (maxc[thevane][1] < rcorner.getY()) maxc[thevane][1] = rcorner.getY();
-      if (maxc[thevane][2] < lcorner.getZ()) maxc[thevane][2] = lcorner.getZ();
-      if (maxc[thevane][2] < rcorner.getZ()) maxc[thevane][2] = rcorner.getZ();
-      
-    } 
-    
-    cout << "Ranges: " << endl;
-    for (int i=0; i<4; ++i) {
-      cout << "\nVane " << i << " , min ( ";
-      for (int k=0; k<3; ++k) {
-        cout << minc[i][k] << (k==2?" ) ":", ");
-      }
-      cout << "   max ( ";
-      for (int k=0; k<3; ++k) {
-        cout << maxc[i][k] << (k==2?" ) ":", ");
-      }
     }
-    cout << endl;  
+    
   }
   
   void MCCaloUtilities::setTrackAndRO(const edm::Event & event,
@@ -155,12 +130,12 @@ namespace mu2e {
 
     //    edm::Handle<PhysicalVolumeInfoCollection> volumes;
     //event.getRun().getByType(volumes);
-
-    //    PhysicalVolumeInfo const& volInfob = volumes->at(sim.startVolumeIndex());
+    
+    //PhysicalVolumeInfo const& volInfob = volumes->at(sim.startVolumeIndex());
     //PhysicalVolumeInfo const& volInfoe = volumes->at(sim.endVolumeIndex());
-    //    cout << "start: " << sim.startVolumeIndex() << "   " << volInfob.name() << "  " << volInfob.copyNo() << endl; 
-    //cout << "end:   " << sim.endVolumeIndex() << "    " << volInfoe.name() << "  " << volInfoe.copyNo() << endl; 
-    //  cout << "Start position: " << sim.startPosition() << '\n'
+    //cout << "start: " << sim.startVolumeIndex() << "   " << volInfob.name() << "  " << volInfob.copyNo() << endl; 
+    //cout << "end:   " << sim.endVolumeIndex()   << "   " << volInfoe.name() << "  " << volInfoe.copyNo() << endl; 
+    //cout << "Start position: " << sim.startPosition() << '\n'
     //     << "End position:   " << sim.endPosition() << endl;
     //cout << "Particle process code " << sim.creationCode().name() << endl;
     //bool ID(false); 
@@ -199,30 +174,23 @@ namespace mu2e {
   }
 
   int MCCaloUtilities::getStartingVane(CLHEP::Hep3Vector origin) {
+    
+    edm::Service<GeometryService> geom;
+    GeomHandle<Calorimeter> cg;
+    
+    for (size_t i=0; i<cg->nVane(); ++i) {
 
-    if (origin.getZ() >= 11950 && origin.getZ() <= 13450) {
+      Vane const & vane = cg->getVane(i);
+      CLHEP::Hep3Vector rsize = *(vane.getRotation()) * vane.getSize();
+      //cout << "size " << vane.getSize() << " and rotated is " << rsize << endl;
+      CLHEP::Hep3Vector vaneOr = vane.getOrigin(); 
 
-      if (origin.getX() >= -4564 && origin.getX() <= -4264) {
-        if (origin.getY() >= -55 && origin.getY() <= 55) {
-          return 0;
-        }
-      }
 
-      if (origin.getX() >= -3959 && origin.getX() <= -3849) {
-        if (origin.getY() >= -660 && origin.getY() <= -360) {
-          return 1;
-        }
-      }
-
-      if (origin.getX() >= -3544 && origin.getX() <= -3244) {
-        if (origin.getY() >= -55 && origin.getY() <= 55) {
-          return 2;
-        }
-      }
-
-      if (origin.getX() >= -3959 && origin.getX() <= -3849) {
-        if (origin.getY() >= 360 && origin.getY() <= 660) {
-          return 3;
+      if (fabs(origin.getZ() - vaneOr.getZ()) <= fabs(rsize.getZ())) {
+        if (fabs(origin.getY() - vaneOr.getY()) <= fabs(rsize.getY())) {
+          if (fabs(origin.getX() - vaneOr.getX()) <= fabs(rsize.getX())) {
+            return i;
+          }
         }
       }
     } 
