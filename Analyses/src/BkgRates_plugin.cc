@@ -628,40 +628,42 @@ namespace mu2e {
           cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
           cntpArray[idx++] = cryCenter.getY();
           cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
-          readCryOnce = true;
-        }
+        
+          DPIndexVector const & mcptr(hits_mcptr->at(CollectionPosition));        
+          size_t nHitsPerCrystal = mcptr.size();
+          _hCaloHitMult->Fill(nHitsPerCrystal);
 
-        DPIndexVector const & mcptr(hits_mcptr->at(CollectionPosition));        
-        size_t nHitsPerCrystal = mcptr.size();
-        _hCaloHitMult->Fill(nHitsPerCrystal);
-
-        for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
-          
-          StepPointMC const& mchit = (*mchits)[mcptr[j2].index];
-          // The simulated particle that made this hit.
-          SimParticleCollection::key_type trackId(mchit.trackId());
-
-          CaloManager->setTrackAndRO(evt, trackId, ROIds.at(it).index );  
-          
-          //cout << "Original Vane: " << CaloManager->localVane()
-          //     << "\nStarting Vane: " << CaloManager->startingVane() << endl;
-          if (CaloManager->localVane() == CaloManager->startingVane()) {
-            EfromShower += mchit.eDep();
-          }
-          if (CaloManager->localVane() != CaloManager->startingVane() &&
-              CaloManager->startingVane() != -1) {
-            EfromOtherVane += mchit.eDep();
-          }
-          
-          if (CaloManager->fromOutside()) {
-            if (!CaloManager->generated()) {
-              PairListAdd(OutsideEDep, trackId, mchit.eDep());
+          for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
+            
+            StepPointMC const& mchit = (*mchits)[mcptr[j2].index];
+            // The simulated particle that made this hit.
+            SimParticleCollection::key_type trackId(mchit.trackId());
+            
+            CaloManager->setTrackAndRO(evt, trackId, ROIds.at(it).index );  
+            
+            //cout << "Original Vane: " << CaloManager->localVane()
+            //     << "\nStarting Vane: " << CaloManager->startingVane() << endl;
+            if (CaloManager->localVane() == CaloManager->startingVane()) {
+              EfromShower += mchit.eDep();
+            }
+            if (CaloManager->localVane() != CaloManager->startingVane() &&
+                CaloManager->startingVane() != -1) {
+              EfromOtherVane += mchit.eDep();
             }
             
-            if (CaloManager->generated()) {
-              PairListAdd(GeneratedEDep, trackId, mchit.eDep());
+            if (CaloManager->fromOutside()) {
+              if (!CaloManager->generated()) {
+                PairListAdd(OutsideEDep, trackId, mchit.eDep());
+              }
+              
+              if (CaloManager->generated()) {
+                PairListAdd(GeneratedEDep, trackId, mchit.eDep());
+              }
             }
           }
+          
+          readCryOnce = true;
+        
         }
       }
       
