@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.76 2011/01/25 16:46:29 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.77 2011/01/25 17:59:24 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/01/25 16:46:29 $
+// $Date: 2011/01/25 17:59:24 $
 //
 // Original author Rob Kutschke
 //
@@ -206,9 +206,11 @@ namespace mu2e {
     // These are just placeholders for now - and might be misnamed.
     constructCal();
     constructMagnetYoke();
-    constructCRV();
 
-    constructSteel(hallInfo,_config);
+    if ( _config->getBool("hasCosmicRayShield",false) ) {
+      constructSteel(hallInfo,_config);
+      constructCRV();
+    }
 
     edm::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << _mu2eOrigin           << "\n";
