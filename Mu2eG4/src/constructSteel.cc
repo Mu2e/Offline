@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.1 2011/01/05 21:04:47 genser Exp $
+// $Id: constructSteel.cc,v 1.2 2011/01/25 16:47:55 genser Exp $
 // $Author: genser $
-// $Date: 2011/01/05 21:04:47 $
+// $Date: 2011/01/25 16:47:55 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -16,6 +16,8 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShieldSteelShield.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -41,168 +43,128 @@ namespace mu2e {
 
     MaterialFinder materialFinder(*_config);
 
-    // Extract information from the config file
-    double HallSteelHalfThick   = _config->getDouble("fluxcrv.HallSteelHalfThick");
-    double HallSteelHalfLenXY = _config->getDouble("fluxcrv.HallSteelHalfLengthXY");
-    double HallSteelHalfLenZ = _config->getDouble("fluxcrv.HallSteelHalfLengthZ");
-    G4Material* HallSteelShieldMaterial = materialFinder.get("fluxcrv.HallSteelMaterialName");
+    G4Material* CRSSteelShieldMaterial = materialFinder.get("fluxcrv.HallSteelMaterialName");
 
-    GeomHandle<Beamline> beamg;
-
-    // Compute dimensions of 5 sides in Mu2e coordinates
-    double HallSteelTopHalfX   = HallSteelHalfLenXY + HallSteelHalfThick;
-    double HallSteelTopHalfY   = HallSteelHalfThick;
-    double HallSteelTopHalfZ   = HallSteelHalfLenZ;
-    double HallSteelSideHalfX  = HallSteelHalfThick;
-    double HallSteelSideHalfY  = HallSteelHalfLenXY - HallSteelHalfThick;
-    double HallSteelSideHalfZ  = HallSteelHalfLenZ; 
-    double HallSteelFrontHalfX = HallSteelHalfLenXY - HallSteelHalfThick;
-    double HallSteelFrontHalfY = HallSteelHalfLenXY - HallSteelHalfThick;
-    double HallSteelFrontHalfZ = HallSteelHalfThick;
-
-    double HallSteelTopDims[3] ={
-      HallSteelTopHalfX,
-      HallSteelTopHalfY,
-      HallSteelTopHalfZ
-    };
-
-    double HallSteelSideDims[3] ={
-      HallSteelSideHalfX,
-      HallSteelSideHalfY,
-      HallSteelSideHalfZ
-    };
-
-    double HallSteelFrontDims[3] ={
-      HallSteelFrontHalfX,
-      HallSteelFrontHalfY,           
-      HallSteelFrontHalfZ                        
-    };
-    TubsParams FrontHoleDims(0.,
-                             _config->getDouble("fluxcrv.HallSteelHoleRadius"),
-                             HallSteelHalfThick
-                             );
-
-    // Get positions of each side. Assuming view from target foils 
-    double dsCoilZ0          = _config->getDouble("toyDS.z0");
-
-    double solenoidOffset = beamg->solenoidOffset();
-
-    //G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., -dsCoilZ0);
-    G4ThreeVector detSolCoilPosition(+solenoidOffset, 0., -dsCoilZ0);
-
-    std::vector<double> HallSteelOffsetSTDV;
-    _config->getVectorDouble("fluxcrv.HallSteelOffset", HallSteelOffsetSTDV, 3);
-    G4ThreeVector HallSteelOffset(HallSteelOffsetSTDV[0],
-                                  HallSteelOffsetSTDV[1],
-                                  HallSteelOffsetSTDV[2]);
-
-    // Imagine a box that exactly contains the flux return steel.
-    // This is the center of that box, in the coordinate system of the mother volume(the hall air).
-    CLHEP::Hep3Vector boxCenter = -(parent.centerInWorld - VolumeInfo::getMu2eOriginInWorld() 
-                                    + detSolCoilPosition + HallSteelOffset);
-
-    G4ThreeVector TopShield   (0.,      HallSteelSideHalfY + HallSteelHalfThick, 0.);
-    G4ThreeVector BottomShield(0.,    -(HallSteelSideHalfY + HallSteelHalfThick), 0.);
-    G4ThreeVector LeftShield  (         HallSteelSideHalfY + HallSteelHalfThick,0., 0.);
-    G4ThreeVector RightShield (       -(HallSteelSideHalfY + HallSteelHalfThick),0., 0.);
-    G4ThreeVector BackShield  (0., 0.,  HallSteelSideHalfZ - HallSteelHalfThick);
-    G4ThreeVector FrontShield (0., 0.,-(HallSteelSideHalfZ - HallSteelHalfThick));
-
-    //Hole in front shield for TS is centered in the shield
-    G4ThreeVector FrontHole(0.,0.,0.);
-
-    bool hallSteelVisible = _config->getBool("fluxcrv.visible",true);
-    bool hallSteelSolid   = _config->getBool("fluxcrv.solid",false);
+    bool CRSSteelShieldVisible = _config->getBool("fluxcrv.visible",true);
+    bool CRSSteelShieldSolid   = _config->getBool("fluxcrv.solid",false);
 
     bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
-    // Place Boxes
+    // get the CRS parameters from the geometry service and place the steel boxes
 
-    VolumeInfo TopInfo = nestBox ("HallSteelTopShield",
-                                  HallSteelTopDims,
-                                  HallSteelShieldMaterial,
-                                  0,
-                                  TopShield + boxCenter,
-                                  parent,
-                                  0,
-                                  hallSteelVisible,
-                                  G4Colour::Green(),
-                                  hallSteelSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  doSurfaceCheck
-                                  );
+    GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    VolumeInfo BottomInfo = nestBox ("HallSteelBottomShield",
-                                     HallSteelTopDims, 
-                                     HallSteelShieldMaterial,
-                                     0,
-                                     BottomShield + boxCenter,
-                                     parent,
-                                     0, 
-                                     hallSteelVisible,
-                                     G4Colour::Green(), 
-                                     hallSteelSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     doSurfaceCheck
-                                     );
+    CosmicRayShieldSteelShield const & CRSSteelTopShield = 
+      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelTopShield");
 
-    VolumeInfo LeftInfo = nestBox ("HallSteelLeftShield",
-                                   HallSteelSideDims,
-                                   HallSteelShieldMaterial,
-                                   0, 
-                                   LeftShield + boxCenter,
+    VolumeInfo TopInfo   = nestBox(CRSSteelTopShield.name(),
+                                   CRSSteelTopShield.getHalfLengths(),
+                                   CRSSteelShieldMaterial,
+                                   CRSSteelTopShield.getRotation(),
+                                   CRSSteelTopShield.getLocalOffset(),
                                    parent,
-                                   0, 
-                                   hallSteelVisible,
+                                   0,
+                                   CRSSteelShieldVisible,
                                    G4Colour::Green(),
-                                   hallSteelSolid,
+                                   CRSSteelShieldSolid,
                                    forceAuxEdgeVisible,
                                    placePV,
                                    doSurfaceCheck
-                                   ); 
+                                   );
 
-    VolumeInfo RightInfo = nestBox ("HallSteelRightShield",
-                                    HallSteelSideDims,
-                                    HallSteelShieldMaterial,
-                                    0, 
-                                    RightShield + boxCenter,
+    CosmicRayShieldSteelShield const & CRSSteelBottomShield = 
+      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelBottomShield");
+
+    VolumeInfo BottomInfo = nestBox(CRSSteelBottomShield.name(),
+                                    CRSSteelBottomShield.getHalfLengths(),
+                                    CRSSteelShieldMaterial,
+                                    CRSSteelBottomShield.getRotation(),
+                                    CRSSteelBottomShield.getLocalOffset(),
                                     parent,
                                     0, 
-                                    hallSteelVisible,
+                                    CRSSteelShieldVisible,
+                                    G4Colour::Green(), 
+                                    CRSSteelShieldSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    doSurfaceCheck
+                                    );
+
+    CosmicRayShieldSteelShield const & CRSSteelLeftShield = 
+      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelLeftShield");
+
+    VolumeInfo LeftInfo   = nestBox(CRSSteelLeftShield.name(),
+                                    CRSSteelLeftShield.getHalfLengths(),
+                                    CRSSteelShieldMaterial,
+                                    CRSSteelLeftShield.getRotation(),
+                                    CRSSteelLeftShield.getLocalOffset(),
+                                    parent,
+                                    0, 
+                                    CRSSteelShieldVisible,
                                     G4Colour::Green(),
-                                    hallSteelSolid,
+                                    CRSSteelShieldSolid,
                                     forceAuxEdgeVisible,
                                     placePV,
                                     doSurfaceCheck
                                     ); 
 
-    VolumeInfo BackInfo = nestBox ("HallSteelBackShield",
-                                   HallSteelFrontDims,
-                                   HallSteelShieldMaterial,
-                                   0, 
-                                   BackShield + boxCenter,
+    CosmicRayShieldSteelShield const & CRSSteelRightShield = 
+      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelRightShield");
+
+    VolumeInfo RightInfo = nestBox(CRSSteelRightShield.name(),
+                                   CRSSteelRightShield.getHalfLengths(),
+                                   CRSSteelShieldMaterial,
+                                   CRSSteelRightShield.getRotation(),
+                                   CRSSteelRightShield.getLocalOffset(),
                                    parent,
                                    0, 
-                                   hallSteelVisible,
+                                   CRSSteelShieldVisible,
                                    G4Colour::Green(),
-                                   hallSteelSolid,
+                                   CRSSteelShieldSolid,
                                    forceAuxEdgeVisible,
                                    placePV,
                                    doSurfaceCheck
                                    ); 
 
+    CosmicRayShieldSteelShield const & CRSSteelBackShield = 
+      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelBackShield");
+
+    VolumeInfo BackInfo = nestBox(CRSSteelBackShield.name(),
+                                  CRSSteelBackShield.getHalfLengths(),
+                                  CRSSteelShieldMaterial,
+                                  CRSSteelBackShield.getRotation(),
+                                  CRSSteelBackShield.getLocalOffset(),
+                                  parent,
+                                  0, 
+                                  CRSSteelShieldVisible,
+                                  G4Colour::Green(),
+                                  CRSSteelShieldSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  doSurfaceCheck
+                                  ); 
+
     // constructing "hollow" front shield
 
-    G4Box* CRVBox = new G4Box("CRVFrontShieldBox", 
-                              HallSteelFrontDims[0], 
-                              HallSteelFrontDims[1], 
-                              HallSteelFrontDims[2]);
+    CosmicRayShieldSteelShield const & CRSSteelFrontShield = 
+      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelFrontShield");
 
-    G4Tubs* HallSteelFrontHoleTubs = new G4Tubs("HallSteelFrontHoleTubs", 
+
+    G4Box* CRVBox = new G4Box(CRSSteelFrontShield.name()+"Box",
+                              CRSSteelFrontShield.getHalfLengths()[0], 
+                              CRSSteelFrontShield.getHalfLengths()[1], 
+                              CRSSteelFrontShield.getHalfLengths()[2]);
+
+    //Hole in front shield for TS is centered in the shield
+
+    TubsParams FrontHoleDims(0.,
+                             CRSSteelFrontShield.getHoleRadius(),
+                             CRSSteelFrontShield.getHalfLengths()[2]
+                             );
+
+    G4Tubs* HallSteelFrontHoleTubs = new G4Tubs(CRSSteelFrontShield.name()+"HoleTubs", 
                                                 FrontHoleDims.innerRadius,
                                                 FrontHoleDims.outerRadius,
                                                 FrontHoleDims.zHalfLength,
@@ -211,20 +173,20 @@ namespace mu2e {
 
     VolumeInfo FrontShieldInfo;
 
-    FrontShieldInfo.name = "CRVFrontShield";
+    FrontShieldInfo.name = CRSSteelFrontShield.name();
 
     FrontShieldInfo.solid = 
       new G4SubtractionSolid(FrontShieldInfo.name, CRVBox, HallSteelFrontHoleTubs);
 
     finishNesting(FrontShieldInfo,
-                  HallSteelShieldMaterial,
-                  0,
-                  FrontShield  + boxCenter, 
+                  CRSSteelShieldMaterial,
+                  CRSSteelFrontShield.getRotation(),
+                  CRSSteelFrontShield.getLocalOffset(),
                   parent.logical,
                   0,
-                  hallSteelVisible,
+                  CRSSteelShieldVisible,
                   G4Colour::Green(),
-                  hallSteelSolid,
+                  CRSSteelShieldSolid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
