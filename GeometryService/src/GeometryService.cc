@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.11 2010/12/11 00:46:03 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/12/11 00:46:03 $
+// $Id: GeometryService.cc,v 1.12 2011/01/25 16:44:45 genser Exp $
+// $Author: genser $ 
+// $Date: 2011/01/25 16:44:45 $
 //
 // Original author Rob Kutschke
 //
@@ -43,6 +43,8 @@
 #include "BeamlineGeom/inc/BeamlineMaker.hh"
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "VirtualDetectorGeom/inc/VirtualDetectorMaker.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh"
 
 using namespace std;
 
@@ -129,6 +131,11 @@ namespace mu2e {
     if(_config->getBool("hasVirtualDetector",false)){
       VirtualDetectorMaker vdm( *_config );
       addDetector( vdm.getVirtualDetectorPtr() );
+    }
+
+    if(_config->getBool("hasCosmicRayShield",false)){
+      CosmicRayShieldMaker crs( *_config );
+      addDetector( crs.getCosmicRayShieldPtr() );
     }
 
   }
