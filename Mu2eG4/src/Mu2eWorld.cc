@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.75 2011/01/05 21:04:47 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.76 2011/01/25 16:46:29 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/01/05 21:04:47 $
+// $Date: 2011/01/25 16:46:29 $
 //
 // Original author Rob Kutschke
 //
@@ -155,6 +155,8 @@ namespace mu2e {
   // Construct all of the Mu2e world, hall, detectors, beamline ...
   void Mu2eWorld::constructWorld(){
 
+    int static const diagLevel = 0;
+
     // If you play with the order of these calls, you may break things.
     defineMu2eOrigin();
     VolumeInfo::setMu2eOriginInWorld( _mu2eOrigin );
@@ -168,8 +170,24 @@ namespace mu2e {
 
     _info.worldPhys  = worldVInfo.physical;
 
+    if ( diagLevel > 0) {
+      cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << endl;
+      cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << endl;
+    }
+
     VolumeInfo dirtInfo  = constructDirt( worldVInfo,_config );
+
+    if ( diagLevel > 0) {
+      cout << __func__ << " dirtInfo.centerInParent   : " <<  dirtInfo.centerInParent << endl;
+      cout << __func__ << " dirtInfo.centerInWorld    : " <<  dirtInfo.centerInWorld  << endl;
+    }
+
     VolumeInfo hallInfo  = constructHall( dirtInfo,_config );
+
+    if ( diagLevel > 0) {    
+      cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
+      cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
+    }
 
     // Define the hall origin in Mu2e coordinates.
     _hallOriginInMu2e = hallInfo.centerInWorld - _mu2eOrigin;
@@ -219,6 +237,8 @@ namespace mu2e {
 
   void Mu2eWorld::defineMu2eOrigin(){
 
+    int static const diagLevel = 0;
+
     // Dimensions of the world.
     vector<double> worldHLen;
     _config->getVectorDouble("world.halfLengths", worldHLen, 3);
@@ -228,6 +248,10 @@ namespace mu2e {
 
     // Top of the floor in G4 world coordinates.
     double yFloor = -worldHLen[1] + floorThick;
+
+    if ( diagLevel > 0) {    
+      cout << __func__ << " yFlor : " <<  yFloor  << endl;
+    }
 
     // The height above the floor of the y origin of the Mu2e coordinate system.
     double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
@@ -239,9 +263,17 @@ namespace mu2e {
                                 _config->getDouble("world.mu2eOrigin.zoffset")*CLHEP::mm
                                 );
 
+    if ( diagLevel > 0) {    
+      cout << __func__ << " _mu2eOrigin : " <<  _mu2eOrigin  << endl;
+    }
+
     // Origin used to construct the MECO detector.
     // Magic number to fix:
     _mu2eDetectorOrigin = _mu2eOrigin + G4ThreeVector( -3904., 0., 12000.);
+
+    if ( diagLevel > 0) {    
+      cout << __func__ << " _mu2eDetectorOrigin : " <<  _mu2eDetectorOrigin  << endl;
+    }
 
     double ceilingThick     = _config->getDouble("hall.ceilingThick");
     double overburdenDepth  = _config->getDouble("dirt.overburdenDepth");
@@ -263,6 +295,10 @@ namespace mu2e {
 
     // Build the reference points that others will use.
     _cosmicReferencePoint = G4ThreeVector( 0., yEverest, 0.);
+
+    if ( diagLevel > 0) {    
+      cout << __func__ << " yEverest : " <<  yEverest  << endl;
+    }
 
     // Selfconsistency check.
     if ( yEverest > 2.*worldHLen[1] ){
