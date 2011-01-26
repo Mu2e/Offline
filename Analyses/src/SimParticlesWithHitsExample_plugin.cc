@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: SimParticlesWithHitsExample_plugin.cc,v 1.1 2010/11/24 01:06:15 kutschke Exp $
+// $Id: SimParticlesWithHitsExample_plugin.cc,v 1.2 2011/01/26 23:10:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/24 01:06:15 $
+// $Date: 2011/01/26 23:10:18 $
 //
 // Original author Rob Kutschke.
 //
@@ -70,7 +70,7 @@ namespace mu2e {
                                _minHits );
 
     typedef SimParticlesWithHits::map_type map_type;
-    int n(0);
+    //    int n(0);
     for ( map_type::const_iterator i=sims.begin();
           i != sims.end(); ++i ){
 
@@ -80,11 +80,12 @@ namespace mu2e {
       // Information about StrawHits that belong on this SimParticle.
       vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
 
-      cout << "Readback: "
-           << evt.id().event() << " "
-           << n++              << " "
-           << i->first         << " "
-           << infos.size()
+      cout << "SimParticle: "
+           << " Event: " << evt.id().event()
+           << " Track: " << i->first 
+           << " PdgId: " << simInfo.simParticle().pdgId() 
+           << " |p|: "   << simInfo.simParticle().startMomentum().vect().mag()
+           << " Hits: "  << infos.size()
            << endl;
 
       // Loop over all StrawsHits to which this SimParticle contributed.
@@ -92,18 +93,19 @@ namespace mu2e {
         StrawHitMCInfo const& info = infos.at(j);
         StrawHit const& hit      = info.hit();
         Straw const& straw       = tracker.getStraw(hit.strawIndex());
-        cout << "     Hit: "
-             << info.index() << " "
-             << info.hit().strawIndex().asInt() << " "
-             << info.isShared()  << " "
+        cout << "     Straw Hit: "
+             << info.index()             << " "
+             << hit.strawIndex().asInt() << " "
+             << hit.time()               << " "
+             << info.isShared()          << " "
              << straw.getMidPoint().z()  << " "
-             << info.time() << " | ";
+             << info.time()              << " | StepPointMCs: ";
 
         // Loop over all StepPointMC's that contribute to this StrawHit.
         std::vector<StepPointMC const *> const& steps = info.steps();
         for ( size_t k=0; k<steps.size(); ++k){
           StepPointMC const& step = *(steps[k]);
-          cout << " (" << step.time()  << "," << step.trackId() << ")";
+          cout << " (" << step.time()  << "," << step.momentum().mag() << "," << step.trackId() << ")";
         }
         cout << endl;
 
