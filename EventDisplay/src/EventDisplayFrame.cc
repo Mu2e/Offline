@@ -155,9 +155,9 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   TGHorizontalFrame *filterFrame = new TGHorizontalFrame(optionsFrame,500,50);
   TGLabel *minHitLabel     = new TGLabel(filterFrame, "minimum hits");
   _minHitField = new TGTextEntry(filterFrame, new TGTextBuffer, 1101);
-  _minHits=0;  
+  _minHits=100;  
   _minHitField->SetWidth(100); 
-  _minHitField->SetText("0");
+  _minHitField->SetText("100");
   TGTextButton *applyButton = new TGTextButton(filterFrame, "&Apply", 1100);
   filterFrame->AddFrame(minHitLabel, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,15,0,5,0));
   filterFrame->AddFrame(_minHitField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,5,0,10,0));
