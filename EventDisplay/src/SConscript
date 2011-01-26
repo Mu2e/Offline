@@ -1,0 +1,49 @@
+#
+# $Id: SConscript,v 1.1 2011/01/26 18:10:12 ehrlich Exp $
+# $Author: ehrlich $
+# $Date: 2011/01/26 18:10:12 $
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+home = os.environ['FRAMEWORK_DIR']
+Import('env')
+
+if os.path.exists('EventDisplayDict.h'): os.remove('EventDisplayDict.h')
+if os.path.exists('EventDisplayDict.cc'): os.remove('EventDisplayDict.cc')
+os.system('rootcint -f EventDisplayDict.cc -c EventDisplayFrame.h dict_classes/*.h LinkDef.h')
+
+file=os.popen('root-config --cflags --glibs')
+ll = file.readlines()[0]  # first line is all we need
+ll = ll[:-1]   # strip off new line
+file.close()
+
+my_lib=[]  # default if no cc_files
+cc_files = Glob('*.cc',strings=True)
+cc_files2 = Glob('dict_classes/*.cc',strings=True)
+env.SharedLibrary('#/lib/EventDisplay_plugin', cc_files,
+                  # common libs
+                  LIBS=[ 'FWCoreFramework',
+                         'FWCoreUtilities',
+                         'FWCoreServiceRegistry',
+                         'Mu2eUtilities',
+                         'TrackerGeom',
+                         'LTrackerGeom',
+                         'TTrackerGeom',
+                         'ITrackerGeom',
+                         'GeometryService',
+                         'GeometryService_plugin',
+                         'GeneralUtilities',
+                         'CLHEP',
+                         'HepPID',
+                         'boost_thread-gcc%s-mt'%(env.gcc_ver,),
+                         'Core',
+                         ],
+                  LINKFLAGS=[ll.split(),'-lGeom']
+                  )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
