@@ -3,9 +3,9 @@
 // 
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.hh,v 1.2 2010/08/18 23:14:03 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/18 23:14:03 $
+// $Id: StrawHit.hh,v 1.3 2011/01/28 21:36:36 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2011/01/28 21:36:36 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,12 @@
 namespace mu2e { 
 
   struct StrawHit{
+  private:
+
+    StrawIndex       _strawIndex;       // See note 1.
+    float            _time;             // (ns)
+    float            _dt;               // (ns)
+    float            _energyDep;        // (MeV)
 
   public:
 
@@ -49,24 +55,27 @@ namespace mu2e {
     float      energyDep()  const { return _energyDep; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
-    
+        bool operator==(StrawHit const& other) const {
+      return (_strawIndex==other._strawIndex&&
+	  _time==other._time&&
+          _dt==other._dt&&
+	      _energyDep==other._energyDep); 
+    }
+    bool operator<( const StrawHit other) const{
+      return ( _strawIndex< other._strawIndex);
+    }
+    bool operator>( const StrawHit other) const{
+      return ( _strawIndex>other._strawIndex);
+    }
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
-
-  private:
-
-    StrawIndex       _strawIndex;       // See note 1.
-    float            _time;             // (ns)
-    float            _dt;               // (ns)
-    float            _energyDep;        // (MeV)
-
   };
-
   inline std::ostream& operator<<( std::ostream& ost,
                                    StrawHit const& hit){
     hit.print(ost,false);
     return ost;
   }
+
 
 } // namespace mu2e
 
