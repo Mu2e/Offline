@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.10 2010/08/31 05:30:28 kutschke Exp $
+// $Id: GenId.hh,v 1.11 2011/01/28 23:52:02 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/31 05:30:28 $
+// $Date: 2011/01/28 23:52:02 $
 //
 // Original author Rob Kutschke
 //
@@ -111,13 +111,13 @@ namespace mu2e {
       return isValid(_id);
     }
 
+    // List of names corresponding to the enum.
+    const static char* _name[];
+
   private:
 
     // The one and only per-instance member datum.
     enum_type _id;
-
-    // List of names corresponding to the enum.
-    const static char* _name[];
 
     // Can this make sense?  What happens if I read in two different
     // files that have different versions?  Should I use cvs version instead?
