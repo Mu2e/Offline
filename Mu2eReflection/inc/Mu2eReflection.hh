@@ -81,7 +81,7 @@ namespace mu2e{
 
     G4ThreeVector startingVertex;
 
-    double Mu2eReflection::Distance(const G4ThreeVector a, const G4ThreeVector b)
+    double Distance(const G4ThreeVector a, const G4ThreeVector b)
     {
       return safeSqrt( pow<2>(a.x() - b.x()) + pow<2>(a.y() - b.y()) + pow<2>(a.z() - b.z()) );
     }

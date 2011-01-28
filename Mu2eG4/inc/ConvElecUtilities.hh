@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.4 2010/11/09 21:06:04 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2010/11/09 21:06:04 $
+// $Id: ConvElecUtilities.hh,v 1.5 2011/01/28 23:51:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author Gianni Onorato
 //
@@ -61,23 +61,23 @@ namespace mu2e {
     //Trivial accessors defined here
 
     //Number of Conversion Electrons. Used as a check
-    int ConvElecUtilities::nConvElec() const {
+    int nConvElec() const {
       return _nconv;
     }
     
     //Returns how many hits come from the convElectron
-    size_t ConvElecUtilities::hasStepPointMC() const {
+    size_t hasStepPointMC() const {
       return _convElecHits.size();
     }
         
     //return a vector of index related to the stepPointMCCollection
     //identifying hits of the conversion electron
-    const std::vector<size_t> & ConvElecUtilities::convElecHitsIdx() const {
+    const std::vector<size_t> & convElecHitsIdx() const {
       return _convElecHits;
     } //maybe it could be transformed in a vector of references to event hits 
     
     //return a vector of StrawIndex related to hits of the conversion electron
-    const std::vector<StrawIndex> & ConvElecUtilities::convElecStrawIdx() const {
+    const std::vector<StrawIndex> & convElecStrawIdx() const {
       return _convElecStrawIdx;
     }
 

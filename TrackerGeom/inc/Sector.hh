@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.4 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: Sector.hh,v 1.5 2011/01/28 23:51:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author Rob Kutschke
 //
@@ -103,7 +103,7 @@ namespace mu2e {
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
     template <class F>
-    inline void Sector::forAllStraws ( F& f) const{
+    inline void forAllStraws ( F& f) const{
       for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
             i !=e; ++i){
         i->forAllStraws(f);
@@ -111,7 +111,7 @@ namespace mu2e {
     }
 
     template <class F>
-    inline void Sector::forAllLayers ( F& f) const{
+    inline void forAllLayers ( F& f) const{
       for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
             i !=e; ++i){
         f(*i);

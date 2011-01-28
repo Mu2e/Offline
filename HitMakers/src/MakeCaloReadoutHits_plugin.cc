@@ -62,7 +62,7 @@ namespace mu2e {
       _charged(charged), _time(time) { }
 
     // This operator is overloaded in order to time-sort the hits 
-    bool ROHit::operator <(const ROHit& b) const { return (_time < b._time); }
+    bool operator <(const ROHit& b) const { return (_time < b._time); }
 
   };
 

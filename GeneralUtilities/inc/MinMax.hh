@@ -5,9 +5,9 @@
 // Find minimum, maximum and smallest in magnitude of a set of numbers
 // presented one at a time.
 //
-// $Id: MinMax.hh,v 1.1 2010/06/22 16:05:18 kutschke Exp $
+// $Id: MinMax.hh,v 1.2 2011/01/28 23:51:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/06/22 16:05:18 $
+// $Date: 2011/01/28 23:51:57 $
 //
 // Original author Rob Kutschke
 
@@ -18,13 +18,13 @@ class MinMax{
   
 public:
 
-  MinMax::MinMax():
+  MinMax():
     _min(   std::numeric_limits<double>::max()),
     _max(  -std::numeric_limits<double>::max()),
     _small( std::numeric_limits<double>::max())
   {}
 
-  MinMax::MinMax(double x):
+  MinMax(double x):
     _min(   std::numeric_limits<double>::max()),
     _max(  -std::numeric_limits<double>::max()),
     _small( std::numeric_limits<double>::max()){

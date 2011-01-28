@@ -84,13 +84,13 @@ namespace mu2e {
     std::vector<double> weightedBinnedFoilsVolume();
 
     // methods to extract foil, position and time w.r.t. the chosen algorithm
-    int FoilParticleGenerator::getFlatRndFoil() ;
-    int FoilParticleGenerator::getVolumeRndFoil() ;
-    int FoilParticleGenerator::getExpoRndFoil() ;
-    int FoilParticleGenerator::getVolumeAndExpoRndFoil() ;
-    CLHEP::Hep3Vector FoilParticleGenerator::getFlatRndPos(TargetFoil const& theFoil) ;
-    double FoilParticleGenerator::getFlatRndTime() ;
-    double FoilParticleGenerator::getLimitedExpRndTime() ;
+    int getFlatRndFoil() ;
+    int getVolumeRndFoil() ;
+    int getExpoRndFoil() ;
+    int getVolumeAndExpoRndFoil() ;
+    CLHEP::Hep3Vector getFlatRndPos(TargetFoil const& theFoil) ;
+    double getFlatRndTime() ;
+    double getLimitedExpRndTime() ;
     
   };
 } // end namespace mu2e,

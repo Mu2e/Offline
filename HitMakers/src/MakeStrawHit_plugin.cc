@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.8 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:36 $
+// $Id: MakeStrawHit_plugin.cc,v 1.9 2011/01/28 23:51:57 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/01/28 23:51:57 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -68,7 +68,7 @@ namespace mu2e {
       _distanceToMid(toMid), _t1(t1), _t2(t2) { }
 
     // This operator is overloaded in order to time-sort the hits 
-    bool StepHit::operator <(const StepHit& b) const { return (_t1 < b._t1); }
+    bool operator <(const StepHit& b) const { return (_t1 < b._t1); }
 
   };
 

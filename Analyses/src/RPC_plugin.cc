@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.cc,v 1.11 2010/11/10 23:56:46 kutschke Exp $
+// $Id: RPC_plugin.cc,v 1.12 2011/01/28 23:51:57 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/10 23:56:46 $
+// $Date: 2011/01/28 23:51:57 $
 //
 // Original author R. Bernstein
 //
@@ -181,8 +181,8 @@ namespace mu2e {
     const double energyLossSpectrum(const double e);
     const double isotropicEnergyLossSpectrum(const double e);
     // Compute a binned representation of the dE/dx spectrm.
-    std::vector<double> RPC::binnedEnergyLossSpectrum();
-    std::vector<double> RPC::isotropicBinnedEnergyLossSpectrum();
+    std::vector<double> binnedEnergyLossSpectrum();
+    std::vector<double> isotropicBinnedEnergyLossSpectrum();
     double _dEdXelow;         //< lower dE/dx for binned plot 
     double _dEdXehi;          //< upper  
     int    _dEdXnbins;        //< number of bins 
@@ -190,8 +190,8 @@ namespace mu2e {
     //CLHEP::RandGeneral _dEdXspectrum;
 
 
-    void RPC::bookEventHistos(double const elow, double const ehigh);
-    void RPC::fillEventHistos();
+    void bookEventHistos(double const elow, double const ehigh);
+    void fillEventHistos();
 
   };
 

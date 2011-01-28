@@ -3,9 +3,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
+// $Id: ConstructMaterials.hh,v 1.2 2011/01/28 23:51:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author Rob Kutschke
 //
@@ -60,16 +60,16 @@ namespace mu2e {
     void constructMu2eMaterials( SimpleConfig const& config );
 
     // Wrapper around FindOrBuildElement.
-    G4Element* ConstructMaterials::getElementOrThrow( G4String const& name);
+    G4Element* getElementOrThrow( G4String const& name);
 
     // Do we need to build this material?
     CheckedG4String isNeeded(  std::vector<std::string> const& V, std::string const& name);
     
     // Check that a material name is not already in use.
-    void ConstructMaterials::uniqueMaterialOrThrow( G4String const& name);
+    void uniqueMaterialOrThrow( G4String const& name);
     
     // Check to see if a string appear within a vector of strings.
-    bool ConstructMaterials::isRequested( std::vector<std::string> const& V, std::string const& name);
+    bool isRequested( std::vector<std::string> const& V, std::string const& name);
     
   };
 

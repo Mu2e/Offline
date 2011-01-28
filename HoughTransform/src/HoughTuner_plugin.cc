@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_plugin.cc,v 1.7 2010/11/09 20:25:41 kutschke Exp $
+// $Id: HoughTuner_plugin.cc,v 1.8 2011/01/28 23:51:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/09 20:25:41 $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author P. Shanahan
 //
@@ -111,8 +111,8 @@ namespace mu2e {
     //name of the module that created the hits to be used
     const std::string _hitCreatorName;
 
-    void HoughTuner::bookEventHistos(edm::EventNumber_t);
-    void HoughTuner::fillEventHistos(
+    void bookEventHistos(edm::EventNumber_t);
+    void fillEventHistos(
          mu2e::houghtransform::HoughTransform::houghCircleStruct);
   };
 

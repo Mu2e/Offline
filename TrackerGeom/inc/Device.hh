@@ -3,9 +3,9 @@
 //
 // Hold information about one device in a tracker.
 //
-// $Id: Device.hh,v 1.2 2010/04/18 00:31:55 kutschke Exp $
+// $Id: Device.hh,v 1.3 2011/01/28 23:51:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/04/18 00:31:55 $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author Rob Kutschke
 //
@@ -90,7 +90,7 @@ namespace mu2e {
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
     template <class F>
-    inline void Device::forAllStraws ( F& f) const{
+    inline void forAllStraws ( F& f) const{
       for ( std::vector<Sector>::const_iterator i=_sectors.begin(), e=_sectors.end();
             i !=e; ++i){
         i->forAllStraws(f);
@@ -100,7 +100,7 @@ namespace mu2e {
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
     template <class F>
-    inline void Device::forAllLayers ( F& f) const{
+    inline void forAllLayers ( F& f) const{
       for ( std::vector<Sector>::const_iterator i=_sectors.begin(), e=_sectors.end();
             i !=e; ++i){
         i->forAllLayers(f);
@@ -108,7 +108,7 @@ namespace mu2e {
     }
 
     template <class F>
-    inline void Device::forAllSectors ( F& f) const{
+    inline void forAllSectors ( F& f) const{
       for ( std::vector<Sector>::const_iterator i=_sectors.begin(), e=_sectors.end();
             i !=e; ++i){
         f(*i);

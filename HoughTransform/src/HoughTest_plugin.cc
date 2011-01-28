@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.16 2010/12/13 17:02:32 kutschke Exp $
+// $Id: HoughTest_plugin.cc,v 1.17 2011/01/28 23:51:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/12/13 17:02:32 $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author R. Bernstein
 //
@@ -175,8 +175,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     int countHitNeighbours( Straw const& straw, 
                             StepPointMCCollection const* hits );
 
-    void HoughTest::bookEventHistos(edm::EventNumber_t);
-    void HoughTest::fillEventHistos(
+    void bookEventHistos(edm::EventNumber_t);
+    void fillEventHistos(
          mu2e::houghtransform::HoughTransform::houghCircleStruct);
   };
 

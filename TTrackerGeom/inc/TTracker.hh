@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.4 2010/09/29 02:49:55 genser Exp $
-// $Author: genser $
-// $Date: 2010/09/29 02:49:55 $
+// $Id: TTracker.hh,v 1.5 2011/01/28 23:51:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author Rob Kutschke
 //
@@ -135,7 +135,7 @@ namespace mu2e {
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
     template <class F>
-    inline void TTracker::forAllStraws ( F& f) const{
+    inline void forAllStraws ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
         i->forAllStraws(f);
@@ -143,7 +143,7 @@ namespace mu2e {
     }
 
     template <class F>
-    inline void TTracker::forAllLayers ( F& f) const{
+    inline void forAllLayers ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
         i->forAllLayers(f);
@@ -151,7 +151,7 @@ namespace mu2e {
     }
 
     template <class F>
-    inline void TTracker::forAllSectors ( F& f) const{
+    inline void forAllSectors ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
         i->forAllSectors(f);
@@ -159,7 +159,7 @@ namespace mu2e {
     }
     
     template <class F>
-    inline void TTracker::forAllDevices ( F& f) const{
+    inline void forAllDevices ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
         f(*i);

@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_plugin.cc,v 1.4 2010/11/09 20:24:22 kutschke Exp $
+// $Id: Histforpabs_plugin.cc,v 1.5 2011/01/28 23:51:57 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/09 20:24:22 $
+// $Date: 2011/01/28 23:51:57 $
 //
 // Original author Rob Kutschke
 //
@@ -72,7 +72,7 @@ namespace mu2e {
     TH1F* _hEnergyat1;
     TH1F* _hEnergysim;
 
-    void Histforpabs::FillHistograms(const edm::Event& event);
+    void FillHistograms(const edm::Event& event);
   };
 
   Histforpabs::Histforpabs(edm::ParameterSet const& pset) : 

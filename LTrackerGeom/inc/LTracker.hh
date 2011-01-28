@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.7 2010/04/18 00:05:02 kutschke Exp $
+// $Id: LTracker.hh,v 1.8 2011/01/28 23:51:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/18 00:05:02 $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author Rob Kutschke
 //
@@ -139,7 +139,7 @@ namespace mu2e {
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
     template <class F>
-    inline void LTracker::forAllStraws ( F& f) const{
+    inline void forAllStraws ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
         i->forAllStraws(f);
@@ -147,7 +147,7 @@ namespace mu2e {
     }
 
     template <class F>
-    inline void LTracker::forAllLayers ( F& f) const{
+    inline void forAllLayers ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
         i->forAllLayers(f);
@@ -155,7 +155,7 @@ namespace mu2e {
     }
 
     template <class F>
-    inline void LTracker::forAllSectors ( F& f) const{
+    inline void forAllSectors ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
         i->forAllSectors(f);
@@ -163,7 +163,7 @@ namespace mu2e {
     }
     
     template <class F>
-    inline void LTracker::forAllDevices ( F& f) const{
+    inline void forAllDevices ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
         f(*i);

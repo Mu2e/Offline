@@ -3,9 +3,9 @@
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.3 2010/04/18 00:31:55 kutschke Exp $
+// $Id: Layer.hh,v 1.4 2011/01/28 23:51:58 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/04/18 00:31:55 $
+// $Date: 2011/01/28 23:51:58 $
 //
 // Original author Rob Kutschke
 //
@@ -96,7 +96,7 @@ namespace mu2e {
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
     template <class F>
-    inline void Layer::forAllStraws ( F& f) const{
+    inline void forAllStraws ( F& f) const{
       for ( std::vector<const Straw*>::const_iterator i=_straws.begin(), e=_straws.end();
             i !=e; ++i){
         f(**i);

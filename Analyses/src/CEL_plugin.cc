@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_plugin.cc,v 1.6 2010/11/09 20:24:14 kutschke Exp $
+// $Id: CEL_plugin.cc,v 1.7 2011/01/28 23:51:57 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/11/09 20:24:14 $
+// $Date: 2011/01/28 23:51:57 $
 //
 // Original author R. Bernstein
 //
@@ -181,7 +181,7 @@ namespace mu2e {
     // dE/dx spectrum as a continuous function.
     const double energyLossSpectrum(const double e);
     // Compute a binned representation of the dE/dx spectrm.
-    std::vector<double> CEL::binnedEnergyLossSpectrum();
+    std::vector<double> binnedEnergyLossSpectrum();
     double _dEdXelow;         //< lower dE/dx for binned plot 
     double _dEdXehi;          //< upper  
     int    _dEdXnbins;        //< number of bins 
@@ -189,8 +189,8 @@ namespace mu2e {
     //CLHEP::RandGeneral _dEdXspectrum;
 
 
-    void CEL::bookEventHistos(double const elow, double const ehigh);
-    void CEL::fillEventHistos();
+    void bookEventHistos(double const elow, double const ehigh);
+    void fillEventHistos();
 
   };
 
