@@ -18,6 +18,7 @@
 #include <TTimer.h>
 #include <TText.h>
 #include <TBox.h>
+#include <TPolyLine.h>
 
 #include "EventDisplayFrame.h"
 #include "VirtualShape.h"
@@ -42,6 +43,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
 
   _timer=new TTimer();
   _timer->SetObject(this);
+  _timeCurrent=NAN;
   _clock=NULL;
   _isClosed=false;
   _saveAnim=false;
@@ -49,6 +51,11 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   {
     _legendText[i]=NULL;
     _legendBox[i]=NULL;
+  }
+  for(int i=0; i<6; i++)
+  {
+    _legendParticleText[i]=NULL;
+    _legendParticleLine[i]=NULL;
   }
 
   //bare pointers needed since ROOT manages the following object
@@ -113,7 +120,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   subFrame->AddFrame(loopButton, lh1);
   loopButton->Associate(this);
 
-  TGTextButton *view3dButton = new TGTextButton(subFrame, "View3D", 60);
+  TGTextButton *view3dButton = new TGTextButton(subFrame, "View3D", 70);
   subFrame->AddFrame(view3dButton, lh1);
   view3dButton->Associate(this);
 
@@ -126,11 +133,18 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   saveButton->Associate(this);
   saveAnimButton->Associate(this);
 
-  TGCheckButton *backgroundButton = new TGCheckButton(subFrame,"White Background",33);
-  subFrame->AddFrame(backgroundButton, lh1);
-  backgroundButton->Associate(this);
-  backgroundButton->SetState(kButtonDown);
-  _backgroundColor=0;
+  _hitColorButton = new TGCheckButton(subFrame,"Use Hit Colors",60);
+  _trackColorButton = new TGCheckButton(subFrame,"Use Track Colors",61);
+  _backgroundButton = new TGCheckButton(subFrame,"White Background",62);
+  subFrame->AddFrame(_hitColorButton, lh1);
+  subFrame->AddFrame(_trackColorButton, lh1);
+  subFrame->AddFrame(_backgroundButton, lh1);
+  _hitColorButton->Associate(this);
+  _trackColorButton->Associate(this);
+  _backgroundButton->Associate(this);
+  _hitColorButton->SetState(kButtonDown);
+  _trackColorButton->SetState(kButtonDown);
+  _backgroundButton->SetState(kButtonDown);
 
   _eventInfo = new TGLabel*[3];
   for(int i=0; i<3; i++)
@@ -184,12 +198,12 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
 
   _mainCanvas->GetCanvas()->cd();
   _mainPad = new TPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);  
-  _mainPad->SetFillColor(_backgroundColor);
+  _mainPad->SetFillColor(0);
   _mainPad->Draw();
 
   _infoCanvas->GetCanvas()->cd();
   _infoPad = new TPad("infoPad","InfoField", 0, 0, 1, 1, 5,1,1);  
-  _infoPad->SetFillColor(_backgroundColor);
+  _infoPad->SetFillColor(0);
   _infoPad->Draw();
 
   for(int i=0; i<20; i++)
@@ -248,6 +262,11 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
 {
   _mainPad->cd();
   _dataInterface->fillEvent(event);
+  _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown);
+  _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown);
+  updateHitLegend(_hitColorButton->GetState()==kButtonDown);
+  updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
+
   if(_outsideTracksButton->GetState()==kButtonDown)
   {
     double minx=_dataInterface->getTracksBoundary().minx;
@@ -258,30 +277,6 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
     double maxz=_dataInterface->getTracksBoundary().maxz;
     _mainPad->GetView()->SetRange(minx,miny,minz,maxx,maxy,maxz);
     _mainPad->GetView()->AdjustScales();;
-  }
-
-  for(int i=0; i<21; i++)
-  {
-    if(i<20)
-    {
-      if(_legendBox[i]!=NULL) delete _legendBox[i];
-      _legendBox[i]=new TBox(0.6,0.55+i*0.02,0.7,0.57+i*0.02);
-      _legendBox[i]->SetFillColor(i+2000);
-      _legendBox[i]->Draw();
-    }
-    if(i%4==0)
-    {
-      double mint=_dataInterface->getHitsBoundary().mint;
-      double maxt=_dataInterface->getHitsBoundary().maxt;
-      double t=i*(maxt-mint)/20.0+mint;
-      char s[50];
-      sprintf(s,"%+.3e ns",t);
-      if(_legendText[i]!=NULL) delete _legendText[i];
-      _legendText[i]=new TText(0.72,0.54+i*0.02,s);
-      _legendText[i]->SetTextColor(1);
-      _legendText[i]->SetTextSize(0.025);
-      _legendText[i]->Draw();
-    }
   }
 
   char eventInfoText[50];
@@ -295,6 +290,80 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
 
   drawEverything();
   gApplication->Run(true);
+}
+
+void EventDisplayFrame::updateHitLegend(bool draw)
+{
+  for(int i=0; i<21; i++)
+  {
+    if(_legendBox[i]!=NULL) delete _legendBox[i];
+    if(_legendText[i]!=NULL) delete _legendText[i];
+    _legendBox[i]=NULL;
+    _legendText[i]=NULL;
+  }
+
+  if(draw)
+  {
+    for(int i=0; i<21; i++)
+    {
+      if(i<20)
+      {
+        _legendBox[i]=new TBox(0.6,0.55+i*0.02,0.7,0.57+i*0.02);
+        _legendBox[i]->SetFillColor(i+2000);
+        _legendBox[i]->Draw();
+      }
+      if(i%4==0)
+      {
+        double mint=_dataInterface->getHitsBoundary().mint;
+        double maxt=_dataInterface->getHitsBoundary().maxt;
+        double t=i*(maxt-mint)/20.0+mint;
+        char s[50];
+        sprintf(s,"%+.3e ns",t);
+        _legendText[i]=new TText(0.72,0.54+i*0.02,s);
+        _legendText[i]->SetTextColor(kGray);
+        _legendText[i]->SetTextSize(0.025);
+        _legendText[i]->Draw();
+      }
+    }
+  }
+}
+
+void EventDisplayFrame::updateTrackLegend(bool draw)
+{
+  for(int i=0; i<6; i++)
+  {
+    if(_legendParticleLine[i]!=NULL) delete _legendParticleLine[i];
+    if(_legendParticleText[i]!=NULL) delete _legendParticleText[i];
+    _legendParticleLine[i]=NULL;
+    _legendParticleText[i]=NULL;
+  }
+
+  if(draw)
+  {
+    for(int i=0; i<6; i++)
+    {
+      _legendParticleLine[i]=new TPolyLine();
+      _legendParticleLine[i]->SetPoint(0, 0.6,0.45-i*0.05);
+      _legendParticleLine[i]->SetPoint(1, 0.7,0.45-i*0.05);
+      _legendParticleLine[i]->Draw();
+      _legendParticleText[i]=new TText(0.72,0.44-i*0.05,"");
+      _legendParticleText[i]->SetTextColor(kGray);
+      _legendParticleText[i]->SetTextSize(0.025);
+      _legendParticleText[i]->Draw();
+    }
+    _legendParticleLine[0]->SetLineColor(2);
+    _legendParticleLine[1]->SetLineColor(3);
+    _legendParticleLine[2]->SetLineColor(4); 
+    _legendParticleLine[3]->SetLineColor(6);
+    _legendParticleLine[4]->SetLineColor(28);
+    _legendParticleLine[5]->SetLineColor(1);
+    _legendParticleText[0]->SetTitle("e+, e-");
+    _legendParticleText[1]->SetTitle("mu+, mu-");
+    _legendParticleText[2]->SetTitle("gamma");
+    _legendParticleText[3]->SetTitle("n0");
+    _legendParticleText[4]->SetTitle("neutrinos");
+    _legendParticleText[5]->SetTitle("other particles");
+  }
 }
 
 bool EventDisplayFrame::isClosed() const
@@ -311,6 +380,7 @@ void EventDisplayFrame::CloseWindow()
 {
   _isClosed=true;
   _timer->Stop();
+  _timeCurrent=NAN;
   TGMainFrame::CloseWindow();
   gApplication->Terminate();
 }
@@ -327,16 +397,19 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1==41) 
                          {
                            _timer->Stop(); 
+                           _timeCurrent=NAN;
                            if(_saveAnim) combineAnimFiles();
                          }
                          if(param1==42) 
                          {
                            _timer->Stop(); 
+                           _timeCurrent=NAN;
                            drawEverything();
                          }
                          if(param1==1111)
                          {
                            _timer->Stop();
+                           _timeCurrent=NAN;
                            gApplication->Terminate();
                          }
                          if(param1==1100)
@@ -362,7 +435,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              prepareAnimation();
                            }
                          }
-                         if(param1==60)
+                         if(param1==70)
                          {
                            _mainPad->cd();
                            TVirtualViewer3D *v;
@@ -395,6 +468,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==33)
                          {
+                           _mainPad->cd();
                            if(_outsideTracksButton->GetState()==kButtonDown)
                            {
                              double minx=_dataInterface->getTracksBoundary().minx;
@@ -416,6 +490,30 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              _mainPad->GetView()->SetRange(minx,miny,minz,maxx,maxy,maxz);
                            }
                            _mainPad->GetView()->AdjustScales();
+                           _mainPad->Modified();
+                           _mainPad->Update();
+                         }
+                         if(param1=60)
+                         {
+                           _mainPad->cd();
+                           _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown);
+                           updateHitLegend(_hitColorButton->GetState()==kButtonDown);
+                           if(isnan(_timeCurrent)) drawEverything();
+                           else drawSituation();
+                         }
+                         if(param1=61)
+                         {
+                           _mainPad->cd();
+                           _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown);
+                           updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
+                           if(isnan(_timeCurrent)) drawEverything();
+                           else drawSituation();
+                         }
+                         if(param1=62)
+                         {
+                           _mainPad->cd();
+                           if(_backgroundButton->GetState()==kButtonDown) _mainPad->SetFillColor(0);
+                           else _mainPad->SetFillColor(1);
                            _mainPad->Modified();
                            _mainPad->Update();
                          }
@@ -480,6 +578,7 @@ Bool_t EventDisplayFrame::HandleTimer(TTimer *)
   if(_timeCurrent>=_timeStop) 
   {
     _timer->Stop();
+    _timeCurrent=NAN;
     if(_saveAnim) combineAnimFiles();
   }
   return kTRUE;
@@ -498,13 +597,7 @@ void EventDisplayFrame::combineAnimFiles()
 void EventDisplayFrame::drawSituation()
 {
   _mainPad->cd();
-  std::list<boost::shared_ptr<VirtualShape> >::const_iterator iter;
-  const std::list<boost::shared_ptr<VirtualShape> > &components=_dataInterface->getComponents();
-  for(iter=components.begin(); iter!=components.end(); iter++)
-  {
-    (*iter)->update(_timeCurrent);
-  }
-  
+  _dataInterface->updateComponents(_timeCurrent);
   if(!_clock)
   {
     char timeText[50];
@@ -532,12 +625,7 @@ void EventDisplayFrame::drawEverything()
   TAxis3D::GetPadAxis(_mainPad)->SetLabelSize(0.025); 
   _mainPad->Modified();
   _mainPad->Update();
-  std::list<boost::shared_ptr<VirtualShape> >::const_iterator iter;
-  const std::list<boost::shared_ptr<VirtualShape> > &components=_dataInterface->getComponents();
-  for(iter=components.begin(); iter!=components.end(); iter++)
-  {
-    (*iter)->update(NAN);
-  }
+  _dataInterface->updateComponents(NAN);
   _mainPad->Modified();
   _mainPad->Update();
 }

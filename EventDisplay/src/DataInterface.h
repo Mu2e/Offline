@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.1 2011/01/26 18:10:11 ehrlich Exp $
+// $Id: DataInterface.h,v 1.2 2011/01/29 02:14:20 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/26 18:10:11 $
+// $Date: 2011/01/29 02:14:20 $
 //
 // Original author Ralf Ehrlich
 //
@@ -51,10 +51,13 @@ class DataInterface
                                    //from the context menu belongs to this object) 
   std::list<boost::shared_ptr<VirtualShape> >   _components;
   std::map<int, boost::shared_ptr<Straw> >      _straws;
+  std::vector<boost::shared_ptr<Straw> >        _hits;
+  std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   double        _z0;
   minmax        _hitsMinmax, _tracksMinmax;
   int           _numberHits;
+  bool          _showUnhitStraws;
 
   void createGeometryManager();
   void removeNonGeometryComponents();
@@ -65,6 +68,7 @@ class DataInterface
   virtual ~DataInterface(); 
 
   const std::list<boost::shared_ptr<VirtualShape> > &getComponents();
+  void updateComponents(double time);
   void fillGeometry();
   void fillEvent(const edm::Event& event);
   bool findTrajectory(const edm::Event& event, boost::shared_ptr<Track> track, int id);
@@ -72,6 +76,8 @@ class DataInterface
   void findBoundaryP(minmax &m, double x, double y, double z);
   void makeSupportStructuresVisible(bool visible);
   void makeStrawsVisibleBeforeStart(bool visible);
+  void useHitColors(bool hitcolors);
+  void useTrackColors(bool trackcolors);
   minmax getHitsBoundary() {return _hitsMinmax;}
   minmax getTracksBoundary() {return _tracksMinmax;}
   int getNumberHits() {return _numberHits;}

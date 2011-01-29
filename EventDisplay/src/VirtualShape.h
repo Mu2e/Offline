@@ -2,9 +2,9 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.1 2011/01/26 18:10:12 ehrlich Exp $
+// $Id: VirtualShape.h,v 1.2 2011/01/29 02:14:20 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/26 18:10:12 $
+// $Date: 2011/01/29 02:14:20 $
 //
 // Original author Ralf Ehrlich
 //
@@ -47,7 +47,7 @@ class VirtualShape : public TObject
   VirtualShape(const TGeoManager *geomanager, TGeoVolume *topvolume, 
                const boost::shared_ptr<ComponentInfo> info, bool isGeometry):
                _startTime(NAN),_endTime(NAN),
-               _defaultVisibility(true), _isGeometry(isGeometry), _color(0),
+               _defaultVisibility(true), _isGeometry(isGeometry), _color(1),
                _geomanager(geomanager), _topvolume(topvolume), _info(info)
   {}
   

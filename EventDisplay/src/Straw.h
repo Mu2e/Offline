@@ -1,9 +1,9 @@
 //
 // Container class for all detector straws. Straws are displayed via the TPolyLine3DStraw class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
 //
-// $Id: Straw.h,v 1.1 2011/01/26 18:10:12 ehrlich Exp $
+// $Id: Straw.h,v 1.2 2011/01/29 02:14:20 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/26 18:10:12 $
+// $Date: 2011/01/29 02:14:20 $
 //
 // Original author Ralf Ehrlich
 //
@@ -36,7 +36,7 @@ class Straw: public VirtualShape
   public:
 
   Straw(double x, double y, double z, double t1,
-        double theta, double phi, double halflength, int color, 
+        double theta, double phi, double halflength, 
         const TGeoManager *geomanager, TGeoVolume *topvolume, 
         const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info, 
         bool defaultVisibility):
@@ -45,7 +45,6 @@ class Straw: public VirtualShape
         _theta(theta),_phi(phi),_halflength(halflength)
   {
     setStartTime(t1); 
-    setColor(color);
     setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
     _line=boost::shared_ptr<TPolyLine3DStraw>(new TPolyLine3DStraw(mainframe, _info));
@@ -91,6 +90,7 @@ class Straw: public VirtualShape
 
   void update(double time)
   {
+    if(_notDrawn) return;
     if(time<getStartTime() || isnan(getStartTime())) return;
 
     _line->SetLineColor(getColor());

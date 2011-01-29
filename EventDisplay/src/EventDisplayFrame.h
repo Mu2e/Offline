@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.1 2011/01/26 18:10:11 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.2 2011/01/29 02:14:20 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/26 18:10:11 $
+// $Date: 2011/01/29 02:14:20 $
 //
 // Original author Ralf Ehrlich
 //
@@ -26,6 +26,7 @@ class TGCheckButton;
 class TGLabel;
 class TGTextEntry;
 class TBox;
+class TPolyLine;
 
 namespace mu2e_eventdisplay
 {
@@ -58,6 +59,8 @@ namespace mu2e_eventdisplay
                                           //this via TTimer::SetObject)
 
     private:
+    void updateHitLegend(bool draw);
+    void updateTrackLegend(bool draw);
     void drawSituation();
     void drawEverything();
     void combineAnimFiles();
@@ -66,7 +69,7 @@ namespace mu2e_eventdisplay
     boost::shared_ptr<DataInterface> _dataInterface;
 #endif
     double              _timeCurrent, _timeStart, _timeStop;
-    int                 _backgroundColor, _minHits;
+    int                 _minHits;
     bool                _isClosed;
     bool                _saveAnim;
     int                 _saveAnimCounter;
@@ -76,13 +79,13 @@ namespace mu2e_eventdisplay
     TPad                *_mainPad, *_infoPad;
     TText               *_clock;
     TTimer              *_timer;
-    TGCheckButton       *_unhitButton;
-    TGCheckButton       *_supportStructureButton;
-    TGCheckButton       *_outsideTracksButton;
+    TGCheckButton       *_unhitButton, *_supportStructureButton, *_outsideTracksButton;
+    TGCheckButton       *_hitColorButton, *_trackColorButton, *_backgroundButton;
     TGTextEntry         *_minHitField;
     TGLabel             **_eventInfo;
-    TText               *_legendText[30];  
-    TBox                *_legendBox[30];  
+    TText               *_legendText[30], *_legendParticleText[6];  
+    TBox                *_legendBox[30];
+    TPolyLine           *_legendParticleLine[6];  
 
     ClassDef(EventDisplayFrame,0);
   };

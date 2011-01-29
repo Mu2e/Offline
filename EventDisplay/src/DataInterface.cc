@@ -30,7 +30,8 @@ namespace mu2e_eventdisplay
 {
 
 DataInterface::DataInterface(const TGMainFrame *mainframe):
-              _geometrymanager(NULL),_topvolume(NULL),_mainframe(mainframe)
+              _geometrymanager(NULL),_topvolume(NULL),_mainframe(mainframe),
+              _showUnhitStraws(false)
 {
 }
 
@@ -42,6 +43,31 @@ DataInterface::~DataInterface()
 const std::list<boost::shared_ptr<VirtualShape> > &DataInterface::getComponents() 
 {
   return _components;
+}
+
+void DataInterface::updateComponents(double time)
+{
+  std::vector<boost::shared_ptr<Track> >::const_iterator track;
+  for(track=_tracks.begin(); track!=_tracks.end(); track++)
+  {
+    (*track)->update(time);
+  }
+  if(_showUnhitStraws)
+  {
+    std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;
+    for(straw=_straws.begin(); straw!=_straws.end(); straw++)
+    {
+      straw->second->update(time);
+    }
+  }
+  else
+  {
+    std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
+    for(hit=_hits.begin(); hit!=_hits.end(); hit++)
+    {
+      (*hit)->update(time);
+    }
+  }
 }
 
 void DataInterface::createGeometryManager()
@@ -110,7 +136,7 @@ void DataInterface::fillGeometry()
       sprintf(c,"Straw %i  Layer %i  Sector %i  Device %i",idStraw,idLayer,idSector,idDevice);
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       info->setText(0,c);
-      boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, 0, _geometrymanager, _topvolume, _mainframe, info, false));
+      boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info, false));
       _components.push_back(shape);
       _straws[index]=shape;
     }
@@ -160,7 +186,56 @@ void DataInterface::makeStrawsVisibleBeforeStart(bool visible)
     straw->second->setDefaultVisibility(visible);
     straw->second->start();
   }
+  _showUnhitStraws=visible;
 } 
+
+void DataInterface::useHitColors(bool hitcolors)
+{
+  std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
+  for(hit=_hits.begin(); hit!=_hits.end(); hit++)
+  {
+    double time=(*hit)->getStartTime();
+    if(hitcolors)
+    {
+      int color=TMath::FloorNint(20.0*(time-_hitsMinmax.mint)/(_hitsMinmax.maxt-_hitsMinmax.mint));
+      if(color>=20) color=19;
+      if(color<=0) color=0;
+      color+=2000;
+      (*hit)->setColor(color);
+    }
+    else (*hit)->setColor(1);
+  }
+}
+
+void DataInterface::useTrackColors(bool trackcolors)
+{
+  std::vector<boost::shared_ptr<Track> >::const_iterator track;
+  for(track=_tracks.begin(); track!=_tracks.end(); track++)
+  {
+    if(trackcolors)
+    {
+      int particleid=(*track)->getParticleId();
+      int color=1;
+      switch(particleid)
+      {
+        case   11:
+        case  -11: color=2; break;   //e+,e-
+        case   13:
+        case  -13: color=3; break;   //mu+,mu-
+        case   22: color=4; break;   //gamma
+        case 2112: color=6; break;   //n0
+        case   12: 
+        case  -12: 
+        case   14: 
+        case  -14: 
+        case   16: 
+        case  -16: color=28; break;   //neutrinos
+      };
+      (*track)->setColor(color);
+    }
+    else (*track)->setColor(1);
+  }
+}
 
 void DataInterface::findBoundaryT(minmax &m, double t)
 {
@@ -196,11 +271,6 @@ void DataInterface::fillEvent(const edm::Event& event)
     std::vector<mu2e::StepPointMC>::const_iterator iter;
     for(iter=hits->begin(); iter!=hits->end(); iter++)
     {
-      double time = iter->time();
-      findBoundaryT(_hitsMinmax, time);
-    }
-    for(iter=hits->begin(); iter!=hits->end(); iter++)
-    {
       const mu2e::StepPointMC& hit = *iter;
       int strawindex = hit.strawIndex().asInt();
       int trackid = hit.trackId().asInt();
@@ -212,13 +282,9 @@ void DataInterface::fillEvent(const edm::Event& event)
         double previousStartTime=straw->second->getStartTime();
         if(isnan(previousStartTime))
         {
+          findBoundaryT(_hitsMinmax, time);  //is it Ok to exclude all following hits from the time window?
           straw->second->setStartTime(time);
           straw->second->start();
-          int color=TMath::FloorNint(20.0*(time-_hitsMinmax.mint)/(_hitsMinmax.maxt-_hitsMinmax.mint));
-          if(color>=20) color=19;
-          if(color<=0) color=0;
-          color+=2000;
-          straw->second->setColor(color);
           char c[100];
           sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
           straw->second->getComponentInfo()->setText(1,c);
@@ -226,6 +292,7 @@ void DataInterface::fillEvent(const edm::Event& event)
           straw->second->getComponentInfo()->setText(2,c);
           sprintf(c,"track id(s): %i",trackid);
           straw->second->getComponentInfo()->setText(3,c);
+          _hits.push_back(straw->second);
         }
         else
         {
@@ -244,7 +311,8 @@ void DataInterface::fillEvent(const edm::Event& event)
     for(unsigned int i=0; i<genParticles->size(); i++)
     {
       const mu2e::ToyGenParticle& genparticle = (*genParticles)[i];
-      std::string particlename=HepPID::particleName(genparticle._pdgId);
+      int particleid=genparticle.pdgId();
+      std::string particlename=HepPID::particleName(genparticle.pdgId());
 //TODO: figure out coordinate transformation
 //can these numbers be extracted from somewhere?
 //if not, put them somehwere else together with all other numbers
@@ -304,8 +372,9 @@ void DataInterface::fillEvent(const edm::Event& event)
         info->setText(1,c2);
         info->setText(2,c3);
         info->setText(3,daughterString.c_str());
-        boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, 2, _geometrymanager, _topvolume, _mainframe, info));
+        boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, _geometrymanager, _topvolume, _mainframe, info));
         _components.push_back(shape);
+        _tracks.push_back(shape);
       }
     }
   }
@@ -327,6 +396,7 @@ void DataInterface::fillEvent(const edm::Event& event)
       const mu2e::SimParticle& particle = iter->second;
       int id = particle.id().asInt();
       int parentid = particle.parentId().asInt();
+      int particleid=particle.pdgId();
       std::string particlename=HepPID::particleName(particle.pdgId());
 //TODO: figure out coordinate transformation
 //can these numbers be extracted from somewhere?
@@ -366,9 +436,10 @@ void DataInterface::fillEvent(const edm::Event& event)
       {
         info->expandLine(3,daughter->asInt(),"");
       }
-      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, 1, _geometrymanager, _topvolume, _mainframe, info));
+      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, _geometrymanager, _topvolume, _mainframe, info));
       findTrajectory(event,shape,id);
       _components.push_back(shape);
+      _tracks.push_back(shape);
     }
   }
 }
@@ -392,8 +463,7 @@ bool DataInterface::findTrajectory(const edm::Event& event,
 //TODO: figure out coordinate transformation
 //can this number be extracted from somewhere?
 //if not, put it somehwere else together with all other numbers
-          track->addTrajectoryPoint(p_vec[i].x(),p_vec[i].y(),p_vec[i].z()+1800,
-                                    i,p_vec.size());
+          track->addTrajectoryPoint(p_vec[i].x(),p_vec[i].y(),p_vec[i].z()+1800,i,p_vec.size());
         }
         return true;
       }
@@ -415,6 +485,8 @@ void DataInterface::removeNonGeometryComponents()
       iter++;
     }
   }
+  _hits.clear();
+  _tracks.clear();
 }
 
 void DataInterface::removeAllComponents()
@@ -422,6 +494,8 @@ void DataInterface::removeAllComponents()
   std::list<boost::shared_ptr<VirtualShape> >::iterator iter;
   _components.clear();
   _straws.clear();
+  _hits.clear();
+  _tracks.clear();
   _supportstructures.clear();
   if(_geometrymanager) delete _geometrymanager;
   _geometrymanager=NULL;
