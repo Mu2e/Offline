@@ -262,8 +262,10 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
 {
   _mainPad->cd();
   _dataInterface->fillEvent(event);
-  _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown);
-  _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown);
+  _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
+                               _backgroundButton->GetState()==kButtonDown);
+  _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
+                                 _backgroundButton->GetState()==kButtonDown);
   updateHitLegend(_hitColorButton->GetState()==kButtonDown);
   updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
 
@@ -356,7 +358,7 @@ void EventDisplayFrame::updateTrackLegend(bool draw)
     _legendParticleLine[2]->SetLineColor(4); 
     _legendParticleLine[3]->SetLineColor(6);
     _legendParticleLine[4]->SetLineColor(28);
-    _legendParticleLine[5]->SetLineColor(1);
+    _legendParticleLine[5]->SetLineColor(kGray);
     _legendParticleText[0]->SetTitle("e+, e-");
     _legendParticleText[1]->SetTitle("mu+, mu-");
     _legendParticleText[2]->SetTitle("gamma");
@@ -496,7 +498,8 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1=60)
                          {
                            _mainPad->cd();
-                           _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown);
+                           _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
+                                                        _backgroundButton->GetState()==kButtonDown);
                            updateHitLegend(_hitColorButton->GetState()==kButtonDown);
                            if(isnan(_timeCurrent)) drawEverything();
                            else drawSituation();
@@ -504,7 +507,8 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1=61)
                          {
                            _mainPad->cd();
-                           _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown);
+                           _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
+                                                          _backgroundButton->GetState()==kButtonDown);
                            updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
                            if(isnan(_timeCurrent)) drawEverything();
                            else drawSituation();
@@ -514,8 +518,12 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->cd();
                            if(_backgroundButton->GetState()==kButtonDown) _mainPad->SetFillColor(0);
                            else _mainPad->SetFillColor(1);
-                           _mainPad->Modified();
-                           _mainPad->Update();
+                           _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
+                                                        _backgroundButton->GetState()==kButtonDown);
+                           _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
+                                                          _backgroundButton->GetState()==kButtonDown);
+                           if(isnan(_timeCurrent)) drawEverything();
+                           else drawSituation();
                          }
                          break;
       }

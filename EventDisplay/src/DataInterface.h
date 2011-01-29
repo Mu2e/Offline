@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.2 2011/01/29 02:14:20 ehrlich Exp $
+// $Id: DataInterface.h,v 1.3 2011/01/29 06:23:20 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/29 02:14:20 $
+// $Date: 2011/01/29 06:23:20 $
 //
 // Original author Ralf Ehrlich
 //
@@ -76,8 +76,8 @@ class DataInterface
   void findBoundaryP(minmax &m, double x, double y, double z);
   void makeSupportStructuresVisible(bool visible);
   void makeStrawsVisibleBeforeStart(bool visible);
-  void useHitColors(bool hitcolors);
-  void useTrackColors(bool trackcolors);
+  void useHitColors(bool hitcolors, bool whitebackground);
+  void useTrackColors(bool trackcolors, bool whitebackground);
   minmax getHitsBoundary() {return _hitsMinmax;}
   minmax getTracksBoundary() {return _tracksMinmax;}
   int getNumberHits() {return _numberHits;}

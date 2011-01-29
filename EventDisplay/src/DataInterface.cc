@@ -189,7 +189,7 @@ void DataInterface::makeStrawsVisibleBeforeStart(bool visible)
   _showUnhitStraws=visible;
 } 
 
-void DataInterface::useHitColors(bool hitcolors)
+void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
 {
   std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
   for(hit=_hits.begin(); hit!=_hits.end(); hit++)
@@ -203,11 +203,11 @@ void DataInterface::useHitColors(bool hitcolors)
       color+=2000;
       (*hit)->setColor(color);
     }
-    else (*hit)->setColor(1);
+    else (*hit)->setColor(whitebackground?1:0);
   }
 }
 
-void DataInterface::useTrackColors(bool trackcolors)
+void DataInterface::useTrackColors(bool trackcolors, bool whitebackground)
 {
   std::vector<boost::shared_ptr<Track> >::const_iterator track;
   for(track=_tracks.begin(); track!=_tracks.end(); track++)
@@ -215,7 +215,7 @@ void DataInterface::useTrackColors(bool trackcolors)
     if(trackcolors)
     {
       int particleid=(*track)->getParticleId();
-      int color=1;
+      int color=kGray;
       switch(particleid)
       {
         case   11:
@@ -233,7 +233,7 @@ void DataInterface::useTrackColors(bool trackcolors)
       };
       (*track)->setColor(color);
     }
-    else (*track)->setColor(1);
+    else (*track)->setColor(whitebackground?1:0);
   }
 }
 
