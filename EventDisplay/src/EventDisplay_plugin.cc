@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_plugin.cc,v 1.1 2011/01/26 18:10:12 ehrlich Exp $
+// $Id: EventDisplay_plugin.cc,v 1.2 2011/01/31 01:03:53 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/26 18:10:12 $
+// $Date: 2011/01/31 01:03:53 $
 //
 
 #include <iostream>
@@ -72,11 +72,11 @@ namespace mu2e
       std::string _trackerStepPoints = "tracker"; //TODO: this may not always be correct 
                                          //in the future: let user decide via display,
                                          //and get this info with a get function from _frame
-                                         //however, what happens if nothing is selected, yet?
-                                         //in this case, all events are skipped, and the
-                                         //user will never have a chance to select anything
+                                         //however, something (or perhaps everything) needs
+                                         //to be selected by default, otherwise all events 
+                                         //will be skipped, and the user will never have a 
+                                         //chance to select anything
       if(event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits))  
-                                         //TODO: is this return bool to be used like this?
       {
         int numberHits=hits->size();
         if(numberHits > _frame->getMinimumHits()) _frame->fillEvent(event);

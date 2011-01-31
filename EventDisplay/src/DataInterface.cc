@@ -11,6 +11,7 @@
 
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
@@ -19,7 +20,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
 
@@ -106,10 +106,14 @@ void DataInterface::fillGeometry()
   _hitsMinmax.maxz=NAN;
 
   edm::Service<mu2e::GeometryService> geom;
+
+  const mu2e::SimpleConfig &config = geom->config();
+  _xOffset=config.getDouble("mu2e.solenoidOffset");
+  _zOffset=-config.getDouble("mu2e.detectorSystemZ0");
+
   if(geom->hasElement<mu2e::TTracker>())
   {
     mu2e::GeomHandle<mu2e::TTracker> ttracker;  
-    _z0 = ttracker->z0();
     const std::deque<mu2e::Straw>& allStraws = ttracker->getAllStraws();
     std::deque<mu2e::Straw>::const_iterator iter;
     for(iter=allStraws.begin(); iter!=allStraws.end(); iter++)
@@ -163,7 +167,6 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::ITracker>())
   {
     mu2e::GeomHandle<mu2e::ITracker> itracker;  
-    _z0 = itracker->z0();
 //TODO
   }
 }
@@ -263,7 +266,6 @@ void DataInterface::fillEvent(const edm::Event& event)
   std::string _trackerStepPoints = "tracker"; //TODO: this may not always be correct 
                                          //in the future: let user decide via display
   if(event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits))  
-                                         //TODO: is this return bool to be used like this?
   {
     _numberHits=hits->size();
     _hitsMinmax.mint=NAN;
@@ -305,80 +307,6 @@ void DataInterface::fillEvent(const edm::Event& event)
   }
 
 
-  edm::Handle<mu2e::ToyGenParticleCollection> genParticles;
-  if(event.getByType(genParticles));
-  {
-    for(unsigned int i=0; i<genParticles->size(); i++)
-    {
-      const mu2e::ToyGenParticle& genparticle = (*genParticles)[i];
-      int particleid=genparticle.pdgId();
-      std::string particlename=HepPID::particleName(genparticle.pdgId());
-//TODO: figure out coordinate transformation
-//can these numbers be extracted from somewhere?
-//if not, put them somehwere else together with all other numbers
-      double x1=genparticle._position.x()+3904.0;
-      double y1=genparticle._position.y();
-      double z1=genparticle._position.z()-10200.0;  //-z0; //-12000.0;
-      double t1=genparticle._time;
-      double e1=genparticle._momentum.e();
-      double x2=NAN;
-      double y2=NAN;
-      double z2=NAN;
-      double t2=NAN;
-      double length=NAN;
-      std::string daughterString="Daughter ID(s):";
-
-      edm::Handle<mu2e::SimParticleCollection> simParticles;
-      if(event.getByType(simParticles))
-      {
-        MapVector<mu2e::SimParticle>::const_iterator iter;
-        for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
-        {
-          const mu2e::SimParticle& simparticle = iter->second;
-          unsigned int genindex = simparticle.generatorIndex();
-          if(genindex==i)
-          {
-            int id = simparticle.id().asInt();
-            char c[10];
-            if(isnan(length)) sprintf(c," %i",id);
-            else sprintf(c,", %i",id);
-            daughterString.append(c); 
-
-            CLHEP::Hep3Vector d;
-            d=simparticle.startPosition()-genparticle._position;
-            if(length<d.mag() || isnan(length))
-            {
-//TODO: figure out coordinate transformation
-//can these numbers be extracted from somewhere?
-//if not, put them somehwere else together with all other numbers
-              x2=simparticle.startPosition().x()+3904.0;
-              y2=simparticle.startPosition().y();
-              z2=simparticle.startPosition().z()-10200.0;  //-z0; //-12000.0;
-              t2=simparticle.startGlobalTime();
-              length=d.mag();
-            }
-          }
-        }
-      }
-
-      if(!isnan(length))
-      {
-        char c1[200],c2[200],c3[200];
-        sprintf(c1,"Generated Track %s",particlename.c_str());
-        sprintf(c2,"Start Energy %gMeV",e1/CLHEP::MeV);
-        sprintf(c3,"Track Length %gmm",length/CLHEP::mm);
-        boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-        info->setText(0,c1);
-        info->setText(1,c2);
-        info->setText(2,c3);
-        info->setText(3,daughterString.c_str());
-        boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, _geometrymanager, _topvolume, _mainframe, info));
-        _components.push_back(shape);
-        _tracks.push_back(shape);
-      }
-    }
-  }
-
   _tracksMinmax.minx=NAN;
   _tracksMinmax.miny=NAN;
   _tracksMinmax.minz=NAN;
@@ -398,20 +326,16 @@ void DataInterface::fillEvent(const edm::Event& event)
       int parentid = particle.parentId().asInt();
       int particleid=particle.pdgId();
       std::string particlename=HepPID::particleName(particle.pdgId());
-//TODO: figure out coordinate transformation
-//can these numbers be extracted from somewhere?
-//if not, put them somehwere else together with all other numbers
-      double x1=particle.startPosition().x()+3904.0;
+      double x1=particle.startPosition().x()+_xOffset;
       double y1=particle.startPosition().y();
-      double z1=particle.startPosition().z()-10200.0;  //-z0; //-12000.0;
+      double z1=particle.startPosition().z()+_zOffset;
       double t1=particle.startGlobalTime();
       double e1=particle.startMomentum().e();
-      double x2=particle.endPosition().x()+3904.0;
+      double x2=particle.endPosition().x()+_xOffset;
       double y2=particle.endPosition().y();
-      double z2=particle.endPosition().z()-10200.0; //-z0; //-12000.0;
+      double z2=particle.endPosition().z()+_zOffset;
       double t2=particle.endGlobalTime();
       double e2=particle.endMomentum().e();
-
       findBoundaryT(_tracksMinmax, t1);
       findBoundaryT(_tracksMinmax, t2);
       findBoundaryP(_tracksMinmax, x1, y1, z1);

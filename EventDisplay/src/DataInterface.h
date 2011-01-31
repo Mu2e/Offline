@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.3 2011/01/29 06:23:20 ehrlich Exp $
+// $Id: DataInterface.h,v 1.4 2011/01/31 01:03:53 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/29 06:23:20 $
+// $Date: 2011/01/31 01:03:53 $
 //
 // Original author Ralf Ehrlich
 //
@@ -54,7 +54,7 @@ class DataInterface
   std::vector<boost::shared_ptr<Straw> >        _hits;
   std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
-  double        _z0;
+  double        _xOffset, _zOffset;
   minmax        _hitsMinmax, _tracksMinmax;
   int           _numberHits;
   bool          _showUnhitStraws;

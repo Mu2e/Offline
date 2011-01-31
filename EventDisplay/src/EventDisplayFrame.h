@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.2 2011/01/29 02:14:20 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.3 2011/01/31 01:03:53 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/29 02:14:20 $
+// $Date: 2011/01/31 01:03:53 $
 //
 // Original author Ralf Ehrlich
 //
@@ -47,23 +47,23 @@ namespace mu2e_eventdisplay
 #endif
     bool           isClosed() const;
     int            getMinimumHits() const;
-    void           prepareAnimation();
     void           showInfo(TObject*);
-    //the following functions are inherited from TGMainFrame
-    Bool_t         HandleConfigureNotify(Event_t *event);
-    virtual Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
-    virtual void   CloseWindow();  
-    Bool_t         HandleTimer(TTimer *); //inherited function 
-                                          //from TObject (gets called when 
-                                          //timer times out - knows about 
-                                          //this via TTimer::SetObject)
+    virtual void   CloseWindow(); //inherited from TGMainFrame 
 
     private:
     void updateHitLegend(bool draw);
     void updateTrackLegend(bool draw);
+    void prepareAnimation();
     void drawSituation();
     void drawEverything();
     void combineAnimFiles();
+    //the following functions are inherited from TGMainFrame
+    virtual Bool_t HandleConfigureNotify(Event_t *event);
+    virtual Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
+    virtual Bool_t HandleTimer(TTimer *); //inherited function 
+                                          //from TObject (gets called when 
+                                          //timer times out - knows about 
+                                          //this via TTimer::SetObject)
 
 #ifndef __CINT__    //hide boost from ROOTCint
     boost::shared_ptr<DataInterface> _dataInterface;
@@ -81,6 +81,7 @@ namespace mu2e_eventdisplay
     TTimer              *_timer;
     TGCheckButton       *_unhitButton, *_supportStructureButton, *_outsideTracksButton;
     TGCheckButton       *_hitColorButton, *_trackColorButton, *_backgroundButton;
+    TGCheckButton       *_repeatAnimationButton;
     TGTextEntry         *_minHitField;
     TGLabel             **_eventInfo;
     TText               *_legendText[30], *_legendParticleText[6];  

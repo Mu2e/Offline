@@ -116,13 +116,9 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   animButtonStop->Associate(this);
   animButtonReset->Associate(this);
 
-  TGCheckButton *loopButton = new TGCheckButton(subFrame,"Repeat Animation",42);
-  subFrame->AddFrame(loopButton, lh1);
-  loopButton->Associate(this);
-
-  TGTextButton *view3dButton = new TGTextButton(subFrame, "View3D", 70);
-  subFrame->AddFrame(view3dButton, lh1);
-  view3dButton->Associate(this);
+  _repeatAnimationButton = new TGCheckButton(subFrame,"Repeat Animation",42);
+  subFrame->AddFrame(_repeatAnimationButton, lh1);
+  _repeatAnimationButton->Associate(this);
 
   TGHorizontalFrame *subFrameSave = new TGHorizontalFrame(subFrame,300,15);
   TGTextButton *saveButton        = new TGTextButton(subFrameSave, "Save", 50);
@@ -144,7 +140,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   _backgroundButton->Associate(this);
   _hitColorButton->SetState(kButtonDown);
   _trackColorButton->SetState(kButtonDown);
-  _backgroundButton->SetState(kButtonDown);
+  _backgroundButton->SetState(kButtonUp);
 
   _eventInfo = new TGLabel*[3];
   for(int i=0; i<3; i++)
@@ -198,7 +194,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
 
   _mainCanvas->GetCanvas()->cd();
   _mainPad = new TPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);  
-  _mainPad->SetFillColor(0);
+  _mainPad->SetFillColor(1);
   _mainPad->Draw();
 
   _infoCanvas->GetCanvas()->cd();
@@ -310,7 +306,7 @@ void EventDisplayFrame::updateHitLegend(bool draw)
     {
       if(i<20)
       {
-        _legendBox[i]=new TBox(0.6,0.55+i*0.02,0.7,0.57+i*0.02);
+        _legendBox[i]=new TBox(0.6,0.557+i*0.02,0.7,0.577+i*0.02);
         _legendBox[i]->SetFillColor(i+2000);
         _legendBox[i]->Draw();
       }
@@ -436,12 +432,6 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              _saveAnimFile.assign(f,strlen(f)-4);
                              prepareAnimation();
                            }
-                         }
-                         if(param1==70)
-                         {
-                           _mainPad->cd();
-                           TVirtualViewer3D *v;
-                           v=_mainPad->GetViewer3D("ogl");
                          }
                          break;
    case kCM_CHECKBUTTON: if(param1==31)
@@ -588,6 +578,7 @@ Bool_t EventDisplayFrame::HandleTimer(TTimer *)
     _timer->Stop();
     _timeCurrent=NAN;
     if(_saveAnim) combineAnimFiles();
+    if(_repeatAnimationButton->GetState()==kButtonDown) prepareAnimation();
   }
   return kTRUE;
 }
@@ -610,7 +601,7 @@ void EventDisplayFrame::drawSituation()
   {
     char timeText[50];
     sprintf(timeText,"%+.4e ns",_timeCurrent);
-    _clock = new TText(0.3,-0.9,timeText);
+    _clock = new TText(0.52,-0.9,timeText);
     _clock->SetTextColor(5);
     _clock->Draw("same");
   }
