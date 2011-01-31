@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.13 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:36 $
+// $Id: ReadBack.hh,v 1.14 2011/01/31 23:45:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/01/31 23:45:48 $
 //
 // Original author Rob Kutschke
 //
@@ -110,9 +110,9 @@ namespace mu2e {
     int _xyHitCount;
 
     // Do the work specific to one of the trackers.
-    void ReadBack::doLTracker(const edm::Event& event);
-    void ReadBack::doITracker(const edm::Event& event);
-    void ReadBack::doCalorimeter(const edm::Event& event);
+    void doLTracker(const edm::Event& event);
+    void doITracker(const edm::Event& event);
+    void doCalorimeter(const edm::Event& event);
 
     // A helper function.
     int countHitNeighbours( Straw const& straw, 

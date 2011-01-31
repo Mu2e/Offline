@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_plugin.cc,v 1.2 2010/11/12 21:46:33 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/12 21:46:33 $
+// $Id: ReadBack0_plugin.cc,v 1.3 2011/01/31 23:45:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/01/31 23:45:48 $
 //
 // Original author Rob Kutschke
 //
@@ -69,8 +69,8 @@ namespace mu2e {
     TNtuple* _ntup;
 
     // Partition the per event work into two steps.
-    void ReadBack0::doTTracker(const edm::Event& event);
-    void ReadBack0::doCalorimeter(const edm::Event& event);
+    void doTTracker(const edm::Event& event);
+    void doCalorimeter(const edm::Event& event);
 
   };
 
