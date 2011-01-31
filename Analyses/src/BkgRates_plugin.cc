@@ -174,9 +174,9 @@ namespace mu2e {
     _hCryEvtZ2      = tfs->make<TH1F>( "hCryEvtZ2",   "Multiplicity of Crystal per event zoom2",  50,    0.,   50.);
 
     _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                        "evt:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:driftTime:driftDist" );
+                                        "evt:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
     _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
-                                        "evt:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE" );
+                                        "evt:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
 
     for (int i=0; i<_nDevices; ++i) {
       stringstream name, descr;
@@ -358,7 +358,7 @@ namespace mu2e {
       size_t nHitsPerStraw = mcptr.size();
       _hHitMult->Fill(nHitsPerStraw);
 
-      float tntpArray[31];
+      float tntpArray[37];
       int idx(0);
       tntpArray[idx++] = evt.id().event();
       tntpArray[idx++] = hitTime;
@@ -485,7 +485,19 @@ namespace mu2e {
         tntpArray[idx++] = gen.generatorId().Id();
         tntpArray[idx++] = gen.momentum().vect().mag();
         tntpArray[idx++] = gen.momentum().e();
+        tntpArray[idx++] = gen.position().x();
+        tntpArray[idx++] = gen.position().y();
+        tntpArray[idx++] = gen.position().z();
+        tntpArray[idx++] = gen.momentum().cosTheta();
+        tntpArray[idx++] = gen.momentum().phi();
+        tntpArray[idx++] = gen.time();
       } else if ( ngen == 0 ) {
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
@@ -588,7 +600,7 @@ namespace mu2e {
       DPIndexVector const & ROIds  = hit.roIds();
 
       bool readCryOnce(false);
-      float cntpArray[21];
+      float cntpArray[27];
       int idx(0);
 
       //List of trackId and energy deposition
@@ -713,7 +725,19 @@ namespace mu2e {
         cntpArray[idx++] = gen.generatorId().Id();
         cntpArray[idx++] = gen.momentum().vect().mag();
         cntpArray[idx++] = gen.momentum().e();
+        cntpArray[idx++] = gen.position().x();
+        cntpArray[idx++] = gen.position().y();
+        cntpArray[idx++] = gen.position().z();
+        cntpArray[idx++] = gen.momentum().cosTheta();
+        cntpArray[idx++] = gen.momentum().phi();
+        cntpArray[idx++] = gen.time();
       } else if ( ngen == 0 ) {
+        cntpArray[idx++] = 0;
+        cntpArray[idx++] = 0;
+        cntpArray[idx++] = 0;
+        cntpArray[idx++] = 0;
+        cntpArray[idx++] = 0;
+        cntpArray[idx++] = 0;
         cntpArray[idx++] = 0;
         cntpArray[idx++] = 0;
         cntpArray[idx++] = 0;
