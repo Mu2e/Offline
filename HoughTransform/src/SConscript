@@ -1,13 +1,12 @@
 #
-# $Id: SConscript,v 1.10 2010/08/21 22:09:56 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2010/08/21 22:09:56 $
+# $Id: SConscript,v 1.11 2011/02/01 00:26:05 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/02/01 00:26:05 $
 #
 # Original author Rob Kutschke.
 #
 
 import os, re
-home = os.environ['FRAMEWORK_DIR']
 Import('env')
 
 plugin_cc = Glob('*_plugin.cc', strings=True)
