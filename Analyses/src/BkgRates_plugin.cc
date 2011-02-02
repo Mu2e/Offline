@@ -174,9 +174,9 @@ namespace mu2e {
     _hCryEvtZ2      = tfs->make<TH1F>( "hCryEvtZ2",   "Multiplicity of Crystal per event zoom2",  50,    0.,   50.);
 
     _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                        "evt:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+                                        "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
     _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
-                                        "evt:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
+                                        "evt:run:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
 
     for (int i=0; i<_nDevices; ++i) {
       stringstream name, descr;
@@ -358,9 +358,10 @@ namespace mu2e {
       size_t nHitsPerStraw = mcptr.size();
       _hHitMult->Fill(nHitsPerStraw);
 
-      float tntpArray[37];
+      float tntpArray[38];
       int idx(0);
       tntpArray[idx++] = evt.id().event();
+      tntpArray[idx++] = evt.run();
       tntpArray[idx++] = hitTime;
       tntpArray[idx++] = hit.dt();
       tntpArray[idx++] = hitEnergy;
@@ -600,7 +601,7 @@ namespace mu2e {
       DPIndexVector const & ROIds  = hit.roIds();
 
       bool readCryOnce(false);
-      float cntpArray[27];
+      float cntpArray[28];
       int idx(0);
 
       //List of trackId and energy deposition
@@ -620,6 +621,7 @@ namespace mu2e {
           int Rcry = cg->getCrystalRByRO(thehit.id());
           _hCrystalRates[vane]->Fill(Zcry,Rcry);
           cntpArray[idx++] = evt.id().event();
+          cntpArray[idx++] = evt.run();
           cntpArray[idx++] = hit.time();
           cntpArray[idx++] = hit.energyDep();
           cntpArray[idx++] = cg->getCrystalByRO(thehit.id());
