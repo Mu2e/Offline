@@ -39,7 +39,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   int x,y;
   unsigned int width,height;
   gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(),x,y,width,height);
-  MoveResize(20,20,width-50,height-50);
+  MoveResize(20,20,width-30,height-70);
 
   _timer=new TTimer();
   _timer->SetObject(this);
@@ -99,7 +99,6 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   _outsideTracksButton->Associate(this);
 
   _calorimeterViewButton = new TGCheckButton(subFrame,"Adjust View to show Calorimeter",34);
-  _calorimeterViewButton->SetState(kButtonDown);
   subFrame->AddFrame(_calorimeterViewButton, lh1);
   _calorimeterViewButton->Associate(this);
 
