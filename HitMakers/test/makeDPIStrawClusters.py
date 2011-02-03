@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClusters.py,v 1.1 2011/01/28 21:39:21 wenzel Exp $
+# $Id: makeDPIStrawClusters.py,v 1.2 2011/02/03 20:20:46 wenzel Exp $
 # $Author: wenzel $
-# $Date: 2011/01/28 21:39:21 $
+# $Date: 2011/02/03 20:20:46 $
 #
 # Original author Rob Kutschke
 #
@@ -16,7 +16,7 @@ process = mu2e.Process("HitTest01")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(200)
+    input = mu2e.untracked.int32(-1)
 )
 
 # Load the standard message logger configuration.
@@ -56,7 +56,7 @@ process.makeSH = mu2e.EDProducer(
 # Check the StrawHits.
 process.testSH = mu2e.EDAnalyzer("ReadStrawHit",
     makerModuleLabel = mu2e.string("makeSH"),
-    diagLevel    = mu2e.untracked.int32(3),
+    diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
@@ -64,7 +64,7 @@ process.testSH = mu2e.EDAnalyzer("ReadStrawHit",
 process.makeSC = mu2e.EDProducer(
     "MakeDPIStrawCluster",
     makerModuleLabel = mu2e.string("makeSH"),
-    diagLevel    = mu2e.untracked.int32(3),
+    diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
@@ -72,23 +72,23 @@ process.makeSC = mu2e.EDProducer(
 process.testSC = mu2e.EDAnalyzer("ReadDPIStrawCluster",
     makerModuleLabel = mu2e.string("makeSH"),                            
     clmakerModuleLabel = mu2e.string("makeSC"),
-    diagLevel    = mu2e.untracked.int32(3),
+    diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
 
 
 # Write an output file.
-process.outfile = mu2e.OutputModule(
-    "PoolOutputModule",
-    fileName = mu2e.untracked.string('file:hits_03.root'),
-    fastCloning = cms.untracked.bool(False),
-)
+#process.outfile = mu2e.OutputModule(
+#    "PoolOutputModule",
+#    fileName = mu2e.untracked.string('file:hits_03.root'),
+#    fastCloning = cms.untracked.bool(False),
+#)
 
 
 # End of the section that defines and configures modules.
 
 # Tell the system to execute all paths.
-process.output = mu2e.EndPath(  process.makeSH*process.testSH*process.makeSC*process.testSC*process.outfile );
-
+#process.output = mu2e.EndPath(  process.makeSH*process.testSH*process.makeSC*process.testSC*process.outfile );
+process.output = mu2e.EndPath(  process.makeSH*process.testSH*process.makeSC*process.testSC );
 
