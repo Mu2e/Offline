@@ -60,7 +60,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
 
   //bare pointers needed since ROOT manages the following object
   TGHorizontalFrame *mainFrame = new TGHorizontalFrame(this,800,400);
-  _mainCanvas = new TRootEmbeddedCanvas("EventDisplayCanvas",mainFrame,GetWidth()-300,GetHeight()-150);
+  _mainCanvas = new TRootEmbeddedCanvas("EventDisplayCanvas",mainFrame,GetWidth()-270,GetHeight()-170);
   TGVerticalFrame *subFrame = new TGVerticalFrame(mainFrame,300,400);
 
   mainFrame->AddFrame(_mainCanvas, new TGLayoutHints(kLHintsTop));
@@ -85,14 +85,27 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   subFrame->AddFrame(_unhitButton, lh1);
   _unhitButton->Associate(this);
 
+  _unhitCrystalsButton = new TGCheckButton(subFrame,"Show Unhit Crystals",36);
+  subFrame->AddFrame(_unhitCrystalsButton, lh1);
+  _unhitCrystalsButton->Associate(this);
+
   _supportStructureButton = new TGCheckButton(subFrame,"Show Support Structures",32);
   _supportStructureButton->SetState(kButtonDown);
   subFrame->AddFrame(_supportStructureButton, lh1);
   _supportStructureButton->Associate(this);
 
-  _outsideTracksButton = new TGCheckButton(subFrame,"Show Tracks Outside of Detector",33);
+  _outsideTracksButton = new TGCheckButton(subFrame,"Adjust View to show all Tracks",33);
   subFrame->AddFrame(_outsideTracksButton, lh1);
   _outsideTracksButton->Associate(this);
+
+  _calorimeterViewButton = new TGCheckButton(subFrame,"Adjust View to show Calorimeter",34);
+  _calorimeterViewButton->SetState(kButtonDown);
+  subFrame->AddFrame(_calorimeterViewButton, lh1);
+  _calorimeterViewButton->Associate(this);
+
+  _targetViewButton = new TGCheckButton(subFrame,"Adjust View to show Target",35);
+  subFrame->AddFrame(_targetViewButton, lh1);
+  _targetViewButton->Associate(this);
 
   TGListBox **particleBox   = new TGListBox*[2];
   for(int i=0; i<2; i++)
@@ -142,8 +155,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   _trackColorButton->SetState(kButtonDown);
   _backgroundButton->SetState(kButtonUp);
 
-  _eventInfo = new TGLabel*[3];
-  for(int i=0; i<3; i++)
+  _eventInfo = new TGLabel*[4];
+  for(int i=0; i<4; i++)
   {
     _eventInfo[i] = new TGLabel(subFrame, "Place Holder for Event Info");
     _eventInfo[i]->SetTextJustify(kTextLeft);
@@ -151,42 +164,131 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   }
 
   TGHorizontalFrame *footLine   = new TGHorizontalFrame(this,800,100);
-  _infoCanvas = new TRootEmbeddedCanvas("InfoCanvas",footLine,GetWidth()-520,GetHeight()-430);
+  _infoCanvas = new TRootEmbeddedCanvas("InfoCanvas",footLine,GetWidth()-540,GetHeight()-430);
   footLine->AddFrame(_infoCanvas, new TGLayoutHints(kLHintsTop));
 
-  TGVerticalFrame *navigationFrame = new TGVerticalFrame(footLine,100,200);
+  TGGroupFrame *zoomangleFrame  = new TGGroupFrame(footLine,"Zoom & Angle");
+  TGHorizontalFrame *zoomFrame1 = new TGHorizontalFrame(zoomangleFrame,500,50);
+  TGHorizontalFrame *zoomFrame2 = new TGHorizontalFrame(zoomangleFrame,500,50);
+  TGHorizontalFrame *angleFrame = new TGHorizontalFrame(zoomangleFrame,500,50);
+  TGLabel *zoomLabel1  = new TGLabel(zoomFrame1, "minx");
+  TGLabel *zoomLabel2  = new TGLabel(zoomFrame1, "miny");
+  TGLabel *zoomLabel3  = new TGLabel(zoomFrame1, "minz");
+  TGLabel *zoomLabel4  = new TGLabel(zoomFrame2, "maxx");
+  TGLabel *zoomLabel5  = new TGLabel(zoomFrame2, "maxy");
+  TGLabel *zoomLabel6  = new TGLabel(zoomFrame2, "maxz");
+  TGLabel *angleLabel1 = new TGLabel(angleFrame, "phi");
+  TGLabel *angleLabel2 = new TGLabel(angleFrame, "theta");
+  TGLabel *angleLabel3 = new TGLabel(angleFrame, "psi");
+  _minXField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1501);
+  _minYField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1502);
+  _minZField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1503);
+  _maxXField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1504);
+  _maxYField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1505);
+  _maxZField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1506);
+  _phiField   = new TGTextEntry(angleFrame, new TGTextBuffer, 1601);
+  _thetaField = new TGTextEntry(angleFrame, new TGTextBuffer, 1602);
+  _psiField   = new TGTextEntry(angleFrame, new TGTextBuffer, 1603);
+  _minXField->SetWidth(50); 
+  _minYField->SetWidth(50); 
+  _minZField->SetWidth(50); 
+  _maxXField->SetWidth(50); 
+  _maxYField->SetWidth(50); 
+  _maxZField->SetWidth(50); 
+  _phiField->SetWidth(50); 
+  _thetaField->SetWidth(50); 
+  _psiField->SetWidth(50); 
+  TGTextButton *setRangeButton = new TGTextButton(zoomangleFrame, "Set &Range", 1500);
+  TGTextButton *setAngleButton = new TGTextButton(zoomangleFrame, "Set &Angle", 1600);
+  zoomFrame1->AddFrame(zoomLabel1, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame1->AddFrame(_minXField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame1->AddFrame(zoomLabel2, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame1->AddFrame(_minYField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame1->AddFrame(zoomLabel3, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame1->AddFrame(_minZField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(zoomLabel4, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(_maxXField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(zoomLabel5, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(_maxYField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(zoomLabel6, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(_maxZField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  angleFrame->AddFrame(angleLabel1, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  angleFrame->AddFrame(_phiField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  angleFrame->AddFrame(angleLabel2, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  angleFrame->AddFrame(_thetaField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  angleFrame->AddFrame(angleLabel3, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  angleFrame->AddFrame(_psiField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomangleFrame->AddFrame(zoomFrame1, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  zoomangleFrame->AddFrame(zoomFrame2, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  zoomangleFrame->AddFrame(setRangeButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  zoomangleFrame->AddFrame(angleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  zoomangleFrame->AddFrame(setAngleButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  footLine->AddFrame(zoomangleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+
+  _minXField->Associate(this);
+  _minYField->Associate(this);
+  _minZField->Associate(this);
+  _maxXField->Associate(this);
+  _maxYField->Associate(this);
+  _maxZField->Associate(this);
+  _phiField->Associate(this);
+  _thetaField->Associate(this);
+  _psiField->Associate(this);
+  setRangeButton->Associate(this);
+  setAngleButton->Associate(this);
+
+  TGVerticalFrame *innerFrame1   = new TGVerticalFrame(footLine,100,200);
+
+  TGGroupFrame *optionsFrame     = new TGGroupFrame(innerFrame1,"Options");
+  TGHorizontalFrame *filterFrame = new TGHorizontalFrame(optionsFrame,500,50);
+  TGHorizontalFrame *jumpFrame   = new TGHorizontalFrame(optionsFrame,500,50);
+  TGLabel *minHitLabel      = new TGLabel(filterFrame, "minimum hits");
+  TGLabel *eventToFindLabel = new TGLabel(jumpFrame, "jump to event number");
+  _minHitField = new TGTextEntry(filterFrame, new TGTextBuffer, 1101);
+  _eventToFindField = new TGTextEntry(jumpFrame, new TGTextBuffer, 1103);
+  _minHits=0;  
+  _minHitField->SetWidth(50); 
+  _minHitField->SetText("0");
+  _findEvent=false;
+  _eventToFind=0;
+  _eventToFindField->SetWidth(50); 
+  _eventToFindField->SetText("");
+  TGTextButton *applyButton = new TGTextButton(filterFrame, "&Apply", 1100);
+  TGTextButton *goButton    = new TGTextButton(jumpFrame, "&Go", 1102);
+  filterFrame->AddFrame(minHitLabel, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,3,0,3,0));
+  filterFrame->AddFrame(_minHitField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,3,0,3,0));
+  filterFrame->AddFrame(applyButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,3,0,3,0));
+  jumpFrame->AddFrame(eventToFindLabel, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,3,0,3,0));
+  jumpFrame->AddFrame(_eventToFindField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,3,0,3,0));
+  jumpFrame->AddFrame(goButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,3,0,3,0));
+  optionsFrame->AddFrame(filterFrame, new TGLayoutHints(kLHintsLeft,3,0,0,0));
+  optionsFrame->AddFrame(jumpFrame, new TGLayoutHints(kLHintsLeft,3,0,0,0));
+  innerFrame1->AddFrame(optionsFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+
+  TGHorizontalFrame *navigationFrame = new TGHorizontalFrame(innerFrame1,100,200);
   TGTextButton *quitButton         = new TGTextButton(navigationFrame, "&Quit", 1001);
   TGTextButton *nextButton         = new TGTextButton(navigationFrame, "&Next", 1111);
   navigationFrame->AddFrame(quitButton, new TGLayoutHints(kLHintsLeft,10,0,10,0));
   navigationFrame->AddFrame(nextButton, new TGLayoutHints(kLHintsLeft,10,0,10,0));
-  footLine->AddFrame(navigationFrame, new TGLayoutHints(kLHintsLeft,10,0,10,0));
-
-  TGGroupFrame *optionsFrame     = new TGGroupFrame(footLine,"Options");
-  TGHorizontalFrame *filterFrame = new TGHorizontalFrame(optionsFrame,500,50);
-  TGLabel *minHitLabel     = new TGLabel(filterFrame, "minimum hits");
-  _minHitField = new TGTextEntry(filterFrame, new TGTextBuffer, 1101);
-  _minHits=100;  
-  _minHitField->SetWidth(100); 
-  _minHitField->SetText("100");
-  TGTextButton *applyButton = new TGTextButton(filterFrame, "&Apply", 1100);
-  filterFrame->AddFrame(minHitLabel, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,15,0,5,0));
-  filterFrame->AddFrame(_minHitField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,5,0,10,0));
-  filterFrame->AddFrame(applyButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,10,0,5,0));
-  optionsFrame->AddFrame(filterFrame, new TGLayoutHints(kLHintsLeft,5,0,0,0));
-  footLine->AddFrame(optionsFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
 
   quitButton->Associate(this);
   nextButton->Associate(this);
   _minHitField->Associate(this);
+  _eventToFindField->Associate(this);
   applyButton->Associate(this);
+  goButton->Associate(this);
 
+/*
   std::string logoFileName=getenv("MU2E_BASE_RELEASE");
   logoFileName.append("/EventDisplay/src/logo.png");
   TGPicture *logo = (TGPicture *)gClient->GetPicture(logoFileName.c_str());
-  TGIcon *icon = new TGIcon(footLine, logo, 50, 50);
-  footLine->AddFrame(icon, new TGLayoutHints(kLHintsLeft,10,10,10,10));
+  TGIcon *icon = new TGIcon(navigationFrame, logo, 50, 50);
+  navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,1,1,1,1));
+*/
 
-  AddFrame(footLine, new TGLayoutHints(kLHintsLeft,1,1,1,1));
+  innerFrame1->AddFrame(navigationFrame, new TGLayoutHints(kLHintsLeft,10,0,10,0));
+  footLine->AddFrame(innerFrame1, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  AddFrame(footLine, new TGLayoutHints(kLHintsLeft,0,0,0,0));
 
   MapSubwindows();
   SetWindowName("Mu2e Event Display");
@@ -229,33 +331,46 @@ Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
    {
       fWidth  = event->fWidth;
       fHeight = event->fHeight;
-      _mainCanvas->SetWidth(fWidth-300);
-      _mainCanvas->SetHeight(fHeight-150);
-      _infoCanvas->SetWidth(fWidth-520);
+      _mainCanvas->SetWidth(fWidth-270);
+      _mainCanvas->SetHeight(fHeight-170);
+      _infoCanvas->SetWidth(fWidth-540);
       _infoCanvas->SetHeight(fHeight-430);
       Layout();
    }
    return kTRUE;
 }
 
+void EventDisplayFrame::fillZoomAngleFields()
+{
+  char c[100];
+  double min[3], max[3];
+  _mainPad->GetView()->GetRange(min,max);
+  sprintf(c,"%.0f",min[0]); _minXField->SetText(c);
+  sprintf(c,"%.0f",min[1]); _minYField->SetText(c);
+  sprintf(c,"%.0f",min[2]); _minZField->SetText(c);
+  sprintf(c,"%.0f",max[0]); _maxXField->SetText(c);
+  sprintf(c,"%.0f",max[1]); _maxYField->SetText(c);
+  sprintf(c,"%.0f",max[2]); _maxZField->SetText(c);
+  sprintf(c,"%.0f",_mainPad->GetView()->GetLongitude()); _phiField->SetText(c);
+  sprintf(c,"%.0f",_mainPad->GetView()->GetLatitude()); _thetaField->SetText(c);
+  sprintf(c,"%.0f",_mainPad->GetView()->GetPsi()); _psiField->SetText(c);
+}
+
 void EventDisplayFrame::fillGeometry()
 {
   _mainPad->cd();
   _dataInterface->fillGeometry();
-  double minx=_dataInterface->getHitsBoundary().minx;
-  double miny=_dataInterface->getHitsBoundary().miny;
-  double minz=_dataInterface->getHitsBoundary().minz;
-  double maxx=_dataInterface->getHitsBoundary().maxx;
-  double maxy=_dataInterface->getHitsBoundary().maxy;
-  double maxz=_dataInterface->getHitsBoundary().maxz;
-  _mainPad->GetView()->SetRange(minx,miny,minz,maxx,maxy,maxz);
+  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(false, true, false);
+  _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
   _mainPad->GetView()->AdjustScales();
   _mainPad->Modified();
   _mainPad->Update();
+  fillZoomAngleFields();
 }
 
 void EventDisplayFrame::fillEvent(const edm::Event& event)
 {
+  _findEvent=false;
   _mainPad->cd();
   _dataInterface->fillEvent(event);
   _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
@@ -265,17 +380,12 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
   updateHitLegend(_hitColorButton->GetState()==kButtonDown);
   updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
 
-  if(_outsideTracksButton->GetState()==kButtonDown)
-  {
-    double minx=_dataInterface->getTracksBoundary().minx;
-    double miny=_dataInterface->getTracksBoundary().miny;
-    double minz=_dataInterface->getTracksBoundary().minz;
-    double maxx=_dataInterface->getTracksBoundary().maxx;
-    double maxy=_dataInterface->getTracksBoundary().maxy;
-    double maxz=_dataInterface->getTracksBoundary().maxz;
-    _mainPad->GetView()->SetRange(minx,miny,minz,maxx,maxy,maxz);
-    _mainPad->GetView()->AdjustScales();;
-  }
+  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(_targetViewButton->GetState()==kButtonDown,
+                                                 _calorimeterViewButton->GetState()==kButtonDown,
+                                                 _outsideTracksButton->GetState()==kButtonDown);
+  _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
+  _mainPad->GetView()->AdjustScales();;
+  fillZoomAngleFields();
 
   char eventInfoText[50];
   sprintf(eventInfoText,"Event #: %i",event.id().event());
@@ -284,6 +394,8 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
   _eventInfo[1]->SetText(eventInfoText);
   sprintf(eventInfoText,"Number of hit straws: %i",_dataInterface->getNumberHits());
   _eventInfo[2]->SetText(eventInfoText);
+  sprintf(eventInfoText,"Number of hit calorimeter crystals: %i",_dataInterface->getNumberCrystalHits());
+  _eventInfo[3]->SetText(eventInfoText);
   this->Layout();
 
   drawEverything();
@@ -312,8 +424,8 @@ void EventDisplayFrame::updateHitLegend(bool draw)
       }
       if(i%4==0)
       {
-        double mint=_dataInterface->getHitsBoundary().mint;
-        double maxt=_dataInterface->getHitsBoundary().maxt;
+        double mint=_dataInterface->getHitsTimeBoundary().mint;
+        double maxt=_dataInterface->getHitsTimeBoundary().maxt;
         double t=i*(maxt-mint)/20.0+mint;
         char s[50];
         sprintf(s,"%+.3e ns",t);
@@ -374,6 +486,12 @@ int EventDisplayFrame::getMinimumHits() const
   return _minHits;
 }
 
+int EventDisplayFrame::getEventToFind(bool &findEvent) const
+{
+  findEvent=_findEvent;
+  return _eventToFind;
+}
+
 void EventDisplayFrame::CloseWindow()
 {
   _isClosed=true;
@@ -412,7 +530,15 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==1100)
                          {
-                           _minHits=atoi(_minHitField->GetText());                         
+                           _minHits=atoi(_minHitField->GetText());
+                         }
+                         if(param1==1102)
+                         {
+                           _eventToFind=atoi(_eventToFindField->GetText()); 
+                           _findEvent=true;
+                           _timer->Stop();
+                           _timeCurrent=NAN;
+                           gApplication->Terminate();
                          }
                          if(param1==50 || param1==51)
                          {
@@ -433,9 +559,37 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              prepareAnimation();
                            }
                          }
+                         if(param1==1500)
+                         {
+                           double min[3],max[3];
+                           min[0]=atof(_minXField->GetText());
+                           min[1]=atof(_minYField->GetText());
+                           min[2]=atof(_minZField->GetText());
+                           max[0]=atof(_maxXField->GetText());
+                           max[1]=atof(_maxYField->GetText());
+                           max[2]=atof(_maxZField->GetText());
+                           _mainPad->GetView()->SetRange(min,max);
+                           _mainPad->Modified();
+                           _mainPad->Update();
+                           fillZoomAngleFields();
+                         }
+                         if(param1==1600)
+                         {
+                           double phi=atof(_phiField->GetText());
+                           double theta=atof(_thetaField->GetText());
+                           double psi=atof(_psiField->GetText());
+                           int irep=0;
+                           _mainPad->GetView()->SetView(phi,theta,psi,irep);
+                           _mainPad->SetPhi(-90-phi);
+                           _mainPad->SetTheta(90-theta);
+//                           _mainPad->GetView()->Draw();
+                           _mainPad->Modified();
+                           _mainPad->Update();
+                         }
                          break;
    case kCM_CHECKBUTTON: if(param1==31)
                          {
+                           _mainPad->cd();
                            if(_unhitButton->GetState()==kButtonDown)
                            {
                              _dataInterface->makeStrawsVisibleBeforeStart(true);
@@ -448,6 +602,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==32)
                          {
+                           _mainPad->cd();
                            if(_supportStructureButton->GetState()==kButtonDown)
                            {
                              _dataInterface->makeSupportStructuresVisible(true);
@@ -458,34 +613,33 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            }
                            drawEverything();
                          }
-                         if(param1==33)
+                         if(param1==36)
                          {
                            _mainPad->cd();
-                           if(_outsideTracksButton->GetState()==kButtonDown)
+                           if(_unhitCrystalsButton->GetState()==kButtonDown)
                            {
-                             double minx=_dataInterface->getTracksBoundary().minx;
-                             double miny=_dataInterface->getTracksBoundary().miny;
-                             double minz=_dataInterface->getTracksBoundary().minz;
-                             double maxx=_dataInterface->getTracksBoundary().maxx;
-                             double maxy=_dataInterface->getTracksBoundary().maxy;
-                             double maxz=_dataInterface->getTracksBoundary().maxz;
-                             _mainPad->GetView()->SetRange(minx,miny,minz,maxx,maxy,maxz);
+                             _dataInterface->makeCrystalsVisibleBeforeStart(true);
                            }
                            else
                            {
-                             double minx=_dataInterface->getHitsBoundary().minx;
-                             double miny=_dataInterface->getHitsBoundary().miny;
-                             double minz=_dataInterface->getHitsBoundary().minz;
-                             double maxx=_dataInterface->getHitsBoundary().maxx;
-                             double maxy=_dataInterface->getHitsBoundary().maxy;
-                             double maxz=_dataInterface->getHitsBoundary().maxz;
-                             _mainPad->GetView()->SetRange(minx,miny,minz,maxx,maxy,maxz);
+                             _dataInterface->makeCrystalsVisibleBeforeStart(false);
                            }
+                           drawEverything();
+                         }
+                         if(param1==33 || param1==34 || param1==35)
+                         {
+                           _mainPad->cd();
+                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(
+                                                 _targetViewButton->GetState()==kButtonDown,
+                                                 _calorimeterViewButton->GetState()==kButtonDown,
+                                                 _outsideTracksButton->GetState()==kButtonDown);
+                           _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
                            _mainPad->GetView()->AdjustScales();
                            _mainPad->Modified();
                            _mainPad->Update();
+                           fillZoomAngleFields();
                          }
-                         if(param1=60)
+                         if(param1==60)
                          {
                            _mainPad->cd();
                            _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
@@ -494,7 +648,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            if(isnan(_timeCurrent)) drawEverything();
                            else drawSituation();
                          }
-                         if(param1=61)
+                         if(param1==61)
                          {
                            _mainPad->cd();
                            _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
@@ -503,7 +657,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            if(isnan(_timeCurrent)) drawEverything();
                            else drawSituation();
                          }
-                         if(param1=62)
+                         if(param1==62)
                          {
                            _mainPad->cd();
                            if(_backgroundButton->GetState()==kButtonDown) _mainPad->SetFillColor(0);
@@ -540,13 +694,13 @@ void EventDisplayFrame::prepareAnimation()
  
   if(_outsideTracksButton->GetState()==kButtonDown)
   {
-    _timeStart=_dataInterface->getTracksBoundary().mint; 
-    _timeStop=_dataInterface->getTracksBoundary().maxt;
+    _timeStart=_dataInterface->getTracksTimeBoundary().mint; 
+    _timeStop=_dataInterface->getTracksTimeBoundary().maxt;
   }
   else
   {
-    _timeStart=_dataInterface->getHitsBoundary().mint; 
-    _timeStop=_dataInterface->getHitsBoundary().maxt; 
+    _timeStart=_dataInterface->getHitsTimeBoundary().mint; 
+    _timeStop=_dataInterface->getHitsTimeBoundary().maxt; 
   }
   if(isnan(_timeStart) || isnan(_timeStop)) return;
   double diff=_timeStop-_timeStart;

@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.4 2011/01/31 01:03:53 ehrlich Exp $
+// $Id: DataInterface.h,v 1.5 2011/02/03 07:37:03 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/31 01:03:53 $
+// $Date: 2011/02/03 07:37:03 $
 //
 // Original author Ralf Ehrlich
 //
@@ -16,6 +16,7 @@
 #include <map>
 #include "FWCore/Framework/interface/Event.h"
 #include "boost/shared_ptr.hpp"
+#include "Cube.h"
 
 class TGeoManager;
 class TGeoVolume;
@@ -35,14 +36,19 @@ class DataInterface
   DataInterface(const DataInterface &);
   DataInterface& operator=(const DataInterface &);
 
-  struct minmax
+  public:
+  struct timeminmax
+  {
+    double mint, maxt;
+  };
+  struct spaceminmax
   {
     double minx, maxx;
     double miny, maxy;
     double minz, maxz;
-    double mint, maxt;
   };
 
+  private:
   TGeoManager   *_geometrymanager; //bare pointer needed since ROOT manages this object
   TGeoVolume    *_topvolume;       //bare pointer needed since ROOT manages this object
   const TObject *_mainframe;       //points to the EventDisplayFrame object
@@ -51,17 +57,24 @@ class DataInterface
                                    //from the context menu belongs to this object) 
   std::list<boost::shared_ptr<VirtualShape> >   _components;
   std::map<int, boost::shared_ptr<Straw> >      _straws;
+  std::map<int, boost::shared_ptr<Crystal> >    _crystals;
   std::vector<boost::shared_ptr<Straw> >        _hits;
+  std::vector<boost::shared_ptr<Crystal> >      _crystalhits;
   std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   double        _xOffset, _zOffset;
-  minmax        _hitsMinmax, _tracksMinmax;
-  int           _numberHits;
-  bool          _showUnhitStraws;
+  timeminmax    _hitsTimeMinmax, _tracksTimeMinmax;
+  spaceminmax   _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
+  int           _numberHits, _numberCrystalHits;
+  bool          _showUnhitStraws, _showUnhitCrystals;
 
   void createGeometryManager();
   void removeNonGeometryComponents();
   void removeAllComponents();
+  void findBoundaryT(timeminmax &m, double t);
+  void findBoundaryP(spaceminmax &m, double x, double y, double z);
+  void resetBoundaryT(timeminmax &m);
+  void resetBoundaryP(spaceminmax &m);
 
   public:
   DataInterface(const TGMainFrame *mainframe);
@@ -72,15 +85,21 @@ class DataInterface
   void fillGeometry();
   void fillEvent(const edm::Event& event);
   bool findTrajectory(const edm::Event& event, boost::shared_ptr<Track> track, int id);
-  void findBoundaryT(minmax &m, double t);
-  void findBoundaryP(minmax &m, double x, double y, double z);
   void makeSupportStructuresVisible(bool visible);
   void makeStrawsVisibleBeforeStart(bool visible);
+  void makeCrystalsVisibleBeforeStart(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);
   void useTrackColors(bool trackcolors, bool whitebackground);
-  minmax getHitsBoundary() {return _hitsMinmax;}
-  minmax getTracksBoundary() {return _tracksMinmax;}
   int getNumberHits() {return _numberHits;}
+  int getNumberCrystalHits() {return _numberCrystalHits;}
+
+  timeminmax getHitsTimeBoundary() {return _hitsTimeMinmax;}
+  timeminmax getTracksTimeBoundary() {return _tracksTimeMinmax;}
+  spaceminmax getTrackerBoundary() {return _trackerMinmax;}
+  spaceminmax getTargetBoundary() {return _targetMinmax;}
+  spaceminmax getCalorimeterBoundary() {return _calorimeterMinmax;}
+  spaceminmax getTracksBoundary() {return _tracksMinmax;}
+  spaceminmax getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks);
 };
 
 }

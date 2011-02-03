@@ -1,7 +1,7 @@
 #include "DataInterface.h"
 #include "Track.h"
 #include "Straw.h"
-#include "SupportTTracker.h"
+#include "Cylinder.h"
 #include "dict_classes/ComponentInfo.h"
 
 #include <TView.h>
@@ -12,18 +12,19 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
 #include "TrackerGeom/inc/Tracker.hh"
+#include "TargetGeom/inc/Target.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "HepPID/ParticleName.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
+#include "CLHEP/Vector/Rotation.h"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
+#include "ToyDP/inc/CaloCrystalHitCollection.hh"
 
-#include <TGeoTrack.h>
 #include <TGeoVolume.h>
 
 namespace mu2e_eventdisplay
@@ -31,7 +32,7 @@ namespace mu2e_eventdisplay
 
 DataInterface::DataInterface(const TGMainFrame *mainframe):
               _geometrymanager(NULL),_topvolume(NULL),_mainframe(mainframe),
-              _showUnhitStraws(false)
+              _showUnhitStraws(false), _showUnhitCrystals(false)
 {
 }
 
@@ -68,6 +69,22 @@ void DataInterface::updateComponents(double time)
       (*hit)->update(time);
     }
   }
+  if(_showUnhitCrystals)
+  {
+    std::map<int,boost::shared_ptr<Crystal> >::const_iterator crystal;
+    for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
+    {
+      crystal->second->update(time);
+    }
+  }
+  else
+  {
+    std::vector<boost::shared_ptr<Crystal> >::const_iterator crystalhit;
+    for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
+    {
+      (*crystalhit)->update(time);
+    }
+  }
 }
 
 void DataInterface::createGeometryManager()
@@ -82,14 +99,14 @@ void DataInterface::createGeometryManager()
   _topvolume->SetVisibility(0);
   _topvolume->SetLineColor(0);
   _topvolume->Draw("ogle");
-  gPad->GetView()->SetParallel();
+//  gPad->GetView()->SetParallel();
   int irep=0;
-  gPad->GetView()->SetView(200,70,90,irep);
+  gPad->GetView()->SetView(180,70,90,irep);
   gPad->SetPhi(-90-180);
   gPad->SetTheta(90-70);
   gPad->GetView()->ShowAxis();
   TAxis3D::GetPadAxis(gPad)->SetLabelSize(0.025); 
-  gPad->GetView()->Draw();
+//  gPad->GetView()->Draw();  //is this needed?
   gPad->Modified();
   gPad->Update();
 }
@@ -98,12 +115,10 @@ void DataInterface::fillGeometry()
 {
   removeAllComponents();
   createGeometryManager();
-  _hitsMinmax.minx=NAN;
-  _hitsMinmax.miny=NAN;
-  _hitsMinmax.minz=NAN;
-  _hitsMinmax.maxx=NAN;
-  _hitsMinmax.maxy=NAN;
-  _hitsMinmax.maxz=NAN;
+  resetBoundaryP(_trackerMinmax);
+  resetBoundaryP(_targetMinmax);
+  resetBoundaryP(_calorimeterMinmax);
+  resetBoundaryP(_tracksMinmax);
 
   edm::Service<mu2e::GeometryService> geom;
 
@@ -134,8 +149,6 @@ void DataInterface::fillGeometry()
       int idDevice =  s.Id().getDevice();
       int index = s.Index().asInt();
 
-      findBoundaryP(_hitsMinmax, x, y, z);
-
       char c[200];
       sprintf(c,"Straw %i  Layer %i  Sector %i  Device %i",idStraw,idLayer,idSector,idDevice);
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
@@ -145,29 +158,135 @@ void DataInterface::fillGeometry()
       _straws[index]=shape;
     }
 
+    double innerRadius=ttracker->getSupportParams().innerRadius;
+    double outerRadius=ttracker->getSupportParams().outerRadius;
+    double zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength;
+    findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
+    findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
+
     char c[200];
     boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
     sprintf(c,"TTracker Support Structure");
     info->setText(0,c);
-    sprintf(c,"Inner Radius %g mm",ttracker->getSupportParams().innerRadius);
+    sprintf(c,"Inner Radius %g mm",innerRadius);
     info->setText(1,c);
-    sprintf(c,"Outer Radius %g mm",ttracker->getSupportParams().outerRadius);
+    sprintf(c,"Outer Radius %g mm",outerRadius);
     info->setText(2,c);
-    sprintf(c,"Length %g mm",2.0*ttracker->getTrackerEnvelopeParams().zHalfLength);
+    sprintf(c,"Length %g mm",2.0*zHalfLength);
     info->setText(3,c);
     boost::shared_ptr<SupportTTracker> shape(new SupportTTracker(0,0,0, 0,0, 
-                                   ttracker->getTrackerEnvelopeParams().zHalfLength,
-                                   ttracker->getSupportParams().innerRadius,
-                                   ttracker->getSupportParams().outerRadius,
+                                   zHalfLength,innerRadius,outerRadius,
                                    _geometrymanager, _topvolume, _mainframe, info, true));
     _components.push_back(shape);
     _supportstructures.push_back(shape);
   }
 
-  if(geom->hasElement<mu2e::ITracker>())
+  if(geom->hasElement<mu2e::Target>())
   {
-    mu2e::GeomHandle<mu2e::ITracker> itracker;  
-//TODO
+    mu2e::GeomHandle<mu2e::Target> target;  
+    double radius=target->cylinderRadius();
+    double length=target->cylinderLength();
+    double z=target->cylinderCenter();
+    unsigned int n=target->nFoils();
+    for(unsigned int i=0; i<n; i++)
+    {
+//      const TargetFoil &foil=target->foil(i);
+    }
+
+    findBoundaryP(_targetMinmax, radius, radius, z+length);
+    findBoundaryP(_targetMinmax, -radius, -radius, z-length);
+
+    char c[200];
+    boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+    sprintf(c,"Target");
+    info->setText(0,c);
+    sprintf(c,"Outer Radius %g mm",radius);
+    info->setText(1,c);
+    sprintf(c,"Length %g mm",length);
+    info->setText(2,c);
+    boost::shared_ptr<SupportTTracker> shape(new SupportTTracker(0,0,z, 0,0, length/2.0,0,radius,
+                                   _geometrymanager, _topvolume, _mainframe, info, true));
+    _components.push_back(shape);
+    _supportstructures.push_back(shape);
+  }
+  
+  if(geom->hasElement<mu2e::Calorimeter>())
+  {
+    mu2e::GeomHandle<mu2e::Calorimeter> calo;  
+    unsigned int n=calo->nVane();
+    for(unsigned int i=0; i<n; i++)
+    { 
+      const mu2e::Vane &v=calo->getVane(i);
+      double x=v.getOrigin().x()+_xOffset;
+      double y=v.getOrigin().y();
+      double z=v.getOrigin().z()+_zOffset;
+      int    id=v.Id();
+      double sx=v.getSize().x();
+      double sy=v.getSize().y();
+      double sz=v.getSize().z();
+      double phi=v.getRotation()->phi();
+      double theta=v.getRotation()->theta();
+      double psi=v.getRotation()->psi();
+
+      findBoundaryP(_calorimeterMinmax, x+sx, y+sy, z+sz);
+      findBoundaryP(_calorimeterMinmax, x-sx, y-sy, z-sz);
+
+      char c[200];
+      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+      sprintf(c,"Vane %i",id);
+      info->setText(0,c);
+      boost::shared_ptr<Vane> shape(new Vane(x,y,z,  sx,sy,sz,  phi,theta,psi,   NAN,0, 
+                                             _geometrymanager, _topvolume, _mainframe, info, true));
+      _components.push_back(shape);
+      _supportstructures.push_back(shape);
+    }
+
+    unsigned int roPerCrystal=calo->nROPerCrystal();
+    unsigned int nro=calo->nRO();
+    for(unsigned int i=0; i<nro; i+=roPerCrystal)
+    {
+      int vaneid=calo->getVaneByRO(i);
+      int crystalid=calo->getCrystalByRO(i);
+      int rPos=calo->getCrystalRByRO(i);
+      int zPos=calo->getCrystalZByRO(i);
+      double crystalHalfSize=calo->crystalHalfSize();
+
+      const mu2e::Vane &v=calo->getVane(vaneid);
+      double x=v.getOrigin().x()+_xOffset;
+      double y=v.getOrigin().y();
+      double z=v.getOrigin().z()+_zOffset;
+      double theta=v.getRotation()->theta();
+      double phi=v.getRotation()->phi();
+      double psi=v.getRotation()->psi();
+      double sx=v.getSize().x();
+      double sy=v.getSize().y();
+      double sz=v.getSize().z();
+
+      //vector to center of crystal, in (unrotated) vane coordinate system, with (0,0,0) as center of vane
+      double crystalX=0;
+      double crystalY=-sy+crystalHalfSize*(2.0*rPos+1.0);
+      double crystalZ=-sz+crystalHalfSize*(2.0*zPos+1.0);
+
+      double st=sin(theta);
+      double ct=cos(theta);
+      double sp=sin(phi);
+      double cp=cos(phi);
+      double ss=sin(psi);
+      double cs=cos(psi);
+      //vectors after roatation:
+      double rotatedX = cs*cp*crystalX-ct*sp*ss*crystalX   -  ss*cp*crystalY-ct*sp*cs*crystalY  +  st*sp*crystalZ;
+      double rotatedY = cs*sp*crystalX+ct*cp*ss*crystalX   -  ss*sp*crystalY+ct*cp*cs*crystalY  -  st*cp*crystalZ;
+      double rotatedZ = ss*st*crystalX                     +  cs*st*crystalY                    +     ct*crystalZ;
+
+      char c[200];
+      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+      sprintf(c,"Vane %i, Crystal %i",vaneid,crystalid);
+      info->setText(0,c);
+      boost::shared_ptr<Crystal> shape(new Crystal(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfSize,crystalHalfSize,  
+                                                   phi,theta,psi,  NAN,0,  _geometrymanager, _topvolume, _mainframe, info, false));
+      _components.push_back(shape);
+      _crystals[crystalid]=shape;
+    }
   }
 }
 
@@ -192,6 +311,17 @@ void DataInterface::makeStrawsVisibleBeforeStart(bool visible)
   _showUnhitStraws=visible;
 } 
 
+void DataInterface::makeCrystalsVisibleBeforeStart(bool visible)
+{
+  std::map<int,boost::shared_ptr<Crystal> >::const_iterator crystal;
+  for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
+  {
+    crystal->second->setDefaultVisibility(visible);
+    crystal->second->start();
+  }
+  _showUnhitCrystals=visible;
+} 
+
 void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
 {
   std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
@@ -200,13 +330,27 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
     double time=(*hit)->getStartTime();
     if(hitcolors)
     {
-      int color=TMath::FloorNint(20.0*(time-_hitsMinmax.mint)/(_hitsMinmax.maxt-_hitsMinmax.mint));
+      int color=TMath::FloorNint(20.0*(time-_hitsTimeMinmax.mint)/(_hitsTimeMinmax.maxt-_hitsTimeMinmax.mint));
       if(color>=20) color=19;
       if(color<=0) color=0;
       color+=2000;
       (*hit)->setColor(color);
     }
     else (*hit)->setColor(whitebackground?1:0);
+  }
+  std::vector<boost::shared_ptr<Crystal> >::const_iterator crystalhit;
+  for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
+  {
+    double time=(*crystalhit)->getStartTime();
+    if(hitcolors)
+    {
+      int color=TMath::FloorNint(20.0*(time-_hitsTimeMinmax.mint)/(_hitsTimeMinmax.maxt-_hitsTimeMinmax.mint));
+      if(color>=20) color=19;
+      if(color<=0) color=0;
+      color+=2000;
+      (*crystalhit)->setColor(color);
+    }
+    else (*crystalhit)->setColor(whitebackground?1:0);
   }
 }
 
@@ -240,13 +384,53 @@ void DataInterface::useTrackColors(bool trackcolors, bool whitebackground)
   }
 }
 
-void DataInterface::findBoundaryT(minmax &m, double t)
+void DataInterface::resetBoundaryT(timeminmax &m)
+{
+  m.mint=NAN;
+  m.maxt=NAN;
+}
+
+void DataInterface::resetBoundaryP(spaceminmax &m)
+{
+  m.minx=NAN;
+  m.miny=NAN;
+  m.minz=NAN;
+  m.maxx=NAN;
+  m.maxy=NAN;
+  m.maxz=NAN;
+}
+
+DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks)
+{
+  spaceminmax m;
+  resetBoundaryP(m);
+  findBoundaryP(m, _trackerMinmax.minx, _trackerMinmax.miny, _trackerMinmax.minz);
+  findBoundaryP(m, _trackerMinmax.maxx, _trackerMinmax.maxy, _trackerMinmax.maxz);
+  if(useTarget)
+  {
+    findBoundaryP(m, _targetMinmax.minx, _targetMinmax.miny, _targetMinmax.minz);
+    findBoundaryP(m, _targetMinmax.maxx, _targetMinmax.maxy, _targetMinmax.maxz);
+  }
+  if(useCalorimeter)
+  {
+    findBoundaryP(m, _calorimeterMinmax.minx, _calorimeterMinmax.miny, _calorimeterMinmax.minz);
+    findBoundaryP(m, _calorimeterMinmax.maxx, _calorimeterMinmax.maxy, _calorimeterMinmax.maxz);
+  }
+  if(useTracks)
+  {
+    findBoundaryP(m, _tracksMinmax.minx, _tracksMinmax.miny, _tracksMinmax.minz);
+    findBoundaryP(m, _tracksMinmax.maxx, _tracksMinmax.maxy, _tracksMinmax.maxz);
+  }
+  return m;
+}
+
+void DataInterface::findBoundaryT(timeminmax &m, double t)
 {
   if(isnan(m.mint) || t<m.mint) m.mint=t;
   if(isnan(m.maxt) || t>m.maxt) m.maxt=t;
 }
 
-void DataInterface::findBoundaryP(minmax &m, double x, double y, double z)
+void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
 {
   if(isnan(m.minx) || x<m.minx) m.minx=x;
   if(isnan(m.miny) || y<m.miny) m.miny=y;
@@ -260,6 +444,8 @@ void DataInterface::fillEvent(const edm::Event& event)
 {
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
+  resetBoundaryT(_hitsTimeMinmax);
+  resetBoundaryT(_tracksTimeMinmax);
 
   edm::Handle<mu2e::StepPointMCCollection> hits;
   std::string _g4ModuleLabel = "g4run";
@@ -268,8 +454,6 @@ void DataInterface::fillEvent(const edm::Event& event)
   if(event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits))  
   {
     _numberHits=hits->size();
-    _hitsMinmax.mint=NAN;
-    _hitsMinmax.maxt=NAN;
     std::vector<mu2e::StepPointMC>::const_iterator iter;
     for(iter=hits->begin(); iter!=hits->end(); iter++)
     {
@@ -284,7 +468,7 @@ void DataInterface::fillEvent(const edm::Event& event)
         double previousStartTime=straw->second->getStartTime();
         if(isnan(previousStartTime))
         {
-          findBoundaryT(_hitsMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           straw->second->setStartTime(time);
           straw->second->start();
           char c[100];
@@ -307,14 +491,44 @@ void DataInterface::fillEvent(const edm::Event& event)
   }
 
 
-  _tracksMinmax.minx=NAN;
-  _tracksMinmax.miny=NAN;
-  _tracksMinmax.minz=NAN;
-  _tracksMinmax.mint=NAN;
-  _tracksMinmax.maxx=NAN;
-  _tracksMinmax.maxy=NAN;
-  _tracksMinmax.maxz=NAN;
-  _tracksMinmax.maxt=NAN;
+  edm::Handle<mu2e::CaloCrystalHitCollection> calohits;
+  if(event.getByType(calohits))
+  {
+    _numberCrystalHits=calohits->size();
+    std::vector<mu2e::CaloCrystalHit>::const_iterator iter;
+    for(iter=calohits->begin(); iter!=calohits->end(); iter++)
+    {
+      const mu2e::CaloCrystalHit& calohit = *iter;
+      int crystalid = calohit.id();
+      double time = calohit.time();
+      double energy = calohit.energyDep();
+      std::map<int,boost::shared_ptr<Crystal> >::iterator crystal=_crystals.find(crystalid);
+      if(crystal!=_crystals.end() && !isnan(time))
+      {
+        double previousStartTime=crystal->second->getStartTime();
+        if(isnan(previousStartTime))
+        {
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          crystal->second->setStartTime(time);
+          crystal->second->start();
+          char c[100];
+          sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
+          crystal->second->getComponentInfo()->setText(1,c);
+          sprintf(c,"deposited energy(s): %geV",energy/CLHEP::eV);
+          crystal->second->getComponentInfo()->setText(2,c);
+          _crystalhits.push_back(crystal->second);
+        }
+        else
+        {
+          crystal->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
+          crystal->second->getComponentInfo()->expandLine(2,energy/CLHEP::eV,"eV");
+        }
+      }
+    }
+  }
+
+
+  resetBoundaryP(_tracksMinmax);
   edm::Handle<mu2e::SimParticleCollection> simParticles;
   if(event.getByType(simParticles))
   {
@@ -336,8 +550,8 @@ void DataInterface::fillEvent(const edm::Event& event)
       double z2=particle.endPosition().z()+_zOffset;
       double t2=particle.endGlobalTime();
       double e2=particle.endMomentum().e();
-      findBoundaryT(_tracksMinmax, t1);
-      findBoundaryT(_tracksMinmax, t2);
+      findBoundaryT(_tracksTimeMinmax, t1);
+      findBoundaryT(_tracksTimeMinmax, t2);
       findBoundaryP(_tracksMinmax, x1, y1, z1);
       findBoundaryP(_tracksMinmax, x2, y2, z2);
 
@@ -346,8 +560,8 @@ void DataInterface::fillEvent(const edm::Event& event)
 
       char c1[200],c2[200],c3[200];
       sprintf(c1,"Track %i  %s  Parent %i",id,particlename.c_str(),parentid);
-      sprintf(c2,"Start Energy %gMeV  End Energy %gMeV",e1/CLHEP::MeV,e2/CLHEP::MeV);
-      sprintf(c3,"Track Length %gmm",length/CLHEP::mm);
+      sprintf(c2,"Start Energy %gMeV  End Energy %gMeV Track Length %gmm",e1/CLHEP::MeV,e2/CLHEP::MeV,length/CLHEP::mm);
+      sprintf(c3,"Created by %s  Destroyed by %s",particle.creationCode().name().c_str(),particle.stoppingCode().name().c_str());
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       info->setText(0,c1);
       info->setText(1,c2);
@@ -410,6 +624,7 @@ void DataInterface::removeNonGeometryComponents()
     }
   }
   _hits.clear();
+  _crystalhits.clear();
   _tracks.clear();
 }
 
@@ -418,7 +633,9 @@ void DataInterface::removeAllComponents()
   std::list<boost::shared_ptr<VirtualShape> >::iterator iter;
   _components.clear();
   _straws.clear();
+  _crystals.clear();
   _hits.clear();
+  _crystalhits.clear();
   _tracks.clear();
   _supportstructures.clear();
   if(_geometrymanager) delete _geometrymanager;

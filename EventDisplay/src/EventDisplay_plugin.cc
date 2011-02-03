@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_plugin.cc,v 1.2 2011/01/31 01:03:53 ehrlich Exp $
+// $Id: EventDisplay_plugin.cc,v 1.3 2011/02/03 07:37:03 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/31 01:03:53 $
+// $Date: 2011/02/03 07:37:03 $
 //
 
 #include <iostream>
@@ -20,6 +20,7 @@
 #include "ToyDP/inc/StepPointMCCollection.hh"
 
 #include "TApplication.h"
+#include "TGMsgBox.h"
 
 #include "EventDisplayFrame.h"
 
@@ -78,9 +79,20 @@ namespace mu2e
                                          //chance to select anything
       if(event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits))  
       {
-        int numberHits=hits->size();
-        if(numberHits > _frame->getMinimumHits()) _frame->fillEvent(event);
-        else std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
+        bool findEvent=false;
+        int eventToFind=_frame->getEventToFind(findEvent);
+        if(findEvent)
+        {
+          int eventNumber=event.id().event();
+          if(eventNumber==eventToFind) _frame->fillEvent(event);
+          else std::cout<<"event skipped, since this is not the event we are looking for"<<std::endl;
+        }
+        else
+        {
+          int numberHits=hits->size();
+          if(numberHits > _frame->getMinimumHits()) _frame->fillEvent(event);
+          else std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
+        }
       }
 /*-----------------------------------*/
     }
@@ -88,7 +100,19 @@ namespace mu2e
 
   void EventDisplay::endJob()
   {
-    if(!_frame->isClosed()) _frame->CloseWindow();
+    if(!_frame->isClosed())
+    {
+      bool findEvent=false;
+      int eventToFind=_frame->getEventToFind(findEvent);
+      if(findEvent)
+      {
+        char msg[300];
+        sprintf(msg,"The end of file has been reached, but the event #%i has not been found.",eventToFind);
+        TGMsgBox *eventNotFoundBox;
+        eventNotFoundBox = new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Event Not Found",msg,kMBIconExclamation,kMBOk);
+      }
+      _frame->CloseWindow();
+    }
   }
 }
 

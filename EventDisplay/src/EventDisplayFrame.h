@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.3 2011/01/31 01:03:53 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.4 2011/02/03 07:37:03 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/31 01:03:53 $
+// $Date: 2011/02/03 07:37:03 $
 //
 // Original author Ralf Ehrlich
 //
@@ -47,12 +47,14 @@ namespace mu2e_eventdisplay
 #endif
     bool           isClosed() const;
     int            getMinimumHits() const;
+    int            getEventToFind(bool &findEvent) const;
     void           showInfo(TObject*);
     virtual void   CloseWindow(); //inherited from TGMainFrame 
 
     private:
     void updateHitLegend(bool draw);
     void updateTrackLegend(bool draw);
+    void fillZoomAngleFields();
     void prepareAnimation();
     void drawSituation();
     void drawEverything();
@@ -69,8 +71,8 @@ namespace mu2e_eventdisplay
     boost::shared_ptr<DataInterface> _dataInterface;
 #endif
     double              _timeCurrent, _timeStart, _timeStop;
-    int                 _minHits;
-    bool                _isClosed;
+    int                 _minHits, _eventToFind;
+    bool                _isClosed, _findEvent;
     bool                _saveAnim;
     int                 _saveAnimCounter;
     std::string         _saveAnimFile;
@@ -79,10 +81,13 @@ namespace mu2e_eventdisplay
     TPad                *_mainPad, *_infoPad;
     TText               *_clock;
     TTimer              *_timer;
-    TGCheckButton       *_unhitButton, *_supportStructureButton, *_outsideTracksButton;
+    TGCheckButton       *_unhitButton, *_unhitCrystalsButton, *_supportStructureButton;
+    TGCheckButton       *_outsideTracksButton, *_calorimeterViewButton, *_targetViewButton;
     TGCheckButton       *_hitColorButton, *_trackColorButton, *_backgroundButton;
     TGCheckButton       *_repeatAnimationButton;
-    TGTextEntry         *_minHitField;
+    TGTextEntry         *_minHitField, *_eventToFindField;
+    TGTextEntry         *_minXField, *_minYField, *_minZField, *_maxXField, *_maxYField, *_maxZField;
+    TGTextEntry         *_phiField, *_thetaField, *_psiField;
     TGLabel             **_eventInfo;
     TText               *_legendText[30], *_legendParticleText[6];  
     TBox                *_legendBox[30];
