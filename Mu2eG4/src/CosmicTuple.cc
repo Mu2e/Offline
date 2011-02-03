@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.11 2010/12/01 23:05:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/01 23:05:18 $
+// $Id: CosmicTuple.cc,v 1.12 2011/02/03 18:38:27 wasiko Exp $
+// $Author: wasiko $
+// $Date: 2011/02/03 18:38:27 $
 //
 // Original author Rob Kutschke
 //
@@ -12,6 +12,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <vector>
 
 // Framework includes.
 #include "FWCore/Services/interface/TFileService.h"
@@ -20,15 +21,22 @@
 
 // Mu2e includes.
 #include "Mu2eG4/src/CosmicTuple.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "ToyDP/inc/ProcessCode.hh"
+#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
+#include "Mu2eUtilities/inc/SimParticleAncestors.hh"
+#include "TrackerGeom/inc/Tracker.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 
+#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+ 
 #include "FWCore/Framework/interface/EDFilter.h"
 
 // Root includes.
@@ -47,13 +55,14 @@ namespace mu2e {
 
   CosmicTuple::CosmicTuple(edm::ParameterSet const& pset) : 
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-    //  _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
     _minimump(pset.getParameter<double>("minimump")),
     _maximump(pset.getParameter<double>("maximump")),
-    _traverseZ(pset.getParameter<double>("traverseZ")),
-
+    _minHits(pset.getParameter<int>("minHits")),
+  
     _nAnalyzed(0),
+    _hEventsize(0),
     _ntupTrk(0)
+
   {
   }
   
@@ -61,13 +70,20 @@ namespace mu2e {
 
     // Get access to the TFile service.
     edm::Service<edm::TFileService> tfs;
+
+    // Create some 1D histograms.
+    _hEventsize     = tfs->make<TH1F>( "EventSize",       "Size of the Event",     100,  0., 100000. );
     
     // Create an ntuple.
     _ntupTrk = tfs->make<TNtuple>( "ntupTrk", "Trk ntuple", 
-                                   "evt:trk:pid:px:py:pz:pmag:genId:pidGen:eGen:thGen:xGen:yGen:zGen:nHits:hxMin:hyMin:hzMin:hxMax:hyMax:hzMax:tMin:tMax");
-
+"evt:trk:pid:pmag:genId:pidGen:eGen:thGen:xGen:yGen:zGen:nHits:ptrs:xtrs:ytrs:ztrs:pprs:xprs:yprs:zprs:prnId:time:calE:nCryst:nAPD:pAng:prCrea:prStop:trCrea:trStop:run:px:py:pz:E:vx:vy:vz:vt:isSh");
   }
 
+  bool CosmicTuple:: beginRun(edm::Run& run, edm::EventSetup const&) {  
+   _runNumber = run.id().run();
+   return true;
+  }
+   
   bool CosmicTuple::filter(edm::Event& event, edm::EventSetup const&) {
     
     typedef SimParticleCollection::key_type key_type;
@@ -81,221 +97,229 @@ namespace mu2e {
     }
 
     // Ask the event to give us a "handle" to the requested hits.
-    static const string collectionName("tracker");
-    edm::Handle<StepPointMCCollection> hits;
-    event.getByLabel(_g4ModuleLabel,collectionName,hits);
-
+       static const string collectionName("tracker");
+       edm::Handle<StepPointMCCollection> hits;
+       event.getByLabel(_g4ModuleLabel,collectionName,hits);
+  
     // Get handles to the generated and simulated particles.
     edm::Handle<ToyGenParticleCollection> genParticles;
     event.getByType(genParticles);
 
+    // Get handles to the generated and simulated particles.
     edm::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() );
-
+   
     // Other files might have empty collections.
     if ( haveSimPart ){
       haveSimPart = !(simParticles->empty() );
     }
 
-    //tim edit filter
-
-    // Get the hit information.
-    //      const CLHEP::Hep3Vector& pos = hit.position();
-    //      const CLHEP::Hep3Vector& mom = hit.momentum();
-
-
-    //    if ( ptrk.mag() > _minimump ) return true;
-    //    if ( ptrk.mag() < _minimump ) return false;
-    //    if ( ptrk.mag() < _maximump ) return true;
-    //    if ( ptrk.mag() > _maximump ) return false;
-    //    if ( hzMax-hzMin > _traverseZ ) return true;
-    //    if ( hzMax-hzMin < _traverseZ ) return false;
-    //
-    //end tim edit
-
-
-
-
-
-    // A silly example just to show how to throw.
-    if ( hits->size() > 1000000 ){
-      throw cms::Exception("RANGE")
-        << "Way too many hits in this event.  Something is really wrong."
-        << hits->size();
-    }
-
-
     // ntuple buffer.
-    float ntT[23];   
+    float ntT[_ntupTrk->GetNvar()];   
 
-    key_type oldTrk(-1);
-    bool first = true;
-    CLHEP::Hep3Vector ptrk(0,0,0);
-    int nHits = 0;
-    float hxMin = 1e6;
-    float hyMin = 1e6;
-    float hzMin = 1e6;
-    float tMin = 1e6;
-    float hxMax = -1e6;
-    float hyMax = -1e6;
-    float hzMax = -1e6;
-    float tMax = -1e6;
- 
+    bool    pass     = false;
+    bool    isSh     = false;
+    double  calEne   = 0.;    
+    int     prntPdg  = 0;     
+    int     prCr     = 0;
+    int     prSt     = 0;
+    int     trCr     = 0;
+    int     trSt     = 0;
+    double  px       = 0.; 
+    double  py       = 0.;
+    double  pz       = 0.;
+    double  E        = 0.; 
+    double  vx       = 0.; 
+    double  vy       = 0.;    
+    double  vz       = 0.;    
+    double  vt       = 0.;
+    double  rmass    = 0.;
 
-    bool pass= false;
-    bool pass1= false;
-    bool pass2= false;
-    bool pass3= false;
+    map<int,int> hit_crystals;       
+    map<int,int> hit_apds;
 
-    // Loop over all hits.
-    for ( size_t i=0; i<hits->size(); ++i ){
-      
-      // Alias, used for readability.
-      const StepPointMC& hit = (*hits)[i];
+    edm::Service<GeometryService> geom;
+    if( ! geom->hasElement<Calorimeter>() ) return pass;
+    GeomHandle<Calorimeter> cg;
 
+      // Fill some histograms
+      _hEventsize->Fill(simParticles->size());
+  
+    if ( simParticles->size() >= 50000 ) return pass;
 
-      // Skip hits with low pulse height.
-      if ( hit.eDep() < _minimumEnergy ) continue;
-      //      if ( hit.momentum() > _minimump ) continue;
-      //      if ( hit.momentum() < _maximump ) continue;
-      //      if ( hzMax-hzMin  > _traverseZ ) continue;
+    // Construct an object that ties together all of the simulated particle and hit info.
+    SimParticlesWithHits sims( event,
+                               "g4run",
+                               "makeSH",
+			       "tracker",
+                               0.001,
+                               0 );
     
-      // Get the hit information.
-      const CLHEP::Hep3Vector& pos = hit.position();
-      const CLHEP::Hep3Vector& mom = hit.momentum();
+    typedef SimParticlesWithHits::map_type map_type;
      
+    for ( map_type::const_iterator i=sims.begin();
+          i != sims.end(); ++i ){
 
-      //          if ( ptrk.mag() > _minimump ){ pass1 = true;}
-      //          if ( ptrk.mag() < _maximump ){ pass2 = true;}
-      //          if ( hzMax-hzMin > _traverseZ ) {pass3 = true;}
-      //      pass = pass1 && pass2 && pass3;
+      // All information about this SimParticle
+      SimParticleInfo const& simInfo = i->second;
+      SimParticle const& sim = simInfo.simParticle();
 
+      // Information about primary ancestor
+      SimParticleAncestors ancestor( sim,
+				    *simParticles,
+				    *genParticles);
+      ToyGenParticle const& gen_parent = ancestor.originalGen();
 
+      // Immediate parent particle
+      SimParticle const* sim_parent = 0;
+      if( sim.hasParent() ) sim_parent = simParticles->findOrNull(sim.parentId());
 
+      // Information about StrawHits that belong on this SimParticle.
+      vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
+      int nHits = infos.size();
+
+      CLHEP::Hep3Vector y(0,-1,0);
+      CLHEP::Hep3Vector posGen = gen_parent._position;
+      CLHEP::Hep3Vector trspos(0,0,0);
+      CLHEP::Hep3Vector prspos(0,0,0);
+      CLHEP::Hep3Vector trsmom(0,0,0);
+      CLHEP::Hep3Vector prsmom(0,0,0);
  
-      // The simulated particle that made this hit.
-      key_type trackId = hit.trackId();
+      trspos = sim.startPosition();
+      trsmom = sim.startMomentum();
+      ProcessCode creationCode = sim.creationCode();
+      ProcessCode stoppingCode = sim.stoppingCode();
+      trCr = creationCode;
+      trSt = stoppingCode;
 
-      if ( oldTrk != trackId || i == hits->size()-1 ) {
-        // special case
-        if ( i == hits->size()-1 ) {
-          oldTrk = trackId;
-          if ( pos.x() < hxMin ) hxMin = pos.x();
-          if ( pos.y() < hyMin ) hyMin = pos.y();
-          if ( pos.z() < hzMin ) hzMin = pos.z();
-          if ( hit.time() < tMin ) tMin = hit.time();
-          if ( pos.x() > hxMax ) hxMax = pos.x();
-          if ( pos.y() > hyMax ) hyMax = pos.y();
-          if ( pos.z() > hzMax ) hzMax = pos.z();
-          if ( hit.time() > tMax ) tMax = hit.time();
-          nHits++;
-        }
-
-        if ( !first ) {
-          // dump previous track
-
-          // Default values for these, in case information is not available.
-          int pdgId = -1;
-          float eGen = 0;
-          float thGen = 0;
-          CLHEP::Hep3Vector posGen(0,0,0);
-          GenId idGen;
-          int pidGen = -1;
-
-          const SimParticle* sim = simParticles->findOrNull(oldTrk);
-          if ( haveSimPart && sim ){
-
-            // PDG Particle Id of the sim particle that made this hit.
-            pdgId = sim->pdgId();
-      
-            // find the generated parent
-            const SimParticle* p = sim;
-            int gTrk = p->generatorIndex();
-            int depth = 0;
-            while ( gTrk < 0 && depth < 100 ) {
-              if ( p->hasParent() ) {
-                p = simParticles->findOrNull(p->parentId());
-                if ( !p ) break;
-                gTrk = p->generatorIndex();
-                depth++;
-              } else {
-                break;
-              }
-            }
-
-            // store generator info
-            if ( gTrk >= 0 && static_cast<size_t>(gTrk) < genParticles->size() ) {
-              ToyGenParticle const& genpart = genParticles->at(gTrk);
-              idGen = genpart.generatorId();
-              pidGen = genpart.pdgId();
-              CLHEP::HepLorentzVector p4gen = genpart.momentum();
-              CLHEP::Hep3Vector y(0,-1,0);
-              eGen = p4gen.e();
-              thGen = y.angle(p4gen.vect());
-              posGen = genpart.position();
-            }
-
-          }
-
-          ntT[0]  = event.id().event();
-          ntT[1]  = oldTrk.asInt();
-          ntT[2]  = pdgId;
-          ntT[3]  = ptrk.x();
-          ntT[4]  = ptrk.y();
-          ntT[5]  = ptrk.z();
-          ntT[6]  = ptrk.mag();
-          ntT[7]  = idGen.Id();
-          ntT[8]  = pidGen;
-          ntT[9]  = eGen;
-          ntT[10] = thGen;
-          ntT[11] = posGen.x();
-          ntT[12] = posGen.y();
-          ntT[13] = posGen.z();
-          ntT[14] = nHits;
-          ntT[15] = hxMin;
-          ntT[16] = hyMin;
-          ntT[17] = hzMin;
-          ntT[18] = hxMax;
-          ntT[19] = hyMax;
-          ntT[20] = hzMax;
-          ntT[21] = tMin;
-          ntT[22] = tMax;
-          if ( ptrk.mag() > _minimump ){ pass1 = true;}
-          if ( ptrk.mag() < _maximump ){ pass2 = true;}
-          if ( hzMax-hzMin > _traverseZ ) {pass3 = true;}
-          pass = pass1 && pass2 && pass3;
-
-          _ntupTrk->Fill(ntT);
-        }
-
-        oldTrk = hit.trackId();
-        ptrk = mom;
-        nHits = 0;
-        hxMin = 1e6;
-        hyMin = 1e6;
-        hzMin = 1e6;
-        tMin = 1e6;
-        hxMax = -1e6;
-        hyMax = -1e6;
-        hzMax = -1e6;
-        tMax=  -1e6;
+       if( sim.hasParent()) {
+      prspos = sim_parent->startPosition();
+      prsmom = sim_parent->startMomentum();
+      prntPdg= sim_parent->pdgId();
+      prCr   = sim_parent->creationCode();  
+      prSt   = sim_parent->stoppingCode();
+      } else {
+       prspos  = posGen;
+       prsmom  = gen_parent._momentum.e();
+       prntPdg = gen_parent._pdgId;   
       }
 
-      if ( pos.x() < hxMin ) hxMin = pos.x();
-      if ( pos.y() < hyMin ) hyMin = pos.y();
-      if ( pos.z() < hzMin ) hzMin = pos.z();
-      if ( hit.time() < tMin ) tMin = hit.time();
-      if ( pos.x() > hxMax ) hxMax = pos.x();
-      if ( pos.y() > hyMax ) hyMax = pos.y();
-      if ( pos.z() > hzMax ) hzMax = pos.z();
-      if ( hit.time() > tMax ) tMax = hit.time();
-      nHits++;
-      first=false;
+      double  momentum = -1.;
+      double  pitchAng = -1.;
+  
+     ConditionsHandle<ParticleDataTable> pdt("ignored");
+    
+    //Get particle mass
+    const HepPDT::ParticleData& e_data = pdt->particle(sim.pdgId());
+    rmass = e_data.mass().value();
 
+      // First  StrawsHits to which this SimParticle contributed.
+        StrawHitMCInfo const& info = infos.at(0);
+            
+       // Loop over all StepPointMC's that contribute to this StrawHit.
+        std::vector<StepPointMC const *> const& steps = info.steps();
+
+        for ( size_t k=0; k<steps.size(); ++k){
+          StepPointMC const& step = *(steps[k]);
+
+       if(step.trackId() == sim.id()) {
+           momentum = step.momentum().mag();
+          pitchAng = acos(step.momentum().z()/step.momentum().mag())*180./3.14159;
+          px = step.momentum().x();
+          py = step.momentum().y();
+          pz = step.momentum().z();
+          E  = sqrt(step.momentum().mag()*step.momentum().mag() + rmass*rmass);
+          vx = step.position().x();          
+          vy = step.position().y();          
+          vz = step.position().z();
+          vt = step.time();
+          isSh = info.isShared();          
+       break;
+        }
+      }
+
+      if( momentum < _minimump || momentum > _maximump ) continue;
+      if( nHits< _minHits ) continue;
+      pass = true;
+
+      if(calEne == 0. ) {
+   // Find original G4 steps in the Crystals
+    edm::Handle<StepPointMCCollection> rohits;
+    event.getByLabel(_g4ModuleLabel,"calorimeter",rohits);
+
+    if( rohits.isValid() ) { 
+      for ( size_t i=0; i<rohits->size(); ++i ) {
+         const StepPointMC & rohit = rohits->at(i);
+         calEne += rohit.eDep();
+         int cid = rohit.volumeId();
+         hit_crystals[cid] =1;
+         }
+       } else{
+       calEne = -1;
+      }
+
+   // Find original G4 steps in the APDs
+    edm::Handle<StepPointMCCollection> apdhits;
+    event.getByLabel(_g4ModuleLabel,"calorimeterRO",apdhits);
+    
+    if( apdhits.isValid() ) {
+      for ( size_t i=0; i<apdhits->size(); ++i ) {
+         const StepPointMC & apdhit = apdhits->at(i);
+         int apdid = apdhit.volumeId();
+         int cida  = cg->getCrystalByRO(apdid);
+         hit_apds[cida] =1;
+         }
+      }
+     }
+
+      ntT[0]  = event.id().event();
+      ntT[1]  = sim.id().asInt();
+      ntT[2]  = sim.pdgId();
+      ntT[3]  = momentum;
+      ntT[4]  = gen_parent._generatorId.Id();
+      ntT[5]  = gen_parent._pdgId;
+      ntT[6]  = gen_parent._momentum.e();
+      ntT[7]  = y.angle(gen_parent._momentum.vect());
+      ntT[8]  = posGen.x();
+      ntT[9]  = posGen.y();
+      ntT[10] = posGen.z();
+      ntT[11] = nHits;
+      ntT[12] = trsmom.mag();
+      ntT[13] = trspos.x();
+      ntT[14] = trspos.y();
+      ntT[15] = trspos.z();
+      ntT[16] = prsmom.mag();
+      ntT[17] = prspos.x();
+      ntT[18] = prspos.y();
+      ntT[19] = prspos.z();
+      ntT[20] = prntPdg;
+      ntT[21] = sim.startGlobalTime();
+      ntT[22] = calEne;
+      ntT[23] = hit_crystals.size();
+      ntT[24] = hit_apds.size();
+      ntT[25] = pitchAng;
+      ntT[26] = prCr;
+      ntT[27] = prSt;
+      ntT[28] = trCr;  
+      ntT[29] = trSt;  
+      ntT[30] = _runNumber;
+      ntT[31] = px;  
+      ntT[32] = py;        
+      ntT[33] = pz;        
+      ntT[34] = E;        
+      ntT[35] = vx;        
+      ntT[36] = vy;        
+      ntT[37] = vz;        
+      ntT[38] = vt;
+      ntT[39] = isSh;
+
+      _ntupTrk->Fill(ntT);
+      
     } // end loop over hits.
+
     return pass;
 
   } // end analyze

@@ -3,9 +3,14 @@
 
            Release notes for Mu2e Offline software, v0_3_1
 
-  $Id: v0_3_1.txt,v 1.11 2011/02/01 00:28:33 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/02/01 00:28:33 $
+  $Id: v0_3_1.txt,v 1.12 2011/02/03 18:38:27 wasiko Exp $
+  $Author: wasiko $
+  $Date: 2011/02/03 18:38:27 $
+
+13) February 03, 2011 Jorjadze
+    Mu2e/G4/src/CosmicTuple.cc and CosmicTuple.hh files were changed.
+    A new logic based on SimParticlesWithHits are used for the search
+    of the cosmic originated track candidates in the tracker 
 
 12) January 31, 2011 kutschke
     In many SConscript files there was a line that was uneccessary because

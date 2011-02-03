@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.hh,v 1.4 2010/08/10 19:06:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/10 19:06:58 $
+// $Id: CosmicTuple.hh,v 1.5 2011/02/03 18:38:27 wasiko Exp $
+// $Author: wasiko $
+// $Date: 2011/02/03 18:38:27 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -34,6 +34,7 @@ namespace mu2e {
     virtual ~CosmicTuple() { }
 
     virtual void beginJob(edm::EventSetup const&);
+    virtual bool beginRun(edm::Run &r, edm::EventSetup const& eSetup );
  
     // This is called for each event.
     virtual bool filter(edm::Event& e, edm::EventSetup const&);
@@ -44,15 +45,16 @@ namespace mu2e {
     std::string _g4ModuleLabel;
 
     // Cut on the minimum energy.
-    double _minimumEnergy;
     double _minimump;
     double _maximump;
-    double _traverseZ;
+    int _minHits;
+    int _runNumber;
 
     // Number of events analyzed.
     int _nAnalyzed;
 
-    // Pointers to histograms to be filled.
+    // Pointers to histograms & ntuples
+    TH1F* _hEventsize;
     TNtuple* _ntupTrk;
 
   };
