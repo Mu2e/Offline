@@ -3,9 +3,13 @@
 
            Release notes for Mu2e Offline software, v0_3_1
 
-  $Id: v0_3_1.txt,v 1.12 2011/02/03 18:38:27 wasiko Exp $
-  $Author: wasiko $
-  $Date: 2011/02/03 18:38:27 $
+
+14) Feb 3 2011 Hans Wenzel 
+    ../HitMakers/src/MakeDPIStrawCluster_plugin.cc
+    ../HitMakers/src/ReadDPIStrawCluster_plugin.cc
+    to run it use:
+    mute HitMakers/test/makeDPIStrawClusters.py
+    This will run the Hit maker and the Cluster maker
 
 13) February 03, 2011 Jorjadze
     Mu2e/G4/src/CosmicTuple.cc and CosmicTuple.hh files were changed.
@@ -32,6 +36,7 @@
    Now each hit has an entry with the information of the generated particle, 
    independently from the energy deposition of the generated track. This structure
    implies that only one background particle must be generated for each event. 
+>>>>>>> 1.12
 
 9) January 28, 2011 kutschke
    The compiler version was hard coded into the boost iostream library name.
