@@ -1,8 +1,8 @@
 #! /bin/sh
 #
-# $Id: setup_mu2e_project.sh,v 1.3 2010/09/27 19:43:08 kutschke Exp $
+# $Id: setup_mu2e_project.sh,v 1.4 2011/02/04 20:24:05 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/09/27 19:43:08 $
+# $Date: 2011/02/04 20:24:05 $
 #
 # Original author Rob Kutschke
 #
@@ -14,13 +14,13 @@ if [ "`basename $0 2>/dev/null`" = "setup_mu2e_project.sh" ];then
     echo "You should be sourcing this file"; exit
 fi
 
-if [ "${FRAMEWORK_DIR}" = '' ];then
-    echo "FRAMEWORK_DIR is not set; "
+if [ "${FW_HOME}" = '' ];then
+    echo "FW_HOME is not set; "
     echo "You need to do setup the framework before sourcing this file."
     return 21
 fi
 
-source ${FRAMEWORK_DIR}/bin/funcs.sh
+source ${FW_HOME}/bin/funcs.sh
 bin_dir=`dirname ${BASH_SOURCE}`   # assume file is in bin subdir
 bin_dir=`cd $bin_dir >/dev/null 2>&1 && echo $PWD`
 user_root=`dirname $bin_dir`
