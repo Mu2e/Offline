@@ -1,9 +1,9 @@
 # Script to build this release.
 
 #
-# $Id: SConstruct,v 1.9 2010/11/09 20:04:24 kutschke Exp $
+# $Id: SConstruct,v 1.10 2011/02/04 20:23:40 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/11/09 20:04:24 $
+# $Date: 2011/02/04 20:23:40 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,14 +16,16 @@ if not os.environ.has_key('FRAMEWORK_DIR'):
 SetOption('warn', 'no-fortran-cxx-mix')
 
 home = os.environ['FRAMEWORK_DIR']
-boost_dir = os.environ['BOOST_DIR']
+boost_lib = os.environ['BOOST_LIB']
 boost_inc = os.environ['BOOST_INC']
-clhep_dir = os.environ['CLHEP_DIR']
-#cmake_dir = os.environ['CMAKE_DIR']
+clhep_inc = os.environ['CLHEP_INC']
+clhep_base = os.environ['CLHEP_BASE']
 cppunit_dir = os.environ['CPPUNIT_DIR']
 gccxml_dir = os.environ['GCCXML_DIR']
-heppdt_dir = os.environ['HEPPDT_DIR']
-libsigcpp_dir = os.environ['LIBSIGCPP_DIR']
+heppdt_lib = os.environ['HEPPDT_LIB']
+heppdt_inc = os.environ['HEPPDT_INC']
+libsigcpp_inc = os.environ['LIBSIGCPP_INC']
+libsigcpp_lib = os.environ['LIBSIGCPP_LIB']
 python_dir = os.environ['PYTHON_DIR']
 root_dir = os.environ['ROOT_DIR']
 scons_dir = os.environ['SCONS_DIR']
@@ -34,22 +36,22 @@ env = Environment( CPPPATH=[ '#',
                              '.',
                              home,
                              boost_inc,
-                             clhep_dir+'/include',
+                             clhep_inc,
                              cppunit_dir+'/include',
-                             heppdt_dir+'/include',
-                             libsigcpp_dir+'/include/sigc++-2.0',
-                             libsigcpp_dir+'/lib/sigc++-2.0/include',
+                             heppdt_inc,
+                             libsigcpp_inc+'/sigc++-2.0',
+                             libsigcpp_lib+'/sigc++-2.0/include',
                              python_dir+'/include',
                              root_dir+'/include',
                              scons_dir+'/include',
                            ],
                    LIBPATH=[ '#/lib',
                              home+'/tmp/lib' ,
-                             boost_dir+'/lib',
-                              clhep_dir+'/lib',
+                             boost_lib,
+                             clhep_base+'/lib',
                              cppunit_dir+'/lib',
-                             heppdt_dir+'/lib',
-                             libsigcpp_dir+'/lib',
+                             heppdt_lib,
+                             libsigcpp_lib,
                              python_dir+'/lib',
                              root_dir+'/lib',
                              scons_dir+'/lib',

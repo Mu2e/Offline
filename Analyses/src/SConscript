@@ -1,13 +1,12 @@
 #
-# $Id: SConscript,v 1.3 2011/01/20 21:24:51 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/01/20 21:24:51 $
+# $Id: SConscript,v 1.4 2011/02/04 20:24:56 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/02/04 20:24:56 $
 #
 # Original author Rob Kutschke.
 #
 
 import os, re
-home = os.environ['FRAMEWORK_DIR']
 Import('env')
 
 plugin_cc = Glob('*_plugin.cc', strings=True)
@@ -20,7 +19,16 @@ if non_plugin_cc:
     local_lib_name=os.path.dirname(dd)
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'FWCoreFramework','GeneralUtilities','ConditionsService','Spectrum','MLP','Gpad','Graf'
+                      LIBS=[ 'FWCoreFramework',
+                             'GeometryService',
+                             'ConditionsService',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'ToyDP',
+                             'Spectrum',
+                             'MLP',
+                             'Gpad',
+                             'Graf'
                              ],
                       )
     libs=[ local_lib_name ]
@@ -30,11 +38,13 @@ else:
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
-                       LIBS=['FWCoreFramework',
-                             'GeneralUtilities',
+                       LIBS=[ libs,
+                             'FWCoreFramework',
                              'GeometryService',
-                             'Mu2eUtilities',
                              'ConditionsService',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'ToyDP',
                              'Spectrum',
                              'MLP',
                              'Gpad',
