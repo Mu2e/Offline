@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.6 2010/11/05 18:53:49 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/11/05 18:53:49 $
+// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.7 2011/02/04 14:56:24 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/02/04 14:56:24 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -562,17 +562,17 @@ namespace mu2e {
       labelPoint(x3,z3,"PiuE",-10., 3.);
       labelPoint(x4,z4,"PilE",-10.,-7.);
 
-    } else if (dolabels=3) {
+    } else if (dolabels==3) {
 
       labelPoint(_drawingOrigin.x(),z1,"PilEm", -0.3,-0.5);
       labelPoint(_drawingOrigin.x(),z2,"PiuEm", -0.3, 0.25);
 
-    } else if (dolabels=4) {
+    } else if (dolabels==4) {
 
       labelPoint(x1,z1,"PilE",0.,0.);
       labelPoint(x2,z2,"PiuE",0.,0.);      
 
-    } else if (dolabels=5) {
+    } else if (dolabels==5) {
 
       labelPoint(x1,z1,"PolE",0.,0.);
       labelPoint(x2,z2,"PouE",0.,0.);      
