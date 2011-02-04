@@ -4,6 +4,14 @@
            Release notes for Mu2e Offline software, v0_3_1
 
 
+15) Feb 4, 2011 kutschke
+    Bug fix.  
+         else if (dolabels=3)
+      should be
+         else if (dolabels==3)
+     Analyses/src/TTrackerGeomIntRootPlots_plugin.cc
+           
+
 14) Feb 3 2011 Hans Wenzel 
     ../HitMakers/src/MakeDPIStrawCluster_plugin.cc
     ../HitMakers/src/ReadDPIStrawCluster_plugin.cc
