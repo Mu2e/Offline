@@ -21,6 +21,7 @@
 #include <TPolyLine.h>
 
 #include "EventDisplayFrame.h"
+#include "dict_classes/EventDisplayPad.h"
 #include "VirtualShape.h"
 #include "DataInterface.h"
 
@@ -163,22 +164,26 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   }
 
   TGHorizontalFrame *footLine   = new TGHorizontalFrame(this,800,100);
-  _infoCanvas = new TRootEmbeddedCanvas("InfoCanvas",footLine,GetWidth()-540,GetHeight()-430);
+  _infoCanvas = new TRootEmbeddedCanvas("InfoCanvas",footLine,GetWidth()-600,GetHeight()-450);
   footLine->AddFrame(_infoCanvas, new TGLayoutHints(kLHintsTop));
 
   TGGroupFrame *zoomangleFrame  = new TGGroupFrame(footLine,"Zoom & Angle");
   TGHorizontalFrame *zoomFrame1 = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGHorizontalFrame *zoomFrame2 = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGHorizontalFrame *angleFrame = new TGHorizontalFrame(zoomangleFrame,500,50);
+  TGHorizontalFrame *perspectiveFrame = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGLabel *zoomLabel1  = new TGLabel(zoomFrame1, "minx");
-  TGLabel *zoomLabel2  = new TGLabel(zoomFrame1, "miny");
-  TGLabel *zoomLabel3  = new TGLabel(zoomFrame1, "minz");
-  TGLabel *zoomLabel4  = new TGLabel(zoomFrame2, "maxx");
-  TGLabel *zoomLabel5  = new TGLabel(zoomFrame2, "maxy");
-  TGLabel *zoomLabel6  = new TGLabel(zoomFrame2, "maxz");
+  TGLabel *zoomLabel2  = new TGLabel(zoomFrame1, "mm  miny");
+  TGLabel *zoomLabel3  = new TGLabel(zoomFrame1, "mm  minz");
+  TGLabel *zoomLabel4  = new TGLabel(zoomFrame1, "mm");
+  TGLabel *zoomLabel5  = new TGLabel(zoomFrame2, "maxx");
+  TGLabel *zoomLabel6  = new TGLabel(zoomFrame2, "mm  maxy");
+  TGLabel *zoomLabel7  = new TGLabel(zoomFrame2, "mm  maxz");
+  TGLabel *zoomLabel8  = new TGLabel(zoomFrame2, "mm");
   TGLabel *angleLabel1 = new TGLabel(angleFrame, "phi");
-  TGLabel *angleLabel2 = new TGLabel(angleFrame, "theta");
-  TGLabel *angleLabel3 = new TGLabel(angleFrame, "psi");
+  TGLabel *angleLabel2 = new TGLabel(angleFrame, "°  theta");
+  TGLabel *angleLabel3 = new TGLabel(angleFrame, "°  psi");
+  TGLabel *angleLabel4 = new TGLabel(angleFrame, "°");
   _minXField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1501);
   _minYField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1502);
   _minZField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1503);
@@ -188,6 +193,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   _phiField   = new TGTextEntry(angleFrame, new TGTextBuffer, 1601);
   _thetaField = new TGTextEntry(angleFrame, new TGTextBuffer, 1602);
   _psiField   = new TGTextEntry(angleFrame, new TGTextBuffer, 1603);
+  _perspectiveButton = new TGRadioButton(perspectiveFrame, "perspective", 1700);
+  _parallelButton    = new TGRadioButton(perspectiveFrame, "parallel", 1701);
   _minXField->SetWidth(50); 
   _minYField->SetWidth(50); 
   _minZField->SetWidth(50); 
@@ -205,23 +212,29 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   zoomFrame1->AddFrame(_minYField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   zoomFrame1->AddFrame(zoomLabel3, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   zoomFrame1->AddFrame(_minZField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
-  zoomFrame2->AddFrame(zoomLabel4, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
-  zoomFrame2->AddFrame(_maxXField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame1->AddFrame(zoomLabel4, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   zoomFrame2->AddFrame(zoomLabel5, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
-  zoomFrame2->AddFrame(_maxYField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(_maxXField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   zoomFrame2->AddFrame(zoomLabel6, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(_maxYField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(zoomLabel7, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   zoomFrame2->AddFrame(_maxZField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame2->AddFrame(zoomLabel8, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   angleFrame->AddFrame(angleLabel1, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   angleFrame->AddFrame(_phiField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   angleFrame->AddFrame(angleLabel2, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   angleFrame->AddFrame(_thetaField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   angleFrame->AddFrame(angleLabel3, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   angleFrame->AddFrame(_psiField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  angleFrame->AddFrame(angleLabel4, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  perspectiveFrame->AddFrame(_perspectiveButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  perspectiveFrame->AddFrame(_parallelButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(zoomFrame1, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(zoomFrame2, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(setRangeButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(angleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(setAngleButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  zoomangleFrame->AddFrame(perspectiveFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   footLine->AddFrame(zoomangleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
 
   _minXField->Associate(this);
@@ -235,6 +248,10 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   _psiField->Associate(this);
   setRangeButton->Associate(this);
   setAngleButton->Associate(this);
+  _perspectiveButton->Associate(this);
+  _parallelButton->Associate(this);
+  _perspectiveButton->SetState(kButtonDown);
+  _parallelButton->SetState(kButtonUp);
 
   TGVerticalFrame *innerFrame1   = new TGVerticalFrame(footLine,100,200);
 
@@ -294,7 +311,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   MapWindow();
 
   _mainCanvas->GetCanvas()->cd();
-  _mainPad = new TPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);  
+  _mainPad = new EventDisplayPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);  
+  _mainPad->setEventDisplayFrame(this);
   _mainPad->SetFillColor(1);
   _mainPad->Draw();
 
@@ -312,8 +330,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   }
 
   _mainPad->cd();
+//  _mainPad->Connect("Modified()", "EventDisplayFrame", this, "fillZoomAngleFields()"); //don't know why this doesn't work
   _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this));
-//  mainPad->SetView(new TView3D());  //not needed - gets provided by TGeoManager
 }
 
 EventDisplayFrame::~EventDisplayFrame()
@@ -332,8 +350,8 @@ Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
       fHeight = event->fHeight;
       _mainCanvas->SetWidth(fWidth-270);
       _mainCanvas->SetHeight(fHeight-170);
-      _infoCanvas->SetWidth(fWidth-540);
-      _infoCanvas->SetHeight(fHeight-430);
+      _infoCanvas->SetWidth(fWidth-600);
+      _infoCanvas->SetHeight(fHeight-450);
       Layout();
    }
    return kTRUE;
@@ -341,6 +359,7 @@ Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
 
 void EventDisplayFrame::fillZoomAngleFields()
 {
+  if(_mainPad->GetView()==NULL) return;
   char c[100];
   double min[3], max[3];
   _mainPad->GetView()->GetRange(min,max);
@@ -353,6 +372,16 @@ void EventDisplayFrame::fillZoomAngleFields()
   sprintf(c,"%.0f",_mainPad->GetView()->GetLongitude()); _phiField->SetText(c);
   sprintf(c,"%.0f",_mainPad->GetView()->GetLatitude()); _thetaField->SetText(c);
   sprintf(c,"%.0f",_mainPad->GetView()->GetPsi()); _psiField->SetText(c);
+  if(_mainPad->GetView()->IsPerspective())
+  {
+    _perspectiveButton->SetState(kButtonDown);
+    _parallelButton->SetState(kButtonUp);
+  }
+  else
+  {
+    _perspectiveButton->SetState(kButtonUp);
+    _parallelButton->SetState(kButtonDown);
+  }
 }
 
 void EventDisplayFrame::fillGeometry()
@@ -364,7 +393,6 @@ void EventDisplayFrame::fillGeometry()
   _mainPad->GetView()->AdjustScales();
   _mainPad->Modified();
   _mainPad->Update();
-  fillZoomAngleFields();
 }
 
 void EventDisplayFrame::fillEvent(const edm::Event& event)
@@ -383,8 +411,7 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
                                                  _calorimeterViewButton->GetState()==kButtonDown,
                                                  _outsideTracksButton->GetState()==kButtonDown);
   _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-  _mainPad->GetView()->AdjustScales();;
-  fillZoomAngleFields();
+  _mainPad->GetView()->AdjustScales();
 
   char eventInfoText[50];
   sprintf(eventInfoText,"Event #: %i",event.id().event());
@@ -570,7 +597,6 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->GetView()->SetRange(min,max);
                            _mainPad->Modified();
                            _mainPad->Update();
-                           fillZoomAngleFields();
                          }
                          if(param1==1600)
                          {
@@ -581,7 +607,23 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->GetView()->SetView(phi,theta,psi,irep);
                            _mainPad->SetPhi(-90-phi);
                            _mainPad->SetTheta(90-theta);
-//                           _mainPad->GetView()->Draw();
+                           _mainPad->Modified();
+                           _mainPad->Update();
+                         }
+                         break;
+   case kCM_RADIOBUTTON: if(param1==1700)
+                         {
+                           _parallelButton->SetState(kButtonUp);
+                           _perspectiveButton->SetState(kButtonDown);
+                           _mainPad->GetView()->SetPerspective();
+                           _mainPad->Modified();
+                           _mainPad->Update();
+                         }
+                         if(param1==1701)
+                         {
+                           _perspectiveButton->SetState(kButtonUp);
+                           _parallelButton->SetState(kButtonDown);
+                           _mainPad->GetView()->SetParallel();
                            _mainPad->Modified();
                            _mainPad->Update();
                          }
@@ -636,7 +678,6 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->GetView()->AdjustScales();
                            _mainPad->Modified();
                            _mainPad->Update();
-                           fillZoomAngleFields();
                          }
                          if(param1==60)
                          {

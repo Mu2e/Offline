@@ -10,3 +10,4 @@
 #pragma link C++ class mu2e_eventdisplay::TPolyLine3DCrystal;
 #pragma link C++ class mu2e_eventdisplay::TPolyLine3DVane;
 #pragma link C++ class mu2e_eventdisplay::EventDisplayFrame;
+#pragma link C++ class mu2e_eventdisplay::EventDisplayPad;

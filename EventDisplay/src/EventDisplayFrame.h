@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.4 2011/02/03 07:37:03 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.5 2011/02/05 01:20:08 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/03 07:37:03 $
+// $Date: 2011/02/05 01:20:08 $
 //
 // Original author Ralf Ehrlich
 //
@@ -23,6 +23,7 @@ class TPad;
 class TText;
 class TTimer;
 class TGCheckButton;
+class TGRadioButton;
 class TGLabel;
 class TGTextEntry;
 class TBox;
@@ -31,6 +32,7 @@ class TPolyLine;
 namespace mu2e_eventdisplay
 {
   class DataInterface;
+  class EventDisplayPad;
 
   class EventDisplayFrame : public TGMainFrame
   {
@@ -49,12 +51,12 @@ namespace mu2e_eventdisplay
     int            getMinimumHits() const;
     int            getEventToFind(bool &findEvent) const;
     void           showInfo(TObject*);
+    void           fillZoomAngleFields();
     virtual void   CloseWindow(); //inherited from TGMainFrame 
 
     private:
     void updateHitLegend(bool draw);
     void updateTrackLegend(bool draw);
-    void fillZoomAngleFields();
     void prepareAnimation();
     void drawSituation();
     void drawEverything();
@@ -78,7 +80,8 @@ namespace mu2e_eventdisplay
     std::string         _saveAnimFile;
     //bare pointers needed since ROOT manages these objects
     TRootEmbeddedCanvas *_mainCanvas, *_infoCanvas;
-    TPad                *_mainPad, *_infoPad;
+    EventDisplayPad     *_mainPad;
+    TPad                *_infoPad;
     TText               *_clock;
     TTimer              *_timer;
     TGCheckButton       *_unhitButton, *_unhitCrystalsButton, *_supportStructureButton;
@@ -88,6 +91,7 @@ namespace mu2e_eventdisplay
     TGTextEntry         *_minHitField, *_eventToFindField;
     TGTextEntry         *_minXField, *_minYField, *_minZField, *_maxXField, *_maxYField, *_maxZField;
     TGTextEntry         *_phiField, *_thetaField, *_psiField;
+    TGRadioButton       *_perspectiveButton, *_parallelButton;
     TGLabel             **_eventInfo;
     TText               *_legendText[30], *_legendParticleText[6];  
     TBox                *_legendBox[30];
