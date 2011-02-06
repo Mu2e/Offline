@@ -1,9 +1,9 @@
 //
 // Template class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, Target. The structure is displayed via TGeoVolumeType (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the TPolyLine3DType class (inherited from ROOT's TPolyLine3D class). 
 //
-// $Id: Cylinder.h,v 1.1 2011/02/03 07:37:03 ehrlich Exp $
+// $Id: Cylinder.h,v 1.2 2011/02/06 23:10:38 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/03 07:37:03 $
+// $Date: 2011/02/06 23:10:38 $
 //
 // Original author Ralf Ehrlich
 //
@@ -30,8 +30,6 @@ class Cylinder: public VirtualShape
   Cylinder(const Cylinder &);
   Cylinder& operator=(const Cylinder &);
 
-  double _x, _y, _z;  
-  double _theta, _phi, _halflength, _innerRadius, _outerRadius;
   //bare pointer needed, since ROOT manages this object 
   TGeoVolumeType *_volume;
   TGeoRotation *_rotation;
@@ -46,64 +44,68 @@ class Cylinder: public VirtualShape
   public:
 
   Cylinder(double x, double y, double z,
-           double theta, double phi, double halflength, 
+           double phi, double theta, double psi, double halflength, 
            double innerRadius, double outerRadius, 
            const TGeoManager *geomanager, TGeoVolume *topvolume, 
            const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info,
            bool defaultVisibility):
-           VirtualShape(geomanager, topvolume, info, true),
-           _x(x),_y(y),_z(z),
-           _theta(theta),_phi(phi),_halflength(halflength), 
-           _innerRadius(innerRadius),_outerRadius(outerRadius)
+           VirtualShape(geomanager, topvolume, info, true)
   {
     setStartTime(NAN);
     setDefaultVisibility(defaultVisibility);
 
-    _volume = new TGeoVolumeType(_innerRadius, _outerRadius, _halflength, mainframe, _info);
+    _volume = new TGeoVolumeType(innerRadius, outerRadius, halflength, mainframe, _info);
     _volume->SetVisibility(0);
-    _rotation = new TGeoRotation("",_phi,_theta,0);
-    _translation = new TGeoCombiTrans(_x,_y,_z,_rotation);
+    _rotation = new TGeoRotation("",phi*180.0/TMath::Pi(),theta*180.0/TMath::Pi(),psi*180.0/TMath::Pi());
+    _translation = new TGeoCombiTrans(x,y,z,_rotation);
     int i=0;
     if(_topvolume->GetNodes()) i=_topvolume->GetNodes()->GetEntries();
     _topvolume->AddNode(_volume, i, _translation);
 
     int nseg=_geomanager->GetNsegments();
-    int nlayers=TMath::CeilNint((_outerRadius-_innerRadius)/200.0);
+    int nlayers=TMath::CeilNint((outerRadius-innerRadius)/200.0);
+    double st=sin(theta);
+    double ct=cos(theta);
+    double sp=sin(phi);
+    double cp=cos(phi);
+    double ss=sin(psi);
+    double cs=cos(psi);
     for(int i=0; i<=nlayers; i++)
     {
-      double st=sin(_theta);
-      double ct=cos(_theta);
-      double sp=sin(_phi+TMath::Pi()/2.0);
-      double cp=cos(_phi+TMath::Pi()/2.0);
-      double r=i*(_outerRadius-_innerRadius)/nlayers+_innerRadius;
+      double r=i*(outerRadius-innerRadius)/nlayers+innerRadius;
       for(int j=0; j<nseg; j++)
       {
-        double rx=0;
-        double ry=0;
-        double rz=0;
-        if(r>0)
-        {
-          double azimuth=j*2*TMath::Pi()/nseg;
-          //before rotation:
-          double ex = cos(azimuth+TMath::Pi()/2.0)*r;
-          double ey = sin(azimuth+TMath::Pi()/2.0)*r;
-          //after rotation:
-          rx = cp*ex - ct*sp*ey;
-          ry = sp*ex + ct*cp*ey;
-          rz =         st*ey;
-        }
-        else
-        {
-          j=nseg;
-        }
-        //after translation:
+        if(r==0) j=nseg;
+        double azimuth=j*2*TMath::Pi()/nseg;
+
+        //Start with an unrotated cylinder with its center at (0,0,0).
+        //The vectors to points on the end planes of the cylinder 
+        //before rotation are (ex,ey,-halflength) and (ex,ey,halflength).
+        double dx = cos(azimuth+TMath::Pi()/2.0)*r;
+        double dy = sin(azimuth+TMath::Pi()/2.0)*r;
+        double dz1=-halflength;
+        double dz2=halflength;
+
+        //After the rotation, the vectors from the center of the cylinder
+        //to the points on the end planes of the cylinder 
+        //are (rx1,ry1,-halflength) and (rx2,ry2,halflength).
+        double rx1 = cs*cp*dx-ct*sp*ss*dx   -  ss*cp*dy-ct*sp*cs*dy  +  st*sp*dz1;
+        double ry1 = cs*sp*dx+ct*cp*ss*dx   -  ss*sp*dy+ct*cp*cs*dy  -  st*cp*dz1;
+        double rz1 = ss*st*dx               +  cs*st*dy              +     ct*dz1;
+        double rx2 = cs*cp*dx-ct*sp*ss*dx   -  ss*cp*dy-ct*sp*cs*dy  +  st*sp*dz2;
+        double ry2 = cs*sp*dx+ct*cp*ss*dx   -  ss*sp*dy+ct*cp*cs*dy  -  st*cp*dz2;
+        double rz2 = ss*st*dx               +  cs*st*dy              +     ct*dz2;
+
+        //After the translation (i.e. when the center of the cylinder moves 
+        //from (0,0,0) to (x,y,z)), the points of the cylinder points move to
+        //(x+rx1,y+ry1,z+rz1) and (x+rx2,y+ry2,z+rz2).
         line_struct newline;
-        newline.x1=rx+_x+_halflength*st*sp;
-        newline.y1=ry+_y-_halflength*st*cp;
-        newline.z1=rz+_z+_halflength*ct;
-        newline.x2=rx+_x-_halflength*st*sp;
-        newline.y2=ry+_y+_halflength*st*cp;
-        newline.z2=rz+_z-_halflength*ct;
+        newline.x1=rx1+x;
+        newline.y1=ry1+y;
+        newline.z1=rz1+z;
+        newline.x2=rx2+x;
+        newline.y2=ry2+y;
+        newline.z2=rz2+z;
         newline.line=boost::shared_ptr<TPolyLine3DType>(new TPolyLine3DType(mainframe, _info));
         newline.line->Draw();
         _lines.push_back(newline);

@@ -330,7 +330,6 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   }
 
   _mainPad->cd();
-//  _mainPad->Connect("Modified()", "EventDisplayFrame", this, "fillZoomAngleFields()"); //don't know why this doesn't work
   _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this));
 }
 
@@ -721,14 +720,7 @@ void EventDisplayFrame::prepareAnimation()
   _timer->Stop();           //needed if an animation is already running
   if(_clock) {delete _clock; _clock=NULL;}
   _mainPad->cd();
-
-  //resets all shapes
-  std::list<boost::shared_ptr<VirtualShape> >::const_iterator iter;
-  const std::list<boost::shared_ptr<VirtualShape> > &components=_dataInterface->getComponents();
-  for(iter=components.begin(); iter!=components.end(); iter++)
-  {
-    (*iter)->start();
-  }
+  _dataInterface->startComponents();
   _mainPad->Modified();
   _mainPad->Update();
  

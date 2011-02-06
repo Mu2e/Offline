@@ -1,9 +1,9 @@
 //
 // Template class for all cube structures, e.g. Vane, Crystal. The structure is displayed via TGeoVolumeType (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the TPolyLine3DType class (inherited from ROOT's TPolyLine3D class). 
 //
-// $Id: Cube.h,v 1.1 2011/02/03 07:37:03 ehrlich Exp $
+// $Id: Cube.h,v 1.2 2011/02/06 23:10:37 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/03 07:37:03 $
+// $Date: 2011/02/06 23:10:37 $
 //
 // Original author Ralf Ehrlich
 //
@@ -41,6 +41,40 @@ class Cube: public VirtualShape
   };
   std::vector<line_struct> _lines;
   bool _notDrawn;
+
+  struct points{double x,y,z;};
+  
+  points rotateAndTranslate(double x, double y, double z, 
+                            double dx, double dy, double dz,
+                            double phi, double theta, double psi)
+  {
+    double st=sin(theta);
+    double ct=cos(theta);
+    double sp=sin(phi);
+    double cp=cos(phi);
+    double ss=sin(psi);
+    double cs=cos(psi);
+
+    //Start with the cylinder centered at (0,0,0).
+    //Before the rotation, the vector from the center of the cube 
+    //to its corner is (dx,dy,dz).
+    //After the rotation, the vector from the center of the cube
+    //to its corner is (rx,ry,rz).
+    double rx = cs*cp*dx-ct*sp*ss*dx   -  ss*cp*dy-ct*sp*cs*dy  +  st*sp*dz;
+    double ry = cs*sp*dx+ct*cp*ss*dx   -  ss*sp*dy+ct*cp*cs*dy  -  st*cp*dz;
+    double rz = ss*st*dx               +  cs*st*dy              +     ct*dz;
+
+    //After the translation (i.e. when the center of the cube moves 
+    //from (0,0,0) to (x,y,z)), the points of the cube points move to
+    //(x+rx,y+ry,z+rz).
+    points to_return;
+    to_return.x=x+rx;
+    to_return.y=y+ry;
+    to_return.z=z+rz;
+
+    return to_return;
+  }
+
  
   public:
   Cube(double x, double y, double z, double dx, double dy, double dz,
@@ -67,45 +101,22 @@ class Cube: public VirtualShape
     if(_topvolume->GetNodes()) i=_topvolume->GetNodes()->GetEntries();
     _topvolume->AddNode(_volume, i, _translation);
 
-    double st=sin(theta);
-    double ct=cos(theta);
-    double sp=sin(phi);
-    double cp=cos(phi);
-    double ss=sin(psi);
-    double cs=cos(psi);
+    //Start with the cylinder centered at (0,0,0).
+    //Before the rotation, the vectors from the center of the cube 
+    //to its corners are 
+    //(dx,dy,dz), (-dx,dy,dz), (-dx,-dy,dz), (dx,-dy,dz), and so on.
 
-    //vector from center of vane to corner after roatation:
-    double rx = cs*cp*dx-ct*sp*ss*dx   -  ss*cp*dy-ct*sp*cs*dy  +  st*sp*dz;
-    double ry = cs*sp*dx+ct*cp*ss*dx   -  ss*sp*dy+ct*cp*cs*dy  -  st*cp*dz;
-    double rz = ss*st*dx               +  cs*st*dy              +     ct*dz;
-
-    //after translation:
-    struct points{double x,y,z;};
+    //Now rotate this cylinder with the angles phi, theta, psi, 
+    //and move the center of the cylinder from (0,0,0) to (x,y,z)
     points p[8];
-    p[0].x=x+rx;
-    p[0].y=y+ry;
-    p[0].z=z+rz;
-    p[1].x=x-rx;
-    p[1].y=y+ry;
-    p[1].z=z+rz;
-    p[2].x=x-rx;
-    p[2].y=y-ry;
-    p[2].z=z+rz;
-    p[3].x=x+rx;
-    p[3].y=y-ry;
-    p[3].z=z+rz;
-    p[4].x=x+rx;
-    p[4].y=y+ry;
-    p[4].z=z-rz;
-    p[5].x=x-rx;
-    p[5].y=y+ry;
-    p[5].z=z-rz;
-    p[6].x=x-rx;
-    p[6].y=y-ry;
-    p[6].z=z-rz;
-    p[7].x=x+rx;
-    p[7].y=y-ry;
-    p[7].z=z-rz;
+    p[0]=rotateAndTranslate(x, y, z,  dx,  dy,  dz, phi, theta, psi);
+    p[1]=rotateAndTranslate(x, y, z, -dx,  dy,  dz, phi, theta, psi);
+    p[2]=rotateAndTranslate(x, y, z, -dx, -dy,  dz, phi, theta, psi);
+    p[3]=rotateAndTranslate(x, y, z,  dx, -dy,  dz, phi, theta, psi);
+    p[4]=rotateAndTranslate(x, y, z,  dx,  dy, -dz, phi, theta, psi);
+    p[5]=rotateAndTranslate(x, y, z, -dx,  dy, -dz, phi, theta, psi);
+    p[6]=rotateAndTranslate(x, y, z, -dx, -dy, -dz, phi, theta, psi);
+    p[7]=rotateAndTranslate(x, y, z,  dx, -dy, -dz, phi, theta, psi);
 
     line_struct newline;
     for(int i=0; i<4; i++)

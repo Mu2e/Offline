@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.5 2011/02/03 07:37:03 ehrlich Exp $
+// $Id: DataInterface.h,v 1.6 2011/02/06 23:10:38 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/03 07:37:03 $
+// $Date: 2011/02/06 23:10:38 $
 //
 // Original author Ralf Ehrlich
 //
@@ -80,7 +80,7 @@ class DataInterface
   DataInterface(const TGMainFrame *mainframe);
   virtual ~DataInterface(); 
 
-  const std::list<boost::shared_ptr<VirtualShape> > &getComponents();
+  void startComponents();
   void updateComponents(double time);
   void fillGeometry();
   void fillEvent(const edm::Event& event);

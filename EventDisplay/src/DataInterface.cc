@@ -41,9 +41,13 @@ DataInterface::~DataInterface()
   removeAllComponents();
 }
 
-const std::list<boost::shared_ptr<VirtualShape> > &DataInterface::getComponents() 
+void DataInterface::startComponents()
 {
-  return _components;
+  std::list<boost::shared_ptr<VirtualShape> >::const_iterator iter;
+  for(iter=_components.begin(); iter!=_components.end(); iter++)
+  {
+    (*iter)->start();
+  }
 }
 
 void DataInterface::updateComponents(double time)
@@ -182,7 +186,7 @@ void DataInterface::fillGeometry()
     info->setText(2,c);
     sprintf(c,"Length %g mm",2.0*zHalfLength);
     info->setText(3,c);
-    boost::shared_ptr<SupportTTracker> shape(new SupportTTracker(0,0,0, 0,0, 
+    boost::shared_ptr<SupportTTracker> shape(new SupportTTracker(0,0,0, 0,0,0, 
                                    zHalfLength,innerRadius,outerRadius,
                                    _geometrymanager, _topvolume, _mainframe, info, true));
     _components.push_back(shape);
@@ -212,7 +216,7 @@ void DataInterface::fillGeometry()
     info->setText(1,c);
     sprintf(c,"Length %g mm",length);
     info->setText(2,c);
-    boost::shared_ptr<SupportTTracker> shape(new SupportTTracker(0,0,z, 0,0, length/2.0,0,radius,
+    boost::shared_ptr<Target> shape(new Target(0,0,z, 0,0,0, length/2.0,0,radius,
                                    _geometrymanager, _topvolume, _mainframe, info, true));
     _components.push_back(shape);
     _supportstructures.push_back(shape);
@@ -270,7 +274,9 @@ void DataInterface::fillGeometry()
       double sy=v.getSize().y();
       double sz=v.getSize().z();
 
-      //vector to center of crystal, in (unrotated) vane coordinate system, with (0,0,0) as center of vane
+      //Start with an unrotated vane centered at (0,0,0).
+      //Before the rotation, the vector from the center of the vane 
+      //to the center of a crystal is (crystalX,crystalY,crystalZ).
       double crystalX=0;
       double crystalY=-sy+crystalHalfSize*(2.0*rPos+1.0);
       double crystalZ=-sz+crystalHalfSize*(2.0*zPos+1.0);
@@ -281,11 +287,15 @@ void DataInterface::fillGeometry()
       double cp=cos(phi);
       double ss=sin(psi);
       double cs=cos(psi);
-      //vectors after roatation:
+
+      //After the rotation of the vane, the vector from the center of the vane 
+      //to the center of a crystal is (rotatedX,rotatedY,rotatedZ).
       double rotatedX = cs*cp*crystalX-ct*sp*ss*crystalX   -  ss*cp*crystalY-ct*sp*cs*crystalY  +  st*sp*crystalZ;
       double rotatedY = cs*sp*crystalX+ct*cp*ss*crystalX   -  ss*sp*crystalY+ct*cp*cs*crystalY  -  st*cp*crystalZ;
       double rotatedZ = ss*st*crystalX                     +  cs*st*crystalY                    +     ct*crystalZ;
 
+      //After the vane gets shifted from (0,0,0) to (x,y,z), 
+      //the crystal centers need to be shifted to (x+rotatedX,y+rotatedY,z+rotatedZ).
       char c[200];
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       sprintf(c,"Vane %i, Crystal %i",vaneid,crystalid);
