@@ -9,6 +9,7 @@
 #include <TGFrame.h>
 #include <TMath.h>
 
+#include "FWCore/Framework/interface/Run.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -24,6 +25,7 @@
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 
 #include <TGeoVolume.h>
 
@@ -135,8 +137,9 @@ void DataInterface::fillGeometry()
   edm::Service<mu2e::GeometryService> geom;
 
   const mu2e::SimpleConfig &config = geom->config();
-  _xOffset=config.getDouble("mu2e.solenoidOffset");
-  _zOffset=-config.getDouble("mu2e.detectorSystemZ0");
+  _xOffset=config.getDouble("mu2e.solenoidOffset");    //between Mu2e and Tracker coordinates
+  _zOffset=-config.getDouble("mu2e.detectorSystemZ0"); //between Mu2e and Tracker coordinates
+  _zOffsetDS=1800.0;                                   //between DS and Tracker coordinates
 
   if(geom->hasElement<mu2e::TTracker>())
   {
@@ -198,7 +201,7 @@ void DataInterface::fillGeometry()
     mu2e::GeomHandle<mu2e::Target> target;  
     double radius=target->cylinderRadius();
     double length=target->cylinderLength();
-    double z=target->cylinderCenter();
+    double z=target->cylinderCenter()+_zOffsetDS;
     unsigned int n=target->nFoils();
     for(unsigned int i=0; i<n; i++)
     {
@@ -545,6 +548,12 @@ void DataInterface::fillEvent(const edm::Event& event)
     }
   }
 
+  unsigned int physicalVolumeEntries=0;
+  edm::Handle<mu2e::PhysicalVolumeInfoCollection> physicalVolumes;
+  if(event.getRun().getByType(physicalVolumes))
+  {
+    physicalVolumeEntries=physicalVolumes->size();
+  }
 
   resetBoundaryP(_tracksMinmax);
   edm::Handle<mu2e::SimParticleCollection> simParticles;
@@ -558,6 +567,13 @@ void DataInterface::fillEvent(const edm::Event& event)
       int parentid = particle.parentId().asInt();
       int particleid=particle.pdgId();
       std::string particlename=HepPID::particleName(particle.pdgId());
+      unsigned int startVolume=particle.startVolumeIndex();
+      unsigned int endVolume  =particle.endVolumeIndex();
+      std::string startVolumeName="unknown volume";
+      std::string endVolumeName="unknown volume";
+      if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(startVolume).name();     
+      if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(endVolume).name();     
+
       double x1=particle.startPosition().x()+_xOffset;
       double y1=particle.startPosition().y();
       double z1=particle.startPosition().z()+_zOffset;
@@ -576,21 +592,24 @@ void DataInterface::fillEvent(const edm::Event& event)
       CLHEP::Hep3Vector d = particle.endPosition() - particle.startPosition();
       double length=d.mag();
 
-      char c1[200],c2[200],c3[200];
-      sprintf(c1,"Track %i  %s  Parent %i",id,particlename.c_str(),parentid);
+      char c1[200],c2[200],c3[200],c4[200];
+      if(parentid!=0) sprintf(c1,"Track %i  %s  Parent %i",id,particlename.c_str(),parentid);
+      else sprintf(c1,"Track %i  %s  generated track",id,particlename.c_str());
       sprintf(c2,"Start Energy %gMeV  End Energy %gMeV Track Length %gmm",e1/CLHEP::MeV,e2/CLHEP::MeV,length/CLHEP::mm);
-      sprintf(c3,"Created by %s  Destroyed by %s",particle.creationCode().name().c_str(),particle.stoppingCode().name().c_str());
+      sprintf(c3,"Created by %s in %s",particle.creationCode().name().c_str(),startVolumeName.c_str());
+      sprintf(c4,"Destroyed by %s in %s",particle.stoppingCode().name().c_str(),endVolumeName.c_str());
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       info->setText(0,c1);
       info->setText(1,c2);
       info->setText(2,c3);
-      info->setText(3,"Daughter IDs:");
+      info->setText(3,c4);
+      info->setText(4,"Daughter IDs:");
       std::vector<MapVectorKey>::const_iterator daughter;
       for(daughter=particle.daughterIds().begin(); 
           daughter!=particle.daughterIds().end();
           daughter++)
       {
-        info->expandLine(3,daughter->asInt(),"");
+        info->expandLine(4,daughter->asInt(),"");
       }
       boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, _geometrymanager, _topvolume, _mainframe, info));
       findTrajectory(event,shape,id);
@@ -616,10 +635,10 @@ bool DataInterface::findTrajectory(const edm::Event& event,
         const std::vector<CLHEP::Hep3Vector>& p_vec=trajectory.points();
         for(unsigned int i=0; i<p_vec.size(); i++)
         {
-//TODO: figure out coordinate transformation
-//can this number be extracted from somewhere?
-//if not, put it somehwere else together with all other numbers
-          track->addTrajectoryPoint(p_vec[i].x(),p_vec[i].y(),p_vec[i].z()+1800,i,p_vec.size());
+//TODO: no time information available from PointTrajectory
+//the assumption that the time period between each 
+//recorded trajectory point is equal is not valid
+          track->addTrajectoryPoint(p_vec[i].x(),p_vec[i].y(),p_vec[i].z()+_zOffsetDS,i,p_vec.size());
         }
         return true;
       }
@@ -648,7 +667,6 @@ void DataInterface::removeNonGeometryComponents()
 
 void DataInterface::removeAllComponents()
 {
-  std::list<boost::shared_ptr<VirtualShape> >::iterator iter;
   _components.clear();
   _straws.clear();
   _crystals.clear();
