@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.5 2010/09/30 17:31:21 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/30 17:31:21 $
+// $Id: ConstructMaterials.cc,v 1.6 2011/02/09 16:19:18 genser Exp $
+// $Author: genser $ 
+// $Date: 2011/02/09 16:19:18 $
 //
 // Original author Rob Kutschke
 //
@@ -154,6 +154,38 @@ namespace mu2e {
       Polyethylene->AddElement( eH, 2);
     }
 
+    //   note that G4 has:
+    //   AddMaterial("G4_POLYETHYLENE", 0.94, 0, 57.4, 2);
+    //   AddElementByWeightFraction( 1, 0.143711);
+    //   AddElementByWeightFraction( 6, 0.856289);
+    //   AddChemicalFormula("G4_POLYETHYLENE","(C_2H_4)_N-Polyethylene");
+
+    // borated polyethylene data per Bob B
+    mat = isNeeded(materialsToLoad, "PolyethyleneB05");
+    if ( mat.doit ){
+      G4Material* PolyethyleneB05 = 
+        new G4Material( mat.name, 0.98*g/cm3, 2);
+      // we will use the G4_POLYETHYLENE and add B as a material
+      G4Material* Polyethylene = findMaterialOrThrow("G4_POLYETHYLENE");
+      G4Material* mB           = findMaterialOrThrow("G4_B");
+      double Bpercentage = 5.0;
+      PolyethyleneB05->AddMaterial( Polyethylene, (100.-Bpercentage)*perCent);
+      PolyethyleneB05->AddMaterial( mB, Bpercentage*perCent);
+    }
+
+    // borated polyethylene data per Bob B
+    mat = isNeeded(materialsToLoad, "PolyethyleneB30");
+    if ( mat.doit ){
+      G4Material* PolyethyleneB30 = 
+        new G4Material( mat.name, 1.19*g/cm3, 2);
+      // we will use the G4_POLYETHYLENE and add B as a material
+      G4Material* Polyethylene = findMaterialOrThrow("G4_POLYETHYLENE");
+      G4Material* mB           = findMaterialOrThrow("G4_B");
+      double Bpercentage = 30.0;
+      PolyethyleneB30->AddMaterial( Polyethylene, (100.-Bpercentage)*perCent);
+      PolyethyleneB30->AddMaterial( mB, Bpercentage*perCent);
+    }
+
     mat = isNeeded(materialsToLoad, "IsoButane");
     if ( mat.doit ){
       G4Material* IsoButane = 
@@ -167,7 +199,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "StrawGas");
     if ( mat.doit ) {
       G4Material* StrawGas = 
-        new G4Material(mat.name, 0.0028561*g/cm3, 3);
+        new G4Material(mat.name, 0.0028561*g/cm3, 3); // should it not use kStateGas ?
       G4Element* eAr = getElementOrThrow("Ar");
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eF  = getElementOrThrow("F");
@@ -361,5 +393,4 @@ namespace mu2e {
     return answer;
   }
 
-  
 } // end namespace mu2e

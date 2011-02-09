@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.60 2011/01/25 17:42:33 genser Exp $
+// $Id: geom_01.txt,v 1.61 2011/02/09 16:19:18 genser Exp $
 // $Author: genser $
-// $Date: 2011/01/25 17:42:33 $
+// $Date: 2011/02/09 16:19:18 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,8 @@ string detector.name  = "g4geom_v00";
 
 bool hasHall            = true;
 bool hasTarget          = true;
-bool hasProtonAbsorber  = true;
+bool hasProtonAbsorber  = true; 
+bool hasNeutronAbsorber = true;
 bool hasCalorimeter     = true;
 bool hasBFieldManager   = true;
 bool hasBeamline        = true;
@@ -85,14 +86,15 @@ vector<string> g4.materials =
     "G4_F",     "G4_Na",  "G4_Al", "G4_Si", "G4_Ar",
     "G4_Ca",    "G4_Ti",  "G4_Fe", "G4_Cu", "G4_Ta",
     "G4_W",     "G4_Pt",  "G4_Au", "G4_Pb", "G4_WATER",
-    "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be"
+    "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be", "G4_B", "G4_POLYETHYLENE"
   };
 
 // Load other materials defined specifically for Mu2e.
 vector<string> mu2e.materials =
-  { "ShieldingConcrete", "Polyethylene", "IsoButane", "StrawGas", 
+  { "ShieldingConcrete", "IsoButane", "StrawGas", 
     "Kapton", "Scintillator", "WAGVacuum", "MBOverburden", 
-    "ITGasMix",  "CarbonFiber", "PolypropyleneFoam" };
+    "ITGasMix",  "CarbonFiber", "PolypropyleneFoam",
+    "PolyethyleneB05", "PolyethyleneB30" };
 
 // Control printout of element and material lists.
 bool g4.printElements  = false;
@@ -356,6 +358,23 @@ double protonabsorber.halfLength   = 1250.0;
 double protonabsorber.thickness    =    0.5;
 bool   protonabsorber.visible      = true;
 bool   protonabsorber.solid        = true;
+
+// Neutron Absorber (document draft dated 2010-07-16)
+string neutronabsorber.materialName          = "PolyethyleneB30";
+double neutronabsorber.internalOuterRadius   =  940.0;
+double neutronabsorber.internalInnerRadius0  =  460.0;
+double neutronabsorber.internalInnerRadius1  =  710.0;
+double neutronabsorber.internalInnerRadius2  =  850.0;
+double neutronabsorber.internalHalfLengthZ01 = 2197.5;
+double neutronabsorber.internalHalfLengthZ02 = 3515.0;
+double neutronabsorber.internalZ01           = 6202.5; // 4005+8400/2
+double neutronabsorber.externalHalfLengthZ   = 6220.0;
+double neutronabsorber.externalHalfLengthXY  = 1475.0;
+double neutronabsorber.externalHalfThickness =   75.0;
+double neutronabsorber.externalZ0            = 9219.0; // 2999+15439/2
+
+bool   neutronabsorber.visible      = true;
+bool   neutronabsorber.solid        = false;
 
 //
 //
