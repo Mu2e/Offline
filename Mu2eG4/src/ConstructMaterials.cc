@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.6 2011/02/09 16:19:18 genser Exp $
+// $Id: ConstructMaterials.cc,v 1.7 2011/02/10 19:48:33 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/02/09 16:19:18 $
+// $Date: 2011/02/10 19:48:33 $
 //
 // Original author Rob Kutschke
 //
@@ -153,6 +153,27 @@ namespace mu2e {
       Polyethylene->AddElement( eC, 1);
       Polyethylene->AddElement( eH, 2);
     }
+    
+    // polyethylene data below as in John Caunt Scientific, also see shieldwerx
+    mat = isNeeded(materialsToLoad, "Polyethylene092");
+    if ( mat.doit ){
+      G4Material* Polyethylene092 = 
+        new G4Material( mat.name, 0.92*g/cm3, 2);
+      G4Material* mC  = findMaterialOrThrow("G4_C");
+      G4Material* mH  = findMaterialOrThrow("G4_H");
+      Polyethylene092->AddMaterial( mH, 0.1428);
+      Polyethylene092->AddMaterial( mC, 0.8572);
+    }
+
+    mat = isNeeded(materialsToLoad, "Polyethylene0956");
+    if ( mat.doit ){
+      G4Material* Polyethylene0956 = 
+        new G4Material( mat.name, 0.956*g/cm3, 2);
+      G4Material* mC  = findMaterialOrThrow("G4_C");
+      G4Material* mH  = findMaterialOrThrow("G4_H");
+      Polyethylene0956->AddMaterial( mH, 0.143711);
+      Polyethylene0956->AddMaterial( mC, 0.856289);
+    }
 
     //   note that G4 has:
     //   AddMaterial("G4_POLYETHYLENE", 0.94, 0, 57.4, 2);
@@ -160,30 +181,41 @@ namespace mu2e {
     //   AddElementByWeightFraction( 6, 0.856289);
     //   AddChemicalFormula("G4_POLYETHYLENE","(C_2H_4)_N-Polyethylene");
 
-    // borated polyethylene data per Bob B
-    mat = isNeeded(materialsToLoad, "PolyethyleneB05");
+    // borated polyethylene data as in John Caunt Scientific
+    mat = isNeeded(materialsToLoad, "Polyethylene092B050d095");
     if ( mat.doit ){
-      G4Material* PolyethyleneB05 = 
-        new G4Material( mat.name, 0.98*g/cm3, 2);
-      // we will use the G4_POLYETHYLENE and add B as a material
-      G4Material* Polyethylene = findMaterialOrThrow("G4_POLYETHYLENE");
-      G4Material* mB           = findMaterialOrThrow("G4_B");
+      G4Material* Polyethylene092B050d095 = 
+        new G4Material( mat.name, 0.95*g/cm3, 2);
+      // we will use the Polyethylene092 and add B as a material
+      G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
+      G4Material* mB              = findMaterialOrThrow("G4_B");
       double Bpercentage = 5.0;
-      PolyethyleneB05->AddMaterial( Polyethylene, (100.-Bpercentage)*perCent);
-      PolyethyleneB05->AddMaterial( mB, Bpercentage*perCent);
+      Polyethylene092B050d095->AddMaterial( Polyethylene092, (100.-Bpercentage)*perCent);
+      Polyethylene092B050d095->AddMaterial( mB, Bpercentage*perCent);
     }
 
-    // borated polyethylene data per Bob B
-    mat = isNeeded(materialsToLoad, "PolyethyleneB30");
+    mat = isNeeded(materialsToLoad, "Polyethylene092B300d119");
     if ( mat.doit ){
-      G4Material* PolyethyleneB30 = 
+      G4Material* Polyethylene092B300d119 = 
         new G4Material( mat.name, 1.19*g/cm3, 2);
-      // we will use the G4_POLYETHYLENE and add B as a material
-      G4Material* Polyethylene = findMaterialOrThrow("G4_POLYETHYLENE");
-      G4Material* mB           = findMaterialOrThrow("G4_B");
+      // we will use the Polyethylene092 and add B as a material
+      G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
+      G4Material* mB              = findMaterialOrThrow("G4_B");
       double Bpercentage = 30.0;
-      PolyethyleneB30->AddMaterial( Polyethylene, (100.-Bpercentage)*perCent);
-      PolyethyleneB30->AddMaterial( mB, Bpercentage*perCent);
+      Polyethylene092B300d119->AddMaterial( Polyethylene092, (100.-Bpercentage)*perCent);
+      Polyethylene092B300d119->AddMaterial( mB, Bpercentage*perCent);
+    }
+
+    mat = isNeeded(materialsToLoad, "Polyethylene092Li075d106");
+    if ( mat.doit ){
+      G4Material* Polyethylene092Li075d106 = 
+        new G4Material( mat.name, 1.06*g/cm3, 2);
+      // we will use the Polyethylene092 and add Li as a material
+      G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
+      G4Material* mLi              = findMaterialOrThrow("G4_Li");
+      double Lipercentage = 30.0;
+      Polyethylene092Li075d106->AddMaterial( Polyethylene092, (100.-Lipercentage)*perCent);
+      Polyethylene092Li075d106->AddMaterial( mLi, Lipercentage*perCent);
     }
 
     mat = isNeeded(materialsToLoad, "IsoButane");
@@ -199,7 +231,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "StrawGas");
     if ( mat.doit ) {
       G4Material* StrawGas = 
-        new G4Material(mat.name, 0.0028561*g/cm3, 3); // should it not use kStateGas ?
+        new G4Material(mat.name, 0.0028561*g/cm3, 3); // it is OK not use kStateGas
       G4Element* eAr = getElementOrThrow("Ar");
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eF  = getElementOrThrow("F");
