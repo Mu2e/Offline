@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.3 2011/02/10 16:49:46 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.4 2011/02/10 17:53:25 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/02/10 16:49:46 $
+// $Date: 2011/02/10 17:53:25 $
 //
 // Original author Hans Wenzel
 //
@@ -52,18 +52,20 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawClusterCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
+#include "Mu2eG4/inc/ConvElecUtilities.hh" 
+#include "ToyDP/inc/StatusG4.hh"
 
 using namespace std;
 
 namespace mu2e {
-  enum PrintLevel { quiet =-1,
-		    normal=0,
-		    verbose=1};
+  enum PrintLevel { quiet  =-1,
+		    normal = 0,
+		    verbose= 1};
   
   TGraph *gr2;
   TGraphErrors *error;
@@ -207,6 +209,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     explicit ReadDPIStrawCluster(edm::ParameterSet const& pset):
       _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
+      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _clmakerModuleLabel(pset.getParameter<std::string>("clmakerModuleLabel")),
       _hNInter(0),
       _hNClusters(0),
@@ -236,7 +240,13 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
-    
+        
+    // Module label of the g4 module that made the hits.
+    std::string _g4ModuleLabel;
+
+    // Name of the tracker StepPoint collection
+    std::string _trackerStepPoints;
+
     // Label of the module that made the Clusters.
     std::string _clmakerModuleLabel;
     // Some diagnostic histograms.
@@ -295,6 +305,80 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     edm::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_clmakerModuleLabel,"DPIStrawCluster",mcptrHandle);
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
+
+    edm::Handle<StatusG4> g4StatusHandle;
+    evt.getByLabel( _g4ModuleLabel, g4StatusHandle);
+    StatusG4 const& g4Status = *g4StatusHandle;
+
+    // Ask the event to give us a "handle" to the requested hits.
+    edm::Handle<StepPointMCCollection> hits;
+    evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
+
+    // Get handles to the generated and simulated particles.
+    edm::Handle<ToyGenParticleCollection> genParticles;
+    evt.getByType(genParticles);
+    
+    edm::Handle<SimParticleCollection> simParticles;
+    evt.getByType(simParticles);
+    
+    // Handle to information about G4 physical volumes.
+    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    evt.getRun().getByType(volumes);
+    
+    //Some files might not have the SimParticle and volume information.
+    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+
+    // Other files might have empty collections.
+    if ( haveSimPart ){
+      haveSimPart = !(simParticles->empty() || volumes->empty());
+    }
+
+    cout<<"_g4ModuleLabel:  "<<_g4ModuleLabel
+	<<"  trackerStepPoints:  "<<_trackerStepPoints
+	<<"  Hits:  " <<hits->size()
+	<<endl;
+    //Class constructor: you have to pass the event and two strings, one for the g4module, one for the tracker name.
+    //The constructor checks that we have hits in the event
+    ConvElecUtilities ConvElec(evt, _g4ModuleLabel, _trackerStepPoints); 
+    
+    //This gives you the number of hits associated to the generated conversion electron 
+    int nCEHits = ConvElec.hasStepPointMC(); 
+    
+    //Here I check that there is one conversion electron
+    if (nCEHits >=1) 
+      {
+	//This gives a reference to the first hit (temporally speaking) associated to the converse electron
+	const StepPointMC & CEFirstHit = ConvElec.firstHit(); 
+	
+	//Now you can ask position, momentum and whatever to this hit, looking at ToyDP/inc/StepPointMC.hh
+	cout << "Position of first Hit:     "<<CEFirstHit.position()   <<endl;   
+	cout << "Momentum at first Hit:     "<<CEFirstHit.momentum()   <<endl;  
+	cout << "Staw Index of first Hit:   "<<CEFirstHit.strawIndex() <<endl; 
+	
+	//The following line gives you the StrawIndex of the straw associated to the first hit of the conversion electron 
+	StrawIndex Idx = ConvElec.earliestStrawIndex();
+	
+	//Using the StrawIndex above you can point to the straw, passing through the tracker
+	const Straw& CEFirstStraw = tracker.getStraw(Idx);
+	
+	//You can ask the straw its Id or whatever, just looking at   ToyDP/inc/Straw.hh
+	cout << CEFirstStraw.Id() << endl; 
+	
+	//This method gives a vector of StrawIndex associated to all the straws hit by the conversion electron
+	vector<StrawIndex> CEStrawsIdx = ConvElec.convElecStrawIdx(); 
+	
+	//You can loop through the conversion electron straws, passing the element of the vector (StrawIndex)
+	// to the tracker and ask them whatever you prefer
+	
+	//for (vector<StrawIndex>::iterator i = CEStrawsIdx.begin(); 
+	//     i != CEStrawsIdx.end(); ++i) { 
+	//  cout << tracker.getStraw(*i).Id() << endl; 
+	//} 
+      }
+    else
+      {
+	cout << "No hits associated to Conversion Electron" << endl; 
+      }   
     vector<double> X;
     vector<double> Y;
     vector<double> R;
@@ -364,46 +448,39 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		first2++;
 		for (first2;first2 != last2;++first2)
 		  {
-		  pstraw junk  = (*first1).second;
-		  pstraw pjunk = (*first2).second;
-		  const Vector p0= Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
-		  const Vector p1= Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
-		  const Vector p2= Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry); 
-		  const Vector p3= Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
-		  LineSegment linesegment0(p0, p1);
-		  LineSegment linesegment1(p2, p3);
-		  Vector intersection;
-		  switch(linesegment0.Intersect(linesegment1, intersection))
-		    {
-		    case LineSegment::PARALLEL:
-		      //std::cout << "The lines are parallel\n\n";
-		      break;
-		    case LineSegment::COINCIDENT:
-		      //std::cout << "The lines are coincident\n\n";
-		      break;
-		    case LineSegment::NOT_INTERSECTING:
-		      //std::cout << "The lines do not intersect\n\n";
-		      break;
-		    case LineSegment::INTERSECTING:
-		      //std::cout << "The lines intersect at (" << intersection.x_ << ", " << intersection.y_ << ")\n\n";
-		      X.push_back(intersection.x_);
-		      Y.push_back(intersection.y_);
-		      //cout << "z: " <<0.5*(junk.mpz+pjunk.mpz)<<"  R:  "<<TMath::Sqrt(intersection.x_*intersection.x_ + intersection.y_*intersection.y_)<<endl;
-		      Z.push_back(0.5*(junk.mpz+pjunk.mpz));
-		      R.push_back( TMath::Sqrt(intersection.x_*intersection.x_ + intersection.y_*intersection.y_));
-		      nint ++;
-		      //cout<<nint<<endl;
-		      break;
-		    }  // end switch 
-		} // end for first2
-	    }// end for first1
-	}// end count >1
-      //cout<<nint<<endl;
-	  // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
-	  //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
-
+		    pstraw junk  = (*first1).second;
+		    pstraw pjunk = (*first2).second;
+		    const Vector p0= Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
+		    const Vector p1= Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
+		    const Vector p2= Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry); 
+		    const Vector p3= Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
+		    LineSegment linesegment0(p0, p1);
+		    LineSegment linesegment1(p2, p3);
+		    Vector intersection;
+		    switch(linesegment0.Intersect(linesegment1, intersection))
+		      {
+		      case LineSegment::PARALLEL:
+			//std::cout << "The lines are parallel\n\n";
+			break;
+		      case LineSegment::COINCIDENT:
+			//std::cout << "The lines are coincident\n\n";
+			break;
+		      case LineSegment::NOT_INTERSECTING:
+			//std::cout << "The lines do not intersect\n\n";
+			break;
+		      case LineSegment::INTERSECTING:
+			X.push_back(intersection.x_);
+			Y.push_back(intersection.y_);
+			Z.push_back(0.5*(junk.mpz+pjunk.mpz));
+			R.push_back( TMath::Sqrt(intersection.x_*intersection.x_ + intersection.y_*intersection.y_));
+			nint ++;
+			//cout<<nint<<endl;
+			break;
+		      }  // end switch 
+		  } // end for first2
+	      }// end for first1
+	  }// end count >1
       }   ///endloop over all devices
-    //cout<<nint<<endl;
     _hNInter->Fill(X.size());
     if (X.size()>2)
       {
