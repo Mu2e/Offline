@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClusters.py,v 1.2 2011/02/03 20:20:46 wenzel Exp $
+# $Id: makeDPIStrawClusters.py,v 1.3 2011/02/10 17:54:15 wenzel Exp $
 # $Author: wenzel $
-# $Date: 2011/02/03 20:20:46 $
+# $Date: 2011/02/10 17:54:15 $
 #
 # Original author Rob Kutschke
 #
@@ -60,7 +60,7 @@ process.testSH = mu2e.EDAnalyzer("ReadStrawHit",
     maxFullPrint = mu2e.untracked.int32(5)
 )
 
-# make  the StrawClusters.
+# make  the DPIStrawClusters.
 process.makeSC = mu2e.EDProducer(
     "MakeDPIStrawCluster",
     makerModuleLabel = mu2e.string("makeSH"),
@@ -70,6 +70,7 @@ process.makeSC = mu2e.EDProducer(
 
 # Check the StrawClusters.
 process.testSC = mu2e.EDAnalyzer("ReadDPIStrawCluster",
+       g4ModuleLabel = mu2e.string("g4run"),                             
     makerModuleLabel = mu2e.string("makeSH"),                            
     clmakerModuleLabel = mu2e.string("makeSC"),
     diagLevel    = mu2e.untracked.int32(0),

@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.6 2011/02/01 00:26:05 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/02/01 00:26:05 $
+# $Id: SConscript,v 1.7 2011/02/10 17:51:11 wenzel Exp $
+# $Author: wenzel $
+# $Date: 2011/02/10 17:51:11 $
 #
 # Original author Rob Kutschke.
 #
@@ -21,9 +21,11 @@ if non_plugin_cc:
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'FWCoreFramework',
                              'ToyDP',
+                             'Mu2eG4',
                              'GeometryService',
                              'GeneralUtilities',
                              'CLHEP',
+                             'Minuit'
                            ],
                       )
     libs=[ local_lib_name ]
@@ -33,8 +35,8 @@ else:
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
-                     LIBS=[ 'FWCoreFramework', libs, 'ToyDP', 'GeometryService',
-                            'GeneralUtilities', 'CLHEP',
+                     LIBS=[ 'FWCoreFramework', libs, 'ToyDP','Mu2eG4', 'GeometryService',
+                            'GeneralUtilities', 'CLHEP','Minuit'
                           ],
                      )
 
