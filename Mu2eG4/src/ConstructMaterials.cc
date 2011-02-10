@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.7 2011/02/10 19:48:33 genser Exp $
+// $Id: ConstructMaterials.cc,v 1.8 2011/02/10 22:39:54 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/02/10 19:48:33 $
+// $Date: 2011/02/10 22:39:54 $
 //
 // Original author Rob Kutschke
 //
@@ -189,9 +189,9 @@ namespace mu2e {
       // we will use the Polyethylene092 and add B as a material
       G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
       G4Material* mB              = findMaterialOrThrow("G4_B");
-      double Bpercentage = 5.0;
-      Polyethylene092B050d095->AddMaterial( Polyethylene092, (100.-Bpercentage)*perCent);
-      Polyethylene092B050d095->AddMaterial( mB, Bpercentage*perCent);
+      double BPercentage = 5.0;
+      Polyethylene092B050d095->AddMaterial( Polyethylene092, (100.-BPercentage)*perCent);
+      Polyethylene092B050d095->AddMaterial( mB, BPercentage*perCent);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene092B300d119");
@@ -201,9 +201,9 @@ namespace mu2e {
       // we will use the Polyethylene092 and add B as a material
       G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
       G4Material* mB              = findMaterialOrThrow("G4_B");
-      double Bpercentage = 30.0;
-      Polyethylene092B300d119->AddMaterial( Polyethylene092, (100.-Bpercentage)*perCent);
-      Polyethylene092B300d119->AddMaterial( mB, Bpercentage*perCent);
+      double BPercentage = 30.0;
+      Polyethylene092B300d119->AddMaterial( Polyethylene092, (100.-BPercentage)*perCent);
+      Polyethylene092B300d119->AddMaterial( mB, BPercentage*perCent);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene092Li075d106");
@@ -213,9 +213,9 @@ namespace mu2e {
       // we will use the Polyethylene092 and add Li as a material
       G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
       G4Material* mLi              = findMaterialOrThrow("G4_Li");
-      double Lipercentage = 30.0;
-      Polyethylene092Li075d106->AddMaterial( Polyethylene092, (100.-Lipercentage)*perCent);
-      Polyethylene092Li075d106->AddMaterial( mLi, Lipercentage*perCent);
+      double LiPercentage = 7.5;
+      Polyethylene092Li075d106->AddMaterial( Polyethylene092, (100.-LiPercentage)*perCent);
+      Polyethylene092Li075d106->AddMaterial( mLi, LiPercentage*perCent);
     }
 
     mat = isNeeded(materialsToLoad, "IsoButane");
