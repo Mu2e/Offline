@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.2 2011/02/03 20:20:28 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.3 2011/02/10 16:49:46 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/02/03 20:20:28 $
+// $Date: 2011/02/10 16:49:46 $
 //
 // Original author Hans Wenzel
 //
@@ -61,12 +61,12 @@
 using namespace std;
 
 namespace mu2e {
-  //  TGraph *gr;
+  enum PrintLevel { quiet =-1,
+		    normal=0,
+		    verbose=1};
+  
   TGraph *gr2;
   TGraphErrors *error;
-  //  Double_t x0;
-  //Double_t y0;
-  //Double_t R_rec;
 void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    //minimisation function computing the sum of squares of residuals
    Int_t np = error->GetN();
@@ -84,20 +84,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       f += (dr*dr)/(0.25*ex[i]*ex[i]);
    }
 }
-  /*void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
-   //minimisation function computing the sum of squares of residuals
-   Int_t np = gr->GetN();
-   f = 0;
-   Double_t *x = gr->GetX();
-   Double_t *y = gr->GetY();
-   for (Int_t i=0;i<np;i++) {
-      Double_t u = x[i] - par[0];
-      Double_t v = y[i] - par[1];
-      Double_t dr = par[2] - TMath::Sqrt(u*u+v*v);
-      f += dr*dr;
-   }
-}
-  */
  class Vector
   {
   public:
@@ -341,19 +327,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	  {
 	    hlen=str.getHalfLength();
 	  }
-	/*	cout 
-	  << " Layer:  " << lid.getLayer()
-	  << " DID:    " << did
-	  << " Sector: " << secid.getSector()
-	  << " hlen:   " << str.getHalfLength()
-	  << " mp:     "<< mpvec
-	  << " dir:    "<< dvec
-	  << endl;
-	*/
       }
       double a = 1./double(mcptr.size());
       pvec = pvec*a;
-      //cout << "pvec: "<<pvec<<endl;
       pstraw pstr;
       pstr.lay=lid.getLayer();
       pstr.did=did;
@@ -365,10 +341,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       pstr.dirx=dvec.getX();
       pstr.diry=dvec.getY();
       pstr.dirz=dvec.getZ();
-      //pstr.Print();
       mpstraws.insert(pair<int,pstraw>(did,pstr));
     }
-
 
     //cout << " size of pseudo straw map: " <<mpstraws.size()<<endl; 
 
@@ -431,7 +405,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       }   ///endloop over all devices
     //cout<<nint<<endl;
     _hNInter->Fill(X.size());
-    if (X.size()>5)
+    if (X.size()>2)
       {
 	FitCircle(X, Y);
 	Double_t Bmagnet=10.;   // 10 KGauss magnetic field
@@ -479,51 +453,38 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       ex[i] = 5.0 ; 
       ey[i] = 5.0 ;
     }
-
-    //    gr = new TGraph(n,x,y);
     error = new TGraphErrors(n,x,y,ex,ey);
-
-    //Fit a circle to the graph points
-    
-    TVirtualFitter::SetDefaultFitter("Minuit");  //default is Minuit
-    TVirtualFitter *fitter = TVirtualFitter::Fitter(0, 3);
-    fitter->Clear();
-    
-    fitter->SetFCN(myfcn);
-    fitter->SetParameter(0, "x0",   0, 0.1, 0,0);
-    fitter->SetParameter(1, "y0",   0, 0.1, 0,0);
-    fitter->SetParameter(2, "R",    175., 0.1, 0,0);
-
-    Double_t arglist[100] = {0};
-    //    arglist[0] = -1;
-    //fitter->ExecuteCommand("SET PRINT", arglist, 2);
-    //	      fitter->SetParameter(3, "omega",    175., 0.1, 0,0);
-    //	      fitter->SetParameter(4, "phase",    175., 0.1, 0,0);
-    arglist[1] = 0;
-    fitter->ExecuteCommand("MIGRAD", arglist, 0);
-    
-    //fitter->ExecuteCommand("GetStatus", arglist, 0);
-    //cout <<fitter->fCstatu<<endl;
-    double chi2, edm, errdef; 
-    int nvpar, nparx;
-    fitter -> GetStats(chi2,edm,errdef,nvpar,nparx);
-    /*
-    cout << "x0:   " << fitter->GetParameter(0)
-	 << " y0:  " << fitter->GetParameter(1)
-	 << " r:   " << fitter->GetParameter(2)
-	 << " chi2:   " << chi2 << " " << nvpar << " " << nparx 
-    <<endl;
-    */
-    
-
-    x0    = fitter->GetParameter(0);
-    y0    = fitter->GetParameter(1);
-    R_rec = fitter->GetParameter(2);
+    TMinuit *gmMinuit = new TMinuit(3); 
+    gmMinuit->SetPrintLevel(quiet);
+    gmMinuit->SetFCN(myfcn);
+    const int dim(3);
+    const char par_name[dim][20]={"x0","y0","R"};
+    static Double_t step[dim] = {0.001,0.001,0.001};
+    Double_t sfpar[dim]={0.0,0.0,175.};
+    Double_t errsfpar[dim]={0.0,0.0,0.0};
+    int ierflg = 0;
+    for (int ii = 0; ii<dim; ii++) {    
+      gmMinuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
+    }
+    int result=gmMinuit->Migrad();
+    bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
+    if (!converged) 
+      {
+	cout <<"-----------fit didn't converge---------------------------" <<endl;
+	return;
+      }
+    for (int i = 0;i<3;i++) {
+     gmMinuit->GetParameter(i,sfpar[i],errsfpar[i]);
+    } 
+    x0    = sfpar[0];
+    y0    = sfpar[1];
+    R_rec = sfpar[2];
+    Double_t chi2, edm, errdef; 
+    Int_t nvpar, nparx,istat;
+    gmMinuit->mnstat(chi2,edm,errdef,nvpar,nparx,istat);
     _x0y0->Fill(x0,y0);
     _R_rec->Fill(R_rec);
     _chi2 -> Fill(chi2) ;
-
-    fitter->Clear();
   }
 
 
