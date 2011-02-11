@@ -3,9 +3,16 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.3 2011/02/10 19:56:52 genser Exp $
+  $Id: v0_3_3.txt,v 1.4 2011/02/11 16:57:34 genser Exp $
   $Author: genser $
-  $Date: 2011/02/10 19:56:52 $
+  $Date: 2011/02/11 16:57:34 $
+
+3) February 11, 2011 genser
+
+   Modified TTrackerSectorEnvelope to decrease its size to avoid
+   potential overlaps when changing sizes of the tracker
+
+     Mu2eG4/src/constructTTrackerv3.cc
 
 2) February 10, 2011 genser
 
