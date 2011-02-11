@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.4 2011/02/10 17:53:25 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.5 2011/02/11 00:06:20 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/02/10 17:53:25 $
+// $Date: 2011/02/11 00:06:20 $
 //
 // Original author Hans Wenzel
 //
@@ -214,11 +214,19 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       _clmakerModuleLabel(pset.getParameter<std::string>("clmakerModuleLabel")),
       _hNInter(0),
       _hNClusters(0),
+      _hNHits(0),
+      _hNEleHits(0),
       _hNStraws(0),
       _R_rec(0),
+      _Pt_in(0),
+      _P_in(0),
+      _Pz_in(0),
       _Pt_rec(0),
       _P_rec(0),
       _Pz_rec(0),
+      _Pt_diff(0),
+      _P_diff(0),
+      _Pz_diff(0),
       _x0y0(0),
       _chi2(0)
     {
@@ -232,9 +240,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     void FitSinus( vector<double> R,vector<double> Z);
 
   private:
-    Double_t R_rec,x0,y0;
-    Double_t Pt,Pz;
-      
+ 
     // Diagnostics level.
     int _diagLevel;
     
@@ -249,16 +255,31 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
     // Label of the module that made the Clusters.
     std::string _clmakerModuleLabel;
+
     // Some diagnostic histograms.
     TH1F* _hNInter;
     TH1F* _hNClusters;
+    TH1F* _hNHits;
+    TH1F* _hNEleHits;
     TH1F* _hNStraws;
     TH1F* _R_rec;
+    TH1F* _Pt_in;
+    TH1F* _P_in;
+    TH1F* _Pz_in;
     TH1F* _Pt_rec;
     TH1F* _P_rec;
     TH1F* _Pz_rec;
+    TH1F* _Pt_diff;
+    TH1F* _P_diff;
+    TH1F* _Pz_diff;
     TH2F* _x0y0;
     TH1F* _chi2;
+    Double_t R_rec,x0,y0;
+    Double_t Pt,Pz;
+    CLHEP::Hep3Vector  X_in;  
+    CLHEP::Hep3Vector  P_in; 
+    Double_t Pt_inval;
+    Double_t P_inval;
   };
   
   void ReadDPIStrawCluster::beginJob(edm::EventSetup const& ){
@@ -271,11 +292,19 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     edm::Service<edm::TFileService> tfs;
     _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );  
     _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 500, 0., 500. );
+    _hNHits        = tfs->make<TH1F>( "hNHits","Number of straw Hits", 500, 0., 500. );
+    _hNEleHits     = tfs->make<TH1F>( "hNEleHits","Number of straw Hits/conversion electron", 500, 0., 500. );
     _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
     _R_rec         = tfs->make<TH1F>( "R_rec",  "reconstructed track radius", 100, 0., 800. );
+    _Pt_in         = tfs->make<TH1F>( "Pt_in",  "tansverse momentum Pt at first Hit", 100, 0., 160. );
+    _P_in          = tfs->make<TH1F>( "P_in",  "momentum at first Hit", 100, 60., 140. );
+    _Pz_in         = tfs->make<TH1F>( "Pz_in",  "longitudinal momentum at first Hit", 100, 0., 120. );
     _Pt_rec        = tfs->make<TH1F>( "Pt_rec",  "reconstructed tansverse momentum Pt", 100, 0., 160. );
     _P_rec         = tfs->make<TH1F>( "P_rec",  "reconstructed momentum", 100, 60., 140. );
     _Pz_rec        = tfs->make<TH1F>( "Pz_rec",  "reconstructed longitudinal momentum", 100, 0., 120. );
+    _Pt_diff       = tfs->make<TH1F>( "Pt_diff",  "delta tansverse momentum Pt", 100, -20., 20. );
+    _P_diff        = tfs->make<TH1F>( "P_diff",  "delta momentum", 100, -20., 20.);
+    _Pz_diff       = tfs->make<TH1F>( "Pz_diff",  "delta longitudinal momentum", 100, -20., 20.);
     _x0y0          = tfs->make<TH2F>( "x0y0","x0 of circle vs y0 of circle ", 500,-650.,650.,500,-650.,650.);
     _chi2          = tfs->make<TH1F>( "chi2",  "chi2", 200, 0., 200. );
   }
@@ -291,7 +320,18 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     LayerId lid;
     DeviceId did;
     SectorId secid;
-	
+
+// calculate the average hit position of track at a plane
+    double Xavg[36], Yavg[36], edep[36] ;
+    int nhitdev[36];
+    
+    for (int i = 0; i < 36 ; i++) { 
+      nhitdev[i] = 0 ;
+      Xavg[i] = 0 ;
+      Yavg[i] = 0 ;
+      edep[i] = 0 ;
+    } 
+    
     // Geometry info for the TTracker.
     // Get a reference to one of the T trackers.
     // Throw exception if not successful.
@@ -353,8 +393,14 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	//Now you can ask position, momentum and whatever to this hit, looking at ToyDP/inc/StepPointMC.hh
 	cout << "Position of first Hit:     "<<CEFirstHit.position()   <<endl;   
 	cout << "Momentum at first Hit:     "<<CEFirstHit.momentum()   <<endl;  
-	cout << "Staw Index of first Hit:   "<<CEFirstHit.strawIndex() <<endl; 
-	
+	cout << "Staw Index of first Hit:   "<<CEFirstHit.strawIndex() <<endl;
+	X_in= CEFirstHit.position();  
+	P_in= CEFirstHit.momentum();
+	Pt_inval =  TMath::Sqrt(P_in.x()*P_in.x()+P_in.y()*P_in.y());
+	P_inval  =  TMath::Sqrt(P_in.x()*P_in.x()+P_in.y()*P_in.y()+P_in.z()*P_in.z());
+	_Pt_in->Fill( Pt_inval);
+	_P_in->Fill(P_inval);
+	_Pz_in->Fill(P_in.z());
 	//The following line gives you the StrawIndex of the straw associated to the first hit of the conversion electron 
 	StrawIndex Idx = ConvElec.earliestStrawIndex();
 	
@@ -362,23 +408,53 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	const Straw& CEFirstStraw = tracker.getStraw(Idx);
 	
 	//You can ask the straw its Id or whatever, just looking at   ToyDP/inc/Straw.hh
-	cout << CEFirstStraw.Id() << endl; 
+	//cout << CEFirstStraw.Id() << endl; 
 	
 	//This method gives a vector of StrawIndex associated to all the straws hit by the conversion electron
 	vector<StrawIndex> CEStrawsIdx = ConvElec.convElecStrawIdx(); 
 	
 	//You can loop through the conversion electron straws, passing the element of the vector (StrawIndex)
 	// to the tracker and ask them whatever you prefer
-	
+	_hNEleHits->Fill( CEStrawsIdx.size());
 	//for (vector<StrawIndex>::iterator i = CEStrawsIdx.begin(); 
 	//     i != CEStrawsIdx.end(); ++i) { 
-	//  cout << tracker.getStraw(*i).Id() << endl; 
-	//} 
+	// cout << tracker.getStraw(*i).Id() << endl; 
+	//}
+	vector<size_t> CEStepPoints =ConvElec.convElecHitsIdx();
+	for (vector<size_t>::iterator i = CEStepPoints.begin(); 
+	     i != CEStepPoints.end(); ++i) { 
+	  const StepPointMC hit = (*hits)[*i];
+	  cout << "Step point index:  "<<*i << endl;
+	  const CLHEP::Hep3Vector& pos = hit.position();
+	  const CLHEP::Hep3Vector& mom = hit.momentum();
+	  cout << "Position of hits " << hit.position() << endl ;      
+	  cout << "Momentum of hits " << hit.momentum() << endl ;  
+	  // find out what device or plane we are in (layer goes from 0 to 35) 
+      
+	  const Straw&      straw = tracker.getStraw( hit.strawIndex() );
+	  StrawId nsid = straw.Id() ;	  
+	  nhitdev[nsid.getDevice()]++;
+	  Xavg[nsid.getDevice()] = Xavg[nsid.getDevice()] + pos.x() ;
+	  Yavg[nsid.getDevice()] = Yavg[nsid.getDevice()] + pos.y() ;
+	  edep[nsid.getDevice()] = edep[nsid.getDevice()] + hit.eDep() ;  
+	}
+ 
       }
     else
       {
 	cout << "No hits associated to Conversion Electron" << endl; 
-      }   
+      } 
+    //  calculate the average hit position of the MC hit within each layer
+    for (int i = 0; i < 36 ; i++) { 
+      if (nhitdev[i] != 0) {
+	Xavg[i] = Xavg[i]/nhitdev[i]; 
+	Yavg[i] = Yavg[i]/nhitdev[i]; 
+	//	 cout << i << " " << nhitdev[i] << " " << Xavg[i] << " " << Yavg[i] << endl ; 
+	//_eplane -> Fill(edep[i]) ;  // energy deposited in plane
+	//_nhitpl -> Fill(nhitdev[i]) ; // number of hits in plane
+      }
+    } 
+    
     vector<double> X;
     vector<double> Y;
     vector<double> R;
@@ -387,7 +463,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Y.clear();
     R.clear();
     Z.clear();
-
+    Int_t totalHits=0;
     _hNClusters->Fill(mcptrHandle->size());
     CLHEP::Hep3Vector dvec;
     for ( size_t i=0; i< mcptrHandle->size(); ++i ) {
@@ -395,6 +471,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       DPIndexVector   const&    mcptr(hits_mcptr->at(i));
       CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
       _hNStraws->Fill(mcptr.size());
+      totalHits = totalHits+mcptr.size();
       for( size_t j=0; j<mcptr.size(); j++ ) {
 	DPIndex const& junkie = mcptr[j];
        	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
@@ -427,7 +504,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       pstr.dirz=dvec.getZ();
       mpstraws.insert(pair<int,pstraw>(did,pstr));
     }
-
+    _hNHits->Fill(totalHits);
     //cout << " size of pseudo straw map: " <<mpstraws.size()<<endl; 
 
     Int_t nint = 0;
@@ -473,6 +550,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 			Y.push_back(intersection.y_);
 			Z.push_back(0.5*(junk.mpz+pjunk.mpz));
 			R.push_back( TMath::Sqrt(intersection.x_*intersection.x_ + intersection.y_*intersection.y_));
+
 			nint ++;
 			//cout<<nint<<endl;
 			break;
@@ -489,10 +567,13 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	Double_t Const=1.49898e-4;
 	Pt =1000.*R_rec*0.1 * 2. * Bmagnet* Const;
 	_Pt_rec->Fill(Pt);
+	_Pt_diff->Fill(Pt-Pt_inval);
 	FitSinus(R, Z);
 	_Pz_rec->Fill(Pz);
+	_Pz_diff->Fill(Pz-P_in.z());
 	Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
 	_P_rec->Fill(Ptot);
+	_P_diff->Fill(Ptot-P_inval);
 
       }
   } // end of ::analyze.
@@ -506,10 +587,13 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       z[i]=Z[i];
       r[i]=R[i];
     }
+    TVirtualFitter::SetDefaultFitter("Minuit");
+    gMinuit->SetPrintLevel(quiet);
     gr2 = new TGraph(n,z,r);
     TF1 *f2 = new TF1("f2", "[0]+[1]*sin([2]*x-[3])", -2000., 2000.);
     Double_t offset =  TMath::Sqrt(x0*x0+y0*y0);
     Double_t radius= R_rec;
+    gMinuit->SetPrintLevel(quiet);
     f2->SetParameters(offset,radius,0.005,0.1);
     f2->FixParameter(0,offset);
     f2->FixParameter(1,radius);
