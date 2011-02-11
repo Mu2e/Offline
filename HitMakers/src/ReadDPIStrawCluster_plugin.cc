@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.5 2011/02/11 00:06:20 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.6 2011/02/11 16:26:57 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/02/11 00:06:20 $
+// $Date: 2011/02/11 16:26:57 $
 //
 // Original author Hans Wenzel
 //
@@ -228,7 +228,10 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       _P_diff(0),
       _Pz_diff(0),
       _x0y0(0),
-      _chi2(0)
+      _chi2(0),
+      _Xdiff(0),
+      _Ydiff(0),
+      _eplane(0)
     {
     }
     virtual ~ReadDPIStrawCluster() { }
@@ -274,6 +277,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     TH1F* _Pz_diff;
     TH2F* _x0y0;
     TH1F* _chi2;
+    TH1F* _Xdiff;
+    TH1F* _Ydiff;
+    TH1F* _eplane;
     Double_t R_rec,x0,y0;
     Double_t Pt,Pz;
     CLHEP::Hep3Vector  X_in;  
@@ -306,7 +312,10 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     _P_diff        = tfs->make<TH1F>( "P_diff",  "delta momentum", 100, -20., 20.);
     _Pz_diff       = tfs->make<TH1F>( "Pz_diff",  "delta longitudinal momentum", 100, -20., 20.);
     _x0y0          = tfs->make<TH2F>( "x0y0","x0 of circle vs y0 of circle ", 500,-650.,650.,500,-650.,650.);
-    _chi2          = tfs->make<TH1F>( "chi2",  "chi2", 200, 0., 200. );
+    _chi2          = tfs->make<TH1F>( "chi2",  "chi2 of 2d circle fit", 200, 0., 200. );
+    _Xdiff         = tfs->make<TH1F>( "Xdiff",  "X(stereo hit) - X(stepMC) mm ", 100, -20., 20.);
+    _Ydiff         = tfs->make<TH1F>( "Ydiff",  "Y(stereo hit) - Y(stepMC) mm ", 100, -20., 20.);
+    _eplane        = tfs->make<TH1F>( "eplane",  "edep in plane (MeV)", 200, 0., .1 );
   }
   
   void ReadDPIStrawCluster::analyze(edm::Event const& evt, edm::EventSetup const&)
@@ -386,14 +395,14 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     
     //Here I check that there is one conversion electron
     if (nCEHits >=1) 
-      {
-	//This gives a reference to the first hit (temporally speaking) associated to the converse electron
+      {  
+	//
+	// reference to the first hit (temporally speaking) associated to the converse electron
+	//
 	const StepPointMC & CEFirstHit = ConvElec.firstHit(); 
-	
-	//Now you can ask position, momentum and whatever to this hit, looking at ToyDP/inc/StepPointMC.hh
-	cout << "Position of first Hit:     "<<CEFirstHit.position()   <<endl;   
-	cout << "Momentum at first Hit:     "<<CEFirstHit.momentum()   <<endl;  
-	cout << "Staw Index of first Hit:   "<<CEFirstHit.strawIndex() <<endl;
+	//cout << "Position of first Hit:     "<<CEFirstHit.position()   <<endl;   
+	//cout << "Momentum at first Hit:     "<<CEFirstHit.momentum()   <<endl;  
+	//cout << "Staw Index of first Hit:   "<<CEFirstHit.strawIndex() <<endl;
 	X_in= CEFirstHit.position();  
 	P_in= CEFirstHit.momentum();
 	Pt_inval =  TMath::Sqrt(P_in.x()*P_in.x()+P_in.y()*P_in.y());
@@ -401,16 +410,16 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	_Pt_in->Fill( Pt_inval);
 	_P_in->Fill(P_inval);
 	_Pz_in->Fill(P_in.z());
-	//The following line gives you the StrawIndex of the straw associated to the first hit of the conversion electron 
+	//
+	// StrawIndex of the straw associated with the first hit of the conversion electron: 
+	//
 	StrawIndex Idx = ConvElec.earliestStrawIndex();
-	
-	//Using the StrawIndex above you can point to the straw, passing through the tracker
 	const Straw& CEFirstStraw = tracker.getStraw(Idx);
 	
 	//You can ask the straw its Id or whatever, just looking at   ToyDP/inc/Straw.hh
 	//cout << CEFirstStraw.Id() << endl; 
 	
-	//This method gives a vector of StrawIndex associated to all the straws hit by the conversion electron
+	//This method gives a vector of StrawIndeces associated to all the straws hits by the conversion electron
 	vector<StrawIndex> CEStrawsIdx = ConvElec.convElecStrawIdx(); 
 	
 	//You can loop through the conversion electron straws, passing the element of the vector (StrawIndex)
@@ -427,8 +436,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	  cout << "Step point index:  "<<*i << endl;
 	  const CLHEP::Hep3Vector& pos = hit.position();
 	  const CLHEP::Hep3Vector& mom = hit.momentum();
-	  cout << "Position of hits " << hit.position() << endl ;      
-	  cout << "Momentum of hits " << hit.momentum() << endl ;  
+	  //	  cout << "Position of hits " << hit.position() << endl ;      
+	  //cout << "Momentum of hits " << hit.momentum() << endl ;  
 	  // find out what device or plane we are in (layer goes from 0 to 35) 
       
 	  const Straw&      straw = tracker.getStraw( hit.strawIndex() );
@@ -450,17 +459,22 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	Xavg[i] = Xavg[i]/nhitdev[i]; 
 	Yavg[i] = Yavg[i]/nhitdev[i]; 
 	//	 cout << i << " " << nhitdev[i] << " " << Xavg[i] << " " << Yavg[i] << endl ; 
-	//_eplane -> Fill(edep[i]) ;  // energy deposited in plane
+	_eplane -> Fill(edep[i]) ;  // energy deposited in plane
 	//_nhitpl -> Fill(nhitdev[i]) ; // number of hits in plane
       }
     } 
     
-    vector<double> X;
-    vector<double> Y;
-    vector<double> R;
-    vector<double> Z;
+    vector<double> X;       // x of cluster intersections
+    vector<double> Y;       // y of cluster intersections
+    vector<double> X_res;   // x residuals
+    vector<double> Y_res;   // y residual 
+    vector<double> R;       // radius of cluster intersections
+    vector<double> Z;       // z of cluster intersections
+
     X.clear();
     Y.clear();
+    X_res.clear();
+    Y_res.clear();
     R.clear();
     Z.clear();
     Int_t totalHits=0;
@@ -550,9 +564,11 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 			Y.push_back(intersection.y_);
 			Z.push_back(0.5*(junk.mpz+pjunk.mpz));
 			R.push_back( TMath::Sqrt(intersection.x_*intersection.x_ + intersection.y_*intersection.y_));
-
+			X_res.push_back(Xavg[i]-intersection.x_);
+			Y_res.push_back(Yavg[i]-intersection.y_);
+			_Xdiff -> Fill(Xavg[i]-intersection.x_) ;
+			_Ydiff -> Fill(Yavg[i]-intersection.y_) ;
 			nint ++;
-			//cout<<nint<<endl;
 			break;
 		      }  // end switch 
 		  } // end for first2
