@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.6 2011/02/11 16:26:57 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.7 2011/02/11 21:46:25 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/02/11 16:26:57 $
+// $Date: 2011/02/11 21:46:25 $
 //
 // Original author Hans Wenzel
 //
@@ -231,6 +231,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       _chi2(0),
       _Xdiff(0),
       _Ydiff(0),
+      _Rdiff(0),
+      _Phidiff(0),
       _eplane(0)
     {
     }
@@ -279,6 +281,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     TH1F* _chi2;
     TH1F* _Xdiff;
     TH1F* _Ydiff;
+    TH1F* _Rdiff;
+    TH1F* _Phidiff;
     TH1F* _eplane;
     Double_t R_rec,x0,y0;
     Double_t Pt,Pz;
@@ -298,24 +302,26 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     edm::Service<edm::TFileService> tfs;
     _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );  
     _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 500, 0., 500. );
-    _hNHits        = tfs->make<TH1F>( "hNHits","Number of straw Hits", 500, 0., 500. );
-    _hNEleHits     = tfs->make<TH1F>( "hNEleHits","Number of straw Hits/conversion electron", 500, 0., 500. );
+    _hNHits        = tfs->make<TH1F>( "hNHits",    "Number of straw Hits", 500, 0., 500. );
+    _hNEleHits     = tfs->make<TH1F>( "hNEleHits", "Number of straw Hits/conversion electron", 500, 0., 500. );
     _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
-    _R_rec         = tfs->make<TH1F>( "R_rec",  "reconstructed track radius", 100, 0., 800. );
-    _Pt_in         = tfs->make<TH1F>( "Pt_in",  "tansverse momentum Pt at first Hit", 100, 0., 160. );
-    _P_in          = tfs->make<TH1F>( "P_in",  "momentum at first Hit", 100, 60., 140. );
-    _Pz_in         = tfs->make<TH1F>( "Pz_in",  "longitudinal momentum at first Hit", 100, 0., 120. );
-    _Pt_rec        = tfs->make<TH1F>( "Pt_rec",  "reconstructed tansverse momentum Pt", 100, 0., 160. );
-    _P_rec         = tfs->make<TH1F>( "P_rec",  "reconstructed momentum", 100, 60., 140. );
-    _Pz_rec        = tfs->make<TH1F>( "Pz_rec",  "reconstructed longitudinal momentum", 100, 0., 120. );
-    _Pt_diff       = tfs->make<TH1F>( "Pt_diff",  "delta tansverse momentum Pt", 100, -20., 20. );
-    _P_diff        = tfs->make<TH1F>( "P_diff",  "delta momentum", 100, -20., 20.);
-    _Pz_diff       = tfs->make<TH1F>( "Pz_diff",  "delta longitudinal momentum", 100, -20., 20.);
-    _x0y0          = tfs->make<TH2F>( "x0y0","x0 of circle vs y0 of circle ", 500,-650.,650.,500,-650.,650.);
-    _chi2          = tfs->make<TH1F>( "chi2",  "chi2 of 2d circle fit", 200, 0., 200. );
-    _Xdiff         = tfs->make<TH1F>( "Xdiff",  "X(stereo hit) - X(stepMC) mm ", 100, -20., 20.);
-    _Ydiff         = tfs->make<TH1F>( "Ydiff",  "Y(stereo hit) - Y(stepMC) mm ", 100, -20., 20.);
-    _eplane        = tfs->make<TH1F>( "eplane",  "edep in plane (MeV)", 200, 0., .1 );
+    _R_rec         = tfs->make<TH1F>( "R_rec",     "reconstructed track radius", 100, 0., 800. );
+    _Pt_in         = tfs->make<TH1F>( "Pt_in",     "tansverse momentum Pt at first Hit", 100, 0., 160. );
+    _P_in          = tfs->make<TH1F>( "P_in",      "momentum at first Hit", 100, 60., 140. );
+    _Pz_in         = tfs->make<TH1F>( "Pz_in",     "longitudinal momentum at first Hit", 100, 0., 120. );
+    _Pt_rec        = tfs->make<TH1F>( "Pt_rec",    "reconstructed tansverse momentum Pt", 100, 0., 160. );
+    _P_rec         = tfs->make<TH1F>( "P_rec",     "reconstructed momentum", 100, 60., 140. );
+    _Pz_rec        = tfs->make<TH1F>( "Pz_rec",    "reconstructed longitudinal momentum", 100, 0., 120. );
+    _Pt_diff       = tfs->make<TH1F>( "Pt_diff",   "delta tansverse momentum Pt", 100, -20., 20. );
+    _P_diff        = tfs->make<TH1F>( "P_diff",    "delta momentum", 100, -20., 20.);
+    _Pz_diff       = tfs->make<TH1F>( "Pz_diff",   "delta longitudinal momentum", 100, -20., 20.);
+    _x0y0          = tfs->make<TH2F>( "x0y0",      "x0 of circle vs y0 of circle ", 500,-650.,650.,500,-650.,650.);
+    _chi2          = tfs->make<TH1F>( "chi2",      "chi2 of 2d circle fit", 200, 0., 200. );
+    _Xdiff         = tfs->make<TH1F>( "Xdiff",     "X(stepMC)  - X(stereo hit) mm ", 100, -20., 20.);
+    _Ydiff         = tfs->make<TH1F>( "Ydiff",     "Y(stepMC)  - Y(stereo hit)  mm ", 100, -20., 20.);
+    _Rdiff         = tfs->make<TH1F>( "Rdiff",     "R(stepMC)  - R(stereo hit) mm ", 100, -20., 20.);;
+    _Phidiff       = tfs->make<TH1F>( "Phidiff",   "Phi(stepMC)- Phi(stereo hit) mm ", 100, -0.6, 0.6);;
+    _eplane        = tfs->make<TH1F>( "eplane",    "edep in plane (MeV)", 200, 0., .1 );
   }
   
   void ReadDPIStrawCluster::analyze(edm::Event const& evt, edm::EventSetup const&)
@@ -331,14 +337,17 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     SectorId secid;
 
 // calculate the average hit position of track at a plane
-    double Xavg[36], Yavg[36], edep[36] ;
+    double Xavg[36], Yavg[36],Zavg[36], edep[36] ;
     int nhitdev[36];
+    CLHEP::Hep3Vector  MCPoint[36]; 
     
     for (int i = 0; i < 36 ; i++) { 
       nhitdev[i] = 0 ;
       Xavg[i] = 0 ;
       Yavg[i] = 0 ;
+      Zavg[i] = 0 ;
       edep[i] = 0 ;
+      MCPoint[i] = CLHEP::Hep3Vector(0.,0.,0.);
     } 
     
     // Geometry info for the TTracker.
@@ -435,6 +444,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	  const StepPointMC hit = (*hits)[*i];
 	  cout << "Step point index:  "<<*i << endl;
 	  const CLHEP::Hep3Vector& pos = hit.position();
+
 	  const CLHEP::Hep3Vector& mom = hit.momentum();
 	  //	  cout << "Position of hits " << hit.position() << endl ;      
 	  //cout << "Momentum of hits " << hit.momentum() << endl ;  
@@ -445,7 +455,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	  nhitdev[nsid.getDevice()]++;
 	  Xavg[nsid.getDevice()] = Xavg[nsid.getDevice()] + pos.x() ;
 	  Yavg[nsid.getDevice()] = Yavg[nsid.getDevice()] + pos.y() ;
-	  edep[nsid.getDevice()] = edep[nsid.getDevice()] + hit.eDep() ;  
+	  Zavg[nsid.getDevice()] = Zavg[nsid.getDevice()] + pos.z() ;
+	  edep[nsid.getDevice()] = edep[nsid.getDevice()] + hit.eDep() ;
+  	  MCPoint[nsid.getDevice()] = MCPoint[nsid.getDevice()] + pos;
 	}
  
       }
@@ -458,6 +470,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       if (nhitdev[i] != 0) {
 	Xavg[i] = Xavg[i]/nhitdev[i]; 
 	Yavg[i] = Yavg[i]/nhitdev[i]; 
+	MCPoint[i] = MCPoint[i]/nhitdev[i]; 
 	//	 cout << i << " " << nhitdev[i] << " " << Xavg[i] << " " << Yavg[i] << endl ; 
 	_eplane -> Fill(edep[i]) ;  // energy deposited in plane
 	//_nhitpl -> Fill(nhitdev[i]) ; // number of hits in plane
@@ -468,27 +481,39 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     vector<double> Y;       // y of cluster intersections
     vector<double> X_res;   // x residuals
     vector<double> Y_res;   // y residual 
+    vector<double> R_res;   // R residuals
+    vector<double> Phi_res; // phi residual 
     vector<double> R;       // radius of cluster intersections
+    vector<double> Phi;     // angle of cluster intersections
     vector<double> Z;       // z of cluster intersections
+    vector<CLHEP::Hep3Vector> Points3d; // x,y measurement packed into clhepvector
 
     X.clear();
     Y.clear();
     X_res.clear();
     Y_res.clear();
+    R_res.clear();
+    Phi_res.clear();
     R.clear();
+    Phi.clear();
     Z.clear();
+    Points3d.clear();
     Int_t totalHits=0;
     _hNClusters->Fill(mcptrHandle->size());
     CLHEP::Hep3Vector dvec;
+
     for ( size_t i=0; i< mcptrHandle->size(); ++i ) {
       double hlen=9999999.;
       DPIndexVector   const&    mcptr(hits_mcptr->at(i));
       CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
       _hNStraws->Fill(mcptr.size());
       totalHits = totalHits+mcptr.size();
+      Double_t totalEnergy = 0.0;
       for( size_t j=0; j<mcptr.size(); j++ ) {
 	DPIndex const& junkie = mcptr[j];
        	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+	Double_t Energy = strawhit.energyDep();
+	totalEnergy=totalEnergy+Energy;
 	str = tracker.getStraw(strawhit.strawIndex());
 	sid = str.Id();
 	lid = sid.getLayerId();
@@ -497,6 +522,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
 	const CLHEP::Hep3Vector dirvec = str.getDirection();
 	dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
+	//pvec = pvec + Energy * mpvec;     // weight straw by energy deposition
 	pvec = pvec + mpvec;
 	if (str.getHalfLength()<hlen)
 	  {
@@ -505,6 +531,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       }
       double a = 1./double(mcptr.size());
       pvec = pvec*a;
+      //pvec = pvec/totalEnergy;             // mean weighted by energy deposition
       pstraw pstr;
       pstr.lay=lid.getLayer();
       pstr.did=did;
@@ -563,11 +590,19 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 			X.push_back(intersection.x_);
 			Y.push_back(intersection.y_);
 			Z.push_back(0.5*(junk.mpz+pjunk.mpz));
-			R.push_back( TMath::Sqrt(intersection.x_*intersection.x_ + intersection.y_*intersection.y_));
+			CLHEP::Hep3Vector point3d  =
+			  CLHEP::Hep3Vector(intersection.x_,intersection.y_,0.5*(junk.mpz+pjunk.mpz));
+			Points3d.push_back(point3d);
+			Double_t Rhit = TMath::Sqrt(intersection.x_*intersection.x_ + intersection.y_*intersection.y_);
+			Double_t Rmc  = TMath::Sqrt(Xavg[i]*Xavg[i]+Yavg[i]*Yavg[i]);
+			R.push_back(Rhit);
+			R_res.push_back(Rmc-Rhit);
+			_Rdiff-> Fill(Rmc-Rhit);
+			_Phidiff->Fill(MCPoint[i].phi()-point3d.phi());
 			X_res.push_back(Xavg[i]-intersection.x_);
 			Y_res.push_back(Yavg[i]-intersection.y_);
-			_Xdiff -> Fill(Xavg[i]-intersection.x_) ;
-			_Ydiff -> Fill(Yavg[i]-intersection.y_) ;
+			_Xdiff -> Fill(Xavg[i]-intersection.x_);
+			_Ydiff -> Fill(Yavg[i]-intersection.y_);
 			nint ++;
 			break;
 		      }  // end switch 
@@ -579,7 +614,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     if (X.size()>2)
       {
 	FitCircle(X, Y);
-	Double_t Bmagnet=10.;   // 10 KGauss magnetic field
+	Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
 	Double_t Const=1.49898e-4;
 	Pt =1000.*R_rec*0.1 * 2. * Bmagnet* Const;
 	_Pt_rec->Fill(Pt);
