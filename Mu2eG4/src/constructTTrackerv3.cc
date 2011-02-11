@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.14 2010/12/22 17:38:19 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.15 2011/02/11 16:54:35 genser Exp $
 // $Author: genser $
-// $Date: 2010/12/22 17:38:19 $
+// $Date: 2011/02/11 16:54:35 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -33,15 +33,19 @@
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestTrp.hh"
+#include "Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
 #include "G4Material.hh"
 #include "G4Colour.hh"
 #include "G4String.hh"
 #include "G4ThreeVector.hh"
-#include "G4PVPlacement.hh"
+#include "G4Box.hh"
+#include "G4Trd.hh"
 #include "G4SDManager.hh"
+#include "G4PVPlacement.hh"
+#include "G4IntersectionSolid.hh"
+
 
 using namespace std;
 
@@ -159,25 +163,55 @@ namespace mu2e{
 
     // constructing sector envelope
 
-    // Make a logical volume for this sector.  
+    // Make a logical volume for this sector, 
+
+    // G4IntersectionSolid of G4Box and G4Trd to avoid overlaps of two envelopes
 
     // reuse device attributes for now
 
-    // false for placing physical volume
-    VolumeInfo secInfo = nestTrp( "TTrackerSectorEnvelope",
-                                  sector.boxHalfLengths(),
-                                  envelopeMaterial,
-                                  0,
-                                  zeroVector,
-                                  0,
-                                  0,
-                                  ttrackerSectorEnvelopeVisible,
-                                  G4Colour::Cyan(),
-                                  ttrackerSectorEnvelopeSolid,
-                                  forceAuxEdgeVisible,
-                                  false,
-                                  doSurfaceCheck
-                                  );
+    // get the length of the innermost straw
+    Layer const& layer0        = sector.getLayer(0);
+    Straw const& straw0        = layer0.getStraw(0);
+    StrawDetail const& detail0 = straw0.getDetail();
+
+    verbosityLevel > 0 && 
+      cout << "Debugging sector box isec detail0.halfLength(): " << detail0.halfLength() << endl;
+
+
+    VolumeInfo secInfo;
+    secInfo.name = "TTrackerSectorEnvelope";
+
+    G4Box* secBox = new G4Box(secInfo.name+"Box",
+                              detail0.halfLength(),
+                              sector.boxHalfLengths()[2], 
+                              sector.boxHalfLengths()[1]
+                              );
+
+    G4Trd* secTrd = new G4Trd(secInfo.name+"Trd",
+                              sector.boxHalfLengths()[4],
+                              sector.boxHalfLengths()[3],
+                              sector.boxHalfLengths()[2],
+                              sector.boxHalfLengths()[2],
+                              sector.boxHalfLengths()[1]
+                              );
+
+    secInfo.solid = 
+      new G4IntersectionSolid(secInfo.name, secBox, secTrd);
+
+    // false for placing physical volume, just create a logical one
+    finishNesting(secInfo,
+                  envelopeMaterial,
+                  0,
+                  zeroVector,
+                  0,
+                  0,
+                  ttrackerSectorEnvelopeVisible,
+                  G4Colour::Cyan(),
+                  ttrackerSectorEnvelopeSolid,
+                  forceAuxEdgeVisible,
+                  false,
+                  doSurfaceCheck
+                  );
 
     verbosityLevel > 0 && 
       cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
