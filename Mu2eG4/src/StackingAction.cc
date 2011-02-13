@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.6 2010/12/17 22:10:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/17 22:10:41 $
+// $Id: StackingAction.cc,v 1.7 2011/02/13 22:33:10 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/13 22:33:10 $
 //
 // Original author Rob Kutschke
 //
@@ -177,7 +177,7 @@ namespace mu2e {
     int id(track->GetDefinition()->GetPDGEncoding()); 
     for( size_t i=0; i<_pdgToDrop.size(); ++i ) {
       if( _pdgToDrop[i] == id ) {
-        cout << "Killing track from list: " << id << endl;
+        // cout << "Killing track from list: " << id << endl;
         return true;
       }
     }

@@ -15,6 +15,7 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "TargetGeom/inc/Target.hh"
 
 using namespace std;
 using namespace CLHEP;
@@ -34,6 +35,7 @@ namespace mu2e {
 
     // Need some data from other subsystems
     GeomHandle<Beamline> bg;
+    double solenoidOffset = bg->solenoidOffset();
 
     // VD 1 and 2 are at the front and back of collimator 1, which is placed inside TS1.
 
@@ -79,6 +81,25 @@ namespace mu2e {
 
     _vd->addVirtualDetector( 7, "Coll5_In",  ts5pos, ts5rot, coll5pos-deltaZ5);
     _vd->addVirtualDetector( 8, "Coll5_Out", ts5pos, ts5rot, coll5pos+deltaZ5);
+
+    // VD 9 and 10 are placed inside DS2, just before and after stopping target
+
+    GeomHandle<Target> target;
+
+    double z0    = target->cylinderCenter();
+    double zHalf = target->cylinderLength()/2.0;
+
+    double rTorus        = bg->getTS().torusRadius();
+    double ts5HalfLength = bg->getTS().getTS5().getHalfLength();
+    double ds2HalfLength = c.getDouble("toyDS2.halfLength");
+    double ds2Z0         = rTorus + 2.*ts5HalfLength + ds2HalfLength;
+
+    Hep3Vector ds2Offset(-solenoidOffset,0.,ds2Z0);
+    Hep3Vector targetOffset(0.,0.,(12000+z0-ds2Z0));
+    Hep3Vector shift(0.,0.,zHalf+vdHL);
+
+    _vd->addVirtualDetector(  9, "ST_In",  ds2Offset, 0, targetOffset-shift);
+    _vd->addVirtualDetector( 10, "ST_Out", ds2Offset, 0, targetOffset+shift);
 
   }
   

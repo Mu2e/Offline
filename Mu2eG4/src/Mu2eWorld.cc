@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.78 2011/02/09 16:19:18 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/02/09 16:19:18 $
+// $Id: Mu2eWorld.cc,v 1.79 2011/02/13 22:33:10 logash Exp $
+// $Author: logash $ 
+// $Date: 2011/02/13 22:33:10 $
 //
 // Original author Rob Kutschke
 //
@@ -224,12 +224,7 @@ namespace mu2e {
     log << "Hall Origin in Mu2e:  " << _hallOriginInMu2e     << "\n";
 
     // Create magnetic fields and managers only after all volumes have been defined.
-    // Eventually constructBFieldAndManagers2() will be the only BField constructor.
-    if( _config->getString("bfield.format","GMC") == "GMC" ) {
-      constructBFieldAndManagers();
-    } else {
-      constructBFieldAndManagers2();
-    }
+    constructBFieldAndManagers();
     constructStepLimiters();
 
   }
@@ -360,7 +355,13 @@ namespace mu2e {
     VolumeInfo const & detSolUpstreamVacInfo   = _helper->locateVolInfo("ToyDS2Vacuum");
 
     // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
+    // is it better to use here detSolUpstreamVacInfo.centerInMu2e().z() ?
     double z0DSup   = detSolUpstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+
+    cout << "_mu2eOrigin.z()=" << _mu2eOrigin.z() << endl;
+    cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
+    cout << "detSolUpstreamVacInfo.centerInMu2e.z()=" << detSolUpstreamVacInfo.centerInMu2e().z() << endl;
+    cout << "_hallOriginInMu2e.z()=" << _hallOriginInMu2e.z() << endl;
 
     // Buid the stopping target
     VolumeInfo targetInfo = ( _config->getBool("hasTarget",false) ) ? 
@@ -378,7 +379,8 @@ namespace mu2e {
   } // end Mu2eWorld::constructTarget
 
   // Construct the magnetic field managers and attach them to
-  // the relevant volumes.
+  // the relevant volumes or to the world
+
   void Mu2eWorld::constructBFieldAndManagers(){
 
     // Figure out which magnetic field managers are needed.
@@ -386,145 +388,6 @@ namespace mu2e {
 
     // Decide on the G4 Stepper
 
-    bool needDSFull    = (dsFieldForm == dsModelFull  || dsFieldForm == dsModelSplit );
-    bool needDSUniform = (dsFieldForm == dsModelSplit || dsFieldForm == dsModelUniform );
-
-    string stepper = _config->getString("g4.stepper","G4SimpleRunge");
-
-    // Create field manager for the full DS field.
-    if ( needDSFull ){
-      if ( stepper  == "G4ClassicalRK4" ) {
-        _dsFull = FieldMgr::forMappedField<G4ClassicalRK4>( "DS", _mu2eOrigin );
-      } else if ( stepper  == "G4ImplicitEuler" ) {
-        _dsFull = FieldMgr::forMappedField<G4ImplicitEuler>( "DS", _mu2eOrigin );
-      } else if ( stepper  == "G4ExplicitEuler" ) {
-        _dsFull = FieldMgr::forMappedField<G4ExplicitEuler>( "DS", _mu2eOrigin );
-      } else if ( stepper  == "G4SimpleHeum" ) {
-        _dsFull = FieldMgr::forMappedField<G4SimpleHeum>( "DS", _mu2eOrigin );
-      } else if ( stepper  == "G4HelixImplicitEuler" ) {
-        _dsFull = FieldMgr::forMappedField<G4HelixImplicitEuler>( "DS", _mu2eOrigin );
-      } else if ( stepper  == "G4HelixSimpleRunge" ) {
-        _dsFull = FieldMgr::forMappedField<G4HelixSimpleRunge>( "DS", _mu2eOrigin );
-      } else {
-        _dsFull = FieldMgr::forMappedField<G4SimpleRunge>( "DS", _mu2eOrigin );
-      } 
-    }
-
-    // Create field manager for the uniform DS field.
-    if ( needDSUniform){
-      // Handle to the BField manager.
-      GeomHandle<BFieldManager> bfMgr;
-      _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue(), _mu2eOrigin );
-    }
-
-    // Create field managers for the PS and TS.
-
-    if ( stepper  == "G4ClassicalRK4" ) {
-      _psFull = FieldMgr::forMappedField<G4ClassicalRK4>( "PS", _mu2eOrigin );
-    } else if ( stepper  == "G4ImplicitEuler" ) {
-      _psFull = FieldMgr::forMappedField<G4ImplicitEuler>( "PS", _mu2eOrigin );
-    } else if ( stepper  == "G4ExplicitEuler" ) {
-      _psFull = FieldMgr::forMappedField<G4ExplicitEuler>( "PS", _mu2eOrigin );
-    } else if ( stepper  == "G4SimpleHeum" ) {
-      _psFull = FieldMgr::forMappedField<G4SimpleHeum>( "PS", _mu2eOrigin );
-    } else if ( stepper  == "G4HelixImplicitEuler" ) {
-      _psFull = FieldMgr::forMappedField<G4HelixImplicitEuler>( "PS", _mu2eOrigin );
-    } else if ( stepper  == "G4HelixSimpleRunge" ) {
-      _psFull = FieldMgr::forMappedField<G4HelixSimpleRunge>( "PS", _mu2eOrigin );
-    } else {
-      _psFull = FieldMgr::forMappedField<G4SimpleRunge>( "PS", _mu2eOrigin );
-    } 
-
-
-    if ( stepper  == "G4ClassicalRK4" ) {
-      _tsFull = FieldMgr::forMappedField<G4ClassicalRK4>( "TS", _mu2eOrigin );
-    } else if ( stepper  == "G4ImplicitEuler" ) {
-      _tsFull = FieldMgr::forMappedField<G4ImplicitEuler>( "TS", _mu2eOrigin );
-    } else if ( stepper  == "G4ExplicitEuler" ) {
-      _tsFull = FieldMgr::forMappedField<G4ExplicitEuler>( "TS", _mu2eOrigin );
-    } else if ( stepper  == "G4SimpleHeum" ) {
-      _tsFull = FieldMgr::forMappedField<G4SimpleHeum>( "TS", _mu2eOrigin );
-    } else if ( stepper  == "G4HelixImplicitEuler" ) {
-      _tsFull = FieldMgr::forMappedField<G4HelixImplicitEuler>( "TS", _mu2eOrigin );
-    } else if ( stepper  == "G4HelixSimpleRunge" ) {
-      _tsFull = FieldMgr::forMappedField<G4HelixSimpleRunge>( "TS", _mu2eOrigin );
-    } else {
-      _tsFull = FieldMgr::forMappedField<G4SimpleRunge>( "TS", _mu2eOrigin );
-    }
-
-    // Get pointers to logical volumes.
-    G4LogicalVolume* ds2Vacuum = _helper->locateVolInfo("ToyDS2Vacuum").logical;
-    G4LogicalVolume* ds3Vacuum = _helper->locateVolInfo("ToyDS3Vacuum").logical;
-
-    vector<G4LogicalVolume*> psVacua;
-    psVacua.push_back( _helper->locateVolInfo("PS1Vacuum").logical );
-
-    vector<G4LogicalVolume*> tsVacua;
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS1Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS2Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS3Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS4Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS5Vacuum").logical );
-
-    // Attach field managers to the appropriate logical volumes.
-    if (dsFieldForm == dsModelFull  ){
-      ds2Vacuum->SetFieldManager( _dsFull->manager(), true);
-      ds3Vacuum->SetFieldManager( _dsFull->manager(), true);
-    } else if ( dsFieldForm == dsModelSplit ){
-      ds2Vacuum->SetFieldManager( _dsFull->manager(), true);
-      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-    } else {
-      ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
-      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-    }
-
-    for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
-          i!=psVacua.end(); ++i ){
-      (**i).SetFieldManager( _psFull->manager(), true);
-    }
-    
-    for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
-          i!=tsVacua.end(); ++i ){
-      (**i).SetFieldManager( _tsFull->manager(), true);
-    }
-
-    // Adjust properties of the integrators to control accuracy vs time.
-    G4double singleValue         = 0.5e-01*CLHEP::mm;
-    G4double newUpstreamDeltaI   = singleValue;
-    G4double deltaOneStep        = singleValue;
-    G4double deltaChord          = singleValue;
-
-    if ( _dsFull.get() != 0 ){
-      _dsFull->manager()->SetDeltaOneStep(deltaOneStep);
-      _dsFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
-      _dsFull->chordFinder()->SetDeltaChord(deltaChord);
-    }
-
-    if ( _dsUniform.get() != 0 ){
-      G4double deltaIntersection = 0.00001*CLHEP::mm;
-      _dsUniform->manager()->SetDeltaIntersection(deltaIntersection);
-    }
-
-    _tsFull->manager()->SetDeltaOneStep(deltaOneStep);
-    _tsFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
-    _tsFull->chordFinder()->SetDeltaChord(deltaChord);
-
-    _psFull->manager()->SetDeltaOneStep(deltaOneStep);
-    _psFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
-    _psFull->chordFinder()->SetDeltaChord(deltaChord);
-
-
-  } // end Mu2eWorld::constructBFieldAndManagers
-
-  // Construct the magnetic field managers and attach them to
-  // the relevant volumes - alternative version.
-  void Mu2eWorld::constructBFieldAndManagers2(){
-
-    // Figure out which magnetic field managers are needed.
-    int dsFieldForm    = _config->getInt("detSolFieldForm", dsModelUniform); 
-
-    // Decide on the G4 Stepper
-
     bool needDSUniform = (dsFieldForm == dsModelSplit || dsFieldForm == dsModelUniform );
 
     string stepper = _config->getString("g4.stepper","G4SimpleRunge");
@@ -536,58 +399,42 @@ namespace mu2e {
       _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue(), _mu2eOrigin );
     }
 
-    // Create field managers for the PS and TS.
-
+    // Create global field managers; don't use FieldMgr here to avoid problem with ownership
+    
+    G4MagneticField * _field = new DSField("", _mu2eOrigin);
+    G4Mag_UsualEqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
+    G4MagIntegratorStepper * _stepper;
     if ( stepper  == "G4ClassicalRK4" ) {
-      _hallFull = FieldMgr::forMappedField<G4ClassicalRK4>( "", _mu2eOrigin );
+      _stepper = new G4ClassicalRK4(_rhs);
     } else if ( stepper  == "G4ImplicitEuler" ) {
-      _hallFull = FieldMgr::forMappedField<G4ImplicitEuler>( "", _mu2eOrigin );
+      _stepper = new G4ImplicitEuler(_rhs);
     } else if ( stepper  == "G4ExplicitEuler" ) {
-      _hallFull = FieldMgr::forMappedField<G4ExplicitEuler>( "", _mu2eOrigin );
+      _stepper = new G4ExplicitEuler(_rhs);
     } else if ( stepper  == "G4SimpleHeum" ) {
-      _hallFull = FieldMgr::forMappedField<G4SimpleHeum>( "", _mu2eOrigin );
+      _stepper = new G4SimpleHeum(_rhs);
     } else if ( stepper  == "G4HelixImplicitEuler" ) {
-      _hallFull = FieldMgr::forMappedField<G4HelixImplicitEuler>( "", _mu2eOrigin );
+      _stepper = new G4HelixImplicitEuler(_rhs);
     } else if ( stepper  == "G4HelixSimpleRunge" ) {
-      _hallFull = FieldMgr::forMappedField<G4HelixSimpleRunge>( "", _mu2eOrigin );
+      _stepper = new G4HelixSimpleRunge(_rhs);
     } else {
-      _hallFull = FieldMgr::forMappedField<G4SimpleRunge>( "", _mu2eOrigin );
+      _stepper = new G4SimpleRunge(_rhs);
     } 
+    G4ChordFinder * _chordFinder = new G4ChordFinder(_field,1.0e-2*CLHEP::mm,_stepper);
+    G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true); 
 
-    // Get pointers to logical volumes.
+    // G4TransportationManager takes ownership of _manager
+    G4TransportationManager::GetTransportationManager()->SetFieldManager(_manager);
+
+    // Define uniform field region in the detector solenoid, if neccessary
+
     G4LogicalVolume* ds2Vacuum = _helper->locateVolInfo("ToyDS2Vacuum").logical;
     G4LogicalVolume* ds3Vacuum = _helper->locateVolInfo("ToyDS3Vacuum").logical;
-
-    vector<G4LogicalVolume*> psVacua;
-    psVacua.push_back( _helper->locateVolInfo("PS1Vacuum").logical );
-
-    vector<G4LogicalVolume*> tsVacua;
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS1Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS2Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS3Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS4Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS5Vacuum").logical );
-
-    // Attach field managers to the appropriate logical volumes.
-    if (dsFieldForm == dsModelFull  ){
-      ds2Vacuum->SetFieldManager( _hallFull->manager(), true);
-      ds3Vacuum->SetFieldManager( _hallFull->manager(), true);
-    } else if ( dsFieldForm == dsModelSplit ){
-      ds2Vacuum->SetFieldManager( _hallFull->manager(), true);
-      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-    } else {
+    
+    if (dsFieldForm == dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
       ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-    }
-
-    for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
-          i!=psVacua.end(); ++i ){
-      (**i).SetFieldManager( _hallFull->manager(), true);
-    }
-    
-    for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
-          i!=tsVacua.end(); ++i ){
-      (**i).SetFieldManager( _hallFull->manager(), true);
+    } else if ( dsFieldForm == dsModelSplit ){
+      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
     }
 
     // Adjust properties of the integrators to control accuracy vs time.
@@ -601,9 +448,9 @@ namespace mu2e {
       _dsUniform->manager()->SetDeltaIntersection(deltaIntersection);
     }
 
-    _hallFull->manager()->SetDeltaOneStep(deltaOneStep);
-    _hallFull->manager()->SetDeltaIntersection(newUpstreamDeltaI);
-    _hallFull->chordFinder()->SetDeltaChord(deltaChord);
+    _manager->SetDeltaOneStep(deltaOneStep);
+    _manager->SetDeltaIntersection(newUpstreamDeltaI);
+    _chordFinder->SetDeltaChord(deltaChord);
 
   } // end Mu2eWorld::constructBFieldAndManagers
 

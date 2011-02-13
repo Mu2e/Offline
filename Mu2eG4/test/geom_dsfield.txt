@@ -1,0 +1,24 @@
+//
+// In this geometry file the magnetic field configuration 
+// is modified:
+// - field only exist in detector solenoid
+// - the field map is used everywhere except downstream section
+//   where uniform field is used instead
+//
+// Original author Ivan Logashenko
+//
+#include "Mu2eG4/test/geom_01.txt";
+
+// Form of DS field: 0 is full field; 
+//                   1 is full upstream, const downstream; 
+//                   2 is const throughout
+int detSolFieldForm = 1;
+
+// This is recommended field map
+string bfield.format  = "G4BL";
+vector<string> bfield.files = { "BFieldMaps/Mau4/Mau4_DSMap.txt.bz2" };
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

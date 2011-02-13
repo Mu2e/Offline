@@ -1,9 +1,9 @@
 //
 // Variation on the geometry for debugging the beamline.
 //
-// $Id: beamline_geom.txt,v 1.10 2010/12/14 01:03:39 logash Exp $
+// $Id: beamline_geom.txt,v 1.11 2011/02/13 22:33:10 logash Exp $
 // $Author: logash $
-// $Date: 2010/12/14 01:03:39 $
+// $Date: 2011/02/13 22:33:10 $
 //
 // Original author Rob Kutschke
 //
@@ -17,17 +17,6 @@
 
 // Form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
 int detSolFieldForm = 0;
-
-// For G4BL input files you must use the G4BL field maps.
-
-double toyTS.rTorus = 2929;
-bool   bfield.format  = "G4BL";
-vector<string> bfield.files = {
-  "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_DSMap.txt",
-  "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_PSMap.txt",
-  "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSuMap.txt",
-  "BFieldMaps/G4BL_v0/Mu2e_Rotated_Coils_TSdMap.txt"
-};
 
 //Use this line to switch off pion decays
 

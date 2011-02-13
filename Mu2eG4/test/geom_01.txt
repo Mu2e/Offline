@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.62 2011/02/10 19:53:54 genser Exp $
-// $Author: genser $
-// $Date: 2011/02/10 19:53:54 $
+// $Id: geom_01.txt,v 1.63 2011/02/13 22:33:10 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/13 22:33:10 $
 //
 // Original author Rob Kutschke
 //
@@ -45,9 +45,6 @@ bool   g4SteppingAction.killLowEKine  = false;
 bool   g4SteppingAction.killInHallAir = false;
 bool   g4SteppingAction.killerVerbose = false;
 double g4SteppingAction.eKineMin      = 0.1;    // Kinetic energy in MeV
-
-//form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
-int detSolFieldForm = 1;
 
 // current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
 
@@ -184,7 +181,7 @@ bool   toyPS.solid          = true;
 // Parameters for TS volumes.
 double toyTS.rVac        =  240.;          // Outer radius of vacuum volume
 double toyTS.rCryo       =  700.;          // Outer radius of cryostat
-double toyTS.rTorus      = 2926.;          // Bend radius of the torus
+double toyTS.rTorus      = 2929.;          // Bend radius of the torus
 double toyTS1.halfLength =  500.;
 double toyTS5.halfLength =  500.;
 bool   toyTS.visible        = true;
@@ -345,12 +342,34 @@ bool   fluxcrv.visible          = true;
 bool   fluxcrv.solid            = false;
 
 // Magnetic field
-string bfield.dsFile = "BFieldMaps/MECO/dsmap_unfmt_rad100.dat";
-vector<int> bfield.dsDimensions = {  50, 25, 438 };
-string bfield.tsFile = "BFieldMaps/MECO/tsmap_unfmt_rotcor.dat";
-vector<int> bfield.tsDimensions = { 425, 18, 388 };
-string bfield.psFile = "BFieldMaps/MECO/psmap_unfmt.dat";
-vector<int> bfield.psDimensions = {  76, 38, 251 };
+//
+// Default setting is to use the full field everywhere, except the 
+// upstream part of DS, where uniform field is used. 
+
+// Form of DS field: 0 is full field; 
+//                   1 is full upstream, const downstream; 
+//                   2 is const throughout
+int detSolFieldForm = 1;
+
+// This is recommended field map
+string bfield.format  = "G4BL";
+vector<string> bfield.files = { 
+  "BFieldMaps/Mau4/Mau4_DSMap.txt.bz2",
+  "BFieldMaps/Mau4/Mau4_PSMap.txt.bz2",
+  "BFieldMaps/Mau4/Mau4_TSuMap.txt.bz2",
+  "BFieldMaps/Mau4/Mau4_TSdMap.txt.bz2"
+};
+
+// While it is not recommended, it is still possible to use 
+// old GMC maps using the following lines instead of the lines above:
+//
+// string bfield.format  = "GMC";
+// string bfield.dsFile = "BFieldMaps/MECO/dsmap_unfmt_rad100.dat";
+// vector<int> bfield.dsDimensions = {  50, 25, 438 };
+// string bfield.tsFile = "BFieldMaps/MECO/tsmap_unfmt_rotcor.dat";
+// vector<int> bfield.tsDimensions = { 425, 18, 388 };
+// string bfield.psFile = "BFieldMaps/MECO/psmap_unfmt.dat";
+// vector<int> bfield.psDimensions = {  76, 38, 251 };
 
 // Proton Absorber
 string protonabsorber.materialName = "Polyethylene092";

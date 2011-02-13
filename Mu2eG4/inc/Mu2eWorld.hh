@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.28 2011/01/05 21:04:31 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/01/05 21:04:31 $
+// $Id: Mu2eWorld.hh,v 1.29 2011/02/13 22:33:10 logash Exp $
+// $Author: logash $ 
+// $Date: 2011/02/13 22:33:10 $
 //
 // Original author Rob Kutschke
 //
@@ -95,8 +95,7 @@ namespace mu2e {
     void constructCal();
     void constructMagnetYoke();
     void constructCRV();
-    void constructBFieldAndManagers();  // MECO field maps
-    void constructBFieldAndManagers2(); // G4BL field maps
+    void constructBFieldAndManagers();
     void constructStepLimiters();
 
     void instantiateSensitiveDetectors();
@@ -135,11 +134,7 @@ namespace mu2e {
 
     // Field managers for the different regions of magnetic field.
     // These have a lifetime equal to that of the G4 geometry.
-    std::auto_ptr<FieldMgr> _dsFull;
     std::auto_ptr<FieldMgr> _dsUniform;
-    std::auto_ptr<FieldMgr> _psFull;
-    std::auto_ptr<FieldMgr> _tsFull;
-    std::auto_ptr<FieldMgr> _hallFull;
 
     // Access to the G4HelperService.
     G4Helper * _helper;

@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.1 2011/01/05 21:04:47 genser Exp $
-// $Author: genser $
-// $Date: 2011/01/05 21:04:47 $
+// $Id: constructProtonAbsorber.cc,v 1.2 2011/02/13 22:33:10 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/13 22:33:10 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -20,6 +20,8 @@
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestCons.hh"
@@ -53,11 +55,18 @@ namespace mu2e {
    
     MaterialFinder materialFinder(*_config);
     G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
+
+    // Add virtual detector before and after target
+    double vdHL = 0.;
+    edm::Service<GeometryService> geom;
+    if( ! geom->hasElement<VirtualDetector>() ) return;
+    GeomHandle<VirtualDetector> vdg;
+    if( vdg->nDet()>0 ) vdHL = vdg->getHalfLength();
     
     double z0DSup   = parent1.centerInWorld.z()+hallInfo.centerInMu2e().z();
     vector<double> targetRadius;  _config->getVectorDouble("target.radii", targetRadius);
     double numoftf = (targetRadius.size()-1)/2.0;
-    double foilwid=_config->getDouble("target.deltaZ"); double taglen =(foilwid*numoftf) + 5.0;
+    double foilwid=_config->getDouble("target.deltaZ"); double taglen =(foilwid*numoftf) + 5.0 + vdHL;
     double z0valt =_config->getDouble("target.z0");     double tagoff =z0valt - z0DSup + 12000.0;
     double targetEnd = tagoff + taglen;
     double ds2halflen = _config->getDouble("toyDS2.halfLength");

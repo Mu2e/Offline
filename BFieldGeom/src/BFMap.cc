@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.7 2010/09/29 22:43:54 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/29 22:43:54 $
+// $Id: BFMap.cc,v 1.8 2011/02/13 22:33:10 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/13 22:33:10 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -190,6 +190,21 @@ namespace mu2e {
            << setw(4) << _dz << " "
            << endl;
     }
+
+    if ( dflag ){
+      cout << "Map's info nx,ny,nz "
+           << "& xmin, ymin, zmin & xmax, ymax, zmax :    " << endl
+           << setw(4) << _nx << " "  
+           << setw(4) << _ny << " " 
+           << setw(4) << _nz << " " << endl
+           << setw(7) << _xmin << " "
+           << setw(7) << _ymin << " "
+           << setw(7) << _zmin << " " << endl
+           << setw(7) << _xmax << " "
+           << setw(7) << _ymax << " "
+           << setw(7) << _zmax << " "
+           << endl;
+    }
     
     // Correct for edge points by moving their NGPt just inside the edge
     if (ix ==     0){++ix;}
@@ -217,6 +232,8 @@ namespace mu2e {
       edm::LogWarning("GEOM")
         << "Point's field is not defined in the map: " << _key << "\n"
         << "Point in input coordinates: " << testpoint << "\n";
+      edm::LogWarning("GEOM")
+	<< "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
       //}
       return CLHEP::Hep3Vector(0.,0.,0.);
     }
