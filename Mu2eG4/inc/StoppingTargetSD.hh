@@ -1,12 +1,8 @@
-#ifndef VirtualDetectorSD_h
-#define VirtualDetectorSD_h 1
+#ifndef StoppingTargetSD_h
+#define StoppingTargetSD_h 1
 //
-// Define a sensitive detector for virtual detectors (like G4Beamline)
+// Define a sensitive detector for stopping target
 // 
-// $Id: VirtualDetectorSD.hh,v 1.5 2011/02/14 23:20:01 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/14 23:20:01 $
-//
 // Original author Ivan Logashenko
 //
 
@@ -25,11 +21,11 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimpleConfig;
 
-  class VirtualDetectorSD : public G4VSensitiveDetector{
+  class StoppingTargetSD : public G4VSensitiveDetector{
 
   public:
-    VirtualDetectorSD(G4String, const SimpleConfig& config);
-    ~VirtualDetectorSD();
+    StoppingTargetSD(G4String, const SimpleConfig& config);
+    ~StoppingTargetSD();
     
     void Initialize(G4HCofThisEvent*);
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);

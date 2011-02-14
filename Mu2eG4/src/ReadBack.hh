@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.14 2011/01/31 23:45:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/31 23:45:48 $
+// $Id: ReadBack.hh,v 1.15 2011/02/14 23:20:01 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/14 23:20:01 $
 //
 // Original author Rob Kutschke
 //
@@ -23,6 +23,7 @@
 #include "ToyDP/inc/StepPointMCCollection.hh"
 
 class TH1F;
+class TH2F;
 class TGraph;
 class TNtuple;
 
@@ -57,6 +58,9 @@ namespace mu2e {
     // Module which made the CaloCrystalHits
     std::string _caloCrystalHitsMaker;
  
+    // Name of the stopping target StepPoint collection
+    std::string _targetStepPoints;
+
     // Cut on the minimum energy.
     double _minimumEnergy;
 
@@ -103,6 +107,11 @@ namespace mu2e {
     TH1F* _hRCTimeMC;
     TH1F* _hRCNCrystalsMC;
 
+    TH1F* _hTargetEdep;
+    TH1F* _hTargetPathLength;
+    TH1F* _hTargetNfoils;
+    TH2F* _hTargetNfoils2D;
+
     TNtuple* _ntup;
     TGraph*  _xyHits;
 
@@ -113,6 +122,7 @@ namespace mu2e {
     void doLTracker(const edm::Event& event);
     void doITracker(const edm::Event& event);
     void doCalorimeter(const edm::Event& event);
+    void doStoppingTarget(const edm::Event& event);
 
     // A helper function.
     int countHitNeighbours( Straw const& straw, 

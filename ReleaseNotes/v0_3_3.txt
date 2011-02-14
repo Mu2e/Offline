@@ -3,9 +3,37 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.7 2011/02/13 22:33:10 logash Exp $
+  $Id: v0_3_3.txt,v 1.8 2011/02/14 23:20:01 logash Exp $
   $Author: logash $
-  $Date: 2011/02/13 22:33:10 $
+  $Date: 2011/02/14 23:20:01 $
+
+6) February 14, 2011 logash
+
+   Stopping target foils are now sensitive detectors. There is new output 
+   StepPointMCCollection with the name "stoppingtarget". This collection
+   holds all G4 steps occured in the stopping target foils.
+
+   There is example in ReadBack.cc of how to use these data, function
+   doStoppingTarget(). In this example four histograms are filled: 
+   the total energy deposition in the target, the total path length and 
+   the number of foils crossed by the particle. There is 2D version of 
+   the last histogram, where number of crossed foils is shown versus 
+   the id of the foil of origin. All these histograms are in "checkhits"
+   folder, with the name, starting from "hTarget".
+
+   New files:
+
+     Mu2eG4/inc/StoppingTargetSD.hh
+     Mu2eG4/src/StoppingTargetSD.cc
+
+   Modified files:
+
+     Mu2eG4/src/constructStoppingTarget.cc
+     Mu2eG4/inc/SensitiveDetectorName.hh
+     Mu2eG4/src/G4_plugin.cc
+     Mu2eG4/src/Mu2eWorld.cc
+     Mu2eG4/src/ReadBack.cc
+     Mu2eG4/src/ReadBack.hh
 
 5) February 13, 2011 logash
 

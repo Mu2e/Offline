@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.27 2010/12/13 06:10:33 logash Exp $
+// $Id: ReadBack.cc,v 1.28 2011/02/14 23:20:01 logash Exp $
 // $Author: logash $
-// $Date: 2010/12/13 06:10:33 $
+// $Date: 2011/02/14 23:20:01 $
 //
 // Original author Rob Kutschke
 //
@@ -46,6 +46,7 @@
 // Root includes.
 #include "TDirectory.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TNtuple.h"
 #include "TGraph.h"
 
@@ -66,6 +67,7 @@ namespace mu2e {
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
     _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
     _caloCrystalHitsMaker(pset.getUntrackedParameter<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
+    _targetStepPoints(pset.getUntrackedParameter<string>("targetStepPoints","stoppingtarget")),
     _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
     _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
     _xyHitsMax(pset.getUntrackedParameter<int>("xyHitsMax",10000)),
@@ -98,6 +100,10 @@ namespace mu2e {
     _hRCEdepMC(0),
     _hRCTimeMC(0),
     _hRCNCrystalsMC(0),
+    _hTargetEdep(0),
+    _hTargetPathLength(0),
+    _hTargetNfoils(0),
+    _hTargetNfoils2D(0),
     _ntup(0),
     _xyHits(0),
 
@@ -169,6 +175,21 @@ namespace mu2e {
                                     "Number of crystals reconstructed from raw ROs MC", 
                                     50, 0., 50. );
 
+    // Stopping target histograms
+
+    _hTargetEdep = tfs->make<TH1F>( "hTargetEdep", 
+				    "Energy deposition in the stopping target", 
+				    100, 0., 5. );
+    _hTargetPathLength = tfs->make<TH1F>( "hTargetPathLength", 
+					  "Path length in the stopping target", 
+					  100, 0., 5. );
+    _hTargetNfoils = tfs->make<TH1F>( "hTargetNfoils", 
+				      "Number of stopping target foils crossed by particle", 
+				      20, 0., 20. );
+    _hTargetNfoils2D = tfs->make<TH2F>( "hTargetNfoils2D", 
+					"Number of stopping target foils vs foil of origin", 
+					20, 0., 20., 20, 0, 20. );
+
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
                       "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
@@ -198,6 +219,8 @@ namespace mu2e {
     }
 
     doCalorimeter(event);
+
+    doStoppingTarget(event);
 
   }
 
@@ -800,4 +823,59 @@ namespace mu2e {
     return count;
   }
   
+  // 
+  // Example of how to read information about stopping target 
+  //
+  // Here we assume that the primary particles are the conversion
+  // electrons generated in the stopping target. 
+  //
+  void ReadBack::doStoppingTarget(const edm::Event& event) {
+    
+    // Find original G4 steps in the stopping target
+    edm::Handle<StepPointMCCollection> sthits;
+    event.getByLabel(_g4ModuleLabel,_targetStepPoints,sthits);
+
+    // SimParticles container
+    edm::Handle<SimParticleCollection> simParticles;
+    event.getByType(simParticles);
+    if( !(simParticles.isValid()) || simParticles->empty() ) return;
+
+    // Loop over all hits in the stopping target. Check, that the 
+    // hit belongs to primary particle. If so, calculate total energy 
+    // deposition in the target, total path length and the number of 
+    // foils, crossed by the electron.
+
+    int id_start = -1;
+    double eDep=0.0, pathLength=0.0;
+    map<int,int> foils;
+
+    for ( size_t i=0; i<sthits->size(); ++i ){
+      
+      const StepPointMC& hit = (*sthits)[i];
+
+      SimParticleCollection::key_type trackId = hit.trackId();
+      if( !simParticles->has(trackId) ) continue;
+      if( trackId.asInt() != 1 ) continue;
+      SimParticle const& sim = simParticles->at(trackId);
+
+      int id = hit.volumeId();
+      if( id_start<0 ) id_start=id;
+      foils[id] = 1;
+
+      eDep += hit.totalEDep();
+      pathLength += hit.stepLength();
+
+    }
+
+    int nfoil = foils.size();
+
+    if( id_start>=0 ) {
+      _hTargetEdep->Fill(eDep);
+      _hTargetPathLength->Fill(pathLength);
+      _hTargetNfoils->Fill(nfoil);
+      _hTargetNfoils2D->Fill(id_start,nfoil);
+    }
+
+  }
+
 }  // end namespace mu2e

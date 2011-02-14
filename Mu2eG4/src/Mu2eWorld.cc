@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.79 2011/02/13 22:33:10 logash Exp $
+// $Id: Mu2eWorld.cc,v 1.80 2011/02/14 23:20:01 logash Exp $
 // $Author: logash $ 
-// $Date: 2011/02/13 22:33:10 $
+// $Date: 2011/02/14 23:20:01 $
 //
 // Original author Rob Kutschke
 //
@@ -48,6 +48,7 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
+#include "Mu2eG4/inc/StoppingTargetSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -162,6 +163,7 @@ namespace mu2e {
     defineMu2eOrigin();
     VolumeInfo::setMu2eOriginInWorld( _mu2eOrigin );
     VirtualDetectorSD::setMu2eOriginInWorld( _mu2eOrigin );
+    StoppingTargetSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloReadoutSD::setMu2eOriginInWorld( _mu2eOrigin );
 
@@ -551,6 +553,9 @@ namespace mu2e {
 
     CaloReadoutSD* crSD     = new CaloReadoutSD(    SensitiveDetectorName::CaloReadout(),     *_config);
     SDman->AddNewDetector(crSD);
+
+    StoppingTargetSD* stSD = new StoppingTargetSD(SensitiveDetectorName::StoppingTarget(), *_config);
+    SDman->AddNewDetector(stSD);
 
   } // instantiateSensitiveDetectors
 

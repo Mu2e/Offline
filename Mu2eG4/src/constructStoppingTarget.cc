@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.8 2010/12/22 17:38:19 genser Exp $
-// $Author: genser $
-// $Date: 2010/12/22 17:38:19 $
+// $Id: constructStoppingTarget.cc,v 1.9 2011/02/14 23:20:01 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/14 23:20:01 $
 //
 // Original author Peter Shanahan
 //
@@ -26,6 +26,8 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 //#include "Mu2eG4/inc/nestTubs.hh"
 #include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4/inc/StoppingTargetSD.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -48,6 +50,9 @@ namespace mu2e {
     std::cout<<"In constructStoppingTarget"<<std::endl;
     // Master geometry for the Target assembly
     GeomHandle<Target> target;
+
+    G4VSensitiveDetector* stSD = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::StoppingTarget());
 
     G4Helper    & _helper = *(edm::Service<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
@@ -122,6 +127,7 @@ namespace mu2e {
                                                 , foilMaterial
                                                 , foilInfo.name
                                                 );
+	foilInfo.logical->SetSensitiveDetector(stSD);
 
         // rotation matrix... 
         G4RotationMatrix* rot = 0; //... will have to wait
