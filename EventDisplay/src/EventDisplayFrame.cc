@@ -593,7 +593,8 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            max[0]=atof(_maxXField->GetText());
                            max[1]=atof(_maxYField->GetText());
                            max[2]=atof(_maxZField->GetText());
-                           _mainPad->GetView()->SetRange(min,max);
+                           if(min[0]<max[0] && min[1]<max[1] && min[2]<max[2])
+                             _mainPad->GetView()->SetRange(min,max);
                            _mainPad->Modified();
                            _mainPad->Update();
                          }

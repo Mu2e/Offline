@@ -1,9 +1,9 @@
 //
 // Template class for all cube structures, e.g. Vane, Crystal. The structure is displayed via TGeoVolumeType (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the TPolyLine3DType class (inherited from ROOT's TPolyLine3D class). 
 //
-// $Id: Cube.h,v 1.2 2011/02/06 23:10:37 ehrlich Exp $
+// $Id: Cube.h,v 1.3 2011/02/14 03:45:02 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/06 23:10:37 $
+// $Date: 2011/02/14 03:45:02 $
 //
 // Original author Ralf Ehrlich
 //
@@ -60,9 +60,8 @@ class Cube: public VirtualShape
     //to its corner is (dx,dy,dz).
     //After the rotation, the vector from the center of the cube
     //to its corner is (rx,ry,rz).
-    double rx = cs*cp*dx-ct*sp*ss*dx   -  ss*cp*dy-ct*sp*cs*dy  +  st*sp*dz;
-    double ry = cs*sp*dx+ct*cp*ss*dx   -  ss*sp*dy+ct*cp*cs*dy  -  st*cp*dz;
-    double rz = ss*st*dx               +  cs*st*dy              +     ct*dz;
+    double rx,ry,rz;
+    rotate(dx,dy,dz,  rx,ry,rz,  sp,cp,st,ct,ss,cs);
 
     //After the translation (i.e. when the center of the cube moves 
     //from (0,0,0) to (x,y,z)), the points of the cube points move to

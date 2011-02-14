@@ -1,9 +1,9 @@
 //
 // Template class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, Target. The structure is displayed via TGeoVolumeType (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the TPolyLine3DType class (inherited from ROOT's TPolyLine3D class). 
 //
-// $Id: Cylinder.h,v 1.2 2011/02/06 23:10:38 ehrlich Exp $
+// $Id: Cylinder.h,v 1.3 2011/02/14 03:45:02 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/06 23:10:38 $
+// $Date: 2011/02/14 03:45:02 $
 //
 // Original author Ralf Ehrlich
 //
@@ -89,12 +89,10 @@ class Cylinder: public VirtualShape
         //After the rotation, the vectors from the center of the cylinder
         //to the points on the end planes of the cylinder 
         //are (rx1,ry1,-halflength) and (rx2,ry2,halflength).
-        double rx1 = cs*cp*dx-ct*sp*ss*dx   -  ss*cp*dy-ct*sp*cs*dy  +  st*sp*dz1;
-        double ry1 = cs*sp*dx+ct*cp*ss*dx   -  ss*sp*dy+ct*cp*cs*dy  -  st*cp*dz1;
-        double rz1 = ss*st*dx               +  cs*st*dy              +     ct*dz1;
-        double rx2 = cs*cp*dx-ct*sp*ss*dx   -  ss*cp*dy-ct*sp*cs*dy  +  st*sp*dz2;
-        double ry2 = cs*sp*dx+ct*cp*ss*dx   -  ss*sp*dy+ct*cp*cs*dy  -  st*cp*dz2;
-        double rz2 = ss*st*dx               +  cs*st*dy              +     ct*dz2;
+        double rx1,ry1,rz1;
+        double rx2,ry2,rz2;
+        rotate(dx,dy,dz1,  rx1,ry1,rz1,  sp,cp,st,ct,ss,cs);
+        rotate(dx,dy,dz2,  rx2,ry2,rz2,  sp,cp,st,ct,ss,cs);
 
         //After the translation (i.e. when the center of the cylinder moves 
         //from (0,0,0) to (x,y,z)), the points of the cylinder points move to

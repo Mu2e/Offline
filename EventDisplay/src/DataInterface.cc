@@ -293,9 +293,8 @@ void DataInterface::fillGeometry()
 
       //After the rotation of the vane, the vector from the center of the vane 
       //to the center of a crystal is (rotatedX,rotatedY,rotatedZ).
-      double rotatedX = cs*cp*crystalX-ct*sp*ss*crystalX   -  ss*cp*crystalY-ct*sp*cs*crystalY  +  st*sp*crystalZ;
-      double rotatedY = cs*sp*crystalX+ct*cp*ss*crystalX   -  ss*sp*crystalY+ct*cp*cs*crystalY  -  st*cp*crystalZ;
-      double rotatedZ = ss*st*crystalX                     +  cs*st*crystalY                    +     ct*crystalZ;
+      double rotatedX,rotatedY,rotatedZ;
+      VirtualShape::rotate(crystalX,crystalY,crystalZ,  rotatedX,rotatedY,rotatedZ,  sp,cp,st,ct,ss,cs);
 
       //After the vane gets shifted from (0,0,0) to (x,y,z), 
       //the crystal centers need to be shifted to (x+rotatedX,y+rotatedY,z+rotatedZ).
