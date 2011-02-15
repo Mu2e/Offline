@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.cc,v 1.13 2010/12/03 18:06:04 onoratog Exp $ 
+// $Id: EjectedProtonGun.cc,v 1.14 2011/02/15 20:50:16 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2010/12/03 18:06:04 $
+// $Date: 2011/02/15 20:50:16 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -57,8 +57,8 @@ namespace mu2e {
     _mean(config.getDouble("ejectedProtonGun.mean",1.)),
     _elow(config.getDouble("ejectedProtonGun.elow",0.)),
     _ehi(config.getDouble("ejectedProtonGun.ehi",.100)),
-    _czmin(config.getDouble("ejectedProtonGun.czmin",  0.3)),
-    _czmax(config.getDouble("ejectedProtonGun.czmax",  0.6)),
+    _czmin(config.getDouble("ejectedProtonGun.czmin",  -1.)),
+    _czmax(config.getDouble("ejectedProtonGun.czmax",  1.)),
     _phimin(config.getDouble("ejectedProtonGun.phimin", 0. )),
     _phimax(config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi )),
     _nbins(config.getInt("ejectedProtonGun.nbins",1000)),
