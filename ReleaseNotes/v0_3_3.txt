@@ -3,10 +3,21 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.8 2011/02/14 23:20:01 logash Exp $
-  $Author: logash $
-  $Date: 2011/02/14 23:20:01 $
+  $Id: v0_3_3.txt,v 1.9 2011/02/15 20:54:40 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2011/02/15 20:54:40 $
 
+
+7) February 15, 2011 onoratog
+   
+   The limitation on cos theta for the generation of ejected protons is
+   removed. Now they are producted isotropically. Two configuration files:
+     Mu2eG4/test/genconfig_05.txt
+     Analyses/test/genconfig_Bkg.txt
+   and the default option in 
+     EventGenerator/src/EjectedProtonGun.cc
+   have been changed.
+  
 6) February 14, 2011 logash
 
    Stopping target foils are now sensitive detectors. There is new output 
