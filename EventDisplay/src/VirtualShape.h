@@ -2,9 +2,9 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.4 2011/02/14 03:45:03 ehrlich Exp $
+// $Id: VirtualShape.h,v 1.5 2011/02/16 07:44:42 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/14 03:45:03 $
+// $Date: 2011/02/16 07:44:42 $
 //
 // Original author Ralf Ehrlich
 //
@@ -86,7 +86,7 @@ class VirtualShape : public TObject
     double &st=sintheta;
     double &ct=costheta;
     double &ss=sinpsi;
-    double &cs=sinpsi;
+    double &cs=cospsi;
     newX = cs*cp*oldX-ct*sp*ss*oldX   -  ss*cp*oldY-ct*sp*cs*oldY  +  st*sp*oldZ;
     newY = cs*sp*oldX+ct*cp*ss*oldX   -  ss*sp*oldY+ct*cp*cs*oldY  -  st*cp*oldZ;
     newZ = ss*st*oldX                 +  cs*st*oldY                +     ct*oldZ;
