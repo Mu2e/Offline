@@ -3,9 +3,15 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.10 2011/02/15 22:15:11 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/02/15 22:15:11 $
+  $Id: v0_3_3.txt,v 1.11 2011/02/17 17:38:02 logash Exp $
+  $Author: logash $
+  $Date: 2011/02/17 17:38:02 $
+
+9) February 17, 2011 logash
+
+   Added comments to stopping target example in ReadBack.cc 
+   (function doStoppingTarget()), and made the code slightly more 
+   efficient.
 
 8) February 15, 2011 kutschke
    A simple producer to be used for tutorials.
