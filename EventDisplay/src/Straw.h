@@ -1,9 +1,9 @@
 //
 // Container class for all detector straws. Straws are displayed via the TPolyLine3DStraw class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
 //
-// $Id: Straw.h,v 1.3 2011/02/03 07:37:03 ehrlich Exp $
+// $Id: Straw.h,v 1.4 2011/02/18 04:10:55 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/03 07:37:03 $
+// $Date: 2011/02/18 04:10:55 $
 //
 // Original author Ralf Ehrlich
 //
@@ -76,6 +76,15 @@ class Straw: public VirtualShape
     {
       if(_notDrawn==false) gPad->RecursiveRemove(_line.get());
       _notDrawn=true;
+    }
+  }
+
+  void toForeground()
+  {
+    if(_notDrawn==false)
+    {
+      gPad->RecursiveRemove(_line.get());
+      _line->Draw();
     }
   }
 

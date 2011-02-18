@@ -1,9 +1,9 @@
 //
 // Template class for all cube structures, e.g. Vane, Crystal. The structure is displayed via TGeoVolumeType (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the TPolyLine3DType class (inherited from ROOT's TPolyLine3D class). 
 //
-// $Id: Cube.h,v 1.3 2011/02/14 03:45:02 ehrlich Exp $
+// $Id: Cube.h,v 1.4 2011/02/18 04:10:55 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/14 03:45:02 $
+// $Date: 2011/02/18 04:10:55 $
 //
 // Original author Ralf Ehrlich
 //
@@ -13,8 +13,10 @@
 
 #include "dict_classes/TGeoVolumeCrystal.h"
 #include "dict_classes/TGeoVolumeVane.h"
+#include "dict_classes/TGeoVolumeSteelShield.h"
 #include "dict_classes/TPolyLine3DCrystal.h"
 #include "dict_classes/TPolyLine3DVane.h"
+#include "dict_classes/TPolyLine3DSteelShield.h"
 #include <TPad.h>
 #include <TMath.h>
 #include "VirtualShape.h"
@@ -195,6 +197,22 @@ class Cube: public VirtualShape
     }
   }
 
+  void toForeground()
+  {
+    if(_notDrawn==false)
+    {
+      typedef std::vector<line_struct> vector_type;
+      typedef typename vector_type::iterator iter_type;
+      iter_type iter;
+      for(iter=_lines.begin(); iter!=_lines.end(); iter++)
+      {
+        line_struct &l=*iter;
+        gPad->RecursiveRemove(l.line.get());
+        l.line->Draw();
+      }
+    }
+  }
+
   void update(double time)
   {
     if(time<getStartTime() || isnan(getStartTime())) return;
@@ -223,6 +241,7 @@ class Cube: public VirtualShape
 
 typedef Cube<TGeoVolumeCrystal,TPolyLine3DCrystal> Crystal;
 typedef Cube<TGeoVolumeVane,TPolyLine3DVane> Vane;
+typedef Cube<TGeoVolumeSteelShield,TPolyLine3DSteelShield> SteelShield;
 
 }
 #endif

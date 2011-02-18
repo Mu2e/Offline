@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.5 2011/02/05 01:20:08 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.6 2011/02/18 04:10:55 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/05 01:20:08 $
+// $Date: 2011/02/18 04:10:55 $
 //
 // Original author Ralf Ehrlich
 //
@@ -84,7 +84,8 @@ namespace mu2e_eventdisplay
     TPad                *_infoPad;
     TText               *_clock;
     TTimer              *_timer;
-    TGCheckButton       *_unhitButton, *_unhitCrystalsButton, *_supportStructureButton;
+    TGCheckButton       *_unhitButton, *_unhitCrystalsButton;
+    TGCheckButton       *_supportStructuresButton, *_otherStructuresButton;
     TGCheckButton       *_outsideTracksButton, *_calorimeterViewButton, *_targetViewButton;
     TGCheckButton       *_hitColorButton, *_trackColorButton, *_backgroundButton;
     TGCheckButton       *_repeatAnimationButton;

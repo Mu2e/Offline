@@ -1,9 +1,9 @@
 //
 // Class which displays the cylinder of a tracker support structure (used, e.g. by the SupportTTracker class). It is inherited from ROOT's TGeoVolume and the ComponentInfo class which stores specific information for this support structure. The class' constructure creates a TGeoTube, which is put into the TGeoVolume. The context menu is overwritten with a menu item allowing the user to display information for this support structure.
 //
-// $Id: TGeoVolumeSupport.h,v 1.2 2011/02/03 07:37:03 ehrlich Exp $
+// $Id: TGeoVolumeSupport.h,v 1.3 2011/02/18 04:10:55 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/03 07:37:03 $
+// $Date: 2011/02/18 04:10:55 $
 //
 // Original author Ralf Ehrlich
 //
@@ -40,7 +40,7 @@ class TGeoVolumeSupport : public TGeoVolume, public ComponentInfo
     TClassMenuItem *m = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,IsA(),"Information","showInfo",const_cast<TObject*>(mainframe),"TObject*",1); //bare pointer needed since ROOT manages this object
     l->Clear();
     l->AddFirst(m);
-    IsA()->SetName("Support Structure");
+    IsA()->SetName("Support Structure and Envelope");
   }
 #endif
 

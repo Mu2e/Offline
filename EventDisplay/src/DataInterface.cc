@@ -17,8 +17,8 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "HepPID/ParticleName.hh"
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -106,9 +106,9 @@ void DataInterface::createGeometryManager()
   _topvolume->SetLineColor(0);
   _topvolume->Draw("ogle");
   int irep=0;
-  gPad->GetView()->SetView(180,70,90,irep);
+  gPad->GetView()->SetView(180,65,90,irep);
   gPad->SetPhi(-90-180);
-  gPad->SetTheta(90-70);
+  gPad->SetTheta(90-65);
   gPad->GetView()->ShowAxis();
   TAxis3D::GetPadAxis(gPad)->SetLabelSize(0.025); 
   TAxis3D::GetPadAxis(gPad)->SetTitleOffset(-0.5); 
@@ -140,9 +140,19 @@ void DataInterface::fillGeometry()
   _xOffset=config.getDouble("mu2e.solenoidOffset");    //between Mu2e and Tracker coordinates
   _zOffset=-config.getDouble("mu2e.detectorSystemZ0"); //between Mu2e and Tracker coordinates
   _zOffsetDS=1800.0;                                   //between DS and Tracker coordinates
+//coordinate transformation between "World" and Mu2e coordinates
+//(taken from CosmicRaysShieldMaker class)
+  std::vector<double> worldHLen;
+  config.getVectorDouble("world.halfLengths", worldHLen, 3);
+  double floorThick =  config.getDouble("hall.floorThick");
+  double yFloor     = -worldHLen[1] + floorThick;
+  CLHEP::Hep3Vector _mu2eOriginInWorld = CLHEP::Hep3Vector(config.getDouble("world.mu2eOrigin.xoffset"),
+                                                           config.getDouble("world.mu2eOrigin.height") + yFloor,
+                                                           config.getDouble("world.mu2eOrigin.zoffset"));
 
   if(geom->hasElement<mu2e::TTracker>())
   {
+//Straws
     mu2e::GeomHandle<mu2e::TTracker> ttracker;  
     const std::deque<mu2e::Straw>& allStraws = ttracker->getAllStraws();
     std::deque<mu2e::Straw>::const_iterator iter;
@@ -173,6 +183,7 @@ void DataInterface::fillGeometry()
       _straws[index]=shape;
     }
 
+//Support Structure
     double innerRadius=ttracker->getSupportParams().innerRadius;
     double outerRadius=ttracker->getSupportParams().outerRadius;
     double zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength;
@@ -194,6 +205,47 @@ void DataInterface::fillGeometry()
                                    _geometrymanager, _topvolume, _mainframe, info, true));
     _components.push_back(shape);
     _supportstructures.push_back(shape);
+
+//Envelope
+    innerRadius=ttracker->getTrackerEnvelopeParams().innerRadius;
+    outerRadius=ttracker->getTrackerEnvelopeParams().outerRadius;
+    zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength;
+
+    boost::shared_ptr<ComponentInfo> infoEnvelope(new ComponentInfo());
+    sprintf(c,"TTracker Envelope");
+    infoEnvelope->setText(0,c);
+    sprintf(c,"Inner Radius %g mm",innerRadius);
+    infoEnvelope->setText(1,c);
+    sprintf(c,"Outer Radius %g mm",outerRadius);
+    infoEnvelope->setText(2,c);
+    sprintf(c,"Length %g mm",2.0*zHalfLength);
+    infoEnvelope->setText(3,c);
+    boost::shared_ptr<SupportTTracker> shapeEnvelope(new SupportTTracker(0,0,0, 0,0,0, 
+                                   zHalfLength,innerRadius,outerRadius,
+                                   _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
+    _components.push_back(shapeEnvelope);
+    _supportstructures.push_back(shapeEnvelope);
+
+//ToyDS
+    innerRadius=config.getDouble("toyDS.rIn");
+    outerRadius=config.getDouble("toyDS.rOut");
+    zHalfLength=config.getDouble("toyDS.halfLength");
+    double z=config.getDouble("toyDS.z0")+_zOffset;
+
+    boost::shared_ptr<ComponentInfo> infoToyDS(new ComponentInfo());
+    sprintf(c,"Toy DS");
+    infoToyDS->setText(0,c);
+    sprintf(c,"Inner Radius %g mm",innerRadius);
+    infoToyDS->setText(1,c);
+    sprintf(c,"Outer Radius %g mm",outerRadius);
+    infoToyDS->setText(2,c);
+    sprintf(c,"Length %g mm",2.0*zHalfLength);
+    infoToyDS->setText(3,c);
+    boost::shared_ptr<SupportTTracker> shapeToyDS(new SupportTTracker(0,0,z, 0,0,0, 
+                                   zHalfLength,innerRadius,outerRadius,
+                                   _geometrymanager, _topvolume, _mainframe, infoToyDS, true));
+    _components.push_back(shapeToyDS);
+    _otherstructures.push_back(shapeToyDS);
   }
 
   if(geom->hasElement<mu2e::Target>())
@@ -308,6 +360,50 @@ void DataInterface::fillGeometry()
       _crystals[crystalid]=shape;
     }
   }
+
+  if(geom->hasElement<mu2e::CosmicRayShield>())
+  {
+    mu2e::GeomHandle<mu2e::CosmicRayShield> crs;  
+    std::string steelshieldnames[6]={"CRSSteelTopShield",
+                                     "CRSSteelBottomShield",
+                                     "CRSSteelLeftShield",
+                                     "CRSSteelRightShield",
+                                     "CRSSteelBackShield",
+                                     "CRSSteelFrontShield"};
+    for(int i=0; i<6; i++)
+    {
+//TODO: CosmicRayShield needs to have a public function 
+//which returns the entire map so that one can interate over it
+//without knowing the names of the elements
+      const mu2e::CosmicRayShieldSteelShield &steelshield=crs->getCosmicRayShieldSteelShield(steelshieldnames[i].c_str());
+      char c[200];
+      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+      sprintf(c,"Cosmic Ray Steel Shield %i (%s)",i,steelshieldnames[i].c_str());
+      info->setText(0,c);
+      double x=steelshield.getGlobalOffset().x()-_mu2eOriginInWorld.x()+_xOffset;
+      double y=steelshield.getGlobalOffset().y()-_mu2eOriginInWorld.y();
+      double z=steelshield.getGlobalOffset().z()-_mu2eOriginInWorld.z()+_zOffset;
+      double dx=steelshield.getHalfLengths()[0];
+      double dy=steelshield.getHalfLengths()[1];
+      double dz=steelshield.getHalfLengths()[2];
+      double holeRadius=steelshield.getHoleRadius();
+      if(holeRadius==0)
+      {
+        boost::shared_ptr<SteelShield> shape(new SteelShield(x,y,z,  dx,dy,dz,  0,0,0, NAN,0,
+                                             _geometrymanager, _topvolume, _mainframe, info, true));
+        _components.push_back(shape);
+        _otherstructures.push_back(shape);
+      }
+      else
+      {
+//TODO: This needs to be replaced by a shape with a hole
+        boost::shared_ptr<SteelShield> shape(new SteelShield(x,y,z,  dx,dy,dz,  0,0,0, NAN,0,
+                                             _geometrymanager, _topvolume, _mainframe, info, true));
+        _components.push_back(shape);
+        _otherstructures.push_back(shape);
+      }
+    }
+  }
 }
 
 void DataInterface::makeSupportStructuresVisible(bool visible)
@@ -318,6 +414,22 @@ void DataInterface::makeSupportStructuresVisible(bool visible)
     (*structure)->setDefaultVisibility(visible);
     (*structure)->start();
   }
+
+  //tracks and straws don't have to be pushed into the foreground if the structure is removed
+  if(visible) toForeground();
+} 
+
+void DataInterface::makeOtherStructuresVisible(bool visible)
+{
+  std::vector<boost::shared_ptr<VirtualShape> >::const_iterator structure;
+  for(structure=_otherstructures.begin(); structure!=_otherstructures.end(); structure++)
+  {
+    (*structure)->setDefaultVisibility(visible);
+    (*structure)->start();
+  }
+
+  //tracks and straws don't have to be pushed into the foreground if the structure is removed
+  if(visible) toForeground();
 } 
 
 void DataInterface::makeStrawsVisibleBeforeStart(bool visible)
@@ -341,6 +453,27 @@ void DataInterface::makeCrystalsVisibleBeforeStart(bool visible)
   }
   _showUnhitCrystals=visible;
 } 
+  
+void DataInterface::toForeground()
+{
+  std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;
+  for(straw=_straws.begin(); straw!=_straws.end(); straw++)
+  {
+    straw->second->toForeground();
+  }
+
+  std::map<int,boost::shared_ptr<Crystal> >::const_iterator crystal;
+  for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
+  {
+    crystal->second->toForeground();
+  }
+
+  std::vector<boost::shared_ptr<Track> >::const_iterator track;
+  for(track=_tracks.begin(); track!=_tracks.end(); track++)
+  {
+    (*track)->toForeground();
+  }
+}
 
 void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
 {
@@ -673,6 +806,7 @@ void DataInterface::removeAllComponents()
   _crystalhits.clear();
   _tracks.clear();
   _supportstructures.clear();
+  _otherstructures.clear();
   if(_geometrymanager) delete _geometrymanager;
   _geometrymanager=NULL;
 }

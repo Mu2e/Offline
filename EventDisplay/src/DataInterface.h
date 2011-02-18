@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.7 2011/02/08 05:20:31 ehrlich Exp $
+// $Id: DataInterface.h,v 1.8 2011/02/18 04:10:55 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/08 05:20:31 $
+// $Date: 2011/02/18 04:10:55 $
 //
 // Original author Ralf Ehrlich
 //
@@ -14,6 +14,7 @@
 #include <TObject.h>
 #include <list>
 #include <map>
+#include "CLHEP/Vector/ThreeVector.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "boost/shared_ptr.hpp"
 #include "Cube.h"
@@ -62,11 +63,13 @@ class DataInterface
   std::vector<boost::shared_ptr<Crystal> >      _crystalhits;
   std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
-  double        _xOffset, _zOffset, _zOffsetDS;
-  timeminmax    _hitsTimeMinmax, _tracksTimeMinmax;
-  spaceminmax   _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
-  int           _numberHits, _numberCrystalHits;
-  bool          _showUnhitStraws, _showUnhitCrystals;
+  std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;
+  double            _xOffset, _zOffset, _zOffsetDS;
+  CLHEP::Hep3Vector _mu2eOriginInWorld;
+  timeminmax        _hitsTimeMinmax, _tracksTimeMinmax;
+  spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
+  int               _numberHits, _numberCrystalHits;
+  bool              _showUnhitStraws, _showUnhitCrystals;
 
   void createGeometryManager();
   void removeNonGeometryComponents();
@@ -75,6 +78,7 @@ class DataInterface
   void findBoundaryP(spaceminmax &m, double x, double y, double z);
   void resetBoundaryT(timeminmax &m);
   void resetBoundaryP(spaceminmax &m);
+  void toForeground();
 
   public:
   DataInterface(const TGMainFrame *mainframe);
@@ -86,6 +90,7 @@ class DataInterface
   void fillEvent(const edm::Event& event);
   bool findTrajectory(const edm::Event& event, boost::shared_ptr<Track> track, int id);
   void makeSupportStructuresVisible(bool visible);
+  void makeOtherStructuresVisible(bool visible);
   void makeStrawsVisibleBeforeStart(bool visible);
   void makeCrystalsVisibleBeforeStart(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);

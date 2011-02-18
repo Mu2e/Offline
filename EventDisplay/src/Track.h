@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the TPolyLine3DTrack class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.2 2011/01/29 02:14:20 ehrlich Exp $
+// $Id: Track.h,v 1.3 2011/02/18 04:10:55 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/01/29 02:14:20 $
+// $Date: 2011/02/18 04:10:55 $
 //
 // Original author Ralf Ehrlich
 //
@@ -82,6 +82,12 @@ class Track: public VirtualShape
   }
 
   int getParticleId() {return _particleId;}
+
+  void toForeground()
+  {
+    gPad->RecursiveRemove(_line.get());
+    _line->Draw();
+  }
 
   void update(double time)
   {

@@ -1,9 +1,9 @@
 //
 // Template class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, Target. The structure is displayed via TGeoVolumeType (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the TPolyLine3DType class (inherited from ROOT's TPolyLine3D class). 
 //
-// $Id: Cylinder.h,v 1.3 2011/02/14 03:45:02 ehrlich Exp $
+// $Id: Cylinder.h,v 1.4 2011/02/18 04:10:55 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/14 03:45:02 $
+// $Date: 2011/02/18 04:10:55 $
 //
 // Original author Ralf Ehrlich
 //
@@ -18,7 +18,7 @@
 #include <TMath.h>
 #include "VirtualShape.h"
 #include <iostream>
-#include <vector>
+#include <map>
 
 namespace mu2e_eventdisplay
 {
@@ -39,8 +39,49 @@ class Cylinder: public VirtualShape
     double x1, y1, z1, x2, y2, z2;
     boost::shared_ptr<TPolyLine3DType> line;
   };
-  std::vector<line_struct> _lines;
+  struct layersegment_struct
+  {
+    int layer, segment, direction;
+    bool operator<(const layersegment_struct &rhs) const
+    {
+      if(this->layer<rhs.layer) return true;
+      if(this->layer>rhs.layer) return false;
+      if(this->segment<rhs.segment) return true;
+      if(this->segment>rhs.segment) return false;
+      if(this->direction<rhs.direction) return true;
+      return false;
+    }
+    bool operator==(const layersegment_struct &rhs) const
+    {
+      if(this->layer==rhs.layer && this->segment==rhs.segment && this->direction==rhs.direction) return true;
+      return false;
+    }
+  };
+  std::map<layersegment_struct,line_struct> _lines;
+  bool _notDrawn;
  
+  void addline(double x1, double y1, double z1, double x2, double y2, double z2,
+               int layer, int segment, int direction, const TObject *mainframe)
+  {
+    line_struct newline;
+    newline.x1=x1;
+    newline.y1=y1;
+    newline.z1=z1;
+    newline.x2=x2;
+    newline.y2=y2;
+    newline.z2=z2;
+    newline.line=boost::shared_ptr<TPolyLine3DType>(new TPolyLine3DType(mainframe, _info));
+    newline.line->SetLineWidth(1);
+    newline.line->SetLineColor(getDefaultColor());
+    newline.line->SetPoint(0,x1,y1,z1);
+    newline.line->SetPoint(1,x2,y2,z2);
+    layersegment_struct layersegment;
+    layersegment.layer=layer;
+    layersegment.segment=segment;
+    layersegment.direction=direction;
+    _lines[layersegment]=newline;
+  }
+
   public:
 
   Cylinder(double x, double y, double z,
@@ -53,9 +94,13 @@ class Cylinder: public VirtualShape
   {
     setStartTime(NAN);
     setDefaultVisibility(defaultVisibility);
+    _notDrawn=true;
 
     _volume = new TGeoVolumeType(innerRadius, outerRadius, halflength, mainframe, _info);
     _volume->SetVisibility(0);
+    _volume->SetLineWidth(1);
+    _volume->SetLineColor(getDefaultColor());
+    _volume->SetFillColor(getDefaultColor());
     _rotation = new TGeoRotation("",phi*180.0/TMath::Pi(),theta*180.0/TMath::Pi(),psi*180.0/TMath::Pi());
     _translation = new TGeoCombiTrans(x,y,z,_rotation);
     int i=0;
@@ -63,7 +108,7 @@ class Cylinder: public VirtualShape
     _topvolume->AddNode(_volume, i, _translation);
 
     int nseg=_geomanager->GetNsegments();
-    int nlayers=TMath::CeilNint((outerRadius-innerRadius)/200.0);
+    int nlayers=TMath::CeilNint((outerRadius-innerRadius)/500.0);
     double st=sin(theta);
     double ct=cos(theta);
     double sp=sin(phi);
@@ -75,7 +120,7 @@ class Cylinder: public VirtualShape
       double r=i*(outerRadius-innerRadius)/nlayers+innerRadius;
       for(int j=0; j<nseg; j++)
       {
-        if(r==0) j=nseg;
+        if(i==0 && innerRadius==0) j=nseg;
         double azimuth=j*2*TMath::Pi()/nseg;
 
         //Start with an unrotated cylinder with its center at (0,0,0).
@@ -97,18 +142,50 @@ class Cylinder: public VirtualShape
         //After the translation (i.e. when the center of the cylinder moves 
         //from (0,0,0) to (x,y,z)), the points of the cylinder points move to
         //(x+rx1,y+ry1,z+rz1) and (x+rx2,y+ry2,z+rz2).
-        line_struct newline;
-        newline.x1=rx1+x;
-        newline.y1=ry1+y;
-        newline.z1=rz1+z;
-        newline.x2=rx2+x;
-        newline.y2=ry2+y;
-        newline.z2=rz2+z;
-        newline.line=boost::shared_ptr<TPolyLine3DType>(new TPolyLine3DType(mainframe, _info));
-        newline.line->Draw();
-        _lines.push_back(newline);
+        addline(rx1+x, ry1+y, rz1+z,   rx2+x, ry2+y, rz2+z,   i, j, 0, mainframe);
       }
     }
+
+    for(int i=0; i<=nlayers; i++)
+    {
+      if(i==0 && innerRadius==0) continue;
+      for(int j=0; j<nseg; j++)
+      {
+        layersegment_struct layersegment0;
+        layersegment0.layer=i;
+        layersegment0.segment=j;
+        layersegment0.direction=0;
+        const line_struct &referenceline0=_lines[layersegment0];
+
+        layersegment_struct layersegment1;
+        layersegment1.layer=i;
+        layersegment1.segment=j+1;
+        layersegment1.direction=0;
+        if(layersegment1.segment==nseg) layersegment1.segment=0;
+        const line_struct &referenceline1=_lines[layersegment1];
+        addline(referenceline0.x1, referenceline0.y1, referenceline0.z1,
+                referenceline1.x1, referenceline1.y1, referenceline1.z1,
+                i, j, 1, mainframe);
+        addline(referenceline0.x2, referenceline0.y2, referenceline0.z2,
+                referenceline1.x2, referenceline1.y2, referenceline1.z2,
+                i, j, 2, mainframe);
+
+        if(i==0) continue;
+        layersegment_struct layersegment2;
+        layersegment2.layer=i-1;
+        layersegment2.segment=j;
+        layersegment2.direction=0;
+        if(i==1 && innerRadius==0) layersegment2.segment=nseg;
+        const line_struct &referenceline2=_lines[layersegment2];
+        addline(referenceline0.x1, referenceline0.y1, referenceline0.z1,
+                referenceline2.x1, referenceline2.y1, referenceline2.z1,
+                i, j, 3, mainframe);
+        addline(referenceline0.x2, referenceline0.y2, referenceline0.z2,
+                referenceline2.x2, referenceline2.y2, referenceline2.z2,
+                i, j, 4, mainframe);
+      }
+    }
+
     start();
   }
 
@@ -122,29 +199,37 @@ class Cylinder: public VirtualShape
 
   void start()
   {
-    _volume->SetLineWidth(3);
-    _volume->SetLineColor(getDefaultColor());
-    _volume->SetFillColor(getDefaultColor());
-    _volume->SetVisibility(0);
+    typedef std::map<layersegment_struct,line_struct> map_type;
+    typedef typename map_type::iterator iter_type;
+    iter_type iter;
     if(getDefaultVisibility())
     {
       _volume->SetVisibility(1);
-    }
-
-    typedef std::vector<line_struct> vector_type;
-    typedef typename vector_type::iterator iter_type;
-    iter_type iter;
-    for(iter=_lines.begin(); iter!=_lines.end(); iter++)
-    {
-      line_struct &l=*iter;
-      l.line->SetPolyLine(0); //needed if animation is restarted
-      l.line->SetPoint(0,l.x1,l.y1,l.z1);
-      l.line->SetLineColor(getDefaultColor());
-      l.line->SetLineWidth(3);
-      if(getDefaultVisibility())
+      _volume->SetLineColor(getDefaultColor());
+      _volume->SetFillColor(getDefaultColor());
+      if(_notDrawn==true)
       {
-        l.line->SetPoint(1,l.x2,l.y2,l.z2);
+        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
+        {
+          line_struct &l=iter->second;
+          l.line->SetLineColor(getDefaultColor());
+          l.line->Draw();
+        }
       }
+      _notDrawn=false;
+    }
+    else
+    {
+      _volume->SetVisibility(0);
+      if(_notDrawn==false)
+      {
+        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
+        {
+          line_struct &l=iter->second;
+          gPad->RecursiveRemove(l.line.get());
+        }
+      }
+      _notDrawn=true;
     }
   }
 

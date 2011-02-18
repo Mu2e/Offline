@@ -90,20 +90,27 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   subFrame->AddFrame(_unhitCrystalsButton, lh1);
   _unhitCrystalsButton->Associate(this);
 
-  _supportStructureButton = new TGCheckButton(subFrame,"Show Support Structures",32);
-  _supportStructureButton->SetState(kButtonDown);
-  subFrame->AddFrame(_supportStructureButton, lh1);
-  _supportStructureButton->Associate(this);
+  _supportStructuresButton = new TGCheckButton(subFrame,"Show Tracker Supports, Calo Vanes, Target",32);
+  _supportStructuresButton->SetState(kButtonDown);
+  subFrame->AddFrame(_supportStructuresButton, lh1);
+  _supportStructuresButton->Associate(this);
+
+  _otherStructuresButton = new TGCheckButton(subFrame,"Show Toy DS, CR Steel Shield",37);
+  _otherStructuresButton->SetState(kButtonDown);
+  subFrame->AddFrame(_otherStructuresButton, lh1);
+  _otherStructuresButton->Associate(this);
 
   _outsideTracksButton = new TGCheckButton(subFrame,"Adjust View to show all Tracks",33);
   subFrame->AddFrame(_outsideTracksButton, lh1);
   _outsideTracksButton->Associate(this);
 
   _calorimeterViewButton = new TGCheckButton(subFrame,"Adjust View to show Calorimeter",34);
+  _calorimeterViewButton->SetState(kButtonDown);
   subFrame->AddFrame(_calorimeterViewButton, lh1);
   _calorimeterViewButton->Associate(this);
 
   _targetViewButton = new TGCheckButton(subFrame,"Adjust View to show Target",35);
+  _targetViewButton->SetState(kButtonDown);
   subFrame->AddFrame(_targetViewButton, lh1);
   _targetViewButton->Associate(this);
 
@@ -644,13 +651,26 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1==32)
                          {
                            _mainPad->cd();
-                           if(_supportStructureButton->GetState()==kButtonDown)
+                           if(_supportStructuresButton->GetState()==kButtonDown)
                            {
                              _dataInterface->makeSupportStructuresVisible(true);
                            }
                            else
                            {
                              _dataInterface->makeSupportStructuresVisible(false);
+                           }
+                           drawEverything();
+                         }
+                         if(param1==37)
+                         {
+                           _mainPad->cd();
+                           if(_otherStructuresButton->GetState()==kButtonDown)
+                           {
+                             _dataInterface->makeOtherStructuresVisible(true);
+                           }
+                           else
+                           {
+                             _dataInterface->makeOtherStructuresVisible(false);
                            }
                            drawEverything();
                          }
