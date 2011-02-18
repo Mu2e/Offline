@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_plugin.cc,v 1.3 2011/02/03 07:37:03 ehrlich Exp $
+// $Id: EventDisplay_plugin.cc,v 1.4 2011/02/18 02:22:08 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/03 07:37:03 $
+// $Date: 2011/02/18 02:22:08 $
 //
 
 #include <iostream>
@@ -55,7 +55,9 @@ namespace mu2e
     //has a bug (perhaps deletes things twice), so that the program 
     //would crash.
     if (!gApplication) gApplication = new TApplication("EventDisplay",0,0);
-    _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550);
+
+    //don't create the eventdisplay here to avoid an empty (and not-responding)
+    //eventdisplay window, because it usually takes a while until the first event gets pushed through
   }
 
   void EventDisplay::analyze(const edm::Event& event, edm::EventSetup const&) 
@@ -63,6 +65,7 @@ namespace mu2e
     if(_firstLoop)
     {
       _firstLoop=false;
+      _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550);
       if(!_frame->isClosed()) _frame->fillGeometry();
     }
     if(!_frame->isClosed())
