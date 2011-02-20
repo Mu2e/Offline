@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.63 2011/02/13 22:33:10 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/13 22:33:10 $
+// $Id: geom_01.txt,v 1.64 2011/02/20 15:08:31 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/02/20 15:08:31 $
 //
 // Original author Rob Kutschke
 //
@@ -165,9 +165,6 @@ string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
 bool   toyDS.visible            = true;
 bool   toyDS.solid              = true;
-
-// Use a uniform magnetic field with the DS volume.
-double toyDS.bz            = -1.0;
 
 // A toy model of the PS, coils, cryo and vaccum.
 double toyPS.rIn            =   880.;
@@ -351,6 +348,9 @@ bool   fluxcrv.solid            = false;
 //                   2 is const throughout
 int detSolFieldForm = 1;
 
+// Value of the uniform magnetic field with the DS volume.
+double toyDS.bz            = 1.0;
+
 // This is recommended field map
 string bfield.format  = "G4BL";
 vector<string> bfield.files = { 
@@ -361,7 +361,7 @@ vector<string> bfield.files = {
 };
 
 // While it is not recommended, it is still possible to use 
-// old GMC maps using the following lines instead of the lines above:
+// old GMC maps using the following lines instead of the lines above.
 //
 // string bfield.format  = "GMC";
 // string bfield.dsFile = "BFieldMaps/MECO/dsmap_unfmt_rad100.dat";
@@ -370,6 +370,16 @@ vector<string> bfield.files = {
 // vector<int> bfield.tsDimensions = { 425, 18, 388 };
 // string bfield.psFile = "BFieldMaps/MECO/psmap_unfmt.dat";
 // vector<int> bfield.psDimensions = {  76, 38, 251 };
+//
+// Since size of the field is opposite in MECO and TD maps, if 
+// MECO maps are user, one have to use the following setting
+// for the uniform field:
+//
+// double toyDS.bz            = -1.0;
+//
+// The bend radius of the torus also differs between the MECO
+// and TD maps.
+// double toyTS.rTorus      = 2926.; 
 
 // Proton Absorber
 string protonabsorber.materialName = "Polyethylene092";
