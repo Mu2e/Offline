@@ -3,9 +3,26 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.11 2011/02/17 17:38:02 logash Exp $
-  $Author: logash $
-  $Date: 2011/02/17 17:38:02 $
+  $Id: v0_3_3.txt,v 1.12 2011/02/20 15:08:42 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/02/20 15:08:42 $
+
+10) February 20, 2011 kutschke
+    First part of the fix to the magnetic field problems that have been
+    discussed on the mu2e-sim list in the last two days.  
+
+    With this fix the TD field is working correctly.
+
+    There are two problems.  The first is easy to solve: MECO and TD choose
+    different sign conventions: MECO field is in the -z direction and
+    the TD field is in the +z direction.  The other problem will be discussed
+    when that fix is commited.
+
+    Mu2eG4/test/geom_01.txt
+      - Vanya changed the direction of the uniform field to match the TD convention
+           double toyDS.bz = +1.0;
+      - I added a reminder that the torus radius needs to change when you uncomment
+        the MECO field description.
 
 9) February 17, 2011 logash
 
