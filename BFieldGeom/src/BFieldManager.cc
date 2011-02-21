@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.3 2010/09/29 22:51:43 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/29 22:51:43 $
+// $Id: BFieldManager.cc,v 1.4 2011/02/21 22:08:17 logash Exp $
+// $Author: logash $ 
+// $Date: 2011/02/21 22:08:17 $
 //
 
 // Includes from C++
@@ -46,23 +46,25 @@ namespace mu2e {
   }
 
 
-  // Get field at an arbitrary point.  Not yet implemented.
-  // When written, this code will figure out which map to use
-  // and will then look up the field in that map.
-  CLHEP::Hep3Vector BFieldManager::getBField( const CLHEP::Hep3Vector& point ) const{
+  // Get field at an arbitrary point. This code figures out which map to use
+  // and looks up the field in that map.
+  bool BFieldManager::getBFieldWithStatus( const CLHEP::Hep3Vector & point,
+					   CLHEP::Hep3Vector & result) const{
 
     // First check cached map
-    if( _last_map!=0 && _last_map->isValid(point) ) return _last_map->getBField(point);
+    if( _last_map!=0 && _last_map->getBFieldWithStatus(point,result) ) return true;
 
-    // Loop over all maps and check if point belongs to them. Use first found map.
+    // Loop over all maps and try to calculate field. 
     for( MapType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
-      if( im->second.isValid(point) ) {
+      if( im->second.getBFieldWithStatus(point,result) ) {
 	_last_map = &(im->second);
-	return im->second.getBField(point);
+	return true;
       }
     }
-
-    return CLHEP::Hep3Vector(0.,0.,0.);
+    
+    _last_map = 0;
+    result = CLHEP::Hep3Vector(0.,0.,0.);
+    return false;
 
   }
 

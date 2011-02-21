@@ -4,9 +4,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.3 2010/09/29 22:51:43 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/29 22:51:43 $
+// $Id: BFieldManager.hh,v 1.4 2011/02/21 22:08:17 logash Exp $
+// $Author: logash $ 
+// $Date: 2011/02/21 22:08:17 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -36,14 +36,14 @@ namespace mu2e {
     friend class BFieldManagerMaker;
 
     BFieldManager();
-    virtual ~BFieldManager();
+    ~BFieldManager();
 
     // Copying disabled - see below.
 
-    virtual std::string name() const { return "BFieldManager";}
+    std::string name() const { return "BFieldManager";}
 
     // Get field at an arbitrary point.
-    CLHEP::Hep3Vector getBField( const CLHEP::Hep3Vector& point ) const;
+    bool getBFieldWithStatus(const CLHEP::Hep3Vector &, CLHEP::Hep3Vector& ) const;
 
     // Check if point belongs to any map
     bool isValid(CLHEP::Hep3Vector const& point) const;

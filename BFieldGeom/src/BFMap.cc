@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.8 2011/02/13 22:33:10 logash Exp $
+// $Id: BFMap.cc,v 1.9 2011/02/21 22:08:17 logash Exp $
 // $Author: logash $
-// $Date: 2011/02/13 22:33:10 $
+// $Date: 2011/02/21 22:08:17 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -53,7 +53,7 @@ namespace mu2e {
 
   // Populate a 3x3x3 array with the field values centered on the grid point
   // that is the closest to the requested point.
-  void BFMap::getNeighbors( int ix, int iy, int iz, 
+  bool BFMap::getNeighbors( int ix, int iy, int iz, 
                             CLHEP::Hep3Vector neighborsBF[3][3][3]) const {
     for (int i = 0; i != 3; ++i){
       unsigned int xindex = ix + i - 1;
@@ -61,6 +61,7 @@ namespace mu2e {
         unsigned int yindex = iy + j - 1;
         for (int k = 0; k != 3; ++k){
           unsigned int zindex = iz + k - 1;
+	  if ( ! _isDefined(xindex,yindex,zindex) ) return false;
           neighborsBF[i][j][k] = _field(xindex, yindex, zindex);
           /*        
                     cout << "Neighbor(" << xindex << "," << yindex << "," << zindex 
@@ -71,7 +72,7 @@ namespace mu2e {
         }
       }
     }
-    return;
+    return true;
   }
 
   // Function to interpolate the BField value at the point from the values
@@ -145,7 +146,10 @@ namespace mu2e {
   } 
 
   // Function to return the BField for any point
-  CLHEP::Hep3Vector BFMap::getBField(CLHEP::Hep3Vector const& testpoint ) const{
+  bool BFMap::getBFieldWithStatus(const CLHEP::Hep3Vector & testpoint,
+				  CLHEP::Hep3Vector & result) const {
+
+    result = CLHEP::Hep3Vector(0.,0.,0.);
 
     static const bool dflag = false;
 
@@ -171,7 +175,7 @@ namespace mu2e {
           << "Point is outside of the valid region of the map: " << _key << "\n"
           << "Point in input coordinates: " << testpoint << "\n";
       }
-      return CLHEP::Hep3Vector(0.,0.,0.);
+      return false;
     }
 
     // Get the indices of the nearest grid point
@@ -228,22 +232,28 @@ namespace mu2e {
     // check if the point had a field defined
     
     if ( ! _isDefined(ix,iy,iz) ){
-      // if ( _warnIfOutside ){
-      edm::LogWarning("GEOM")
-        << "Point's field is not defined in the map: " << _key << "\n"
-        << "Point in input coordinates: " << testpoint << "\n";
-      edm::LogWarning("GEOM")
-	<< "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
-      //}
-      return CLHEP::Hep3Vector(0.,0.,0.);
+      if ( _warnIfOutside ){
+	edm::LogWarning("GEOM")
+	  << "Point's field is not defined in the map: " << _key << "\n"
+	  << "Point in input coordinates: " << testpoint << "\n";
+	edm::LogWarning("GEOM")
+	  << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
+      }
+      return false;
     }
-
-
-
 
     // Get the BField values of the nearest grid neighbors to the point
     static CLHEP::Hep3Vector neighborsBF[3][3][3];
-    getNeighbors(ix, iy, iz, neighborsBF);
+    if ( ! getNeighbors(ix, iy, iz, neighborsBF) ) {
+      if ( _warnIfOutside ){
+	edm::LogWarning("GEOM")
+	  << "Point's neighboring field is not defined in the map: " << _key << "\n"
+	  << "Point in input coordinates: " << testpoint << "\n";
+	edm::LogWarning("GEOM")
+	  << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
+      }
+      return false;
+    }
 
     // Set up fractional grid point. The interpolator treats the neighbors array
     // as spanning from (0,0,0) to (2,2,2), so we find the location of the point
@@ -274,16 +284,16 @@ namespace mu2e {
     };
 
     // Run the interpolator
-    CLHEP::Hep3Vector testBF = interpolate(neighborsBF,frac);
+    result = interpolate(neighborsBF,frac);
     if( dflag ){
-      cout << "Interpolated Field: " << testBF << endl;
+      cout << "Interpolated Field: " << result << endl;
     }
 
     // Reassign y sign
     if (sign == -1){
-      testBF.setY(-testBF.y());
+      result.setY(-result.y());
     }
-    return testBF;
+    return true;
   }
 
   // Called by BFieldManagerMaker.

@@ -3,9 +3,44 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.12 2011/02/20 15:08:42 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/02/20 15:08:42 $
+  $Id: v0_3_3.txt,v 1.13 2011/02/21 22:08:17 logash Exp $
+  $Author: logash $
+  $Date: 2011/02/21 22:08:17 $
+
+11) February 21, 2011 logash
+
+    Second part of the fix to the magnetic field problems that have been
+    discussed on the mu2e-sim list in the last two days.  
+
+    The field map is defined on the rectangular grid of points. In the TD maps 
+    the field is present for all the points. In the MECO maps the field is defined
+    only in the cylindrical part of the grid. Previously the B-field was set only 
+    inside DS, TS and PS vacuum, thus the field was never requested for that part 
+    of the grid, where the field was not defined. After B-field was described as
+    global (see item 5, February 13), unattached to any volume, G4 started to 
+    request for field at any position. There was a bug in the existing code which 
+    lead to the wrong field value in the boundary region between defined and undefined 
+    points.
+
+    This problem has been fixed and the simulation now works correctly as with 
+    TD maps as with MECO maps, and can handle points on the grid where field is
+    not defined.
+
+    I've added geometry configuration file Mu2eG4/test/geom_mecofield.txt, which
+    has geometry properly tuned to use old MECO maps. Use it for corresponding 
+    studies. The default field map in geom_01.txt is the latest TD map.
+
+    Files modified:
+
+       BFieldGeom/inc/BFMapBase.hh
+       BFieldGeom/inc/BFMap.hh
+       BFieldGeom/inc/BFieldManager.hh
+       BFieldGeom/src/BFMap.cc
+       BFieldGeom/src/BFieldManager.cc
+
+    New files:
+
+      Mu2eG4/test/geom_mecofield.txt
 
 10) February 20, 2011 kutschke
     First part of the fix to the magnetic field problems that have been

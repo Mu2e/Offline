@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.6 2010/09/29 22:51:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/29 22:51:43 $
+// $Id: BFMap.hh,v 1.7 2011/02/21 22:08:17 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/21 22:08:17 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -67,7 +67,7 @@ namespace mu2e {
     virtual ~BFMap();
 
     // Accessors
-    CLHEP::Hep3Vector getBField(CLHEP::Hep3Vector const& point) const;
+    bool getBFieldWithStatus(const CLHEP::Hep3Vector &, CLHEP::Hep3Vector &) const;
 
     // Validity checker
     bool isValid(CLHEP::Hep3Vector const& point) const;
@@ -116,7 +116,7 @@ namespace mu2e {
     // Functions used internally and by the code that populates the maps.
 
     // method to store the neighbors
-    void getNeighbors(int ix, int iy, int iz, CLHEP::Hep3Vector neighborsBF[3][3][3]) const;
+    bool getNeighbors(int ix, int iy, int iz, CLHEP::Hep3Vector neighborsBF[3][3][3]) const;
 
     // Interpolator
     CLHEP::Hep3Vector interpolate(CLHEP::Hep3Vector const vec[3][3][3],
