@@ -72,15 +72,36 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   TGLayoutHints *lh1 = new TGLayoutHints(kLHintsTop,2,1,2,2);
 
   TGHorizontalFrame *hitFrame  = new TGHorizontalFrame(subFrame,200,15);
-  TGLabel *hitLabel  = new TGLabel(hitFrame, "hits");
+  TGLabel *hitLabel  = new TGLabel(hitFrame, "Hits");
   TGComboBox *hitBox = new TGComboBox(hitFrame,10);
   hitBox->Associate(this);
   hitBox->AddEntry("",0);
   hitBox->Select(0);
   hitBox->Resize(150,20);
+  hitBox->SetEnabled(false);
   hitFrame->AddFrame(hitLabel, lh1);
   hitFrame->AddFrame(hitBox, lh1);
   subFrame->AddFrame(hitFrame, lh0);
+
+  TGHorizontalFrame *caloHitFrame  = new TGHorizontalFrame(subFrame,200,15);
+  TGLabel *caloHitLabel  = new TGLabel(caloHitFrame, "Calo Hits");
+  TGComboBox *caloHitBox = new TGComboBox(caloHitFrame,11);
+  caloHitBox->Associate(this);
+  caloHitBox->AddEntry("",0);
+  caloHitBox->Select(0);
+  caloHitBox->Resize(150,20);
+  caloHitBox->SetEnabled(false);
+  caloHitFrame->AddFrame(caloHitLabel, lh1);
+  caloHitFrame->AddFrame(caloHitBox, lh1);
+  subFrame->AddFrame(caloHitFrame, lh0);
+
+  TGLabel *trackLabel  = new TGLabel(subFrame, "Tracks");
+  TGListBox *trackBox = new TGListBox(subFrame,12);
+  trackBox->Associate(this);
+  trackBox->Resize(200,60);
+  trackBox->SetMultipleSelections(true);
+  subFrame->AddFrame(trackLabel, lh1);
+  subFrame->AddFrame(trackBox, lh1);
 
   _unhitButton = new TGCheckButton(subFrame,"Show Unhit Straws",31);
   subFrame->AddFrame(_unhitButton, lh1);
@@ -113,16 +134,6 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   _targetViewButton->SetState(kButtonDown);
   subFrame->AddFrame(_targetViewButton, lh1);
   _targetViewButton->Associate(this);
-
-  TGListBox **particleBox   = new TGListBox*[2];
-  for(int i=0; i<2; i++)
-  {
-    particleBox[i] = new TGListBox(subFrame,20+i);
-    particleBox[i]->Associate(this);
-    particleBox[i]->Resize(150,60);
-    particleBox[i]->SetMultipleSelections(true);
-    subFrame->AddFrame(particleBox[i], lh1);
-  }
 
   TGHorizontalFrame *subFrameAnim = new TGHorizontalFrame(subFrame,300,15);
   TGTextButton *animButtonStart   = new TGTextButton(subFrameAnim, "Start Animation", 40);
