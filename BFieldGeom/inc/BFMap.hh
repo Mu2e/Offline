@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.7 2011/02/21 22:08:17 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/21 22:08:17 $
+// $Id: BFMap.hh,v 1.8 2011/02/22 21:07:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/02/22 21:07:48 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -96,7 +96,7 @@ namespace mu2e {
 
     // If true, then print a warning message when a point is outside the region 
     // in which the map is defined; else return a field with a value of (0.,0.,0.);
-    // This does happen under normal operation of G4 so we should not warn be default.
+    // This does happen under normal operation of G4 so we should not warn by default.
     bool _warnIfOutside;
 
     // Grid dimensions
