@@ -1,19 +1,22 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.9 2010/12/13 06:10:33 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/12/13 06:10:33 $
+// $Id: BFieldManagerMaker.cc,v 1.10 2011/02/22 21:07:31 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/02/22 21:07:31 $
 //
 
 // Includes from C++
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <set>
 
 // Includes from C ( needed for block IO ).
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <errno.h>
+#include <string.h>
 
 // Includes from boost
 #include <boost/regex.hpp>
@@ -62,6 +65,16 @@ namespace mu2e {
     string format = _config.getString("bfield.format","GMC");
 
     if( format=="GMC" ) {
+
+      // These maps require torus radius of 2926 mm
+      std::string torusName("toyTS.rTorus");
+      const double torusRadius = 2926.0; // Required number
+      if( fabs(_config.getDouble(torusName,0.0)-torusRadius)>0.1 ){
+	throw cms::Exception("GEOM")
+	  << "The GMC magnetic field files require torus radius of 2926 mm."
+	  << " Check " << torusName << " value in the config file." 
+	  << " Maps are not loaded.\n";
+      }
 
       // Add the DS, TS and PS field maps.
       loadGMC( "DS", "bfield.dsFile", "bfield.dsDimensions" );
@@ -113,6 +126,9 @@ namespace mu2e {
 	ostringstream mapkey;
 	mapkey << "bfield" << i;
 	loadG4BL( mapkey.str(),  filename  );
+        if( _config.getBool("bfield.writeG4BLBinaries", false) ){
+          writeG4BLBinary( i, mapkey.str() );
+        }
       }
 
       //throw cms::Exception("GEOM") << "Temporal end." << "\n";
@@ -260,7 +276,11 @@ namespace mu2e {
 		    X0[2],X0[2]+(dim[2]-1)*dX[2]);
 
     // Fill the map.
-    readG4BLMap( filename, dsmap, G4BL_offset );
+    if ( filename.find(".header") != string::npos ) {
+      readG4BLBinary( filename, dsmap, G4BL_offset );
+    } else {
+      readG4BLMap( filename, dsmap, G4BL_offset );
+    }
     
     //dsmap.print(std::cout);
 
@@ -442,17 +462,17 @@ namespace mu2e {
 
     // Debug print
     /*
-    ifstream fin1;
-    string fname("/tmp/logash/Mu2e_Rotated_Coils_DSMap.txt.bz2");
-    fin1.open(fname.c_str());
-    boost::iostreams::filtering_istream in;
-    decompressFile(fname,in);
-    in.push(fin1);
-    char cbuf1[128];
-    cout << "Debug file: " << endl;
-    for( int i=0; i<5; i++ ) { in.getline(cbuf1,128); cout << cbuf1 << endl; }
-    in.pop();
-    fin1.close();
+      ifstream fin1;
+      string fname("/tmp/logash/Mu2e_Rotated_Coils_DSMap.txt.bz2");
+      fin1.open(fname.c_str());
+      boost::iostreams::filtering_istream in;
+      decompressFile(fname,in);
+      in.push(fin1);
+      char cbuf1[128];
+      cout << "Debug file: " << endl;
+      for( int i=0; i<5; i++ ) { in.getline(cbuf1,128); cout << cbuf1 << endl; }
+      in.pop();
+      fin1.close();
     */
 
     // Open the input file.
@@ -508,12 +528,186 @@ namespace mu2e {
       throw cms::Exception("GEOM")
 	<<"Error while reading "<<filename<<"\n"
 	<<"Read "<<nread<<" out of expected "<<nrecord<<" lines.\n"
-	<<"Last line:\n"<<cbuf<<"\n";
+        <<"Last line:\n"<<cbuf<<"\n";
     }
 
     return;
 
   }
+
+  void BFieldManagerMaker::readG4BLBinary( const string& headerFilename,
+                                           BFMap& bf,
+                                           CLHEP::Hep3Vector G4BL_offset ){
+
+    // Form the name of the binary file from the name of the header file.
+    string::size_type i = headerFilename.find(".header");
+    if ( i == string::npos ){
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:readG4BLBinary Expected a file type of .header: " 
+        << headerFilename << "\n";
+    }
+    string binFilename = headerFilename.substr(0,i);
+    binFilename += ".bin";
+
+    // Resolve filename into a full path.
+    string path = edm::FileInPath(binFilename).fullPath();
+
+    // Number of points in each big array.
+    int nPoints = bf.nx()*bf.ny()*bf.nz();
+
+    // Number of bytes in each big array.
+    ssize_t nbytes = sizeof(CLHEP::Hep3Vector)*nPoints;
+
+    // Open the binary file.
+    int fd = open( path.c_str(), O_RDONLY );
+    if ( fd < 0 ) {
+      int errsave = errno;
+      char* errmsg = strerror(errsave); 
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:readG4BLBinary Error opening " << path
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
+
+    // A word to receive the endian marker.
+    unsigned int marker(0);
+
+    // Addresses of first elements in each of the two big arrays.
+    CLHEP::Hep3Vector* gridAddr  = &bf._grid.get(0,0,0);
+    CLHEP::Hep3Vector* fieldAddr = &bf._field.get(0,0,0);
+
+    // Read the endian marker and check that it is OK.
+    ssize_t s0 = read( fd, &marker, sizeof(unsigned int) );
+    if ( s0 != sizeof(unsigned int) ){
+      int errsave = errno;
+      char* errmsg = strerror(errsave); 
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:readG4BLBinary Error reading endian marker from " << path << "\n"
+        << "Status: " << s0 
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
+
+    static const unsigned int deadbeef(0XDEADBEEF);
+    if ( marker != deadbeef ){
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:readG4BLBinary endian mismatch" << path 
+        << "  returned value: " << std:: hex << marker 
+        << "  expected value: " << deadbeef
+        << std::dec << "\n"
+        << "Suggestion: change from binary format field maps to the text or gzipped text format.\n"
+        << "\n";
+    }
+
+    // Read the grid point positions.
+    ssize_t s1 = read( fd, gridAddr, nbytes );
+    if ( s1 != nbytes ){
+      int errsave = errno;
+      char* errmsg = strerror(errsave); 
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:readG4BLBinary Error reading grid points from " << path << "\n"
+        << "Status: " << s1 
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
+
+    // Read the field values at the grid points.
+    ssize_t s2 = read( fd, fieldAddr, nbytes );
+    if ( s2 != nbytes ){
+      int errsave = errno;
+      char* errmsg = strerror(errsave); 
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:readG4BLBinary Error reading field values from " << path << "\n"
+        << "Status: " << s2 
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
+
+    // These maps fill the full box so mark all grid points as valid.
+    for ( int ix=0; ix<bf.nx(); ++ix ){
+      for ( int iy=0; iy<bf.ny(); ++iy ){
+        for ( int iz=0; iz<bf.nz(); ++iz ){
+          bf._isDefined.set(ix,iy,iz,true);
+        }
+      }
+    }
+
+  } // end BFieldManagerMaker::readG4BLBinary
+
+  void BFieldManagerMaker::writeG4BLBinary( unsigned int i, std::string const& key ){
+
+    // Get the name of the output file.
+    vector<string> outputfiles;
+    _config.getVectorString("bfield.binaryFiles",outputfiles);
+    string const& outputfile = outputfiles.at(i);
+
+    // Get the map to be written out.
+    BFMap const& bf = _bfmgr->getContainedMapByName(key);
+
+    // Number of points in each big array.
+    int nPoints = bf.nx()*bf.ny()*bf.nz();
+
+    // Number of bytes in each big array.
+    size_t nBytes = sizeof(CLHEP::Hep3Vector)*nPoints;
+
+    cout << "Writing G4BL Magnetic field map in binary format: "
+         << "map key: " << key
+         << "file: " << outputfile 
+         << endl;
+
+    // A marker to catch endian mismatch on readback.
+    unsigned int deadbeef(0XDEADBEEF);
+
+    // Addresses of first elements in each of the two big arrays.
+    CLHEP::Hep3Vector const* gridAddr  = &bf._grid.get(0,0,0);
+    CLHEP::Hep3Vector const* fieldAddr = &bf._field.get(0,0,0);
+
+    // Open the output file.
+    mode_t mode = S_IRUSR| S_IWUSR | S_IRGRP | S_IROTH;
+    int flags   = O_CREAT|O_WRONLY|O_TRUNC|O_EXCL;
+    int fd = open( outputfile.c_str(), flags, mode );
+    int errsave = errno;
+
+    // Check for errors.
+    if ( fd < 0 ) {
+      if ( errsave ==  EEXIST ){
+        throw cms::Exception("GEOM")
+          << "BFieldManagerMaker:writeG4BLBinary Error opening " << outputfile
+          << "  File already exists.\n";
+      }
+      char* errmsg = strerror(errsave); 
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:writeG4BLBinary Error opening " << outputfile
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
+
+    // Write the endian marker and the big arrays.
+    ssize_t s0 = write( fd, &deadbeef, sizeof(unsigned int) );
+    if ( s0 == -1 ){
+      errsave = errno;
+      char* errmsg = strerror(errsave); 
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:writeG4BLBinary Error writing endian marker to " << outputfile
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
+    ssize_t s1 = write( fd, gridAddr,  nBytes );
+    if ( s1 == -1 ){
+      errsave = errno;
+      char* errmsg = strerror(errsave); 
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:writeG4BLBinary  Error writing grid points to " << outputfile
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
+    ssize_t s2 = write( fd, fieldAddr, nBytes );
+    if ( s2 == -1 ){
+      errsave = errno;
+      char* errmsg = strerror(errsave); 
+      throw cms::Exception("GEOM")
+        << "BFieldManagerMaker:writeG4BLBinary Error writing field values to " << outputfile
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
+
+    close(fd);
+
+    cout << "Writing complete for map key: " << key << endl;
+
+  }  // end BFieldManagerMaker::writeG4BLBinary
 
   // Compute the size of the array needed to hold the raw data of the field map.
   int BFieldManagerMaker::computeArraySize( int fd, const string& filename ){

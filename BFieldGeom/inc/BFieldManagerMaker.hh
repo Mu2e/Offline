@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.2 2010/09/08 00:07:27 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/08 00:07:27 $
+// $Id: BFieldManagerMaker.hh,v 1.3 2011/02/22 21:07:31 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/02/22 21:07:31 $
 //
 
 // Includes from C++
@@ -51,9 +51,17 @@ namespace mu2e {
     void readGMCMap( const std::string& filename,
                      BFMap& bfmap );
 
-    // Read a MECO G4BL format map.
+    // Read a G4BL text format map.
     void readG4BLMap( const std::string& filename,
 		      BFMap& bfmap, CLHEP::Hep3Vector offset );
+
+    // Read a G4BL map that was stored using writeG4BLBinary.
+    void readG4BLBinary( const std::string& headerFilename,
+                         BFMap& bfmap,
+                         CLHEP::Hep3Vector G4BL_offset );
+
+    // Write an existing BFMap in binary format.
+    void writeG4BLBinary( unsigned int i, std::string const& key );
 
     // Special case: when the DS has a uniform field.
     void loadUniformDS();
