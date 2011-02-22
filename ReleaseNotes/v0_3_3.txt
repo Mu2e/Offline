@@ -3,9 +3,21 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.13 2011/02/21 22:08:17 logash Exp $
+  $Id: v0_3_3.txt,v 1.14 2011/02/22 03:54:43 logash Exp $
   $Author: logash $
-  $Date: 2011/02/21 22:08:17 $
+  $Date: 2011/02/22 03:54:43 $
+
+12) February 21, 2011 logash
+
+    Changed the way calorimeter constructed in Mu2eG4/src/constructCalorimeter.cc.
+
+    The old way was to construct one full crystal (wrapped, with readouts) and then
+    to place it many time. That approach allowed to save some memory, but is very
+    inconvenient when one needs to track in which volume the particular hit occured.
+
+    In the new code each crystal is constructed separately. Thus the total number of
+    physics volumes in the calorimeter increased by a factor 4 (or so). The 
+    advantage now is that all these volumes are easily tracked in the latter analysis.
 
 11) February 21, 2011 logash
 

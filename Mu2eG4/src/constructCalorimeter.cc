@@ -1,11 +1,11 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.9 2010/12/21 21:48:40 genser Exp $
-// $Author: genser $
-// $Date: 2010/12/21 21:48:40 $
+// $Id: constructCalorimeter.cc,v 1.10 2011/02/22 03:54:43 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/22 03:54:43 $
 //
-// Original author Rob Kutschke
+// Original author Ivan Logashenko
 // 
 // Notes
 // 1) The argument zOff is the zlocation of the center of the mother volume,
@@ -76,7 +76,9 @@ namespace mu2e {
 
       double dim[3] = { size.x(), size.y(), size.z() };
 
-      cout << "Calorimeter Vane position: (" << pos.x() << "," << pos.y() << "," << pos.z() << ")" << endl;
+      cout << "Calorimeter Vane position: (" 
+	   << pos.x() << "," << pos.y() << "," << pos.z() 
+	   << ")" << endl;
 
       ostringstream name;
       name << "CalorimeterVane_" << i;
@@ -127,18 +129,8 @@ namespace mu2e {
     int ncrysR = cal.nCrystalR();
     int ncrysZ = cal.nCrystalZ();
 
-    // Create logical volumes
+    // Create logical volumes - we are going to reuse these
 	
-    G4LogicalVolume * l_shell = new G4LogicalVolume( shell, fillMaterial, "l_CrystalShell"); 
-    if(!isVisible) {
-      l_shell->SetVisAttributes(G4VisAttributes::Invisible);
-    } else {
-      G4VisAttributes* shell_visAtt = new G4VisAttributes(isVisible, G4Color::Blue());
-      shell_visAtt->SetForceSolid(isSolid);
-      shell_visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
-      l_shell->SetVisAttributes(shell_visAtt);
-    }
-
     G4LogicalVolume * l_wrap  = new G4LogicalVolume( wrap,  wrapMaterial, "l_CrystalWrap"); 
     l_wrap->SetVisAttributes(G4VisAttributes::Invisible);
 
@@ -163,35 +155,12 @@ namespace mu2e {
       FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
     l_ro->SetSensitiveDetector(crSD);
 
-    //
-    // Create single crystal
-    //
-    // -- place crystal inside wrap
-    new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),l_crys,
-                      "p_Crystal",l_wrap,0,0,doSurfaceCheck);
-    // -- place wrap inside shell
-    // p_CrystalShell not p_CrystalWrap ???
-    new G4PVPlacement(0,G4ThreeVector(-cal.roHalfThickness(),0.0,0.0),l_wrap,
-		      "p_CrystalShell",l_shell,0,0,doSurfaceCheck);
-    // -- add readouts
-    for( int i=0; i<nro; ++i ) {
-      ostringstream pname; pname << "p_CrystalRO" << i;
-      if( nro==1 ) {
-	new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),0.0,0.0),
-			  l_ro,pname.str(),l_shell,0,i,doSurfaceCheck);
-      } else if( nro==2 ) {
-	new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),(i-0.5)*cal.crystalHalfSize(),0.0),
-			  l_ro,pname.str(),l_shell,0,i,doSurfaceCheck);
-      } else if( nro==4 ) {
-	new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),
-					  (i/2-0.5)*cal.crystalHalfSize(),
-					  (i%2-0.5)*cal.crystalHalfSize()),
-			  l_ro,pname.str(),l_shell,0,i,doSurfaceCheck);
-      }
-    }
 
-    // Place crystal shell for each crystal. If neccessary, this code can be 
-    // rewritten to use Replica
+    //
+    // Create crystals in the loop, one at a time. I do it this way, not using
+    // replica or reusing the same logical volume to avoid problem with volume
+    // index in physHelper. 
+    //
 
     double step = cal.crystalHalfSize()*2.0;
 
@@ -199,23 +168,63 @@ namespace mu2e {
       for( int ic=0; ic<ncrys; ++ic ) {
 
 	// IDs
-	int id   = iv*ncrys + ic; // Crystal ID
+	int id     = iv*ncrys + ic;       // Crystal ID
+	int roid   = nro*(iv*ncrys + ic); // Readout ID
+
+	ostringstream lname; lname << "l_CrystalShell" << id;
+
+	G4LogicalVolume * l_shell = new G4LogicalVolume( shell, fillMaterial, lname.str()); 
+	if(!isVisible) {
+	  l_shell->SetVisAttributes(G4VisAttributes::Invisible);
+	} else {
+	  G4VisAttributes* shell_visAtt = new G4VisAttributes(isVisible, G4Color::Blue());
+	  shell_visAtt->SetForceSolid(isSolid);
+	  shell_visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+	  l_shell->SetVisAttributes(shell_visAtt);
+	}
+
+	ostringstream wname; wname << "l_CrystalWrap" << id;
+
+	G4LogicalVolume * l_wrap  = new G4LogicalVolume( wrap,  wrapMaterial, wname.str()); 
+	l_wrap->SetVisAttributes(G4VisAttributes::Invisible);
+
+	// -- place crystal inside wrap
+	new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),l_crys,
+			  "p_Crystal",l_wrap,0,id,doSurfaceCheck);
+	// -- place wrap inside shell
+	// p_CrystalShell not p_CrystalWrap ???
+	new G4PVPlacement(0,G4ThreeVector(-cal.roHalfThickness(),0.0,0.0),l_wrap,
+			  "p_CrystalShell",l_shell,0,id,doSurfaceCheck);
+	// -- add readouts
+	for( int i=0; i<nro; ++i ) {
+	  if( nro==1 ) {
+	    new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),0.0,0.0),
+			      l_ro,"p_CrystalRO",l_shell,0,roid+i,doSurfaceCheck);
+	  } else if( nro==2 ) {
+	    new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),(i-0.5)*cal.crystalHalfSize(),0.0),
+			      l_ro,"p_CrystalRO",l_shell,0,roid+i,doSurfaceCheck);
+	  } else if( nro==4 ) {
+	    new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),
+					      (i/2-0.5)*cal.crystalHalfSize(),
+					      (i%2-0.5)*cal.crystalHalfSize()),
+			      l_ro,"p_CrystalRO",l_shell,0,roid+i,doSurfaceCheck);
+	  }
+	}
+
+	// Place crystal shell for each crystal in the vane. 
 	
 	// Position - first run along Z, then along Y, both times in positive direction
 	double x = 0.0;
 	double y = 0.5*step*(2*(ic/ncrysZ)-ncrysR+1);
 	double z = 0.5*step*(2*(ic%ncrysZ)-ncrysZ+1);
 
-	ostringstream name;
-	name << "Crystal" << id;
-	
 	// Create volumes 
-
-	new G4PVPlacement(0,G4ThreeVector(x,y,z),l_shell,name.str()
+	
+	new G4PVPlacement(0,G4ThreeVector(x,y,z),l_shell,"Crystal"
                           ,vaneInfo[iv].logical,0,id,doSurfaceCheck);
       }
     }
-
+    
   }
-
+  
 } // end namespace mu2e
