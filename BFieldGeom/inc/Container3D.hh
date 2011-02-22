@@ -5,9 +5,9 @@
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
-// $Id: Container3D.hh,v 1.5 2010/09/29 22:36:26 kutschke Exp $
+// $Id: Container3D.hh,v 1.6 2011/02/22 21:08:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/09/29 22:36:26 $
+// $Date: 2011/02/22 21:08:25 $
 //
 
 #include <vector>
@@ -65,6 +65,12 @@ namespace mu2e {
     // Get element, without safety features. Use if the calller has 
     // already ensured the validity of the arguments.
     OBJ const& get( unsigned int ix, unsigned int iy, unsigned int iz) const {
+      return _vec[index(ix,iy,iz)];
+    }
+
+    // Get element, without safety features. Use if the calller has 
+    // already ensured the validity of the arguments.
+    OBJ& get( unsigned int ix, unsigned int iy, unsigned int iz){
       return _vec[index(ix,iy,iz)];
     }
 
@@ -183,6 +189,10 @@ namespace mu2e {
     bool get( unsigned int ix, unsigned int iy, unsigned int iz) const {
       return _vec[index(ix,iy,iz)];
     }
+
+    // This would be needed to exactly parallel the interface of the general case
+    // but this is not meaningful for bools.
+    //bool& get( unsigned int ix, unsigned int iy, unsigned int iz);
 
     // Synonym for get, without safety features.
     bool operator()( unsigned int ix, unsigned int iy, unsigned int iz) const {
