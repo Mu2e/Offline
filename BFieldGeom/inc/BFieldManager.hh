@@ -4,9 +4,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.4 2011/02/21 22:08:17 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/21 22:08:17 $
+// $Id: BFieldManager.hh,v 1.5 2011/02/22 21:09:16 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/02/22 21:09:16 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -51,7 +51,11 @@ namespace mu2e {
     const std::string& getKey() const { return _key; };
 
     // Get an arbitrary map.  Throw if it cannot be found.
-    const BFMapBase& getMapByName( const std::string key ) const;
+    const BFMapBase& getMapByName( const std::string& key ) const;
+
+    // Get one of the contained maps (not the manager itself).  Throw if it cannot be found.
+    // Return the BFMap interface, not the BFMapBase interface.
+    const BFMap& getContainedMapByName( const std::string& key ) const;
 
     // The uniform field in the DS is a special case.
     const CLHEP::Hep3Vector getDSUniformValue() const{

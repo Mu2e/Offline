@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.4 2011/02/21 22:08:17 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/21 22:08:17 $
+// $Id: BFieldManager.cc,v 1.5 2011/02/22 21:09:16 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/02/22 21:09:16 $
 //
 
 // Includes from C++
@@ -69,9 +69,17 @@ namespace mu2e {
   }
 
   // Get an arbitrary map, throw if it cannot be found.
-  const BFMapBase& BFieldManager::getMapByName( const std::string key ) const{
+  // Search includes the manager class itself.
+  const BFMapBase& BFieldManager::getMapByName( const std::string& key ) const{
 
     if( key == _key ) return (*this);
+    return getContainedMapByName(key);
+
+  }
+
+  // Get an arbitrary map, throw if it cannot be found.
+  // Search excludes the manager class itself.
+  const BFMap& BFieldManager::getContainedMapByName( const std::string& key ) const{
 
     MapType::const_iterator i = _map.find(key);
     if ( i == _map.end() ){
