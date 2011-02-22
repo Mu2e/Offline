@@ -3,9 +3,44 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.14 2011/02/22 03:54:43 logash Exp $
-  $Author: logash $
-  $Date: 2011/02/22 03:54:43 $
+  $Id: v0_3_3.txt,v 1.15 2011/02/22 21:12:10 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/02/22 21:12:10 $
+
+13) February 22, 2011 kutschke
+
+    Speed up the reading of the G4BL style magnetic field maps.  The reading
+    of these maps is slow because they are text files (or compressed text files).
+    I added two new methods to BFieldManagerMaker:
+
+        void writeG4BLBinary( unsigned int i, std::string const& key );
+        void readG4BLBinary( const std::string& headerFilename,
+                             BFMap& bfmap,
+                             CLHEP::Hep3Vector G4BL_offset );
+
+    The first method writes an existing field map to a binary file.  Is can be called, optionally, 
+    right after reading in a text format G4BL.  The option is enabled in the config file;
+    see the example Mu2eG4/test/geom_writeBF.txt
+
+    The second method reads the binary data written by the previous code.  It checks endian-ness
+    on readback.
+
+    The binary format requires two files for each map
+       xxxx.header - this is a copy of the preamble from the text file
+       xxxx.bin    - the binary data
+    The code keys on the file types .header and .bin so these must not be changed.
+
+        BFieldGeom/inc/BFieldManagerMaker.hh   - See above
+        BFieldGeom/src/BFieldManagerMaker.cc
+        BFieldGeom/inc/BFMap.hh                - comments only
+        BFieldGeom/inc/Container3D.hh          - Add a non-const accessor needed by readG4BLBinary
+
+        BFieldGeom/inc/BFieldManager.hh        - New accessor to get BFMap by const ref to derived class,
+        BFieldGeom/src/BFieldManager.cc          not by const ref to base.
+
+        Mu2eG4/test/geom_01.txt                - remove commented out meco field section  
+        Mu2eG4/test/geom_mecofield.txt         - add cvs versioning comments
+        Mu2eG4/test/geom_writeBF.txt           - example of how to write the field maps
 
 12) February 21, 2011 logash
 
