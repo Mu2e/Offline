@@ -1,9 +1,9 @@
 //
 // In this geometry file MECO magnetic field configuration is used
 //
-// $Id: geom_mecofield.txt,v 1.2 2011/02/22 21:10:06 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/02/22 21:10:06 $
+// $Id: geom_mecofield.txt,v 1.3 2011/02/23 00:36:47 logash Exp $
+// $Author: logash $
+// $Date: 2011/02/23 00:36:47 $
 //
 // Original author Ivan Logashenko
 //
@@ -28,9 +28,16 @@ vector<int> bfield.psDimensions = {  76, 38, 251 };
 
 double toyDS.bz            = -1.0;
 
+// Since the particles hit the calorimeter from the other side, we 
+// have to put readouts on the other side as well
+
+int    calorimeter.crystalReadoutSide = -1; // +1 or -1
+
 // The bend radius of the torus also differs between the MECO and TD maps.
 
 double toyTS.rTorus      = 2926.; 
+
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

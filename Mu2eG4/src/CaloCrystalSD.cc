@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors 
 // 
-// $Id: CaloCrystalSD.cc,v 1.5 2010/12/21 21:49:20 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/21 21:49:20 $
+// $Id: CaloCrystalSD.cc,v 1.6 2011/02/23 00:36:47 logash Exp $
+// $Author: logash $ 
+// $Date: 2011/02/23 00:36:47 $
 //
 // Original author Ivan Logashenko
 //
@@ -83,6 +83,9 @@ namespace mu2e {
 
     // Get crystal ID
     G4int copyNo = touchableHandle->GetCopyNumber(2);
+    // had to use the following in the previous version of geometry 
+    // construction
+    //G4int copyNo = touchableHandle->GetCopyNumber(2);
 
     // Originally the hit position was saved in local crystal frame. 
     // Not it is saved in Mu2e frame, hence the following code is

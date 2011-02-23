@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.10 2011/02/22 03:54:43 logash Exp $
+// $Id: constructCalorimeter.cc,v 1.11 2011/02/23 00:36:47 logash Exp $
 // $Author: logash $
-// $Date: 2011/02/22 03:54:43 $
+// $Date: 2011/02/23 00:36:47 $
 //
 // Original author Ivan Logashenko
 // 
@@ -54,6 +54,8 @@ namespace mu2e {
     bool isSolid   = config.getBool("calorimeter.solid",true);
     G4bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV = true;
+    int roSide = config.getInt("calorimeter.crystalReadoutSide",1);
+    if( roSide>=0 ) roSide=1; else roSide=-1;
 
     G4Material* fillMaterial = materialFinder.get("calorimeter.calorimeterFillMaterial");
     //G4Material* fillMaterial = materialFinder.get("calorimeter.crystalMaterial");
@@ -191,20 +193,22 @@ namespace mu2e {
 	// -- place crystal inside wrap
 	new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),l_crys,
 			  "p_Crystal",l_wrap,0,id,doSurfaceCheck);
+
 	// -- place wrap inside shell
 	// p_CrystalShell not p_CrystalWrap ???
-	new G4PVPlacement(0,G4ThreeVector(-cal.roHalfThickness(),0.0,0.0),l_wrap,
+	new G4PVPlacement(0,G4ThreeVector(roSide*cal.roHalfThickness(),0.0,0.0),l_wrap,
 			  "p_CrystalShell",l_shell,0,id,doSurfaceCheck);
+
 	// -- add readouts
 	for( int i=0; i<nro; ++i ) {
 	  if( nro==1 ) {
-	    new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),0.0,0.0),
+	    new G4PVPlacement(0,G4ThreeVector(-roSide*cal.crystalHalfLength(),0.0,0.0),
 			      l_ro,"p_CrystalRO",l_shell,0,roid+i,doSurfaceCheck);
 	  } else if( nro==2 ) {
-	    new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),(i-0.5)*cal.crystalHalfSize(),0.0),
+	    new G4PVPlacement(0,G4ThreeVector(-roSide*cal.crystalHalfLength(),(i-0.5)*cal.crystalHalfSize(),0.0),
 			      l_ro,"p_CrystalRO",l_shell,0,roid+i,doSurfaceCheck);
 	  } else if( nro==4 ) {
-	    new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),
+	    new G4PVPlacement(0,G4ThreeVector(-roSide*cal.crystalHalfLength(),
 					      (i/2-0.5)*cal.crystalHalfSize(),
 					      (i%2-0.5)*cal.crystalHalfSize()),
 			      l_ro,"p_CrystalRO",l_shell,0,roid+i,doSurfaceCheck);

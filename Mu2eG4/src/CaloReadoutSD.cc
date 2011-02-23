@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 // 
-// $Id: CaloReadoutSD.cc,v 1.4 2010/12/21 21:49:20 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/21 21:49:20 $
+// $Id: CaloReadoutSD.cc,v 1.5 2011/02/23 00:36:47 logash Exp $
+// $Author: logash $ 
+// $Date: 2011/02/23 00:36:47 $
 //
 // Original author Ivan Logashenko
 //
@@ -92,7 +92,10 @@ namespace mu2e {
     }
 
     // Get readout ID
-    int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(1)*_nro;
+    int idro = touchableHandle->GetCopyNumber(0);
+    // in the previous version of calorimeter geometry the RO id 
+    // had to be calculated this way:
+    // int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(1)*_nro;
 
     // The points coordinates are saved in the mu2e world
 
