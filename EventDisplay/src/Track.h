@@ -1,9 +1,9 @@
 //
-// Container class for all particle tracks. Tracks are displayed via the TPolyLine3DTrack class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
+// Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.3 2011/02/18 04:10:55 ehrlich Exp $
+// $Id: Track.h,v 1.4 2011/02/23 00:29:27 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/18 04:10:55 $
+// $Date: 2011/02/23 00:29:27 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,8 +11,9 @@
 #ifndef TRACK_H
 #define TRACK_H
 
-#include "dict_classes/TPolyLine3DTrack.h"
+#include "dict_classes/EventDisplayPolyLine3D.h"
 #include "VirtualShape.h"
+#include <TPad.h>
 #include <TMath.h>
 #include <vector>
 
@@ -27,7 +28,7 @@ class Track: public VirtualShape
 
   struct pt{double x,y,z,t;};
   std::vector<pt> _pVec;
-  boost::shared_ptr<TPolyLine3DTrack> _line;
+  boost::shared_ptr<EventDisplayPolyLine3D> _line;
   bool _trajectory;
   int _particleId;
 
@@ -54,7 +55,7 @@ class Track: public VirtualShape
     setEndTime(t2); 
     _particleId=particleId;
     _trajectory=false;
-    _line=boost::shared_ptr<TPolyLine3DTrack>(new TPolyLine3DTrack(mainframe, _info));
+    _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     _line->Draw();
     start();
   }

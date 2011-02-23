@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc. 
 //
-// $Id: ComponentInfo.h,v 1.2 2011/02/05 01:20:08 ehrlich Exp $
+// $Id: ComponentInfo.h,v 1.3 2011/02/23 00:29:27 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/05 01:20:08 $
+// $Date: 2011/02/23 00:29:27 $
 //
 // Original author Ralf Ehrlich
 //
@@ -32,12 +32,14 @@ namespace mu2e_eventdisplay
     private:
 #ifndef __CINT__
     std::vector<boost::shared_ptr<TText> > _text;
+    boost::shared_ptr<std::string>         _name;
     //will be expanded later for more advanced info, e.g. histograms, etc.
     //this will be only a base class, and the specifics will be in inherited classes
 
     public:
     ComponentInfo()
     {
+      _name=boost::shared_ptr<std::string>(new std::string);
       for(int i=0; i<5; i++)
       {
         boost::shared_ptr<TText> newLine(new TText(0.02,0.9-0.1*i,NULL));
@@ -50,6 +52,7 @@ namespace mu2e_eventdisplay
 
     ComponentInfo(const boost::shared_ptr<ComponentInfo> c)  //no reference, since shared_ptr
     {
+      _name=c->getName();
       std::vector<boost::shared_ptr<TText> >::const_iterator iter;
       for(iter=c->getText().begin(); iter!=c->getText().end(); iter++)
       {
@@ -58,6 +61,10 @@ namespace mu2e_eventdisplay
     }
 
     virtual ~ComponentInfo() {} //TTexts will get deleted automatically.
+
+    const boost::shared_ptr<std::string> getName() const {return _name;}
+
+    void setName(const char *newName) {_name->assign(newName);}
 
     const std::vector<boost::shared_ptr<TText> > &getText() const {return _text;}
 

@@ -1,22 +1,18 @@
 //
-// Template class for all cube structures, e.g. Vane, Crystal. The structure is displayed via TGeoVolumeType (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the TPolyLine3DType class (inherited from ROOT's TPolyLine3D class). 
+// Class for all cube structures, e.g. vanes, crystals. The structure is displayed via EventDisplayGeoVolumeBox (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). 
 //
-// $Id: Cube.h,v 1.4 2011/02/18 04:10:55 ehrlich Exp $
+// $Id: Cube.h,v 1.5 2011/02/23 00:29:27 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/18 04:10:55 $
+// $Date: 2011/02/23 00:29:27 $
 //
 // Original author Ralf Ehrlich
 //
 
-#ifndef CUBE_TEMPLATE_H
-#define CUBE_TEMPLATE_H
+#ifndef CUBE_H
+#define CUBE_H
 
-#include "dict_classes/TGeoVolumeCrystal.h"
-#include "dict_classes/TGeoVolumeVane.h"
-#include "dict_classes/TGeoVolumeSteelShield.h"
-#include "dict_classes/TPolyLine3DCrystal.h"
-#include "dict_classes/TPolyLine3DVane.h"
-#include "dict_classes/TPolyLine3DSteelShield.h"
+#include "dict_classes/EventDisplayGeoVolumeBox.h"
+#include "dict_classes/EventDisplayPolyLine3D.h"
 #include <TPad.h>
 #include <TMath.h>
 #include "VirtualShape.h"
@@ -26,7 +22,6 @@
 namespace mu2e_eventdisplay
 {
 
-template<typename TGeoVolumeType, typename TPolyLine3DType>
 class Cube: public VirtualShape 
 {
   Cube();
@@ -34,12 +29,12 @@ class Cube: public VirtualShape
   Cube& operator=(const Cube &);
 
   //bare pointer needed, since ROOT manages this object 
-  TGeoVolumeType *_volume;
+  EventDisplayGeoVolumeBox *_volume;
   TGeoRotation *_rotation;
   TGeoCombiTrans *_translation;
   struct line_struct 
   {
-    boost::shared_ptr<TPolyLine3DType> line;
+    boost::shared_ptr<EventDisplayPolyLine3D> line;
   };
   std::vector<line_struct> _lines;
   bool _notDrawn;
@@ -91,7 +86,7 @@ class Cube: public VirtualShape
     setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
 
-    _volume = new TGeoVolumeType(dx, dy, dz, mainframe, _info);
+    _volume = new EventDisplayGeoVolumeBox(dx, dy, dz, mainframe, _info);
     _volume->SetVisibility(0);
     _volume->SetLineWidth(1);
     _volume->SetLineColor(getDefaultColor());
@@ -122,7 +117,7 @@ class Cube: public VirtualShape
     line_struct newline;
     for(int i=0; i<4; i++)
     {
-      newline.line=boost::shared_ptr<TPolyLine3DType>(new TPolyLine3DType(mainframe, _info));
+      newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
       newline.line->SetLineWidth(1);
       newline.line->SetLineColor(getDefaultColor());
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
@@ -131,7 +126,7 @@ class Cube: public VirtualShape
     }
     for(int i=0; i<4; i++)
     {
-      newline.line=boost::shared_ptr<TPolyLine3DType>(new TPolyLine3DType(mainframe, _info));
+      newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
       newline.line->SetLineWidth(1);
       newline.line->SetLineColor(getDefaultColor());
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
@@ -141,7 +136,7 @@ class Cube: public VirtualShape
     }
     for(int i=4; i<8; i++)
     {
-      newline.line=boost::shared_ptr<TPolyLine3DType>(new TPolyLine3DType(mainframe, _info));
+      newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
       newline.line->SetLineWidth(1);
       newline.line->SetLineColor(getDefaultColor());
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
@@ -163,9 +158,7 @@ class Cube: public VirtualShape
 
   void start()
   {
-    typedef std::vector<line_struct> vector_type;
-    typedef typename vector_type::iterator iter_type;
-    iter_type iter;
+    std::vector<line_struct>::iterator iter;
     if(getDefaultVisibility())
     {
       _volume->SetVisibility(1);
@@ -201,9 +194,7 @@ class Cube: public VirtualShape
   {
     if(_notDrawn==false)
     {
-      typedef std::vector<line_struct> vector_type;
-      typedef typename vector_type::iterator iter_type;
-      iter_type iter;
+      std::vector<line_struct>::iterator iter;
       for(iter=_lines.begin(); iter!=_lines.end(); iter++)
       {
         line_struct &l=*iter;
@@ -216,9 +207,7 @@ class Cube: public VirtualShape
   void update(double time)
   {
     if(time<getStartTime() || isnan(getStartTime())) return;
-    typedef std::vector<line_struct> vector_type;
-    typedef typename vector_type::iterator iter_type;
-    iter_type iter;
+    std::vector<line_struct>::iterator iter;
     for(iter=_lines.begin(); iter!=_lines.end(); iter++)
     {
       line_struct &l=*iter;
@@ -238,10 +227,6 @@ class Cube: public VirtualShape
     }
   }
 };
-
-typedef Cube<TGeoVolumeCrystal,TPolyLine3DCrystal> Crystal;
-typedef Cube<TGeoVolumeVane,TPolyLine3DVane> Vane;
-typedef Cube<TGeoVolumeSteelShield,TPolyLine3DSteelShield> SteelShield;
 
 }
 #endif

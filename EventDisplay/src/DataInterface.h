@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.8 2011/02/18 04:10:55 ehrlich Exp $
+// $Id: DataInterface.h,v 1.9 2011/02/23 00:29:27 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/18 04:10:55 $
+// $Date: 2011/02/23 00:29:27 $
 //
 // Original author Ralf Ehrlich
 //
@@ -17,7 +17,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "boost/shared_ptr.hpp"
-#include "Cube.h"
 
 class TGeoManager;
 class TGeoVolume;
@@ -29,6 +28,7 @@ namespace mu2e_eventdisplay
 class VirtualShape;
 class Track;
 class Straw;
+class Cube;
 class ComponentInfo;
 
 class DataInterface
@@ -58,9 +58,9 @@ class DataInterface
                                    //from the context menu belongs to this object) 
   std::list<boost::shared_ptr<VirtualShape> >   _components;
   std::map<int, boost::shared_ptr<Straw> >      _straws;
-  std::map<int, boost::shared_ptr<Crystal> >    _crystals;
+  std::map<int, boost::shared_ptr<Cube> >       _crystals;
   std::vector<boost::shared_ptr<Straw> >        _hits;
-  std::vector<boost::shared_ptr<Crystal> >      _crystalhits;
+  std::vector<boost::shared_ptr<Cube> >         _crystalhits;
   std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;

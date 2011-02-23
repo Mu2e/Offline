@@ -1,20 +1,18 @@
 //
-// Template class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, Target. The structure is displayed via TGeoVolumeType (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the TPolyLine3DType class (inherited from ROOT's TPolyLine3D class). 
+// Class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, target. The structure is displayed via EventDisplayGeoVolumeTube (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). 
 //
-// $Id: Cylinder.h,v 1.4 2011/02/18 04:10:55 ehrlich Exp $
+// $Id: Cylinder.h,v 1.5 2011/02/23 00:29:27 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/18 04:10:55 $
+// $Date: 2011/02/23 00:29:27 $
 //
 // Original author Ralf Ehrlich
 //
 
-#ifndef CYLINDER_TEMPLATE_H
-#define CYLINDER_TEMPLATE_H
+#ifndef CYLINDER_H
+#define CYLINDER_H
 
-#include "dict_classes/TGeoVolumeSupport.h"
-#include "dict_classes/TGeoVolumeTarget.h"
-#include "dict_classes/TPolyLine3DSupport.h"
-#include "dict_classes/TPolyLine3DTarget.h"
+#include "dict_classes/EventDisplayGeoVolumeTube.h"
+#include "dict_classes/EventDisplayPolyLine3D.h"
 #include <TMath.h>
 #include "VirtualShape.h"
 #include <iostream>
@@ -23,7 +21,6 @@
 namespace mu2e_eventdisplay
 {
 
-template<typename TGeoVolumeType, typename TPolyLine3DType>
 class Cylinder: public VirtualShape 
 {
   Cylinder();
@@ -31,13 +28,13 @@ class Cylinder: public VirtualShape
   Cylinder& operator=(const Cylinder &);
 
   //bare pointer needed, since ROOT manages this object 
-  TGeoVolumeType *_volume;
+  EventDisplayGeoVolumeTube *_volume;
   TGeoRotation *_rotation;
   TGeoCombiTrans *_translation;
   struct line_struct 
   {
     double x1, y1, z1, x2, y2, z2;
-    boost::shared_ptr<TPolyLine3DType> line;
+    boost::shared_ptr<EventDisplayPolyLine3D> line;
   };
   struct layersegment_struct
   {
@@ -70,7 +67,7 @@ class Cylinder: public VirtualShape
     newline.x2=x2;
     newline.y2=y2;
     newline.z2=z2;
-    newline.line=boost::shared_ptr<TPolyLine3DType>(new TPolyLine3DType(mainframe, _info));
+    newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     newline.line->SetLineWidth(1);
     newline.line->SetLineColor(getDefaultColor());
     newline.line->SetPoint(0,x1,y1,z1);
@@ -96,7 +93,7 @@ class Cylinder: public VirtualShape
     setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
 
-    _volume = new TGeoVolumeType(innerRadius, outerRadius, halflength, mainframe, _info);
+    _volume = new EventDisplayGeoVolumeTube(innerRadius, outerRadius, halflength, mainframe, _info);
     _volume->SetVisibility(0);
     _volume->SetLineWidth(1);
     _volume->SetLineColor(getDefaultColor());
@@ -199,9 +196,7 @@ class Cylinder: public VirtualShape
 
   void start()
   {
-    typedef std::map<layersegment_struct,line_struct> map_type;
-    typedef typename map_type::iterator iter_type;
-    iter_type iter;
+    std::map<layersegment_struct,line_struct>::iterator iter;
     if(getDefaultVisibility())
     {
       _volume->SetVisibility(1);
@@ -237,9 +232,6 @@ class Cylinder: public VirtualShape
   {//no animation here
   }
 };
-
-typedef Cylinder<TGeoVolumeSupport,TPolyLine3DSupport> SupportTTracker;
-typedef Cylinder<TGeoVolumeTarget,TPolyLine3DTarget> Target;
 
 }
 #endif

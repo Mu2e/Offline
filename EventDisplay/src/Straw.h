@@ -1,9 +1,9 @@
 //
-// Container class for all detector straws. Straws are displayed via the TPolyLine3DStraw class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
+// Container class for all detector straws. Straws are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
 //
-// $Id: Straw.h,v 1.4 2011/02/18 04:10:55 ehrlich Exp $
+// $Id: Straw.h,v 1.5 2011/02/23 00:29:27 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/18 04:10:55 $
+// $Date: 2011/02/23 00:29:27 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,7 +11,7 @@
 #ifndef STRAW_H
 #define STRAW_H
 
-#include "dict_classes/TPolyLine3DStraw.h"
+#include "dict_classes/EventDisplayPolyLine3D.h"
 #include <TPad.h>
 #include <TMath.h>
 #include "VirtualShape.h"
@@ -27,7 +27,7 @@ class Straw: public VirtualShape
   Straw(const Straw &);
   Straw& operator=(const Straw &);
 
-  boost::shared_ptr<TPolyLine3DStraw> _line;
+  boost::shared_ptr<EventDisplayPolyLine3D> _line;
   bool _notDrawn;
  
   public:
@@ -42,7 +42,7 @@ class Straw: public VirtualShape
     setStartTime(t1); 
     setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
-    _line=boost::shared_ptr<TPolyLine3DStraw>(new TPolyLine3DStraw(mainframe, _info));
+    _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     double st=sin(theta);
     double ct=cos(theta);
     double sp=sin(phi+TMath::Pi()/2.0);
