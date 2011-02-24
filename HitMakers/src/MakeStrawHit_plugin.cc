@@ -2,12 +2,12 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.9 2011/01/28 23:51:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/28 23:51:57 $
+// $Id: MakeStrawHit_plugin.cc,v 1.10 2011/02/24 23:48:01 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2011/02/24 23:48:01 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
-//
+//                               Updated by Hans Wenzel to include sigma in deltat 
 
 // C++ includes.
 #include <iostream>
@@ -84,6 +84,8 @@ namespace mu2e {
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _t0Sigma(pset.getUntrackedParameter<double>("t0Sigma",5.0)), // ns
+      _timetodist(pset.getUntrackedParameter<double>("timetodist",149.8962)), // mm/ns
+      _distSigma(pset.getUntrackedParameter<double>("distSigma",80.)), // mm
       _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
       _minimumLength(pset.getUntrackedParameter<double>("minimumLength",0.01)),   // mm
       _driftVelocity(pset.getUntrackedParameter<double>("driftVelocity",0.05)),   // mm/ns
@@ -93,7 +95,7 @@ namespace mu2e {
 
       // Random number distributions
       _gaussian( createEngine( get_seed_value(pset)) ),
-
+      
       _messageCategory("StrawHitMaker"){
 
       // Tell the framework what we make.
@@ -121,6 +123,8 @@ namespace mu2e {
 
     // Parameters
     double _t0Sigma;        // T0 spread in ns
+    double  _timetodist;    // const to convert delata t in delat z along the wire in mm/ns
+    double  _distSigma;      // sigma of dealta z in mm
     double _minimumEnergy;  // minimum energy deposition of G4 step 
     double _minimumLength;  // is G4Step is shorter than this, consider it a point
     double _driftVelocity;  
@@ -314,6 +318,7 @@ namespace mu2e {
       double digi_driftT = straw_hits[0]._driftTime;
       double digi_toMid  = straw_hits[0]._distanceToMid;
       double digi_dca    = straw_hits[0]._dca;
+      double deltadigitime;
       DPIndexVector mcptr;
       mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
 
@@ -339,8 +344,8 @@ namespace mu2e {
           mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
         }
       }
-
-      strawHits->push_back(StrawHit(straw_id,digi_time,digi_t2-digi_time,digi_edep));
+      deltadigitime=(digi_t2-digi_time)+_gaussian.fire(0.,_distSigma/_timetodist);
+      strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_edep));
       truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
 
