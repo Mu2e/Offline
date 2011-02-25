@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.80 2011/02/14 23:20:01 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/14 23:20:01 $
+// $Id: Mu2eWorld.cc,v 1.81 2011/02/25 23:53:25 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/02/25 23:53:25 $
 //
 // Original author Rob Kutschke
 //
@@ -398,7 +398,7 @@ namespace mu2e {
     if ( needDSUniform){
       // Handle to the BField manager.
       GeomHandle<BFieldManager> bfMgr;
-      _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue(), _mu2eOrigin );
+      _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue()*CLHEP::tesla, _mu2eOrigin );
     }
 
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership

@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.10 2011/02/22 21:07:31 kutschke Exp $
+// $Id: BFieldManagerMaker.cc,v 1.11 2011/02/25 23:53:25 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/02/22 21:07:31 $
+// $Date: 2011/02/25 23:53:25 $
 //
 
 // Includes from C++
@@ -732,7 +732,7 @@ namespace mu2e {
   }
 
   void BFieldManagerMaker::loadUniformDS(){
-    double bz = _config.getDouble("toyDS.bz", 0.) * CLHEP::tesla;
+    double bz = _config.getDouble("toyDS.bz", 0.);
     _bfmgr->_dsUniformValue = CLHEP::Hep3Vector( 0., 0., bz);
   }
 
