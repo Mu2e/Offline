@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.66 2011/02/23 00:36:47 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/23 00:36:47 $
+// $Id: geom_01.txt,v 1.67 2011/02/25 22:18:20 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/02/25 22:18:20 $
 //
 // Original author Rob Kutschke
 //
@@ -355,10 +355,10 @@ double toyDS.bz            = 1.0;
 // This is recommended field map. See geom_mecofield.txt to use the meco field.
 string bfield.format  = "G4BL";
 vector<string> bfield.files = { 
-  "BFieldMaps/Mau4/Mau4_DSMap.header",
-  "BFieldMaps/Mau4/Mau4_PSMap.header",
-  "BFieldMaps/Mau4/Mau4_TSuMap.header",
-  "BFieldMaps/Mau4/Mau4_TSdMap.header"
+  "BFieldMaps/Mau5/Mu2e_DSMap.header",
+  "BFieldMaps/Mau5/Mu2e_PSMap.header",
+  "BFieldMaps/Mau5/Mu2e_TSuMap.header",
+  "BFieldMaps/Mau5/Mu2e_TSdMap.header"
 };
 
 // Proton Absorber
