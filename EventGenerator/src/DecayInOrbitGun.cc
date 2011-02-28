@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.15 2010/12/03 18:06:04 onoratog Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.16 2011/02/28 16:17:35 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2010/12/03 18:06:04 $
+// $Date: 2011/02/28 16:17:35 $
 //
 // Original author Rob Kutschke
 // 
@@ -137,6 +137,8 @@ namespace mu2e {
                                                                              FoilParticleGenerator::volWeightFoil, 
                                                                              FoilParticleGenerator::flatPos, 
                                                                              FoilParticleGenerator::limitedExpoTime));
+    
+    _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow,_ehi, getEngine()));
 
   }
 
@@ -161,9 +163,10 @@ namespace mu2e {
       _fGenerator->generatePositionAndTime(pos, time);
       
       //Pick up energy
-      double e  = _elow + _shape.fire() * (_ehi - _elow);
+      //      double e  = _elow + _shape.fire() * (_ehi - _elow);
 
       //Pick up momentum vector
+      double e = _randEnergy->fire();
       _p = safeSqrt(e*e - _mass*_mass);
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
       
