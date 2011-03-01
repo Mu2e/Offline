@@ -1,26 +1,11 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.16 2011/02/28 16:17:35 onoratog Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.17 2011/03/01 04:36:57 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2011/02/28 16:17:35 $
+// $Date: 2011/03/01 04:36:57 $
 //
 // Original author Rob Kutschke
-// 
-// Notes
-//
-// 1) This codes uses (Emax-E)**5 for the momentum distribution.  At a future
-//    date this needs to be improved.
-//
-// 2) About the initialization of _shape.
-//    The c'tor of RandGeneral wants, as its second argument, the starting
-//    address of an array of doubles that describes the required shape.
-//    The method binnedEnergySpectrum returns, by value, a std::vector<double>.
-//    We can get the required argument by taking the address of the first element 
-//    of the std::vector. There is a subtlety about the return value of
-//    those methods:  they return by value to a temporary variable that
-//    we cannot see; this variable goes out of scope after the c'tor completes;
-//    therefore its lifetime is managed properly.//
 // 
 
 // C++ includes.
@@ -81,11 +66,11 @@ namespace mu2e {
     _phimin(config.getDouble("decayinorbitGun.phimin", 0. )),
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
+    _spectrumResolution(config.getDouble("decayinorbit.spectrumResolution", 0.1)),
 
     // Random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),  
-    _shape (  getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),
 
     // Histograms.
     _hMultiplicity(0),
@@ -138,7 +123,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::flatPos, 
                                                                              FoilParticleGenerator::limitedExpoTime));
     
-    _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow,_ehi, getEngine()));
+    _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow,_ehi, _spectrumResolution, getEngine()));
 
   }
 
@@ -162,8 +147,6 @@ namespace mu2e {
       double time;
       _fGenerator->generatePositionAndTime(pos, time);
       
-      //Pick up energy
-      //      double e  = _elow + _shape.fire() * (_ehi - _elow);
 
       //Pick up momentum vector
       double e = _randEnergy->fire();
@@ -204,6 +187,8 @@ namespace mu2e {
     
 
   // Compute a binned representation of the energy spectrum of the electron from DIO.
+  // Not used. Still in the code until a new class can reproduce it. 
+
   std::vector<double> DecayInOrbitGun::binnedEnergySpectrum(){
     
     // Sanity check.

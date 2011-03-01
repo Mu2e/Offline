@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.9 2011/02/28 16:17:35 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.10 2011/03/01 04:36:57 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2011/02/28 16:17:35 $
+// $Date: 2011/03/01 04:36:57 $
 //
 // 
 
@@ -23,8 +23,6 @@
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
-#include "CLHEP/Random/RandGeneral.h"
-
 
 // Forward declarations outside of mu2e namespace.
 class TH1D;
@@ -79,12 +77,14 @@ namespace mu2e {
     // Histogram control.
     bool _doHistograms;
 
+    // Resolution of the energy spectrum (0.1 default)
+    double _spectrumResolution;
+
     // End: parameters that can be configured from the config file.
 
     // Random number generators.
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere _randomUnitSphere;
-    CLHEP::RandGeneral _shape;
 
     // Diagnostic histograms.
     TH1D* _hMultiplicity;
