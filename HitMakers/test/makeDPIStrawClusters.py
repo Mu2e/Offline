@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClusters.py,v 1.3 2011/02/10 17:54:15 wenzel Exp $
+# $Id: makeDPIStrawClusters.py,v 1.4 2011/03/02 16:02:21 wenzel Exp $
 # $Author: wenzel $
-# $Date: 2011/02/10 17:54:15 $
+# $Date: 2011/03/02 16:02:21 $
 #
 # Original author Rob Kutschke
 #
@@ -44,7 +44,9 @@ process.GeometryService = mu2e.Service("GeometryService",
 process.source = mu2e.Source("PoolSource",
    fileNames = mu2e.untracked.vstring("data_03.root")
 )
-
+process.ConditionsService = mu2e.Service("ConditionsService",
+      conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
+) 
 # Form StrawHits (SH).
 process.makeSH = mu2e.EDProducer(
     "MakeStrawHit",
