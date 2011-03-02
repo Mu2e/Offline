@@ -2,7 +2,7 @@ import FWCore.ParameterSet.python.Config as mu2e
 
 process = mu2e.Process("EventDisplay")
 
-process.load("Config/MessageLogger_cfi")
+process.load("MessageLogger_cfi")
 
 process.GeometryService = mu2e.Service("GeometryService",
                           inputfile=mu2e.untracked.string("Mu2eG4/test/geom_cosmic.txt"))

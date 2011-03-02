@@ -24,6 +24,7 @@
 #include "dict_classes/EventDisplayPad.h"
 #include "VirtualShape.h"
 #include "DataInterface.h"
+#include "ContentSelector.h"
 
 #include "TClassMenuItem.h"
 #include "TClass.h"
@@ -71,37 +72,29 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   TGLayoutHints *lh0 = new TGLayoutHints(kLHintsTop,0,0,0,0);
   TGLayoutHints *lh1 = new TGLayoutHints(kLHintsTop,2,1,2,2);
 
-  TGHorizontalFrame *hitFrame  = new TGHorizontalFrame(subFrame,200,15);
-  TGLabel *hitLabel  = new TGLabel(hitFrame, "Hits");
-  TGComboBox *hitBox = new TGComboBox(hitFrame,10);
+  TGLabel *hitLabel  = new TGLabel(subFrame, "Hits");
+  TGComboBox *hitBox = new TGComboBox(subFrame,10);
   hitBox->Associate(this);
-  hitBox->AddEntry("",0);
-  hitBox->Select(0);
-  hitBox->Resize(150,20);
-  hitBox->SetEnabled(false);
-  hitFrame->AddFrame(hitLabel, lh1);
-  hitFrame->AddFrame(hitBox, lh1);
-  subFrame->AddFrame(hitFrame, lh0);
+  hitBox->Resize(250,20);
+  subFrame->AddFrame(hitLabel, lh1);
+  subFrame->AddFrame(hitBox, lh1);
 
-  TGHorizontalFrame *caloHitFrame  = new TGHorizontalFrame(subFrame,200,15);
-  TGLabel *caloHitLabel  = new TGLabel(caloHitFrame, "Calo Hits");
-  TGComboBox *caloHitBox = new TGComboBox(caloHitFrame,11);
+  TGLabel *caloHitLabel  = new TGLabel(subFrame, "Calo Hits");
+  TGComboBox *caloHitBox = new TGComboBox(subFrame,11);
   caloHitBox->Associate(this);
-  caloHitBox->AddEntry("",0);
-  caloHitBox->Select(0);
-  caloHitBox->Resize(150,20);
-  caloHitBox->SetEnabled(false);
-  caloHitFrame->AddFrame(caloHitLabel, lh1);
-  caloHitFrame->AddFrame(caloHitBox, lh1);
-  subFrame->AddFrame(caloHitFrame, lh0);
+  caloHitBox->Resize(250,20);
+  subFrame->AddFrame(caloHitLabel, lh1);
+  subFrame->AddFrame(caloHitBox, lh1);
 
   TGLabel *trackLabel  = new TGLabel(subFrame, "Tracks");
   TGListBox *trackBox = new TGListBox(subFrame,12);
   trackBox->Associate(this);
-  trackBox->Resize(200,60);
+  trackBox->Resize(250,60);
   trackBox->SetMultipleSelections(true);
   subFrame->AddFrame(trackLabel, lh1);
   subFrame->AddFrame(trackBox, lh1);
+
+  _contentSelector=new ContentSelector(hitBox, caloHitBox, trackBox);
 
   _unhitButton = new TGCheckButton(subFrame,"Show Unhit Straws",31);
   subFrame->AddFrame(_unhitButton, lh1);
@@ -412,11 +405,27 @@ void EventDisplayFrame::fillGeometry()
   _mainPad->Update();
 }
 
-void EventDisplayFrame::fillEvent(const edm::Event& event)
+void EventDisplayFrame::setEvent(const edm::Event& event, bool firstLoop)
+{
+  char eventInfoText[50];
+  sprintf(eventInfoText,"Event #: %i",event.id().event());
+  _eventInfo[0]->SetText(eventInfoText);
+  sprintf(eventInfoText,"Run #: %i",event.id().run());
+  _eventInfo[1]->SetText(eventInfoText);
+  this->Layout();
+
+  _contentSelector->setAvailableCollections(event);
+  if(firstLoop) _contentSelector->firstLoop();
+  fillEvent(firstLoop);
+
+  gApplication->Run(true);
+}
+
+void EventDisplayFrame::fillEvent(bool firstLoop)
 {
   _findEvent=false;
   _mainPad->cd();
-  _dataInterface->fillEvent(event);
+  _dataInterface->fillEvent(_contentSelector);
   _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
                                _backgroundButton->GetState()==kButtonDown);
   _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
@@ -424,17 +433,17 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
   updateHitLegend(_hitColorButton->GetState()==kButtonDown);
   updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
 
-  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(_targetViewButton->GetState()==kButtonDown,
-                                                 _calorimeterViewButton->GetState()==kButtonDown,
-                                                 _outsideTracksButton->GetState()==kButtonDown);
-  _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-  _mainPad->GetView()->AdjustScales();
+  //set zoom only if "all tracks" option is on, or if it is the first event
+  if(_outsideTracksButton->GetState()==kButtonDown || firstLoop) 
+  {
+    DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(_targetViewButton->GetState()==kButtonDown,
+                                                   _calorimeterViewButton->GetState()==kButtonDown,
+                                                   _outsideTracksButton->GetState()==kButtonDown);
+    _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
+    _mainPad->GetView()->AdjustScales();
+  }
 
   char eventInfoText[50];
-  sprintf(eventInfoText,"Event #: %i",event.id().event());
-  _eventInfo[0]->SetText(eventInfoText);
-  sprintf(eventInfoText,"Run #: %i",event.id().run());
-  _eventInfo[1]->SetText(eventInfoText);
   sprintf(eventInfoText,"Number of hit straws: %i",_dataInterface->getNumberHits());
   _eventInfo[2]->SetText(eventInfoText);
   sprintf(eventInfoText,"Number of hit calorimeter crystals: %i",_dataInterface->getNumberCrystalHits());
@@ -442,7 +451,6 @@ void EventDisplayFrame::fillEvent(const edm::Event& event)
   this->Layout();
 
   drawEverything();
-  gApplication->Run(true);
 }
 
 void EventDisplayFrame::updateHitLegend(bool draw)
@@ -524,6 +532,13 @@ bool EventDisplayFrame::isClosed() const
   return _isClosed;
 }
 
+bool EventDisplayFrame::getSelectedHitsName(std::string &className, 
+                                            std::string &moduleLabel, 
+                                            std::string &productInstanceName) const
+{
+  return _contentSelector->getSelectedHitsName(className, moduleLabel, productInstanceName);
+}
+
 int EventDisplayFrame::getMinimumHits() const
 {
   return _minHits;
@@ -569,6 +584,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          {
                            _timer->Stop();
                            _timeCurrent=NAN;
+                           _contentSelector->setSelectedHitsName();
                            gApplication->Terminate();
                          }
                          if(param1==1100)
@@ -741,6 +757,11 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            else drawSituation();
                          }
                          break;
+  case kCM_COMBOBOX : if(param1==10) fillEvent();
+                      if(param1==11) fillEvent();
+                      break;
+  case kCM_LISTBOX : if(param1==12) fillEvent();
+                     break;
       }
       break;
   }

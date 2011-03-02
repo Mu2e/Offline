@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_plugin.cc,v 1.4 2011/02/18 02:22:08 ehrlich Exp $
+// $Id: EventDisplay_plugin.cc,v 1.5 2011/03/02 03:25:47 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/18 02:22:08 $
+// $Date: 2011/03/02 03:25:47 $
 //
 
 #include <iostream>
@@ -64,41 +64,41 @@ namespace mu2e
   {
     if(_firstLoop)
     {
-      _firstLoop=false;
       _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550);
       if(!_frame->isClosed()) _frame->fillGeometry();
     }
     if(!_frame->isClosed())
     {
-/*This section needs to be completely rewritten */
-      edm::Handle<mu2e::StepPointMCCollection> hits;
-      std::string _g4ModuleLabel = "g4run";
-      std::string _trackerStepPoints = "tracker"; //TODO: this may not always be correct 
-                                         //in the future: let user decide via display,
-                                         //and get this info with a get function from _frame
-                                         //however, something (or perhaps everything) needs
-                                         //to be selected by default, otherwise all events 
-                                         //will be skipped, and the user will never have a 
-                                         //chance to select anything
-      if(event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits))  
+      bool findEvent=false;
+      int eventToFind=_frame->getEventToFind(findEvent);
+      if(findEvent)
       {
-        bool findEvent=false;
-        int eventToFind=_frame->getEventToFind(findEvent);
-        if(findEvent)
-        {
-          int eventNumber=event.id().event();
-          if(eventNumber==eventToFind) _frame->fillEvent(event);
-          else std::cout<<"event skipped, since this is not the event we are looking for"<<std::endl;
-        }
-        else
-        {
-          int numberHits=hits->size();
-          if(numberHits > _frame->getMinimumHits()) _frame->fillEvent(event);
-          else std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
-        }
+        int eventNumber=event.id().event();
+        if(eventNumber==eventToFind) _frame->setEvent(event);
+        else std::cout<<"event skipped, since this is not the event we are looking for"<<std::endl;
       }
-/*-----------------------------------*/
+      else
+      {
+        bool showEvent=true;
+        
+        std::string className,moduleLabel,productInstanceName;
+        bool hasSelectedHits=_frame->getSelectedHitsName(className,moduleLabel,productInstanceName);
+        if(hasSelectedHits && className.compare("std::vector<mu2e::StepPointMC>")==0)
+        {
+          edm::Handle<mu2e::StepPointMCCollection> hits;
+          if(event.getByLabel(moduleLabel,productInstanceName,hits))
+          {
+            if(static_cast<int>(hits->size()) < _frame->getMinimumHits())
+            {
+              showEvent=false;
+              std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
+            }
+          }
+        }
+        if(showEvent) _frame->setEvent(event,_firstLoop);
+      }
     }
+    _firstLoop=false;
   }
 
   void EventDisplay::endJob()

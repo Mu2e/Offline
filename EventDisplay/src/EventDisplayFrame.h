@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.6 2011/02/18 04:10:55 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.7 2011/03/02 03:25:47 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/18 04:10:55 $
+// $Date: 2011/03/02 03:25:47 $
 //
 // Original author Ralf Ehrlich
 //
@@ -33,6 +33,7 @@ namespace mu2e_eventdisplay
 {
   class DataInterface;
   class EventDisplayPad;
+  class ContentSelector;
 
   class EventDisplayFrame : public TGMainFrame
   {
@@ -45,9 +46,12 @@ namespace mu2e_eventdisplay
     virtual        ~EventDisplayFrame();
     void           fillGeometry();
 #ifndef __CINT__   //hide edm::Event from ROOTCint
-    void           fillEvent(const edm::Event& event);
+    void           setEvent(const edm::Event& event, bool firstLoop=false);
 #endif
     bool           isClosed() const;
+    bool           getSelectedHitsName(std::string &className, 
+                                       std::string &moduleLabel, 
+                                       std::string &productInstanceName) const;
     int            getMinimumHits() const;
     int            getEventToFind(bool &findEvent) const;
     void           showInfo(TObject*);
@@ -55,6 +59,7 @@ namespace mu2e_eventdisplay
     virtual void   CloseWindow(); //inherited from TGMainFrame 
 
     private:
+    void fillEvent(bool firstLoop=false);
     void updateHitLegend(bool draw);
     void updateTrackLegend(bool draw);
     void prepareAnimation();
@@ -81,6 +86,7 @@ namespace mu2e_eventdisplay
     //bare pointers needed since ROOT manages these objects
     TRootEmbeddedCanvas *_mainCanvas, *_infoCanvas;
     EventDisplayPad     *_mainPad;
+    ContentSelector     *_contentSelector;
     TPad                *_infoPad;
     TText               *_clock;
     TTimer              *_timer;

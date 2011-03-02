@@ -4,6 +4,7 @@
 #include "Cylinder.h"
 #include "Cube.h"
 #include "dict_classes/ComponentInfo.h"
+#include "ContentSelector.h"
 
 #include <TView.h>
 #include <TAxis3D.h>
@@ -197,11 +198,11 @@ void DataInterface::fillGeometry()
     sprintf(c,"TTracker Support Structure");
     info->setName(c);
     info->setText(0,c);
-    sprintf(c,"Inner Radius %g mm",innerRadius);
+    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
     info->setText(1,c);
-    sprintf(c,"Outer Radius %g mm",outerRadius);
+    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
     info->setText(2,c);
-    sprintf(c,"Length %g mm",2.0*zHalfLength);
+    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
     info->setText(3,c);
     boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0, 
                                           zHalfLength,innerRadius,outerRadius,
@@ -218,11 +219,11 @@ void DataInterface::fillGeometry()
     sprintf(c,"TTracker Envelope");
     infoEnvelope->setName(c);
     infoEnvelope->setText(0,c);
-    sprintf(c,"Inner Radius %g mm",innerRadius);
+    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
     infoEnvelope->setText(1,c);
-    sprintf(c,"Outer Radius %g mm",outerRadius);
+    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
     infoEnvelope->setText(2,c);
-    sprintf(c,"Length %g mm",2.0*zHalfLength);
+    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
     infoEnvelope->setText(3,c);
     boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,0, 0,0,0, 
                                                   zHalfLength,innerRadius,outerRadius,
@@ -240,11 +241,11 @@ void DataInterface::fillGeometry()
     sprintf(c,"Toy DS");
     infoToyDS->setName(c);
     infoToyDS->setText(0,c);
-    sprintf(c,"Inner Radius %g mm",innerRadius);
+    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
     infoToyDS->setText(1,c);
-    sprintf(c,"Outer Radius %g mm",outerRadius);
+    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
     infoToyDS->setText(2,c);
-    sprintf(c,"Length %g mm",2.0*zHalfLength);
+    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
     infoToyDS->setText(3,c);
     boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0, 
                                                zHalfLength,innerRadius,outerRadius,
@@ -273,10 +274,12 @@ void DataInterface::fillGeometry()
     sprintf(c,"Target");
     info->setName(c);
     info->setText(0,c);
-    sprintf(c,"Outer Radius %g mm",radius);
+    sprintf(c,"Outer Radius %.f mm",radius/CLHEP::mm);
     info->setText(1,c);
-    sprintf(c,"Length %g mm",length);
+    sprintf(c,"Length %.f mm",length/CLHEP::mm);
     info->setText(2,c);
+    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
+    info->setText(3,c);
     boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,z, 0,0,0, length/2.0,0,radius,
                                           _geometrymanager, _topvolume, _mainframe, info, true));
     _components.push_back(shape);
@@ -309,6 +312,12 @@ void DataInterface::fillGeometry()
       sprintf(c,"Vane %i",id);
       info->setName(c);
       info->setText(0,c);
+      sprintf(c,"Dimension  ∆x: %.f mm, ∆y: %.f mm, ∆z: %.f mm",sx/CLHEP::mm,sy/CLHEP::mm,sz/CLHEP::mm);
+      info->setText(1,c);
+      sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
+      info->setText(2,c);
+      sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
+      info->setText(3,c);
       boost::shared_ptr<Cube> shape(new Cube(x,y,z,  sx,sy,sz,  phi,theta,psi,   NAN,0, 
                                         _geometrymanager, _topvolume, _mainframe, info, true));
       _components.push_back(shape);
@@ -362,6 +371,12 @@ void DataInterface::fillGeometry()
       sprintf(c,"Vane %i, Crystal %i",vaneid,crystalid);
       info->setName(c);
       info->setText(0,c);
+      sprintf(c,"Dimension  ∆x: %.f mm, ∆y: %.f mm, ∆z: %.f mm",sx/CLHEP::mm,crystalHalfSize/CLHEP::mm,crystalHalfSize/CLHEP::mm);
+      info->setText(1,c);
+      sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
+      info->setText(2,c);
+      sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",(x+rotatedX)/CLHEP::mm,(y+rotatedY)/CLHEP::mm,(z+rotatedZ)/CLHEP::mm);
+      info->setText(3,c);
       boost::shared_ptr<Cube> shape(new Cube(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfSize,crystalHalfSize,  
                                         phi,theta,psi,  NAN,0,  
                                         _geometrymanager, _topvolume, _mainframe, info, false));
@@ -385,17 +400,22 @@ void DataInterface::fillGeometry()
 //which returns the entire map so that one can interate over it
 //without knowing the names of the elements
       const mu2e::CosmicRayShieldSteelShield &steelshield=crs->getCosmicRayShieldSteelShield(steelshieldnames[i].c_str());
-      char c[200];
-      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-      sprintf(c,"Cosmic Ray Steel Shield %i (%s)",i,steelshieldnames[i].c_str());
-      info->setName(c);
-      info->setText(0,c);
       double x=steelshield.getGlobalOffset().x()-_mu2eOriginInWorld.x()+_xOffset;
       double y=steelshield.getGlobalOffset().y()-_mu2eOriginInWorld.y();
       double z=steelshield.getGlobalOffset().z()-_mu2eOriginInWorld.z()+_zOffset;
       double dx=steelshield.getHalfLengths()[0];
       double dy=steelshield.getHalfLengths()[1];
       double dz=steelshield.getHalfLengths()[2];
+      char c[200];
+      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+      sprintf(c,"Cosmic Ray Steel Shield %i (%s)",i,steelshieldnames[i].c_str());
+      info->setName(c);
+      info->setText(0,c);
+      sprintf(c,"Dimension  ∆x: %.f mm, ∆y: %.f mm, ∆z: %.f mm",dx/CLHEP::mm,dy/CLHEP::mm,dz/CLHEP::mm);
+      info->setText(1,c);
+      sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
+      info->setText(2,c);
+
       double holeRadius=steelshield.getHoleRadius();
       if(holeRadius==0)
       {
@@ -584,6 +604,13 @@ DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool 
     findBoundaryP(m, _tracksMinmax.minx, _tracksMinmax.miny, _tracksMinmax.minz);
     findBoundaryP(m, _tracksMinmax.maxx, _tracksMinmax.maxy, _tracksMinmax.maxz);
   }
+
+  if(isnan(m.minx)) m.minx=-1000;
+  if(isnan(m.miny)) m.miny=-1000;
+  if(isnan(m.minz)) m.minz=-1000;
+  if(isnan(m.maxx)) m.maxx=1000;
+  if(isnan(m.maxy)) m.maxy=1000;
+  if(isnan(m.maxz)) m.maxz=1000;
   return m;
 }
 
@@ -603,18 +630,18 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
   if(isnan(m.maxz) || z>m.maxz) m.maxz=z;
 }
 
-void DataInterface::fillEvent(const edm::Event& event)
+void DataInterface::fillEvent(const ContentSelector *contentSelector)
 {
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
   resetBoundaryT(_hitsTimeMinmax);
   resetBoundaryT(_tracksTimeMinmax);
 
-  edm::Handle<mu2e::StepPointMCCollection> hits;
-  std::string _g4ModuleLabel = "g4run";
-  std::string _trackerStepPoints = "tracker"; //TODO: this may not always be correct 
-                                         //in the future: let user decide via display
-  if(event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits))  
+  _numberHits=0;
+  _numberCrystalHits=0;
+
+  const mu2e::StepPointMCCollection *hits=contentSelector->getSelectedHitCollection();
+  if(hits!=NULL)  
   {
     _numberHits=hits->size();
     std::vector<mu2e::StepPointMC>::const_iterator iter;
@@ -654,8 +681,8 @@ void DataInterface::fillEvent(const edm::Event& event)
   }
 
 
-  edm::Handle<mu2e::CaloCrystalHitCollection> calohits;
-  if(event.getByType(calohits))
+  const mu2e::CaloCrystalHitCollection *calohits=contentSelector->getSelectedCaloHitCollection();
+  if(calohits!=NULL)  
   {
     _numberCrystalHits=calohits->size();
     std::vector<mu2e::CaloCrystalHit>::const_iterator iter;
@@ -691,16 +718,17 @@ void DataInterface::fillEvent(const edm::Event& event)
   }
 
   unsigned int physicalVolumeEntries=0;
-  edm::Handle<mu2e::PhysicalVolumeInfoCollection> physicalVolumes;
-  if(event.getRun().getByType(physicalVolumes))
+  const mu2e::PhysicalVolumeInfoCollection *physicalVolumes=contentSelector->getPhysicalVolumeInfoCollection();
+  if(physicalVolumes!=NULL)
   {
     physicalVolumeEntries=physicalVolumes->size();
   }
 
   resetBoundaryP(_tracksMinmax);
-  edm::Handle<mu2e::SimParticleCollection> simParticles;
-  if(event.getByType(simParticles))
+  std::vector<const mu2e::SimParticleCollection*> trackCollectionVector=contentSelector->getSelectedTrackCollection();
+  for(unsigned int i=0; i<trackCollectionVector.size(); i++) 
   {
+    const mu2e::SimParticleCollection *simParticles=trackCollectionVector[i];
     MapVector<mu2e::SimParticle>::const_iterator iter;
     for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
     {
@@ -753,18 +781,18 @@ void DataInterface::fillEvent(const edm::Event& event)
         info->expandLine(4,daughter->asInt(),"");
       }
       boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, _geometrymanager, _topvolume, _mainframe, info));
-      findTrajectory(event,shape,id);
+      findTrajectory(contentSelector,shape,id);
       _components.push_back(shape);
       _tracks.push_back(shape);
     }
   }
 }
 
-bool DataInterface::findTrajectory(const edm::Event& event, 
+bool DataInterface::findTrajectory(const ContentSelector *contentSelector,
                                    boost::shared_ptr<Track> track, int id)
 {
-  edm::Handle<mu2e::PointTrajectoryCollection> pointTrajectories;
-  if(event.getByType(pointTrajectories))
+  const mu2e::PointTrajectoryCollection *pointTrajectories=contentSelector->getPointTrajectoryCollection();
+  if(pointTrajectories!=NULL)
   {
     MapVector<mu2e::PointTrajectory>::const_iterator iter;
     for(iter=pointTrajectories->begin(); iter!=pointTrajectories->end(); iter++)

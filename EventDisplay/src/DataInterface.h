@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.9 2011/02/23 00:29:27 ehrlich Exp $
+// $Id: DataInterface.h,v 1.10 2011/03/02 03:25:47 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/23 00:29:27 $
+// $Date: 2011/03/02 03:25:47 $
 //
 // Original author Ralf Ehrlich
 //
@@ -30,6 +30,7 @@ class Track;
 class Straw;
 class Cube;
 class ComponentInfo;
+class ContentSelector;
 
 class DataInterface
 {
@@ -50,6 +51,7 @@ class DataInterface
   };
 
   private:
+  edm::Event    *_event;
   TGeoManager   *_geometrymanager; //bare pointer needed since ROOT manages this object
   TGeoVolume    *_topvolume;       //bare pointer needed since ROOT manages this object
   const TObject *_mainframe;       //points to the EventDisplayFrame object
@@ -79,6 +81,8 @@ class DataInterface
   void resetBoundaryT(timeminmax &m);
   void resetBoundaryP(spaceminmax &m);
   void toForeground();
+  bool findTrajectory(const ContentSelector *contentSelector,
+                      boost::shared_ptr<Track> track, int id);
 
   public:
   DataInterface(const TGMainFrame *mainframe);
@@ -87,8 +91,7 @@ class DataInterface
   void startComponents();
   void updateComponents(double time);
   void fillGeometry();
-  void fillEvent(const edm::Event& event);
-  bool findTrajectory(const edm::Event& event, boost::shared_ptr<Track> track, int id);
+  void fillEvent(const ContentSelector *contentSelector);
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
   void makeStrawsVisibleBeforeStart(bool visible);
