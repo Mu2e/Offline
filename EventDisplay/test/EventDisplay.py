@@ -4,6 +4,11 @@ process = mu2e.Process("EventDisplay")
 
 process.load("MessageLogger_cfi")
 
+#Mu2eUtilities got changed and requires now loading ConditionsService, 
+#since the Mu2eUtilities shared library doesn't get linked with the ConditionsService library
+process.ConditionsService = mu2e.Service("ConditionsService",
+                            conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt"))
+
 process.GeometryService = mu2e.Service("GeometryService",
                           inputfile=mu2e.untracked.string("Mu2eG4/test/geom_cosmic.txt"))
 
