@@ -13,119 +13,123 @@ ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGL
   _hasPointTrajectories=false;
 }
 
-void ContentSelector::firstLoop()  //This is useful for now, but may be changed later on
+void ContentSelector::firstLoop()  //This is useful for now, but may be changed later
 {
-  for(int i=0; i<_hitBox->GetNumberOfEntries(); i++)
-  {
-    const char *entry=(dynamic_cast<TGTextLBEntry*>(_hitBox->GetListBox()->GetEntry(i)))->GetText()->GetString();
-    if(strcmp(entry,"StepPointMC:g4run:tracker")==0) _hitBox->Select(i);
-  }
-  for(int i=0; i<_caloHitBox->GetNumberOfEntries(); i++)
-  {
-    const char *entry=(dynamic_cast<TGTextLBEntry*>(_caloHitBox->GetListBox()->GetEntry(i)))->GetText()->GetString();
-    if(strcmp(entry,"CaloCrystalHit:CaloCrystalHitsMaker:")==0) _caloHitBox->Select(i);
-  }
-  for(int i=0; i<_trackBox->GetNumberOfEntries(); i++)
-  {
-    const char *entry=(dynamic_cast<TGTextLBEntry*>(_trackBox->GetEntry(i)))->GetText()->GetString();
-    if(strcmp(entry,"SimParticle:g4run:")==0) _trackBox->Select(i);
-  }
+  TGLBEntry *entry;
+  entry=_hitBox->FindEntry("StrawHit:makeSH:");
+  if(entry!=NULL) _hitBox->Select(entry->EntryId());
+  entry=_caloHitBox->FindEntry("CaloHit:CaloReadoutHitsMaker:");
+  if(entry!=NULL) _caloHitBox->Select(entry->EntryId());
+  entry=_trackBox->FindEntry("SimParticle:g4run:");
+  if(entry!=NULL) _trackBox->Select(entry->EntryId());
 }
 
-bool ContentSelector::compareLists(const std::vector<std::string> &newContent, const TGListBox *boxContent) const
+bool ContentSelector::compareLists(const std::vector<entryStruct> &newEntries, const TGListBox *boxContent) const
 {
-  for(unsigned int i=0; i<newContent.size(); i++)
+  if(static_cast<int>(newEntries.size())!=boxContent->GetNumberOfEntries()) return(false);
+
+  for(unsigned int i=0; i<newEntries.size(); i++)
   {
-    TGTextLBEntry *entryTmp=dynamic_cast<TGTextLBEntry*>(boxContent->GetEntry(i));
+    int entryID=newEntries[i].entryID;
+    TGTextLBEntry *entryTmp=dynamic_cast<TGTextLBEntry*>(boxContent->GetEntry(entryID));
     if(entryTmp==NULL) return(false);
     const char *entry=entryTmp->GetText()->GetString();
-    if(newContent[i].compare(entry)!=0) return(false);
+    if(newEntries[i].entryText.compare(entry)!=0) return(false);
   }
   return(true);
 }
 
+template<class CollectionType>
+void ContentSelector::createNewEntries(std::vector<edm::Handle<CollectionType> > &dataVector, 
+                                       const edm::Event &event, const std::string &className,
+                                       std::vector<entryStruct> &newEntries, int entryIDStart)
+{
+  int entryID;
+  event.getManyByType(dataVector);
+  typedef std::vector<edm::Handle<CollectionType> > CollectionVector;
+  typedef typename CollectionVector::const_iterator itertype;
+  itertype iter;
+  for(iter=dataVector.begin(), entryID=entryIDStart; 
+      iter!=dataVector.end(); 
+      iter++, entryID++)
+  {
+    entryStruct e;
+    e.entryID=entryID;
+    e.entryText=className+":"+iter->provenance()->moduleLabel()
+               +":"+iter->provenance()->productInstanceName();
+    newEntries.push_back(e);
+  }
+}
+
 void ContentSelector::setAvailableCollections(const edm::Event& event)
 {
-  std::vector<std::string> newContent;
+  std::vector<entryStruct> newEntries;
+
+  entryStruct nothingSelected;
+  nothingSelected.entryID=0;
+  nothingSelected.entryText="Nothing Selected";
 
 //Hit Selection
-  event.getManyByType(_hitsVector);
-  std::vector<edm::Handle<mu2e::StepPointMCCollection> >::const_iterator hitsIter;
-  for(hitsIter=_hitsVector.begin(); hitsIter!=_hitsVector.end(); hitsIter++)
-  {
-    std::string s="StepPointMC:"+hitsIter->provenance()->moduleLabel()
-                 +":"+hitsIter->provenance()->productInstanceName();
-    newContent.push_back(s);
-  }
-  newContent.push_back("Nothing Selected");
+  createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1000);
+  createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2000);
+  newEntries.push_back(nothingSelected);
 
-  if(compareLists(newContent,_hitBox->GetListBox())==false)
+  if(compareLists(newEntries,_hitBox->GetListBox())==false)
   {
     TGTextLBEntry *selectedEntryTmp=dynamic_cast<TGTextLBEntry*>(_hitBox->GetSelectedEntry());
     std::string selectedEntry="Nothing Selected";
     if(selectedEntryTmp) selectedEntry=selectedEntryTmp->GetText()->GetString();
     _hitBox->RemoveAll();
-    for(unsigned int i=0; i<newContent.size(); i++)
+    for(unsigned int i=0; i<newEntries.size(); i++)
     {
-      _hitBox->AddEntry(newContent[i].c_str(), i);
-      if(newContent[i].compare(selectedEntry)==0) _hitBox->Select(i);
+      _hitBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
+      if(newEntries[i].entryText.compare(selectedEntry)==0) _hitBox->Select(newEntries[i].entryID);
     }
-    _hitBox->GetListBox()->GetEntry(newContent.size()-1)->SetBackgroundColor(0x00FF00);
+    _hitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
   }
 
-  newContent.clear();
+  newEntries.clear();
 
 //Calo Hit Selection
-  event.getManyByType(_caloHitsVector);
-  std::vector<edm::Handle<mu2e::CaloCrystalHitCollection> >::const_iterator caloHitsIter;
-  for(caloHitsIter=_caloHitsVector.begin(); caloHitsIter!=_caloHitsVector.end(); caloHitsIter++)
-  {
-    std::string s="CaloCrystalHit:"+caloHitsIter->provenance()->moduleLabel()
-                 +":"+caloHitsIter->provenance()->productInstanceName();
-    newContent.push_back(s);
-  }
-  newContent.push_back("Nothing Selected");
+  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 1000);
+  createNewEntries<mu2e::CaloHitCollection>(_caloHitVector, event, "CaloHit", newEntries, 2000);
+  newEntries.push_back(nothingSelected);
 
-  if(compareLists(newContent,_caloHitBox->GetListBox())==false)
+  if(compareLists(newEntries,_caloHitBox->GetListBox())==false)
   {
     TGTextLBEntry *selectedEntryTmp=dynamic_cast<TGTextLBEntry*>(_caloHitBox->GetSelectedEntry());
     std::string selectedEntry="Nothing Selected";
     if(selectedEntryTmp) selectedEntry=selectedEntryTmp->GetText()->GetString();
     _caloHitBox->RemoveAll();
-    for(unsigned int i=0; i<newContent.size(); i++)
+    for(unsigned int i=0; i<newEntries.size(); i++)
     {
-      _caloHitBox->AddEntry(newContent[i].c_str(), i);
-      if(newContent[i].compare(selectedEntry)==0) _caloHitBox->Select(i);
+      _caloHitBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
+      if(newEntries[i].entryText.compare(selectedEntry)==0) _caloHitBox->Select(newEntries[i].entryID);
     }
-    _caloHitBox->GetListBox()->GetEntry(newContent.size()-1)->SetBackgroundColor(0x00FF00);
+    _caloHitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
   }
 
-  newContent.clear();
+  newEntries.clear();
 
 //Track Selection
-  event.getManyByType(_simParticlesVector);
-  std::vector<edm::Handle<mu2e::SimParticleCollection> >::const_iterator simParticlesIter;
-  for(simParticlesIter=_simParticlesVector.begin(); simParticlesIter!=_simParticlesVector.end(); simParticlesIter++)
+  createNewEntries<mu2e::SimParticleCollection>(_simParticlesVector, event, "SimParticle", newEntries, 1000);
+
+  if(compareLists(newEntries,_trackBox)==false)
   {
-    std::string s="SimParticle:"+simParticlesIter->provenance()->moduleLabel()
-                 +":"+simParticlesIter->provenance()->productInstanceName();
-    newContent.push_back(s);
-  }
-  if(compareLists(newContent,_trackBox)==false)
-  {
-    TList *selections = new TList;
-    _trackBox->GetSelectedEntries(selections);
+    TList selections;
+    _trackBox->GetSelectedEntries(&selections);
     std::vector<std::string> oldSelections;
-    for(int i=0; i<selections->GetSize(); i++)
+    for(int i=0; i<selections.GetSize(); i++)
     {
-      std::string selectedEntry=(dynamic_cast<TGTextLBEntry*>(selections->At(i)))->GetText()->GetString();
+      std::string selectedEntry=(dynamic_cast<TGTextLBEntry*>(selections.At(i)))->GetText()->GetString();
       oldSelections.push_back(selectedEntry);
     }
     _trackBox->RemoveAll();
-    for(unsigned int i=0; i<newContent.size(); i++)
+    for(unsigned int i=0; i<newEntries.size(); i++)
     {
-      _trackBox->AddEntry(newContent[i].c_str(), i);
-      if(find(oldSelections.begin(),oldSelections.end(),newContent[i])!=oldSelections.end()) _trackBox->Select(i);
+      _trackBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
+      if(find(oldSelections.begin(),oldSelections.end(),newEntries[i].entryText)!=oldSelections.end()) 
+           _trackBox->Select(newEntries[i].entryID);
     }
   }
 
@@ -137,13 +141,26 @@ void ContentSelector::setAvailableCollections(const edm::Event& event)
 
 void ContentSelector::setSelectedHitsName()
 {
-  _hitsAreSelected        =false;
+  _hitsAreSelected=false;
   int i=_hitBox->GetSelected();
-  if(i<0 || i>=static_cast<int>(_hitsVector.size())) return;
-  _hitsAreSelected        =true;
-  _hitsClassName          =_hitsVector[i].provenance()->className();
-  _hitsModuleLabel        =_hitsVector[i].provenance()->moduleLabel();
-  _hitsProductInstanceName=_hitsVector[i].provenance()->productInstanceName();
+  int classtype=i/1000;
+  int index=i%1000;
+  edm::Provenance *provenance=NULL;
+  switch(classtype)
+  {
+    case 1 : if(index>=static_cast<int>(_stepPointMCVector.size())) return;
+             _hitsAreSelected=true;
+             provenance=const_cast<edm::Provenance*>(_stepPointMCVector[index].provenance());
+             break;
+    case 2 : if(index>=static_cast<int>(_strawHitVector.size())) return;
+             _hitsAreSelected=true;
+             provenance=const_cast<edm::Provenance*>(_strawHitVector[index].provenance());
+             break;
+    default: return;
+  };
+  _hitsClassName          =provenance->className();
+  _hitsModuleLabel        =provenance->moduleLabel();
+  _hitsProductInstanceName=provenance->productInstanceName();
 }
 
 bool ContentSelector::getSelectedHitsName(std::string &className, 
@@ -156,42 +173,79 @@ bool ContentSelector::getSelectedHitsName(std::string &className,
   return(_hitsAreSelected);
 }
 
-const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection() const
+template<typename CollectionType> 
+const CollectionType* ContentSelector::getSelectedHitCollection() const
 {
-  unsigned int i=_hitBox->GetSelected();
-  if(i>=_hitsVector.size()) return(NULL);
-  else return(_hitsVector[i].product());
-}
-
-const mu2e::CaloCrystalHitCollection* ContentSelector::getSelectedCaloHitCollection() const
-{
-  unsigned int i=_caloHitBox->GetSelected();
-  if(i>=_caloHitsVector.size()) return(NULL);
-  else return(_caloHitsVector[i].product());
-}
-
-std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection() const
-{
-  std::vector<const mu2e::SimParticleCollection*> to_return;
-
-  TList *selections = new TList;
-  _trackBox->GetSelectedEntries(selections);
-  for(int i=0; i<selections->GetSize(); i++)
+  int i=_hitBox->GetSelected();
+  int classtype=i/1000;
+  int index=i%1000;
+  switch(classtype)
   {
-    const char *entry=(dynamic_cast<TGTextLBEntry*>(selections->At(i)))->GetText()->GetString();
-    std::vector<edm::Handle<mu2e::SimParticleCollection> >::const_iterator simParticlesIter;
-    for(simParticlesIter=_simParticlesVector.begin(); 
-        simParticlesIter!=_simParticlesVector.end(); 
-        simParticlesIter++)
-    {
-      std::string s="SimParticle:"+simParticlesIter->provenance()->moduleLabel()
-                   +":"+simParticlesIter->provenance()->productInstanceName();
-      if(s.compare(entry)==0) to_return.push_back(simParticlesIter->product());
-    }
-  }
+    case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(NULL);
+             if(index>=static_cast<int>(_stepPointMCVector.size())) return(NULL);
+             return(reinterpret_cast<const CollectionType*>(_stepPointMCVector[index].product()));
+    case 2 : if(typeid(CollectionType)!=typeid(mu2e::StrawHitCollection)) return(NULL);
+             if(index>=static_cast<int>(_strawHitVector.size())) return(NULL);
+             return(reinterpret_cast<const CollectionType*>(_strawHitVector[index].product()));
+//Note about the use of reinterpret_cast: While it is generally unsafe to use it, in this case it is Ok.
+//the typeid check makes that the program advances to the line with the reinterpret_cast ONLY if the
+//type of the vector element and the CollectionType are identical. The compiler doesn't see this, the compiler
+//knows that this template function (and therefore CollectionType) gets implemented with different types (see below),
+//which created an incompatibility between the return type of the function and the object which is returned.
+//However, the compiler doesn't see that the object gets returned only if both types match. 
+//In order to satisfy the compiler, an reinterpret_cast is used, while during run time the argument type and the 
+//return type of the reinterpret_cast will always be the same, i.e. no "reinterpretation" will happen
+  };
+  return(NULL);
+}
+template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
+template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
 
+
+template<typename CollectionType> 
+const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
+{
+  int i=_caloHitBox->GetSelected();
+  int classtype=i/1000;
+  int index=i%1000;
+  switch(classtype)
+  {
+    case 1 : if(typeid(CollectionType)!=typeid(mu2e::CaloCrystalHitCollection)) return(NULL);
+             if(index>=static_cast<int>(_caloCrystalHitVector.size())) return(NULL);
+             return(reinterpret_cast<const CollectionType*>(_caloCrystalHitVector[index].product()));
+    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(NULL);
+             if(index>=static_cast<int>(_caloHitVector.size())) return(NULL);
+             return(reinterpret_cast<const CollectionType*>(_caloHitVector[index].product()));
+  };
+  return(NULL);
+}
+template const mu2e::CaloCrystalHitCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>() const;
+template const mu2e::CaloHitCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
+
+template<typename CollectionType>
+std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection() const
+{
+  std::vector<const CollectionType*> to_return;
+
+  TList selections;
+  _trackBox->GetSelectedEntries(&selections);
+  for(int i=0; i<selections.GetSize(); i++)
+  {
+    TGTextLBEntry *entry=dynamic_cast<TGTextLBEntry*>(selections.At(i));
+    if(entry==NULL) continue;
+    int id=entry->EntryId();
+    int classtype=id/1000;
+    int index=id%1000;
+    switch(classtype)
+    {
+      case 1 : if(typeid(CollectionType)!=typeid(mu2e::SimParticleCollection)) break;
+               if(index>=static_cast<int>(_simParticlesVector.size())) break;
+               to_return.push_back(reinterpret_cast<const CollectionType*>(_simParticlesVector[index].product()));
+    };
+  }
   return(to_return);
 }
+template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>() const;
 
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const
 {

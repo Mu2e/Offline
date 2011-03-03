@@ -24,9 +24,11 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 
 #include <TGeoVolume.h>
@@ -640,12 +642,12 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   _numberHits=0;
   _numberCrystalHits=0;
 
-  const mu2e::StepPointMCCollection *hits=contentSelector->getSelectedHitCollection();
-  if(hits!=NULL)  
+  const mu2e::StepPointMCCollection *steppointMChits=contentSelector->getSelectedHitCollection<mu2e::StepPointMCCollection>();
+  if(steppointMChits!=NULL)  
   {
-    _numberHits=hits->size();
+    _numberHits=steppointMChits->size();
     std::vector<mu2e::StepPointMC>::const_iterator iter;
-    for(iter=hits->begin(); iter!=hits->end(); iter++)
+    for(iter=steppointMChits->begin(); iter!=steppointMChits->end(); iter++)
     {
       const mu2e::StepPointMC& hit = *iter;
       int strawindex = hit.strawIndex().asInt();
@@ -680,13 +682,53 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
     }
   }
 
-
-  const mu2e::CaloCrystalHitCollection *calohits=contentSelector->getSelectedCaloHitCollection();
-  if(calohits!=NULL)  
+  const mu2e::StrawHitCollection *strawhits=contentSelector->getSelectedHitCollection<mu2e::StrawHitCollection>();
+  if(strawhits!=NULL)  
   {
-    _numberCrystalHits=calohits->size();
+    _numberHits=strawhits->size();
+    std::vector<mu2e::StrawHit>::const_iterator iter;
+    for(iter=strawhits->begin(); iter!=strawhits->end(); iter++)
+    {
+      const mu2e::StrawHit& hit = *iter;
+      int strawindex = hit.strawIndex().asInt();
+      double time = hit.time();
+      double dt = hit.dt();
+      double energy = hit.energyDep();
+      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
+      if(straw!=_straws.end() && !isnan(time))
+      {
+        double previousStartTime=straw->second->getStartTime();
+        if(isnan(previousStartTime))
+        {
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          straw->second->setStartTime(time);
+          straw->second->start();
+          char c[100];
+          sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
+          straw->second->getComponentInfo()->setText(1,c);
+          sprintf(c,"deposited energy(s): %geV",energy/CLHEP::eV);
+          straw->second->getComponentInfo()->setText(2,c);
+          sprintf(c,"hit time interval(s): %gns",dt/CLHEP::ns);
+          straw->second->getComponentInfo()->setText(3,c);
+          _hits.push_back(straw->second);
+        }
+        else
+        {
+          straw->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
+          straw->second->getComponentInfo()->expandLine(2,energy/CLHEP::eV,"eV");
+          straw->second->getComponentInfo()->expandLine(3,dt/CLHEP::ns,"ns");
+        }
+      }
+    }
+  }
+
+
+  const mu2e::CaloCrystalHitCollection *calocrystalhits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>();
+  if(calocrystalhits!=NULL)  
+  {
+    _numberCrystalHits=calocrystalhits->size();
     std::vector<mu2e::CaloCrystalHit>::const_iterator iter;
-    for(iter=calohits->begin(); iter!=calohits->end(); iter++)
+    for(iter=calocrystalhits->begin(); iter!=calocrystalhits->end(); iter++)
     {
       const mu2e::CaloCrystalHit& calohit = *iter;
       int crystalid = calohit.id();
@@ -717,6 +759,48 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
     }
   }
 
+  const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
+  edm::Service<mu2e::GeometryService> geoservice;
+  if(calohits!=NULL && geoservice->hasElement<mu2e::Calorimeter>())
+  {
+    mu2e::GeomHandle<mu2e::Calorimeter> calo;  
+    _numberCrystalHits=calohits->size();  //this is not accurate since the return value gives the RO hits
+    std::vector<mu2e::CaloHit>::const_iterator iter;
+    for(iter=calohits->begin(); iter!=calohits->end(); iter++)
+    {
+      const mu2e::CaloHit& calohit = *iter;
+      int roid = calohit.id();
+      int crystalid=calo->getCrystalByRO(roid);
+      double time = calohit.time();
+      double energy = calohit.energyDep();
+      std::map<int,boost::shared_ptr<Cube> >::iterator crystal=_crystals.find(crystalid);
+      if(crystal!=_crystals.end() && !isnan(time))
+      {
+        double previousStartTime=crystal->second->getStartTime();
+        if(isnan(previousStartTime))
+        {
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          crystal->second->setStartTime(time);
+          crystal->second->start();
+          char c[100];
+          sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
+          crystal->second->getComponentInfo()->setText(1,c);
+          sprintf(c,"deposited energy(s): %geV",energy/CLHEP::eV);
+          crystal->second->getComponentInfo()->setText(2,c);
+          sprintf(c,"RO ID(s): %i",roid);
+          crystal->second->getComponentInfo()->setText(3,c);
+          _crystalhits.push_back(crystal->second);
+        }
+        else
+        {
+          crystal->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
+          crystal->second->getComponentInfo()->expandLine(2,energy/CLHEP::eV,"eV");
+          crystal->second->getComponentInfo()->expandLine(3,roid,"");
+        }
+      }
+    }
+  }
+
   unsigned int physicalVolumeEntries=0;
   const mu2e::PhysicalVolumeInfoCollection *physicalVolumes=contentSelector->getPhysicalVolumeInfoCollection();
   if(physicalVolumes!=NULL)
@@ -725,7 +809,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   }
 
   resetBoundaryP(_tracksMinmax);
-  std::vector<const mu2e::SimParticleCollection*> trackCollectionVector=contentSelector->getSelectedTrackCollection();
+  std::vector<const mu2e::SimParticleCollection*> trackCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::SimParticleCollection>();
   for(unsigned int i=0; i<trackCollectionVector.size(); i++) 
   {
     const mu2e::SimParticleCollection *simParticles=trackCollectionVector[i];

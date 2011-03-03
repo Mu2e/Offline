@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries. 
 //
-// $Id: ContentSelector.h,v 1.1 2011/03/02 03:25:47 ehrlich Exp $
+// $Id: ContentSelector.h,v 1.2 2011/03/03 17:24:10 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/03/02 03:25:47 $
+// $Date: 2011/03/03 17:24:10 $
 //
 // Original author Ralf Ehrlich
 //
@@ -18,9 +18,11 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Run.h"
 #include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 
 namespace mu2e_eventdisplay
@@ -28,8 +30,14 @@ namespace mu2e_eventdisplay
 
 class ContentSelector
 {
-  std::vector<edm::Handle<mu2e::StepPointMCCollection> > _hitsVector;
-  std::vector<edm::Handle<mu2e::CaloCrystalHitCollection> > _caloHitsVector;
+  ContentSelector();
+  ContentSelector(const ContentSelector &);
+  ContentSelector& operator=(const ContentSelector &);
+
+  std::vector<edm::Handle<mu2e::StepPointMCCollection> > _stepPointMCVector;
+  std::vector<edm::Handle<mu2e::StrawHitCollection> > _strawHitVector;
+  std::vector<edm::Handle<mu2e::CaloCrystalHitCollection> > _caloCrystalHitVector;
+  std::vector<edm::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<edm::Handle<mu2e::SimParticleCollection> > _simParticlesVector;
   edm::Handle<mu2e::PhysicalVolumeInfoCollection> _physicalVolumes;
   edm::Handle<mu2e::PointTrajectoryCollection> _pointTrajectories;
@@ -39,12 +47,21 @@ class ContentSelector
   TGComboBox *_caloHitBox;
   TGListBox  *_trackBox;
 
+  struct entryStruct
+  {
+    int         entryID;
+    std::string entryText;
+  };
+
 //these are information stored for the minimum hit test
   bool _hitsAreSelected;
   std::string _hitsClassName, _hitsModuleLabel, _hitsProductInstanceName;
 
   private:
-  bool compareLists(const std::vector<std::string> &newContent, const TGListBox *boxContent) const;
+  bool compareLists(const std::vector<entryStruct> &newEntries, const TGListBox *boxContent) const;
+  template<class CollectionType> void createNewEntries(std::vector<edm::Handle<CollectionType> > &dataVector, 
+                                                       const edm::Event &event, const std::string &className,
+                                                       std::vector<entryStruct> &newEntries, int entryIDStart);
 
   public:
   ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox);
@@ -56,9 +73,9 @@ class ContentSelector
                            std::string &moduleLabel, 
                            std::string &productInstanceName) const;
 
-  const mu2e::StepPointMCCollection *getSelectedHitCollection() const;
-  const mu2e::CaloCrystalHitCollection *getSelectedCaloHitCollection() const;
-  std::vector<const mu2e::SimParticleCollection*> getSelectedTrackCollection() const;
+  template<typename CollectionType> const CollectionType* getSelectedHitCollection() const;
+  template<typename CollectionType> const CollectionType* getSelectedCaloHitCollection() const;
+  template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection() const;
   const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
   const mu2e::PointTrajectoryCollection *getPointTrajectoryCollection() const;
 };

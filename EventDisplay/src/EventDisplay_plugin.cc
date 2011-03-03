@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_plugin.cc,v 1.5 2011/03/02 03:25:47 ehrlich Exp $
+// $Id: EventDisplay_plugin.cc,v 1.6 2011/03/03 17:24:10 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/03/02 03:25:47 $
+// $Date: 2011/03/03 17:24:10 $
 //
 
 #include <iostream>
@@ -18,6 +18,7 @@
 #include "FWCore/Services/interface/TFileService.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/StrawHitCollection.hh"
 
 #include "TApplication.h"
 #include "TGMsgBox.h"
@@ -36,6 +37,10 @@ namespace mu2e
     void analyze(const edm::Event& e, edm::EventSetup const&);
 
     private:
+    template<class collectionType> void checkMinimumHits(const edm::Event &event, 
+                                                         const std::string &classNameToCheck,
+                                                         const mu2e_eventdisplay::EventDisplayFrame *_frame, 
+                                                         bool &showEvent);
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
   };
@@ -80,25 +85,32 @@ namespace mu2e
       else
       {
         bool showEvent=true;
-        
-        std::string className,moduleLabel,productInstanceName;
-        bool hasSelectedHits=_frame->getSelectedHitsName(className,moduleLabel,productInstanceName);
-        if(hasSelectedHits && className.compare("std::vector<mu2e::StepPointMC>")==0)
-        {
-          edm::Handle<mu2e::StepPointMCCollection> hits;
-          if(event.getByLabel(moduleLabel,productInstanceName,hits))
-          {
-            if(static_cast<int>(hits->size()) < _frame->getMinimumHits())
-            {
-              showEvent=false;
-              std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
-            }
-          }
-        }
+        checkMinimumHits<mu2e::StepPointMCCollection>(event, "std::vector<mu2e::StepPointMC>", _frame, showEvent);
+        checkMinimumHits<mu2e::StrawHitCollection>(event, "std::vector<mu2e::StrawHit>", _frame, showEvent);
         if(showEvent) _frame->setEvent(event,_firstLoop);
       }
     }
     _firstLoop=false;
+  }
+
+  template<class collectionType>
+  void EventDisplay::checkMinimumHits(const edm::Event &event, const std::string &classNameToCheck,
+                                      const mu2e_eventdisplay::EventDisplayFrame *_frame, bool &showEvent)
+  {
+    std::string className, moduleLabel, productInstanceName;
+    bool hasSelectedHits=_frame->getSelectedHitsName(className, moduleLabel, productInstanceName);
+    if(hasSelectedHits && className.compare(classNameToCheck)==0)
+    {
+      edm::Handle<collectionType> hits;
+      if(event.getByLabel(moduleLabel,productInstanceName,hits))
+      {
+        if(static_cast<int>(hits->size()) < _frame->getMinimumHits())
+        {
+          std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
+          showEvent=false;
+        }
+      }
+    }
   }
 
   void EventDisplay::endJob()
