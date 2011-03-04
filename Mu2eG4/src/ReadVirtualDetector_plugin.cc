@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_plugin.cc,v 1.13 2011/01/31 23:45:48 kutschke Exp $
+//  $Id: ReadVirtualDetector_plugin.cc,v 1.14 2011/03/04 23:32:42 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2011/01/31 23:45:48 $
+//  $Date: 2011/03/04 23:32:42 $
 //
 // Original author Ivan Logashenko
 //
@@ -31,7 +31,6 @@
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/G4BeamlineInfoCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
