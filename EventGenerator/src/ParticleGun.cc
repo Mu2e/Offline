@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.7 2010/08/20 14:47:07 kutschke Exp $
+// $Id: ParticleGun.cc,v 1.8 2011/03/04 23:31:34 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/08/20 14:47:07 $
+// $Date: 2011/03/04 23:31:34 $
 //
 // Original author Rob Kutschke
 // 
@@ -97,7 +97,7 @@ namespace mu2e {
 
     // end processing run time configuration.
     ConditionsHandle<ParticleDataTable> pdt("ignored");
-    _mass = pdt->particle(_pdgId).mass().value();
+    _mass = pdt->particle(_pdgId).ref().mass().value();
 
     _dp  = ( _pmax - _pmin);
     _dt  = ( _tmax - _tmin);

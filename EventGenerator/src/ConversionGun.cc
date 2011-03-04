@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.17 2010/11/04 15:47:31 onoratog Exp $ 
-// $Author: onoratog $
-// $Date: 2010/11/04 15:47:31 $
+// $Id: ConversionGun.cc,v 1.18 2011/03/04 23:31:34 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2011/03/04 23:31:34 $
 //
 // Original author Rob Kutschke
 // 
@@ -63,7 +63,7 @@ namespace mu2e {
     ConditionsHandle<ParticleDataTable> pdt("ignored");
 
     //Get particle mass
-    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus);
+    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _mass = e_data.mass().value();
 
     // Default values for the start and end of the live window.

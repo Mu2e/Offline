@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression 
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.1 2011/03/01 04:38:33 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/03/01 04:38:33 $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.2 2011/03/04 23:31:34 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/03/04 23:31:34 $
 //
 // 
 
@@ -76,8 +76,8 @@ namespace mu2e {
   double ShankerWanatabeSpectrum::EvaluateShanker(double E) {
 
     ConditionsHandle<ParticleDataTable> pdt("ignored");
-    const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus);
-    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus);
+    const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
+    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     double mumass = mu_data.mass().value();
     double emass = e_data.mass().value();
     double BindEnergy = 13.6 * ( mumass / emass ) * _Znum * _Znum / 1e6; 

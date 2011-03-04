@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.cc,v 1.14 2011/02/15 20:50:16 onoratog Exp $ 
-// $Author: onoratog $
-// $Date: 2011/02/15 20:50:16 $
+// $Id: EjectedProtonGun.cc,v 1.15 2011/03/04 23:31:34 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2011/03/04 23:31:34 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -88,7 +88,7 @@ namespace mu2e {
     ConditionsHandle<ParticleDataTable> pdt("ignored");
 
     //Set particle mass
-    const HepPDT::ParticleData& p_data = pdt->particle(PDGCode::p_plus);
+    const HepPDT::ParticleData& p_data = pdt->particle(PDGCode::p_plus).ref();
     _mass = p_data.mass().value();
     
     

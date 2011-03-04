@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.18 2011/03/04 23:08:05 onoratog Exp $ 
-// $Author: onoratog $
-// $Date: 2011/03/04 23:08:05 $
+// $Id: DecayInOrbitGun.cc,v 1.19 2011/03/04 23:31:34 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2011/03/04 23:31:34 $
 //
 // Original author Rob Kutschke
 // 
@@ -101,7 +101,7 @@ namespace mu2e {
     ConditionsHandle<ParticleDataTable> pdt("ignored");
     
     //pick up particle mass    
-    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus);
+    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _mass = e_data.mass().value();
 
     _tmin   = config.getDouble("decayinorbitGun.tmin",  daqPar->t0 );
