@@ -3,9 +3,9 @@
 // data, merged to Shanker's formula near the endpoint. The construction
 // of the spectrum is made by ShankerWanatabeSpectrum class
 //
-// $Id: DIOShankerWanatabe.cc,v 1.2 2011/03/01 04:38:33 onoratog Exp $
+// $Id: DIOShankerWanatabe.cc,v 1.3 2011/03/04 23:09:10 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/03/01 04:38:33 $
+// $Date: 2011/03/04 23:09:10 $
 //
 // 
 
@@ -62,7 +62,6 @@ namespace mu2e {
     while (step <= _emax) {
       spectrum.push_back(WSspec[step]);
       step += _res;
-      cout << "en " << step << "val " << WSspec[step] << endl;
     }
 
     _nBinsSpectrum = spectrum.size();
