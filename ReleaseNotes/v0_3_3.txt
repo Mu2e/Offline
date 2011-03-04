@@ -3,9 +3,26 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.18 2011/02/26 00:02:56 kutschke Exp $
+  $Id: v0_3_3.txt,v 1.19 2011/03/04 19:59:57 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/02/26 00:02:56 $
+  $Date: 2011/03/04 19:59:57 $
+
+20) March 3, 2011 kutschke
+    New class template to deal with return values that are allowed to be missing.
+      Mu2eUtilities/inc/maybe_ref.hh
+
+    Tests for the above
+        Mu2eUtilities/test/maybe_ref_test.cc
+        Mu2eUtilities/test/makeIt.cc
+        Mu2eUtilities/test/makeIt.hh
+
+    New package to hold some test code:
+      TestTools/TestTools/inc/TestClass.hh
+      TestTools/src/TestClass.cc
+      TestTools/src/SConscript
+
+19) March 1, 2011 onoratog
+     Changes related to modelling DIO.
 
 18) February 25, 2011 kutschke
     BFieldGeom/src/BFieldManagerMaker.cc
