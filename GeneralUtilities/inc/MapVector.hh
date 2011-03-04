@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.10 2010/11/11 23:21:53 kutschke Exp $
+// $Id: MapVector.hh,v 1.11 2011/03/04 21:32:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/11/11 23:21:53 $
+// $Date: 2011/03/04 21:32:18 $
 //
 //   Original author Rob Kutschke
 //
@@ -147,7 +147,7 @@ public:
 
     if ( i == _map.end() ){
       std::ostringstream out;
-      out << "No such key: " << key;
+      out << "MapVector::findOrThrow, no such key: " << key;
       throw std::out_of_range( out.str() );
     }
     return i->second;
@@ -159,7 +159,7 @@ public:
 
     if ( i == _map.end() ){
       std::ostringstream out;
-      out << "No such key: " << key;
+      out << "MapVector::findOrThrow const, no such key: " << key;
       throw std::out_of_range( out.str() );
     }
     return i->second;
