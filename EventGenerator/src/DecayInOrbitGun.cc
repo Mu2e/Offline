@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.17 2011/03/01 04:36:57 onoratog Exp $ 
+// $Id: DecayInOrbitGun.cc,v 1.18 2011/03/04 23:08:05 onoratog Exp $ 
 // $Author: onoratog $
-// $Date: 2011/03/01 04:36:57 $
+// $Date: 2011/03/04 23:08:05 $
 //
 // Original author Rob Kutschke
 // 
@@ -66,9 +66,12 @@ namespace mu2e {
     _phimin(config.getDouble("decayinorbitGun.phimin", 0. )),
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
-    _spectrumResolution(config.getDouble("decayinorbit.spectrumResolution", 0.1)),
+    _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
+    _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
 
     // Random number distributions; getEngine comes from the base class.
+    _randSimpleEnergy(getEngine(), &(binnedEnergySpectrum()[0]), _nbins ),
+
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),  
 
@@ -122,8 +125,10 @@ namespace mu2e {
                                                                              FoilParticleGenerator::volWeightFoil, 
                                                                              FoilParticleGenerator::flatPos, 
                                                                              FoilParticleGenerator::limitedExpoTime));
-    
+
     _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow,_ehi, _spectrumResolution, getEngine()));
+
+
 
   }
 
@@ -148,8 +153,14 @@ namespace mu2e {
       _fGenerator->generatePositionAndTime(pos, time);
       
 
-      //Pick up momentum vector
-      double e = _randEnergy->fire();
+      //Pick up energy and momentum vector
+      double e;
+      if (_useSimpleSpectrum) {
+        e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow); 
+      } else if (!_useSimpleSpectrum) {
+        e = _randEnergy->fire();
+      }
+
       _p = safeSqrt(e*e - _mass*_mass);
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
       

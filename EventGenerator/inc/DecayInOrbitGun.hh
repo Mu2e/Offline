@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.10 2011/03/01 04:36:57 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.11 2011/03/04 23:08:05 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2011/03/01 04:36:57 $
+// $Date: 2011/03/04 23:08:05 $
 //
 // 
 
@@ -80,9 +80,13 @@ namespace mu2e {
     // Resolution of the energy spectrum (0.1 default)
     double _spectrumResolution;
 
+    // SimpleSpectrum on/off (off is default)
+    bool _useSimpleSpectrum;
+
     // End: parameters that can be configured from the config file.
 
     // Random number generators.
+    CLHEP::RandGeneral _randSimpleEnergy;
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere _randomUnitSphere;
 
