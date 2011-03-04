@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.12 2011/02/03 18:38:27 wasiko Exp $
-// $Author: wasiko $
-// $Date: 2011/02/03 18:38:27 $
+// $Id: CosmicTuple.cc,v 1.13 2011/03/04 23:33:39 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/03/04 23:33:39 $
 //
 // Original author Rob Kutschke
 //
@@ -210,11 +210,21 @@ namespace mu2e {
       double  momentum = -1.;
       double  pitchAng = -1.;
   
-     ConditionsHandle<ParticleDataTable> pdt("ignored");
+    ConditionsHandle<ParticleDataTable> pdt("ignored");
     
     //Get particle mass
-    const HepPDT::ParticleData& e_data = pdt->particle(sim.pdgId());
-    rmass = e_data.mass().value();
+    ParticleDataTable::safe_ref e_data = pdt->particle(sim.pdgId());
+    if ( e_data ){
+      rmass = e_data.ref().mass().value();
+    } else{
+
+      // If particle is unknown, set rest mass to 0.
+      rmass = 0.;
+      edm::LogWarning("PDGID") 
+        << "Particle ID created by G4 not known to the particle data table:  "
+        << sim.pdgId()
+        << "\n";
+    }
 
       // First  StrawsHits to which this SimParticle contributed.
         StrawHitMCInfo const& info = infos.at(0);

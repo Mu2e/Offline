@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.30 2011/03/04 21:31:11 kutschke Exp $
+// $Id: ReadBack.cc,v 1.31 2011/03/04 23:33:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/04 21:31:11 $
+// $Date: 2011/03/04 23:33:39 $
 //
 // Original author Rob Kutschke
 //
@@ -666,6 +666,17 @@ namespace mu2e {
 
           // Particle Data group Id number.
           int pdgId = sim.pdgId();
+
+          //
+          ParticleDataTable::safe_ref particle = pdt->particle(pdgId);
+          string pname;
+          if ( particle ) {
+            pname = particle.ref().name();
+          } else{
+            ostringstream os;
+            os << "UnknownG4Id_" << pdgId;
+            pname = os.str();
+          }
           
           // Information about generated particle.
           ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
