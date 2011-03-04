@@ -3,10 +3,19 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.20 2011/03/04 21:33:46 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/03/04 21:33:46 $
+  $Id: v0_3_3.txt,v 1.21 2011/03/04 23:22:49 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2011/03/04 23:22:49 $
 
+
+23) March 4, 2011 onoratog
+    The DIO generator now can use the old version of the energy spectrum
+    for back-compatibility purpose.
+    To activate the old version of energy spectrum, one just has to add
+    the line 
+    "decayinorbitGun.useSimpleSpectrum = true" 
+    in the generation config file. 
+    The default spectrum is the WanatabeShanker (see note 19)
 
 22) March 3, 2011 kutschke
     Improve error messages in findOrThrow.
@@ -33,6 +42,14 @@
 
 19) March 1, 2011 onoratog
      Changes related to modelling DIO.
+
+    The energy spectrum of DIO now is taken from Wanatabe data until 100 MeV, 
+    then is merged with Shanker formula, using 5 order corrections. 
+    The resolution of the distribution can be chosen by config file 
+    adding the line
+    "decayinorbitGun.spectrumResolution = val in MeV"
+    to the generation config file.
+    The default is 0.1.
 
 18) February 25, 2011 kutschke
     BFieldGeom/src/BFieldManagerMaker.cc
