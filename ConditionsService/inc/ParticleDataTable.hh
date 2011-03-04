@@ -3,9 +3,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.hh,v 1.4 2010/04/14 18:00:46 kutschke Exp $
+//   $Id: ParticleDataTable.hh,v 1.5 2011/03/04 23:22:33 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2010/04/14 18:00:46 $
+//   $Date: 2011/03/04 23:22:33 $
 //
 //  Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@
 
 // Mu2e includes.
 #include "ConditionsService/inc/ConditionsEntity.hh"
+#include "Mu2eUtilities/inc/maybe_ref.hh"
 
 // External includes.
 #include "HepPDT/ParticleDataTable.hh"
@@ -62,6 +63,9 @@ namespace mu2e {
   
   public:
 
+    // Return type of accessors
+    typedef cet::maybe_ref<HepPDT::ParticleData const>            safe_ref;
+
     typedef HepPDT::ParticleDataTable::PDTMap::const_iterator     const_iterator;
     typedef HepPDT::ParticleDataTable::PDTNameMap::const_iterator const_iteratorByName;
 
@@ -71,14 +75,14 @@ namespace mu2e {
     // Accept the compiler supplied destructor.  Copying forbidden - see below.
 
     /// Access particle information via ParticleID or particle name
-    HepPDT::ParticleData const& particle( HepPDT::ParticleID ) const;
-    HepPDT::ParticleData const& particle( std::string const& name ) const;
+    safe_ref particle( HepPDT::ParticleID ) const;
+    safe_ref particle( std::string const& name ) const;
 
     // Duplicate accessors with [] syntax.
-    HepPDT::ParticleData const& operator[] ( HepPDT::ParticleID id ) const{
+    safe_ref operator[] ( HepPDT::ParticleID id ) const{
       return particle(id);
     }
-    HepPDT::ParticleData const& operator[] ( std::string const& name ) const{
+    safe_ref operator[] ( std::string const& name ) const{
       return particle(name);
     }
 

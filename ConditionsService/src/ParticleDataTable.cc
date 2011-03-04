@@ -1,22 +1,25 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.cc,v 1.5 2010/09/27 19:38:44 kutschke Exp $
+//   $Id: ParticleDataTable.cc,v 1.6 2011/03/04 23:22:33 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2010/09/27 19:38:44 $
+//   $Date: 2011/03/04 23:22:33 $
 //
 //
-// 1) In changeUnits and improveData I want to loop over all elements in the 
+// 1) The Geant4 particle table is a superset of this table.  It includes
+//    various nuclei and ions.
+//
+// 2) In changeUnits and improveData I want to loop over all elements in the 
 //    and modify their contents. The minor complication is that there is no 
 //    non-const iterator over the table.  But we can stitch one together using 
 //    two components.  First, there is an accessor by ParticleID to give a 
 //    non-const pointer to any element in the table.  Also, there is a const 
 //    iterator over the table.
 //
-// 2) The table is populated in the destructor of the table builder.  So it is
+// 3) The table is populated in the destructor of the table builder.  So it is
 //    not valid until the table builder goes out of scope.
 //
-// 3) At present mass_width_2008.mc contains precise values of masses and widths
+// 4) At present mass_width_2008.mc contains precise values of masses and widths
 //    but it is missing a lot of particles and does not contain antiparticles.
 //    Moreover if I add anti-particles to the table the code that reads the tables
 //    skips them.  On the other hand particle.tbl has all of the particles present
@@ -83,7 +86,7 @@ namespace mu2e {
 
   void ParticleDataTable::loadTableFromFile(){
 
-    // See note 2.
+    // See note 3.
     {
       // Construct the table builder.
       HepPDT::TableBuilder  tb(_pdt);
@@ -107,28 +110,16 @@ namespace mu2e {
 
   }
 
-  // Accessor by ID that checks for null pointer.
-  ParticleData const& ParticleDataTable::particle( ParticleID id ) const{
+  // Accessor by ID that checks that the requested particle exists in the table.
+  ParticleDataTable::safe_ref ParticleDataTable::particle( ParticleID id ) const{
     ParticleData const* p = _pdt.particle(id); 
-    if ( p == 0 ){
-      throw cms::Exception("RANGE")
-        << "Could not find requested particle in the ParticleDataTable.  " 
-        << "Requested paricle id code was: "
-        << id.pid() << "\n";
-    }
-    return *p;
+    return safe_ref(p);
   }
 
-  // Accessor by name that checks for null pointer.
-  ParticleData const& ParticleDataTable::particle( std::string const& name ) const{
+  // Accessor by name that checks that the requested particle exists in the table.
+  ParticleDataTable::safe_ref ParticleDataTable::particle( std::string const& name ) const{
     ParticleData const* p = _pdt.particle(name);
-    if ( p == 0 ){
-      throw cms::Exception("RANGE")
-        << "Could not find requested particle in the ParticleDataTable.  " 
-        << "Requested particle name was: "
-        << name << "\n";
-    }
-    return *p;
+    return safe_ref(p);
   }
 
   void ParticleDataTable::changeUnits(){
@@ -137,7 +128,7 @@ namespace mu2e {
     double eMassMeV = 0.510999;
 
     // Electron mass from the table.
-    double eMass = particle(PDGCode::e_minus).mass().value();
+    double eMass = particle(PDGCode::e_minus).ref().mass().value();
 
     // Ratio of two measures of the mass.
     double r = eMass/eMassMeV;
@@ -174,7 +165,7 @@ namespace mu2e {
       for ( HepPDT::ParticleDataTable::const_iterator i=_pdt.begin(), e=_pdt.end();
             i!=e; ++i ){
 
-        // Get non-const reference to the particle data.  See Note 1.
+        // Get non-const reference to the particle data.  See Note 2.
         ParticleData& particle = *_pdt.particle(i->first.pid());
           
         // Extract properties with dimensions of mass.
@@ -199,13 +190,13 @@ namespace mu2e {
   } // end changeUnits.
 
 
-  // This is a temporary hack.  See note 3.
+  // This is a temporary hack.  See note 4.
   void ParticleDataTable::improveData(){
 
     // Auxillary table that has better masses and widths but is missing anti-particles.
     HepPDT::ParticleDataTable auxTable;
 
-    // Fill the auxillary table. See note 2.
+    // Fill the auxillary table. See note 3.
     {
       // Construct the table builder.
       HepPDT::TableBuilder  tb(auxTable);
@@ -224,7 +215,7 @@ namespace mu2e {
     for ( HepPDT::ParticleDataTable::const_iterator i=_pdt.begin(), e=_pdt.end();
           i!=e; ++i ){
 
-      // Get non-const access to each particle. See note 1.
+      // Get non-const access to each particle. See note 2.
       ParticleData* particle = _pdt.particle( i->first.pid() );
       
       ParticleData* tmp = auxTable.particle( std::abs(i->first.pid()) );
