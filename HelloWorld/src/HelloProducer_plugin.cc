@@ -1,9 +1,9 @@
 //
 //  The first example of a producer.
 //
-//  $Id: HelloProducer_plugin.cc,v 1.1 2011/02/15 20:26:08 kutschke Exp $
+//  $Id: HelloProducer_plugin.cc,v 1.2 2011/03/04 23:34:25 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2011/02/15 20:26:08 $
+//  $Date: 2011/03/04 23:34:25 $
 //   
 //  Original author Rob Kutschke
 //
@@ -15,11 +15,8 @@
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
-//#include "ConditionsService/inc/ConditionsHandle.hh"
-//#include "ConditionsService/inc/ParticleDataTable.hh"
-
+// Mu2e includes.
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
-//Mu2eUtilities/inc/PDGCode.hh
 
 using namespace std;
 
