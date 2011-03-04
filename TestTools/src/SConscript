@@ -1,0 +1,32 @@
+#
+# $Id: SConscript,v 1.1 2011/03/04 19:54:17 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/03/04 19:54:17 $
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+Import('env')
+
+plugin_cc = Glob('*_plugin.cc', strings=True)
+non_plugin_cc = Glob('*.cc', strings=True)
+for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+if non_plugin_cc:
+
+    # From: /path1/path2/path3/Name/src extract the string Name field.
+    ll=env.Dir('.').abspath
+    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+    local_lib_name=os.path.dirname(dd)
+    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
+                      LIBS=[],
+                      )
+    libs=[ '#/lib/'+local_lib_name ]
+else:
+    libs=[]
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
