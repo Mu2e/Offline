@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.15 2011/02/14 23:20:01 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/14 23:20:01 $
+// $Id: ReadBack.hh,v 1.16 2011/03/04 21:31:11 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/03/04 21:31:11 $
 //
 // Original author Rob Kutschke
 //
@@ -38,9 +38,10 @@ namespace mu2e {
     virtual ~ReadBack() { }
 
     virtual void beginJob(edm::EventSetup const&);
+    virtual void endJob();
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    virtual void analyze(const edm::Event& e, edm::EventSetup const&);
 
   private:
 
@@ -117,6 +118,8 @@ namespace mu2e {
 
     // Need to keep track of TGraph entries by hand.
     int _xyHitCount;
+
+    int _nBadG4Status;
 
     // Do the work specific to one of the trackers.
     void doLTracker(const edm::Event& event);

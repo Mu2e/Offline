@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.29 2011/02/17 17:38:02 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/17 17:38:02 $
+// $Id: ReadBack.cc,v 1.30 2011/03/04 21:31:11 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/03/04 21:31:11 $
 //
 // Original author Rob Kutschke
 //
@@ -108,7 +108,8 @@ namespace mu2e {
     _xyHits(0),
 
     // Remaining member data
-    _xyHitCount(0){
+    _xyHitCount(0),
+    _nBadG4Status(0){
   }
   
   void ReadBack::beginJob(edm::EventSetup const& ){
@@ -208,7 +209,25 @@ namespace mu2e {
     
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
-    
+
+    // Inquire about the completion status of G4.
+    edm::Handle<StatusG4> g4StatusHandle;
+    event.getByLabel( _g4ModuleLabel, g4StatusHandle);
+    StatusG4 const& g4Status = *g4StatusHandle;
+    if ( _nAnalyzed < _maxFullPrint ){
+      cerr << g4Status << endl;
+    }
+
+    // Abort if G4 did not complete correctly.  
+    // Use your own judgement about whether to abort or to continue.
+    if ( g4Status.status() != 0 ) {
+      ++_nBadG4Status;
+      edm::LogError("G4") 
+        << "Aborting ReadBack::analyze due to G4 status\n"  
+        << g4Status;
+      return;
+    }
+
     // Call code appropriate for the tracker that is installed in this job.
     edm::Service<GeometryService> geom;
     if( geom->hasElement<LTracker>() || geom->hasElement<TTracker>() ){
@@ -444,10 +463,6 @@ namespace mu2e {
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
 
-    edm::Handle<StatusG4> g4StatusHandle;
-    event.getByLabel( _g4ModuleLabel, g4StatusHandle);
-    StatusG4 const& g4Status = *g4StatusHandle;
-
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
@@ -488,11 +503,6 @@ namespace mu2e {
         << "Way too many hits in this event.  Something is really wrong."
         << hits->size();
     }
-
-    if ( _nAnalyzed < _maxFullPrint ){
-      cerr << g4Status << endl;
-    }
-
 
     // ntuple buffer.
     float nt[_ntup->GetNvar()];
@@ -821,7 +831,7 @@ namespace mu2e {
 
     }
     return count;
-  }
+  }  // end countHitNeighbours
   
   // 
   // Example of how to read information about stopping target 
@@ -901,6 +911,13 @@ namespace mu2e {
       _hTargetNfoils2D->Fill(id_start,nfoil);
     }
 
+  } // end doStoppingTarget
+
+  void ReadBack::endJob(){
+    cout << "ReadBack::endJob Number of events skipped "
+         << "due to G4 completion status: "
+         << _nBadG4Status
+         << endl;
   }
 
 }  // end namespace mu2e
