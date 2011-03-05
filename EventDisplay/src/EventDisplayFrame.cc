@@ -72,7 +72,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   TGLayoutHints *lh0 = new TGLayoutHints(kLHintsTop,0,0,0,0);
   TGLayoutHints *lh1 = new TGLayoutHints(kLHintsTop,2,1,2,2);
 
-  TGLabel *hitLabel  = new TGLabel(subFrame, "Hits");
+  TGLabel *hitLabel  = new TGLabel(subFrame, "Tracker Hits");
   TGComboBox *hitBox = new TGComboBox(subFrame,10);
   hitBox->Associate(this);
   hitBox->Resize(250,20);
@@ -264,7 +264,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   _perspectiveButton->SetState(kButtonDown);
   _parallelButton->SetState(kButtonUp);
 
-  TGVerticalFrame *innerFrame1   = new TGVerticalFrame(footLine,100,200);
+  TGVerticalFrame *innerFrame1   = new TGVerticalFrame(footLine,100,400);
 
   TGGroupFrame *optionsFrame     = new TGGroupFrame(innerFrame1,"Options");
   TGHorizontalFrame *filterFrame = new TGHorizontalFrame(optionsFrame,500,50);
@@ -297,6 +297,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   TGTextButton *nextButton         = new TGTextButton(navigationFrame, "&Next", 1111);
   navigationFrame->AddFrame(quitButton, new TGLayoutHints(kLHintsLeft,10,0,10,0));
   navigationFrame->AddFrame(nextButton, new TGLayoutHints(kLHintsLeft,10,0,10,0));
+  innerFrame1->AddFrame(navigationFrame, new TGLayoutHints(kLHintsLeft,10,0,10,0));
 
   quitButton->Associate(this);
   nextButton->Associate(this);
@@ -305,15 +306,12 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   applyButton->Associate(this);
   goButton->Associate(this);
 
-/*
   std::string logoFileName=getenv("MU2E_BASE_RELEASE");
-  logoFileName.append("/EventDisplay/src/logo.png");
-  TGPicture *logo = (TGPicture *)gClient->GetPicture(logoFileName.c_str());
+  logoFileName.append("/EventDisplay/src/logo_small.png");
+  const TGPicture *logo = gClient->GetPicture(logoFileName.c_str());
   TGIcon *icon = new TGIcon(navigationFrame, logo, 50, 50);
-  navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,1,1,1,1));
-*/
+  navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,20,0,0,0));
 
-  innerFrame1->AddFrame(navigationFrame, new TGLayoutHints(kLHintsLeft,10,0,10,0));
   footLine->AddFrame(innerFrame1, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   AddFrame(footLine, new TGLayoutHints(kLHintsLeft,0,0,0,0));
 

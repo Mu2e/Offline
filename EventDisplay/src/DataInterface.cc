@@ -913,6 +913,22 @@ void DataInterface::removeNonGeometryComponents()
       iter++;
     }
   }
+
+  std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
+  for(hit=_hits.begin(); hit!=_hits.end(); hit++)
+  {
+    (*hit)->getComponentInfo()->removeLine(1);
+    (*hit)->getComponentInfo()->removeLine(2);
+    (*hit)->getComponentInfo()->removeLine(3);
+  }
+  std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit;
+  for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
+  {
+    (*crystalhit)->getComponentInfo()->removeLine(1);
+    (*crystalhit)->getComponentInfo()->removeLine(2);
+    (*crystalhit)->getComponentInfo()->removeLine(3);
+  }
+
   _hits.clear();
   _crystalhits.clear();
   _tracks.clear();

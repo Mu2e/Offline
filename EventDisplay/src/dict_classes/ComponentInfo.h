@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc. 
 //
-// $Id: ComponentInfo.h,v 1.3 2011/02/23 00:29:27 ehrlich Exp $
+// $Id: ComponentInfo.h,v 1.4 2011/03/05 05:06:09 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/23 00:29:27 $
+// $Date: 2011/03/05 05:06:09 $
 //
 // Original author Ralf Ehrlich
 //
@@ -96,6 +96,12 @@ namespace mu2e_eventdisplay
         sprintf(newLine,"%s, %i%s",oldLine, newNumber, unit);
         _text[lineNumber]->SetTitle(newLine);
       }
+    }
+
+    void removeLine(const unsigned int lineNumber)
+    {
+      if(lineNumber<0 || lineNumber>=_text.size()) return;  //TODO throw exception
+      _text[lineNumber]->SetTitle("");
     }
 
 
