@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.13 2011/03/04 23:33:39 kutschke Exp $
+// $Id: CosmicTuple.cc,v 1.14 2011/03/06 00:36:32 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/04 23:33:39 $
+// $Date: 2011/03/06 00:36:32 $
 //
 // Original author Rob Kutschke
 //
@@ -213,7 +213,7 @@ namespace mu2e {
     ConditionsHandle<ParticleDataTable> pdt("ignored");
     
     //Get particle mass
-    ParticleDataTable::safe_ref e_data = pdt->particle(sim.pdgId());
+    ParticleDataTable::maybe_ref e_data = pdt->particle(sim.pdgId());
     if ( e_data ){
       rmass = e_data.ref().mass().value();
     } else{
