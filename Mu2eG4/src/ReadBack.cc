@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.31 2011/03/04 23:33:39 kutschke Exp $
+// $Id: ReadBack.cc,v 1.32 2011/03/06 00:38:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/04 23:33:39 $
+// $Date: 2011/03/06 00:38:05 $
 //
 // Original author Rob Kutschke
 //
@@ -40,6 +40,7 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "ConditionsService/inc/unknownPDGIdName.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
@@ -664,20 +665,15 @@ namespace mu2e {
 
         } else {
 
-          // Particle Data group Id number.
+          // Particle Data Group Id number of this SimParticle
           int pdgId = sim.pdgId();
 
-          //
-          ParticleDataTable::safe_ref particle = pdt->particle(pdgId);
-          string pname;
-          if ( particle ) {
-            pname = particle.ref().name();
-          } else{
-            ostringstream os;
-            os << "UnknownG4Id_" << pdgId;
-            pname = os.str();
-          }
-          
+          // Name of this particle type.
+          ParticleDataTable::maybe_ref particle = pdt->particle(pdgId);
+          string pname = particle ? 
+            particle.ref().name() :
+            unknownPDGIdName(pdgId);
+
           // Information about generated particle.
           ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
           GenId genId(gen.generatorId());
