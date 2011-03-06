@@ -3,9 +3,9 @@
 A producer module that makes a collection of overly simplified "hits"
 and adds them to the event.
 
-$Id: Ex02MakeHits_plugin.cc,v 1.12 2010/09/30 01:55:52 kutschke Exp $
+$Id: Ex02MakeHits_plugin.cc,v 1.13 2011/03/06 00:38:34 kutschke Exp $
 $Author: kutschke $
-$Date: 2010/09/30 01:55:52 $
+$Date: 2011/03/06 00:38:34 $
    
 Original author Rob Kutschke
 
@@ -119,20 +119,9 @@ namespace mu2e {
       }
     }
 
-    // Put the generated hits into the event.
-    //event.put(p);
+    // Put the generated hits into the event.  At this point p is no longer usable.
+    event.put(p);
 
-    // At this point p is no longer usable.  If you try to
-    // use p it will generate a run time error.
-
-    // There is an alternative syntax for put.
-    // Comment out the call to put and uncomment the following lines:
-    //
-    // Return value is a "read only pointer" to the data product.
-    
-    edm::OrphanHandle<ToyHitCollection> q = event.put(p);
-    edm::LogInfo("Hits") << "Number of hits: " 
-                         << q->size();
   }
 
 } // end namespace mu2e

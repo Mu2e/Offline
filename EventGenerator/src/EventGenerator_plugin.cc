@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.17 2010/08/31 21:50:37 kutschke Exp $
+  $Id: EventGenerator_plugin.cc,v 1.18 2011/03/06 00:38:33 kutschke Exp $
   $Author: kutschke $
-  $Date: 2010/08/31 21:50:37 $
+  $Date: 2011/03/06 00:38:33 $
 
   Original author Rob Kutschke
 
@@ -194,7 +194,7 @@ namespace mu2e {
     }
 
     // Put the generated particles into the event.
-    edm::OrphanHandle<ToyGenParticleCollection> q = evt.put(genParticles);
+    evt.put(genParticles);
 
   }
 

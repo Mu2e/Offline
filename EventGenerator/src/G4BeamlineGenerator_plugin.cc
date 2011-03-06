@@ -128,8 +128,8 @@ namespace mu2e {
     _generator->generate(*genParticles,&(*extraData));
 
     // Put the generated particles into the event.
-    edm::OrphanHandle<ToyGenParticleCollection> q1 = evt.put(genParticles);
-    edm::OrphanHandle<G4BeamlineInfoCollection> q2 = evt.put(extraData);
+    evt.put(genParticles);
+    evt.put(extraData);
 
   }
 
