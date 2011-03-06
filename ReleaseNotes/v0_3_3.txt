@@ -3,12 +3,31 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.22 2011/03/04 23:43:41 kutschke Exp $
+  $Id: v0_3_3.txt,v 1.23 2011/03/06 00:39:01 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/03/04 23:43:41 $
+  $Date: 2011/03/06 00:39:01 $
 
+26) March 5, 2011 kutschke
+    Remove use of OrphanHandle. This feature is deprecated.
+      EventGenerator/src/EventGenerator_plugin.cc
+      EventGenerator/src/G4BeamlineGenerator_plugin.cc
+      Example02/src/Ex02MakeHits_plugin.cc
 
-24) March 3, 2011 kutschke
+25) March 5, 2011 kutschke
+    Tweaks to item 24.
+    Change the type ParticleDataTable::safe_ref to ParticleDataTable::maybe_ref
+      ConditionsService/inc/ParticleDataTable.hh
+      ConditionsService/src/ParticleDataTable.cc
+      Mu2eG4/src/CosmicTuple.cc
+
+    Add a small function to clean up the code in ReadBack.cc 
+      ConditionsService/inc/unknownPDGIdName.hh 
+      ConditionsService/src/unknownPDGIdName.cc
+
+    Use the new function.
+      Mu2eG4/src/ReadBack.cc
+
+24) March 4, 2011 kutschke
     G4 can create particles that are not in our particle data table. These are usually nuclei
     or excited nuclei.  Previous the particle data table always threw if the requested particle
     could not be found.  The code has been changed so that all of the accessors now return
