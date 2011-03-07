@@ -140,7 +140,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   animButtonStop->Associate(this);
   animButtonReset->Associate(this);
 
-  _repeatAnimationButton = new TGCheckButton(subFrame,"Repeat Animation",42);
+  _repeatAnimationButton = new TGCheckButton(subFrame,"Repeat Animation",43);
   subFrame->AddFrame(_repeatAnimationButton, lh1);
   _repeatAnimationButton->Associate(this);
 
