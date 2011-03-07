@@ -3,9 +3,13 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.23 2011/03/06 00:39:01 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/03/06 00:39:01 $
+  $Id: v0_3_3.txt,v 1.24 2011/03/07 22:58:25 wasiko Exp $
+  $Author: wasiko $
+  $Date: 2011/03/07 22:58:25 $
+
+27) March 07, 2011 Jorjadze
+    Change in Mu2eG4/src/CosmicTuple.cc
+    A few new variables were added to thr code.
 
 26) March 5, 2011 kutschke
     Remove use of OrphanHandle. This feature is deprecated.
