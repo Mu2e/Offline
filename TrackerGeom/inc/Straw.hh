@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.5 2011/01/06 23:12:59 wenzel Exp $
-// $Author: wenzel $ 
-// $Date: 2011/01/06 23:12:59 $
+// $Id: Straw.hh,v 1.6 2011/03/08 08:47:03 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2011/03/08 08:47:03 $
 //
 // Original author Rob Kutschke
 //
@@ -84,10 +84,10 @@ namespace mu2e {
     // Compiler generated copy and assignment constructors
     // should be OK.
 
-    const CLHEP::Hep3Vector& getMidPoint() const {return _c;}
+    virtual const CLHEP::Hep3Vector& getMidPoint() const {return _c;}
 
     // Delete one of these
-    const CLHEP::Hep3Vector& getDirection() const { return _w;}
+    virtual  const CLHEP::Hep3Vector& getDirection() const { return _w;}
     const CLHEP::Hep3Vector& direction() const { return _w;}
 
     // Return G4TUBS parameters outer volume for this straw - gas volume.
@@ -116,7 +116,7 @@ namespace mu2e {
     }
 
     // Half length
-    double getHalfLength() const {
+    virtual double getHalfLength() const {
       return _detail->halfLength();
     }
 
