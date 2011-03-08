@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.32 2011/03/06 00:38:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/06 00:38:05 $
+// $Id: ReadBack.cc,v 1.33 2011/03/08 09:35:16 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2011/03/08 09:35:16 $
 //
 // Original author Rob Kutschke
 //
@@ -765,7 +765,7 @@ namespace mu2e {
       _hzHit->Fill(pos.z());
 
       //    _hDriftDist->Fill(pca.dca());
-      itwp->SelectWireDet(hit.volumeId());
+      itwp->SelectCellDet(hit.volumeId());
       double distUnit = (itracker->isExternal()) ? 1.0*CLHEP::cm : 1.0*CLHEP::mm ;
       double invDistUnit = 1.0/distUnit;
       double hitpos[3] = {pos.x()*invDistUnit,pos.y()*invDistUnit,pos.z()*invDistUnit};
