@@ -10,16 +10,20 @@
 #include "ITrackerGeom/inc/CellDetail.hh"
 #include "ITrackerGeom/inc/Wire.hh"
 
+#include "TrackerGeom/inc/Straw.hh"
+
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e { 
 
-class Cell{
+class Cell : public Straw {
 
   friend class SuperLayer;
   friend class ITracker;
   friend class ITrackerMaker;
-
+  friend class CellGeometryHandle;
+  friend class CellGeometryHandle_v2;
+  friend class CellGeometryHandle_v3;
 
 public:
 
@@ -51,9 +55,11 @@ public:
 
   boost::shared_ptr<Wire> getWire() const { return  _senseWire; }
 
-  CLHEP::Hep3Vector getMidPoint() const {return _senseWire.get()->getMidPoint();}
+  const CLHEP::Hep3Vector& getMidPoint()  const { return _tmpMidPoint;  /*return _senseWire.get()->getMidPoint();*/}
 
-  CLHEP::Hep3Vector getDirection() const { return _senseWire.get()->getDirection();}
+  const CLHEP::Hep3Vector& getDirection() const { return _tmpDirection; /*return _senseWire.get()->getDirection();*/}
+
+  double getHalfLength() const { return _senseWire.get()->getDetail()->halfLength();}
 
 //  int hack;
   
@@ -67,6 +73,9 @@ protected:
   int _detailIndex;
 
   boost::shared_ptr<Wire> _senseWire;
+
+  CLHEP::Hep3Vector _tmpMidPoint;
+  CLHEP::Hep3Vector _tmpDirection;
 
 };
 

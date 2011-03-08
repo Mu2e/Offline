@@ -19,6 +19,8 @@ void CellGeometryHandle_v3::SelectCell(int SupLayer, int CelLayer, int Cell) {
         if (SupLayer==0) SelectedCellLayer++;
         _itl=sl->getLayer(SelectedCellLayer);
         _cell=_itl->getCell(Cell);
+        _cell->_tmpMidPoint  = _cell->_senseWire.get()->getMidPoint();
+        _cell->_tmpDirection = _cell->_senseWire.get()->getDirection();
         _matrx = _cell->getWire()->get3DTransfrom();
         _invmatrx = _cell->getWire()->get3DInvTransfrom();
         _fSuperLayer=SupLayer;
@@ -26,7 +28,7 @@ void CellGeometryHandle_v3::SelectCell(int SupLayer, int CelLayer, int Cell) {
         _fWire=Cell;
 }
 
-void CellGeometryHandle_v3::SelectWireDet(unsigned long  det) {
+void CellGeometryHandle_v3::SelectCellDet(unsigned long  det) {
         // Return the SuperLayer
         int fSuperLayer=(int)(det*0.0001);
 

@@ -22,7 +22,7 @@ public:
         ~CellGeometryHandle_v3();
 
         virtual void  SelectCell(int SupLayer, int CelLayer, int Cell);
-        virtual void  SelectWireDet(unsigned long det);
+        virtual void  SelectCellDet(unsigned long det);
         virtual unsigned long computeDet(int SupLayer, int CelLayer, int Cell);
 
 protected:

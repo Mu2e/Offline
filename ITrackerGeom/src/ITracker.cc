@@ -5,22 +5,22 @@ using namespace std;
 namespace mu2e { 
 
 ITracker::ITracker() {
-        _r0                                =0.0;
-        _z0                                =0.0;
-        _nSWire                        =0;
-        _nSDeltaWire        =0;
-        _nRing                        =0;
-        _rOut                        =0.0;
-        _extFile                ="";
-        _isExternal                =false;
-        _nSuperLayers        =0;
-        _nWalls                        =0;
-        _zHalfLength        =0.0;
-        _max_EndCap_dim        =0.0;
-        _geomType                =ITracker::Hexagonal;
-        _endcapType                =ITracker::Plane;
-        _displayGasLayer=false;
-        _displayWires        =false;
+        _r0              =0.0;
+        _z0              =0.0;
+        _nSWire          =0;
+        _nSDeltaWire     =0;
+        _nRing           =0;
+        _rOut            =0.0;
+        _extFile         ="";
+        _isExternal      =false;
+        _nSuperLayers    =0;
+        _nWalls          =0;
+        _zHalfLength     =0.0;
+        _max_EndCap_dim  =0.0;
+        _geomType        =ITracker::Hexagonal;
+        _endcapType      =ITracker::Plane;
+        _displayGasLayer =false;
+        _displayWires    =false;
 }
 
 SuperLayer* ITracker::getSuperLayer(int n) const throw(cms::Exception) {

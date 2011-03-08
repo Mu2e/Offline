@@ -10,13 +10,14 @@
 
 #include "ITrackerGeom/inc/SuperLayer.hh"
 #include "ITrackerGeom/inc/Wall.hh"
-#include "GeometryService/inc/Detector.hh"
+//#include "GeometryService/inc/Detector.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
 
 namespace mu2e {
 
-class ITracker: public Detector{
+class ITracker: public Tracker {
 
         friend class ITrackerMaker;
 
@@ -27,33 +28,33 @@ public:
         virtual std::string name() const { return "ITracker";}
 
 
-        enum GeomType        { Hexagonal=2, Square };
-        enum EnCapType        { Plane, Spherical };
+        enum GeomType          { Hexagonal=2, Square };
+        enum EnCapType         { Plane, Spherical };
 
-        double r0()                           const { return _r0;}
-        double z0()                           const { return _z0;}
-        double rOut()                         const { return _rOut;}
-        int nSWire()                          const { return _nSWire;}
-        int nSDeltaWire()                 const { return _nSDeltaWire;}
-        int nRing()                         const { return _nRing;}
+        double r0()            const { return _r0;}
+        double z0()            const { return _z0;}
+        double rOut()          const { return _rOut;}
+        int nSWire()           const { return _nSWire;}
+        int nSDeltaWire()      const { return _nSDeltaWire;}
+        int nRing()            const { return _nRing;}
 
-        std::string extFile()        const { return _extFile; }
-        bool isExternal()                const { return _isExternal; }
+        std::string extFile()  const { return _extFile; }
+        bool isExternal()      const { return _isExternal; }
 
-        int nSuperLayers()                const { return _nSuperLayers; }
+        int nSuperLayers()     const { return _nSuperLayers; }
 
-        double zHalfLength()        const { return _zHalfLength;}
+        double zHalfLength()   const { return _zHalfLength;}
 
-        double maxEndCapDim()        const { return _max_EndCap_dim; }
+        double maxEndCapDim()  const { return _max_EndCap_dim; }
 
-        GeomType geomType()                const { return _geomType; }
+        GeomType geomType()    const { return _geomType; }
 
-        EnCapType endcapType()        const { return _endcapType; }
+        EnCapType endcapType() const { return _endcapType; }
 
-        int getNWalls()                        const { return _nWalls; }
+        int getNWalls()        const { return _nWalls; }
 
-        bool displayGasLayer()        const { return _displayGasLayer; }
-        bool displayWires()                const { return _displayWires; }
+        bool displayGasLayer() const { return _displayGasLayer; }
+        bool displayWires()    const { return _displayWires; }
 
         CellGeometryHandle* getCellGeometryHandle() const { return _cellhnd.get(); }
 
@@ -61,6 +62,24 @@ public:
 
         boost::shared_array<SuperLayer> getSuperLayersArray() const {
                 return _sprlr;
+        }
+
+        const Straw& getStraw ( const StrawId& sid )      const throw(cms::Exception) {
+                throw cms::Exception("GEOM")<< "Fake method \"getStraw ( StrawId )\", not used for the ITracker";
+                return fakeStraw;
+        }
+//        const Straw& getStraw ( StrawIndex i )      const { return fakeStraw; }
+        const Straw&  getStraw ( StrawIndex i )            const {
+                getCellGeometryHandle()->SelectCellDet(i.asUint());
+                return dynamic_cast<Straw&>( *(getCellGeometryHandle()->GetITCell().get()) );
+        }
+        const std::deque<Straw>& getAllStraws()           const throw(cms::Exception) {
+                throw cms::Exception("GEOM")<< "Fake method \"getAllStraws()\", not used for the ITracker";
+                return fakeStrawDeq;
+        }
+        const std::vector<StrawDetail>& getStrawDetails() const throw(cms::Exception) {
+                throw cms::Exception("GEOM")<< "Fake method \"getStrawDetails()\", not used for the ITracker";
+                return fakeStrawVec;
         }
 
 //        const boost::shared_ptr<Wall> getWall(int n) throw(cms::Exception);
@@ -116,6 +135,9 @@ private:
         std::multimap <Wall::Walltype,boost::shared_ptr<Wall> >::iterator _walls_it;
         int _lastSeenWall; //last extracted wall from the _walls container using the getWall method
 
+        const Straw fakeStraw;
+        const std::deque<Straw> fakeStrawDeq;
+        const std::vector<StrawDetail>  fakeStrawVec;
 };
 
 } //namespace mu2e

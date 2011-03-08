@@ -9,33 +9,33 @@
 namespace mu2e {
 
 Wall::Wall(){
-        _type                   =        Wall::undefined;
-        _pRmin                  =        0.0;
-        _pRmax                  =        0.0;
-        _pSPhi                  =        0.0;
-        _pDPhi                  =        0.0;
-        _pSTheta                =        0.0;
-        _pDTheta                =        0.0;
-        _pDz                    =        0.0;
-        _name                   =        "";
-//        _c                    =        CLHEP::Hep3Vector(0.0,0.0,0.0);
-        _nShells                =        0;
-        _totalThickness         =        0.0;
+        _type           = Wall::undefined;
+        _pRmin          = 0.0;
+        _pRmax          = 0.0;
+        _pSPhi          = 0.0;
+        _pDPhi          = 0.0;
+        _pSTheta        = 0.0;
+        _pDTheta        = 0.0;
+        _pDz            = 0.0;
+        _name           = "";
+        //_c              = CLHEP::Hep3Vector(0.0,0.0,0.0);
+        _nShells        = 0;
+        _totalThickness = 0.0;
 }
 
 Wall::Wall(Walltype wt){
-        _type                   =        wt;
-        _pRmin                  =        0.0;
-        _pRmax                  =        0.0;
-        _pSPhi                  =        0.0;
-        _pDPhi                  =        0.0;
-        _pSTheta                =        0.0;
-        _pDTheta                =        0.0;
-        _pDz                    =        0.0;
-        _name                   =        "";
-//        _c                    =        CLHEP::Hep3Vector(0.0,0.0,0.0);
-        _nShells                =        0;
-        _totalThickness         =        0.0;
+        _type           = wt;
+        _pRmin          = 0.0;
+        _pRmax          = 0.0;
+        _pSPhi          = 0.0;
+        _pDPhi          = 0.0;
+        _pSTheta        = 0.0;
+        _pDTheta        = 0.0;
+        _pDz            = 0.0;
+        _name           = "";
+        //_c              = CLHEP::Hep3Vector(0.0,0.0,0.0);
+        _nShells        = 0;
+        _totalThickness = 0.0;
 }
 
 Wall::Wall(const Wall &wl) {
@@ -51,7 +51,7 @@ Wall::Wall(const Wall &wl) {
                 _pDTheta=wl.getDTheta();
                 _pDz=wl.getDz();
                 _name=wl.getName();
-//                _c=wl.getC();
+                //_c=wl.getC();
                 _pos=wl.getPos();
                 _materialsName=wl.getMaterialsName();
                 _thicknesses=wl.getThicknesses();
@@ -84,7 +84,7 @@ Wall& Wall::operator=(const Wall &wl) {
                 _pDTheta=wl.getDTheta();
                 _pDz=wl.getDz();
                 _name=wl.getName();
-//                _c=wl.getC();
+                //_c=wl.getC();
                 _pos=wl.getPos();
                 _materialsName=wl.getMaterialsName();
                 _thicknesses=wl.getThicknesses();

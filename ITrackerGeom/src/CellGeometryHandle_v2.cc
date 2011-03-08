@@ -16,7 +16,9 @@ void CellGeometryHandle_v2::SelectCell(int SupLayer, int CelLayer, int Cell) {
         if (SupLayer==0) SelectedCellLayer++;
         /*boost::shared_ptr<ITLayer> */_itl=sl->getLayer(SelectedCellLayer);
         _cell=_itl->getCell(Cell);
-//        _cell = _itr->getSuperLayer(SupLayer)->getLayer(CelLayer)->getCell(Cell);
+        _cell->_tmpMidPoint  = _cell->_senseWire.get()->getMidPoint();
+        _cell->_tmpDirection = _cell->_senseWire.get()->getDirection();
+ //        _cell = _itr->getSuperLayer(SupLayer)->getLayer(CelLayer)->getCell(Cell);
         _matrx = _cell->getWire()->get3DTransfrom();
         _invmatrx = _cell->getWire()->get3DInvTransfrom();
         _fSuperLayer=SupLayer;

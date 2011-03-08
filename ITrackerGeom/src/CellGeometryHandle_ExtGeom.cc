@@ -19,7 +19,7 @@ void CellGeometryHandle_ExtGeom::SelectCell(int SupLayer, int CelLayer, int Cell
         _fWire=_iTwire->GetWire();
 }
 
-void CellGeometryHandle_ExtGeom::SelectWireDet(unsigned long  det)
+void CellGeometryHandle_ExtGeom::SelectCellDet(unsigned long  det)
 {
         _iTwire->SelectWireDet(det);
         _fSuperLayer=_iTwire->GetSuperLayer();

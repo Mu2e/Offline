@@ -18,7 +18,7 @@ public:
         ~CellGeometryHandle_ExtGeom();
 
     virtual void SelectCell(int SupLayer, int CelLayer, int Cell);
-    virtual void SelectWireDet(unsigned long det);// Det Method
+    virtual void SelectCellDet(unsigned long det);// Det Method
     virtual void Global2Local(double *global, double *local);
     virtual void Local2Global(double *local, double *global);
     virtual void WirePosAtEndcap(float *right, float *left);

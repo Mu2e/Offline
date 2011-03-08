@@ -29,31 +29,31 @@ public:
 
         ~Wall (){}
 
-//        CLHEP::Hep3Vector getC()                const { return _c; }
+        //        CLHEP::Hep3Vector getC()                const { return _c; }
 
-        HepGeom::Transform3D getPos()        const { return _pos; }
+        HepGeom::Transform3D getPos() const { return _pos; }
 
-        Walltype getType()                                 const { return _type; }
+        Walltype getType()            const { return _type; }
 
-        int getNShells()                                 const { return _nShells; }
+        int getNShells()              const { return _nShells; }
 
-        float getDPhi()                                 const { return _pDPhi; }
+        float getDPhi()               const { return _pDPhi; }
 
-        float getDTheta()                                 const { return _pDTheta; }
+        float getDTheta()             const { return _pDTheta; }
 
-        float getDz()                                         const { return _pDz; }
+        float getDz()                 const { return _pDz; }
 
-        std::string getName()                         const { return _name; }
+        std::string getName()         const { return _name; }
 
-        float getRmax()                                 const { return _pRmax; }
+        float getRmax()               const { return _pRmax; }
 
-        float getRmin()                                 const { return _pRmin; }
+        float getRmin()               const { return _pRmin; }
 
-        float getSPhi()                                 const { return _pSPhi; }
+        float getSPhi()               const { return _pSPhi; }
 
-        float getSTheta()                                 const { return _pSTheta; }
+        float getSTheta()             const { return _pSTheta; }
 
-        float getTotalThickness()                const {
+        float getTotalThickness()     const {
                 return _totalThickness;
         }
 
@@ -101,24 +101,24 @@ public:
 
 protected:
 
-        Walltype                                _type;
+        Walltype     _type;
 
-        float                                        _pRmin;
-        float                                        _pRmax;
-        float                                        _pSPhi;
-        float                                        _pDPhi;
-        float                                        _pSTheta;
-        float                                        _pDTheta;
-        float                                        _pDz;
-        std::string                                _name;
-//        CLHEP::Hep3Vector                _c;
-        HepGeom::Transform3D        _pos;
+        float        _pRmin;
+        float        _pRmax;
+        float        _pSPhi;
+        float        _pDPhi;
+        float        _pSTheta;
+        float        _pDTheta;
+        float        _pDz;
+        std::string  _name;
+        //CLHEP::Hep3Vector  _c;
+        HepGeom::Transform3D _pos;
 
 private:
-        int                                                _nShells;
+        int                                          _nShells;
         float                                        _totalThickness;
-        boost::shared_ptr<std::vector<std::string> >         _materialsName;
-        boost::shared_ptr<std::vector<double> >                 _thicknesses;
+        boost::shared_ptr<std::vector<std::string> > _materialsName;
+        boost::shared_ptr<std::vector<double> >      _thicknesses;
 
 };
 
