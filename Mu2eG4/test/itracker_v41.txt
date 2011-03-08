@@ -1,12 +1,4 @@
 //
-// Geometry description of the ITracker.
-//
-// $Id: itracker_v0.txt,v 1.2 2011/03/08 08:40:47 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/03/08 08:40:47 $
-//
-// Original author Rob Kutschke
-//
 // Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
 
 bool hasITracker      = true;
@@ -14,11 +6,11 @@ bool hasITracker      = true;
 string itracker.extFile          =    "";   //"ITrackerGeom/ITrackerGeom.gdml";
 string itracker.extWireFile      =    "";   //"ITrackerGeom/ITrackerWireData.root";
 
-double itracker.r0               = 400.0;   //388.48435399; // Lengths in mm
-double itracker.z0               =10200.;
-double itracker.zHalfLength      =1000.0;   //1300.0;
-double itracker.rOut             = 840.0;   //870.0;
-double itracker.drop             =  20.0;
+double itracker.r0               =  379.599300638;   //To be consistent check that is = nSWire*cellDimension/2pi -cellDimension/2 -InnerWall_thickness -fieldWireDiameter -1.0e-2 -1.0e-3  // Lengths in mm
+double itracker.z0               =10200.0;
+double itracker.zHalfLength      = 1000.0;   //1300.0;
+double itracker.rOut             =  745.0;   //must be greater than the radius of the outer most filed wire +fieldWireDiameter +OuterWall_thickness
+double itracker.drop             =   40.0;
 
 int    itracker.geomType         =    41;   //decimal digit:magior version, unit digit:minor version  20:Hexagonal, 30:Square with constant cell dimension, 
                                             //                                         31:Like 30 but with base fw in both directions and shared between two consecutive layers, and layers staggered
@@ -29,20 +21,13 @@ bool   itracker.displayGasLayer  = false;   //Allow to display the gas inside th
 bool   itracker.displayWires     = false;   //Allow to display every wires inside gas inside the chamber. It is recommended to switch on it only for debug, it makes the display very slow.
 
 
-// Cell parameter needed only for the hexagonal cell case
-
-int    itracker.nSWire           =   140;
-int    itracker.nSDeltaWire      =    12;
-int    itracker.nSuperLayer      =     8;
-int    itracker.nRing            =     7;
-
 // Cell parameter needed only for the square cell case
 
-double itracker.cellDimension    =  10.0;
-double itracker.FWireStep        =   1.0;
-int    itracker.nLayer           =    40;
-int    itracker.nVerticalFWire   =     2;
-int    itracker.StoFWireRation   =    12;
+int    itracker.nSWire           =   408;
+double itracker.cellDimension    =   6.0;  //of the innermost layer
+int    itracker.nLayer           =    38;
+int    itracker.nVerticalFWire   =     1;
+int    itracker.StoFWireRation   =     5;
 
 
 // Materials and elements compositions
@@ -52,7 +37,7 @@ string         itracker.fillMaterial    = "ITGasMix";
 int    itracker.nFieldWireShells =      2;
 vector<string> itracker.fieldWireMaterials = { "CarbonFiber", "G4_Ag" };
 //vector<double> itracker.fieldWireShellsThicknesses = { 0.033, 0.001 };
-vector<double> itracker.fieldWireShellsThicknesses = { 0.0795, 0.0005 };
+vector<double> itracker.fieldWireShellsThicknesses = { 0.0395, 0.0005 };
 
 // Sense wires description
 int    itracker.nSenseWireShells =      2;
@@ -61,22 +46,19 @@ vector<string> itracker.senseWireMaterials = { "CarbonFiber", "G4_Ag" };
 vector<double> itracker.senseWireShellsThicknesses = { 0.0145, 0.0005 };
 
 // Inner Wall description
-//int    itracker.nInnerWallShells =      4;
-//vector<string> itracker.innerWallMaterials = { "CarbonFiber", "PolypropyleneFoam", "CarbonFiber" , "G4_Cu" };
-//vector<double> itracker.innerWallShellsThicknesses = { 0.125, 0.48, 0.125, 0.002 };
-int    itracker.nInnerWallShells =      1;
-vector<string> itracker.innerWallMaterials = { "CarbonFiber"};
-vector<double> itracker.innerWallShellsThicknesses = { 1.0 };
+int    itracker.nInnerWallShells =      4;
+vector<string> itracker.innerWallMaterials = { "CarbonFiber", "PolypropyleneFoam", "CarbonFiber" , "G4_Cu" };
+vector<double> itracker.innerWallShellsThicknesses = { 0.300, 6.40, 0.300, 0.001 };
 
 // Outer Wall description
 int    itracker.nOuterWallShells =      2;
 vector<string> itracker.outerWallMaterials = { "G4_Cu" , "CarbonFiber" };
-vector<double> itracker.outerWallShellsThicknesses = { 0.002, 10.0 };
+vector<double> itracker.outerWallShellsThicknesses = { 0.001, 10.0 };
 
 // End Cap description
 int    itracker.nEndCapWallShells =     2;
-vector<string> itracker.endcapWallMaterials = { "CarbonFiber", "G4_Cu" };
-vector<double> itracker.endcapWallShellsThicknesses = { 0.002, 5.0 };
+vector<string> itracker.endcapWallMaterials = { "G4_Cu" , "CarbonFiber" };
+vector<double> itracker.endcapWallShellsThicknesses = { 0.001, 0.500 };
 
 //
 // This tells emacs to view this file in c++ mode.

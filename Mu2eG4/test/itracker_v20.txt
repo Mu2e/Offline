@@ -1,12 +1,4 @@
 //
-// Geometry description of the ITracker.
-//
-// $Id: itracker_v0.txt,v 1.2 2011/03/08 08:40:47 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/03/08 08:40:47 $
-//
-// Original author Rob Kutschke
-//
 // Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
 
 bool hasITracker      = true;
@@ -20,7 +12,7 @@ double itracker.zHalfLength      =1000.0;   //1300.0;
 double itracker.rOut             = 840.0;   //870.0;
 double itracker.drop             =  20.0;
 
-int    itracker.geomType         =    41;   //decimal digit:magior version, unit digit:minor version  20:Hexagonal, 30:Square with constant cell dimension, 
+int    itracker.geomType         =    20;   //decimal digit:magior version, unit digit:minor version  20:Hexagonal, 30:Square with constant cell dimension, 
                                             //                                         31:Like 30 but with base fw in both directions and shared between two consecutive layers, and layers staggered
                                             //                                         41:Like 31 but with cell dimension that increases with radius
 int    itracker.endCapType       =     0;   //EndCap shape type: 0 plane, 1 spherical
@@ -35,14 +27,6 @@ int    itracker.nSWire           =   140;
 int    itracker.nSDeltaWire      =    12;
 int    itracker.nSuperLayer      =     8;
 int    itracker.nRing            =     7;
-
-// Cell parameter needed only for the square cell case
-
-double itracker.cellDimension    =  10.0;
-double itracker.FWireStep        =   1.0;
-int    itracker.nLayer           =    40;
-int    itracker.nVerticalFWire   =     2;
-int    itracker.StoFWireRation   =    12;
 
 
 // Materials and elements compositions
