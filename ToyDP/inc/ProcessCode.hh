@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.2 2011/01/28 23:52:02 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/28 23:52:02 $
+// $Id: ProcessCode.hh,v 1.3 2011/03/08 14:18:01 ayarritu Exp $
+// $Author: ayarritu $ 
+// $Date: 2011/03/08 14:18:01 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,8 @@ namespace mu2e {
       PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic,
       StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic,
       XiZeroInelastic,        mu2eLowEKine,            mu2eHallAir,         mu2eMaxSteps,
-      mu2ePrimary,            lastEnum
+      mu2ePrimary,            muMinusConversionAtRest, 
+      lastEnum
     };
   
     // Keep this list of names in sync with the enum. Used in ProcessCode.cc
@@ -77,7 +78,7 @@ namespace mu2e {
     "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic",        \
     "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic",          \
     "XiZeroInelastic",        "mu2eLowEKine",            "mu2eHallAir",         "mu2eMaxSteps",              \
-    "mu2ePrimary"
+    "mu2ePrimary",            "muMinusConversionAtRest" 
 
   public:
 
