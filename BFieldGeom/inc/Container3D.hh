@@ -5,9 +5,9 @@
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
-// $Id: Container3D.hh,v 1.6 2011/02/22 21:08:25 kutschke Exp $
+// $Id: Container3D.hh,v 1.7 2011/03/08 00:40:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/02/22 21:08:25 $
+// $Date: 2011/03/08 00:40:23 $
 //
 
 #include <vector>
@@ -113,6 +113,15 @@ namespace mu2e {
         throw std::domain_error(os.str());
       }
     }
+
+    // Recover the memory. T
+    void cleart(){
+      _nx = 0;
+      _ny = 0;
+      _nz = 0;
+      _vec.clear();
+    }
+
 
   private:
 

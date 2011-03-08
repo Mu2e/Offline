@@ -1,12 +1,11 @@
 #ifndef BFieldManager_HH
 #define BFieldManager_HH
-
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.5 2011/02/22 21:09:16 kutschke Exp $
+// $Id: BFieldManager.hh,v 1.6 2011/03/08 00:40:23 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/02/22 21:09:16 $
+// $Date: 2011/03/08 00:40:23 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -19,11 +18,13 @@
 
 // C++ includes
 #include <string>
+#include <iosfwd> 
 #include <map>
 
 // Includes from Mu2e
 #include "GeometryService/inc/Detector.hh"
 #include "BFieldGeom/inc/BFMapBase.hh"
+#include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/BFMap.hh"
 
 namespace mu2e {
@@ -48,6 +49,7 @@ namespace mu2e {
     // Check if point belongs to any map
     bool isValid(CLHEP::Hep3Vector const& point) const;
     
+    // The identifier for treating the BFieldManager as a field map itself.
     const std::string& getKey() const { return _key; };
 
     // Get an arbitrary map.  Throw if it cannot be found.
@@ -67,6 +69,12 @@ namespace mu2e {
       return ( _map.find(key) != _map.end() );
     }
 
+    double  rTorus() const { return _rTorus; }
+    double xOffset() const { return _xOffset; }
+    BFMapType type() const { return _type; }
+
+    void print( std::ostream& out );
+
   private:
 
     // Name of the manager
@@ -79,11 +87,20 @@ namespace mu2e {
     // Special case: uniform field in the DS.
     CLHEP::Hep3Vector _dsUniformValue;
 
+    // Geometric properties of the muon beamline:
+    // bend radius of the TS arcs and the offset from the center to DS or PS.
+    double _rTorus;
+    double _xOffset;
+
+    // GMC, G4BL or possible future types.
+    BFMapType _type;
+
     // Add an empty map to the list.  Used by BFieldManagerMaker.
     BFMap& addBFMap( const std::string& key,
                      int const nx, 
                      int const ny, 
-                     int const nz );
+                     int const nz,
+                     BFMapType::enum_type type );
 
     // This class could support copying but it is not really needed and
     // I would like to prevent unintended copies ( people forgetting to

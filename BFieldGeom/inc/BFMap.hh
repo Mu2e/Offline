@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.8 2011/02/22 21:07:48 kutschke Exp $
+// $Id: BFMap.hh,v 1.9 2011/03/08 00:40:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/02/22 21:07:48 $
+// $Date: 2011/03/08 00:40:23 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include "BFieldGeom/inc/BFMapBase.hh"
+#include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/Container3D.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -35,10 +36,12 @@ namespace mu2e {
       _nz(),
       _grid(),
       _field(),
-      _isDefined(){
+      _isDefined(),
+      _allDefined(false),
+      _type(){
     }
 
-    BFMap( const std::string& key, bool warnIfOutside=false):
+    BFMap( const std::string& key, BFMapType::enum_type atype, bool warnIfOutside=false):
       _key(key),
       _warnIfOutside(warnIfOutside),
       _nx(),
@@ -46,13 +49,16 @@ namespace mu2e {
       _nz(),
       _grid(),
       _field(),
-      _isDefined(){
+      _isDefined(),
+      _allDefined(false),
+      _type(atype){
     }
 
     BFMap(std::string filename, 
           int const nx, 
           int const ny, 
           int const nz,
+          BFMapType::enum_type atype,
           bool warnIfOutside=false):
       _key(filename),
       _warnIfOutside(warnIfOutside),
@@ -61,7 +67,9 @@ namespace mu2e {
       _nz(nz),
       _grid(_nx,_ny,_nz),
       _field(_nx,_ny,_nz),
-      _isDefined(_nx,_ny,_nz,false){
+      _isDefined(_nx,_ny,_nz,false),
+      _allDefined(false),
+      _type(atype){
     };
     
     virtual ~BFMap();
@@ -71,6 +79,9 @@ namespace mu2e {
 
     // Validity checker
     bool isValid(CLHEP::Hep3Vector const& point) const;
+
+    // Some extra checks for GMC format maps.
+    bool isGMCValid(CLHEP::Hep3Vector const& point) const;
 
     int nx() const { return _nx; }
     int ny() const { return _ny; }
@@ -83,6 +94,8 @@ namespace mu2e {
     double dx() const {return _dx;}; 
     double dy() const {return _dy;};
     double dz() const {return _dz;};
+
+    BFMapType type() const { return _type; }
 
     const std::string& getKey() const { return _key; };
 
@@ -112,6 +125,12 @@ namespace mu2e {
     mu2e::Container3D<CLHEP::Hep3Vector> _grid;
     mu2e::Container3D<CLHEP::Hep3Vector> _field;
     mu2e::Container3D<bool> _isDefined;
+
+    // If all grid points are valid then _isDefined is not needed.
+    bool  _allDefined;
+
+    // GMC, G4BL or possible future types.
+    BFMapType _type;
 
     // Functions used internally and by the code that populates the maps.
 

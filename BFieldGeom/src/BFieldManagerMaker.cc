@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.11 2011/02/25 23:53:25 kutschke Exp $
+// $Id: BFieldManagerMaker.cc,v 1.12 2011/03/08 00:40:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/02/25 23:53:25 $
+// $Date: 2011/03/08 00:40:46 $
 //
 
 // Includes from C++
@@ -62,6 +62,9 @@ namespace mu2e {
     // Instantiate an empty BFieldManager.
     _bfmgr = auto_ptr<BFieldManager>(new BFieldManager() );
 
+    
+    _bfmgr->_xOffset =_config.getDouble("mu2e.solenoidOffset");
+
     string format = _config.getString("bfield.format","GMC");
 
     if( format=="GMC" ) {
@@ -75,6 +78,9 @@ namespace mu2e {
 	  << " Check " << torusName << " value in the config file." 
 	  << " Maps are not loaded.\n";
       }
+
+      _bfmgr->_type   = BFMapType::GMC;
+      _bfmgr->_rTorus = torusRadius;
 
       // Add the DS, TS and PS field maps.
       loadGMC( "DS", "bfield.dsFile", "bfield.dsDimensions" );
@@ -94,6 +100,8 @@ namespace mu2e {
 	  << " Check " << torusName << " value in the config file." 
 	  << " Maps are not loaded.\n";
       }
+      _bfmgr->_type   = BFMapType::G4BL;
+      _bfmgr->_rTorus = torusRadius;
 
       // Read list of files with maps from the config file
       // The list can be specified directly with
@@ -140,7 +148,7 @@ namespace mu2e {
         << "\n";
 
     }
-
+    
     // For debug purposes: print the field in the target region
     CLHEP::Hep3Vector b = _bfmgr->getBField(CLHEP::Hep3Vector(3900.0,0.0,-6550.0));
     cout << "B-field at the proton target: ("
@@ -151,6 +159,7 @@ namespace mu2e {
 
     // Special case for the uniform DS field.
     loadUniformDS();
+
   }
 
   BFieldManagerMaker::~BFieldManagerMaker(){
@@ -175,13 +184,14 @@ namespace mu2e {
     _config.getVectorInt(dimensionKey,dim, 3);
 
     // Create an empty map.
-    BFMap& dsmap = _bfmgr->addBFMap( key,
+    BFMap& bfmap = _bfmgr->addBFMap( key,
                                      dim[0],
                                      dim[1],
-                                     dim[2] );
+                                     dim[2],
+                                     BFMapType::GMC );
 
     // Fill the map.
-    readGMCMap( filename, dsmap );
+    readGMCMap( filename, bfmap );
 
     //dsmap.print(std::cout);
   }
@@ -268,7 +278,8 @@ namespace mu2e {
     BFMap& dsmap = _bfmgr->addBFMap( key,
                                      dim[0],
                                      dim[1],
-                                     dim[2] );
+                                     dim[2],
+                                     BFMapType::G4BL );
 
     // Set defined region for the map
     dsmap.setLimits(X0[0],X0[0]+(dim[0]-1)*dX[0],

@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.9 2011/02/21 22:08:17 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/21 22:08:17 $
+// $Id: BFMap.cc,v 1.10 2011/03/08 00:40:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/03/08 00:40:23 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -48,6 +48,14 @@ namespace mu2e {
     if (point.z() < _zmin || point.z() > _zmax) {
       return false;
     }
+    if ( _type == BFMapType::GMC ){
+      return isGMCValid( point );
+    }
+    return true;
+  }
+
+  // Some extra checks for GMC format maps - dummy implementation for now.
+  bool BFMap::isGMCValid(CLHEP::Hep3Vector const& point) const{
     return true;
   }
 

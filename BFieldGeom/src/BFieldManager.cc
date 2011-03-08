@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.5 2011/02/22 21:09:16 kutschke Exp $
+// $Id: BFieldManager.cc,v 1.6 2011/03/08 00:40:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/02/22 21:09:16 $
+// $Date: 2011/03/08 00:40:46 $
 //
 
 // Includes from C++
@@ -94,10 +94,11 @@ namespace mu2e {
   BFMap& BFieldManager::addBFMap( const std::string& key,
                                   int const nx, 
                                   int const ny, 
-                                  int const nz ){
+                                  int const nz,
+                                  BFMapType::enum_type type ){
 
     // Construct an empty BFMap.
-    BFMap bfmap(key, nx, ny, nz);
+    BFMap bfmap(key, nx, ny, nz, type);
 
     // Add it to the container of BFMaps.
     pair<MapType::iterator,bool> retval = _map.insert( MapType::value_type(key,bfmap) );
@@ -107,12 +108,26 @@ namespace mu2e {
       throw cms::Exception("GEOM")
         << "Trying to add a new magnetic field when the named field map already exists: "
         << key
-        << "\n";      
+        << "\n";
     }
 
     // All Ok; return reference to the new BFMap.
     return retval.first->second;
   }
-
+  
+  void BFieldManager::print( ostream& out){
+    if ( _key.empty() ) {
+      cout << "BFieldManager key name is the empty string." 
+           << endl;
+    } else{
+      cout << "BFieldManager key name is the empty string." 
+           << _key
+           << endl;
+    }
+    for ( MapType::iterator i =_map.begin();
+          i != _map.end(); ++i ){
+      i->second.print(out);
+    }
+  }
 
 } // end namespace mu2e
