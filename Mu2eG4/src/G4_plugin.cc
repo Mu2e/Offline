@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.43 2011/03/08 14:19:58 ayarritu Exp $
-// $Author: ayarritu $ 
-// $Date: 2011/03/08 14:19:58 $
+// $Id: G4_plugin.cc,v 1.44 2011/03/08 23:29:15 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/03/08 23:29:15 $
 //
 // Original author Rob Kutschke
 //
@@ -117,7 +117,6 @@ namespace mu2e {
       _rmvlevel(pSet.getUntrackedParameter<int>("rmvlevel",0)),
       _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")),
-      _configfile(pSet.getUntrackedParameter<std::string>("configfile","generatorconfig.txt")),
       _trackerOutputName("tracker"),
       _vdOutputName("virtualdetector"),
       _stOutputName("stoppingtarget"),
@@ -180,8 +179,6 @@ namespace mu2e {
 
     string _generatorModuleLabel;
 
-    string _configfile;
-
     // Helps with indexology related to persisting info about G4 volumes.
     PhysicalVolumeHelper _physVolHelper;
 
@@ -209,8 +206,6 @@ namespace mu2e {
     edm::Service<GeometryService> geom;
     SimpleConfig const& config = geom->config();
 
-    SimpleConfig evtgen_config(_configfile);
-    
     static int ncalls(0);
     
     if ( ++ncalls > 1 ){
@@ -254,7 +249,7 @@ namespace mu2e {
     switchDecayOff(config);
 
     // add user processes
-    addUserProcesses(evtgen_config);
+    addUserProcesses(config);
     
     // At this point G4 geometry has been initialized.  So it is safe to initialize
     // objects that depend on G4 geometry.
@@ -264,11 +259,11 @@ namespace mu2e {
     _mu2eOrigin            = world->getMu2eOrigin();
     _mu2eDetectorOrigin    = world->getMu2eDetectorOrigin();
 
-     _UI = G4UImanager::GetUIpointer();
-
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
-      
+
+      _UI = G4UImanager::GetUIpointer();
+
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
       
