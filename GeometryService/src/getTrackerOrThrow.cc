@@ -4,9 +4,9 @@
 // TTracker ). Return a pointer to the one that is present.
 // If neither are present, throw.
 //
-// $Id: getTrackerOrThrow.cc,v 1.1 2010/04/18 00:32:42 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/18 00:32:42 $
+// $Id: getTrackerOrThrow.cc,v 1.2 2011/03/08 08:21:18 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2011/03/08 08:21:18 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
 
 namespace mu2e{
 
@@ -32,10 +33,14 @@ namespace mu2e{
     } else if ( geom->hasElement<TTracker>() ){
       GeomHandle<TTracker> ttracker;
       return *ttracker;
+    } else if ( geom->hasElement<ITracker>() ){
+      GeomHandle<ITracker> itracker;
+      return *itracker;
     }
 
+
     throw cms::Exception("GEOM") 
-      << "Expected one of L or T Trackers but found neither.\n";
+      << "Expected one of L or T or I Trackers but found neither.\n";
 
   }
 
