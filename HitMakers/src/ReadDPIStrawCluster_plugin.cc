@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.8 2011/03/04 22:32:17 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.9 2011/03/08 16:28:24 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/03/04 22:32:17 $
+// $Date: 2011/03/08 16:28:24 $
 //
 // Original author Hans Wenzel
 //
@@ -622,16 +622,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	      //
 	      StrawHitMCInfo const& infofirst = infos.at(0);
 	      std::vector<StepPointMC const *> const& steps = infofirst.steps();
-	      StepPointMC const& FirstHit  = *(steps[0]);
-	      X_in= FirstHit.position();  
-	      P_in= FirstHit.momentum();
-	      Pt_inval =  TMath::Sqrt(P_in.x()*P_in.x()+P_in.y()*P_in.y());
-	      P_inval  =  TMath::Sqrt(P_in.x()*P_in.x()+P_in.y()*P_in.y()+P_in.z()*P_in.z());
-	      _Pt_in->Fill( Pt_inval);
-	      _P_in->Fill(P_inval);
-	      _Pz_in->Fill(P_in.z());
-	      //Radius = 3.335601542*Pt_inval;  
-	      //curv  =  1.0/Radius;
 	      bool found=false;
      	      for ( size_t j=0; j<infos.size(); ++j) // Loop over associated Hits
 		{
