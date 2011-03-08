@@ -5,9 +5,9 @@
 // associated with hit.  This is a building block of the
 // the class SimParticlesWithHits.
 //
-// $Id: SimParticleInfo.hh,v 1.3 2010/12/10 00:47:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/10 00:47:13 $
+// $Id: SimParticleInfo.hh,v 1.4 2011/03/08 14:14:17 ayarritu Exp $
+// $Author: ayarritu $
+// $Date: 2011/03/08 14:14:17 $
 //
 // Original author Rob Kutschke.
 //
@@ -29,33 +29,38 @@ using namespace std;
 namespace mu2e {
   
   class SimParticleInfo{
+
+    // This class should only ever be created within SimParticlesWithHits.
+    friend class SimParticlesWithHits;
+
   public:
     typedef SimParticleCollection::key_type key_type;
-
-    SimParticleInfo():_simId(-1){}
-
-    SimParticleInfo( key_type simId,
-                     SimParticle const& simParticle,
-                     edm::Event const& event):
-      _simId(simId),
-      _simParticle(&simParticle),
-      _event(&event),
-      _hitInfos()
-    {
-    }
 
     key_type id() const { return _simId; }
     SimParticle const& simParticle() const { return *_simParticle; }
 
     size_t nHits() const { return _hitInfos.size(); }
 
-    vector<StrawHitMCInfo>&      strawHitInfos()       { return _hitInfos; }
     vector<StrawHitMCInfo>const& strawHitInfos() const { return _hitInfos; }
+   
+    StepPointMC const& firstStepPointMCinTracker() const;
+    StepPointMC const& lastStepPointMCinTracker()  const;
 
     // Compiler generated code is Ok for:
-    //  d'tor, copy c'tor assignment operator.
+    //   d'tor, copy c'tor assignment operator.
+    // Once this class mature we will make the copy c'tor and assignment operator private.
 
   private:
+
+    // This class should only ever be created by SimParticlesWithHits.
+    // Therefore c'tor and non-const accessors are private.
+    SimParticleInfo():_simId(-1){}
+
+    SimParticleInfo( key_type simId,
+                     SimParticle const& simParticle,
+                     edm::Event const& event);
+
+    vector<StrawHitMCInfo>& strawHitInfos()  { return _hitInfos; }
 
     // ID of this particle in the SimParticleCollection.
     key_type _simId;
@@ -68,6 +73,12 @@ namespace mu2e {
 
     // Vector of information about the StrawHits to which this track contributed.
     vector<StrawHitMCInfo>  _hitInfos;
+
+    // First StepPointMC in tracker.  Lazy evaluated, therefore mutable.
+    mutable StepPointMC const* _firstInTracker; 
+
+    // Last StepPointMC in tracker.  Lazy evaluated, therefore mutable.
+    mutable StepPointMC const* _lastInTracker;
 
   };
 
