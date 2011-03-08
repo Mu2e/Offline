@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.68 2011/03/08 08:41:48 tassiell Exp $
+// $Id: geom_01.txt,v 1.69 2011/03/08 09:46:03 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/03/08 08:41:48 $
+// $Date: 2011/03/08 09:46:03 $
 //
 // Original author Rob Kutschke
 //
@@ -13,8 +13,8 @@ string detector.name  = "g4geom_v00";
 
 bool hasHall            = true;
 bool hasTarget          = true;
-bool hasProtonAbsorber  = false; 
-bool hasNeutronAbsorber = false;
+bool hasProtonAbsorber  = true; 
+bool hasNeutronAbsorber = true;
 bool hasCalorimeter     = true;
 bool hasBFieldManager   = true;
 bool hasBeamline        = true;
