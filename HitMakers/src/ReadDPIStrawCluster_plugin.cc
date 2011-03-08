@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.9 2011/03/08 16:28:24 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.10 2011/03/08 23:11:25 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/03/08 16:28:24 $
+// $Date: 2011/03/08 23:11:25 $
 //
 // Original author Hans Wenzel
 //
@@ -37,12 +37,12 @@
 #include "TH2F.h"
 #include "TF1.h"
 #include "TNtuple.h"
-#include <TStyle.h>
-#include <TEllipse.h>
-#include <TCanvas.h>
-#include <TGraph.h>
-#include <TGraphErrors.h>
-#include <TColor.h>
+#include "TStyle.h"
+#include "TEllipse.h"
+#include "TCanvas.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TColor.h"
 #include "TVirtualFitter.h"
 #include "TMath.h"
 #include "TArc.h"
@@ -67,7 +67,7 @@
 #include "ToyDP/inc/ToyGenParticle.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/GenId.hh"
-//#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+
 using namespace std;
 
 namespace mu2e {;
@@ -349,7 +349,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Double_t Pt_inval;
     Double_t P_inval;
     CLHEP::Hep3Vector B;
-  };
+   };
   
   void ReadDPIStrawCluster::beginJob(edm::EventSetup const& ){
     cout << "Diaglevel: " 
@@ -364,9 +364,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
     _Polar         = tfs->make<TH1F>( "Polar",     "polar angle at production", 100, -1, 1. );
     _R_rec         = tfs->make<TH1F>( "R_rec",     "reconstructed track radius", 100, 0., 800. );
-    _Pt_in         = tfs->make<TH1F>( "Pt_in",     "tansverse momentum Pt at first Hit", 100, 0., 160. );
-    _P_in          = tfs->make<TH1F>( "P_in",      "momentum at first Hit", 100, 60., 140. );
-    _Pz_in         = tfs->make<TH1F>( "Pz_in",     "longitudinal momentum at first Hit", 100, 0., 120. );
+    _Pt_in         = tfs->make<TH1F>( "Pt_in",     "tansverse momentum Pt at first Hit", 100, 40., 120. );
+    _P_in          = tfs->make<TH1F>( "P_in",      "momentum at first Hit", 100, 60., 110. );
+    _Pz_in         = tfs->make<TH1F>( "Pz_in",     "longitudinal momentum at first Hit", 100, 20., 100. );
     _Pt_rec        = tfs->make<TH1F>( "Pt_rec",    "reconstructed tansverse momentum Pt", 100, 0., 160. );
     _P_rec         = tfs->make<TH1F>( "P_rec",     "reconstructed momentum", 100, 60., 140. );
     _Pz_rec        = tfs->make<TH1F>( "Pz_rec",    "reconstructed longitudinal momentum", 100, 0., 120. );
@@ -389,10 +389,10 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     _Pz_diff_s       = tfs->make<TH1F>( "Pz_diff_s",   "s delta longitudinal momentum", 100, -20., 20.);
     _x0y0_s          = tfs->make<TH2F>( "x0y0_s",      "s x0 of circle vs y0 of circle ", 500,-650.,650.,500,-650.,650.);
     _chi2_s          = tfs->make<TH1F>( "chi2_s",      "s chi2 of 2d circle fit", 200, 0., 200. );
-    _Xdiff_s         = tfs->make<TH1F>( "Xdiff_s",     "s X(stepMC)  - X(stereo hit) mm ", 100, -20., 20.);
-    _Ydiff_s         = tfs->make<TH1F>( "Ydiff_s",     "s Y(stepMC)  - Y(stereo hit)  mm ", 100, -20., 20.);
-    _Rdiff_s         = tfs->make<TH1F>( "Rdiff_s",     "s R(stepMC)  - R(stereo hit) mm ", 100, -50., 50.);
-    _Phidiff_s       = tfs->make<TH1F>( "Phidiff_s",   "s Phi(stepMC)- Phi(stereo hit) mm ", 100, -0.6, 0.6);
+    _Xdiff_s         = tfs->make<TH1F>( "Xdiff_s",     "s X(stepMC)  - X(straw hit) mm ", 100, -20., 20.);
+    _Ydiff_s         = tfs->make<TH1F>( "Ydiff_s",     "s Y(stepMC)  - Y(straw hit)  mm ", 100, -20., 20.);
+    _Rdiff_s         = tfs->make<TH1F>( "Rdiff_s",     "s R(stepMC)  - R(straw hit) mm ", 100, -10., 10.);
+    _Phidiff_s       = tfs->make<TH1F>( "Phidiff_s",   "s Phi(stepMC)- Phi(straw hit) mm ", 100, -0.05, 0.05);
     //
     //
     _R_rec_c         = tfs->make<TH1F>( "R_rec_c",     "s reconstructed track radius", 100, 0., 800. );
@@ -622,22 +622,33 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	      //
 	      StrawHitMCInfo const& infofirst = infos.at(0);
 	      std::vector<StepPointMC const *> const& steps = infofirst.steps();
-	      bool found=false;
+	      for ( size_t k=0; k<steps.size(); ++k){
+		StepPointMC const& step = *(steps[k]);
+		if (step.momentum().mag()>5.) 
+		  {
+		    X_in= step.position();  
+		    P_in= step.momentum();
+		    Pt_inval =  P_in.rho();
+		    P_inval  =  P_in.mag();
+		    _Pt_in->Fill(Pt_inval);
+		    _P_in ->Fill(P_inval);
+		    _Pz_in->Fill(P_in.z());
+		    break;
+		  }
+	      }
      	      for ( size_t j=0; j<infos.size(); ++j) // Loop over associated Hits
 		{
 		  StrawHitMCInfo const& info = infos.at(j);
-		  StrawHit const& hit      = info.hit();
-		  Straw const& straw       = tracker.getStraw(hit.strawIndex());
-		  //cout << "     Straw Hit: "
-		  //     << info.index()             << " "
-		  //     << hit.strawIndex().asInt() << " "
-		  //     << hit.time()               << " "
-		  //     << info.isShared()          << " "
-		  //     << straw.getMidPoint().z()  << " "
-		  //     << info.time()              << " | StepPointMCs: ";
-		  
-		  StrawIndex si = hit.strawIndex();
-		  Straw str = tracker.getStraw(si);	 
+		  StrawHit const& hit        = info.hit();
+		  Straw const& str           = tracker.getStraw(hit.strawIndex());
+		  /*cout << "     Straw Hit: "
+		       << info.index()             << " "
+		       << hit.strawIndex().asInt() << " "
+		       << hit.time()               << " "
+		       << info.isShared()          << " "
+		       << straw.getMidPoint().z()  << " "
+		       << info.time()              << " | StepPointMCs: ";
+		  */	 
 		  const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
 		  const CLHEP::Hep3Vector dirvec = str.getDirection();
 		  double dt =hit.dt();
@@ -646,32 +657,18 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		  X_straw.push_back(hitpos.getX());
 		  Y_straw.push_back(hitpos.getY());
 		  Z_straw.push_back(hitpos.getZ());
-		  Double_t Rhit = TMath::Sqrt(hitpos.getX()*hitpos.getX()+hitpos.getY()*hitpos.getY());
+		  Double_t Rhit = hitpos.rho( );
 		  R_straw.push_back(Rhit);
 		  CLHEP::Hep3Vector smcpos = CLHEP::Hep3Vector( 0.0, 0.0, 0.0);
-		  CLHEP::Hep3Vector smcmom = CLHEP::Hep3Vector( 0.0, 0.0, 0.0);
+		  cout << "steps.size():  " << steps.size()<<endl;
+		  std::vector<StepPointMC const *> const& steps = info.steps();
 		  for ( size_t k=0; k<steps.size(); ++k){
 		    StepPointMC const& step = *(steps[k]);
 		    smcpos= smcpos+step.position();
-		    smcmom =smcmom+step.momentum();
-		    if (step.momentum().mag()>5.&&!found) 
-		      {
-			found=true;
-			X_in= step.position();  
-			P_in= step.momentum();
-			Pt_inval =  TMath::Sqrt(P_in.x()*P_in.x()+P_in.y()*P_in.y());
-			P_inval  =  TMath::Sqrt(P_in.x()*P_in.x()+P_in.y()*P_in.y()+P_in.z()*P_in.z());
-			_Pt_in->Fill( Pt_inval);
-			_P_in->Fill(P_inval);
-			_Pz_in->Fill(P_in.z());
-			//Radius = 3.335601542*Pt_inval;  
-			//curv  =  1.0/Radius;
-		      }
-		    //cout << " (" << step.time()  << "," << step.momentum().mag() << "," << step.trackId() << ")";
 		  }
 		  smcpos=smcpos/steps.size();
 		  Points3d_straw.push_back(smcpos);
-		  Double_t Rmc  = TMath::Sqrt(smcpos.getX()*smcpos.getX()+smcpos.getY()*smcpos.getY());
+		  Double_t Rmc  = smcpos.rho();
 		  R_res_straw.push_back(Rmc-Rhit);
 		  _Rdiff_s-> Fill(Rmc-Rhit);
 		  _Phidiff_s->Fill(smcpos.phi()-hitpos.phi());
@@ -819,8 +816,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 			Z.push_back(0.5*(junk.mpz+pjunk.mpz));
 			CLHEP::Hep3Vector point3d  =
 			  CLHEP::Hep3Vector(intersection.x(),intersection.y(),0.5*(junk.mpz+pjunk.mpz));
+			Double_t Rhit=point3d.rho();
 			Points3d.push_back(point3d);
-			Double_t Rhit = TMath::Sqrt(intersection.x()*intersection.x() + intersection.y()*intersection.y());
 			//			Double_t Rmc  = TMath::Sqrt(Xavg[i]*Xavg[i]+Yavg[i]*Yavg[i]);
 			R.push_back(Rhit);
 			//R_res.push_back(Rmc-Rhit);
@@ -893,7 +890,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	X_cluster.push_back(clusterpos.getX());
 	Y_cluster.push_back(clusterpos.getY());
 	Z_cluster.push_back(clusterpos.getZ());
-	Double_t Rhit = TMath::Sqrt(clusterpos.getX()*clusterpos.getX()+clusterpos.getY()*clusterpos.getY());
+	Double_t Rhit =clusterpos.rho();
 	R_cluster.push_back(Rhit);
 	  //  StrawHitMCTruth const&    truth(hits_truth->at(i));
       } //  end Loop over Clusters      
@@ -990,7 +987,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     gmMinuit->mnstat(chi2,edm,errdef,nvpar,nparx,istat);
 
   }
-
 
 }
 
