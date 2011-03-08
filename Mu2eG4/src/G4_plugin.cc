@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.41 2011/02/14 23:20:01 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/14 23:20:01 $
+// $Id: G4_plugin.cc,v 1.42 2011/03/08 08:36:34 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2011/03/08 08:36:34 $
 //
 // Original author Rob Kutschke
 //
@@ -68,6 +68,7 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
+#include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/StoppingTargetSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
@@ -312,9 +313,20 @@ namespace mu2e {
 
     G4SDManager* SDman      = G4SDManager::GetSDMpointer();
 
-    static_cast<StrawSD*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
-      beforeG4Event(*outputHits);
+    // Get access to the master geometry system and its run time config.
+    edm::Service<GeometryService> geom;
+    SimpleConfig const* _config = &(geom->config());
+
+    if ( _config->getBool("hasITracker",false) ) {
+            static_cast<ITGasLayerSD*>
+            (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
+            beforeG4Event(*outputHits);
+
+    }else {
+            static_cast<StrawSD*>
+            (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
+            beforeG4Event(*outputHits);
+    }
 
     static_cast<VirtualDetectorSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()))->

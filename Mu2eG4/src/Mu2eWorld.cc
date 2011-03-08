@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.81 2011/02/25 23:53:25 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/02/25 23:53:25 $
+// $Id: Mu2eWorld.cc,v 1.82 2011/03/08 08:36:34 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2011/03/08 08:36:34 $
 //
 // Original author Rob Kutschke
 //
@@ -47,6 +47,9 @@
 #include "Mu2eG4/inc/constructPS.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
+//#include "Mu2eG4/inc/ITGasLayerSD.hh"
+#include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
+#include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/StoppingTargetSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
@@ -166,6 +169,10 @@ namespace mu2e {
     StoppingTargetSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloReadoutSD::setMu2eOriginInWorld( _mu2eOrigin );
+    if ( _config->getBool("hasITracker",false) ) {
+            ITGasLayerSD::setMu2eDetCenterInWorld( _mu2eDetectorOrigin -
+                            G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
+    }
 
     instantiateSensitiveDetectors();
 
@@ -541,9 +548,21 @@ namespace mu2e {
 
     // G4 takes ownership and will delete the detectors at the job end
 
-    StrawSD* strawSD        = new StrawSD(          SensitiveDetectorName::StrawGasVolume(),  *_config);
-    //strawSD->SetVerboseLevel(1);
-    SDman->AddNewDetector(strawSD); 
+    if ( _config->getBool("hasITracker",false) ) {
+            GeomHandle<ITracker> itracker;
+            ITGasLayerSD* itrackerSD;
+            if ( itracker->geomType()==ITracker::Hexagonal )
+                    itrackerSD        = new ITGasLayerSD_Hexagonal(          SensitiveDetectorName::ItrackerGasVolume(),  *_config);
+            else if ( itracker->geomType()==ITracker::Square )
+                    itrackerSD        = new ITGasLayerSD_Square(          SensitiveDetectorName::ItrackerGasVolume(),  *_config);
+            //itrackerSD->SetVerboseLevel(1);
+            SDman->AddNewDetector(itrackerSD);
+    }
+    else {
+            StrawSD* strawSD        = new StrawSD(          SensitiveDetectorName::StrawGasVolume(),  *_config);
+            //strawSD->SetVerboseLevel(1);
+            SDman->AddNewDetector(strawSD);
+    }
 
     VirtualDetectorSD* vdSD = new VirtualDetectorSD(SensitiveDetectorName::VirtualDetector(), *_config);
     SDman->AddNewDetector(vdSD);

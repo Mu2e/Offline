@@ -20,9 +20,10 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eG4/inc/ITGasLayerSD_ExtWireData.hh"
-#include "Mu2eG4/inc/ITGasLayerSD_v2.hh"
-#include "Mu2eG4/inc/ITGasLayerSD_v3.hh"
+//#include "Mu2eG4/inc/ITGasLayerSD_ExtWireData.hh"
+//#include "Mu2eG4/inc/ITGasLayerSD_v2.hh"
+//#include "Mu2eG4/inc/ITGasLayerSD_v3.hh"
+#include "Mu2eG4/inc/ITGasLayerSD.hh"
 
 // G4 includes
 #include "G4Tubs.hh"
@@ -246,11 +247,14 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                                 0);                      // copy number
 
                                 if (ily->getLayerType() != ITLayer::undefined) {
-                                        ITGasLayerSD* glSD;
-                                        if ( itracker->geomType()==ITracker::Hexagonal ) glSD = new ITGasLayerSD_v2( vol );
-                                        else if ( itracker->geomType()==ITracker::Square ) glSD = new ITGasLayerSD_v3( vol );
-                                        SDman->AddNewDetector( glSD );
-                                        LayerInfo.logical->SetSensitiveDetector( glSD );
+//                                        ITGasLayerSD* glSD;
+//                                        if ( itracker->geomType()==ITracker::Hexagonal ) glSD = new ITGasLayerSD( vol );//ITGasLayerSD_v2( vol );
+//                                        else if ( itracker->geomType()==ITracker::Square ) glSD = new ITGasLayerSD( vol );//ITGasLayerSD_v3( vol );
+//                                        SDman->AddNewDetector( glSD );
+//                                        LayerInfo.logical->SetSensitiveDetector( glSD );
+                                          LayerInfo.logical->SetSensitiveDetector(
+                                                          G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()) );
+
                                 }
 
                                 for ( int iFw=0; iFw < ily->nFieldWires(); iFw++){
