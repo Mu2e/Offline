@@ -2,9 +2,9 @@
 #define SensitiveDetectorName_h
 // Define names of Sensitive Detectors
 // 
-// $Id: SensitiveDetectorName.hh,v 1.2 2011/02/14 23:20:01 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/14 23:20:01 $
+// $Id: SensitiveDetectorName.hh,v 1.3 2011/03/08 08:31:51 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2011/03/08 08:31:51 $
 //
 // Original author KLG
 
@@ -18,6 +18,10 @@ namespace mu2e {
     static char const * StrawGasVolume(){
       // string literals are statically allocated, so this is safe
       return "StrawGasVolume";
+    }
+
+    static char const * ItrackerGasVolume(){
+       return "ItrackerGasVolume";
     }
 
     static char const * VirtualDetector(){
