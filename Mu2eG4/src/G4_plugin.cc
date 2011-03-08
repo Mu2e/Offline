@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.42 2011/03/08 08:36:34 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2011/03/08 08:36:34 $
+// $Id: G4_plugin.cc,v 1.43 2011/03/08 14:19:58 ayarritu Exp $
+// $Author: ayarritu $ 
+// $Date: 2011/03/08 14:19:58 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,6 @@
 #include "Mu2eG4/inc/copyStepPointG4toMC.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "GeometryService/inc/GeometryService.hh"
-
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/EventAction.hh"
@@ -73,6 +72,8 @@
 #include "Mu2eG4/inc/StoppingTargetSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
+#include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"   
+#include "Mu2eG4/inc/toggleProcesses.hh"
 
 // Data products that will be produced by this module.
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -116,6 +117,7 @@ namespace mu2e {
       _rmvlevel(pSet.getUntrackedParameter<int>("rmvlevel",0)),
       _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")),
+      _configfile(pSet.getUntrackedParameter<std::string>("configfile","generatorconfig.txt")),
       _trackerOutputName("tracker"),
       _vdOutputName("virtualdetector"),
       _stOutputName("stoppingtarget"),
@@ -153,8 +155,6 @@ namespace mu2e {
                                 string const& moduleLabel) {
       iDesc.setAllowAnything();
     }
-    
-    void switchDecayOff(const SimpleConfig&);
 
   private:
     auto_ptr<Mu2eG4RunManager> _runManager;
@@ -167,7 +167,8 @@ namespace mu2e {
     G4VisManager *_visManager;
     G4UImanager  *_UI;
     int _rmvlevel;
-
+    
+    
     // Position, in G4 world coord, of (0,0,0) of the mu2e coordinate system.
     CLHEP::Hep3Vector _mu2eOrigin;
 
@@ -178,6 +179,8 @@ namespace mu2e {
     string _visMacro;
 
     string _generatorModuleLabel;
+
+    string _configfile;
 
     // Helps with indexology related to persisting info about G4 volumes.
     PhysicalVolumeHelper _physVolHelper;
@@ -206,6 +209,8 @@ namespace mu2e {
     edm::Service<GeometryService> geom;
     SimpleConfig const& config = geom->config();
 
+    SimpleConfig evtgen_config(_configfile);
+    
     static int ncalls(0);
     
     if ( ++ncalls > 1 ){
@@ -248,6 +253,9 @@ namespace mu2e {
     // Switch off the decay of some particles
     switchDecayOff(config);
 
+    // add user processes
+    addUserProcesses(evtgen_config);
+    
     // At this point G4 geometry has been initialized.  So it is safe to initialize
     // objects that depend on G4 geometry.
 
@@ -256,11 +264,11 @@ namespace mu2e {
     _mu2eOrigin            = world->getMu2eOrigin();
     _mu2eDetectorOrigin    = world->getMu2eDetectorOrigin();
 
+     _UI = G4UImanager::GetUIpointer();
+
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
       
-      _UI = G4UImanager::GetUIpointer();
-
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
       
@@ -295,7 +303,6 @@ namespace mu2e {
   // Create one G4 event and copy its output to the edm::event.
   void G4::produce(edm::Event& event, edm::EventSetup const&) {
 
-
     // Create empty data products.
     auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
     auto_ptr<StepPointMCCollection>     outputHits(        new StepPointMCCollection);
@@ -305,7 +312,7 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
-    // Some of the user actions have begein event methods. These are not G4 standards.
+     // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
     _genAction->setEvent(event);
 
@@ -435,46 +442,8 @@ namespace mu2e {
   void G4::endJob(){
   }
 
-  void G4::switchDecayOff(const SimpleConfig& config) {
+  
 
-    // Read list of particles for which the decay should be switched off
-    vector<int> plist;
-    if( ! config.hasName("g4.noDecay") ) return;
-    config.getVectorInt("g4.noDecay",plist);
-    
-    G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
-    for( size_t i=0; i<plist.size(); ++i ) {
-      int pdg = plist[i];
-      G4ParticleDefinition* particle = theParticleTable->FindParticle(pdg);
-      if( particle==0 ) {
-	cout << "SwitchDecayOff: cannot find particle pdgId=" << pdg << endl;
-      } else {
-	G4ProcessManager* pmanager = particle->GetProcessManager();
-	G4ProcessVector * pVector  = pmanager->GetProcessList();
-	G4VProcess *decayProcess = 0;
-	for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) {
-	  if( (*pVector)[j]->GetProcessName() == "Decay" ) {
-	    decayProcess = (*pVector)[j];
-	    break;
-	  }
-	}
-	if( decayProcess==0 ) {
-	  cout << "SwitchDecayOff: cannot find decay process for particle pdgId=" << pdg 
-	       << " (" << particle->GetParticleName() << ")" << endl;
-	} else {
-	  pmanager->RemoveProcess(decayProcess);
-	  cout << "SwitchDecayOff: decay process is removed for particle pdgId=" << pdg 
-	       << " (" << particle->GetParticleName() << ")" << endl;
-	}
-	cout << "SwitchDecayOff: list of processes defined for particle pdgId=" << pdg 
-	     << " (" << particle->GetParticleName() << "):" << endl;
-	for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) 
-	  cout << (*pVector)[j]->GetProcessName() << endl;
-      }
-    }
-
-  }
- 
 } // End of namespace mu2e
 
 using mu2e::G4;
