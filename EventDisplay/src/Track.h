@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.4 2011/02/23 00:29:27 ehrlich Exp $
+// $Id: Track.h,v 1.5 2011/03/08 17:47:30 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/02/23 00:29:27 $
+// $Date: 2011/03/08 17:47:30 $
 //
 // Original author Ralf Ehrlich
 //
@@ -60,12 +60,11 @@ class Track: public VirtualShape
     start();
   }
 
-  void addTrajectoryPoint(double x, double y, double z, int i, int numberPoints)
+  void addTrajectoryPoint(double x, double y, double z, double t)
   {
     if(!_trajectory) {_pVec.clear();}
     pt p;
-    p.x=x; p.y=y; p.z=z;
-    p.t=getStartTime()+i*(getEndTime()-getStartTime())/(numberPoints-1);
+    p.x=x; p.y=y; p.z=z; p.t=t;
     _pVec.push_back(p);
     if(!_trajectory) {start(); _trajectory=true;}
   }

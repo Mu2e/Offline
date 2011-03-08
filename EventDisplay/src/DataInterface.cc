@@ -857,47 +857,132 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
       info->setText(2,c3);
       info->setText(3,c4);
       info->setText(4,"Daughter IDs:");
+      std::vector<int> daughterVect;
       std::vector<MapVectorKey>::const_iterator daughter;
       for(daughter=particle.daughterIds().begin(); 
           daughter!=particle.daughterIds().end();
           daughter++)
       {
         info->expandLine(4,daughter->asInt(),"");
+        daughterVect.push_back(daughter->asInt());
       }
       boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, _geometrymanager, _topvolume, _mainframe, info));
-      findTrajectory(contentSelector,shape,id);
+      findTrajectory(contentSelector,shape,id, t1,t2, simParticles,daughterVect);
       _components.push_back(shape);
       _tracks.push_back(shape);
     }
   }
 }
 
-bool DataInterface::findTrajectory(const ContentSelector *contentSelector,
-                                   boost::shared_ptr<Track> track, int id)
+void DataInterface::findTrajectory(const ContentSelector *contentSelector,
+                                   boost::shared_ptr<Track> track, int id,
+                                   double t1, double t2,
+                                   const mu2e::SimParticleCollection *simParticles,
+                                   const std::vector<int> &daughterVect)
 {
   const mu2e::PointTrajectoryCollection *pointTrajectories=contentSelector->getPointTrajectoryCollection();
   if(pointTrajectories!=NULL)
   {
+// loop over all trajectories
     MapVector<mu2e::PointTrajectory>::const_iterator iter;
     for(iter=pointTrajectories->begin(); iter!=pointTrajectories->end(); iter++)
     {
+// find the trajectory corresponding to this track id
       const mu2e::PointTrajectory& trajectory = iter->second;
       int trajectory_id = trajectory.simId();
       if(id==trajectory_id)
       {
-        const std::vector<CLHEP::Hep3Vector>& p_vec=trajectory.points();
-        for(unsigned int i=0; i<p_vec.size(); i++)
+// fill a vector with all trajectory points, leave the times as NAN, 
+// except the first and last point, which get the times from the track
+        std::vector<trajectoryStruct> trajectoryVect;
+        const std::vector<CLHEP::Hep3Vector>& pVect=trajectory.points();
+        for(unsigned int i=0; i<pVect.size(); i++)
         {
-//TODO: no time information available from PointTrajectory
-//the assumption that the time period between each 
-//recorded trajectory point is equal is not valid
-          track->addTrajectoryPoint(p_vec[i].x(),p_vec[i].y(),p_vec[i].z()+_zOffsetDS,i,p_vec.size());
+          trajectoryStruct ts;
+          ts.v=pVect[i];
+          ts.v.setZ(pVect[i].z()+_zOffsetDS);
+          if(i==0) ts.t=t1;
+          if(i==(pVect.size()-1)) ts.t=t2;
+          trajectoryVect.push_back(ts);
         }
-        return true;
+// loop over all daughter ids
+        for(unsigned int i=0; i<daughterVect.size(); i++)
+        {
+          MapVector<mu2e::SimParticle>::const_iterator iter;
+          for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
+          {
+// find the track which corresponds to each daughter id
+            const mu2e::SimParticle& particle = iter->second;
+            int id = particle.id().asInt();
+            if(id==daughterVect[i])
+            {
+// extract the start position and start time of the daughter track
+              CLHEP::Hep3Vector v;
+              v.setX(particle.startPosition().x()+_xOffset);
+              v.setY(particle.startPosition().y());
+              v.setZ(particle.startPosition().z()+_zOffset);
+              double newTime=particle.startGlobalTime();
+              if(newTime>t2 || newTime<t1) break;
+// try to find the point in the trajectory vector, which is closest to this starting point
+              double mindiff=NAN;
+              unsigned int mindiffPoint=0;
+              for(unsigned int j=0; j<trajectoryVect.size(); j++)
+              {
+                CLHEP::Hep3Vector diff=trajectoryVect[j].v-v;
+                double diff_magnitude=diff.getR();
+                if(diff_magnitude<mindiff || isnan(mindiff)) 
+                {
+                  mindiff=diff_magnitude;
+                  mindiffPoint=j;
+                }
+              }
+// if a valid trajectory point is found, set the time of this trajectory point to the starting time of the daughter track
+              if(mindiffPoint>0 && mindiffPoint<(trajectoryVect.size()-1))
+              {
+                double oldTime=trajectoryVect[mindiffPoint].t;
+                if(newTime<oldTime || isnan(oldTime)) trajectoryVect[mindiffPoint].t=newTime;
+              }
+              break;
+            }
+          }
+        }
+
+// loop over all trajectory points (some of them have their times set from the previous steps,
+// the remaining points have their times equal to NAN)
+        int lastTimeEntry=0;
+        double lastTime=t1;
+        for(unsigned int i=1; i<trajectoryVect.size(); i++)
+        {
+// find a point with a non-NAN time
+          double nextTime=trajectoryVect[i].t;
+          if(!isnan(nextTime))
+          {
+            if(nextTime<lastTime) {trajectoryVect[i].t=NAN; continue;}
+            double timeIntervall=(nextTime-lastTime)/(i-lastTimeEntry);
+            double timeStep=lastTime;
+// fill all times between the previous point with a non-NAN time to the current point with a non-NAN time
+            for(unsigned int j=lastTimeEntry+1; j<i; j++)
+            {
+              timeStep+=timeIntervall;
+              trajectoryVect[j].t=timeStep;
+            }
+            lastTimeEntry=i;
+            lastTime=nextTime;
+          }
+        }
+
+//replace the track, which previously had only two points, with a complete trajectory
+        for(unsigned int i=0; i<trajectoryVect.size(); i++)
+        {
+          track->addTrajectoryPoint(trajectoryVect[i].v.getX(), 
+                                    trajectoryVect[i].v.getY(),
+                                    trajectoryVect[i].v.getZ(),
+                                    trajectoryVect[i].t);
+        }
+        return;
       }
     }
   }
-  return false;
 }
 
 void DataInterface::removeNonGeometryComponents()

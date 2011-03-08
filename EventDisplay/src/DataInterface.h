@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.10 2011/03/02 03:25:47 ehrlich Exp $
+// $Id: DataInterface.h,v 1.11 2011/03/08 17:47:29 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/03/02 03:25:47 $
+// $Date: 2011/03/08 17:47:29 $
 //
 // Original author Ralf Ehrlich
 //
@@ -16,6 +16,7 @@
 #include <map>
 #include "CLHEP/Vector/ThreeVector.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "ToyDP/inc/SimParticleCollection.hh"
 #include "boost/shared_ptr.hpp"
 
 class TGeoManager;
@@ -81,8 +82,17 @@ class DataInterface
   void resetBoundaryT(timeminmax &m);
   void resetBoundaryP(spaceminmax &m);
   void toForeground();
-  bool findTrajectory(const ContentSelector *contentSelector,
-                      boost::shared_ptr<Track> track, int id);
+  void findTrajectory(const ContentSelector *contentSelector,
+                      boost::shared_ptr<Track> track, int id,
+                      double t1, double t2,
+                      const mu2e::SimParticleCollection *simParticles,
+                      const std::vector<int> &daughterVect);
+  struct trajectoryStruct
+  {
+    CLHEP::Hep3Vector v;
+    double t;
+    trajectoryStruct() {t=NAN;}
+  };
 
   public:
   DataInterface(const TGMainFrame *mainframe);
