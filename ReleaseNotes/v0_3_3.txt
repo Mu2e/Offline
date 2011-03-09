@@ -3,9 +3,9 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.27 2011/03/09 00:46:35 tassiell Exp $
-  $Author: tassiell $
-  $Date: 2011/03/09 00:46:35 $
+  $Id: v0_3_3.txt,v 1.28 2011/03/09 02:04:29 ayarritu Exp $
+  $Author: ayarritu $
+  $Date: 2011/03/09 02:04:29 $
 
 
 32) March 08, 2011 kutschke
@@ -21,6 +21,32 @@
     G4_plugin.cc no longer opens the generator configuration file.
 
 31) March 08, 2011 ayarritu
+
+     New files:  toggleProcesses.cc
+                 toggleProcesses.hh
+                 MuonConversionAtRest.cc
+                 MuonConversionAtRest.hh
+                 SimParticleInfo.cc
+
+     Modified files: SimParticleInfo.hh
+                     G4_plugin.cc
+                     ProcessCode.hh
+
+     The function toggleProcesses provides the ability to turn on and off the Decay process 
+     of a given particle (this was transferred from G4_plugin).  Also the ability is given 
+     in this function to turn on the process muMinusConversionAtRest, while at the same 
+     time turning off muMinusCaptureAtRest.  In G4_plugin, the functionality to remove a Decay
+     process was removed.
+
+     A G4 process of a muon converting to an electron was added through MuonConversionAtRest.  An 
+     AtRest process occurs for the muon and an electron is emitted with user defined polar and 
+     azimuthal angles at a user defined momentum.  The file ProcessCode.hh was modified to include
+     this process.  
+
+     The methods firstStepPointMCinTracker and lastStepPointMCinTracker were added to SimParticleInfo.
+     These methods find the first and last StepPointMC ordered by time in the tracker for a given
+     particle.
+
 
 30) March 08, 2011 tassielli
     ITracker geometry updated and fixed, moreover the production of the closest approach hits for the ITracker is inserted.
