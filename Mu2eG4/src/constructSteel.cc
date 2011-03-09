@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.2 2011/01/25 16:47:55 genser Exp $
+// $Id: constructSteel.cc,v 1.3 2011/03/09 19:51:42 genser Exp $
 // $Author: genser $
-// $Date: 2011/01/25 16:47:55 $
+// $Date: 2011/03/09 19:51:42 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -17,7 +17,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShieldSteelShield.hh"
+#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -56,143 +56,78 @@ namespace mu2e {
 
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    CosmicRayShieldSteelShield const & CRSSteelTopShield = 
-      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelTopShield");
+    std::map<std::string,CRSSteelShield> const & shields = 
+      CosmicRayShieldGeomHandle->getCRSSteelShields();
 
-    VolumeInfo TopInfo   = nestBox(CRSSteelTopShield.name(),
-                                   CRSSteelTopShield.getHalfLengths(),
-                                   CRSSteelShieldMaterial,
-                                   CRSSteelTopShield.getRotation(),
-                                   CRSSteelTopShield.getLocalOffset(),
-                                   parent,
-                                   0,
-                                   CRSSteelShieldVisible,
-                                   G4Colour::Green(),
-                                   CRSSteelShieldSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   doSurfaceCheck
-                                   );
+    for (std::map<std::string,CRSSteelShield>::const_iterator ishield=shields.begin();
+         ishield!=shields.end(); ++ishield) {
 
-    CosmicRayShieldSteelShield const & CRSSteelBottomShield = 
-      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelBottomShield");
+      CRSSteelShield const & shield = ishield->second;
+      std::string shieldName = ishield->first;
 
-    VolumeInfo BottomInfo = nestBox(CRSSteelBottomShield.name(),
-                                    CRSSteelBottomShield.getHalfLengths(),
-                                    CRSSteelShieldMaterial,
-                                    CRSSteelBottomShield.getRotation(),
-                                    CRSSteelBottomShield.getLocalOffset(),
-                                    parent,
-                                    0, 
-                                    CRSSteelShieldVisible,
-                                    G4Colour::Green(), 
-                                    CRSSteelShieldSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                    );
+      if (shield.getHoleRadius() == 0.) {
+        nestBox(shield.name(),
+                shield.getHalfLengths(),
+                CRSSteelShieldMaterial,
+                shield.getRotation(),
+                shield.getLocalOffset(),
+                parent,
+                0,
+                CRSSteelShieldVisible,
+                G4Colour::Green(),
+                CRSSteelShieldSolid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+                );      
+      } else {
 
-    CosmicRayShieldSteelShield const & CRSSteelLeftShield = 
-      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelLeftShield");
+        // constructing "hollow" upstream steel
 
-    VolumeInfo LeftInfo   = nestBox(CRSSteelLeftShield.name(),
-                                    CRSSteelLeftShield.getHalfLengths(),
-                                    CRSSteelShieldMaterial,
-                                    CRSSteelLeftShield.getRotation(),
-                                    CRSSteelLeftShield.getLocalOffset(),
-                                    parent,
-                                    0, 
-                                    CRSSteelShieldVisible,
-                                    G4Colour::Green(),
-                                    CRSSteelShieldSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                    ); 
+        G4Box* CRSSteelShieldBox = new G4Box(shield.name()+"Box",
+                                  shield.getHalfLengths()[0], 
+                                  shield.getHalfLengths()[1], 
+                                  shield.getHalfLengths()[2]);
 
-    CosmicRayShieldSteelShield const & CRSSteelRightShield = 
-      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelRightShield");
+        //Hole in upstream shield for TS is centered in the shield
 
-    VolumeInfo RightInfo = nestBox(CRSSteelRightShield.name(),
-                                   CRSSteelRightShield.getHalfLengths(),
-                                   CRSSteelShieldMaterial,
-                                   CRSSteelRightShield.getRotation(),
-                                   CRSSteelRightShield.getLocalOffset(),
-                                   parent,
-                                   0, 
-                                   CRSSteelShieldVisible,
-                                   G4Colour::Green(),
-                                   CRSSteelShieldSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   doSurfaceCheck
-                                   ); 
+        TubsParams UpstreamHoleDims(0.,
+                                 shield.getHoleRadius(),
+                                 shield.getHalfLengths()[2]);
 
-    CosmicRayShieldSteelShield const & CRSSteelBackShield = 
-      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelBackShield");
+        G4Tubs* CRSSteelShieldUpstreamHoleTubs = new G4Tubs(shield.name()+"HoleTubs", 
+                                                    UpstreamHoleDims.innerRadius,
+                                                    UpstreamHoleDims.outerRadius,
+                                                    UpstreamHoleDims.zHalfLength,
+                                                    UpstreamHoleDims.phi0, 
+                                                    UpstreamHoleDims.phiMax);
 
-    VolumeInfo BackInfo = nestBox(CRSSteelBackShield.name(),
-                                  CRSSteelBackShield.getHalfLengths(),
-                                  CRSSteelShieldMaterial,
-                                  CRSSteelBackShield.getRotation(),
-                                  CRSSteelBackShield.getLocalOffset(),
-                                  parent,
-                                  0, 
-                                  CRSSteelShieldVisible,
-                                  G4Colour::Green(),
-                                  CRSSteelShieldSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  doSurfaceCheck
-                                  ); 
+        VolumeInfo CRSSteelShieldUpstreamInfo;
 
-    // constructing "hollow" front shield
+        CRSSteelShieldUpstreamInfo.name = shield.name();
 
-    CosmicRayShieldSteelShield const & CRSSteelFrontShield = 
-      CosmicRayShieldGeomHandle->getCosmicRayShieldSteelShield("CRSSteelFrontShield");
+        CRSSteelShieldUpstreamInfo.solid = 
+          new G4SubtractionSolid(CRSSteelShieldUpstreamInfo.name, 
+                                 CRSSteelShieldBox, CRSSteelShieldUpstreamHoleTubs);
 
+        finishNesting(CRSSteelShieldUpstreamInfo,
+                      CRSSteelShieldMaterial,
+                      shield.getRotation(),
+                      shield.getLocalOffset(),
+                      parent.logical,
+                      0,
+                      CRSSteelShieldVisible,
+                      G4Colour::Green(),
+                      CRSSteelShieldSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck
+                      );
 
-    G4Box* CRVBox = new G4Box(CRSSteelFrontShield.name()+"Box",
-                              CRSSteelFrontShield.getHalfLengths()[0], 
-                              CRSSteelFrontShield.getHalfLengths()[1], 
-                              CRSSteelFrontShield.getHalfLengths()[2]);
+      }
 
-    //Hole in front shield for TS is centered in the shield
-
-    TubsParams FrontHoleDims(0.,
-                             CRSSteelFrontShield.getHoleRadius(),
-                             CRSSteelFrontShield.getHalfLengths()[2]
-                             );
-
-    G4Tubs* HallSteelFrontHoleTubs = new G4Tubs(CRSSteelFrontShield.name()+"HoleTubs", 
-                                                FrontHoleDims.innerRadius,
-                                                FrontHoleDims.outerRadius,
-                                                FrontHoleDims.zHalfLength,
-                                                FrontHoleDims.phi0, 
-                                                FrontHoleDims.phiMax);
-
-    VolumeInfo FrontShieldInfo;
-
-    FrontShieldInfo.name = CRSSteelFrontShield.name();
-
-    FrontShieldInfo.solid = 
-      new G4SubtractionSolid(FrontShieldInfo.name, CRVBox, HallSteelFrontHoleTubs);
-
-    finishNesting(FrontShieldInfo,
-                  CRSSteelShieldMaterial,
-                  CRSSteelFrontShield.getRotation(),
-                  CRSSteelFrontShield.getLocalOffset(),
-                  parent.logical,
-                  0,
-                  CRSSteelShieldVisible,
-                  G4Colour::Green(),
-                  CRSSteelShieldSolid,
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
+    }
 
   }
-
 
 }
