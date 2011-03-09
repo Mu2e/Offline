@@ -3,10 +3,20 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.2 2011/03/09 20:05:51 genser Exp $
-  $Author: genser $
-  $Date: 2011/03/09 20:05:51 $
+  $Id: v0_3_4.txt,v 1.3 2011/03/09 21:43:57 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/03/09 21:43:57 $
 
+02) March 09, 2011 kutschke
+    Tell StackingAction about the y extent of the dirt volume.
+       Mu2eG4/inc/Mu2eWorld.hh       - Record the y extent information
+       Mu2eG4/src/Mu2eWorld.cc
+       Mu2eG4/src/G4_plugin.cc       - Pass info from Mu2eWorld to StackingAction
+       Mu2eG4/inc/StackingAction.hh  - Receive information at beginRun time.
+       Mu2eG4/src/StackingAction.cc
+
+    In StackingAction.cc also moved some initialization that had been in PrepareEvent
+    to beginRun, where it belongs.
 
 01) March 09, 2011 genser
 
