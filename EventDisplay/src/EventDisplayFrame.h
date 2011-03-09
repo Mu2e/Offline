@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.7 2011/03/02 03:25:47 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.8 2011/03/09 07:50:54 ehrlich Exp $
 // $Author: ehrlich $ 
-// $Date: 2011/03/02 03:25:47 $
+// $Date: 2011/03/09 07:50:54 $
 //
 // Original author Ralf Ehrlich
 //
@@ -60,6 +60,7 @@ namespace mu2e_eventdisplay
 
     private:
     void fillEvent(bool firstLoop=false);
+    void updateTimeIntervalFields();
     void updateHitLegend(bool draw);
     void updateTrackLegend(bool draw);
     void prepareAnimation();
@@ -95,6 +96,7 @@ namespace mu2e_eventdisplay
     TGCheckButton       *_outsideTracksButton, *_calorimeterViewButton, *_targetViewButton;
     TGCheckButton       *_hitColorButton, *_trackColorButton, *_backgroundButton;
     TGCheckButton       *_repeatAnimationButton;
+    TGTextEntry         *_timeIntervalField1, *_timeIntervalField2;
     TGTextEntry         *_minHitField, *_eventToFindField;
     TGTextEntry         *_minXField, *_minYField, *_minZField, *_maxXField, *_maxYField, *_maxZField;
     TGTextEntry         *_phiField, *_thetaField, *_psiField;

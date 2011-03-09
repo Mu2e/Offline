@@ -140,6 +140,23 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   animButtonStop->Associate(this);
   animButtonReset->Associate(this);
 
+  TGHorizontalFrame *subFrameAnimTime = new TGHorizontalFrame(subFrame,300,15);
+  TGLabel *timeIntervalLabel1  = new TGLabel(subFrameAnimTime, "Time Interval from");
+  TGLabel *timeIntervalLabel2  = new TGLabel(subFrameAnimTime, "ns to");
+  TGLabel *timeIntervalLabel3  = new TGLabel(subFrameAnimTime, "ns");
+  _timeIntervalField1 = new TGTextEntry(subFrameAnimTime, new TGTextBuffer, 45);
+  _timeIntervalField2 = new TGTextEntry(subFrameAnimTime, new TGTextBuffer, 46);
+  subFrameAnimTime->AddFrame(timeIntervalLabel1, lh1);
+  subFrameAnimTime->AddFrame(_timeIntervalField1, lh1);
+  subFrameAnimTime->AddFrame(timeIntervalLabel2, lh1);
+  subFrameAnimTime->AddFrame(_timeIntervalField2, lh1);
+  subFrameAnimTime->AddFrame(timeIntervalLabel3, lh1);
+  subFrame->AddFrame(subFrameAnimTime, lh0);
+  _timeIntervalField1->Associate(this);
+  _timeIntervalField2->Associate(this);
+  _timeIntervalField1->SetWidth(50); 
+  _timeIntervalField2->SetWidth(50); 
+
   _repeatAnimationButton = new TGCheckButton(subFrame,"Repeat Animation",43);
   subFrame->AddFrame(_repeatAnimationButton, lh1);
   _repeatAnimationButton->Associate(this);
@@ -428,6 +445,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
                                _backgroundButton->GetState()==kButtonDown);
   _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
                                  _backgroundButton->GetState()==kButtonDown);
+  updateTimeIntervalFields();
   updateHitLegend(_hitColorButton->GetState()==kButtonDown);
   updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
 
@@ -442,13 +460,32 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   }
 
   char eventInfoText[50];
-  sprintf(eventInfoText,"Number of hit straws: %i",_dataInterface->getNumberHits());
+  sprintf(eventInfoText,"Number of tracker hits: %i",_dataInterface->getNumberHits());
   _eventInfo[2]->SetText(eventInfoText);
-  sprintf(eventInfoText,"Number of hit calorimeter crystals: %i",_dataInterface->getNumberCrystalHits());
+  sprintf(eventInfoText,"Number of calorimeter hits: %i",_dataInterface->getNumberCrystalHits());
   _eventInfo[3]->SetText(eventInfoText);
   this->Layout();
 
   drawEverything();
+}
+
+void EventDisplayFrame::updateTimeIntervalFields()
+{
+  double mint, maxt;
+  if(_outsideTracksButton->GetState()==kButtonDown)
+  {
+    mint=_dataInterface->getTracksTimeBoundary().mint; 
+    maxt=_dataInterface->getTracksTimeBoundary().maxt;
+  }
+  else
+  {
+    mint=_dataInterface->getHitsTimeBoundary().mint; 
+    maxt=_dataInterface->getHitsTimeBoundary().maxt; 
+  }
+
+  char c[50];
+  sprintf(c,"%.0f",mint); _timeIntervalField1->SetText(c);
+  sprintf(c,"%.0f",maxt); _timeIntervalField2->SetText(c);
 }
 
 void EventDisplayFrame::updateHitLegend(bool draw)
@@ -723,6 +760,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->GetView()->AdjustScales();
                            _mainPad->Modified();
                            _mainPad->Update();
+                           updateTimeIntervalFields();
                          }
                          if(param1==60)
                          {
@@ -774,21 +812,13 @@ void EventDisplayFrame::prepareAnimation()
   _dataInterface->startComponents();
   _mainPad->Modified();
   _mainPad->Update();
- 
-  if(_outsideTracksButton->GetState()==kButtonDown)
-  {
-    _timeStart=_dataInterface->getTracksTimeBoundary().mint; 
-    _timeStop=_dataInterface->getTracksTimeBoundary().maxt;
-  }
-  else
-  {
-    _timeStart=_dataInterface->getHitsTimeBoundary().mint; 
-    _timeStop=_dataInterface->getHitsTimeBoundary().maxt; 
-  }
-  if(isnan(_timeStart) || isnan(_timeStop)) return;
+  _timeStart=atof(_timeIntervalField1->GetText());
+  _timeStop=atof(_timeIntervalField2->GetText());
+
+  if(isnan(_timeStart) || isnan(_timeStop) || (_timeStop-_timeStart)<=0.0) return;
   double diff=_timeStop-_timeStart;
-  _timeStart-=diff*0.05;
-  _timeStop+=diff*0.05;
+  _timeStart-=diff*0.01;
+  _timeStop+=diff*0.01;
   _timeCurrent=_timeStart;
   _saveAnimCounter=0;
   _timer->Start(100,kFALSE);
@@ -798,7 +828,7 @@ void EventDisplayFrame::prepareAnimation()
 Bool_t EventDisplayFrame::HandleTimer(TTimer *)
 {
   _timer->Reset();
-  _timeCurrent+=(_timeStop-_timeStart)/200;
+  _timeCurrent+=(_timeStop-_timeStart)/50;
   drawSituation();
   if(_saveAnim) 
   {
