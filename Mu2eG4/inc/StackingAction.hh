@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.5 2011/01/31 23:45:48 kutschke Exp $
+// $Id: StackingAction.hh,v 1.6 2011/03/09 21:43:35 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/01/31 23:45:48 $
+// $Date: 2011/03/09 21:43:35 $
 //
 // Original author Rob Kutschke
 //
@@ -31,10 +31,15 @@ namespace mu2e {
     ~StackingAction();
     
   public:
+
+    // Specified by G4UserStackingAction.
     G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack);
     void NewStage();
     void PrepareNewEvent();
-    
+
+    // Methods specific to Mu2e.
+    void beginRun( double dirtG4YMin, double dirtG4YMax );
+
   private:
 
     // Count number of calls to ClassifyNewTrack this event.
@@ -53,6 +58,9 @@ namespace mu2e {
     // Pointers to some physical volumes of interest.
     G4VPhysicalVolume * dirtBodyPhysVol;
     G4VPhysicalVolume * dirtCapPhysVol;
+
+    // Y limits of the dirt overburden.
+    double _dirtG4Ymin, _dirtG4Ymax;
 
     // Check to see if we kill low p tracks in the dirt or other shielding.
     bool cosmicKiller( const G4Track* aTrack);
