@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.70 2011/03/08 23:29:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/08 23:29:15 $
+// $Id: geom_01.txt,v 1.71 2011/03/09 19:29:04 genser Exp $
+// $Author: genser $
+// $Date: 2011/03/09 19:29:04 $
 //
 // Original author Rob Kutschke
 //
@@ -85,7 +85,8 @@ vector<string> g4.materials =
     "G4_F",     "G4_Na",  "G4_Al", "G4_Si", "G4_Ar",
     "G4_Ca",    "G4_Ti",  "G4_Fe", "G4_Cu", "G4_Ta",
     "G4_W",     "G4_Pt",  "G4_Au", "G4_Pb", "G4_WATER",
-    "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be", "G4_B", "G4_Li"
+    "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be", "G4_B", "G4_Li",
+    "G4_TITANIUM_DIOXIDE"
   };
 
 // Load other materials defined specifically for Mu2e.
@@ -109,7 +110,7 @@ bool g4.doSurfaceCheck = false;
 // Half lengths of the world box, (x,y,z) in mm.
 vector<double> world.halfLengths  = { 20000., 10000., 20000.};
 string         world.materialName = "G4_AIR";
-bool           world.boxVisible   = true;
+bool           world.boxVisible   = false;
 bool           world.boxSolid     = false;
 
 
@@ -118,7 +119,7 @@ bool           world.boxSolid     = false;
 //  y: given as height above the floor
 //  z: offset from the world origin.
 double world.mu2eOrigin.xoffset =     0.;
-double world.mu2eOrigin.height  =  2350.;
+double world.mu2eOrigin.height  =  2550.;
 double world.mu2eOrigin.zoffset = -4000.;
 
 // Overburden above the detector: 20 ft in proposal.
@@ -128,9 +129,9 @@ double dirt.capHalfHeight   = 1.; // small numbers make it "almost" invisible (m
 double dirt.capBottomRadius = 2.;
 double dirt.capTopRadius    = 1.;
 string dirt.overburdenMaterialName = "MBOverburden";
-bool   dirt.visible         = true;
+bool   dirt.visible         = false;
 bool   dirt.solid           = false;
-bool   dirt.capVisible      = true;
+bool   dirt.capVisible      = false;
 bool   dirt.capSolid        = false;
 
 // Inside dimensions of the hall.  Order is: (x,y,z) = width, height, length.
@@ -141,7 +142,7 @@ double hall.ceilingThick = 300.;
 double hall.wallThick    = 300.;
 string hall.wallMaterialName = "G4_CONCRETE";
 string hall.insideMaterialName = "G4_AIR";
-bool   hall.visible            = true;
+bool   hall.visible            = false;
 bool   hall.solid              = false;
 
 // Offset of the hall from its base position within the world:
@@ -165,8 +166,8 @@ double toyDS3.halfLength        = 3650.;
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
-bool   toyDS.visible            = true;
-bool   toyDS.solid              = true;
+bool   toyDS.visible            = false;
+bool   toyDS.solid              = false;
 
 // A toy model of the PS, coils, cryo and vaccum.
 double toyPS.rIn            =   880.;
@@ -174,8 +175,8 @@ double toyPS.rOut           =  1300.;
 double toyPS1.vacHalfLength =  2580.; //2700.;
 double toyPS.CryoHalfLength =  2580.;
 string toyPS.materialName   = "G4_Al";
-bool   toyPS.visible        = true;
-bool   toyPS.solid          = true;
+bool   toyPS.visible        = false;
+bool   toyPS.solid          = false;
 
 // Parameters for TS volumes.
 double toyTS.rVac        =  240.;          // Outer radius of vacuum volume
@@ -183,8 +184,8 @@ double toyTS.rCryo       =  700.;          // Outer radius of cryostat
 double toyTS.rTorus      = 2929.;          // Bend radius of the torus
 double toyTS1.halfLength =  500.;
 double toyTS5.halfLength =  500.;
-bool   toyTS.visible        = true;
-bool   toyTS.solid          = true;
+bool   toyTS.visible        = false;
+bool   toyTS.solid          = false;
 
 // PBAR Absorber
 
@@ -193,8 +194,8 @@ string pbar.materialName = "G4_Be";
 
 // Collimators
 
-bool   coll.visible        = true;
-bool   coll.solid          = true;
+bool   coll.visible        = false;
+bool   coll.solid          = false;
 
 double coll1.halfLength = 500.0;
 double coll1.innerRadius1 = 150.0;
@@ -216,8 +217,8 @@ string coll5.materialName = "G4_Cu";
 // Virtual detectors
 
 double vd.halfLength     = 0.1; //mm
-bool   vd.visible        = true;
-bool   vd.solid          = true;
+bool   vd.visible        = false;
+bool   vd.solid          = false;
 
 // Production Target in PS:
 
@@ -232,8 +233,8 @@ double targetPS_positionZ         =   -35.5;  // mm
 double targetPS_rotX              =    -1.8;  // degree. Active rotation. See Mu2e-doc-938.
 double targetPS_rotY              =   12.22;  // degree.
 string targetPS_materialName      = "G4_Au";
-bool   targetPS.visible           = true;
-bool   targetPS.solid             = true;
+bool   targetPS.visible           = false;
+bool   targetPS.solid             = false;
 
 // Describe dummy stopping target that is just one big G4TUBS.
 double dummyStoppingTarget.rIn        =     0.;
@@ -253,7 +254,7 @@ string         target.fillMaterial    = "WAGVacuum";
 // (0,0,0) = on axis in the DS at z=12000. mm
 double target.z0             = -6100.0;
 double target.deltaZ         =    50.0;
-bool   target.visible        = true;
+bool   target.visible        = false;
 bool   target.solid          = true;
 
 // all radii must be specified, i.e., nFoils is determined from the size 
@@ -328,18 +329,63 @@ double calorimeter.timeGap               = 100.0;  // ns
 double calorimeter.electronDepositionAPD = 1000.0; // MeV
 double calorimeter.electronMinEnergyAPD  = 0.1;    // MeV
 
-bool   calorimeter.visible        = true;
-bool   calorimeter.solid          = true;
+bool   calorimeter.visible        = false;
+bool   calorimeter.solid          = false;
 
-// Dimensions of CRV steel, assuming constant thickness all around, and square shape.
+// Dimensions of steel, assuming constant thickness all around, and square shape.
 double fluxcrv.HallSteelHalfThick    = 250.;
 double fluxcrv.HallSteelHalfLengthXY = 2048.;
 double fluxcrv.HallSteelHalfLengthZ  = 7150.;
 string fluxcrv.HallSteelMaterialName = "G4_Fe";
 double fluxcrv.HallSteelHoleRadius   = 850;
-vector<double> fluxcrv.HallSteelOffset  = {0.,0., -80.}; // mm
+vector<double> fluxcrv.HallSteelOffset  = {0.,0., -80.}; 
 bool   fluxcrv.visible          = true;
 bool   fluxcrv.solid            = false;
+
+// Parameters of the CRS Scintillator Modules (length in mm)
+// data based mainly on Mu2e Document 388-v1 Mu2e Proposal, fig 11.6,
+// p174 11.9 p.179 and fig 4.6.9/text in 1330v2
+
+int            crs.scintillatorLayersPerModule              = 3;
+int            crs.scintillatorBarsPerFullLayer             = 20;
+vector<double> crs.scintillatorBarHalfLengths               = { 5.,  2475., 50.}; 
+string         crs.scintillatorBarMaterialName              = "G4_POLYSTYRENE";
+double         crs.scintillatorLayerShift                   = 25.0; 
+double         crs.scintillatorLayerGap                     = 0.0;
+double         crs.scintillatorBarPigmentationHalfThickness = 0.125; // not used for now
+string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXIDE";  // check
+vector<double> crs.scintillatorModuleOuterSheetHalfLengths  = { 0.8, 2475., 1045.}; // 0.063"=1.6mm;
+string         crs.scintillatorModuleOuterSheetMaterial     = "G4_Al";
+string         crs.scintillatorModuleInterLayerSheetMaterialName  = "G4_POLYSTYRENE";
+double         crs.scintillatorModuleInterLayerSheetHalfThickness = 6.0; // 0.125"=3.175mm; or 57.2-30-3.2/4
+vector<double> crs.moduleUnistrutHalfLengths                = {28.,  2475., 157.}; // fig 11.9 p.179 
+double         crs.wallUnistrutHalfThickness                = 28.;  // (154 - 41)/4 = 28.25 ~28
+// assume the unistrut on the steel to be of the same thickness as the one on the modules
+double         crs.scintillatorOverlap                      = 100.; // fig 11.5 
+
+// full, half modules, more specific numbers TBD
+vector<int>    crs.shieldR_NumberOfModules  = { 8,  0};
+vector<int>    crs.shieldL_NumberOfModules  = { 8,  0};
+vector<int>    crs.shieldD_NumberOfModules  = { 2,  1};
+vector<int>    crs.shieldU_NumberOfModules  = { 3,  1};
+vector<int>    crs.shieldT_NumberOfModules  = { 8,  0};
+vector<int>    crs.shieldB_NumberOfModules  = { 8,  0};
+vector<int>    crs.shieldTS_NumberOfModules = { 2,  6};
+
+// additional relative offsets wrt the center of the shields
+
+vector<double> crs.shieldR_Offset  = {   0., 75., 0.};
+vector<double> crs.shieldL_Offset  = {   0., 75., 0.};
+vector<double> crs.shieldD_Offset  = { 720.,  0., 0.};
+vector<double> crs.shieldU_Offset  = {   0.,  0., 0.};
+vector<double> crs.shieldT_Offset  = {   0., 75., 0.};
+vector<double> crs.shieldB_Offset  = {   0., 75., 0.};
+vector<double> crs.shieldTS_Offset = {   0.,  0., 0.};
+
+bool   crs.vetoVisible    = false;
+bool   crs.vetoSolid      = false;
+int    crs.verbosityLevel = 0;
+
 
 // Magnetic field
 //
@@ -369,8 +415,8 @@ double protonabsorber.OutRadius1   =  380.0;
 double protonabsorber.OutRadius0   =  335.2;
 double protonabsorber.halfLength   = 1250.0;
 double protonabsorber.thickness    =    0.5;
-bool   protonabsorber.visible      = true;
-bool   protonabsorber.solid        = true;
+bool   protonabsorber.visible      = false;
+bool   protonabsorber.solid        = false;
 
 // Neutron Absorber (document draft dated 2010-07-16)
 string neutronabsorber.materialName          = "Polyethylene092B300d119";
@@ -386,7 +432,7 @@ double neutronabsorber.externalHalfLengthXY  = 1475.0;
 double neutronabsorber.externalHalfThickness =   75.0;
 double neutronabsorber.externalZ0            = 9219.0; // 2999+15439/2
 
-bool   neutronabsorber.visible      = true;
+bool   neutronabsorber.visible      = false;
 bool   neutronabsorber.solid        = false;
 
 //
