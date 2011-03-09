@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 // 
-// $Id: StrawSD.cc,v 1.22 2010/12/21 21:47:51 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/21 21:47:51 $
+// $Id: StrawSD.cc,v 1.23 2011/03/09 16:50:47 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/03/09 16:50:47 $
 //
 // Original author Rob Kutschke
 //
@@ -303,7 +303,7 @@ namespace mu2e {
       double ttt = lppca.unit().cosTheta(w);
 
       printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f | %10.7f %10.7f\n",
-               eventNo,  _collection->size(), copy,
+               eventNo,  int(_collection->size()), copy,
                aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
                prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
                preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
