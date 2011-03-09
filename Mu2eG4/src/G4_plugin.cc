@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.45 2011/03/09 19:50:41 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/09 19:50:41 $
+// $Id: G4_plugin.cc,v 1.46 2011/03/09 21:43:12 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/03/09 21:43:12 $
 //
 // Original author Rob Kutschke
 //
@@ -112,6 +112,7 @@ namespace mu2e {
       _genAction(0),
       _trackingAction(0),
       _steppingAction(0),
+      _stackingAction(0),
       _session(0),
       _visManager(0),
       _UI(0),
@@ -162,8 +163,9 @@ namespace mu2e {
     auto_ptr<Mu2eG4RunManager> _runManager;
 
     PrimaryGeneratorAction* _genAction;
-    TrackingAction*       _trackingAction;
-    SteppingAction*       _steppingAction;
+    TrackingAction*         _trackingAction;
+    SteppingAction*         _steppingAction;
+    StackingAction*         _stackingAction;
 
     G4UIsession  *_session;
     G4VisManager *_visManager;
@@ -240,8 +242,8 @@ namespace mu2e {
     G4UserEventAction* event_action = new EventAction(_steppingAction);
     _runManager->SetUserAction(event_action);
     
-    StackingAction* stacking_action = new StackingAction(config);
-    _runManager->SetUserAction(stacking_action);
+    _stackingAction = new StackingAction(config);
+    _runManager->SetUserAction(_stackingAction);
 
     _trackingAction = new TrackingAction(config,_steppingAction);
     _runManager->SetUserAction(_trackingAction);
@@ -295,7 +297,8 @@ namespace mu2e {
     // Some of the user actions have beginRun methods.
     _genAction->setWorld(world);
     _trackingAction->beginRun( _physVolHelper, _mu2eOrigin );
-    _steppingAction->beginRun();
+    _steppingAction->beginRun( );
+    _stackingAction->beginRun( world->getDirtG4Ymin(), world->getDirtG4Ymax() );
 
   }
 
