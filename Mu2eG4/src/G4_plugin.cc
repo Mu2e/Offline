@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.44 2011/03/08 23:29:15 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/08 23:29:15 $
+// $Id: G4_plugin.cc,v 1.45 2011/03/09 19:50:41 genser Exp $
+// $Author: genser $ 
+// $Date: 2011/03/09 19:50:41 $
 //
 // Original author Rob Kutschke
 //
@@ -70,6 +70,7 @@
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/StoppingTargetSD.hh"
+#include "Mu2eG4/inc/CRSScintillatorBarSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"   
@@ -120,12 +121,14 @@ namespace mu2e {
       _trackerOutputName("tracker"),
       _vdOutputName("virtualdetector"),
       _stOutputName("stoppingtarget"),
+      _sbOutputName("CRV"),
       _caloOutputName("calorimeter"),
       _caloROOutputName("calorimeterRO") {
 
       produces<StepPointMCCollection>(_trackerOutputName);
       produces<StepPointMCCollection>(_vdOutputName);
       produces<StepPointMCCollection>(_stOutputName);
+      produces<StepPointMCCollection>(_sbOutputName);
       produces<StepPointMCCollection>(_caloOutputName);
       produces<StepPointMCCollection>(_caloROOutputName);
       produces<SimParticleCollection>();
@@ -186,8 +189,9 @@ namespace mu2e {
     const std::string _trackerOutputName;
     const std::string      _vdOutputName;
     const std::string      _stOutputName;
+    const std::string      _sbOutputName;
     const std::string    _caloOutputName;
-    const std::string    _caloROOutputName;
+    const std::string  _caloROOutputName;
 
   };
   
@@ -303,6 +307,7 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>     outputHits(        new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     vdHits(            new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     stHits(            new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>     sbHits(            new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     caloHits(          new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
@@ -337,6 +342,10 @@ namespace mu2e {
     static_cast<StoppingTargetSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::StoppingTarget()))->
       beforeG4Event(*stHits);
+
+    static_cast<CRSScintillatorBarSD*>
+      (SDman->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()))->
+      beforeG4Event(*sbHits);
 
     static_cast<CaloCrystalSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
@@ -377,6 +386,7 @@ namespace mu2e {
     event.put(outputHits,_trackerOutputName);
     event.put(vdHits,_vdOutputName);
     event.put(stHits,_stOutputName);
+    event.put(sbHits,_sbOutputName);
     event.put(simParticles);
     event.put(caloHits,_caloOutputName);
     event.put(caloROHits,_caloROOutputName);
