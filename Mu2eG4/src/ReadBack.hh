@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.16 2011/03/04 21:31:11 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/04 21:31:11 $
+// $Id: ReadBack.hh,v 1.17 2011/03/09 19:51:14 genser Exp $
+// $Author: genser $
+// $Date: 2011/03/09 19:51:14 $
 //
 // Original author Rob Kutschke
 //
@@ -62,6 +62,9 @@ namespace mu2e {
     // Name of the stopping target StepPoint collection
     std::string _targetStepPoints;
 
+    // Name of the CRSScintillatorBar(CRV) StepPoint collection
+    std::string _crvStepPoints;
+
     // Cut on the minimum energy.
     double _minimumEnergy;
 
@@ -113,6 +116,8 @@ namespace mu2e {
     TH1F* _hTargetNfoils;
     TH2F* _hTargetNfoils2D;
 
+    TNtuple* _ntupCRV;
+
     TNtuple* _ntup;
     TGraph*  _xyHits;
 
@@ -126,6 +131,7 @@ namespace mu2e {
     void doITracker(const edm::Event& event);
     void doCalorimeter(const edm::Event& event);
     void doStoppingTarget(const edm::Event& event);
+    void doCRV(const edm::Event& event);
 
     // A helper function.
     int countHitNeighbours( Straw const& straw, 

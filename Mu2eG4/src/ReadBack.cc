@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.33 2011/03/08 09:35:16 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/03/08 09:35:16 $
+// $Id: ReadBack.cc,v 1.34 2011/03/09 19:51:06 genser Exp $
+// $Author: genser $
+// $Date: 2011/03/09 19:51:06 $
 //
 // Original author Rob Kutschke
 //
@@ -44,6 +44,14 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
+#include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
+#include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
+
+#include "G4Helper/inc/G4Helper.hh"
+
+
 // Root includes.
 #include "TDirectory.h"
 #include "TH1F.h"
@@ -69,6 +77,7 @@ namespace mu2e {
     _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
     _caloCrystalHitsMaker(pset.getUntrackedParameter<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
     _targetStepPoints(pset.getUntrackedParameter<string>("targetStepPoints","stoppingtarget")),
+    _crvStepPoints(pset.getUntrackedParameter<string>("CRVStepPoints","CRV")),
     _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
     _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
     _xyHitsMax(pset.getUntrackedParameter<int>("xyHitsMax",10000)),
@@ -105,6 +114,7 @@ namespace mu2e {
     _hTargetPathLength(0),
     _hTargetNfoils(0),
     _hTargetNfoils2D(0),
+    _ntupCRV(0),
     _ntup(0),
     _xyHits(0),
 
@@ -154,28 +164,28 @@ namespace mu2e {
 
 
     _hRCEdep    = tfs->make<TH1F>( "hRCEdep", 
-                                  "Total energy deposition in calorimeter reconstructed from ROs", 
-                                  2400, 0., 2400. );
+                                   "Total energy deposition in calorimeter reconstructed from ROs", 
+                                   2400, 0., 2400. );
 
     _hRCTime    = tfs->make<TH1F>( "hRCTime", 
-                                  "Hit time in calorimeter reconstructed from ROs", 
-                                  2400, 0., 2400. );
+                                   "Hit time in calorimeter reconstructed from ROs", 
+                                   2400, 0., 2400. );
 
     _hRCNCrystals = tfs->make<TH1F>( "hRCNCrystals", 
-                                    "Number of crystals reconstructed from ROs", 
-                                    50, 0., 50. );
+                                     "Number of crystals reconstructed from ROs", 
+                                     50, 0., 50. );
 
     _hRCEdepMC  = tfs->make<TH1F>( "hRCEdepMC", 
-                                  "Total energy deposition in calorimeter reconstructed from raw ROs MC", 
-                                  240, 0., 240. );
+                                   "Total energy deposition in calorimeter reconstructed from raw ROs MC", 
+                                   240, 0., 240. );
 
     _hRCTimeMC  = tfs->make<TH1F>( "hRCTimeMC", 
-                                  "Hit time in calorimeter reconstructed from raw ROs MC", 
-                                  2400, 0., 2400. );
+                                   "Hit time in calorimeter reconstructed from raw ROs MC", 
+                                   2400, 0., 2400. );
 
     _hRCNCrystalsMC = tfs->make<TH1F>( "hRCNCrystalsMC", 
-                                    "Number of crystals reconstructed from raw ROs MC", 
-                                    50, 0., 50. );
+                                       "Number of crystals reconstructed from raw ROs MC", 
+                                       50, 0., 50. );
 
     // Stopping target histograms
 
@@ -194,7 +204,13 @@ namespace mu2e {
 
     // Create an ntuple.
     _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
-                      "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
+                                          "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
+
+    // Create CRV ntuple.
+    _ntupCRV        = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple", 
+                                          "evt:trk:sid:hx:hy:hz:bx:by:bz:dx:dy:dz:time:shld:mod:lay:pdgId:genId:edep:p:step");
+
+
 
     // Create a TGraph; 
     // - Syntax to set name and title is weird; that's just root.
@@ -242,6 +258,9 @@ namespace mu2e {
 
     doStoppingTarget(event);
 
+    if( geom->hasElement<CosmicRayShield>() ) {
+      doCRV(event);
+    }
   }
 
   void ReadBack::doCalorimeter(const edm::Event& event) {
@@ -376,7 +395,7 @@ namespace mu2e {
       if ( pos != hitCrystals.end() ) {
 
         _diagLevel > 0 && cout << __func__ << ": Already saw " 
-               << (*caloCrystalHits).at(pos->second) << endl;
+                               << (*caloCrystalHits).at(pos->second) << endl;
         
       }
 
@@ -432,7 +451,7 @@ namespace mu2e {
       if ( pos != hitCrystals.end() ) {
 
         _diagLevel > 0 && cout << __func__ << ": Already saw " 
-               << (*caloCrystalOnlyHits).at(pos->second) << endl;
+                               << (*caloCrystalOnlyHits).at(pos->second) << endl;
         
       }
 
@@ -926,5 +945,148 @@ namespace mu2e {
          << _nBadG4Status
          << endl;
   }
+
+  void ReadBack::doCRV(const edm::Event& event){
+
+    // Get a reference to CosmicRayShield (it contains crv)
+
+    GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+
+    std::vector<CRSScintillatorBar> const & allBars = 
+      CosmicRayShieldGeomHandle->getAllCRSScintillatorBars();
+
+    edm::Handle<StatusG4> g4StatusHandle;
+    event.getByLabel( _g4ModuleLabel, g4StatusHandle);
+    StatusG4 const& g4Status = *g4StatusHandle;
+
+    // Ask the event to give us a "handle" to the requested hits.
+    edm::Handle<StepPointMCCollection> hits;
+    event.getByLabel(_g4ModuleLabel,_crvStepPoints,hits);
+
+    // Get handles to the generated and simulated particles.
+    edm::Handle<ToyGenParticleCollection> genParticles;
+    event.getByType(genParticles);
+
+    edm::Handle<SimParticleCollection> simParticles;
+    event.getByType(simParticles);
+
+    // Handle to information about G4 physical volumes.
+    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    event.getRun().getByType(volumes);
+
+    // Some files might not have the SimParticle and volume information.
+    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+
+    // Other files might have empty collections.
+    if ( haveSimPart ){
+      haveSimPart = !(simParticles->empty() || volumes->empty());
+    }
+
+    // A silly example just to show that we have a messsage logger.
+    if ( hits->size() > 300 ){
+      edm::LogWarning("HitInfo")
+        << "Number of CRV hits "
+        << hits->size() 
+        << " may be too large.";
+    }
+
+    // A silly example just to show how to throw.
+    if ( hits->size() > 1000000 ){
+      throw cms::Exception("RANGE")
+        << "Way too many CRV hits in this event.  Something is really wrong."
+        << hits->size();
+    }
+
+    if ( _nAnalyzed < _maxFullPrint ){
+      cerr << g4Status << endl;
+    }
+
+    // ntuple buffer.
+    float nt[_ntupCRV->GetNvar()];
+
+    // Loop over all hits.
+    for ( size_t i=0; i<hits->size(); ++i ){
+      
+      // Alias, used for readability.
+      const StepPointMC& hit = (*hits)[i];
+
+      // Get the hit information.
+      const CLHEP::Hep3Vector& pos = hit.position();
+      const CLHEP::Hep3Vector& mom = hit.momentum();
+      
+      // Get the CRSScintillatorBar information: 
+      const CRSScintillatorBar&  bar = allBars.at( hit.volumeId() );
+      CLHEP::Hep3Vector const &  mid = bar.getGlobalOffset();
+      
+      // The simulated particle that made this hit.
+      SimParticleCollection::key_type trackId(hit.trackId());
+
+      // Default values for these, in case information is not available.
+      int pdgId(0);
+      GenId genId;
+
+      if ( haveSimPart ){
+
+        SimParticle const& sim = simParticles->at(trackId);
+
+          // PDG Particle Id of the sim particle that made this hit.
+          pdgId = sim.pdgId();
+      
+          // If this is a generated particle, which generator did it come from?
+          // This default constructs to "unknown".
+          if ( sim.fromGenerator() ){
+            ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+            genId = gen.generatorId();
+          }
+
+      }
+
+      // Fill the ntuple.
+      nt[ 0] = event.id().event();
+      nt[ 1] = hit.trackId().asInt();
+      nt[ 2] = hit.volumeId();
+      nt[ 3] = pos.x();
+      nt[ 4] = pos.y();
+      nt[ 5] = pos.z();
+      nt[ 6] = mid.x();
+      nt[ 7] = mid.y();
+      nt[ 8] = mid.z();
+      nt[ 9] = abs((pos-mid).x());
+      nt[10] = abs((pos-mid).y());
+      nt[11] = abs((pos-mid).z());
+      nt[12] = hit.time();
+      nt[13] = bar.Id().getShieldNumber();
+      nt[14] = bar.Id().getModuleNumber();
+      nt[15] = bar.Id().getLayerNumber();
+      nt[16] = pdgId;
+      nt[17] = genId.Id();
+      nt[18] = hit.eDep()/keV;
+      nt[19] = mom.mag();
+      nt[20] = hit.stepLength();
+
+      _ntupCRV->Fill(nt);
+
+      // Print out limited to the first few events.
+      if ( _nAnalyzed < _maxFullPrint ){
+
+        cerr << "Readback"
+             << " hit: "
+             << event.id().event() << " "
+             << i                  <<  " "
+             << hit.trackId()      << "   "
+             << hit.volumeId()     << " "
+             << bar.Id()           << " | "
+             << pos                << " "
+             << mid                << " "
+             << (mid-pos)          << " "
+             << mom                << " "
+             << hit.totalEDep()/keV << " "
+             << hit.stepLength()
+             << endl;
+      }
+      
+    } // end loop over hits.
+
+  } // end doCRV
 
 }  // end namespace mu2e
