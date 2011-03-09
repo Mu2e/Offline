@@ -2,9 +2,9 @@
 #define SensitiveDetectorName_h
 // Define names of Sensitive Detectors
 // 
-// $Id: SensitiveDetectorName.hh,v 1.3 2011/03/08 08:31:51 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2011/03/08 08:31:51 $
+// $Id: SensitiveDetectorName.hh,v 1.4 2011/03/09 19:49:32 genser Exp $
+// $Author: genser $ 
+// $Date: 2011/03/09 19:49:32 $
 //
 // Original author KLG
 
@@ -38,6 +38,10 @@ namespace mu2e {
 
     static char const * StoppingTarget(){
       return "StoppingTarget";
+    }
+
+    static char const * CRSScintillatorBar(){
+      return "CRSScintillatorBar";
     }
 
   };
