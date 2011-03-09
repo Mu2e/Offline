@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.29 2011/02/13 22:33:10 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/13 22:33:10 $
+// $Id: Mu2eWorld.hh,v 1.30 2011/03/09 19:48:51 genser Exp $
+// $Author: genser $ 
+// $Date: 2011/03/09 19:48:51 $
 //
 // Original author Rob Kutschke
 //
@@ -94,7 +94,6 @@ namespace mu2e {
     VolumeInfo constructTarget();
     void constructCal();
     void constructMagnetYoke();
-    void constructCRV();
     void constructBFieldAndManagers();
     void constructStepLimiters();
 
