@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.83 2011/03/09 19:49:11 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/09 19:49:11 $
+// $Id: Mu2eWorld.cc,v 1.84 2011/03/09 21:42:29 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/03/09 21:42:29 $
 //
 // Original author Rob Kutschke
 //
@@ -309,6 +309,9 @@ namespace mu2e {
 
     // Build the reference points that others will use.
     _cosmicReferencePoint = G4ThreeVector( 0., yEverest, 0.);
+
+    _dirtG4Ymax = ySurface;
+    _dirtG4Ymin = yCeilingOutside;
 
     if ( diagLevel > 0) {    
       cout << __func__ << " yEverest : " <<  yEverest  << endl;

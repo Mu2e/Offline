@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.30 2011/03/09 19:48:51 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/09 19:48:51 $
+// $Id: Mu2eWorld.hh,v 1.31 2011/03/09 21:42:29 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/03/09 21:42:29 $
 //
 // Original author Rob Kutschke
 //
@@ -78,6 +78,14 @@ namespace mu2e {
     G4ThreeVector const& getPrimaryProtonGunOrigin() const{
       return _primaryProtonGunOrigin;
     }
+
+    double getDirtG4Ymin() const{
+      return _dirtG4Ymin;
+    }
+
+    double getDirtG4Ymax() const{
+      return _dirtG4Ymax;
+    }
  
     G4RotationMatrix const& getPrimaryProtonGunRotation() const{
       return _primaryProtonGunRotation;
@@ -111,6 +119,9 @@ namespace mu2e {
 
     // Origin of the hall air volume in the Mu2e coordinate system.
     G4ThreeVector _hallOriginInMu2e;
+
+    // Top and bottom of the dirt volume (not including the berm); in G4 coordinates
+    double _dirtG4Ymax, _dirtG4Ymin;
 
     // Information about the world that can be passed to others.
     WorldInfo _info;
