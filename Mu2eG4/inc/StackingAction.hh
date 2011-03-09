@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.6 2011/03/09 21:43:35 kutschke Exp $
+// $Id: StackingAction.hh,v 1.7 2011/03/09 21:55:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/09 21:43:35 $
+// $Date: 2011/03/09 21:55:11 $
 //
 // Original author Rob Kutschke
 //
@@ -43,21 +43,21 @@ namespace mu2e {
   private:
 
     // Count number of calls to ClassifyNewTrack this event.
-    int ncalls;
+    int _ncalls;
 
     // Count events to limit printout.
-    int nevents;
+    int _nevents;
 
     // Do we run the cosmic killer?
-    bool doCosmicKiller;
-    int  killLevel;
+    bool _doCosmicKiller;
+    int  _killLevel;
 
     // List of particles to remove (others will be kept)
     std::vector<int> _pdgToDrop;
 
     // Pointers to some physical volumes of interest.
-    G4VPhysicalVolume * dirtBodyPhysVol;
-    G4VPhysicalVolume * dirtCapPhysVol;
+    G4VPhysicalVolume * _dirtBodyPhysVol;
+    G4VPhysicalVolume * _dirtCapPhysVol;
 
     // Y limits of the dirt overburden.
     double _dirtG4Ymin, _dirtG4Ymax;

@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.8 2011/03/09 21:43:35 kutschke Exp $
+// $Id: StackingAction.cc,v 1.9 2011/03/09 21:55:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/09 21:43:35 $
+// $Date: 2011/03/09 21:55:11 $
 //
 // Original author Rob Kutschke
 //
@@ -43,17 +43,19 @@ using namespace std;
 namespace mu2e {
 
   StackingAction::StackingAction( const SimpleConfig& config ):
-    ncalls(0),
-    nevents(0),
-    doCosmicKiller(false),
-    killLevel(0),
+    _ncalls(0),
+    _nevents(0),
+    _doCosmicKiller(false),
+    _killLevel(0),
     _pdgToDrop(),
-    dirtBodyPhysVol(0),
-    dirtCapPhysVol(0){
+    _dirtBodyPhysVol(0),
+    _dirtCapPhysVol(0),
+    _dirtG4Ymin(0),
+    _dirtG4Ymax(0){
 
     // Get control info from run time configuration.
-    doCosmicKiller = config.getBool("g4.doCosmicKiller",false);
-    killLevel = config.getInt("g4.cosmicKillLevel",0);
+    _doCosmicKiller = config.getBool("g4.doCosmicKiller",false);
+    _killLevel = config.getInt("g4.cosmicKillLevel",0);
 
     // Get list of particles to keep or to drop in stepping action
     if ( config.hasName("g4.steppingActionDropPDG") ){
@@ -77,18 +79,18 @@ namespace mu2e {
     _dirtG4Ymax = dirtG4Ymax;
 
     // Find the addresses of some physical volumes of interest.  See note 3.
-    dirtBodyPhysVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtBody");
-    dirtCapPhysVol  = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtCap");
+    _dirtBodyPhysVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtBody");
+    _dirtCapPhysVol  = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtCap");
 
   }
 
   G4ClassificationOfNewTrack
   StackingAction::ClassifyNewTrack(const G4Track* trk){
-    ++ncalls;
+    ++_ncalls;
 
     // When we get a few different tests, we can decide how to
     // make a more elegant way to call them all.
-    if ( doCosmicKiller ){
+    if ( _doCosmicKiller ){
       if ( cosmicKiller(trk) ){
         return fKill;
       }
@@ -107,8 +109,8 @@ namespace mu2e {
   }
 
   void StackingAction::PrepareNewEvent(){ 
-    ncalls = 0;
-    ++nevents;
+    _ncalls = 0;
+    ++_nevents;
   }
 
   bool StackingAction::cosmicKiller( const G4Track* trk){
@@ -119,11 +121,11 @@ namespace mu2e {
 
     bool killit = false;
 
-    if ( killLevel > 1 && pdef != 0 ) {
+    if ( _killLevel > 1 && pdef != 0 ) {
       int pType = pdef->GetPDGEncoding();
 
       // just kill anything electromagnetic in the dirt
-      killit =  ( pvol == dirtBodyPhysVol &&
+      killit =  ( pvol == _dirtBodyPhysVol &&
                   (pType == PDGCode::e_minus || 
                    pType ==  PDGCode::e_plus || 
                    PDGCode::gamma ) );
@@ -144,7 +146,7 @@ namespace mu2e {
 
 
     // Printout about the decision.
-    if ( nevents < 20 ) {
+    if ( _nevents < 20 ) {
 
       // See note 4.
       G4String volName = (pvol !=0) ? pvol->GetName(): "Unknown Volume";
@@ -155,8 +157,8 @@ namespace mu2e {
       G4ThreeVector p3mom = trk->GetMomentum();
 
       cout << "Cosmic Killer: " 
-           << setw(4)  << nevents << " "
-           << setw(4)  << ncalls << " "
+           << setw(4)  << _nevents << " "
+           << setw(4)  << _ncalls << " "
            << setw(4)  << trk->GetTrackID() << " "
            << setw(4)  << trk->GetParentID() <<  " "
            << setw(8)  << partName << "   |   "
@@ -167,11 +169,11 @@ namespace mu2e {
            << endl;
 
       // Check to see if we are in the dirt.
-      if ( pvol == dirtBodyPhysVol ){
+      if ( pvol == _dirtBodyPhysVol ){
         string tag = ( ppos.y() >= _dirtG4Ymin && ppos.y() <= _dirtG4Ymax ) ?
           "OK" : "Fail y Check";
         cout << "Cosmic Killer: tag Dirt Body " << tag << endl;
-      } else if ( pvol == dirtCapPhysVol ) {
+      } else if ( pvol == _dirtCapPhysVol ) {
         cout << "Cosmic Killer: tag Dirt Cap" << endl;
       }
 
