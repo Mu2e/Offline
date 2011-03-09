@@ -2,11 +2,11 @@
 #define CosmicRayShield_hh
 
 //
-// Class to represent CosmicRayShield
+// Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.1 2011/01/25 16:43:52 genser Exp $
+// $Id: CosmicRayShield.hh,v 1.2 2011/03/09 19:45:08 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/01/25 16:43:52 $
+// $Date: 2011/03/09 19:45:08 $
 //
 // Original author KLG
 //
@@ -21,7 +21,8 @@
 
 // Includes from Mu2e
 #include "GeometryService/inc/Detector.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShieldSteelShield.hh"
+#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
+#include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 
 
 namespace mu2e {
@@ -33,7 +34,6 @@ namespace mu2e {
   class CosmicRayShield : public Detector {
 
     friend class CosmicRayShieldMaker;
-    //  friend class CosmicRayShieldVetoMaker;
 
   public:
 
@@ -43,28 +43,56 @@ namespace mu2e {
 
     ~CosmicRayShield(){};
 
-    virtual std::string name() const { return _name;};
-    
+    std::string name() const { return _name;};
+
     // Get SteelShield
-    CosmicRayShieldSteelShield const & getCosmicRayShieldSteelShield(std::string name) const;
+    CRSSteelShield         const & getCRSSteelShield(std::string name) const;
 
-    // Get Veto
-    //    CosmicRayShieldVeto  const& getCosmicRayShieldVeto()  const { return _veto; };
+    std::map<std::string,CRSSteelShield> const & getCRSSteelShields() const {
+      return _steelShields;
+    }
 
-    void addSteelShield(std::string name, 
-                        CLHEP::Hep3Vector   localOffset, 
-                        CLHEP::HepRotation* localRot,
-                        CLHEP::Hep3Vector   globalOffset,
-                        double const        halfLengths[3],
-                        double              holeRadius = 0.);
+    // Get ScintillatorShield
+    CRSScintillatorShield  const & getCRSScintillatorShield(std::string name)  const;
+
+    std::map<std::string,CRSScintillatorShield> const & getCRSScintillatorShields() const {
+      return _scintillatorShields;
+    }
+
+    CRSScintillatorBarDetail const & getCRSScintillatorBarDetail() const {
+      return _barDetails;
+    }
+
+    std::vector<CRSScintillatorBar> const & getAllCRSScintillatorBars() const {
+      return _allCRSScintillatorBars;
+    }
+
+    const CRSScintillatorBar& getCRSScintillatorBar ( CRSScintillatorBarIndex index ) const{
+      return _allCRSScintillatorBars.at(index.asInt());
+    }
+
 
   private:
 
     std::string _name;
 
-    std::map<std::string,CosmicRayShieldSteelShield> _steelShield;
+    // position of the center in the parent frame
+    CLHEP::Hep3Vector _localOffset;
 
-    //    CosmicRayShieldVeto  _veto;
+    // position of the center in the global Mu2e frame (well,... World)
+    CLHEP::Hep3Vector _globalOffset;
+
+    std::map<std::string,CRSSteelShield>         _steelShields;
+
+    std::map<std::string,CRSScintillatorShield>  _scintillatorShields;
+
+    // Detailed info about scintillators etc...
+    CRSScintillatorBarDetail _barDetails;
+
+    // global holder of all scintillator bars
+    std::vector<CRSScintillatorBar>  _allCRSScintillatorBars;
+
+
 
   };
 

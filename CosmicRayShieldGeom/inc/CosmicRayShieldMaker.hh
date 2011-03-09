@@ -1,11 +1,11 @@
 #ifndef CosmicRayShieldMaker_hh
 #define CosmicRayShieldMaker_hh
 //
-// Construct and return CosmicRayShield.
+// Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.1 2011/01/25 16:43:52 genser Exp $
+// $Id: CosmicRayShieldMaker.hh,v 1.2 2011/03/09 19:45:36 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/01/25 16:43:52 $
+// $Date: 2011/03/09 19:45:36 $
 //
 // Original author KLG
 //
@@ -18,18 +18,34 @@
 
 namespace mu2e {
 
-class CosmicRayShield;
-class SimpleConfig;
+  class CosmicRayShield;
+  class SimpleConfig;
+
+  class CRSScintillatorShield;
+  class CRSScintillatorModule;
+  class CRSScintillatorLayer;
 
 class CosmicRayShieldMaker {
 
 public:
 
-  CosmicRayShieldMaker( SimpleConfig const& config );  
+  CosmicRayShieldMaker( SimpleConfig const & config );  
 
-  ~CosmicRayShieldMaker ();
+  void parseConfig( SimpleConfig const & _config );
 
-  // This is depracted and will go away soon.  
+  void makeCRSSteelShield(SimpleConfig const & _config);
+
+  void calculateCRSOffsets(SimpleConfig const & _config);
+
+  void calculateCommonCRSScintillatorParameters();
+  void makeDetails();
+  void makeShields();
+  void makeModules(CRSScintillatorShield& shield);
+  void makeLayers(CRSScintillatorModule& module);
+  void makeBars(CRSScintillatorLayer& layer);
+
+
+  // This is deprected and will go away soon.  
   // Still needed for root graphics version.
   const CosmicRayShield& getCosmicRayShield() const { return *_crs;}
 
@@ -39,6 +55,79 @@ public:
 private:
 
   std::auto_ptr<CosmicRayShield> _crs;
+
+  int _diagLevel;
+
+  double _HallSteelHalfThick;
+  double _HallSteelHalfLengthXY;
+  double _HallSteelHalfLengthZ;
+  double _HallSteelHoleRadius;
+
+  std::vector<double> _HallSteelOffset;
+
+  CLHEP::Hep3Vector _TopHallSteelOffset;
+  CLHEP::Hep3Vector _BottomHallSteelOffset;
+  CLHEP::Hep3Vector _LeftHallSteelOffset;
+  CLHEP::Hep3Vector _RightHallSteelOffset;
+  CLHEP::Hep3Vector _DownstreamHallSteelOffset;
+  CLHEP::Hep3Vector _UpstreamHallSteelOffset;
+
+  std::string _HallSteelMaterialName;
+
+  int                 _scintillatorLayersPerModule;
+  int                 _scintillatorBarsPerFullLayer;
+  std::vector<double> _scintillatorBarHalfLengths;
+  std::string         _scintillatorBarMaterialName;
+  double              _scintillatorLayerShift;
+  double              _scintillatorLayerGap;
+  double              _scintillatorBarPigmentationHalfThickness;
+  std::string         _scintillatorBarPigmentationMaterialName;
+  std::vector<double> _scintillatorModuleOuterSheetHalfLengths;
+  std::string         _scintillatorModuleOuterSheetMaterialName;
+  std::string         _scintillatorModuleInterLayerSheetMaterialName;
+  double              _scintillatorModuleInterLayerSheetHalfThickness;
+  double              _scintillatorOverlap;
+  std::vector<double> _moduleUnistrutHalfLengths;
+  double              _wallUnistrutHalfThickness;
+
+  std::vector<int>    _shieldR_NumberOfModules;
+  std::vector<int>    _shieldL_NumberOfModules;
+  std::vector<int>    _shieldD_NumberOfModules;
+  std::vector<int>    _shieldU_NumberOfModules;
+  std::vector<int>    _shieldT_NumberOfModules;
+  std::vector<int>    _shieldB_NumberOfModules;
+  std::vector<int>    _shieldTS_NumberOfModules;
+
+  std::vector<double> _shieldR_Offset;
+  std::vector<double> _shieldL_Offset;
+  std::vector<double> _shieldD_Offset;
+  std::vector<double> _shieldU_Offset;
+  std::vector<double> _shieldT_Offset;
+  std::vector<double> _shieldB_Offset;
+  std::vector<double> _shieldTS_Offset;
+
+  // derived quantities etc...
+
+  int    _totalNumberOfBars;
+
+  double _scintillatorFullLayerHalfWidth;
+  double _scintillatorHalfLayerHalfWidth;
+  double _scintillatorLayerHalfLength;
+
+  double _scintillatorModuleCoreHalfThickness; // no unistruts
+
+  double _scintillatorFullModuleHalfWidth;
+  double _scintillatorHalfModuleHalfWidth;  
+
+  double _scintillatorModuleHalfThickness;
+
+  double _scintillatorModuleHalfLength;
+
+  double _scintillatorModuleOverlap;
+
+  double _scintillatorShieldHalfThickness;
+
+  double _scintillatorShieldOffsetToTheSideOfHallSteel;
 
 };
 
