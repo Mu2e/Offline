@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.2 2011/03/09 19:46:51 genser Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.3 2011/03/09 20:13:59 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/03/09 19:46:51 $
+// $Date: 2011/03/09 20:13:59 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -43,8 +43,6 @@ namespace mu2e {
   CosmicRayShieldMaker::CosmicRayShieldMaker(SimpleConfig const & _config)
   {
 
-    _diagLevel = 0;
-
     _crs = auto_ptr<CosmicRayShield>(new CosmicRayShield());
 
     if( ! _config.getBool("hasCosmicRayShield",false) ) return;
@@ -68,6 +66,7 @@ namespace mu2e {
   void CosmicRayShieldMaker::parseConfig( SimpleConfig const & _config ){
 
     // we readin/store crs parameters needed in more than one function
+    _diagLevel = _config.getInt("crs.verbosityLevel",0);
 
     _HallSteelHalfThick     = _config.getDouble("fluxcrv.HallSteelHalfThick");
     _HallSteelHalfLengthXY  = _config.getDouble("fluxcrv.HallSteelHalfLengthXY");
