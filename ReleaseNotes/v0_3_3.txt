@@ -3,9 +3,9 @@
 
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.26 2011/03/08 23:36:02 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/03/08 23:36:02 $
+  $Id: v0_3_3.txt,v 1.27 2011/03/09 00:46:35 tassiell Exp $
+  $Author: tassiell $
+  $Date: 2011/03/09 00:46:35 $
 
 
 32) March 08, 2011 kutschke
@@ -23,6 +23,15 @@
 31) March 08, 2011 ayarritu
 
 30) March 08, 2011 tassielli
+    ITracker geometry updated and fixed, moreover the production of the closest approach hits for the ITracker is inserted.
+    To accomplish these tasks some little changes in the following generic files were made:
+    
+    GeometryService/src/getTrackerOrThrow.cc  -- ITracker added
+    Mu2eG4/inc/SensitiveDetectorName.hh       -- ITracker added
+    Mu2eG4/src/Mu2eWorld.cc                   -- switch for the hit production between I/(L or T) Tracker added
+    Mu2eG4/src/G4_plugin.cc                   -- switch for the hit production between I/(L or T) Tracker added
+    Mu2eG4/test/geom_01.txt                   -- changes in the ITracker geometry files naming scheme 
+    TrackerGeom/inc/Straw.hh                  -- getMidPoint getDirection getHalfLength methods made virtual to be usable by the ITracker too
 
 29) March 07, 2011 kutschke
     Provide a clear method.
