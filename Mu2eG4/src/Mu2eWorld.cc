@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.82 2011/03/08 08:36:34 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2011/03/08 08:36:34 $
+// $Id: Mu2eWorld.cc,v 1.83 2011/03/09 19:49:11 genser Exp $
+// $Author: genser $ 
+// $Date: 2011/03/09 19:49:11 $
 //
 // Original author Rob Kutschke
 //
@@ -40,6 +40,7 @@
 #include "Mu2eG4/inc/constructHall.hh"
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructSteel.hh"
+#include "Mu2eG4/inc/constructCRV.hh"
 #include "Mu2eG4/inc/constructNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 #include "Mu2eG4/inc/constructDS.hh"
@@ -52,6 +53,7 @@
 #include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/StoppingTargetSD.hh"
+#include "Mu2eG4/inc/CRSScintillatorBarSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -169,6 +171,7 @@ namespace mu2e {
     StoppingTargetSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloReadoutSD::setMu2eOriginInWorld( _mu2eOrigin );
+    CRSScintillatorBarSD::setMu2eOriginInWorld( _mu2eOrigin );
     if ( _config->getBool("hasITracker",false) ) {
             ITGasLayerSD::setMu2eDetCenterInWorld( _mu2eDetectorOrigin -
                             G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
@@ -219,7 +222,7 @@ namespace mu2e {
 
     if ( _config->getBool("hasCosmicRayShield",false) ) {
       constructSteel(hallInfo,_config);
-      constructCRV();
+      constructCRV(hallInfo,_config);
     }
 
     if ( _config->getBool("hasNeutronAbsorber",false) ) {
@@ -536,10 +539,6 @@ namespace mu2e {
   void Mu2eWorld::constructMagnetYoke(){
   } // end Mu2eWorld::constructMagnetYoke
 
-  // A place holder for now.
-  void Mu2eWorld::constructCRV(){
-  } // end Mu2eWorld::constructCRV
-
   // instantiateSensitiveDetectors
 
   void Mu2eWorld::instantiateSensitiveDetectors(){
@@ -573,8 +572,12 @@ namespace mu2e {
     CaloReadoutSD* crSD     = new CaloReadoutSD(    SensitiveDetectorName::CaloReadout(),     *_config);
     SDman->AddNewDetector(crSD);
 
-    StoppingTargetSD* stSD = new StoppingTargetSD(SensitiveDetectorName::StoppingTarget(), *_config);
+    StoppingTargetSD* stSD = new StoppingTargetSD(  SensitiveDetectorName::StoppingTarget(), *_config);
     SDman->AddNewDetector(stSD);
+
+    CRSScintillatorBarSD* sbSD = new CRSScintillatorBarSD(SensitiveDetectorName::CRSScintillatorBar(), *_config);
+    SDman->AddNewDetector(sbSD);
+
 
   } // instantiateSensitiveDetectors
 
