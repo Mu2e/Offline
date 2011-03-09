@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.10 2011/03/08 23:11:25 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.11 2011/03/09 21:56:52 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/03/08 23:11:25 $
+// $Date: 2011/03/09 21:56:52 $
 //
 // Original author Hans Wenzel
 //
@@ -220,9 +220,15 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       _hNStraws(0),
       _Polar(0),
       _R_rec(0),
-      _Pt_in(0),
-      _P_in(0),
-      _Pz_in(0),
+      //_Pt_in(0),
+      //_Pz_in(0),
+      //_P_in(0),
+      _Pt_in_si(0),
+      _Pz_in_si(0),
+      _P_in_si(0),
+      _Pt_out_si(0),
+      _Pz_out_si(0),
+      _P_out_si(0),
       _Pt_rec(0),
       _P_rec(0),
       _Pz_rec(0),
@@ -297,9 +303,19 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     TH1F* _hNStraws;
     TH1F*_Polar;
     TH1F* _R_rec;
-    TH1F* _Pt_in;
-    TH1F* _P_in;
-    TH1F* _Pz_in;
+    //
+    //    TH1F* _Pt_in;
+    //TH1F* _Pz_in;
+    //TH1F* _P_in;
+    //
+    TH1F* _Pt_in_si;
+    TH1F* _Pz_in_si;
+    TH1F* _P_in_si;
+    //
+    TH1F* _Pt_out_si;
+    TH1F* _Pz_out_si;
+    TH1F* _P_out_si;
+    //
     TH1F* _Pt_rec;
     TH1F* _P_rec;
     TH1F* _Pz_rec;
@@ -345,9 +361,17 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Double_t R_rec,x0,y0,chi2;
     Double_t Pt,Pz;
     CLHEP::Hep3Vector  X_in;  
-    CLHEP::Hep3Vector  P_in; 
-    Double_t Pt_inval;
-    Double_t P_inval;
+    //    CLHEP::Hep3Vector  P_in;
+    CLHEP::Hep3Vector  P_in_si;
+    CLHEP::Hep3Vector  P_out_si;
+    //
+    //    Double_t Pt_inval;
+    // Double_t P_inval;
+    Double_t Pt_inval_si;
+    Double_t P_inval_si;
+    Double_t Pt_outval_si;
+    Double_t P_outval_si;
+    //
     CLHEP::Hep3Vector B;
    };
   
@@ -364,9 +388,20 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
     _Polar         = tfs->make<TH1F>( "Polar",     "polar angle at production", 100, -1, 1. );
     _R_rec         = tfs->make<TH1F>( "R_rec",     "reconstructed track radius", 100, 0., 800. );
-    _Pt_in         = tfs->make<TH1F>( "Pt_in",     "tansverse momentum Pt at first Hit", 100, 40., 120. );
-    _P_in          = tfs->make<TH1F>( "P_in",      "momentum at first Hit", 100, 60., 110. );
-    _Pz_in         = tfs->make<TH1F>( "Pz_in",     "longitudinal momentum at first Hit", 100, 20., 100. );
+       //
+
+    //    _Pt_in         = tfs->make<TH1F>( "Pt_in",     "tansverse momentum Pt at first Hit", 100, 40., 120. );
+    //_Pz_in         = tfs->make<TH1F>( "Pz_in",     "longitudinal momentum at first Hit", 100, 20., 100. );
+    //_P_in          = tfs->make<TH1F>( "P_in",      "momentum at first Hit", 100, 60., 110. );
+    //
+    _Pt_in_si      = tfs->make<TH1F>( "Pt_in_si",     "tansverse momentum Pt_si at first Hit", 100, 0., 120. );
+    _Pz_in_si      = tfs->make<TH1F>( "Pz_in_si",     "longitudinal momentum Pz_si at first Hit", 100, 0., 100. );
+    _P_in_si       = tfs->make<TH1F>( "P_in_si",      "momentum at first Hit P_si", 100, 0., 110. );
+    //
+    _Pt_out_si     = tfs->make<TH1F>( "Pt_out_si",     "tansverse momentum Pt_out_si at last Hit", 100, 0., 120. );
+    _Pz_out_si     = tfs->make<TH1F>( "Pz_out_si",     "longitudinal momentum Pz_out_si at last Hit", 100, 0., 100. );
+    _P_out_si      = tfs->make<TH1F>( "P_out_si",      "momentum P_out_si at last Hit", 100, 0., 110. );
+    //
     _Pt_rec        = tfs->make<TH1F>( "Pt_rec",    "reconstructed tansverse momentum Pt", 100, 0., 160. );
     _P_rec         = tfs->make<TH1F>( "P_rec",     "reconstructed momentum", 100, 60., 140. );
     _Pz_rec        = tfs->make<TH1F>( "Pz_rec",    "reconstructed longitudinal momentum", 100, 0., 120. );
@@ -474,7 +509,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     vector<double> R_cluster;       // radius
     vector<double> Phi_cluster;     // angle 
     vector<CLHEP::Hep3Vector> Points3d_cluster; // x,y measurement packed in
-
+    double  edep[36] ;
+    int nhitdev[36];
+    CLHEP::Hep3Vector  MCPoint[36];
 
     X.clear();
     Y.clear();
@@ -508,27 +545,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     R_cluster.clear();
     Phi_cluster.clear();
     Points3d_cluster.clear();
-
-
-
     multimap<int,pstraw> mpstraws;
     mpstraws.clear();
-    /*
-// calculate the average hit position of track at a plane
-    double Xavg[36], Yavg[36],Zavg[36], edep[36] ;
-    int nhitdev[36];
 
-    CLHEP::Hep3Vector  MCPoint[36]; 
-    
-    for (int i = 0; i < 36 ; i++) { 
-      nhitdev[i] = 0 ;
-      Xavg[i] = 0 ;
-      Yavg[i] = 0 ;
-      Zavg[i] = 0 ;
-      edep[i] = 0 ;
-      MCPoint[i] = CLHEP::Hep3Vector(0.,0.,0.);
-    }
-*/ 
     //
     // Get the persistent data about pointers to StrawHits
     //
@@ -587,21 +606,11 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       SimParticleInfo const& simInfo = i->second;
       // Information about StrawHits that belong on this SimParticle.
       vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
-      /*
-	cout << "SimParticle: "
-	<< " Event: " << evt.id().event()
-	<< " Track: " << i->first 
-	<< " PdgId: " << simInfo.simParticle().pdgId() 
-	<< " |p|: "   << simInfo.simParticle().startMomentum().vect().mag()
-	<< " Hits: "  << infos.size()
-	<< " CC:   "  << simInfo.simParticle().creationCode() 
-	<< "  GI:  "  << simInfo.simParticle().generatorIndex() 
-	<< endl;
-      */
       if (simInfo.simParticle().generatorIndex()>=0)
 	{
 	  const ToyGenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
-	  cout<< genpar.generatorId()<<endl;
+	  
+	  //cout<< genpar.generatorId()<<endl;
 	  if (genpar.generatorId()== GenId::conversionGun)
 	    {
 	      cout << "SimParticle associated to conversion electron: "
@@ -614,41 +623,58 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		   << " GI:   "  << simInfo.simParticle().generatorIndex() 
 		   << endl;
 	      cout << "Polar: "<<simInfo.simParticle().startMomentum().vect().getTheta ()<<endl;
+	      StepPointMC const& fstep =simInfo.firstStepPointMCinTracker();
+	      StepPointMC const& lstep =simInfo.lastStepPointMCinTracker();
+	      P_in_si= fstep.momentum();     // momentum as the track enters the tracker
+	      Pt_inval_si =  P_in_si.rho();
+	      P_inval_si  =  P_in_si.mag();
+	      _Pt_in_si->Fill(Pt_inval_si);
+	      _P_in_si ->Fill(P_inval_si);
+	      _Pz_in_si->Fill(P_in_si.z());
+	      P_out_si= lstep.momentum();   // momentum as the track leaves the tracker
+	      Pt_outval_si =  P_out_si.rho();
+	      P_outval_si  =  P_out_si.mag();
+	      _Pt_out_si->Fill(Pt_outval_si);
+	      _P_out_si ->Fill(P_outval_si);
+	      _Pz_out_si->Fill(P_out_si.z());
 	      // Loop over all StrawsHits to which this SimParticle contributed.
 	      double _timetodist=149.8962;
 	      _hNEleHits->Fill(infos.size());
-	      //
-	      // get information about track as it enters the tracker:
-	      //
-	      StrawHitMCInfo const& infofirst = infos.at(0);
-	      std::vector<StepPointMC const *> const& steps = infofirst.steps();
-	      for ( size_t k=0; k<steps.size(); ++k){
-		StepPointMC const& step = *(steps[k]);
-		if (step.momentum().mag()>5.) 
-		  {
-		    X_in= step.position();  
-		    P_in= step.momentum();
-		    Pt_inval =  P_in.rho();
-		    P_inval  =  P_in.mag();
-		    _Pt_in->Fill(Pt_inval);
-		    _P_in ->Fill(P_inval);
-		    _Pz_in->Fill(P_in.z());
-		    break;
-		  }
+	      // calculate the average hit position of track at a plane
+	      
+	      for (int i = 0; i < 36 ; i++) { 
+		nhitdev[i] = 0 ;
+		edep[i] = 0 ;
+		MCPoint[i] = CLHEP::Hep3Vector(0.,0.,0.);
 	      }
-     	      for ( size_t j=0; j<infos.size(); ++j) // Loop over associated Hits
+	      
+	      for ( size_t j=0; j<infos.size(); ++j) // Loop over associated Hits
 		{
 		  StrawHitMCInfo const& info = infos.at(j);
 		  StrawHit const& hit        = info.hit();
 		  Straw const& str           = tracker.getStraw(hit.strawIndex());
-		  /*cout << "     Straw Hit: "
-		       << info.index()             << " "
-		       << hit.strawIndex().asInt() << " "
-		       << hit.time()               << " "
-		       << info.isShared()          << " "
-		       << straw.getMidPoint().z()  << " "
-		       << info.time()              << " | StepPointMCs: ";
-		  */	 
+		  sid = str.Id();
+		  did = sid.getDeviceId();
+		  std::vector<StepPointMC const *> const& steps = info.steps();
+		  for ( size_t k=0; k<steps.size(); ++k){
+		    StepPointMC const& step = *(steps[k]);
+		    MCPoint[did] =  MCPoint[did]+step.position();
+		    edep[did] =  edep[did]+step.totalEDep();
+		    nhitdev[did]++;
+		  }
+		}
+	      for (int i = 0; i < 36 ; i++) {
+		if (nhitdev[i]>0)
+		  {
+		    MCPoint[i] = MCPoint[i]/float(nhitdev[i]);
+		    //cout<<"Edep:  " <<  edep[i]<<"  MCPoint:  " << MCPoint[i]<<endl;
+		  }      
+	      }
+	      for ( size_t j=0; j<infos.size(); ++j) // Loop over associated Hits
+		{
+		  StrawHitMCInfo const& info = infos.at(j);
+		  StrawHit const& hit        = info.hit();
+		  Straw const& str           = tracker.getStraw(hit.strawIndex());
 		  const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
 		  const CLHEP::Hep3Vector dirvec = str.getDirection();
 		  double dt =hit.dt();
@@ -657,10 +683,10 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		  X_straw.push_back(hitpos.getX());
 		  Y_straw.push_back(hitpos.getY());
 		  Z_straw.push_back(hitpos.getZ());
-		  Double_t Rhit = hitpos.rho( );
+		  Double_t Rhit = hitpos.rho();
 		  R_straw.push_back(Rhit);
 		  CLHEP::Hep3Vector smcpos = CLHEP::Hep3Vector( 0.0, 0.0, 0.0);
-		  cout << "steps.size():  " << steps.size()<<endl;
+		  //		  cout << "steps.size():  " << steps.size()<<endl;
 		  std::vector<StepPointMC const *> const& steps = info.steps();
 		  for ( size_t k=0; k<steps.size(); ++k){
 		    StepPointMC const& step = *(steps[k]);
@@ -676,45 +702,31 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		  Y_res_straw.push_back(smcpos.getY()-hitpos.getY());
 		  _Xdiff_s -> Fill(smcpos.getX()-hitpos.getX());
 		  _Ydiff_s -> Fill(smcpos.getY()-hitpos.getY());		
-		  
 		}
 	      
 	      FitCircle(X_straw, Y_straw);
 	      _x0y0_s->Fill(x0,y0);
 	      _R_rec_s->Fill(R_rec);
 	      _chi2_s -> Fill(chi2) ;
-
+	      
 	      Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
 	      Double_t Const=1.49898e-4;
-	      cout << "Pt_inval:  "<< Pt_inval
+	      cout << "Pt_inval:  "<< Pt_inval_si
 		   << "  Radius:  "<< Radius
 		   << "  curv:    "<< curv
 		   << "  R_rec:  " << R_rec <<endl;
 	      Pt =1000.*R_rec*0.1 * 2. * Bmagnet* Const;
 	      _Pt_rec_s->Fill(Pt);
-	      _Pt_diff_s->Fill(Pt-Pt_inval);
+	      _Pt_diff_s->Fill(Pt-Pt_inval_si);
 	      FitSinus(R_straw, Z_straw);
 	      _Pz_rec_s->Fill(Pz);
-	      _Pz_diff_s->Fill(Pz-P_in.z());
+	      _Pz_diff_s->Fill(Pz-P_in_si.z());
 	      Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
 	      _P_rec_s->Fill(Ptot);
-	      _P_diff_s->Fill(Ptot-P_inval);
+	      _P_diff_s->Fill(Ptot-P_inval_si);
 	    }
 	}
-  }
-    /*
-    //  calculate the average hit position of the MC hit within each layer
-    for (int i = 0; i < 36 ; i++) { 
-      if (nhitdev[i] != 0) {
-	Xavg[i] = Xavg[i]/nhitdev[i]; 
-	Yavg[i] = Yavg[i]/nhitdev[i]; 
-	MCPoint[i] = MCPoint[i]/nhitdev[i]; 
-	//	 cout << i << " " << nhitdev[i] << " " << Xavg[i] << " " << Yavg[i] << endl ; 
-	_eplane -> Fill(edep[i]) ;  // energy deposited in plane
-	//_nhitpl -> Fill(nhitdev[i]) ; // number of hits in plane
-      }
-    } 
-    */
+    }
     Int_t totalHits=0;
     _hNClusters->Fill(mcptrHandle->size());
     CLHEP::Hep3Vector dvec;
@@ -818,15 +830,15 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 			  CLHEP::Hep3Vector(intersection.x(),intersection.y(),0.5*(junk.mpz+pjunk.mpz));
 			Double_t Rhit=point3d.rho();
 			Points3d.push_back(point3d);
-			//			Double_t Rmc  = TMath::Sqrt(Xavg[i]*Xavg[i]+Yavg[i]*Yavg[i]);
+			Double_t Rmc  = MCPoint[i].rho();
 			R.push_back(Rhit);
-			//R_res.push_back(Rmc-Rhit);
-			//_Rdiff-> Fill(Rmc-Rhit);
-			//_Phidiff->Fill(MCPoint[i].phi()-point3d.phi());
-			//X_res.push_back(Xavg[i]-intersection.x());
-			//Y_res.push_back(Yavg[i]-intersection.y());
-			//_Xdiff -> Fill(Xavg[i]-intersection.x());
-			//_Ydiff -> Fill(Yavg[i]-intersection.y());
+			R_res.push_back(Rmc-Rhit);
+			_Rdiff-> Fill(Rmc-Rhit);
+			_Phidiff->Fill(MCPoint[i].phi()-point3d.phi());
+			X_res.push_back(MCPoint[i].getX()-intersection.x());
+			Y_res.push_back(MCPoint[i].getY()-intersection.y());
+			_Xdiff -> Fill(MCPoint[i].getX()-intersection.x());
+			_Ydiff -> Fill(MCPoint[i].getX()-intersection.y());
 			nint ++;
 			break;
 		      }  // end switch 
@@ -844,23 +856,24 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
 	Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
 	Double_t Const=1.49898e-4;
-	cout << "Pt_inval:  "<< Pt_inval
+	cout << "Pt_inval:  "<< Pt_inval_si
 	     << "  Radius:  "<< Radius
 	     << "  curv:    "<< curv
              << "  zstep:   "<< zstep 
              << "  R_rec:  " << R_rec <<endl;
 	Pt =1000.*R_rec*0.1 * 2. * Bmagnet* Const;
 	_Pt_rec->Fill(Pt);
-	_Pt_diff->Fill(Pt-Pt_inval);
+	_Pt_diff->Fill(Pt-Pt_inval_si);
 	FitSinus(R, Z);
 	_Pz_rec->Fill(Pz);
-	_Pz_diff->Fill(Pz-P_in.z());
+	_Pz_diff->Fill(Pz-P_in_si.z());
 	Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
 	_P_rec->Fill(Ptot);
-	_P_diff->Fill(Ptot-P_inval);
+	_P_diff->Fill(Ptot-P_inval_si);
 
       }
 
+    int nclusters=0;
     double _timetodist=149.8962;
     for ( size_t i=0; i< mcptrHandle->size(); ++i )// Loop over Clusters
       {
@@ -892,7 +905,17 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	Z_cluster.push_back(clusterpos.getZ());
 	Double_t Rhit =clusterpos.rho();
 	R_cluster.push_back(Rhit);
-	  //  StrawHitMCTruth const&    truth(hits_truth->at(i));
+	Points3d_cluster.push_back(clusterpos);
+	Double_t Rmc  = MCPoint[i].rho();
+	//R_cluster_res.push_back(Rmc-Rhit);
+	_Rdiff_c-> Fill(Rmc-Rhit);
+	_Phidiff_c->Fill(MCPoint[i].phi()- clusterpos.phi());
+	//X_cluster_res.push_back(MCPoint[i].getX()-intersection.x());
+	//Y_cluster_res.push_back(MCPoint[i].getY()-intersection.y());
+	_Xdiff_c -> Fill(MCPoint[i].getX()-clusterpos.getX());
+	_Ydiff_c -> Fill(MCPoint[i].getY()-clusterpos.getY());
+	nclusters++;
+
       } //  end Loop over Clusters      
     if (X_cluster.size()>2)
       {
@@ -903,20 +926,20 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	
 	Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
 	Double_t Const=1.49898e-4;
-	cout << "Pt_inval:  "<< Pt_inval
+	cout << "Pt_inval:  "<< Pt_inval_si
 	     << "  Radius:  "<< Radius
 	     << "  curv:    "<< curv
              << "  zstep:   "<< zstep 
              << "  R_rec:  " << R_rec <<endl;
 	Pt =1000.*R_rec*0.1 * 2. * Bmagnet* Const;
 	_Pt_rec_c->Fill(Pt);
-	_Pt_diff_c->Fill(Pt-Pt_inval);
+	_Pt_diff_c->Fill(Pt-Pt_inval_si);
 	FitSinus(R_cluster, Z_cluster);
 	_Pz_rec_c->Fill(Pz);
-	_Pz_diff_c->Fill(Pz-P_in.z());
+	_Pz_diff_c->Fill(Pz-P_in_si.z());
 	Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
 	_P_rec_c->Fill(Ptot);
-	_P_diff_c->Fill(Ptot-P_inval);	
+	_P_diff_c->Fill(Ptot-P_inval_si);	
       }
   } // end of ::analyze.
 
