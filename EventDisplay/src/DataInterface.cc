@@ -314,7 +314,7 @@ void DataInterface::fillGeometry()
       sprintf(c,"Vane %i",id);
       info->setName(c);
       info->setText(0,c);
-      sprintf(c,"Dimension  ∆x: %.f mm, ∆y: %.f mm, ∆z: %.f mm",sx/CLHEP::mm,sy/CLHEP::mm,sz/CLHEP::mm);
+      sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",sx/CLHEP::mm,sy/CLHEP::mm,sz/CLHEP::mm);
       info->setText(1,c);
       sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
       info->setText(2,c);
@@ -373,7 +373,7 @@ void DataInterface::fillGeometry()
       sprintf(c,"Vane %i, Crystal %i",vaneid,crystalid);
       info->setName(c);
       info->setText(0,c);
-      sprintf(c,"Dimension  ∆x: %.f mm, ∆y: %.f mm, ∆z: %.f mm",sx/CLHEP::mm,crystalHalfSize/CLHEP::mm,crystalHalfSize/CLHEP::mm);
+      sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",sx/CLHEP::mm,crystalHalfSize/CLHEP::mm,crystalHalfSize/CLHEP::mm);
       info->setText(1,c);
       sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
       info->setText(2,c);
@@ -387,55 +387,52 @@ void DataInterface::fillGeometry()
     }
   }
 
-  if(geom->hasElement<mu2e::CosmicRayShield>())
-  {
-    mu2e::GeomHandle<mu2e::CosmicRayShield> crs;  
-    std::string steelshieldnames[6]={"CRSSteelTopShield",
-                                     "CRSSteelBottomShield",
-                                     "CRSSteelLeftShield",
-                                     "CRSSteelRightShield",
-                                     "CRSSteelBackShield",
-                                     "CRSSteelFrontShield"};
-    for(int i=0; i<6; i++)
-    {
-//TODO: CosmicRayShield needs to have a public function 
-//which returns the entire map so that one can interate over it
-//without knowing the names of the elements
-      const mu2e::CosmicRayShieldSteelShield &steelshield=crs->getCosmicRayShieldSteelShield(steelshieldnames[i].c_str());
-      double x=steelshield.getGlobalOffset().x()-_mu2eOriginInWorld.x()+_xOffset;
-      double y=steelshield.getGlobalOffset().y()-_mu2eOriginInWorld.y();
-      double z=steelshield.getGlobalOffset().z()-_mu2eOriginInWorld.z()+_zOffset;
-      double dx=steelshield.getHalfLengths()[0];
-      double dy=steelshield.getHalfLengths()[1];
-      double dz=steelshield.getHalfLengths()[2];
-      char c[200];
-      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-      sprintf(c,"Cosmic Ray Steel Shield %i (%s)",i,steelshieldnames[i].c_str());
-      info->setName(c);
-      info->setText(0,c);
-      sprintf(c,"Dimension  ∆x: %.f mm, ∆y: %.f mm, ∆z: %.f mm",dx/CLHEP::mm,dy/CLHEP::mm,dz/CLHEP::mm);
-      info->setText(1,c);
-      sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
-      info->setText(2,c);
+//   if(geom->hasElement<mu2e::CosmicRayShield>())
+//   {
+//     mu2e::GeomHandle<mu2e::CosmicRayShield> crs;  
 
-      double holeRadius=steelshield.getHoleRadius();
-      if(holeRadius==0)
-      {
-        boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,0,
-                                          _geometrymanager, _topvolume, _mainframe, info, true));
-        _components.push_back(shape);
-        _otherstructures.push_back(shape);
-      }
-      else
-      {
-//TODO: This needs to be replaced by a shape with a hole
-        boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,0,
-                                          _geometrymanager, _topvolume, _mainframe, info, true));
-        _components.push_back(shape);
-        _otherstructures.push_back(shape);
-      }
-    }
-  }
+//     std::map<std::string,mu2e::CRSSteelShield> const & shields = 
+//       crs->getCRSSteelShields();
+
+//     for (std::map<std::string,mu2e::CRSSteelShield>::const_iterator ishield=shields.begin();
+//          ishield!=shields.end(); ++ishield) {
+//       mu2e::CRSSteelShield const & steelshield = ishield->second;
+//       std::string shieldName = ishield->first;
+//       double x=steelshield.getGlobalOffset().x()-_mu2eOriginInWorld.x()+_xOffset;
+//       double y=steelshield.getGlobalOffset().y()-_mu2eOriginInWorld.y();
+//       double z=steelshield.getGlobalOffset().z()-_mu2eOriginInWorld.z()+_zOffset;
+//       double dx=steelshield.getHalfLengths()[0];
+//       double dy=steelshield.getHalfLengths()[1];
+//       double dz=steelshield.getHalfLengths()[2];
+//       char c[200];
+//       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+//       sprintf(c,"Cosmic Ray Steel Shield (%s)",shieldName.c_str());
+//       info->setName(c);
+//       info->setText(0,c);
+//       sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",dx/CLHEP::mm,dy/CLHEP::mm,dz/CLHEP::mm);
+//       info->setText(1,c);
+//       sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
+//       info->setText(2,c);
+
+//       double holeRadius=steelshield.getHoleRadius();
+//       if(holeRadius==0)
+//       {
+//         boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,0,
+//                                           _geometrymanager, _topvolume, _mainframe, info, true));
+//         _components.push_back(shape);
+//         _otherstructures.push_back(shape);
+//       }
+//       else
+//       {
+// //TODO: This needs to be replaced by a shape with a hole
+//         boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,0,
+//                                           _geometrymanager, _topvolume, _mainframe, info, true));
+//         _components.push_back(shape);
+//         _otherstructures.push_back(shape);
+//       }
+//     }
+//   }
+
 }
 
 void DataInterface::makeSupportStructuresVisible(bool visible)
