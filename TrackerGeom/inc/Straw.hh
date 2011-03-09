@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.6 2011/03/08 08:47:03 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2011/03/08 08:47:03 $
+// $Id: Straw.hh,v 1.7 2011/03/09 16:23:26 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/03/09 16:23:26 $
 //
 // Original author Rob Kutschke
 //
@@ -61,8 +61,13 @@ namespace mu2e {
            int detailIndex,
            CLHEP::Hep3Vector const& t
            );
+
+    // Accept the compiler copy constructor and assignment operators
+
+    // I don't think that this class should have virtual functions but since it does it
+    // must have a virtual destructor.
+    virtual ~Straw(){}
   
-    // Accept the compiler generated destructor, copy constructor and assignment operators
 
     const StrawId& Id() const { return _id;}
     StrawIndex Index() const { return _index;}
