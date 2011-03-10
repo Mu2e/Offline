@@ -33,12 +33,15 @@ namespace mu2e {
           G4double step = aStep->GetStepLength();
           G4double idep  = edep-nidep;
 
-          //cout<<"edep "<<edep<<" nidep "<<nidep<<" step "<<step<<endl;
+          if ( _debugList.inList() )  cout<<"edep "<<edep<<" nidep "<<nidep<<" step "<<step<<endl;
           // I am not sure why we get these cases but we do.  Skip them.
-          if ( (edep == 0. || idep == 0.)&& step == 0. ) return false;
+          if ( (edep == 0. || idep == 0.)/*&& step == 0.*/ ) {
+                  if ( _debugList.inList() )  cout<<"Skipped"<<endl;
+                  return false;
+          }
 
           string volName = aStep->GetTrack()->GetVolume()->GetName();
-          //cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<endl;
+          if ( _debugList.inList() )  cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<endl;
 
           _superlayer=atoi(volName.substr(5,2).c_str());
           _ring=atoi(volName.substr(8,2).c_str());
@@ -65,6 +68,7 @@ namespace mu2e {
           // Position at start of step point, in world system and in
           // a system in which the center of the tracking detector is the origin.
           G4ThreeVector prePosWorld   = aStep->GetPreStepPoint()->GetPosition();
+          if ( _debugList.inList() )  std::cout<<"G4 hit pos in World"<<prePosWorld[0]<<" "<<prePosWorld[1]<<" "<<prePosWorld[2]<<std::endl;
           G4ThreeVector prePosTracker = prePosWorld - _mu2eDetCenter;
 
           G4ThreeVector preMomWorld = aStep->GetPreStepPoint()->GetMomentum();
@@ -86,18 +90,19 @@ namespace mu2e {
           double invcosstereo;
 
           try {
-                  //std::cout<<"S "<<_superlayer<<" R "<<ring<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"S "<<_superlayer<<" R "<<ring<<std::endl;
                   itracker->getCellGeometryHandle()->SelectCell(_superlayer,ring,0);
 
                   double Dphi=_Dphi/3.0;
 
                   cosstereo=TMath::Cos(itracker->getCellGeometryHandle()->GetWireEpsilon());
                   invcosstereo=1.0/cosstereo;
+                  if ( _debugList.inList() )  std::cout<<"stereo "<<itracker->getCellGeometryHandle()->GetWireEpsilon()<<" invcosstereo "<<invcosstereo<<std::endl;
                   itracker->getCellGeometryHandle()->WirePosAtZ(pos[2]/**invcosstereo*/,xywire);
 
-   //                std::cout<<"0 wire center "<<xywire[0]<<" "<<xywire[1]<<" "<<xywire[2]<<std::endl;
-   //                std::cout<<"hit pos "<<pos[0]<<" "<<pos[1]<<" "<<pos[2]<<std::endl;
-   //                std::cout<<"hit 0 wire dist "<<sqrt(pow(pos[0]-xywire[0],2)+pow(pos[1]-xywire[1],2)+pow(pos[2]-xywire[2],2))<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"0 wire center "<<xywire[0]<<" "<<xywire[1]<<" "<<xywire[2]<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"hit pos "<<pos[0]<<" "<<pos[1]<<" "<<pos[2]<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"hit 0 wire dist "<<sqrt(pow(pos[0]-xywire[0],2)+pow(pos[1]-xywire[1],2)+pow(pos[2]-xywire[2],2))<<std::endl;
 
    //                //---------------- test --------------------
    //                //TRandom *rn = new TRandom();
@@ -112,7 +117,7 @@ namespace mu2e {
 
                   phiwire1=TMath::ATan2(xywire[1],xywire[0]);
 
-   //                std::cout<<"phihit "<<phihit <<" phiwire1 "<<phiwire1 <<" _Dphi "<<_Dphi<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"phihit "<<phihit <<" phiwire1 "<<phiwire1 <<" _Dphi "<<_Dphi<<std::endl;
 
                   phihit-=phiwire1;
                   int wire;
@@ -192,7 +197,8 @@ namespace mu2e {
 
                   if(ring==0) ++ring;
 
-   //                std::cout<<"selected wire "<<ring<<" "<<wire<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"Cirumscribed Cell Radius "<<itracker->getCellGeometryHandle()->GetCellRad()<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"selected wire "<<ring<<" "<<wire<<std::endl;
 
                   unsigned long det=itracker->getCellGeometryHandle()->computeDet(_superlayer,ring,wire);
 
