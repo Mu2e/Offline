@@ -33,7 +33,10 @@ int    itracker.StoFWireRation   =    12;
 
 
 // Materials and elements compositions
-string         itracker.fillMaterial    = "ITGasMix";
+string         itracker.fillMaterial    = "ITGasHe_90Isob_10"; //"ITGasMix";
+
+bool   itracker.usePhysicalStep  =  false; //Use the physical calculation of the path length, if false a fixed step distance is used by using the freePath variable 
+double itracker.freePath         =   1.0; // free Path length in mm
 
 // Field wires description
 int    itracker.nFieldWireShells =      2;

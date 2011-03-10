@@ -10,7 +10,7 @@ double itracker.r0               =  379.599300638;   //To be consistent check th
 double itracker.z0               =10200.0;
 double itracker.zHalfLength      = 1000.0;   //1300.0;
 double itracker.rOut             =  745.0;   //must be greater than the radius of the outer most filed wire +fieldWireDiameter +OuterWall_thickness
-double itracker.drop             =   40.0;
+double itracker.drop             =   15.0;
 
 int    itracker.geomType         =    41;   //decimal digit:magior version, unit digit:minor version  20:Hexagonal, 30:Square with constant cell dimension, 
                                             //                                         31:Like 30 but with base fw in both directions and shared between two consecutive layers, and layers staggered
@@ -31,24 +31,25 @@ int    itracker.StoFWireRation   =     5;
 
 
 // Materials and elements compositions
-string         itracker.fillMaterial    = "ITGasMix";
+string         itracker.fillMaterial    = "ITGasHe_90Isob_10"; //"ITGasMix";
+
+bool   itracker.usePhysicalStep  =  false; //Use the physical calculation of the path length, if false a fixed step distance is used by using the freePath variable 
+double itracker.freePath         =   1.0; // free Path length in mm
 
 // Field wires description
 int    itracker.nFieldWireShells =      2;
-vector<string> itracker.fieldWireMaterials = { "CarbonFiber", "G4_Ag" };
-//vector<double> itracker.fieldWireShellsThicknesses = { 0.033, 0.001 };
-vector<double> itracker.fieldWireShellsThicknesses = { 0.0395, 0.0005 };
+vector<string> itracker.fieldWireMaterials = { "G4_Al", "G4_Ag" };
+vector<double> itracker.fieldWireShellsThicknesses = { 0.0394, 0.0006 };
 
 // Sense wires description
 int    itracker.nSenseWireShells =      2;
-vector<string> itracker.senseWireMaterials = { "CarbonFiber", "G4_Ag" };
-//vector<double> itracker.senseWireShellsThicknesses = { 0.033, 0.001 };
-vector<double> itracker.senseWireShellsThicknesses = { 0.0145, 0.0005 };
+vector<string> itracker.senseWireMaterials = { "G4_Mo", "G4_Ag" };
+vector<double> itracker.senseWireShellsThicknesses = { 0.0197, 0.0003 };
 
 // Inner Wall description
 int    itracker.nInnerWallShells =      4;
-vector<string> itracker.innerWallMaterials = { "CarbonFiber", "PolypropyleneFoam", "CarbonFiber" , "G4_Cu" };
-vector<double> itracker.innerWallShellsThicknesses = { 0.300, 6.40, 0.300, 0.001 };
+vector<string> itracker.innerWallMaterials = { "CarbonFiber", "CFoam_080", "CarbonFiber" , "G4_Cu" };
+vector<double> itracker.innerWallShellsThicknesses = { 0.306, 6.388, 0.306, 0.001 };
 
 // Outer Wall description
 int    itracker.nOuterWallShells =      2;
@@ -56,9 +57,9 @@ vector<string> itracker.outerWallMaterials = { "G4_Cu" , "CarbonFiber" };
 vector<double> itracker.outerWallShellsThicknesses = { 0.001, 10.0 };
 
 // End Cap description
-int    itracker.nEndCapWallShells =     2;
-vector<string> itracker.endcapWallMaterials = { "G4_Cu" , "CarbonFiber" };
-vector<double> itracker.endcapWallShellsThicknesses = { 0.001, 0.500 };
+int    itracker.nEndCapWallShells =     4;
+vector<string> itracker.endcapWallMaterials = { "CarbonFiber", "ITGasHe_90Isob_10", "G4_Cu", "CarbonFiber" };
+vector<double> itracker.endcapWallShellsThicknesses = { 0.300, 100.000, 0.001, 0.612 };
 
 //
 // This tells emacs to view this file in c++ mode.
