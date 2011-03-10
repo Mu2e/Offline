@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.35 2011/03/10 01:50:00 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/03/10 01:50:00 $
+// $Id: ReadBack.cc,v 1.36 2011/03/10 22:03:05 genser Exp $
+// $Author: genser $
+// $Date: 2011/03/10 22:03:05 $
 //
 // Original author Rob Kutschke
 //
@@ -208,9 +208,7 @@ namespace mu2e {
 
     // Create CRV ntuple.
     _ntupCRV        = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple", 
-                                          "evt:trk:sid:hx:hy:hz:bx:by:bz:dx:dy:dz:time:shld:mod:lay:pdgId:genId:edep:p:step");
-
-
+                                          "evt:trk:sid:hx:hy:hz:bx:by:bz:dx:dy:dz:lx:ly:lz:time:shld:mod:lay:pdgId:genId:edep:p:step");
 
     // Create a TGraph; 
     // - Syntax to set name and title is weird; that's just root.
@@ -1014,10 +1012,17 @@ namespace mu2e {
 
     // Get a reference to CosmicRayShield (it contains crv)
 
-    GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+    GeomHandle<CosmicRayShield> cosmicRayShieldGeomHandle;
 
     std::vector<CRSScintillatorBar> const & allBars = 
-      CosmicRayShieldGeomHandle->getAllCRSScintillatorBars();
+      cosmicRayShieldGeomHandle->getAllCRSScintillatorBars();
+
+    CRSScintillatorBarDetail const & barDetail = 
+      cosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
+
+    CLHEP::Hep3Vector barLengths = CLHEP::Hep3Vector(barDetail.getHalfLengths()[0],
+                                                     barDetail.getHalfLengths()[1],
+                                                     barDetail.getHalfLengths()[2]);
 
     edm::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( _g4ModuleLabel, g4StatusHandle);
@@ -1082,6 +1087,16 @@ namespace mu2e {
       const CRSScintillatorBar&  bar = allBars.at( hit.volumeId() );
       CLHEP::Hep3Vector const &  mid = bar.getGlobalOffset();
       
+      CLHEP::HepRotationX RX(bar.getGlobalRotationAngles()[0]);
+      CLHEP::HepRotationY RY(bar.getGlobalRotationAngles()[1]);
+      CLHEP::HepRotationZ RZ(bar.getGlobalRotationAngles()[2]);
+
+      CLHEP::HepRotation barInvRotation((RX*RY*RZ).inverse());
+      CLHEP::Hep3Vector hitLocal  = barInvRotation*(pos-mid);
+      CLHEP::Hep3Vector hitLocalN = CLHEP::Hep3Vector(hitLocal.x()/barLengths.x(),
+                                                      hitLocal.y()/barLengths.y(),
+                                                      hitLocal.z()/barLengths.z());
+
       // The simulated particle that made this hit.
       SimParticleCollection::key_type trackId(hit.trackId());
 
@@ -1115,18 +1130,21 @@ namespace mu2e {
       nt[ 6] = mid.x();
       nt[ 7] = mid.y();
       nt[ 8] = mid.z();
-      nt[ 9] = abs((pos-mid).x());
-      nt[10] = abs((pos-mid).y());
-      nt[11] = abs((pos-mid).z());
-      nt[12] = hit.time();
-      nt[13] = bar.Id().getShieldNumber();
-      nt[14] = bar.Id().getModuleNumber();
-      nt[15] = bar.Id().getLayerNumber();
-      nt[16] = pdgId;
-      nt[17] = genId.Id();
-      nt[18] = hit.eDep()/keV;
-      nt[19] = mom.mag();
-      nt[20] = hit.stepLength();
+      nt[ 9] = fabs((pos-mid).x());
+      nt[10] = fabs((pos-mid).y());
+      nt[11] = fabs((pos-mid).z());
+      nt[12] = hitLocalN.x();
+      nt[13] = hitLocalN.y();
+      nt[14] = hitLocalN.z();
+      nt[15] = hit.time();
+      nt[16] = bar.Id().getShieldNumber();
+      nt[17] = bar.Id().getModuleNumber();
+      nt[18] = bar.Id().getLayerNumber();
+      nt[19] = pdgId;
+      nt[20] = genId.Id();
+      nt[21] = hit.eDep()/keV;
+      nt[22] = mom.mag();
+      nt[23] = hit.stepLength();
 
       _ntupCRV->Fill(nt);
 
@@ -1142,7 +1160,8 @@ namespace mu2e {
              << bar.Id()           << " | "
              << pos                << " "
              << mid                << " "
-             << (mid-pos)          << " "
+             << (mid-pos)          << " | "
+             << hitLocalN          << " | "
              << mom                << " "
              << hit.totalEDep()/keV << " "
              << hit.stepLength()
