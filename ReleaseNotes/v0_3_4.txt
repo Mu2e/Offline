@@ -3,9 +3,16 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.4 2011/03/10 00:24:30 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/03/10 00:24:30 $
+  $Id: v0_3_4.txt,v 1.5 2011/03/10 22:05:55 genser Exp $
+  $Author: genser $
+  $Date: 2011/03/10 22:05:55 $
+
+04) March 10, 2011 genser
+
+     CosmicRayShieldGeom/inc/CosmicRayShield.hh
+       added offset accessors
+     Mu2eG4/src/ReadBack.cc
+       evolved CRV ntuple
 
 03) March 09, 2011 kutschke
      Mu2eUtilities/inc/maybe_ref.hh 
@@ -30,8 +37,7 @@
     to beginRun, where it belongs.
 
 01) March 09, 2011 genser
-
-Implemented CRV aka Scintillator Shield; Rewrote Steel related parts
+    Implemented CRV aka Scintillator Shield; Rewrote Steel related parts
 
       CosmicRayShieldGeom/inc/CRSScintillatorBar.hh
       CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh
