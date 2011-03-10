@@ -3,9 +3,20 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.3 2011/03/09 21:43:57 kutschke Exp $
+  $Id: v0_3_4.txt,v 1.4 2011/03/10 00:24:30 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/03/09 21:43:57 $
+  $Date: 2011/03/10 00:24:30 $
+
+03) March 09, 2011 kutschke
+     Mu2eUtilities/inc/maybe_ref.hh 
+       - Get the latest version from Walt; c'tor now takes a reference.
+       - Users of maybe_ref<> need no changes, just makers.
+     ConditionsService/src/ParticleDataTable.cc
+       - Fix to use reference based c'tor.
+     Mu2eUtilities/test/makeIt.cc
+       - Fix to use reference based c'tor.
+     Mu2eUtilities/test/Makefile  
+       - New file to run the test.
 
 02) March 09, 2011 kutschke
     Tell StackingAction about the y extent of the dirt volume.
