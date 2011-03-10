@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.2 2011/03/09 19:45:08 genser Exp $
+// $Id: CosmicRayShield.hh,v 1.3 2011/03/10 22:02:20 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/03/09 19:45:08 $
+// $Date: 2011/03/10 22:02:20 $
 //
 // Original author KLG
 //
@@ -67,10 +67,17 @@ namespace mu2e {
       return _allCRSScintillatorBars;
     }
 
-    const CRSScintillatorBar& getCRSScintillatorBar ( CRSScintillatorBarIndex index ) const{
+    const CRSScintillatorBar& getCRSScintillatorBar ( CRSScintillatorBarIndex index ) const {
       return _allCRSScintillatorBars.at(index.asInt());
     }
 
+    CLHEP::Hep3Vector const & getGlobalOffset() const {
+      return _globalOffset;
+    }
+
+    CLHEP::Hep3Vector const & getLocalOffset() const {
+      return _localOffset;
+    }
 
   private:
 
@@ -79,7 +86,7 @@ namespace mu2e {
     // position of the center in the parent frame
     CLHEP::Hep3Vector _localOffset;
 
-    // position of the center in the global Mu2e frame (well,... World)
+    // position of the center in  Mu2e frame 
     CLHEP::Hep3Vector _globalOffset;
 
     std::map<std::string,CRSSteelShield>         _steelShields;
