@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.cc,v 1.7 2011/03/06 00:36:32 kutschke Exp $
+//   $Id: ParticleDataTable.cc,v 1.8 2011/03/10 00:00:58 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2011/03/06 00:36:32 $
+//   $Date: 2011/03/10 00:00:58 $
 //
 //
 // 1) The Geant4 particle table is a superset of this table.  It includes
@@ -113,13 +113,13 @@ namespace mu2e {
   // Accessor by ID that checks that the requested particle exists in the table.
   ParticleDataTable::maybe_ref ParticleDataTable::particle( ParticleID id ) const{
     ParticleData const* p = _pdt.particle(id); 
-    return maybe_ref(p);
+    return p ? maybe_ref(*p): maybe_ref();
   }
 
   // Accessor by name that checks that the requested particle exists in the table.
   ParticleDataTable::maybe_ref ParticleDataTable::particle( std::string const& name ) const{
     ParticleData const* p = _pdt.particle(name);
-    return maybe_ref(p);
+    return p ? maybe_ref(*p): maybe_ref();
   }
 
   void ParticleDataTable::changeUnits(){

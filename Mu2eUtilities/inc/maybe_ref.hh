@@ -1,107 +1,95 @@
-#ifndef maybe_ref_HH
-#define maybe_ref_HH
+#ifndef MAYBE_REF_HH
+#define MAYBE_REF_HH
+
+// ======================================================================
 //
-// A "safe reference" class template to be used as a return type when it is possible
-// that there is nothing to return.  
-//
-// The usual usage is expected to be something like:
-//
-//  cet::maybe_ref<T const> r(call some accessor);
-//  if ( !t ) return;       // or continue, or break ....
-//  T const& t(r.ref());
-//   ... use t in your following code.
-//
-// $Id: maybe_ref.hh,v 1.1 2011/03/04 19:54:04 kutschke Exp $
+// $Id: maybe_ref.hh,v 1.2 2011/03/10 00:00:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/04 19:54:04 $
+// $Date: 2011/03/10 00:00:57 $
 //
-// Original author Rob Kutschke
+// ======================================================================
 //
+// maybe_ref<>: reference-like types that may refer to nothing
 //
-// Notes:
-// 1) For the usual Mu2e related reasons I want the accessor to be by const&
-//    even though internally it holds a const*.  
+// A maybe_ref<> object has the following members of special interest:
+//   - isValid() : does it have a referent?
+//   - ref() : produce a C++ reference to its referent (iff it is valid)
 //
-// 2) This class will eventually move out of the Mu2e code base into the
-//    cetlib library.  To minimize downstream maintenance, I have put it 
-//    in the final namespace now.
+// When valid, a maybe_ref<> object mimics a C++ reference in that it
+// takes no ownership of its referent, thus is unaware of the referent's
+// lifetime.  Therefore it is the user's responsibility to keep the
+// referent alive so long as there is a valid maybe_ref<> to it.
 //
-// 3) Any pointer with a non-null value is presumed to be valid.
+// Unlike a C++ reference, a maybe_ref<> object can be reseated (made to
+// refer to a different referent).
 //
-// 4) This class presumes that it is managing a non-owning pointer.  So it
-//    will never call delete on the pointer and will always do shallow copies.
+// When invalid, a maybe_ref<> object throws if asked to produce a C++
+// reference.
 //
-// 5) This class does not protect against accessing an object that
-//    goes out of scope before this class goes out of scope, or
-//    against accessing an object that moved in memory (such as in an
-//    element in a std::vector after reallocation forced by a
-//    push_back).  If a maybe_ref<T> is used within a method of a
-//    framework module, any object obtained from the event or from a 
-//    Service will satisfy this constraint.
+// One typical usage pattern:
+//   cet::maybe_ref<T const> m( call some accessor );
+//   if ( !m ) return;  // or continue
+//   T const & r( m.ref() );
 //
-// 6) An operator<() was not included on purpose. Sorting pointers is often
-//    meaningless so we do not want to make it too easy.
-//
-// 7) The operator-> and operator* were not included because the desired usage is 
-//    to immediately use the ref() method and use the resulting T const&.  We do not
-//    want to tempt people to use this class like a pointer since it might get used
-//    that way inside nested loops.
-//
-// 8) Do we want to make assignment private and unimplemented ( = delete in C++0X)?
-//
+// ======================================================================
 
 #include <stdexcept>
 
 namespace cet {
+  template< class T >
+    class maybe_ref;
 
-  template<typename T>
-  class maybe_ref{
+  template< class T >
+  void
+    swap( maybe_ref<T> &, maybe_ref<T> & );
+}
 
-  public:
+// ======================================================================
 
-    typedef T value_type;
+template< class T >
+  class cet::maybe_ref
+{
+public:
+  typedef  T  value_type;
 
-    // Default constructor makes an invalid object.
-    maybe_ref():_ptr(0){}
+           maybe_ref(       ) : ptr_( 0  )  { }
+  explicit maybe_ref( T & t ) : ptr_( &t )  { }
 
-    explicit maybe_ref( T* ptr):_ptr(ptr){}
+  // use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    // Accept the compiler written d'tor, copy c'tor and assignment operator.
+  bool  isValid( ) const  { return ptr_; }
+  operator bool( ) const  { return isValid(); }
 
-    bool isValid() const { return _ptr !=0; }
+  void  reseat(       )  { ptr_ = 0; }
+  void  reseat( T & p )  { ptr_ = &p; }
 
-    // A synonym for isValid.
-    operator bool() const { return _ptr !=0; }
+  T       & ref( )       { return ref_iff_valid(); }
+  T const & ref( ) const { return ref_iff_valid(); }
 
-    T& ref(){
-      if ( !isValid() ) {
-        throw std::logic_error(
-          "Attempt to access invalid pointer using cet::maybe_ref ");
-      }
-      return *_ptr;
-    }
+  void  swap( maybe_ref & other )  { std::swap(ptr_, other.ptr_); }
 
-    // For use when the optional<T> itself is const.
-    T const& ref() const{
-      if ( !isValid() ) {
-        throw std::logic_error(
-          "Attempt to access invalid pointer using cet::maybe_ref ");
-      }
-      return *_ptr;
-    }
+private:
+  T *  ptr_;
 
-    void swap ( maybe_ref& rhs ){
-      std::swap(_ptr, rhs._ptr);
-    }
+  T &
+    ref_iff_valid( ) const
+  {
+    if( isValid() )
+      return *ptr_;
 
-  private:
+    // TODO: consider throwing a cet::exception
+    throw std::logic_error( "cet::maybe_ref<>: referent does not exist" );
+  }
 
-    // Non-owning pointer to the object.
-    T* _ptr;
+};  // maybe_ref<>
 
-};
+// ======================================================================
 
-} // end namespace cet
+template< class T >
+inline void
+  cet::swap( maybe_ref<T> & r1, maybe_ref<T> & r2 )
+{ r1.swap(r2); }
 
+// ======================================================================
 
 #endif
