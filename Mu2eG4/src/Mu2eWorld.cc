@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.84 2011/03/09 21:42:29 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/09 21:42:29 $
+// $Id: Mu2eWorld.cc,v 1.85 2011/03/10 01:47:14 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2011/03/10 01:47:14 $
 //
 // Original author Rob Kutschke
 //
@@ -238,6 +238,9 @@ namespace mu2e {
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();
     constructStepLimiters();
+    if ( _config->getBool("hasITracker",false) ) {
+            constructITStepLimiters();
+    }
 
   }
 
@@ -521,6 +524,45 @@ namespace mu2e {
 
 
   } // end Mu2eWorld::constructStepLimiters(){
+
+  void Mu2eWorld::constructITStepLimiters(){
+
+    bool physicalStep =  _config->getBool("itracker.usePhysicalStep",false);
+    // Maximum step length, in mm.
+    double maxStep = 10.0;
+    if (physicalStep){
+            maxStep = 10.0/12.0;
+    }else {
+            maxStep = _config->getDouble("itracker.freePath", 0.5);
+    }
+    G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
+
+    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    G4UserLimits* stepLimit = reg.add( G4UserLimits(maxStep) );
+
+    GeomHandle<ITracker> itracker;
+    SuperLayer *iSpl;
+    int ilay;
+    for (int ispls=0; ispls<itracker->nSuperLayers(); ispls++){
+            iSpl = itracker->getSuperLayer(ispls);
+            for ( ilay=0; ilay<iSpl->nLayers(); ilay++){
+                    iSpl->getLayer(ilay)->getDetail();
+            }
+
+    }
+    G4VPhysicalVolume *iDau;
+    //cout<<"N IT daughter: "<<tracker->TotalVolumeEntities()<<endl;
+    for (int iDaughter=0; iDaughter<tracker->TotalVolumeEntities(); iDaughter++){
+            iDau = tracker->GetDaughter(iDaughter);
+            if (!iDau) break;
+            //cout<<"Vol Name "<< iDau->GetName()<<" is Tracking: "<<iDau->GetName().contains("volS")<<endl;
+            if (iDau->GetName().contains("volS")) iDau->GetLogicalVolume()->SetUserLimits(stepLimit);
+    }
+
+    cout<<"IT Step limits set"<<endl;
+
+
+  } // end Mu2eWorld::constructITStepLimiters(){
 
 
   // Construct calorimeter if needed.

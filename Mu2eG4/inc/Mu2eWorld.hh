@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.31 2011/03/09 21:42:29 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/09 21:42:29 $
+// $Id: Mu2eWorld.hh,v 1.32 2011/03/10 01:46:19 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2011/03/10 01:46:19 $
 //
 // Original author Rob Kutschke
 //
@@ -104,6 +104,7 @@ namespace mu2e {
     void constructMagnetYoke();
     void constructBFieldAndManagers();
     void constructStepLimiters();
+    void constructITStepLimiters();
 
     void instantiateSensitiveDetectors();
 
