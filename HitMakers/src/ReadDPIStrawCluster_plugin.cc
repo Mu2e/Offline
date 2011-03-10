@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.11 2011/03/09 21:56:52 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.12 2011/03/10 02:07:37 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/03/09 21:56:52 $
+// $Date: 2011/03/10 02:07:37 $
 //
 // Original author Hans Wenzel
 //
@@ -220,9 +220,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       _hNStraws(0),
       _Polar(0),
       _R_rec(0),
-      //_Pt_in(0),
-      //_Pz_in(0),
-      //_P_in(0),
       _Pt_in_si(0),
       _Pz_in_si(0),
       _P_in_si(0),
@@ -304,10 +301,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     TH1F*_Polar;
     TH1F* _R_rec;
     //
-    //    TH1F* _Pt_in;
-    //TH1F* _Pz_in;
-    //TH1F* _P_in;
-    //
     TH1F* _Pt_in_si;
     TH1F* _Pz_in_si;
     TH1F* _P_in_si;
@@ -361,12 +354,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Double_t R_rec,x0,y0,chi2;
     Double_t Pt,Pz;
     CLHEP::Hep3Vector  X_in;  
-    //    CLHEP::Hep3Vector  P_in;
     CLHEP::Hep3Vector  P_in_si;
     CLHEP::Hep3Vector  P_out_si;
     //
-    //    Double_t Pt_inval;
-    // Double_t P_inval;
     Double_t Pt_inval_si;
     Double_t P_inval_si;
     Double_t Pt_outval_si;
@@ -388,11 +378,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
     _Polar         = tfs->make<TH1F>( "Polar",     "polar angle at production", 100, -1, 1. );
     _R_rec         = tfs->make<TH1F>( "R_rec",     "reconstructed track radius", 100, 0., 800. );
-       //
-
-    //    _Pt_in         = tfs->make<TH1F>( "Pt_in",     "tansverse momentum Pt at first Hit", 100, 40., 120. );
-    //_Pz_in         = tfs->make<TH1F>( "Pz_in",     "longitudinal momentum at first Hit", 100, 20., 100. );
-    //_P_in          = tfs->make<TH1F>( "P_in",      "momentum at first Hit", 100, 60., 110. );
     //
     _Pt_in_si      = tfs->make<TH1F>( "Pt_in_si",     "tansverse momentum Pt_si at first Hit", 100, 0., 120. );
     _Pz_in_si      = tfs->make<TH1F>( "Pz_in_si",     "longitudinal momentum Pz_si at first Hit", 100, 0., 100. );
@@ -486,7 +471,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     vector<double> Phi_res; // phi residual 
     vector<double> R;       // radius of cluster intersections
     vector<double> Phi;     // angle of cluster intersections
-    vector<CLHEP::Hep3Vector> Points3d; // x,y measurement packed into clh
+    
+    vector<CLHEP::Hep3Vector> Points3d; 
     //
     vector<double> X_straw;       // x of dt straw
     vector<double> Y_straw; 
@@ -512,7 +498,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     double  edep[36] ;
     int nhitdev[36];
     CLHEP::Hep3Vector  MCPoint[36];
-
+   
     X.clear();
     Y.clear();
     Z.clear();
@@ -523,7 +509,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     R.clear();
     Phi.clear();
     Points3d.clear();
-
+    
     X_straw.clear();
     Y_straw.clear();
     Z_straw.clear();
@@ -554,16 +540,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     edm::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_clmakerModuleLabel,"DPIStrawCluster",mcptrHandle);
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
-    //
-    // Get the persistent data about the StrawHitsMCTruth.
-    //
-    //edm::Handle<StrawHitMCTruthCollection> truthHandle;
-    //evt.getByLabel(_makerModuleLabel,truthHandle);
-    //StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
-
-    //    edm::Handle<StatusG4> g4StatusHandle;
-    //evt.getByLabel( _g4ModuleLabel, g4StatusHandle);
-    //StatusG4 const& g4Status = *g4StatusHandle;
 
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<StepPointMCCollection> hits;
@@ -599,6 +575,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                                "tracker",
                                0.001,
                                5 );
+
     typedef SimParticlesWithHits::map_type map_type;
     for ( map_type::const_iterator i=sims.begin();
           i != sims.end(); ++i ){
@@ -742,9 +719,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	DPIndex const& junkie = mcptr[j];
        	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
 	Double_t Energy = strawhit.energyDep();
-	Double_t Time   = strawhit.time();
-	Double_t deltaT = strawhit.dt();
-	// StrawHitMCTruth const&    truth(hits_truth->at(i));
+	//Double_t Time   = strawhit.time();
+	//Double_t deltaT = strawhit.dt();
 	totalEnergy=totalEnergy+Energy;
 	str = tracker.getStraw(strawhit.strawIndex());
 	sid = str.Id();
@@ -787,16 +763,16 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	  {
 	    pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
 	    ppp1 = mpstraws.equal_range(i);
-	    multimap<int,pstraw>::iterator first1 = ppp1.first;
-	    multimap<int,pstraw>::iterator first2 = ppp1.first;
+	    multimap<int,pstraw>::iterator first11 = ppp1.first;
+	    multimap<int,pstraw>::iterator first22 = ppp1.first;
 	    multimap<int,pstraw>::iterator last1 = ppp1.second;
 	    last1--;
 	    multimap<int,pstraw>::iterator last2 = ppp1.second;
-	    for (first1;first1 != last1;++first1)
+	    for ( multimap<int,pstraw>::iterator first1=first11;first1 != last1;first1++)
 	      {
-		first2=first1;
-		first2++;
-		for (first2;first2 != last2;++first2)
+		first22=first1;
+		first22++;
+		for ( multimap<int,pstraw>::iterator first2=first22;first2 != last2;++first2)
 		  {
 		    pstraw junk  = (*first1).second;
 		    pstraw pjunk = (*first2).second;
@@ -887,7 +863,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	    DPIndex const& junkie = mcptr[j];
 	    StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
 	    Double_t Energy = strawhit.energyDep();
-	    Double_t Time   = strawhit.time();
+	    //Double_t Time   = strawhit.time();
 	    Double_t deltaT = strawhit.dt();
 	    StrawIndex si   = strawhit.strawIndex();
 	    Straw str       = tracker.getStraw(si);	 
@@ -907,11 +883,11 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	R_cluster.push_back(Rhit);
 	Points3d_cluster.push_back(clusterpos);
 	Double_t Rmc  = MCPoint[i].rho();
-	//R_cluster_res.push_back(Rmc-Rhit);
+	R_res_cluster.push_back(Rmc-Rhit);
 	_Rdiff_c-> Fill(Rmc-Rhit);
 	_Phidiff_c->Fill(MCPoint[i].phi()- clusterpos.phi());
-	//X_cluster_res.push_back(MCPoint[i].getX()-intersection.x());
-	//Y_cluster_res.push_back(MCPoint[i].getY()-intersection.y());
+	X_res_cluster.push_back(MCPoint[i].getX()-clusterpos.getX());
+	Y_res_cluster.push_back(MCPoint[i].getY()-clusterpos.getY());
 	_Xdiff_c -> Fill(MCPoint[i].getX()-clusterpos.getX());
 	_Ydiff_c -> Fill(MCPoint[i].getY()-clusterpos.getY());
 	nclusters++;
@@ -993,6 +969,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       gmMinuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
     }
     int result=gmMinuit->Migrad();
+    cout << " Result: "<< result <<endl;
     bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
     if (!converged) 
       {
@@ -1010,7 +987,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     gmMinuit->mnstat(chi2,edm,errdef,nvpar,nparx,istat);
 
   }
-
 }
 
 
