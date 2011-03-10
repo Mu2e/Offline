@@ -186,9 +186,9 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                         WallInfo.physical = new G4PVPlacement(iwall->getPos(),
                                         WallInfo.logical,                // its logical volume
                                         iwall->getName(),                // its name
-                                        trackerInfo.logical,                // its mother  volume
-                                        false,                                        // no boolean operations
-                                        0);                                                // copy number
+                                        trackerInfo.logical,             // its mother  volume
+                                        false,                           // no boolean operations
+                                        0);                              // copy number
                         if (iwall->getType() == Wall::outer) outerWallInnerRadius = iwall->getRmin();
                 }
 
