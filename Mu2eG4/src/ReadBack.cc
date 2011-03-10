@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.34 2011/03/09 19:51:06 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:51:06 $
+// $Id: ReadBack.cc,v 1.35 2011/03/10 01:50:00 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2011/03/10 01:50:00 $
 //
 // Original author Rob Kutschke
 //
@@ -719,7 +719,7 @@ namespace mu2e {
   void ReadBack::doITracker(const edm::Event& event){
      
     // Instance name of the module that created the hits of interest;
-    static const string creatorName("g4run");
+    //static const string creatorName("g4run");
  
     // Gometry for the ITracker.
     GeomHandle<ITracker> itracker;
@@ -730,13 +730,48 @@ namespace mu2e {
 
     // Ask the event to give us a "handle" to the requested hits.
     edm::Handle<StepPointMCCollection> hits;
-    event.getByLabel(creatorName,_trackerStepPoints,hits);
+    event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
+
+    // Get handles to the generated and simulated particles.
+    edm::Handle<ToyGenParticleCollection> genParticles;
+    event.getByType(genParticles);
+
+    edm::Handle<SimParticleCollection> simParticles;
+    event.getByType(simParticles);
+
+    // Handle to information about G4 physical volumes.
+    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    event.getRun().getByType(volumes);
+
+    // Some files might not have the SimParticle and volume information.
+    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+
+    // Other files might have empty collections.
+    if ( haveSimPart ){
+      haveSimPart = !(simParticles->empty() || volumes->empty());
+    }
 
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
 
+    // A silly example just to show that we have a messsage logger.
+    if ( hits->size() > 300 ){
+      edm::LogWarning("HitInfo")
+        << "Number of hits "
+        << hits->size()
+        << " may be too large.";
+    }
+
+    // A silly example just to show how to throw.
+    if ( hits->size() > 1000000 ){
+      throw cms::Exception("RANGE")
+        << "Way too many hits in this event.  Something is really wrong."
+        << hits->size();
+    }
+
     // ntuple buffer.
-    float nt[13];
+    //float nt[13];
+    float nt[_ntup->GetNvar()];
     
     // Loop over all hits.
     int n(0);
@@ -753,21 +788,26 @@ namespace mu2e {
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
 
-      // Get the cell information.
-      //    Cell const& cell = itracker->getCell( hit.volumeId() );
-      //    CLHEP::Hep3Vector mid = cell.getMidPoint();
-      //    CLHEP::Hep3Vector w   = cell.getDirection();
+      itwp->SelectCellDet(hit.volumeId());
+      //Get the cell information.
+          boost::shared_ptr<mu2e::Cell> cell = itwp->GetITCell();
+          //Cell const& cell = itwp->GetITCell();
+          CLHEP::Hep3Vector mid = cell->getMidPoint();
+          CLHEP::Hep3Vector w   = cell->getDirection();
 
       // Count how many nearest neighbours are also hit.
       //    int nNeighbours = countHitNeighbours( cell, hits );
 
       // Compute an estimate of the drift distance.
-      //   TwoLinePCA pca( mid, w, pos, mom);
+         TwoLinePCA pca( mid, w, pos, mom);
 
       // Check that the radius of the reference point in the local
       // coordinates of the cell.  Should be 2.5 mm.
-      //    double s = w.dot(pos-mid);
-      //    CLHEP::Hep3Vector point = pos - (mid + s*w);
+          double s = w.dot(pos-mid);
+          CLHEP::Hep3Vector point = pos - (mid + s*w);
+
+          // The simulated particle that made this hit.
+          SimParticleCollection::key_type trackId(hit.trackId());
 
       // I don't understand the distribution of the time variable.
       // I want it to be the time from the start of the spill.
@@ -784,12 +824,29 @@ namespace mu2e {
       _hzHit->Fill(pos.z());
 
       //    _hDriftDist->Fill(pca.dca());
-      itwp->SelectCellDet(hit.volumeId());
       double distUnit = (itracker->isExternal()) ? 1.0*CLHEP::cm : 1.0*CLHEP::mm ;
       double invDistUnit = 1.0/distUnit;
       double hitpos[3] = {pos.x()*invDistUnit,pos.y()*invDistUnit,pos.z()*invDistUnit};
       double lclhitpos[3] = {0.0,0.0,0.0};
       itwp->Global2Local(hitpos,lclhitpos);
+
+      // Default values for these, in case information is not available.
+      int pdgId(0);
+      GenId genId;
+
+      if ( haveSimPart ){
+        SimParticle const& sim = simParticles->at(trackId);
+
+        // PDG Particle Id of the sim particle that made this hit.
+        pdgId = sim.pdgId();
+
+        // If this is a generated particle, which generator did it come from?
+        // This default constructs to "unknown".
+        if ( sim.fromGenerator() ){
+          ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          genId = gen.generatorId();
+        }
+      }
       
       // Fill the ntuple.
       nt[0]  = event.id().event();
@@ -803,8 +860,15 @@ namespace mu2e {
       nt[8]  = distUnit*lclhitpos[2];//mid.z();
       nt[9]  = distUnit*itwp->DistFromWire(hitpos);//pca.dca();
       nt[10] = hit.time();
-      nt[11] = 0;//cell.Id().getDevice();
-      nt[12] = 0;//cell.Id().getSector();
+      nt[11] = itwp->GetITCell()->Id().getCell();
+      nt[12] = itwp->GetITCell()->Id().getLayer();
+      nt[13] = itwp->GetITCell()->Id().getLayerId().getSuperLayer();
+      nt[14] = pdgId;
+      nt[15] = genId.Id();
+      nt[16] = hit.eDep()/keV;
+      nt[17] = mom.mag();
+      nt[18] = hit.stepLength();
+      nt[19] = s/itwp->GetITCell()->getHalfLength();
 
       //    if (nt[6]<-3.0) {
       //
