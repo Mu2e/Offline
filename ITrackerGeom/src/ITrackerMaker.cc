@@ -95,6 +95,7 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
         for (int is=0; is<nWireShells; is++) {
                 _fWireDiameter +=_fwShellsThicknesses.at(is);
         }
+        _fWireDiameter*=2.0;
 
         nWireShells     = config.getInt("itracker.nSenseWireShells");
         config.getVectorString("itracker.senseWireMaterials", _swMaterialsName, nWireShells);
@@ -103,6 +104,7 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
         for (int is=0; is<nWireShells; is++) {
                 _sWireDiameter +=_swShellsThicknesses.at(is);
         }
+        _sWireDiameter*=2.0;
 
         _walls.insert( pair<Wall::Walltype,Wall*>(Wall::inner,new Wall(Wall::inner)) );
         nWallShells    = config.getInt("itracker.nInnerWallShells");
