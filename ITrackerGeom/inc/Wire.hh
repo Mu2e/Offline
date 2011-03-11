@@ -83,7 +83,7 @@ protected:
 };
 
 inline std::ostream& operator<<(std::ostream& ost, const Wire& w ){
-        ost <<w.Id()<<" type "<<w.getWireType()<<std::endl;
+        ost <<w.Id()<<" type "<<w.getWireType()<<" radius "<< w.getDetail()->outerRadius() << " length "<< w.getDetail()->length() <<std::endl;
         ost<<"epsilon "<< w.getEpsilon()<<" pos matrix: "<<std::endl;
         ost<<w.get3DTransfrom().xx()<<" "<<w.get3DTransfrom().xy()<<" "<<w.get3DTransfrom().xz()<<" "<<w.get3DTransfrom().dx()<<std::endl;
         ost<<w.get3DTransfrom().yx()<<" "<<w.get3DTransfrom().yy()<<" "<<w.get3DTransfrom().yz()<<" "<<w.get3DTransfrom().dy()<<std::endl;
