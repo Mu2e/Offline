@@ -39,12 +39,12 @@ double itracker.freePath         =   1.0; // free Path length in mm
 // Field wires description
 int    itracker.nFieldWireShells =      2;
 vector<string> itracker.fieldWireMaterials = { "G4_Al", "G4_Ag" };
-vector<double> itracker.fieldWireShellsThicknesses = { 0.0394, 0.0006 };
+vector<double> itracker.fieldWireShellsThicknesses = { 0.0194, 0.0006 };
 
 // Sense wires description
 int    itracker.nSenseWireShells =      2;
 vector<string> itracker.senseWireMaterials = { "G4_Mo", "G4_Ag" };
-vector<double> itracker.senseWireShellsThicknesses = { 0.0197, 0.0003 };
+vector<double> itracker.senseWireShellsThicknesses = { 0.0097, 0.0003 };
 
 // Inner Wall description
 int    itracker.nInnerWallShells =      4;
