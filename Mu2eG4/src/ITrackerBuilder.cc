@@ -270,7 +270,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                                         wire_name,                     // its name
                                                         LayerInfo.logical,             // its mother  volume
                                                         false,                         // no boolean operations
-                                                        iwire->Id().getWire());  // copy number
+                                                        iwire->Id().getWire());        // copy number
                                 }
 
                                 for ( int iSw=0; iSw < ily->nCells(); iSw++){
@@ -286,7 +286,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                                         wire_name,                     // its name
                                                         LayerInfo.logical,             // its mother  volume
                                                         false,                         // no boolean operations
-                                                        iwire->Id().getWire());  // copy number
+                                                        iwire->Id().getWire());        // copy number
                                 }
 
                         }
@@ -304,6 +304,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                 0,
                                 0);
 
+                //cout<<"IT Overlap Checking "<<trackerInfo.physical->CheckOverlaps(100000,0.0001,true)<<endl;
         }
 
         return trackerInfo;
@@ -335,11 +336,11 @@ VolumeInfo ITrackerBuilder::buildWire(float radius, float length, char *shapeNam
                         G4LogicalVolume *tlogicWire = new G4LogicalVolume(tswire,findMaterialOrThrow(materialName.at(ishell).c_str()),tVolName,0,0,0);
                         G4VPhysicalVolume *tphysWire = new G4PVPlacement(0,
                                         G4ThreeVector(0,0,0),
-                                        tlogicWire,      // its logical volume
-                                        tVolName,             // its name
-                                        wire.logical,    // its mother  volume
-                                        false,                 // no boolean operations
-                                        0);                  // copy number
+                                        tlogicWire,       // its logical volume
+                                        tVolName,         // its name
+                                        wire.logical,     // its mother  volume
+                                        false,            // no boolean operations
+                                        0);               // copy number
                 }
 
         }
@@ -383,11 +384,11 @@ VolumeInfo ITrackerBuilder::buildWall(Wall *wall, ITracker::EnCapType endcapType
                         G4LogicalVolume *tlogicwall = new G4LogicalVolume(tswall,findMaterialOrThrow(wall->getMaterialsName()->at(ishell).c_str()),tVolName,0,0,0);
                         G4VPhysicalVolume *tphyswall = new G4PVPlacement(0,
                                         G4ThreeVector(0,0,0),
-                                        tlogicwall,      // its logical volume
-                                        tVolName,             // its name
-                                        wallInfo.logical,    // its mother  volume
-                                        false,                 // no boolean operations
-                                        0);                  // copy number
+                                        tlogicwall,       // its logical volume
+                                        tVolName,         // its name
+                                        wallInfo.logical, // its mother  volume
+                                        false,            // no boolean operations
+                                        0);               // copy number
                 }
 
         }
