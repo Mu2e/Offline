@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makehits.py,v 1.11 2010/08/26 19:15:52 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/08/26 19:15:52 $
+# $Id: makehits.py,v 1.12 2011/03/14 19:45:42 wenzel Exp $
+# $Author: wenzel $
+# $Date: 2011/03/14 19:45:42 $
 #
 # Original author Rob Kutschke
 #
@@ -28,6 +28,10 @@ process.TFileService = mu2e.Service("TFileService",
                        fileName = mu2e.string("makehits.root"),
                        closeFileFast = mu2e.untracked.bool(False)
 )
+# Load the Conditions service 
+process.ConditionsService = mu2e.Service("ConditionsService",
+      conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
+) 
 
 # Initialize the random number sequences.
 process.add_(mu2e.Service("RandomNumberGeneratorService"))
