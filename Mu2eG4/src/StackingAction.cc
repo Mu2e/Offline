@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.9 2011/03/09 21:55:11 kutschke Exp $
+// $Id: StackingAction.cc,v 1.10 2011/03/15 19:25:46 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/09 21:55:11 $
+// $Date: 2011/03/15 19:25:46 $
 //
 // Original author Rob Kutschke
 //
@@ -48,6 +48,7 @@ namespace mu2e {
     _doCosmicKiller(false),
     _killLevel(0),
     _pdgToDrop(),
+    _pdgToKeep(),
     _dirtBodyPhysVol(0),
     _dirtCapPhysVol(0),
     _dirtG4Ymin(0),
@@ -57,13 +58,31 @@ namespace mu2e {
     _doCosmicKiller = config.getBool("g4.doCosmicKiller",false);
     _killLevel = config.getInt("g4.cosmicKillLevel",0);
 
-    // Get list of particles to keep or to drop in stepping action
-    if ( config.hasName("g4.steppingActionDropPDG") ){
-      config.getVectorInt("g4.steppingActionDropPDG",_pdgToDrop);
+    // Get list of particles to keep or to drop in stacking action
+    if ( config.hasName("g4.stackingActionDropPDG") ){
+      config.getVectorInt("g4.stackingActionDropPDG",_pdgToDrop);
     }
+    if ( config.hasName("g4.stackingActionKeepPDG") ){
+      config.getVectorInt("g4.stackingActionKeepPDG",_pdgToKeep);
+    }
+
+    if ( !_pdgToDrop.empty() && !_pdgToKeep.empty() ){
+      throw cms::Exception("G4CONTROL")
+        << "Both g4.stackingActionKeepPDG and g4.stackingActionDropPDG have entries: " 
+        << _pdgToDrop.size() <<  " " 
+        << _pdgToKeep.size() <<  " " 
+        << "\n";
+    }
+
     if( _pdgToDrop.size()>0 ) {
-      cout << "Drop these particles in the SteppingAction: ";
+      cout << "Drop these particles in the StackingAction: ";
       for( size_t i=0; i<_pdgToDrop.size(); ++i ) cout << _pdgToDrop[i] << ",";
+      cout << endl;
+    }
+
+    if( _pdgToKeep.size()>0 ) {
+      cout << "Keep these particles in the StackingAction: ";
+      for( size_t i=0; i<_pdgToKeep.size(); ++i ) cout << _pdgToKeep[i] << ",";
       cout << endl;
     }
 
@@ -84,6 +103,17 @@ namespace mu2e {
 
   }
 
+  // A utility function used by ClassifyNewTrack
+  bool idInList( G4Track const * track, std::vector<int> const& v){
+    int id(track->GetDefinition()->GetPDGEncoding()); 
+    for( size_t i=0; i<v.size(); ++i ) {
+      if( v[i] == id ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   G4ClassificationOfNewTrack
   StackingAction::ClassifyNewTrack(const G4Track* trk){
     ++_ncalls;
@@ -97,7 +127,13 @@ namespace mu2e {
     }
 
     if ( !_pdgToDrop.empty() ){
-      if ( dropByPDGId(trk) ){
+      if ( idInList(trk,_pdgToDrop) ){
+        return fKill;
+      }
+    }
+
+    if ( !_pdgToKeep.empty() ){
+      if ( !idInList(trk,_pdgToKeep) ){
         return fKill;
       }
     }
@@ -183,6 +219,8 @@ namespace mu2e {
     return killit;
   }
 
+
+  /*
   // Return true if the particle Id of this track is in the list.
   bool StackingAction::dropByPDGId( G4Track const* track ){
     
@@ -195,6 +233,21 @@ namespace mu2e {
     }
     return false;
   }
+
+  // Return true if the particle Id of this track is in the list.
+  bool StackingAction::keepByPDGId( G4Track const* track ){
+    
+    int id(track->GetDefinition()->GetPDGEncoding()); 
+    for( size_t i=0; i<_pdgToKeep.size(); ++i ) {
+      if( _pdgToKeep[i] == id ) {
+        // cout << "Killing track from list: " << id << endl;
+        return true;
+      }
+    }
+    return false;
+  }
+  */
+
 
 } // end namespace mu2e
 
