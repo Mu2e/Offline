@@ -131,8 +131,8 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                 sprintf(shape_name_FD,"tube_Field");
                 sprintf(shape_name_SD,"tube_Sense");
 
-                int superlayer,iring;
-                G4SDManager* SDman   = G4SDManager::GetSDMpointer();
+                int superlayer =0,iring=0;
+                //G4SDManager* SDman   = G4SDManager::GetSDMpointer();
 
                 G4ThreeVector positionTracker = G4ThreeVector(0,0,0);
                 //        boost::shared_array<SuperLayer> SLayers = itracker->getSuperLayersArray();
@@ -341,6 +341,7 @@ VolumeInfo ITrackerBuilder::buildWire(float radius, float length, char *shapeNam
                                         wire.logical,     // its mother  volume
                                         false,            // no boolean operations
                                         0);               // copy number
+                        tphysWire->GetCopyNo(); //just to remove the warning during compiling
                 }
 
         }
@@ -389,6 +390,7 @@ VolumeInfo ITrackerBuilder::buildWall(Wall *wall, ITracker::EnCapType endcapType
                                         wallInfo.logical, // its mother  volume
                                         false,            // no boolean operations
                                         0);               // copy number
+                        tphyswall->GetCopyNo(); //just to remove the warning during compiling
                 }
 
         }

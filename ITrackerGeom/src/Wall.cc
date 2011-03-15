@@ -60,7 +60,7 @@ Wall::Wall(const Wall &wl) {
 
 void Wall::addMaterials(int &wShellNumber, std::vector<std::string> *wShellsMatName, std::vector<double> *wShellsThicknesses) throw(cms::Exception) {
         _nShells=wShellNumber;
-        if ( _nShells!=wShellsMatName->size() && _nShells!=wShellsThicknesses->size() )
+        if ( _nShells!=((int)wShellsMatName->size()) && _nShells!=((int)wShellsThicknesses->size()) )
                 throw cms::Exception("GEOM")<< "Error in Configuration file! There is a disagreement between the vectors dimensions of a ITracker wall.\n";
 
         _materialsName.reset(wShellsMatName);
@@ -89,6 +89,7 @@ Wall& Wall::operator=(const Wall &wl) {
                 _materialsName=wl.getMaterialsName();
                 _thicknesses=wl.getThicknesses();
         }
+        return *this;
 }
 
 } // namespace mu2e

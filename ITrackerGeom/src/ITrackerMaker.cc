@@ -191,7 +191,7 @@ void ITrackerMaker::Build(){
                 double endcap_inner_radius;
                 double outer_radius             =	 _rOut  			   ;
                 double fieldwire_diameter       =	 _fWireDiameter 		   ;
-                double sensewire_diameter       =	 _sWireDiameter 		   ;
+                //double sensewire_diameter       =	 _sWireDiameter 		   ;
                 double envelop_Inner_thickness  =	 tmpInnerWall->getTotalThickness() ;
                 double envelop_Outer_thickness  =	 tmpOuterWall->getTotalThickness() ;
                 double envelop_EndCap_thickness =	 tmpEndCapWall->getTotalThickness();
@@ -220,14 +220,14 @@ void ITrackerMaker::Build(){
 
 
                 double FWradii, radius_ring_0, radius_ring, alfa, epsilon, radius_ringOut_0, radius_ringOut, epsilonOut, radius_ringIn_0,
-                radius_ringIn, epsilonIn, cellBase, inscribedRadius, circumscribedRadius, delta_radius_ring, zlength, phi, theta_ring, ringangle;
+                radius_ringIn, epsilonIn, cellBase, inscribedRadius, circumscribedRadius, delta_radius_ring, zlength, phi=0.0, theta_ring=0.0, ringangle=0.0;
                 int   sign_epsilon      = -1;
-                int   num_wire;
+                int   num_wire          =  0;
 
                 double secure           = 1.0e-2;			 //Extra volume layer thickness to avoid wire illegal overlap
                 double capGasLayer      = 1.0e-3;			 //Thickness of the closing inner gas layer, its is less enough just to be different from 0
 
-                char wshape[30], gshape[30], wvol[30], gvol[30], shape_name_FD[30], shape_name_SD[30], vol_name_FD[30], vol_name_SD[30];
+                //char wshape[30], gshape[30], wvol[30], gvol[30], shape_name_FD[30], shape_name_SD[30], vol_name_FD[30], vol_name_SD[30];
 
                 boost::shared_ptr<ITLayer> itl;
 
@@ -303,7 +303,7 @@ void ITrackerMaker::Build(){
                 //epsilonOut        = atan((radius_ringOut+drop)/length*sin(alfa));
                 epsilonOut        = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
 
-                int superlayer,iring;
+                int superlayer=0, iring=0;
 
                 if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
 
@@ -458,7 +458,7 @@ void ITrackerMaker::Build(){
 
                         delta_radius_ring   = _cellDimension;
                         float fwireDist     = _FWireStep;
-                        unsigned int nFwire;
+                        unsigned int nFwire = 0;
                         int nHorizontalFWire;
                         float iradius, idelta_radius;
                         idelta_radius = delta_radius_ring/((float) (1+_nVerticalFWire));
@@ -592,12 +592,13 @@ void ITrackerMaker::Build(){
                 }
                 else if (geomType==31) {
 
-                        _ltt->_geomType     = ITracker::Square;
+                        _ltt->_geomType      = ITracker::Square;
                         _ltt->_cellhnd.reset(new CellGeometryHandle_v3(_ltt.get()));
 
-                        delta_radius_ring   = _cellDimension;
-                        float fwireDist     = _FWireStep;
-                        unsigned int nFwire, nFwire1;
+                        delta_radius_ring    = _cellDimension;
+                        float fwireDist      = _FWireStep;
+                        unsigned int nFwire  = 0;
+                        unsigned int nFwire1 = 0;
                         int nHorizontalFWire;
                         double cellStaggering;
                         //bool isCellStaggered;
@@ -605,11 +606,11 @@ void ITrackerMaker::Build(){
                         float iradius, idelta_radius;
                         idelta_radius = delta_radius_ring/((float) (1+_nVerticalFWire));
                         double senseWireRing_radius_0;
-                        inscribedRadius     = 0.5*_cellDimension;
-                        circumscribedRadius = inscribedRadius*sqrt(2.0);
+                        inscribedRadius      = 0.5*_cellDimension;
+                        circumscribedRadius  = inscribedRadius*sqrt(2.0);
 
                         radius_ring_0+=FWradii;
-                        nHorizontalFWire    = _StoFWireRatio-_nVerticalFWire;
+                        nHorizontalFWire     = _StoFWireRatio-_nVerticalFWire;
                         //isCellStaggered     = ((nHorizontalFWire/2)%2==0) ? true : false;
 
                         for ( superlayer=0;superlayer<nsuperlayer;superlayer++ ) {
@@ -759,7 +760,7 @@ void ITrackerMaker::Build(){
                         double cellStaggering;
                         //bool isCellStaggered;
                         double theta_ring1;
-                        float iradius, idelta_radius;
+                        float iradius/*, idelta_radius=0.0*/;
                         //idelta_radius = delta_radius_ring/((float) (1+_nVerticalFWire));
                         double senseWireRing_radius_0;
 
@@ -860,7 +861,7 @@ void ITrackerMaker::Build(){
                                 boost::shared_ptr<WireDetail> fw1( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
                                 for( iring=0; iring< _nVerticalFWire ; iring++ ){
 
-                                        iradius+=idelta_radius;
+                                        //iradius+=idelta_radius;
                                         ITWireLocater(fw1,Wire::field,itl,num_wire,iradius,phi,ringangle+cellStaggering,sign_epsilon*epsilon,alfa,iring*num_wire);
 
                                 }
