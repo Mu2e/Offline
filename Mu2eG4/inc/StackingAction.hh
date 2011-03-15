@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.8 2011/03/15 19:25:46 kutschke Exp $
+// $Id: StackingAction.hh,v 1.9 2011/03/15 19:37:20 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/15 19:25:46 $
+// $Date: 2011/03/15 19:37:20 $
 //
 // Original author Rob Kutschke
 //
@@ -67,12 +67,6 @@ namespace mu2e {
 
     // Check to see if we kill low p tracks in the dirt or other shielding.
     bool cosmicKiller( const G4Track* aTrack);
-
-    // Drop tracks from a list of PDG Id's.
-    //bool dropByPDGId( G4Track const *);
-
-    // Keep tracks from a list of PDG Id's.
-    //bool keepByPDGId( G4Track const *);
 
   };
 

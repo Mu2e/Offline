@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.10 2011/03/15 19:25:46 kutschke Exp $
+// $Id: StackingAction.cc,v 1.11 2011/03/15 19:37:20 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/15 19:25:46 $
+// $Date: 2011/03/15 19:37:20 $
 //
 // Original author Rob Kutschke
 //
@@ -218,36 +218,6 @@ namespace mu2e {
 
     return killit;
   }
-
-
-  /*
-  // Return true if the particle Id of this track is in the list.
-  bool StackingAction::dropByPDGId( G4Track const* track ){
-    
-    int id(track->GetDefinition()->GetPDGEncoding()); 
-    for( size_t i=0; i<_pdgToDrop.size(); ++i ) {
-      if( _pdgToDrop[i] == id ) {
-        // cout << "Killing track from list: " << id << endl;
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // Return true if the particle Id of this track is in the list.
-  bool StackingAction::keepByPDGId( G4Track const* track ){
-    
-    int id(track->GetDefinition()->GetPDGEncoding()); 
-    for( size_t i=0; i<_pdgToKeep.size(); ++i ) {
-      if( _pdgToKeep[i] == id ) {
-        // cout << "Killing track from list: " << id << endl;
-        return true;
-      }
-    }
-    return false;
-  }
-  */
-
 
 } // end namespace mu2e
 
