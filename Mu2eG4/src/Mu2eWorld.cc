@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.85 2011/03/10 01:47:14 tassiell Exp $
+// $Id: Mu2eWorld.cc,v 1.86 2011/03/15 19:46:29 tassiell Exp $
 // $Author: tassiell $ 
-// $Date: 2011/03/10 01:47:14 $
+// $Date: 2011/03/15 19:46:29 $
 //
 // Original author Rob Kutschke
 //
@@ -594,7 +594,7 @@ namespace mu2e {
 
     if ( _config->getBool("hasITracker",false) ) {
             GeomHandle<ITracker> itracker;
-            ITGasLayerSD* itrackerSD;
+            ITGasLayerSD* itrackerSD=0x0;
             if ( itracker->geomType()==ITracker::Hexagonal )
                     itrackerSD        = new ITGasLayerSD_Hexagonal(          SensitiveDetectorName::ItrackerGasVolume(),  *_config);
             else if ( itracker->geomType()==ITracker::Square )
