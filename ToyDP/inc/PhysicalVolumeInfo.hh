@@ -4,9 +4,9 @@
 //
 // Persistable information about a G4 Physical Volume.
 //
-// $Id: PhysicalVolumeInfo.hh,v 1.1 2010/03/23 20:34:30 kutschke Exp $
+// $Id: PhysicalVolumeInfo.hh,v 1.2 2011/03/15 13:21:45 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/03/23 20:34:30 $
+// $Date: 2011/03/15 13:21:45 $
 //
 // Original author Rob Kutschke
 //
@@ -35,13 +35,22 @@ namespace mu2e {
     std::string const& name()   const { return _name;  }
     uint32_t           copyNo() const { return _copyNo;}
 
-
-
   private:
     std::string _name;
     uint32_t _copyNo;
 
   };
+
+  // Shift left (printing) operator.
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  const PhysicalVolumeInfo& vol ){
+    ost << "( "
+        << vol.name() << ", "
+        << vol.copyNo()
+        << " )";
+    return ost;
+  }
+
 
 }
 
