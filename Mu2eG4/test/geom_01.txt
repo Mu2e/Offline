@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.73 2011/03/10 01:50:50 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/03/10 01:50:50 $
+// $Id: geom_01.txt,v 1.74 2011/03/16 15:26:53 wasiko Exp $
+// $Author: wasiko $
+// $Date: 2011/03/16 15:26:53 $
 //
 // Original author Rob Kutschke
 //
@@ -74,6 +74,8 @@ string g4.physicsListName = "QGSP_BERT";
 
 // Enable the code to kill low p secondaries from cosmics.
 bool g4.doCosmicKiller = false;
+double g4.cosmicPcut = 0.;
+double g4.yaboveDirtYmin = 0.;
 
 // Tell G4 to load these predefined elements.
 vector<string> g4.elements =
