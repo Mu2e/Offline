@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.9 2011/03/15 19:37:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/15 19:37:20 $
+// $Id: StackingAction.hh,v 1.10 2011/03/16 15:20:41 wasiko Exp $
+// $Author: wasiko $
+// $Date: 2011/03/16 15:20:41 $
 //
 // Original author Rob Kutschke
 //
@@ -51,6 +51,8 @@ namespace mu2e {
     // Do we run the cosmic killer?
     bool _doCosmicKiller;
     int  _killLevel;
+    double _cosmicpcut;
+    double _yaboveDirtYmin;    
 
     // Only one of these may be non-empty.
     // List of particles to remove (others will be kept).
