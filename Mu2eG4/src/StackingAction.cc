@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.11 2011/03/15 19:37:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/15 19:37:20 $
+// $Id: StackingAction.cc,v 1.12 2011/03/16 15:21:23 wasiko Exp $
+// $Author: wasiko $
+// $Date: 2011/03/16 15:21:23 $
 //
 // Original author Rob Kutschke
 //
@@ -47,6 +47,8 @@ namespace mu2e {
     _nevents(0),
     _doCosmicKiller(false),
     _killLevel(0),
+    _cosmicpcut(0),
+    _yaboveDirtYmin(0),
     _pdgToDrop(),
     _pdgToKeep(),
     _dirtBodyPhysVol(0),
@@ -57,6 +59,8 @@ namespace mu2e {
     // Get control info from run time configuration.
     _doCosmicKiller = config.getBool("g4.doCosmicKiller",false);
     _killLevel = config.getInt("g4.cosmicKillLevel",0);
+    _cosmicpcut = config.getDouble("g4.cosmicPcut",0.);
+    _yaboveDirtYmin = config.getDouble("g4.yaboveDirtYmin",0.);    
 
     // Get list of particles to keep or to drop in stacking action
     if ( config.hasName("g4.stackingActionDropPDG") ){
@@ -157,7 +161,7 @@ namespace mu2e {
 
     bool killit = false;
 
-    if ( _killLevel > 1 && pdef != 0 ) {
+    if ( _killLevel > 1) {
       int pType = pdef->GetPDGEncoding();
 
       // just kill anything electromagnetic in the dirt
@@ -173,11 +177,9 @@ namespace mu2e {
       // Magic numbers for illustrative purposes.
       // You can probably get much more aggressive than this.
       // Get ycut from geometry and pcut from run time config.
-      static const double ycut = 800.* CLHEP::mm;
-      static const double pcut =  50.* CLHEP::MeV;
       
       // Decide if we want to kill the track.
-      killit = ( ppos.y() > ycut && p3mom.mag() < pcut);
+      killit = ( ppos.y() > (_dirtG4Ymin + _yaboveDirtYmin) && p3mom.mag() <  _cosmicpcut );
     }
 
 
