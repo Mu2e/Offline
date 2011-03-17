@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.3 2011/03/09 20:13:59 genser Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.4 2011/03/17 16:18:30 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/03/09 20:13:59 $
+// $Date: 2011/03/17 16:18:30 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -152,9 +152,9 @@ namespace mu2e {
 
     // a half module has different dimentions from the full one... 
 
-    // the "universal" parameters are kept in  "details"
+    // the "universal", mainly bar, parameters are kept in  "details"
 
-    // calculate  "global" parameters
+    // calculate "global" parameters
     calculateCommonCRSScintillatorParameters();
 
     makeDetails();
@@ -163,8 +163,12 @@ namespace mu2e {
     int ishield=0;
     
     // we generate/assign the names here:
-
     // R Shield is the "Right" shield
+
+    // we may want to have an enumeration/function translating from 
+    // R, L, T, B, D, U, TS to numbers, 
+    // as of now the "translation" is done by using ishield:
+    // 0  1  2  3  4  5  6 
 
     std::string name = "CRSScintillatorRShield";
 
@@ -181,18 +185,14 @@ namespace mu2e {
         CRSScintillatorShieldOffset << endl;
     }
 
-    // we rotate the shields so that they "start" from the downstream end
+    // we set the rotation agles of the shields so that they "start" from the downstream end
+    // but we do not actually rotate the shields, modules or layers as of now, we do it for bars only
 
     std::vector<double> CRSScintillatorShieldRotationAngles; // x,y,z
     CRSScintillatorShieldRotationAngles.reserve(3);
     CRSScintillatorShieldRotationAngles.push_back(CLHEP::pi);
     CRSScintillatorShieldRotationAngles.push_back(0.);
     CRSScintillatorShieldRotationAngles.push_back(CLHEP::pi);
-
-    // we may want to have an enumeration/function translating from 
-    // R, L, T, B, D, U, TS to numbers, 
-    // as of now the "translation" is done by using ishield:
-    // 0  1  2  3  4  5  6 
 
     // the constructors are "simple", most work is done in the maker
 
@@ -329,6 +329,41 @@ namespace mu2e {
     CRSScintillatorShieldRotationAngles.reserve(3);
     CRSScintillatorShieldRotationAngles.push_back(0.);
     CRSScintillatorShieldRotationAngles.push_back(-CLHEP::halfpi);
+    CRSScintillatorShieldRotationAngles.push_back(0.);
+
+    _crs->_scintillatorShields[name] = 
+      CRSScintillatorShield(ishield,
+                            name,
+                            CRSScintillatorShieldOffset + _crs->_localOffset,
+                            CRSScintillatorShieldRotationAngles,
+                            CRSScintillatorShieldOffset + _crs->_globalOffset,
+                            _scintillatorShieldHalfThickness,
+                            numberOfModules);
+
+    ++ishield;
+
+
+    //
+
+    name = "CRSScintillatorUShield";
+
+    numberOfModules = _shieldU_NumberOfModules;
+
+    CRSScintillatorShieldOffset =
+      CLHEP::Hep3Vector(_scintillatorShieldOffsetToTheSideOfHallSteel + 
+                        _HallSteelHalfLengthZ - _HallSteelHalfThick, 0., 0.) + 
+      CLHEP::Hep3Vector(_shieldU_Offset[0],_shieldU_Offset[1],_shieldU_Offset[2]);
+
+    if ( _diagLevel > 0) {
+      cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " << 
+        CRSScintillatorShieldOffset << endl;
+    }
+
+    // around x, y, z
+    CRSScintillatorShieldRotationAngles.clear();
+    CRSScintillatorShieldRotationAngles.reserve(3);
+    CRSScintillatorShieldRotationAngles.push_back(0.);
+    CRSScintillatorShieldRotationAngles.push_back(CLHEP::halfpi);
     CRSScintillatorShieldRotationAngles.push_back(0.);
 
     _crs->_scintillatorShields[name] = 
