@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.1 2011/03/09 19:27:05 genser Exp $
+// $Id: constructCRV.cc,v 1.2 2011/03/17 16:17:42 genser Exp $
 // $Author: genser $
-// $Date: 2011/03/09 19:27:05 $
+// $Date: 2011/03/17 16:17:42 $
 //
 // Original author KLG 
 //
@@ -70,6 +70,61 @@ namespace mu2e {
 
     CLHEP::Hep3Vector perentCenterInMu2e = parent.centerInWorld - VolumeInfo::getMu2eOriginInWorld();
 
+    // all materials and dimensions are the same
+
+    CRSScintillatorBarDetail const & barDetail = 
+      CosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
+
+    G4Material* scintillatorBarMaterial = 
+      findMaterialOrThrow(barDetail.getMaterialName(0));
+
+    std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
+
+    // each solid is the same, 
+    // is each logical volume the same?
+    // but each physical volume has different name...
+    // this seems not quite compatible with VolumeInfo and their registry, so we will not use it
+    
+    //    VolumeInfo scintillatorBarInfo;
+
+    std::string scintillatorBarName = "CRSScintillatorBar";
+
+    G4VSolid* scintillatorBarSolid = 
+      new G4Box( scintillatorBarName,
+                 scintillatorBarHalfLengths[0],
+                 scintillatorBarHalfLengths[1],
+                 scintillatorBarHalfLengths[2]);
+
+    G4LogicalVolume* scintillatorBarLogical = 
+      new G4LogicalVolume( scintillatorBarSolid, 
+                           scintillatorBarMaterial, 
+                           scintillatorBarName);
+
+    // visibility attributes
+
+    if (!scintillatorShieldVisible) {
+
+      scintillatorBarLogical->SetVisAttributes(G4VisAttributes::Invisible);
+
+    } else {
+      G4Colour  orange  (.75, .55, .0);
+      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, orange));
+      visAtt->SetForceSolid(scintillatorShieldSolid);
+      visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+      scintillatorBarLogical->SetVisAttributes(visAtt);
+
+    }
+
+    // Make each scintillatorBar a sensitive detector.
+
+    scintillatorBarLogical->
+      SetSensitiveDetector(G4SDManager::GetSDMpointer()->
+                           FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()) );
+
+    if (verbosityLevel > 1) {
+      G4SDManager::GetSDMpointer()->SetVerboseLevel(verbosityLevel-1);
+    }
+
     for (std::map<std::string,CRSScintillatorShield>::const_iterator ishield=shields.begin();
          ishield!=shields.end(); ++ishield) {
 
@@ -99,62 +154,6 @@ namespace mu2e {
           shield.getGlobalRotationAngles()[1] << ", " <<
           shield.getGlobalRotationAngles()[2] << ", " << endl; 
         cout << __func__ << " shieldRotation and *    : " << shieldRotation << *shieldRotation << endl;
-      }
-
-      // all materials and dimensions are the same
-
-      CRSScintillatorBarDetail const & barDetail = 
-        CosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
-
-      G4Material* scintillatorBarMaterial = 
-        findMaterialOrThrow(barDetail.getMaterialName(0));
-
-      std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
-
-      // each solid is the same, 
-      // is each logical volume the same?
-      // but each physical volume has different name...
-      // this seems not quite compatible with VolumeInfo and their registry, so we will not use it
-    
-      //    VolumeInfo scintillatorBarInfo;
-
-      std::string scintillatorBarName = "CRSScintillatorBar";
-
-      G4VSolid* scintillatorBarSolid = 
-        new G4Box( scintillatorBarName,
-                   scintillatorBarHalfLengths[0],
-                   scintillatorBarHalfLengths[1],
-                   scintillatorBarHalfLengths[2]);
-
-      G4LogicalVolume* scintillatorBarLogical = 
-        new G4LogicalVolume( scintillatorBarSolid, 
-                             scintillatorBarMaterial, 
-                             scintillatorBarName);
-
-
-      // visibility attributes
-
-      if (!scintillatorShieldVisible) {
-
-        scintillatorBarLogical->SetVisAttributes(G4VisAttributes::Invisible);
-
-      } else {
-      
-        G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Cyan()));
-        visAtt->SetForceSolid(scintillatorShieldSolid);
-        visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
-        scintillatorBarLogical->SetVisAttributes(visAtt);
-
-      }
-
-      // Make each scintillatorBar a sensitive detector.
-
-      scintillatorBarLogical->
-        SetSensitiveDetector(G4SDManager::GetSDMpointer()->
-                             FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()) );
-
-      if (verbosityLevel > 1) {
-        G4SDManager::GetSDMpointer()->SetVerboseLevel(verbosityLevel-1);
       }
 
       // now loop over all bars in the given shield
