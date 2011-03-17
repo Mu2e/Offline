@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: CRSScintillatorModule.hh,v 1.1 2011/03/09 19:23:03 genser Exp $
+// $Id: CRSScintillatorModule.hh,v 1.2 2011/03/17 16:17:19 genser Exp $
 // $Author: genser $
-// $Date: 2011/03/09 19:23:03 $
+// $Date: 2011/03/17 16:17:19 $
 //
 // Original author KLG somewhat based on Rob Kutschke' Sector
 //
@@ -90,7 +90,7 @@ namespace mu2e {
     // On readback from persistency, recursively recompute mutable members.
     //    void fillPointers ( const CosmicRayShield& cosmicRayShield ) const;
 
-  protected:
+  private:
   
     CRSScintillatorModuleId _id;
 

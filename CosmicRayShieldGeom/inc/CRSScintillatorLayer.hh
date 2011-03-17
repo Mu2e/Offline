@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Layer in  CosmicRayShield
 //
-// $Id: CRSScintillatorLayer.hh,v 1.1 2011/03/09 19:22:42 genser Exp $
+// $Id: CRSScintillatorLayer.hh,v 1.2 2011/03/17 16:17:04 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/03/09 19:22:42 $
+// $Date: 2011/03/17 16:17:04 $
 //
 // Original author KLG; somewhat based on  Rob Kutschke's Layer
 //
@@ -87,7 +87,7 @@ namespace mu2e {
         CRSScintillatorBarId();
     }
 
-  protected:
+  private:
 
     CRSScintillatorLayerId _id;
 
