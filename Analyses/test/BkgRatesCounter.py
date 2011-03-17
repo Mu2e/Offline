@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.py,v 1.2 2010/12/02 23:51:41 onoratog Exp $
+# $Id: BkgRatesCounter.py,v 1.3 2011/03/17 14:10:38 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2010/12/02 23:51:41 $
+# $Date: 2011/03/17 14:10:38 $
 #
 # Original author Gianni Onorato.
 #
@@ -22,7 +22,7 @@ process = mu2e.Process("BkgRatesCounter")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(20000)
+    input = mu2e.untracked.int32(1000)
 )
 
 # Define the standard message logger configuration.
@@ -86,14 +86,24 @@ process.g4run = mu2e.EDProducer(
     seed=mu2e.untracked.vint32(9877)
     )
 
-# Form StrawHits (SH).
-process.makeSH = mu2e.EDProducer(
+# Form StrawHits (SH). For T-Tracker. Comment if you use I-Tracker
+process.makeTH = mu2e.EDProducer(
     "MakeStrawHit",
     g4ModuleLabel = mu2e.string("g4run"),
     seed=mu2e.untracked.vint32(7790),
     diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)
 )
+
+# Form CellHits (CH). For I-Tracker. Comment if you use T-Tracker
+#process.makeTH = mu2e.EDProducer(
+#    "MakeDriftCellHit",
+#    g4ModuleLabel = mu2e.string("g4run"),
+#    seed=mu2e.untracked.vint32(7790),
+#    diagLevel    = mu2e.untracked.int32(0),
+#    maxFullPrint = mu2e.untracked.int32(5)
+#)
+
 
 # Form CaloCrystalHits
 process.CaloCrystalHitsMaker =  mu2e.EDProducer(
@@ -121,18 +131,21 @@ process.CaloROHitsMaker =  mu2e.EDProducer(
 process.filterEmpty = mu2e.EDFilter(
     "FilterEmptyEvents",
     keepTrackOrCalo=mu2e.untracked.int32(0),
-    makerModuleLabel = mu2e.string("makeSH")
+    makerModuleLabel = mu2e.string("makeTH")
 )
 
 
 # Look at the hits from G4.
 process.CountRates = mu2e.EDAnalyzer(
     "BkgRates",
-#    diagLevel            = mu2e.untracked.int32(0),
-    makerModuleLabel = mu2e.string("makeSH"),
-    maxFullPrint = mu2e.untracked.int32(50)
-#    g4ModuleLabel        = mu2e.string("g4run"),
-#    minimumEnergy        = mu2e.double(0.001),
+#   diagLevel            = mu2e.untracked.int32(0),
+    makerModuleLabel = mu2e.string("makeTH"),
+    maxFullPrint = mu2e.untracked.int32(50),
+#    trackerVersion = mu2e.untracked.string("TTracker")
+#   uncomment for I-Tracker
+    trackerVersion = mu2e.untracked.string("ITracker") 
+#   g4ModuleLabel        = mu2e.string("g4run"),
+#   minimumEnergy        = mu2e.double(0.001),
 )
 
 # Save state of random numbers to the event.
@@ -163,7 +176,7 @@ process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
 process.output = mu2e.EndPath(  process.generate*process.g4run*
-                                process.makeSH*
+                                process.makeTH*
                                 process.CaloROHitsMaker*
                                 process.CaloCrystalHitsMaker*
                                 process.CountRates*

@@ -32,6 +32,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
+#include "ITrackerGeom/inc/Cell.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
@@ -45,6 +46,7 @@
 #include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "Mu2eUtilities/inc/MCCaloUtilities.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
 
 using namespace std;
 
@@ -58,6 +60,7 @@ namespace mu2e {
       _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
       _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
+      _trackerVersion(pset.getUntrackedParameter<string>("trackerVersion","TTracker")),
       _nAnalyzed(0),
       _hHitMult(0),
       _hStrawEvt(0),
@@ -92,6 +95,7 @@ namespace mu2e {
   private:
 
     void doTracker(edm::Event const& evt);
+    void doITracker(edm::Event const& evt);
 
     void doCalorimeter(edm::Event const& evt);
 
@@ -105,6 +109,8 @@ namespace mu2e {
     std::string _makerModuleLabel;
 
     double _minimumEnergy; //minimum energy deposition of hits
+
+    std::string _trackerVersion;
 
     //number of analyzed events
     int _nAnalyzed;
@@ -178,8 +184,14 @@ namespace mu2e {
     _hCryEvtZ1      = tfs->make<TH1F>( "hCryEvtZ1",   "Multiplicity of Crystal per event zoom1", 100,    0.,  500.);
     _hCryEvtZ2      = tfs->make<TH1F>( "hCryEvtZ2",   "Multiplicity of Crystal per event zoom2",  50,    0.,   50.);
 
-    _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                        "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+    if (_trackerVersion == "TTracker") {
+      _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
+                                          "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+    }
+    if(_trackerVersion == "ITracker") {
+      _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
+                                          "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+    }
     _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
                                         "evt:run:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
 
@@ -219,8 +231,14 @@ namespace mu2e {
       // cout << "This should be done only in the first event" << endl;
     }
 
-    doTracker(evt);
-
+    if (_trackerVersion == "ITracker") {
+      cout << "ITracker selected" << endl;
+      doITracker(evt);
+    } 
+    if (_trackerVersion == "TTracker") {
+      cout << "TTracker selected" << endl;
+      doTracker(evt);
+    }
     doCalorimeter(evt);
 
   } // end of analyze
@@ -518,6 +536,268 @@ namespace mu2e {
     } //end of Strawhits loop
   
   } // end of doTracker
+
+  void BkgRates::doITracker(edm::Event const& evt) {
+    
+
+    const Tracker& tracker = getTrackerOrThrow();
+    edm::Handle<StrawHitCollection> pdataHandle;
+    evt.getByLabel(_makerModuleLabel,pdataHandle);
+    StrawHitCollection const* hits = pdataHandle.product();
+
+    // Get the persistent data about the StrawHitsMCTruth.
+    edm::Handle<StrawHitMCTruthCollection> truthHandle;
+    evt.getByLabel(_makerModuleLabel,truthHandle);
+    StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
+
+    // Get the persistent data about pointers to StepPointMCs
+    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
+    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
+
+    // Get the persistent data about the StepPointMCs. More correct implementation
+    // should look for product ids in DPIndexVectorCollection, rather than 
+    // use producer name directly ("g4run"). 
+
+    edm::Handle<StepPointMCCollection> mchitsHandle;
+    evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
+    StepPointMCCollection const* mchits = mchitsHandle.product();
+
+    if (!(hits->size() == hits_truth->size() &&
+          hits_mcptr->size() == hits->size() ) ) {
+      throw cms::Exception("RANGE")
+        << "Strawhits: " << hits->size() 
+        << " MCTruthStrawHits: " << hits_truth->size() 
+        << " MCPtr: " << hits_mcptr->size(); 
+    }
+
+    // Get handles to the generated and simulated particles.
+    edm::Handle<ToyGenParticleCollection> genParticles;
+    evt.getByType(genParticles);
+
+    edm::Handle<SimParticleCollection> simParticles;
+    evt.getByType(simParticles);
+
+    // Handle to information about G4 physical volumes.
+    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    evt.getRun().getByType(volumes);
+
+    // Some files might not have the SimParticle and volume information.
+    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+
+    // Other files might have empty collections.
+    if ( haveSimPart ){
+      haveSimPart = !(simParticles->empty() || volumes->empty());
+    }
+
+    size_t nStrawPerEvent = hits->size();
+    if (nStrawPerEvent > 0) {
+      _hStrawEvt->Fill(nStrawPerEvent);
+      _hStrawEvtZ1->Fill(nStrawPerEvent);
+      _hStrawEvtZ2->Fill(nStrawPerEvent);
+    }
+
+    for (size_t i=0; i<nStrawPerEvent; ++i) {
+      
+      // Access data
+      StrawHit        const&      hit(hits->at(i));
+      StrawHitMCTruth const&    truth(hits_truth->at(i));
+      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+
+      double hitEnergy = hit.energyDep();
+
+      //Skip the straw if the energy of the hit is smaller than the minimum required
+      if (hitEnergy < _minimumEnergy) continue;
+
+      //Get hit straw
+      StrawIndex si = hit.strawIndex();
+      const Straw & str = tracker.getStraw(si);
+      const Cell & cell = static_cast<const Cell&>( str );
+
+
+      // cout << "Getting informations about cells" << endl;
+
+      int sid = cell.Id().getCell();
+      int lid = cell.Id().getLayer();
+      int did = cell.Id().getLayerId().getSuperLayer();
+      
+      const CLHEP::Hep3Vector stMidPoint3 = str.getMidPoint();
+
+      //time of the hit
+      double hitTime = hit.time(); 
+
+      //direction of the straw
+      const CLHEP::Hep3Vector stDirection3 = str.getDirection();
+
+      // cout << "Reading MCtruth info" << endl;
+
+      // Get MC truth data
+      double driftTime = truth.driftTime();
+      double driftDistance = truth.driftDistance();
+
+      //Position along the wire using mctruth info
+      double vMC = truth.distanceToMid();
+
+      const CLHEP::Hep3Vector MCHitPoint = stMidPoint3 + (vMC/stDirection3.mag())*stDirection3;
+
+      size_t nHitsPerStraw = mcptr.size();
+      _hHitMult->Fill(nHitsPerStraw);
+
+      //  cout << "Filling ntupla" << endl;
+
+      float tntpArray[34];
+      int idx(0);
+      tntpArray[idx++] = evt.id().event();
+      tntpArray[idx++] = evt.run();
+      tntpArray[idx++] = hitTime;
+      tntpArray[idx++] = hitEnergy;
+      tntpArray[idx++] = lid;
+      tntpArray[idx++] = did;
+      tntpArray[idx++] = sid;
+      tntpArray[idx++] = MCHitPoint.getX();
+      tntpArray[idx++] = MCHitPoint.getY();
+      tntpArray[idx++] = vMC;
+
+
+      //Get related G4 hits to identify the track. 
+
+      // cout << "Tracks info" << endl;
+
+
+      //Map of track id as key, and vector index as value
+      map<SimParticleCollection::key_type , size_t > StrawTracksMap;
+
+      //Vectors of pdgId and GenId of the tracks associated to the strawhit
+      vector<int>     PdgIdTracks;
+      vector<bool>    IsGenerated;
+
+      //List of trackId and energy deposition
+      PairList TracksEDep;
+
+      //common index for vectors
+      size_t trackIdx(0);      
+
+      for (size_t j = 0; j < mcptr.size(); ++j) {
+        
+        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+        
+        // The simulated particle that made this hit.
+        SimParticleCollection::key_type trackId(mchit.trackId());
+
+        //Find in the map if the track is already stored
+        map<SimParticleCollection::key_type , size_t >::iterator it;
+        it = StrawTracksMap.find(trackId);
+
+        //if the contributing track id does not exist in the map
+        //add an element to the map itself, energy to the list and pdgId and genId to the vectors
+        if (it==StrawTracksMap.end()) {
+          
+          //insert track id in the trackId vector
+          StrawTracksMap.insert(pair<SimParticleCollection::key_type, size_t>(trackId,trackIdx));
+          
+          //insert trackId, and energy deposition in the list     
+          TracksEDep.push_back(pair<SimParticleCollection::key_type, double>(trackId,mchit.eDep()));
+          
+          if ( haveSimPart ){
+            SimParticle const& sim = simParticles->at(trackId);
+           
+            // PDG Particle Id of the sim particle that made this hit.
+            PdgIdTracks.push_back(sim.pdgId()); 
+            IsGenerated.push_back(sim.fromGenerator());
+
+          } else if ( !haveSimPart) {
+            PdgIdTracks.push_back(0);
+            IsGenerated.push_back(false);
+          }
+
+          //increment index
+          trackIdx++;
+        } else if (it != StrawTracksMap.end()) {          
+          for (PairList::iterator it2 = TracksEDep.begin(); it2 != TracksEDep.end(); ++it2) {
+            if (it2->first == trackId) {
+              it2->second += mchit.eDep();
+            }
+          }
+        }
+      }
+    
+      TracksEDep.sort(SortByEnergy);      
+      
+      int nTrkPerStraw = TracksEDep.size();
+      
+      if (nTrkPerStraw > 3) {
+        if (_diagLevel > 0) {
+          cout << "More than 3 different tracks contribute to the straw:"
+               << "\nonly the first three with higher e deposit will be stored" << endl;
+        }
+      }
+
+      tntpArray[idx++] = nTrkPerStraw;
+      int counter = 0;
+
+      for (PairList::reverse_iterator it = TracksEDep.rbegin();
+           it != TracksEDep.rend(); ++it) {
+        if (counter == 3) break;        
+        
+        size_t vec_idx = StrawTracksMap[it->first];
+
+        tntpArray[idx++] = it->first.asInt();
+        tntpArray[idx++] = PdgIdTracks[vec_idx];
+        tntpArray[idx++] = it->second;
+        tntpArray[idx++] = IsGenerated[vec_idx];
+        counter++;
+      }
+    
+      
+      //Fill with 0 the rest of the ntupla leaves 
+      //if there are less than 3 tracks contributing
+      //to the straw hit
+      
+      for (int add_idx = 0; add_idx < 3 - counter; ++add_idx) {
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+      }
+
+      size_t ngen = genParticles->size();
+      if (ngen>1) {
+        cout << "The plugin is supposed to analyze single background rates,"
+             << "with one generated particle per event"
+             << "\nThis event has more than one genparticle. Only the "
+             << "first one will be stored" << endl;  
+      }
+      if (ngen > 0) {
+        ToyGenParticle const& gen = genParticles->at(0);
+        tntpArray[idx++] = gen.generatorId().Id();
+        tntpArray[idx++] = gen.momentum().vect().mag();
+        tntpArray[idx++] = gen.momentum().e();
+        tntpArray[idx++] = gen.position().x();
+        tntpArray[idx++] = gen.position().y();
+        tntpArray[idx++] = gen.position().z();
+        tntpArray[idx++] = gen.momentum().cosTheta();
+        tntpArray[idx++] = gen.momentum().phi();
+        tntpArray[idx++] = gen.time();
+      } else if ( ngen == 0 ) {
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+      }
+      
+      tntpArray[idx++] = driftTime;
+      tntpArray[idx++] = driftDistance;
+      
+      _tNtup->Fill(tntpArray);
+      
+    } //end of Cellhits loop
+  
+  } // end of doITracker
 
   void BkgRates::doCalorimeter(edm::Event const& evt) {
 
