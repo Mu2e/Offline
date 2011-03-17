@@ -1,20 +1,24 @@
-//=============================================================================================================
+//=============================================================================
 //
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 // Uses three methods to reconstruct the track helix of a conversion electron: 
-// * use single straws associated to Simparticle., use deltat to form 3D reconstructed points
-// * use intersection of Pseudo straws and use stereo information to form 3D reconstructed points
-// * form pseudo straws from clusters in a panel. Use the combined information to form 3D reconstructed points
-// For all three cases estimate Pt,Pz of the conversion electron by performing a simple circle/sinus fit.  
+// * use single straws associated to Simparticle., use deltat to form 3D 
+//   reconstructed points
+// * use intersection of Pseudo straws and use stereo information to form 
+//   3D reconstructed points
+// * form pseudo straws from clusters in a panel. Use the combined information 
+//   to form 3D reconstructed points
+// For all three cases estimate Pt,Pz of the conversion electron by performing
+// a simple circle/sinus fit.  
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.13 2011/03/11 23:52:27 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.14 2011/03/17 19:51:09 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/03/11 23:52:27 $
+// $Date: 2011/03/17 19:51:09 $
 //
 // Original author: Hans Wenzel
 //
-//=============================================================================================================
+//=============================================================================
 // C++ includes
 #include <iostream>
 #include <string>
@@ -67,6 +71,7 @@
 #include "ToyDP/inc/ToyGenParticle.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/GenId.hh"
+#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 
 using namespace std;
 
@@ -74,7 +79,6 @@ namespace mu2e {;
   enum PrintLevel { quiet  =-1,
 		    normal = 0,
 		    verbose= 1};
-  enum IntersectResult { PARALLEL, COINCIDENT, NOT_INTERSECTING, INTERSECTING };
   Double_t Radius;  
   Double_t curv;
   Double_t zstep;
@@ -98,51 +102,6 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    }
 }
 
-  
-  class LineSegment
-  {
-  private:
-    CLHEP::Hep2Vector begin_;
-    CLHEP::Hep2Vector end_;
-  public:
-    LineSegment(const CLHEP::Hep2Vector& begin, const CLHEP::Hep2Vector& end)
-      : begin_(begin), end_(end) {}
-    enum IntersectResult { PARALLEL, COINCIDENT, NOT_INTERSECTING, INTERSECTING };
-    
-    IntersectResult Intersect(const LineSegment& other_line, CLHEP::Hep2Vector& intersection)
-    {
-      float denom = ((other_line.end_.y() - other_line.begin_.y())*(end_.x() - begin_.x())) -
-	((other_line.end_.x() - other_line.begin_.x())*(end_.y() - begin_.y()));
-      
-      float nume_a = ((other_line.end_.x() - other_line.begin_.x())*(begin_.y() - other_line.begin_.y())) -
-	((other_line.end_.y() - other_line.begin_.y())*(begin_.x() - other_line.begin_.x()));
-      
-      float nume_b = ((end_.x() - begin_.x())*(begin_.y() - other_line.begin_.y())) -
-	((end_.y() - begin_.y())*(begin_.x() - other_line.begin_.x()));
-      
-      if(denom == 0.0f)
-	{
-	  if(nume_a == 0.0f && nume_b == 0.0f)
-	    {
-	      return COINCIDENT;
-	    }
-	  return PARALLEL;
-	}
-      
-      float ua = nume_a / denom;
-      float ub = nume_b / denom;
-      
-      if(ua >= 0.0f && ua <= 1.0f && ub >= 0.0f && ub <= 1.0f)
-	{
-	  // Get the intersection point.
-	  intersection =CLHEP::Hep2Vector(begin_.x() + ua*(end_.x() - begin_.x()),begin_.y() + ua*(end_.y() - begin_.y()));
-	  return INTERSECTING;
-	}
-      
-      return NOT_INTERSECTING;
-    }
-  };
- 
  class pstraw{
    //
    // pseudo straw class 
@@ -819,21 +778,21 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		      CLHEP::Hep2Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry); 
 		    const CLHEP::Hep2Vector p3 = 
 		      CLHEP::Hep2Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry); 
-		    LineSegment linesegment0(p0, p1);
-		    LineSegment linesegment1(p2, p3);
+		    LineSegmentPCA linesegment0(p0, p1);
+		    LineSegmentPCA linesegment1(p2, p3);
 		    CLHEP::Hep2Vector intersection;
 		    switch(linesegment0.Intersect(linesegment1, intersection))
 		      {
-		      case PARALLEL:
+		      case LineSegmentPCA::PARALLEL:
 			//std::cout << "The lines are parallel\n\n";
 			break;
-		      case COINCIDENT:
+		      case LineSegmentPCA::COINCIDENT:
 			//std::cout << "The lines are coincident\n\n";
 			break;
-		      case NOT_INTERSECTING:
+		      case LineSegmentPCA::NOT_INTERSECTING:
 			//std::cout << "The lines do not intersect\n\n";
 			break;
-		      case INTERSECTING:
+		      case LineSegmentPCA::INTERSECTING:
 			X.push_back(intersection.x());
 			Y.push_back(intersection.y());
 			Z.push_back(0.5*(junk.mpz+pjunk.mpz));
