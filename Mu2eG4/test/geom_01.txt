@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.74 2011/03/16 15:26:53 wasiko Exp $
-// $Author: wasiko $
-// $Date: 2011/03/16 15:26:53 $
+// $Id: geom_01.txt,v 1.75 2011/03/17 16:21:17 genser Exp $
+// $Author: genser $
+// $Date: 2011/03/17 16:21:17 $
 //
 // Original author Rob Kutschke
 //
@@ -355,10 +355,10 @@ int            crs.scintillatorLayersPerModule              = 3;
 int            crs.scintillatorBarsPerFullLayer             = 20;
 vector<double> crs.scintillatorBarHalfLengths               = { 5.,  2475., 50.}; 
 string         crs.scintillatorBarMaterialName              = "G4_POLYSTYRENE";
-double         crs.scintillatorLayerShift                   = 25.0; 
+double         crs.scintillatorLayerShift                   = 25.0;
 double         crs.scintillatorLayerGap                     = 0.0;
 double         crs.scintillatorBarPigmentationHalfThickness = 0.125; // not used for now
-string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXIDE";  // check
+string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXIDE"; 
 vector<double> crs.scintillatorModuleOuterSheetHalfLengths  = { 0.8, 2475., 1045.}; // 0.063"=1.6mm;
 string         crs.scintillatorModuleOuterSheetMaterial     = "G4_Al";
 string         crs.scintillatorModuleInterLayerSheetMaterialName  = "G4_POLYSTYRENE";
@@ -369,22 +369,22 @@ double         crs.wallUnistrutHalfThickness                = 28.;  // (154 - 41
 double         crs.scintillatorOverlap                      = 100.; // fig 11.5 
 
 // full, half modules, more specific numbers TBD
-vector<int>    crs.shieldR_NumberOfModules  = { 8,  0};
+vector<int>    crs.shieldR_NumberOfModules  = { 9,  1};
 vector<int>    crs.shieldL_NumberOfModules  = { 8,  0};
 vector<int>    crs.shieldD_NumberOfModules  = { 2,  1};
 vector<int>    crs.shieldU_NumberOfModules  = { 3,  1};
-vector<int>    crs.shieldT_NumberOfModules  = { 8,  0};
-vector<int>    crs.shieldB_NumberOfModules  = { 8,  0};
+vector<int>    crs.shieldT_NumberOfModules  = { 9,  1};
+vector<int>    crs.shieldB_NumberOfModules  = { 9,  1};
 vector<int>    crs.shieldTS_NumberOfModules = { 2,  6};
 
 // additional relative offsets wrt the center of the shields
 
-vector<double> crs.shieldR_Offset  = {   0., 75., 0.};
+vector<double> crs.shieldR_Offset  = {   0., 75., 1450.};
 vector<double> crs.shieldL_Offset  = {   0., 75., 0.};
-vector<double> crs.shieldD_Offset  = { 720.,  0., 0.};
-vector<double> crs.shieldU_Offset  = {   0.,  0., 0.};
-vector<double> crs.shieldT_Offset  = {   0., 75., 0.};
-vector<double> crs.shieldB_Offset  = {   0., 75., 0.};
+vector<double> crs.shieldD_Offset  = { 607.,  0., 0.};
+vector<double> crs.shieldU_Offset  = {3508.,  0.,  925.};
+vector<double> crs.shieldT_Offset  = {   0., 75., 1450.};
+vector<double> crs.shieldB_Offset  = {   0., 75., 1450.};
 vector<double> crs.shieldTS_Offset = {   0.,  0., 0.};
 
 bool   crs.vetoVisible    = true;
