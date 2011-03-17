@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.1 2011/03/09 19:21:42 genser Exp $
+// $Id: CRSScintillatorBar.hh,v 1.2 2011/03/17 16:16:52 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/03/09 19:21:42 $
+// $Date: 2011/03/17 16:16:52 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -41,7 +41,6 @@ namespace mu2e {
                        CRSScintillatorBarIndex const & index
                        );
   
-    // Constructor using bar normal unit vector.
     CRSScintillatorBar(
                        CRSScintillatorBarId    const & id,
                        CRSScintillatorBarIndex const & index,
@@ -58,9 +57,6 @@ namespace mu2e {
     // Formatted string embedding the id of the ScintillatorBar.
     std::string name( std::string const & base ) const;
   
-    // Compiler generated copy and assignment constructors
-    // should be OK.
-
     CLHEP::Hep3Vector const & getLocalOffset() const {return _localOffset;}
 
     std::vector<double> const & getGlobalRotationAngles() const { return _globalRotationAngles;}
@@ -104,12 +100,13 @@ namespace mu2e {
 	return false;
       }
    }
- protected:
+
+  private:
 
     // Identifier
     CRSScintillatorBarId _id;
 
-    // Index into the array of all ScintillatorBars.
+    // Index into the container of all ScintillatorBars.
     CRSScintillatorBarIndex _index;
 
     // Mid-point of the ScintillatorBar, a.k.a. localOffset
@@ -118,16 +115,16 @@ namespace mu2e {
     std::vector<double> _globalRotationAngles;
     // we may do rotation instead
 
-    // Mid-point of the ScintillatorBar, in another ref frame (initially Mu2e)
+    // Mid-point of the ScintillatorBar, in Mu2e
     CLHEP::Hep3Vector _globalOffset;
 
-    // Detailed description of a straw.
+    // Detailed description of a bar
     mutable const CRSScintillatorBarDetail* _detail;
     // not needed for one detail int32_t _detailIndex;
 
-    // Nearest neighbours.// not filled out yet
-    std::vector<CRSScintillatorBarId>    _nearestById;
-    std::vector<CRSScintillatorBarIndex> _nearestByIndex; 
+    //     Nearest neighbours.// not filled out yet
+    //     std::vector<CRSScintillatorBarId>    _nearestById;
+    //     std::vector<CRSScintillatorBarIndex> _nearestByIndex; 
 
   };
 
