@@ -3,9 +3,23 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.9 2011/03/17 16:30:20 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2011/03/17 16:30:20 $
+  $Id: v0_3_4.txt,v 1.10 2011/03/17 18:16:00 genser Exp $
+  $Author: genser $
+  $Date: 2011/03/17 18:16:00 $
+
+
+08) March 17, 2011 genser 
+     Added CRV U shield; extended shields R,T,B; modified shield's
+     offsets; updated comments; made data private in
+     CRSScintillatorBar, Layer, Module; 
+     in constructCRV.cc: factored out code from the shield loop;
+     changed color of the scintillator bars;
+       CosmicRayShieldGeom/inc/CRSScintillatorBar.hh
+       CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh
+       CosmicRayShieldGeom/inc/CRSScintillatorModule.hh
+       CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
+       Mu2eG4/src/constructCRV.cc
+       Mu2eG4/test/geom_01.txt
 
 07) March 17, 2011 onoratog
     The BkgRates_plugin now supports also the ITracker. 
