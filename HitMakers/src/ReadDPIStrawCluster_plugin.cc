@@ -12,9 +12,9 @@
 // For all three cases estimate Pt,Pz of the conversion electron by performing
 // a simple circle/sinus fit.  
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.14 2011/03/17 19:51:09 wenzel Exp $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.15 2011/03/17 22:03:04 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/03/17 19:51:09 $
+// $Date: 2011/03/17 22:03:04 $
 //
 // Original author: Hans Wenzel
 //
@@ -82,6 +82,7 @@ namespace mu2e {;
   Double_t Radius;  
   Double_t curv;
   Double_t zstep;
+  bool magset(false);
   TGraph *gr2;
   TGraphErrors *error;
 void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
@@ -101,7 +102,19 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       f += (dr*dr)/(0.25*ex[i]*ex[i]);
    }
 }
-
+void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
+   //minimisation function computing the sum of squares of residuals
+   Int_t np = error->GetN();
+   f = 0;
+   Double_t *x = error->GetX();
+   Double_t *y = error->GetY();
+   Double_t *ex = error->GetEX();
+   Double_t *ey = error->GetEY();
+   for (Int_t i=0;i<np;i++) {
+     double_t dr = y[i] - (par[0]+par[1]*TMath::Sin(par[2]*x[i]-par[3]));
+     f += (dr*dr)/(ey[i]*ey[i]);
+   }
+}
  class pstraw{
    //
    // pseudo straw class 
@@ -233,7 +246,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     void analyze( edm::Event const& e, edm::EventSetup const&);
     void FitCircle(vector<double> X,vector<double> Y);
     void FitSinus( vector<double> R,vector<double> Z);
-
+    void FitSinus2( vector<double> R,vector<double> Z);
   private:
  
     // Diagnostics level.
@@ -322,7 +335,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Double_t P_outval_si;
     //
     CLHEP::Hep3Vector B;
+    Double_t Bmagnet; 
    };
+
   
   void ReadDPIStrawCluster::beginJob(edm::EventSetup const& ){
     cout << "Diaglevel: " 
@@ -405,16 +420,21 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     // Note there are some issues with the magnetic field units 
     // that's why the two methods yield different results.
     // 
-    GeomHandle<BFieldManager> bfMgr;
-    B= bfMgr->getDSUniformValue(); 
-    cout << " B-field (getDSUniformValue()):  " <<B<<endl;
+    if (!magset)
+      {
+	GeomHandle<BFieldManager> bfMgr;
+	B= bfMgr->getDSUniformValue(); 
+	cout << " B-field (getDSUniformValue()):  " <<B<<endl;
+	Bmagnet=B.getZ(); 
+	magset=true;
+      }
     //
     // Position of the center of the tracker in mu2e coordinates.
     //
-    CLHEP::Hep2Vector tt =CLHEP::Hep2Vector( 0.0, 10200.);
-    CLHEP::Hep3Vector point =CLHEP::Hep3Vector( -3904, 0.0, 10200.);
-    CLHEP::Hep3Vector bf = bfMgr->getBField(point); 
-    cout << " B-field: (getBField(center of tracker)) " <<bf<<endl;
+    //CLHEP::Hep2Vector tt =CLHEP::Hep2Vector( 0.0, 10200.);
+    //CLHEP::Hep3Vector point =CLHEP::Hep3Vector( -3904, 0.0, 10200.);
+    //CLHEP::Hep3Vector bf = bfMgr->getBField(point); 
+    //cout << " B-field: (getBField(center of tracker)) " <<bf<<endl;
     static int ncalls(0);
     ++ncalls;
     StrawId nsid;
@@ -566,7 +586,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
  		nt[PGENZ]=genpar.momentum().getZ() ;
 
 		foundcele=true;
-		cout << "SimParticle associated to conversion electron: "
+		/*		cout << "SimParticle associated to conversion electron: "
 		     << " Event: " << evt.id().event()
 		     << " Track: " << i->first 
 		     << " PdgId: " << simInfo.simParticle().pdgId() 
@@ -575,6 +595,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		     << " CC:   "  << simInfo.simParticle().creationCode() 
 		     << " GI:   "  << simInfo.simParticle().generatorIndex() 
 		     << endl;
+		*/
 		//		cout << "Polar: "<<simInfo.simParticle().startMomentum().vect().getTheta ()<<endl;
 		StepPointMC const& fstep =simInfo.firstStepPointMCinTracker();
 		StepPointMC const& lstep =simInfo.lastStepPointMCinTracker();
@@ -625,7 +646,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 			}
 		      else 
 			{
-			  cout << "delta: " << step.momentum().mag()<<endl;
+			  //			  cout << "delta: " << step.momentum().mag()<<endl;
 			}
 		    }
 		  }                                             // end loop over associated Hits
@@ -674,26 +695,28 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		_R_rec_s->Fill(R_rec);
 		_chi2_s -> Fill(chi2) ;
 		
-		Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
+		//		Double_t Bmagnet=B.getZ();   // magnetic field 
 		Double_t Const=1.49898e-4;
-		cout << "Pt_inval:  "<< Pt_inval_si
-		     << "  Radius:  "<< Radius
-		     << "  curv:    "<< curv
-		     << "  R_rec:  " << R_rec <<endl;
-		Pt =1000.*R_rec*0.1 * 2. * Bmagnet* Const;
+		//		cout << "Pt_inval:  "<< Pt_inval_si
+		//     << "  Radius:  "<< Radius
+		//     << "  curv:    "<< curv
+		//     << "  R_rec:  " << R_rec <<endl;
+		Pt =1000.*R_rec  * 2. * Bmagnet* Const;
 		_Pt_rec_s->Fill(Pt);
 		_Pt_diff_s->Fill(Pt-Pt_inval_si);
-		FitSinus(R_straw, Z_straw);
+		FitSinus2(R_straw, Z_straw);
 		_Pz_rec_s->Fill(Pz);
 		_Pz_diff_s->Fill(Pz-P_in_si.z());
 		Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
 		_P_rec_s->Fill(Ptot);
 		_P_diff_s->Fill(Ptot-P_inval_si);
-		
+		//cout<<"Sinus:  " << Pz<<endl;
 		nt[NSTRAWS]= X_straw.size();
 		nt[RREC_S] = R_rec;
 		nt[PTREC_S]= Pt;
 		nt[PREC_SZ]= Pz;
+		//FitSinus2(Z_straw, R_straw);
+		//cout<<"Sinus2: " << Pz<<endl;
 	      }
 	}
       }           // end loop over simparticles 
@@ -824,17 +847,17 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	_R_rec->Fill(R_rec);
 	_chi2 -> Fill(chi2) ;
 
-	Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
+	//	Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
 	Double_t Const=1.49898e-4;
-	cout << "Pt_inval:  "<< Pt_inval_si
-	     << "  Radius:  "<< Radius
-	     << "  curv:    "<< curv
-             << "  zstep:   "<< zstep 
-             << "  R_rec:  " << R_rec <<endl;
-	Pt =1000.*R_rec*0.1 * 2. * Bmagnet* Const;
+	//	cout << "Pt_inval:  "<< Pt_inval_si
+	//     << "  Radius:  "<< Radius
+	//    << "  curv:    "<< curv
+        //     << "  zstep:   "<< zstep 
+        //     << "  R_rec:  " << R_rec <<endl;
+	Pt =1000.*R_rec * 2. * Bmagnet* Const;
 	_Pt_rec->Fill(Pt);
 	_Pt_diff->Fill(Pt-Pt_inval_si);
-	FitSinus(R, Z);
+	FitSinus2(R, Z);
 	_Pz_rec->Fill(Pz);
 	_Pz_diff->Fill(Pz-P_in_si.z());
 	Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
@@ -898,17 +921,17 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	_R_rec_c->Fill(R_rec);
 	_chi2_c -> Fill(chi2) ;
 	
-	double Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
+	//	double Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework) 
 	double Const=1.49898e-4;
-	cout << "Pt_inval:  "<< Pt_inval_si
-	     << "  Radius:  "<< Radius
-	     << "  curv:    "<< curv
-             << "  zstep:   "<< zstep 
-             << "  R_rec:  " << R_rec <<endl;
-	Pt =1000.*R_rec*0.1 * 2. * Bmagnet* Const;
+	//cout << "Pt_inval:  "<< Pt_inval_si
+	//     << "  Radius:  "<< Radius
+	//     << "  curv:    "<< curv
+        //     << "  zstep:   "<< zstep 
+        //     << "  R_rec:  " << R_rec <<endl;
+	Pt =1000.*R_rec * 2. * Bmagnet* Const;
 	_Pt_rec_c->Fill(Pt);
 	_Pt_diff_c->Fill(Pt-Pt_inval_si);
-	FitSinus(R_cluster, Z_cluster);
+	FitSinus2(R_cluster, Z_cluster);
 	_Pz_rec_c->Fill(Pz);
 	_Pz_diff_c->Fill(Pz-P_in_si.z());
 	double Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
@@ -972,11 +995,11 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       gmMinuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
     }
     int result=gmMinuit->Migrad();
-    cout << " Result: "<< result <<endl;
+    //cout << " Result: "<< result <<endl;
     bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
     if (!converged) 
       {
-	cout <<"-----------fit didn't converge---------------------------" <<endl;
+	cout <<"-----------Circle fit didn't converge---------------------------" <<endl;
 	return;
       }
     for (int i = 0;i<3;i++) {
@@ -988,6 +1011,53 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Double_t  edm, errdef; 
     Int_t nvpar, nparx,istat;
     gmMinuit->mnstat(chi2,edm,errdef,nvpar,nparx,istat);
+
+  }
+  void ReadDPIStrawCluster::FitSinus2(    vector<double> X,vector<double> Y)
+  {
+    Int_t n = X.size();
+    Double_t x[n];
+    Double_t y[n];
+    Double_t ex[n] ; Double_t ey[n] ;
+    for ( size_t i=0; i<X.size(); ++i ) {
+      x[i]=X[i];
+      y[i]=Y[i];
+      ex[i] = 5.0 ; 
+      ey[i] = 5.0 ;
+    }
+    error = new TGraphErrors(n,x,y,ex,ey);
+    TMinuit *gmMinuit2 = new TMinuit(4); 
+    gmMinuit2->SetPrintLevel(quiet);
+    gmMinuit2->SetFCN(myfcn2);
+    const int dim(4);
+    const char par_name[dim][20]={"offset","radius","frequency","phase"};
+    static Double_t step[dim] = {0.001,0.001,0.001,0.001};
+    Double_t offset =  TMath::Sqrt(x0*x0+y0*y0);
+    Double_t radius= R_rec;
+    Double_t sfpar[dim]={offset,radius,0.005,0.1};
+    Double_t errsfpar[dim]={0.0,0.0,0.0,0.0};
+    int ierflg = 0;
+    for (int ii = 0; ii<dim; ii++) {    
+      gmMinuit2->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
+    }
+    gmMinuit2->FixParameter(0);
+    gmMinuit2->FixParameter(1);
+    int result=gmMinuit2->Migrad();
+    //cout << " Result: "<< result <<endl;
+    bool converged = gmMinuit2->fCstatu.Contains("CONVERGED");
+    if (!converged) 
+      {
+	cout <<"-----------Sin fit didn't converge---------------------------" <<endl;
+	return;
+      }
+    for (int i = 0;i<dim;i++) {
+     gmMinuit2->GetParameter(i,sfpar[i],errsfpar[i]);
+    } 
+    Double_t p2 = sfpar[2];
+    Pz = 10./(33.36*p2);
+    Double_t  edm, errdef; 
+    Int_t nvpar, nparx,istat;
+    gmMinuit2->mnstat(chi2,edm,errdef,nvpar,nparx,istat);
 
   }
 }
