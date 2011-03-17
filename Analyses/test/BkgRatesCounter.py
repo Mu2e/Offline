@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.py,v 1.3 2011/03/17 14:10:38 onoratog Exp $
+# $Id: BkgRatesCounter.py,v 1.4 2011/03/17 16:29:03 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/03/17 14:10:38 $
+# $Date: 2011/03/17 16:29:03 $
 #
 # Original author Gianni Onorato.
 #
@@ -86,24 +86,16 @@ process.g4run = mu2e.EDProducer(
     seed=mu2e.untracked.vint32(9877)
     )
 
-# Form StrawHits (SH). For T-Tracker. Comment if you use I-Tracker
+# Form StrawHits (SH). 
 process.makeTH = mu2e.EDProducer(
     "MakeStrawHit",
+    # uncomment line below for ITracker, and comment line above.
+    # "MakeDriftCellHit",
     g4ModuleLabel = mu2e.string("g4run"),
     seed=mu2e.untracked.vint32(7790),
     diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)
 )
-
-# Form CellHits (CH). For I-Tracker. Comment if you use T-Tracker
-#process.makeTH = mu2e.EDProducer(
-#    "MakeDriftCellHit",
-#    g4ModuleLabel = mu2e.string("g4run"),
-#    seed=mu2e.untracked.vint32(7790),
-#    diagLevel    = mu2e.untracked.int32(0),
-#    maxFullPrint = mu2e.untracked.int32(5)
-#)
-
 
 # Form CaloCrystalHits
 process.CaloCrystalHitsMaker =  mu2e.EDProducer(
@@ -141,9 +133,6 @@ process.CountRates = mu2e.EDAnalyzer(
 #   diagLevel            = mu2e.untracked.int32(0),
     makerModuleLabel = mu2e.string("makeTH"),
     maxFullPrint = mu2e.untracked.int32(50),
-#    trackerVersion = mu2e.untracked.string("TTracker")
-#   uncomment for I-Tracker
-    trackerVersion = mu2e.untracked.string("ITracker") 
 #   g4ModuleLabel        = mu2e.string("g4run"),
 #   minimumEnergy        = mu2e.double(0.001),
 )

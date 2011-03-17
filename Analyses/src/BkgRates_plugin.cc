@@ -47,6 +47,7 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "Mu2eUtilities/inc/MCCaloUtilities.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 using namespace std;
 
@@ -60,7 +61,6 @@ namespace mu2e {
       _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
       _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
-      _trackerVersion(pset.getUntrackedParameter<string>("trackerVersion","TTracker")),
       _nAnalyzed(0),
       _hHitMult(0),
       _hStrawEvt(0),
@@ -109,8 +109,6 @@ namespace mu2e {
     std::string _makerModuleLabel;
 
     double _minimumEnergy; //minimum energy deposition of hits
-
-    std::string _trackerVersion;
 
     //number of analyzed events
     int _nAnalyzed;
@@ -184,17 +182,6 @@ namespace mu2e {
     _hCryEvtZ1      = tfs->make<TH1F>( "hCryEvtZ1",   "Multiplicity of Crystal per event zoom1", 100,    0.,  500.);
     _hCryEvtZ2      = tfs->make<TH1F>( "hCryEvtZ2",   "Multiplicity of Crystal per event zoom2",  50,    0.,   50.);
 
-    if (_trackerVersion == "TTracker") {
-      _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                          "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
-    }
-    if(_trackerVersion == "ITracker") {
-      _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
-                                          "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
-    }
-    _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
-                                        "evt:run:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
-
     for (int i=0; i<_nDevices; ++i) {
       stringstream name, descr;
       name << "hRateDev" << i;
@@ -227,16 +214,34 @@ namespace mu2e {
     //*****test code******
         static int ncalls(0);
     ++ncalls;
+    
+    edm::Service<GeometryService> geom;
+    
     if (ncalls == 1) {
-      // cout << "This should be done only in the first event" << endl;
-    }
 
-    if (_trackerVersion == "ITracker") {
-      cout << "ITracker selected" << endl;
+      // cout << "This should be done only in the first event" << endl;
+      
+      
+      edm::Service<edm::TFileService> tfs;
+      
+      if (geom->hasElement<TTracker>()) {
+        _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
+                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+      } else if(geom->hasElement<ITracker>()) {
+        _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
+                                            "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+      }
+      _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
+                                          "evt:run:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
+      
+    }
+    
+    if (geom->hasElement<ITracker>()) {
+      //      cout << "ITracker selected" << endl;
       doITracker(evt);
     } 
-    if (_trackerVersion == "TTracker") {
-      cout << "TTracker selected" << endl;
+    if (geom->hasElement<TTracker>()) {
+      //      cout << "TTracker selected" << endl;
       doTracker(evt);
     }
     doCalorimeter(evt);
