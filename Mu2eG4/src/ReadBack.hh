@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.17 2011/03/09 19:51:14 genser Exp $
+// $Id: ReadBack.hh,v 1.18 2011/03/18 16:19:34 genser Exp $
 // $Author: genser $
-// $Date: 2011/03/09 19:51:14 $
+// $Date: 2011/03/18 16:19:34 $
 //
 // Original author Rob Kutschke
 //
@@ -116,13 +116,15 @@ namespace mu2e {
     TH1F* _hTargetNfoils;
     TH2F* _hTargetNfoils2D;
 
-    TNtuple* _ntupCRV;
-
     TNtuple* _ntup;
     TGraph*  _xyHits;
 
     // Need to keep track of TGraph entries by hand.
     int _xyHitCount;
+
+    // CRV
+    TH1F*    _hCRVMultiplicity;
+    TNtuple* _ntupCRV;
 
     int _nBadG4Status;
 

@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.36 2011/03/10 22:03:05 genser Exp $
+// $Id: ReadBack.cc,v 1.37 2011/03/18 16:19:34 genser Exp $
 // $Author: genser $
-// $Date: 2011/03/10 22:03:05 $
+// $Date: 2011/03/18 16:19:34 $
 //
 // Original author Rob Kutschke
 //
@@ -114,12 +114,14 @@ namespace mu2e {
     _hTargetPathLength(0),
     _hTargetNfoils(0),
     _hTargetNfoils2D(0),
-    _ntupCRV(0),
     _ntup(0),
     _xyHits(0),
-
-    // Remaining member data
     _xyHitCount(0),
+    // CRV
+    _hCRVMultiplicity(0),
+    _ntupCRV(0),
+    //
+    // Remaining member data
     _nBadG4Status(0){
   }
   
@@ -202,13 +204,9 @@ namespace mu2e {
 					"Number of stopping target foils vs foil of origin", 
 					20, 0., 20., 20, 0, 20. );
 
-    // Create an ntuple.
-    _ntup           = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
+    // Create tracker ntuple.
+    _ntup = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
                                           "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
-
-    // Create CRV ntuple.
-    _ntupCRV        = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple", 
-                                          "evt:trk:sid:hx:hy:hz:bx:by:bz:dx:dy:dz:lx:ly:lz:time:shld:mod:lay:pdgId:genId:edep:p:step");
 
     // Create a TGraph; 
     // - Syntax to set name and title is weird; that's just root.
@@ -217,6 +215,14 @@ namespace mu2e {
     _xyHits->SetName("xyHits");
     _xyHits->SetTitle("Y vs X for StepPointMC");
     gDirectory->Append(_xyHits);
+
+    // CRV
+
+    _hCRVMultiplicity = tfs->make<TH1F>( "hCRVMultiplicity", "CRV StepPointMC per Bar", 5000,  0.,  5000. );
+
+    // Create CRV ntuple.
+    _ntupCRV = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple", 
+                                          "evt:trk:bid:hx:hy:hz:bx:by:bz:dx:dy:dz:lx:ly:lz:time:shld:mod:lay:pdgId:genId:edep:p:step");
 
   }
 
@@ -1147,6 +1153,8 @@ namespace mu2e {
       nt[23] = hit.stepLength();
 
       _ntupCRV->Fill(nt);
+
+      _hCRVMultiplicity->Fill(hit.volumeId());
 
       // Print out limited to the first few events.
       if ( _nAnalyzed < _maxFullPrint ){
