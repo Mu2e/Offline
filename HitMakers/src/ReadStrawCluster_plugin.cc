@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_plugin.cc,v 1.3 2011/01/17 05:29:20 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/01/17 05:29:20 $
+// $Id: ReadStrawCluster_plugin.cc,v 1.4 2011/03/18 18:17:12 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/03/18 18:17:12 $
 //
 // Original author Hans Wenzel
 //
@@ -242,7 +242,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 500, 0., 500. );
     _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
     _R_rec         = tfs->make<TH1F>( "R_rec",  "reconstructed track radius", 100, 250., 350. );
-    _x0y0          = tfs->make<TH2F>( "x0y0","x0 of circle vs y0 of circle ", 500,-650.,650.,500.,-650.,650.);
+    _x0y0          = tfs->make<TH2F>( "x0y0","x0 of circle vs y0 of circle ", 500,-650.,650.,500,-650.,650.);
 
   }
   
