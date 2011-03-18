@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.3 2011/03/10 22:02:20 genser Exp $
+// $Id: CosmicRayShield.hh,v 1.4 2011/03/18 16:21:06 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/03/10 22:02:20 $
+// $Date: 2011/03/18 16:21:06 $
 //
 // Original author KLG
 //
@@ -99,7 +99,14 @@ namespace mu2e {
     // global holder of all scintillator bars
     std::vector<CRSScintillatorBar>  _allCRSScintillatorBars;
 
+    // for a future reference: 
 
+    // given that the bars, layers and modules have the same rotation
+    // angles as their shield, one could e.g. store the rotations as
+    // HepRotation in the shields or in CosmicRayShield and point to
+    // them from the lower level objects; similarly for their half
+    // lengths, one could store layer and module half lengths as "details"
+    // in CosmicRayShield and point to them from those objects
 
   };
 
