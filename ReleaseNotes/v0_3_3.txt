@@ -1,11 +1,22 @@
 
-  Still under construction
-
            Release notes for Mu2e Offline software, v0_3_3
 
-  $Id: v0_3_3.txt,v 1.29 2011/03/09 07:53:01 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2011/03/09 07:53:01 $
+  $Id: v0_3_3.txt,v 1.32 2011/03/18 13:52:31 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/03/18 13:52:31 $
+
+34) March 9, 2011 kutschke
+    TrackerGeom/inc/Straw.hh
+     - make the d'tor virtual
+    In item 30, Gianfrano make ITrackerGeom/inc/Cell.hh inherit from Straw and made some
+    of the functions of Straw virtual.  So the base class must have a virtual d'tor.
+    I added the virtual d'tor - at least for now ...
+
+    I believe that this design is a mistake.  I am not convinced that we have correctly
+    identified how to wisely use inheritance to dsscribe commonalities between the ITracker
+    and the T/LTrackers.  This looks like a shoehorned point fix and not an actual design.  I strongly
+    prefer that, until we have properly understood common behaviour, we should keep the implementations
+    of the ITracker separate from that of the other two trackers.
 
 33) March 09, 2011 ehrlich
     The event display has been part of offline software for a while, and the code was 
