@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.23 2010/11/05 19:58:33 genser Exp $
+// $Id: TTrackerMaker.cc,v 1.24 2011/03/21 22:27:18 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/05 19:58:33 $
+// $Date: 2011/03/21 22:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -77,9 +77,9 @@ namespace mu2e {
     config.getVectorString("ttracker.strawMaterials", _strawMaterials, 3);
 
     _envelopeMaterial = config.getString("ttracker.mat.vacuum");
+    _supportMaterial = config.getString("ttracker.mat.support");
     
     //string ttracker.mat.manifold  = "G4_Al";  // Placeholder.
-    //string ttracker.mat.support   = "G4_Al";  // Placeholder.
 
     // Also define some parameters that may become variable some day.
     _sectorBaseRotations.clear();
@@ -171,7 +171,7 @@ namespace mu2e {
     _tt->_supportParams = Support( _innerSupportRadius,
                                    _outerSupportRadius,
                                    _supportHalfThickness,
-                                   "CarbonFiber");
+                                   _supportMaterial);
 
     _tt->_z0                  = _zCenter;
     _tt->_envelopeInnerRadius = _envelopeInnerRadius;

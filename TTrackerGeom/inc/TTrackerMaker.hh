@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.10 2010/10/18 21:15:16 genser Exp $
+// $Id: TTrackerMaker.hh,v 1.11 2011/03/21 22:27:18 genser Exp $
 // $Author: genser $
-// $Date: 2010/10/18 21:15:16 $
+// $Date: 2011/03/21 22:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -87,6 +87,7 @@ private:
   double _wireRadius;                  // Wire radius
   double _manifoldYOffset;             // Offset of manifold from inner edge of support.
   std::string _envelopeMaterial;       // Material for the envelope volume.
+  std::string _supportMaterial;        // Material for the support volume.
 
   std::vector<double> _manifoldHalfLengths; // Dimensions of each manifold.
   std::vector<std::string> _strawMaterials; // Names of the materials.
