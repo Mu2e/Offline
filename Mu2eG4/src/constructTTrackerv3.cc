@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.15 2011/02/11 16:54:35 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.16 2011/03/21 22:28:31 genser Exp $
 // $Author: genser $
-// $Date: 2011/02/11 16:54:35 $
+// $Date: 2011/03/21 22:28:31 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -113,6 +113,8 @@ namespace mu2e{
 
     bool ttrackerDeviceEnvelopeVisible = config.getBool("ttracker.deviceEnvelopeVisible",false);
     bool ttrackerDeviceEnvelopeSolid   = config.getBool("ttracker.deviceEnvelopeSolid",true);
+    bool ttrackerSupportVisible        = config.getBool("ttracker.supportVisible",false);
+    bool ttrackerSupportSolid          = config.getBool("ttracker.supportSolid",true);
     bool ttrackerSectorEnvelopeVisible = config.getBool("ttracker.sectorEnvelopeVisible",false);
     bool ttrackerSectorEnvelopeSolid   = config.getBool("ttracker.sectorEnvelopeSolid",true);
     bool ttrackerStrawVisible          = config.getBool("ttracker.strawVisible",false);
@@ -140,6 +142,29 @@ namespace mu2e{
                                    doSurfaceCheck
                                    );
 
+
+    // we also place the support material here as well
+
+    G4Material* supportMaterial = findMaterialOrThrow(ttracker.getSupportParams().materialName);
+    TubsParams  supportParams   = ttracker.getSupportParams().getTubsParams();
+    // device origin coincides with the support origin (offset)
+
+    G4Colour  lightBlue (0.0, 0.0, 0.75);
+
+    VolumeInfo supportInfo = nestTubs( "TTrackerDeviceSupport",
+                                       supportParams,
+                                       supportMaterial,
+                                       0,
+                                       zeroVector,
+                                       devInfo.logical,
+                                       0,
+                                       ttrackerSupportVisible,
+                                       lightBlue,
+                                       ttrackerSupportSolid,
+                                       forceAuxEdgeVisible,
+                                       true,
+                                       doSurfaceCheck
+                                       );
 
     verbosityLevel > 0 && 
       cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
