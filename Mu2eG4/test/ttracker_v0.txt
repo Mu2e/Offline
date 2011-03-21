@@ -2,9 +2,9 @@
 // Geometry description of the Aseet version of the TTracker.
 // See:  Mu2e-doc-888
 //
-// $Id: ttracker_v0.txt,v 1.6 2010/11/30 16:48:39 genser Exp $
+// $Id: ttracker_v0.txt,v 1.7 2011/03/21 22:28:05 genser Exp $
 // $Author: genser $
-// $Date: 2010/11/30 16:48:39 $
+// $Date: 2011/03/21 22:28:05 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,9 @@ bool   ttracker.envelopeSolid        =  false;
 bool   ttracker.deviceEnvelopeVisible = true;
 bool   ttracker.deviceEnvelopeSolid   = false;
 
+bool   ttracker.supportVisible        = true;
+bool   ttracker.supportSolid          = false;
+
 bool   ttracker.sectorEnvelopeVisible = true;
 bool   ttracker.sectorEnvelopeSolid   = false;
 
@@ -59,7 +62,7 @@ string ttracker.mat.strawgas  = "StrawGas";
 string ttracker.mat.strawwall = "Kapton";
 string ttracker.mat.wire      = "G4_W";
 string ttracker.mat.manifold  = "G4_Al";
-string ttracker.mat.support   = "CarbonFiber";
+string ttracker.mat.support   = "G4_Al";
 
 // Debug control for TTracker; uncomment to make only a selected sector.
 // it is not about drawing, but about the construction itself
