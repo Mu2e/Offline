@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.11 2011/03/21 19:55:19 onoratog Exp $
+// $Id: FromG4BLFile.cc,v 1.12 2011/03/21 20:24:39 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2011/03/21 19:55:19 $
+// $Date: 2011/03/21 20:24:39 $
 //
 // Original author Rob Kutschke
 //
@@ -108,6 +108,11 @@ namespace mu2e {
     _ntup          = tfdir.make<TNtuple>( "ntup", "G4BL Track ntuple",
                                           "x:y:z:p:cz:phi:pt:t:id:evtId:trkID:ParId:w");
 
+    //Skip out the first nParticlesToSkip of the file;
+    //10000 is a fake number of chars, berfore reaching the newline command
+    for (int jid=0; jid < _nPartToSkip; ++jid) {
+      _inputFile.ignore(10000, '\n');
+    }
   }
 
   FromG4BLFile::~FromG4BLFile(){
@@ -130,12 +135,6 @@ namespace mu2e {
 
     // Ntuple buffer.
     float nt[_ntup->GetNvar()];
-
-    //Skip out the first nParticlesToSkip of the file;
-    //10000 is a fake number of chars, berfore reaching the newline command
-    for (int jid=0; jid < _nPartToSkip; ++jid) {
-      _inputFile.ignore(10000, '\n');
-    }
 
     // Loop over all of the requested particles.
     for ( int j =0; j<n; ++j ){
