@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.9 2011/03/04 23:31:34 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/04 23:31:34 $
+// $Id: FromG4BLFile.cc,v 1.10 2011/03/21 19:49:51 onoratog Exp $
+// $Author: onoratog $ 
+// $Date: 2011/03/21 19:49:51 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,7 @@ namespace mu2e {
     _inputFileName(config.getString("fromG4BLFile.filename")),
     _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
     _targetFrame(config.getBool("fromG4BLFile.targetFrame", true)),
-
+    _nPartToSkip(config.getInt("fromG4BKFile.particlesToSkip",0)),
     // Random number distributions; getEngine() comes from base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
 
@@ -131,6 +131,12 @@ namespace mu2e {
     // Ntuple buffer.
     float nt[_ntup->GetNvar()];
 
+    //Skip out the first nParticlesToSkip of the file;
+    //10000 is a fake number of chars, berfore reaching the newline command
+    for (int jid=0; jid < _nPartToSkip; ++jid) {
+      _inputFile.ignore(10000, '\n');
+    }
+
     // Loop over all of the requested particles.
     for ( int j =0; j<n; ++j ){
 
@@ -140,7 +146,7 @@ namespace mu2e {
       _inputFile >> x >> y >> z >> px >> py >> pz >> t >> id >> evtid >> trkid >> parentid >> weight;
       if ( !_inputFile ){
         throw cms::Exception("EOF")
-          << "FromG4BLFile has reached an unexpected end of flie.\n";
+          << "FromG4BLFile has reached an unexpected end of file.\n";
       }
 
       // Express pdgId as the correct type.

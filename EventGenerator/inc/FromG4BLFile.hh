@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.4 2010/12/11 04:50:10 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/12/11 04:50:10 $
+// $Id: FromG4BLFile.hh,v 1.5 2011/03/21 19:49:51 onoratog Exp $
+// $Author: onoratog $ 
+// $Date: 2011/03/21 19:49:51 $
 //
 // Original author Rob Kutschke
 //
@@ -67,6 +67,10 @@ namespace mu2e {
 
     // Is target frame used in the file?
     bool _targetFrame;
+
+    //Number of particles to skip form the input file.
+    //Useful to run grid-jobs reading different segments of the same txt file
+    int _nPartToSkip;
 
     // End: Information from the run time configuration.
 
