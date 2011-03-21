@@ -1,9 +1,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.cc,v 1.10 2011/03/21 19:49:51 onoratog Exp $
+// $Id: FromG4BLFile.cc,v 1.11 2011/03/21 19:55:19 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2011/03/21 19:49:51 $
+// $Date: 2011/03/21 19:55:19 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,7 @@ namespace mu2e {
     _inputFileName(config.getString("fromG4BLFile.filename")),
     _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
     _targetFrame(config.getBool("fromG4BLFile.targetFrame", true)),
-    _nPartToSkip(config.getInt("fromG4BKFile.particlesToSkip",0)),
+    _nPartToSkip(config.getInt("fromG4BLFile.particlesToSkip",0)),
     // Random number distributions; getEngine() comes from base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
 
