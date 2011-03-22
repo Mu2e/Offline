@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.16 2011/03/21 22:28:31 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.17 2011/03/22 18:51:21 genser Exp $
 // $Author: genser $
-// $Date: 2011/03/21 22:28:31 $
+// $Date: 2011/03/22 18:51:21 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -143,17 +143,12 @@ namespace mu2e{
                                    );
 
 
-    // we also place the support material here as well
-
-    G4Material* supportMaterial = findMaterialOrThrow(ttracker.getSupportParams().materialName);
-    TubsParams  supportParams   = ttracker.getSupportParams().getTubsParams();
-    // device origin coincides with the support origin (offset)
+    // place the support material here
 
     G4Colour  lightBlue (0.0, 0.0, 0.75);
-
     VolumeInfo supportInfo = nestTubs( "TTrackerDeviceSupport",
-                                       supportParams,
-                                       supportMaterial,
+                                       ttracker.getSupportParams().getTubsParams(),
+                                       findMaterialOrThrow(ttracker.getSupportParams().materialName),
                                        0,
                                        zeroVector,
                                        devInfo.logical,
@@ -219,6 +214,8 @@ namespace mu2e{
                               sector.boxHalfLengths()[2],
                               sector.boxHalfLengths()[1]
                               );
+
+    // one could also intersect it with a ring to decrease its radial spread
 
     secInfo.solid = 
       new G4IntersectionSolid(secInfo.name, secBox, secTrd);
