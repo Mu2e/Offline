@@ -3,9 +3,16 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.14 2011/03/21 22:29:36 genser Exp $
-  $Author: genser $
-  $Date: 2011/03/21 22:29:36 $
+  $Id: v0_3_4.txt,v 1.15 2011/03/27 00:46:04 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2011/03/27 00:46:04 $
+
+13) March 26, 2011 ehrlich
+    EventDisplay/src/SConscript
+    EventDisplay/src/RootDictMakeFile
+
+    EventDisplayDict gets updated (and compiled) 
+    only if the relevant header files were modified
 
 12) March 21, 2011 genser 
      Added support rings to the ttracker; used G4_Al as the material
