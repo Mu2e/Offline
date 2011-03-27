@@ -1,0 +1,3 @@
+EventDisplayDict.cc: EventDisplayFrame.h dict_classes/*.h LinkDef.h
+	rootcint -f EventDisplayDict.cc -c EventDisplayFrame.h dict_classes/*.h LinkDef.h
+
