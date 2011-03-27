@@ -76,6 +76,7 @@ namespace mu2e {
       _hCryEvtZ2(0),
       _tNtup(0),
       _cNtup(0),
+      _tgtNtup(0),
       _nDevices(36),
       _nSectors(6), 
       _nLayers(2),
@@ -98,6 +99,7 @@ namespace mu2e {
     void doITracker(edm::Event const& evt);
 
     void doCalorimeter(edm::Event const& evt);
+    void doStoppingTarget(edm::Event const& evt);
 
     // Diagnostic level
     int _diagLevel;
@@ -129,6 +131,7 @@ namespace mu2e {
     
     TNtuple* _tNtup;
     TNtuple* _cNtup;
+    TNtuple* _tgtNtup;
 
     const int _nDevices, _nSectors, _nLayers, _nStrawsPerLay;
     const int _nVanes, _nZCryPerVane, _nRCryPerVane;
@@ -233,8 +236,12 @@ namespace mu2e {
       }
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
                                           "evt:run:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
-      
+      _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",      
+                                          "evt:run:time:x:y:z:isGen:pdgId:trkId:foil");
+
     }
+
+    doStoppingTarget(evt);
     
     if (geom->hasElement<ITracker>()) {
       //      cout << "ITracker selected" << endl;
@@ -245,6 +252,8 @@ namespace mu2e {
       doTracker(evt);
     }
     doCalorimeter(evt);
+
+
 
   } // end of analyze
 
@@ -1050,7 +1059,58 @@ namespace mu2e {
       }
     } 
   } // end of doCalorimeter
-  
+
+  void BkgRates::doStoppingTarget(const edm::Event& event) {
+    
+    // Find original G4 steps in the stopping target
+    edm::Handle<StepPointMCCollection> sthits;
+    event.getByLabel("g4run","stoppingtarget",sthits);
+
+    // SimParticles container
+    edm::Handle<SimParticleCollection> simParticles;
+    event.getByType(simParticles);
+    if( !(simParticles.isValid()) || simParticles->empty() ) return;
+
+    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    event.getRun().getByType(volumes);
+
+    set<SimParticleCollection::key_type> stoppedtracks;
+
+    // Loop over all hits in the stopping target
+    for ( size_t i=0; i<sthits->size(); ++i ){
+      
+      // This is G4 hit (step) in the target
+      const StepPointMC& hit = (*sthits)[i];
+
+      SimParticleCollection::key_type trackId = hit.trackId();
+
+      SimParticle const* sim = simParticles->findOrNull(trackId);
+      if( !sim ) continue;
+
+      PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
+
+      if ( volInfo.name() == "TargetFoil_" ) {
+       
+        if( stoppedtracks.insert(trackId).second ) {
+          float tgtntpArray[10];
+          int idx(0);
+          tgtntpArray[idx++] = event.id().event();
+          tgtntpArray[idx++] = event.run();
+          tgtntpArray[idx++] = sim->endGlobalTime();
+          tgtntpArray[idx++] = sim->endPosition().x();
+          tgtntpArray[idx++] = sim->endPosition().y();
+          tgtntpArray[idx++] = sim->endPosition().z();
+          tgtntpArray[idx++] = sim->fromGenerator();
+          tgtntpArray[idx++] = sim->pdgId();
+          tgtntpArray[idx++] = trackId.asInt();
+          tgtntpArray[idx++] = volInfo.copyNo();
+
+          _tgtNtup->Fill(tgtntpArray);
+
+        }
+      }
+    }
+  }  // end doStoppingTarget
 }
 
 using mu2e::BkgRates;

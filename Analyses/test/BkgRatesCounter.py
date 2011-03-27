@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.py,v 1.4 2011/03/17 16:29:03 onoratog Exp $
+# $Id: BkgRatesCounter.py,v 1.5 2011/03/27 17:46:26 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/03/17 16:29:03 $
+# $Date: 2011/03/27 17:46:26 $
 #
 # Original author Gianni Onorato.
 #
@@ -22,7 +22,7 @@ process = mu2e.Process("BkgRatesCounter")
 
 # Maximum number of events to do.
 process.maxEvents = mu2e.untracked.PSet(
-    input = mu2e.untracked.int32(1000)
+    input = mu2e.untracked.int32(500)
 )
 
 # Define the standard message logger configuration.
@@ -74,8 +74,8 @@ process.source = mu2e.Source("EmptySource")
 
 #  Make some generated tracks and add them to the event.
 process.generate = mu2e.EDProducer(
-    "EventGenerator",
-    inputfile = mu2e.untracked.string("Analyses/test/genconfig_Bkg.txt"),
+    "EventGenerator", 
+    inputfile = mu2e.untracked.string("Analyses/test/genconfig_fromBeam.txt"),
     seed=mu2e.untracked.vint32(7789)
 )
 
@@ -146,7 +146,7 @@ process.outfile = mu2e.OutputModule(
     fileName = mu2e.untracked.string('file:data_bkg.root'),
     outputCommands = mu2e.untracked.vstring(
      'keep *_*_*_*',
-     'drop mu2ePointTrajectoryMapVector_*_*_*',
+#     'drop mu2ePointTrajectoryMapVector_*_*_*',
 #     'drop mu2eSimParticles_*_*_*'   # Uncomment this line to reduce file size.
     ),
 
@@ -169,6 +169,6 @@ process.output = mu2e.EndPath(  process.generate*process.g4run*
                                 process.CaloROHitsMaker*
                                 process.CaloCrystalHitsMaker*
                                 process.CountRates*
-                                process.filterEmpty*
+#                                process.filterEmpty*
                                 process.randomsaver*process.outfile );
 
