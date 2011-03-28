@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_plugin.cc,v 1.1 2011/03/08 08:23:23 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/03/08 08:23:23 $
+// $Id: MakeDriftCellHit_plugin.cc,v 1.2 2011/03/28 16:56:39 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2011/03/28 16:56:39 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -255,7 +255,7 @@ namespace mu2e {
         }
         
         // Calculate the drift distance from this step. 
-        double hit_dca;
+        double hit_dca,sign;
         CLHEP::Hep3Vector hit_pca;
 
         if( length < _minimumLength ) {
@@ -265,7 +265,7 @@ namespace mu2e {
           LinePointPCA pca(mid, w, pos);
           hit_dca = pca.dca();
           hit_pca = pca.pca();
-          
+	  continue;
         } else {
 
           // Step is not a point. Calculate the distance between two lines. 
@@ -273,12 +273,13 @@ namespace mu2e {
           TwoLinePCA pca( mid, w, pos, mom);
           CLHEP::Hep3Vector const& p2 = pca.point2();
 
-          if( (pos-p2).mag()<=length && (pos-p2).dot(mom)<=0 ) {
+	  //          if( (pos-p2).mag()<=length && (pos-p2).dot(mom)<=0 ) {
 
             // If the point of closest approach is within the step and wire - thats it.
             hit_dca = pca.dca();
             hit_pca = pca.point1();
-
+	    sign=w.cross(mom).dot(hit_pca-p2);
+	    /*
           } else {
             
             // The point of closest approach is not within the step. In this case
@@ -293,9 +294,9 @@ namespace mu2e {
               hit_dca = pca2.dca();
               hit_pca = pca2.pca();
             }
-          
+	    
           }          
-
+	    */
         } // drift distance calculation
 
         // Calculate signal time. It is Geant4 time + signal propagation time
@@ -309,7 +310,7 @@ namespace mu2e {
         double hit_t1 = t0 + hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
         //double hit_t2 = -9999.9;//t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
 
-        dcell_hits.push_back(StepHit(hitRef,edep,hit_dca,driftTime,distanceToMiddle,hit_t1));
+        dcell_hits.push_back(StepHit(hitRef,edep,hit_dca*(sign>0?1.:-1.),driftTime,distanceToMiddle,hit_t1));
 
       } // loop over hits
 
