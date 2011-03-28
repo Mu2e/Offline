@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.9 2011/03/10 01:49:28 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2011/03/10 01:49:28 $
+// $Id: ConstructMaterials.cc,v 1.10 2011/03/28 16:58:48 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2011/03/28 16:58:48 $
 //
 // Original author Rob Kutschke
 //
@@ -348,7 +348,7 @@ namespace mu2e {
       G4int nel;
 
       G4double densityHe   = 0.000166 *g/cm3;
-      G4double densityCF4  = 0.00249  *g/cm3;
+      G4double densityCF4  = 0.003780 *g/cm3;
       G4double fractionHe  = 90.0*perCent;
 
       density = fractionHe*densityHe + (1.0-fractionHe)*densityCF4;
@@ -411,7 +411,8 @@ namespace mu2e {
       G4double density;
       G4int nel;
       G4Material* CarbonFiber =
-        new G4Material(mat.name, density = 1.384*g/cm3, nel=1);
+	//        new G4Material(mat.name, density = 1.605*g/cm3, nel=1);
+	new G4Material(mat.name, density = 1.384*g/cm3, nel=1);
       G4Element* C  = getElementOrThrow("C");
       CarbonFiber->AddElement(C, 100.0*perCent );
     }
@@ -451,6 +452,15 @@ namespace mu2e {
       G4double density;
       G4int nel;
       G4Material *CFoam = new G4Material(mat.name, density = 0.080*g/cm3, nel=1);
+      G4Element* C  = getElementOrThrow("C");
+      CFoam->AddElement(C, 100.0*perCent );
+    }
+
+    mat = isNeeded(materialsToLoad, "CFoam");
+    if ( mat.doit ){
+      G4double density;
+      G4int nel;
+      G4Material *CFoam = new G4Material(mat.name, density = 0.030*g/cm3, nel=1);
       G4Element* C  = getElementOrThrow("C");
       CFoam->AddElement(C, 100.0*perCent );
     }
