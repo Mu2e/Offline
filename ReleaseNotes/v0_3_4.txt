@@ -3,9 +3,9 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.15 2011/03/27 00:46:04 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2011/03/27 00:46:04 $
+  $Id: v0_3_4.txt,v 1.16 2011/03/31 20:30:11 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2011/03/31 20:30:11 $
 
 13) March 26, 2011 ehrlich
     EventDisplay/src/SConscript
@@ -24,6 +24,18 @@
      Changed manifold layout to resemble more the current design
      without changing the straw positions
        Mu2eG4/test/ttracker_v2.txt
+
+
+12) March 31, 2011 onoratog
+    FoilParticleGenerator now has the possibility of introducing a 
+    time shift in the generation of particle from foils.
+    This time shift is extracted randomly from the time distribution
+    of the stopped muons in the ST, where t=0 is the primary proton
+    impacting the production target.
+    This feature is on by default. You can turn it off by adding a 
+    false boolean as last parameter of the FPG constructor.
+    I turned it off for the PiCapture generator. 
+
 
 11) March 21, 2011 onoratog
     THe generator module "FromG4BLFile" now can skip custom number 
