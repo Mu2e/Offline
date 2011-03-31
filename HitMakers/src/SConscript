@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.8 2011/03/31 15:13:51 wenzel Exp $
+# $Id: SConscript,v 1.9 2011/03/31 15:26:31 wenzel Exp $
 # $Author: wenzel $
-# $Date: 2011/03/31 15:13:51 $
+# $Date: 2011/03/31 15:26:31 $
 #
 # Original author Rob Kutschke.
 #
@@ -25,7 +25,7 @@ if non_plugin_cc:
                              'GeometryService',
                              'GeneralUtilities',
                              'CLHEP',
-                             'Trajectory',
+                             'CDFTrajectory',
                              'Minuit'
                            ],
                       )
@@ -37,7 +37,7 @@ for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
                      LIBS=[ 'FWCoreFramework', libs, 'ToyDP','Mu2eG4', 'GeometryService',
-                            'GeneralUtilities', 'CLHEP','Trajectory','Minuit'
+                            'GeneralUtilities', 'CLHEP','CDFTrajectory','Minuit'
                           ],
                      )
 
