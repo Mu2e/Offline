@@ -45,11 +45,9 @@ namespace mu2e {
       flatTime, limitedExpoTime
     };
 
-
-
     FoilParticleGenerator( edm::RandomNumberGeneratorService::base_engine_t& engine,
                            double tmin, double tmax, foilGen_enum foilAlgo, 
-                           posGen_enum  posAlgo, timeGen_enum  timeAlgo);
+                           posGen_enum  posAlgo, timeGen_enum  timeAlgo, bool PTtoSTdelay = true);
     
     ~FoilParticleGenerator();
     
@@ -78,16 +76,22 @@ namespace mu2e {
     RandomLimitedExpo   _randTime;
     CLHEP::RandGeneral  _randFoils;
     CLHEP::RandGeneral  _randExpoFoils;
+    CLHEP::RandGeneral  _delayTime;
+
+    //Include a delay in time due to the PT to ST path
+    bool _PTtoSTdelay;
 
     //Build a binned representation of foils volume
     std::vector<double> binnedFoilsVolume();
     std::vector<double> weightedBinnedFoilsVolume();
+    std::vector<double> timePathDelay();
 
     // methods to extract foil, position and time w.r.t. the chosen algorithm
     int getFlatRndFoil() ;
     int getVolumeRndFoil() ;
     int getExpoRndFoil() ;
     int getVolumeAndExpoRndFoil() ;
+    double includeTimeDelay();
     CLHEP::Hep3Vector getFlatRndPos(TargetFoil const& theFoil) ;
     double getFlatRndTime() ;
     double getLimitedExpRndTime() ;

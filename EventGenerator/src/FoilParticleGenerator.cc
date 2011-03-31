@@ -22,6 +22,7 @@
 
 // C++ includes.
 #include <iostream>
+#include <fstream>
 
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
@@ -34,13 +35,17 @@
 
 using namespace std;
 
+static const double timeMaxDelay = 3000;
+static const int nBinsForTimeDelayPDF = 150;
+
 namespace mu2e {
   
   FoilParticleGenerator::FoilParticleGenerator(edm::RandomNumberGeneratorService::base_engine_t& engine,
                                                double tmin, double tmax, 
                                                foilGen_enum foilAlgo, 
                                                posGen_enum  posAlgo, 
-                                               timeGen_enum  timeAlgo):
+                                               timeGen_enum  timeAlgo,
+                                               bool PTtoSTdelay):
     // time generation range
     _tmin ( tmin ),
     _tmax ( tmax ),
@@ -54,9 +59,12 @@ namespace mu2e {
     _randFlat ( engine ) ,
     _randTime( engine ),
     _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils ),
-    _randExpoFoils ( engine, &(weightedBinnedFoilsVolume()[0]), _nfoils )
+    _randExpoFoils ( engine, &(weightedBinnedFoilsVolume()[0]), _nfoils ),
+    _delayTime( engine, &(timePathDelay()[0]), nBinsForTimeDelayPDF ), 
+    _PTtoSTdelay ( PTtoSTdelay )
   {
-    // Check if nfoils is bigger than 0;
+  
+  // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {
       throw cms::Exception("GEOM")
         << "no foils are present";
@@ -111,6 +119,12 @@ namespace mu2e {
     default:
       break;
     }
+
+    if (_PTtoSTdelay) {
+      double deltat = includeTimeDelay();
+      time += deltat;
+    }
+    
   }
   
 
@@ -165,6 +179,29 @@ namespace mu2e {
   } //FoilParticleGenerator::weightedBinnedFoilsVolume() 
   
 
+  vector<double> FoilParticleGenerator::timePathDelay() {
+
+    vector<double> muonTimeDelay;
+    fstream infile("EventGenerator/src/timeDelayDist.txt", ios::in);
+    if (infile.is_open()) {
+      double val;
+      
+      for (int i=0; i < nBinsForTimeDelayPDF; ++i) {
+        infile >> val;
+        muonTimeDelay.push_back(val);
+      }
+    } else {
+      cout << "No file associated for the muon arriving delay distribution" << endl;
+      for (int i=0; i < nBinsForTimeDelayPDF; ++i) {
+        muonTimeDelay.push_back(1);
+      }
+    }
+    
+    return muonTimeDelay;
+    
+  }
+
+
   // Pick up a random foil from a flat distribution
   int FoilParticleGenerator::getFlatRndFoil() {
     return static_cast<int>(_nfoils*_randFlat.fire());
@@ -204,6 +241,13 @@ namespace mu2e {
   double FoilParticleGenerator::getFlatRndTime() {
     return _tmin + _randFlat.fire() * (_tmax-_tmin);
   }
+
+  double FoilParticleGenerator::includeTimeDelay() {
+
+    double dt = timeMaxDelay * _delayTime.fire();
+    return dt;
+  }
+
 
   // Pick up a time random from am exponential distribution, 
   // with a given lifetime and in a defined range.

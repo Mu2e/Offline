@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.15 2010/12/03 18:06:04 onoratog Exp $
+// $Id: PiCapture.cc,v 1.16 2011/03/31 20:16:56 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/12/03 18:06:04 $
+// $Date: 2011/03/31 20:16:56 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -108,7 +108,7 @@ namespace mu2e {
     _fGenerator = auto_ptr<FoilParticleGenerator>( new FoilParticleGenerator(getEngine(), 0 ,tcycle, 
                                                                              FoilParticleGenerator::expoVolWeightFoil, 
                                                                              FoilParticleGenerator::flatPos, 
-                                                                             FoilParticleGenerator::limitedExpoTime));
+                                                                             FoilParticleGenerator::limitedExpoTime, false));
     
   } // end PiCapture::PiCapture
 
