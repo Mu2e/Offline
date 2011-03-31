@@ -13,9 +13,15 @@ endif
 mkdir include
 cd include
 
-foreach file ( BaBar BbrGeom BField CLHEP DetectorModel KalmanTrack ProbTools TrajGeom TrkBase difAlgebra )
+foreach file ( BaBar BbrGeom BField CLHEP DetectorModel KalmanTrack MatEnv ProbTools TrajGeom TrkBase difAlgebra )
   if !( -e $file ) then
      ln -s ../${file}/include $file
+  endif
+end
+
+foreach file ( DchCalib DchData DchGeom DchGeomBase )
+  if !( -e $file ) then
+     ln -s ../Dch/${file}/include $file
   endif
 end
 
