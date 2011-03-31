@@ -1,0 +1,18 @@
+
+template <class Measureable>
+void Constraint<Measureable>::applyYourselfTo(Fitter<Measureable> *theFitter) const {
+  theFitter->apply(this);
+}
+
+template <class Measureable>
+Constraint<Measureable>::Constraint()
+{
+}
+
+
+template <class Measureable>
+Constraint<Measureable>::~Constraint()
+{
+}
+
+

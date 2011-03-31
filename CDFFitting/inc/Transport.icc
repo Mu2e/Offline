@@ -1,0 +1,17 @@
+
+template <class Measureable>
+void Transport<Measureable>::applyYourselfTo(Fitter<Measureable> *theFitter) const {
+  theFitter->apply(this);
+}
+
+template <class Measureable>
+Transport<Measureable>::Transport()
+{
+}
+
+
+template <class Measureable>
+Transport<Measureable>::~Transport()
+{
+}
+

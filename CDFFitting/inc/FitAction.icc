@@ -1,0 +1,17 @@
+
+
+template <class Measureable>
+FitAction<Measureable>::FitAction()
+{
+}
+
+
+template <class Measureable>
+FitAction<Measureable>::~FitAction()
+{
+}
+
+
+
+
+

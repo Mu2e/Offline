@@ -1,5 +1,5 @@
 #
-# $Id: SConscript,v 1.8 2011/03/31 15:13:51 wenzel Exp $
+# $Id: SConscript,v 1.1 2011/03/31 15:13:51 wenzel Exp $
 # $Author: wenzel $
 # $Date: 2011/03/31 15:13:51 $
 #
@@ -14,32 +14,21 @@ non_plugin_cc = Glob('*.cc', strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
 
 if non_plugin_cc:
+
     # From: /path1/path2/path3/Name/src extract the string Name field.
+    ll=env.Dir('.').abspath
     dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
     local_lib_name=os.path.dirname(dd)
-
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'FWCoreFramework',
-                             'ToyDP',
-                             'Mu2eG4',
-                             'GeometryService',
                              'GeneralUtilities',
+                             'ToyDP',
                              'CLHEP',
-                             'Trajectory',
-                             'Minuit'
-                           ],
+                             ],
                       )
-    libs=[ local_lib_name ]
+    libs=[ '#/lib/'+local_lib_name ]
 else:
     libs=[]
-
-for cc in plugin_cc:
-    libname='#/lib/'+cc[:cc.find('.cc')]
-    env.SharedLibrary( libname, cc,
-                     LIBS=[ 'FWCoreFramework', libs, 'ToyDP','Mu2eG4', 'GeometryService',
-                            'GeneralUtilities', 'CLHEP','Trajectory','Minuit'
-                          ],
-                     )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
