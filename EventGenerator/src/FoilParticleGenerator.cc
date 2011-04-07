@@ -24,6 +24,9 @@
 #include <iostream>
 #include <fstream>
 
+//Framework includes
+#include "FWCore/ParameterSet/interface/FileInPath.h"
+
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -182,7 +185,9 @@ namespace mu2e {
   vector<double> FoilParticleGenerator::timePathDelay() {
 
     vector<double> muonTimeDelay;
-    fstream infile("EventGenerator/src/timeDelayDist.txt", ios::in);
+    edm::FileInPath muonDelayFileName("ConditionsService/data/timeDelayDist.txt");
+    string MuonFileFIP = muonDelayFileName.fullPath();
+    fstream infile(MuonFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
       double val;
       
