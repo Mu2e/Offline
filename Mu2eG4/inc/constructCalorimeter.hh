@@ -3,9 +3,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.hh,v 1.3 2010/12/22 17:37:57 genser Exp $
+// $Id: constructCalorimeter.hh,v 1.4 2011/04/25 19:16:49 genser Exp $
 // $Author: genser $
-// $Date: 2010/12/22 17:37:57 $
+// $Date: 2011/04/25 19:16:49 $
 //
 // Original author Rob Kutschke
 //
@@ -19,14 +19,11 @@
 // Mu2e includes.
 #include "G4Helper/inc/VolumeInfo.hh"
 
-// Forward references.
-class G4LogicalVolume;
-
 namespace mu2e {
 
   class SimpleConfig;
 
-  void constructCalorimeter( G4LogicalVolume    *mother, 
+  void constructCalorimeter( VolumeInfo const&   mother, 
 			     double              zOffset,
 			     SimpleConfig const& config );
 
