@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.10 2011/03/28 16:58:48 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/03/28 16:58:48 $
+// $Id: ConstructMaterials.cc,v 1.11 2011/04/25 19:18:20 genser Exp $
+// $Author: genser $ 
+// $Date: 2011/04/25 19:18:20 $
 //
 // Original author Rob Kutschke
 //
@@ -218,6 +218,18 @@ namespace mu2e {
       Polyethylene092Li075d106->AddMaterial( mLi, LiPercentage*perCent);
     }
 
+    // Stainless Steel (Medical Physics, Vol 25, No 10, Oct 1998) based on brachytherapy example
+    mat = isNeeded(materialsToLoad, "StainlessSteel");
+    if ( mat.doit ){
+      G4Material* StainlessSteel = 
+        new G4Material( mat.name, 8.02*g/cm3, 5);
+      StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.02);
+      StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Si"), 0.01);
+      StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.19);
+      StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.10);
+      StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.68);
+    }
+
     mat = isNeeded(materialsToLoad, "IsoButane");
     if ( mat.doit ){
       G4Material* IsoButane = 
@@ -231,7 +243,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "StrawGas");
     if ( mat.doit ) {
       G4Material* StrawGas = 
-        new G4Material(mat.name, 0.0028561*g/cm3, 3); // it is OK not use kStateGas
+        new G4Material(mat.name, 0.0028561*g/cm3, 3); // it is OK not to use kStateGas
       G4Element* eAr = getElementOrThrow("Ar");
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eF  = getElementOrThrow("F");
