@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.75 2011/03/17 16:21:17 genser Exp $
+// $Id: geom_01.txt,v 1.76 2011/04/25 19:23:59 genser Exp $
 // $Author: genser $
-// $Date: 2011/03/17 16:21:17 $
+// $Date: 2011/04/25 19:23:59 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,7 @@ bool hasBFieldManager   = true;
 bool hasBeamline        = true;
 bool hasVirtualDetector = true;
 bool hasCosmicRayShield = true;
+bool hasMBS             = true;
 
 // Uncomment exactly one tracker.
 #include "Mu2eG4/test/ttracker_v2.txt"
@@ -100,7 +101,7 @@ vector<string> mu2e.materials =
     "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix",  
     "CarbonFiber", "PolypropyleneFoam", "CFoam_480", "CFoam_100", 
     "CFoam_080", "Polyethylene092B050d095", "Polyethylene092B300d119", 
-    "Polyethylene092Li075d106", "Polyethylene092"
+    "Polyethylene092Li075d106", "Polyethylene092", "StainlessSteel"
 };
 
 // Control printout of element and material lists.
@@ -167,12 +168,12 @@ double toyDS.halfLength         = 6000.;
 double toyDS.z0                 = 9226.;
 double toyDS1.halfLength        =  150.;
 double toyDS2.halfLength        = 2350.;
-double toyDS3.halfLength        = 3650.;
+double toyDS3.halfLength        = 4210.5.; // was 3650; changed to accommodate mbs
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
 bool   toyDS.visible            = true;
-bool   toyDS.solid              = true;
+bool   toyDS.solid              = false;
 
 // A toy model of the PS, coils, cryo and vaccum.
 double toyPS.rIn            =   880.;
@@ -181,7 +182,7 @@ double toyPS1.vacHalfLength =  2580.; //2700.;
 double toyPS.CryoHalfLength =  2580.;
 string toyPS.materialName   = "G4_Al";
 bool   toyPS.visible        = true;
-bool   toyPS.solid          = true;
+bool   toyPS.solid          = false;
 
 // Parameters for TS volumes.
 double toyTS.rVac        =  240.;          // Outer radius of vacuum volume
@@ -190,7 +191,7 @@ double toyTS.rTorus      = 2929.;          // Bend radius of the torus
 double toyTS1.halfLength =  500.;
 double toyTS5.halfLength =  500.;
 bool   toyTS.visible        = true;
-bool   toyTS.solid          = true;
+bool   toyTS.solid          = false;
 
 // PBAR Absorber
 
@@ -200,7 +201,7 @@ string pbar.materialName = "G4_Be";
 // Collimators
 
 bool   coll.visible        = true;
-bool   coll.solid          = true;
+bool   coll.solid          = false;
 
 double coll1.halfLength = 500.0;
 double coll1.innerRadius1 = 150.0;
@@ -223,7 +224,7 @@ string coll5.materialName = "G4_Cu";
 
 double vd.halfLength     = 0.1; //mm
 bool   vd.visible        = true;
-bool   vd.solid          = true;
+bool   vd.solid          = false;
 
 // Production Target in PS:
 
@@ -239,7 +240,7 @@ double targetPS_rotX              =    -1.8;  // degree. Active rotation. See Mu
 double targetPS_rotY              =   12.22;  // degree.
 string targetPS_materialName      = "G4_Au";
 bool   targetPS.visible           = true;
-bool   targetPS.solid             = true;
+bool   targetPS.solid             = false;
 
 // Describe dummy stopping target that is just one big G4TUBS.
 double dummyStoppingTarget.rIn        =     0.;
@@ -260,7 +261,7 @@ string         target.fillMaterial    = "WAGVacuum";
 double target.z0             = -6100.0;
 double target.deltaZ         =    50.0;
 bool   target.visible        = true;
-bool   target.solid          = true;
+bool   target.solid          = false;
 
 // all radii must be specified, i.e., nFoils is determined from the size 
 // of the radii vector.
@@ -335,12 +336,15 @@ double calorimeter.electronDepositionAPD = 1000.0; // MeV
 double calorimeter.electronMinEnergyAPD  = 0.1;    // MeV
 
 bool   calorimeter.visible        = true;
-bool   calorimeter.solid          = true;
+bool   calorimeter.solid          = false;
+int    calorimeter.verbosityLevel = 0;
 
 // Dimensions of steel, assuming constant thickness all around, and square shape.
-double fluxcrv.HallSteelHalfThick    = 250.;
+double fluxcrv.HallSteelHalfThick    = 250.;  // newer drawings seem to have it at 150 in the D/U ends
 double fluxcrv.HallSteelHalfLengthXY = 2048.;
-double fluxcrv.HallSteelHalfLengthZ  = 7150.;
+double fluxcrv.HallSteelHalfLengthZ  = 7150.; // newer drawings have it at 6830; there is also End Cap
+double fluxcrv.HallSteelEndCapHalfLengthZ  = 1085;
+double fluxcrv.HallSteelEndCapHalfThick    =  250.;
 string fluxcrv.HallSteelMaterialName = "G4_Fe";
 double fluxcrv.HallSteelHoleRadius   = 850;
 vector<double> fluxcrv.HallSteelOffset  = {0.,0., -80.}; // mm
@@ -369,22 +373,22 @@ double         crs.wallUnistrutHalfThickness                = 28.;  // (154 - 41
 double         crs.scintillatorOverlap                      = 100.; // fig 11.5 
 
 // full, half modules, more specific numbers TBD
-vector<int>    crs.shieldR_NumberOfModules  = { 9,  1};
-vector<int>    crs.shieldL_NumberOfModules  = { 8,  0};
+vector<int>    crs.shieldR_NumberOfModules  = {10,  1};
+vector<int>    crs.shieldL_NumberOfModules  = { 8,  1};
 vector<int>    crs.shieldD_NumberOfModules  = { 2,  1};
 vector<int>    crs.shieldU_NumberOfModules  = { 3,  1};
-vector<int>    crs.shieldT_NumberOfModules  = { 9,  1};
-vector<int>    crs.shieldB_NumberOfModules  = { 9,  1};
-vector<int>    crs.shieldTS_NumberOfModules = { 2,  6};
+vector<int>    crs.shieldT_NumberOfModules  = {10,  1};
+vector<int>    crs.shieldB_NumberOfModules  = {10,  1};
+vector<int>    crs.shieldTS_NumberOfModules = { 2,  6}; // not implemented yet
 
-// additional relative offsets wrt the center of the shields
+// additional relative offsets wrt the center of the shields in their local reference frame before rotation
 
-vector<double> crs.shieldR_Offset  = {   0., 75., 1450.};
-vector<double> crs.shieldL_Offset  = {   0., 75., 0.};
-vector<double> crs.shieldD_Offset  = { 607.,  0., 0.};
-vector<double> crs.shieldU_Offset  = {3508.,  0.,  925.};
-vector<double> crs.shieldT_Offset  = {   0., 75., 1450.};
-vector<double> crs.shieldB_Offset  = {   0., 75., 1450.};
+vector<double> crs.shieldR_Offset  = {   0., 75.,1419.};
+vector<double> crs.shieldL_Offset  = {   0., 75.,-531.};
+vector<double> crs.shieldD_Offset  = {1670.,  0.,   0.};
+vector<double> crs.shieldU_Offset  = {4508.,  0., 925.};
+vector<double> crs.shieldT_Offset  = {   0., 75.,1419.};
+vector<double> crs.shieldB_Offset  = {   0., 75.,1419.};
 vector<double> crs.shieldTS_Offset = {   0.,  0., 0.};
 
 bool   crs.vetoVisible    = true;
@@ -421,7 +425,7 @@ double protonabsorber.OutRadius0   =  335.2;
 double protonabsorber.halfLength   = 1250.0;
 double protonabsorber.thickness    =    0.5;
 bool   protonabsorber.visible      = true;
-bool   protonabsorber.solid        = true;
+bool   protonabsorber.solid        = false;
 
 // Neutron Absorber (document draft dated 2010-07-16)
 string neutronabsorber.materialName          = "Polyethylene092B300d119";
@@ -439,6 +443,44 @@ double neutronabsorber.externalZ0            = 9219.0; // 2999+15439/2
 
 bool   neutronabsorber.visible      = true;
 bool   neutronabsorber.solid        = false;
+
+// Muon Beam Dump/Stop
+
+// except for one of the Z offset values the rest is computable from the other values
+
+double mbs.BSTSInnerRadius  =   410.0;
+double mbs.BSTSOuterRadius  =   430.0;
+double mbs.BSTSHLength      =  1700.0; // was 2108 ; then 1933
+string mbs.BSTSMaterialName = "StainlessSteel";
+double mbs.BSTSZ            = 15150.0; // was 15258, but this is not aligned with the other ones; 15208, 15383then +175
+double mbs.SPBSInnerRadius  =   430.0;
+double mbs.SPBSOuterRadius  =   452.0;
+double mbs.SPBSHLength      =  1320.0;
+string mbs.SPBSMaterialName = "G4_Pb";
+// double mbs.SPBSZ            = 15996.0;
+double mbs.BSTCInnerRadius  =   390.0;
+double mbs.BSTCOuterRadius  =   410.0;
+double mbs.BSTCHLength      =   375.0;
+string mbs.BSTCMaterialName = "Polyethylene092B300d119";
+// double mbs.BSTCZ            = 13475.0; // was 13525, but this is not aligned with BSTS
+double mbs.BSBSInnerRadius  =   320.0;
+double mbs.BSBSOuterRadius  =   410.0;
+// double mbs.BSBSHLength      =  1733.0; // 1733 + 375 = 2108
+string mbs.BSBSMaterialName = "Polyethylene092B300d119";
+// double mbs.BSBSZ            = 15583.0;
+double mbs.CLV2InnerRadius  =    50.0;
+double mbs.CLV2OuterRadius  =   320.0;
+double mbs.CLV2HLength      =    50.0;
+string mbs.CLV2MaterialName = "Polyethylene092B300d119";
+// double mbs.CLV2Z         = 17266.0;
+double mbs.CryoSealHLength    = 150.0;
+string mbs.CryoSealMaterialName = "StainlessSteel";
+string mbs.EndPlugMaterialName  = "StainlessSteel";
+double mbs.EndPlugDiskHLength   = 50.0;
+
+int    mbs.verbosityLevel = 0;
+bool   mbs.visible      = true;
+bool   mbs.solid        = false;
 
 //
 //
