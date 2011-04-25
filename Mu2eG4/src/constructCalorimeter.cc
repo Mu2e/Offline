@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.11 2011/02/23 00:36:47 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/23 00:36:47 $
+// $Id: constructCalorimeter.cc,v 1.12 2011/04/25 19:15:57 genser Exp $
+// $Author: genser $
+// $Date: 2011/04/25 19:15:57 $
 //
 // Original author Ivan Logashenko
 // 
@@ -40,9 +40,12 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructCalorimeter( G4LogicalVolume*    mother,
-                                   double              zOffset,
-                                   SimpleConfig const& config ){
+  void constructCalorimeter( VolumeInfo const &  mother,
+                             double              zOffset,
+                             SimpleConfig const& config ){
+
+    int const verbosityLevel = config.getInt("calorimeter.verbosityLevel",0);
+
     // A helper class for parsing the config file.
     MaterialFinder materialFinder(config);
 
@@ -99,6 +102,16 @@ namespace mu2e {
                             placePV,
                             doSurfaceCheck );
 
+    }
+
+    if ( verbosityLevel > 0) {
+      double zhl         = static_cast<G4Box*>(vaneInfo[0].solid)->GetZHalfLength();
+      CLHEP::Hep3Vector const & CalorimeterVaneOffsetInMu2e = vaneInfo[0].centerInMu2e();
+      double CalorimeterVaneOffsetInMu2eZ = CalorimeterVaneOffsetInMu2e[CLHEP::Hep3Vector::Z];
+      cout << __func__ << " Calorimeter mother center in Mu2e   : " << CalorimeterVaneOffsetInMu2e << endl;
+      cout << __func__ << " CalorimeterVane   center in Mu2e    : " << CalorimeterVaneOffsetInMu2e << endl;
+      cout << __func__ << " CalorimeterVane Z extent in Mu2e    : " << 
+        CalorimeterVaneOffsetInMu2eZ - zhl << ", " << CalorimeterVaneOffsetInMu2eZ + zhl << endl;
     }
 
     // Create materials for crystals 
