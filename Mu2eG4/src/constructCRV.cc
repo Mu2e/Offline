@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.2 2011/03/17 16:17:42 genser Exp $
+// $Id: constructCRV.cc,v 1.3 2011/04/25 19:18:41 genser Exp $
 // $Author: genser $
-// $Date: 2011/03/17 16:17:42 $
+// $Date: 2011/04/25 19:18:41 $
 //
 // Original author KLG 
 //
@@ -134,7 +134,7 @@ namespace mu2e {
       //      if (shieldName!="CRSScintillatorDShield") continue;
 
       verbosityLevel > 0 &&
-        cout << __func__ << " constructing        : " << shieldName << endl;
+        cout << __func__ << " constructing            : " << shieldName << endl;
 
       // we shall place individual scintillators skipping modules and layers for now
       // the scintillators do have some common parameters though
@@ -161,7 +161,7 @@ namespace mu2e {
       int nModules = shield.nModules();
 
       verbosityLevel > 0 &&
-        cout << __func__ << " nModules       : " << nModules << endl;
+        cout << __func__ << " nModules                : " << nModules << endl;
 
       for (int im = 0; im < nModules; ++im) {
 
@@ -170,7 +170,7 @@ namespace mu2e {
 
         CRSScintillatorModule const & module = shield.getModule(im);
 
-        if ( verbosityLevel > 0 ) {
+        if ( verbosityLevel > 1 ) {
           cout << __func__ << " moduleLocalOffset       : " << module.getLocalOffset() << endl;
           cout << __func__ << " moduleGlobalOffset      : " << module.getGlobalOffset() << endl;
           cout << __func__ << " moduleAirOffset         : " << module.getGlobalOffset() - perentCenterInMu2e << endl;
@@ -179,16 +179,16 @@ namespace mu2e {
         int nLayers = module.nLayers();
 
         verbosityLevel > 0 &&
-          cout << __func__ << " nLayers           : " << nLayers << endl;
+          cout << __func__ << " nLayers                 : " << nLayers << endl;
 
         for (int il = 0; il < nLayers; ++il) {
 
-          verbosityLevel > 0 &&
+          verbosityLevel > 1 &&
             cout << __func__ << " working on layer        : " << il << endl;
 
           CRSScintillatorLayer const & layer = module.getLayer(il);
 
-          if ( verbosityLevel > 0 ) {
+          if ( verbosityLevel > 2 ) {
             cout << __func__ << " layerLocalOffset        : " << layer.getLocalOffset() << endl;
             cout << __func__ << " layerGlobalOffset       : " << layer.getGlobalOffset() << endl;
             cout << __func__ << " layerAirOffset          : " << layer.getGlobalOffset() - perentCenterInMu2e << endl;
@@ -197,11 +197,11 @@ namespace mu2e {
           int nBars = layer.nBars();
 
           verbosityLevel > 0 &&
-            cout << __func__ << " nBars             : " << nBars << endl;
+            cout << __func__ << " nBars                   : " << nBars << endl;
 
           for (int ib = 0; ib < nBars; ++ib) {
           
-            verbosityLevel > 1 &&
+            verbosityLevel > 2 &&
               cout << __func__ << " working on bar          : " << ib << endl;
 
             CRSScintillatorBar const & bar = layer.getBar(ib);
@@ -215,7 +215,7 @@ namespace mu2e {
 
             // the rotation is the same for each bar in a given shield
 
-            if ( verbosityLevel > 1 ) {
+            if ( verbosityLevel > 3 ) {
               cout << __func__ << " barLocalOffset       : " <<  bar.getLocalOffset() << endl;
               cout << __func__ << " barGlobalOffset      : " <<  bar.getGlobalOffset() << endl;
               cout << __func__ << " barAirOffset         : " <<  barAirOffset << endl;
