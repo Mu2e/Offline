@@ -1,0 +1,28 @@
+#
+# Macro file for setting up the graphics scene and the verbosity level: "xz" view.
+#
+# $Id: visxz.mac,v 1.1 2011/04/25 21:12:34 genser Exp $
+# $Author: genser $
+# $Date: 2011/04/25 21:12:34 $
+#
+# Original author KLG
+#
+# note the fact that viewpoint direction is the up vector direction,
+# so the behaviour is not quite definable
+
+#
+/control/verbose 0
+/run/verbose 0
+/vis/open OGLIX 800x800-0+0
+/vis/viewer/set/background white ! ! 0.01
+/vis/viewer/set/viewpointThetaPhi 90 90 deg
+/vis/viewer/zoom 1.0
+/vis/disable
+/vis/scene/create
+/vis/scene/add/volume world
+/vis/scene/add/trajectories
+/vis/sceneHandler/attach
+/vis/scene/endOfEventAction refresh
+/vis/enable 
+
+# Do NOT issue the /run/beamon command
