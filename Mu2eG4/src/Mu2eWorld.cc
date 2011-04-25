@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.86 2011/03/15 19:46:29 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2011/03/15 19:46:29 $
+// $Id: Mu2eWorld.cc,v 1.87 2011/04/25 19:16:20 genser Exp $
+// $Author: genser $ 
+// $Date: 2011/04/25 19:16:20 $
 //
 // Original author Rob Kutschke
 //
@@ -42,6 +42,7 @@
 #include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
 #include "Mu2eG4/inc/constructNeutronAbsorber.hh"
+#include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 #include "Mu2eG4/inc/constructDS.hh"
 #include "Mu2eG4/inc/constructTS.hh"
@@ -227,6 +228,10 @@ namespace mu2e {
 
     if ( _config->getBool("hasNeutronAbsorber",false) ) {
       constructNeutronAbsorber(_config);
+    }
+
+    if ( _config->getBool("hasMBS",false) ) {
+      constructMBS(_config);
     }
 
     edm::LogInfo log("GEOM");
@@ -574,7 +579,7 @@ namespace mu2e {
 
     double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
 
-    constructCalorimeter( detSolDownstreamVacInfo.logical,
+    constructCalorimeter( detSolDownstreamVacInfo,
 			  -z0DSdown,
 			  *_config );
   }
@@ -593,19 +598,19 @@ namespace mu2e {
     // G4 takes ownership and will delete the detectors at the job end
 
     if ( _config->getBool("hasITracker",false) ) {
-            GeomHandle<ITracker> itracker;
-            ITGasLayerSD* itrackerSD=0x0;
-            if ( itracker->geomType()==ITracker::Hexagonal )
-                    itrackerSD        = new ITGasLayerSD_Hexagonal(          SensitiveDetectorName::ItrackerGasVolume(),  *_config);
-            else if ( itracker->geomType()==ITracker::Square )
-                    itrackerSD        = new ITGasLayerSD_Square(          SensitiveDetectorName::ItrackerGasVolume(),  *_config);
-            //itrackerSD->SetVerboseLevel(1);
-            SDman->AddNewDetector(itrackerSD);
+      GeomHandle<ITracker> itracker;
+      ITGasLayerSD* itrackerSD=0x0;
+      if ( itracker->geomType()==ITracker::Hexagonal )
+        itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::ItrackerGasVolume(), *_config);
+      else if ( itracker->geomType()==ITracker::Square )
+        itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::ItrackerGasVolume(), *_config);
+      //itrackerSD->SetVerboseLevel(1);
+      SDman->AddNewDetector(itrackerSD);
     }
     else {
-            StrawSD* strawSD        = new StrawSD(          SensitiveDetectorName::StrawGasVolume(),  *_config);
-            //strawSD->SetVerboseLevel(1);
-            SDman->AddNewDetector(strawSD);
+      StrawSD* strawSD      = new StrawSD(  SensitiveDetectorName::StrawGasVolume(),  *_config);
+      //strawSD->SetVerboseLevel(1);
+      SDman->AddNewDetector(strawSD);
     }
 
     VirtualDetectorSD* vdSD = new VirtualDetectorSD(SensitiveDetectorName::VirtualDetector(), *_config);
@@ -617,7 +622,7 @@ namespace mu2e {
     CaloReadoutSD* crSD     = new CaloReadoutSD(    SensitiveDetectorName::CaloReadout(),     *_config);
     SDman->AddNewDetector(crSD);
 
-    StoppingTargetSD* stSD = new StoppingTargetSD(  SensitiveDetectorName::StoppingTarget(), *_config);
+    StoppingTargetSD* stSD = new StoppingTargetSD(  SensitiveDetectorName::StoppingTarget(),  *_config);
     SDman->AddNewDetector(stSD);
 
     CRSScintillatorBarSD* sbSD = new CRSScintillatorBarSD(SensitiveDetectorName::CRSScintillatorBar(), *_config);
