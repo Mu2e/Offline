@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.3 2011/03/09 19:51:42 genser Exp $
+// $Id: constructSteel.cc,v 1.4 2011/04/25 19:20:14 genser Exp $
 // $Author: genser $
-// $Date: 2011/03/09 19:51:42 $
+// $Date: 2011/04/25 19:20:14 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -40,6 +40,8 @@ namespace mu2e {
   void constructSteel( const VolumeInfo& parent, 
                        SimpleConfig const * const _config
                        ){
+
+    int const verbosityLevel = _config->getInt("crs.verbosityLevel",0);
 
     MaterialFinder materialFinder(*_config);
 
@@ -82,35 +84,35 @@ namespace mu2e {
                 );      
       } else {
 
-        // constructing "hollow" upstream steel
+        // constructing "hollow" upstream/downstream steel
 
         G4Box* CRSSteelShieldBox = new G4Box(shield.name()+"Box",
                                   shield.getHalfLengths()[0], 
                                   shield.getHalfLengths()[1], 
                                   shield.getHalfLengths()[2]);
 
-        //Hole in upstream shield for TS is centered in the shield
+        //Hole in  shield for TS is centered in the shield
 
-        TubsParams UpstreamHoleDims(0.,
-                                 shield.getHoleRadius(),
-                                 shield.getHalfLengths()[2]);
+        TubsParams HoleDims(0.,
+                            shield.getHoleRadius(),
+                            shield.getHalfLengths()[2]+1.0);//  added for better rendering
 
-        G4Tubs* CRSSteelShieldUpstreamHoleTubs = new G4Tubs(shield.name()+"HoleTubs", 
-                                                    UpstreamHoleDims.innerRadius,
-                                                    UpstreamHoleDims.outerRadius,
-                                                    UpstreamHoleDims.zHalfLength,
-                                                    UpstreamHoleDims.phi0, 
-                                                    UpstreamHoleDims.phiMax);
+        G4Tubs* CRSSteelShieldHoleTubs = new G4Tubs(shield.name()+"HoleTubs", 
+                                                    HoleDims.innerRadius,
+                                                    HoleDims.outerRadius,
+                                                    HoleDims.zHalfLength,
+                                                    HoleDims.phi0, 
+                                                    HoleDims.phiMax);
 
-        VolumeInfo CRSSteelShieldUpstreamInfo;
+        VolumeInfo CRSSteelShieldInfo;
 
-        CRSSteelShieldUpstreamInfo.name = shield.name();
+        CRSSteelShieldInfo.name = shield.name();
 
-        CRSSteelShieldUpstreamInfo.solid = 
-          new G4SubtractionSolid(CRSSteelShieldUpstreamInfo.name, 
-                                 CRSSteelShieldBox, CRSSteelShieldUpstreamHoleTubs);
+        CRSSteelShieldInfo.solid = 
+          new G4SubtractionSolid(CRSSteelShieldInfo.name, 
+                                 CRSSteelShieldBox, CRSSteelShieldHoleTubs);
 
-        finishNesting(CRSSteelShieldUpstreamInfo,
+        finishNesting(CRSSteelShieldInfo,
                       CRSSteelShieldMaterial,
                       shield.getRotation(),
                       shield.getLocalOffset(),
@@ -123,6 +125,14 @@ namespace mu2e {
                       placePV,
                       doSurfaceCheck
                       );
+
+        if ( verbosityLevel > 0) {
+          double zhl  =  shield.getHalfLengths()[2];
+          cout << __func__ << " " << shield.name() << " zhl    : " << zhl << endl;
+         double CRSSteelShieldOffsetInMu2eZ = shield.getGlobalOffset()[CLHEP::Hep3Vector::Z];
+         cout << __func__ << " " << shield.name() << " Z extent in Mu2e    : " << 
+            CRSSteelShieldOffsetInMu2eZ - zhl << ", " << CRSSteelShieldOffsetInMu2eZ + zhl << endl;
+        }
 
       }
 
