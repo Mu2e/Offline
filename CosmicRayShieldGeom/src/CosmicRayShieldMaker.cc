@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.4 2011/03/17 16:18:30 genser Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.5 2011/04/25 19:17:58 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/03/17 16:18:30 $
+// $Date: 2011/04/25 19:17:58 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -413,6 +413,31 @@ namespace mu2e {
       cout << __func__ << " shieldHalfWidth     : " << shieldHalfWidth << endl;
       cout << __func__ << " _scintillatorFullModuleHalfWidth : " << _scintillatorFullModuleHalfWidth << endl;
       cout << __func__ << " _scintillatorModuleOverlap       : " << _scintillatorModuleOverlap << endl;
+
+      // calculate shields position in the mu2e frame 
+
+      CLHEP::HepRotationX RX(shield._globalRotationAngles[0]);
+      CLHEP::HepRotationY RY(shield._globalRotationAngles[1]);
+      CLHEP::HepRotationZ RZ(shield._globalRotationAngles[2]);
+
+      CLHEP::HepRotation shieldRotation(RX*RY*RZ);
+
+      CLHEP::Hep3Vector shieldGlobalCRSOffsetRotated = 
+        (shieldRotation * (shield._globalOffset - _crs->_globalOffset)) + _crs->_globalOffset;
+
+      cout << __func__ << " shieldGlobalCRSOffsetRotated : " << shield._name << " : "
+           << shieldGlobalCRSOffsetRotated << endl;
+
+      if (shield._name.compare("CRSScintillatorDShield")==0 || 
+          shield._name.compare("CRSScintillatorUShield")==0) {
+        cout << __func__ << " " << shield._name << " extent    : " << 
+          shieldGlobalCRSOffsetRotated[CLHEP::Hep3Vector::Z] - shield._halfThickness << ", " <<
+          shieldGlobalCRSOffsetRotated[CLHEP::Hep3Vector::Z] + shield._halfThickness << endl;
+      } else { 
+        cout << __func__ << " " << shield._name << " extent    : " << 
+          shieldGlobalCRSOffsetRotated[CLHEP::Hep3Vector::Z] - shieldHalfWidth << ", " <<
+          shieldGlobalCRSOffsetRotated[CLHEP::Hep3Vector::Z] + shieldHalfWidth << endl;
+      }
     }
 
     // module counter for the given shield
@@ -423,7 +448,7 @@ namespace mu2e {
 
     for (int ii = 0; ii<numberOfFullModules; ++ii) {
 
-      if ( _diagLevel > 0) {
+      if ( _diagLevel > 1) {
         cout << __func__ << " creating module          : " << imodule << endl;
       }
 
@@ -432,7 +457,7 @@ namespace mu2e {
       double moduleLocalOffsetL = firstFullModuleLocalOffsetL +
         ii*(2.*_scintillatorFullModuleHalfWidth-_scintillatorModuleOverlap);
 
-      if ( _diagLevel > 0) {
+      if ( _diagLevel > 1) {
         cout << __func__ << " moduleLocalOffsetL               : " << moduleLocalOffsetL << endl;
       }
 
@@ -466,20 +491,20 @@ namespace mu2e {
       numberOfFullModules*(2.*_scintillatorFullModuleHalfWidth - _scintillatorModuleOverlap)
       + _scintillatorHalfModuleHalfWidth;
 
-    if ( _diagLevel > 0) {
+    if ( _diagLevel > 1) {
       cout << __func__ << " _scintillatorModuleOverlap       : " << _scintillatorModuleOverlap << endl;
     }
 
     for (int ii = 0; ii<numberOfHalfModules; ++ii) {
 
-      if ( _diagLevel > 0) {
+      if ( _diagLevel > 1) {
         cout << __func__ << " creating module          : " << imodule << endl;
       }
 
       double moduleLocalOffsetL = firstHalfModuleLocalOffsetL +
         ii*(2.0*_scintillatorHalfModuleHalfWidth-_scintillatorModuleOverlap);
 
-      if ( _diagLevel > 0) {
+      if ( _diagLevel > 1) {
         cout << __func__ << " moduleLocalOffsetL               : " << moduleLocalOffsetL << endl;
       }
 
@@ -507,13 +532,13 @@ namespace mu2e {
 
     for (int ii = 0; ii<numberOfModules; ++ii) {
 
-      if ( _diagLevel > 0) {
+      if ( _diagLevel > 1) {
         cout << __func__ << " making layers for module : " << ii << endl;
       }
 
       CRSScintillatorModule& module = shield._modules.at(ii);
       module._globalOffset = shield._globalOffset + module._localOffset;
-      if ( _diagLevel > 0) {
+      if ( _diagLevel > 1) {
         cout << __func__ << " module._localOffset : " << module._localOffset << endl;
         cout << __func__ << " module._globalOffset: " << module._globalOffset << endl;
       }
@@ -549,7 +574,7 @@ namespace mu2e {
 
     for (int ii = 0; ii<numberOfLayers; ++ii) {
 
-      if ( _diagLevel > 0) {
+      if ( _diagLevel > 1) {
         cout << __func__ << " making layer : " << ii << endl;
       }
 
@@ -567,7 +592,7 @@ namespace mu2e {
       layer._globalOffset = module._globalOffset + layer._localOffset;
       layer._nBars = module._nBarsPerLayer;
 
-      if ( _diagLevel > 0) {
+      if ( _diagLevel > 2) {
         cout << __func__ << " layer._localOffset : " << layer._localOffset << endl;
         cout << __func__ << " layer._globalOffset: " << layer._globalOffset << endl;
       }
@@ -592,7 +617,7 @@ namespace mu2e {
 
     for (int ii = 0; ii<numberOfBars; ++ii) {
 
-      if ( _diagLevel > 1) {
+      if ( _diagLevel > 2) {
         cout << __func__ << " making bar   : " << ii << endl;
       }
 
@@ -638,7 +663,7 @@ namespace mu2e {
       bar._detail = &_crs->_barDetails;
       layer._indices.push_back(index);
 
-      if ( _diagLevel > 1) {
+      if ( _diagLevel > 3) {
         cout << __func__ << " barCRSOffset        : " << barCRSOffset        << endl;
         cout << __func__ << " barCRSOffsetRotated : " << barCRSOffsetRotated << endl;
         cout << __func__ << " bar._localOffset    : " << bar._localOffset    << endl;
@@ -845,8 +870,8 @@ namespace mu2e {
                                                 CRSSteelShieldSideHalfZ);
 
       CLHEP::Hep3Vector CRSSteelShieldUpstreamDimsV(CRSSteelShieldUpstreamHalfX,
-                                                 CRSSteelShieldUpstreamHalfY,           
-                                                 CRSSteelShieldUpstreamHalfZ);
+                                                    CRSSteelShieldUpstreamHalfY,           
+                                                    CRSSteelShieldUpstreamHalfZ);
 
       cout << __func__ << " CRSSteelShieldTopDimsV   : " << CRSSteelShieldTopDimsV   << endl;
       cout << __func__ << " CRSSteelShieldSideDimsV  : " << CRSSteelShieldSideDimsV  << endl;
@@ -872,7 +897,7 @@ namespace mu2e {
 
     }
 
-    // finaly create the steel shield objects
+    // finaly create the steel shield objects (we invent/assign their names here...)
 
     std::string name = "CRSSteelTopShield";
     _crs->_steelShields[name] = 
@@ -912,7 +937,9 @@ namespace mu2e {
                      _DownstreamHallSteelOffset + _crs->_localOffset,
                      0,
                      _DownstreamHallSteelOffset + _crs->_globalOffset,
-                     CRSSteelShieldUpstreamDims);
+                     CRSSteelShieldUpstreamDims,
+                     _config.getDouble("toyDS.rIn")
+                     );
 
     name = "CRSSteelUpstreamShield";
     _crs->_steelShields[name] = 
