@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.76 2011/04/25 19:23:59 genser Exp $
+// $Id: geom_01.txt,v 1.77 2011/04/27 22:30:50 genser Exp $
 // $Author: genser $
-// $Date: 2011/04/25 19:23:59 $
+// $Date: 2011/04/27 22:30:50 $
 //
 // Original author Rob Kutschke
 //
@@ -448,31 +448,31 @@ bool   neutronabsorber.solid        = false;
 
 // except for one of the Z offset values the rest is computable from the other values
 
+// the Z values were adjusted from mu2e doc-1351 based on doc-1186 also to
+// fit with the previously implemented components
+
+// the initial implementation is described in doc-1519
+
 double mbs.BSTSInnerRadius  =   410.0;
 double mbs.BSTSOuterRadius  =   430.0;
-double mbs.BSTSHLength      =  1700.0; // was 2108 ; then 1933
+double mbs.BSTSHLength      =  1700.0; 
 string mbs.BSTSMaterialName = "StainlessSteel";
-double mbs.BSTSZ            = 15150.0; // was 15258, but this is not aligned with the other ones; 15208, 15383then +175
+double mbs.BSTSZ            = 15150.0; 
 double mbs.SPBSInnerRadius  =   430.0;
 double mbs.SPBSOuterRadius  =   452.0;
 double mbs.SPBSHLength      =  1320.0;
 string mbs.SPBSMaterialName = "G4_Pb";
-// double mbs.SPBSZ            = 15996.0;
 double mbs.BSTCInnerRadius  =   390.0;
 double mbs.BSTCOuterRadius  =   410.0;
 double mbs.BSTCHLength      =   375.0;
 string mbs.BSTCMaterialName = "Polyethylene092B300d119";
-// double mbs.BSTCZ            = 13475.0; // was 13525, but this is not aligned with BSTS
 double mbs.BSBSInnerRadius  =   320.0;
 double mbs.BSBSOuterRadius  =   410.0;
-// double mbs.BSBSHLength      =  1733.0; // 1733 + 375 = 2108
 string mbs.BSBSMaterialName = "Polyethylene092B300d119";
-// double mbs.BSBSZ            = 15583.0;
 double mbs.CLV2InnerRadius  =    50.0;
 double mbs.CLV2OuterRadius  =   320.0;
 double mbs.CLV2HLength      =    50.0;
 string mbs.CLV2MaterialName = "Polyethylene092B300d119";
-// double mbs.CLV2Z         = 17266.0;
 double mbs.CryoSealHLength    = 150.0;
 string mbs.CryoSealMaterialName = "StainlessSteel";
 string mbs.EndPlugMaterialName  = "StainlessSteel";

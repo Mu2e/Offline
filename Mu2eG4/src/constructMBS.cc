@@ -1,14 +1,24 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.1 2011/04/25 19:17:27 genser Exp $
+// $Id: constructMBS.cc,v 1.2 2011/04/27 22:30:50 genser Exp $
 // $Author: genser $
-// $Date: 2011/04/25 19:17:27 $
+// $Date: 2011/04/27 22:30:50 $
 //
 // Original author KLG 
 //
-// Notes:
-// Construct the Neutron Absorbers in G4
+// Notes: 
+//
+// The initial implementaion is described in Mu2e Document 1519 
+
+// Also, note the interdependence of the position of the CryoSeal on
+// the position of the neutron absorber to avoid overlaps, it should
+// probably be more related to the SolenoidCoil and placed in the air
+// once the ToyDS3Vacuum is split, see below
+
+// Another aspect to keep in mind that the MBS & ToyDS3Vacuum should
+// eventually be split to allow for two different field managers and
+// to decrese the hole in the iron return yoke
 
 
 // clhep includes
@@ -56,26 +66,21 @@ namespace mu2e {
     double const SPBSOuterRadius   = _config->getDouble("mbs.SPBSOuterRadius");
     double const SPBSHLength       = _config->getDouble("mbs.SPBSHLength");
     string const SPBSMaterialName  = _config->getString("mbs.SPBSMaterialName");
-    //    double const SPBSZ             = _config->getDouble("mbs.SPBSZ");
     double const SPBSZ             = BSTSZ + BSTSHLength - SPBSHLength;
     double const BSTCInnerRadius   = _config->getDouble("mbs.BSTCInnerRadius");
     double const BSTCOuterRadius   = _config->getDouble("mbs.BSTCOuterRadius");
     double const BSTCHLength       = _config->getDouble("mbs.BSTCHLength");
     string const BSTCMaterialName  = _config->getString("mbs.BSTCMaterialName");
-    //    double const BSTCZ             = _config->getDouble("mbs.BSTCZ");
     double const BSTCZ             = BSTSZ - BSTSHLength + BSTCHLength;
     double const BSBSInnerRadius   = _config->getDouble("mbs.BSBSInnerRadius");
     double const BSBSOuterRadius   = _config->getDouble("mbs.BSBSOuterRadius");
-    //    double const BSBSHLength       = _config->getDouble("mbs.BSBSHLength");
     double const BSBSHLength       = BSTSHLength - BSTCHLength;
     string const BSBSMaterialName  = _config->getString("mbs.BSBSMaterialName");
-    //    double const BSBSZ             = _config->getDouble("mbs.BSBSZ");
     double const BSBSZ             = BSTSZ + BSTSHLength - BSBSHLength;
     double const CLV2InnerRadius   = _config->getDouble("mbs.CLV2InnerRadius");
     double const CLV2OuterRadius   = _config->getDouble("mbs.CLV2OuterRadius");
     double const CLV2HLength       = _config->getDouble("mbs.CLV2HLength");
     string const CLV2MaterialName  = _config->getString("mbs.CLV2MaterialName");
-    //    double const CLV2Z             = _config->getDouble("mbs.CLV2Z");
     double const CLV2Z             = BSTSZ + BSTSHLength - CLV2HLength;
 
     bool const MBSisVisible        = _config->getBool("mbs.visible",true);

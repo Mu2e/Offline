@@ -1,12 +1,17 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.5 2011/04/25 19:17:58 genser Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.6 2011/04/27 22:30:50 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/04/25 19:17:58 $
+// $Date: 2011/04/27 22:30:50 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
+// Notes
+//
+// Right now the hole in CRSSteelDownstreamShield is large enough to
+// accommodate the ToyDS3Vacuum; it should eventually be only large
+// enough to accommodate MBS
 
 // c++ includes
 #include <iostream>
