@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.77 2011/04/27 22:30:50 genser Exp $
+// $Id: geom_01.txt,v 1.78 2011/04/29 17:44:49 genser Exp $
 // $Author: genser $
-// $Date: 2011/04/27 22:30:50 $
+// $Date: 2011/04/29 17:44:49 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@ bool hasBFieldManager   = true;
 bool hasBeamline        = true;
 bool hasVirtualDetector = true;
 bool hasCosmicRayShield = true;
-bool hasMBS             = true;
+bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(Steel) & NeutronAbsorber
 
 // Uncomment exactly one tracker.
 #include "Mu2eG4/test/ttracker_v2.txt"
@@ -168,10 +168,12 @@ double toyDS.halfLength         = 6000.;
 double toyDS.z0                 = 9226.;
 double toyDS1.halfLength        =  150.;
 double toyDS2.halfLength        = 2350.;
-double toyDS3.halfLength        = 4210.5.; // was 3650; changed to accommodate mbs
+double toyDS3.halfLength        = 3400.5.; // was 3650; changed to accommodate mbs
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
+
+int    toyDS.verbosityLevel     = 0;
 bool   toyDS.visible            = true;
 bool   toyDS.solid              = false;
 
@@ -441,6 +443,7 @@ double neutronabsorber.externalHalfLengthXY  = 1475.0;
 double neutronabsorber.externalHalfThickness =   75.0;
 double neutronabsorber.externalZ0            = 9219.0; // 2999+15439/2
 
+int    neutronabsorber.verbosityLevel = 0;
 bool   neutronabsorber.visible      = true;
 bool   neutronabsorber.solid        = false;
 
