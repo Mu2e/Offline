@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.47 2011/04/29 22:34:07 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.48 2011/04/29 22:53:53 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/04/29 22:34:07 $
+// $Date: 2011/04/29 22:53:53 $
 //
 // Original author Rob Kutschke
 //
@@ -399,6 +399,9 @@ namespace mu2e {
     // Pause to see graphics. 
     if ( !_visMacro.empty() ){
 
+      // We need to add a command here to flush the graphics to the screen
+      // The only way that I know how does a full redraw ...
+
       // Prompt to continue and wait for reply.
       cout << "Enter a character to go to the next event (q quits, v enters G4 interactive session)" << 
         endl;
@@ -421,9 +424,10 @@ namespace mu2e {
           G4UIExecutive* UIE = new G4UIExecutive(argc, argv);
           UIE->SessionStart();
           delete UIE;
-          _UI->ApplyCommand("/vis/scene/endOfEventAction refresh");
         }
       } // end !userinput.empty()
+      _UI->ApplyCommand("/vis/scene/endOfEventAction refresh");
+
     }   // end !_visMacro.empty()
      
 
