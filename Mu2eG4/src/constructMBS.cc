@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.2 2011/04/27 22:30:50 genser Exp $
+// $Id: constructMBS.cc,v 1.3 2011/04/29 17:43:23 genser Exp $
 // $Author: genser $
-// $Date: 2011/04/27 22:30:50 $
+// $Date: 2011/04/29 17:43:23 $
 //
 // Original author KLG 
 //
@@ -11,15 +11,10 @@
 //
 // The initial implementaion is described in Mu2e Document 1519 
 
-// Also, note the interdependence of the position of the CryoSeal on
+// Note the interdependence of the position of the CryoSeal on
 // the position of the neutron absorber to avoid overlaps, it should
-// probably be more related to the SolenoidCoil and placed in the air
-// once the ToyDS3Vacuum is split, see below
-
-// Another aspect to keep in mind that the MBS & ToyDS3Vacuum should
-// eventually be split to allow for two different field managers and
-// to decrese the hole in the iron return yoke
-
+// probably be more related to the SolenoidCoil once the dimensions of
+// those components are reconciled
 
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -104,13 +99,14 @@ namespace mu2e {
       cout << __func__ << " solenoidOffset                   : " << solenoidOffset  << endl;
     }
 
-     // mother volume
+     // mother volumes
     VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo const & hallInfo =                _helper->locateVolInfo("HallAir");
 
     if ( verbosityLevel > 0) {
-      double pzhl        = static_cast<G4Tubs*>(detSolDownstreamVacInfo.solid)->GetZHalfLength();
+      double pzhl = static_cast<G4Tubs*>(detSolDownstreamVacInfo.solid->GetConstituentSolid(0))->GetZHalfLength();
       double pZOffset = detSolDownstreamVacInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " ToyDS3Vacuum Z Offset in Mu2e    : " << 
+      cout << __func__ << " ToyDS3Vacuum   Offset in Mu2e    : " << 
         detSolDownstreamVacInfo.centerInMu2e() << endl;
       cout << __func__ << " ToyDS3Vacuum Z extent in Mu2e    : " << 
         pZOffset - pzhl << ", " << pZOffset + pzhl << endl;
@@ -310,7 +306,7 @@ namespace mu2e {
 
     // the hollow disk aka CryoSeal
 
-    double CryoSealInnerRadius = SPBSOuterRadius;
+    double CryoSealInnerRadius = SPBSOuterRadius; // may need to be BSTSOuterRadius TBD
     double CryoSealOuterRadius = _config->getDouble("toyDS.rIn");
     double CryoSealHLength     = _config->getDouble("mbs.CryoSealHLength");
 
@@ -324,7 +320,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector CryoSealOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,CryoSealZ);
 
-    CLHEP::Hep3Vector CryoSealOffset = CryoSealOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();
+    CLHEP::Hep3Vector CryoSealOffset = CryoSealOffsetInMu2e - hallInfo.centerInMu2e();
 
     string const CryoSealMaterialName  = _config->getString("mbs.CryoSealMaterialName");
 
@@ -333,7 +329,7 @@ namespace mu2e {
                                         findMaterialOrThrow(CryoSealMaterialName),
                                         0,
                                         CryoSealOffset,
-                                        detSolDownstreamVacInfo,
+                                        hallInfo,
                                         0, 
                                         MBSisVisible,
                                         G4Colour::Green(),
@@ -395,7 +391,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector EndPlug1OffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,EndPlug1Z);
 
-    CLHEP::Hep3Vector EndPlug1Offset = EndPlug1OffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();
+    CLHEP::Hep3Vector EndPlug1Offset = EndPlug1OffsetInMu2e - hallInfo.centerInMu2e();
 
     string const EndPlug1MaterialName  = _config->getString("mbs.EndPlugMaterialName");
 
@@ -404,7 +400,7 @@ namespace mu2e {
                                         findMaterialOrThrow(EndPlug1MaterialName),
                                         0,
                                         EndPlug1Offset,
-                                        detSolDownstreamVacInfo,
+                                        hallInfo,
                                         0, 
                                         MBSisVisible,
                                         G4Colour::Gray(),
@@ -443,7 +439,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector EndPlugDiskOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,EndPlugDiskZ);
 
-    CLHEP::Hep3Vector EndPlugDiskOffset = EndPlugDiskOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();
+    CLHEP::Hep3Vector EndPlugDiskOffset = EndPlugDiskOffsetInMu2e - hallInfo.centerInMu2e();
 
     string const EndPlugDiskMaterialName  = _config->getString("mbs.EndPlugMaterialName");
 
@@ -452,7 +448,7 @@ namespace mu2e {
                                            findMaterialOrThrow(EndPlugDiskMaterialName),
                                            0,
                                            EndPlugDiskOffset,
-                                           detSolDownstreamVacInfo,
+                                           hallInfo,
                                            0, 
                                            MBSisVisible,
                                            G4Colour::Gray(),
