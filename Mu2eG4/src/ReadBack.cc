@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.37 2011/03/18 16:19:34 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/18 16:19:34 $
+// $Id: ReadBack.cc,v 1.38 2011/04/29 21:35:08 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/04/29 21:35:08 $
 //
 // Original author Rob Kutschke
 //
@@ -703,6 +703,7 @@ namespace mu2e {
 
           // Physical volume in which this track started.
           PhysicalVolumeInfo const& volInfo = volumes->at(sim.startVolumeIndex());
+          PhysicalVolumeInfo const& endInfo = volumes->at(sim.endVolumeIndex());
 
           cerr << "Readback"
                << " Simulated Particle: " 
@@ -711,7 +712,10 @@ namespace mu2e {
                << genId.name()        << " "
                << sim.startPosition() << " "
                << volInfo.name()      << " "
-               << volInfo.copyNo()
+               << volInfo.copyNo()    << " | "
+               << endInfo.name()      << " "
+               << endInfo.copyNo()    << " | "
+               << sim.stoppingCode()
                << endl;
         }
 
