@@ -3,14 +3,26 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.18 2011/04/25 20:47:01 genser Exp $
+  $Id: v0_3_4.txt,v 1.19 2011/04/29 17:51:18 genser Exp $
   $Author: genser $
-  $Date: 2011/04/25 20:47:01 $
+  $Date: 2011/04/29 17:51:18 $
+
+16) April 29, 2011 genser 
+
+    Improved the Muon Beam Stop (MBS) implementation by reimplementing
+    DS3Vacuum as a subtraction solid to limit the magnetic field to
+    the MBS area only and to be able to make the MBS steel opening
+    smaller and place the new elements external to MBS in the air; 
+    added conditional diagnostic printout; added comments
+      CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
+      Mu2eG4/src/constructDS.cc
+      Mu2eG4/src/constructMBS.cc
+      Mu2eG4/test/geom_01.txt
 
 15) April 25, 2011 genser 
 
     Added Muon Beam Stop (MBS) and related elements of the Cryostat in geant4;
-    Added a hole in CRSSteelDownstreamShield to accomodate MBS;
+    Added an opening in CRSSteelDownstreamShield to accomodate MBS;
     Extended DS3 vacuum to accommodate MBS (as a temporary measure);
     Extended/Repositioned CRV to accommodate MBS;
     Added/changed diagnostic printout also to help the z alignment
