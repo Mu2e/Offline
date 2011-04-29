@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.1 2011/02/09 16:19:18 genser Exp $
+// $Id: constructNeutronAbsorber.cc,v 1.2 2011/04/29 17:44:15 genser Exp $
 // $Author: genser $
-// $Date: 2011/02/09 16:19:18 $
+// $Date: 2011/04/29 17:44:15 $
 //
 // Original author KLG 
 //
@@ -43,7 +43,7 @@ namespace mu2e {
 
   void constructNeutronAbsorber(SimpleConfig const * const _config){
 
-    int static const diagLevel = 0;
+    int const verbosityLevel = _config->getInt("neutronabsorber.verbosityLevel",0);
 
     // the absorber is split into two major pieces internal & external (wrt to the coil)
 
@@ -94,20 +94,20 @@ namespace mu2e {
     double solenoidOffset = -beamg->solenoidOffset(); 
     // this is an offset in X (and in what?) and should be negative?
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " solenoidOffset                   : " << solenoidOffset  << endl;
     }
 
     CLHEP::Hep3Vector NAEOffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,NAEZ0);
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " NAEOffsetInMu2e                  : " << NAEOffsetInMu2e << endl;
     }
 
     // now local offset in hallAir
     CLHEP::Hep3Vector NAEOffset =  NAEOffsetInMu2e - hallInfo.centerInMu2e();
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " hallInfo.centerInMu2e()          : " << hallInfo.centerInMu2e() << endl;
       cout << __func__ << " NAEOffset                        : " << NAEOffset << endl;
     }
@@ -204,13 +204,13 @@ namespace mu2e {
 
     CLHEP::Hep3Vector NAI1OffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,NAIZ01);
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " NAI1OffsetInMu2e                 : " << NAI1OffsetInMu2e << endl;
     }
 
     double NAIZ02 = NAIZ01 + NAIHalfLengthZ01 + NAIHalfLengthZ02;
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " NAIZ01                           : " << NAIZ01  << endl;
       cout << __func__ << " NAIZ02                           : " << NAIZ02  << endl;
     }
@@ -219,7 +219,7 @@ namespace mu2e {
     double NAI12BoundaryZ = NAIZ01 + NAIHalfLengthZ01;
     double NAI2EndZ      = NAIZ02 + NAIHalfLengthZ02;
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " NAI1FrontZ                       : " << NAI1FrontZ    << endl;
       cout << __func__ << " NAI12BoundaryZ                   : " << NAI12BoundaryZ << endl;
       cout << __func__ << " NAI2EndZ                         : " << NAI2EndZ      << endl;
@@ -244,9 +244,9 @@ namespace mu2e {
       dynamic_cast<G4Tubs* const>(toyDS2VacuumInfo.solid)->GetZHalfLength();
 
      double ds3HalfLength = 
-      dynamic_cast<G4Tubs* const>(toyDS3VacuumInfo.solid)->GetZHalfLength();
+      dynamic_cast<G4Tubs* const>(toyDS3VacuumInfo.solid->GetConstituentSolid(0))->GetZHalfLength();
 
-   if ( diagLevel > 0) {
+   if ( verbosityLevel > 0) {
       cout << __func__ << " toyDS2VacuumInfo.solid->GetZHalfLength()    : " << 
         ds2HalfLength  << endl;
 
@@ -268,7 +268,7 @@ namespace mu2e {
       2.*ds3HalfLength;
 
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " ds2FrontZG                       : " << ds2FrontZG    << endl;
       cout << __func__ << " ds23BoudaryZG                    : " << ds23BoudaryZG << endl;
       cout << __func__ << " ds3EndZG                         : " << ds3EndZG      << endl;
@@ -307,14 +307,14 @@ namespace mu2e {
     CLHEP::Hep3Vector NAI23OffsetInMu2e = 
       CLHEP::Hep3Vector(solenoidOffset,0.,NAIZ02+halfDeltaBoundary);
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " NAI23OffsetInMu2e                : " << NAI23OffsetInMu2e << endl;
     }
 
     CLHEP::Hep3Vector NAI22OffsetInMu2e = 
       CLHEP::Hep3Vector(solenoidOffset,0.,averageBoundary);
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " NAI22OffsetInMu2e                : " << NAI22OffsetInMu2e << endl;
     }
 
@@ -322,7 +322,7 @@ namespace mu2e {
     CLHEP::Hep3Vector NAI22Offset =  NAI22OffsetInMu2e - toyDS2VacuumInfo.centerInMu2e();
     CLHEP::Hep3Vector NAI23Offset =  NAI23OffsetInMu2e - toyDS3VacuumInfo.centerInMu2e();
 
-    if ( diagLevel > 0) {
+    if ( verbosityLevel > 0) {
       cout << __func__ << " toyDS2VacuumInfo.centerInMu2e()  : " << 
         toyDS2VacuumInfo.centerInMu2e() << endl;
       cout << __func__ << " toyDS3VacuumInfo.centerInMu2e()  : " << 
@@ -417,6 +417,14 @@ namespace mu2e {
                                      doSurfaceCheck
                                      ); 
 
+    if ( verbosityLevel > 0) {
+      double zhl         = static_cast<G4Tubs*>(INA23Info.solid)->GetZHalfLength();
+      CLHEP::Hep3Vector const & IntNeutronAbs23OffsetInMu2e = INA23Info.centerInMu2e();
+      double IntNeutronAbs23OffsetInMu2eZ = IntNeutronAbs23OffsetInMu2e[CLHEP::Hep3Vector::Z];
+      cout << __func__ << " INA23Info Z center in Mu2e    : " << IntNeutronAbs23OffsetInMu2eZ << endl;
+      cout << __func__ << " INA23Info Z extent in Mu2e    : " << 
+        IntNeutronAbs23OffsetInMu2eZ - zhl << ", " << IntNeutronAbs23OffsetInMu2eZ + zhl << endl;
+    }
 
   } // end of constructNeutronAbsorber;
 
