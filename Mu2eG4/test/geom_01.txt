@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.78 2011/04/29 17:44:49 genser Exp $
-// $Author: genser $
-// $Date: 2011/04/29 17:44:49 $
+// $Id: geom_01.txt,v 1.79 2011/04/29 22:33:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/04/29 22:33:40 $
 //
 // Original author Rob Kutschke
 //
@@ -168,7 +168,7 @@ double toyDS.halfLength         = 6000.;
 double toyDS.z0                 = 9226.;
 double toyDS1.halfLength        =  150.;
 double toyDS2.halfLength        = 2350.;
-double toyDS3.halfLength        = 3400.5.; // was 3650; changed to accommodate mbs
+double toyDS3.halfLength        = 3400.5.;
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
@@ -337,9 +337,12 @@ double calorimeter.timeGap               = 100.0;  // ns
 double calorimeter.electronDepositionAPD = 1000.0; // MeV
 double calorimeter.electronMinEnergyAPD  = 0.1;    // MeV
 
-bool   calorimeter.visible        = true;
-bool   calorimeter.solid          = false;
-int    calorimeter.verbosityLevel = 0;
+// Control display and debug printout.
+bool calorimeter.vaneBoxVisible = true;
+bool calorimeter.vaneBoxSolid   = true;
+bool calorimeter.crystalVisible = false;
+bool calorimeter.crystalSolid   = true;
+int  calorimeter.verbosityLevel = 0;
 
 // Dimensions of steel, assuming constant thickness all around, and square shape.
 double fluxcrv.HallSteelHalfThick    = 250.;  // newer drawings seem to have it at 150 in the D/U ends
