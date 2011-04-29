@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.12 2011/03/16 15:21:23 wasiko Exp $
-// $Author: wasiko $
-// $Date: 2011/03/16 15:21:23 $
+// $Id: StackingAction.cc,v 1.13 2011/04/29 21:16:07 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/04/29 21:16:07 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@ namespace mu2e {
     _killLevel(0),
     _cosmicpcut(0),
     _yaboveDirtYmin(0),
+    _primaryOnly(false),
     _pdgToDrop(),
     _pdgToKeep(),
     _dirtBodyPhysVol(0),
@@ -61,6 +62,8 @@ namespace mu2e {
     _killLevel = config.getInt("g4.cosmicKillLevel",0);
     _cosmicpcut = config.getDouble("g4.cosmicPcut",0.);
     _yaboveDirtYmin = config.getDouble("g4.yaboveDirtYmin",0.);    
+
+    _primaryOnly = config.getBool("g4.stackPrimaryOnly",false);
 
     // Get list of particles to keep or to drop in stacking action
     if ( config.hasName("g4.stackingActionDropPDG") ){
@@ -140,6 +143,10 @@ namespace mu2e {
       if ( !idInList(trk,_pdgToKeep) ){
         return fKill;
       }
+    }
+
+    if ( _primaryOnly ){
+      if ( trk->GetParentID() != 0 ) return fKill;
     }
 
     return fUrgent;
