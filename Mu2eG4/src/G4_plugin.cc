@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.46 2011/03/09 21:43:12 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.47 2011/04/29 22:34:07 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/03/09 21:43:12 $
+// $Date: 2011/04/29 22:34:07 $
 //
 // Original author Rob Kutschke
 //
@@ -397,9 +397,7 @@ namespace mu2e {
 
     
     // Pause to see graphics. 
-    if ( _visMacro.size() > 0 ) {
-
-      _UI->ApplyCommand( "/vis/scene/endOfEventAction refresh");
+    if ( !_visMacro.empty() ){
 
       // Prompt to continue and wait for reply.
       cout << "Enter a character to go to the next event (q quits, v enters G4 interactive session)" << 
@@ -423,14 +421,10 @@ namespace mu2e {
           G4UIExecutive* UIE = new G4UIExecutive(argc, argv);
           UIE->SessionStart();
           delete UIE;
+          _UI->ApplyCommand("/vis/scene/endOfEventAction refresh");
         }
-      }
-      //_UI->ApplyCommand(userinput); 
-      _UI->ApplyCommand("/vis/scene/endOfEventAction refresh");
-      //_UI->ApplyCommand( "/vis/viewer/refresh"); 
-      //_UI->ApplyCommand( "/vis/viewer/flush"); 
-
-    }
+      } // end !userinput.empty()
+    }   // end !_visMacro.empty()
      
 
     // This deletes the object pointed to by currentEvent.
