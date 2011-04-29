@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.6 2011/04/27 22:30:50 genser Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.7 2011/04/29 17:42:51 genser Exp $
 // $Author: genser $ 
-// $Date: 2011/04/27 22:30:50 $
+// $Date: 2011/04/29 17:42:51 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -936,6 +936,9 @@ namespace mu2e {
                      _RightHallSteelOffset + _crs->_globalOffset,
                      CRSSteelShieldSideDims);
 
+    double downStreamHoleRadius = _config.getBool("hasMBS",false) ? 
+      _config.getDouble("mbs.SPBSOuterRadius") : 0. ;
+
     name = "CRSSteelDownstreamShield";
     _crs->_steelShields[name] = 
       CRSSteelShield(name,
@@ -943,7 +946,7 @@ namespace mu2e {
                      0,
                      _DownstreamHallSteelOffset + _crs->_globalOffset,
                      CRSSteelShieldUpstreamDims,
-                     _config.getDouble("toyDS.rIn")
+                     downStreamHoleRadius
                      );
 
     name = "CRSSteelUpstreamShield";
