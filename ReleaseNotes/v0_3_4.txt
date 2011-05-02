@@ -3,9 +3,20 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.25 2011/05/02 18:29:19 kutschke Exp $
+  $Id: v0_3_4.txt,v 1.26 2011/05/02 18:56:02 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/05/02 18:29:19 $
+  $Date: 2011/05/02 18:56:02 $
+
+25) May 5, 2011 kutschke
+      EventGenerator/inc/FromG4BLFile.hh
+      EventGenerator/src/FromG4BLFile.cc
+    Rework the treatment of the input coordinate system.  See the
+    comments in the code for details.
+    
+    Added a list of pdgIds to accept.  If the list is empty, accept
+    all ids.  If it is not empty, then only accept particles from
+    the input file if they match one of the ids in the list.
+
 
 24) May 5, 2011 kutschke
       Mu2eUtc/SimpleConfig.hh   
