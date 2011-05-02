@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.7 2010/09/30 14:43:55 kutschke Exp $
+ * $Id: SimpleConfig.cc,v 1.8 2011/05/02 18:26:51 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/09/30 14:43:55 $
+ * $Date: 2011/05/02 18:26:51 $
  *
  * Original author Rob Kutschke
  *
@@ -213,6 +213,43 @@ namespace mu2e {
         << v.size();
     }
   }
+
+  /**
+   * Get a specified parameter as a vector<string>.
+   * If the parameter is absent, return the default value.
+   *
+   * @return the value of the parameter as a vector<string>.
+   */
+  void SimpleConfig::getVectorString ( const string&         name, 
+                                       vector<string>&       v,
+                                       const vector<string>& vdefault,
+                                       int                   nRequired ) const{
+
+    // If value is present, extract it from the configuration.
+    if ( hasName(name) ){
+      getVectorString( name, v, nRequired);
+      return;
+    }
+
+    // If asked to, check that the default value has the right length.
+    if ( nRequired > -1 ) {
+      if ( vdefault.size() != static_cast<size_t>(nRequired) ){
+        throw edm::Exception(edm::errors::Unknown)
+          << "SimpleConfig: Wrong number of elements in vector<string> "
+          << name 
+          << " in file " 
+          << _inputfile 
+          << " Required: "
+          << nRequired
+          << " Found: "
+          << vdefault.size();
+      }
+    }
+
+    // Assign the default value;
+    v = vdefault;
+  }
+
   
   /**
    * Get a specified parameter as a vector<int>.
@@ -235,6 +272,43 @@ namespace mu2e {
     }
   }
 
+  /**
+   * Get a specified parameter as a vector<int>.
+   * If the parameter is absent, return the default value.
+   *
+   * @return the value of the parameter as a vector<int>.
+   */
+  void SimpleConfig::getVectorInt ( const string&      name, 
+                                    vector<int>&       v,
+                                    const vector<int>& vdefault,
+                                    int                nRequired ) const{
+    
+    // If value is present, extract it from the configuration.
+    if ( hasName(name) ){
+      getVectorInt( name, v, nRequired);
+      return;
+    }
+
+    // If asked to, check that the default value has the right length.
+    if ( nRequired > -1 ) {
+      if ( vdefault.size() != static_cast<size_t>(nRequired) ){
+        throw edm::Exception(edm::errors::Unknown)
+          << "SimpleConfig: Wrong number of elements in vector<int> "
+          << name 
+          << " in file " 
+          << _inputfile 
+          << " Required: "
+          << nRequired
+          << " Found: "
+          << vdefault.size();
+      }
+    }
+
+    // Assign the default value;
+    v = vdefault;
+  }
+
+
 
   /**
    * Get a specified parameter as a vector<double>.
@@ -248,7 +322,7 @@ namespace mu2e {
     if ( nRequired < 0 ) return;
     if ( v.size() != static_cast<size_t>(nRequired) ){
       throw edm::Exception(edm::errors::Unknown)
-        << "SimpleConfig: Wrong number of elements in vector<String> "
+        << "SimpleConfig: Wrong number of elements in vector<double> "
         << name 
         << " in file " 
         << _inputfile 
@@ -260,6 +334,42 @@ namespace mu2e {
 
   }
 
+  /**
+   * Get a specified parameter as a vector<double>.
+   * If the parameter is absent, return the default value.
+   *
+   * @return the value of the parameter as a vector<double>.
+   */
+  void SimpleConfig::getVectorDouble ( const string&         name, 
+                                       vector<double>&       v,
+                                       const vector<double>& vdefault,
+                                       int                   nRequired ) const{
+
+    // If value is present, extract it from the configuration.
+    if ( hasName(name) ){
+      getVectorDouble( name, v, nRequired);
+      return;
+    }
+
+    // If asked to, check that the default value has the right length.
+    if ( nRequired > -1 ) {
+      if ( vdefault.size() != static_cast<size_t>(nRequired) ){
+        throw edm::Exception(edm::errors::Unknown)
+          << "SimpleConfig: Wrong number of elements in vector<double> "
+          << name 
+          << " in file " 
+          << _inputfile 
+          << " Required: "
+          << nRequired
+          << " Found: "
+          << vdefault.size();
+      }
+    }
+
+    // Assign the default value;
+    v = vdefault;
+  }
+
   CLHEP::Hep3Vector SimpleConfig::getHep3Vector ( const std::string& name ) const{
     vector<double> tmp;
     getVectorDouble(name,tmp,3);
@@ -268,7 +378,7 @@ namespace mu2e {
   }
 
   CLHEP::Hep3Vector SimpleConfig::getHep3Vector ( const std::string& name,
-                                           const CLHEP::Hep3Vector& def ){
+                                                  const CLHEP::Hep3Vector& def ) const{
     if ( hasName(name) ) {
       vector<double> tmp;
       getVectorDouble(name,tmp,3);

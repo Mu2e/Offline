@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.7 2010/09/27 19:42:30 kutschke Exp $
+ * $Id: SimpleConfig.hh,v 1.8 2011/05/02 18:26:51 kutschke Exp $
  * $Author: kutschke $ 
- * $Date: 2010/09/27 19:42:30 $
+ * $Date: 2011/05/02 18:26:51 $
  *
  * Original author Rob Kutschke
  *
@@ -23,7 +23,7 @@
  * 2) Does not escape new lines within a string properly.
  *
  *@author $Author: kutschke $
- *@version $Id: SimpleConfig.hh,v 1.7 2010/09/27 19:42:30 kutschke Exp $
+ *@version $Id: SimpleConfig.hh,v 1.8 2011/05/02 18:26:51 kutschke Exp $
  *
  * Date $Date%
  *
@@ -172,12 +172,35 @@ namespace mu2e {
                            int nRequired=-1) const;
 
     /**
+     * Get a specified parameter as a vector<std::string>. 
+     * If the parameter is absent, return the default value.
+     * Works for all parameter types.
+     *
+     * @return the value of the parameter as a vector<std::string>.
+     */
+    void getVectorString ( const std::string&              name, 
+                           std::vector<std::string>&       v,
+                           const std::vector<std::string>& vdefault,
+                           int                             nRequired=-1) const;
+
+    /**
      * Get a specified parameter as a vector<int>.
      *
      * @return the value of the parameter as a vector<int>.
      */
     void getVectorInt ( const std::string& name, 
-                        std::vector<int>&,
+                        std::vector<int>& v,
+                        int nRequired=-1) const;
+
+    /**
+     * Get a specified parameter as a vector<int>.
+     * If the parameter is absent, return the default value.
+     *
+     * @return the value of the parameter as a vector<int>.
+     */
+    void getVectorInt ( const std::string& name, 
+                        std::vector<int>& v,
+                        const std::vector<int>& vdefault,
                         int nRequired=-1) const;
     
     /**
@@ -187,6 +210,17 @@ namespace mu2e {
      */
     void getVectorDouble ( const std::string& name, 
                            std::vector<double>& v,
+                           int nRequired=-1) const;
+
+    /**
+     * Get a specified parameter as a vector<double>.
+     * If the parameter is absent, return the default value.
+     *
+     * @return the value of the parameter as a vector<double>.
+     */
+    void getVectorDouble ( const std::string& name, 
+                           std::vector<double>& v,
+                           const std::vector<double>& vdefault,
                            int nRequired=-1) const;
 
     /**
@@ -202,7 +236,7 @@ namespace mu2e {
      * @return the value of the parameter as a CLHEP::Hep3Vector.
      */
     CLHEP::Hep3Vector getHep3Vector ( const std::string& name,
-                                      const CLHEP::Hep3Vector& def );
+                                      const CLHEP::Hep3Vector& def ) const;
   
     /**
      * Return the requested record as a formatted string.
