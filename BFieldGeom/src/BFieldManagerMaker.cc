@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.12 2011/03/08 00:40:46 kutschke Exp $
+// $Id: BFieldManagerMaker.cc,v 1.13 2011/05/02 15:51:25 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/03/08 00:40:46 $
+// $Date: 2011/05/02 15:51:25 $
 //
 
 // Includes from C++
@@ -183,12 +183,15 @@ namespace mu2e {
     vector<int> dim;
     _config.getVectorInt(dimensionKey,dim, 3);
 
+    double scaleFactor(_config.getDouble("bfield.scaleFactor",1.0));
+
     // Create an empty map.
     BFMap& bfmap = _bfmgr->addBFMap( key,
                                      dim[0],
                                      dim[1],
                                      dim[2],
-                                     BFMapType::GMC );
+                                     BFMapType::GMC,
+                                     scaleFactor );
 
     // Fill the map.
     readGMCMap( filename, bfmap );
@@ -274,12 +277,15 @@ namespace mu2e {
     X0[1] = X0[1] - G4BL_offset.y();
     X0[2] = X0[2] - G4BL_offset.z();
 
+    double scaleFactor(_config.getDouble("bfield.scaleFactor",1.0));
+
     // Create an empty map.
     BFMap& dsmap = _bfmgr->addBFMap( key,
                                      dim[0],
                                      dim[1],
                                      dim[2],
-                                     BFMapType::G4BL );
+                                     BFMapType::G4BL,
+                                     scaleFactor );
 
     // Set defined region for the map
     dsmap.setLimits(X0[0],X0[0]+(dim[0]-1)*dX[0],
@@ -744,7 +750,9 @@ namespace mu2e {
 
   void BFieldManagerMaker::loadUniformDS(){
     double bz = _config.getDouble("toyDS.bz", 0.);
-    _bfmgr->_dsUniformValue = CLHEP::Hep3Vector( 0., 0., bz);
+    double scaleFactor(_config.getDouble("bfield.scaleFactor",1.0));
+
+    _bfmgr->_dsUniformValue = CLHEP::Hep3Vector( 0., 0., bz*scaleFactor);
   }
 
 } // end namespace mu2e

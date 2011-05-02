@@ -3,9 +3,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.6 2011/03/08 00:40:23 kutschke Exp $
+// $Id: BFieldManager.hh,v 1.7 2011/05/02 15:51:25 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/03/08 00:40:23 $
+// $Date: 2011/05/02 15:51:25 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -100,7 +100,8 @@ namespace mu2e {
                      int const nx, 
                      int const ny, 
                      int const nz,
-                     BFMapType::enum_type type );
+                     BFMapType::enum_type type,
+                     double scaleFactor );
 
     // This class could support copying but it is not really needed and
     // I would like to prevent unintended copies ( people forgetting to

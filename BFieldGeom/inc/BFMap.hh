@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.9 2011/03/08 00:40:23 kutschke Exp $
+// $Id: BFMap.hh,v 1.10 2011/05/02 15:51:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/08 00:40:23 $
+// $Date: 2011/05/02 15:51:25 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -38,10 +38,11 @@ namespace mu2e {
       _field(),
       _isDefined(),
       _allDefined(false),
-      _type(){
+      _type(),
+      _scaleFactor(1.){
     }
 
-    BFMap( const std::string& key, BFMapType::enum_type atype, bool warnIfOutside=false):
+    BFMap( const std::string& key, BFMapType::enum_type atype, double scale, bool warnIfOutside=false):
       _key(key),
       _warnIfOutside(warnIfOutside),
       _nx(),
@@ -51,7 +52,8 @@ namespace mu2e {
       _field(),
       _isDefined(),
       _allDefined(false),
-      _type(atype){
+      _type(atype),
+      _scaleFactor(scale){
     }
 
     BFMap(std::string filename, 
@@ -59,6 +61,7 @@ namespace mu2e {
           int const ny, 
           int const nz,
           BFMapType::enum_type atype,
+          double scale,
           bool warnIfOutside=false):
       _key(filename),
       _warnIfOutside(warnIfOutside),
@@ -69,7 +72,8 @@ namespace mu2e {
       _field(_nx,_ny,_nz),
       _isDefined(_nx,_ny,_nz,false),
       _allDefined(false),
-      _type(atype){
+      _type(atype),
+      _scaleFactor(scale){
     };
     
     virtual ~BFMap();
@@ -131,6 +135,9 @@ namespace mu2e {
 
     // GMC, G4BL or possible future types.
     BFMapType _type;
+
+    // A scale factor applied overall.
+    double _scaleFactor;
 
     // Functions used internally and by the code that populates the maps.
 

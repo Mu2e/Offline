@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.10 2011/03/08 00:40:23 kutschke Exp $
+// $Id: BFMap.cc,v 1.11 2011/05/02 15:51:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/08 00:40:23 $
+// $Date: 2011/05/02 15:51:25 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -138,7 +138,7 @@ namespace mu2e {
     // Return BField 3Vector
     return CLHEP::Hep3Vector(gmcpoly2(x1d,zin),
                              gmcpoly2(y1d,zin),
-                             gmcpoly2(z1d,zin));
+                             gmcpoly2(z1d,zin))*_scaleFactor;
   }
 
   // Standard Lagrange formula for 2nd order polynomial fit of 
