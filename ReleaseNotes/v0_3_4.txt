@@ -3,10 +3,21 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.24 2011/05/02 15:51:43 kutschke Exp $
+  $Id: v0_3_4.txt,v 1.25 2011/05/02 18:29:19 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/05/02 15:51:43 $
+  $Date: 2011/05/02 18:29:19 $
 
+24) May 5, 2011 kutschke
+      Mu2eUtc/SimpleConfig.hh   
+      Mu2eUtilities/src/SimpleConfig.cc
+    Bug fix: the two getHep3Vector methods are now both const methods.
+    New features: optional default values for getVector* methods.
+
+23) May 2, 2011 kutschke
+    Added a utility routine to compute the kinematics of
+    two body decay:
+      GeneralUtilities/inc/TwoBodyKinematics.hh 
+      GeneralUtilities/src/TwoBodyKinematics.cc
 
 22) May 2, 2011 kutschke
     Added a scale factor for the magnetic field map:
