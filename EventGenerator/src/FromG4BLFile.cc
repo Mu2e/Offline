@@ -1,18 +1,43 @@
 //
 // Read particles from a file in G4beamline input format.
+// Position of the ToyGenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.12 2011/03/21 20:24:39 onoratog Exp $
-// $Author: onoratog $ 
-// $Date: 2011/03/21 20:24:39 $
+// $Id: FromG4BLFile.cc,v 1.13 2011/05/02 18:55:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/05/02 18:55:50 $
 //
 // Original author Rob Kutschke
 //
 // The position is given in the Mu2e coordinate system.
-// 
-
-// Zlimits: 1685.84 1843.21
-//   Length = 157.37           ( halflength=80)
-//   Mid    = 1764.525
+//
+// Notes:
+// 1) There are two modes that are selected by the config variable: 
+//      fromG4BLFile.targetFrame = true or false
+//
+//    True:
+//       Particles should be created in the production target.
+//       For historical reasons, some versions of the G4beamline
+//       have the production target in different locations.
+//       So the variable 
+//          fromG4BLFile.prodTargetOff
+//       should be set to the position of the center of the production 
+//       target in the G4beamline coordinate system.  This is subtracted
+//       from the position read from the file to yield a position that
+//       is centered on the production target.  The code then uses 
+//       the GeometryService value of the target position to place the
+//       generated particles in the event.
+//       
+//    False:
+//       Positions in the input file are specified in the G4beamline 
+//       coordinate system.  This is transformed to the Mu2e coordinate
+//       system using the configuration parameter:
+//              fromG4BLFile.g4beamlineOrigin
+//       There is a second offset that can be used:
+//              fromG4BLFile.g4beamlineExtraOffset
+//       Normally this should be (0,0,0) but it can be used to fix
+//       small deviations in geometry specifications between G4beamline
+//       and Mu2esim.
+//
 
 #include <iostream>
 
@@ -51,10 +76,16 @@ namespace mu2e {
 
     // From run time configuration file.
     _mean(config.getDouble("fromG4BLFile.mean",-1.)),
+    _prodTargetOffset(),
+    _prodTargetCenter(),
+    _g4beamlineOrigin(),
+    _g4beamlineExtraOffset(CLHEP::Hep3Vector()),
     _inputFileName(config.getString("fromG4BLFile.filename")),
+    _pdgIdToKeep(),
     _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
-    _targetFrame(config.getBool("fromG4BLFile.targetFrame", true)),
+    _targetFrame(config.getBool("fromG4BLFile.targetFrame", false)),
     _nPartToSkip(config.getInt("fromG4BLFile.particlesToSkip",0)),
+
     // Random number distributions; getEngine() comes from base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
 
@@ -75,12 +106,18 @@ namespace mu2e {
       throw cms::Exception("RANGE")
         << "FromG4BLFile has been asked to produce a crazily large number of particles.\n";
     }
-    
-    if ( config.hasName("fromG4BLFile.offset") ) {
-      _offset = config.getHep3Vector("fromG4BLFile.offset");
-    } else {
-      _offset = CLHEP::Hep3Vector(0.0,0.0,1764.5);
-    }
+
+    CLHEP::Hep3Vector offset_default(0.0,0.0,1764.5);
+    _prodTargetOffset = config.getHep3Vector("fromG4BLFile.prodTargetOff", offset_default);
+
+    CLHEP::Hep3Vector g4beamlineOrigin_default(3904.,0.,-7929.);
+    _g4beamlineOrigin = config.getHep3Vector("fromG4BLFile.g4beamlineOrigin", g4beamlineOrigin_default);
+
+    CLHEP::Hep3Vector g4beamlineExtraOffset_default;
+    _g4beamlineExtraOffset = config.getHep3Vector("fromG4BLFile.g4beamlineExtraOffset", g4beamlineExtraOffset_default);
+
+    vector<int> default_pdgIdToKeep;
+    config.getVectorInt("fromG4BLFile.pdgIdToKeep", _pdgIdToKeep, default_pdgIdToKeep );
 
     // This should really come from the geometry service, not directly from the config file.
     // Or we should change this code so that its reference point is the production target midpoint
@@ -108,8 +145,8 @@ namespace mu2e {
     _ntup          = tfdir.make<TNtuple>( "ntup", "G4BL Track ntuple",
                                           "x:y:z:p:cz:phi:pt:t:id:evtId:trkID:ParId:w");
 
-    //Skip out the first nParticlesToSkip of the file;
-    //10000 is a fake number of chars, berfore reaching the newline command
+    //Skip the first nParticlesToSkip of the file;
+    //10000 is a fake number of chars, before reaching the newline character.
     for (int jid=0; jid < _nPartToSkip; ++jid) {
       _inputFile.ignore(10000, '\n');
     }
@@ -136,16 +173,36 @@ namespace mu2e {
     // Ntuple buffer.
     float nt[_ntup->GetNvar()];
 
-    // Loop over all of the requested particles.
+    // Read particles from the file until the requested number of particle have been read.
     for ( int j =0; j<n; ++j ){
-
-      // Format of one line is: x y z Px Py Pz t PDGid EventID TrackID ParentID Weight
+      
+      // Format of one line from the input file is: x y z Px Py Pz t PDGid EventID TrackID ParentID Weight
       double x, y, z, px, py, pz, t,  weight;
       int id, evtid, trkid, parentid;
-      _inputFile >> x >> y >> z >> px >> py >> pz >> t >> id >> evtid >> trkid >> parentid >> weight;
-      if ( !_inputFile ){
-        throw cms::Exception("EOF")
-          << "FromG4BLFile has reached an unexpected end of file.\n";
+
+      // Invariant: pdgId of particle just read is not on the list of required pdgIds.
+      bool idWrong(true);
+      while (idWrong){
+
+        _inputFile >> x >> y >> z >> px >> py >> pz >> t >> id >> evtid >> trkid >> parentid >> weight;
+        if ( !_inputFile ){
+          throw cms::Exception("EOF")
+            << "FromG4BLFile has reached an unexpected end of file.\n";
+        }
+
+        // Allow all pdgId's: so accept the particle just read.
+        if ( _pdgIdToKeep.empty() ) break;
+
+        // Check if this pdgId is on the allowed list.
+        for ( std::vector<int>::const_iterator i=_pdgIdToKeep.begin();
+              i != _pdgIdToKeep.end(); ++i ){
+
+          // Accept the particle just read.
+          if ( id == *i ) {
+            idWrong = false;
+            break;
+          }
+        }
       }
 
       // Express pdgId as the correct type.
@@ -153,9 +210,13 @@ namespace mu2e {
 
       // 3D position in Mu2e coordinate system.
       CLHEP::Hep3Vector pos(x,y,z);
+      CLHEP::Hep3Vector oldpos(pos);
       if( _targetFrame ) {
-	pos -= _offset;           // Move to target coordinate system
+	pos -= _prodTargetOffset;           // Move to target coordinate system
 	pos += _prodTargetCenter; // Move to Mu2e coordinate system
+      } else{
+        pos += _g4beamlineOrigin;
+        pos += _g4beamlineExtraOffset;
       }
 
       // 4 Momentum.

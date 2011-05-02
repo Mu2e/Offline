@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.5 2011/03/21 19:49:51 onoratog Exp $
-// $Author: onoratog $ 
-// $Date: 2011/03/21 19:49:51 $
+// $Id: FromG4BLFile.hh,v 1.6 2011/05/02 18:55:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/05/02 18:55:50 $
 //
 // Original author Rob Kutschke
 //
@@ -54,13 +54,23 @@ namespace mu2e {
     double _mean;
 
     // The midpoint of the target in the coordinates used in the input file.
-    CLHEP::Hep3Vector _offset;
+    CLHEP::Hep3Vector _prodTargetOffset;
 
     // The center of the production target, in the Mu2e coordinate system.
     CLHEP::Hep3Vector _prodTargetCenter;
 
+    // The origin of the G4beamline coordinate system, specified in the Mu2e system.
+    CLHEP::Hep3Vector _g4beamlineOrigin;
+
+    // An offset relative to the g4beamlineOrigin - used to fix minor discrepancies
+    // in G4beamline vs Offline geometries.
+    CLHEP::Hep3Vector _g4beamlineExtraOffset;
+
     // The name of the input file.
     std::string _inputFileName;
+
+    // List of pdg Id's in which we are interested.  If empty keep all pdgIds.
+    std::vector<int> _pdgIdToKeep;
 
     // Enable histograms
     bool _doHistograms;
