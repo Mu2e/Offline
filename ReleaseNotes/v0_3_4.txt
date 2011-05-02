@@ -3,9 +3,46 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.23 2011/04/29 22:38:42 kutschke Exp $
+  $Id: v0_3_4.txt,v 1.24 2011/05/02 15:51:43 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/04/29 22:38:42 $
+  $Date: 2011/05/02 15:51:43 $
+
+
+22) May 2, 2011 kutschke
+    Added a scale factor for the magnetic field map:
+
+      Mu2eG4/test/geom_01.txt
+      BFieldGeom/inc/BFMap.hh
+      BFieldGeom/inc/BFieldManager.hh
+      BFieldGeom/src/BFMap.cc
+      BFieldGeom/src/BFieldManager.cc
+      BFieldGeom/src/BFieldManagerMaker.cc
+
+    This was added to study a candidate technique for absolute calibration
+    of the momentum scale of the TTracker: pi+ stopped in production targets, 
+    decaying at rest to e nu.
+
+    Use this with care:
+      If we ramp down the currents in the DS coils, to about 2/3 of their nominal
+      values, then the monoenergetic electrons from this process will fall
+      within the acceptance of the tracker and can provide a line for
+      calibration.  This scale factor is provided to allow for a crude study of
+      this process.
+
+      Why only a crude stduy?  Because of the presence of the iron return yoke,
+      the magnetic field in the tracker does not linearly scale with coil currents.
+      So this scale factor is an approximation.  Moreover, the factor is applied
+      everywhere in the field map, which is probably not what we would do in 
+      real life; in particular it would change the transmission characteristics
+      of the TS.
+
+21) May 2, 2011 kutschke
+    The example cint files call WaitPrimitive on the active TCanvas. 
+    It should be called on the active TPad.  Now fixed.
+      Example02/test/ex02.cint 
+      Mu2eG4/test/display_03.cint 
+      Mu2eG4/test/g4test_03.cint 
+      Mu2eG4/test/readback0.cint
 
 20) April 29, 2011 kutschke
     There was one wrongly placed call and one unnecessary call to:
