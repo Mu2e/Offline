@@ -3,9 +3,9 @@
 // the Toy cylindrical detector.  It also shows how to project a histogram
 // from the event data and write it to a file.
 // 
-// $Id: ex02.cint,v 1.2 2010/05/18 21:26:27 kutschke Exp $
+// $Id: ex02.cint,v 1.3 2011/05/02 14:29:42 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/05/18 21:26:27 $
+// $Date: 2011/05/02 14:29:42 $
 //
 // Original author Rob Kutschke
 //
@@ -75,7 +75,7 @@
   c->Print("ex02.ps");
 
   // Wait for response before continuing.
-  c->WaitPrimitive();
+  gPad->WaitPrimitive();
 
   // Get ready for page 2.
   c->cd(0);
@@ -127,7 +127,7 @@
   c->Print("ex02.ps");
 
   // Wait for response before continuing.
-  c->WaitPrimitive();
+  gPad->WaitPrimitive();
 
   // Get ready for page 3.
   c->cd(0);

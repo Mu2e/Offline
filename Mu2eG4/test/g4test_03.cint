@@ -1,9 +1,9 @@
 //
 // Root script to display some of the plots in made by ReadBack_plugin.cc
 // 
-// $Id: g4test_03.cint,v 1.3 2010/06/29 14:55:27 kutschke Exp $
+// $Id: g4test_03.cint,v 1.4 2011/05/02 14:29:42 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/06/29 14:55:27 $
+// $Date: 2011/05/02 14:29:42 $
 // 
 // Original author Rob Kutschke
 //
@@ -88,8 +88,8 @@
   //canvas->Print( basename + "_1.png" );
 
   // Prompt and wait for response before continuing.
-  cerr << "Double click in the Canvas to continue:" ;
-  canvas->WaitPrimitive();
+  cerr << "Double click in the last active pad to continue: " ;
+  gPad->WaitPrimitive();
   cerr << endl;
 
   // Clear canvas in preparation for page 2.
@@ -110,8 +110,8 @@
   // canvas->Print( basename + "_2.jpg" );
 
   // Prompt and wait for response before continuing.
-  cerr << "Double click in the Canvas to continue:" ;
-  canvas->WaitPrimitive();
+  cerr << "Double click in the last active pad to continue: " ;
+  gPad->WaitPrimitive();
   cerr << endl;
 
   // Clear canvas in preparation for page 3.
