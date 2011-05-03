@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.38 2011/04/29 21:35:08 kutschke Exp $
+// $Id: ReadBack.cc,v 1.39 2011/05/03 04:28:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/04/29 21:35:08 $
+// $Date: 2011/05/03 04:28:25 $
 //
 // Original author Rob Kutschke
 //
@@ -74,6 +74,7 @@ namespace mu2e {
     // Run time parameters
     _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
     _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
+    _generatorModuleLabel(pset.getParameter<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
     _caloCrystalHitsMaker(pset.getUntrackedParameter<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
     _targetStepPoints(pset.getUntrackedParameter<string>("targetStepPoints","stoppingtarget")),
@@ -493,7 +494,7 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     edm::Handle<ToyGenParticleCollection> genParticles;
-    event.getByType(genParticles);
+    event.getByLabel(_generatorModuleLabel,genParticles);
 
     edm::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
@@ -742,7 +743,7 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     edm::Handle<ToyGenParticleCollection> genParticles;
-    event.getByType(genParticles);
+    event.getByLabel(_generatorModuleLabel,genParticles);
 
     edm::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
@@ -1044,7 +1045,7 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     edm::Handle<ToyGenParticleCollection> genParticles;
-    event.getByType(genParticles);
+    event.getByLabel(_generatorModuleLabel,genParticles);
 
     edm::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);

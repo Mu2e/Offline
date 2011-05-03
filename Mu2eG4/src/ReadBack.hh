@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.18 2011/03/18 16:19:34 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/18 16:19:34 $
+// $Id: ReadBack.hh,v 1.19 2011/05/03 04:28:25 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/03 04:28:25 $
 //
 // Original author Rob Kutschke
 //
@@ -52,6 +52,9 @@ namespace mu2e {
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
+
+    // Module label of the generator module that was passed as input to G4.
+    std::string _generatorModuleLabel;
 
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
