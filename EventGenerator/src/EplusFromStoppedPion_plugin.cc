@@ -5,9 +5,9 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_plugin.cc,v 1.1 2011/05/03 03:59:54 kutschke Exp $
+// $Id: EplusFromStoppedPion_plugin.cc,v 1.2 2011/05/03 05:10:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/03 03:59:54 $
+// $Date: 2011/05/03 05:10:45 $
 //
 // Original author Rob Kutschke.
 //
@@ -141,7 +141,7 @@ namespace mu2e {
     // Get access to the TFile service.
     edm::Service<edm::TFileService> tfs;
 
-    hzPos_  =  tfs->make<TH1F>( "hzPos", "Z of Stopping Position;[mm]", 1800, 5000., 5900. );
+    hzPos_  =  tfs->make<TH1F>( "hzPos", "Z of Stopping Position;[mm]", 1800, 5400., 6400. );
 
     hcz_  = tfs->make<TH1F>( "hcz",  "Cos(theta) of generated momentum", 100, -1., 1.);
     hphi_ = tfs->make<TH1F>( "hphi", "Azimuth of generated momentum;(radians)", 100, -M_PI, M_PI );
@@ -210,7 +210,7 @@ namespace mu2e {
 
       hzPos_->Fill(gen.position().z());
       hcz_->Fill(gen.momentum().cosTheta());
-      hcz_->Fill(gen.momentum().phi());
+      hphi_->Fill(gen.momentum().phi());
 
 
     }
