@@ -1,9 +1,9 @@
 # Configuration file for G4Test04
 # Similar to g4test_03.py but do fewer events and do not make the output file.
 #
-# $Id: g4test_04.py,v 1.10 2010/11/24 22:47:26 logash Exp $
-# $Author: logash $
-# $Date: 2010/11/24 22:47:26 $
+# $Id: g4test_04.py,v 1.11 2011/05/03 03:00:58 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/03 03:00:58 $
 #
 # Original author Rob Kutschke
 #
@@ -114,6 +114,7 @@ process.CaloCrystalHitsMaker =  mu2e.EDProducer(
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
+    generatorModuleLabel=mu2e.string("generate"),
     g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
     maxFullPrint  = mu2e.untracked.int32(201)

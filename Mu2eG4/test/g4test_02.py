@@ -4,9 +4,9 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: g4test_02.py,v 1.11 2010/11/15 23:42:20 kutschke Exp $
+# $Id: g4test_02.py,v 1.12 2011/05/03 03:00:58 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/11/15 23:42:20 $
+# $Date: 2011/05/03 03:00:58 $
 #
 # Original author Rob Kutschke
 #
@@ -72,6 +72,7 @@ process.g4run = mu2e.EDProducer(
 # Look at the hits from G4.
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
+    generatorModuleLabel=mu2e.string("generate"),
     g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
     maxFullPrint = mu2e.untracked.int32(5)

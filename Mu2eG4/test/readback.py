@@ -1,9 +1,9 @@
 # Configuration file for Readback
 # Readback the output of g4test_03.py; make histograms and printout.
 #
-# $Id: readback.py,v 1.10 2010/10/13 23:29:08 kutschke Exp $
+# $Id: readback.py,v 1.11 2011/05/03 03:00:58 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/10/13 23:29:08 $
+# $Date: 2011/05/03 03:00:58 $
 #
 # Original author Rob Kutschke
 #
@@ -52,6 +52,7 @@ process.source = mu2e.Source("PoolSource",
 #  - minimum energy is in MeV
 process.checkhits = mu2e.EDAnalyzer(
     "ReadBack",
+    generatorModuleLabel=mu2e.string("generate"),
     g4ModuleLabel = mu2e.string("g4run"),
     minimumEnergy = mu2e.double(0.001),
     maxFullPrint = mu2e.untracked.int32(201)
