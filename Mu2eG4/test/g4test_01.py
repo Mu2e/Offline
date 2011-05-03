@@ -3,9 +3,9 @@
 #   - Run it through G4
 #   - Event display with xy view.
 #
-# $Id: g4test_01.py,v 1.10 2010/11/15 23:42:20 kutschke Exp $
+# $Id: g4test_01.py,v 1.11 2011/05/03 04:16:47 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2010/11/15 23:42:20 $
+# $Date: 2011/05/03 04:16:47 $
 #
 # Original author Rob Kutschke
 #
@@ -37,7 +37,7 @@ process.RandomNumberGeneratorService = mu2e.Service("RandomNumberGeneratorServic
 
 # Define the geometry.
 process.GeometryService = mu2e.Service("GeometryService",
-       inputfile=mu2e.untracked.string("Mu2eG4/test/geom_01.txt")
+       inputfile=mu2e.untracked.string("Mu2eG4/test/geom_01_LowDetailGraphics.txt")
 )
 
 # Access the conditions data.
