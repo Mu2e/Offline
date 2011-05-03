@@ -3,9 +3,44 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.27 2011/05/03 03:11:53 kutschke Exp $
+  $Id: v0_3_4.txt,v 1.28 2011/05/03 05:12:33 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/05/03 03:11:53 $
+  $Date: 2011/05/03 05:12:33 $
+
+
+31) May 5, 2011 kutschke
+    A job to pick up pi+ that are stopped in foils (from G4beamline),
+    create positrons from pi-> e nu decay, run these through G4 and
+    make hits:
+
+      Mu2eG4/test/pi_e_nu.py 
+      Mu2eG4/test/pi_e_nu_geom.txt 
+      Mu2eG4/test/pi_e_nu_genconfig.txt 
+
+30) May 5, 2011 kutschke
+    Require generatorModuleLabel in the parameter set.
+       Mu2eG4/src/ReadBack.cc 
+       Mu2eG4/src/ReadBack.hh
+
+    This is needed to distinguish the ToyGenParticleCollections made in
+    item 28 from ones made by EventGenerator_plugin.
+
+29) May 5, 2011 kutschke
+    A new geometry file.  It includes geom_01.txt and makes many details
+    invisible. The full details are still present in the simulation, they
+    are just not draw in the G4 visualization. This is done to speed up 
+    rendering.  
+      Mu2eG4/test/geom_01_LowDetailGraphics.txt
+
+    Use this new geometry file:
+      Mu2eG4/test/g4test_01.py 
+      Mu2eG4/test/g4test_02.py
+      Mu2eG4/test/beamline_geom.txt
+
+28) May 5, 2011 kutschke
+    New event generator module.  It reads an existing ToyGenParticleCollection
+    and creates a new, modified one.
+      EventGenerator/src/EplusFromStoppedPion_plugin.cc 
 
 27) May 5, 2011 kutschke
     An up coming change to Mu2eG4/src/ReadBack.cc will require
