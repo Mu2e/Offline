@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.12 2011/05/09 16:33:05 onoratog Exp $
+// $Id: genconfig_05.txt,v 1.13 2011/05/09 16:34:00 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/05/09 16:33:05 $
+// $Date: 2011/05/09 16:34:00 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -39,7 +39,7 @@ double primaryProtonGun.stdDev = 1; //units are mm
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
 double decayinorbitGun.elow = 100.;
 double ejectedNeutronGun.elow = 0.0;
-double ejectedNeutronGun.ehi = 300.;
+double ejectedNeutronGun.ehi = 0.1;
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
 
