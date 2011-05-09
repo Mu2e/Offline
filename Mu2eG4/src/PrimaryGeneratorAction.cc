@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.17 2010/12/01 23:05:18 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/12/01 23:05:18 $
+// $Id: PrimaryGeneratorAction.cc,v 1.18 2011/05/09 16:33:05 onoratog Exp $
+// $Author: onoratog $ 
+// $Date: 2011/05/09 16:33:05 $
 //
 // Original author Rob Kutschke
 //
@@ -106,10 +106,11 @@ namespace mu2e {
       G4ThreeVector      pos(genpart.position());
       G4ThreeVector momentum(genpart.momentum().v());
 
-      if( genpart.generatorId() == GenId::conversionGun    ||
-          genpart.generatorId() == GenId::dio1             ||
-          genpart.generatorId() == GenId::ejectedProtonGun ||
-          genpart.generatorId() == GenId::pionCapture      ||
+      if( genpart.generatorId() == GenId::conversionGun     ||
+          genpart.generatorId() == GenId::dio1              ||
+          genpart.generatorId() == GenId::ejectedProtonGun  ||
+          genpart.generatorId() == GenId::ejectedNeutronGun ||
+          genpart.generatorId() == GenId::pionCapture       ||
           genpart.generatorId() == GenId::piEplusNuGun){
         pos += detectorOrigin;
       } else if ( genpart.generatorId() == GenId::cosmicToy ||

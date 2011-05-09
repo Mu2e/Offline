@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.18 2011/03/06 00:38:33 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/03/06 00:38:33 $
+  $Id: EventGenerator_plugin.cc,v 1.19 2011/05/09 16:33:05 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2011/05/09 16:33:05 $
 
   Original author Rob Kutschke
 
@@ -59,6 +59,7 @@
 #include "EventGenerator/inc/CosmicToy.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
+#include "EventGenerator/inc/EjectedNeutronGun.hh"
 #include "EventGenerator/inc/ParticleGun.hh"
 #include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/PiEplusNuGun.hh"
@@ -155,6 +156,7 @@ namespace mu2e {
     bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
     bool doPiCapture            = config.getBool( "picapture.do",        false );
     bool doEjectedProton        = config.getBool( "ejectedProtonGun.do", false );
+    bool doEjectedNeutron       = config.getBool( "ejectedNeutronGun.do", false );
     bool doDIO                  = config.getBool( "decayinorbitGun.do",  false );
     bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
@@ -168,6 +170,7 @@ namespace mu2e {
     if ( doPiCapture)            _generators.push_back( GeneratorBasePtr( new PiCapture(        run, config)) );
     if ( doDIO)                  _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(  run, config)) );
     if ( doEjectedProton)        _generators.push_back( GeneratorBasePtr( new EjectedProtonGun( run, config)) );
+    if ( doEjectedNeutron)       _generators.push_back( GeneratorBasePtr( new EjectedNeutronGun(run, config)) );
     if ( doPiEplusNu)            _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
     if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );

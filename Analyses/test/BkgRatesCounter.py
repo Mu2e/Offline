@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.py,v 1.5 2011/03/27 17:46:26 onoratog Exp $
+# $Id: BkgRatesCounter.py,v 1.6 2011/05/09 16:33:05 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/03/27 17:46:26 $
+# $Date: 2011/05/09 16:33:05 $
 #
 # Original author Gianni Onorato.
 #
@@ -75,7 +75,7 @@ process.source = mu2e.Source("EmptySource")
 #  Make some generated tracks and add them to the event.
 process.generate = mu2e.EDProducer(
     "EventGenerator", 
-    inputfile = mu2e.untracked.string("Analyses/test/genconfig_fromBeam.txt"),
+    inputfile = mu2e.untracked.string("Analyses/test/genconfig_Bkg.txt"),
     seed=mu2e.untracked.vint32(7789)
 )
 
@@ -133,6 +133,7 @@ process.CountRates = mu2e.EDAnalyzer(
 #   diagLevel            = mu2e.untracked.int32(0),
     makerModuleLabel = mu2e.string("makeTH"),
     maxFullPrint = mu2e.untracked.int32(50),
+    skipStoppedParticle = mu2e.untracked.bool(False)
 #   g4ModuleLabel        = mu2e.string("g4run"),
 #   minimumEnergy        = mu2e.double(0.001),
 )

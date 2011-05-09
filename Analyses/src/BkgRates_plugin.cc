@@ -49,6 +49,9 @@
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 
+// Other external includes
+#include "CLHEP/Units/PhysicalConstants.h"
+
 using namespace std;
 
 namespace mu2e {
@@ -61,6 +64,7 @@ namespace mu2e {
       _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
       _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
+      _skipStoppedParticle(pset.getUntrackedParameter<bool>("skipStoppedParticle",false)),
       _nAnalyzed(0),
       _hHitMult(0),
       _hStrawEvt(0),
@@ -95,10 +99,10 @@ namespace mu2e {
 
   private:
 
-    void doTracker(edm::Event const& evt);
-    void doITracker(edm::Event const& evt);
+    void doTracker(edm::Event const& evt, bool skip);
+    void doITracker(edm::Event const& evt, bool skip);
 
-    void doCalorimeter(edm::Event const& evt);
+    void doCalorimeter(edm::Event const& evt, bool skip);
     void doStoppingTarget(edm::Event const& evt);
 
     // Diagnostic level
@@ -111,6 +115,7 @@ namespace mu2e {
     std::string _makerModuleLabel;
 
     double _minimumEnergy; //minimum energy deposition of hits
+    bool _skipStoppedParticle; 
 
     //number of analyzed events
     int _nAnalyzed;
@@ -140,6 +145,8 @@ namespace mu2e {
     vector<TH2F*> _hCrystalRates;
 
     std::auto_ptr<MCCaloUtilities> CaloManager;
+
+    bool _skipEvent;
 
   };
 
@@ -235,7 +242,7 @@ namespace mu2e {
                                             "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
       }
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
-                                          "evt:run:crTime:crE:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
+                                          "evt:run:crTime:crE:crRad:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
       _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",      
                                           "evt:run:time:x:y:z:isGen:pdgId:trkId:foil");
 
@@ -245,20 +252,22 @@ namespace mu2e {
     
     if (geom->hasElement<ITracker>()) {
       //      cout << "ITracker selected" << endl;
-      doITracker(evt);
+      doITracker(evt, _skipEvent);
     } 
     if (geom->hasElement<TTracker>()) {
       //      cout << "TTracker selected" << endl;
-      doTracker(evt);
+      doTracker(evt, _skipEvent);
     }
-    doCalorimeter(evt);
+    doCalorimeter(evt, _skipEvent);
 
 
 
   } // end of analyze
 
-  void BkgRates::doTracker(edm::Event const& evt) {
+  void BkgRates::doTracker(edm::Event const& evt, bool skip) {
     
+    if (skip) return;
+
     // Geometry info for the LTracker.
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
@@ -551,8 +560,9 @@ namespace mu2e {
   
   } // end of doTracker
 
-  void BkgRates::doITracker(edm::Event const& evt) {
-    
+  void BkgRates::doITracker(edm::Event const& evt, bool skip) {
+
+    if (skip) return;    
 
     const Tracker& tracker = getTrackerOrThrow();
     edm::Handle<StrawHitCollection> pdataHandle;
@@ -813,13 +823,25 @@ namespace mu2e {
   
   } // end of doITracker
 
-  void BkgRates::doCalorimeter(edm::Event const& evt) {
+  void BkgRates::doCalorimeter(edm::Event const& evt, bool skip) {
 
+    if (skip) return;
+
+    const double CrDensity = 8.28; //from G4. It is in g/cm^3 
 
     //Get handle to the calorimeter
     edm::Service<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
+
+    double CrSize = cg->crystalHalfSize();
+    double CrLength = cg->crystalHalfLength();
+    double CrVolumeCm3 = (CrSize*CrSize*CrLength)/1000; //factor 1000 because they are in mm 
+
+    double CrMassKg = CrDensity*CrVolumeCm3/1000;
+
+    //    cout << CrSize << '\t' << CrLength << '\t' << CrVolumeCm3
+    //     << '\t' << CrDensity << '\t' << CrMassKg << endl;
 
     // Get handles to calorimeter collections
     edm::Handle<CaloHitCollection> caloHits;
@@ -909,7 +931,7 @@ namespace mu2e {
         if (hit.energyDep() < _minimumEnergy) continue;
         
         bool readCryOnce(false);
-        float cntpArray[28];
+        float cntpArray[29];
         int idx(0);
         
         //List of trackId and energy deposition
@@ -932,6 +954,9 @@ namespace mu2e {
             cntpArray[idx++] = evt.run();
             cntpArray[idx++] = hit.time();
             cntpArray[idx++] = hit.energyDep();
+            double CrEjoule = hit.energyDep()*CLHEP::joule/CLHEP::megaelectronvolt;
+            double dose = CrEjoule/CrMassKg;
+            cntpArray[idx++] = dose;
             cntpArray[idx++] = cg->getCrystalByRO(thehit.id());
             cntpArray[idx++] = vane;
             cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
@@ -989,30 +1014,35 @@ namespace mu2e {
         }
       
         int counter = 0;
+
+        PairList::reverse_iterator it = OutsideEDep.rbegin();
       
-        for (PairList::reverse_iterator it = OutsideEDep.rbegin();
-             it != OutsideEDep.rend(); ++it) {
-          if (counter == 3) break;
-          if (counter == 0) {
-            EfromOutside1 = it->second;
-            SimParticle const& sim = simParticles->at(it->first);
-            OutsideTrkPdgId1 = sim.pdgId();
-            counter++;
+        if (nOutsideTrk>0) {
+          
+          for (int itidx=0; itidx<nOutsideTrk; ++itidx) {
+            if (counter == 3) break;
+            if (itidx == 0) {
+              EfromOutside1 = it->second;
+              SimParticle const& sim = simParticles->at(it->first);
+              OutsideTrkPdgId1 = sim.pdgId();
+              it++;
+            }
+            if (itidx == 1) {
+              EfromOutside2 = it->second;
+              SimParticle const& sim = simParticles->at(it->first);
+              OutsideTrkPdgId2 = sim.pdgId();
+              it++;
+            }
+            if (itidx == 2) {
+              EfromOutside3 = it->second;
+              SimParticle const& sim = simParticles->at(it->first);
+              OutsideTrkPdgId3 = sim.pdgId();
+              it++;
+            }
           }
-          if (counter == 1) {
-            EfromOutside2 = it->second;
-            SimParticle const& sim = simParticles->at(it->first);
-            OutsideTrkPdgId2 = sim.pdgId();
-            counter++;
-          }
-          if (counter == 2) {
-            EfromOutside3 = it->second;
-            SimParticle const& sim = simParticles->at(it->first);
-            OutsideTrkPdgId3 = sim.pdgId();
-            counter++;
-          }
-        }
-      
+
+        }      
+
         cntpArray[idx++] = EfromShower;  
         cntpArray[idx++] = EfromOtherVane;
         cntpArray[idx++] = nOutsideTrk;
@@ -1062,6 +1092,8 @@ namespace mu2e {
 
   void BkgRates::doStoppingTarget(const edm::Event& event) {
     
+    bool generatedStopped = false;
+
     // Find original G4 steps in the stopping target
     edm::Handle<StepPointMCCollection> sthits;
     event.getByLabel("g4run","stoppingtarget",sthits);
@@ -1101,6 +1133,7 @@ namespace mu2e {
           tgtntpArray[idx++] = sim->endPosition().y();
           tgtntpArray[idx++] = sim->endPosition().z();
           tgtntpArray[idx++] = sim->fromGenerator();
+          if (sim->fromGenerator()) generatedStopped = true;
           tgtntpArray[idx++] = sim->pdgId();
           tgtntpArray[idx++] = trackId.asInt();
           tgtntpArray[idx++] = volInfo.copyNo();
@@ -1110,6 +1143,7 @@ namespace mu2e {
         }
       }
     }
+    _skipEvent = generatedStopped;
   }  // end doStoppingTarget
 }
 
