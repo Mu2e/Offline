@@ -3,10 +3,29 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.28 2011/05/03 05:12:33 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/05/03 05:12:33 $
+  $Id: v0_3_4.txt,v 1.29 2011/05/09 16:41:23 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2011/05/09 16:41:23 $
 
+
+33) May 9, 2011 onoratog
+    EjectedNeutronGun generator added to the framework. The energy spectrum
+    comes from MARS simulation and is reported in 
+    ConditionsService/data/neutronSpectrum.txt
+    The configuration file      
+    Mu2eG4/test/genconfig_05.txt
+    contains an example of how to use the new generator. It is basically
+    identical to the EjectedProtonGun generator.
+
+32) May 9, 2011 onoratog
+    Two features have been added to BkgRates_plugin.cc.
+    i. Evaluation of radiation absorbed by crystal in the calorimeter
+    in Gray.
+    ii. Possibility of skipping events where the generated track is stopped
+    by the ST foils. It could be used when reading events coming from the PS.
+    The possibility of skip those events is controlled by a boolean flag
+    in the py file. It works properly only if the config file reads one 
+    particle per event.
 
 31) May 5, 2011 kutschke
     A job to pick up pi+ that are stopped in foils (from G4beamline),
