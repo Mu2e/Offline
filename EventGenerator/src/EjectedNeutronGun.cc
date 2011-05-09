@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.  
 //
-// $Id: EjectedNeutronGun.cc,v 1.1 2011/05/09 16:33:05 onoratog Exp $
+// $Id: EjectedNeutronGun.cc,v 1.2 2011/05/09 22:05:10 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/05/09 16:33:05 $
+// $Date: 2011/05/09 22:05:10 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 // 
@@ -47,6 +47,8 @@
 
 using namespace std;
 
+static const double spectrumEndPoint = 0.1;
+
 namespace mu2e {
 
   EjectedNeutronGun::EjectedNeutronGun( edm::Run& run, const SimpleConfig& config ):
@@ -57,7 +59,7 @@ namespace mu2e {
     // Configurable parameters
     _mean(config.getDouble("ejectedNeutronGun.mean",1.)),
     _elow(config.getDouble("ejectedNeutronGun.elow",0.)),
-    _ehi(config.getDouble("ejectedNeutronGun.ehi",.100)),
+    _ehi(config.getDouble("ejectedNeutronGun.ehi",spectrumEndPoint)),
     _czmin(config.getDouble("ejectedNeutronGun.czmin",  -1.)),
     _czmax(config.getDouble("ejectedNeutronGun.czmax",  1.)),
     _phimin(config.getDouble("ejectedNeutronGun.phimin", 0. )),
@@ -79,6 +81,13 @@ namespace mu2e {
     _hcz(),
     _hphi(),
     _htime(){
+
+
+    if (_nbins!=((_ehi-_elow)/0.0005)) {
+      throw cms::Exception("RANGE") 
+        << "Number f bins for the energy spectrum must be consistent with the data table binning: "
+        << "0.5 KeV" ;
+    }
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
@@ -187,10 +196,15 @@ namespace mu2e {
     string NeutronFileFIP = spectrumFileName.fullPath();
     fstream infile(NeutronFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
-      double val;
-      for (int i=0; i < _nbins; ++i) {
-        infile >> val;
-        neutronSpectrum.push_back(val);
+      double en, val;
+      int i=0;
+      while (i!=_nbins) {
+        if (infile.eof()) break;
+        infile >> en >> val;
+        if (en >= _elow && en <= _ehi) {
+          neutronSpectrum.push_back(val);
+          i++;
+        }
       }
     } else {
       cout << "No file associated for the ejected neutron spectrum" << endl;

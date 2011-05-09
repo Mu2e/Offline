@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.13 2011/05/09 16:34:00 onoratog Exp $
+// $Id: genconfig_05.txt,v 1.14 2011/05/09 22:05:10 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/05/09 16:34:00 $
+// $Date: 2011/05/09 22:05:10 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -40,6 +40,9 @@ double primaryProtonGun.stdDev = 1; //units are mm
 double decayinorbitGun.elow = 100.;
 double ejectedNeutronGun.elow = 0.0;
 double ejectedNeutronGun.ehi = 0.1;
+// Number of bins must be compatible with the spectrum table (0.5 KeV each bin)
+// that is: (ehi - elow)/0.0005;
+int ejectedNeutronGun.nbins = 200;
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
 
