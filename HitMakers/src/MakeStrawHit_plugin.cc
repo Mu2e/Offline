@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_plugin.cc,v 1.10 2011/02/24 23:48:01 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/02/24 23:48:01 $
+// $Id: MakeStrawHit_plugin.cc,v 1.11 2011/05/10 16:44:02 vrusu Exp $
+// $Author: vrusu $
+// $Date: 2011/05/10 16:44:02 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat 
@@ -40,6 +40,8 @@
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/TrackerCalibrations.hh"
 
 // Other includes.
 #include "CLHEP/Random/RandGaussQ.h"
@@ -84,8 +86,6 @@ namespace mu2e {
       _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
       _t0Sigma(pset.getUntrackedParameter<double>("t0Sigma",5.0)), // ns
-      _timetodist(pset.getUntrackedParameter<double>("timetodist",149.8962)), // mm/ns
-      _distSigma(pset.getUntrackedParameter<double>("distSigma",80.)), // mm
       _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
       _minimumLength(pset.getUntrackedParameter<double>("minimumLength",0.01)),   // mm
       _driftVelocity(pset.getUntrackedParameter<double>("driftVelocity",0.05)),   // mm/ns
@@ -118,13 +118,13 @@ namespace mu2e {
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
+
+
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
 
     // Parameters
     double _t0Sigma;        // T0 spread in ns
-    double  _timetodist;    // const to convert delata t in delat z along the wire in mm/ns
-    double  _distSigma;      // sigma of dealta z in mm
     double _minimumEnergy;  // minimum energy deposition of G4 step 
     double _minimumLength;  // is G4Step is shorter than this, consider it a point
     double _driftVelocity;  
@@ -171,6 +171,9 @@ namespace mu2e {
     // Calculate T0 for this event
     double t0 = _gaussian.fire(0.,_t0Sigma);
 
+    //get handle to the conditions service
+    ConditionsHandle<TrackerCalibrations>         trackerCalibrations("ignored");
+
     // Organize hits by straws
 
     typedef std::map<StrawIndex,std::vector<int> > StrawHitMap;
@@ -205,6 +208,10 @@ namespace mu2e {
       CLHEP::Hep3Vector const& mid   = straw.getMidPoint();
       CLHEP::Hep3Vector const& w     = straw.getDirection();
       double strawHalfLength         = straw.getHalfLength();
+
+      //        const double signalVelocity = 299.792458; // mm/ns
+      const double signalVelocity = trackerCalibrations->SignalVelocity(straw_id);
+
 
       // Prepare info for hit creation
       straw_hits.clear();
@@ -277,7 +284,6 @@ namespace mu2e {
         // t1 is signal time at positive end (along w vector), 
         // t2 - at negative end (opposite to w vector)
 
-        const double signalVelocity = 299.792458; // mm/ns
 
         double driftTime = (hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
         double distanceToMiddle = (hit_pca-mid).dot(w);
@@ -319,13 +325,17 @@ namespace mu2e {
       double digi_toMid  = straw_hits[0]._distanceToMid;
       double digi_dca    = straw_hits[0]._dca;
       double deltadigitime;
+      double distSigma;
       DPIndexVector mcptr;
       mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
 
       for( size_t i=1; i<straw_hits.size(); i++ ) {
         if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
           // The is bit time gap - save current data as a hit...
-          strawHits->push_back(StrawHit(straw_id,digi_time,digi_t2-digi_time,digi_edep));
+	  distSigma = trackerCalibrations->TimeDivisionResolution(straw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
+	  deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
+
+          strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_edep));
           truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
           mcptrHits->push_back(mcptr);
           // ...and create new hit
@@ -344,7 +354,9 @@ namespace mu2e {
           mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
         }
       }
-      deltadigitime=(digi_t2-digi_time)+_gaussian.fire(0.,_distSigma/_timetodist);
+
+      distSigma = trackerCalibrations->TimeDivisionResolution(straw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
+      deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
       strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_edep));
       truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
