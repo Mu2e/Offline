@@ -3,10 +3,16 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.29 2011/05/09 16:41:23 onoratog Exp $
+  $Id: v0_3_4.txt,v 1.30 2011/05/10 22:05:37 onoratog Exp $
   $Author: onoratog $
-  $Date: 2011/05/09 16:41:23 $
+  $Date: 2011/05/10 22:05:37 $
 
+34) May 10, 2011 onoratog
+    Bug fixed in DIOShankerWanatabe.cc [.hh]. The constructor of the energy 
+    spectrum PDF need the size of the table the PDF is taken from.
+    Those size was initialized only after the first calling of the object, 
+    so the number of bins of the PDF was a random number.
+    Now it works properly.   
 
 33) May 9, 2011 onoratog
     EjectedNeutronGun generator added to the framework. The energy spectrum
