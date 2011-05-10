@@ -4,9 +4,9 @@
 // Generate a momentum for the DIO electrons, using Wanatabe
 // data, merged to Shanker's formula near the endpoint
 //
-// $Id: DIOShankerWanatabe.hh,v 1.2 2011/03/01 04:38:33 onoratog Exp $
+// $Id: DIOShankerWanatabe.hh,v 1.3 2011/05/10 22:02:37 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/03/01 04:38:33 $
+// $Date: 2011/05/10 22:02:37 $
 //
 // 
 
@@ -41,11 +41,14 @@ namespace mu2e {
 
     double _emin, _emax, _res;
 
+    int calculateNBins();
+
+    int _nBinsSpectrum;
+
     CLHEP::RandGeneral _randEnergy;
 
     std::vector<double> ShWaSpectrum();
 
-    int _nBinsSpectrum;
   };
 
 } // end of namespace mu2e
