@@ -4,9 +4,9 @@
 // Generate a momentum for the DIO electrons, using Wanatabe
 // data, merged to Shanker's formula near the endpoint
 //
-// $Id: DIOShankerWanatabe.hh,v 1.3 2011/05/10 22:02:37 onoratog Exp $
+// $Id: DIOShankerWanatabe.hh,v 1.4 2011/05/11 19:08:49 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/05/10 22:02:37 $
+// $Date: 2011/05/11 19:08:49 $
 //
 // 
 
@@ -47,7 +47,7 @@ namespace mu2e {
 
     CLHEP::RandGeneral _randEnergy;
 
-    std::vector<double> ShWaSpectrum();
+    std::vector<double> shWaSpectrum();
 
   };
 

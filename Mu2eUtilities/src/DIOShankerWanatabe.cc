@@ -3,9 +3,9 @@
 // data, merged to Shanker's formula near the endpoint. The construction
 // of the spectrum is made by ShankerWanatabeSpectrum class
 //
-// $Id: DIOShankerWanatabe.cc,v 1.5 2011/05/10 22:02:37 onoratog Exp $
+// $Id: DIOShankerWanatabe.cc,v 1.6 2011/05/11 19:08:49 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/05/10 22:02:37 $
+// $Date: 2011/05/11 19:08:49 $
 //
 // 
 
@@ -34,7 +34,7 @@ namespace mu2e {
     _emax ( emax ),
     _res ( spectRes ),
     _nBinsSpectrum ( calculateNBins() ),
-    _randEnergy ( engine, &(ShWaSpectrum()[0]), _nBinsSpectrum )
+    _randEnergy ( engine, &(shWaSpectrum()[0]), _nBinsSpectrum )
   {
     if (_Znum!=13) {
       throw cms::Exception("GEOM")
@@ -65,7 +65,7 @@ namespace mu2e {
 
   }
 
-  vector<double> DIOShankerWanatabe::ShWaSpectrum() {
+  vector<double> DIOShankerWanatabe::shWaSpectrum() {
 
     vector<double> spectrum;
     ShankerWanatabeSpectrum WSspec(_Znum);
