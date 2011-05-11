@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.19 2011/03/04 23:31:34 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2011/03/04 23:31:34 $
+// $Id: DecayInOrbitGun.cc,v 1.20 2011/05/11 19:21:31 onoratog Exp $ 
+// $Author: onoratog $
+// $Date: 2011/05/11 19:21:31 $
 //
 // Original author Rob Kutschke
 // 
@@ -50,7 +50,7 @@ namespace mu2e {
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
   static const double conversionEnergyAluminum = 104.96;
-
+  
   DecayInOrbitGun::DecayInOrbitGun( edm::Run& run, const SimpleConfig& config ):
 
     // Base class
@@ -126,7 +126,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::flatPos, 
                                                                              FoilParticleGenerator::limitedExpoTime));
 
-    _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow,_ehi, _spectrumResolution, getEngine()));
+    _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow, _ehi, _spectrumResolution, getEngine()));
 
 
 
@@ -165,12 +165,7 @@ namespace mu2e {
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
       
       //Set Four-momentum
-      CLHEP::HepLorentzVector mom(0,0,0,0);
-      mom.setPx( p3.x() );
-      mom.setPy( p3.y() );
-      mom.setPz( p3.z() );
-      mom.setE( e );
-      
+      CLHEP::HepLorentzVector mom(p3,e);
       
       // Add the particle to  the list.
       genParts.push_back( ToyGenParticle( PDGCode::e_minus, GenId::dio1, pos, mom, time));
