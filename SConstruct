@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.11 2011/05/12 14:26:04 kutschke Exp $
+# $Id: SConstruct,v 1.12 2011/05/12 15:50:46 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/12 14:26:04 $
+# $Date: 2011/05/12 15:50:46 $
 #
 # Original author Rob Kutschke.
 #
@@ -53,10 +53,10 @@ else:
     testreleaseBaBar_inc = None
 
 # Define scons-local environment - it will be exported later.
-env = Environment( CPPPATH=[ base,
-                             base+'/BaBar/include',
-                             testrelease,
+env = Environment( CPPPATH=[ testrelease,
                              testreleaseBaBar_inc,
+                             base,
+                             base+'/BaBar/include',
                              framework,
                              boost_inc,
                              clhep_inc,
@@ -68,8 +68,8 @@ env = Environment( CPPPATH=[ base,
                              root_dir+'/include',
                              scons_dir+'/include',
                            ],
-                   LIBPATH=[ base+'/lib',
-                             testrelease_lib,
+                   LIBPATH=[ testrelease_lib,
+                             base+'/lib',
                              framework+'/tmp/lib',
                              boost_lib,
                              clhep_base+'/lib',
