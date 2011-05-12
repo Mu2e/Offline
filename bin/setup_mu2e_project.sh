@@ -1,8 +1,8 @@
 #! /bin/sh
 #
-# $Id: setup_mu2e_project.sh,v 1.4 2011/02/04 20:24:05 kutschke Exp $
+# $Id: setup_mu2e_project.sh,v 1.5 2011/05/12 22:45:07 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/02/04 20:24:05 $
+# $Date: 2011/05/12 22:45:07 $
 #
 # Original author Rob Kutschke
 #
@@ -24,7 +24,8 @@ source ${FW_HOME}/bin/funcs.sh
 bin_dir=`dirname ${BASH_SOURCE}`   # assume file is in bin subdir
 bin_dir=`cd $bin_dir >/dev/null 2>&1 && echo $PWD`
 user_root=`dirname $bin_dir`
-add_to_var $user_root/lib  LD_LIBRARY_PATH
+add_to_var $user_root/lib    LD_LIBRARY_PATH
 add_to_var $user_root/Config PYTHONPATH
+add_to_var $user_root/bin    PATH
 
 unset bin_dir user_root
