@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.80 2011/05/02 14:48:59 kutschke Exp $
+// $Id: geom_01.txt,v 1.81 2011/05/12 18:33:21 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/02 14:48:59 $
+// $Date: 2011/05/12 18:33:21 $
 //
 // Original author Rob Kutschke
 //
@@ -46,7 +46,7 @@ int g4.particlesSizeLimit = 10000;
 bool   g4SteppingAction.killLowEKine  = false;
 bool   g4SteppingAction.killInHallAir = false;
 bool   g4SteppingAction.killerVerbose = false;
-double g4SteppingAction.eKineMin      = 0.1;    // Kinetic energy in MeV
+double g4SteppingAction.eKineMin      = 0.0;    // Kinetic energy in MeV
 
 // current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
 // G4ClassicalRK4
