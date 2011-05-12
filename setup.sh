@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.14 2011/02/04 20:23:05 kutschke Exp $
+# $Id: setup.sh,v 1.15 2011/05/12 22:41:44 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/02/04 20:23:05 $
+# $Date: 2011/05/12 22:41:44 $
 #
 # Original author Rob Kutschke
 #
@@ -18,6 +18,13 @@ fi
 if [ "${MU2E}" = '' ];then
     echo "The environment variable MU2E is not set."
     echo "You must setup the local Mu2e environment before sourcing this script."
+    exit
+fi
+
+# Protect against multiple invocation.
+if [ "${MU2E_BASE_RELEASE}" != '' ];then
+    echo "A base release has already been setup.  Hope that's OK."
+    echo "The base release is: " ${MU2E_BASE_RELEASE}
     exit
 fi
 
