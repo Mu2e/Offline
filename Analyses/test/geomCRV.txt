@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geomCRV.txt,v 1.1 2011/05/12 16:15:32 rhbob Exp $
+// $Id: geomCRV.txt,v 1.2 2011/05/12 17:47:44 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2011/05/12 16:15:32 $
+// $Date: 2011/05/12 17:47:44 $
 //
 // Original author Rob Kutschke
 //
@@ -46,7 +46,7 @@ int g4.particlesSizeLimit = 10000;
 bool   g4SteppingAction.killLowEKine  = false;
 bool   g4SteppingAction.killInHallAir = false;
 bool   g4SteppingAction.killerVerbose = false;
-double g4SteppingAction.eKineMin      = 0.1;    // Kinetic energy in MeV
+double g4SteppingAction.eKineMin      = 0.000001;    // Kinetic energy in MeV; 1 eV for CRV neutron studies
 
 // current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
 // G4ClassicalRK4
@@ -71,7 +71,7 @@ bool printConfig = false;
 bool printConfigStats = false;
 
 // Choose a PhysicsList
-string g4.physicsListName = "QGSP_BERT";
+string g4.physicsListName = "QGSP_BERT_HP";
 
 // Enable the code to kill low p secondaries from cosmics.
 bool g4.doCosmicKiller = false;
