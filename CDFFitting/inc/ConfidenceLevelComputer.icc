@@ -81,7 +81,7 @@ inline float  ConfidenceLevelComputer::gammcf(float a, float x, float LogGamma) 
     c = 1.0/FPMIN;
     d = 1.0/b;
     h = d;
-    for (i=1;i<ITMAX;i++) {
+    for (i=1;i<int(ITMAX);i++) {
         an = -i*(i-a);
         b+=2.0;
         d=an*d+b;

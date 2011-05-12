@@ -12,9 +12,9 @@
 // For all three cases estimate Pt,Pz of the conversion electron by performing
 // a simple circle/sinus fit.  
 //
-// $Id: ReadDPIStrawCluster_plugin.cc,v 1.16 2011/03/31 15:13:51 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/03/31 15:13:51 $
+// $Id: ReadDPIStrawCluster_plugin.cc,v 1.17 2011/05/12 15:38:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/12 15:38:27 $
 //
 // Original author: Hans Wenzel
 //
@@ -91,7 +91,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    Double_t *x = error->GetX();
    Double_t *y = error->GetY();
    Double_t *ex = error->GetEX();
-   Double_t *ey = error->GetEY();
+   //Double_t *ey = error->GetEY();
 
    for (Int_t i=0;i<np;i++) {
       Double_t u = (x[i] - par[0]);
@@ -107,7 +107,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    f = 0;
    Double_t *x = error->GetX();
    Double_t *y = error->GetY();
-   Double_t *ex = error->GetEX();
+   //Double_t *ex = error->GetEX();
    Double_t *ey = error->GetEY();
    for (Int_t i=0;i<np;i++) {
      double_t dr = y[i] - (par[0]+par[1]*TMath::Sin(par[2]*x[i]-par[3]));
@@ -946,7 +946,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     for (int ii = 0; ii<dim; ii++) {    
       gmMinuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
     }
-    int result=gmMinuit->Migrad();
+    //int result=gmMinuit->Migrad();
     //cout << " Result: "<< result <<endl;
     bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
     if (!converged) 
@@ -994,7 +994,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     }
     gmMinuit2->FixParameter(0);
     gmMinuit2->FixParameter(1);
-    int result=gmMinuit2->Migrad();
+    //int result=gmMinuit2->Migrad();
     bool converged = gmMinuit2->fCstatu.Contains("CONVERGED");
     if (!converged) 
       {

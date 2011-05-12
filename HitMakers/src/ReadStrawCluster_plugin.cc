@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_plugin.cc,v 1.4 2011/03/18 18:17:12 kutschke Exp $
+// $Id: ReadStrawCluster_plugin.cc,v 1.5 2011/05/12 15:38:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/18 18:17:12 $
+// $Date: 2011/05/12 15:38:27 $
 //
 // Original author Hans Wenzel
 //
@@ -345,11 +345,11 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	    multimap<int,pstraw>::iterator last1 = ppp1.second;
 	    last1--;
 	    multimap<int,pstraw>::iterator last2 = ppp1.second;
-	    for (first1;first1 != last1;++first1)
+	    for (;first1 != last1;++first1)
 	      {
 		first2=first1;
 		first2++;
-		for (first2;first2 != last2;++first2)
+		for (;first2 != last2;++first2)
 		  {
 		  pstraw junk  = (*first1).second;
 		  pstraw pjunk = (*first2).second;
