@@ -3,9 +3,38 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.30 2011/05/10 22:05:37 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2011/05/10 22:05:37 $
+  $Id: v0_3_4.txt,v 1.31 2011/05/12 15:44:19 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/05/12 15:44:19 $
+
+37) May 12, 2011 kutschke
+    Minor changes to remove compiler warnings.  These should not change
+    any behaviour.
+      CDFTrajectory/inc/Circle2D.hh
+         - initializer lists out of order - no functional error.
+      CDFFitting/inc/ConfidenceLevelComputer.icc
+         - comparison between signed and unsigned integer expressions
+      HitMakers/src/ReadDPIStrawCluster_plugin.cc
+         - commented out the declaration of unused variables
+      HitMakers/src/ReadStrawCluster_plugin.cc
+         - first clause of a for loop had not effect; just remove it, 
+           leaving a blank clause.
+
+36) May 12, 2011 kutschke
+    Renamed RootAnalyzer/src/SConscript to RootAnalyzer/src/SConscript.sav
+
+    To make the old file go away, remember the -P argument in: cvs update -PdA
+    
+    The build of this directory does not work because the code contains hardcoded 
+    information about the shape of the data product classes; this code was not updated
+    after the shape of some classes changed. So it needs maintenance.  This code is
+    meant to be illustrative of how to read a data file outside of the framework.
+    It is not needed for most purposes.  For now, just take it out of the build.
+
+35) May 12, 2011 kutschke
+    SConstruct will now work either in a base release or a test release.
+      - It is now driven from environment variables MU2E_BASE_RELEASE and MU2E_TEST_RELEASE
+    Renamed some inappropriately named internal variables.
 
 34) May 10, 2011 onoratog
     Bug fixed in DIOShankerWanatabe.cc [.hh]. The constructor of the energy 
