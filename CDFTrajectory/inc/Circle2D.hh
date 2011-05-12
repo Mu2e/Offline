@@ -54,7 +54,7 @@ private:
 //Constructors
 
 inline
-Circle2D::Circle2D(double a,double phi0,double b) : _a(a),_phi0(phi0),_b(b) {}
+Circle2D::Circle2D(double a,double phi0,double b) : _a(a), _b(b), _phi0(phi0) {}
 
 
 // Access Parameters
@@ -69,7 +69,7 @@ double Circle2D::getPhi0(void) const {return _phi0;}
 
 inline
 Circle2D::Circle2D(const Circle2D &right)
-  : _phi0(right._phi0), _a(right._a), _b(right._b)
+  : _a(right._a), _b(right._b), _phi0(right._phi0)
 {}
 
 
