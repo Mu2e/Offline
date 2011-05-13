@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03-500.py,v 1.1 2011/05/12 19:23:55 mf Exp $
+# $Id: g4test_03-5000.py,v 1.1 2011/05/13 20:54:59 mf Exp $
 # $Author: mf $
-# $Date: 2011/05/12 19:23:55 $
+# $Date: 2011/05/13 20:54:59 $
 #
 # Original author Rob Kutschke
 #
