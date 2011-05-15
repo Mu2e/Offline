@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.15 2011/01/04 22:07:20 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.16 2011/05/15 16:22:55 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/01/04 22:07:20 $
+// $Date: 2011/05/15 16:22:55 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@ namespace mu2e {
 
   SteppingAction::SteppingAction( const SimpleConfig& config ):
 
-    // Parameters from the run time configuration.
+    // Default values for parameters that are optional in the run time configuration.
     _doKillLowEKine(false),
     _doKillInHallAir(false),
     _killerVerbose(false),
@@ -50,11 +50,11 @@ namespace mu2e {
     _lastMomentum(),
     _zref(0.){ 
 
-    _doKillLowEKine  = config.getBool("g4SteppingAction.killLowEKine",  _doKillLowEKine);
+    // Look up parameter values in the run time configuration.
+    _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
     _doKillInHallAir = config.getBool("g4SteppingAction.killInHallAir", _doKillInHallAir);
     _killerVerbose   = config.getBool("g4SteppingAction.killerVerbose", _killerVerbose);
-
-    _eKineMin        = config.getDouble("g4SteppingAction.eKineMin", _eKineMin );
+    _eKineMin        = config.getDouble("g4.eKineMin",                  _eKineMin );
 
     // Get list of events for which to make debug printout.
     string key("g4.steppingActionEventList");
