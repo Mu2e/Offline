@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.16 2011/05/15 16:22:55 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.17 2011/05/15 17:47:34 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/05/15 16:22:55 $
+// $Date: 2011/05/15 17:47:34 $
 //
 // Original author Rob Kutschke
 //
@@ -40,7 +40,7 @@ namespace mu2e {
     _doKillLowEKine(false),
     _doKillInHallAir(false),
     _killerVerbose(false),
-    _eKineMin(0.1),
+    _eKineMin(0.),
     _debugEventList(),
     _debugTrackList(),
 
@@ -54,9 +54,26 @@ namespace mu2e {
     _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
     _doKillInHallAir = config.getBool("g4SteppingAction.killInHallAir", _doKillInHallAir);
     _killerVerbose   = config.getBool("g4SteppingAction.killerVerbose", _killerVerbose);
-    _eKineMin        = config.getDouble("g4.eKineMin",                  _eKineMin );
 
+
+    // If this cut is enabled, the cut value must be supplied in the run time config.
+    // It is also used in StackingAction.
+    if ( _doKillLowEKine ){
+      _eKineMin = config.getDouble("g4.eKineMin");
+    }
+
+    vector<int> tmp1;
+    config.getVectorInt( "g4.steppingActionEventList", tmp1, vector<int>() );
+    _debugEventList.add(tmp1);
+
+    vector<int> tmp2;
+    config.getVectorInt( "g4.steppingActionTrackList", tmp2, vector<int>() );
+    _debugTrackList.add(tmp2);
+
+    //config.getVectorInt( "g4.steppingActionEventList", _debugEventList, vector<int>() );
+    //config.getVectorInt( "g4.steppingActionTrackList", _debugTrackList, vector<int>() );
     // Get list of events for which to make debug printout.
+    /*
     string key("g4.steppingActionEventList");
     if ( config.hasName(key) ){
       vector<int> list;
@@ -72,6 +89,7 @@ namespace mu2e {
       config.getVectorInt(key2,list);
       _debugTrackList.add(list);
     }
+    */
 
     // Get maximum allowed number of steps per event
     _maxSteps = config.getInt("g4.steppingActionMaxSteps", 0);

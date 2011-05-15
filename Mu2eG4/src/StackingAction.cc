@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.13 2011/04/29 21:16:07 kutschke Exp $
+// $Id: StackingAction.cc,v 1.14 2011/05/15 17:47:34 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/04/29 21:16:07 $
+// $Date: 2011/05/15 17:47:34 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,8 @@ namespace mu2e {
     _cosmicpcut(0),
     _yaboveDirtYmin(0),
     _primaryOnly(false),
+    _killLowKineticEnergy(false),
+    _eKineMin(0.),
     _pdgToDrop(),
     _pdgToKeep(),
     _dirtBodyPhysVol(0),
@@ -58,19 +60,20 @@ namespace mu2e {
     _dirtG4Ymax(0){
 
     // Get control info from run time configuration.
-    _doCosmicKiller = config.getBool("g4.doCosmicKiller",false);
-    _killLevel = config.getInt("g4.cosmicKillLevel",0);
-    _cosmicpcut = config.getDouble("g4.cosmicPcut",0.);
-    _yaboveDirtYmin = config.getDouble("g4.yaboveDirtYmin",0.);    
+    _doCosmicKiller       = config.getBool  ("g4.doCosmicKiller",   _doCosmicKiller );
+    _killLevel            = config.getInt   ("g4.cosmicKillLevel",  _killLevel      );
+    _cosmicpcut           = config.getDouble("g4.cosmicPcut",       _cosmicpcut     );
+    _yaboveDirtYmin       = config.getDouble("g4.yaboveDirtYmin",   _yaboveDirtYmin );
+    _primaryOnly          = config.getBool  ("g4.stackPrimaryOnly", _primaryOnly    );
+    _killLowKineticEnergy = config.getBool  ("g4.killLowEKine",     _killLowKineticEnergy );
 
-    _primaryOnly = config.getBool("g4.stackPrimaryOnly",false);
+    config.getVectorInt("g4.stackingActionDropPDG", _pdgToDrop, vector<int>() );
+    config.getVectorInt("g4.stackingActionKeepPDG", _pdgToKeep, vector<int>() );
 
-    // Get list of particles to keep or to drop in stacking action
-    if ( config.hasName("g4.stackingActionDropPDG") ){
-      config.getVectorInt("g4.stackingActionDropPDG",_pdgToDrop);
-    }
-    if ( config.hasName("g4.stackingActionKeepPDG") ){
-      config.getVectorInt("g4.stackingActionKeepPDG",_pdgToKeep);
+    // If this cut is enabled, the cut value must be supplied in the run time config.
+    // It is also used in SteppingAction.
+    if ( _killLowKineticEnergy ){
+      _eKineMin = config.getDouble("g4.eKineMin");
     }
 
     if ( !_pdgToDrop.empty() && !_pdgToKeep.empty() ){
@@ -146,7 +149,16 @@ namespace mu2e {
     }
 
     if ( _primaryOnly ){
-      if ( trk->GetParentID() != 0 ) return fKill;
+      if ( trk->GetParentID() != 0 ) {
+        return fKill;
+      }
+    }
+
+    // See Note 1) in the header file.
+    if ( _killLowKineticEnergy ){
+      if ( trk->GetKineticEnergy() < _eKineMin ) {
+        return fKill;
+      }
     }
 
     return fUrgent;
@@ -224,9 +236,9 @@ namespace mu2e {
 
     }
 
-
     return killit;
-  }
+
+  } // end StackingAction::cosmicKiller
 
 } // end namespace mu2e
 

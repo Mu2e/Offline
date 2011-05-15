@@ -5,11 +5,17 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.11 2011/04/29 21:16:07 kutschke Exp $
+// $Id: StackingAction.hh,v 1.12 2011/05/15 17:47:34 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/04/29 21:16:07 $
+// $Date: 2011/05/15 17:47:34 $
 //
 // Original author Rob Kutschke
+//
+// Notes
+// 1) There is an option to kill particles that have a kinetic energy
+//    below a given value.  In the long run we want to properly tune
+//    physics lists.  The option provided here is a sledgehammer for
+//    use when we need it during development.
 //
 
 #include <vector>
@@ -52,10 +58,15 @@ namespace mu2e {
     bool _doCosmicKiller;
     int  _killLevel;
     double _cosmicpcut;
-    double _yaboveDirtYmin;    
+    double _yaboveDirtYmin;
 
     // Only stack primary particles.
     bool _primaryOnly;
+
+    // Enable the code to kill particles with kinetic energy below threshold.  
+    // See Note 1).
+    bool _killLowKineticEnergy;
+    double _eKineMin;
 
     // Only one of these may be non-empty.
     // List of particles to remove (others will be kept).
@@ -78,4 +89,3 @@ namespace mu2e {
 } // end namespace mu2e
 
 #endif
-

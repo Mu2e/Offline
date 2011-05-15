@@ -3,10 +3,29 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.34 2011/05/15 16:23:07 kutschke Exp $
+  $Id: v0_3_4.txt,v 1.35 2011/05/15 17:47:34 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/05/15 16:23:07 $
+  $Date: 2011/05/15 17:47:34 $
 
+41) May 15, 2011 kutschke
+    Followup on item 40.  When the minimum kinetic energy cut is present in the
+    run time configuration, then it is now also be applied in StackingAction.
+    Also, when g4SteppingAction.killLowEKine is true, then
+    g4SteppingAction.eKineMin is now a required parameter - that is the code will
+    throw if it is not present.  This ensures that the same cut value is used
+    in both SteppingAction and StackingAction.
+       Mu2eG4/inc/StackingAction.hh
+       Mu2eG4/src/StackingAction.cc
+       Mu2eG4/src/SteppingAction.cc
+
+    Note on order of operations in G4. The SteppingAction is called at the end of
+    a step.  In particular it is called after the sensitive detector codes have been
+    called.  Before the changes in item 40 and 41, when the minimum kinetic energy
+    cut was present, the cut was not applied until the end of the first step.  Therefore,
+    if a track were created with a kinetic energy below the cut, and if were created
+    in a senstive detector, the sensitive detector code would be called, and a hit created,
+    before the track was killed in the first call to SteppingAction. This will no longer
+    happen because the track will be killed in the StackingAction.
 
 40) May 15, 2011 kutschke
     Renamed some the G4 run-time configuration variables.  User files that change these
