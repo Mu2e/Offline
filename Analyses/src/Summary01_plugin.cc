@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: Summary01_plugin.cc,v 1.1 2011/05/16 00:23:27 kutschke Exp $
+// $Id: Summary01_plugin.cc,v 1.2 2011/05/16 01:52:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/16 00:23:27 $
+// $Date: 2011/05/16 01:52:27 $
 //
 // Original author Rob Kutschke.
 //
@@ -48,6 +48,7 @@ namespace mu2e {
       minEnergyDep_(pset.getParameter<double>("minEnergyDep")),
       minHits_(pset.getParameter<uint32_t>("minHits")),
       simsPlotMax_(pset.getUntrackedParameter<double>("simsPlotMax",400.)),
+      productionMode_(pset.getUntrackedParameter<bool>("productionMode",true)),
       deltaRayParentId_(),
       deltaRayVolumeId_(),
       nBadG4_(0),
@@ -94,6 +95,9 @@ namespace mu2e {
     // Maximum size of the plots to study compression of the SimParticleCollection.
     double simsPlotMax_;
 
+    // If true then development code is turned off and verbosity is dropped.
+    bool productionMode_;
+
     std::map<int,int> deltaRayParentId_;
     std::map<int,int> deltaRayVolumeId_;
 
@@ -132,8 +136,10 @@ namespace mu2e {
     hSimsSize_     = tfs->make<TH1F>( "hSimsSize",     "Size of SimParticleColleciton",            100, 0.,  simsPlotMax_ );
     hTrkSimsSize_  = tfs->make<TH1F>( "hTrkSimsSize",  "SimParticleColleciton: size for non-Cal",  100, 0.,  simsPlotMax_ );
     hCalSimsSize_  = tfs->make<TH1F>( "hCalSimsSize",  "SimParticleColleciton: size for all Hits", 100, 0.,  simsPlotMax_ );
-    hTrkSimsRatio_ = tfs->make<TH1F>( "hTrkSimsRatio", "SimParticleColleciton: Ratio for non-Cal",  100, 0.,  1.  );
-    hCalSimsRatio_ = tfs->make<TH1F>( "hCalSimsRatio", "SimParticleColleciton: Ratio for all Hits", 100, 0.,  1.  );
+
+    // Make sure that 100% is in the plot.
+    hTrkSimsRatio_ = tfs->make<TH1F>( "hTrkSimsRatio", "SimParticleColleciton: Ratio for non-Cal",  101, 0.,  1.01 );
+    hCalSimsRatio_ = tfs->make<TH1F>( "hCalSimsRatio", "SimParticleColleciton: Ratio for all Hits", 101, 0.,  1.01 );
 
   }
 
@@ -154,13 +160,13 @@ namespace mu2e {
     }
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> stepsHandle;
-    event.getByLabel( g4ModuleLabel_, trackerStepPoints_,stepsHandle);
-    StepPointMCCollection const& steps = *stepsHandle;
+    //edm::Handle<StepPointMCCollection> stepsHandle;
+    //event.getByLabel( g4ModuleLabel_, trackerStepPoints_,stepsHandle);
+    //StepPointMCCollection const& steps = *stepsHandle;
 
-    edm::Handle<SimParticleCollection> simsHandle;
-    event.getByLabel( g4ModuleLabel_, simsHandle);
-    SimParticleCollection const& sims = *simsHandle;
+    //edm::Handle<SimParticleCollection> simsHandle;
+    //event.getByLabel( g4ModuleLabel_, simsHandle);
+    //SimParticleCollection const& sims = *simsHandle;
 
     edm::Handle<PhysicalVolumeInfoCollection> volsHandle;
     event.getRun().getByLabel( g4ModuleLabel_, volsHandle);
@@ -169,6 +175,9 @@ namespace mu2e {
     // Fill plots of the spectra of delta rays.
     deltaRaySpectra( event );
     compressSims( event );
+
+    // Stuff below here is under development.
+    if ( productionMode_ ) return;
 
     // Construct an object that ties together all of the simulated particle and hit info.
     SimParticlesWithHits simsWithHits( event,
@@ -303,11 +312,11 @@ namespace mu2e {
 
     // Contribution from tracker StepPointMCs.
     markChainToHit( used, trkSteps, sims);
-    size_t size1 = used.size();
+    //size_t size1 = used.size();
 
     // Contribution from CRV StepPointMCs.
     markChainToHit( used, crvSteps, sims);
-    size_t size2 = used.size();
+    //size_t size2 = used.size();
 
     // Contribution from calorimeter RO StepPointMCs.
     markChainToHit( used, cROSteps, sims);
@@ -326,17 +335,12 @@ namespace mu2e {
     hTrkSimsRatio_->Fill( double(size3)/double(simsSize));
     hCalSimsRatio_->Fill( double(size4)/double(simsSize));
 
-    cout << "Compare: " 
-         << sims.size() << " " 
-         << size1 << " "
-         << size2 << " "
-         << size3 << " "
-         << size4 << " "
-         << endl;
-
   }
 
   void Summary01::endRun( edm::Run const& run, edm::EventSetup const&){
+
+    // Skip immature verbose printout.
+    if ( productionMode_ ) return;
 
     edm::Handle<PhysicalVolumeInfoCollection> volsHandle;
     run.getByLabel( g4ModuleLabel_, volsHandle);
