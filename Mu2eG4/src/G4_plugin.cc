@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.48 2011/04/29 22:53:53 kutschke Exp $
+// $Id: G4_plugin.cc,v 1.49 2011/05/16 23:25:46 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/04/29 22:53:53 $
+// $Date: 2011/05/16 23:25:46 $
 //
 // Original author Rob Kutschke
 //
@@ -75,6 +75,7 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"   
 #include "Mu2eG4/inc/toggleProcesses.hh"
+#include "Mu2eG4/inc/DiagnosticsG4.hh"
 
 // Data products that will be produced by this module.
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -124,7 +125,8 @@ namespace mu2e {
       _stOutputName("stoppingtarget"),
       _sbOutputName("CRV"),
       _caloOutputName("calorimeter"),
-      _caloROOutputName("calorimeterRO") {
+      _caloROOutputName("calorimeterRO"),
+      _diagnostics(){
 
       produces<StepPointMCCollection>(_trackerOutputName);
       produces<StepPointMCCollection>(_vdOutputName);
@@ -195,6 +197,8 @@ namespace mu2e {
     const std::string    _caloOutputName;
     const std::string  _caloROOutputName;
 
+    DiagnosticsG4 _diagnostics;
+
   };
   
   // Create an instance of the run manager.
@@ -203,6 +207,7 @@ namespace mu2e {
 
     // If you want job scope histograms.
     edm::Service<edm::TFileService> tfs;
+    _diagnostics.beginJob();
     
   }
 
@@ -300,7 +305,9 @@ namespace mu2e {
     _steppingAction->beginRun( );
     _stackingAction->beginRun( world->getDirtG4Ymin(), world->getDirtG4Ymax() );
 
-  }
+    _diagnostics.beginRun( run, _physVolHelper );
+
+  } 
 
   // Create one G4 event and copy its output to the edm::event.
   void G4::produce(edm::Event& event, edm::EventSetup const&) {
@@ -384,6 +391,17 @@ namespace mu2e {
                                             timer->GetRealElapsed() ) 
                               );
 
+    _diagnostics.analyze( *g4stat,
+                          *simParticles,
+                          *outputHits,
+                          *caloHits,
+                          *caloROHits,
+                          *sbHits,
+                          *stHits,
+                          *vdHits,
+                          *pointTrajectories,
+                          _physVolHelper);
+
     // Add data products to the event.
     event.put(g4stat);
     event.put(outputHits,_trackerOutputName);
@@ -438,6 +456,9 @@ namespace mu2e {
 
   // Tell G4 that this run is over.
   void G4::endRun(edm::Run & run, edm::EventSetup const&){
+
+    _diagnostics.endRun(run);
+
     _runManager->BeamOnEndRun();
     _physVolHelper.endRun();
     _trackingAction->endRun();
@@ -446,6 +467,7 @@ namespace mu2e {
   }
 
   void G4::endJob(){
+    _diagnostics.endJob();
   }
 
   
