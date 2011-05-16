@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.20 2011/05/11 19:21:31 onoratog Exp $ 
-// $Author: onoratog $
-// $Date: 2011/05/11 19:21:31 $
+// $Id: DecayInOrbitGun.cc,v 1.21 2011/05/16 02:24:51 kutschke Exp $ 
+// $Author: kutschke $
+// $Date: 2011/05/16 02:24:51 $
 //
 // Original author Rob Kutschke
 // 
@@ -61,8 +61,8 @@ namespace mu2e {
     _elow(config.getDouble("decayinorbitGun.elow",100.)),
     _ehi(config.getDouble("decayinorbitGun.ehi",conversionEnergyAluminum)),
     _nbins(config.getInt("decayinorbitGun.nbins",1000)),
-    _czmin(config.getDouble("decayinorbitGun.czmin",  0.3)),
-    _czmax(config.getDouble("decayinorbitGun.czmax",  0.6)),
+    _czmin(config.getDouble("decayinorbitGun.czmin", -1.0)),
+    _czmax(config.getDouble("decayinorbitGun.czmax",  1.0)),
     _phimin(config.getDouble("decayinorbitGun.phimin", 0. )),
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
@@ -112,8 +112,8 @@ namespace mu2e {
     if ( _doHistograms ){
       edm::Service<edm::TFileService> tfs;
       edm::TFileDirectory tfdir = tfs->mkdir( "DecayInOrbit" );
-      _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "DIO Multiplicity",                20,     0.,   20.    );
-      _hEElec        = tfdir.make<TH1D>( "hEElec",        "DIO Electron Energy",             10,  _elow,    0.105 );
+      _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "DIO Multiplicity",               100,     0.,   200.   );
+      _hEElec        = tfdir.make<TH1D>( "hEElec",        "DIO Electron Energy",            100,     0.,   105.   );
       _hEElecZ       = tfdir.make<TH1D>( "hEElecZ",       "DIO Electron Energy (zoom)",     200,  _elow, _ehi     );
       _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "DIO z Position (Tracker Coord)", 200, -6600., -5600.   );
       _hcz           = tfdir.make<TH1D>( "hcz",           "DIO cos(theta)",                 100,    -1.,     1.   );
