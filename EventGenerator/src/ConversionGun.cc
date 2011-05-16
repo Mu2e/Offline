@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.18 2011/03/04 23:31:34 kutschke Exp $ 
+// $Id: ConversionGun.cc,v 1.19 2011/05/16 00:19:07 kutschke Exp $ 
 // $Author: kutschke $
-// $Date: 2011/03/04 23:31:34 $
+// $Date: 2011/05/16 00:19:07 $
 //
 // Original author Rob Kutschke
 // 
@@ -14,8 +14,8 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Services/interface/TFileService.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/ConversionGun.hh"
@@ -25,10 +25,13 @@
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "TargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "TH1F.h"
+#include "TH2F.h"
 
 using namespace std;
 
@@ -42,17 +45,34 @@ namespace mu2e {
 
     // Base class
     GeneratorBase(),
-    
 
-    _doConvs(config.getBool( "conversionGun.do", 1)),
-    _p      (config.getDouble("conversionGun.p", pEndPoint )),
-    _czmin (config.getDouble("conversionGun.czmin",  0.3)),
-    _czmax (config.getDouble("conversionGun.czmax",  0.6)),
+    // Get initializers from the run time configuration.
+    // Initialization of tmin and tmax is deferred.
+    _p     (config.getDouble("conversionGun.p", pEndPoint )),
+    _czmin (config.getDouble("conversionGun.czmin", -0.5)),
+    _czmax (config.getDouble("conversionGun.czmax",  0.5)),
     _phimin(config.getDouble("conversionGun.phimin", 0. )),
     _phimax(config.getDouble("conversionGun.phimax", CLHEP::twopi )),
-    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax )
-   
-  {
+    _tmin(0.),
+    _tmax(0.),
+    _doHistograms(config.getDouble("conversionGun.doHistograms", true )),
+
+    // Random distribution.
+    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
+
+    // Properly initialized later.
+    _mass(0),
+
+    // Histograms
+    _hMultiplicity(0),
+    _hcz(0),
+    _hphi(0),
+    _hmomentum(0),
+    _hradius(0),
+    _hzPos(0),
+    _htime(0),
+    _hxyPos(0),
+    _hrzPos(0){
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
@@ -62,48 +82,98 @@ namespace mu2e {
     ConditionsHandle<DAQParams>         daqPar("ignored");
     ConditionsHandle<ParticleDataTable> pdt("ignored");
 
+    // Initialize data members that could not be initialized correctly in the initiailizer list.
+
+    // Default values for the start and end of the live window.
+    _tmin = config.getDouble("conversionGun.tmin",  daqPar->t0 );
+    _tmax = config.getDouble("conversionGun.tmax",  accPar->deBuncherPeriod );
+
     //Get particle mass
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _mass = e_data.mass().value();
-
-    // Default values for the start and end of the live window.
-    // Can be overriden by the run-time config; see below.
-    _tmin = daqPar->t0;
-    _tmax = accPar->deBuncherPeriod;
-
-    _tmin = config.getDouble("conversionGun.tmin",  _tmin );
-    _tmax = config.getDouble("conversionGun.tmax",  _tmax );
     
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
                                                                              FoilParticleGenerator::volWeightFoil, 
                                                                              FoilParticleGenerator::flatPos, 
                                                                              FoilParticleGenerator::limitedExpoTime));
-    
+    if ( _doHistograms ) bookHistograms();
   }
+
   
   ConversionGun::~ConversionGun(){
   }
   
   void ConversionGun::generate( ToyGenParticleCollection& genParts ){
     
-    //Pick up position and momentum
+    // Compute position and momentum
     double time;
-    CLHEP::Hep3Vector pos(0,0,0);
+    CLHEP::Hep3Vector pos;
     _fGenerator->generatePositionAndTime(pos, time);
 
-    //Pick up momentum vector
-
+    // Compute momentum 3-vector
     CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
 
-    //Pick up energy
+    // Compute energy
     double e = sqrt( _p*_p + _mass*_mass );    
 
-    //Set four-momentum
-
-    CLHEP::HepLorentzVector mom(p3.x(), p3.y(), p3.z(), e);
+    // Set four-momentum
+    CLHEP::HepLorentzVector mom(p3, e);
 
     // Add the particle to  the list.
     genParts.push_back( ToyGenParticle( PDGCode::e_minus, GenId::conversionGun, pos, mom, time));
+
+    if ( !_doHistograms ) return;
+
+    double genRadius = pos.perp();
+
+    _hMultiplicity->Fill(1);
+    _hcz->Fill(p3.cosTheta());
+    _hphi->Fill(p3.phi());
+    _hmomentum->Fill(_p);
+    _hradius->Fill( genRadius );
+    _hzPos->Fill(pos.z());
+    _htime->Fill(time);
+    _hxyPos->Fill( pos.x(), pos.y()   );
+    _hrzPos->Fill( pos.z(), genRadius );
+
+  }
+
+  void ConversionGun::bookHistograms(){
+
+    // Compute a binning that ensures that the stopping target foils are at bin centers.
+    GeomHandle<Target> target;
+    Binning bins = zBinningForFoils(*target,7);
+    Binning bins2 = zBinningForFoils(*target,3);
+
+    edm::Service<edm::TFileService> tfs;
+    edm::TFileDirectory tfdir = tfs->mkdir( "ConversionGun" );
+
+    _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity", "Conversion Multiplicity",  10,  0.,  10.  );
+    _hcz           = tfdir.make<TH1F>( "hcz",
+                                       "Conversion Electron cos(theta) at Production;(MeV)",  
+                                       100,  -1.,  1.  );
+    _hphi          = tfdir.make<TH1F>( "hphi",
+                                       "Conversion Electron phi at Production;(MeV)",
+                                       100,  -M_PI,  M_PI  );
+    _hmomentum     = tfdir.make<TH1F>( "hmomentum",
+                                       "Conversion Electron Momentum at Production;(MeV)",
+                                       100,  90.,  110.  );
+    _hradius       = tfdir.make<TH1F>( "hradius",
+                                       "Conversion Electron Radius at Production;(mm)",
+                                       60,  0., 120. );
+    _hzPos         = tfdir.make<TH1F>( "hzPos",
+                                       "Conversion Electron z at Production;(mm)",
+                                       bins.nbins(), bins.low(), bins.high() );
+    _htime         = tfdir.make<TH1F>( "htime",
+                                       "Conversion Electron time at Production;(ns)",
+                                       120, 0., 2400. );
+    _hxyPos        = tfdir.make<TH2F>( "hxyPos",
+                                       "Conversion Electron (x,y) at Production;(mm)",
+                                       60,  -120., 120., 60, -120., 120. );
+    _hrzPos        = tfdir.make<TH2F>( "hrzPos",
+                                       "Conversion Electron (z,r) at Production;(mm)",
+                                       bins2.nbins(), bins2.low(), bins2.high(), 60, 0., 120. );
+
   }
 
 } // end namespace mu2e
