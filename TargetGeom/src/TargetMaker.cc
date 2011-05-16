@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.3 2010/05/18 21:16:44 kutschke Exp $
+// $Id: TargetMaker.cc,v 1.4 2011/05/16 00:18:26 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:44 $
+// $Date: 2011/05/16 00:18:26 $
 //
 // Original author Peter Shanahan
 //
@@ -42,12 +42,17 @@ namespace mu2e {
   {
 
     // positions are in detector coordinates (mm).
-
     _z0            = c.getDouble("target.z0");
     _deltaZ        = c.getDouble("target.deltaZ");
 
     // all outer radii must be specified.
     c.getVectorDouble("target.radii", _rOut);
+
+    // Downstream code counts on this so test it here.
+    if ( _rOut.size() < 1 ){
+      throw cms::Exception("GEOM")
+        << "Specified a stopping target with no foils!\n";
+    }
 
     // halfThicknesses can be repeated from last element specified
     c.getVectorDouble("target.halfThicknesses",_halfThicknesses);
