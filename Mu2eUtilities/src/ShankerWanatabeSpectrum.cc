@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression 
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.2 2011/03/04 23:31:34 kutschke Exp $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.3 2011/05/16 01:49:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/03/04 23:31:34 $
+// $Date: 2011/05/16 01:49:07 $
 //
 // 
 
@@ -13,6 +13,9 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+
+// Framework includes
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
@@ -56,7 +59,9 @@ namespace mu2e {
 
   void ShankerWanatabeSpectrum::ReadWanatabeTable() {
     
-    fstream intable("ConditionsService/data/wanatabe.tbl",ios::in);
+    edm::FileInPath filename("ConditionsService/data/wanatabe.tbl");
+
+    fstream intable(filename.fullPath().c_str(),ios::in);
     if (!(intable.is_open())) {
       throw cms::Exception("ProductNotFound")
         << "No Wanatabe spectrum table file found"; 
