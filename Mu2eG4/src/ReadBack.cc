@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.39 2011/05/03 04:28:25 kutschke Exp $
+// $Id: ReadBack.cc,v 1.40 2011/05/16 23:26:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/03 04:28:25 $
+// $Date: 2011/05/16 23:26:27 $
 //
 // Original author Rob Kutschke
 //
@@ -242,7 +242,7 @@ namespace mu2e {
 
     // Abort if G4 did not complete correctly.  
     // Use your own judgement about whether to abort or to continue.
-    if ( g4Status.status() != 0 ) {
+    if ( g4Status.status() > 1 ) {
       ++_nBadG4Status;
       edm::LogError("G4") 
         << "Aborting ReadBack::analyze due to G4 status\n"  

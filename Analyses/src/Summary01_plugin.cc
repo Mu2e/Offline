@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: Summary01_plugin.cc,v 1.2 2011/05/16 01:52:27 kutschke Exp $
+// $Id: Summary01_plugin.cc,v 1.3 2011/05/16 23:26:34 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/16 01:52:27 $
+// $Date: 2011/05/16 23:26:34 $
 //
 // Original author Rob Kutschke.
 //
@@ -150,11 +150,11 @@ namespace mu2e {
     edm::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( g4ModuleLabel_, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
-    if ( g4Status.status() != 0 ){
+    if ( g4Status.status() > 1 ){
       ++nBadG4_;
       hG4Status_->Fill( g4Status.status() );
       edm::LogError("G4")
-        << "Summary01::analyze skipping event because of bad G4 status\n"
+        << "Summary01::analyze skipping event because of bad G4 status.\n"
         << g4Status;
       return;
     }
