@@ -111,23 +111,27 @@ namespace mu2e {
       break;
     }
 
-    //Pick up time
-    switch (_timeAlgo) {
-    case flatTime:
-      time = getFlatRndTime();
-      break;
-    case limitedExpoTime:
-      time = getLimitedExpRndTime();
-      break;
-    default:
-      break;
-    }
+    time = -1000;
 
-    if (_PTtoSTdelay) {
-      double deltat = includeTimeDelay();
-      time += deltat;
+    while (time < _tmin) {
+
+      //Pick up time
+      switch (_timeAlgo) {
+      case flatTime:
+        time = getFlatRndTime();
+        break;
+      case limitedExpoTime:
+        time = getLimitedExpRndTime();
+        break;
+      default:
+        break;
+      }
+      
+      if (_PTtoSTdelay) {
+        double deltat = includeTimeDelay();
+        time += deltat;
+      }
     }
-    
   }
   
 
@@ -263,7 +267,7 @@ namespace mu2e {
       throw cms::Exception("RANGE")
         << "nonsense decay time of bound state"; 
     }
-    return _randTime.fire(_tmin, _tmax, tau);
+    return _randTime.fire(0, _tmax, tau);
     
   }
 }
