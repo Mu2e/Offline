@@ -3,9 +3,25 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.38 2011/05/16 02:45:14 kutschke Exp $
+  $Id: v0_3_4.txt,v 1.39 2011/05/16 23:31:24 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/05/16 02:45:14 $
+  $Date: 2011/05/16 23:31:24 $
+
+49) May 16, 2011 kutschke
+    A new class in which I will add diagnostic histograms for G4.
+    It is called at appropriate places inside G4_plugin.cc
+    This is done in a separate class to avoid clutter inside G4_plugin.cc.
+    This class is not a module, despite having module-sounding names.
+      Mu2eG4/inc/DiagnosticsG4.hh
+      Mu2eG4/src/DiagnosticsG4.cc
+      Mu2eG4/src/G4_plugin.cc
+
+48) May 16, 2011 kutschke
+    Allow analyses to proceed if the status G4 is <=1; this allows
+    events that have some truncated tracks to be analyzed.  
+    A track is truncated if it takes too many steps.  
+      Analyses/src/Summary01_plugin.cc
+      Mu2eG4/src/ReadBack.cc
 
 47) May 15, 2011 kutschke
     EventGenerator/src/DecayInOrbitGun.cc
