@@ -1,9 +1,9 @@
 //
 // Dump information about all data products in the file.
 //
-// $Id: DataProductDump_plugin.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Id: DataProductDump_plugin.cc,v 1.3 2011/05/17 15:46:09 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:46:09 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,7 @@ namespace mu2e {
   void DataProductDump::analyze(const art::Event& event, art::EventSetup const&) {
 
     art::Run const& run(event.getRun());
-    art::LuminosityBlock const& lumi(event.getLuminosityBlock());
+    art::SubRun const& lumi(event.getSubRun());
 
     // Get provenance information for all data products.
     provs_type evtProvs;
@@ -61,7 +61,7 @@ namespace mu2e {
     cout << "\n\nData producs for: " << event.id() << endl;
     cout << "Data products in this event:      " << evtProvs.size()  << endl;
     cout << "Data products in this run:        " << runProvs.size()  << endl;
-    cout << "Data products in this Lumi Block: " << lumiProvs.size() << endl;
+    cout << "Data products in this subRun:     " << lumiProvs.size() << endl;
     cout << endl;
 
     // Print information about each set of data products.
@@ -76,7 +76,7 @@ namespace mu2e {
     }
 
     if ( lumiProvs.size() > 0 ) {
-      cout << "Luminosity Block data products: " << endl;
+      cout << "SubRun data products: " << endl;
       print (lumiProvs);
     }
 
