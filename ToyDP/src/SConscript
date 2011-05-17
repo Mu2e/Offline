@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.3 2010/05/18 21:53:18 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/05/18 21:53:18 $
+# $Id: SConscript,v 1.4 2011/05/17 19:54:17 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/17 19:54:17 $
 #
 # Original author Rob Kutschke.
 #
@@ -13,8 +13,8 @@ Import('env')
 #                                      "AND_THIS" is usually "src"
 dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
 ff=os.path.dirname(dd)   # THIS
-env.DictionarySource(['#/tmp/src/%s/%s_dict_plugin.cpp'%(dd,ff),
-                      '#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff)],
+env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+                      '#/tmp/src/%s/%s_map.cpp'%(dd,ff)],
                      ['classes.h','classes_def.xml'])
 
 my_lib=[]  # default if no cc_files
@@ -32,11 +32,11 @@ if cc_files:
         )
     my_lib=['%s'%(ff,),'CLHEP']
 
-env.SharedLibrary('#/lib/%s_dict_plugin'%(ff,),
-                  '#/tmp/src/%s/%s_dict_plugin.cpp'%(dd,ff),
+env.SharedLibrary('#/lib/%s_dict'%(ff,),
+                  '#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
                   LIBS=my_lib)
-env.SharedLibrary('#/lib/%s_map_plugin'%(ff,),
-                  '#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff))
+env.SharedLibrary('#/lib/%s_map'%(ff,),
+                  '#/tmp/src/%s/%s_map.cpp'%(dd,ff))
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

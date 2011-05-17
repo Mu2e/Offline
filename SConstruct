@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.13 2011/05/17 18:47:35 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/17 18:47:35 $
+# $Id: SConstruct,v 1.14 2011/05/17 19:54:17 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/17 19:54:17 $
 #
 # Original author Rob Kutschke.
 #
@@ -95,18 +95,22 @@ env = Environment( CPPPATH=[ #testrelease,
                              scons_dir+'/lib',
                              '/lib', '/usr/X11R6/lib',
                            ],
-                   ENV={ 'PATH' : os.environ['PATH'], 
+                   ENV={
                          'LD_LIBRARY_PATH': os.environ['LD_LIBRARY_PATH'],
+                         'GCC_FQ_DIR' : os.environ['GCC_FQ_DIR'], # For GCCXML
+                         'PATH' : os.environ['PATH'], 
+                         'PYTHONPATH' : os.environ['PYTHONPATH'],
+                         'ROOTSYS' : os.environ['ROOTSYS']
                        },
-                   FORTRAN = 'g77',
+                   FORTRAN = 'gfortran'
                  )
 
 # Define the rule for building dictionaries.
 genreflex_flags = '--deep --fail_on_warnings  --capabilities=classes_ids.cc '\
-                + '-DCMS_DICT_IMPL -D_REENTRANT -DGNU_SOURCE  -DGNU_GCC '\
-                + '-DPROJECT_NAME="CMSSW" -DPROJECT_VERSION="CMSSW_3_0_0_pre2"'
-aa="if   t1=`expr ${TARGET} : '\(.*\)_dict_plugin.cpp'`;then t2=$${t1}_map_plugin.cpp; t1=$${t1}_dict_plugin.cpp;"\
-  +"elif t1=`expr ${TARGET} : '\(.*\)_map_plugin.cpp'`;then t2=$${t1}_map_plugin.cpp; t1=$${t1}_dict_plugin.cpp; fi;"\
+                + '-D_REENTRANT -DGNU_SOURCE -DGNU_GCC '\
+                + '-DPROJECT_NAME="mu2e" -DPROJECT_VERSION="development"'
+aa="if   t1=`expr ${TARGET} : '\(.*\)_dict.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp;"\
+  +"elif t1=`expr ${TARGET} : '\(.*\)_map.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp; fi;"\
   +"genreflex $SOURCE -s ${SOURCE.srcdir}/classes_def.xml $_CPPINCFLAGS"\
   +" -o $$t1 "\
   +genreflex_flags\

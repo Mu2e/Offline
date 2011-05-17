@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.5 2011/05/17 16:30:15 greenc Exp $
+# $Id: SConscript,v 1.6 2011/05/17 19:54:17 greenc Exp $
 # $Author: greenc $
-# $Date: 2011/05/17 16:30:15 $
+# $Date: 2011/05/17 19:54:17 $
 #
 # Original author Rob Kutschke
 #
@@ -20,8 +20,8 @@ if non_plugin_cc:
     local_lib_name=os.path.dirname(dd)
  
     ff=os.path.dirname(dd)   # THIS
-    env.DictionarySource(['#/tmp/src/%s/%s_dict_plugin.cpp'%(dd,ff),
-                      '#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff)],
+    env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+                      '#/tmp/src/%s/%s_map.cpp'%(dd,ff)],
                      ['classes.h','classes_def.xml'])
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
