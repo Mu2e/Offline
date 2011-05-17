@@ -1,8 +1,11 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClusters.fcl,v 1.2 2011/05/17 23:28:23 mf Exp $
+# $Id: makeClusters.fcl,v 1.1 2011/05/17 23:28:23 mf Exp $
 # $Author: mf $
 # $Date: 2011/05/17 23:28:23 $
+#
+# Original author Rob Kutschke
+#
 
 #include "minimalMessageService.fcl"
 
@@ -20,8 +23,8 @@ process : HitTest01
 source : 
 { 
   module_type : RootInput 
-  fileNames : ["data_03.root"]        
-  maxEvents : -1
+  fileNames : ["makeclusters.root"]        
+  maxEvents : 200
 }
 
 services : 
@@ -42,11 +45,6 @@ services :
       inputFile : "Mu2eG4/test/geom_01.txt"
     }  
 
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
-
   }
 
 }
@@ -64,12 +62,12 @@ physics :
       diagLevel     : @local::diagLevel
       maxFullPrint  : @local::maxFullPrint
     }
-    # make  the DPIStrawClusters
+    # make  the StrawClusters
     makeSC:
     {
-      module_type      : MakeDPIStrawCluster
+      module_type      : MakeStrawCluster
       makerModuleLabel : makeSH
-      diagLevel        : @local::diagLevel
+      diagLevel        : 1
       maxFullPrint     : @local::maxFullPrint  
     }
 
@@ -82,18 +80,17 @@ physics :
     {
       module_type      : ReadStrawHit
       makerModuleLabel : makeSH
-      diagLevel        : @local::diagLevel
+      diagLevel        : 3
       maxFullPrint     : @local::maxFullPrint
     }
 
     # Check the StrawClusters
     testSC:
     {
-      module_type        : ReadDPIStrawCluster
-      g4ModuleLabel      : g4run
+      module_type        : ReadStrawCluster
       makerModuleLabel   : makeSH
       clmakerModuleLabel : makeSC
-      diagLevel          : @local::diagLevel
+      diagLevel          : 1
       maxFullPrint       : @local::maxFullPrint
     }
 
@@ -111,12 +108,12 @@ physics :
 outputs:
 {
 
-# outfile :
-# {
-#   module_type   :   RootOutput
-#   filename      :   "hits_03.root"
-#   fastCloning   :   false
-# }
+ outfile :
+ {
+   module_type   :   RootOutput
+   filename	 :   "hits_03.root"
+   fastCloning   :   false
+ }
 
 }
 

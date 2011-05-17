@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClustersAndTau.fcl,v 1.1 2011/05/17 23:08:32 mf Exp $
+# $Id: makeDPIStrawClustersAndTau.fcl,v 1.2 2011/05/17 23:28:23 mf Exp $
 # $Author: mf $
-# $Date: 2011/05/17 23:08:32 $
+# $Date: 2011/05/17 23:28:23 $
 
 #include "minimalMessageService.fcl"
 
@@ -68,7 +68,7 @@ physics :
     makeSC:
     {
       module_type      : MakeDPIStrawCluster
-      g4ModuleLabel    : makeSH
+      makerModuleLabel : makeSH
       diagLevel        : @local::diagLevel
       maxFullPrint     : @local::maxFullPrint  
     }
