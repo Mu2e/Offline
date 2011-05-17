@@ -1,0 +1,123 @@
+# Configuration file for making StrawHits.
+#
+# $Id: makeDPIStrawClusters.fcl,v 1.1 2011/05/17 23:08:32 mf Exp $
+# $Author: mf $
+# $Date: 2011/05/17 23:08:32 $
+
+#include "minimalMessageService.fcl"
+
+BEGIN_PROLOG
+
+  diagLevel    : 0
+  maxFullPrint : 5
+
+END_PROLOG
+
+# Give this job a name.  
+process : HitTest01
+
+# Read events from a file (made by Mu2eG4 example g4test_03.py)
+source : 
+{ 
+  module_type : RootInput 
+  fileNames : ["data_03.root"]        
+  maxEvents : -1
+}
+
+services : 
+{
+  message : @local::default_message 
+
+  TFileService : 
+  {
+    fileName : "makeDPIStrawClusters.root"
+  }
+
+  RandomNumberGeneratorService : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01.txt"
+    }  
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+    # Form StrawHits (SH).
+    makeSH:
+    {
+      module_type   : MakeStrawHit
+      g4ModuleLabel : g4run
+      seed          : [7790]
+      diagLevel     : @local::diagLevel
+      maxFullPrint  : @local::maxFullPrint
+    }
+    # make  the DPIStrawClusters
+    makeSC:
+    {
+      module_type      : MakeDPIStrawCluster
+      g4ModuleLabel    : makeSH
+      diagLevel        : @local::diagLevel
+      maxFullPrint     : @local::maxFullPrint  
+    }
+
+  }
+
+  analyzers:
+  {
+    # Check the StrawHits
+    testSH:
+    {
+      module_type      : ReadStrawHit
+      makerModuleLabel : makeSH
+      diagLevel        : @local::diagLevel
+      maxFullPrint     : @local::maxFullPrint
+    }
+
+    # Check the StrawClusters
+    testSC:
+    {
+      module_type        : ReadDPIStrawCluster
+      g4ModuleLabel      : g4run
+      makerModuleLabel   : makeSH
+      clmakerModuleLabel : makeSC
+      diagLevel          : @local::diagLevel
+      maxFullPrint       : @local::maxFullPrint
+    }
+
+  }
+
+  p1 : [makeSH , makeSC ]
+  e1 : [testSH , testSC ]
+
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+
+# outfile :
+# {
+#   module_type   :   RootOutput
+#   filename      :   "hits_03.root"
+#   fastCloning   :   false
+# }
+
+}
+
+
