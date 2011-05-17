@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Id: MCCaloUtilities.hh,v 1.4 2011/05/17 20:44:26 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Date: 2011/05/17 20:44:26 $
 //
 // Original author Gianni Onorato
 //
@@ -11,7 +11,6 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/ParameterSet/FileInPath.h"
 #include "art/Utilities/Exception.h"
 #include "art/Framework/Core/Event.h"
 

@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.9 2011/05/17 15:36:01 greenc Exp $
+ * $Id: SimpleConfig.cc,v 1.10 2011/05/17 20:44:26 greenc Exp $
  * $Author: greenc $ 
- * $Date: 2011/05/17 15:36:01 $
+ * $Date: 2011/05/17 20:44:26 $
  *
  * Original author Rob Kutschke
  *
@@ -103,8 +103,8 @@ namespace mu2e {
    *
    * @return the value of the parameter.
    */
-  string SimpleConfig::get<std::string> ( const string& name ) const{
-    return getRecord(name).get<std::string>();
+  string SimpleConfig::getString ( const string& name ) const{
+    return getRecord(name).getString();
   }
   
   /**
@@ -113,11 +113,11 @@ namespace mu2e {
    *
    * @return the value of the parameter as a string.
    */
-  string SimpleConfig::get<std::string> ( const string& name, 
+  string SimpleConfig::getString ( const string& name, 
                                    const string& def ) const {
     Record_sptr b;
     if ( getSharedPointer(name,b) ){
-      return b->get<std::string>();
+      return b->getString();
     }
     return def;
   }
@@ -127,8 +127,8 @@ namespace mu2e {
    *
    * @return the value of the parameter as an int.
    */
-  int SimpleConfig::get<int> ( const string& name ) const{
-    return getRecord(name).get<int>();
+  int SimpleConfig::getInt ( const string& name ) const{
+    return getRecord(name).getInt();
   }
   
   /**
@@ -137,10 +137,10 @@ namespace mu2e {
    *
    * @return the value of the parameter as an int.
    */
-  int SimpleConfig::get<int> ( const string& name, int def )const{
+  int SimpleConfig::getInt ( const string& name, int def )const{
     Record_sptr b;
     if ( getSharedPointer(name,b) ){
-      return b->get<int>();
+      return b->getInt();
     }
     return def;
   }
@@ -174,8 +174,8 @@ namespace mu2e {
    *
    * @return the value of the parameter as an bool.
    */
-  bool SimpleConfig::get<bool> ( const string& name ) const{
-    return getRecord(name).get<bool>();
+  bool SimpleConfig::getBool ( const string& name ) const{
+    return getRecord(name).getBool();
   }
   
   /**
@@ -184,10 +184,10 @@ namespace mu2e {
    *
    * @return the value of the parameter as an bool.
    */
-  bool SimpleConfig::get<bool> ( const string& name, bool def ) const{
+  bool SimpleConfig::getBool ( const string& name, bool def ) const{
     Record_sptr b;
     if ( getSharedPointer(name,b) ){
-      return b->get<bool>();
+      return b->getBool();
     }
     return def;
   }

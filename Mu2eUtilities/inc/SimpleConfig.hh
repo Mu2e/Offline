@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.10 2011/05/17 15:41:36 greenc Exp $
+ * $Id: SimpleConfig.hh,v 1.11 2011/05/17 20:44:26 greenc Exp $
  * $Author: greenc $ 
- * $Date: 2011/05/17 15:41:36 $
+ * $Date: 2011/05/17 20:44:26 $
  *
  * Original author Rob Kutschke
  *
@@ -23,7 +23,7 @@
  * 2) Does not escape new lines within a string properly.
  *
  *@author $Author: greenc $
- *@version $Id: SimpleConfig.hh,v 1.10 2011/05/17 15:41:36 greenc Exp $
+ *@version $Id: SimpleConfig.hh,v 1.11 2011/05/17 20:44:26 greenc Exp $
  *
  * Date $Date%
  *
@@ -103,7 +103,7 @@ namespace mu2e {
      *
      * @return the value of the parameter.
      */
-    std::string get<std::string> ( const std::string& name ) const;
+    std::string getString ( const std::string& name ) const;
     
     /**
      * Get a specified parameter as a string, if not present in the file
@@ -111,7 +111,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as a string.
      */
-    std::string get<std::string> ( const std::string& name, 
+    std::string getString ( const std::string& name, 
                             const std::string& def ) const;
     
     /**
@@ -119,7 +119,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as an int.
      */
-    int get<int> ( const std::string& name ) const;
+    int getInt ( const std::string& name ) const;
     
     /**
      * Get a specified parameter as a int, if not present in the file
@@ -127,7 +127,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as an int.
      */
-    int get<int> ( const std::string& name, int def ) const;
+    int getInt ( const std::string& name, int def ) const;
     
     /**
      * Get a specified parameter as a double.
@@ -151,7 +151,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as an bool.
      */
-    bool get<bool> ( const std::string& name ) const;
+    bool getBool ( const std::string& name ) const;
     
     /**
      * Get a specified parameter as a bool, if not present in the file
@@ -159,7 +159,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as an bool.
      */
-    bool get<bool> ( const std::string& name, bool def ) const;
+    bool getBool ( const std::string& name, bool def ) const;
     
     /**
      * Get a specified parameter as a vector<std::string>. 
