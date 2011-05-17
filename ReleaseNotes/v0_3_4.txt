@@ -3,9 +3,28 @@
 
            Release notes for Mu2e Offline software, v0_3_4
 
-  $Id: v0_3_4.txt,v 1.40 2011/05/17 00:34:30 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/05/17 00:34:30 $
+  $Id: v0_3_4.txt,v 1.41 2011/05/17 06:09:17 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2011/05/17 06:09:17 $
+
+52) May 17, 2011 onoratog
+    A new bkg generator has been added: NuclearCaptureGun.
+    It includes EjectedProtons, EjectedNeutrons plus photons.
+    The input position and time of captured muons is taken from a txt file
+    ConditionsService/data/StoppedMuons.txt
+    The multiplicity of nuclear capture and relative products can
+    be set from parameter file. An example is in 
+    Mu2eG4/test/genconfig_05.txt
+    In the parameter file one can set also the coordinate system
+    used by the input file (Mu2e or G4BeamLine).
+    A feature has been added to FPG, that is the possibility        
+    of adding a delay in time production due to the 
+    the proton pulse and the transport from PS to DS.
+    Every generator usinf FPG can use it.
+    The new generator is a prototype. It needs to be tested again but 
+    it compiles. Moreover the input file of stopped muons is a dummy file
+    and the energy spectrum of photons is flat.
+
 
 51) May 10, 2011 rusu
     New conditions entity that applies tracker calibrations.
