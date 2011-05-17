@@ -1,8 +1,8 @@
 #! /bin/sh
 #
-# $Id: setup_mu2e_project.sh,v 1.6 2011/05/17 15:24:56 greenc Exp $
+# $Id: setup_mu2e_project.sh,v 1.7 2011/05/17 18:33:37 greenc Exp $
 # $Author: greenc $
-# $Date: 2011/05/17 15:24:56 $
+# $Date: 2011/05/17 18:33:37 $
 #
 # Original author Rob Kutschke
 #
@@ -10,18 +10,25 @@
 #  - add the local lib subdirectory to the LD_LIBRARY_PATH
 #  - add the local Config subdirectory to the PYTHONPATH
 
+function dropit_from_var() {
+  local path="${1}"; shift
+  local var
+  if [[ "$1" != "-"* ]]; then var="${1}"; shift; fi
+  var=${var:-PATH}
+  local new_path="$(eval dropit "${@}" -e -p\"$`echo $var`\" \"\$path\")"
+  eval export "$var"=\""${new_path}"\"
+}
+
 function add_to_var() {
-  local path="${1}"
-  local var="${2:-PATH}"
-  local l="$(eval dropit -s -e -p\"$`echo $var`\" \"\$path\")"
-  eval export "$var"=\"$l\"
+  dropit_from_var "${@}" -s -f
+}
+
+function append_to_var() {
+  dropit_from_var "${@}" -s
 }
 
 function rm_from_var() {
-  local path="${1}"
-  local var="${2:-PATH}"
-  local l="$(eval dropit -e -p\"$`echo $var`\" \"\$path\")"
-  eval export "$var"=\"$l\"
+  dropit_from_var "${@}"
 }
 
 if [ "`basename $0 2>/dev/null`" = "setup_mu2e_project.sh" ];then
