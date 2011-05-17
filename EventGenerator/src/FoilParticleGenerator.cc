@@ -38,8 +38,12 @@
 
 using namespace std;
 
+static const edm::FileInPath StMuFileName("ConditionsService/data/StoppedMuons.txt"); 
+static const string StMuFileString = StMuFileName.fullPath();
 static const double timeMaxDelay = 3000;
 static const int nBinsForTimeDelayPDF = 150;
+static fstream inMuFile(StMuFileString.c_str(), ios::in);
+
 
 namespace mu2e {
   
@@ -48,7 +52,13 @@ namespace mu2e {
                                                foilGen_enum foilAlgo, 
                                                posGen_enum  posAlgo, 
                                                timeGen_enum  timeAlgo,
-                                               bool PTtoSTdelay):
+                                               bool targetFrame,
+                                               bool PTtoSTdelay,
+                                               bool pPulseDelay ):
+    _prodTargetOffset(),
+    _prodTargetCenter(),
+    _g4beamlineOrigin(),
+    _g4beamlineExtraOffset(CLHEP::Hep3Vector()),   
     // time generation range
     _tmin ( tmin ),
     _tmax ( tmax ),
@@ -61,17 +71,41 @@ namespace mu2e {
     // Random number distributions; getEngine comes from the base class.
     _randFlat ( engine ) ,
     _randTime( engine ),
+    _muTimeDecay (getMuTimeDecay()),
+    _randNegExpoTime( engine, -_muTimeDecay ),
     _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils ),
     _randExpoFoils ( engine, &(weightedBinnedFoilsVolume()[0]), _nfoils ),
     _delayTime( engine, &(timePathDelay()[0]), nBinsForTimeDelayPDF ), 
-    _PTtoSTdelay ( PTtoSTdelay )
+    _targetFrame( targetFrame ),
+    _PTtoSTdelay ( PTtoSTdelay ),
+    _pPulseDelay ( pPulseDelay )
   {
   
+
+    CLHEP::Hep3Vector offset_default(0.0,0.0,1764.5);
+    _prodTargetOffset = offset_default;
+
+    CLHEP::Hep3Vector g4beamlineOrigin_default(3904.,0.,-7929.);
+    _g4beamlineOrigin = g4beamlineOrigin_default;
+
+    CLHEP::Hep3Vector g4beamlineExtraOffset_default;
+    _g4beamlineExtraOffset = g4beamlineExtraOffset_default;
+
+    edm::Service<GeometryService> geom;
+    SimpleConfig const& geomConfig = geom->config();
+    _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");;
+
   // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {
       throw cms::Exception("GEOM")
         << "no foils are present";
     }
+
+    if (!inMuFile.is_open()) {
+      throw cms::Exception("GEOM")
+        << "no stopped muon file is present";
+    }
+
   }
   
   FoilParticleGenerator::~FoilParticleGenerator()
@@ -83,38 +117,44 @@ namespace mu2e {
 
     
     // Pick a foil 
-    
-    switch (_foilAlgo) {
-    case flatFoil:
-      _ifoil = getFlatRndFoil();
-      break;
-    case volWeightFoil:
-      _ifoil = getVolumeRndFoil();
-      break;
-    case expoVolWeightFoil:
-      _ifoil = getVolumeAndExpoRndFoil();
-      break;
-    default:
-      break;
-    }
-
-    // Get access to the geometry system.
-    GeomHandle<Target> target;
-    TargetFoil const& foil = target->foil(_ifoil);
-
-    //Pick up position
-    switch (_posAlgo) {
-    case flatPos:
-      pos = getFlatRndPos(foil);
-      break;
-    default:
-      break;
-    }
 
     time = -1000;
-
     while (time < _tmin) {
-
+      
+      switch (_foilAlgo) {
+      case flatFoil:
+        _ifoil = getFlatRndFoil();
+        break;
+      case volWeightFoil:
+        _ifoil = getVolumeRndFoil();
+        break;
+      case expoVolWeightFoil:
+        _ifoil = getVolumeAndExpoRndFoil();
+        break;
+      case muonFileInputFoil:
+        _ifoil = 0;
+        break;
+      default:
+        break;
+      }
+      
+      // Get access to the geometry system.
+      GeomHandle<Target> target;
+      TargetFoil const& foil = target->foil(_ifoil);
+      
+      //Pick up position
+      switch (_posAlgo) {
+      case flatPos:
+        pos = getFlatRndPos(foil);
+        break;
+      case muonFileInputPos:
+        getInfoFromFile(pos, time);
+        break;
+      default:
+        break;
+      }
+      
+      
       //Pick up time
       switch (_timeAlgo) {
       case flatTime:
@@ -123,6 +163,8 @@ namespace mu2e {
       case limitedExpoTime:
         time = getLimitedExpRndTime();
         break;
+      case negExp:
+        time += getNegativeExpoRndTime();
       default:
         break;
       }
@@ -131,8 +173,19 @@ namespace mu2e {
         double deltat = includeTimeDelay();
         time += deltat;
       }
+
+    }
+    if (_posAlgo==muonFileInputPos) {
+      if( _targetFrame ) {
+        pos -= _prodTargetOffset;           // Move to target coordinate system
+        pos += _prodTargetCenter; // Move to Mu2e coordinate system
+      } else{
+        pos += _g4beamlineOrigin;
+        pos += _g4beamlineExtraOffset;
+      }
     }
   }
+
   
 
   int FoilParticleGenerator::iFoil() {
@@ -246,6 +299,52 @@ namespace mu2e {
 
   }
 
+  //Pick up the position from the input stopped muon file
+  void FoilParticleGenerator::getInfoFromFile(CLHEP::Hep3Vector& pos, double& time) {
+
+    //Start reading the input file from the beginning when it reaches the end
+    bool gotthem = false;
+    string line;
+    while (!gotthem) {
+      while(getline(inMuFile,line)) {
+        stringstream s_line;
+        s_line << line;
+        size_t skip = line.find("\\\\");
+        if (skip != string::npos) continue;
+        if (line == "") continue;
+        double x, y, z, t;
+        s_line >> x >> y >> z >> t;
+        CLHEP::Hep3Vector temppos(x,y,z);
+        pos = temppos;
+        time = t;
+        gotthem = true;
+        return;
+      }  
+      inMuFile.clear();
+      inMuFile.seekg(0, ios::beg);
+    }
+    
+    return;
+
+  }
+
+  //Add a time interval taken from a negative exponential pdf
+  double FoilParticleGenerator::getNegativeExpoRndTime() {
+    return _randNegExpoTime.fire();
+  }
+
+
+  double FoilParticleGenerator::getMuTimeDecay() {
+
+  ConditionsHandle<PhysicsParams> phyPar("ignored");
+  double tau = phyPar->decayTime; 
+  if (tau < 0 || tau > 3500) { //bigger than muon decay time
+    throw cms::Exception("RANGE")
+      << "nonsense decay time of bound state"; 
+    }
+  return tau;
+  }
+  
   // Pick up a random generation time from a flat distribution
   double FoilParticleGenerator::getFlatRndTime() {
     return _tmin + _randFlat.fire() * (_tmax-_tmin);
@@ -261,14 +360,9 @@ namespace mu2e {
   // Pick up a time random from am exponential distribution, 
   // with a given lifetime and in a defined range.
   double FoilParticleGenerator::getLimitedExpRndTime() {
-    ConditionsHandle<PhysicsParams> phyPar("ignored");
-    double tau = phyPar->decayTime; 
-    if (tau < 0 || tau > 3500) { //bigger than muon decay time
-      throw cms::Exception("RANGE")
-        << "nonsense decay time of bound state"; 
-    }
-    return _randTime.fire(0, _tmax, tau);
-    
+
+    return _randTime.fire(0, _tmax, _muTimeDecay);
+
   }
 }
 

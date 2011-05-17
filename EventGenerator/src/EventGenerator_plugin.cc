@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_plugin.cc,v 1.19 2011/05/09 16:33:05 onoratog Exp $
+  $Id: EventGenerator_plugin.cc,v 1.20 2011/05/17 06:00:47 onoratog Exp $
   $Author: onoratog $
-  $Date: 2011/05/09 16:33:05 $
+  $Date: 2011/05/17 06:00:47 $
 
   Original author Rob Kutschke
 
@@ -60,6 +60,7 @@
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
+#include "EventGenerator/inc/NuclearCaptureGun.hh"
 #include "EventGenerator/inc/ParticleGun.hh"
 #include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/PiEplusNuGun.hh"
@@ -156,11 +157,12 @@ namespace mu2e {
     bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
     bool doPiCapture            = config.getBool( "picapture.do",        false );
     bool doEjectedProton        = config.getBool( "ejectedProtonGun.do", false );
-    bool doEjectedNeutron       = config.getBool( "ejectedNeutronGun.do", false );
+    bool doEjectedNeutron       = config.getBool( "ejectedNeutronGun.do",false );
     bool doDIO                  = config.getBool( "decayinorbitGun.do",  false );
     bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
     bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
+    bool doNuclearCapture       = config.getBool( "nuclearCaptureGun.do",false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
@@ -174,6 +176,7 @@ namespace mu2e {
     if ( doPiEplusNu)            _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
     if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );
+    if ( doNuclearCapture)       _generators.push_back( GeneratorBasePtr( new NuclearCaptureGun(run, config)) );
 
     if ( _generators.size() == 0 ){
       edm::LogWarning("CONTROL")

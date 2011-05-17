@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.11 2011/03/04 23:08:05 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.12 2011/05/17 06:00:47 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2011/03/04 23:08:05 $
+// $Date: 2011/05/17 06:00:47 $
 //
 // 
 
@@ -65,6 +65,9 @@ namespace mu2e {
     double _czmax;
     double _phimin;
     double _phimax;
+
+    bool _PStoDSDelay;
+    bool _pPulseDelay;
 
     // Limits on the generated time.
     double _tmin;

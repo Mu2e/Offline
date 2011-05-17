@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.16 2011/03/31 20:16:56 onoratog Exp $
+// $Id: PiCapture.cc,v 1.17 2011/05/17 06:00:47 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2011/03/31 20:16:56 $
+// $Date: 2011/05/17 06:00:47 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -48,6 +48,8 @@ namespace mu2e {
     _mean(config.getDouble("picapture.mean", -1.)),
     _elow(config.getDouble("picapture.elow", 38.2)),
     _ehi(config.getDouble("picapture.ehi",   emax)),
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", false)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
     _nbins(config.getInt("picapture.nbins",  1000)),
     _doHistograms(config.getBool("picapture.doHistograms",true)),
 
@@ -108,7 +110,10 @@ namespace mu2e {
     _fGenerator = auto_ptr<FoilParticleGenerator>( new FoilParticleGenerator(getEngine(), 0 ,tcycle, 
                                                                              FoilParticleGenerator::expoVolWeightFoil, 
                                                                              FoilParticleGenerator::flatPos, 
-                                                                             FoilParticleGenerator::limitedExpoTime, false));
+                                                                             FoilParticleGenerator::limitedExpoTime,
+                                                                             false, //dummy value
+                                                                             _PStoDSDelay,
+                                                                             _pPulseDelay));
     
   } // end PiCapture::PiCapture
 

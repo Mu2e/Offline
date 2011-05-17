@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.21 2011/05/16 02:24:51 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2011/05/16 02:24:51 $
+// $Id: DecayInOrbitGun.cc,v 1.22 2011/05/17 06:00:47 onoratog Exp $ 
+// $Author: onoratog $
+// $Date: 2011/05/17 06:00:47 $
 //
 // Original author Rob Kutschke
 // 
@@ -65,6 +65,8 @@ namespace mu2e {
     _czmax(config.getDouble("decayinorbitGun.czmax",  1.0)),
     _phimin(config.getDouble("decayinorbitGun.phimin", 0. )),
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
     _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
@@ -124,7 +126,10 @@ namespace mu2e {
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
                                                                              FoilParticleGenerator::volWeightFoil, 
                                                                              FoilParticleGenerator::flatPos, 
-                                                                             FoilParticleGenerator::limitedExpoTime));
+                                                                             FoilParticleGenerator::limitedExpoTime,
+                                                                             false, //dummy value
+                                                                             _PStoDSDelay,
+                                                                             _pPulseDelay));
 
     _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow, _ehi, _spectrumResolution, getEngine()));
 

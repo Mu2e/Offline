@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.hh,v 1.7 2010/10/28 20:28:24 onoratog Exp $
+// $Id: EjectedProtonGun.hh,v 1.8 2011/05/17 06:00:47 onoratog Exp $
 // $Author: onoratog $ 
-// $Date: 2010/10/28 20:28:24 $
+// $Date: 2011/05/17 06:00:47 $
 //
 //
 
@@ -69,6 +69,9 @@ namespace mu2e {
 
     // Histogram control.
     bool _doHistograms;
+
+    bool _PStoDSDelay;
+    bool _pPulseDelay;
 
     // end: parameters that can be configured from the config file.
 

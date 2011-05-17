@@ -34,20 +34,21 @@ namespace mu2e {
   public: 
     
     enum foilGen_enum {
-      flatFoil, volWeightFoil, expoFoil, expoVolWeightFoil
+      flatFoil, volWeightFoil, expoFoil, expoVolWeightFoil, muonFileInputFoil
     };
 
     enum posGen_enum {
-      flatPos
+      flatPos, muonFileInputPos
     };
 
     enum timeGen_enum {
-      flatTime, limitedExpoTime
+      flatTime, limitedExpoTime, negExp
     };
 
     FoilParticleGenerator( edm::RandomNumberGeneratorService::base_engine_t& engine,
                            double tmin, double tmax, foilGen_enum foilAlgo, 
-                           posGen_enum  posAlgo, timeGen_enum  timeAlgo, bool PTtoSTdelay = true);
+                           posGen_enum  posAlgo, timeGen_enum  timeAlgo, 
+                           bool targetFrame = true, bool PTtoSTdelay = true, bool pPulseDelay = true);
     
     ~FoilParticleGenerator();
     
@@ -56,6 +57,9 @@ namespace mu2e {
     int iFoil();
 
   private:
+
+    CLHEP::Hep3Vector _prodTargetOffset, _prodTargetCenter,
+      _g4beamlineOrigin,  _g4beamlineExtraOffset;
 
     // time generation range
     double _tmin, _tmax;
@@ -74,12 +78,17 @@ namespace mu2e {
     // Random numbers generators
     CLHEP::RandFlat     _randFlat;
     RandomLimitedExpo   _randTime;
+    double _muTimeDecay;
+    CLHEP::RandExponential     _randNegExpoTime;
     CLHEP::RandGeneral  _randFoils;
     CLHEP::RandGeneral  _randExpoFoils;
     CLHEP::RandGeneral  _delayTime;
 
+    bool _targetFrame;
+
     //Include a delay in time due to the PT to ST path
     bool _PTtoSTdelay;
+    bool _pPulseDelay;
 
     //Build a binned representation of foils volume
     std::vector<double> binnedFoilsVolume();
@@ -95,6 +104,10 @@ namespace mu2e {
     CLHEP::Hep3Vector getFlatRndPos(TargetFoil const& theFoil) ;
     double getFlatRndTime() ;
     double getLimitedExpRndTime() ;
+    void getInfoFromFile(CLHEP::Hep3Vector& pos, double& time); 
+    double getNegativeExpoRndTime();
+    double getMuTimeDecay();
+
     
   };
 } // end namespace mu2e,

@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.cc,v 1.15 2011/03/04 23:31:34 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2011/03/04 23:31:34 $
+// $Id: EjectedProtonGun.cc,v 1.16 2011/05/17 06:00:47 onoratog Exp $ 
+// $Author: onoratog $
+// $Date: 2011/05/17 06:00:47 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -63,7 +63,8 @@ namespace mu2e {
     _phimax(config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi )),
     _nbins(config.getInt("ejectedProtonGun.nbins",1000)),
     _doHistograms(config.getBool("ejectedProtonGun.doHistograms",true)),
-
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),  
@@ -118,8 +119,10 @@ namespace mu2e {
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
                                                                              FoilParticleGenerator::volWeightFoil, 
                                                                              FoilParticleGenerator::flatPos, 
-                                                                             FoilParticleGenerator::limitedExpoTime));
-
+                                                                             FoilParticleGenerator::limitedExpoTime,
+                                                                             false, //dummy value
+                                                                             _PStoDSDelay,
+                                                                             _pPulseDelay));
   }
 
   EjectedProtonGun::~EjectedProtonGun(){

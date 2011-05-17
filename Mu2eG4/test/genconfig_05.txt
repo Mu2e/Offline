@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.14 2011/05/09 22:05:10 onoratog Exp $
+// $Id: genconfig_05.txt,v 1.15 2011/05/17 06:00:47 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/05/09 22:05:10 $
+// $Date: 2011/05/17 06:00:47 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -14,7 +14,7 @@ bool ejectedNeutronGun.do = 0;
 bool conversionGun.do = 0;
 bool decayinorbitGun.do = 0;
 bool primaryProtonGun.do = 1;
-
+bool nuclearCaptureGun.do = 0;
 
 // Limits on cos(polar angle):
 double conversionGun.czmin = -0.5;
@@ -25,6 +25,8 @@ double ejectedProtonGun.czmin = -1;
 double ejectedProtonGun.czmax = 1;
 double ejectedNeutronGun.czmin = -1;
 double ejectedNeutronGun.czmax = 1;
+double nuclearCaptureGun.czmin = -1;
+double nuclearCaptureGun.czmax = 1;
 
 double primaryProtonGun.czmin = 1;
 double primaryProtonGun.czmax = 1;
@@ -45,6 +47,15 @@ double ejectedNeutronGun.ehi = 0.1;
 int ejectedNeutronGun.nbins = 200;
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
+double nuclearCaptureGun.protonElow = 0.0;
+double nuclearCaptureGun.protonEhi = 300.;
+double nuclearCaptureGun.neutronElow = 0.0;
+double nuclearCaptureGun.neutronEhi = 0.1;
+double nuclearCaptureGun.photonElow = 0.0;
+double nuclearCaptureGun.photonEhi = 100.;
+
+
+
 
 // Time limits in ns, relative to protons on target.
 double conversionGun.tmin  =  700.;
@@ -57,10 +68,20 @@ double ejectedProtonGun.tmin  =  700.;
 double ejectedProtonGun.tmax  = 1694.;
 double primaryProtonGun.tmin  =  700.;
 double primaryProtonGun.tmax  = 1694.;
+double primaryProtonGun.tmin  =  700.;
+double primaryProtonGun.tmax  = 1694.;
+double nuclearCaptureGun.tmin  =  0.;
+double nuclearCaptureGun.tmax  = 1694.;
 
 // Mean multiplicities for the two background generators.
 double cosmictoy.mean =  0.0;
 double picapture.mean =  0.0;
+
+double nuclearCaptureGun.mean = -1;
+double nuclearCaptureGun.protonMean = 0.1;
+double nuclearCaptureGun.neutronMean = 1.5;
+double nuclearCaptureGun.photonMean = 2;
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
