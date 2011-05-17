@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for magnetic field types.
 //
-// $Id: BFMapType.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: BFMapType.hh,v 1.3 2011/05/17 22:33:42 wb Exp $
+// $Author: wb $ 
+// $Date: 2011/05/17 22:33:42 $
 //
 // Original author Rob Kutschke
 //
@@ -108,7 +108,7 @@ namespace mu2e {
     // Can this make sense?  What happens if I read in two different
     // files that have different versions?  Should I use cvs version instead?
     // This is really an edm question not a question for the class itself.
-    static const uint32_t _version = 1000;
+    static const unsigned _version = 1000;
 
   };
 

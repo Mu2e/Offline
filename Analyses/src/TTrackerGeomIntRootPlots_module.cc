@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 22:06:50 $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.3 2011/05/17 22:33:42 wb Exp $
+// $Author: wb $ 
+// $Date: 2011/05/17 22:33:42 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -668,7 +668,7 @@ namespace mu2e {
 
   void TTrackerGeomIntRootPlots::drawStraws(bool dolabels) {
 
-    int _strawsPerManifold  = _config->get<int>("ttracker.strawsPerManifold");
+    int _strawsPerManifold = _config->getInt("ttracker.strawsPerManifold");
 
     TLine* line   = new TLine();
     line->SetLineStyle(kSolid);
@@ -737,7 +737,7 @@ namespace mu2e {
 
   void TTrackerGeomIntRootPlots::drawManifolds(bool dolabels) {
 
-    int _strawsPerManifold = _config->get<int>("ttracker.strawsPerManifold");
+    int _strawsPerManifold = _config->getInt("ttracker.strawsPerManifold");
 
     TLine* line   = new TLine();
     line->SetLineStyle(kSolid);

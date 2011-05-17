@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 22:06:50 $
+// $Id: RPC_module.cc,v 1.3 2011/05/17 22:33:42 wb Exp $
+// $Author: wb $ 
+// $Date: 2011/05/17 22:33:42 $
 //
 // Original author R. Bernstein
 //
@@ -32,7 +32,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Framework includes
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
+//#include "art/Framework/Core/RandomNumberGeneratorService.h"
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
