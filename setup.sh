@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.16 2011/05/17 15:24:56 greenc Exp $
+# $Id: setup.sh,v 1.17 2011/05/17 16:30:13 greenc Exp $
 # $Author: greenc $
-# $Date: 2011/05/17 15:24:56 $
+# $Date: 2011/05/17 16:30:13 $
 #
 # Original author Rob Kutschke
 #
@@ -54,6 +54,12 @@ case ${EXTERNALSVERSION} in
     setup g4abla v3_0
 
     setup heppdt v3_04_01 -qgcc45
+
+    setup scons v1_3_0a -qgcc45
+
+    # This is not as expected in the product
+    export CLHEP_LIB=${CLHEP_DIR}/lib
+
   ;;
   1)
     setup framework v1_1_4

@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.3 2011/01/29 00:03:56 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/01/29 00:03:56 $
+# $Id: SConscript,v 1.4 2011/05/17 16:30:13 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/17 16:30:13 $
 #
 # Original author Rob Kutschke.
 #
@@ -9,7 +9,7 @@
 import os, re
 Import('env')
 
-plugin_cc = Glob('*_plugin.cc', strings=True)
+plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
 non_plugin_cc = Glob('*.cc', strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
 
