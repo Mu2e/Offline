@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:13 $
+// $Id: EventDisplay_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $ 
+// $Date: 2011/05/17 22:22:46 $
 //
 
 #include <iostream>
@@ -31,9 +31,9 @@ namespace mu2e
     public:
     explicit EventDisplay(fhicl::ParameterSet const&);
     virtual ~EventDisplay() { }
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     void endJob();
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e);
 
     private:
     template<class collectionType> void checkMinimumHits(const art::Event &event, 
@@ -49,7 +49,7 @@ namespace mu2e
     _firstLoop=true;
   }
 
-  void EventDisplay::beginJob(art::EventSetup const& )
+  void EventDisplay::beginJob()
   {
     //Bare pointer are needed for gApplication and _mainframe to avoid
     //that the destructor for these two objects gets called, i.e.
@@ -64,7 +64,7 @@ namespace mu2e
     //eventdisplay window, because it usually takes a while until the first event gets pushed through
   }
 
-  void EventDisplay::analyze(const art::Event& event, art::EventSetup const&) 
+  void EventDisplay::analyze(const art::Event& event) 
   {
     if(_firstLoop)
     {

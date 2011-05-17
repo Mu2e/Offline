@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: ReadStrawCluster_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Hans Wenzel
 //
@@ -207,9 +207,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     }
     virtual ~ReadStrawCluster() { }
     
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e);
     void FitCircle(    vector<double> X,vector<double> Y);
   private:
     
@@ -229,7 +229,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     TH2F* _x0y0;
   };
   
-  void ReadStrawCluster::beginJob(art::EventSetup const& ){
+  void ReadStrawCluster::beginJob(){
     
     cout << "Diaglevel: " 
          << _diagLevel << " "
@@ -245,7 +245,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
   }
   
-  void ReadStrawCluster::analyze(art::Event const& evt, art::EventSetup const&) {
+  void ReadStrawCluster::analyze(art::Event const& evt) {
     if ( _diagLevel > 2 ) cout << "ReadStrawCluster: analyze() begin"<<endl;
     static int ncalls(0);
     ++ncalls;

@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.10 2011/05/17 20:44:26 greenc Exp $
- * $Author: greenc $ 
- * $Date: 2011/05/17 20:44:26 $
+ * $Id: SimpleConfig.cc,v 1.11 2011/05/17 22:22:46 wb Exp $
+ * $Author: wb $
+ * $Date: 2011/05/17 22:22:46 $
  *
  * Original author Rob Kutschke
  *
@@ -34,6 +34,11 @@
 #include "Mu2eUtilities/inc/TrimInPlace.hh"
 #include "Mu2eUtilities/src/SimpleConfigRecord.hh"
 
+// ======================================================================
+#include "cetlib/exception.h"
+#include "cetlib/search_path.h"
+// ======================================================================
+
 using namespace std;
 
 namespace mu2e {
@@ -47,18 +52,20 @@ namespace mu2e {
    * The constructors.
    *
    */
-  SimpleConfig::SimpleConfig( const string& filename, 
+  SimpleConfig::SimpleConfig( const string& filename,
                               bool allowReplacement,
                               bool messageOnReplacement ):
     _allowReplacement(allowReplacement),
     _messageOnReplacement(messageOnReplacement){
 
-    art::FileInPath fip(filename);
-    _inputfile = fip.fullPath();
-    ReadFile();
+    cet::search_path sp("MU2E_SEARCH_PATH");
+    if( ! sp.find_file(filename, _inputfile) )
+      throw "SimpleConfig c'tor: find_file failure!"  // TODO: improve exception
 
+    ReadFile();
   }
 
+#if 0
   SimpleConfig::SimpleConfig( const art::FileInPath& fileInPath,
                               bool allowReplacement,
                               bool messageOnReplacement):
@@ -67,6 +74,7 @@ namespace mu2e {
     _messageOnReplacement(messageOnReplacement){
     ReadFile();
   }
+#endif
 
   /**
    * Return a vector<string> containing the names of all variables found in
@@ -95,7 +103,7 @@ namespace mu2e {
   string SimpleConfig::inputFile() const{
     return _inputfile;
   }
-    
+
   // Accessors to named parameters, separated by data type.
 
   /**
@@ -106,14 +114,14 @@ namespace mu2e {
   string SimpleConfig::getString ( const string& name ) const{
     return getRecord(name).getString();
   }
-  
+
   /**
    * Get a specified parameter as a string, if not present in the file
    * return the value specified by the second argument.
    *
    * @return the value of the parameter as a string.
    */
-  string SimpleConfig::getString ( const string& name, 
+  string SimpleConfig::getString ( const string& name,
                                    const string& def ) const {
     Record_sptr b;
     if ( getSharedPointer(name,b) ){
@@ -130,7 +138,7 @@ namespace mu2e {
   int SimpleConfig::getInt ( const string& name ) const{
     return getRecord(name).getInt();
   }
-  
+
   /**
    * Get a specified parameter as a int, if not present in the file
    * return the value specified by the second argument.
@@ -144,7 +152,7 @@ namespace mu2e {
     }
     return def;
   }
-  
+
   /**
    * Get a specified parameter as a double.
    *
@@ -153,7 +161,7 @@ namespace mu2e {
   double SimpleConfig::getDouble ( const string& name ) const{
     return getRecord(name).getDouble();
   }
-  
+
   /**
    * Get a specified parameter as a double, if not present in the file
    * return the value specified by the second argument.
@@ -177,7 +185,7 @@ namespace mu2e {
   bool SimpleConfig::getBool ( const string& name ) const{
     return getRecord(name).getBool();
   }
-  
+
   /**
    * Get a specified parameter as a bool, if not present in the file
    * return the value specified by the second argument.
@@ -192,7 +200,7 @@ namespace mu2e {
     return def;
   }
 
-  
+
   /**
    * Get a specified parameter as a vector<string>. Works for all parameter types.
    *
@@ -204,9 +212,9 @@ namespace mu2e {
     if ( v.size() != static_cast<size_t>(nRequired) ){
       throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<string> "
-        << name 
-        << " in file " 
-        << _inputfile 
+        << name
+        << " in file "
+        << _inputfile
         << " Required: "
         << nRequired
         << " Found: "
@@ -220,7 +228,7 @@ namespace mu2e {
    *
    * @return the value of the parameter as a vector<string>.
    */
-  void SimpleConfig::getVectorString ( const string&         name, 
+  void SimpleConfig::getVectorString ( const string&         name,
                                        vector<string>&       v,
                                        const vector<string>& vdefault,
                                        int                   nRequired ) const{
@@ -236,9 +244,9 @@ namespace mu2e {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
         throw art::Exception(art::errors::Unknown)
           << "SimpleConfig: Wrong number of elements in vector<string> "
-          << name 
-          << " in file " 
-          << _inputfile 
+          << name
+          << " in file "
+          << _inputfile
           << " Required: "
           << nRequired
           << " Found: "
@@ -250,7 +258,7 @@ namespace mu2e {
     v = vdefault;
   }
 
-  
+
   /**
    * Get a specified parameter as a vector<int>.
    *
@@ -262,9 +270,9 @@ namespace mu2e {
     if ( v.size() != static_cast<size_t>(nRequired) ){
       throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<int> "
-        << name 
-        << " in file " 
-        << _inputfile 
+        << name
+        << " in file "
+        << _inputfile
         << " Required: "
         << nRequired
         << " Found: "
@@ -278,11 +286,11 @@ namespace mu2e {
    *
    * @return the value of the parameter as a vector<int>.
    */
-  void SimpleConfig::getVectorInt ( const string&      name, 
+  void SimpleConfig::getVectorInt ( const string&      name,
                                     vector<int>&       v,
                                     const vector<int>& vdefault,
                                     int                nRequired ) const{
-    
+
     // If value is present, extract it from the configuration.
     if ( hasName(name) ){
       getVectorInt( name, v, nRequired);
@@ -294,9 +302,9 @@ namespace mu2e {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
         throw art::Exception(art::errors::Unknown)
           << "SimpleConfig: Wrong number of elements in vector<int> "
-          << name 
-          << " in file " 
-          << _inputfile 
+          << name
+          << " in file "
+          << _inputfile
           << " Required: "
           << nRequired
           << " Found: "
@@ -315,7 +323,7 @@ namespace mu2e {
    *
    * @return the value of the parameter as a vector<double>.
    */
-  void SimpleConfig::getVectorDouble ( const string& name, 
+  void SimpleConfig::getVectorDouble ( const string& name,
                                        vector<double>& v,
                                        int nRequired ) const{
     getRecord(name).getVectorDouble(v);
@@ -323,9 +331,9 @@ namespace mu2e {
     if ( v.size() != static_cast<size_t>(nRequired) ){
       throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<double> "
-        << name 
-        << " in file " 
-        << _inputfile 
+        << name
+        << " in file "
+        << _inputfile
         << " Required: "
         << nRequired
         << " Found: "
@@ -340,7 +348,7 @@ namespace mu2e {
    *
    * @return the value of the parameter as a vector<double>.
    */
-  void SimpleConfig::getVectorDouble ( const string&         name, 
+  void SimpleConfig::getVectorDouble ( const string&         name,
                                        vector<double>&       v,
                                        const vector<double>& vdefault,
                                        int                   nRequired ) const{
@@ -356,9 +364,9 @@ namespace mu2e {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
         throw art::Exception(art::errors::Unknown)
           << "SimpleConfig: Wrong number of elements in vector<double> "
-          << name 
-          << " in file " 
-          << _inputfile 
+          << name
+          << " in file "
+          << _inputfile
           << " Required: "
           << nRequired
           << " Found: "
@@ -388,7 +396,7 @@ namespace mu2e {
     return def;
   }
 
-  
+
   /**
    * Return the record as a formatted string.
    *
@@ -466,21 +474,21 @@ namespace mu2e {
    */
   const SimpleConfigRecord& SimpleConfig::getRecord ( const string& name ) const {
     Record_sptr b;
-  
+
     if ( !getSharedPointer(name,b) ) {
 
       // Test: fail21.conf
       throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: No such parameter "
-        << name 
-        << " in file " 
+        << name
+        << " in file "
         << _inputfile;
 
     }
     return *b;
   }
-  
- 
+
+
 
 
   /**
@@ -493,7 +501,7 @@ namespace mu2e {
 
     ifstream in(_inputfile.c_str());
     if ( !in ) {
-    
+
       // No conf file for this test.
       throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: Cannot open input file: "
@@ -513,11 +521,11 @@ namespace mu2e {
 
       // Remove comments.
       line = StripComment(line);
-      
+
       // If line is not semi-colon terminated, look for the line
       // to be continued.  Exception for a line starting with #include.
       if ( WantsExtension(line) && !hasInclude(line) ){
-      
+
         string all(line);
         string nextline;
         while ( in ){
@@ -543,7 +551,7 @@ namespace mu2e {
           }
         }
       }
-    
+
       if ( hasInclude(line) ){
         processInclude(line);
       }
@@ -551,7 +559,7 @@ namespace mu2e {
         // Convert to a record and store an image of all records that we find.
         _image.push_back(Record_sptr(new SimpleConfigRecord(line)));
       }
-    
+
     }
 
     // Form the map after the image has been made.
@@ -594,11 +602,11 @@ namespace mu2e {
             // Test: fail03.conf
             throw art::Exception(art::errors::Unknown)
               << "Duplicate parameter name found in the input file: "
-              << endl 
-              << "This record:     " 
+              << endl
+              << "This record:     "
               << r.toString()
               << endl
-              << "Previous record: " 
+              << "Previous record: "
               << b->second->toString()
               << endl;
           }
@@ -616,7 +624,7 @@ namespace mu2e {
 
   /**
    * Test to see if this record is complete.
-   * 
+   *
    * A valid end of line indicator is a semi-colon as the last non-blank character
    * before any comments.  Otherwise this record needs an extension.
    *
@@ -639,24 +647,24 @@ namespace mu2e {
    *  - a comment begins with // and continues for the rest of the line.
    *
    * This will give a wrong result on a line like:
-   * string name = "//This is not supposed to be a comment"; 
+   * string name = "//This is not supposed to be a comment";
    *
    * @return a copy of the input with comments and insignificant whitespace removed.
    */
   string SimpleConfig::StripComment( string s){
-    
+
     // Find comment delimiter if present.
     int islash = s.find("//");
-  
+
     if ( islash < 0 ){
       TrimInPlace(s);
       return s;
     }
-  
+
     string s1(s.substr(0,islash));
     TrimInPlace(s1);
     return s1;
-  
+
   }
 
   /**
@@ -673,9 +681,9 @@ namespace mu2e {
    *  Insert contents of an included file.
    *  The required syntax is:
    *  #include "filename"
-   *  where there may be any amount of white space between or after the 
+   *  where there may be any amount of white space between or after the
    *  two tokens. The filename must be delimited with double quotes.
-   *  
+   *
    */
   void SimpleConfig::processInclude( const std::string& line){
     string::size_type idx = line.find("#include");
@@ -774,7 +782,7 @@ namespace mu2e {
           i<_image.size(); ++i ){
 
       // Only look at live records.
-      if ( !_image[i]->isCommentOrBlank() && 
+      if ( !_image[i]->isCommentOrBlank() &&
            !_image[i]->isSuperceded() ) {
 
         const SimpleConfigRecord& record = *_image[i];

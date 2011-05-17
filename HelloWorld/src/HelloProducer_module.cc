@@ -1,9 +1,9 @@
 //
 //  The first example of a producer.
 //
-//  $Id: HelloProducer_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/05/17 16:30:14 $
+//  $Id: HelloProducer_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/17 22:22:46 $
 //   
 //  Original author Rob Kutschke
 //
@@ -29,13 +29,13 @@ namespace mu2e {
       produces<ToyGenParticleCollection>();
     }
 
-    void produce( art::Event& event, art::EventSetup const&);
+    void produce( art::Event& event);
 
   private:
 
   };
 
-  void HelloProducer::produce( art::Event& event, art::EventSetup const&){
+  void HelloProducer::produce( art::Event& event){
 
     auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);
 

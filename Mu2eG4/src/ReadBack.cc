@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.41 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: ReadBack.cc,v 1.42 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -126,7 +126,7 @@ namespace mu2e {
     _nBadG4Status(0){
   }
   
-  void ReadBack::beginJob(art::EventSetup const& ){
+  void ReadBack::beginJob(){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -227,7 +227,7 @@ namespace mu2e {
 
   }
 
-  void ReadBack::analyze(const art::Event& event, art::EventSetup const&) {
+  void ReadBack::analyze(const art::Event& event) {
     
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;

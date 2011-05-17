@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.1 2011/05/17 16:30:15 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/05/17 16:30:15 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/17 22:22:46 $
 //
 // Original author Ivan Logashenko
 //
@@ -86,10 +86,10 @@ namespace mu2e {
   
     virtual ~ReadVirtualDetector() { }
 
-    virtual void beginJob(art::EventSetup const&);
-    virtual void beginRun(art::Run const&, art::EventSetup const& );
+    virtual void beginJob();
+    virtual void beginRun(art::Run const&);
 
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e);
 
   private:
 
@@ -117,7 +117,7 @@ namespace mu2e {
 
   };
   
-  void ReadVirtualDetector::beginJob(art::EventSetup const& ){
+  void ReadVirtualDetector::beginJob(){
 
     vid_stop.clear();
 
@@ -147,7 +147,7 @@ namespace mu2e {
 
   }
 
-  void ReadVirtualDetector::beginRun(art::Run const& run, art::EventSetup const& ){
+  void ReadVirtualDetector::beginRun(art::Run const& run){
 
     // Get pointers to the physical volumes we are interested
     art::Handle<PhysicalVolumeInfoCollection> physVolumes;
@@ -166,7 +166,7 @@ namespace mu2e {
 
   }
 
-  void ReadVirtualDetector::analyze(const art::Event& event, art::EventSetup const&) {
+  void ReadVirtualDetector::analyze(const art::Event& event) {
 
     ++_nAnalyzed;
 

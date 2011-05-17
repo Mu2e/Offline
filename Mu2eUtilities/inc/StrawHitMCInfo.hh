@@ -1,15 +1,15 @@
 #ifndef Mu2eUtilities_StrawHitMCInfo_hh
 #define Mu2eUtilities_StrawHitMCInfo_hh
 //
-// Integrated access to all information about a StrawHit that was 
-// created by a SimParticle.   This class is a building block of 
+// Integrated access to all information about a StrawHit that was
+// created by a SimParticle.   This class is a building block of
 // the SimParticlesWithHits class. If a StrawHit contains contributions
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
-// objects, one attached to each SimParticle. 
+// objects, one attached to each SimParticle.
 //
-// $Id: StrawHitMCInfo.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: StrawHitMCInfo.hh,v 1.5 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke.
 //
@@ -31,7 +31,6 @@ namespace art{
   class Event;
 }
 
-using namespace std;
 
 namespace mu2e {
 
@@ -59,7 +58,7 @@ namespace mu2e {
       _truth(&strawHitMCTruth),
       _mcPtr(&strawHitMCPtr),
       _nSimParticles(nSimParticles),
-      _time(numeric_limits<double>::max()){
+      _time(std::numeric_limits<double>::max()){
       fillStepPointMCs(event,trackId);
     }
 
@@ -79,7 +78,7 @@ namespace mu2e {
 
     // Return true if this hit occured before hit rhs.
     // The metric is the time of the earliest StepPointMC that
-    // belongs to this hit and was made by the track to which it 
+    // belongs to this hit and was made by the track to which it
     // is attached.
     bool operator<( StrawHitMCInfo const& rhs) const {
       return ( _time < rhs._time );

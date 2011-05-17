@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author KLG
 //
@@ -64,9 +64,9 @@ namespace mu2e {
     }
     virtual ~MakeCaloCrystalHits() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
  
-    void produce( art::Event& e, art::EventSetup const&);
+    void produce( art::Event& e);
 
   private:
     
@@ -93,7 +93,7 @@ namespace mu2e {
 
   };
 
-  void MakeCaloCrystalHits::beginJob(art::EventSetup const& ){
+  void MakeCaloCrystalHits::beginJob(){
   }
 
   void MakeCaloCrystalHits::fixEnergy(CaloCrystalHitCollection::value_type & caloCrystalHit, 
@@ -129,7 +129,7 @@ namespace mu2e {
 
   }
 
-  void MakeCaloCrystalHits::produce(art::Event& event, art::EventSetup const&) {
+  void MakeCaloCrystalHits::produce(art::Event& event) {
 
     // Source of the info
     art::Handle<CaloHitCollection> caloHits;

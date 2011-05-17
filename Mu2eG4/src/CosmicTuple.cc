@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.16 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: CosmicTuple.cc,v 1.17 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -66,7 +66,7 @@ namespace mu2e {
   {
   }
   
-  void CosmicTuple::beginJob(art::EventSetup const& ){
+  void CosmicTuple::beginJob(){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -79,12 +79,12 @@ namespace mu2e {
 "evt:trk:pid:pmag:genId:pidGen:eGen:thGen:xGen:yGen:zGen:nHits:ptrs:xtrs:ytrs:ztrs:pprs:xprs:yprs:zprs:prnId:time:calE:nCryst:nAPD:pAng:prCrea:prStop:trCrea:trStop:run:px:py:pz:E:vx:vy:vz:vt:isSh:ppre:xpre:ypre:zpre:trvs:trve:prvs:prve:calEi");
   }
 
-  bool CosmicTuple:: beginRun(art::Run& run, art::EventSetup const&) {  
+  bool CosmicTuple:: beginRun(art::Run& run) {  
     _runNumber = run.id().run();
     return true;
   }
    
-  bool CosmicTuple::filter(art::Event& event, art::EventSetup const&) {
+  bool CosmicTuple::filter(art::Event& event) {
     
     typedef SimParticleCollection::key_type key_type;
 

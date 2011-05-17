@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: MCSH_Test_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -58,9 +58,9 @@ namespace mu2e {
     }
     virtual ~MCSH_Test() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
 
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e);
 
   private:
     
@@ -75,7 +75,7 @@ namespace mu2e {
 
   };
 
-  void MCSH_Test::beginJob(art::EventSetup const& ){
+  void MCSH_Test::beginJob(){
 
     cout << "Diaglevel: " 
          << _diagLevel << " "
@@ -94,7 +94,7 @@ namespace mu2e {
   }
 
   void
-  MCSH_Test::analyze(art::Event const& evt, art::EventSetup const&) {
+  MCSH_Test::analyze(art::Event const& evt) {
 
     static int ncalls(0);
     ++ncalls;

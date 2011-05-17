@@ -12,9 +12,9 @@
 // For all three cases estimate Pt,Pz of the conversion electron by performing
 // a simple circle/sinus fit.  
 //
-// $Id: ReadDPIStrawCluster_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: ReadDPIStrawCluster_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author: Hans Wenzel
 //
@@ -239,9 +239,9 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     }
     virtual ~ReadDPIStrawCluster() { }
     
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e);
     bool FitCircle(vector<double> X,vector<double> Y);
     bool FitSinus2( vector<double> R,vector<double> Z);
   private:
@@ -336,7 +336,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    };
 
   
-  void ReadDPIStrawCluster::beginJob(art::EventSetup const& ){
+  void ReadDPIStrawCluster::beginJob(){
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint<<endl; 
@@ -405,7 +405,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //
   }
   
-  void ReadDPIStrawCluster::analyze(art::Event const& evt, art::EventSetup const&)
+  void ReadDPIStrawCluster::analyze(art::Event const& evt)
   {
     if ( _diagLevel > 2 ) cout << "ReadDPIStrawCluster: analyze() begin"<<endl;
     // Geometry info for the TTracker.

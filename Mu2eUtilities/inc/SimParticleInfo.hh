@@ -5,9 +5,9 @@
 // associated with hit.  This is a building block of the
 // the class SimParticlesWithHits.
 //
-// $Id: SimParticleInfo.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: SimParticleInfo.hh,v 1.7 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke.
 //
@@ -24,10 +24,8 @@ namespace art{
 }
 
 
-using namespace std;
-
 namespace mu2e {
-  
+
   class SimParticleInfo{
 
     // This class should only ever be created within SimParticlesWithHits.
@@ -41,8 +39,8 @@ namespace mu2e {
 
     size_t nHits() const { return _hitInfos.size(); }
 
-    vector<StrawHitMCInfo>const& strawHitInfos() const { return _hitInfos; }
-   
+    std::vector<StrawHitMCInfo>const& strawHitInfos() const { return _hitInfos; }
+
     StepPointMC const& firstStepPointMCinTracker() const;
     StepPointMC const& lastStepPointMCinTracker()  const;
 
@@ -60,7 +58,7 @@ namespace mu2e {
                      SimParticle const& simParticle,
                      art::Event const& event);
 
-    vector<StrawHitMCInfo>& strawHitInfos()  { return _hitInfos; }
+    std::vector<StrawHitMCInfo>& strawHitInfos()  { return _hitInfos; }
 
     // ID of this particle in the SimParticleCollection.
     key_type _simId;
@@ -72,10 +70,10 @@ namespace mu2e {
     art::Event const* _event;
 
     // Vector of information about the StrawHits to which this track contributed.
-    vector<StrawHitMCInfo>  _hitInfos;
+    std::vector<StrawHitMCInfo>  _hitInfos;
 
     // First StepPointMC in tracker.  Lazy evaluated, therefore mutable.
-    mutable StepPointMC const* _firstInTracker; 
+    mutable StepPointMC const* _firstInTracker;
 
     // Last StepPointMC in tracker.  Lazy evaluated, therefore mutable.
     mutable StepPointMC const* _lastInTracker;

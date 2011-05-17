@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.1 2011/05/17 16:30:15 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:15 $
+// $Id: G4_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $ 
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -147,13 +147,13 @@ namespace mu2e {
       // See note 1.
     }
 
-    virtual void produce(art::Event& e, art::EventSetup const& c);
+    virtual void produce(art::Event& e);
     
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     virtual void endJob();
  
-    virtual void beginRun(art::Run &r, art::EventSetup const& eSetup );
-    virtual void endRun(art::Run &, art::EventSetup const&);
+    virtual void beginRun(art::Run &r);
+    virtual void endRun(art::Run &);
 
     static void fillDescription(art::ParameterSetDescription& iDesc,
                                 string const& moduleLabel) {
@@ -201,7 +201,7 @@ namespace mu2e {
   };
   
   // Create an instance of the run manager.
-  void G4::beginJob(art::EventSetup const&){
+  void G4::beginJob(){
     _runManager = auto_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
 
     // If you want job scope histograms.
@@ -211,7 +211,7 @@ namespace mu2e {
   }
 
   // Initialze G4.
-  void G4::beginRun( art::Run &run, art::EventSetup const& eSetup ){
+  void G4::beginRun( art::Run &run){
 
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& config = geom->config();
@@ -309,7 +309,7 @@ namespace mu2e {
   } 
 
   // Create one G4 event and copy its output to the art::event.
-  void G4::produce(art::Event& event, art::EventSetup const&) {
+  void G4::produce(art::Event& event) {
 
     // Create empty data products.
     auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
@@ -454,7 +454,7 @@ namespace mu2e {
   }
 
   // Tell G4 that this run is over.
-  void G4::endRun(art::Run & run, art::EventSetup const&){
+  void G4::endRun(art::Run & run){
 
     _diagnostics.endRun(run);
 

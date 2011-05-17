@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: MakeCrudeStrawHit_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -73,9 +73,9 @@ namespace mu2e {
     }
     virtual ~MakeCrudeStrawHit() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
  
-    void produce( art::Event& e, art::EventSetup const&);
+    void produce( art::Event& e);
 
   private:
     
@@ -97,7 +97,7 @@ namespace mu2e {
 
   };
 
-  void MakeCrudeStrawHit::beginJob(art::EventSetup const& ){
+  void MakeCrudeStrawHit::beginJob(){
 
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ){
@@ -113,7 +113,7 @@ namespace mu2e {
   }
 
   void
-  MakeCrudeStrawHit::produce(art::Event& event, art::EventSetup const&) {
+  MakeCrudeStrawHit::produce(art::Event& event) {
 
     static int ncalls(0);
     ++ncalls;

@@ -1,7 +1,7 @@
 #ifndef Mu2eUtilities_SimParticlesWithHits_hh
 #define Mu2eUtilities_SimParticlesWithHits_hh
 //
-// This class makes available a collection of SimParticles that 
+// This class makes available a collection of SimParticles that
 // have more than a minimum number of StrawHits with energy deposition
 // in the gas above some cut.  The class can also return a
 // vector of information about all of the StrawHits on each track
@@ -11,9 +11,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: SimParticlesWithHits.hh,v 1.6 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke.
 //
@@ -34,27 +34,25 @@ namespace art{
   class Event;
 }
 
-using namespace std;
-
 namespace mu2e {
 
   class SimParticlesWithHits{
   public:
 
-    typedef SimParticleCollection::key_type   key_type;
-    typedef SimParticleInfo                   mapped_type;
-    typedef map<key_type,SimParticleInfo>     map_type;
-    typedef map_type::const_iterator          const_iterator;
+    typedef SimParticleCollection::key_type    key_type;
+    typedef SimParticleInfo                    mapped_type;
+    typedef std::map<key_type,SimParticleInfo> map_type;
+    typedef map_type::const_iterator           const_iterator;
 
     // No default c'tor by design.
 
     SimParticlesWithHits( const art::Event& evt,
-                          string const& _g4ModuleLabel,
-                          string const& _hitMakerModuleLabel,
-                          string const& _trackerStepPoints,
+                          std::string const& _g4ModuleLabel,
+                          std::string const& _hitMakerModuleLabel,
+                          std::string const& _trackerStepPoints,
                           double minEnergyDep,
                           size_t minHits );
-    
+
     // Compiler generated code is Ok for:
     //  d'tor, copy c'tor assignment operator.
 
@@ -74,7 +72,7 @@ namespace mu2e {
     // Iterators over the collection.
     const_iterator begin() const { return _hitsPerTrack.begin(); }
     const_iterator end()   const { return _hitsPerTrack.end(); }
-    
+
     // Number of particles with hits.
     size_t size() const { return _hitsPerTrack.size(); }
 

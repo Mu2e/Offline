@@ -6,9 +6,9 @@
 // Starts from ReadDPIStrawCluster_plugin.cc, adding the quantities of
 // interest to these angles, and gradually eliminating the rest.
 //
-// $Id: BetaTauPitch_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: BetaTauPitch_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author: Mark Fischler modifying code by Hans Wenzel
 //
@@ -245,9 +245,9 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     }
     virtual ~BetaTauPitch() { }
     
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e);
     void FitCircle(vector<double> X,vector<double> Y);
     void FitSinus( vector<double> R,vector<double> Z);
     void FitSinus2( vector<double> R,vector<double> Z);
@@ -365,7 +365,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
   }; // end of BetaTauPich class definition
 
   
-  void BetaTauPitch::beginJob(art::EventSetup const& ){
+  void BetaTauPitch::beginJob(){
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint<<endl; 
@@ -448,7 +448,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //
   }
   
-  void BetaTauPitch::analyze(art::Event const& evt, art::EventSetup const&)
+  void BetaTauPitch::analyze(art::Event const& evt)
   {
     if ( _diagLevel > 2 ) cout << "BetaTauPitch: analyze() begin"<<endl;
     // Geometry info for the TTracker.

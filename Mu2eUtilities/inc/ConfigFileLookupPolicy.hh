@@ -3,6 +3,8 @@
 
 #include "cetlib/filepath_maker.h"
 
+// $MU2E_SEARCH_PATH contains the colon-separated search path
+
 namespace mu2e {
   class ConfigFileLookupPolicy;
 }

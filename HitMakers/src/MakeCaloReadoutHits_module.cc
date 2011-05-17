@@ -91,9 +91,9 @@ namespace mu2e {
     }
     virtual ~MakeCaloReadoutHits() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
  
-    void produce( art::Event& e, art::EventSetup const&);
+    void produce( art::Event& e);
 
   private:
     
@@ -123,12 +123,12 @@ namespace mu2e {
 
   };
 
-  void MakeCaloReadoutHits::beginJob(art::EventSetup const& ){
+  void MakeCaloReadoutHits::beginJob(){
     
   }
 
   void
-  MakeCaloReadoutHits::produce(art::Event& event, art::EventSetup const&) {
+  MakeCaloReadoutHits::produce(art::Event& event) {
 
     if ( _diagLevel > 0 ) cout << "MakeCaloReadoutHits: produce() begin" << endl;
       

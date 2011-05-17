@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: MakeStrawHit_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat 
@@ -105,9 +105,9 @@ namespace mu2e {
     }
     virtual ~MakeStrawHit() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
  
-    void produce( art::Event& e, art::EventSetup const&);
+    void produce( art::Event& e);
 
   private:
     
@@ -139,12 +139,12 @@ namespace mu2e {
 
   };
 
-  void MakeStrawHit::beginJob(art::EventSetup const& ){
+  void MakeStrawHit::beginJob(){
     
   }
 
   void
-  MakeStrawHit::produce(art::Event& event, art::EventSetup const&) {
+  MakeStrawHit::produce(art::Event& event) {
 
     if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() begin" << endl;
       

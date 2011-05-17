@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: MakeStrawCluster_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Hans Wenzel
 //
@@ -60,9 +60,9 @@ namespace mu2e {
     }
     virtual ~MakeStrawCluster() { }
     
-    virtual void beginJob(art::EventSetup const&);
-    void produce( art::Event& e, art::EventSetup const&);
-    //  void analyze( art::Event const& e, art::EventSetup const&);
+    virtual void beginJob();
+    void produce( art::Event& e);
+    //  void analyze( art::Event const& e);
     
   private:
     
@@ -83,7 +83,7 @@ namespace mu2e {
     
   };
      
-  void MakeStrawCluster::beginJob(art::EventSetup const& ){
+  void MakeStrawCluster::beginJob(){
     
     cout << "Diaglevel: " 
          << _diagLevel << " "
@@ -92,7 +92,7 @@ namespace mu2e {
     
     art::ServiceHandle<art::TFileService> tfs;
   }
-   void MakeStrawCluster::produce(art::Event& evt, art::EventSetup const&)
+   void MakeStrawCluster::produce(art::Event& evt)
    {
      if ( _diagLevel > 0 ) cout << "MakeStrawCluster: produce() begin" << endl;
      static int ncalls(0);

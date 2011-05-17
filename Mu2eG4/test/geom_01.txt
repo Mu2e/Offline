@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.82 2011/05/15 16:22:55 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/15 16:22:55 $
+// $Id: geom_01.txt,v 1.83 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@ string detector.name  = "g4geom_v00";
 
 bool hasHall            = true;
 bool hasTarget          = true;
-bool hasProtonAbsorber  = true; 
+bool hasProtonAbsorber  = true;
 bool hasNeutronAbsorber = true;
 bool hasCalorimeter     = true;
 bool hasBFieldManager   = true;
@@ -36,7 +36,7 @@ bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(S
 //vector<int> g4.itgaslayerSDEventList   = { 0, 1, 2, 3 };
 //vector<int> g4.trackingActionEventList = { 0, 1, 2, 3, 4, 5};
 
-// Some G4 controls which does not allow it to consume all the memory 
+// Some G4 controls which does not allow it to consume all the memory
 // or to spend all the time tracking one bad particle
 int g4.steppingActionMaxSteps = 10000;
 int g4.stepsSizeLimit = 10000;
@@ -85,24 +85,24 @@ vector<string> g4.elements =
   { "H",  "He", "C",  "N",  "O",  "F", "Na", "Al", "Si", "Ar",
     "Ca", "Ti", "Fe", "Cu", "Mo", "Ag", "Ta", "W", "Pt", "Au",
     "Pb" };
- 
+
 // Tell G4 to load these predefined materials.
 vector<string> g4.materials =
-  { "G4_H",     "G4_He",  "G4_C",  "G4_N",  "G4_O", 
+  { "G4_H",     "G4_He",  "G4_C",  "G4_N",  "G4_O",
     "G4_F",     "G4_Na",  "G4_Al", "G4_Si", "G4_Ar",
     "G4_Ca",    "G4_Ti",  "G4_Fe", "G4_Cu", "G4_Ta",
     "G4_W",     "G4_Pt",  "G4_Au", "G4_Pb", "G4_WATER",
-    "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be", "G4_B", 
+    "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be", "G4_B",
     "G4_Li",    "G4_Mo",  "G4_TITANIUM_DIOXIDE"
   };
 
 // Load other materials defined specifically for Mu2e.
 vector<string> mu2e.materials =
-  { "ShieldingConcrete", "IsoButane", "StrawGas", 
-    "Kapton", "Scintillator", "WAGVacuum", "MBOverburden", 
-    "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix",  
-    "CarbonFiber", "PolypropyleneFoam", "CFoam_480", "CFoam_100", 
-    "CFoam_080", "Polyethylene092B050d095", "Polyethylene092B300d119", 
+  { "ShieldingConcrete", "IsoButane", "StrawGas",
+    "Kapton", "Scintillator", "WAGVacuum", "MBOverburden",
+    "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix",
+    "CarbonFiber", "PolypropyleneFoam", "CFoam_480", "CFoam_100",
+    "CFoam_080", "Polyethylene092B050d095", "Polyethylene092B300d119",
     "Polyethylene092Li075d106", "Polyethylene092", "StainlessSteel"
 };
 
@@ -122,7 +122,7 @@ bool           world.boxVisible   = true;
 bool           world.boxSolid     = false;
 
 
-// Position of the origin of the Mu2e origin system at the 
+// Position of the origin of the Mu2e origin system at the
 //  x: mid-point between TSu and TSd.
 //  y: given as height above the floor
 //  z: offset from the world origin.
@@ -132,7 +132,7 @@ double world.mu2eOrigin.zoffset = -4000.;
 
 // Overburden above the detector: 20 ft in proposal.
 // I have arbitrarily split it into a flat part and a dome.
-double dirt.overburdenDepth = 6000.;  
+double dirt.overburdenDepth = 6000.;
 double dirt.capHalfHeight   = 1.; // small numbers make it "almost" invisible (mm)
 double dirt.capBottomRadius = 2.;
 double dirt.capTopRadius    = 1.;
@@ -254,7 +254,7 @@ double dummyStoppingTarget.z0         =  5900.;
 string dummyStoppingTarget.material   = "WAGVacuum";
 
 //
-// Describe targets.  
+// Describe targets.
 //
 
 // material around the targets
@@ -267,9 +267,9 @@ double target.deltaZ         =    50.0;
 bool   target.visible        = true;
 bool   target.solid          = false;
 
-// all radii must be specified, i.e., nFoils is determined from the size 
+// all radii must be specified, i.e., nFoils is determined from the size
 // of the radii vector.
-vector<double> target.radii  = 
+vector<double> target.radii  =
     { 100.000, 82.168, 81.288, 80.378, 79.438,
        78.467, 77.463, 76.425, 75.352, 74.241,
        73.093, 71.904, 70.674, 69.401, 68.082,
@@ -279,10 +279,10 @@ vector<double> target.radii  =
 vector<string> target.materials =
     { "G4_Al"};
 
-// Variation of locations of foil centers 
+// Variation of locations of foil centers
 // z: variations from equal spacings according to z0 and deltaZ
 // last will be repeated...
-vector<double> target.zVars  =    
+vector<double> target.zVars  =
     { 0., 0., 0., 0., 0.,
       0., 0., 0., 0., 0.,
       0., 0., 0., 0., 0.,
@@ -290,24 +290,24 @@ vector<double> target.zVars  =
 
 // x: relative to beam axis
 // last will be repeated...
-vector<double> target.xVars  =    
+vector<double> target.xVars  =
     { 0.};
 
 // y: relative to beam axis
 // last will be repeated...
-vector<double> target.yVars  =    
+vector<double> target.yVars  =
     { 0. };
 
 // last thickness given will be repeated up to number radii.size()
-vector<double> target.halfThicknesses  =    
+vector<double> target.halfThicknesses  =
     {0.1};
 
 // last x directional cosine given will be repeated up to number radii.size()
-vector<double> target.xCos  =    
+vector<double> target.xCos  =
     { 0.};
 
 // last y directional cosine given will be repeated up to number radii.size()
-vector<double> target.yCos  =    
+vector<double> target.yCos  =
     { 0.};
 
 // Crystal calorimeter
@@ -321,7 +321,7 @@ int    calorimeter.nCrystalRSlices  =  10;
 int    calorimeter.nCrystalZSlices  =  50;
 
 double calorimeter.crystalHalfLong  = 50.;
-double calorimeter.crystalHalfTrans = 15.; 
+double calorimeter.crystalHalfTrans = 15.;
 string calorimeter.crystalMaterial                         = "G4_PbWO4";
 
 string calorimeter.crystalWrapper                          = "Polyethylene092";
@@ -329,7 +329,7 @@ double calorimeter.crystalWrapperHalfThickness             = 0.01 ;
 
 string calorimeter.crystalReadoutMaterial                  = "G4_Si";
 double calorimeter.crystalReadoutHalfTrans                 = 5.;
-double calorimeter.crystalReadoutHalfThickness             = 5.; 
+double calorimeter.crystalReadoutHalfThickness             = 5.;
 int    calorimeter.crystalReadoutChannelCount              = 2; // APDs per crystal
 int    calorimeter.crystalReadoutSide                      = 1; // +1 or -1
 
@@ -364,20 +364,20 @@ bool   fluxcrv.solid            = false;
 
 int            crs.scintillatorLayersPerModule              = 3;
 int            crs.scintillatorBarsPerFullLayer             = 20;
-vector<double> crs.scintillatorBarHalfLengths               = { 5.,  2475., 50.}; 
+vector<double> crs.scintillatorBarHalfLengths               = { 5.,  2475., 50.};
 string         crs.scintillatorBarMaterialName              = "G4_POLYSTYRENE";
 double         crs.scintillatorLayerShift                   = 25.0;
 double         crs.scintillatorLayerGap                     = 0.0;
 double         crs.scintillatorBarPigmentationHalfThickness = 0.125; // not used for now
-string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXIDE"; 
+string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXIDE";
 vector<double> crs.scintillatorModuleOuterSheetHalfLengths  = { 0.8, 2475., 1045.}; // 0.063"=1.6mm;
 string         crs.scintillatorModuleOuterSheetMaterial     = "G4_Al";
 string         crs.scintillatorModuleInterLayerSheetMaterialName  = "G4_POLYSTYRENE";
 double         crs.scintillatorModuleInterLayerSheetHalfThickness = 6.0; // 0.125"=3.175mm; or 57.2-30-3.2/4
-vector<double> crs.moduleUnistrutHalfLengths                = {28.,  2475., 157.}; // fig 11.9 p.179 
+vector<double> crs.moduleUnistrutHalfLengths                = {28.,  2475., 157.}; // fig 11.9 p.179
 double         crs.wallUnistrutHalfThickness                = 28.;  // (154 - 41)/4 = 28.25 ~28
 // assume the unistrut on the steel to be of the same thickness as the one on the modules
-double         crs.scintillatorOverlap                      = 100.; // fig 11.5 
+double         crs.scintillatorOverlap                      = 100.; // fig 11.5
 
 // full, half modules, more specific numbers TBD
 vector<int>    crs.shieldR_NumberOfModules  = {10,  1};
@@ -405,11 +405,11 @@ int    crs.verbosityLevel = 0;
 
 // Magnetic field
 //
-// Default setting is to use the full field everywhere, except the 
-// upstream part of DS, where uniform field is used. 
+// Default setting is to use the full field everywhere, except the
+// upstream part of DS, where uniform field is used.
 
-// Form of DS field: 0 is full field; 
-//                   1 is full upstream, const downstream; 
+// Form of DS field: 0 is full field;
+//                   1 is full upstream, const downstream;
 //                   2 is const throughout
 int detSolFieldForm = 1;
 
@@ -418,7 +418,7 @@ double toyDS.bz            = 1.0;
 
 // This is recommended field map. See geom_mecofield.txt to use the meco field.
 string bfield.format  = "G4BL";
-vector<string> bfield.files = { 
+vector<string> bfield.files = {
   "BFieldMaps/Mau5/Mu2e_DSMap.header",
   "BFieldMaps/Mau5/Mu2e_PSMap.header",
   "BFieldMaps/Mau5/Mu2e_TSuMap.header",
@@ -470,9 +470,9 @@ bool   neutronabsorber.solid        = false;
 
 double mbs.BSTSInnerRadius  =   410.0;
 double mbs.BSTSOuterRadius  =   430.0;
-double mbs.BSTSHLength      =  1700.0; 
+double mbs.BSTSHLength      =  1700.0;
 string mbs.BSTSMaterialName = "StainlessSteel";
-double mbs.BSTSZ            = 15150.0; 
+double mbs.BSTSZ            = 15150.0;
 double mbs.SPBSInnerRadius  =   430.0;
 double mbs.SPBSOuterRadius  =   452.0;
 double mbs.SPBSHLength      =  1320.0;
@@ -500,9 +500,9 @@ bool   mbs.solid        = false;
 //
 //
 // End notes:
-// 
+//
 // 1) Sources of information:
-//    
+//
 //
 //
 // This tells emacs to view this file in c++ mode.

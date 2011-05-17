@@ -74,9 +74,9 @@ namespace mu2e {
 
     virtual ~SimpleEffyNoise()  { }
 
-    virtual void beginJob( art::EventSetup const& );
+    virtual void beginJob();
 
-    void produce( art::Event& e, art::EventSetup const& );
+    void produce( art::Event& e );
 
   private:
     int _diagLevel;     // diagnostics level
@@ -97,7 +97,7 @@ namespace mu2e {
 
   };  // SimpleEffyNoise
 
-  void SimpleEffyNoise::beginJob(art::EventSetup const& ) {
+  void SimpleEffyNoise::beginJob() {
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ) {
       art::ServiceHandle<art::TFileService> tfs;
@@ -114,7 +114,7 @@ namespace mu2e {
 
   }  // beginJob()
 
-  void SimpleEffyNoise::produce(art::Event& event, art::EventSetup const&) {
+  void SimpleEffyNoise::produce(art::Event& event) {
 
   std::cout<<"\n\n IN SimpleEffyNoise::produced ================\n\n"<<std::endl;
    // This function has two main sections:

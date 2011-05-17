@@ -1,10 +1,10 @@
 //
 //  A second hello world plugin, with a little more detail.
 //
-//  $Id: HelloWorld2_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/05/17 16:30:14 $
-//   
+//  $Id: HelloWorld2_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/17 22:22:46 $
+//
 //  Original author Rob Kutschke
 //
 
@@ -36,12 +36,11 @@ namespace mu2e {
 
     ~HelloWorld2() { }
 
-    void beginJob(art::EventSetup const&);
+    void beginJob();
 
-    void beginRun(art::Run const &run, 
-                          art::EventSetup const& eSetup );
- 
-    void analyze(const art::Event& event, art::EventSetup const&);
+    void beginRun(art::Run const &run);
+
+    void analyze(const art::Event& event);
 
     void endJob();
 
@@ -51,34 +50,33 @@ namespace mu2e {
 
   };
 
-  void HelloWorld2::beginJob(art::EventSetup const& ){
+  void HelloWorld2::beginJob(){
     cerr << "Hello, world.  From beginJob. "
-         << "  Magic number: " 
+         << "  Magic number: "
          << _magicNumber
          << endl;
   }
 
-  void HelloWorld2::beginRun(art::Run const& run,
-                              art::EventSetup const& eSetup ){
+  void HelloWorld2::beginRun(art::Run const& run){
 
     cerr << "Hello, world.  From beginRun: "
          << run.id().run()
-         << "  Magic number: " 
+         << "  Magic number: "
          << _magicNumber
          << endl;
   }
 
-  void HelloWorld2::analyze(const art::Event& event, art::EventSetup const&) {
+  void HelloWorld2::analyze(const art::Event& event) {
     cerr << "Hello, world.  From analyze: "
          << event.id()
-         << "  Magic number: " 
+         << "  Magic number: "
          << _magicNumber
          << endl;
   }
 
   void HelloWorld2::endJob(){
     cerr << "Hello, world.  From endJob. "
-         << "  Magic number: " 
+         << "  Magic number: "
          << _magicNumber
          << endl;
   }

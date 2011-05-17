@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:14 $
+// $Id: HoughTest_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $ 
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author R. Bernstein
 //
@@ -90,17 +90,15 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     }
     virtual ~HoughTest() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     virtual void endJob();
 
-    virtual void beginRun(art::Run const &r, 
-                          art::EventSetup const& eSetup );
+    virtual void beginRun(art::Run const &r);
 
-    virtual void beginSubRun(art::SubRun const& lblock, 
-                                      art::EventSetup const&);
+    virtual void beginSubRun(art::SubRun const& lblock);
  
     // This is called for each event.
-    void produce(art::Event& e, art::EventSetup const&);
+    void produce(art::Event& e);
 
 
   private:
@@ -180,7 +178,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
   };
 
 
-  void HoughTest::beginJob(art::EventSetup const& ){
+  void HoughTest::beginJob(){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -265,16 +263,14 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
 
-  void HoughTest::beginRun(art::Run const& run,
-                                 art::EventSetup const& eSetup ){
+  void HoughTest::beginRun(art::Run const& run){
   }
 
-  void HoughTest::beginSubRun(art::SubRun const& lblock,
-                                             art::EventSetup const&){
+  void HoughTest::beginSubRun(art::SubRun const& lblock){
   }
 
 
-  void HoughTest::produce(art::Event& evt, art::EventSetup const&) {
+  void HoughTest::produce(art::Event& evt) {
 
     static int ncalls(0);
     ++ncalls;

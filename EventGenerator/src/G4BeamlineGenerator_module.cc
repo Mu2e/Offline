@@ -61,9 +61,9 @@ namespace mu2e {
 
     virtual ~G4BeamlineGenerator() { }
 
-    virtual void produce(art::Event& e, art::EventSetup const& c);
+    virtual void produce(art::Event& e);
 
-    virtual void beginRun(art::Run &r, art::EventSetup const& eSetup );
+    virtual void beginRun(art::Run &r);
 
     static void fillDescription(art::ParameterSetDescription& iDesc,
                                 string const& moduleLabel) {
@@ -84,7 +84,7 @@ namespace mu2e {
   };
 
   // At beginRun time, update any derived geometry information.
-  void G4BeamlineGenerator::beginRun( art::Run &run, art::EventSetup const& eSetup ){
+  void G4BeamlineGenerator::beginRun( art::Run &run){
 
     static int ncalls(0);
     if ( ++ncalls > 1){
@@ -118,7 +118,7 @@ namespace mu2e {
   }
 
   void
-  G4BeamlineGenerator::produce(art::Event& evt, art::EventSetup const&) {
+  G4BeamlineGenerator::produce(art::Event& evt) {
 
     // Make the collection to hold the output.
     auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);

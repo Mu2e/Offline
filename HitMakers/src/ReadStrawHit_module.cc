@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: ReadStrawHit_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -75,9 +75,9 @@ namespace mu2e {
     }
     virtual ~ReadStrawHit() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
 
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e);
 
   private:
     
@@ -111,7 +111,7 @@ namespace mu2e {
 
   };
 
-  void ReadStrawHit::beginJob(art::EventSetup const& ){
+  void ReadStrawHit::beginJob(){
 
     cout << "Diaglevel: " 
          << _diagLevel << " "
@@ -139,7 +139,7 @@ namespace mu2e {
   }
 
   void
-  ReadStrawHit::analyze(art::Event const& evt, art::EventSetup const&) {
+  ReadStrawHit::analyze(art::Event const& evt) {
 
     static int ncalls(0);
     ++ncalls;

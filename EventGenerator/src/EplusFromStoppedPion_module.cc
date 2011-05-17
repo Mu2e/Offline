@@ -5,9 +5,9 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:13 $
+// $Id: EplusFromStoppedPion_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke.
 //
@@ -50,8 +50,8 @@ namespace mu2e {
     explicit EplusFromStoppedPion(fhicl::ParameterSet const& pset);
     virtual ~EplusFromStoppedPion() { }
 
-    void beginRun(art::Run& run,     art::EventSetup const& eSetup );
-    void produce( art::Event& event, art::EventSetup const& eSetup );
+    void beginRun(art::Run& run);
+    void produce( art::Event& event);
 
   private:
 
@@ -119,7 +119,7 @@ namespace mu2e {
 
   }
 
-  void EplusFromStoppedPion::beginRun(art::Run& run, art::EventSetup const& eSetup ){
+  void EplusFromStoppedPion::beginRun(art::Run& run){
 
     // Get the positron and pi+ masses from the particle data table.  See note 1.
     ConditionsHandle<ParticleDataTable> pdt("ignored");
@@ -165,7 +165,7 @@ namespace mu2e {
   }
 
   void
-  EplusFromStoppedPion::produce(art::Event& event, art::EventSetup const&) {
+  EplusFromStoppedPion::produce(art::Event& event) {
 
     auto_ptr<ToyGenParticleCollection> output(new ToyGenParticleCollection);
 

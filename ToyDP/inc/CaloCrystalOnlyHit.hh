@@ -1,9 +1,9 @@
 #ifndef ToyDP_CaloCrystalOnlyHit_hh
 #define ToyDP_CaloCrystalOnlyHit_hh
 
-// $Id: CaloCrystalOnlyHit.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: CaloCrystalOnlyHit.hh,v 1.4 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author KLG
 
@@ -14,9 +14,11 @@
 // Mu2e includes
 #include "ToyDP/inc/DPIndex.hh"
 
-class art::ProductID;
+namespace art {
+  class ProductID;
+}
 
-namespace mu2e { 
+namespace mu2e {
 
   class CaloCrystalOnlyHit{
 
@@ -41,7 +43,7 @@ namespace mu2e {
     float            energyDep() const { return _energyDep; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
-    
+
     void setEnergyDep(double energy);
 
     // Print contents of the object.

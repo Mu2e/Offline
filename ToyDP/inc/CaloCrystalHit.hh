@@ -1,9 +1,9 @@
 #ifndef ToyDP_CaloCrystalHit_hh
 #define ToyDP_CaloCrystalHit_hh
 
-// $Id: CaloCrystalHit.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: CaloCrystalHit.hh,v 1.7 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author KLG
 
@@ -14,7 +14,9 @@
 // Mu2e includes
 #include "ToyDP/inc/DPIndex.hh"
 
-class art::ProductID;
+namespace art {
+  class ProductID;
+}
 
 namespace mu2e { 
 

@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_module.cc,v 1.1 2011/05/17 16:30:15 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:15 $
+// $Id: KalmanT01_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -84,9 +84,9 @@ namespace mu2e {
     }
     virtual ~KalmanT01() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
  
-    void analyze( const art::Event& e, art::EventSetup const&);
+    void analyze( const art::Event& e);
 
   private:
     
@@ -119,7 +119,7 @@ namespace mu2e {
 
   };
 
-  void KalmanT01::beginJob(art::EventSetup const& ){
+  void KalmanT01::beginJob(){
 
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ){
@@ -138,7 +138,7 @@ namespace mu2e {
     }
   }
 
-  void KalmanT01::analyze(const art::Event& event, art::EventSetup const&) {
+  void KalmanT01::analyze(const art::Event& event) {
 
     // Counter used by debug printout. 
     static int ncalls(0);

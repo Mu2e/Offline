@@ -1,7 +1,7 @@
 //
-// $Id: MakeDPIStrawCluster_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: MakeDPIStrawCluster_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Hans Wenzel
 // This modules create clusters of fired StrawHits in a panel 
@@ -61,8 +61,8 @@ namespace mu2e {
     }
     virtual ~MakeDPIStrawCluster() { }
     
-    virtual void beginJob(art::EventSetup const&);
-    void produce( art::Event& e, art::EventSetup const&);
+    virtual void beginJob();
+    void produce( art::Event& e);
     
   private:
     
@@ -83,7 +83,7 @@ namespace mu2e {
     
   };
      
-  void MakeDPIStrawCluster::beginJob(art::EventSetup const& ){
+  void MakeDPIStrawCluster::beginJob(){
     
     cout << "Diaglevel: " 
          << _diagLevel << " "
@@ -92,7 +92,7 @@ namespace mu2e {
     
     art::ServiceHandle<art::TFileService> tfs;
   }
-   void MakeDPIStrawCluster::produce(art::Event& evt, art::EventSetup const&)
+   void MakeDPIStrawCluster::produce(art::Event& evt)
    {
      if ( _diagLevel > 0 ) cout << "MakeDPIStrawCluster: produce() begin" << endl;
      static int ncalls(0);

@@ -81,9 +81,9 @@ namespace mu2e {
       _cNtup(0),
       _tgtNtup(0),
       _nDevices(36),
-      _nSectors(6), 
+      _nSectors(6),
       _nLayers(2),
-      _nStrawsPerLay(50), 
+      _nStrawsPerLay(50),
       _nVanes(4),
       _nZCryPerVane(50),
       _nRCryPerVane(10)
@@ -91,7 +91,6 @@ namespace mu2e {
     }
     virtual ~BkgRates() {
     }
-    
     virtual void beginJob();
 
     void analyze(art::Event const& e );
@@ -114,7 +113,7 @@ namespace mu2e {
     std::string _makerModuleLabel;
 
     double _minimumEnergy; //minimum energy deposition of hits
-    bool _skipStoppedParticle; 
+    bool _skipStoppedParticle;
 
     //number of analyzed events
     int _nAnalyzed;
@@ -128,11 +127,11 @@ namespace mu2e {
     TH1F* _hRateU;
     TH2F* _hRateUT;
     TH1F* _hRateMaxU;
-    TH1F* _hCaloHitMult;    
+    TH1F* _hCaloHitMult;
     TH1F* _hCryEvt;
     TH1F* _hCryEvtZ1;
     TH1F* _hCryEvtZ2;
-    
+
     TNtuple* _tNtup;
     TNtuple* _cNtup;
     TNtuple* _tgtNtup;
@@ -140,7 +139,7 @@ namespace mu2e {
     const int _nDevices, _nSectors, _nLayers, _nStrawsPerLay;
     const int _nVanes, _nZCryPerVane, _nRCryPerVane;
 
-    vector<TH2F*> _hStrawRates; 
+    vector<TH2F*> _hStrawRates;
     vector<TH2F*> _hCrystalRates;
 
     std::auto_ptr<MCCaloUtilities> CaloManager;
@@ -157,11 +156,11 @@ namespace mu2e {
                     const pair<SimParticleCollection::key_type,double> & b ) {
     return a.second < b.second;
   }
-  
+
 
   void PairListAdd(PairList& list, SimParticleCollection::key_type prt, double e) {
-  
-    for (PairList::iterator it = list.begin(); 
+
+    for (PairList::iterator it = list.begin();
          it != list.end(); ++it) {
       if (it->first == prt) {
         it->second += e;
@@ -185,7 +184,7 @@ namespace mu2e {
     _hStrawEvtZ1    = tfs->make<TH1F>( "hStrawEvtZ1", "Multiplicity of straws per event zoom1",  100,    0.,  500. );
     _hStrawEvtZ2    = tfs->make<TH1F>( "hStrawEvtZ2", "Multiplicity of straws per event zoom2",  100,    0.,  100. );
     _hRateUZ        = tfs->make<TH2F>( "hRateUZ",     "Straw hit in u and z coordinates",         80,  380.,  690., 40, -1550., 1550.);
-    _hRateU         = tfs->make<TH1F>( "hRateU",      "Straw hit in u coordinate",               100,  380.,  690. ); 
+    _hRateU         = tfs->make<TH1F>( "hRateU",      "Straw hit in u coordinate",               100,  380.,  690. );
     _hRateUT        = tfs->make<TH2F>( "hRateUT",     "Straw hit in u coordinate and time",       80,  380.,  690., 40,   700., 1900.);
     _hCryEvt        = tfs->make<TH1F>( "hCryEvt",     "Multiplicity of Crystal per event",       200,    0., 2000.);
     _hCryEvtZ1      = tfs->make<TH1F>( "hCryEvtZ1",   "Multiplicity of Crystal per event zoom1", 100,    0.,  500.);
@@ -195,8 +194,8 @@ namespace mu2e {
       stringstream name, descr;
       name << "hRateDev" << i;
       descr << "Straw rates in device " << i;
-      
-      _hStrawRates.push_back(tfs->make<TH2F>(name.str().c_str(), 
+
+      _hStrawRates.push_back(tfs->make<TH2F>(name.str().c_str(),
                                              descr.str().c_str(),
                                              _nStrawsPerLay, 0, _nStrawsPerLay,
                                              _nLayers*_nSectors, 0, _nLayers*_nSectors));
@@ -206,8 +205,8 @@ namespace mu2e {
     for (int i=0; i<_nVanes; ++i) {
       stringstream name, descr;
       name << "hRateVane" << i;
-      descr << "Crystal rates in vane " << i;  
-      _hCrystalRates.push_back(tfs->make<TH2F>(name.str().c_str(), 
+      descr << "Crystal rates in vane " << i;
+      _hCrystalRates.push_back(tfs->make<TH2F>(name.str().c_str(),
                                                descr.str().c_str(),
                                                _nZCryPerVane, 0, _nZCryPerVane,
                                                _nRCryPerVane, 0, _nRCryPerVane));
@@ -223,16 +222,16 @@ namespace mu2e {
     //*****test code******
         static int ncalls(0);
     ++ncalls;
-    
+
     art::ServiceHandle<GeometryService> geom;
-    
+
     if (ncalls == 1) {
 
       // cout << "This should be done only in the first event" << endl;
-      
-      
+
+
       art::ServiceHandle<art::TFileService> tfs;
-      
+
       if (geom->hasElement<TTracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
                                             "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
@@ -242,17 +241,17 @@ namespace mu2e {
       }
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
                                           "evt:run:crTime:crE:crRad:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
-      _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",      
+      _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
                                           "evt:run:time:x:y:z:isGen:pdgId:trkId:foil");
 
     }
 
     doStoppingTarget(evt);
-    
+
     if (geom->hasElement<ITracker>()) {
       //      cout << "ITracker selected" << endl;
       doITracker(evt, _skipEvent);
-    } 
+    }
     if (geom->hasElement<TTracker>()) {
       //      cout << "TTracker selected" << endl;
       doTracker(evt, _skipEvent);
@@ -264,20 +263,20 @@ namespace mu2e {
   } // end of analyze
 
   void BkgRates::doTracker(art::Event const& evt, bool skip) {
-    
+
     if (skip) return;
 
     // Geometry info for the LTracker.
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
-    
+
     art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
     // Get the persistent data about the StrawHitsMCTruth.
-    
+
     art::Handle<StrawHitMCTruthCollection> truthHandle;
     evt.getByLabel(_makerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
@@ -288,19 +287,19 @@ namespace mu2e {
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in DPIndexVectorCollection, rather than 
-    // use producer name directly ("g4run"). 
+    // should look for product ids in DPIndexVectorCollection, rather than
+    // use producer name directly ("g4run").
 
     art::Handle<StepPointMCCollection> mchitsHandle;
     evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
     StepPointMCCollection const* mchits = mchitsHandle.product();
 
-    /*    
+    /*
     //Get and printout all straw (just to check)
     const std::deque<Straw>& allstraws = tracker.getAllStraws();
     for (size_t i = 0; i< allstraws.size(); ++i) {
     Straw str = allstraws[i];
-    cout << "Index " << str.Index() 
+    cout << "Index " << str.Index()
     << "\t" << str.Id() << endl;
     }
     */
@@ -308,9 +307,9 @@ namespace mu2e {
     if (!(hits->size() == hits_truth->size() &&
           hits_mcptr->size() == hits->size() ) ) {
       throw cet::exception("RANGE")
-        << "Strawhits: " << hits->size() 
-        << " MCTruthStrawHits: " << hits_truth->size() 
-        << " MCPtr: " << hits_mcptr->size(); 
+        << "Strawhits: " << hits->size()
+        << " MCTruthStrawHits: " << hits_truth->size()
+        << " MCPtr: " << hits_mcptr->size();
     }
 
     // Get handles to the generated and simulated particles.
@@ -339,7 +338,7 @@ namespace mu2e {
       _hStrawEvtZ2->Fill(nStrawPerEvent);
     }
     for (size_t i=0; i<nStrawPerEvent; ++i) {
-      
+
       // Access data
       StrawHit        const&      hit(hits->at(i));
       StrawHitMCTruth const&    truth(hits_truth->at(i));
@@ -357,7 +356,7 @@ namespace mu2e {
       LayerId lid = sid.getLayerId();
       DeviceId did = sid.getDeviceId();
       SectorId secid = sid.getSectorId();
-      
+
       //Get coordinates of the hit:
 
       //X, Y and Z coordinate of the straw middle point
@@ -371,7 +370,7 @@ namespace mu2e {
       double u = sqrt((xc*xc)+(yc*yc));
 
       //time of the hit
-      double hitTime = hit.time(); 
+      double hitTime = hit.time();
 
 
       //direction of the straw
@@ -392,11 +391,11 @@ namespace mu2e {
 
       //Position along the wire using dt and propagation velocity (c)
       const double signalVelocity = 299.792458; // mm/ns
-      double v = 10e4 * hit.dt()/(2*signalVelocity); 
+      double v = 10e4 * hit.dt()/(2*signalVelocity);
 
       const CLHEP::Hep3Vector HitPoint = stMidPoint3 + (v/stDirection3.mag())*stDirection3;
       const CLHEP::Hep3Vector MCHitPoint = stMidPoint3 + (vMC/stDirection3.mag())*stDirection3;
-      
+
       if (fabs(v) > str.getHalfLength()) {
         if (_diagLevel > 0) cout << "Position along the wire bigger than halflength" << endl;
       }
@@ -421,7 +420,7 @@ namespace mu2e {
       tntpArray[idx++] = vMC;
       tntpArray[idx++] = z;
 
-      //Get related G4 hits to identify the track. 
+      //Get related G4 hits to identify the track.
 
 
       //Map of track id as key, and vector index as value
@@ -435,12 +434,12 @@ namespace mu2e {
       PairList TracksEDep;
 
       //common index for vectors
-      size_t trackIdx(0);      
+      size_t trackIdx(0);
 
       for (size_t j = 0; j < mcptr.size(); ++j) {
-        
+
         StepPointMC const& mchit = (*mchits)[mcptr[j].index];
-        
+
         // The simulated particle that made this hit.
         SimParticleCollection::key_type trackId(mchit.trackId());
 
@@ -451,18 +450,18 @@ namespace mu2e {
         //if the contributing track id does not exist in the map
         //add an element to the map itself, energy to the list and pdgId and genId to the vectors
         if (it==StrawTracksMap.end()) {
-          
+
           //insert track id in the trackId vector
           StrawTracksMap.insert(pair<SimParticleCollection::key_type, size_t>(trackId,trackIdx));
-          
-          //insert trackId, and energy deposition in the list     
+
+          //insert trackId, and energy deposition in the list
           TracksEDep.push_back(pair<SimParticleCollection::key_type, double>(trackId,mchit.eDep()));
-          
+
           if ( haveSimPart ){
             SimParticle const& sim = simParticles->at(trackId);
-           
+
             // PDG Particle Id of the sim particle that made this hit.
-            PdgIdTracks.push_back(sim.pdgId()); 
+            PdgIdTracks.push_back(sim.pdgId());
             IsGenerated.push_back(sim.fromGenerator());
 
           } else if ( !haveSimPart) {
@@ -472,7 +471,7 @@ namespace mu2e {
 
           //increment index
           trackIdx++;
-        } else if (it != StrawTracksMap.end()) {          
+        } else if (it != StrawTracksMap.end()) {
           for (PairList::iterator it2 = TracksEDep.begin(); it2 != TracksEDep.end(); ++it2) {
             if (it2->first == trackId) {
               it2->second += mchit.eDep();
@@ -480,11 +479,11 @@ namespace mu2e {
           }
         }
       }
-    
-      TracksEDep.sort(SortByEnergy);      
-      
+
+      TracksEDep.sort(SortByEnergy);
+
       int nTrkPerStraw = TracksEDep.size();
-      
+
       if (nTrkPerStraw > 3) {
         if (_diagLevel > 0) {
           cout << "More than 3 different tracks contribute to the straw:"
@@ -497,8 +496,8 @@ namespace mu2e {
 
       for (PairList::reverse_iterator it = TracksEDep.rbegin();
            it != TracksEDep.rend(); ++it) {
-        if (counter == 3) break;        
-        
+        if (counter == 3) break;
+
         size_t vec_idx = StrawTracksMap[it->first];
 
         tntpArray[idx++] = it->first.asInt();
@@ -507,12 +506,12 @@ namespace mu2e {
         tntpArray[idx++] = IsGenerated[vec_idx];
         counter++;
       }
-    
-      
-      //Fill with 0 the rest of the ntupla leaves 
+
+
+      //Fill with 0 the rest of the ntupla leaves
       //if there are less than 3 tracks contributing
       //to the straw hit
-      
+
       for (int add_idx = 0; add_idx < 3 - counter; ++add_idx) {
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
@@ -525,7 +524,7 @@ namespace mu2e {
         cout << "The plugin is supposed to analyze single background rates,"
              << "with one generated particle per event"
              << "\nThis event has more than one genparticle. Only the "
-             << "first one will be stored" << endl;  
+             << "first one will be stored" << endl;
       }
       if (ngen > 0) {
         ToyGenParticle const& gen = genParticles->at(0);
@@ -549,19 +548,19 @@ namespace mu2e {
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
       }
-      
+
       tntpArray[idx++] = driftTime;
       tntpArray[idx++] = driftDistance;
-      
+
       _tNtup->Fill(tntpArray);
-      
+
     } //end of Strawhits loop
-  
+
   } // end of doTracker
 
   void BkgRates::doITracker(art::Event const& evt, bool skip) {
 
-    if (skip) return;    
+    if (skip) return;
 
     const Tracker& tracker = getTrackerOrThrow();
     art::Handle<StrawHitCollection> pdataHandle;
@@ -579,8 +578,8 @@ namespace mu2e {
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in DPIndexVectorCollection, rather than 
-    // use producer name directly ("g4run"). 
+    // should look for product ids in DPIndexVectorCollection, rather than
+    // use producer name directly ("g4run").
 
     art::Handle<StepPointMCCollection> mchitsHandle;
     evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
@@ -589,9 +588,9 @@ namespace mu2e {
     if (!(hits->size() == hits_truth->size() &&
           hits_mcptr->size() == hits->size() ) ) {
       throw cet::exception("RANGE")
-        << "Strawhits: " << hits->size() 
-        << " MCTruthStrawHits: " << hits_truth->size() 
-        << " MCPtr: " << hits_mcptr->size(); 
+        << "Strawhits: " << hits->size()
+        << " MCTruthStrawHits: " << hits_truth->size()
+        << " MCPtr: " << hits_mcptr->size();
     }
 
     // Get handles to the generated and simulated particles.
@@ -621,7 +620,7 @@ namespace mu2e {
     }
 
     for (size_t i=0; i<nStrawPerEvent; ++i) {
-      
+
       // Access data
       StrawHit        const&      hit(hits->at(i));
       StrawHitMCTruth const&    truth(hits_truth->at(i));
@@ -643,11 +642,11 @@ namespace mu2e {
       int sid = cell.Id().getCell();
       int lid = cell.Id().getLayer();
       int did = cell.Id().getLayerId().getSuperLayer();
-      
+
       const CLHEP::Hep3Vector stMidPoint3 = str.getMidPoint();
 
       //time of the hit
-      double hitTime = hit.time(); 
+      double hitTime = hit.time();
 
       //direction of the straw
       const CLHEP::Hep3Vector stDirection3 = str.getDirection();
@@ -682,7 +681,7 @@ namespace mu2e {
       tntpArray[idx++] = vMC;
 
 
-      //Get related G4 hits to identify the track. 
+      //Get related G4 hits to identify the track.
 
       // cout << "Tracks info" << endl;
 
@@ -698,12 +697,12 @@ namespace mu2e {
       PairList TracksEDep;
 
       //common index for vectors
-      size_t trackIdx(0);      
+      size_t trackIdx(0);
 
       for (size_t j = 0; j < mcptr.size(); ++j) {
-        
+
         StepPointMC const& mchit = (*mchits)[mcptr[j].index];
-        
+
         // The simulated particle that made this hit.
         SimParticleCollection::key_type trackId(mchit.trackId());
 
@@ -714,18 +713,18 @@ namespace mu2e {
         //if the contributing track id does not exist in the map
         //add an element to the map itself, energy to the list and pdgId and genId to the vectors
         if (it==StrawTracksMap.end()) {
-          
+
           //insert track id in the trackId vector
           StrawTracksMap.insert(pair<SimParticleCollection::key_type, size_t>(trackId,trackIdx));
-          
-          //insert trackId, and energy deposition in the list     
+
+          //insert trackId, and energy deposition in the list
           TracksEDep.push_back(pair<SimParticleCollection::key_type, double>(trackId,mchit.eDep()));
-          
+
           if ( haveSimPart ){
             SimParticle const& sim = simParticles->at(trackId);
-           
+
             // PDG Particle Id of the sim particle that made this hit.
-            PdgIdTracks.push_back(sim.pdgId()); 
+            PdgIdTracks.push_back(sim.pdgId());
             IsGenerated.push_back(sim.fromGenerator());
 
           } else if ( !haveSimPart) {
@@ -735,7 +734,7 @@ namespace mu2e {
 
           //increment index
           trackIdx++;
-        } else if (it != StrawTracksMap.end()) {          
+        } else if (it != StrawTracksMap.end()) {
           for (PairList::iterator it2 = TracksEDep.begin(); it2 != TracksEDep.end(); ++it2) {
             if (it2->first == trackId) {
               it2->second += mchit.eDep();
@@ -743,11 +742,11 @@ namespace mu2e {
           }
         }
       }
-    
-      TracksEDep.sort(SortByEnergy);      
-      
+
+      TracksEDep.sort(SortByEnergy);
+
       int nTrkPerStraw = TracksEDep.size();
-      
+
       if (nTrkPerStraw > 3) {
         if (_diagLevel > 0) {
           cout << "More than 3 different tracks contribute to the straw:"
@@ -760,8 +759,8 @@ namespace mu2e {
 
       for (PairList::reverse_iterator it = TracksEDep.rbegin();
            it != TracksEDep.rend(); ++it) {
-        if (counter == 3) break;        
-        
+        if (counter == 3) break;
+
         size_t vec_idx = StrawTracksMap[it->first];
 
         tntpArray[idx++] = it->first.asInt();
@@ -770,12 +769,12 @@ namespace mu2e {
         tntpArray[idx++] = IsGenerated[vec_idx];
         counter++;
       }
-    
-      
-      //Fill with 0 the rest of the ntupla leaves 
+
+
+      //Fill with 0 the rest of the ntupla leaves
       //if there are less than 3 tracks contributing
       //to the straw hit
-      
+
       for (int add_idx = 0; add_idx < 3 - counter; ++add_idx) {
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
@@ -788,7 +787,7 @@ namespace mu2e {
         cout << "The plugin is supposed to analyze single background rates,"
              << "with one generated particle per event"
              << "\nThis event has more than one genparticle. Only the "
-             << "first one will be stored" << endl;  
+             << "first one will be stored" << endl;
       }
       if (ngen > 0) {
         ToyGenParticle const& gen = genParticles->at(0);
@@ -812,21 +811,21 @@ namespace mu2e {
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
       }
-      
+
       tntpArray[idx++] = driftTime;
       tntpArray[idx++] = driftDistance;
-      
+
       _tNtup->Fill(tntpArray);
-      
+
     } //end of Cellhits loop
-  
+
   } // end of doITracker
 
   void BkgRates::doCalorimeter(art::Event const& evt, bool skip) {
 
     if (skip) return;
 
-    const double CrDensity = 8.28; //from G4. It is in g/cm^3 
+    const double CrDensity = 8.28; //from G4. It is in g/cm^3
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
@@ -835,7 +834,7 @@ namespace mu2e {
 
     double CrSize = cg->crystalHalfSize();
     double CrLength = cg->crystalHalfLength();
-    double CrVolumeCm3 = (CrSize*CrSize*CrLength)/1000; //factor 1000 because they are in mm 
+    double CrVolumeCm3 = (CrSize*CrSize*CrLength)/1000; //factor 1000 because they are in mm
 
     double CrMassKg = CrDensity*CrVolumeCm3/1000;
 
@@ -875,23 +874,23 @@ namespace mu2e {
 
     art::Handle<SimParticleCollection> simParticles;
     evt.getByType(simParticles);
-    
+
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByType(volumes);
-    
+
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
-    
+
     // Other files might have empty collections.
     if ( haveSimPart ){
       haveSimPart = !(simParticles->empty() || volumes->empty());
     }
-    
+
     map<uint32_t, size_t> CHMap;
 
     for (size_t j=0; j<caloHits->size(); ++j) {
-      
+
       CaloHit const & ahit = (*caloHits).at(j);
       CHMap.insert(pair<uint32_t, size_t>(ahit.id(), j));
 
@@ -904,14 +903,14 @@ namespace mu2e {
 
       for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
 
-        CaloCrystalHit const & hit = (*caloCrystalHits).at(i);        
+        CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
 
         DPIndexVector const & ROIds  = hit.roIds();
-        
+
         if (ROIds.size() < 1) {
-          //          cout << " Event n. " << evt.id().event() 
-          //   << " \t got crystal hits but not ROhits" 
-          //     << '\t' <<  caloCrystalHits->size() 
+          //          cout << " Event n. " << evt.id().event()
+          //   << " \t got crystal hits but not ROhits"
+          //     << '\t' <<  caloCrystalHits->size()
           //   << '\t' << ROIds.size() << endl;
           continue;
         }
@@ -926,23 +925,23 @@ namespace mu2e {
         int OutsideTrkPdgId3 = 0;
         int nOutsideTrk = 0;
         double GeneratedEDep = 0.;
-        
+
         if (hit.energyDep() < _minimumEnergy) continue;
-        
+
         bool readCryOnce(false);
         float cntpArray[29];
         int idx(0);
-        
+
         //List of trackId and energy deposition
         PairList OutsideEDep;
-        
-        for (size_t it = 0; 
+
+        for (size_t it = 0;
              it < ROIds.size() ; ++it ) {
-          
+
           size_t CollectionPosition = CHMap[ROIds.at(it).index];
 
           CaloHit const & thehit = (*caloHits).at(CollectionPosition);
-        
+
           if (!readCryOnce) {
             CLHEP::Hep3Vector cryCenter =  cg->getCrystalOriginByRO(thehit.id());
             int vane = cg->getVaneByRO(thehit.id());
@@ -962,19 +961,19 @@ namespace mu2e {
             cntpArray[idx++] = cryCenter.getY();
             cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
 
-        
-            DPIndexVector const & mcptr(hits_mcptr->at(CollectionPosition));        
+
+            DPIndexVector const & mcptr(hits_mcptr->at(CollectionPosition));
             size_t nHitsPerCrystal = mcptr.size();
             _hCaloHitMult->Fill(nHitsPerCrystal);
 
             for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
-            
+
               StepPointMC const& mchit = (*mchits)[mcptr[j2].index];
               // The simulated particle that made this hit.
               SimParticleCollection::key_type trackId(mchit.trackId());
-            
-              CaloManager->setTrackAndRO(evt, trackId, ROIds.at(it).index );  
-            
+
+              CaloManager->setTrackAndRO(evt, trackId, ROIds.at(it).index );
+
               //cout << "Original Vane: " << CaloManager->localVane()
               //     << "\nStarting Vane: " << CaloManager->startingVane() << endl;
               if (CaloManager->localVane() == CaloManager->startingVane()) {
@@ -984,40 +983,40 @@ namespace mu2e {
                   CaloManager->startingVane() != -1) {
                 EfromOtherVane += mchit.eDep();
               }
-            
+
               if (CaloManager->fromOutside()) {
                 if (!CaloManager->generated()) {
                   PairListAdd(OutsideEDep, trackId, mchit.eDep());
                 }
-              
+
                 if (CaloManager->generated()) {
                   GeneratedEDep +=  mchit.eDep();
                 }
               }
             }
-          
+
             readCryOnce = true;
-        
+
           }
         }
-      
+
         OutsideEDep.sort(SortByEnergy);
-      
+
         nOutsideTrk = OutsideEDep.size();
-      
+
         if (nOutsideTrk > 3) {
           if (_diagLevel > 0) {
             cout << "More than 3 different tracks from outside the calorimeter contribute to the crystal:"
                  << "\nonly the first three with higher e deposit will be stored" << endl;
           }
         }
-      
+
         int counter = 0;
 
         PairList::reverse_iterator it = OutsideEDep.rbegin();
-      
+
         if (nOutsideTrk>0) {
-          
+
           for (int itidx=0; itidx<nOutsideTrk; ++itidx) {
             if (counter == 3) break;
             if (itidx == 0) {
@@ -1040,9 +1039,9 @@ namespace mu2e {
             }
           }
 
-        }      
+        }
 
-        cntpArray[idx++] = EfromShower;  
+        cntpArray[idx++] = EfromShower;
         cntpArray[idx++] = EfromOtherVane;
         cntpArray[idx++] = nOutsideTrk;
         cntpArray[idx++] = EfromOutside1;
@@ -1052,13 +1051,13 @@ namespace mu2e {
         cntpArray[idx++] = EfromOutside3;
         cntpArray[idx++] = OutsideTrkPdgId3;
         cntpArray[idx++] = GeneratedEDep;
-       
+
         size_t ngen = genParticles->size();
         if (ngen>1) {
           cout << "The plugin is supposed to analyze single background rates,"
                << "with one generated particle per event"
                << "\nThis event has more than one genparticle. Only the "
-               << "first one will be stored" << endl;  
+               << "first one will be stored" << endl;
         }
         if (ngen > 0) {
           ToyGenParticle const& gen = genParticles->at(0);
@@ -1083,14 +1082,14 @@ namespace mu2e {
           cntpArray[idx++] = 0.;
         }
         if (hit.energyDep()>0) {
-          _cNtup->Fill(cntpArray);        
+          _cNtup->Fill(cntpArray);
         }
       }
-    } 
+    }
   } // end of doCalorimeter
 
   void BkgRates::doStoppingTarget(const art::Event& event) {
-    
+
     bool generatedStopped = false;
 
     // Find original G4 steps in the stopping target
@@ -1109,7 +1108,7 @@ namespace mu2e {
 
     // Loop over all hits in the stopping target
     for ( size_t i=0; i<sthits->size(); ++i ){
-      
+
       // This is G4 hit (step) in the target
       const StepPointMC& hit = (*sthits)[i];
 
@@ -1121,7 +1120,7 @@ namespace mu2e {
       PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
 
       if ( volInfo.name() == "TargetFoil_" ) {
-       
+
         if( stoppedtracks.insert(trackId).second ) {
           float tgtntpArray[10];
           int idx(0);
@@ -1148,4 +1147,4 @@ namespace mu2e {
 
 using mu2e::BkgRates;
 DEFINE_ART_MODULE(BkgRates);
- 
+

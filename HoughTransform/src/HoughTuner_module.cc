@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_module.cc,v 1.1 2011/05/17 16:30:15 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:15 $
+// $Id: HoughTuner_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $ 
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author P. Shanahan
 //
@@ -77,17 +77,15 @@ namespace mu2e {
     { }
     virtual ~HoughTuner() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     virtual void endJob();
 
-    virtual void beginRun(art::Run const &r, 
-                          art::EventSetup const& eSetup );
+    virtual void beginRun(art::Run const &r);
 
-    virtual void beginSubRun(art::SubRun const& lblock, 
-                                      art::EventSetup const&);
+    virtual void beginSubRun(art::SubRun const& lblock);
  
     // This is called for each event.
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e);
 
 
   private:
@@ -116,7 +114,7 @@ namespace mu2e {
   };
 
 
-  void HoughTuner::beginJob(art::EventSetup const& ){
+  void HoughTuner::beginJob(){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -139,16 +137,14 @@ namespace mu2e {
 
 
 
-  void HoughTuner::beginRun(art::Run const& run,
-                                 art::EventSetup const& eSetup ){
+  void HoughTuner::beginRun(art::Run const& run){
   }
 
-  void HoughTuner::beginSubRun(art::SubRun const& lblock,
-                                             art::EventSetup const&){
+  void HoughTuner::beginSubRun(art::SubRun const& lblock){
   }
 
 
-  void HoughTuner::analyze(const art::Event& evt, art::EventSetup const&) {
+  void HoughTuner::analyze(const art::Event& evt) {
 
 
     static int ncalls(0);

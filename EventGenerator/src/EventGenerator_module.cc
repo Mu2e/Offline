@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-  $Author: greenc $
-  $Date: 2011/05/17 16:30:14 $
+  $Id: EventGenerator_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+  $Author: wb $
+  $Date: 2011/05/17 22:22:46 $
 
   Original author Rob Kutschke
 
@@ -92,9 +92,9 @@ namespace mu2e {
 
     virtual ~EventGenerator() { }
 
-    virtual void produce(art::Event& e, art::EventSetup const& c);
+    virtual void produce(art::Event& e);
 
-    virtual void beginRun(art::Run &r, art::EventSetup const& eSetup );
+    virtual void beginRun(art::Run &r);
 
     static void fillDescription(art::ParameterSetDescription& iDesc,
                                 string const& moduleLabel) {
@@ -115,7 +115,7 @@ namespace mu2e {
   };
 
   // At beginRun time, update any derived geometry information.
-  void EventGenerator::beginRun( art::Run &run, art::EventSetup const& eSetup ){
+  void EventGenerator::beginRun( art::Run &run){
 
     static int ncalls(0);
     if ( ++ncalls > 1){
@@ -185,7 +185,7 @@ namespace mu2e {
   }
 
   void
-  EventGenerator::produce(art::Event& evt, art::EventSetup const&) {
+  EventGenerator::produce(art::Event& evt) {
 
     // Make the collection to hold the output.
     auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);

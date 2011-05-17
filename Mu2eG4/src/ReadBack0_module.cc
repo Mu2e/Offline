@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_module.cc,v 1.1 2011/05/17 16:30:15 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:15 $
+// $Id: ReadBack0_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -44,10 +44,10 @@ namespace mu2e {
     virtual ~ReadBack0() { }
 
     // The framework calls this at the start of the job.
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
  
     // The framework calls this for each event.
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e);
 
   private:
 
@@ -92,7 +92,7 @@ namespace mu2e {
   }
   
   // At the start of the job, book histograms.
-  void ReadBack0::beginJob(art::EventSetup const& ){
+  void ReadBack0::beginJob(){
 
     // Get a handle to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -111,7 +111,7 @@ namespace mu2e {
   } // end beginJob
 
   // For each event, look at tracker hits and calorimeter hits.
-  void ReadBack0::analyze(const art::Event& event, art::EventSetup const&) {
+  void ReadBack0::analyze(const art::Event& event) {
     
     doTTracker(event);
     doCalorimeter(event);

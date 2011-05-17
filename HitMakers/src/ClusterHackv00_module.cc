@@ -1,9 +1,9 @@
 //
 // A hack at makeing a cluster finder driven from CrudeTrackerHit objects.
 //
-// $Id: ClusterHackv00_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: ClusterHackv00_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author Rob Kutschke
 //
@@ -57,9 +57,9 @@ namespace mu2e {
     }
     virtual ~ClusterHackv00() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
 
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e);
 
   private:
     
@@ -85,7 +85,7 @@ namespace mu2e {
 
   };
 
-  void ClusterHackv00::beginJob(art::EventSetup const& ){
+  void ClusterHackv00::beginJob(){
 
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ){
@@ -102,7 +102,7 @@ namespace mu2e {
   }
 
   void
-  ClusterHackv00::analyze(art::Event const& evt, art::EventSetup const&) {
+  ClusterHackv00::analyze(art::Event const& evt) {
 
     static int ncalls(0);
     ++ncalls;

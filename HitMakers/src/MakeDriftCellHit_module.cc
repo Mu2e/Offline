@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:14 $
+// $Id: MakeDriftCellHit_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -104,9 +104,9 @@ namespace mu2e {
     }
     virtual ~MakeDriftCellHit() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
  
-    void produce( art::Event& e, art::EventSetup const&);
+    void produce( art::Event& e);
 
   private:
     
@@ -138,12 +138,12 @@ namespace mu2e {
 
   };
 
-  void MakeDriftCellHit::beginJob(art::EventSetup const& ){
+  void MakeDriftCellHit::beginJob(){
     
   }
 
   void
-  MakeDriftCellHit::produce(art::Event& event, art::EventSetup const&) {
+  MakeDriftCellHit::produce(art::Event& event) {
 
     if ( _diagLevel > 0 ) cout << "MakeDriftCellHit: produce() begin" << endl;
       

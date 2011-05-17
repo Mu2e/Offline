@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: Small_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:13 $
+// $Id: Small_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/17 22:22:46 $
 //
 // Original author: Mark Fischler 
 //
@@ -137,9 +137,9 @@ namespace mu2e {;
     }
     virtual ~GrokGeometry() { }
     
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e);
   private:
  
     // Diagnostics level.
@@ -167,7 +167,7 @@ namespace mu2e {;
   }; // end of GrokGeometry class definition
 
   
-  void GrokGeometry::beginJob(art::EventSetup const& ){
+  void GrokGeometry::beginJob(){
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint<<endl; 
@@ -181,7 +181,7 @@ namespace mu2e {;
 
    } // end of GrokGeometry beginJob
   
-  void GrokGeometry::analyze(art::Event const& evt, art::EventSetup const&)
+  void GrokGeometry::analyze(art::Event const& evt)
   {
     if ( _diagLevel > 2 ) cout << "GrokGeometry: analyze() begin"<<endl;
     // Geometry info for the TTracker.
