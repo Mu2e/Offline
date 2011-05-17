@@ -1,9 +1,9 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:13 $
+// $Id: InteractiveRoot_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke
 //
@@ -77,11 +77,11 @@ namespace mu2e {
     explicit InteractiveRoot(fhicl::ParameterSet const& pset);
     virtual ~InteractiveRoot() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     void endJob();
  
     // This is called for each event.
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e);
 
   private:
 
@@ -133,7 +133,7 @@ namespace mu2e {
 
   }
 
-  void InteractiveRoot::beginJob(art::EventSetup const& ){
+  void InteractiveRoot::beginJob( ){
 
     // Get access to the TFile service and save current directory for later use.
     art::ServiceHandle<art::TFileService> tfs;
@@ -162,7 +162,7 @@ namespace mu2e {
 
   }
 
-  void InteractiveRoot::analyze(const art::Event& event, art::EventSetup const&) {
+  void InteractiveRoot::analyze(const art::Event& event) {
 
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hitsHandle;

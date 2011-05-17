@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:13 $
+// $Id: RPC_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author R. Bernstein
 //
@@ -100,17 +100,15 @@ namespace mu2e {
       _dEdXnbins(2000) {}
     virtual ~RPC() {}
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     virtual void endJob();
 
-    virtual void beginRun(art::Run const &r, 
-                          art::EventSetup const& eSetup );
+    virtual void beginRun(art::Run const &r );
 
-    virtual void beginSubRun(art::SubRun const& lblock, 
-                                      art::EventSetup const&);
+    virtual void beginSubRun(art::SubRun const& lblock );
  
     // This is called for each event.
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e );
 
 
   private:
@@ -195,7 +193,7 @@ namespace mu2e {
   };
 
 
-  void RPC::beginJob(art::EventSetup const& ){
+  void RPC::beginJob( ){
 
     // Get access to the TFile service.
     //    art::ServiceHandle<art::TFileService> tfs;
@@ -211,16 +209,14 @@ namespace mu2e {
 
 
 
-  void RPC::beginRun(art::Run const& run,
-		     art::EventSetup const& eSetup ){
+  void RPC::beginRun(art::Run const& run ){
   }
 
-  void RPC::beginSubRun(art::SubRun const& lblock,
-				 art::EventSetup const&){
+  void RPC::beginSubRun(art::SubRun const& lblock ){
   }
 
 
-  void RPC::analyze(const art::Event& event, art::EventSetup const&) {
+  void RPC::analyze(const art::Event& event ) {
 
     static int ncalls(0);
     ++ncalls;

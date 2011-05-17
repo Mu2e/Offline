@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter 
 
-$Id: FilterEmptyEvents_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-$Author: greenc $
-$Date: 2011/05/17 16:30:13 $
+$Id: FilterEmptyEvents_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+$Author: kutschke $
+$Date: 2011/05/17 22:06:50 $
    
 Original author Giovanni Onorato
 
@@ -56,7 +56,7 @@ namespace mu2e {
     }
     virtual ~FilterEmptyEvents() {
     }
-    virtual bool filter(art::Event& e, art::EventSetup const& c);
+    virtual bool filter(art::Event& e );
     
   private:
     
@@ -73,7 +73,7 @@ namespace mu2e {
     
   };
   
-  bool FilterEmptyEvents::filter(art::Event& e, art::EventSetup const&) {
+  bool FilterEmptyEvents::filter(art::Event& e ) {
     
     if (_keepTrackOrCalo < 0 || _keepTrackOrCalo>2) {
       cout << "Meaningless KeepTrackOrCalo parameter value."

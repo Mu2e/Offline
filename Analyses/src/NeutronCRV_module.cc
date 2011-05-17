@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:13 $
+// $Id: NeutronCRV_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke
 //
@@ -148,10 +148,10 @@ namespace mu2e {
     }
 
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
     virtual void endJob  ();
 
-    void analyze(art::Event const& e, art::EventSetup const&);
+    void analyze(art::Event const& e );
 
 
   private:
@@ -203,7 +203,7 @@ namespace mu2e {
 
   };
   
-  void NeutronCRV::beginJob(art::EventSetup const& ){
+  void NeutronCRV::beginJob( ){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -218,7 +218,7 @@ namespace mu2e {
 
   }
 
-  void NeutronCRV::analyze(const art::Event& event, art::EventSetup const&) {
+  void NeutronCRV::analyze(const art::Event& event ) {
     
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;

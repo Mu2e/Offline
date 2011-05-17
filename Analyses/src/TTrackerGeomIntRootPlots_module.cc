@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:13 $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -69,24 +69,24 @@ namespace mu2e {
     explicit TTrackerGeomIntRootPlots(fhicl::ParameterSet const& pset);
     virtual ~TTrackerGeomIntRootPlots() { }
 
-//     virtual void analyze(Event const&, EventSetup const&) = 0;
-//     virtual void beginJob(EventSetup const&){}
+//     virtual void analyze(Event const& ) = 0;
+//     virtual void beginJob(){}
 //     virtual void endJob(){}
-//     virtual void endRun(Run const&, EventSetup const&){}
-//     virtual void beginSubRun(SubRun const&, EventSetup const&){}
-//     virtual void endSubRun(SubRun const&, EventSetup const&){}
+//     virtual void endRun(Run const& ){}
+//     virtual void beginSubRun(SubRun const& ){}
+//     virtual void endSubRun(SubRun const& ){}
 //     virtual void respondToOpenInputFile(FileBlock const& fb) {}
 //     virtual void respondToCloseInputFile(FileBlock const& fb) {}
 //     virtual void respondToOpenOutputFiles(FileBlock const& fb) {}
 //     virtual void respondToCloseOutputFiles(FileBlock const& fb) {}
 
 
-    void beginJob(art::EventSetup const&);
-    void beginRun(art::Run const&, art::EventSetup const&);
+    void beginJob();
+    void beginRun(art::Run const& );
     void endJob();
  
     // This is called for each event and is pure virtual
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e);
 
 
     // other aux functions
@@ -163,7 +163,7 @@ namespace mu2e {
 
   }
   
-  void TTrackerGeomIntRootPlots::beginJob(art::EventSetup const& ){
+  void TTrackerGeomIntRootPlots::beginJob( ){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -242,7 +242,7 @@ namespace mu2e {
   }
 
 
-  void TTrackerGeomIntRootPlots::beginRun(art::Run const&, art::EventSetup const&){
+  void TTrackerGeomIntRootPlots::beginRun(art::Run const& ){
 
     // Get access to the master geometry system and its run time config.
     art::ServiceHandle<GeometryService> geom;
@@ -253,7 +253,7 @@ namespace mu2e {
     
   }
 
-  void TTrackerGeomIntRootPlots::analyze(const art::Event& event, art::EventSetup const&) {
+  void TTrackerGeomIntRootPlots::analyze(const art::Event& event ) {
     // we do not do much here since we plot the detector geometry which does not change between events,
     // but it is a pure virtual function ...
   } // end analyze

@@ -1,9 +1,9 @@
 //
 // Dump information about all data products in the file.
 //
-// $Id: DataProductDump_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:13 $
+// $Id: DataProductDump_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@ namespace mu2e {
 
     typedef std::vector<art::Provenance const*> provs_type;
 
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e);
 
     // A utility function to print info about a vector of provenances.
     void print( provs_type const& provs);
@@ -44,7 +44,7 @@ namespace mu2e {
   DataProductDump::DataProductDump(fhicl::ParameterSet const& pset){
   }
 
-  void DataProductDump::analyze(const art::Event& event, art::EventSetup const&) {
+  void DataProductDump::analyze(const art::Event& event) {
 
     art::Run const& run(event.getRun());
     art::SubRun const& lumi(event.getSubRun());

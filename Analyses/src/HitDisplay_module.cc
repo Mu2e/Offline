@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:13 $
+// $Id: HitDisplay_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke.
 //
@@ -61,8 +61,8 @@ namespace mu2e {
     explicit HitDisplay(fhicl::ParameterSet const& pset);
     virtual ~HitDisplay(){}
 
-    void beginJob(art::EventSetup const& );
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void beginJob( );
+    void analyze( art::Event const& e );
 
   private:
 
@@ -126,7 +126,7 @@ namespace mu2e {
     _ntHit(0){
   }
 
-  void HitDisplay::beginJob(art::EventSetup const& ){
+  void HitDisplay::beginJob(){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -163,7 +163,7 @@ namespace mu2e {
 
 
   void
-  HitDisplay::analyze(art::Event const& event, art::EventSetup const&) {
+  HitDisplay::analyze(art::Event const& event) {
 
     // Tracker geometry.
     GeomHandle<TTracker> ttracker;
@@ -314,9 +314,9 @@ namespace mu2e {
       Hep3Vector posMid( tmid.positionAtZ( mid.z() ) );
       Hep3Vector momMid( tmid.momentumAtZ( mid.z() ) );
       TwoLinePCA pcaMid( posMid, momMid.unit(), mid, w);
-      double dcaMid = pcaMid.dca();
 
       /*
+      double dcaMid = pcaMid.dca();
       cout << "Compare: " 
            << mid.z() << " "
            << dca << " "

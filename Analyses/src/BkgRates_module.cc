@@ -92,9 +92,9 @@ namespace mu2e {
     virtual ~BkgRates() {
     }
     
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
 
-    void analyze(art::Event const& e, art::EventSetup const&);
+    void analyze(art::Event const& e );
 
   private:
 
@@ -173,7 +173,7 @@ namespace mu2e {
   }
 
 
-  void BkgRates::beginJob(art::EventSetup const& ) {
+  void BkgRates::beginJob( ) {
 
     CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
 
@@ -216,7 +216,7 @@ namespace mu2e {
     
   }    
   
-  void BkgRates::analyze(art::Event const& evt, art::EventSetup const&) {
+  void BkgRates::analyze(art::Event const& evt ) {
 
     ++_nAnalyzed;
 

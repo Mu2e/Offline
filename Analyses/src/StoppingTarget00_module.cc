@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:13 $
+// $Id: StoppingTarget00_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke.
 //
@@ -41,11 +41,11 @@ namespace mu2e {
     explicit StoppingTarget00(fhicl::ParameterSet const& pset);
     virtual ~StoppingTarget00() { }
 
-    void beginJob(art::EventSetup const& );
+    void beginJob();
     void endJob();
 
-    void beginRun(art::Run const&, art::EventSetup const&);
-    void analyze( art::Event const&, art::EventSetup const&);
+    void beginRun(art::Run const& );
+    void analyze( art::Event const& );
 
   private:
 
@@ -89,7 +89,7 @@ namespace mu2e {
     ,_stopCodes()
   {}
 
-  void StoppingTarget00::beginJob(art::EventSetup const& ){
+  void StoppingTarget00::beginJob(){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -103,7 +103,7 @@ namespace mu2e {
 
   }
 
-  void StoppingTarget00::beginRun(art::Run const& run, art::EventSetup const&){
+  void StoppingTarget00::beginRun(art::Run const& run ){
 
     // Information about the detector coordinate system.
     GeomHandle<DetectorSystem> det;
@@ -129,7 +129,7 @@ namespace mu2e {
   }
 
   void
-  StoppingTarget00::analyze(art::Event const& event, art::EventSetup const&) {
+  StoppingTarget00::analyze(art::Event const& event ) {
 
     // Information about the detector coordinate system.
     //GeomHandle<DetectorSystem> det;

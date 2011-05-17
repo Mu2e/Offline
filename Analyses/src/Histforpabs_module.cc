@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:13 $
+// $Id: Histforpabs_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke
 //
@@ -46,10 +46,10 @@ namespace mu2e {
     explicit Histforpabs(fhicl::ParameterSet const& pset);
     virtual ~Histforpabs() { }
 
-    virtual void beginJob(art::EventSetup const&);
+    virtual void beginJob();
  
     // This is called for each event.
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e );
 
   private:
 
@@ -86,7 +86,7 @@ namespace mu2e {
     _hEnergyat1(0),
     _hEnergysim(0){}
 
-  void Histforpabs::beginJob(art::EventSetup const& ){
+  void Histforpabs::beginJob( ){
     
     art::ServiceHandle<art::TFileService> tfs;
     _hEnergyat0 = tfs->make<TH1F>( "hEnergyat0", "Energy Deposited before 1st straw hist", 80, 102., 106.);
@@ -96,7 +96,7 @@ namespace mu2e {
   }
 
 
-  void Histforpabs::analyze(const art::Event& event, art::EventSetup const&) {
+  void Histforpabs::analyze(const art::Event& event ) {
     ++_nAnalyzed;
     FillHistograms(event);   
   } // end analyze

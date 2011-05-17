@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: Summary01_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:13 $
+// $Id: Summary01_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke.
 //
@@ -66,12 +66,12 @@ namespace mu2e {
     }
     virtual ~Summary01() { }
 
-    void beginJob(art::EventSetup const& );
+    void beginJob();
     void endJob();
 
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e );
 
-    void endRun( art::Run const&, art::EventSetup const&);
+    void endRun( art::Run const& );
 
 
   private:
@@ -121,7 +121,7 @@ namespace mu2e {
   };
 
   void 
-  Summary01::beginJob(art::EventSetup const& ){
+  Summary01::beginJob( ){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
@@ -144,7 +144,7 @@ namespace mu2e {
   }
 
   void
-  Summary01::analyze(art::Event const& event, art::EventSetup const&) {
+  Summary01::analyze(art::Event const& event ) {
 
     // Skip event if G4 did not complete OK.
     art::Handle<StatusG4> g4StatusHandle;
@@ -337,7 +337,7 @@ namespace mu2e {
 
   }
 
-  void Summary01::endRun( art::Run const& run, art::EventSetup const&){
+  void Summary01::endRun( art::Run const& run ){
 
     // Skip immature verbose printout.
     if ( productionMode_ ) return;

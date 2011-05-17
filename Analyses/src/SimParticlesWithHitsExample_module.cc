@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: SimParticlesWithHitsExample_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 16:30:13 $
+// $Id: SimParticlesWithHitsExample_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke.
 //
@@ -37,7 +37,7 @@ namespace mu2e {
     }
     virtual ~SimParticlesWithHitsExample() { }
 
-    void analyze( art::Event const& e, art::EventSetup const&);
+    void analyze( art::Event const& e );
 
   private:
 
@@ -57,7 +57,7 @@ namespace mu2e {
   };
 
   void
-  SimParticlesWithHitsExample::analyze(art::Event const& evt, art::EventSetup const&) {
+  SimParticlesWithHitsExample::analyze(art::Event const& evt ) {
 
     const Tracker& tracker = getTrackerOrThrow();
     

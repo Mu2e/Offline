@@ -1,9 +1,9 @@
 //
 // A plugin to test FileInPath.
 //
-// $Id: FileInPathTest_module.cc,v 1.1 2011/05/17 16:30:13 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:13 $
+// $Id: FileInPathTest_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/05/17 22:06:50 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@ namespace mu2e {
     explicit FileInPathTest(fhicl::ParameterSet const& pset);
     virtual ~FileInPathTest() { }
 
-    void analyze(const art::Event& e, art::EventSetup const&);
+    void analyze(const art::Event& e);
 
   private:
 
@@ -50,7 +50,7 @@ namespace mu2e {
 
   }
   
-  void FileInPathTest::analyze(const art::Event& event, art::EventSetup const&) {
+  void FileInPathTest::analyze(const art::Event& event) {
   }
 
 }  // end namespace mu2e
