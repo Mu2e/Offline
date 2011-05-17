@@ -1,11 +1,11 @@
-#ifndef CaloReadoutSD_h
-#define CaloReadoutSD_h 1
+#ifndef Mu2eG4_CaloReadoutSD_hh
+#define Mu2eG4_CaloReadoutSD_hh
 //
 // Define a sensitive detector for calorimetric readout
 // 
-// $Id: CaloReadoutSD.hh,v 1.3 2010/12/21 21:49:20 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/21 21:49:20 $
+// $Id: CaloReadoutSD.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 // 
 // Original author Ivan Logashenko
 //
@@ -64,4 +64,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eG4_CaloReadoutSD_hh */

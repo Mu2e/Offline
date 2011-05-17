@@ -1,11 +1,11 @@
-#ifndef MU2EG4_ANTILEAKREGISTRY_H
-#define MU2EG4_ANTILEAKREGISTRY_H
+#ifndef G4Helper_AntiLeakRegistry_hh
+#define G4Helper_AntiLeakRegistry_hh
 //
 // An anti-leak system to aid in using G4 from the Mu2e framework.
 //
-// $Id: AntiLeakRegistry.hh,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Id: AntiLeakRegistry.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -194,4 +194,4 @@ namespace mu2e
 
 }
 
-#endif
+#endif /* G4Helper_AntiLeakRegistry_hh */

@@ -1,5 +1,5 @@
-#ifndef DPIndexVector_H
-#define DPIndexVector_H
+#ifndef ToyDP_DPIndexVector_hh
+#define ToyDP_DPIndexVector_hh
 // 
 // This vector has links to original G4Steps
 //
@@ -18,4 +18,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_DPIndexVector_hh */

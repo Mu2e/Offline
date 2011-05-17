@@ -1,11 +1,11 @@
-#ifndef CosmicDYB_HH
-#define CosmicDYB_HH
+#ifndef EventGenerator_CosmicDYB_hh
+#define EventGenerator_CosmicDYB_hh
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.5 2011/05/17 15:35:59 greenc Exp $
+// $Id: CosmicDYB.hh,v 1.6 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Yury Kolomensky
 //
@@ -90,4 +90,4 @@ namespace mu2e {
 
 }  // namespace mu2e
 
-#endif  // CosmicDYB_HH
+#endif /* EventGenerator_CosmicDYB_hh */

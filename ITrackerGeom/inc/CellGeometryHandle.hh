@@ -1,5 +1,5 @@
-#ifndef CELLGEOMETRYHANDLE_HH
-#define CELLGEOMETRYHANDLE_HH
+#ifndef ITrackerGeom_CellGeometryHandle_hh
+#define ITrackerGeom_CellGeometryHandle_hh
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "ITrackerGeom/inc/ITLayer.hh"
@@ -81,4 +81,4 @@ protected:
 
 }
 
-#endif /* CELLGEOMETRYHANDLE_HH */
+#endif /* ITrackerGeom_CellGeometryHandle_hh */

@@ -1,5 +1,5 @@
-#ifndef SUPERLAYERID_HH
-#define SUPERLAYERID_HH
+#ifndef ITrackerGeom_SuperLayerId_hh
+#define ITrackerGeom_SuperLayerId_hh
 
 #include <iostream>
 
@@ -41,4 +41,4 @@ inline std::ostream& operator<<(std::ostream& ost,
 
 } //namespace mu2e
 
-#endif /*SUPERLAYERID_HH*/
+#endif /* ITrackerGeom_SuperLayerId_hh */

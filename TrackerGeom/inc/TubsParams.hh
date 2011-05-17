@@ -1,12 +1,12 @@
-#ifndef TUBSPARAMS_HH
-#define TUBSPARAMS_HH
+#ifndef TrackerGeom_TubsParams_hh
+#define TrackerGeom_TubsParams_hh
 
 //
 // The parameters of a TUBS
 //
-// $Id: TubsParams.hh,v 1.2 2010/05/18 20:29:06 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:29:06 $
+// $Id: TubsParams.hh,v 1.3 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -55,4 +55,4 @@ namespace mu2e {
 }
 
 
-#endif
+#endif /* TrackerGeom_TubsParams_hh */

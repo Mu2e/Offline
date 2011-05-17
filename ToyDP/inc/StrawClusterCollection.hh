@@ -4,9 +4,9 @@
 //
 // Define a type for a collection of StrawCluster objects.
 //
-// $Id: StrawClusterCollection.hh,v 1.1 2011/01/11 20:42:28 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/01/11 20:42:28 $
+// $Id: StrawClusterCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Hans Wenzel
 //
@@ -19,4 +19,4 @@ namespace mu2e {
    typedef std::vector<mu2e::StrawCluster> StrawClusterCollection;
 }
 
-#endif
+#endif /* ToyDP_StrawClusterCollection_hh */

@@ -1,14 +1,14 @@
-#ifndef LAYERID_HH
-#define LAYERID_HH
+#ifndef TrackerGeom_LayerId_hh
+#define TrackerGeom_LayerId_hh
 
 //
 // Identifier of one layer in a tracker.
 //
 
 //
-// $Id: LayerId.hh,v 1.3 2010/05/18 20:29:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:29:00 $
+// $Id: LayerId.hh,v 1.4 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -90,4 +90,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* TrackerGeom_LayerId_hh */

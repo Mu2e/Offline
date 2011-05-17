@@ -1,5 +1,5 @@
-#ifndef STRAWDETAIL_HH
-#define STRAWDETAIL_HH
+#ifndef TrackerGeom_StrawDetail_hh
+#define TrackerGeom_StrawDetail_hh
 
 //
 // Class to hold information about the properties of each type of straw.  
@@ -7,9 +7,9 @@
 // straws in the LTracker and for different lengths of straws in the TTracker.
 // 
 //
-// $Id: StrawDetail.hh,v 1.3 2010/05/18 20:29:02 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:29:02 $
+// $Id: StrawDetail.hh,v 1.4 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -94,4 +94,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif
+#endif /* TrackerGeom_StrawDetail_hh */

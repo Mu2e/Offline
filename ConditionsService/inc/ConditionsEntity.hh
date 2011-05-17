@@ -1,11 +1,11 @@
-#ifndef ConditionsEntity_H
-#define ConditionsEntity_H
+#ifndef ConditionsService_ConditionsEntity_hh
+#define ConditionsService_ConditionsEntity_hh
 //
 // A base class for objects held by the conditions data system.
 //
-// $Id: ConditionsEntity.hh,v 1.1 2009/11/12 00:51:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2009/11/12 00:51:08 $
+// $Id: ConditionsEntity.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -24,4 +24,4 @@ namespace mu2e
   };
 }
 
-#endif
+#endif /* ConditionsService_ConditionsEntity_hh */

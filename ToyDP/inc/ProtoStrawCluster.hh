@@ -1,11 +1,11 @@
-#ifndef ProtoStrawCluster_hh
-#define ProtoStrawCluster_hh
+#ifndef ToyDP_ProtoStrawCluster_hh
+#define ToyDP_ProtoStrawCluster_hh
 //
 // A crude step along the way to forming real clusters.
 //
-// $Id: ProtoStrawCluster.hh,v 1.3 2010/03/23 20:28:02 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/23 20:28:02 $
+// $Id: ProtoStrawCluster.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 //
 #include <vector>
@@ -35,4 +35,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ToyDP_ProtoStrawCluster_hh */

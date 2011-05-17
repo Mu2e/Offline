@@ -1,13 +1,13 @@
-#ifndef TwoLinePCA_h
-#define TwoLinePCA_h 1
+#ifndef Mu2eUtilities_TwoLinePCA_hh
+#define Mu2eUtilities_TwoLinePCA_hh
 //
 // Given two lines in 3D, compute the distance of closest
 // approach between the two lines.  The lines are 
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA.hh,v 1.4 2010/05/18 20:28:52 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:52 $
+// $Id: TwoLinePCA.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -85,4 +85,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_TwoLinePCA_hh */

@@ -1,13 +1,13 @@
-#ifndef WorldInfo_H
-#define WorldInfo_H
+#ifndef Mu2eG4_WorldInfo_hh
+#define Mu2eG4_WorldInfo_hh
 //
 //  A collection of information about the Mu2e G4 world that will
 //  be interesting to others.
 //
 //
-// $Id: WorldInfo.hh,v 1.2 2010/06/02 04:01:24 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/06/02 04:01:24 $
+// $Id: WorldInfo.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -51,5 +51,5 @@ namespace mu2e {
   };
 
 } // end namespace mu2e
-#endif
+#endif /* Mu2eG4_WorldInfo_hh */
 

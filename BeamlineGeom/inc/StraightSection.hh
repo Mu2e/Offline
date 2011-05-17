@@ -1,5 +1,5 @@
-#ifndef StraightSection_HH
-#define StraightSection_HH
+#ifndef BeamlineGeom_StraightSection_hh
+#define BeamlineGeom_StraightSection_hh
 
 //
 // Class to represent the transport solenoid
@@ -42,4 +42,4 @@ namespace mu2e {
 };
 
 }
-#endif
+#endif /* BeamlineGeom_StraightSection_hh */

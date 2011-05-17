@@ -1,5 +1,5 @@
-#ifndef StrawHitMCTruth_H
-#define StrawHitMCTruth_H
+#ifndef ToyDP_StrawHitMCTruth_hh
+#define ToyDP_StrawHitMCTruth_hh
 // 
 // This is a place to put additional information produced by HitMaker,
 // like true drift distance, signal propagation time, etc.
@@ -66,4 +66,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_StrawHitMCTruth_hh */

@@ -1,5 +1,5 @@
-#ifndef Line_h
-#define Line_h 1
+#ifndef CDFTrajectory_Line_hh
+#define CDFTrajectory_Line_hh
 #include "CDFTrajectory/inc/Trajectory.hh"
 #include "CDFTrajectory/inc/Helix.hh"
 namespace mu2e {
@@ -85,6 +85,6 @@ public:
 
 } // end namespace mu2e
 
-#endif
+#endif /* CDFTrajectory_Line_hh */
 
 

@@ -1,5 +1,5 @@
-#ifndef WIRE_HH
-#define WIRE_HH
+#ifndef ITrackerGeom_Wire_hh
+#define ITrackerGeom_Wire_hh
 
 #include <deque>
 #include <vector>
@@ -93,4 +93,4 @@ inline std::ostream& operator<<(std::ostream& ost, const Wire& w ){
 
 }  //namespace mu2e
 
-#endif /*WIRE_HH*/
+#endif /* ITrackerGeom_Wire_hh */

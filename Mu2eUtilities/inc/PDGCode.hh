@@ -1,13 +1,13 @@
-#ifndef PDGCODE_HH
-#define PDGCODE_HH
+#ifndef Mu2eUtilities_PDGCode_hh
+#define Mu2eUtilities_PDGCode_hh
 
 //
 // A convenience class to allow compile time access
 // to the PDG identifier codes for various particles.  
 //
-// $Id: PDGCode.hh,v 1.3 2010/05/18 20:28:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:48 $
+// $Id: PDGCode.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // This file is taken directly from BaBar's pdt/PdtPdg.hh
 //
@@ -473,4 +473,4 @@ namespace mu2e {
   
 } // end namespace mu2e.
 
-#endif
+#endif /* Mu2eUtilities_PDGCode_hh */

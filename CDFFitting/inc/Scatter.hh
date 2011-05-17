@@ -1,5 +1,5 @@
-#ifndef Scatter_h
-#define Scatter_h 1
+#ifndef CDFFitting_Scatter_hh
+#define CDFFitting_Scatter_hh
 #include "CDFFitting/inc/FitAction.hh"
 #include "CDFFitting/inc/Scatter.hh"
 #include "CDFFitting/inc/Scatter.hh"
@@ -26,6 +26,6 @@ public:
 };
 #include "CDFFitting/inc/Scatter.icc"
 
-#endif
+#endif /* CDFFitting_Scatter_hh */
 
 

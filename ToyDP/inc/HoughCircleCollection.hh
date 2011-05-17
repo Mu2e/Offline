@@ -4,9 +4,9 @@
 //
 // Define a type for a collection of ToyHits.
 //
-// $Id: HoughCircleCollection.hh,v 1.1 2010/04/12 18:12:28 shanahan Exp $
-// $Author: shanahan $
-// $Date: 2010/04/12 18:12:28 $
+// $Id: HoughCircleCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Peter Shanahan
 //
@@ -19,4 +19,4 @@ namespace mu2e {
    typedef std::vector<mu2e::HoughCircle> HoughCircleCollection;
 }
 
-#endif //ToyDP_HoughCircleCollection_hh
+#endif /* ToyDP_HoughCircleCollection_hh */

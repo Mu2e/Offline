@@ -1,5 +1,5 @@
-#ifndef VIRTUALDETECTORMAKER_HH
-#define VIRTUALDETECTORMAKER_HH
+#ifndef VirtualDetectorGeom_VirtualDetectorMaker_hh
+#define VirtualDetectorGeom_VirtualDetectorMaker_hh
 //
 // Construct and return an VirtualDetector.
 //
@@ -42,4 +42,4 @@ private:
 
 }  //namespace mu2e
 
-#endif 
+#endif /* VirtualDetectorGeom_VirtualDetectorMaker_hh */

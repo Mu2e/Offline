@@ -1,5 +1,5 @@
-#ifndef ITLAYERDETAIL_HH
-#define ITLAYERDETAIL_HH
+#ifndef ITrackerGeom_ITLayerDetail_hh
+#define ITrackerGeom_ITLayerDetail_hh
 
 #include <string>
 
@@ -36,4 +36,4 @@ private:
 
 }  //namespace mu2e
 
-#endif /*ITLAYERDETAIL_HH*/
+#endif /* ITrackerGeom_ITLayerDetail_hh */

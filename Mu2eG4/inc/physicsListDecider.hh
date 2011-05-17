@@ -1,11 +1,11 @@
-#ifndef PhysicsListDecider_HH
-#define PhysicsListDecider_HH
+#ifndef Mu2eG4_physicsListDecider_hh
+#define Mu2eG4_physicsListDecider_hh
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.hh,v 1.1 2010/04/07 22:08:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/07 22:08:58 $
+// $Id: physicsListDecider.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,6 @@ namespace mu2e{
 
 
 }  // end namespace mu2e
-#endif
+#endif /* Mu2eG4_physicsListDecider_hh */
 
 

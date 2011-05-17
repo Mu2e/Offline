@@ -1,5 +1,5 @@
-#ifndef CRSScintillatorBarIndex_HH
-#define CRSScintillatorBarIndex_HH
+#ifndef CosmicRayShieldGeom_CRSScintillatorBarIndex_hh
+#define CosmicRayShieldGeom_CRSScintillatorBarIndex_hh
 
 //
 // Dense integer identifier of one CRSScintillatorBar.
@@ -7,9 +7,9 @@
 // of CRSScintillatorBars in the system. 
 
 //
-// $Id: CRSScintillatorBarIndex.hh,v 1.1 2011/03/09 19:22:18 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:22:18 $
+// $Id: CRSScintillatorBarIndex.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG; based on Rob Kutschke StrawIndex
 //
@@ -65,4 +65,4 @@ namespace mu2e {
   }
 
 }
-#endif
+#endif /* CosmicRayShieldGeom_CRSScintillatorBarIndex_hh */

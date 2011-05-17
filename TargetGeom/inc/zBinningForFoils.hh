@@ -1,5 +1,5 @@
-#ifndef zBinningForFoils_HH
-#define zBinningForFoils_HH
+#ifndef TargetGeom_zBinningForFoils_hh
+#define TargetGeom_zBinningForFoils_hh
 
 //
 // Free function to compute a convenient binning for a histogram that will show 
@@ -13,9 +13,9 @@
 //
 // The case of a target with one foil is handed differently.
 //
-// $Id: zBinningForFoils.hh,v 1.1 2011/05/15 21:14:09 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/15 21:14:09 $
+// $Id: zBinningForFoils.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 
@@ -29,4 +29,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* TargetGeom_zBinningForFoils_hh */

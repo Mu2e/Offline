@@ -1,5 +1,5 @@
-#ifndef FOR_ALL_HH
-#define FOR_ALL_HH
+#ifndef Mu2eUtilities_for_all_hh
+#define Mu2eUtilities_for_all_hh
 
 //
 // A free function to iterate over all elements of a container
@@ -9,9 +9,9 @@
 // A later version of C++ will allow a ... notation for an arbitrary
 // number of additional objects.
 //
-// $Id: for_all.hh,v 1.2 2010/05/18 20:28:54 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:54 $
+// $Id: for_all.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -38,4 +38,4 @@ namespace mu2e {
   
 }
 
-#endif
+#endif /* Mu2eUtilities_for_all_hh */

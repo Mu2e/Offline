@@ -1,5 +1,5 @@
-#ifndef CIRCLE2D_HH
-#define CIRCLE2D_HH
+#ifndef CDFTrajectory_Circle2D_hh
+#define CDFTrajectory_Circle2D_hh
 
 #include "CDFTrajectory/inc/Trajectory.hh"
 namespace mu2e {
@@ -97,4 +97,4 @@ inline
 Circle2D::~Circle2D() {}
 } // end namespace mu2e
 
-#endif
+#endif /* CDFTrajectory_Circle2D_hh */

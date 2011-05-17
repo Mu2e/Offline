@@ -1,5 +1,5 @@
-#ifndef Trajectory_h
-#define Trajectory_h 1
+#ifndef CDFTrajectory_Trajectory_hh
+#define CDFTrajectory_Trajectory_hh
 #include "CLHEP/Geometry/Point3D.h"
 #include "CLHEP/Geometry/Normal3D.h"
 #include "CLHEP/Geometry/Plane3D.h"
@@ -174,5 +174,5 @@ protected:
 #include "CDFTrajectory/inc/Trajectory.icc"
 } // end namespace mu2e
 
-#endif
+#endif /* CDFTrajectory_Trajectory_hh */
 

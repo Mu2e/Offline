@@ -1,13 +1,13 @@
-#ifndef STRAWID_HH
-#define STRAWID_HH
+#ifndef TrackerGeom_StrawId_hh
+#define TrackerGeom_StrawId_hh
 //
 // Identifier of one straw in a tracker.
 //
 
 //
-// $Id: StrawId.hh,v 1.3 2010/05/18 20:29:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:29:04 $
+// $Id: StrawId.hh,v 1.4 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -107,4 +107,4 @@ inline std::ostream& operator<<(std::ostream& ost,
 }
 
 }
-#endif
+#endif /* TrackerGeom_StrawId_hh */

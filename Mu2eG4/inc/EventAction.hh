@@ -1,11 +1,11 @@
-#ifndef EventAction_h
-#define EventAction_h 1
+#ifndef Mu2eG4_EventAction_hh
+#define Mu2eG4_EventAction_hh
 //
 // G4 begin and end of event actions for Mu2e.
 //
-// $Id: EventAction.hh,v 1.2 2010/09/20 02:57:05 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/20 02:57:05 $
+// $Id: EventAction.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -34,6 +34,6 @@ class EventAction : public G4UserEventAction
 };
 
 }  // end namespace mu2e
-#endif
+#endif /* Mu2eG4_EventAction_hh */
 
     

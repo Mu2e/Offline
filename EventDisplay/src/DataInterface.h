@@ -1,15 +1,15 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.12 2011/05/17 15:35:59 greenc Exp $
+// $Id: DataInterface.h,v 1.13 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Ralf Ehrlich
 //
 
-#ifndef DATAINTERFACE_H
-#define DATAINTERFACE_H
+#ifndef EventDisplay_src_DataInterface_h
+#define EventDisplay_src_DataInterface_h
 
 #include <TObject.h>
 #include <list>
@@ -121,4 +121,4 @@ class DataInterface
 };
 
 }
-#endif
+#endif /* EventDisplay_src_DataInterface_h */

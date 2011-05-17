@@ -1,5 +1,5 @@
-#ifndef ITLAYERID_HH
-#define ITLAYERID_HH
+#ifndef ITrackerGeom_ITLayerId_hh
+#define ITrackerGeom_ITLayerId_hh
 
 #include "ITrackerGeom/inc/SuperLayerId.hh"
 
@@ -59,4 +59,4 @@ inline std::ostream& operator<<(std::ostream& ost,
 }
 
 }
-#endif /*ITLAYERID_HH*/
+#endif /* ITrackerGeom_ITLayerId_hh */

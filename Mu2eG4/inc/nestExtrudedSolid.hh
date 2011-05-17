@@ -1,11 +1,11 @@
-#ifndef NESTEXTRUDEDSOLID_HH
-#define NESTEXTRUDEDSOLID_HH
+#ifndef Mu2eG4_nestExtrudedSolid_hh
+#define Mu2eG4_nestExtrudedSolid_hh
 //
 // Free function to create and place a new G4ExtrudedSolid inside a logical volume.
 // 
-// $Id: nestExtrudedSolid.hh,v 1.2 2010/12/22 17:37:57 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/22 17:37:57 $
+// $Id: nestExtrudedSolid.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -66,4 +66,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_nestExtrudedSolid_hh */

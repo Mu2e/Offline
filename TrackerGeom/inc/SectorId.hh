@@ -1,14 +1,14 @@
-#ifndef SECTORID_HH
-#define SECTORID_HH
+#ifndef TrackerGeom_SectorId_hh
+#define TrackerGeom_SectorId_hh
 
 //
 // Identifier for a sector.
 //
 
 //
-// $Id: SectorId.hh,v 1.3 2010/05/18 20:29:01 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:29:01 $
+// $Id: SectorId.hh,v 1.4 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -73,4 +73,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif
+#endif /* TrackerGeom_SectorId_hh */

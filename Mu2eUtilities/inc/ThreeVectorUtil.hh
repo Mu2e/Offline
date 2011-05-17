@@ -1,11 +1,11 @@
-#ifndef ThreeVectorUtil_HH
-#define ThreeVectorUtil_HH
+#ifndef Mu2eUtilities_ThreeVectorUtil_hh
+#define Mu2eUtilities_ThreeVectorUtil_hh
 //
 // Various utilities that construct or operate on CLHEP::Hep3Vectors;
 //
-// $Id: ThreeVectorUtil.hh,v 1.3 2010/05/18 20:28:51 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:51 $
+// $Id: ThreeVectorUtil.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -35,5 +35,5 @@ namespace mu2e {
                                   double eps );
 }
 
-#endif
+#endif /* Mu2eUtilities_ThreeVectorUtil_hh */
 

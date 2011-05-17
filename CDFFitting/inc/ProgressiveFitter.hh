@@ -1,5 +1,5 @@
-#ifndef ProgressiveFitter_h
-#define ProgressiveFitter_h 1
+#ifndef CDFFitting_ProgressiveFitter_hh
+#define CDFFitting_ProgressiveFitter_hh
 #include "CDFFitting/inc/Fitter.hh"
 #include "CDFFitting/inc/Fit.hh"
 #include "CDFFitting/inc/Residual.hh"
@@ -96,6 +96,6 @@ protected:
 
 #include "CDFFitting/inc/ProgressiveFitter.icc"
 
-#endif
+#endif /* CDFFitting_ProgressiveFitter_hh */
 
 

@@ -1,15 +1,15 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries. 
 //
-// $Id: ContentSelector.h,v 1.3 2011/05/17 15:35:59 greenc Exp $
+// $Id: ContentSelector.h,v 1.4 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Ralf Ehrlich
 //
 
-#ifndef COMPONENTSELECTOR_H
-#define COMPONENTSELECTOR_H
+#ifndef EventDisplay_src_ContentSelector_h
+#define EventDisplay_src_ContentSelector_h
 
 #include <iostream>
 #include <vector>
@@ -82,4 +82,4 @@ class ContentSelector
 
 }
 
-#endif
+#endif /* EventDisplay_src_ContentSelector_h */

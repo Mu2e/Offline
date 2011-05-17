@@ -1,8 +1,8 @@
-#ifndef CALORIMETERMAKER_HH
-#define CALORIMETERMAKER_HH
-// $Id: CalorimeterMaker.hh,v 1.10 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+#ifndef CalorimeterGeom_CalorimeterMaker_hh
+#define CalorimeterGeom_CalorimeterMaker_hh
+// $Id: CalorimeterMaker.hh,v 1.11 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -59,4 +59,4 @@ namespace mu2e{
 
 } //namespace mu2e
 
-#endif
+#endif /* CalorimeterGeom_CalorimeterMaker_hh */

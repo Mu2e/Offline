@@ -1,14 +1,14 @@
-#ifndef CRSScintillatorModuleId_HH
-#define CRSScintillatorModuleId_HH
+#ifndef CosmicRayShieldGeom_CRSScintillatorModuleId_hh
+#define CosmicRayShieldGeom_CRSScintillatorModuleId_hh
 
 //
 // Identifier of one module in CosmicRayShield
 //
 
 //
-// $Id: CRSScintillatorModuleId.hh,v 1.1 2011/03/09 19:23:15 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:23:15 $
+// $Id: CRSScintillatorModuleId.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG; based on Rob Kutschke's SectorId
 //
@@ -76,4 +76,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif
+#endif /* CosmicRayShieldGeom_CRSScintillatorModuleId_hh */

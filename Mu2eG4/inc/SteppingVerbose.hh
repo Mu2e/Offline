@@ -1,11 +1,11 @@
-#ifndef SteppingVerbose_h
-#define SteppingVerbose_h 1
+#ifndef Mu2eG4_SteppingVerbose_hh
+#define Mu2eG4_SteppingVerbose_hh
 //
 // Verbose version of the stepping action.
 // 
-// $Id: SteppingVerbose.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: SteppingVerbose.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -28,4 +28,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_SteppingVerbose_hh */

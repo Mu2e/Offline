@@ -1,5 +1,5 @@
-#ifndef FITACTION_HH_
-#define FITACTION_HH_
+#ifndef CDFFitting_FitAction_hh
+#define CDFFitting_FitAction_hh
 #include "CDFFitting/inc/Fitter.hh"
 #include "CDFFitting/inc/FitAction.hh"
 
@@ -35,4 +35,4 @@ public:
 
 #include "CDFFitting/inc/FitAction.icc"
 
-#endif //FITACTION_HH_
+#endif /* CDFFitting_FitAction_hh */

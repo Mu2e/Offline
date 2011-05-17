@@ -1,5 +1,5 @@
-#ifndef _matrixUtils_h_
-#define _matrixUtils_h_
+#ifndef CDFFitting_matrixUtils_hh
+#define CDFFitting_matrixUtils_hh
 //
 // Joe Boudreau September 1997
 //
@@ -14,4 +14,4 @@ class HepMatrix;
 class HepSymMatrix;
 inline HepMatrix jacobi(HepSymMatrix * A);
 #include "CDFFitting/inc/matrixUtils.icc"
-#endif
+#endif /* CDFFitting_matrixUtils_hh */

@@ -1,10 +1,10 @@
-#ifndef NESTTORUS_HH
-#define NESTTORUS_HH
+#ifndef Mu2eG4_nestTorus_hh
+#define Mu2eG4_nestTorus_hh
 //
 // Free function to create and place a new G4Torus inside a logical volume.
 // 
-// $Id: nestTorus.hh,v 1.5 2010/12/22 17:37:57 genser Exp $
-// $Author: genser $ 
+// $Id: nestTorus.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
 // $Date: 2010/03/15
 //
 
@@ -126,4 +126,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_nestTorus_hh */

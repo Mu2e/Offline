@@ -1,5 +1,5 @@
-#ifndef RANDOMLIMITEDEXPO_HH
-#define RANDOMLIMITEDEXPO_HH
+#ifndef Mu2eUtilities_RandomLimitedExpo_hh
+#define Mu2eUtilities_RandomLimitedExpo_hh
 
 //  Extend RandomExponential binding the output variable in a user defined range
 // 
@@ -32,4 +32,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eUtilities_RandomLimitedExpo_hh */

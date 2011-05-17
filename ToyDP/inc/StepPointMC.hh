@@ -1,5 +1,5 @@
-#ifndef StepPointMC_h
-#define StepPointMC_h 1
+#ifndef ToyDP_StepPointMC_hh
+#define ToyDP_StepPointMC_hh
 //
 // A persistable class representing a point that is on a track and
 // is also inside, or on the boundary of, some G4 volume.  This can be
@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different 
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.12 2010/11/09 20:12:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/09 20:12:18 $
+// $Id: StepPointMC.hh,v 1.13 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -110,4 +110,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_StepPointMC_hh */

@@ -1,11 +1,11 @@
-#ifndef StrawCluster_H
-#define StrawCluster_H
+#ifndef ToyDP_StrawCluster_hh
+#define ToyDP_StrawCluster_hh
 // 
 // First version of a Cluster.
 //
-// $Id: StrawCluster.hh,v 1.1 2011/01/11 20:42:08 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/01/11 20:42:08 $
+// $Id: StrawCluster.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Hans Wenzel
 //
@@ -21,4 +21,4 @@ namespace mu2e {
       typedef std::vector<mu2e::StrawId> StrawCluster;
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_StrawCluster_hh */

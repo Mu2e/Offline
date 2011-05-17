@@ -9,4 +9,4 @@ namespace mu2e {
    typedef std::vector<mu2e::CaloHit> CaloHitCollection;
 }
 
-#endif
+#endif /* ToyDP_CaloHitCollection_hh */

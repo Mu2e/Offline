@@ -1,13 +1,13 @@
-#ifndef LAYERINFO_HH
-#define LAYERINFO_HH
+#ifndef LTrackerGeom_LayerInfo_hh
+#define LTrackerGeom_LayerInfo_hh
 //
 // Information about a Layer.  Used by LTrackerMaker
 // to construct an LTracker.
 //
 //
-// $Id: LayerInfo.hh,v 1.2 2010/05/18 20:28:35 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:35 $
+// $Id: LayerInfo.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -44,4 +44,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif
+#endif /* LTrackerGeom_LayerInfo_hh */

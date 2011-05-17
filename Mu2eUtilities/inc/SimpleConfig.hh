@@ -1,13 +1,13 @@
-#ifndef ExampleExtrasSimpleConfig_HH
-#define ExampleExtrasSimpleConfig_HH
+#ifndef Mu2eUtilities_SimpleConfig_hh
+#define Mu2eUtilities_SimpleConfig_hh
 
 /**
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.9 2011/05/17 15:36:01 greenc Exp $
+ * $Id: SimpleConfig.hh,v 1.10 2011/05/17 15:41:36 greenc Exp $
  * $Author: greenc $ 
- * $Date: 2011/05/17 15:36:01 $
+ * $Date: 2011/05/17 15:41:36 $
  *
  * Original author Rob Kutschke
  *
@@ -23,7 +23,7 @@
  * 2) Does not escape new lines within a string properly.
  *
  *@author $Author: greenc $
- *@version $Id: SimpleConfig.hh,v 1.9 2011/05/17 15:36:01 greenc Exp $
+ *@version $Id: SimpleConfig.hh,v 1.10 2011/05/17 15:41:36 greenc Exp $
  *
  * Date $Date%
  *
@@ -391,4 +391,4 @@ namespace mu2e {
   }
 
 } // end namespace mu2e
-#endif
+#endif /* Mu2eUtilities_SimpleConfig_hh */

@@ -3,8 +3,8 @@
 //
 // Joe Boudreau Sep. 1997.
 //
-#ifndef SPACEPOINT_HH_
-#define SPACEPOINT_HH_
+#ifndef CDFFitting_SpacePoint_hh
+#define CDFFitting_SpacePoint_hh
 #include "CLHEP/Geometry/Point3D.h"
 #include "CLHEP/Matrix/Vector.h"
 class SpacePoint: public HepPoint3D {
@@ -51,4 +51,4 @@ public:
 private:
 
 };
-#endif //SPACEPOINT_HH_
+#endif /* CDFFitting_SpacePoint_hh */

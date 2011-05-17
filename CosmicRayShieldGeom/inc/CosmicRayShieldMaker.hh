@@ -1,11 +1,11 @@
-#ifndef CosmicRayShieldMaker_hh
-#define CosmicRayShieldMaker_hh
+#ifndef CosmicRayShieldGeom_CosmicRayShieldMaker_hh
+#define CosmicRayShieldGeom_CosmicRayShieldMaker_hh
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.2 2011/03/09 19:45:36 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/09 19:45:36 $
+// $Id: CosmicRayShieldMaker.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG
 //
@@ -133,4 +133,4 @@ private:
 
 }  //namespace mu2e
 
-#endif 
+#endif /* CosmicRayShieldGeom_CosmicRayShieldMaker_hh */

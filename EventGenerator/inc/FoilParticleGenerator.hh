@@ -1,5 +1,5 @@
-#ifndef FOILPARTICLEGENERATOR_HH
-#define FOILPARTICLEGENERATOR_HH
+#ifndef EventGenerator_FoilParticleGenerator_hh
+#define EventGenerator_FoilParticleGenerator_hh
 
 //
 // Generate position and time of a generic particle coming from target foils.
@@ -112,5 +112,5 @@ namespace mu2e {
   };
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_FoilParticleGenerator_hh */
 

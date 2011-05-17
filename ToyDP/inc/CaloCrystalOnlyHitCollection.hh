@@ -4,9 +4,9 @@
 //
 // Define a type for a collection of CaloCrystalOnlyHit objects.
 //
-// $Id: CaloCrystalOnlyHitCollection.hh,v 1.1 2010/12/13 06:10:33 logash Exp $
-// $Author: logash $
-// $Date: 2010/12/13 06:10:33 $
+// $Id: CaloCrystalOnlyHitCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Ivan Logashenko
 //
@@ -19,4 +19,4 @@ namespace mu2e {
    typedef std::vector<mu2e::CaloCrystalOnlyHit> CaloCrystalOnlyHitCollection;
 }
 
-#endif
+#endif /* ToyDP_CaloCrystalOnlyHitCollection_hh */

@@ -1,13 +1,13 @@
-#ifndef RANDOMUNITSHPERE_HH
-#define RANDOMUNITSHPERE_HH
+#ifndef Mu2eUtilities_RandomUnitSphere_hh
+#define Mu2eUtilities_RandomUnitSphere_hh
 
 //
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.hh,v 1.7 2010/08/26 15:49:22 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/26 15:49:22 $
+// $Id: RandomUnitSphere.hh,v 1.8 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -88,4 +88,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eUtilities_RandomUnitSphere_hh */

@@ -1,5 +1,5 @@
-#ifndef KalmanFitter_h
-#define KalmanFitter_h 1
+#ifndef CDFFitting_KalmanFitter_hh
+#define CDFFitting_KalmanFitter_hh
 #include <vector>
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -80,7 +80,7 @@ protected:
 
 #include "CDFFitting/inc/KalmanFitter.icc"
 
-#endif
+#endif /* CDFFitting_KalmanFitter_hh */
 
 
 

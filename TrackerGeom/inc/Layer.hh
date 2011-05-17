@@ -1,11 +1,11 @@
-#ifndef LAYER_HH
-#define LAYER_HH
+#ifndef TrackerGeom_Layer_hh
+#define TrackerGeom_Layer_hh
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.4 2011/01/28 23:51:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/28 23:51:58 $
+// $Id: Layer.hh,v 1.5 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -130,4 +130,4 @@ namespace mu2e {
   };
 }
 
-#endif
+#endif /* TrackerGeom_Layer_hh */

@@ -1,5 +1,5 @@
-#ifndef Mu2eUtilities_SimParticlesWithHits_HH
-#define Mu2eUtilities_SimParticlesWithHits_HH
+#ifndef Mu2eUtilities_SimParticlesWithHits_hh
+#define Mu2eUtilities_SimParticlesWithHits_hh
 //
 // This class makes available a collection of SimParticles that 
 // have more than a minimum number of StrawHits with energy deposition
@@ -11,9 +11,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.hh,v 1.4 2011/05/17 15:36:01 greenc Exp $
+// $Id: SimParticlesWithHits.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke.
 //
@@ -98,4 +98,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_SimParticlesWithHits_hh */

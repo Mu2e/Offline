@@ -1,13 +1,13 @@
-#ifndef Target_TargetFoil_HH
-#define Target_TargetFoil_HH
+#ifndef TargetGeom_TargetFoil_hh
+#define TargetGeom_TargetFoil_hh
 
 //
 // Class to represent one target foil.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: TargetFoil.hh,v 1.3 2010/05/18 20:28:59 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:59 $
+// $Id: TargetFoil.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -74,4 +74,4 @@ namespace mu2e {
 };
 
 }
-#endif
+#endif /* TargetGeom_TargetFoil_hh */

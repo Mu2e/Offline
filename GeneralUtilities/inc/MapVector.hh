@@ -1,5 +1,5 @@
-#ifndef Generalutilities_MapVector_hh
-#define Generalutilities_MapVector_hh
+#ifndef GeneralUtilities_MapVector_hh
+#define GeneralUtilities_MapVector_hh
 //
 // An STL-like class template that looks and feels std::map<key_type,T>,
 // with the exception that it is has a few extra modifier and accessor
@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.11 2011/03/04 21:32:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/04 21:32:18 $
+// $Id: MapVector.hh,v 1.12 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 //   Original author Rob Kutschke
 //
@@ -318,4 +318,4 @@ private:
 
 };
 
-#endif
+#endif /* GeneralUtilities_MapVector_hh */

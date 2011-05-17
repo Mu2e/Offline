@@ -1,11 +1,11 @@
-#ifndef makeIt_HH
-#define makeIt_HH
+#ifndef Mu2eUtilities_test_makeIt_hh
+#define Mu2eUtilities_test_makeIt_hh
 //
 // Part of the test suite for the make_ref class template.
 //
-//  $Id: makeIt.hh,v 1.1 2011/03/04 19:54:17 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/03/04 19:54:17 $
+//  $Id: makeIt.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -16,4 +16,4 @@
 cet::maybe_ref<mu2e::TestClass const> makeItConst( int i, int j);
 cet::maybe_ref<mu2e::TestClass> makeIt( int i, int j);
 
-#endif
+#endif /* Mu2eUtilities_test_makeIt_hh */

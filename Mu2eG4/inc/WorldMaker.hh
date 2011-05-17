@@ -1,11 +1,11 @@
-#ifndef WorldMaker_H
-#define WorldMaker_H
+#ifndef Mu2eG4_WorldMaker_hh
+#define Mu2eG4_WorldMaker_hh
 //
 // The Mu2e version of G4VUserDetectorConstruction.
 // 
-// $Id: WorldMaker.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: WorldMaker.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -56,5 +56,5 @@ namespace mu2e {
   };
 
 } // end namespace mu2e
-#endif
+#endif /* Mu2eG4_WorldMaker_hh */
 

@@ -1,5 +1,5 @@
-#ifndef ITGasLayerSD_h
-#define ITGasLayerSD_h 1
+#ifndef Mu2eG4_ITGasLayerSD_hh
+#define Mu2eG4_ITGasLayerSD_hh
 
 //// Mu2e includes
 #include "ITrackerGeom/inc/ITracker.hh"
@@ -77,4 +77,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif /*ITGasLayerSD_h*/
+#endif /* Mu2eG4_ITGasLayerSD_hh */

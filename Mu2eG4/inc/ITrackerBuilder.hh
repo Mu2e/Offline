@@ -5,8 +5,8 @@
  *      Author: tassiell
  */
 
-#ifndef ITRACKERBUILDER_H_
-#define ITRACKERBUILDER_H_
+#ifndef Mu2eG4_ITrackerBuilder_hh
+#define Mu2eG4_ITrackerBuilder_hh
 
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
@@ -27,4 +27,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif /* ITRACKERBUILDER_H_ */
+#endif /* Mu2eG4_ITrackerBuilder_hh */

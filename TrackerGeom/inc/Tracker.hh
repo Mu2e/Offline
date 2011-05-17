@@ -1,11 +1,11 @@
-#ifndef TRACKER_HH
-#define TRACKER_HH
+#ifndef TrackerGeom_Tracker_hh
+#define TrackerGeom_Tracker_hh
 //
 // Pure virtual base class that will used by both LTracker or TTracker.
 //
-// $Id: Tracker.hh,v 1.2 2010/04/18 00:31:55 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:31:55 $
+// $Id: Tracker.hh,v 1.3 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -42,4 +42,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* TrackerGeom_Tracker_hh */

@@ -1,14 +1,14 @@
-#ifndef PIEPLUSNU_HH
-#define PIEPLUSNU_HH
+#ifndef EventGenerator_PiEplusNuGun_hh
+#define EventGenerator_PiEplusNuGun_hh
 
 //
 // Generate a positron from pi^+ -> e^+ nu
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.hh,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Id: PiEplusNuGun.hh,v 1.4 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -58,6 +58,6 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_PiEplusNuGun_hh */
 
 

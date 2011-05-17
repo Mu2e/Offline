@@ -1,5 +1,5 @@
-#ifndef WIREID_HH
-#define WIREID_HH
+#ifndef ITrackerGeom_WireId_hh
+#define ITrackerGeom_WireId_hh
 
 #include "ITrackerGeom/inc/ITLayerId.hh"
 
@@ -57,4 +57,4 @@ inline std::ostream& operator<<(std::ostream& ost,
 }
 
 }
-#endif
+#endif /* ITrackerGeom_WireId_hh */

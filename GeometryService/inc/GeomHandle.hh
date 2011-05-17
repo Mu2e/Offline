@@ -5,9 +5,9 @@
 // A safe pointer to the geometry information for a 
 // detector component.
 //
-// $Id: GeomHandle.hh,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Id: GeomHandle.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -42,4 +42,4 @@ namespace mu2e {
   };
 }
 
-#endif
+#endif /* GeometryService_GeomHandle_hh */

@@ -1,5 +1,5 @@
-#ifndef CELLID_HH
-#define CELLID_HH
+#ifndef ITrackerGeom_CellId_hh
+#define ITrackerGeom_CellId_hh
 
 #include "ITrackerGeom/inc/WireId.hh"
 
@@ -59,4 +59,4 @@ inline std::ostream& operator<<(std::ostream& ost,
 }
 
 }
-#endif /*CELLID_HH*/
+#endif /* ITrackerGeom_CellId_hh */

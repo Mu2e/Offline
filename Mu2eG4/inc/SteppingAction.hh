@@ -1,11 +1,11 @@
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
+#ifndef Mu2eG4_SteppingAction_hh
+#define Mu2eG4_SteppingAction_hh
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.9 2011/01/04 22:07:20 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/04 22:07:20 $
+// $Id: SteppingAction.hh,v 1.10 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -98,4 +98,4 @@ namespace mu2e {
   };
   
 } // end namespace mu2e
-#endif
+#endif /* Mu2eG4_SteppingAction_hh */

@@ -1,10 +1,10 @@
-#ifndef SensitiveDetectorName_h
-#define SensitiveDetectorName_h
+#ifndef Mu2eG4_SensitiveDetectorName_hh
+#define Mu2eG4_SensitiveDetectorName_hh
 // Define names of Sensitive Detectors
 // 
-// $Id: SensitiveDetectorName.hh,v 1.4 2011/03/09 19:49:32 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/09 19:49:32 $
+// $Id: SensitiveDetectorName.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author KLG
 
@@ -48,4 +48,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eG4_SensitiveDetectorName_hh */

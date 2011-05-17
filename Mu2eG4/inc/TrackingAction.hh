@@ -1,13 +1,13 @@
-#ifndef TrackingAction_H
-#define TrackingAction_H 1
+#ifndef Mu2eG4_TrackingAction_hh
+#define Mu2eG4_TrackingAction_hh
 //
 // Steering routine for user tracking actions. 
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.12 2011/05/17 15:36:00 greenc Exp $
+// $Id: TrackingAction.hh,v 1.13 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -125,5 +125,5 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_TrackingAction_hh */
 

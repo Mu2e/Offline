@@ -1,5 +1,5 @@
-#ifndef CELLGEOMETRYHANDLEEXTGEOM_HH
-#define CELLGEOMETRYHANDLEEXTGEOM_HH
+#ifndef ITrackerGeom_CellGeometryHandle_ExtGeom_hh
+#define ITrackerGeom_CellGeometryHandle_ExtGeom_hh
 
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
 #include "ITrackerGeom/inc/ITrackerWireposition.hh"
@@ -47,4 +47,4 @@ public:
 
 }
 
-#endif /* CELLGEOMETRYHANDLEEXTGEOM_HH */
+#endif /* ITrackerGeom_CellGeometryHandle_ExtGeom_hh */

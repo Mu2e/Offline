@@ -1,5 +1,5 @@
-#ifndef STRAWINDEX_HH
-#define STRAWINDEX_HH
+#ifndef TrackerGeom_StrawIndex_hh
+#define TrackerGeom_StrawIndex_hh
 
 //
 // Dense integer identifier of one straw.
@@ -7,9 +7,9 @@
 // of straws in the system.  This works for both the LTracker
 // and the TTracker.
 //
-// $Id: StrawIndex.hh,v 1.5 2011/01/06 23:12:37 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/01/06 23:12:37 $
+// $Id: StrawIndex.hh,v 1.6 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -75,4 +75,4 @@ namespace mu2e {
   }
 
 }
-#endif
+#endif /* TrackerGeom_StrawIndex_hh */

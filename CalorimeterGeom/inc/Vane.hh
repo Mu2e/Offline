@@ -1,14 +1,14 @@
-#ifndef VANE_HH
-#define VANE_HH
+#ifndef CalorimeterGeom_Vane_hh
+#define CalorimeterGeom_Vane_hh
 
 //
 // Hold information about one vane in the calorimter.
 //
 
 //
-// $Id: Vane.hh,v 1.4 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: Vane.hh,v 1.5 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author R, Bernstein and Rob Kutschke
 //
@@ -57,4 +57,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* CalorimeterGeom_Vane_hh */

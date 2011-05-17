@@ -1,15 +1,15 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc. 
 //
-// $Id: ComponentInfo.h,v 1.4 2011/03/05 05:06:09 ehrlich Exp $
-// $Author: ehrlich $ 
-// $Date: 2011/03/05 05:06:09 $
+// $Id: ComponentInfo.h,v 1.5 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Ralf Ehrlich
 //
 
-#ifndef COMPONENTINFO_H
-#define COMPONENTINFO_H
+#ifndef EventDisplay_src_dict_classes_ComponentInfo_h
+#define EventDisplay_src_dict_classes_ComponentInfo_h
 
 #include <TText.h>
 #include <iostream>
@@ -119,4 +119,4 @@ namespace mu2e_eventdisplay
   };
 
 }
-#endif
+#endif /* EventDisplay_src_dict_classes_ComponentInfo_h */

@@ -1,11 +1,11 @@
-#ifndef constructHall_HH
-#define constructHall_HH
+#ifndef Mu2eG4_constructHall_hh
+#define Mu2eG4_constructHall_hh
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.hh,v 1.1 2011/01/05 21:04:31 genser Exp $
-// $Author: genser $
-// $Date: 2011/01/05 21:04:31 $
+// $Id: constructHall.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author KLG
 //
@@ -23,4 +23,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_constructHall_hh */

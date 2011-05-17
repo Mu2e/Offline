@@ -1,12 +1,12 @@
-#ifndef PhysicalVolumeHelper_H
-#define PhysicalVolumeHelper_H 
+#ifndef Mu2eG4_PhysicalVolumeHelper_hh
+#define Mu2eG4_PhysicalVolumeHelper_hh
 //
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.hh,v 1.1 2010/03/23 20:34:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/23 20:34:30 $
+// $Id: PhysicalVolumeHelper.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -63,5 +63,5 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_PhysicalVolumeHelper_hh */
 

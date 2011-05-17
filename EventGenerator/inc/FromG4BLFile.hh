@@ -1,11 +1,11 @@
-#ifndef FROMG4BLFILE_HH
-#define FROMG4BLFILE_HH
+#ifndef EventGenerator_FromG4BLFile_hh
+#define EventGenerator_FromG4BLFile_hh
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.7 2011/05/17 15:35:59 greenc Exp $
+// $Id: FromG4BLFile.hh,v 1.8 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -104,4 +104,4 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_FromG4BLFile_hh */

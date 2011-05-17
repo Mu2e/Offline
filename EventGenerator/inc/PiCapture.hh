@@ -1,13 +1,13 @@
-#ifndef PiCapture_HH
-#define PiCapture_HH
+#ifndef EventGenerator_PiCapture_hh
+#define EventGenerator_PiCapture_hh
 //
 //
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
-// $Id: PiCapture.hh,v 1.12 2011/05/17 15:36:00 greenc Exp $
+// $Id: PiCapture.hh,v 1.13 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke, P. Shanahan
 // 
@@ -90,4 +90,4 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_PiCapture_hh */

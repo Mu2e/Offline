@@ -1,5 +1,5 @@
-#ifndef AddVirtualDetectorPoints_HH
-#define AddVirtualDetectorPoints_HH
+#ifndef Mu2eG4_copyStepPointG4toMC_hh
+#define Mu2eG4_copyStepPointG4toMC_hh
 //
 // Populate output StepPointMC collection from StepPointG4
 //
@@ -18,6 +18,6 @@ namespace mu2e{
 
 }  // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_copyStepPointG4toMC_hh */
 
 

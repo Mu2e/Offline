@@ -1,12 +1,12 @@
-#ifndef FieldMgr_H
-#define FieldMgr_H
+#ifndef Mu2eG4_FieldMgr_hh
+#define Mu2eG4_FieldMgr_hh
 //
 // Create a G4FieldManager object. Provide accessors to the field manager
 // and to the parts from which it is made.
 //
-// $Id: FieldMgr.hh,v 1.1 2010/06/22 16:06:22 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/06/22 16:06:22 $
+// $Id: FieldMgr.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -119,4 +119,4 @@ namespace mu2e {
 
 } //end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_FieldMgr_hh */

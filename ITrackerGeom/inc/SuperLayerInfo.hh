@@ -1,5 +1,5 @@
-#ifndef SUPERLAYERINFO_HH
-#define SUPERLAYERINFO_HH
+#ifndef ITrackerGeom_SuperLayerInfo_hh
+#define ITrackerGeom_SuperLayerInfo_hh
 
 namespace mu2e {
 
@@ -29,4 +29,4 @@ public:
 
 }  //namespace mu2e
 
-#endif /*SUPERLAYERINFO_HH*/
+#endif /* ITrackerGeom_SuperLayerInfo_hh */

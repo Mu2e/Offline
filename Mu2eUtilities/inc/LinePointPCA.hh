@@ -1,12 +1,12 @@
-#ifndef LinePointPCA_h
-#define LinePointPCA_h 1
+#ifndef Mu2eUtilities_LinePointPCA_hh
+#define Mu2eUtilities_LinePointPCA_hh
 //
 // Given a line and an external point, find the point on the line that is
 // closest to the external point.
 //
-// $Id: LinePointPCA.hh,v 1.2 2010/05/18 20:28:47 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:47 $
+// $Id: LinePointPCA.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -63,4 +63,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_LinePointPCA_hh */

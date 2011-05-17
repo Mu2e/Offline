@@ -1,11 +1,11 @@
-#ifndef Binning_HH
-#define Binning_HH
+#ifndef GeneralUtilities_Binning_hh
+#define GeneralUtilities_Binning_hh
 //
 // A definition of the binning of a histogram.
 //
-// $Id: Binning.hh,v 1.1 2011/05/15 21:14:09 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/15 21:14:09 $
+// $Id: Binning.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -47,4 +47,4 @@ private:
 
 };
 
-#endif
+#endif /* GeneralUtilities_Binning_hh */

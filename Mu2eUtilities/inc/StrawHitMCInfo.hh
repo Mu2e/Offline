@@ -1,5 +1,5 @@
-#ifndef Mu2eUtilities_StrawHitMCInfo_HH
-#define Mu2eUtilities_StrawHitMCInfo_HH
+#ifndef Mu2eUtilities_StrawHitMCInfo_hh
+#define Mu2eUtilities_StrawHitMCInfo_hh
 //
 // Integrated access to all information about a StrawHit that was 
 // created by a SimParticle.   This class is a building block of 
@@ -7,9 +7,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle. 
 //
-// $Id: StrawHitMCInfo.hh,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Id: StrawHitMCInfo.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke.
 //
@@ -111,4 +111,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_StrawHitMCInfo_hh */

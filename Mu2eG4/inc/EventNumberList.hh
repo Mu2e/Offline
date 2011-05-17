@@ -1,11 +1,11 @@
-#ifndef EventNumberList_HH
-#define EventNumberList_HH
+#ifndef Mu2eG4_EventNumberList_hh
+#define Mu2eG4_EventNumberList_hh
 //
 // Utility class to select listed events within G4.
 //
-// $Id: EventNumberList.hh,v 1.2 2010/02/06 19:40:31 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/02/06 19:40:31 $
+// $Id: EventNumberList.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -62,4 +62,4 @@ namespace mu2e {
 
   };
 }
-#endif
+#endif /* Mu2eG4_EventNumberList_hh */

@@ -1,11 +1,11 @@
-#ifndef PRIMARYPROTONGUN_HH
-#define PRIMARYPROTONGUN_HH
+#ifndef EventGenerator_PrimaryProtonGun_hh
+#define EventGenerator_PrimaryProtonGun_hh
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.7 2011/05/17 15:36:00 greenc Exp $
+// $Id: PrimaryProtonGun.hh,v 1.8 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 //
 // The coordinate system used in this class is:
@@ -87,6 +87,6 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_PrimaryProtonGun_hh */
 
 

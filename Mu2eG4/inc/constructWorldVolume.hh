@@ -1,11 +1,11 @@
-#ifndef constructWorldVolume_HH
-#define constructWorldVolume_HH
+#ifndef Mu2eG4_constructWorldVolume_hh
+#define Mu2eG4_constructWorldVolume_hh
 //
 // Free function to construct World Mother Volume
 //
-// $Id: constructWorldVolume.hh,v 1.1 2011/01/05 21:04:31 genser Exp $
-// $Author: genser $
-// $Date: 2011/01/05 21:04:31 $
+// $Id: constructWorldVolume.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author KLG
 //
@@ -22,4 +22,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_constructWorldVolume_hh */

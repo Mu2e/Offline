@@ -1,14 +1,14 @@
-#ifndef TRIMINPLACE_H
-#define TRIMINPLACE_H
+#ifndef Mu2eUtilities_TrimInPlace_hh
+#define Mu2eUtilities_TrimInPlace_hh
 
 /**
  * 
  * Remove leading and trailing whitespace from a string.
  * It modifies the input string.
  *
- * $Id: TrimInPlace.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
- * $Author: kutschke $ 
- * $Date: 2009/09/30 22:57:47 $
+ * $Id: TrimInPlace.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+ * $Author: greenc $ 
+ * $Date: 2011/05/17 15:41:36 $
  *
  * Original author Rob Kutschke
  * 
@@ -21,4 +21,4 @@ namespace mu2e {
 void TrimInPlace( std::string& s);
 
 }
-#endif
+#endif /* Mu2eUtilities_TrimInPlace_hh */

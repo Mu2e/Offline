@@ -4,9 +4,9 @@
 //
 // Define a type for a collection of SimParticle objects.
 //
-// $Id: SimParticleCollection.hh,v 1.3 2010/11/16 21:18:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/16 21:18:10 $
+// $Id: SimParticleCollection.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -18,4 +18,4 @@ namespace mu2e {
    typedef MapVector<mu2e::SimParticle> SimParticleCollection;
 }
 
-#endif
+#endif /* ToyDP_SimParticleCollection_hh */

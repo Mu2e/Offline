@@ -3,9 +3,9 @@
 // 
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.hh,v 1.3 2010/12/17 22:26:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/17 22:26:44 $
+// $Id: StatusG4.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -97,4 +97,4 @@ namespace mu2e {
 
 } // end namespace mu2e 
 
-#endif
+#endif /* ToyDP_StatusG4_hh */

@@ -1,5 +1,5 @@
-#ifndef Beamline_HH
-#define Beamline_HH
+#ifndef BeamlineGeom_Beamline_hh
+#define BeamlineGeom_Beamline_hh
 
 //
 // Class to represent the transport solenoid
@@ -41,4 +41,4 @@ namespace mu2e {
 };
 
 }
-#endif
+#endif /* BeamlineGeom_Beamline_hh */

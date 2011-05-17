@@ -1,5 +1,5 @@
-#ifndef G4BeamlineInfo_H
-#define G4BeamlineInfo_H
+#ifndef ToyDP_G4BeamlineInfo_hh
+#define ToyDP_G4BeamlineInfo_hh
 // 
 // Simple holder for extra data available from G4Beamline generator
 //
@@ -49,4 +49,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_G4BeamlineInfo_hh */

@@ -1,11 +1,11 @@
-#ifndef AddPointTrajectories_HH
-#define AddPointTrajectories_HH
+#ifndef Mu2eG4_addPointTrajectories_hh
+#define Mu2eG4_addPointTrajectories_hh
 //
 // Dig the trajectories out of the G4 internals and add them to the event.
 //
-// $Id: addPointTrajectories.hh,v 1.1 2010/11/18 07:22:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/18 07:22:43 $
+// $Id: addPointTrajectories.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -27,6 +27,6 @@ namespace mu2e{
 
 }  // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_addPointTrajectories_hh */
 
 

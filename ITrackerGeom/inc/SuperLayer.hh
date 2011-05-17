@@ -1,5 +1,5 @@
-#ifndef SUPERLAYER_HH
-#define SUPERLAYER_HH
+#ifndef ITrackerGeom_SuperLayer_hh
+#define ITrackerGeom_SuperLayer_hh
 
 #include <vector>
 #include <deque>
@@ -77,4 +77,4 @@ protected:
 };
 }
 
-#endif /*SUPERLAYER_HH*/
+#endif /* ITrackerGeom_SuperLayer_hh */

@@ -2,15 +2,15 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.5 2011/02/16 07:44:42 ehrlich Exp $
-// $Author: ehrlich $ 
-// $Date: 2011/02/16 07:44:42 $
+// $Id: VirtualShape.h,v 1.6 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Ralf Ehrlich
 //
 
-#ifndef VIRTUALSHAPE_H
-#define VIRTUALSHAPE_H
+#ifndef EventDisplay_src_VirtualShape_h
+#define EventDisplay_src_VirtualShape_h
 
 #include <string>
 #include <TGeoMatrix.h>
@@ -94,4 +94,4 @@ class VirtualShape : public TObject
 };
 
 }
-#endif
+#endif /* EventDisplay_src_VirtualShape_h */

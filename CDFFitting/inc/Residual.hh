@@ -1,6 +1,6 @@
 
-#ifndef Residual_h
-#define Residual_h 1
+#ifndef CDFFitting_Residual_hh
+#define CDFFitting_Residual_hh
 
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
@@ -43,6 +43,6 @@ private:
 
 #include "CDFFitting/inc/Residual.icc"
 
-#endif
+#endif /* CDFFitting_Residual_hh */
 
 

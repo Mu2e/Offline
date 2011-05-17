@@ -1,14 +1,14 @@
-#ifndef CRSScintillatorLayerId_HH
-#define CRSScintillatorLayerId_HH
+#ifndef CosmicRayShieldGeom_CRSScintillatorLayerId_hh
+#define CosmicRayShieldGeom_CRSScintillatorLayerId_hh
 
 //
 // Identifier of one Scintillator Layer in CosmicRayShield.
 //
 
 //
-// $Id: CRSScintillatorLayerId.hh,v 1.1 2011/03/09 19:22:56 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:22:56 $
+// $Id: CRSScintillatorLayerId.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG; based on Rob Kutschke LayerId
 //
@@ -90,4 +90,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* CosmicRayShieldGeom_CRSScintillatorLayerId_hh */

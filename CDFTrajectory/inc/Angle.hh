@@ -34,8 +34,8 @@
 //
 // Author: Paolo Gatti, University of Padova / INFN
 
-#ifndef ANGLE_HH
-#define ANGLE_HH
+#ifndef CDFTrajectory_Angle_hh
+#define CDFTrajectory_Angle_hh
 
 #include <iostream>
 #include <cmath>
@@ -207,4 +207,4 @@ public:
 // By default, "Angles" are unsigned (CDF convention: 0-2PI range).
 typedef UnsignedAngle Angle;
 
-#endif /* ANGLE_HH */
+#endif /* CDFTrajectory_Angle_hh */

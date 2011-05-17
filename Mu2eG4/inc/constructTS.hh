@@ -1,11 +1,11 @@
-#ifndef constructTS_HH
-#define constructTS_HH
+#ifndef Mu2eG4_constructTS_hh
+#define Mu2eG4_constructTS_hh
 //
 // Free function to create  Transport Solenoid
 //
-// $Id: constructTS.hh,v 1.1 2011/01/05 21:04:31 genser Exp $
-// $Author: genser $
-// $Date: 2011/01/05 21:04:31 $
+// $Id: constructTS.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author KLG
 //
@@ -21,4 +21,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_constructTS_hh */

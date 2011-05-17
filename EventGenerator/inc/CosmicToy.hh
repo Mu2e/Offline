@@ -1,12 +1,12 @@
-#ifndef CosmicToy_HH
-#define CosmicToy_HH
+#ifndef EventGenerator_CosmicToy_hh
+#define EventGenerator_CosmicToy_hh
 //
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.hh,v 1.4 2011/05/17 15:35:59 greenc Exp $
+// $Id: CosmicToy.hh,v 1.5 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -67,6 +67,6 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_CosmicToy_hh */
 
 

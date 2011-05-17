@@ -1,5 +1,5 @@
-#ifndef WIREDETAIL_HH
-#define WIREDETAIL_HH
+#ifndef ITrackerGeom_WireDetail_hh
+#define ITrackerGeom_WireDetail_hh
 
 #include <vector>
 #include <string>
@@ -64,4 +64,4 @@ private:
 
 }  //namespace mu2e
 
-#endif /*WIREDETAIL_HH*/
+#endif /* ITrackerGeom_WireDetail_hh */

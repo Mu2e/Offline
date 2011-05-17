@@ -1,15 +1,15 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.9 2011/05/17 15:35:59 greenc Exp $
+// $Id: EventDisplayFrame.h,v 1.10 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Ralf Ehrlich
 //
 
-#ifndef MU2EMAINFRAME_H
-#define MU2EMAINFRAME_H
+#ifndef EventDisplay_src_EventDisplayFrame_h
+#define EventDisplay_src_EventDisplayFrame_h
 
 #include <iostream>
 #include <TGFrame.h>
@@ -110,5 +110,5 @@ namespace mu2e_eventdisplay
   };
 }
 
-#endif
+#endif /* EventDisplay_src_EventDisplayFrame_h */
 

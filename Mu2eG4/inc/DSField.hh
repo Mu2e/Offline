@@ -1,11 +1,11 @@
-#ifndef DSFIELD_HH
-#define DSFIELD_HH
+#ifndef Mu2eG4_DSField_hh
+#define Mu2eG4_DSField_hh
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: DSField.hh,v 1.5 2010/09/08 00:07:27 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/08 00:07:27 $
+// $Id: DSField.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite Rob Kutschke at version 1.4
@@ -53,4 +53,4 @@ namespace mu2e {
 
   };
 }
-#endif
+#endif /* Mu2eG4_DSField_hh */

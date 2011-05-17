@@ -1,11 +1,11 @@
-#ifndef AddStepPointMCs_HH
-#define AddStepPointMCs_HH
+#ifndef Mu2eG4_addStepPointMCs_hh
+#define Mu2eG4_addStepPointMCs_hh
 //
 // Add StepPointMC objects to the event.
 //
-// $Id: addStepPointMCs.hh,v 1.2 2010/04/18 00:06:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:06:53 $
+// $Id: addStepPointMCs.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,6 @@ namespace mu2e{
 
 }  // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_addStepPointMCs_hh */
 
 

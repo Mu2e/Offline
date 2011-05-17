@@ -1,5 +1,5 @@
-#ifndef Mu2eUtilities_sqrtOrThrow_HH
-#define Mu2eUtilities_sqrtOrThrow_HH
+#ifndef Mu2eUtilities_sqrtOrThrow_hh
+#define Mu2eUtilities_sqrtOrThrow_hh
 
 //
 //  Take the sqrt of its argument but protect against
@@ -9,9 +9,9 @@
 //  that this is round off error and set the answer
 //  to zero.  If the argument is very negative, throw.
 //
-// $Id: sqrtOrThrow.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: sqrtOrThrow.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -24,4 +24,4 @@ namespace mu2e {
   float  sqrtOrThrow( float x,  float eps );
 
 }
-#endif
+#endif /* Mu2eUtilities_sqrtOrThrow_hh */

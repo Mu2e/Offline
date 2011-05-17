@@ -1,11 +1,11 @@
-#ifndef CRSScintillatorBarSD_h
-#define CRSScintillatorBarSD_h
+#ifndef Mu2eG4_CRSScintillatorBarSD_hh
+#define Mu2eG4_CRSScintillatorBarSD_hh
 //
 // Define a sensitive detector for 
 // 
-// $Id: CRSScintillatorBarSD.hh,v 1.1 2011/03/09 19:25:27 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/09 19:25:27 $
+// $Id: CRSScintillatorBarSD.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 // 
 // Original author KLG
 //
@@ -59,4 +59,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eG4_CRSScintillatorBarSD_hh */

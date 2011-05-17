@@ -1,9 +1,9 @@
-#ifndef CaloHit_H
-#define CaloHit_H
+#ifndef ToyDP_CaloHit_hh
+#define ToyDP_CaloHit_hh
 
-// $Id: CaloHit.hh,v 1.2 2010/11/12 21:44:58 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/12 21:44:58 $
+// $Id: CaloHit.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Ivan Logashenko
 
@@ -59,4 +59,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_CaloHit_hh */

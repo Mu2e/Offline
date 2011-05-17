@@ -1,13 +1,13 @@
-#ifndef CRSScintillatorBarId_HH
-#define CRSScintillatorBarId_HH
+#ifndef CosmicRayShieldGeom_CRSScintillatorBarId_hh
+#define CosmicRayShieldGeom_CRSScintillatorBarId_hh
 //
 // Identifier of one CRSScintillatorBar in CosmicRayShield.
 //
 
 //
-// $Id: CRSScintillatorBarId.hh,v 1.1 2011/03/09 19:22:03 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:22:03 $
+// $Id: CRSScintillatorBarId.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG somewhat based on Rob Kutschke's StrawId
 //
@@ -105,4 +105,4 @@ namespace mu2e {
   }
 
 }
-#endif
+#endif /* CosmicRayShieldGeom_CRSScintillatorBarId_hh */

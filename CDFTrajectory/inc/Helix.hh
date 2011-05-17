@@ -1,5 +1,5 @@
-#ifndef Helix_h
-#define Helix_h 1
+#ifndef CDFTrajectory_Helix_hh
+#define CDFTrajectory_Helix_hh
 
 #include "CDFTrajectory/inc/Trajectory.hh"
 #include "CDFTrajectory/inc/Angle.hh"
@@ -189,6 +189,6 @@ private:
 
 #include "CDFTrajectory/inc/Helix.icc"
 } // end namespace mu2e
-#endif
+#endif /* CDFTrajectory_Helix_hh */
 
 

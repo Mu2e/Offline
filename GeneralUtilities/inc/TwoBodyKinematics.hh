@@ -1,11 +1,11 @@
-#ifndef TwoBodyKinematics_HH
-#define TwoBodyKinematics_HH
+#ifndef GeneralUtilities_TwoBodyKinematics_hh
+#define GeneralUtilities_TwoBodyKinematics_hh
 //
 // Kinematics of 2 body decay.
 //
-// $Id: TwoBodyKinematics.hh,v 1.1 2011/05/02 16:08:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/02 16:08:34 $
+// $Id: TwoBodyKinematics.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 
@@ -40,4 +40,4 @@ private:
 
 };
 
-#endif
+#endif /* GeneralUtilities_TwoBodyKinematics_hh */

@@ -15,4 +15,4 @@ namespace mu2e {
    typedef std::vector<mu2e::StrawHitMCTruth> StrawHitMCTruthCollection;
 }
 
-#endif
+#endif /* ToyDP_StrawHitMCTruthCollection_hh */

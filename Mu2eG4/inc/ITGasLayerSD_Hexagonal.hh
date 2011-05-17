@@ -1,5 +1,5 @@
-#ifndef ITGasLayerSD_Hexagonal_h
-#define ITGasLayerSD_Hexagonal_h 1
+#ifndef Mu2eG4_ITGasLayerSD_Hexagonal_hh
+#define Mu2eG4_ITGasLayerSD_Hexagonal_hh
 
 //// Mu2e includes
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
@@ -18,4 +18,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif /*ITGasLayerSD_Hexagonal_h*/
+#endif /* Mu2eG4_ITGasLayerSD_Hexagonal_hh */

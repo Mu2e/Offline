@@ -1,15 +1,15 @@
 //
 // This class is inherited from ROOT's TPad class, and is used for _mainframe in EventDisplayFrame. It is used to catch updates to the display (e.g. rotations via mouse, zoom via TView3D context menu, etc.) so that the fields (phi, theta, xmin, xmax, ...) in the event display can get updated.
 //
-// $Id: EventDisplayPad.h,v 1.1 2011/02/05 01:20:08 ehrlich Exp $
-// $Author: ehrlich $ 
-// $Date: 2011/02/05 01:20:08 $
+// $Id: EventDisplayPad.h,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Ralf Ehrlich
 //
 
-#ifndef EVENTDISPLAYPAD_H
-#define EVENTDISPLAYPAD_H
+#ifndef EventDisplay_src_dict_classes_EventDisplayPad_h
+#define EventDisplay_src_dict_classes_EventDisplayPad_h
 
 #include <TPad.h>
 #include <TView.h>
@@ -54,4 +54,4 @@ class EventDisplayPad : public TPad
 };
 
 }
-#endif
+#endif /* EventDisplay_src_dict_classes_EventDisplayPad_h */

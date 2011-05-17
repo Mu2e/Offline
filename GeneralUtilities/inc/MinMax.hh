@@ -1,13 +1,13 @@
-#ifndef MinMax_HH
-#define MinMax_HH
+#ifndef GeneralUtilities_MinMax_hh
+#define GeneralUtilities_MinMax_hh
 
 //
 // Find minimum, maximum and smallest in magnitude of a set of numbers
 // presented one at a time.
 //
-// $Id: MinMax.hh,v 1.2 2011/01/28 23:51:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/28 23:51:57 $
+// $Id: MinMax.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 
@@ -49,4 +49,4 @@ private:
 
 };
 
-#endif
+#endif /* GeneralUtilities_MinMax_hh */

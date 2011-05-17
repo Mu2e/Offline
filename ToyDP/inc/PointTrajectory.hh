@@ -5,9 +5,9 @@
 // One can imagine that some day we will have smarter
 // trajectory classes but this is what we have for now.
 //
-// $Id: PointTrajectory.hh,v 1.1 2010/11/18 07:21:39 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/18 07:21:39 $
+// $Id: PointTrajectory.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -61,4 +61,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ToyDP_PointTrajectory_hh */

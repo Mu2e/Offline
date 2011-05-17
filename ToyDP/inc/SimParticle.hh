@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.8 2011/01/04 22:08:36 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/04 22:08:36 $
+// $Id: SimParticle.hh,v 1.9 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -184,4 +184,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ToyDP_SimParticle_hh */

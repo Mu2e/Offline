@@ -1,9 +1,9 @@
-#ifndef SORT_FUNCTORS_HH
-#define SORT_FUNCTORS_HH
+#ifndef Mu2eUtilities_sort_functors_hh
+#define Mu2eUtilities_sort_functors_hh
 //
-// $Id: sort_functors.hh,v 1.2 2010/11/15 17:16:53 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/11/15 17:16:53 $
+// $Id: sort_functors.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author KLG
 //
@@ -69,4 +69,4 @@ namespace mu2e {
   
 }
 
-#endif
+#endif /* Mu2eUtilities_sort_functors_hh */

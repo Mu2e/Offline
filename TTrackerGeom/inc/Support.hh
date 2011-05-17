@@ -1,13 +1,13 @@
-#ifndef SUPPORT_HH
-#define SUPPORT_HH
+#ifndef TTrackerGeom_Support_hh
+#define TTrackerGeom_Support_hh
 
 //
 // Describe the properites of a support for the TTracker.
 //
 //
-//  $Id: Support.hh,v 1.1 2010/04/18 00:37:16 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2010/04/18 00:37:16 $
+//  $Id: Support.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/05/17 15:41:36 $
 //
 //  Original author Rob Kutschke
 //
@@ -53,4 +53,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* TTrackerGeom_Support_hh */

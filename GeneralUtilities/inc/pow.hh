@@ -14,15 +14,15 @@
 //     T answer = cube(a);
 //     T answer = fourth(a);
 //
-// $Id: pow.hh,v 1.1 2009/10/06 23:49:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2009/10/06 23:49:30 $
+// $Id: pow.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // ======================================================================
 
 
-#ifndef COMPILE_TIME_POW
-#define COMPILE_TIME_POW
+#ifndef GeneralUtilities_pow_hh
+#define GeneralUtilities_pow_hh
 
 
 // ----------------------------------------------------------------------
@@ -154,5 +154,5 @@ T  fourth( T x )  { return pow<4UL>( x ); }
 // ======================================================================
 //
 
-#endif  // COMPILE_TIME_POW
+#endif /* GeneralUtilities_pow_hh */
 

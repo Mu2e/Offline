@@ -1,5 +1,5 @@
-#ifndef FITTER_HH_
-#define FITTER_HH_
+#ifndef CDFFitting_Fitter_hh
+#define CDFFitting_Fitter_hh
 
 #ifdef DEFECT_OLD_STL_HEADERS
 #include <vector>
@@ -131,5 +131,5 @@ protected:
 };
 #include "CDFFitting/inc/Fitter.icc"
 
-#endif //FITTER_HH_
+#endif /* CDFFitting_Fitter_hh */
 

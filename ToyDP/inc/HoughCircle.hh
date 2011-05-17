@@ -5,9 +5,9 @@
 // A candidate hough circle - i.e., a geometric cicle and some information
 // about hough peak quality (eventually)
 //
-// $Id: HoughCircle.hh,v 1.1 2010/04/12 18:12:28 shanahan Exp $
-// $Author: shanahan $
-// $Date: 2010/04/12 18:12:28 $
+// $Id: HoughCircle.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Peter Shanahan
 //
@@ -37,4 +37,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif // ToyDP_HoughCircle_hh
+#endif /* ToyDP_HoughCircle_hh */

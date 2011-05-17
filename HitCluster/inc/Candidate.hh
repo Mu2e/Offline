@@ -1,13 +1,13 @@
-#ifndef STRAWINDEX_HH
-#define STRAWINDEX_HH
+#ifndef HitCluster_Candidate_hh
+#define HitCluster_Candidate_hh
 
 //
 // Helper struct for cluster finding.  
 // Holds a StrawIndex and an index into a container of hits.
 // 
-// $Id: Candidate.hh,v 1.2 2010/05/18 20:28:07 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:07 $
+// $Id: Candidate.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -59,4 +59,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* HitCluster_Candidate_hh */

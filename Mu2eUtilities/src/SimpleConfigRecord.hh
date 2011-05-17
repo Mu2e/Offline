@@ -1,14 +1,14 @@
-#ifndef ExampleExtrasSimpleConfigRecord_HH
-#define ExampleExtrasSimpleConfigRecord_HH
+#ifndef Mu2eUtilities_src_SimpleConfigRecord_hh
+#define Mu2eUtilities_src_SimpleConfigRecord_hh
 
 /**
  *
  * A class to hold one record within the primitive 
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.hh,v 1.4 2011/05/17 15:36:01 greenc Exp $
+ * $Id: SimpleConfigRecord.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
  * $Author: greenc $ 
- * $Date: 2011/05/17 15:36:01 $
+ * $Date: 2011/05/17 15:41:36 $
  *
  * Original author Rob Kutschke
  *
@@ -278,4 +278,4 @@ inline std::ostream& operator<<(std::ostream& ost, const SimpleConfigRecord& r){
 
 }
 
-#endif
+#endif /* Mu2eUtilities_src_SimpleConfigRecord_hh */

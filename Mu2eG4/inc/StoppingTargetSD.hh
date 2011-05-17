@@ -1,5 +1,5 @@
-#ifndef StoppingTargetSD_h
-#define StoppingTargetSD_h 1
+#ifndef Mu2eG4_StoppingTargetSD_hh
+#define Mu2eG4_StoppingTargetSD_hh
 //
 // Define a sensitive detector for stopping target
 // 
@@ -55,4 +55,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eG4_StoppingTargetSD_hh */

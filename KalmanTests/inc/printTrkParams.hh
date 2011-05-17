@@ -3,9 +3,9 @@
 //
 // Free function to print the BaBar style track parameters.
 //
-// $Id: printTrkParams.hh,v 1.1 2010/04/23 20:18:57 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/23 20:18:57 $
+// $Id: printTrkParams.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -23,4 +23,4 @@ namespace mu2e {
   }
 
 }
-#endif
+#endif /* KalmanTests_printTrkParams_hh */

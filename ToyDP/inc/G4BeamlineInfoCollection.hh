@@ -13,4 +13,4 @@ namespace mu2e {
    typedef std::vector<mu2e::G4BeamlineInfo> G4BeamlineInfoCollection;
 }
 
-#endif
+#endif /* ToyDP_G4BeamlineInfoCollection_hh */

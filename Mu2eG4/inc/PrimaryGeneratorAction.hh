@@ -1,14 +1,14 @@
-#ifndef PrimaryGeneratorAction_h
-#define PrimaryGeneratorAction_h 1
+#ifndef Mu2eG4_PrimaryGeneratorAction_hh
+#define Mu2eG4_PrimaryGeneratorAction_hh
 //
 // Give generated tracks to G4. This implements two algorithms:
 //
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.4 2011/05/17 15:36:00 greenc Exp $
+// $Id: PrimaryGeneratorAction.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -75,4 +75,4 @@ namespace mu2e {
   };
   
 }  // end namespace mu2e
-#endif
+#endif /* Mu2eG4_PrimaryGeneratorAction_hh */

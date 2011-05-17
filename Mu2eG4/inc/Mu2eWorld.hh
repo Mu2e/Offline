@@ -1,11 +1,11 @@
-#ifndef Mu2eWorld_H
-#define Mu2eWorld_H 1
+#ifndef Mu2eG4_Mu2eWorld_hh
+#define Mu2eG4_Mu2eWorld_hh
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.32 2011/03/10 01:46:19 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2011/03/10 01:46:19 $
+// $Id: Mu2eWorld.hh,v 1.33 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -153,4 +153,4 @@ namespace mu2e {
   };
 
 } // end namespace mu2e
-#endif
+#endif /* Mu2eG4_Mu2eWorld_hh */

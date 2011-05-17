@@ -1,13 +1,13 @@
-#ifndef BFMAP_HH
-#define BFMAP_HH
+#ifndef BFieldGeom_BFMap_hh
+#define BFieldGeom_BFMap_hh
 //
 // Class to hold one magnetic field map. The map is defined on a regular cartesian grid.
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.10 2011/05/02 15:51:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/02 15:51:25 $
+// $Id: BFMap.hh,v 1.11 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -172,4 +172,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif
+#endif /* BFieldGeom_BFMap_hh */

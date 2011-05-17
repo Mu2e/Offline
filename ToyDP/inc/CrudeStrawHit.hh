@@ -1,5 +1,5 @@
-#ifndef CrudeStrawHit_h
-#define CrudeStrawHit_h 1
+#ifndef ToyDP_CrudeStrawHit_hh
+#define ToyDP_CrudeStrawHit_hh
 //
 // A persistable class representing a crude hit on a straw.
 // Crude means that represents a hit straight off of the detector
@@ -35,9 +35,9 @@
 //    to be defined.
 // 
 // 
-// $Id: CrudeStrawHit.hh,v 1.8 2011/05/17 15:36:01 greenc Exp $
+// $Id: CrudeStrawHit.hh,v 1.9 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -186,4 +186,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_CrudeStrawHit_hh */

@@ -1,14 +1,14 @@
-#ifndef CALORIMETER_HH
-#define CALORIMETER_HH
+#ifndef CalorimeterGeom_Calorimeter_hh
+#define CalorimeterGeom_Calorimeter_hh
 //
 // Hold all geometry and identifier information about
 // a Calorimeter.  In order to insulate this class from 
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.8 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/29 19:37:58 $
+// $Id: Calorimeter.hh,v 1.9 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -114,4 +114,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* CalorimeterGeom_Calorimeter_hh */

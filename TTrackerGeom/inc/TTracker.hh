@@ -1,13 +1,13 @@
-#ifndef TTRACKER_HH
-#define TTRACKER_HH
+#ifndef TTrackerGeom_TTracker_hh
+#define TTrackerGeom_TTracker_hh
 //
 // Hold all geometry and identifier information about
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.5 2011/01/28 23:51:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/28 23:51:58 $
+// $Id: TTracker.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -203,4 +203,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* TTrackerGeom_TTracker_hh */

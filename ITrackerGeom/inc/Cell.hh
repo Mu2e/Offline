@@ -1,5 +1,5 @@
-#ifndef CELL_HH
-#define CELL_HH
+#ifndef ITrackerGeom_Cell_hh
+#define ITrackerGeom_Cell_hh
 
 #include <deque>
 #include <vector>
@@ -81,4 +81,4 @@ protected:
 
 }  //namespace mu2e
 
-#endif /*CELL_HH*/
+#endif /* ITrackerGeom_Cell_hh */

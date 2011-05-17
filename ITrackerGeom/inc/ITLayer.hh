@@ -1,5 +1,5 @@
-#ifndef ITLAYER_HH
-#define ITLAYER_HH
+#ifndef ITrackerGeom_ITLayer_hh
+#define ITrackerGeom_ITLayer_hh
 
 #include <deque>
 #include <vector>
@@ -107,4 +107,4 @@ protected:
 
 }  //namespace mu2e
 
-#endif /*ITLAYER_HH*/
+#endif /* ITrackerGeom_ITLayer_hh */

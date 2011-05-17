@@ -1,11 +1,11 @@
-#ifndef DECAYINORBIT_HH
-#define DECAYINORBIT_HH
+#ifndef EventGenerator_DecayInOrbitGun_hh
+#define EventGenerator_DecayInOrbitGun_hh
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.13 2011/05/17 15:35:59 greenc Exp $
+// $Id: DecayInOrbitGun.hh,v 1.14 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // 
 
@@ -110,4 +110,4 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_DecayInOrbitGun_hh */

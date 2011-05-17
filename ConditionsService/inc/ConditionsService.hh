@@ -1,13 +1,13 @@
-#ifndef ConditionsService_HH
-#define ConditionsService_HH
+#ifndef ConditionsService_ConditionsService_hh
+#define ConditionsService_ConditionsService_hh
 
 //
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.8 2011/05/17 15:35:59 greenc Exp $
+// $Id: ConditionsService.hh,v 1.9 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -118,4 +118,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ConditionsService_ConditionsService_hh */

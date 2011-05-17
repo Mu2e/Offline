@@ -15,4 +15,4 @@ namespace mu2e {
    typedef std::vector<mu2e::CaloHitMCTruth> CaloHitMCTruthCollection;
 }
 
-#endif
+#endif /* ToyDP_CaloHitMCTruthCollection_hh */

@@ -1,5 +1,5 @@
-#ifndef CONVERSION_HH
-#define CONVERSION_HH
+#ifndef EventGenerator_ConversionGun_hh
+#define EventGenerator_ConversionGun_hh
 
 //
 // Generate an electron with the conversion energy
@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.10 2011/05/17 15:35:59 greenc Exp $
+// $Id: ConversionGun.hh,v 1.11 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 
 // C++ includes
@@ -90,6 +90,6 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_ConversionGun_hh */
 
 

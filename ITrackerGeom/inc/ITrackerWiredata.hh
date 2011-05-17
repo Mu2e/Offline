@@ -1,5 +1,5 @@
-#ifndef ITRACKERWIREDATA_HH
-#define ITRACKERWIREDATA_HH
+#ifndef ITrackerGeom_ITrackerWiredata_hh
+#define ITrackerGeom_ITrackerWiredata_hh
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -47,4 +47,4 @@ class IlcDCHwiredata : public ITrackerWiredata {
     virtual ~IlcDCHwiredata(){}
 };
 
-#endif
+#endif /* ITrackerGeom_ITrackerWiredata_hh */

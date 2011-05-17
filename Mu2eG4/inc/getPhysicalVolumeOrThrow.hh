@@ -1,5 +1,5 @@
-#ifndef getPhysicalVolumeOrThrow_H
-#define getPhysicalVolumeOrThrow_H 1
+#ifndef Mu2eG4_getPhysicalVolumeOrThrow_hh
+#define Mu2eG4_getPhysicalVolumeOrThrow_hh
 //
 // Free function wrapper around:
 //
@@ -7,9 +7,9 @@
 //
 // The wrapper does the job of throwing if the pointer comes back null.
 //
-// $Id: getPhysicalVolumeOrThrow.hh,v 1.1 2010/09/01 18:57:19 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/01 18:57:19 $
+// $Id: getPhysicalVolumeOrThrow.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -23,4 +23,4 @@ namespace mu2e {
   G4VPhysicalVolume* getPhysicalVolumeOrThrow( G4String const& name, bool mustHave=true );
 
 } // end namespace mu2e
-#endif
+#endif /* Mu2eG4_getPhysicalVolumeOrThrow_hh */

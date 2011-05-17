@@ -1,13 +1,13 @@
-#ifndef hep3VectorFromStdVector_HH
-#define hep3VectorFromStdVector_HH
+#ifndef Mu2eUtilities_hep3VectorFromStdVector_hh
+#define Mu2eUtilities_hep3VectorFromStdVector_hh
 
 //
 //  A variety of ways of copying a std::vector into a 
 //  CLHEP::Hep3Vector.
 //
-// $Id: hep3VectorFromStdVector.hh,v 1.3 2010/05/18 20:28:55 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:55 $
+// $Id: hep3VectorFromStdVector.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -45,4 +45,4 @@ namespace mu2e {
   
 
 }
-#endif
+#endif /* Mu2eUtilities_hep3VectorFromStdVector_hh */

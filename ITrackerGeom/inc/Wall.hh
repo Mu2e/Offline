@@ -1,5 +1,5 @@
-#ifndef WALL_HH
-#define WALL_HH
+#ifndef ITrackerGeom_Wall_hh
+#define ITrackerGeom_Wall_hh
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -124,4 +124,4 @@ private:
 
 } //namespace mu2e
 
-#endif /*WALL_HH*/
+#endif /* ITrackerGeom_Wall_hh */

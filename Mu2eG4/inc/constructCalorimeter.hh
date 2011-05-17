@@ -1,11 +1,11 @@
-#ifndef constructCalorimeter_HH
-#define constructCalorimeter_HH
+#ifndef Mu2eG4_constructCalorimeter_hh
+#define Mu2eG4_constructCalorimeter_hh
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.hh,v 1.4 2011/04/25 19:16:49 genser Exp $
-// $Author: genser $
-// $Date: 2011/04/25 19:16:49 $
+// $Id: constructCalorimeter.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -29,4 +29,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_constructCalorimeter_hh */

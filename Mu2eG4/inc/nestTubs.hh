@@ -1,11 +1,11 @@
-#ifndef NESTTUBS_HH
-#define NESTTUBS_HH
+#ifndef Mu2eG4_nestTubs_hh
+#define Mu2eG4_nestTubs_hh
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 // 
-// $Id: nestTubs.hh,v 1.8 2010/12/22 17:37:57 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/22 17:37:57 $
+// $Id: nestTubs.hh,v 1.9 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -160,4 +160,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_nestTubs_hh */

@@ -1,5 +1,5 @@
-#ifndef ConfidenceLevelComputer_h
-#define ConfidenceLevelComputer_h 1
+#ifndef CDFFitting_ConfidenceLevelComputer_hh
+#define CDFFitting_ConfidenceLevelComputer_hh
 //-------------------------------------------------------
 // ConfidenceLevelComputer: A class to compute confidence
 // Levels.  Author:  Joe Boudreau
@@ -27,6 +27,6 @@ private:
 
 #include "CDFFitting/inc/ConfidenceLevelComputer.icc"
 
-#endif
+#endif /* CDFFitting_ConfidenceLevelComputer_hh */
 
 

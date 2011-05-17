@@ -1,11 +1,11 @@
-#ifndef BFieldManager_HH
-#define BFieldManager_HH
+#ifndef BFieldGeom_BFieldManager_hh
+#define BFieldGeom_BFieldManager_hh
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.7 2011/05/02 15:51:25 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/02 15:51:25 $
+// $Id: BFieldManager.hh,v 1.8 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -115,4 +115,4 @@ namespace mu2e {
   }; // end class BFieldManager
 
 } // end namespace mu2e
-#endif
+#endif /* BFieldGeom_BFieldManager_hh */

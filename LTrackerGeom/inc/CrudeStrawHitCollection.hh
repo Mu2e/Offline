@@ -1,5 +1,5 @@
-#ifndef ToyDP_CrudeStrawHitCollection_hh
-#define ToyDP_CrudeStrawHitCollection_hh
+#ifndef LTrackerGeom_CrudeStrawHitCollection_hh
+#define LTrackerGeom_CrudeStrawHitCollection_hh
 
 //
 // A collection of CrudeStrawHits, that holds a reference to the
@@ -7,9 +7,9 @@
 //   - it provides a view to return a hit by StrawIndex.
 //   - it provides a convenience method getStepPointMC().
 //
-// $Id: CrudeStrawHitCollection.hh,v 1.8 2011/05/17 15:36:00 greenc Exp $
+// $Id: CrudeStrawHitCollection.hh,v 1.9 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -104,4 +104,4 @@ namespace mu2e {
   };
 }
 
-#endif
+#endif /* LTrackerGeom_CrudeStrawHitCollection_hh */

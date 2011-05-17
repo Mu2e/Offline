@@ -1,11 +1,11 @@
-#ifndef unknownPDGIdName_HH
-#define unknownPDGIdName_HH
+#ifndef ConditionsService_unknownPDGIdName_hh
+#define ConditionsService_unknownPDGIdName_hh
 //
 // Return a string identifying the name of a particle with an unknown PDGID.
 //
-// $Id: unknownPDGIdName.hh,v 1.1 2011/03/06 00:31:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/06 00:31:43 $
+// $Id: unknownPDGIdName.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -18,4 +18,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ConditionsService_unknownPDGIdName_hh */

@@ -5,9 +5,9 @@
 // Define the persistent data for a collection of 
 // CrudeStrawHit objects.
 //
-// $Id: CrudeStrawHitPData.hh,v 1.1 2009/10/22 15:51:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2009/10/22 15:51:23 $
+// $Id: CrudeStrawHitPData.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -20,4 +20,4 @@ namespace mu2e {
   typedef std::vector<mu2e::CrudeStrawHit> CrudeStrawHitPData;
 }
 
-#endif
+#endif /* ToyDP_CrudeStrawHitPData_hh */

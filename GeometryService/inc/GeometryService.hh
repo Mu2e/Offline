@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.5 2011/05/17 15:36:00 greenc Exp $
+// $Id: GeometryService.hh,v 1.6 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -127,4 +127,4 @@ private:
 
 }
 
-#endif
+#endif /* GeometryService_GeometryService_hh */

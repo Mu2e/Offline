@@ -1,13 +1,13 @@
-#ifndef RootNameTitleHelper_HH
-#define RootNameTitleHelper_HH
+#ifndef GeneralUtilities_RootNameTitleHelper_hh
+#define GeneralUtilities_RootNameTitleHelper_hh
 
 // 
 // Helper class to construct a series of similar
 // names and titles for root objects.
 //
-// $Id: RootNameTitleHelper.hh,v 1.2 2010/05/18 20:28:02 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:02 $
+// $Id: RootNameTitleHelper.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // This class helps to make a series of root objects that 
 // have names that differ only by a trailing integer, such as:
@@ -61,4 +61,4 @@ private:
 
 };
 
-#endif
+#endif /* GeneralUtilities_RootNameTitleHelper_hh */

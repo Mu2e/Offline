@@ -1,5 +1,5 @@
-#ifndef ITRACKERMAKER_HH
-#define ITRACKERMAKER_HH
+#ifndef ITrackerGeom_ITrackerMaker_hh
+#define ITrackerGeom_ITrackerMaker_hh
 
 #include <vector>
 #include <memory>
@@ -92,4 +92,4 @@ private:
 
 }  //namespace mu2e
 
-#endif /*ITRACKERMAKER_HH*/
+#endif /* ITrackerGeom_ITrackerMaker_hh */

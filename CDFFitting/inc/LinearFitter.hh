@@ -1,5 +1,5 @@
-#ifndef LinearFitter_h
-#define LinearFitter_h 1
+#ifndef CDFFitting_LinearFitter_hh
+#define CDFFitting_LinearFitter_hh
 #include <vector>
 #include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -70,7 +70,7 @@ protected:
 
 #include "CDFFitting/inc/LinearFitter.icc"
 
-#endif
+#endif /* CDFFitting_LinearFitter_hh */
 
 
 

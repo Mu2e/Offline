@@ -1,9 +1,9 @@
 #ifndef ToyDP_CaloCrystalHitCollection_hh
 #define ToyDP_CaloCrystalHitCollection_hh
 
-// $Id: CaloCrystalHitCollection.hh,v 1.1 2010/10/28 20:43:58 genser Exp $
-// $Author: genser $
-// $Date: 2010/10/28 20:43:58 $
+// $Id: CaloCrystalHitCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 
 #include <vector>
 
@@ -13,4 +13,4 @@ namespace mu2e {
    typedef std::vector<mu2e::CaloCrystalHit> CaloCrystalHitCollection;
 }
 
-#endif
+#endif /* ToyDP_CaloCrystalHitCollection_hh */

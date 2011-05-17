@@ -1,13 +1,13 @@
-#ifndef Mu2eUtilities_resolveTransients_HH
-#define Mu2eUtilities_resolveTransients_HH
+#ifndef Mu2eUtilities_resolveTransients_hh
+#define Mu2eUtilities_resolveTransients_hh
 
 //
 // A utility function to compute values for all of the transients
 // in members of a collection.
 //
-// $Id: resolveTransients.hh,v 1.4 2011/05/17 15:36:01 greenc Exp $
+// $Id: resolveTransients.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -28,4 +28,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eUtilities_resolveTransients_hh */

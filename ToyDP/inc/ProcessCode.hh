@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.3 2011/03/08 14:18:01 ayarritu Exp $
-// $Author: ayarritu $ 
-// $Date: 2011/03/08 14:18:01 $
+// $Id: ProcessCode.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -191,4 +191,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ToyDP_ProcessCode_hh */

@@ -1,11 +1,11 @@
-#ifndef UserTrackInformation_H
-#define UserTrackInformation_H
+#ifndef Mu2eG4_UserTrackInformation_hh
+#define Mu2eG4_UserTrackInformation_hh
 //
 // Mu2e specific information about one G4 track.
 //
-// $Id: UserTrackInformation.hh,v 1.2 2011/01/04 22:07:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/04 22:07:20 $
+// $Id: UserTrackInformation.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -46,4 +46,4 @@ namespace mu2e{
 
 } // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_UserTrackInformation_hh */

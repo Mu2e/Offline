@@ -4,9 +4,9 @@
 //
 // Define a type for a collection of StrawHit objects.
 //
-// $Id: StrawHitCollection.hh,v 1.1 2010/07/01 13:34:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/07/01 13:34:57 $
+// $Id: StrawHitCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -19,4 +19,4 @@ namespace mu2e {
    typedef std::vector<mu2e::StrawHit> StrawHitCollection;
 }
 
-#endif
+#endif /* ToyDP_StrawHitCollection_hh */

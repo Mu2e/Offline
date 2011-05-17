@@ -1,5 +1,5 @@
-#ifndef StepPointG4_h
-#define StepPointG4_h 1
+#ifndef Mu2eG4_StepPointG4_hh
+#define Mu2eG4_StepPointG4_hh
 //
 // A class to hold hits created by G4 in most types of sensitive detectors.
 // A different class may be needed for calorimeter objects.  This wil
@@ -7,9 +7,9 @@
 //
 // For details, see: ToyDP/inc/StepPointMC.hh .
 // 
-// $Id: StepPointG4.hh,v 1.4 2010/11/09 20:25:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/09 20:25:41 $
+// $Id: StepPointG4.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -97,4 +97,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eG4_StepPointG4_hh */

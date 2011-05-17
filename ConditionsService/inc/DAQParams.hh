@@ -1,11 +1,11 @@
-#ifndef DAQParams_H
-#define DAQParams_H
+#ifndef ConditionsService_DAQParams_hh
+#define ConditionsService_DAQParams_hh
 //
 // Parameters of the DAQ system.
 //
-// $Id: DAQParams.hh,v 1.2 2010/05/18 20:28:01 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:01 $
+// $Id: DAQParams.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -49,4 +49,4 @@ namespace mu2e
   }
 }
 
-#endif
+#endif /* ConditionsService_DAQParams_hh */

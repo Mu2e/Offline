@@ -4,9 +4,9 @@
 //
 // Persistable information about a G4 Physical Volume.
 //
-// $Id: PhysicalVolumeInfo.hh,v 1.2 2011/03/15 13:21:45 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/15 13:21:45 $
+// $Id: PhysicalVolumeInfo.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -54,4 +54,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ToyDP_PhysicalVolumeInfo_hh */

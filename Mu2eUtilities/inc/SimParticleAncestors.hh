@@ -1,11 +1,11 @@
-#ifndef Mu2eUtilities_SimParticleAncestors_HH
-#define Mu2eUtilities_SimParticleAncestors_HH
+#ifndef Mu2eUtilities_SimParticleAncestors_hh
+#define Mu2eUtilities_SimParticleAncestors_hh
 //
 // Start with a SimParticle and trace its ancestry back to a generated particle.
 //
-// $Id: SimParticleAncestors.hh,v 1.1 2010/11/30 23:50:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/30 23:50:22 $
+// $Id: SimParticleAncestors.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -67,4 +67,4 @@ namespace mu2e{
 } // end namespace mu2e
 
 
-#endif
+#endif /* Mu2eUtilities_SimParticleAncestors_hh */

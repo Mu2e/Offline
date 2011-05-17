@@ -1,11 +1,11 @@
-#ifndef BFieldManagerMaker_HH
-#define BFieldManagerMaker_HH
+#ifndef BFieldGeom_BFieldManagerMaker_hh
+#define BFieldGeom_BFieldManagerMaker_hh
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.3 2011/02/22 21:07:31 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/02/22 21:07:31 $
+// $Id: BFieldManagerMaker.hh,v 1.4 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 
 // Includes from C++
@@ -72,4 +72,4 @@ namespace mu2e {
   }; // end class BFieldManagerMaker
 
 } // end namespace mu2e
-#endif
+#endif /* BFieldGeom_BFieldManagerMaker_hh */

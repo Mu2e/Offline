@@ -1,5 +1,5 @@
-#ifndef Transport_h
-#define Transport_h 1
+#ifndef CDFFitting_Transport_hh
+#define CDFFitting_Transport_hh
 #include "CDFFitting/inc/FitAction.hh"
 #include "CLHEP/Matrix/Matrix.h"
 
@@ -32,6 +32,6 @@ public:
 #include "CDFFitting/inc/Transport.icc"
 
 
-#endif
+#endif /* CDFFitting_Transport_hh */
 
 

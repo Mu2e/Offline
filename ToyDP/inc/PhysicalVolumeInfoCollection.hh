@@ -4,9 +4,9 @@
 //
 // Define a type for a collection of PhysicalVolumeInfo objects.
 //
-// $Id: PhysicalVolumeInfoCollection.hh,v 1.1 2010/03/23 20:34:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/23 20:34:30 $
+// $Id: PhysicalVolumeInfoCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -19,4 +19,4 @@ namespace mu2e {
   typedef std::vector<PhysicalVolumeInfo> PhysicalVolumeInfoCollection;
 }
 
-#endif
+#endif /* ToyDP_PhysicalVolumeInfoCollection_hh */

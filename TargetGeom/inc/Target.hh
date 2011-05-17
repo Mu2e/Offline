@@ -1,13 +1,13 @@
-#ifndef ExampleExtrasTarget_HH
-#define ExampleExtrasTarget_HH
+#ifndef TargetGeom_Target_hh
+#define TargetGeom_Target_hh
 
 //
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: Target.hh,v 1.2 2010/02/15 16:56:50 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/02/15 16:56:50 $
+// $Id: Target.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -64,4 +64,4 @@ namespace mu2e {
 };
 
 }
-#endif
+#endif /* TargetGeom_Target_hh */

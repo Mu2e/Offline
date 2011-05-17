@@ -1,9 +1,9 @@
-#ifndef CaloCrystalHit_H
-#define CaloCrystalHit_H
+#ifndef ToyDP_CaloCrystalHit_hh
+#define ToyDP_CaloCrystalHit_hh
 
-// $Id: CaloCrystalHit.hh,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Id: CaloCrystalHit.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author KLG
 
@@ -82,4 +82,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_CaloCrystalHit_hh */

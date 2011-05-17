@@ -1,12 +1,12 @@
-#ifndef RM48_HH
-#define RM48_HH
+#ifndef Mu2eUtilities_rm48_hh
+#define Mu2eUtilities_rm48_hh
 
 //
 //  Adapter to make CLHEP::RandFlat look like the cernlib rn48.
 //
-//  $Id: rm48.hh,v 1.2 2010/05/17 21:47:32 genser Exp $
-//  $Author: genser $
-//  $Date: 2010/05/17 21:47:32 $
+//  $Id: rm48.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/05/17 15:41:36 $
 //
 //  Original author Rob Kutschke.
 //
@@ -36,4 +36,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eUtilities_rm48_hh */

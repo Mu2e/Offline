@@ -1,11 +1,11 @@
-#ifndef DetectorConstruction_h
-#define DetectorConstruction_h 1
+#ifndef Mu2eG4_DetectorConstruction_hh
+#define Mu2eG4_DetectorConstruction_hh
 //
 // Construct the Mu2e detector with the Mu2e G4 world.
 //
-// $Id: DetectorConstruction.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: DetectorConstruction.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -65,4 +65,4 @@ namespace mu2e {
   };
 
 }  // end namespace mu2e
-#endif
+#endif /* Mu2eG4_DetectorConstruction_hh */

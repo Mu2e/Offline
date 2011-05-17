@@ -1,5 +1,5 @@
-#ifndef G4Mu2eReflection_h
-#define G4Mu2eReflection_h 1
+#ifndef Mu2eReflection_Mu2eReflection_hh
+#define Mu2eReflection_Mu2eReflection_hh
 
 //
 // derived class that defines a reflection process in G4; reverses 
@@ -90,4 +90,4 @@ namespace mu2e{
   
 
 } //end namespace mu2e
-#endif
+#endif /* Mu2eReflection_Mu2eReflection_hh */

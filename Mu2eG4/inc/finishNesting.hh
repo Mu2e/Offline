@@ -1,11 +1,11 @@
-#ifndef FINISHNESTING_HH
-#define FINISHNESTING_HH
+#ifndef Mu2eG4_finishNesting_hh
+#define Mu2eG4_finishNesting_hh
 //
 // Free function to be used by the nest... functions
 // 
-// $Id: finishNesting.hh,v 1.2 2010/12/06 22:30:30 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/06 22:30:30 $
+// $Id: finishNesting.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author KLG
 //
@@ -41,4 +41,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_finishNesting_hh */

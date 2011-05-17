@@ -1,10 +1,10 @@
-#ifndef TrackTool_h
-#define TrackTool_h 1
+#ifndef Mu2eUtilities_TrackTool_hh
+#define Mu2eUtilities_TrackTool_hh
 //
 //
-// $Id: TrackTool.hh,v 1.1 2011/05/17 00:28:23 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 00:28:23 $
+// $Id: TrackTool.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -101,4 +101,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_TrackTool_hh */

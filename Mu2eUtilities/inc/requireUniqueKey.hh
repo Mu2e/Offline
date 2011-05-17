@@ -1,13 +1,13 @@
-#ifndef REQUIREUNIQUEKEY_HH
-#define REQUIREUNIQUEKEY_HH
+#ifndef Mu2eUtilities_requireUniqueKey_hh
+#define Mu2eUtilities_requireUniqueKey_hh
 //
 // Given a list of keys and a SimpleConfig object, count how
 // many of the keys have a value of true. Throw if more than 
 // one is true.  Optionally, throw if none are true.
 //
-// $Id: requireUniqueKey.hh,v 1.2 2010/05/18 20:28:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:56 $
+// $Id: requireUniqueKey.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -25,4 +25,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_requireUniqueKey_hh */

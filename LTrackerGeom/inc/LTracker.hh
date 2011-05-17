@@ -1,14 +1,14 @@
-#ifndef LTRACKER_HH
-#define LTRACKER_HH
+#ifndef LTrackerGeom_LTracker_hh
+#define LTrackerGeom_LTracker_hh
 //
 // Hold all geometry and identifier information about
 // an LTracker.  In order to insulate this class from 
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.8 2011/01/28 23:51:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/28 23:51:58 $
+// $Id: LTracker.hh,v 1.9 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -214,4 +214,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* LTrackerGeom_LTracker_hh */

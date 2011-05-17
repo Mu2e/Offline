@@ -1,12 +1,12 @@
-#ifndef getMaterial_HH
-#define getMaterial_HH
+#ifndef Mu2eG4_MaterialFinder_hh
+#define Mu2eG4_MaterialFinder_hh
 //
 // Manage lookup of G4Material from a name found in a geometry file.
 // Throws if operation cannot be successfully completed.
 //
-// $Id: MaterialFinder.hh,v 1.2 2010/04/16 14:46:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/16 14:46:05 $
+// $Id: MaterialFinder.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 
@@ -40,7 +40,7 @@ namespace mu2e {
   
 }
 
-#endif
+#endif /* Mu2eG4_MaterialFinder_hh */
 
 
 

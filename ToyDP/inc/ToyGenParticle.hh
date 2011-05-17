@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: ToyGenParticle.hh,v 1.5 2010/12/01 23:25:45 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/12/01 23:25:45 $
+// $Id: ToyGenParticle.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -89,4 +89,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ToyDP_ToyGenParticle_hh */

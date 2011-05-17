@@ -1,5 +1,5 @@
-#ifndef CELLGEOMETRYHANDLE_V2_HH
-#define CELLGEOMETRYHANDLE_V2_HH
+#ifndef ITrackerGeom_CellGeometryHandle_v2_hh
+#define ITrackerGeom_CellGeometryHandle_v2_hh
 
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
@@ -26,4 +26,4 @@ protected:
 
 }
 
-#endif /* CELLGEOMETRYHANDLE_V2_HH */
+#endif /* ITrackerGeom_CellGeometryHandle_v2_hh */

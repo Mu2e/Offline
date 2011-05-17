@@ -1,12 +1,12 @@
-#ifndef TARGETMAKER_HH
-#define TARGETMAKER_HH
+#ifndef TargetGeom_TargetMaker_hh
+#define TargetGeom_TargetMaker_hh
 //
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.hh,v 1.1 2010/02/15 16:56:50 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/02/15 16:56:50 $
+// $Id: TargetMaker.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Peter Shanahan
 //
@@ -71,4 +71,4 @@ private:
 
 }  //namespace mu2e
 
-#endif //TARGETMAKER_HH
+#endif /* TargetGeom_TargetMaker_hh */

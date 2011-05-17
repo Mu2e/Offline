@@ -1,13 +1,13 @@
-#ifndef DPIndex_HH
-#define DPIndex_HH
+#ifndef ToyDP_DPIndex_hh
+#define ToyDP_DPIndex_hh
 
 //
 // A persistable index into another data product.
 //
 //
-// $Id: DPIndex.hh,v 1.6 2011/05/17 15:36:01 greenc Exp $
+// $Id: DPIndex.hh,v 1.7 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/17 15:41:36 $
 //
 
 // Framework includes.
@@ -66,4 +66,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* ToyDP_DPIndex_hh */

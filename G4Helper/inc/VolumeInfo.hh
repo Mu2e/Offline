@@ -1,14 +1,14 @@
-#ifndef VOLUMEINFO_HH
-#define VOLUMEINFO_HH
+#ifndef G4Helper_VolumeInfo_hh
+#define G4Helper_VolumeInfo_hh
 //
 // Information about a physical volume.  Used by Mu2eWorld and its utility routines.
 // The center information is not fully general: it does not know about rotations
 // and is useful only for the top few levels of the detector.
 // 
 // 
-// $Id: VolumeInfo.hh,v 1.2 2011/01/05 20:54:34 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/01/05 20:54:34 $
+// $Id: VolumeInfo.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -73,4 +73,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* G4Helper_VolumeInfo_hh */

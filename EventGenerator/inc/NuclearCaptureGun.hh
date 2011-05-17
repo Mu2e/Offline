@@ -1,14 +1,14 @@
-#ifndef NUCLEARCAPTUREGUN_HH
-#define NUCLEARCAPTUREGUN_HH
+#ifndef EventGenerator_NuclearCaptureGun_hh
+#define EventGenerator_NuclearCaptureGun_hh
 
 //
 // Simulate the complete process of the nuclear capture of muons by aluminum atoms
 // which results in protons, neutrons and photons
 // 
 //
-// $Id: NuclearCaptureGun.hh,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Id: NuclearCaptureGun.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Gianni Onorato
 
@@ -128,4 +128,4 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_NuclearCaptureGun_hh */

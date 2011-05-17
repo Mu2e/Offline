@@ -1,11 +1,11 @@
-#ifndef growCluster_hh
-#define growCluster_hh
+#ifndef HitMakers_growCluster_hh
+#define HitMakers_growCluster_hh
 //
 // Free function to grow a cluster.
 //
-// $Id: growCluster.hh,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Id: growCluster.hh,v 1.4 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 //
 // Consider all straws in the cluster in the range,
@@ -51,4 +51,4 @@ namespace mu2e {
                     );
 }
 
-#endif
+#endif /* HitMakers_growCluster_hh */

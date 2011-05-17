@@ -1,11 +1,11 @@
-#ifndef PARTICLEGUN_HH
-#define PARTICLEGUN_HH
+#ifndef EventGenerator_ParticleGun_hh
+#define EventGenerator_ParticleGun_hh
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.5 2011/05/17 15:35:59 greenc Exp $
+// $Id: ParticleGun.hh,v 1.6 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -105,4 +105,4 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_ParticleGun_hh */

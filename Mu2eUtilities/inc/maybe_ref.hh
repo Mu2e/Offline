@@ -1,11 +1,11 @@
-#ifndef MAYBE_REF_HH
-#define MAYBE_REF_HH
+#ifndef Mu2eUtilities_maybe_ref_hh
+#define Mu2eUtilities_maybe_ref_hh
 
 // ======================================================================
 //
-// $Id: maybe_ref.hh,v 1.2 2011/03/10 00:00:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/10 00:00:57 $
+// $Id: maybe_ref.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // ======================================================================
 //
@@ -92,4 +92,4 @@ inline void
 
 // ======================================================================
 
-#endif
+#endif /* Mu2eUtilities_maybe_ref_hh */

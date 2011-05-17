@@ -1,5 +1,5 @@
-#ifndef MEASUREMENT_HH_
-#define MEASUREMENT_HH_
+#ifndef CDFFitting_Measurement_hh
+#define CDFFitting_Measurement_hh
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -77,4 +77,4 @@ public:
 };
 #include "CDFFitting/inc/Measurement.icc"
 
-#endif //MEASUREMENT_HH_
+#endif /* CDFFitting_Measurement_hh */

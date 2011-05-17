@@ -1,13 +1,13 @@
-#ifndef Container3D_hh
-#define Container3D_hh
+#ifndef BFieldGeom_Container3D_hh
+#define BFieldGeom_Container3D_hh
 
 //
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
-// $Id: Container3D.hh,v 1.7 2011/03/08 00:40:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/08 00:40:23 $
+// $Id: Container3D.hh,v 1.8 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 
 #include <vector>
@@ -260,4 +260,4 @@ namespace mu2e {
 }
 
 
-#endif
+#endif /* BFieldGeom_Container3D_hh */

@@ -1,11 +1,11 @@
-#ifndef CRSScintillatorBar_HH
-#define CRSScintillatorBar_HH
+#ifndef CosmicRayShieldGeom_CRSScintillatorBar_hh
+#define CosmicRayShieldGeom_CRSScintillatorBar_hh
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.2 2011/03/17 16:16:52 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/17 16:16:52 $
+// $Id: CRSScintillatorBar.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -130,4 +130,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif
+#endif /* CosmicRayShieldGeom_CRSScintillatorBar_hh */

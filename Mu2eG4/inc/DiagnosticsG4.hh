@@ -1,12 +1,12 @@
-#ifndef DiagnosticsG4_HH
-#define DiagnosticsG4_HH
+#ifndef Mu2eG4_DiagnosticsG4_hh
+#define Mu2eG4_DiagnosticsG4_hh
 //
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Id: DiagnosticsG4.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -70,4 +70,4 @@ namespace mu2e {
   
 } // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_DiagnosticsG4_hh */

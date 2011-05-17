@@ -1,11 +1,11 @@
-#ifndef Mu2e_ParticleDataTable_hh
-#define Mu2e_ParticleDataTable_hh
+#ifndef ConditionsService_ParticleDataTable_hh
+#define ConditionsService_ParticleDataTable_hh
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.hh,v 1.6 2011/03/06 00:36:32 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2011/03/06 00:36:32 $
+//   $Id: ParticleDataTable.hh,v 1.7 2011/05/17 15:41:35 greenc Exp $
+//   $Author: greenc $
+//   $Date: 2011/05/17 15:41:35 $
 //
 //  Original author Rob Kutschke
 //
@@ -139,4 +139,4 @@ namespace mu2e {
 
 } //end namespace mu2e
 
-#endif
+#endif /* ConditionsService_ParticleDataTable_hh */

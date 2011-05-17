@@ -1,12 +1,12 @@
-#ifndef DIOSHANKERWANATABE_HH
-#define DIOSHANKERWANATABE_HH
+#ifndef Mu2eUtilities_DIOShankerWanatabe_hh
+#define Mu2eUtilities_DIOShankerWanatabe_hh
 //
 // Generate a momentum for the DIO electrons, using Wanatabe
 // data, merged to Shanker's formula near the endpoint
 //
-// $Id: DIOShankerWanatabe.hh,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Id: DIOShankerWanatabe.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // 
 
@@ -53,5 +53,5 @@ namespace mu2e {
 
 } // end of namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_DIOShankerWanatabe_hh */
 

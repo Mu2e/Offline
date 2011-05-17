@@ -1,5 +1,5 @@
-#ifndef LineSegmentPCA_h
-#define LineSegmentPCA_h 1
+#ifndef Mu2eUtilities_LineSegmentPCA_hh
+#define Mu2eUtilities_LineSegmentPCA_hh
 //========================================================================
 // This class represents a LineSegment defined by two points (Hep2Vectors) 
 // representing the two ends of the line segment. 
@@ -26,4 +26,4 @@ namespace mu2e {
   };
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_LineSegmentPCA_hh */

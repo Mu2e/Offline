@@ -1,11 +1,11 @@
-#ifndef StepLimiterPhysConstructor_HH
-#define StepLimiterPhysConstructor_HH
+#ifndef Mu2eG4_StepLimiterPhysConstructor_hh
+#define Mu2eG4_StepLimiterPhysConstructor_hh
 //
 // A Physics constructor that adds step limiters to some particles.
 //
-// $Id: StepLimiterPhysConstructor.hh,v 1.1 2010/04/11 15:15:12 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/11 15:15:12 $
+// $Id: StepLimiterPhysConstructor.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -26,4 +26,4 @@ namespace mu2e {
   
 } // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_StepLimiterPhysConstructor_hh */

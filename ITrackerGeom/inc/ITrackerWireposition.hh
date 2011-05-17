@@ -1,5 +1,5 @@
-#ifndef ITRACKERWIREPOSITION_HH
-#define ITRACKERWIREPOSITION_HH
+#ifndef ITrackerGeom_ITrackerWireposition_hh
+#define ITrackerGeom_ITrackerWireposition_hh
 
 #include "TObjArray.h"
 #include "TFile.h"
@@ -71,4 +71,4 @@ class ITrackerWireposition {
  
 }  //namespace mu2e
 
-#endif /*ITRACKERWIREPOSITION_HH*/
+#endif /* ITrackerGeom_ITrackerWireposition_hh */

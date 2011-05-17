@@ -1,11 +1,11 @@
-#ifndef constructStoppingTarget_HH
-#define constructStoppingTarget_HH
+#ifndef Mu2eG4_constructStoppingTarget_hh
+#define Mu2eG4_constructStoppingTarget_hh
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.hh,v 1.3 2010/12/22 17:37:57 genser Exp $
-// $Author: genser $
-// $Date: 2010/12/22 17:37:57 $
+// $Id: constructStoppingTarget.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Peter Shanahan
 //
@@ -26,4 +26,4 @@ namespace mu2e{
 
 }  // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_constructStoppingTarget_hh */

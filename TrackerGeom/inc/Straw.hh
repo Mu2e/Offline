@@ -1,11 +1,11 @@
-#ifndef STRAW_HH
-#define STRAW_HH
+#ifndef TrackerGeom_Straw_hh
+#define TrackerGeom_Straw_hh
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.7 2011/03/09 16:23:26 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/09 16:23:26 $
+// $Id: Straw.hh,v 1.8 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -180,4 +180,4 @@ namespace mu2e {
   };
 
 }  //namespace mu2e
-#endif
+#endif /* TrackerGeom_Straw_hh */

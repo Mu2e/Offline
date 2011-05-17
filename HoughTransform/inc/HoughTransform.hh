@@ -1,9 +1,9 @@
-#ifndef HOUGHTRANSFORM_HH
-#define HOUGHTRANSFORM_HH
+#ifndef HoughTransform_HoughTransform_hh
+#define HoughTransform_HoughTransform_hh
 //
-// $Id: HoughTransform.hh,v 1.10 2011/05/17 15:36:00 greenc Exp $
+// $Id: HoughTransform.hh,v 1.11 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.  
@@ -155,4 +155,4 @@ namespace mu2e{
   } //namespace HoughTransform
 }   //namespace mu2e
 
-#endif
+#endif /* HoughTransform_HoughTransform_hh */

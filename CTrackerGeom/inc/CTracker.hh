@@ -1,14 +1,14 @@
-#ifndef ExampleExtrasCTracker_HH
-#define ExampleExtrasCTracker_HH
+#ifndef CTrackerGeom_CTracker_hh
+#define CTrackerGeom_CTracker_hh
 
 //
 // Hold information about the toy tracker, the CTracker.
 // This is just a set of infinitely thin concentric circles.
 //
 //
-// $Id: CTracker.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: CTracker.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -39,4 +39,4 @@ class SimpleConfig;
 
 }
 
-#endif
+#endif /* CTrackerGeom_CTracker_hh */

@@ -1,13 +1,13 @@
-#ifndef Mu2eUtilities_SimParticleInfo_HH
-#define Mu2eUtilities_SimParticleInfo_HH
+#ifndef Mu2eUtilities_SimParticleInfo_hh
+#define Mu2eUtilities_SimParticleInfo_hh
 //
 // Information about one SimParticle and all StrawHits that are
 // associated with hit.  This is a building block of the
 // the class SimParticlesWithHits.
 //
-// $Id: SimParticleInfo.hh,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Id: SimParticleInfo.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke.
 //
@@ -84,4 +84,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eUtilities_SimParticleInfo_hh */

@@ -1,13 +1,13 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.6 2011/05/17 15:36:00 greenc Exp $
+// $Id: ConvElecUtilities.hh,v 1.7 2011/05/17 15:41:36 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Gianni Onorato
 //
 
-#ifndef CONVELECUTILITIES_HH
-#define CONVELECUTILITIES_HH
+#ifndef Mu2eG4_ConvElecUtilities_hh
+#define Mu2eG4_ConvElecUtilities_hh
 
 // C++ includes
 #include <ostream>
@@ -100,4 +100,4 @@ namespace mu2e {
   }; //end of class ConvElecUtilities
 
 } // end namespace mu2e
-#endif
+#endif /* Mu2eG4_ConvElecUtilities_hh */

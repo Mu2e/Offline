@@ -1,5 +1,5 @@
-#ifndef Constraint_h
-#define Constraint_h 1
+#ifndef CDFFitting_Constraint_hh
+#define CDFFitting_Constraint_hh
 #include "CDFFitting/inc/FitAction.hh"
 
 
@@ -38,6 +38,6 @@ public:
 
 
 
-#endif
+#endif /* CDFFitting_Constraint_hh */
 
 

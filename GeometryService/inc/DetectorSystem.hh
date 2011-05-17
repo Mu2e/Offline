@@ -1,12 +1,12 @@
-#ifndef DetectorSystem_HH
-#define DetectorSystem_HH
+#ifndef GeometryService_DetectorSystem_hh
+#define GeometryService_DetectorSystem_hh
 //
 // Transformations between the Mu2e coordinate system and the detector coordinate system.
 // This is a dumb data class that does not know how to build itself.
 //
-// $Id: DetectorSystem.hh,v 1.2 2011/03/17 21:34:32 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/17 21:34:32 $
+// $Id: DetectorSystem.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -49,4 +49,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* GeometryService_DetectorSystem_hh */

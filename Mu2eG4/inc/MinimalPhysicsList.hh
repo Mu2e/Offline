@@ -1,12 +1,12 @@
-#ifndef MinimalPhysicsList_h
-#define MinimalPhysicsList_h 1
+#ifndef Mu2eG4_MinimalPhysicsList_hh
+#define Mu2eG4_MinimalPhysicsList_hh
 //
 // Define a minimal physics list for G4, just transportation.
 // Used for debugging geometry.
 //
-// $Id: MinimalPhysicsList.hh,v 1.1 2010/02/01 00:16:39 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/02/01 00:16:39 $
+// $Id: MinimalPhysicsList.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,6 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_MinimalPhysicsList_hh */
 
  

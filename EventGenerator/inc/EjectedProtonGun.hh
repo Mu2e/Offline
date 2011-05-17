@@ -1,14 +1,14 @@
-#ifndef EJECTEDPROTONGUN_HH
-#define EJECTEDPROTONGUN_HH
+#ifndef EventGenerator_EjectedProtonGun_hh
+#define EventGenerator_EjectedProtonGun_hh
 
 //
 // Simulate the protons that come from the stopping target when muons capture
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.hh,v 1.9 2011/05/17 15:35:59 greenc Exp $
+// $Id: EjectedProtonGun.hh,v 1.10 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 //
 
@@ -99,4 +99,4 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_EjectedProtonGun_hh */

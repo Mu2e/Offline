@@ -1,12 +1,12 @@
-#ifndef CRSSteelShield_hh
-#define CRSSteelShield_hh
+#ifndef CosmicRayShieldGeom_CRSSteelShield_hh
+#define CosmicRayShieldGeom_CRSSteelShield_hh
 
 //
 // Representation of CRSSteelShield aka the flux return yoke
 //
-// $Id: CRSSteelShield.hh,v 1.1 2011/03/09 19:24:29 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/09 19:24:29 $
+// $Id: CRSSteelShield.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG
 //
@@ -88,4 +88,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* CosmicRayShieldGeom_CRSSteelShield_hh */

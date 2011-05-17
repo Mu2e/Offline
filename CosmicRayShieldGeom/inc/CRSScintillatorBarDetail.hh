@@ -1,12 +1,12 @@
-#ifndef CRSScintillatorBarDetail_HH
-#define CRSScintillatorBarDetail_HH
+#ifndef CosmicRayShieldGeom_CRSScintillatorBarDetail_hh
+#define CosmicRayShieldGeom_CRSScintillatorBarDetail_hh
 
 //
 // Representation of common properties of the Scintillator Bars etc...
 //
-// $Id: CRSScintillatorBarDetail.hh,v 1.1 2011/03/09 19:21:53 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:21:53 $
+// $Id: CRSScintillatorBarDetail.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's StrawDetail
 //
@@ -67,4 +67,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif
+#endif /* CosmicRayShieldGeom_CRSScintillatorBarDetail_hh */

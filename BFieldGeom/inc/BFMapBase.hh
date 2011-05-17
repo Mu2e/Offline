@@ -1,11 +1,11 @@
-#ifndef BFMAPBASE_HH
-#define BFMAPBASE_HH
+#ifndef BFieldGeom_BFMapBase_hh
+#define BFieldGeom_BFMapBase_hh
 //
 // Interface to the magnetic field maps. Used by BFMap and BFMapSet.
 //
-// $Id: BFMapBase.hh,v 1.4 2011/03/08 00:40:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/08 00:40:23 $
+// $Id: BFMapBase.hh,v 1.5 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 
 #include <string>
@@ -39,4 +39,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif
+#endif /* BFieldGeom_BFMapBase_hh */

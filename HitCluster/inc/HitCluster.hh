@@ -1,10 +1,10 @@
-#ifndef HITCLUSTER_HH
-#define HITCLUSTER_HH
+#ifndef HitCluster_HitCluster_hh
+#define HitCluster_HitCluster_hh
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.hh,v 1.5 2011/05/17 15:36:00 greenc Exp $
+// $Id: HitCluster.hh,v 1.6 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Date: 2011/05/17 15:41:35 $
 //
 //original author R. Bernstein
 //
@@ -153,4 +153,4 @@ namespace mu2e{
   } //namespace HitCluster
 }   //namespace mu2e
 
-#endif
+#endif /* HitCluster_HitCluster_hh */

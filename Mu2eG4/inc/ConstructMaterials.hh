@@ -1,11 +1,11 @@
-#ifndef ConstructMaterials_H
-#define ConstructMaterials_H 1
+#ifndef Mu2eG4_ConstructMaterials_hh
+#define Mu2eG4_ConstructMaterials_hh
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.hh,v 1.2 2011/01/28 23:51:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/28 23:51:58 $
+// $Id: ConstructMaterials.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -74,5 +74,5 @@ namespace mu2e {
   };
 
 } // end namespace mu2e
-#endif
+#endif /* Mu2eG4_ConstructMaterials_hh */
 

@@ -1,5 +1,5 @@
-#ifndef PHYSICSPARAMS_H
-#define PHYSICSPARAMS_H
+#ifndef ConditionsService_PhysicsParams_hh
+#define ConditionsService_PhysicsParams_hh
 //
 // Some physical parameters.
 //
@@ -45,4 +45,4 @@ namespace mu2e
 
 }
 
-#endif
+#endif /* ConditionsService_PhysicsParams_hh */

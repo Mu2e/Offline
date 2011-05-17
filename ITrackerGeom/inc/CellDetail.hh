@@ -1,5 +1,5 @@
-#ifndef CELLDETAIL_HH
-#define CELLDETAIL_HH
+#ifndef ITrackerGeom_CellDetail_hh
+#define ITrackerGeom_CellDetail_hh
 
 #include <vector>
 #include <string>
@@ -59,4 +59,4 @@ private:
 
 }  //namespace mu2e
 
-#endif /*CELLDETAIL_HH*/
+#endif /* ITrackerGeom_CellDetail_hh */

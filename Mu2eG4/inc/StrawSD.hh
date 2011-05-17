@@ -1,11 +1,11 @@
-#ifndef StrawSD_h
-#define StrawSD_h 1
+#ifndef Mu2eG4_StrawSD_hh
+#define Mu2eG4_StrawSD_hh
 //
 // Define a sensitive detector for Straws.
 // 
-// $Id: StrawSD.hh,v 1.8 2010/12/21 21:47:51 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/21 21:47:51 $
+// $Id: StrawSD.hh,v 1.9 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -58,4 +58,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eG4_StrawSD_hh */

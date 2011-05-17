@@ -1,11 +1,11 @@
-#ifndef constructMBS_HH
-#define constructMBS_HH
+#ifndef Mu2eG4_constructMBS_hh
+#define Mu2eG4_constructMBS_hh
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.hh,v 1.1 2011/04/25 19:17:07 genser Exp $
-// $Author: genser $
-// $Date: 2011/04/25 19:17:07 $
+// $Id: constructMBS.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author KLG
 //
@@ -18,4 +18,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* Mu2eG4_constructMBS_hh */

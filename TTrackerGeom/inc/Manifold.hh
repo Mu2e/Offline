@@ -1,5 +1,5 @@
-#ifndef TTRACKER_MANIFOLD_HH
-#define TTRACKER_MANIFOLD_HH
+#ifndef TTrackerGeom_Manifold_hh
+#define TTrackerGeom_Manifold_hh
 
 #include <vector>
 #include <string>
@@ -50,4 +50,4 @@ namespace mu2e {
   
 } // end namespace mu2e
 
-#endif
+#endif /* TTrackerGeom_Manifold_hh */

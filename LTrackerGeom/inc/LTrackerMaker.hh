@@ -1,12 +1,12 @@
-#ifndef LTRACKERMAKER_HH
-#define LTRACKERMAKER_HH
+#ifndef LTrackerGeom_LTrackerMaker_hh
+#define LTrackerGeom_LTrackerMaker_hh
 //
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.hh,v 1.5 2010/05/18 20:28:33 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:33 $
+// $Id: LTrackerMaker.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -131,4 +131,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif
+#endif /* LTrackerGeom_LTrackerMaker_hh */

@@ -1,11 +1,11 @@
-#ifndef StrawHit_H
-#define StrawHit_H
+#ifndef ToyDP_StrawHit_hh
+#define ToyDP_StrawHit_hh
 // 
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.hh,v 1.3 2011/01/28 21:36:36 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/01/28 21:36:36 $
+// $Id: StrawHit.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -79,4 +79,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* ToyDP_StrawHit_hh */

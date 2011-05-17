@@ -1,12 +1,12 @@
-#ifndef CRSScintillatorShieldId_HH
-#define CRSScintillatorShieldId_HH
+#ifndef CosmicRayShieldGeom_CRSScintillatorShieldId_hh
+#define CosmicRayShieldGeom_CRSScintillatorShieldId_hh
 
 // Identifier of one CRSScintillatorShield in CosmicRayShield
 // If set to -1, then the shield is not defined.
 //
-// $Id: CRSScintillatorShieldId.hh,v 1.1 2011/03/09 19:23:59 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:23:59 $
+// $Id: CRSScintillatorShieldId.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG based on Rob Kutschke' DeviceId
 //
@@ -19,4 +19,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* CosmicRayShieldGeom_CRSScintillatorShieldId_hh */

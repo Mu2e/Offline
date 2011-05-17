@@ -4,9 +4,9 @@
 //
 // Define a type for a collection of ToyHits.
 //
-// $Id: ToyHitCollection.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: ToyHitCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -19,4 +19,4 @@ namespace mu2e {
    typedef std::vector<mu2e::ToyHit> ToyHitCollection;
 }
 
-#endif
+#endif /* ToyDP_ToyHitCollection_hh */

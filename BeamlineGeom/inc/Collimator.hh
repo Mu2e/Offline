@@ -1,5 +1,5 @@
-#ifndef Collimator_HH
-#define Collimator_HH
+#ifndef BeamlineGeom_Collimator_hh
+#define BeamlineGeom_Collimator_hh
 
 //
 // Class to represent the collimators. Position is relative to
@@ -40,4 +40,4 @@ namespace mu2e {
 };
 
 }
-#endif
+#endif /* BeamlineGeom_Collimator_hh */

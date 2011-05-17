@@ -1,13 +1,13 @@
-#ifndef GENERATORBASE_HH
-#define GENERATORBASE_HH
+#ifndef EventGenerator_GeneratorBase_hh
+#define EventGenerator_GeneratorBase_hh
 //
 // Base class to allow generic access to all of the event generator classes.
 // Also provides access to the random number engine associated with the 
 // EventGenerator module.
 //
-// $Id: GeneratorBase.hh,v 1.3 2011/05/17 15:35:59 greenc Exp $
+// $Id: GeneratorBase.hh,v 1.4 2011/05/17 15:41:35 greenc Exp $
 // $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 // 
@@ -43,5 +43,5 @@ namespace mu2e {
 
 } // end namespace mu2e,
 
-#endif
+#endif /* EventGenerator_GeneratorBase_hh */
 

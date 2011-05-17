@@ -1,11 +1,11 @@
-#ifndef ToyDP_BFMapType_hh
-#define ToyDP_BFMapType_hh
+#ifndef BFieldGeom_BFMapType_hh
+#define BFieldGeom_BFMapType_hh
 //
 // An enum-matched-to-names class for magnetic field types.
 //
-// $Id: BFMapType.hh,v 1.1 2011/03/08 00:38:15 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/08 00:38:15 $
+// $Id: BFMapType.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -124,4 +124,4 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-#endif
+#endif /* BFieldGeom_BFMapType_hh */

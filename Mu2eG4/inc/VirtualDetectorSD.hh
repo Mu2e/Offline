@@ -1,11 +1,11 @@
-#ifndef VirtualDetectorSD_h
-#define VirtualDetectorSD_h 1
+#ifndef Mu2eG4_VirtualDetectorSD_hh
+#define Mu2eG4_VirtualDetectorSD_hh
 //
 // Define a sensitive detector for virtual detectors (like G4Beamline)
 // 
-// $Id: VirtualDetectorSD.hh,v 1.5 2011/02/14 23:20:01 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/14 23:20:01 $
+// $Id: VirtualDetectorSD.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Ivan Logashenko
 //
@@ -59,4 +59,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif
+#endif /* Mu2eG4_VirtualDetectorSD_hh */

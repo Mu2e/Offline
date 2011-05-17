@@ -1,11 +1,11 @@
-#ifndef TrackerCalibrations_H
-#define TrackerCalibrations_H
+#ifndef ConditionsService_TrackerCalibrations_hh
+#define ConditionsService_TrackerCalibrations_hh
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.1 2011/05/10 16:44:02 vrusu Exp $
-// $Author: vrusu $
-// $Date: 2011/05/10 16:44:02 $
+// $Id: TrackerCalibrations.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Vadim Rusu
 //
@@ -54,4 +54,4 @@ namespace mu2e
   }
 }
 
-#endif
+#endif /* ConditionsService_TrackerCalibrations_hh */

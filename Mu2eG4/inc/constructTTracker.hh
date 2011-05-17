@@ -1,11 +1,11 @@
-#ifndef constructTTracker_HH
-#define constructTTracker_HH
+#ifndef Mu2eG4_constructTTracker_hh
+#define Mu2eG4_constructTTracker_hh
 //
 // Free functions to construct various versions of the TTracker.
 //
-// $Id: constructTTracker.hh,v 1.4 2010/12/22 17:37:57 genser Exp $
-// $Author: genser $
-// $Date: 2010/12/22 17:37:57 $
+// $Id: constructTTracker.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -32,4 +32,4 @@ namespace mu2e{
 
 }  // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_constructTTracker_hh */

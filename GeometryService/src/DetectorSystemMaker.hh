@@ -1,11 +1,11 @@
-#ifndef DetectorSystemMaker_HH
-#define DetectorSystemMaker_HH
+#ifndef GeometryService_src_DetectorSystemMaker_hh
+#define GeometryService_src_DetectorSystemMaker_hh
 //
 // Construct a DetectorSystem object.
 //
-// $Id: DetectorSystemMaker.hh,v 1.1 2010/12/03 00:52:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/03 00:52:40 $
+// $Id: DetectorSystemMaker.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -41,4 +41,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif
+#endif /* GeometryService_src_DetectorSystemMaker_hh */

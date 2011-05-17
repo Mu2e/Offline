@@ -6,9 +6,9 @@
 // The key is the simulated particle ID (same as for the 
 // SimParticleCollection).
 //
-// $Id: PointTrajectoryCollection.hh,v 1.1 2010/11/18 07:21:39 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/18 07:21:39 $
+// $Id: PointTrajectoryCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -20,4 +20,4 @@ namespace mu2e {
    typedef MapVector<mu2e::PointTrajectory> PointTrajectoryCollection;
 }
 
-#endif
+#endif /* ToyDP_PointTrajectoryCollection_hh */

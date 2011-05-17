@@ -1,5 +1,5 @@
-#ifndef ITRACKER_HH
-#define ITRACKER_HH
+#ifndef ITrackerGeom_ITracker_hh
+#define ITrackerGeom_ITracker_hh
 
 #include <deque>
 #include <vector>
@@ -142,4 +142,4 @@ private:
 
 } //namespace mu2e
 
-#endif /*ITRACKER_HH*/
+#endif /* ITrackerGeom_ITracker_hh */

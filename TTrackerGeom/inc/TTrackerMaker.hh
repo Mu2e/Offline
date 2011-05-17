@@ -1,11 +1,11 @@
-#ifndef TTRACKERMAKER_HH
-#define TTRACKERMAKER_HH
+#ifndef TTrackerGeom_TTrackerMaker_hh
+#define TTrackerGeom_TTrackerMaker_hh
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.11 2011/03/21 22:27:18 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/21 22:27:18 $
+// $Id: TTrackerMaker.hh,v 1.12 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -130,4 +130,4 @@ private:
 
 }  //namespace mu2e
 
-#endif
+#endif /* TTrackerGeom_TTrackerMaker_hh */

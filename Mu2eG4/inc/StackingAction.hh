@@ -1,13 +1,13 @@
-#ifndef StackingAction_H
-#define StackingAction_H 1
+#ifndef Mu2eG4_StackingAction_hh
+#define Mu2eG4_StackingAction_hh
 //
 // Steering routine for user stacking actions. 
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.12 2011/05/15 17:47:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/15 17:47:34 $
+// $Id: StackingAction.hh,v 1.13 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -88,4 +88,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_StackingAction_hh */

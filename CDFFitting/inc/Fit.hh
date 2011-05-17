@@ -1,5 +1,5 @@
-#ifndef FIT_HH_
-#define FIT_HH_
+#ifndef CDFFitting_Fit_hh
+#define CDFFitting_Fit_hh
 #include "CDFFitting/inc/Measurement.hh"
 #include "CDFFitting/inc/ConfidenceLevelComputer.hh"
 #include "CLHEP/Matrix/Vector.h"
@@ -99,4 +99,4 @@ private:
 #include "CDFFitting/inc/Fit.icc"
 
 
-#endif //FIT_HH_
+#endif /* CDFFitting_Fit_hh */

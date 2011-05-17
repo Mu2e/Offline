@@ -1,12 +1,12 @@
-#ifndef BEAMLINEMAKER_HH
-#define BEAMLINEMAKER_HH
+#ifndef BeamlineGeom_BeamlineMaker_hh
+#define BeamlineGeom_BeamlineMaker_hh
 //
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.hh,v 1.1 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/08/31 00:24:51 $
+// $Id: BeamlineMaker.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Peter Shanahan
 //
@@ -54,4 +54,4 @@ private:
 
 }  //namespace mu2e
 
-#endif //BEAMLINEMAKER_HH
+#endif /* BeamlineGeom_BeamlineMaker_hh */

@@ -1,11 +1,11 @@
-#ifndef Generalutilities_Mapvectorkey_hh
-#define Generalutilities_Mapvectorkey_hh
+#ifndef GeneralUtilities_MapVectorKey_hh
+#define GeneralUtilities_MapVectorKey_hh
 //
 // An object to be the key in a MapVector.
 //
-// $Id: MapVectorKey.hh,v 1.2 2010/11/16 21:18:32 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/16 21:18:32 $
+// $Id: MapVectorKey.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -76,4 +76,4 @@ inline bool operator!=( MapVectorKey const& lhs,
   return !( lhs == rhs);
 }
 
-#endif
+#endif /* GeneralUtilities_MapVectorKey_hh */

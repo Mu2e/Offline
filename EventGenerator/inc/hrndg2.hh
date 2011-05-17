@@ -1,11 +1,11 @@
-#ifndef HRNDG2_HH
-#define HRNDG2_HH
+#ifndef EventGenerator_hrndg2_hh
+#define EventGenerator_hrndg2_hh
 //
 // Interface to the fortran subroutine hrndg2.
 //
-// $Id: hrndg2.hh,v 1.2 2010/10/27 19:56:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/10/27 19:56:07 $
+// $Id: hrndg2.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author Rob Kutschke
 // 
@@ -55,4 +55,4 @@ namespace mu2e {
 
 }
 
-#endif
+#endif /* EventGenerator_hrndg2_hh */

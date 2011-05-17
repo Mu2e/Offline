@@ -1,13 +1,13 @@
-#ifndef SECTOR_HH
-#define SECTOR_HH
+#ifndef TrackerGeom_Sector_hh
+#define TrackerGeom_Sector_hh
 //
 // Holds information about one sector in a tracker.
 //
 
 //
-// $Id: Sector.hh,v 1.5 2011/01/28 23:51:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/28 23:51:58 $
+// $Id: Sector.hh,v 1.6 2011/05/17 15:41:37 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:37 $
 //
 // Original author Rob Kutschke
 //
@@ -148,4 +148,4 @@ namespace mu2e {
   };
 
 }  //namespace mu2e
-#endif
+#endif /* TrackerGeom_Sector_hh */

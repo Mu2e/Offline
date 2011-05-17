@@ -1,5 +1,5 @@
-#ifndef StartingPoint_h
-#define StartingPoint_h 1
+#ifndef CDFFitting_StartingPoint_hh
+#define CDFFitting_StartingPoint_hh
 #include "CDFFitting/inc/FitAction.hh"
 #include "CDFFitting/inc/StartingPoint.hh"
 
@@ -33,6 +33,6 @@ public:
   virtual void applyYourselfTo(Fitter<Measureable> *theFitter) const;
 };
 #include "CDFFitting/inc/StartingPoint.icc"
-#endif
+#endif /* CDFFitting_StartingPoint_hh */
 
 

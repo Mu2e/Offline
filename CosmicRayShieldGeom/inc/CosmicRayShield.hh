@@ -1,12 +1,12 @@
-#ifndef CosmicRayShield_hh
-#define CosmicRayShield_hh
+#ifndef CosmicRayShieldGeom_CosmicRayShield_hh
+#define CosmicRayShieldGeom_CosmicRayShield_hh
 
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.4 2011/03/18 16:21:06 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/18 16:21:06 $
+// $Id: CosmicRayShield.hh,v 1.5 2011/05/17 15:41:35 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:41:35 $
 //
 // Original author KLG
 //
@@ -111,4 +111,4 @@ namespace mu2e {
   };
 
 }
-#endif
+#endif /* CosmicRayShieldGeom_CosmicRayShield_hh */

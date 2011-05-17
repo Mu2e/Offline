@@ -1,11 +1,11 @@
-#ifndef AddStepLimiter_HH
-#define AddStepLimiter_HH
+#ifndef Mu2eG4_addStepLimiter_hh
+#define Mu2eG4_addStepLimiter_hh
 //
 // Free functions to add step limiters to some particles.
 //
-// $Id: addStepLimiter.hh,v 1.1 2010/04/11 15:15:12 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/11 15:15:12 $
+// $Id: addStepLimiter.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -31,6 +31,6 @@ namespace mu2e{
 
 }  // end namespace mu2e
 
-#endif
+#endif /* Mu2eG4_addStepLimiter_hh */
 
 

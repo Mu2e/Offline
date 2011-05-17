@@ -1,5 +1,5 @@
-#ifndef VirtualDetector_HH
-#define VirtualDetector_HH
+#ifndef VirtualDetectorGeom_VirtualDetector_hh
+#define VirtualDetectorGeom_VirtualDetector_hh
 
 //
 // Class to represent the virtual detectors
@@ -59,4 +59,4 @@ namespace mu2e {
 };
 
 }
-#endif
+#endif /* VirtualDetectorGeom_VirtualDetector_hh */
