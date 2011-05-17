@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.12 2011/05/12 15:50:46 kutschke Exp $
+# $Id: SConstruct,v 1.13 2011/05/17 18:47:35 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/12 15:50:46 $
+# $Date: 2011/05/17 18:47:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,16 +16,13 @@
 import os
 import sys
 
-# Check that the site-local setup has been run.
-if not os.environ.has_key('FRAMEWORK_DIR'):
-    sys.exit('You must setup the externals before running scons.\nExiting.')
-
 # Check that the release-specific setup has been run.
 if not os.environ.has_key('MU2E_BASE_RELEASE'):
     sys.exit('You must setup a Mu2e base release before running scons.\nExiting.')
 
 # Extract information from the shell environment.
-framework     = os.environ['FRAMEWORK_DIR']
+art_inc       = os.environ['ART_INC']
+art_lib       = os.environ['ART_LIB']
 base          = os.environ['MU2E_BASE_RELEASE']
 boost_lib     = os.environ['BOOST_LIB']
 boost_inc     = os.environ['BOOST_INC']
@@ -38,8 +35,17 @@ heppdt_inc    = os.environ['HEPPDT_INC']
 libsigcpp_inc = os.environ['LIBSIGCPP_INC']
 libsigcpp_lib = os.environ['LIBSIGCPP_LIB']
 python_dir    = os.environ['PYTHON_DIR']
-root_dir      = os.environ['ROOT_DIR']
+root_inc      = os.environ['ROOT_INC']
+root_sys      = os.environ['ROOTSYS']
 scons_dir     = os.environ['SCONS_DIR']
+fhicl_inc     = os.environ['FHICLCPP_INC']
+fhicl_lib     = os.environ['FHICLCPP_LIB']
+cpp0x_inc     = os.environ['CPP0X_INC']
+cpp0x_lib     = os.environ['CPP0X_LIB']
+mesfac_inc     = os.environ['MESSAGEFACILITY_INC']
+mesfac_lib     = os.environ['MESSAGEFACILITY_LIB']
+cetlib_inc     = os.environ['CETLIB_INC']
+cetlib_lib     = os.environ['CETLIB_LIB']
 
 # If we are working in a test release, extract more information from the environment.
 # See note 1.
@@ -53,11 +59,15 @@ else:
     testreleaseBaBar_inc = None
 
 # Define scons-local environment - it will be exported later.
-env = Environment( CPPPATH=[ testrelease,
-                             testreleaseBaBar_inc,
+env = Environment( CPPPATH=[ #testrelease,
+                             #testreleaseBaBar_inc,
                              base,
                              base+'/BaBar/include',
-                             framework,
+                             art_inc,
+                             mesfac_inc,
+                             fhicl_inc,
+                             cetlib_inc,
+                             cpp0x_inc,
                              boost_inc,
                              clhep_inc,
                              cppunit_dir+'/include',
@@ -65,19 +75,23 @@ env = Environment( CPPPATH=[ testrelease,
                              libsigcpp_inc+'/sigc++-2.0',
                              libsigcpp_lib+'/sigc++-2.0/include',
                              python_dir+'/include',
-                             root_dir+'/include',
+                             root_inc,
                              scons_dir+'/include',
                            ],
-                   LIBPATH=[ testrelease_lib,
+                   LIBPATH=[ #testrelease_lib,
                              base+'/lib',
-                             framework+'/tmp/lib',
+                             art_lib,
+                             mesfac_lib,
+                             fhicl_lib,
+                             cetlib_lib,
+                             cpp0x_lib,
                              boost_lib,
                              clhep_base+'/lib',
                              cppunit_dir+'/lib',
                              heppdt_lib,
                              libsigcpp_lib,
                              python_dir+'/lib',
-                             root_dir+'/lib',
+                             root_sys+'/lib',
                              scons_dir+'/lib',
                              '/lib', '/usr/X11R6/lib',
                            ],
