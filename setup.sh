@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.15 2011/05/12 22:41:44 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/12 22:41:44 $
+# $Id: setup.sh,v 1.16 2011/05/17 15:24:56 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/17 15:24:56 $
 #
 # Original author Rob Kutschke
 #
@@ -12,20 +12,20 @@
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     echo "You should be sourcing this file, not executing it."
-    exit
+    exit 1
 fi
 
 if [ "${MU2E}" = '' ];then
     echo "The environment variable MU2E is not set."
     echo "You must setup the local Mu2e environment before sourcing this script."
-    exit
+    return 1
 fi
 
 # Protect against multiple invocation.
 if [ "${MU2E_BASE_RELEASE}" != '' ];then
     echo "A base release has already been setup.  Hope that's OK."
     echo "The base release is: " ${MU2E_BASE_RELEASE}
-    exit
+    return 1
 fi
 
 # Define the directory in which this file lives as the root of a release.
@@ -37,38 +37,56 @@ unset  FW_BASE
 export FW_RELEASE_BASE=$MU2E_BASE_RELEASE
 export FW_SEARCH_PATH=$FW_RELEASE_BASE/:$FW_DATA_PATH/
 
+case ${EXTERNALSVERSION} in
+  2)
+    # This will set up G4 also.
+    setup art v0_06_03 -qa2:debug
 
-if [ "${EXTERNALSVERSION}" = '1' ]; then
-    # This is the branch that will survive into the future.
+    export FW_HOME=${ART_FQ_DIR}
+    export FRAMEWORK_DIR=${FW_HOME}
 
-    # This will setup all products on which framework depends.
+    setup geant4 v4_9_4_p01 -qgcc45
+
+    setup g4neutron v3_14
+    setup g4emlow v6_19
+    setup g4photon v2_1
+    setup g4radiative v3_3
+    setup g4abla v3_0
+
+    setup heppdt v3_04_01 -qgcc45
+  ;;
+  1)
     setup framework v1_1_4
     export FRAMEWORK_DIR=$FW_HOME
 
     # For historical reasons, Geant4 has different qualifiers on SLF4 and SLF5.
     mu2eG4Qual="gfortran-OpenGL-GDML"
     if grep 'release 4' /etc/redhat-release >/dev/null;then
-	mu2eG4Qual=g77-OpenGL-GDML  
+      mu2eG4Qual=g77-OpenGL-GDML  
     fi
 
     # Chose version of G4 and its cross-section files.
     setup geant4 v4_9_3_p02 -q $mu2eG4Qual
-
-else
-    # Depracated: backwards compatibility with the old externals system.
+    
+  ;;
+  *)
+    # Deprecated: backwards compatibility with the old externals system.
     setup framework v1_1_3
-    setup geant4 v4_9_3_p01 -q g77-OpenGL
+    setup geant4 v4_9_3_p01 -q g77-OpenGL        
+    setup heppdt      v3_04_01
+esac
+
+if (( ${EXTERNALSVERSION:-0} < 2 )); then
+  # G4 cross-section files.
+  setup g4neutron   v3_13a
+  setup g4emlow     v6_2
+  setup g4photon    v2_0
+  setup g4radiative v3_2
+  setup g4abla      v3_0
+
+  # Other products
+  setup heppdt      v3_04_01
 fi
-
-# G4 cross-section files.
-setup g4neutron   v3_13a
-setup g4emlow     v6_2
-setup g4photon    v2_0
-setup g4radiative v3_2
-setup g4abla      v3_0
-
-# Other products
-setup heppdt      v3_04_01
 
 # Another depracated section: only needed for old externals system.
 if [ "${EXTERNALSVERSION}" = '0' ]; then
@@ -81,7 +99,6 @@ if [ "${EXTERNALSVERSION}" = '0' ]; then
     export LIBSIGCPP_LIB=${LIBSIGCPP_DIR}/lib
     export G4LIB=${G4LIB}/Linux-g++
 fi
-
 
 # Tell the framework to look in the local area to find modules.
 source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
