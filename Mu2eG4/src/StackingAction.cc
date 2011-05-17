@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions. 
 //
-// $Id: StackingAction.cc,v 1.14 2011/05/15 17:47:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/15 17:47:34 $
+// $Id: StackingAction.cc,v 1.15 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
 // G4 includes
@@ -60,12 +60,12 @@ namespace mu2e {
     _dirtG4Ymax(0){
 
     // Get control info from run time configuration.
-    _doCosmicKiller       = config.getBool  ("g4.doCosmicKiller",   _doCosmicKiller );
-    _killLevel            = config.getInt   ("g4.cosmicKillLevel",  _killLevel      );
+    _doCosmicKiller       = config.get<bool>  ("g4.doCosmicKiller",   _doCosmicKiller );
+    _killLevel            = config.get<int>   ("g4.cosmicKillLevel",  _killLevel      );
     _cosmicpcut           = config.getDouble("g4.cosmicPcut",       _cosmicpcut     );
     _yaboveDirtYmin       = config.getDouble("g4.yaboveDirtYmin",   _yaboveDirtYmin );
-    _primaryOnly          = config.getBool  ("g4.stackPrimaryOnly", _primaryOnly    );
-    _killLowKineticEnergy = config.getBool  ("g4.killLowEKine",     _killLowKineticEnergy );
+    _primaryOnly          = config.get<bool>  ("g4.stackPrimaryOnly", _primaryOnly    );
+    _killLowKineticEnergy = config.get<bool>  ("g4.killLowEKine",     _killLowKineticEnergy );
 
     config.getVectorInt("g4.stackingActionDropPDG", _pdgToDrop, vector<int>() );
     config.getVectorInt("g4.stackingActionKeepPDG", _pdgToKeep, vector<int>() );
@@ -77,7 +77,7 @@ namespace mu2e {
     }
 
     if ( !_pdgToDrop.empty() && !_pdgToKeep.empty() ){
-      throw cms::Exception("G4CONTROL")
+      throw cet::exception("G4CONTROL")
         << "Both g4.stackingActionKeepPDG and g4.stackingActionDropPDG have entries: " 
         << _pdgToDrop.size() <<  " " 
         << _pdgToKeep.size() <<  " " 

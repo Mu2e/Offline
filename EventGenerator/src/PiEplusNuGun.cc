@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.4 2010/08/20 22:14:30 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2010/08/20 22:14:30 $
+// $Id: PiEplusNuGun.cc,v 1.5 2011/05/17 15:36:00 greenc Exp $ 
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 // 
@@ -14,8 +14,8 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/PiEplusNuGun.hh"
@@ -51,7 +51,7 @@ namespace mu2e {
   // Grab them from Andrew's minimc package?
   static const double pEplus = 70.0;
 
-  PiEplusNuGun::PiEplusNuGun( edm::Run& run, const SimpleConfig& config ):
+  PiEplusNuGun::PiEplusNuGun( art::Run& run, const SimpleConfig& config ):
     GeneratorBase(){
 
     // About the ConditionsService:

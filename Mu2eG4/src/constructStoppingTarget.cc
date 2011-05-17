@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.9 2011/02/14 23:20:01 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/14 23:20:01 $
+// $Id: constructStoppingTarget.cc,v 1.10 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Peter Shanahan
 //
@@ -15,8 +15,8 @@
 #include <string>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
@@ -54,7 +54,7 @@ namespace mu2e {
     G4VSensitiveDetector* stSD = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::StoppingTarget());
 
-    G4Helper    & _helper = *(edm::Service<G4Helper>());
+    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     double rOut  = CLHEP::mm * target->cylinderRadius();
@@ -97,7 +97,7 @@ namespace mu2e {
                                               mother, 
                                               0, 
                                               0,
-                                              config.getBool("g4.doSurfaceCheck",false));
+                                              config.get<bool>("g4.doSurfaceCheck",false));
 
     // Visualization attributes of the the mother volume.
     {
@@ -143,14 +143,14 @@ namespace mu2e {
                            targetInfo.logical,
                            0,
                            itf,
-                           config.getBool("g4.doSurfaceCheck",false));
+                           config.get<bool>("g4.doSurfaceCheck",false));
 
-        if (!config.getBool("target.visible",true)) {
+        if (!config.get<bool>("target.visible",true)) {
           foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Magenta()));
-          visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-          visAtt->SetForceSolid(config.getBool("target.solid",true));
+          visAtt->SetForceAuxEdgeVisible(config.get<bool>("g4.forceAuxEdgeVisible",false));
+          visAtt->SetForceSolid(config.get<bool>("target.solid",true));
           foilInfo.logical->SetVisAttributes(visAtt);
         }
       }// target foils

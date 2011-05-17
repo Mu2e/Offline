@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.22 2011/05/17 06:00:47 onoratog Exp $ 
-// $Author: onoratog $
-// $Date: 2011/05/17 06:00:47 $
+// $Id: DecayInOrbitGun.cc,v 1.23 2011/05/17 15:36:00 greenc Exp $ 
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 // 
@@ -12,10 +12,10 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
@@ -51,7 +51,7 @@ namespace mu2e {
   // Grab them from Andrew's minimc package?
   static const double conversionEnergyAluminum = 104.96;
   
-  DecayInOrbitGun::DecayInOrbitGun( edm::Run& run, const SimpleConfig& config ):
+  DecayInOrbitGun::DecayInOrbitGun( art::Run& run, const SimpleConfig& config ):
 
     // Base class
     GeneratorBase(),
@@ -60,16 +60,16 @@ namespace mu2e {
     _mean(config.getDouble("decayinorbitGun.mean",1.)),
     _elow(config.getDouble("decayinorbitGun.elow",100.)),
     _ehi(config.getDouble("decayinorbitGun.ehi",conversionEnergyAluminum)),
-    _nbins(config.getInt("decayinorbitGun.nbins",1000)),
+    _nbins(config.get<int>("decayinorbitGun.nbins",1000)),
     _czmin(config.getDouble("decayinorbitGun.czmin", -1.0)),
     _czmax(config.getDouble("decayinorbitGun.czmax",  1.0)),
     _phimin(config.getDouble("decayinorbitGun.phimin", 0. )),
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
-    _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
+    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
+    _doHistograms(config.get<bool>("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
-    _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
+    _useSimpleSpectrum(config.get<bool>("decayinorbitGun.useSimpleSpectrum", false)),
 
     // Random number distributions; getEngine comes from the base class.
     _randSimpleEnergy(getEngine(), &(binnedEnergySpectrum()[0]), _nbins ),
@@ -88,7 +88,7 @@ namespace mu2e {
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "DecayInOrbit Gun has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
@@ -112,8 +112,8 @@ namespace mu2e {
     // Make ROOT subdirectory to hold diagnostic histograms; book those histograms.
   
     if ( _doHistograms ){
-      edm::Service<edm::TFileService> tfs;
-      edm::TFileDirectory tfdir = tfs->mkdir( "DecayInOrbit" );
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = tfs->mkdir( "DecayInOrbit" );
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "DIO Multiplicity",               100,     0.,   200.   );
       _hEElec        = tfdir.make<TH1D>( "hEElec",        "DIO Electron Energy",            100,     0.,   105.   );
       _hEElecZ       = tfdir.make<TH1D>( "hEElecZ",       "DIO Electron Energy (zoom)",     200,  _elow, _ehi     );
@@ -204,7 +204,7 @@ namespace mu2e {
     
     // Sanity check.
     if (_nbins <= 0) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "Nonsense nbins requested in "
         << "DecayInOrbit = "
         << _nbins

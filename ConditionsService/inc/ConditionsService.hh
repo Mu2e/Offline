@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.7 2010/08/31 21:50:37 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/31 21:50:37 $
+// $Id: ConditionsService.hh,v 1.8 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -23,10 +23,10 @@
 #include <string>
 
 // Framework include files
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/ActivityRegistry.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "cetlib/exception.h"
 
 // Mu2e include files.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -40,10 +40,10 @@ namespace mu2e {
   class ConditionsService {
 
   public:
-    ConditionsService(const edm::ParameterSet&, edm::ActivityRegistry&);
+    ConditionsService(const fhicl::ParameterSet&, art::ActivityRegistry&);
     ~ConditionsService();
     
-    void preBeginRun( edm::RunID const& id, edm::Timestamp const& ts);
+    void preBeginRun( art::RunID const& id, art::Timestamp const& ts);
     
     // Not sure if we really want this.  It might be abused more than used?
     SimpleConfig const& config() const { return _config;}
@@ -70,7 +70,7 @@ namespace mu2e {
     ENTITY* getElement( std::string const& key, std::string const& version)
     {
       if(_run_count==0) 
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Cannot get _entities from an unconfigured conditions service.\n"
           << "You've attempted to a get an element before the first run\n";
       
@@ -80,14 +80,14 @@ namespace mu2e {
       std::string name = typeid(ENTITY).name();
       ConditionsMap::iterator it(_entities.find(name));
       if(it==_entities.end())
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Failed to retrieve conditions entity of type " << name << "\n";
 
       // this must succeed or there is something terribly wrong
       ENTITY* d = dynamic_cast<ENTITY*>(it->second.get());
       
       if(d==0)
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Failed to convert found conditions entity " << name
           << " to its correct type.  There is a serious problem.\n";
       
@@ -106,7 +106,7 @@ namespace mu2e {
     void addEntity(std::auto_ptr<ENTITY> d)
     {
       if(_entities.find(typeid(ENTITY).name())!=_entities.end())
-        throw cms::Exception("GEOM") << "failed to install conditions entity "
+        throw cet::exception("GEOM") << "failed to install conditions entity "
                                      << d->name() << "\nwith type name "
                                      << typeid(ENTITY).name() << "\n";
       

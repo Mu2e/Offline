@@ -1,9 +1,9 @@
 //
 // Test features of the Geometry Service.
 // 
-// $Id: Geom_t.cpp,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2009/09/30 22:57:47 $
+// $Id: Geom_t.cpp,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Jim Kowalkowski.
 //
@@ -21,9 +21,9 @@ int main()
     {
       // rc = work();
     }
-  catch (cms::Exception& x)
+  catch (cet::exception& x)
     {
-      std::cerr << "cms::Exception caught:\n" << x << '\n';
+      std::cerr << "cet::exception caught:\n" << x << '\n';
       rc = 1;
     }
   catch (...)

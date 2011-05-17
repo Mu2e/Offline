@@ -5,14 +5,14 @@
 //
 // See additional details in the comments in the header file.
 //
-// $Id: zBinningForFoils.cc,v 1.1 2011/05/15 21:14:09 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/15 21:14:09 $
+// $Id: zBinningForFoils.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
 
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/zBinningForFoils.hh"
@@ -25,7 +25,7 @@ namespace mu2e{
 
     // TargetMaker.cc was supposed to make sure that this cannot happen.  Oh well.
     if ( nfoils < 1 ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "zBinningForFoils: using a stopping target with no foils!\n";
     }
 

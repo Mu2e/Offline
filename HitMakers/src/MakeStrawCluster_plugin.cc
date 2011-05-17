@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_plugin.cc,v 1.7 2011/01/14 21:31:26 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/01/14 21:31:26 $
+// $Id: MakeStrawCluster_plugin.cc,v 1.8 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Hans Wenzel
 //
@@ -14,18 +14,17 @@
 
 
 // Framework includes.
-//#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "DataFormats/Provenance/interface/Provenance.h"
+//#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Persistency/Provenance/Provenance.h"
 
 // Root includes.
 #include "TFile.h"
@@ -47,13 +46,13 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class MakeStrawCluster : public edm::EDProducer {
+  class MakeStrawCluster : public art::EDProducer {
   public:
-    explicit MakeStrawCluster(edm::ParameterSet const& pset):
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
+    explicit MakeStrawCluster(fhicl::ParameterSet const& pset):
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
       _messageCategory("StrawClusterMaker"){
 
       // Tell the framework what we make.
@@ -61,9 +60,9 @@ namespace mu2e {
     }
     virtual ~MakeStrawCluster() { }
     
-    virtual void beginJob(edm::EventSetup const&);
-    void produce( edm::Event& e, edm::EventSetup const&);
-    //  void analyze( edm::Event const& e, edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
+    void produce( art::Event& e, art::EventSetup const&);
+    //  void analyze( art::Event const& e, art::EventSetup const&);
     
   private:
     
@@ -84,16 +83,16 @@ namespace mu2e {
     
   };
      
-  void MakeStrawCluster::beginJob(edm::EventSetup const& ){
+  void MakeStrawCluster::beginJob(art::EventSetup const& ){
     
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint 
          << endl;
     
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
   }
-   void MakeStrawCluster::produce(edm::Event& evt, edm::EventSetup const&)
+   void MakeStrawCluster::produce(art::Event& evt, art::EventSetup const&)
    {
      if ( _diagLevel > 0 ) cout << "MakeStrawCluster: produce() begin" << endl;
      static int ncalls(0);
@@ -114,7 +113,7 @@ namespace mu2e {
      // Get a reference to one of the L or T trackers.
      // Throw exception if not successful.
      const Tracker& tracker = getTrackerOrThrow();
-     edm::Handle<StrawHitCollection> pdataHandle;
+     art::Handle<StrawHitCollection> pdataHandle;
      evt.getByLabel(_makerModuleLabel,pdataHandle);
      StrawHitCollection const* hits = pdataHandle.product();
      for ( size_t i=0; i<hits->size(); ++i ) {
@@ -259,4 +258,4 @@ namespace mu2e {
 
 
 using mu2e::MakeStrawCluster;
-DEFINE_FWK_MODULE(MakeStrawCluster);
+DEFINE_ART_MODULE(MakeStrawCluster);

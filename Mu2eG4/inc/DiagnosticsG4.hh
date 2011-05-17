@@ -4,9 +4,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.1 2011/05/16 23:25:46 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/16 23:25:46 $
+// $Id: DiagnosticsG4.hh,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@
 // Forward declarations.
 class TH1F;
 
-namespace edm{
+namespace art{
   class Run;
 }
 
@@ -40,8 +40,8 @@ namespace mu2e {
     void beginJob();
     void endJob();
 
-    void beginRun( edm::Run const &run, PhysicalVolumeHelper const& volInfo );
-    void endRun(edm::Run const& run);
+    void beginRun( art::Run const &run, PhysicalVolumeHelper const& volInfo );
+    void endRun(art::Run const& run);
 
     void analyze( StatusG4                  const& status,
                   SimParticleCollection     const& sims,

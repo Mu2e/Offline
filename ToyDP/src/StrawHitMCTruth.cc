@@ -9,7 +9,7 @@
 #include <ostream>
 
 // Framework includes.
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "ToyDP/inc/StrawHitMCTruth.hh"

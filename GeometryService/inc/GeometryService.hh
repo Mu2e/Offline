@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.4 2010/05/18 20:28:06 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 20:28:06 $
+// $Id: GeometryService.hh,v 1.5 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -17,10 +17,10 @@
 #include <memory>
 
 // Framework include files
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/ActivityRegistry.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "cetlib/exception.h"
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "GeometryService/inc/Detector.hh"
@@ -34,10 +34,10 @@ namespace mu2e {
 
   class GeometryService {
 public:
-    GeometryService(const edm::ParameterSet&, edm::ActivityRegistry&);
+    GeometryService(const fhicl::ParameterSet&, art::ActivityRegistry&);
     ~GeometryService();
     
-    void preBeginRun( edm::RunID const& id, edm::Timestamp const& ts);
+    void preBeginRun( art::RunID const& id, art::Timestamp const& ts);
 
     SimpleConfig const& config() const { return *_config;}
 
@@ -45,7 +45,7 @@ public:
     bool hasElement()
     {
       if(_run_count==0) 
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Cannot get detectors from an unconfigured geometry service.\n"
           << "You've attempted to a get an element before the first run\n";
       
@@ -76,7 +76,7 @@ private:
     DET* getElement()
     {
       if(_run_count==0) 
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Cannot get detectors from an unconfigured geometry service.\n"
           << "You've attempted to a get an element before the first run\n";
       
@@ -86,14 +86,14 @@ private:
       std::string name = typeid(DET).name();
       DetMap::iterator it(_detectors.find(name));
       if(it==_detectors.end())
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Failed to retrieve detector element of type " << name << "\n";
 
       // this must succeed or there is something terribly wrong
       DET* d = dynamic_cast<DET*>(it->second.get());
 
       if(d==0)
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Failed to convert found detector " << name
           << " to its correct type.  There is a serious problem.\n";
 
@@ -114,7 +114,7 @@ private:
     void addDetector(std::auto_ptr<DET> d)
     {
       if(_detectors.find(typeid(DET).name())!=_detectors.end())
-        throw cms::Exception("GEOM") << "failed to install detector "
+        throw cet::exception("GEOM") << "failed to install detector "
                                      << d->name() << "\nwith type name "
                                      << typeid(DET).name() << "\n";
       

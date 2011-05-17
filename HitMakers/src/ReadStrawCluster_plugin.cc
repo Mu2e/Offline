@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_plugin.cc,v 1.5 2011/05/12 15:38:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/12 15:38:27 $
+// $Id: ReadStrawCluster_plugin.cc,v 1.6 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Hans Wenzel
 //
@@ -16,17 +16,16 @@
 #include <map>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "DataFormats/Provenance/interface/Provenance.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Persistency/Provenance/Provenance.h"
 
 // Root includes.
 #include "TFile.h"
@@ -193,12 +192,12 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
   //--------------------------------------------------------------------
   //
   // 
-  class ReadStrawCluster : public edm::EDAnalyzer {
+  class ReadStrawCluster : public art::EDAnalyzer {
   public:
-    explicit ReadStrawCluster(edm::ParameterSet const& pset):
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _clmakerModuleLabel(pset.getParameter<std::string>("clmakerModuleLabel")),
+    explicit ReadStrawCluster(fhicl::ParameterSet const& pset):
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _clmakerModuleLabel(pset.get<std::string>("clmakerModuleLabel")),
       _hNInter(0),
       _hNClusters(0),
       _hNStraws(0),
@@ -208,9 +207,9 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     }
     virtual ~ReadStrawCluster() { }
     
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void analyze( art::Event const& e, art::EventSetup const&);
     void FitCircle(    vector<double> X,vector<double> Y);
   private:
     
@@ -230,14 +229,14 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     TH2F* _x0y0;
   };
   
-  void ReadStrawCluster::beginJob(edm::EventSetup const& ){
+  void ReadStrawCluster::beginJob(art::EventSetup const& ){
     
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint 
          << endl;
     
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );  
     _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 500, 0., 500. );
     _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
@@ -246,7 +245,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
   }
   
-  void ReadStrawCluster::analyze(edm::Event const& evt, edm::EventSetup const&) {
+  void ReadStrawCluster::analyze(art::Event const& evt, art::EventSetup const&) {
     if ( _diagLevel > 2 ) cout << "ReadStrawCluster: analyze() begin"<<endl;
     static int ncalls(0);
     ++ncalls;
@@ -267,7 +266,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Z.clear();
     // Get the persistent data about the StrawClusters.
     //
-    edm::Handle<StrawClusterCollection> pclusterdataHandle;
+    art::Handle<StrawClusterCollection> pclusterdataHandle;
     evt.getByLabel(_clmakerModuleLabel,pclusterdataHandle);
     StrawClusterCollection const* clusters = pclusterdataHandle.product();
     cout << " Nr of Clusters: " << clusters->size()<<endl;
@@ -454,4 +453,4 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
 
 using mu2e::ReadStrawCluster;
-DEFINE_FWK_MODULE(ReadStrawCluster);
+DEFINE_ART_MODULE(ReadStrawCluster);

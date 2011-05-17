@@ -1,9 +1,9 @@
 // 
 // This is a place to put additional information produced by HitMaker,
 //
-// $Id: CaloHitMCTruth.cc,v 1.3 2010/11/11 21:17:49 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/11 21:17:49 $
+// $Id: CaloHitMCTruth.cc,v 1.4 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Ivan Logashenko
 //
@@ -12,7 +12,7 @@
 #include <ostream>
 
 // Framework includes.
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "ToyDP/inc/CaloHitMCTruth.hh"

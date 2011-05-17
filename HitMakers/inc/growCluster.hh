@@ -3,9 +3,9 @@
 //
 // Free function to grow a cluster.
 //
-// $Id: growCluster.hh,v 1.2 2010/05/18 20:28:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:10 $
+// $Id: growCluster.hh,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 //
 // Consider all straws in the cluster in the range,
@@ -32,7 +32,7 @@
 #include <vector>
 
 // Framework includes
-#include "DataFormats/Common/interface/Handle.h"
+#include "art/Persistency/Common/Handle.h"
 
 // Mu2e includes
 #include "ToyDP/inc/CrudeStrawHitPData.hh"
@@ -45,7 +45,7 @@ namespace mu2e {
   int growCluster ( ProtoStrawCluster&              cluster,
                     int                             startCluster,
                     int                             startHit,
-                    edm::Handle<CrudeStrawHitPData> pdataHandle,
+                    art::Handle<CrudeStrawHitPData> pdataHandle,
                     std::vector<int>&               used,
                     LTracker const&                 ltracker
                     );

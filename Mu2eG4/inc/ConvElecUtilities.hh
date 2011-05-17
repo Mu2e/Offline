@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.5 2011/01/28 23:51:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/28 23:51:58 $
+// $Id: ConvElecUtilities.hh,v 1.6 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Gianni Onorato
 //
@@ -18,7 +18,7 @@
 #include <memory>
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -44,7 +44,7 @@ namespace mu2e {
      * Constructor.  Takes an event as an argument
      * plus g4module name (string) and the trackerStepPoints name (string)
      */
-    ConvElecUtilities(const edm::Event & event,
+    ConvElecUtilities(const art::Event & event,
                       std::string g4ModuleLabel,
                       std::string trackerStepPoints);
 
@@ -83,12 +83,12 @@ namespace mu2e {
 
   private:
     
-    void checkConvElec(const edm::Event & event);
-    void lookAtHits(const edm::Event & event);
+    void checkConvElec(const art::Event & event);
+    void lookAtHits(const art::Event & event);
     int _nconv;
-    edm::Handle<SimParticleCollection> _simParticles;
-    edm::Handle<ToyGenParticleCollection> _genParticles;
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<SimParticleCollection> _simParticles;
+    art::Handle<ToyGenParticleCollection> _genParticles;
+    art::Handle<StepPointMCCollection> hits;
     std::vector<size_t> _convElecHits; 
     std::vector<StrawIndex> _convElecStrawIdx;
     std::string _g4ModuleLabel, _trackerStepPoints;

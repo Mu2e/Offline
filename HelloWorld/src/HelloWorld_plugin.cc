@@ -1,9 +1,9 @@
 //
 //  The HelloWorld plugin; the first example of a module.
 //
-//  $Id: HelloWorld_plugin.cc,v 1.3 2010/09/01 18:55:51 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2010/09/01 18:55:51 $
+//  $Id: HelloWorld_plugin.cc,v 1.4 2011/05/17 15:36:00 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/05/17 15:36:00 $
 //   
 //  Original author Rob Kutschke
 //
@@ -12,25 +12,25 @@
 #include <iostream>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 using namespace std;
 
 namespace mu2e {
 
-  class HelloWorld : public edm::EDAnalyzer {
+  class HelloWorld : public art::EDAnalyzer {
 
   public:
-    explicit HelloWorld(edm::ParameterSet const& pset){}
+    explicit HelloWorld(fhicl::ParameterSet const& pset){}
 
-    void analyze(const edm::Event& event, edm::EventSetup const&);
+    void analyze(const art::Event& event, art::EventSetup const&);
 
   private:
 
   };
 
-  void HelloWorld::analyze(const edm::Event& event, edm::EventSetup const&){
+  void HelloWorld::analyze(const art::Event& event, art::EventSetup const&){
     cerr << "Hello, world.  From analyze: "
          << event.id()
          << endl;
@@ -39,4 +39,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::HelloWorld;
-DEFINE_FWK_MODULE(HelloWorld);
+DEFINE_ART_MODULE(HelloWorld);

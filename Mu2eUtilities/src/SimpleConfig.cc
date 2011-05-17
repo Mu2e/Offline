@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.8 2011/05/02 18:26:51 kutschke Exp $
- * $Author: kutschke $ 
- * $Date: 2011/05/02 18:26:51 $
+ * $Id: SimpleConfig.cc,v 1.9 2011/05/17 15:36:01 greenc Exp $
+ * $Author: greenc $ 
+ * $Date: 2011/05/17 15:36:01 $
  *
  * Original author Rob Kutschke
  *
@@ -25,9 +25,9 @@
 #include <iomanip>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "FWCore/Utilities/interface/EDMException.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/ParameterSet/FileInPath.h"
+#include "art/Utilities/EDMException.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -53,13 +53,13 @@ namespace mu2e {
     _allowReplacement(allowReplacement),
     _messageOnReplacement(messageOnReplacement){
 
-    edm::FileInPath fip(filename);
+    art::FileInPath fip(filename);
     _inputfile = fip.fullPath();
     ReadFile();
 
   }
 
-  SimpleConfig::SimpleConfig( const edm::FileInPath& fileInPath,
+  SimpleConfig::SimpleConfig( const art::FileInPath& fileInPath,
                               bool allowReplacement,
                               bool messageOnReplacement):
     _inputfile(fileInPath.fullPath()),
@@ -103,8 +103,8 @@ namespace mu2e {
    *
    * @return the value of the parameter.
    */
-  string SimpleConfig::getString ( const string& name ) const{
-    return getRecord(name).getString();
+  string SimpleConfig::get<std::string> ( const string& name ) const{
+    return getRecord(name).get<std::string>();
   }
   
   /**
@@ -113,11 +113,11 @@ namespace mu2e {
    *
    * @return the value of the parameter as a string.
    */
-  string SimpleConfig::getString ( const string& name, 
+  string SimpleConfig::get<std::string> ( const string& name, 
                                    const string& def ) const {
     Record_sptr b;
     if ( getSharedPointer(name,b) ){
-      return b->getString();
+      return b->get<std::string>();
     }
     return def;
   }
@@ -127,8 +127,8 @@ namespace mu2e {
    *
    * @return the value of the parameter as an int.
    */
-  int SimpleConfig::getInt ( const string& name ) const{
-    return getRecord(name).getInt();
+  int SimpleConfig::get<int> ( const string& name ) const{
+    return getRecord(name).get<int>();
   }
   
   /**
@@ -137,10 +137,10 @@ namespace mu2e {
    *
    * @return the value of the parameter as an int.
    */
-  int SimpleConfig::getInt ( const string& name, int def )const{
+  int SimpleConfig::get<int> ( const string& name, int def )const{
     Record_sptr b;
     if ( getSharedPointer(name,b) ){
-      return b->getInt();
+      return b->get<int>();
     }
     return def;
   }
@@ -174,8 +174,8 @@ namespace mu2e {
    *
    * @return the value of the parameter as an bool.
    */
-  bool SimpleConfig::getBool ( const string& name ) const{
-    return getRecord(name).getBool();
+  bool SimpleConfig::get<bool> ( const string& name ) const{
+    return getRecord(name).get<bool>();
   }
   
   /**
@@ -184,10 +184,10 @@ namespace mu2e {
    *
    * @return the value of the parameter as an bool.
    */
-  bool SimpleConfig::getBool ( const string& name, bool def ) const{
+  bool SimpleConfig::get<bool> ( const string& name, bool def ) const{
     Record_sptr b;
     if ( getSharedPointer(name,b) ){
-      return b->getBool();
+      return b->get<bool>();
     }
     return def;
   }
@@ -202,7 +202,7 @@ namespace mu2e {
     getRecord(name).getVectorString(v);
     if ( nRequired < 0 ) return;
     if ( v.size() != static_cast<size_t>(nRequired) ){
-      throw edm::Exception(edm::errors::Unknown)
+      throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<string> "
         << name 
         << " in file " 
@@ -234,7 +234,7 @@ namespace mu2e {
     // If asked to, check that the default value has the right length.
     if ( nRequired > -1 ) {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
-        throw edm::Exception(edm::errors::Unknown)
+        throw art::Exception(art::errors::Unknown)
           << "SimpleConfig: Wrong number of elements in vector<string> "
           << name 
           << " in file " 
@@ -260,7 +260,7 @@ namespace mu2e {
     getRecord(name).getVectorInt(v);
     if ( nRequired < 0 ) return;
     if ( v.size() != static_cast<size_t>(nRequired) ){
-      throw edm::Exception(edm::errors::Unknown)
+      throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<int> "
         << name 
         << " in file " 
@@ -292,7 +292,7 @@ namespace mu2e {
     // If asked to, check that the default value has the right length.
     if ( nRequired > -1 ) {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
-        throw edm::Exception(edm::errors::Unknown)
+        throw art::Exception(art::errors::Unknown)
           << "SimpleConfig: Wrong number of elements in vector<int> "
           << name 
           << " in file " 
@@ -321,7 +321,7 @@ namespace mu2e {
     getRecord(name).getVectorDouble(v);
     if ( nRequired < 0 ) return;
     if ( v.size() != static_cast<size_t>(nRequired) ){
-      throw edm::Exception(edm::errors::Unknown)
+      throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: Wrong number of elements in vector<double> "
         << name 
         << " in file " 
@@ -354,7 +354,7 @@ namespace mu2e {
     // If asked to, check that the default value has the right length.
     if ( nRequired > -1 ) {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
-        throw edm::Exception(edm::errors::Unknown)
+        throw art::Exception(art::errors::Unknown)
           << "SimpleConfig: Wrong number of elements in vector<double> "
           << name 
           << " in file " 
@@ -470,7 +470,7 @@ namespace mu2e {
     if ( !getSharedPointer(name,b) ) {
 
       // Test: fail21.conf
-      throw edm::Exception(edm::errors::Unknown)
+      throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: No such parameter "
         << name 
         << " in file " 
@@ -495,7 +495,7 @@ namespace mu2e {
     if ( !in ) {
     
       // No conf file for this test.
-      throw edm::Exception(edm::errors::Unknown)
+      throw art::Exception(art::errors::Unknown)
         << "SimpleConfig: Cannot open input file: "
         << _inputfile
         << endl;
@@ -580,7 +580,7 @@ namespace mu2e {
             _rmap[key] = *b0;
 
             if ( _messageOnReplacement ){
-              edm::LogWarning("CONFIG")
+              mf::LogWarning("CONFIG")
                 << "SimpleConfig replacing parameter in: "
                 << _inputfile << "\n"
                 << "old record: " << *old << "\n"
@@ -592,7 +592,7 @@ namespace mu2e {
 
           } else{
             // Test: fail03.conf
-            throw edm::Exception(edm::errors::Unknown)
+            throw art::Exception(art::errors::Unknown)
               << "Duplicate parameter name found in the input file: "
               << endl 
               << "This record:     " 
@@ -683,7 +683,7 @@ namespace mu2e {
     // Find the double quote that opens filename.
     string::size_type j0 = line.find("\"",idx+8);
     if ( j0 == string::npos ){
-      throw edm::Exception(edm::errors::Unknown)
+      throw art::Exception(art::errors::Unknown)
         << "Cannot find first double quote on include line: "
         << line
         << endl;
@@ -693,7 +693,7 @@ namespace mu2e {
     // legal whitespace.  This can be triggered by a missing leading quote.
     for ( string::size_type i=idx+8; i<j0; ++i ){
       if ( line[i] != ' ' && line[i] != '\t' ){
-        throw edm::Exception(edm::errors::Unknown)
+        throw art::Exception(art::errors::Unknown)
           << "Unexpected characters after include and before first double quote.\n"
           << "Maybe a missing leading quote?\n"
           << line
@@ -705,7 +705,7 @@ namespace mu2e {
     // Find the double quote that ends the filename.
     string::size_type j1 = line.find("\"",j0+1);
     if ( j1 == string::npos ){
-      throw edm::Exception(edm::errors::Unknown)
+      throw art::Exception(art::errors::Unknown)
         << "Cannot find trailing double quote on include line: \n"
         << line
         << endl;
@@ -713,7 +713,7 @@ namespace mu2e {
 
     // Check for a non-empty file name.
     if ( j1-j0-1 == 0 ){
-      throw edm::Exception(edm::errors::Unknown)
+      throw art::Exception(art::errors::Unknown)
         << "Empty filename in include line: \n"
         << line
         << endl;

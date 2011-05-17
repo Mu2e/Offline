@@ -14,7 +14,7 @@ CellGeometryHandle_v3::~CellGeometryHandle_v3() {
 void CellGeometryHandle_v3::SelectCell(int SupLayer, int CelLayer, int Cell) {
         SuperLayer *sl=_itr->getSuperLayer(SupLayer);
         if (SupLayer==_nLayer && CelLayer==1) CelLayer=0;
-        if (CelLayer>0)        throw cms::Exception("GEOM")<< "The requested cell layer is not allowed in the Square cell geometry"<<std::endl;
+        if (CelLayer>0)        throw cet::exception("GEOM")<< "The requested cell layer is not allowed in the Square cell geometry"<<std::endl;
         int SelectedCellLayer = 1;
         if (SupLayer==0) SelectedCellLayer++;
         _itl=sl->getLayer(SelectedCellLayer);

@@ -2,9 +2,9 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.cc,v 1.1 2010/03/23 20:58:29 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/23 20:58:29 $
+// $Id: PhysicalVolumeHelper.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -31,7 +31,7 @@
 //    will throw. The client code need not check for errors.
 
 // Framework includes
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
@@ -54,7 +54,7 @@ namespace mu2e {
     G4VPhysicalVolume* physVol  = track->GetVolume();
     VolMapType_const_iterator physVolIter = _volumeMap.find(physVol);
     if ( physVolIter == _volumeMap.end() ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Cannot find physical volume in the map: "
         << physVol->GetName()
         << " Copy number: "
@@ -77,7 +77,7 @@ namespace mu2e {
       } else{
         message = "The map is not empty: something has been corrupted.";
       }
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Cannot find physical volume in the map. "
         << message
         << "\n";
@@ -101,7 +101,7 @@ namespace mu2e {
       G4VPhysicalVolume* vpv = *i;
       VolMapType_iterator iter = _volumeMap.find(vpv);
       if ( iter != _volumeMap.end() ){
-        throw cms::Exception("RANGE")
+        throw cet::exception("RANGE")
           << "Error building the persistent volume list.  Volume: "
           << vpv->GetName()
           << " Copy number: "

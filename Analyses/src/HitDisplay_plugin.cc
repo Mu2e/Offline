@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_plugin.cc,v 1.1 2011/05/17 00:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/17 00:28:23 $
+// $Id: HitDisplay_plugin.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke.
 //
@@ -14,10 +14,10 @@
 #include <string>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Services/interface/TFileService.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -56,13 +56,13 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
-  class HitDisplay : public edm::EDAnalyzer {
+  class HitDisplay : public art::EDAnalyzer {
   public:
-    explicit HitDisplay(edm::ParameterSet const& pset);
+    explicit HitDisplay(fhicl::ParameterSet const& pset);
     virtual ~HitDisplay(){}
 
-    void beginJob(edm::EventSetup const& );
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void beginJob(art::EventSetup const& );
+    void analyze( art::Event const& e, art::EventSetup const&);
 
   private:
 
@@ -103,15 +103,15 @@ namespace mu2e {
 
   };
 
-  HitDisplay::HitDisplay(edm::ParameterSet const& pset):
-    moduleLabel_(pset.getParameter<string>("@module_label")),
-    generatorModuleLabel_(pset.getParameter<std::string>("generatorModuleLabel")),
-    g4ModuleLabel_(pset.getParameter<std::string>("g4ModuleLabel")),
-    hitMakerModuleLabel_(pset.getParameter<std::string>("hitMakerModuleLabel")),
-    trackerStepPoints_(pset.getParameter<std::string>("trackerStepPoints")),
-    minEnergyDep_(pset.getParameter<double>("minEnergyDep")),
-    minHits_(pset.getParameter<uint32_t>("minHits")),
-    doDisplay_(pset.getUntrackedParameter<bool>("doDisplay",true)),
+  HitDisplay::HitDisplay(fhicl::ParameterSet const& pset):
+    moduleLabel_(pset.get<string>("@module_label")),
+    generatorModuleLabel_(pset.get<std::string>("generatorModuleLabel")),
+    g4ModuleLabel_(pset.get<std::string>("g4ModuleLabel")),
+    hitMakerModuleLabel_(pset.get<std::string>("hitMakerModuleLabel")),
+    trackerStepPoints_(pset.get<std::string>("trackerStepPoints")),
+    minEnergyDep_(pset.get<double>("minEnergyDep")),
+    minHits_(pset.get<uint32_t>("minHits")),
+    doDisplay_(pset.get<bool>("doDisplay",true)),
     application_(0),
     directory_(0),
     canvas_(0),
@@ -126,10 +126,10 @@ namespace mu2e {
     _ntHit(0){
   }
 
-  void HitDisplay::beginJob(edm::EventSetup const& ){
+  void HitDisplay::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     
     // Create some 1D histograms.
     _hnHits     =  tfs->make<TH1F>( "hnHits",      "StrawHits per Event",              100,    0.,    200. );
@@ -163,7 +163,7 @@ namespace mu2e {
 
 
   void
-  HitDisplay::analyze(edm::Event const& event, edm::EventSetup const&) {
+  HitDisplay::analyze(art::Event const& event, art::EventSetup const&) {
 
     // Tracker geometry.
     GeomHandle<TTracker> ttracker;
@@ -175,29 +175,29 @@ namespace mu2e {
     ConditionsHandle<TrackerCalibrations> trackCal("ignored");
 
     // Get information from the event.
-    edm::Handle<ToyGenParticleCollection> gensHandle;
+    art::Handle<ToyGenParticleCollection> gensHandle;
     event.getByLabel(generatorModuleLabel_,gensHandle);
     ToyGenParticleCollection const& gens = *gensHandle;
 
-    edm::Handle<SimParticleCollection> simsHandle;
+    art::Handle<SimParticleCollection> simsHandle;
     event.getByLabel(g4ModuleLabel_,simsHandle);
     SimParticleCollection const& sims = *simsHandle;
 
-    edm::Handle<StrawHitCollection> hitsHandle;
+    art::Handle<StrawHitCollection> hitsHandle;
     event.getByLabel(hitMakerModuleLabel_,hitsHandle);
     StrawHitCollection const& hits = *hitsHandle;
 
     /*
-      edm::Handle<StrawHitMCTruthCollection> hitsTruthHandle;
+      art::Handle<StrawHitMCTruthCollection> hitsTruthHandle;
       event.getByLabel(hitMakerModuleLabel_,hitsTruthHandle);
       StrawHitMCTruthCollection const& hitsTruth = *hitsTruthHandle;
     */
 
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<DPIndexVectorCollection> mcptrHandle;
     event.getByLabel(hitMakerModuleLabel_,"StrawHitMCPtr",mcptrHandle);
     DPIndexVectorCollection const& hits_mcptr = *mcptrHandle;
 
-    edm::Handle<StepPointMCCollection> stepsHandle;
+    art::Handle<StepPointMCCollection> stepsHandle;
     event.getByLabel(g4ModuleLabel_,trackerStepPoints_,stepsHandle);
     StepPointMCCollection const& steps = *stepsHandle;
 
@@ -429,4 +429,4 @@ namespace mu2e {
 }
 
 using mu2e::HitDisplay;
-DEFINE_FWK_MODULE(HitDisplay);
+DEFINE_ART_MODULE(HitDisplay);

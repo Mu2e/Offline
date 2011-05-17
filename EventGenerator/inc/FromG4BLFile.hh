@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.6 2011/05/02 18:55:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/02 18:55:50 $
+// $Id: FromG4BLFile.hh,v 1.7 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward references.
-namespace edm{
+namespace art{
   class Run;
 }
 class TH1F;
@@ -38,7 +38,7 @@ namespace mu2e {
   class FromG4BLFile: public GeneratorBase{
 
   public:
-    FromG4BLFile( edm::Run const& run, const SimpleConfig& config );
+    FromG4BLFile( art::Run const& run, const SimpleConfig& config );
     virtual ~FromG4BLFile();
 
     virtual void generate( ToyGenParticleCollection&  );

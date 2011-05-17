@@ -1,9 +1,9 @@
 //
 // Free function to be used by the nest... functions
 // 
-// $Id: finishNesting.cc,v 1.3 2010/12/22 17:38:19 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/22 17:38:19 $
+// $Id: finishNesting.cc,v 1.4 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on nest... functions
 //
@@ -46,7 +46,7 @@ namespace mu2e {
                      bool const verbose
                      ) {
 
-    G4Helper    & _helper = *(edm::Service<G4Helper>());
+    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     // the code below if activated prints the parameters of the solid

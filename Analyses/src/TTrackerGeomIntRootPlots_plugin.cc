@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.7 2011/02/04 14:56:24 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/02/04 14:56:24 $
+// $Id: TTrackerGeomIntRootPlots_plugin.cc,v 1.8 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -17,14 +17,13 @@
 #include <limits>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/Run.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 #include "GeneralUtilities/inc/pow.hh"
 
@@ -64,30 +63,30 @@ namespace mu2e {
 
   class Straw;
 
-  class TTrackerGeomIntRootPlots : public edm::EDAnalyzer {
+  class TTrackerGeomIntRootPlots : public art::EDAnalyzer {
   public:
     
-    explicit TTrackerGeomIntRootPlots(edm::ParameterSet const& pset);
+    explicit TTrackerGeomIntRootPlots(fhicl::ParameterSet const& pset);
     virtual ~TTrackerGeomIntRootPlots() { }
 
 //     virtual void analyze(Event const&, EventSetup const&) = 0;
 //     virtual void beginJob(EventSetup const&){}
 //     virtual void endJob(){}
 //     virtual void endRun(Run const&, EventSetup const&){}
-//     virtual void beginLuminosityBlock(LuminosityBlock const&, EventSetup const&){}
-//     virtual void endLuminosityBlock(LuminosityBlock const&, EventSetup const&){}
+//     virtual void beginSubRun(SubRun const&, EventSetup const&){}
+//     virtual void endSubRun(SubRun const&, EventSetup const&){}
 //     virtual void respondToOpenInputFile(FileBlock const& fb) {}
 //     virtual void respondToCloseInputFile(FileBlock const& fb) {}
 //     virtual void respondToOpenOutputFiles(FileBlock const& fb) {}
 //     virtual void respondToCloseOutputFiles(FileBlock const& fb) {}
 
 
-    void beginJob(edm::EventSetup const&);
-    void beginRun(edm::Run const&, edm::EventSetup const&);
+    void beginJob(art::EventSetup const&);
+    void beginRun(art::Run const&, art::EventSetup const&);
     void endJob();
  
     // This is called for each event and is pure virtual
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
 
     // other aux functions
@@ -146,7 +145,7 @@ namespace mu2e {
 
   };
 
-  TTrackerGeomIntRootPlots::TTrackerGeomIntRootPlots(edm::ParameterSet const& pset) : 
+  TTrackerGeomIntRootPlots::TTrackerGeomIntRootPlots(fhicl::ParameterSet const& pset) : 
 
     // ROOT objects
       
@@ -164,10 +163,10 @@ namespace mu2e {
 
   }
   
-  void TTrackerGeomIntRootPlots::beginJob(edm::EventSetup const& ){
+  void TTrackerGeomIntRootPlots::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     gROOT->SetStyle("Plain");
 
@@ -243,10 +242,10 @@ namespace mu2e {
   }
 
 
-  void TTrackerGeomIntRootPlots::beginRun(edm::Run const&, edm::EventSetup const&){
+  void TTrackerGeomIntRootPlots::beginRun(art::Run const&, art::EventSetup const&){
 
     // Get access to the master geometry system and its run time config.
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     _config = &(geom->config());
 
     GeomHandle<TTracker> ttracker;
@@ -254,7 +253,7 @@ namespace mu2e {
     
   }
 
-  void TTrackerGeomIntRootPlots::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void TTrackerGeomIntRootPlots::analyze(const art::Event& event, art::EventSetup const&) {
     // we do not do much here since we plot the detector geometry which does not change between events,
     // but it is a pure virtual function ...
   } // end analyze
@@ -262,7 +261,7 @@ namespace mu2e {
   void TTrackerGeomIntRootPlots::endJob(){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     setMu2eDetectorOrigin();
     // we will not use it
@@ -589,7 +588,7 @@ namespace mu2e {
                                                     double lx, double ux, 
                                                     double lz, double uz
                                                     ){
-    //    int _strawsPerManifold  = _config->getInt("ttracker.strawsPerManifold");
+    //    int _strawsPerManifold  = _config->get<int>("ttracker.strawsPerManifold");
 
     TLine* line   = new TLine();
     line->SetLineStyle(kSolid);
@@ -669,7 +668,7 @@ namespace mu2e {
 
   void TTrackerGeomIntRootPlots::drawStraws(bool dolabels) {
 
-    int _strawsPerManifold  = _config->getInt("ttracker.strawsPerManifold");
+    int _strawsPerManifold  = _config->get<int>("ttracker.strawsPerManifold");
 
     TLine* line   = new TLine();
     line->SetLineStyle(kSolid);
@@ -738,7 +737,7 @@ namespace mu2e {
 
   void TTrackerGeomIntRootPlots::drawManifolds(bool dolabels) {
 
-    int _strawsPerManifold = _config->getInt("ttracker.strawsPerManifold");
+    int _strawsPerManifold = _config->get<int>("ttracker.strawsPerManifold");
 
     TLine* line   = new TLine();
     line->SetLineStyle(kSolid);
@@ -1074,4 +1073,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::TTrackerGeomIntRootPlots;
-DEFINE_FWK_MODULE(TTrackerGeomIntRootPlots);
+DEFINE_ART_MODULE(TTrackerGeomIntRootPlots);

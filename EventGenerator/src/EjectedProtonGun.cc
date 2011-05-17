@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.cc,v 1.16 2011/05/17 06:00:47 onoratog Exp $ 
-// $Author: onoratog $
-// $Date: 2011/05/17 06:00:47 $
+// $Id: EjectedProtonGun.cc,v 1.17 2011/05/17 15:36:00 greenc Exp $ 
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 // 
@@ -16,10 +16,10 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/EjectedProtonGun.hh"
@@ -48,7 +48,7 @@ using namespace std;
 
 namespace mu2e {
 
-  EjectedProtonGun::EjectedProtonGun( edm::Run& run, const SimpleConfig& config ):
+  EjectedProtonGun::EjectedProtonGun( art::Run& run, const SimpleConfig& config ):
     
     // Base class.
     GeneratorBase(),
@@ -61,10 +61,10 @@ namespace mu2e {
     _czmax(config.getDouble("ejectedProtonGun.czmax",  1.)),
     _phimin(config.getDouble("ejectedProtonGun.phimin", 0. )),
     _phimax(config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi )),
-    _nbins(config.getInt("ejectedProtonGun.nbins",1000)),
-    _doHistograms(config.getBool("ejectedProtonGun.doHistograms",true)),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _nbins(config.get<int>("ejectedProtonGun.nbins",1000)),
+    _doHistograms(config.get<bool>("ejectedProtonGun.doHistograms",true)),
+    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),  
@@ -104,8 +104,8 @@ namespace mu2e {
 
     // Book histograms.
     if ( _doHistograms ){
-      edm::Service<edm::TFileService> tfs;
-      edm::TFileDirectory tfdir  = tfs->mkdir( "EjectedProtonGun" );
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir  = tfs->mkdir( "EjectedProtonGun" );
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "Proton Multiplicity",                20,     0,     20  );
       _hKE           = tfdir.make<TH1D>( "hKE",           "Proton Kinetic Energy",              50, _elow,   _ehi  );
       _hMomentumMeV  = tfdir.make<TH1D>( "hMomentumMeV",  "Proton Momentum in MeV",             50, _elow,   _ehi  );
@@ -236,7 +236,7 @@ namespace mu2e {
     
     // Sanity check.
     if (_nbins <= 0) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "Nonsense nbins requested in "
         << "ejectedProtonGun = "
         << _nbins

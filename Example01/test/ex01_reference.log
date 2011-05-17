@@ -1,6 +1,6 @@
- $Id: ex01_reference.log,v 1.2 2009/10/23 22:27:51 kutschke Exp $
- $Author: kutschke $
- $Date: 2009/10/23 22:27:51 $
+ $Id: ex01_reference.log,v 1.3 2011/05/17 15:36:00 greenc Exp $
+ $Author: greenc $
+ $Date: 2011/05/17 15:36:00 $
 
 ---- Reference log file starts after next blank line ----
 
@@ -16,7 +16,7 @@ Starting a new run: 1
 %MSG-i ToyHitInfo:  23-Oct-2009 17:24:23 CDT BeforeEvents
 Starting a new lumi block: 1
 %MSG
-Begin processing the 1st record. Run 1, Event 1, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 1st record. Run 1, Event 1, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 1. Number of hits: 8.
 Event: 1  | Hit #: 0  | Position: (2.37439,4.40026,0.572971) | Pulse Height: 9.69614
 Event: 1  | Hit #: 1  | Position: (4.74878,8.80052,1.14594) | Pulse Height: 9.41007
@@ -26,7 +26,7 @@ Event: 1  | Hit #: 4  | Position: (11.8719,22.0013,2.86486) | Pulse Height: 8.19
 Event: 1  | Hit #: 5  | Position: (14.2463,26.4016,3.43783) | Pulse Height: 9.42132
 Event: 1  | Hit #: 6  | Position: (16.6207,30.8018,4.0108) | Pulse Height: 12.443
 Event: 1  | Hit #: 7  | Position: (18.9951,35.2021,4.58377) | Pulse Height: 10.1882
-Begin processing the 2nd record. Run 1, Event 3, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 2nd record. Run 1, Event 3, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 3. Number of hits: 6.
 Event: 3  | Hit #: 0  | Position: (-4.01179,-2.98422,0.0524979) | Pulse Height: 12.0547
 Event: 3  | Hit #: 1  | Position: (-8.02358,-5.96843,0.104996) | Pulse Height: 11.0569
@@ -34,7 +34,7 @@ Event: 3  | Hit #: 2  | Position: (-12.0354,-8.95265,0.157494) | Pulse Height: 1
 Event: 3  | Hit #: 3  | Position: (-20.0589,-14.9211,0.262489) | Pulse Height: 10.6683
 Event: 3  | Hit #: 4  | Position: (-28.0825,-20.8895,0.367485) | Pulse Height: 11.382
 Event: 3  | Hit #: 5  | Position: (-32.0943,-23.8737,0.419983) | Pulse Height: 10.0301
-Begin processing the 3rd record. Run 1, Event 5, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 3rd record. Run 1, Event 5, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 5. Number of hits: 7.
 Event: 5  | Hit #: 0  | Position: (9.98076,0.620025,-2.2488) | Pulse Height: 10.1017
 Event: 5  | Hit #: 1  | Position: (14.9711,0.930038,-3.3732) | Pulse Height: 10.1545
@@ -43,7 +43,7 @@ Event: 5  | Hit #: 3  | Position: (24.9519,1.55006,-5.622) | Pulse Height: 10.61
 Event: 5  | Hit #: 4  | Position: (29.9423,1.86008,-6.7464) | Pulse Height: 10.0025
 Event: 5  | Hit #: 5  | Position: (34.9327,2.17009,-7.8708) | Pulse Height: 9.24739
 Event: 5  | Hit #: 6  | Position: (39.923,2.4801,-8.9952) | Pulse Height: 11.5455
-Begin processing the 4th record. Run 1, Event 7, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 4th record. Run 1, Event 7, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 7. Number of hits: 8.
 Event: 7  | Hit #: 0  | Position: (-4.98796,-0.346826,-0.868638) | Pulse Height: 10.5261
 Event: 7  | Hit #: 1  | Position: (-9.97591,-0.693651,-1.73728) | Pulse Height: 11.6335
@@ -53,7 +53,7 @@ Event: 7  | Hit #: 4  | Position: (-24.9398,-1.73413,-4.34319) | Pulse Height: 1
 Event: 7  | Hit #: 5  | Position: (-29.9277,-2.08095,-5.21183) | Pulse Height: 6.82335
 Event: 7  | Hit #: 6  | Position: (-34.9157,-2.42778,-6.08046) | Pulse Height: 9.32186
 Event: 7  | Hit #: 7  | Position: (-39.9037,-2.7746,-6.9491) | Pulse Height: 13.0566
-Begin processing the 5th record. Run 1, Event 9, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 5th record. Run 1, Event 9, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 9. Number of hits: 7.
 Event: 9  | Hit #: 0  | Position: (-1.26627,-4.837,0.756028) | Pulse Height: 10.7074
 Event: 9  | Hit #: 1  | Position: (-2.53253,-9.674,1.51206) | Pulse Height: 9.41309
@@ -96,7 +96,7 @@ Event: 17  | Hit #: 4  | Position: (20.5483,14.2397,10.3647) | Pulse Height: 6.7
 Event: 17  | Hit #: 5  | Position: (24.6579,17.0876,12.4376) | Pulse Height: 9.54023
 Event: 17  | Hit #: 6  | Position: (28.7676,19.9355,14.5106) | Pulse Height: 9.98686
 Event: 17  | Hit #: 7  | Position: (32.8772,22.7835,16.5835) | Pulse Height: 12.5904
-Begin processing the 10th record. Run 1, Event 19, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 10th record. Run 1, Event 19, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 19. Number of hits: 8.
 Event: 19  | Hit #: 0  | Position: (4.56764,2.03388,-1.20915) | Pulse Height: 10.3608
 Event: 19  | Hit #: 1  | Position: (9.13527,4.06777,-2.4183) | Pulse Height: 8.75725
@@ -110,7 +110,7 @@ Analyzing event #: run: 1 event: 21. Number of hits: 8.
 Analyzing event #: run: 1 event: 23. Number of hits: 7.
 Analyzing event #: run: 1 event: 25. Number of hits: 8.
 Analyzing event #: run: 1 event: 27. Number of hits: 7.
-Begin processing the 15th record. Run 1, Event 29, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 15th record. Run 1, Event 29, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 29. Number of hits: 8.
 Analyzing event #: run: 1 event: 31. Number of hits: 8.
 Analyzing event #: run: 1 event: 33. Number of hits: 8.
@@ -121,7 +121,7 @@ Analyzing event #: run: 1 event: 41. Number of hits: 7.
 Analyzing event #: run: 1 event: 43. Number of hits: 6.
 Analyzing event #: run: 1 event: 45. Number of hits: 8.
 Analyzing event #: run: 1 event: 47. Number of hits: 7.
-Begin processing the 25th record. Run 1, Event 49, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 25th record. Run 1, Event 49, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 49. Number of hits: 8.
 Analyzing event #: run: 1 event: 51. Number of hits: 8.
 Analyzing event #: run: 1 event: 53. Number of hits: 8.
@@ -142,7 +142,7 @@ Analyzing event #: run: 1 event: 81. Number of hits: 8.
 Analyzing event #: run: 1 event: 83. Number of hits: 7.
 Analyzing event #: run: 1 event: 85. Number of hits: 8.
 Analyzing event #: run: 1 event: 87. Number of hits: 8.
-Begin processing the 45th record. Run 1, Event 89, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 45th record. Run 1, Event 89, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 89. Number of hits: 8.
 Analyzing event #: run: 1 event: 91. Number of hits: 8.
 Analyzing event #: run: 1 event: 93. Number of hits: 8.
@@ -183,7 +183,7 @@ Analyzing event #: run: 1 event: 161. Number of hits: 8.
 Analyzing event #: run: 1 event: 163. Number of hits: 8.
 Analyzing event #: run: 1 event: 165. Number of hits: 8.
 Analyzing event #: run: 1 event: 167. Number of hits: 7.
-Begin processing the 85th record. Run 1, Event 169, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 85th record. Run 1, Event 169, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 169. Number of hits: 8.
 Analyzing event #: run: 1 event: 171. Number of hits: 8.
 Analyzing event #: run: 1 event: 173. Number of hits: 7.
@@ -264,7 +264,7 @@ Analyzing event #: run: 1 event: 321. Number of hits: 8.
 Analyzing event #: run: 1 event: 323. Number of hits: 8.
 Analyzing event #: run: 1 event: 325. Number of hits: 7.
 Analyzing event #: run: 1 event: 327. Number of hits: 8.
-Begin processing the 165th record. Run 1, Event 329, LumiSection 1 at 23-Oct-2009 17:24:23 CDT
+Begin processing the 165th record. Run 1, Event 329, SubRun 1 at 23-Oct-2009 17:24:23 CDT
 Analyzing event #: run: 1 event: 329. Number of hits: 7.
 Analyzing event #: run: 1 event: 331. Number of hits: 8.
 Analyzing event #: run: 1 event: 333. Number of hits: 8.

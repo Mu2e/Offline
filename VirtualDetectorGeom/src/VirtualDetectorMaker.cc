@@ -7,7 +7,7 @@
 #include <cmath>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "VirtualDetectorGeom/inc/VirtualDetectorMaker.hh"
@@ -28,7 +28,7 @@ namespace mu2e {
   {
     _vd = auto_ptr<VirtualDetector>(new VirtualDetector());
 
-    if( ! c.getBool("hasVirtualDetector",false) ) return;
+    if( ! c.get<bool>("hasVirtualDetector",false) ) return;
 
     double vdHL = c.getDouble("vd.halfLength",0.1*mm);
     _vd->_halfLength = vdHL;

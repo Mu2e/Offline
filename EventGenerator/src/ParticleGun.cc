@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.8 2011/03/04 23:31:34 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/04 23:31:34 $
+// $Id: ParticleGun.cc,v 1.9 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 // 
@@ -11,11 +11,11 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/ParticleGun.hh"
@@ -47,14 +47,14 @@ namespace mu2e {
   // Conversion energy for Al.  Should come from conditions.
   static const double pEndPoint = 104.96;
 
-  ParticleGun::ParticleGun( edm::Run const& , const SimpleConfig& config ):
+  ParticleGun::ParticleGun( art::Run const& , const SimpleConfig& config ):
 
     // Base class.
     GeneratorBase(),
 
     // From run time configuration file.
     _mean(config.getDouble("particleGun.mean",-1.)),
-    _pdgId(static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::mu_minus))),
+    _pdgId(static_cast<PDGCode::type>(config.get<int>("particleGun.id",  PDGCode::mu_minus))),
     _czmin( config.getDouble("particleGun.czmin",  0.5)),
     _czmax( config.getDouble("particleGun.czmax",  0.7)),
     _phimin(config.getDouble("particleGun.phimin", 0. )),
@@ -65,7 +65,7 @@ namespace mu2e {
     _tmax(0),
     _point(),
     _halfLength(),
-    _doHistograms(config.getBool("particleGun.doHistograms", false)),
+    _doHistograms(config.get<bool>("particleGun.doHistograms", false)),
 
     // Random number distributions; getEngine() comes from base class.
     _randFlat( getEngine() ),
@@ -105,9 +105,9 @@ namespace mu2e {
     // Book histograms if enabled.
     if ( !_doHistograms ) return;
 
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
-    edm::TFileDirectory tfdir = tfs->mkdir( "ParticleGun" );
+    art::TFileDirectory tfdir = tfs->mkdir( "ParticleGun" );
     _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity", "Particle Gun Multiplicity",    20,  0.,  20.);
 
     // Pick range of histogram.  Nice round numbers for the usual case.

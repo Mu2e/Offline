@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.1 2011/05/16 23:25:46 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/16 23:25:46 $
+// $Id: DiagnosticsG4.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 //
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
+#include "art/Framework/Core/Run.h"
 
 #include "Mu2eG4/inc/DiagnosticsG4.hh"
 
@@ -30,8 +30,8 @@ namespace mu2e {
   void DiagnosticsG4::beginJob(){}
   void DiagnosticsG4::endJob(){}
 
-  void DiagnosticsG4::beginRun( edm::Run const &run, PhysicalVolumeHelper const& volInfo ){}
-  void DiagnosticsG4::endRun(edm::Run const& run){}
+  void DiagnosticsG4::beginRun( art::Run const &run, PhysicalVolumeHelper const& volInfo ){}
+  void DiagnosticsG4::endRun(art::Run const& run){}
 
   void DiagnosticsG4::analyze( StatusG4                  const& status,
                                SimParticleCollection     const& sims,

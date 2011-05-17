@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_plugin.cc,v 1.2 2011/03/28 16:56:39 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2011/03/28 16:56:39 $
+// $Id: MakeDriftCellHit_plugin.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -15,16 +15,15 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -46,7 +45,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 using namespace std;
-using edm::Event;
+using art::Event;
 
 namespace mu2e {
 
@@ -74,23 +73,23 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class MakeDriftCellHit : public edm::EDProducer {
+  class MakeDriftCellHit : public art::EDProducer {
   public:
-    explicit MakeDriftCellHit(edm::ParameterSet const& pset) :
+    explicit MakeDriftCellHit(fhicl::ParameterSet const& pset) :
 
       // Parameters
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _t0Sigma(pset.getUntrackedParameter<double>("t0Sigma",5.0)), // ns
-      _timetodist(pset.getUntrackedParameter<double>("timetodist",0.0/*149.8962*/)), // mm/ns
-      _distSigma(pset.getUntrackedParameter<double>("distSigma",0.0/*80.*/)), // mm
-      _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
-      _minimumLength(pset.getUntrackedParameter<double>("minimumLength",0.005/*0.01*/)),   // mm
-      _driftVelocity(pset.getUntrackedParameter<double>("driftVelocity",0.035/*0.05*/)),   // mm/ns
-      _driftSigma(pset.getUntrackedParameter<double>("driftSigma",0.2/*0.1*/)),          // mm
-      _minimumTimeGap(pset.getUntrackedParameter<double>("minimumTimeGap",500.0/*100.0*/)),// ns depends by the cell dimension it will change after
-      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _t0Sigma(pset.get<double>("t0Sigma",5.0)), // ns
+      _timetodist(pset.get<double>("timetodist",0.0/*149.8962*/)), // mm/ns
+      _distSigma(pset.get<double>("distSigma",0.0/*80.*/)), // mm
+      _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
+      _minimumLength(pset.get<double>("minimumLength",0.005/*0.01*/)),   // mm
+      _driftVelocity(pset.get<double>("driftVelocity",0.035/*0.05*/)),   // mm/ns
+      _driftSigma(pset.get<double>("driftSigma",0.2/*0.1*/)),          // mm
+      _minimumTimeGap(pset.get<double>("minimumTimeGap",500.0/*100.0*/)),// ns depends by the cell dimension it will change after
+      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
 
       // Random number distributions
       _gaussian( createEngine( get_seed_value(pset)) ),
@@ -105,9 +104,9 @@ namespace mu2e {
     }
     virtual ~MakeDriftCellHit() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
  
-    void produce( edm::Event& e, edm::EventSetup const&);
+    void produce( art::Event& e, art::EventSetup const&);
 
   private:
     
@@ -139,12 +138,12 @@ namespace mu2e {
 
   };
 
-  void MakeDriftCellHit::beginJob(edm::EventSetup const& ){
+  void MakeDriftCellHit::beginJob(art::EventSetup const& ){
     
   }
 
   void
-  MakeDriftCellHit::produce(edm::Event& event, edm::EventSetup const&) {
+  MakeDriftCellHit::produce(art::Event& event, art::EventSetup const&) {
 
     if ( _diagLevel > 0 ) cout << "MakeDriftCellHit: produce() begin" << endl;
       
@@ -164,11 +163,11 @@ namespace mu2e {
     auto_ptr<DPIndexVectorCollection>   mcptrHits(new DPIndexVectorCollection);
 
     // Ask the event to give us a handle to the requested hits.
-    edm::Handle<StepPointMCCollection> points;
+    art::Handle<StepPointMCCollection> points;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,points);
 
     // Product Id of the input points.
-    edm::ProductID const& id(points.id());
+    art::ProductID const& id(points.id());
 
     // Calculate T0 for this event
     double t0 = _gaussian.fire(0.,_t0Sigma);
@@ -404,4 +403,4 @@ namespace mu2e {
 }
 
 using mu2e::MakeDriftCellHit;
-DEFINE_FWK_MODULE(MakeDriftCellHit);
+DEFINE_ART_MODULE(MakeDriftCellHit);

@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: GrokGeometry_plugin.cc,v 1.1 2011/05/16 23:10:52 mf Exp $
-// $Author: mf $
-// $Date: 2011/05/16 23:10:52 $
+// $Id: GrokGeometry_plugin.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author: Mark Fischler 
 //
@@ -21,17 +21,16 @@
 #include "CLHEP/Vector/TwoVector.h"
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "DataFormats/Provenance/interface/Provenance.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Persistency/Provenance/Provenance.h"
 
 // Root includes.
 #include "TFile.h"
@@ -108,15 +107,15 @@ namespace mu2e {;
   //--------------------------------------------------------------------
   //
   // 
-  class GrokGeometry : public edm::EDAnalyzer {
+  class GrokGeometry : public art::EDAnalyzer {
   public:
-    explicit GrokGeometry(edm::ParameterSet const& pset):
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
-      _clmakerModuleLabel(pset.getParameter<std::string>("clmakerModuleLabel")),
+    explicit GrokGeometry(fhicl::ParameterSet const& pset):
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+      _clmakerModuleLabel(pset.get<std::string>("clmakerModuleLabel")),
        _EnergyDep_s(0),
       _EnergyDepX_s(0),
       _beta_c(0),
@@ -126,10 +125,10 @@ namespace mu2e {;
     }
     virtual ~GrokGeometry() { }
     
-    virtual void beginJob(edm::EventSetup const&);
-    virtual void beginRun(edm::Run const &, edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
+    virtual void beginRun(art::Run const &, art::EventSetup const&);
     
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void analyze( art::Event const& e, art::EventSetup const&);
   private:
  
     // Diagnostics level.
@@ -157,12 +156,12 @@ namespace mu2e {;
   }; // end of GrokGeometry class definition
 
   
-  void GrokGeometry::beginJob(edm::EventSetup const& ){
+  void GrokGeometry::beginJob(art::EventSetup const& ){
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint<<endl; 
 
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     _EnergyDep_s     = tfs->make<TH1F>( "EnergyDep_s", "s Energy Deposited in Straw (KeV)", 100, 0.0, 10.0);
     _EnergyDepX_s    = tfs->make<TH1F>( "EnergyDepX_s","s Energy Deposited in Straw (KeV)", 100, 0.0, 10.0);
     _beta_c 	     = tfs->make<TH1F>( "beta_c",      "s straw incidence angle beta", 45, 0., 90. );
@@ -171,7 +170,7 @@ namespace mu2e {;
 
    } // end of GrokGeometry beginJob
   
-  void GrokGeometry::beginRun(edm::Run const &, edm::EventSetup const& ){
+  void GrokGeometry::beginRun(art::Run const &, art::EventSetup const& ){
 
     const Tracker& tracker = getTrackerOrThrow();
     const std::deque<Straw>&  trackerStraws = tracker.getAllStraws();    
@@ -187,7 +186,7 @@ namespace mu2e {;
 
    } // end of GrokGeometry beginRun
   
-  void GrokGeometry::analyze(edm::Event const& evt, edm::EventSetup const&)
+  void GrokGeometry::analyze(art::Event const& evt, art::EventSetup const&)
   {
     if ( _diagLevel > 2 ) cout << "GrokGeometry: analyze() begin"<<endl;
 
@@ -233,23 +232,23 @@ namespace mu2e {;
     //
     // Get the persistent data about pointers to StrawHits
     //
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_clmakerModuleLabel,"DPIStrawCluster",mcptrHandle);
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     evt.getByType(genParticles);
     
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     evt.getByType(simParticles);
     
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByType(volumes);
     
     //Some files might not have the SimParticle and volume information.
@@ -521,4 +520,4 @@ namespace mu2e {;
 }
 
 using mu2e::GrokGeometry;
-DEFINE_FWK_MODULE(GrokGeometry);
+DEFINE_ART_MODULE(GrokGeometry);

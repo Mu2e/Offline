@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_plugin.cc,v 1.8 2011/01/28 23:51:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/28 23:51:58 $
+// $Id: HoughTuner_plugin.cc,v 1.9 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author P. Shanahan
 //
@@ -14,16 +14,15 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -68,27 +67,27 @@ namespace mu2e {
   //
   // 
 
-  class HoughTuner : public edm::EDAnalyzer {
+  class HoughTuner : public art::EDAnalyzer {
   public:
-    explicit HoughTuner(edm::ParameterSet const& pset) : 
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",10)),
+    explicit HoughTuner(fhicl::ParameterSet const& pset) : 
+      _maxFullPrint(pset.get<int>("maxFullPrint",10)),
       _nAnalyzed(0),
       _messageCategory("ToyHitInfo"),
-      _hitCreatorName(pset.getParameter<string>("hitCreatorName"))
+      _hitCreatorName(pset.get<string>("hitCreatorName"))
     { }
     virtual ~HoughTuner() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     virtual void endJob();
 
-    virtual void beginRun(edm::Run const &r, 
-                          edm::EventSetup const& eSetup );
+    virtual void beginRun(art::Run const &r, 
+                          art::EventSetup const& eSetup );
 
-    virtual void beginLuminosityBlock(edm::LuminosityBlock const& lblock, 
-                                      edm::EventSetup const&);
+    virtual void beginSubRun(art::SubRun const& lblock, 
+                                      art::EventSetup const&);
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
 
   private:
@@ -111,16 +110,16 @@ namespace mu2e {
     //name of the module that created the hits to be used
     const std::string _hitCreatorName;
 
-    void bookEventHistos(edm::EventNumber_t);
+    void bookEventHistos(art::EventNumber_t);
     void fillEventHistos(
          mu2e::houghtransform::HoughTransform::houghCircleStruct);
   };
 
 
-  void HoughTuner::beginJob(edm::EventSetup const& ){
+  void HoughTuner::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     // Create some 1D histograms.
     _hBiasRadiusNoise= tfs->make<TH1F>( "hBiasRadiusNoise", 
@@ -140,16 +139,16 @@ namespace mu2e {
 
 
 
-  void HoughTuner::beginRun(edm::Run const& run,
-                                 edm::EventSetup const& eSetup ){
+  void HoughTuner::beginRun(art::Run const& run,
+                                 art::EventSetup const& eSetup ){
   }
 
-  void HoughTuner::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
-                                             edm::EventSetup const&){
+  void HoughTuner::beginSubRun(art::SubRun const& lblock,
+                                             art::EventSetup const&){
   }
 
 
-  void HoughTuner::analyze(const edm::Event& evt, edm::EventSetup const&) {
+  void HoughTuner::analyze(const art::Event& evt, art::EventSetup const&) {
 
 
     static int ncalls(0);
@@ -162,15 +161,15 @@ namespace mu2e {
     ++_nAnalyzed;
 
     // Ask the event to give us a "handle" to the requested hits.
-    //    edm::Handle<StepPointMCCollection> hits;
+    //    art::Handle<StepPointMCCollection> hits;
     //evt.getByLabel(creatorName,hits);
     
     static const string collectionName("tracker");
-    edm::Handle<StepPointMCCollection> hitsHandle;
+    art::Handle<StepPointMCCollection> hitsHandle;
     evt.getByLabel(_hitCreatorName,collectionName,hitsHandle);
     StepPointMCCollection const* hits = hitsHandle.product();
 
-    edm::Handle<HoughCircleCollection> hcHandle;
+    art::Handle<HoughCircleCollection> hcHandle;
     evt.getByType(hcHandle);
 
    // primary hough circle: i.e., the first one in the collection
@@ -187,7 +186,7 @@ namespace mu2e {
      uint32_t evtno=evt.id().event();
 
      RootNameTitleHelper displayCanv("canvEvt","Display, Event",evtno,5);
-     edm::Service<edm::TFileService> tfs;
+     art::ServiceHandle<art::TFileService> tfs;
 
      TCanvas *canvEvt = tfs->make<TCanvas>(displayCanv.name(),
                    displayCanv.title());
@@ -267,7 +266,7 @@ std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
   } // end of ::analyze.
 
 
-  void HoughTuner::bookEventHistos(edm::EventNumber_t evtno)
+  void HoughTuner::bookEventHistos(art::EventNumber_t evtno)
   {
   } //bookEventHistos
   
@@ -282,4 +281,4 @@ std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
 
 
 using mu2e::HoughTuner;
-DEFINE_FWK_MODULE(HoughTuner);
+DEFINE_ART_MODULE(HoughTuner);

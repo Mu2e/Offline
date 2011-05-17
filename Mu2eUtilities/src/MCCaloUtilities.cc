@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.cc,v 1.2 2011/01/21 06:17:27 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/01/21 06:17:27 $
+// $Id: MCCaloUtilities.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Gianni Onorato
 //
@@ -10,13 +10,13 @@
 #include<iostream>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "FWCore/Utilities/interface/EDMException.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/ParameterSet/FileInPath.h"
+#include "art/Utilities/Exception.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/Run.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/MCCaloUtilities.hh"
@@ -45,7 +45,7 @@ namespace mu2e {
 
   void MCCaloUtilities::printOutCaloInfo() {
 
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     GeomHandle<Calorimeter> cg;
     
     double Hsize = cg->crystalHalfSize();
@@ -103,17 +103,17 @@ namespace mu2e {
     
   }
   
-  void MCCaloUtilities::setTrackAndRO(const edm::Event & event,
+  void MCCaloUtilities::setTrackAndRO(const art::Event & event,
                                       SimParticleCollection::key_type track,
                                       uint32_t RO){
 
     _localRO = RO;
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     GeomHandle<Calorimeter> cg;
     _localCrystal  = cg->getCrystalByRO(_localRO);
     _localVane = cg->getVaneByRO(_localRO);
     
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     SimParticle const& sim = simParticles->at(track);
@@ -128,7 +128,7 @@ namespace mu2e {
 
     _generated = sim.fromGenerator();
 
-    //    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    //    art::Handle<PhysicalVolumeInfoCollection> volumes;
     //event.getRun().getByType(volumes);
     
     //PhysicalVolumeInfo const& volInfob = volumes->at(sim.startVolumeIndex());
@@ -175,7 +175,7 @@ namespace mu2e {
 
   int MCCaloUtilities::getStartingVane(CLHEP::Hep3Vector origin) {
     
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     GeomHandle<Calorimeter> cg;
     
     for (size_t i=0; i<cg->nVane(); ++i) {

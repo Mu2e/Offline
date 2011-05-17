@@ -2,9 +2,9 @@
 // code for finding HoughTransform for circles in the L-tracker
 // 
 //
-// $Id: HoughTransform.cc,v 1.7 2010/09/30 21:53:35 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/30 21:53:35 $
+// $Id: HoughTransform.cc,v 1.8 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author R.Bernstein
 //
@@ -142,7 +142,7 @@ namespace mu2e{
       double clusterSize = candClust.size();
 
       if (candClust.empty())
-        { throw cms::Exception("RANGE") << "zero size cluster in computeClusterXYZ" ;}
+        { throw cet::exception("RANGE") << "zero size cluster in computeClusterXYZ" ;}
 
 
       for (vector<int>::size_type ifoo = 0; ifoo < candClust.size(); ++ifoo)
@@ -306,7 +306,7 @@ namespace mu2e{
     }
 
     int HoughTransform::countHitNeighbours( Straw const& straw, 
-                                            //                                    edm::Handle<StepPointMCCollection>& hits ){
+                                            //                                    art::Handle<StepPointMCCollection>& hits ){
                                     StepPointMCCollection const* hits ){
     
       int count(0);

@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example 
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.6 2010/11/09 20:25:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/09 20:25:41 $
+// $Id: Analyzer.C,v 1.7 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG
 //
@@ -28,8 +28,8 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "DataFormats/Common/interface/Wrapper.h"
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Persistency/Common/Wrapper.h"
+#include "art/Framework/Core/Event.h"
 
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
@@ -336,21 +336,21 @@ void Analyzer::analyze() {
   // we should create a class/struct for all data needed for one wrapped type
   // here is the running list: BranchName, Wrppd, 
 
-  // edm::Wrapper<mu2e::SimParticleCollection>   w; 
-  // edm::Wrapper<mu2e::SimParticleCollection>* ww; ww = &w;
+  // art::Wrapper<mu2e::SimParticleCollection>   w; 
+  // art::Wrapper<mu2e::SimParticleCollection>* ww; ww = &w;
   // make sure to not to use cint for the code below, rely on a complier
 
 
-  edm::EventAuxiliary* EventAuxiliaryWrppd = new edm::EventAuxiliary(); // this is a very different branch
+  art::EventAuxiliary* EventAuxiliaryWrppd = new art::EventAuxiliary(); // this is a very different branch
 
-  edm::Wrapper<mu2e::SimParticleCollection>* SimParticleWrppd = 
-    new edm::Wrapper<mu2e::SimParticleCollection>();
-  edm::Wrapper<mu2e::StepPointMCCollection>* StepPointMCWrppd = 
-    new edm::Wrapper<mu2e::StepPointMCCollection>();
-  edm::Wrapper<mu2e::ToyGenParticleCollection>* ToyGenParticleWrppd = 
-    new edm::Wrapper<mu2e::ToyGenParticleCollection>();
-  edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd = 
-    new edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>();
+  art::Wrapper<mu2e::SimParticleCollection>* SimParticleWrppd = 
+    new art::Wrapper<mu2e::SimParticleCollection>();
+  art::Wrapper<mu2e::StepPointMCCollection>* StepPointMCWrppd = 
+    new art::Wrapper<mu2e::StepPointMCCollection>();
+  art::Wrapper<mu2e::ToyGenParticleCollection>* ToyGenParticleWrppd = 
+    new art::Wrapper<mu2e::ToyGenParticleCollection>();
+  art::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd = 
+    new art::Wrapper<mu2e::PhysicalVolumeInfoCollection>();
 
   //disable branch ("*");
 
@@ -416,15 +416,15 @@ void Analyzer::analyze() {
 
 // using those types in the root dict is problematic..., so we use them locally in this function
 
-// void Analyzer::doLTracker(edm::EventAuxiliary*                              EventAuxiliaryWrppd,
-//                           edm::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd,
-//                           edm::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd,
-//                           edm::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd,
-//                           edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd
+// void Analyzer::doLTracker(art::EventAuxiliary*                              EventAuxiliaryWrppd,
+//                           art::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd,
+//                           art::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd,
+//                           art::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd,
+//                           art::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd
 //                           ){
 
     // "aliases/handles"
-    edm::EventAuxiliary                const & event        = *EventAuxiliaryWrppd;
+    art::EventAuxiliary                const & event        = *EventAuxiliaryWrppd;
     mu2e::StepPointMCCollection        const * hits         = StepPointMCWrppd->product(); 
     mu2e::ToyGenParticleCollection     const * genParticles = ToyGenParticleWrppd->product();
     mu2e::SimParticleCollection        const * simParticles = SimParticleWrppd->product();

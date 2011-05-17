@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.cc,v 1.3 2010/11/30 16:39:27 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/30 16:39:27 $
+// $Id: constructDummyStoppingTarget.cc,v 1.4 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -14,8 +14,8 @@
 #include <string>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
@@ -50,7 +50,7 @@ namespace mu2e{
     double z0            = config.getDouble("dummyStoppingTarget.z0" ,        5900.);
     G4Material* material = materialFinder.get("dummyStoppingTarget.materialName","WAGVacuum");
 
-    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool doSurfaceCheck = config.get<bool>("g4.doSurfaceCheck",false);
 
     // Parameters of a G4Tubs.
     TubsParams params(rIn, rOut, halfLength );
@@ -65,10 +65,10 @@ namespace mu2e{
                                 offset,
                                 mother,
                                 0,
-                                config.getBool("target.visible",true),
+                                config.get<bool>("target.visible",true),
                                 G4Color::Yellow(),
-                                config.getBool("target.solid",true),
-                                config.getBool("g4.forceAuxEdgeVisible",false),
+                                config.get<bool>("target.solid",true),
+                                config.get<bool>("g4.forceAuxEdgeVisible",false),
                                 true,
                                 doSurfaceCheck
                                 );

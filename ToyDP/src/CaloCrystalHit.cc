@@ -1,17 +1,17 @@
 // 
 // CaloCrystalHit to be created based on CaloHit's 
 //
-// $Id: CaloCrystalHit.cc,v 1.4 2010/11/12 21:44:58 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/12 21:44:58 $
+// $Id: CaloCrystalHit.cc,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 
 // C++ includes
 #include <ostream>
 
 // Framework includes.
-//#include "FWCore/Utilities/interface/Exception.h"
-#include "DataFormats/Provenance/interface/ProductID.h"
+//#include "art/Utilities/Exception.h"
+#include "art/Persistency/Provenance/ProductID.h"
 
 // Mu2e includes
 #include "ToyDP/inc/CaloCrystalHit.hh"
@@ -22,7 +22,7 @@ using namespace std;
 
 namespace mu2e {
 
-  CaloCrystalHit::CaloCrystalHit(int crystalId, edm::ProductID const & caloHitCollId, CaloHit const & hit) :
+  CaloCrystalHit::CaloCrystalHit(int crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit) :
     _crystalId(crystalId),
     _time(hit.time()),
     _energyDep(hit.energyDep()),
@@ -32,7 +32,7 @@ namespace mu2e {
   {}
 
   // operator += CaloHit
-  CaloCrystalHit& CaloCrystalHit::add(edm::ProductID const & caloHitCollId, CaloHit const & hit) {
+  CaloCrystalHit& CaloCrystalHit::add(art::ProductID const & caloHitCollId, CaloHit const & hit) {
     _roIds.push_back(DPIndex(caloHitCollId,hit.id()));
     _energyDep += hit.energyDep();
     _energyDepTotal += hit.energyDep();
@@ -40,14 +40,14 @@ namespace mu2e {
     return *this;
   }
 
-  CaloCrystalHit& CaloCrystalHit::addEnergyToTot(edm::ProductID const & caloHitCollId, CaloHit const & hit) {
+  CaloCrystalHit& CaloCrystalHit::addEnergyToTot(art::ProductID const & caloHitCollId, CaloHit const & hit) {
     _energyDepTotal += hit.energyDep();
     return *this;
   }
 
   // almost like one of the constructors, plays a role of a two
   // argument assignment operator
-  void CaloCrystalHit::assign(int crystalId, edm::ProductID const & caloHitCollId, CaloHit const & hit) {
+  void CaloCrystalHit::assign(int crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit) {
     _crystalId = crystalId;
     _time = hit.time();
     _energyDep = hit.energyDep();
@@ -58,7 +58,7 @@ namespace mu2e {
     return;
   }
 
-  void CaloCrystalHit::assignEnergyToTot(int crystalId, edm::ProductID const & caloHitCollId, CaloHit const & hit) {
+  void CaloCrystalHit::assignEnergyToTot(int crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit) {
     _crystalId = crystalId;
     _time = hit.time();
     _energyDep = 0.0;

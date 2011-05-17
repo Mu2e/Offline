@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: Summary01_plugin.cc,v 1.3 2011/05/16 23:26:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/16 23:26:34 $
+// $Id: Summary01_plugin.cc,v 1.4 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke.
 //
@@ -14,10 +14,10 @@
 #include <map>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Services/interface/TFileService.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -36,19 +36,19 @@ using namespace std;
 
 namespace mu2e {
 
-  class Summary01 : public edm::EDAnalyzer {
+  class Summary01 : public art::EDAnalyzer {
   public:
-    explicit Summary01(edm::ParameterSet const& pset):
-      g4ModuleLabel_(pset.getParameter<std::string>("g4ModuleLabel")),
-      strawHitMakerModuleLabel_(pset.getParameter<std::string>("strawHitMakerModuleLabel")),
-      trackerStepPoints_(pset.getParameter<std::string>("trackerStepPoints")),
-      calorimeterStepPoints_(pset.getParameter<std::string>("calorimeterStepPoints")),
-      calorimeterROStepPoints_(pset.getParameter<std::string>("calorimeterROStepPoints")),
-      crvStepPoints_(pset.getParameter<std::string>("crvStepPoints")),
-      minEnergyDep_(pset.getParameter<double>("minEnergyDep")),
-      minHits_(pset.getParameter<uint32_t>("minHits")),
-      simsPlotMax_(pset.getUntrackedParameter<double>("simsPlotMax",400.)),
-      productionMode_(pset.getUntrackedParameter<bool>("productionMode",true)),
+    explicit Summary01(fhicl::ParameterSet const& pset):
+      g4ModuleLabel_(pset.get<std::string>("g4ModuleLabel")),
+      strawHitMakerModuleLabel_(pset.get<std::string>("strawHitMakerModuleLabel")),
+      trackerStepPoints_(pset.get<std::string>("trackerStepPoints")),
+      calorimeterStepPoints_(pset.get<std::string>("calorimeterStepPoints")),
+      calorimeterROStepPoints_(pset.get<std::string>("calorimeterROStepPoints")),
+      crvStepPoints_(pset.get<std::string>("crvStepPoints")),
+      minEnergyDep_(pset.get<double>("minEnergyDep")),
+      minHits_(pset.get<uint32_t>("minHits")),
+      simsPlotMax_(pset.get<double>("simsPlotMax",400.)),
+      productionMode_(pset.get<bool>("productionMode",true)),
       deltaRayParentId_(),
       deltaRayVolumeId_(),
       nBadG4_(0),
@@ -66,12 +66,12 @@ namespace mu2e {
     }
     virtual ~Summary01() { }
 
-    void beginJob(edm::EventSetup const& );
+    void beginJob(art::EventSetup const& );
     void endJob();
 
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void analyze( art::Event const& e, art::EventSetup const&);
 
-    void endRun( edm::Run const&, edm::EventSetup const&);
+    void endRun( art::Run const&, art::EventSetup const&);
 
 
   private:
@@ -115,16 +115,16 @@ namespace mu2e {
     TH1F* hTrkSimsRatio_;
     TH1F* hCalSimsRatio_;
 
-    void deltaRaySpectra( edm::Event const& );
-    void compressSims( edm::Event const& );
+    void deltaRaySpectra( art::Event const& );
+    void compressSims( art::Event const& );
 
   };
 
   void 
-  Summary01::beginJob(edm::EventSetup const& ){
+  Summary01::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     hG4Status_ = tfs->make<TH1F>( "hG4Status", "Non-zero Values of G4 Status word", 40, 0.,  40.   );
 
@@ -144,31 +144,31 @@ namespace mu2e {
   }
 
   void
-  Summary01::analyze(edm::Event const& event, edm::EventSetup const&) {
+  Summary01::analyze(art::Event const& event, art::EventSetup const&) {
 
     // Skip event if G4 did not complete OK.
-    edm::Handle<StatusG4> g4StatusHandle;
+    art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( g4ModuleLabel_, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
     if ( g4Status.status() > 1 ){
       ++nBadG4_;
       hG4Status_->Fill( g4Status.status() );
-      edm::LogError("G4")
+      mf::LogError("G4")
         << "Summary01::analyze skipping event because of bad G4 status.\n"
         << g4Status;
       return;
     }
 
     // Ask the event to give us a "handle" to the requested hits.
-    //edm::Handle<StepPointMCCollection> stepsHandle;
+    //art::Handle<StepPointMCCollection> stepsHandle;
     //event.getByLabel( g4ModuleLabel_, trackerStepPoints_,stepsHandle);
     //StepPointMCCollection const& steps = *stepsHandle;
 
-    //edm::Handle<SimParticleCollection> simsHandle;
+    //art::Handle<SimParticleCollection> simsHandle;
     //event.getByLabel( g4ModuleLabel_, simsHandle);
     //SimParticleCollection const& sims = *simsHandle;
 
-    edm::Handle<PhysicalVolumeInfoCollection> volsHandle;
+    art::Handle<PhysicalVolumeInfoCollection> volsHandle;
     event.getRun().getByLabel( g4ModuleLabel_, volsHandle);
     PhysicalVolumeInfoCollection const& vols = *volsHandle;
 
@@ -219,9 +219,9 @@ namespace mu2e {
   } // end of ::analyze.
 
   void 
-  Summary01::deltaRaySpectra( edm::Event const& event ){
+  Summary01::deltaRaySpectra( art::Event const& event ){
 
-    edm::Handle<SimParticleCollection> simsHandle;
+    art::Handle<SimParticleCollection> simsHandle;
     event.getByLabel( g4ModuleLabel_, simsHandle);
     SimParticleCollection const& sims = *simsHandle;
 
@@ -283,25 +283,25 @@ namespace mu2e {
 
   // Investigate how much space we can save by compressing the SimParticleCollection.
   void 
-  Summary01::compressSims( edm::Event const& event ){
+  Summary01::compressSims( art::Event const& event ){
 
-    edm::Handle<StepPointMCCollection> trkStepsHandle;
+    art::Handle<StepPointMCCollection> trkStepsHandle;
     event.getByLabel( g4ModuleLabel_, trackerStepPoints_,trkStepsHandle);
     StepPointMCCollection const& trkSteps = *trkStepsHandle;
 
-    edm::Handle<StepPointMCCollection> calStepsHandle;
+    art::Handle<StepPointMCCollection> calStepsHandle;
     event.getByLabel( g4ModuleLabel_, calorimeterStepPoints_,calStepsHandle);
     StepPointMCCollection const& calSteps = *calStepsHandle;
 
-    edm::Handle<StepPointMCCollection> cROStepsHandle;
+    art::Handle<StepPointMCCollection> cROStepsHandle;
     event.getByLabel( g4ModuleLabel_, calorimeterROStepPoints_,cROStepsHandle);
     StepPointMCCollection const& cROSteps = *cROStepsHandle;
 
-    edm::Handle<StepPointMCCollection> crvStepsHandle;
+    art::Handle<StepPointMCCollection> crvStepsHandle;
     event.getByLabel( g4ModuleLabel_, calorimeterROStepPoints_,crvStepsHandle);
     StepPointMCCollection const& crvSteps = *crvStepsHandle;
 
-    edm::Handle<SimParticleCollection> simsHandle;
+    art::Handle<SimParticleCollection> simsHandle;
     event.getByLabel( g4ModuleLabel_, simsHandle);
     SimParticleCollection const& sims = *simsHandle;
 
@@ -337,12 +337,12 @@ namespace mu2e {
 
   }
 
-  void Summary01::endRun( edm::Run const& run, edm::EventSetup const&){
+  void Summary01::endRun( art::Run const& run, art::EventSetup const&){
 
     // Skip immature verbose printout.
     if ( productionMode_ ) return;
 
-    edm::Handle<PhysicalVolumeInfoCollection> volsHandle;
+    art::Handle<PhysicalVolumeInfoCollection> volsHandle;
     run.getByLabel( g4ModuleLabel_, volsHandle);
     PhysicalVolumeInfoCollection const& vols = *volsHandle;
 
@@ -379,4 +379,4 @@ namespace mu2e {
 }
 
 using mu2e::Summary01;
-DEFINE_FWK_MODULE(Summary01);
+DEFINE_ART_MODULE(Summary01);

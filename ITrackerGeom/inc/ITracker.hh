@@ -58,14 +58,14 @@ public:
 
         CellGeometryHandle* getCellGeometryHandle() const { return _cellhnd.get(); }
 
-        SuperLayer* getSuperLayer(int n) const throw(cms::Exception);
+        SuperLayer* getSuperLayer(int n) const throw(cet::exception);
 
         boost::shared_array<SuperLayer> getSuperLayersArray() const {
                 return _sprlr;
         }
 
-        const Straw& getStraw ( const StrawId& sid )      const throw(cms::Exception) {
-                throw cms::Exception("GEOM")<< "Fake method \"getStraw ( StrawId )\", not used for the ITracker";
+        const Straw& getStraw ( const StrawId& sid )      const throw(cet::exception) {
+                throw cet::exception("GEOM")<< "Fake method \"getStraw ( StrawId )\", not used for the ITracker";
                 return fakeStraw;
         }
 //        const Straw& getStraw ( StrawIndex i )      const { return fakeStraw; }
@@ -73,16 +73,16 @@ public:
                 getCellGeometryHandle()->SelectCellDet(i.asUint());
                 return dynamic_cast<Straw&>( *(getCellGeometryHandle()->GetITCell().get()) );
         }
-        const std::deque<Straw>& getAllStraws()           const throw(cms::Exception) {
-                throw cms::Exception("GEOM")<< "Fake method \"getAllStraws()\", not used for the ITracker";
+        const std::deque<Straw>& getAllStraws()           const throw(cet::exception) {
+                throw cet::exception("GEOM")<< "Fake method \"getAllStraws()\", not used for the ITracker";
                 return fakeStrawDeq;
         }
-        const std::vector<StrawDetail>& getStrawDetails() const throw(cms::Exception) {
-                throw cms::Exception("GEOM")<< "Fake method \"getStrawDetails()\", not used for the ITracker";
+        const std::vector<StrawDetail>& getStrawDetails() const throw(cet::exception) {
+                throw cet::exception("GEOM")<< "Fake method \"getStrawDetails()\", not used for the ITracker";
                 return fakeStrawVec;
         }
 
-//        const boost::shared_ptr<Wall> getWall(int n) throw(cms::Exception);
+//        const boost::shared_ptr<Wall> getWall(int n) throw(cet::exception);
 
         boost::shared_ptr<std::multimap<Wall::Walltype,boost::shared_ptr<Wall> > > getWalls() const {
                 return _walls;

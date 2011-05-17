@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_plugin.cc,v 1.17 2011/01/28 23:51:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/28 23:51:58 $
+// $Id: HoughTest_plugin.cc,v 1.18 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author R. Bernstein
 //
@@ -14,16 +14,15 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -73,35 +72,35 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
   return background + peak; 
 }
   static const bool singleHoughHisto = false;
-  class HoughTest : public edm::EDProducer {
+  class HoughTest : public art::EDProducer {
   public:
-    explicit HoughTest(edm::ParameterSet const& pset) : 
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",10)),
-      _nPeakSearch(pset.getParameter<uint32_t>("NPeakSearch")),
+    explicit HoughTest(fhicl::ParameterSet const& pset) : 
+      _maxFullPrint(pset.get<int>("maxFullPrint",10)),
+      _nPeakSearch(pset.get<uint32_t>("NPeakSearch")),
       _nAnalyzed(0),
       _hRadius(0),
       _hTime(0),
       _hMultiplicity(0),
       _hDriftDist(0),
       _messageCategory("ToyHitInfo"),
-      _hitCreatorName(pset.getParameter<string>("hitCreatorName")),
-      _useStepPointMC(pset.getParameter<bool>("UseMCHits"))
+      _hitCreatorName(pset.get<string>("hitCreatorName")),
+      _useStepPointMC(pset.get<bool>("UseMCHits"))
     {
         produces<HoughCircleCollection>();
     }
     virtual ~HoughTest() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     virtual void endJob();
 
-    virtual void beginRun(edm::Run const &r, 
-                          edm::EventSetup const& eSetup );
+    virtual void beginRun(art::Run const &r, 
+                          art::EventSetup const& eSetup );
 
-    virtual void beginLuminosityBlock(edm::LuminosityBlock const& lblock, 
-                                      edm::EventSetup const&);
+    virtual void beginSubRun(art::SubRun const& lblock, 
+                                      art::EventSetup const&);
  
     // This is called for each event.
-    void produce(edm::Event& e, edm::EventSetup const&);
+    void produce(art::Event& e, art::EventSetup const&);
 
 
   private:
@@ -175,16 +174,16 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     int countHitNeighbours( Straw const& straw, 
                             StepPointMCCollection const* hits );
 
-    void bookEventHistos(edm::EventNumber_t);
+    void bookEventHistos(art::EventNumber_t);
     void fillEventHistos(
          mu2e::houghtransform::HoughTransform::houghCircleStruct);
   };
 
 
-  void HoughTest::beginJob(edm::EventSetup const& ){
+  void HoughTest::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     // Create some 1D histograms.
     _hRadius       = tfs->make<TH1F>( "hRadius", "Radius of Hits;(mm)",          100,  0., 1000. );
@@ -266,16 +265,16 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
 
-  void HoughTest::beginRun(edm::Run const& run,
-                                 edm::EventSetup const& eSetup ){
+  void HoughTest::beginRun(art::Run const& run,
+                                 art::EventSetup const& eSetup ){
   }
 
-  void HoughTest::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
-                                             edm::EventSetup const&){
+  void HoughTest::beginSubRun(art::SubRun const& lblock,
+                                             art::EventSetup const&){
   }
 
 
-  void HoughTest::produce(edm::Event& evt, edm::EventSetup const&) {
+  void HoughTest::produce(art::Event& evt, art::EventSetup const&) {
 
     static int ncalls(0);
     ++ncalls;
@@ -288,9 +287,9 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
     // Ask the event to give us a handle to the requested hits.
-    //    edm::Handle<StepPointMCCollection> hits;
+    //    art::Handle<StepPointMCCollection> hits;
     //evt.getByLabel(creatorName,hits);
-    edm::Handle<StepPointMCCollection> hitsHandle;
+    art::Handle<StepPointMCCollection> hitsHandle;
     static const string collectionName("tracker");
 
     // someday hitClusters will be produced elsewhere, but for now,
@@ -317,7 +316,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 /*
     // if were using a radius from a first pass, get it here
     if (_InitialRadiusCreater!="none") {
-       edm::Handle<HoughCircleCollection> hcHandle;
+       art::Handle<HoughCircleCollection> hcHandle;
        evt.getByLabel(_InitialRadiusCreator,hcHandle);
        if (hcHandle->size()) {
           const HoughCircle& hc=hcHandle->at(0);
@@ -349,7 +348,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 /*
     // if were using a radius from a first pass, get it here
     if (_InitialRadiusCreater!="none") {
-       edm::Handle<HoughCircleCollection> hcHandle;
+       art::Handle<HoughCircleCollection> hcHandle;
        evt.getByLabel(_InitialRadiusCreator,hcHandle);
        if (hcHandle->size()) {
           const HoughCircle& hc=hcHandle->at(0);
@@ -368,11 +367,11 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     // don't bother unless there are some minimum number of hits; start with 3. I might want this in the constructor as an argument...
 
     //so I have access to histos from results
-    // used here? edm::Service<edm::TFileService> tfs;
+    // used here? art::ServiceHandle<art::TFileService> tfs;
 
 
 
-        edm::LogVerbatim log(_messageCategory);
+        mf::LogVerbatim log(_messageCategory);
     log << "HoughTransforming event #: " 
         << evt.id().event();
 
@@ -568,7 +567,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
     if (!singleHoughHisto)
       {
-        edm::Service<edm::TFileService> tfs;
+        art::ServiceHandle<art::TFileService> tfs;
         //scatter plot showing event
         RootNameTitleHelper eventPlot("_eventPlot","EventPlot",evt.id().event(),5);
         _eventPlot= tfs->make<TH2F>(eventPlot.name(),eventPlot.title(),
@@ -707,7 +706,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     return count;
   } //countHitNeighbors
 
-  void HoughTest::bookEventHistos(edm::EventNumber_t evtno)
+  void HoughTest::bookEventHistos(art::EventNumber_t evtno)
   {        
         RootNameTitleHelper radiusHisto("_histoRadius","Radius Accumulator Space Event",evtno,5);
         RootNameTitleHelper radiusErrorHisto("_histoErrorRadius","Radius Error Event",evtno,5);
@@ -719,7 +718,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
         RootNameTitleHelper radiusDCAHisto("_histoRadiusDCA","Radius vs. DCA, Event",evtno,5);
         RootNameTitleHelper radiusDCACenterHisto("_histoRadiusDCACenter","Radius vs. DCA vs Center, Event",evtno,5);
 
-        edm::Service<edm::TFileService> tfs;
+        art::ServiceHandle<art::TFileService> tfs;
 
         _histoRadius = tfs->make<TH1F>(radiusHisto.name(),radiusHisto.title(),
                                        80,100.,500.);
@@ -770,4 +769,4 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
 
 
 using mu2e::HoughTest;
-DEFINE_FWK_MODULE(HoughTest);
+DEFINE_ART_MODULE(HoughTest);

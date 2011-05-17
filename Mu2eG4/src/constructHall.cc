@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.1 2011/01/05 21:04:47 genser Exp $
-// $Author: genser $
-// $Date: 2011/01/05 21:04:47 $
+// $Id: constructHall.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -70,11 +70,11 @@ namespace mu2e {
     // Origin of the hall air volume in the system of the hall concrete volume.
     G4ThreeVector hallOffset( 0., (floorThick-ceilingThick)/2., 0.);
 
-    bool hallVisible = _config->getBool("hall.visible",true);
-    bool hallSolid   = _config->getBool("hall.solid",false);
+    bool hallVisible = _config->get<bool>("hall.visible",true);
+    bool hallSolid   = _config->get<bool>("hall.solid",false);
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     // Concrete walls of the hall.

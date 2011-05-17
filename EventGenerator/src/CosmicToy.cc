@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.8 2010/08/20 14:45:09 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/20 14:45:09 $
+// $Id: CosmicToy.cc,v 1.9 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -13,11 +13,11 @@
 #include <iostream>
 
 // Framework includes.
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes.
 #include "EventGenerator/inc/CosmicToy.hh"
@@ -45,14 +45,14 @@ namespace mu2e {
   // Once we have the HepPDT package installed, get the mass from there.
   static const double m = 0.1056584;
 
-  CosmicToy::CosmicToy( edm::Run& run, const SimpleConfig& config ):
+  CosmicToy::CosmicToy( art::Run& run, const SimpleConfig& config ):
 
     // Base class.
     GeneratorBase(),
 
     // From run time configuration.
     _mean(config.getDouble("cosmictoy.mean",2.)),
-    _doHistograms(config.getBool("cosmictoy.doHistograms",true)),
+    _doHistograms(config.get<bool>("cosmictoy.doHistograms",true)),
 
     // Histograms.
     _hMultiplicity(0),
@@ -65,7 +65,7 @@ namespace mu2e {
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "CosmicToy has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
@@ -86,8 +86,8 @@ namespace mu2e {
 
     // Book histograms.
     if ( _doHistograms ) {
-      edm::Service<edm::TFileService> tfs;
-      edm::TFileDirectory tfdir = tfs->mkdir( "CosmicToy" );
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = tfs->mkdir( "CosmicToy" );
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "Cosmic Toy Multiplicity", 20, 0, 20);
       _hMomentum     = tfdir.make<TH1D>( "hMomentum",     "Cosmic Toy Momentum",   100, 0, 10000.);
       _hAngle        = tfdir.make<TH1D>( "hAngle",        "Cosmic Toy Angle from Zenith", 100, 0, 0.5);

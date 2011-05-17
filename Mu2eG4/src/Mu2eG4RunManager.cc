@@ -2,9 +2,9 @@
 // Override the G4RunManager class so that the Mu2e framework can drive
 // the event loop. 
 //
-// $Id: Mu2eG4RunManager.cc,v 1.4 2010/11/11 00:07:09 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/11/11 00:07:09 $
+// $Id: Mu2eG4RunManager.cc,v 1.5 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 //
 // Notes:
 // 1) In G4RunManager the counter i_event is used as the event number.
-//    In this code it is taken from the event number of the edm::event.
+//    In this code it is taken from the event number of the art::event.
 //
 
 // Mu2e includes.

@@ -11,18 +11,17 @@
 // ======================================================================
 
 // Framework support:
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-using edm::Event;
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/RandomNumberGeneratorService.h"
-#include "FWCore/Services/interface/TFileService.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+using art::Event;
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Core/RandomNumberGeneratorService.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e support:
 #include "GeometryService/inc/GeometryService.hh"
@@ -53,13 +52,13 @@ using namespace std;
 namespace mu2e {
 
   class SimpleEffyNoise
-    : public edm::EDProducer
+    : public art::EDProducer
   {
   public:
-    explicit SimpleEffyNoise( edm::ParameterSet const& pset )
-    : _diagLevel      ( pset.getUntrackedParameter<int>("diagLevel",0) )
-    , _noiseRate      ( pset.getParameter<double>("noiseRate") )
-    , _hitIneffy      ( pset.getParameter<double>("hitIneffy") )
+    explicit SimpleEffyNoise( fhicl::ParameterSet const& pset )
+    : _diagLevel      ( pset.get<int>("diagLevel",0) )
+    , _noiseRate      ( pset.get<double>("noiseRate") )
+    , _hitIneffy      ( pset.get<double>("hitIneffy") )
     , _messageCategory( "EffyNoise" )
     , _hHitsLostRate  ( 0 )
     , _hHitsLost      ( 0 )
@@ -75,9 +74,9 @@ namespace mu2e {
 
     virtual ~SimpleEffyNoise()  { }
 
-    virtual void beginJob( edm::EventSetup const& );
+    virtual void beginJob( art::EventSetup const& );
 
-    void produce( edm::Event& e, edm::EventSetup const& );
+    void produce( art::Event& e, art::EventSetup const& );
 
   private:
     int _diagLevel;     // diagnostics level
@@ -98,10 +97,10 @@ namespace mu2e {
 
   };  // SimpleEffyNoise
 
-  void SimpleEffyNoise::beginJob(edm::EventSetup const& ) {
+  void SimpleEffyNoise::beginJob(art::EventSetup const& ) {
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ) {
-      edm::Service<edm::TFileService> tfs;
+      art::ServiceHandle<art::TFileService> tfs;
 
       _hHitsLostRate      = tfs->make<TH1F>( "hHitsLostRate",
           "Hits Lost (0) and Kept (1)",2,-.5,1.5);
@@ -115,7 +114,7 @@ namespace mu2e {
 
   }  // beginJob()
 
-  void SimpleEffyNoise::produce(edm::Event& event, edm::EventSetup const&) {
+  void SimpleEffyNoise::produce(art::Event& event, art::EventSetup const&) {
 
   std::cout<<"\n\n IN SimpleEffyNoise::produced ================\n\n"<<std::endl;
    // This function has two main sections:
@@ -131,7 +130,7 @@ namespace mu2e {
     static const string collectionName("tracker");
 
     // Ask the event to give us a handle to the requested hits.
-    edm::Handle<StepPointMCCollection> points;
+    art::Handle<StepPointMCCollection> points;
     event.getByLabel(creatorName,collectionName,points);
 
     // first, apply inefficiency
@@ -204,5 +203,5 @@ std::cout<<"numberOfNoiseHits="<<numberOfNoiseHits<<"\n\n"<<std::endl;
 
 
 using mu2e::SimpleEffyNoise;
-DEFINE_FWK_MODULE(SimpleEffyNoise);
+DEFINE_ART_MODULE(SimpleEffyNoise);
 

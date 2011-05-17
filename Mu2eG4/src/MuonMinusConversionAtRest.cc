@@ -5,13 +5,13 @@
 // muon. Configurable parameters include endpoint of momentum, limits of polar
 // and azimuthal angle.
 //
-// $Id: MuonMinusConversionAtRest.cc,v 1.1 2011/03/08 14:11:46 ayarritu Exp $ 
-// $Author: ayarritu $
-// $Date: 2011/03/08 14:11:46 $
+// $Id: MuonMinusConversionAtRest.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $ 
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 //-----------------------------------------------------------------------------
 // Framework includes
-#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"

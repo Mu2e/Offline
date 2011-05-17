@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_plugin.cc,v 1.5 2011/01/28 23:51:57 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/28 23:51:57 $
+// $Id: Histforpabs_plugin.cc,v 1.6 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -15,13 +15,12 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/ModuleMacros.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -41,16 +40,16 @@ namespace mu2e {
 
   class Straw;
 
-  class Histforpabs : public edm::EDAnalyzer {
+  class Histforpabs : public art::EDAnalyzer {
   public:
     
-    explicit Histforpabs(edm::ParameterSet const& pset);
+    explicit Histforpabs(fhicl::ParameterSet const& pset);
     virtual ~Histforpabs() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
@@ -72,24 +71,24 @@ namespace mu2e {
     TH1F* _hEnergyat1;
     TH1F* _hEnergysim;
 
-    void FillHistograms(const edm::Event& event);
+    void FillHistograms(const art::Event& event);
   };
 
-  Histforpabs::Histforpabs(edm::ParameterSet const& pset) : 
+  Histforpabs::Histforpabs(fhicl::ParameterSet const& pset) : 
 
     // Run time parameters
-    _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-    _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-    _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
+    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+    _minimumEnergy(pset.get<double>("minimumEnergy")),
     
     // Histograms
     _hEnergyat0(0),
     _hEnergyat1(0),
     _hEnergysim(0){}
 
-  void Histforpabs::beginJob(edm::EventSetup const& ){
+  void Histforpabs::beginJob(art::EventSetup const& ){
     
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     _hEnergyat0 = tfs->make<TH1F>( "hEnergyat0", "Energy Deposited before 1st straw hist", 80, 102., 106.);
     _hEnergyat1 = tfs->make<TH1F>( "hEnergyat1", "Energy Deposited after 1st straw hist", 80, 102., 106.);
     _hEnergysim = tfs->make<TH1F>( "hEnergysim", "Sim particle energy", 80, 102.0, 106.0);
@@ -97,7 +96,7 @@ namespace mu2e {
   }
 
 
-  void Histforpabs::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void Histforpabs::analyze(const art::Event& event, art::EventSetup const&) {
     ++_nAnalyzed;
     FillHistograms(event);   
   } // end analyze
@@ -106,12 +105,12 @@ namespace mu2e {
 
 
 
-  void Histforpabs::FillHistograms(const edm::Event& event){
+  void Histforpabs::FillHistograms(const art::Event& event){
 
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     for( size_t i=0; i<hits->size(); ++i ){
@@ -145,4 +144,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::Histforpabs;
-DEFINE_FWK_MODULE(Histforpabs);
+DEFINE_ART_MODULE(Histforpabs);

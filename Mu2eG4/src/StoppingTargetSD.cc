@@ -7,8 +7,8 @@
 #include <cstdio>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e incldues
 #include "Mu2eG4/inc/StoppingTargetSD.hh"
@@ -31,7 +31,7 @@ namespace mu2e {
     G4VSensitiveDetector(name),
     _collection(0),
     _debugList(0),
-    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
+    _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
     _currentSize(0)
   {
 
@@ -61,7 +61,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	edm::LogWarning("G4") << "Maximum number of particles reached in StoppingTargetSD: " 
+	mf::LogWarning("G4") << "Maximum number of particles reached in StoppingTargetSD: " 
 			      << _currentSize << endl;
       }
       return false;
@@ -95,7 +95,7 @@ namespace mu2e {
   void StoppingTargetSD::EndOfEvent(G4HCofThisEvent*){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      edm::LogWarning("G4") << "Total of " << _currentSize 
+      mf::LogWarning("G4") << "Total of " << _currentSize 
 			    << " stopping target hits were generated in the event." 
 			    << endl
 			    << "Only " << _sizeLimit << " are saved in output collection." 

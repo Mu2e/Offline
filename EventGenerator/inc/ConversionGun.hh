@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.9 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $ 
-// $Date: 2011/05/17 06:00:47 $
+// $Id: ConversionGun.hh,v 1.10 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 
 // C++ includes
@@ -21,7 +21,7 @@
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // Forward declarations in other namespaces.
-namespace edm {
+namespace art {
   class Run;
 }
 
@@ -38,7 +38,7 @@ namespace mu2e {
   class ConversionGun: public GeneratorBase{
 
   public:
-    ConversionGun( edm::Run& run, const SimpleConfig& config );
+    ConversionGun( art::Run& run, const SimpleConfig& config );
     virtual ~ConversionGun();
 
     virtual void generate( ToyGenParticleCollection&  );

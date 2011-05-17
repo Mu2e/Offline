@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.20 2011/05/17 06:00:47 onoratog Exp $ 
-// $Author: onoratog $
-// $Date: 2011/05/17 06:00:47 $
+// $Id: ConversionGun.cc,v 1.21 2011/05/17 15:36:00 greenc Exp $ 
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 // 
@@ -14,8 +14,8 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Services/interface/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/ConversionGun.hh"
@@ -41,7 +41,7 @@ namespace mu2e {
   // Grab them from Andrew's minimc package?
   static const double pEndPoint = 104.96;
 
-  ConversionGun::ConversionGun( edm::Run& run, const SimpleConfig& config ):
+  ConversionGun::ConversionGun( art::Run& run, const SimpleConfig& config ):
 
     // Base class
     GeneratorBase(),
@@ -53,8 +53,8 @@ namespace mu2e {
     _czmax (config.getDouble("conversionGun.czmax",  0.5)),
     _phimin(config.getDouble("conversionGun.phimin", 0. )),
     _phimax(config.getDouble("conversionGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
     _tmin(0.),
     _tmax(0.),
     _doHistograms(config.getDouble("conversionGun.doHistograms", true )),
@@ -150,8 +150,8 @@ namespace mu2e {
     Binning bins = zBinningForFoils(*target,7);
     Binning bins2 = zBinningForFoils(*target,3);
 
-    edm::Service<edm::TFileService> tfs;
-    edm::TFileDirectory tfdir = tfs->mkdir( "ConversionGun" );
+    art::ServiceHandle<art::TFileService> tfs;
+    art::TFileDirectory tfdir = tfs->mkdir( "ConversionGun" );
 
     _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity", "Conversion Multiplicity",  10,  0.,  10.  );
     _hcz           = tfdir.make<TH1F>( "hcz",

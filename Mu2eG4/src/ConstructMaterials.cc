@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.11 2011/04/25 19:18:20 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/04/25 19:18:20 $
+// $Id: ConstructMaterials.cc,v 1.12 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -17,8 +17,8 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConstructMaterials.hh"
@@ -59,7 +59,7 @@ namespace mu2e {
   void ConstructMaterials::construct(){
 
     // Get access to the master geometry system and its run time config.
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& config = geom->config();
 
     // Construct the requested materials.
@@ -67,14 +67,14 @@ namespace mu2e {
     constructMu2eMaterials( config );
     
     // Print element table, if requested.
-    if ( config.getBool("g4.printElements",false) ){
-      edm::LogInfo  log("GEOM");
+    if ( config.get<bool>("g4.printElements",false) ){
+      mf::LogInfo  log("GEOM");
       log << *G4Element::GetElementTable();
     }
     
     // Print material table, if requested.
-    if ( config.getBool("g4.printMaterials",false) ){
-      edm::LogInfo  log("GEOM");
+    if ( config.get<bool>("g4.printMaterials",false) ){
+      mf::LogInfo  log("GEOM");
       log << *G4Material::GetMaterialTable();
     }
     
@@ -522,7 +522,7 @@ namespace mu2e {
   // Check to see if the named material already exists.
   void ConstructMaterials::uniqueMaterialOrThrow( G4String const& name){
     if ( G4Material::GetMaterial(name,false) != 0 ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "mu2e::ConstructMaterials::constructMu2eMaterials(): "
         << "The requested material is already defined: "
         << name
@@ -541,7 +541,7 @@ namespace mu2e {
       
     // Throw if we could not find a requested element.
     if ( !answer ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "mu2e::ConstructMaterials::constructMaterials(): "
         << "Could not load predefined G4 element named: "
         << name

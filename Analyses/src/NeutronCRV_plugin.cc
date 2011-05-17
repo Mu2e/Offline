@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_plugin.cc,v 1.1 2011/05/12 16:16:47 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2011/05/12 16:16:47 $
+// $Id: NeutronCRV_plugin.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -18,17 +18,16 @@
 #include <memory>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "DataFormats/Provenance/interface/Provenance.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Persistency/Provenance/Provenance.h"
 
 // Root includes.
 #include "TFile.h"
@@ -85,23 +84,23 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  class NeutronCRV : public edm::EDAnalyzer{
+  class NeutronCRV : public art::EDAnalyzer{
   public:
 
     typedef SimParticleCollection::key_type key_type;
 
-    NeutronCRV(edm::ParameterSet const& pset) : 
+    NeutronCRV(fhicl::ParameterSet const& pset) : 
 
       // Run time parameters
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _caloCrystalHitsMaker(pset.getUntrackedParameter<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
-      _targetStepPoints(pset.getUntrackedParameter<string>("targetStepPoints","stoppingtarget")),
-      _crvStepPoints(pset.getUntrackedParameter<string>("CRVStepPoints","CRV")),
-      _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",500)),
-      _xyHitsMax(pset.getUntrackedParameter<int>("xyHitsMax",10000)),
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _caloCrystalHitsMaker(pset.get<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
+      _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
+      _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
+      _minimumEnergy(pset.get<double>("minimumEnergy")),
+      _maxFullPrint(pset.get<int>("maxFullPrint",500)),
+      _xyHitsMax(pset.get<int>("xyHitsMax",10000)),
 
       /*
       // Histograms
@@ -149,10 +148,10 @@ namespace mu2e {
     }
 
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     virtual void endJob  ();
 
-    void analyze(edm::Event const& e, edm::EventSetup const&);
+    void analyze(art::Event const& e, art::EventSetup const&);
 
 
   private:
@@ -199,15 +198,15 @@ namespace mu2e {
     int _nBadG4Status;
 
     // do the work
-    void doCRV(const edm::Event& event);
+    void doCRV(const art::Event& event);
 
 
   };
   
-  void NeutronCRV::beginJob(edm::EventSetup const& ){
+  void NeutronCRV::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     
     // CRV
 
@@ -219,13 +218,13 @@ namespace mu2e {
 
   }
 
-  void NeutronCRV::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void NeutronCRV::analyze(const art::Event& event, art::EventSetup const&) {
     
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
     // Inquire about the completion status of G4.
-    edm::Handle<StatusG4> g4StatusHandle;
+    art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( _g4ModuleLabel, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
     if ( _nAnalyzed < _maxFullPrint ){
@@ -236,14 +235,14 @@ namespace mu2e {
     // Use your own judgement about whether to abort or to continue.
     if ( g4Status.status() != 0 ) {
       ++_nBadG4Status;
-      edm::LogError("G4") 
+      mf::LogError("G4") 
         << "Aborting NeutronCRV::analyze due to G4 status\n"  
         << g4Status;
       return;
     }
     //
     // get the geometry
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
 
     if( geom->hasElement<CosmicRayShield>() ) {
       doCRV(event);
@@ -259,7 +258,7 @@ namespace mu2e {
          << endl;
   }
 
-  void NeutronCRV::doCRV(const edm::Event& event){
+  void NeutronCRV::doCRV(const art::Event& event){
 
     // Get a reference to CosmicRayShield (it contains crv)
 
@@ -276,23 +275,23 @@ namespace mu2e {
                                                      barDetail.getHalfLengths()[1],
                                                      barDetail.getHalfLengths()[2]);
 
-    edm::Handle<StatusG4> g4StatusHandle;
+    art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( _g4ModuleLabel, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_crvStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     event.getByType(genParticles);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     event.getRun().getByType(volumes);
 
     // Some files might not have the SimParticle and volume information.
@@ -305,7 +304,7 @@ namespace mu2e {
 
     // A silly example just to show that we have a messsage logger.
     if ( hits->size() > 300 ){
-      edm::LogWarning("HitInfo")
+      mf::LogWarning("HitInfo")
         << "Number of CRV hits "
         << hits->size() 
         << " may be too large.";
@@ -313,7 +312,7 @@ namespace mu2e {
 
     // A silly example just to show how to throw.
     if ( hits->size() > 1000000 ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Way too many CRV hits in this event.  Something is really wrong."
         << hits->size();
     }
@@ -449,4 +448,4 @@ namespace mu2e {
                                       
 
                                        using mu2e::NeutronCRV;
-DEFINE_FWK_MODULE(NeutronCRV);
+DEFINE_ART_MODULE(NeutronCRV);

@@ -1,9 +1,9 @@
 //
 // A hack at makeing a cluster finder driven from CrudeTrackerHit objects.
 //
-// $Id: ClusterHackv00_plugin.cc,v 1.3 2010/08/26 19:57:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/26 19:57:44 $
+// $Id: ClusterHackv00_plugin.cc,v 1.4 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -14,16 +14,15 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
 #include "TFile.h"
@@ -46,11 +45,11 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class ClusterHackv00 : public edm::EDAnalyzer {
+  class ClusterHackv00 : public art::EDAnalyzer {
   public:
-    explicit ClusterHackv00(edm::ParameterSet const& pset):
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+    explicit ClusterHackv00(fhicl::ParameterSet const& pset):
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _hReHit(0),
       _hNClusters(0),
       _hClusterSize(0),
@@ -58,9 +57,9 @@ namespace mu2e {
     }
     virtual ~ClusterHackv00() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
 
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void analyze( art::Event const& e, art::EventSetup const&);
 
   private:
     
@@ -86,12 +85,12 @@ namespace mu2e {
 
   };
 
-  void ClusterHackv00::beginJob(edm::EventSetup const& ){
+  void ClusterHackv00::beginJob(art::EventSetup const& ){
 
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ){
 
-      edm::Service<edm::TFileService> tfs;
+      art::ServiceHandle<art::TFileService> tfs;
 
       _hReHit       = tfs->make<TH1F>( "hReHit",       "Number of multiply Hit Straws in one Event;", 100,  0.,   3.  );
       _hNClusters   = tfs->make<TH1F>( "hNClusters",   "Number of clusters per Event;;",  40,  0.,   40.  );
@@ -103,7 +102,7 @@ namespace mu2e {
   }
 
   void
-  ClusterHackv00::analyze(edm::Event const& evt, edm::EventSetup const&) {
+  ClusterHackv00::analyze(art::Event const& evt, art::EventSetup const&) {
 
     static int ncalls(0);
     ++ncalls;
@@ -116,7 +115,7 @@ namespace mu2e {
     LTracker const& ltracker(*ltrackerHandle);
 
     // Get the persistent data about the CrudeStrawHits.
-    edm::Handle<CrudeStrawHitPData> pdataHandle;
+    art::Handle<CrudeStrawHitPData> pdataHandle;
     evt.getByLabel(creatorName,pdataHandle);
 
     // Form a fully functional collection of these hits.
@@ -279,4 +278,4 @@ namespace mu2e {
 
 
 using mu2e::ClusterHackv00;
-DEFINE_FWK_MODULE(ClusterHackv00);
+DEFINE_ART_MODULE(ClusterHackv00);

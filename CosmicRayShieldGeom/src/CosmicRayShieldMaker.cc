@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.7 2011/04/29 17:42:51 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/04/29 17:42:51 $
+// $Id: CosmicRayShieldMaker.cc,v 1.8 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -24,7 +24,7 @@
 #include "CLHEP/Vector/Rotation.h"
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh"
@@ -50,7 +50,7 @@ namespace mu2e {
 
     _crs = auto_ptr<CosmicRayShield>(new CosmicRayShield());
 
-    if( ! _config.getBool("hasCosmicRayShield",false) ) return;
+    if( ! _config.get<bool>("hasCosmicRayShield",false) ) return;
 
     parseConfig(_config);
 
@@ -71,38 +71,38 @@ namespace mu2e {
   void CosmicRayShieldMaker::parseConfig( SimpleConfig const & _config ){
 
     // we readin/store crs parameters needed in more than one function
-    _diagLevel = _config.getInt("crs.verbosityLevel",0);
+    _diagLevel = _config.get<int>("crs.verbosityLevel",0);
 
     _HallSteelHalfThick     = _config.getDouble("fluxcrv.HallSteelHalfThick");
     _HallSteelHalfLengthXY  = _config.getDouble("fluxcrv.HallSteelHalfLengthXY");
     _HallSteelHalfLengthZ   = _config.getDouble("fluxcrv.HallSteelHalfLengthZ");
-    _HallSteelMaterialName  = _config.getString("fluxcrv.HallSteelMaterialName");
+    _HallSteelMaterialName  = _config.get<std::string>("fluxcrv.HallSteelMaterialName");
     _HallSteelHoleRadius    = _config.getDouble("fluxcrv.HallSteelHoleRadius");
     _config.getVectorDouble("fluxcrv.HallSteelOffset",_HallSteelOffset,3);
 
-    _scintillatorLayersPerModule  = _config.getInt("crs.scintillatorLayersPerModule");
-    _scintillatorBarsPerFullLayer = _config.getInt("crs.scintillatorBarsPerFullLayer");
+    _scintillatorLayersPerModule  = _config.get<int>("crs.scintillatorLayersPerModule");
+    _scintillatorBarsPerFullLayer = _config.get<int>("crs.scintillatorBarsPerFullLayer");
 
     if ( _scintillatorBarsPerFullLayer%2!=0) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "crs.scintillatorBarsPerFullLayer number should be even\n";
     }
 
     _config.getVectorDouble("crs.scintillatorBarHalfLengths",_scintillatorBarHalfLengths,3);
-    _scintillatorBarMaterialName  = _config.getString("crs.scintillatorBarMaterialName");
+    _scintillatorBarMaterialName  = _config.get<std::string>("crs.scintillatorBarMaterialName");
     _scintillatorLayerShift       = _config.getDouble("crs.scintillatorLayerShift");
     _scintillatorLayerGap       = _config.getDouble("crs.scintillatorLayerGap");
 
     _scintillatorBarPigmentationHalfThickness       =
       _config.getDouble("crs.scintillatorBarPigmentationHalfThickness");
     _scintillatorBarPigmentationMaterialName        = 
-      _config.getString("crs.scintillatorBarPigmentationMaterialName");
+      _config.get<std::string>("crs.scintillatorBarPigmentationMaterialName");
     _config.getVectorDouble("crs.scintillatorModuleOuterSheetHalfLengths",
                             _scintillatorModuleOuterSheetHalfLengths,3);
     _scintillatorModuleOuterSheetMaterialName       =
-      _config.getString("crs.scintillatorModuleOuterSheetMaterial");
+      _config.get<std::string>("crs.scintillatorModuleOuterSheetMaterial");
     _scintillatorModuleInterLayerSheetMaterialName  =
-      _config.getString("crs.scintillatorModuleInterLayerSheetMaterialName");
+      _config.get<std::string>("crs.scintillatorModuleInterLayerSheetMaterialName");
     _scintillatorModuleInterLayerSheetHalfThickness =
       _config.getDouble("crs.scintillatorModuleInterLayerSheetHalfThickness");
     _scintillatorOverlap = _config.getDouble("crs.scintillatorOverlap");
@@ -722,7 +722,7 @@ namespace mu2e {
 
     if (_scintillatorFullModuleHalfWidth<
         (_scintillatorFullLayerHalfWidth + (_scintillatorLayersPerModule-1)/2*_scintillatorLayerShift)) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "inconsistent data crs.scintillatorModuleOuterSheetHalfLengths to small?\n";
     }
 
@@ -936,7 +936,7 @@ namespace mu2e {
                      _RightHallSteelOffset + _crs->_globalOffset,
                      CRSSteelShieldSideDims);
 
-    double downStreamHoleRadius = _config.getBool("hasMBS",false) ? 
+    double downStreamHoleRadius = _config.get<bool>("hasMBS",false) ? 
       _config.getDouble("mbs.SPBSOuterRadius") : 0. ;
 
     name = "CRSSteelDownstreamShield";

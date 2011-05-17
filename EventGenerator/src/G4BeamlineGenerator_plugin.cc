@@ -17,14 +17,13 @@
 #include <vector>
 
 // Framework includes.
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -42,12 +41,12 @@ using namespace std;
 
 namespace mu2e {
 
-  class G4BeamlineGenerator : public edm::EDProducer {
+  class G4BeamlineGenerator : public art::EDProducer {
 
   public:
 
-    explicit G4BeamlineGenerator(edm::ParameterSet const& pSet):
-      _configfile(pSet.getUntrackedParameter<std::string>("inputfile","generatorconfig.txt"))
+    explicit G4BeamlineGenerator(fhicl::ParameterSet const& pSet):
+      _configfile(pSet.get<std::string>("inputfile","generatorconfig.txt"))
     {
       // A placeholder until I make a real data product.
       produces<ToyGenParticleCollection>();
@@ -62,11 +61,11 @@ namespace mu2e {
 
     virtual ~G4BeamlineGenerator() { }
 
-    virtual void produce(edm::Event& e, edm::EventSetup const& c);
+    virtual void produce(art::Event& e, art::EventSetup const& c);
 
-    virtual void beginRun(edm::Run &r, edm::EventSetup const& eSetup );
+    virtual void beginRun(art::Run &r, art::EventSetup const& eSetup );
 
-    static void fillDescription(edm::ParameterSetDescription& iDesc,
+    static void fillDescription(art::ParameterSetDescription& iDesc,
                                 string const& moduleLabel) {
       iDesc.setAllowAnything();
     }
@@ -85,16 +84,16 @@ namespace mu2e {
   };
 
   // At beginRun time, update any derived geometry information.
-  void G4BeamlineGenerator::beginRun( edm::Run &run, edm::EventSetup const& eSetup ){
+  void G4BeamlineGenerator::beginRun( art::Run &run, art::EventSetup const& eSetup ){
 
     static int ncalls(0);
     if ( ++ncalls > 1){
-      edm::LogInfo("G4BeamlineGenerator")
+      mf::LogInfo("G4BeamlineGenerator")
         << "G4BeamlineGenerator does not change state at beginRun.  Hope that's OK.";
       return;
     }
 
-    edm::LogInfo log("G4BeamlineGenerator");
+    mf::LogInfo log("G4BeamlineGenerator");
     log << "Event generator configuration file: " 
         << _configfile
         << "\n\n";
@@ -102,11 +101,11 @@ namespace mu2e {
     SimpleConfig config(_configfile);
     checkConfig(config);
 
-    if ( config.getBool("printConfig",false) ){
+    if ( config.get<bool>("printConfig",false) ){
       log << config;
     }
 
-    if ( config.getBool("printConfigStats",false) ){
+    if ( config.get<bool>("printConfigStats",false) ){
       // Work around absence of << operator for this print method.
       ostringstream os;
       config.printStatistics(os);
@@ -119,7 +118,7 @@ namespace mu2e {
   }
 
   void
-  G4BeamlineGenerator::produce(edm::Event& evt, edm::EventSetup const&) {
+  G4BeamlineGenerator::produce(art::Event& evt, art::EventSetup const&) {
 
     // Make the collection to hold the output.
     auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);
@@ -145,4 +144,4 @@ namespace mu2e {
 
 
 using mu2e::G4BeamlineGenerator;
-DEFINE_FWK_MODULE(G4BeamlineGenerator);
+DEFINE_ART_MODULE(G4BeamlineGenerator);

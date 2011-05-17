@@ -1,5 +1,5 @@
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "ITrackerGeom/inc/Cell.hh"
@@ -30,8 +30,8 @@ Cell::~Cell (){
 //         try {
 //                  if (_detail) delete _detail;
 //                  if (_senseWire) delete _senseWire;
-//         } catch (cms::Exception e) {
-//             throw cms::Exception("GEOM")
+//         } catch (cet::exception e) {
+//             throw cet::exception("GEOM")
 //                  << "Error during deleting cell data \n";
 //         }
 }

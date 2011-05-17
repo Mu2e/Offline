@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.12 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $ 
-// $Date: 2011/05/17 06:00:47 $
+// $Id: DecayInOrbitGun.hh,v 1.13 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // 
 
@@ -13,7 +13,7 @@
 #include <memory>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
+#include "art/Framework/Core/Run.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
@@ -26,7 +26,7 @@
 
 // Forward declarations outside of mu2e namespace.
 class TH1D;
-namespace edm {
+namespace art {
   class Run;
 }
 
@@ -38,7 +38,7 @@ namespace mu2e {
   class DecayInOrbitGun: public GeneratorBase{
 
   public:
-    DecayInOrbitGun( edm::Run& run, const SimpleConfig& config );
+    DecayInOrbitGun( art::Run& run, const SimpleConfig& config );
     virtual ~DecayInOrbitGun();
 
     virtual void generate( ToyGenParticleCollection&  );

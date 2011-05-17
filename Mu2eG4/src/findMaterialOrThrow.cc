@@ -4,9 +4,9 @@
 // The wrapper does the job of throwing if the pointer comes
 // back null.
 //
-// $Id: findMaterialOrThrow.cc,v 1.2 2010/05/18 21:16:26 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:26 $
+// $Id: findMaterialOrThrow.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 
 // Framework includes
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // G4 includes
 #include "G4String.hh"
@@ -30,7 +30,7 @@ namespace mu2e {
     
     // Throw if necessary.
     if ( !m ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Could not find a material with the name: "
         << name
         << "\n";

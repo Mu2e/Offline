@@ -1,7 +1,7 @@
 #include <iostream>
 
 // Framework includes.
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 
 // Mu2e includes
 #include "GeometryService/inc/GeometryService.hh"
@@ -16,8 +16,8 @@ using namespace std;
 namespace mu2e{
 
   CrudeStrawHitCollection::
-  CrudeStrawHitCollection( edm::Event const& event,
-                           edm::Handle<CrudeStrawHitPData> const& hits ):
+  CrudeStrawHitCollection( art::Event const& event,
+                           art::Handle<CrudeStrawHitPData> const& hits ):
     _event(&event),
     _hits(&(*hits)),
     _index()
@@ -26,7 +26,7 @@ namespace mu2e{
   }
 
   CrudeStrawHitCollection::
-  CrudeStrawHitCollection( edm::Event const& event,
+  CrudeStrawHitCollection( art::Event const& event,
                            CrudeStrawHitPData const& hits ):
     _event(&event),
     _hits(&hits),
@@ -61,7 +61,7 @@ namespace mu2e{
     // to the StepPointMC is available.  If so, navigate through
     // that path.
     if ( hit.precursorType != CrudeStrawHit::stepPointMC){
-      throw cms::Exception("Hits")
+      throw cet::exception("Hits")
         << "Requested precursor for a CrudeStrawHit and that precursor could not be found.\n"
         << "Requested type: StepPointMC "
         << "Available type code: "
@@ -78,7 +78,7 @@ namespace mu2e{
     int ihit(_index[idx.asInt()]);
 
     if ( ihit == -1 ) {
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "There is no hit for this StrawIndex: "
         << idx
         << "\n";
@@ -87,7 +87,7 @@ namespace mu2e{
     return ihit;
   }
   
-  void CrudeStrawHitCollection::resolveTransients(edm::Event const& event ){
+  void CrudeStrawHitCollection::resolveTransients(art::Event const& event ){
     //    resolveTransients<CrudeStrawHitPData>(*_hits, event);
   }
 

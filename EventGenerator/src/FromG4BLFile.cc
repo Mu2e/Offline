@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the ToyGenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.13 2011/05/02 18:55:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/02 18:55:50 $
+// $Id: FromG4BLFile.cc,v 1.14 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -42,11 +42,11 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/FromG4BLFile.hh"
@@ -69,7 +69,7 @@ using namespace std;
 
 namespace mu2e {
 
-  FromG4BLFile::FromG4BLFile( edm::Run const& , const SimpleConfig& config ):
+  FromG4BLFile::FromG4BLFile( art::Run const& , const SimpleConfig& config ):
 
     // Base class.
     GeneratorBase(),
@@ -80,11 +80,11 @@ namespace mu2e {
     _prodTargetCenter(),
     _g4beamlineOrigin(),
     _g4beamlineExtraOffset(CLHEP::Hep3Vector()),
-    _inputFileName(config.getString("fromG4BLFile.filename")),
+    _inputFileName(config.get<std::string>("fromG4BLFile.filename")),
     _pdgIdToKeep(),
-    _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
-    _targetFrame(config.getBool("fromG4BLFile.targetFrame", false)),
-    _nPartToSkip(config.getInt("fromG4BLFile.particlesToSkip",0)),
+    _doHistograms(config.get<bool>("fromG4BLFile.doHistograms", false)),
+    _targetFrame(config.get<bool>("fromG4BLFile.targetFrame", false)),
+    _nPartToSkip(config.get<int>("fromG4BLFile.particlesToSkip",0)),
 
     // Random number distributions; getEngine() comes from base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
@@ -103,7 +103,7 @@ namespace mu2e {
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "FromG4BLFile has been asked to produce a crazily large number of particles.\n";
     }
 
@@ -121,16 +121,16 @@ namespace mu2e {
 
     // This should really come from the geometry service, not directly from the config file.
     // Or we should change this code so that its reference point is the production target midpoint
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& geomConfig = geom->config();
     _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");
 
     // Book histograms if enabled.
     if ( !_doHistograms ) return;
 
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
-    edm::TFileDirectory tfdir = tfs->mkdir( "FromG4BLFile" );
+    art::TFileDirectory tfdir = tfs->mkdir( "FromG4BLFile" );
     _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity", "From G4BL file: Multiplicity",    20,  0.,  20.);
 
     _hMomentum     = tfdir.make<TH1F>( "hMomentum",     "From G4BL file: Momentum (MeV)",  100, 0., 1000. );
@@ -186,7 +186,7 @@ namespace mu2e {
 
         _inputFile >> x >> y >> z >> px >> py >> pz >> t >> id >> evtid >> trkid >> parentid >> weight;
         if ( !_inputFile ){
-          throw cms::Exception("EOF")
+          throw cet::exception("EOF")
             << "FromG4BLFile has reached an unexpected end of file.\n";
         }
 

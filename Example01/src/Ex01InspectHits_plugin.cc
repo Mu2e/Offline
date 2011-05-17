@@ -2,9 +2,9 @@
 
 Look at some overly simplified hits that are in the event.
 
-$Id: Ex01InspectHits_plugin.cc,v 1.4 2010/05/18 21:15:39 kutschke Exp $
-$Author: kutschke $
-$Date: 2010/05/18 21:15:39 $
+$Id: Ex01InspectHits_plugin.cc,v 1.5 2011/05/17 15:36:00 greenc Exp $
+$Author: greenc $
+$Date: 2011/05/17 15:36:00 $
    
 Original author Rob Kutschke
 
@@ -16,16 +16,15 @@ Original author Rob Kutschke
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
 #include "TFile.h"
@@ -43,10 +42,10 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class Ex01InspectHits : public edm::EDAnalyzer {
+  class Ex01InspectHits : public art::EDAnalyzer {
   public:
-    explicit Ex01InspectHits(edm::ParameterSet const& pset) : 
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+    explicit Ex01InspectHits(fhicl::ParameterSet const& pset) : 
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _nAnalyzed(0),
       _hist1(0),
       _hist2(0),
@@ -56,17 +55,17 @@ namespace mu2e {
     }
     virtual ~Ex01InspectHits() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     virtual void endJob();
 
-    virtual void beginRun(edm::Run const &r, 
-                          edm::EventSetup const& eSetup );
+    virtual void beginRun(art::Run const &r, 
+                          art::EventSetup const& eSetup );
 
-    virtual void beginLuminosityBlock(edm::LuminosityBlock const& lblock, 
-                                      edm::EventSetup const&);
+    virtual void beginSubRun(art::SubRun const& lblock, 
+                                      art::EventSetup const&);
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
@@ -87,10 +86,10 @@ namespace mu2e {
 
   };
 
-  void Ex01InspectHits::beginJob(edm::EventSetup const& ){
+  void Ex01InspectHits::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     // Create some 1D histograms.
     _hist1 = tfs->make<TH1F>( "hist1", "Radius of Hits", 100,  0., 50. );
@@ -98,45 +97,45 @@ namespace mu2e {
     _hist4 = tfs->make<TH1F>( "hist4", "Hits per Event", 10,  0., 10. );
 
     // Create a subdirectory and create a 2D histogram in the subdirectory.
-    edm::TFileDirectory tfdir = tfs->mkdir( "subdir" );
+    art::TFileDirectory tfdir = tfs->mkdir( "subdir" );
     _hist2 = tfdir.make<TH2F>( "hist2"  , "Radius of Hits vs Z of Hits", 
                                100,  0., 35., 100,  0., 45. );
 
     // Put a decorated message into the log file.  No endl or \n needed.
-    edm::LogInfo(_messageCategory) << "Hello, world!";
+    mf::LogInfo(_messageCategory) << "Hello, world!";
 
     // Put an undecorated message into the log file.
-    edm::LogVerbatim(_messageCategory) << "Hello, again, world!";
+    mf::LogVerbatim(_messageCategory) << "Hello, again, world!";
 
   }
 
   void Ex01InspectHits::endJob(){
-    edm::LogInfo(_messageCategory) 
+    mf::LogInfo(_messageCategory) 
       << "Number of histogram entries: "
       << _hist1->GetEntries();
   }
 
 
-  void Ex01InspectHits::beginRun(edm::Run const& run,
-                                 edm::EventSetup const& eSetup ){
+  void Ex01InspectHits::beginRun(art::Run const& run,
+                                 art::EventSetup const& eSetup ){
 
     // Access the run number.
-    edm::LogInfo(_messageCategory) 
+    mf::LogInfo(_messageCategory) 
       << "Starting a new run: "
       << run.id().run();
   }
 
-  void Ex01InspectHits::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
-                                             edm::EventSetup const&){
+  void Ex01InspectHits::beginSubRun(art::SubRun const& lblock,
+                                             art::EventSetup const&){
     // Access the run number.
-    edm::LogInfo(_messageCategory) 
+    mf::LogInfo(_messageCategory) 
       << "Starting a new lumi block: "
       << lblock.id().luminosityBlock();
 
   }
 
   void
-  Ex01InspectHits::analyze(const edm::Event& event, edm::EventSetup const&) {
+  Ex01InspectHits::analyze(const art::Event& event, art::EventSetup const&) {
 
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
@@ -145,7 +144,7 @@ namespace mu2e {
     static const string creatorName("ex02hitmaker");
 
     // Get the ToyHitCollection from the event.
-    edm::Handle<ToyHitCollection> hitsHandle;
+    art::Handle<ToyHitCollection> hitsHandle;
     event.getByLabel(creatorName,hitsHandle);
 
     // The & is important here: it makes a reference not a copy.
@@ -153,7 +152,7 @@ namespace mu2e {
     ToyHitCollection const& hits(*hitsHandle);
     
     // Some printout.  This time keep the variable log around for future use.
-    edm::LogVerbatim log(_messageCategory);
+    mf::LogVerbatim log(_messageCategory);
     log << "Analyzing event #: " 
         << event.id() << ". Number of hits: "
         << hits.size() << ".";
@@ -195,4 +194,4 @@ namespace mu2e {
 
 
 using mu2e::Ex01InspectHits;
-DEFINE_FWK_MODULE(Ex01InspectHits);
+DEFINE_ART_MODULE(Ex01InspectHits);

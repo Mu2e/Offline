@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_plugin.cc,v 1.6 2010/11/15 17:16:53 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/15 17:16:53 $
+// $Id: MakeCaloCrystalHits_plugin.cc,v 1.7 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author KLG
 //
@@ -15,16 +15,15 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -39,24 +38,24 @@
 #include "Mu2eUtilities/inc/sort_functors.hh"
 
 using namespace std;
-using edm::Event;
+using art::Event;
 
 namespace mu2e {
 
-  class MakeCaloCrystalHits : public edm::EDProducer {
+  class MakeCaloCrystalHits : public art::EDProducer {
 
   public:
 
-    explicit MakeCaloCrystalHits(edm::ParameterSet const& pset) : 
+    explicit MakeCaloCrystalHits(fhicl::ParameterSet const& pset) : 
 
       // Parameters
 
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
-      _maximumEnergy(pset.getUntrackedParameter<double>("maximumEnergy",1000.0)), //MeV 
-      _minimumTimeGap(pset.getUntrackedParameter<double>("minimumTimeGap",100.0)),// ns
-      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
+      _maximumEnergy(pset.get<double>("maximumEnergy",1000.0)), //MeV 
+      _minimumTimeGap(pset.get<double>("minimumTimeGap",100.0)),// ns
+      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _messageCategory("CaloHitMaker")
 
     {
@@ -65,9 +64,9 @@ namespace mu2e {
     }
     virtual ~MakeCaloCrystalHits() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
  
-    void produce( edm::Event& e, edm::EventSetup const&);
+    void produce( art::Event& e, art::EventSetup const&);
 
   private:
     
@@ -94,7 +93,7 @@ namespace mu2e {
 
   };
 
-  void MakeCaloCrystalHits::beginJob(edm::EventSetup const& ){
+  void MakeCaloCrystalHits::beginJob(art::EventSetup const& ){
   }
 
   void MakeCaloCrystalHits::fixEnergy(CaloCrystalHitCollection::value_type & caloCrystalHit, 
@@ -130,10 +129,10 @@ namespace mu2e {
 
   }
 
-  void MakeCaloCrystalHits::produce(edm::Event& event, edm::EventSetup const&) {
+  void MakeCaloCrystalHits::produce(art::Event& event, art::EventSetup const&) {
 
     // Source of the info
-    edm::Handle<CaloHitCollection> caloHits;
+    art::Handle<CaloHitCollection> caloHits;
     // A container to hold the output hits.
     auto_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
 
@@ -159,9 +158,9 @@ namespace mu2e {
     }
 
     // Get calorimeter geometry description
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Expected calorimeter, but found none";
     }
     //    GeomHandle<Calorimeter> cg;
@@ -184,7 +183,7 @@ namespace mu2e {
     // should they be also separated by time?
 
     // Product Id of the input points.
-    edm::ProductID const& caloHitCollId(caloHits.id());
+    art::ProductID const& caloHitCollId(caloHits.id());
     //mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
 
     // Instatiate caloHitsSorted from caloHits which is const, 
@@ -322,4 +321,4 @@ namespace mu2e {
 }
 
 using mu2e::MakeCaloCrystalHits;
-DEFINE_FWK_MODULE(MakeCaloCrystalHits);
+DEFINE_ART_MODULE(MakeCaloCrystalHits);

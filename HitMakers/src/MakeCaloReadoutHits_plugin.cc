@@ -15,16 +15,15 @@
 #include <utility>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -42,7 +41,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 using namespace std;
-using edm::Event;
+using art::Event;
 
 namespace mu2e {
 
@@ -69,16 +68,16 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class MakeCaloReadoutHits : public edm::EDProducer {
+  class MakeCaloReadoutHits : public art::EDProducer {
   public:
-    explicit MakeCaloReadoutHits(edm::ParameterSet const& pset) : 
+    explicit MakeCaloReadoutHits(fhicl::ParameterSet const& pset) : 
 
       // Parameters
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _stepPoints(pset.getUntrackedParameter<string>("calorimeterStepPoints","calorimeter")),
-      _rostepPoints(pset.getUntrackedParameter<string>("calorimeterROStepPoints","calorimeterRO")),
-      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _stepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
+      _rostepPoints(pset.get<string>("calorimeterROStepPoints","calorimeterRO")),
+      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
 
       _messageCategory("CaloReadoutHitsMaker"){
 
@@ -92,9 +91,9 @@ namespace mu2e {
     }
     virtual ~MakeCaloReadoutHits() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
  
-    void produce( edm::Event& e, edm::EventSetup const&);
+    void produce( art::Event& e, art::EventSetup const&);
 
   private:
     
@@ -114,8 +113,8 @@ namespace mu2e {
     // A category for the error logger.
     const std::string _messageCategory;
 
-    void makeCalorimeterHits (const edm::Handle<StepPointMCCollection>&, 
-			      const edm::Handle<StepPointMCCollection>&, 
+    void makeCalorimeterHits (const art::Handle<StepPointMCCollection>&, 
+			      const art::Handle<StepPointMCCollection>&, 
 			      CaloHitCollection &, 
 			      CaloHitMCTruthCollection&,
 			      CaloCrystalOnlyHitCollection&,
@@ -124,12 +123,12 @@ namespace mu2e {
 
   };
 
-  void MakeCaloReadoutHits::beginJob(edm::EventSetup const& ){
+  void MakeCaloReadoutHits::beginJob(art::EventSetup const& ){
     
   }
 
   void
-  MakeCaloReadoutHits::produce(edm::Event& event, edm::EventSetup const&) {
+  MakeCaloReadoutHits::produce(art::Event& event, art::EventSetup const&) {
 
     if ( _diagLevel > 0 ) cout << "MakeCaloReadoutHits: produce() begin" << endl;
       
@@ -137,7 +136,7 @@ namespace mu2e {
     ++ncalls;
 
     // Check that calorimeter geometry description exists
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return;
 
     // A container to hold the output hits.
@@ -149,11 +148,11 @@ namespace mu2e {
 
     // Ask the event to give us a handle to the requested hits.
 
-    edm::Handle<StepPointMCCollection> points;
+    art::Handle<StepPointMCCollection> points;
     event.getByLabel(_g4ModuleLabel,_stepPoints,points);
     int nHits = points->size();
 
-    edm::Handle<StepPointMCCollection> rohits;
+    art::Handle<StepPointMCCollection> rohits;
     event.getByLabel(_g4ModuleLabel,_rostepPoints,rohits);
     int nroHits = rohits->size();
 
@@ -183,8 +182,8 @@ namespace mu2e {
 
   } // end of ::analyze.
  
-  void MakeCaloReadoutHits::makeCalorimeterHits (const edm::Handle<StepPointMCCollection>& steps, 
-				      const edm::Handle<StepPointMCCollection>& rosteps, 
+  void MakeCaloReadoutHits::makeCalorimeterHits (const art::Handle<StepPointMCCollection>& steps, 
+				      const art::Handle<StepPointMCCollection>& rosteps, 
 				      CaloHitCollection &caloHits, 
 				      CaloHitMCTruthCollection& caloHitsMCTruth,
 				      CaloCrystalOnlyHitCollection& caloCrystalHitsMCTruth,
@@ -192,8 +191,8 @@ namespace mu2e {
 				      DPIndexVectorCollection& caloHitsMCReadoutPtr ) {
 
     // Product Id of the input points.
-    edm::ProductID const& crystal_id(steps.id());
-    edm::ProductID const& readout_id(rosteps.id());
+    art::ProductID const& crystal_id(steps.id());
+    art::ProductID const& readout_id(rosteps.id());
 
     // Get calorimeter geometry description
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
@@ -412,4 +411,4 @@ namespace mu2e {
 }
 
 using mu2e::MakeCaloReadoutHits;
-DEFINE_FWK_MODULE(MakeCaloReadoutHits);
+DEFINE_ART_MODULE(MakeCaloReadoutHits);

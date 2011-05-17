@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.  
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_plugin.cc,v 1.11 2011/01/11 17:37:48 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/01/11 17:37:48 $
+// $Id: ReadStrawHit_plugin.cc,v 1.12 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -15,17 +15,16 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "DataFormats/Provenance/interface/Provenance.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Persistency/Provenance/Provenance.h"
 
 // Root includes.
 #include "TFile.h"
@@ -51,13 +50,13 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class ReadStrawHit : public edm::EDAnalyzer {
+  class ReadStrawHit : public art::EDAnalyzer {
   public:
-    explicit ReadStrawHit(edm::ParameterSet const& pset):
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
+    explicit ReadStrawHit(fhicl::ParameterSet const& pset):
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
       _hHitTime(0),
       _hHitDeltaTime(0),
       _hHitEnergy(0),
@@ -76,9 +75,9 @@ namespace mu2e {
     }
     virtual ~ReadStrawHit() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
 
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void analyze( art::Event const& e, art::EventSetup const&);
 
   private:
     
@@ -112,14 +111,14 @@ namespace mu2e {
 
   };
 
-  void ReadStrawHit::beginJob(edm::EventSetup const& ){
+  void ReadStrawHit::beginJob(art::EventSetup const& ){
 
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint 
          << endl;
 
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     _hHitTime      = tfs->make<TH1F>( "hHitTime",      "Hit Time (ns)", 200, 0., 2000. );
     _hHitDeltaTime = tfs->make<TH1F>( "hHitDeltaTime", "Hit Delta Time (ns)", 80, -20.0, 20. );
@@ -140,14 +139,14 @@ namespace mu2e {
   }
 
   void
-  ReadStrawHit::analyze(edm::Event const& evt, edm::EventSetup const&) {
+  ReadStrawHit::analyze(art::Event const& evt, art::EventSetup const&) {
 
     static int ncalls(0);
     ++ncalls;
 
     /*
     // Print the content of current event
-    std::vector<edm::Provenance const*> edata;
+    std::vector<art::Provenance const*> edata;
     evt.getAllProvenance(edata);
     cout << "Event info: " 
     << evt.id().event() <<  " " 
@@ -208,19 +207,19 @@ namespace mu2e {
 	  _detntup->Fill(detnt);
 	}
     }
-    edm::Handle<StrawHitCollection> pdataHandle;
+    art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
     // Get the persistent data about the StrawHitsMCTruth.
 
-    edm::Handle<StrawHitMCTruthCollection> truthHandle;
+    art::Handle<StrawHitMCTruthCollection> truthHandle;
     evt.getByLabel(_makerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
     // Get the persistent data about pointers to StepPointMCs
 
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
@@ -228,7 +227,7 @@ namespace mu2e {
     // should look for product ids in DPIndexVectorCollection, rather than 
     // use producer name directly ("g4run"). 
 
-    edm::Handle<StepPointMCCollection> mchitsHandle;
+    art::Handle<StepPointMCCollection> mchitsHandle;
     evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
     StepPointMCCollection const* mchits = mchitsHandle.product();
 
@@ -312,4 +311,4 @@ namespace mu2e {
 
 
 using mu2e::ReadStrawHit;
-DEFINE_FWK_MODULE(ReadStrawHit);
+DEFINE_ART_MODULE(ReadStrawHit);

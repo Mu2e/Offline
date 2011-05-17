@@ -1,9 +1,9 @@
 // 
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.cc,v 1.2 2010/08/18 23:14:03 logash Exp $
-// $Author: logash $
-// $Date: 2010/08/18 23:14:03 $
+// $Id: StrawHit.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -12,7 +12,7 @@
 #include <ostream>
 
 // Framework includes.
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "ToyDP/inc/StrawHit.hh"

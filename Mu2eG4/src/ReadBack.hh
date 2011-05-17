@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes 
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.19 2011/05/03 04:28:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/03 04:28:25 $
+// $Id: ReadBack.hh,v 1.20 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -13,11 +13,10 @@
 #include <string>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
 
 // Mu2e includes.
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -31,17 +30,17 @@ namespace mu2e {
 
   class Straw;
 
-  class ReadBack : public edm::EDAnalyzer {
+  class ReadBack : public art::EDAnalyzer {
   public:
     
-    explicit ReadBack(edm::ParameterSet const& pset);
+    explicit ReadBack(fhicl::ParameterSet const& pset);
     virtual ~ReadBack() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     virtual void endJob();
  
     // This is called for each event.
-    virtual void analyze(const edm::Event& e, edm::EventSetup const&);
+    virtual void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
@@ -132,15 +131,15 @@ namespace mu2e {
     int _nBadG4Status;
 
     // Do the work specific to one of the trackers.
-    void doLTracker(const edm::Event& event);
-    void doITracker(const edm::Event& event);
-    void doCalorimeter(const edm::Event& event);
-    void doStoppingTarget(const edm::Event& event);
-    void doCRV(const edm::Event& event);
+    void doLTracker(const art::Event& event);
+    void doITracker(const art::Event& event);
+    void doCalorimeter(const art::Event& event);
+    void doStoppingTarget(const art::Event& event);
+    void doCRV(const art::Event& event);
 
     // A helper function.
     int countHitNeighbours( Straw const& straw, 
-                            edm::Handle<StepPointMCCollection>& hits );
+                            art::Handle<StepPointMCCollection>& hits );
 
   };
   

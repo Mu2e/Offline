@@ -5,9 +5,9 @@
   selects events with either even or odd event numbers; this 
   choice is controlled by a run time configuration parameter.
 
-  $Id: Ex02SelectEvents_plugin.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2009/09/30 22:57:47 $
+  $Id: Ex02SelectEvents_plugin.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+  $Author: greenc $
+  $Date: 2011/05/17 15:36:00 $
    
   Original author Rob Kutschke
 
@@ -22,12 +22,11 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/EDFilter.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "fhiclcpp/ParameterSet.h"
 #include <boost/shared_ptr.hpp>
 
 
@@ -36,13 +35,13 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   //
-  class Ex02SelectEvents : public edm::EDFilter {
+  class Ex02SelectEvents : public art::EDFilter {
   public:
-    explicit Ex02SelectEvents(edm::ParameterSet const& pset):
-      _keepOddOrEven(pset.getUntrackedParameter<int>("keepOddOrEven",1)){
+    explicit Ex02SelectEvents(fhicl::ParameterSet const& pset):
+      _keepOddOrEven(pset.get<int>("keepOddOrEven",1)){
     }
     virtual ~Ex02SelectEvents() { }
-    virtual bool filter(edm::Event& e, edm::EventSetup const& c);
+    virtual bool filter(art::Event& e, art::EventSetup const& c);
     
   private:
 
@@ -52,7 +51,7 @@ namespace mu2e {
 
   };
 
-  bool Ex02SelectEvents::filter(edm::Event& e, edm::EventSetup const&) {
+  bool Ex02SelectEvents::filter(art::Event& e, art::EventSetup const&) {
 
     // EventSetup is a cms leftover that we do not use.
     
@@ -82,4 +81,4 @@ namespace mu2e {
 
 
 using mu2e::Ex02SelectEvents;
-DEFINE_FWK_MODULE(Ex02SelectEvents);
+DEFINE_ART_MODULE(Ex02SelectEvents);

@@ -5,16 +5,16 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle. 
 //
-// $Id: SimParticleInfo.cc,v 1.1 2011/03/08 14:12:51 ayarritu Exp $
-// $Author: ayarritu $
-// $Date: 2011/03/08 14:12:51 $
+// $Id: SimParticleInfo.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // See the notes in the header file for the meaning of the member datum _time.
 // 
 
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"
@@ -32,7 +32,7 @@ namespace mu2e {
     SimParticleInfo::SimParticleInfo( 
             key_type simId,
             SimParticle const& simParticle,
-            const edm::Event& evt):
+            const art::Event& evt):
      _simId(simId),
      _simParticle(&simParticle),
      _event(&evt),
@@ -46,7 +46,7 @@ namespace mu2e {
 
         if ( _firstInTracker )  return *_firstInTracker;  
         else if ( _hitInfos.size() == 0 )  {
-          throw cms::Exception("HITS") 
+          throw cet::exception("HITS") 
             << "_hitInfos is empty at " << __func__ << "\n";
         }; 
 
@@ -76,7 +76,7 @@ namespace mu2e {
 
         if ( _lastInTracker )  return *_lastInTracker; 
         else if ( _hitInfos.size() == 0 ) {
-          throw cms::Exception("HITS") 
+          throw cet::exception("HITS") 
             << "_hitInfos is empty at " << __func__ << "\n";
         }
 

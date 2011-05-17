@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.8 2011/05/02 18:26:51 kutschke Exp $
- * $Author: kutschke $ 
- * $Date: 2011/05/02 18:26:51 $
+ * $Id: SimpleConfig.hh,v 1.9 2011/05/17 15:36:01 greenc Exp $
+ * $Author: greenc $ 
+ * $Date: 2011/05/17 15:36:01 $
  *
  * Original author Rob Kutschke
  *
@@ -22,8 +22,8 @@
  *     string name = "//This is not a comment"; 
  * 2) Does not escape new lines within a string properly.
  *
- *@author $Author: kutschke $
- *@version $Id: SimpleConfig.hh,v 1.8 2011/05/02 18:26:51 kutschke Exp $
+ *@author $Author: greenc $
+ *@version $Id: SimpleConfig.hh,v 1.9 2011/05/17 15:36:01 greenc Exp $
  *
  * Date $Date%
  *
@@ -45,7 +45,7 @@
 // Mu2e includes
 
 // Forward declarations outside mu2e namespace.
-namespace edm{
+namespace art{
   class FileInPath;
 }
 
@@ -66,7 +66,7 @@ namespace mu2e {
                   bool allowReplacement=true,
                   bool messageOnReplacement=true);
 
-    SimpleConfig( const edm::FileInPath& fileInPath,
+    SimpleConfig( const art::FileInPath& fileInPath,
                   bool allowReplacement=true,
                   bool messageOnReplacement=true);
     
@@ -103,7 +103,7 @@ namespace mu2e {
      *
      * @return the value of the parameter.
      */
-    std::string getString ( const std::string& name ) const;
+    std::string get<std::string> ( const std::string& name ) const;
     
     /**
      * Get a specified parameter as a string, if not present in the file
@@ -111,7 +111,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as a string.
      */
-    std::string getString ( const std::string& name, 
+    std::string get<std::string> ( const std::string& name, 
                             const std::string& def ) const;
     
     /**
@@ -119,7 +119,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as an int.
      */
-    int getInt ( const std::string& name ) const;
+    int get<int> ( const std::string& name ) const;
     
     /**
      * Get a specified parameter as a int, if not present in the file
@@ -127,7 +127,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as an int.
      */
-    int getInt ( const std::string& name, int def ) const;
+    int get<int> ( const std::string& name, int def ) const;
     
     /**
      * Get a specified parameter as a double.
@@ -151,7 +151,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as an bool.
      */
-    bool getBool ( const std::string& name ) const;
+    bool get<bool> ( const std::string& name ) const;
     
     /**
      * Get a specified parameter as a bool, if not present in the file
@@ -159,7 +159,7 @@ namespace mu2e {
      *
      * @return the value of the parameter as an bool.
      */
-    bool getBool ( const std::string& name, bool def ) const;
+    bool get<bool> ( const std::string& name, bool def ) const;
     
     /**
      * Get a specified parameter as a vector<std::string>. 

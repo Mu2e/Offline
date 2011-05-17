@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.11 2011/01/04 22:07:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/04 22:07:20 $
+// $Id: TrackingAction.hh,v 1.12 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,7 @@
 #include <map>
 
 // Framework includes
-#include "FWCore/Utilities/interface/CPUTimer.h"
+#include "art/Utilities/CPUTimer.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
@@ -87,7 +87,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _mu2eOrigin;
 
-    edm::CPUTimer _timer;
+    art::CPUTimer _timer;
 
     // Information about SimParticles is collected in this map
     // during the operation of G4.  This is not persistent.

@@ -1,9 +1,9 @@
 //
 // The Mu2e version of G4VUserDetectorConstruction.
 // 
-// $Id: WorldMaker.cc,v 1.2 2010/09/30 19:27:52 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/30 19:27:52 $
+// $Id: WorldMaker.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -17,8 +17,8 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/WorldMaker.hh"

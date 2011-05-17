@@ -5,9 +5,9 @@
 // A safe pointer to the geometry information for a 
 // detector component.
 //
-// $Id: GeomHandle.hh,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: GeomHandle.hh,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,7 @@ namespace mu2e {
   public:
     GeomHandle()
     {
-      edm::Service<GeometryService> sg;
+      art::ServiceHandle<GeometryService> sg;
       _detector = sg->getElement<DET>();
     }
     ~GeomHandle() { }

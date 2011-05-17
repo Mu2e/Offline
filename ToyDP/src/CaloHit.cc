@@ -1,7 +1,7 @@
 //
-// $Id: CaloHit.cc,v 1.2 2010/11/02 03:25:37 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/02 03:25:37 $
+// $Id: CaloHit.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Ivan Logashenko
 //
@@ -10,7 +10,7 @@
 #include <ostream>
 
 // Framework includes.
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "ToyDP/inc/CaloHit.hh"

@@ -5,9 +5,9 @@
 // If a hit straw appears more than once in input list, then
 // all of those hits to the cluster.
 //
-// $Id: growCluster.cc,v 1.2 2010/05/18 21:15:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:15:49 $
+// $Id: growCluster.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 // 
 
 // C++ includes
@@ -26,7 +26,7 @@ namespace mu2e {
   int growCluster ( ProtoStrawCluster&              cluster,
                     int                             startCluster,
                     int                             startHit,
-                    edm::Handle<CrudeStrawHitPData> pdataHandle,
+                    art::Handle<CrudeStrawHitPData> pdataHandle,
                     std::vector<int>&               used,
                     LTracker const&                 ltracker
                     ){

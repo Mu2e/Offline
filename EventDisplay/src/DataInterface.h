@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.11 2011/03/08 17:47:29 ehrlich Exp $
-// $Author: ehrlich $ 
-// $Date: 2011/03/08 17:47:29 $
+// $Id: DataInterface.h,v 1.12 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Ralf Ehrlich
 //
@@ -15,7 +15,7 @@
 #include <list>
 #include <map>
 #include "CLHEP/Vector/ThreeVector.h"
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "boost/shared_ptr.hpp"
 
@@ -52,7 +52,7 @@ class DataInterface
   };
 
   private:
-  edm::Event    *_event;
+  art::Event    *_event;
   TGeoManager   *_geometrymanager; //bare pointer needed since ROOT manages this object
   TGeoVolume    *_topvolume;       //bare pointer needed since ROOT manages this object
   const TObject *_mainframe;       //points to the EventDisplayFrame object

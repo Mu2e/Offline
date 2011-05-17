@@ -5,20 +5,20 @@
 // A utility function to compute values for all of the transients
 // in members of a collection.
 //
-// $Id: resolveTransients.hh,v 1.3 2010/05/18 20:28:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:58 $
+// $Id: resolveTransients.hh,v 1.4 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
 
 // Framework includes.
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 
 namespace mu2e {
 
   template<typename T>
-  void resolveTransients( T const& v, edm::Event const& event){
+  void resolveTransients( T const& v, art::Event const& event){
     
     for ( typename T::const_iterator i=v.begin(), e=v.end();
           i<e; ++i ){

@@ -1,9 +1,9 @@
 #ifndef HOUGHTRANSFORM_HH
 #define HOUGHTRANSFORM_HH
 //
-// $Id: HoughTransform.hh,v 1.9 2010/09/30 21:52:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/30 21:52:58 $
+// $Id: HoughTransform.hh,v 1.10 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.  
@@ -21,16 +21,15 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -94,14 +93,14 @@ namespace mu2e{
 
 
       //methods
-      //      void foundHoughTracks(GeomHandle<LTracker>& ltracker,edm::Handle<StepPointMCCollection>& hits,
+      //      void foundHoughTracks(GeomHandle<LTracker>& ltracker,art::Handle<StepPointMCCollection>& hits,
       void foundHoughTracks(double radius, GeomHandle<LTracker>& ltracker,
                             houghCandidates&);
       void foundHoughTracks(GeomHandle<LTracker>& ltracker,
                             houghCandidates&);
 
 
-      //      int countHitNeighbours( Straw const& straw, edm::Handle<StepPointMCCollection>& hits );
+      //      int countHitNeighbours( Straw const& straw, art::Handle<StepPointMCCollection>& hits );
       int countHitNeighbours( Straw const& straw, StepPointMCCollection const* hits );
       //and a numbering scheme for the returned vector of radius, center x, center y no one needs to know about
 

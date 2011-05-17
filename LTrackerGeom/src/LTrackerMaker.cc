@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.12 2010/09/30 02:34:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/30 02:34:07 $
+// $Id: LTrackerMaker.cc,v 1.13 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "LTrackerGeom/inc/LTrackerMaker.hh"
@@ -103,7 +103,7 @@ namespace mu2e {
     _vaneInfo(),
     _center(){
 
-    _nSides          = config.getInt("ltracker.nSides");
+    _nSides          = config.get<int>("ltracker.nSides");
     _r0              = config.getDouble("ltracker.r0");
     _z0              = config.getDouble("ltracker.z0");
     _halfLength      = config.getDouble("ltracker.zHalfLength");
@@ -117,7 +117,7 @@ namespace mu2e {
     _rwire           = config.getDouble("ltracker.rWire");
     _carbonThick     = config.getDouble("ltracker.carbonThick");
     _vaneOffset      = config.getHep3Vector("ltracker.vaneOffset");
-    _fillMaterial    = config.getString("ltracker.fillMaterial");
+    _fillMaterial    = config.get<std::string>("ltracker.fillMaterial");
 
     config.getVectorString("ltracker.strawMaterials0", _strawMaterialNames0, 3);
     config.getVectorString("ltracker.strawMaterials1", _strawMaterialNames1, 3);
@@ -225,7 +225,7 @@ namespace mu2e {
         ( lay._nStraws - 1. + _cphiHalf - (f-_sphiHalf)*_tphiHalf);
       
       if ( _strawRadius > maxRadius ){
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Straw radius too big for straws to fit in the defined space: \n"
           << "Layer:      " << i << "\n"
           << "rInscribed: " << r << "\n"
@@ -518,14 +518,14 @@ namespace mu2e {
   //  2) The code to compute the bounding volumes.
   void LTrackerMaker::CheckSideConsistency(){
     if ( _sideInfo.size()<2 ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Side sectors with fewer than 2 layers are not supported.\n";
     }
     for ( vector<LayerInfo>::size_type i = 1;
           i<_sideInfo.size(); ++i ){
       unsigned int j = i-1;
       if ( _sideInfo[i]._nStraws != _sideInfo[j]._nStraws + 1){
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "This version only supports sectors in which straws/layer increases by 1.\n";
       }
     }
@@ -537,7 +537,7 @@ namespace mu2e {
   //  2) The code to compute the bounding volumes.
   void LTrackerMaker::CheckVaneConsistency(){
     if ( _vaneInfo.size()<2 ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Vanes with fewer than 2 layers are not supported.\n";
     }
     for ( vector<LayerInfo>::size_type i = 1;
@@ -545,7 +545,7 @@ namespace mu2e {
       unsigned int j = i-1;
       int delta = _vaneInfo[i]._nStraws - _vaneInfo[j]._nStraws;
       if ( abs(delta) != 1 ){
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "This version only supports vanes in which straws/layer differs by +/1.\n";
       }
     }
@@ -702,7 +702,7 @@ namespace mu2e {
   // Check for straws that overlap with each other.
   void LTrackerMaker::checkForOverlaps( bool printWarnings ){
 
-    edm::LogInfo log("GEOM");
+    mf::LogInfo log("GEOM");
 
     // "Safety" margins for "close to overlap" warnings
     // and for warnings of a real overlap.  Both in mm.
@@ -789,7 +789,7 @@ namespace mu2e {
     }
 
     if ( nBad > 0 ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "LTracker has overlapping straws.";
     }
 

@@ -69,8 +69,8 @@ namespace mu2e {
 //                                delete (*iwire);
 //                                ++iwire;
 //                        }
-//                } catch (cms::Exception e) {
-//                    throw cms::Exception("GEOM")
+//                } catch (cet::exception e) {
+//                    throw cet::exception("GEOM")
 //                        << "Error during deleting layer data \n";
 //                }
 

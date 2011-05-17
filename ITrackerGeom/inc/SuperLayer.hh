@@ -40,9 +40,9 @@ public:
   
   int nLayers() const { return _nLayers; }
 
-  boost::shared_ptr<ITLayer> getLayer( int n ) const throw(cms::Exception) {
+  boost::shared_ptr<ITLayer> getLayer( int n ) const throw(cet::exception) {
     if (n>=0 && n<_nLayers) return _layers.at(n);
-    else throw  cms::Exception("GEOM")<< "Layer number: "<< n <<" not present in "<<_id;
+    else throw  cet::exception("GEOM")<< "Layer number: "<< n <<" not present in "<<_id;
   }
   
   boost::shared_ptr<ITLayer> getLayer( ITLayerId& id ) const {

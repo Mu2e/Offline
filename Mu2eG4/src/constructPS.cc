@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.1 2011/01/05 21:04:47 genser Exp $
-// $Author: genser $
-// $Date: 2011/01/05 21:04:47 $
+// $Id: constructPS.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -60,10 +60,10 @@ namespace mu2e {
     double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength;
     G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
     
-    bool toyPSVisible        = _config->getBool("toyPS.visible",true);
-    bool toyPSSolid          = _config->getBool("toyPS.solid",true);
-    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool toyPSVisible        = _config->get<bool>("toyPS.visible",true);
+    bool toyPSSolid          = _config->get<bool>("toyPS.solid",true);
+    bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV       = true;
     
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -124,13 +124,13 @@ namespace mu2e {
 
     // G4 takes ownership of this G4RotationMatrix object.
     // Passive rotation. See Mu2e-doc-938.
-    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4RotationMatrix* prodTargetRotation = reg.add(G4RotationMatrix());
     prodTargetRotation->rotateY( -targetPS_rotY);
     prodTargetRotation->rotateX( -targetPS_rotX);
 
-    bool prodTargetVisible = _config->getBool("targetPS.visible",true);
-    bool prodTargetSolid   = _config->getBool("targetPS.solid",true);
+    bool prodTargetVisible = _config->get<bool>("targetPS.visible",true);
+    bool prodTargetSolid   = _config->get<bool>("targetPS.solid",true);
 
     VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
                                             prodTargetParams,

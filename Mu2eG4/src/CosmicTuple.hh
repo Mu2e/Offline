@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.hh,v 1.5 2011/02/03 18:38:27 wasiko Exp $
-// $Author: wasiko $
-// $Date: 2011/02/03 18:38:27 $
+// $Id: CosmicTuple.hh,v 1.6 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -12,13 +12,12 @@
 #include <string>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
 
-#include "FWCore/Framework/interface/EDFilter.h"
+#include "art/Framework/Core/EDFilter.h"
 // Mu2e includes.
 #include "ToyDP/inc/StepPointMCCollection.hh"
 
@@ -27,17 +26,17 @@ class TNtuple;
 
 namespace mu2e {
 
-  class CosmicTuple : public edm::EDFilter {
+  class CosmicTuple : public art::EDFilter {
   public:
     
-    explicit CosmicTuple(edm::ParameterSet const& pset);
+    explicit CosmicTuple(fhicl::ParameterSet const& pset);
     virtual ~CosmicTuple() { }
 
-    virtual void beginJob(edm::EventSetup const&);
-    virtual bool beginRun(edm::Run &r, edm::EventSetup const& eSetup );
+    virtual void beginJob(art::EventSetup const&);
+    virtual bool beginRun(art::Run &r, art::EventSetup const& eSetup );
  
     // This is called for each event.
-    virtual bool filter(edm::Event& e, edm::EventSetup const&);
+    virtual bool filter(art::Event& e, art::EventSetup const&);
 
   private:
 

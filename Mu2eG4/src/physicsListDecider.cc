@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.4 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: physicsListDecider.cc,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke 
 //
@@ -29,7 +29,7 @@
 #include <string>
 
 // Framework incldues
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
@@ -51,7 +51,7 @@ namespace mu2e{
 
     G4VUserPhysicsList* physicsList(0);
 
-    string name = config.getString("g4.physicsListName","N02");
+    string name = config.get<std::string>("g4.physicsListName","N02");
 
     // Two special cases
     if ( name  == "Minimal" ) {
@@ -80,7 +80,7 @@ namespace mu2e{
     }
 
     if ( !physicsList ){
-      throw cms::Exception("G4CONTROL")
+      throw cet::exception("G4CONTROL")
         << "Unable to load physics list named: "
         << name
         << "\n";

@@ -1,22 +1,21 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_plugin.cc,v 1.6 2011/03/03 17:24:10 ehrlich Exp $
-// $Author: ehrlich $ 
-// $Date: 2011/03/03 17:24:10 $
+// $Id: EventDisplay_plugin.cc,v 1.7 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 
 #include <iostream>
 #include <string>
 #include <memory>
 
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/ModuleMacros.h"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 
@@ -27,17 +26,17 @@
 
 namespace mu2e 
 {
-  class EventDisplay : public edm::EDAnalyzer 
+  class EventDisplay : public art::EDAnalyzer 
   {
     public:
-    explicit EventDisplay(edm::ParameterSet const&);
+    explicit EventDisplay(fhicl::ParameterSet const&);
     virtual ~EventDisplay() { }
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     void endJob();
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
     private:
-    template<class collectionType> void checkMinimumHits(const edm::Event &event, 
+    template<class collectionType> void checkMinimumHits(const art::Event &event, 
                                                          const std::string &classNameToCheck,
                                                          const mu2e_eventdisplay::EventDisplayFrame *_frame, 
                                                          bool &showEvent);
@@ -45,12 +44,12 @@ namespace mu2e
     bool _firstLoop;
   };
 
-  EventDisplay::EventDisplay(edm::ParameterSet const& ) 
+  EventDisplay::EventDisplay(fhicl::ParameterSet const& ) 
   {
     _firstLoop=true;
   }
 
-  void EventDisplay::beginJob(edm::EventSetup const& )
+  void EventDisplay::beginJob(art::EventSetup const& )
   {
     //Bare pointer are needed for gApplication and _mainframe to avoid
     //that the destructor for these two objects gets called, i.e.
@@ -65,7 +64,7 @@ namespace mu2e
     //eventdisplay window, because it usually takes a while until the first event gets pushed through
   }
 
-  void EventDisplay::analyze(const edm::Event& event, edm::EventSetup const&) 
+  void EventDisplay::analyze(const art::Event& event, art::EventSetup const&) 
   {
     if(_firstLoop)
     {
@@ -94,14 +93,14 @@ namespace mu2e
   }
 
   template<class collectionType>
-  void EventDisplay::checkMinimumHits(const edm::Event &event, const std::string &classNameToCheck,
+  void EventDisplay::checkMinimumHits(const art::Event &event, const std::string &classNameToCheck,
                                       const mu2e_eventdisplay::EventDisplayFrame *_frame, bool &showEvent)
   {
     std::string className, moduleLabel, productInstanceName;
     bool hasSelectedHits=_frame->getSelectedHitsName(className, moduleLabel, productInstanceName);
     if(hasSelectedHits && className.compare(classNameToCheck)==0)
     {
-      edm::Handle<collectionType> hits;
+      art::Handle<collectionType> hits;
       if(event.getByLabel(moduleLabel,productInstanceName,hits))
       {
         if(static_cast<int>(hits->size()) < _frame->getMinimumHits())
@@ -132,4 +131,4 @@ namespace mu2e
 }
 
 using mu2e::EventDisplay;
-DEFINE_FWK_MODULE(EventDisplay);
+DEFINE_ART_MODULE(EventDisplay);

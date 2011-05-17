@@ -11,7 +11,7 @@
 #include <cmath>
 
 // Framework includes
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eReflection/inc/Mu2eReflection.hh"

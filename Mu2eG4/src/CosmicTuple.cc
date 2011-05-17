@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.15 2011/03/07 22:50:17 wasiko Exp $
-// $Author: wasiko $
-// $Date: 2011/03/07 22:50:17 $
+// $Id: CosmicTuple.cc,v 1.16 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -15,9 +15,9 @@
 #include <vector>
 
 // Framework includes.
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes.
 #include "Mu2eG4/src/CosmicTuple.hh"
@@ -37,7 +37,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
  
-#include "FWCore/Framework/interface/EDFilter.h"
+#include "art/Framework/Core/EDFilter.h"
 
 // Root includes.
 #include "TH1F.h"
@@ -53,11 +53,11 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  CosmicTuple::CosmicTuple(edm::ParameterSet const& pset) : 
-    _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-    _minimump(pset.getParameter<double>("minimump")),
-    _maximump(pset.getParameter<double>("maximump")),
-    _minHits(pset.getParameter<int>("minHits")),
+  CosmicTuple::CosmicTuple(fhicl::ParameterSet const& pset) : 
+    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+    _minimump(pset.get<double>("minimump")),
+    _maximump(pset.get<double>("maximump")),
+    _minHits(pset.get<int>("minHits")),
   
     _nAnalyzed(0),
     _hEventsize(0),
@@ -66,10 +66,10 @@ namespace mu2e {
   {
   }
   
-  void CosmicTuple::beginJob(edm::EventSetup const& ){
+  void CosmicTuple::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     // Create some 1D histograms.
     _hEventsize     = tfs->make<TH1F>( "EventSize",       "Size of the Event",     100,  0., 100000. );
@@ -79,12 +79,12 @@ namespace mu2e {
 "evt:trk:pid:pmag:genId:pidGen:eGen:thGen:xGen:yGen:zGen:nHits:ptrs:xtrs:ytrs:ztrs:pprs:xprs:yprs:zprs:prnId:time:calE:nCryst:nAPD:pAng:prCrea:prStop:trCrea:trStop:run:px:py:pz:E:vx:vy:vz:vt:isSh:ppre:xpre:ypre:zpre:trvs:trve:prvs:prve:calEi");
   }
 
-  bool CosmicTuple:: beginRun(edm::Run& run, edm::EventSetup const&) {  
+  bool CosmicTuple:: beginRun(art::Run& run, art::EventSetup const&) {  
     _runNumber = run.id().run();
     return true;
   }
    
-  bool CosmicTuple::filter(edm::Event& event, edm::EventSetup const&) {
+  bool CosmicTuple::filter(art::Event& event, art::EventSetup const&) {
     
     typedef SimParticleCollection::key_type key_type;
 
@@ -92,21 +92,21 @@ namespace mu2e {
     ++_nAnalyzed;
 
     if ( _nAnalyzed % 10000 == 0 ) {
-      edm::LogInfo("CosmicTuple")
+      mf::LogInfo("CosmicTuple")
         << "Processing event " << _nAnalyzed;
     }
 
     // Ask the event to give us a "handle" to the requested hits.
        static const string collectionName("tracker");
-       edm::Handle<StepPointMCCollection> hits;
+       art::Handle<StepPointMCCollection> hits;
        event.getByLabel(_g4ModuleLabel,collectionName,hits);
   
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     event.getByType(genParticles);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     // Some files might not have the SimParticle and volume information.
@@ -146,7 +146,7 @@ namespace mu2e {
     map<int,int> hit_crystals;       
     map<int,int> hit_apds;
 
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return pass;
     GeomHandle<Calorimeter> cg;
 
@@ -155,10 +155,10 @@ namespace mu2e {
   
     if ( simParticles->size() >= 50000 ) return pass;
 
-    edm::Handle<StepPointMCCollection> rohits;
+    art::Handle<StepPointMCCollection> rohits;
     event.getByLabel(_g4ModuleLabel,"calorimeter",rohits);
 
-    edm::Handle<StepPointMCCollection> apdhits;
+    art::Handle<StepPointMCCollection> apdhits;
     event.getByLabel(_g4ModuleLabel,"calorimeterRO",apdhits);
 
     ConditionsHandle<ParticleDataTable> pdt("ignored");
@@ -239,7 +239,7 @@ namespace mu2e {
        
        // If particle is unknown, set rest mass to 0.
        rmass = 0.;
-       edm::LogWarning("PDGID")
+       mf::LogWarning("PDGID")
          << "Particle ID created by G4 not known to the particle data table:  "
          << sim.pdgId()
          << "\n";

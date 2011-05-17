@@ -1,9 +1,9 @@
 //
 // header for Analyzer.C 
 
-// $Id: Analyzer.h,v 1.5 2010/11/09 20:25:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/09 20:25:41 $
+// $Id: Analyzer.h,v 1.6 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG
 //
@@ -25,8 +25,8 @@
 /* #include "ToyDP/inc/StepPointMCCollection.hh" */
 /* #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh" */
 
-/* #include "DataFormats/Common/interface/Wrapper.h" */
-/* #include "FWCore/Framework/interface/Event.h" */
+/* #include "art/Persistency/Common/Wrapper.h" */
+/* #include "art/Framework/Core/Event.h" */
 
 class Analyzer {
 
@@ -60,11 +60,11 @@ class Analyzer {
   void Analyzer::plotNHist(std::vector<TH1*>, char const * opt="");
   void Analyzer::plotNT(const char* nts, char const * cut="", char const * opt="");
   
-/* void Analyzer::doLTracker(edm::EventAuxiliary*                              EventAuxiliaryWrppd, */
-/*                           edm::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd, */
-/*                           edm::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd, */
-/*                           edm::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd, */
-/*                           edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd); */
+/* void Analyzer::doLTracker(art::EventAuxiliary*                              EventAuxiliaryWrppd, */
+/*                           art::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd, */
+/*                           art::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd, */
+/*                           art::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd, */
+/*                           art::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd); */
 
  private:
 

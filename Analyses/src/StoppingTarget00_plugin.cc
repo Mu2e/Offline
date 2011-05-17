@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_plugin.cc,v 1.1 2011/03/17 21:37:29 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/17 21:37:29 $
+// $Id: StoppingTarget00_plugin.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke.
 //
@@ -13,10 +13,10 @@
 #include <string>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Services/interface/TFileService.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.
 #include "Mu2eUtilities/inc/PDGCode.hh"
@@ -36,16 +36,16 @@ using namespace std;
 
 namespace mu2e {
 
-  class StoppingTarget00 : public edm::EDAnalyzer {
+  class StoppingTarget00 : public art::EDAnalyzer {
   public:
-    explicit StoppingTarget00(edm::ParameterSet const& pset);
+    explicit StoppingTarget00(fhicl::ParameterSet const& pset);
     virtual ~StoppingTarget00() { }
 
-    void beginJob(edm::EventSetup const& );
+    void beginJob(art::EventSetup const& );
     void endJob();
 
-    void beginRun(edm::Run const&, edm::EventSetup const&);
-    void analyze( edm::Event const&, edm::EventSetup const&);
+    void beginRun(art::Run const&, art::EventSetup const&);
+    void analyze( art::Event const&, art::EventSetup const&);
 
   private:
 
@@ -75,10 +75,10 @@ namespace mu2e {
 
   };
 
-  StoppingTarget00::StoppingTarget00(edm::ParameterSet const& pset):
-    _g4ModuleLabel(pset.getParameter<std::string>("g4ModuleLabel"))
-    ,_targetStepPoints(pset.getUntrackedParameter<string>("targetStepPoints","stoppingtarget"))
-    ,_vdStepPoints(pset.getUntrackedParameter<string>("vdStepPoints","virtualdetector"))
+  StoppingTarget00::StoppingTarget00(fhicl::ParameterSet const& pset):
+    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel"))
+    ,_targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget"))
+    ,_vdStepPoints(pset.get<string>("vdStepPoints","virtualdetector"))
     ,_dsOffset()
     ,_hStopFoil(0)
     ,_hnSimPart(0)
@@ -89,10 +89,10 @@ namespace mu2e {
     ,_stopCodes()
   {}
 
-  void StoppingTarget00::beginJob(edm::EventSetup const& ){
+  void StoppingTarget00::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     
     _hStopFoil = tfs->make<TH1F>( "hStopFoil", "Number of Stopping Foil;(mm)", 34, 0., 17. );
     _hnSimPart = tfs->make<TH1F>( "hnSimPart", "Number of SimParticles", 200, 0., 1000. );
@@ -103,7 +103,7 @@ namespace mu2e {
 
   }
 
-  void StoppingTarget00::beginRun(edm::Run const& run, edm::EventSetup const&){
+  void StoppingTarget00::beginRun(art::Run const& run, art::EventSetup const&){
 
     // Information about the detector coordinate system.
     GeomHandle<DetectorSystem> det;
@@ -114,7 +114,7 @@ namespace mu2e {
 
     /*
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volsHandle;
+    art::Handle<PhysicalVolumeInfoCollection> volsHandle;
     run.getByType(volsHandle);
     PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
@@ -129,33 +129,33 @@ namespace mu2e {
   }
 
   void
-  StoppingTarget00::analyze(edm::Event const& event, edm::EventSetup const&) {
+  StoppingTarget00::analyze(art::Event const& event, art::EventSetup const&) {
 
     // Information about the detector coordinate system.
     //GeomHandle<DetectorSystem> det;
 
     // Simulated particles.
-    edm::Handle<SimParticleCollection> simsHandle;
+    art::Handle<SimParticleCollection> simsHandle;
     event.getByLabel(_g4ModuleLabel,simsHandle);
     SimParticleCollection const& sims(*simsHandle);
     if ( sims.size() == 0 ){
-      edm::LogInfo("G4") 
+      mf::LogInfo("G4") 
         << "No particles in SimParticleCollection.  Hope that's OK.";
       return;
     }
 
     // Steps in the stopping target
-    edm::Handle<StepPointMCCollection> stHitsHandle;
+    art::Handle<StepPointMCCollection> stHitsHandle;
     event.getByLabel(_g4ModuleLabel,_targetStepPoints,stHitsHandle);
     StepPointMCCollection const& sthits(*stHitsHandle);
 
     // Steps in the virtual detectors.
-    edm::Handle<StepPointMCCollection> vdhitsHandle;
+    art::Handle<StepPointMCCollection> vdhitsHandle;
     event.getByLabel(_g4ModuleLabel,_vdStepPoints,vdhitsHandle);
     StepPointMCCollection const& vdhits(*vdhitsHandle);
 
     // Information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volsHandle;
+    art::Handle<PhysicalVolumeInfoCollection> volsHandle;
     event.getRun().getByType(volsHandle);
     PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
@@ -425,4 +425,4 @@ namespace mu2e {
 }
 
 using mu2e::StoppingTarget00;
-DEFINE_FWK_MODULE(StoppingTarget00);
+DEFINE_ART_MODULE(StoppingTarget00);

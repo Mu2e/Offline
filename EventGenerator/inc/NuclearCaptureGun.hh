@@ -6,9 +6,9 @@
 // which results in protons, neutrons and photons
 // 
 //
-// $Id: NuclearCaptureGun.hh,v 1.1 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/05/17 06:00:47 $
+// $Id: NuclearCaptureGun.hh,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Gianni Onorato
 
@@ -26,7 +26,7 @@
 
 // Forward declarations outside of namespace mu2e
 class TH1D;
-namespace edm {
+namespace art {
   class Run;
 }
 
@@ -38,7 +38,7 @@ namespace mu2e {
   class NuclearCaptureGun: public GeneratorBase{
 
   public:
-    NuclearCaptureGun( edm::Run& run, const SimpleConfig& config );
+    NuclearCaptureGun( art::Run& run, const SimpleConfig& config );
     virtual ~NuclearCaptureGun();
 
     virtual void generate( ToyGenParticleCollection&  );

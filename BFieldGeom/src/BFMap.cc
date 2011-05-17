@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.11 2011/05/02 15:51:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/02 15:51:25 $
+// $Id: BFMap.cc,v 1.12 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -17,7 +17,7 @@
 #include <vector>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "BFieldGeom/inc/BFMap.hh"
@@ -179,7 +179,7 @@ namespace mu2e {
     // Check validity.  Return a zero field and optionally print a warning.
     if ( !isValid(point) ){
       if ( _warnIfOutside ){
-        edm::LogWarning("GEOM")
+        mf::LogWarning("GEOM")
           << "Point is outside of the valid region of the map: " << _key << "\n"
           << "Point in input coordinates: " << testpoint << "\n";
       }
@@ -241,10 +241,10 @@ namespace mu2e {
     
     if ( ! _isDefined(ix,iy,iz) ){
       if ( _warnIfOutside ){
-	edm::LogWarning("GEOM")
+	mf::LogWarning("GEOM")
 	  << "Point's field is not defined in the map: " << _key << "\n"
 	  << "Point in input coordinates: " << testpoint << "\n";
-	edm::LogWarning("GEOM")
+	mf::LogWarning("GEOM")
 	  << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
       }
       return false;
@@ -254,10 +254,10 @@ namespace mu2e {
     static CLHEP::Hep3Vector neighborsBF[3][3][3];
     if ( ! getNeighbors(ix, iy, iz, neighborsBF) ) {
       if ( _warnIfOutside ){
-	edm::LogWarning("GEOM")
+	mf::LogWarning("GEOM")
 	  << "Point's neighboring field is not defined in the map: " << _key << "\n"
 	  << "Point in input coordinates: " << testpoint << "\n";
-	edm::LogWarning("GEOM")
+	mf::LogWarning("GEOM")
 	  << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
       }
       return false;

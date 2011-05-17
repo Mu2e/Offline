@@ -3,9 +3,9 @@
 // data, merged to Shanker's formula near the endpoint. The construction
 // of the spectrum is made by ShankerWanatabeSpectrum class
 //
-// $Id: DIOShankerWanatabe.cc,v 1.6 2011/05/11 19:08:49 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/05/11 19:08:49 $
+// $Id: DIOShankerWanatabe.cc,v 1.7 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // 
 
@@ -13,7 +13,7 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/DIOShankerWanatabe.hh"
@@ -26,7 +26,7 @@ using namespace std;
 namespace mu2e {
 
   DIOShankerWanatabe::DIOShankerWanatabe(int atomicZ, double emin, double emax, double spectRes,
-                                         edm::RandomNumberGeneratorService::base_engine_t& engine):
+                                         art::RandomNumberGeneratorService::base_engine_t& engine):
   //atomic number of the foil material
     _Znum ( atomicZ ),
   //limits on energy generation
@@ -37,7 +37,7 @@ namespace mu2e {
     _randEnergy ( engine, &(shWaSpectrum()[0]), _nBinsSpectrum )
   {
     if (_Znum!=13) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Foil material different from Alluminum";
     }
   }

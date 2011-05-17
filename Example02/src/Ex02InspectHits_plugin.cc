@@ -2,9 +2,9 @@
 
 Look at some overly simplified hits that are in the event.
 
-$Id: Ex02InspectHits_plugin.cc,v 1.4 2010/05/18 21:15:40 kutschke Exp $
-$Author: kutschke $
-$Date: 2010/05/18 21:15:40 $
+$Id: Ex02InspectHits_plugin.cc,v 1.5 2011/05/17 15:36:00 greenc Exp $
+$Author: greenc $
+$Date: 2011/05/17 15:36:00 $
    
 Original author Rob Kutschke
 
@@ -23,16 +23,15 @@ This differs from the Example01 version by:
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
 #include "TFile.h"
@@ -51,10 +50,10 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class Ex02InspectHits : public edm::EDAnalyzer {
+  class Ex02InspectHits : public art::EDAnalyzer {
   public:
-    explicit Ex02InspectHits(edm::ParameterSet const& pset) : 
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+    explicit Ex02InspectHits(fhicl::ParameterSet const& pset) : 
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _nAnalyzed(0),
       _hist1(0),
       _hist2(0),
@@ -64,10 +63,10 @@ namespace mu2e {
     }
     virtual ~Ex02InspectHits() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
@@ -88,10 +87,10 @@ namespace mu2e {
 
   };
 
-  void Ex02InspectHits::beginJob(edm::EventSetup const& ){
+  void Ex02InspectHits::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     // Create some 1D histograms.
     _hist1 = tfs->make<TH1F>( "hist1", "Radius of Hits", 100,  0., 50. );
@@ -99,7 +98,7 @@ namespace mu2e {
     _hist4 = tfs->make<TH1F>( "hist4", "Hits per Event", 10,  0., 10. );
 
     // Create a subdirectory and create a 2D histogram in the subdirectory.
-    edm::TFileDirectory tfdir = tfs->mkdir( "subdir" );
+    art::TFileDirectory tfdir = tfs->mkdir( "subdir" );
     _hist2 = tfdir.make<TH2F>( "hist2"  , "Radius of Hits vs Z of Hits", 
                                100,  0., 35., 100,  0., 45. );
 
@@ -107,7 +106,7 @@ namespace mu2e {
   
 
   void
-  Ex02InspectHits::analyze(const edm::Event& evt, edm::EventSetup const&) {
+  Ex02InspectHits::analyze(const art::Event& evt, art::EventSetup const&) {
     
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
@@ -116,18 +115,18 @@ namespace mu2e {
     static const string creatorName("ex02hitmaker");
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<ToyHitCollection> handle;
+    art::Handle<ToyHitCollection> handle;
     evt.getByLabel(creatorName,handle);
     
     // The handle is smart enough to throw if you try to use an invalid one.
     // This code is included to show how to throw!
     if ( !handle.isValid() ) {
-      throw edm::Exception(edm::errors::UnimplementedFeature,
+      throw art::Exception(art::errors::UnimplementedFeature,
                            "Event contains no ToyHitCollections.");
     }
 
     // Some debug printout with decorations.
-    // Note the absense of a leading edm:: !
+    // Note the absense of a leading art:: !
     LogDebug(_messageCategory)
       << "Analyzing event #: " 
       << evt.id().event() << ". Number of hits: "
@@ -156,7 +155,7 @@ namespace mu2e {
       if ( _nAnalyzed <= _maxFullPrint ) {
 
         // Some debug severity printout without decorations.
-        // Note the absense of a leading edm:: !
+        // Note the absense of a leading art:: !
         LogTrace(_messageCategory)
           << "Event: "
           << evt.id().event() 
@@ -172,4 +171,4 @@ namespace mu2e {
 
 
 using mu2e::Ex02InspectHits;
-DEFINE_FWK_MODULE(Ex02InspectHits);
+DEFINE_ART_MODULE(Ex02InspectHits);

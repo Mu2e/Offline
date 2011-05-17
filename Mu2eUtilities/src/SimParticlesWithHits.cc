@@ -9,9 +9,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.cc,v 1.2 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:36 $
+// $Id: SimParticlesWithHits.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke.
 //
@@ -22,7 +22,7 @@
 //     Josuttis (1999) section 6.6 p 205.
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
@@ -30,7 +30,7 @@
 
 namespace mu2e{
 
-  SimParticlesWithHits::SimParticlesWithHits( const edm::Event& evt,
+  SimParticlesWithHits::SimParticlesWithHits( const art::Event& evt,
                                               string const& _g4ModuleLabel,
                                               string const& _hitMakerModuleLabel,
                                               string const& _trackerStepPoints,
@@ -41,23 +41,23 @@ namespace mu2e{
     _stepPointsMC(0){
 
     // Get information from the event.
-    edm::Handle<StrawHitCollection> pdataHandle;
+    art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_hitMakerModuleLabel,pdataHandle);
     StrawHitCollection const& hits = *pdataHandle;
 
-    edm::Handle<StrawHitMCTruthCollection> truthHandle;
+    art::Handle<StrawHitMCTruthCollection> truthHandle;
     evt.getByLabel(_hitMakerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const& hits_truth = *truthHandle;
 
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_hitMakerModuleLabel,"StrawHitMCPtr",mcptrHandle);
     _hits_mcptr = mcptrHandle.product();
 
-    edm::Handle<StepPointMCCollection> mchitsHandle;
+    art::Handle<StepPointMCCollection> mchitsHandle;
     evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,mchitsHandle);
     _stepPointsMC = mchitsHandle.product();
 
-    edm::Handle<SimParticleCollection> simsHandle;
+    art::Handle<SimParticleCollection> simsHandle;
     evt.getByLabel(_g4ModuleLabel,simsHandle);
     SimParticleCollection const& sims = *simsHandle;
 
@@ -156,7 +156,7 @@ namespace mu2e{
           }
         }
         if ( !ok ){
-          throw cms::Exception("HITS")
+          throw cet::exception("HITS")
             << "SimParticlesWithHits fails self test.  "
             << "The event is not internally consistent.\n";
         }

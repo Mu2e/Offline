@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.24 2011/03/21 22:27:18 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/21 22:27:18 $
+// $Id: TTrackerMaker.cc,v 1.25 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "TTrackerGeom/inc/TTrackerMaker.hh"
@@ -45,13 +45,13 @@ namespace mu2e {
 
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
-    _numDevices         = config.getInt("ttracker.numDevices");
-    _sectorsPerDevice   = config.getInt("ttracker.sectorsPerDevice");
-    _layersPerSector    = config.getInt("ttracker.layersPerSector");
-    _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
-    _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
-    _rotationPattern    = config.getInt("ttracker.rotationPattern");
-    _spacingPattern     = config.getInt("ttracker.spacingPattern");
+    _numDevices         = config.get<int>("ttracker.numDevices");
+    _sectorsPerDevice   = config.get<int>("ttracker.sectorsPerDevice");
+    _layersPerSector    = config.get<int>("ttracker.layersPerSector");
+    _manifoldsPerEnd    = config.get<int>("ttracker.manifoldsPerEnd");
+    _strawsPerManifold  = config.get<int>("ttracker.strawsPerManifold");
+    _rotationPattern    = config.get<int>("ttracker.rotationPattern");
+    _spacingPattern     = config.get<int>("ttracker.spacingPattern");
 
     _zCenter              = config.getDouble("ttracker.z0")*CLHEP::mm;
     _envelopeInnerRadius  = config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
@@ -76,8 +76,8 @@ namespace mu2e {
     
     config.getVectorString("ttracker.strawMaterials", _strawMaterials, 3);
 
-    _envelopeMaterial = config.getString("ttracker.mat.vacuum");
-    _supportMaterial = config.getString("ttracker.mat.support");
+    _envelopeMaterial = config.get<std::string>("ttracker.mat.vacuum");
+    _supportMaterial = config.get<std::string>("ttracker.mat.support");
     
     //string ttracker.mat.manifold  = "G4_Al";  // Placeholder.
 
@@ -113,7 +113,7 @@ namespace mu2e {
     }
 
     else {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Unrecognized rotation pattern in TTrackerMaker. \n";
     }
 
@@ -121,7 +121,7 @@ namespace mu2e {
     // of stations with 2 devices each.
     if ( _spacingPattern == 1 ){
       if ( _numDevices%2 == 1 ){
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "Aseet style tracker requires 2 devices per station.\n"
           << "So ttracker.numDevices must be even.  It was: "
           << _numDevices
@@ -240,7 +240,7 @@ namespace mu2e {
     if ((2.*_manifoldHalfLengths.at(2)+_supportHalfThickness)>_deviceHalfSeparation + tolerance) {
       cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _deviceHalfSeparation " << 
         (2.*_manifoldHalfLengths.at(2)+_supportHalfThickness) << ", " <<_deviceHalfSeparation << endl;
-      throw cms::Exception("GEOM")  << "Devices are to close \n";
+      throw cet::exception("GEOM")  << "Devices are to close \n";
     }
 
     makeManifolds( secId );
@@ -264,7 +264,7 @@ namespace mu2e {
           cout << "It should be                  : " << strawSpacing << " diff: " 
                << (layerDeltaMag-strawSpacing) << endl;
 
-          throw cms::Exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes rtc..\n";
+          throw cet::exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes rtc..\n";
 
         }
       }
@@ -291,7 +291,7 @@ namespace mu2e {
                << strawSpacing << " diff: " 
                << (xLayerDeltaMag-strawSpacing) << endl;
 
-          throw cms::Exception("GEOM")  << "Incorrect interlayer straw spacing \n";
+          throw cet::exception("GEOM")  << "Incorrect interlayer straw spacing \n";
 
         }
       }
@@ -310,7 +310,7 @@ namespace mu2e {
                << strawSpacing << " diff: " 
                << (xLayerDeltaMag-strawSpacing) << endl;
 
-          throw cms::Exception("GEOM")  << "Incorrect interlayer straw spacing \n";
+          throw cet::exception("GEOM")  << "Incorrect interlayer straw spacing \n";
 
         }
       }
@@ -428,7 +428,7 @@ namespace mu2e {
   void TTrackerMaker::makeManifolds( const SectorId& secId){
 
     if ( _sectorsPerDevice != 4 && _sectorsPerDevice != 6 ) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "This code only knows how to do 4 or 6 sectors per device.\n";
     }
 
@@ -593,7 +593,7 @@ namespace mu2e {
 //       _manifoldXEdgeExcessSpace << ", " << _manifoldZEdgeExcessSpace << endl;
 
     if ( _manifoldXEdgeExcessSpace < 0.0 || _manifoldZEdgeExcessSpace < 0.0){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Manifolds are too small to hold straws!\n";
     }
 
@@ -678,7 +678,7 @@ namespace mu2e {
     if (_sectorBoxHalfLengths.size()!=sectorBoxHalfLengthsSize) {
       cout << " _sectorBoxHalfLengths.size() sould be " << sectorBoxHalfLengthsSize << 
         ", but is : " << _sectorBoxHalfLengths.size() << endl;
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "something is wrong with sector _sectorBoxHalfLengths calculations \n";
     }
 
@@ -710,7 +710,7 @@ namespace mu2e {
     if (_tt->_supportParams.outerRadius < outerSupportRadiusRequiredl) {
       cout << " _supportParams.outerRadius         :   " << _tt->_supportParams.outerRadius << endl;
       cout << " _supportParams.outerRadius required:   " << outerSupportRadiusRequiredl << endl;
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "outerSupportRadius is to small given other paramters \n";
     }
 
@@ -742,7 +742,7 @@ namespace mu2e {
       }
     }
     else {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Unrecognized rotation pattern in TTrackerMaker. \n";
     }
   
@@ -767,7 +767,7 @@ namespace mu2e {
       }
     }
 
-    throw cms::Exception("GEOM")
+    throw cet::exception("GEOM")
       << "Unrecognized separation pattern in TTrackerMaker. \n";
   
   }
@@ -783,7 +783,7 @@ namespace mu2e {
       return double(nStations-1)/2.0 * _deviceSpacing;
     }
     else {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Unrecognized separation pattern in TTrackerMaker. \n";
     }
   }
@@ -799,7 +799,7 @@ namespace mu2e {
       // throw exception if more than 2 layers per sector
       
       if (_tt->getSector(i->Id().getSectorId()).nLayers() > 2 ) {
-        throw cms::Exception("GEOM")
+        throw cet::exception("GEOM")
           << "The code works with no more than 2 layers per sector. \n";
       }
       
@@ -838,7 +838,7 @@ namespace mu2e {
         // throw exception if the two layer of the same sector have different
         // number of straws 
         if (_tt->getLayer(lId)._nStraws != nStrawLayer) {
-          throw cms::Exception("GEOM")
+          throw cet::exception("GEOM")
             << "The code works only with the same number of straws "
             << "per layer in the same sector. \n";
         }

@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.hh,v 1.2 2010/08/20 22:14:30 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/20 22:14:30 $
+// $Id: PiEplusNuGun.hh,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -18,7 +18,7 @@
 
 #include "EventGenerator/inc/GeneratorBase.hh"
 
-namespace edm {
+namespace art {
   class Run;
 }
 
@@ -30,7 +30,7 @@ namespace mu2e {
   class PiEplusNuGun: public GeneratorBase{
 
   public:
-    PiEplusNuGun( edm::Run& run, const SimpleConfig& config );
+    PiEplusNuGun( art::Run& run, const SimpleConfig& config );
     virtual ~PiEplusNuGun();
 
     virtual void generate( ToyGenParticleCollection&  );

@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_plugin.cc,v 1.14 2011/03/04 23:32:42 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/03/04 23:32:42 $
+//  $Id: ReadVirtualDetector_plugin.cc,v 1.15 2011/05/17 15:36:00 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/05/17 15:36:00 $
 //
 // Original author Ivan Logashenko
 //
@@ -14,15 +14,14 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
 
 // Mu2e includes.
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -49,19 +48,19 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  class ReadVirtualDetector : public edm::EDAnalyzer {
+  class ReadVirtualDetector : public art::EDAnalyzer {
   public:
 
     typedef vector<int> Vint;
     typedef SimParticleCollection::key_type key_type;
 
-    explicit ReadVirtualDetector(edm::ParameterSet const& pset) : 
-      _vdStepPoints(pset.getUntrackedParameter<string>("vdStepPoints","virtualdetector")),
+    explicit ReadVirtualDetector(fhicl::ParameterSet const& pset) : 
+      _vdStepPoints(pset.get<string>("vdStepPoints","virtualdetector")),
       _nAnalyzed(0),
-      _maxPrint(pset.getUntrackedParameter<int>("maxPrint",0)),
+      _maxPrint(pset.get<int>("maxPrint",0)),
       _ntvd(0), _ntpart(0) {
       
-      Vint const & pdg_ids = pset.getUntrackedParameter<Vint>("savePDG", Vint());
+      Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
         cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
         for( size_t i=0; i<pdg_ids.size(); ++i ) {
@@ -71,7 +70,7 @@ namespace mu2e {
         cout << endl;
       }
 
-      Vint const & vd_ids = pset.getUntrackedParameter<Vint>("saveVD", Vint());
+      Vint const & vd_ids = pset.get<Vint>("saveVD", Vint());
       if( vd_ids.size()>0 ) {
         cout << "ReadVirtualDetector: save data from the following virtual detectors: ";
         for( size_t i=0; i<vd_ids.size(); ++i ) {
@@ -87,10 +86,10 @@ namespace mu2e {
   
     virtual ~ReadVirtualDetector() { }
 
-    virtual void beginJob(edm::EventSetup const&);
-    virtual void beginRun(edm::Run const&, edm::EventSetup const& );
+    virtual void beginJob(art::EventSetup const&);
+    virtual void beginRun(art::Run const&, art::EventSetup const& );
 
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
@@ -118,13 +117,13 @@ namespace mu2e {
 
   };
   
-  void ReadVirtualDetector::beginJob(edm::EventSetup const& ){
+  void ReadVirtualDetector::beginJob(art::EventSetup const& ){
 
     vid_stop.clear();
 
     // Get access to the TFile service.
 
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     
     _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple", 
                                 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:xl:yl:zl:pxl:pyl:pzl:gtime");
@@ -148,10 +147,10 @@ namespace mu2e {
 
   }
 
-  void ReadVirtualDetector::beginRun(edm::Run const& run, edm::EventSetup const& ){
+  void ReadVirtualDetector::beginRun(art::Run const& run, art::EventSetup const& ){
 
     // Get pointers to the physical volumes we are interested
-    edm::Handle<PhysicalVolumeInfoCollection> physVolumes;
+    art::Handle<PhysicalVolumeInfoCollection> physVolumes;
     run.getByType(physVolumes);
     if( physVolumes.isValid() ) {
 
@@ -167,7 +166,7 @@ namespace mu2e {
 
   }
 
-  void ReadVirtualDetector::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void ReadVirtualDetector::analyze(const art::Event& event, art::EventSetup const&) {
 
     ++_nAnalyzed;
 
@@ -178,15 +177,15 @@ namespace mu2e {
     if( vdg->nDet()<=0 ) return;
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     event.getByLabel("g4run",_vdStepPoints,hits);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
     bool haveSimPart = simParticles.isValid();
     if ( haveSimPart ) haveSimPart = !(simParticles->empty());
 
-    edm::Handle<G4BeamlineInfoCollection> g4beamlineData;
+    art::Handle<G4BeamlineInfoCollection> g4beamlineData;
     event.getByType(g4beamlineData);
     bool haveG4BL = g4beamlineData.isValid();
     if ( haveG4BL ) haveG4BL = (g4beamlineData->size()==1);
@@ -385,4 +384,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::ReadVirtualDetector;
-DEFINE_FWK_MODULE(ReadVirtualDetector);
+DEFINE_ART_MODULE(ReadVirtualDetector);

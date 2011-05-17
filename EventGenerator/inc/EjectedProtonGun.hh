@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.  
 //
-// $Id: EjectedProtonGun.hh,v 1.8 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $ 
-// $Date: 2011/05/17 06:00:47 $
+// $Id: EjectedProtonGun.hh,v 1.9 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 //
 
@@ -26,7 +26,7 @@
 
 // Forward declarations outside of namespace mu2e
 class TH1D;
-namespace edm {
+namespace art {
   class Run;
 }
 
@@ -38,7 +38,7 @@ namespace mu2e {
   class EjectedProtonGun: public GeneratorBase{
 
   public:
-    EjectedProtonGun( edm::Run& run, const SimpleConfig& config );
+    EjectedProtonGun( art::Run& run, const SimpleConfig& config );
     virtual ~EjectedProtonGun();
 
     virtual void generate( ToyGenParticleCollection&  );

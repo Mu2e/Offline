@@ -7,9 +7,9 @@
 //   - it provides a view to return a hit by StrawIndex.
 //   - it provides a convenience method getStepPointMC().
 //
-// $Id: CrudeStrawHitCollection.hh,v 1.7 2010/05/18 20:28:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 20:28:34 $
+// $Id: CrudeStrawHitCollection.hh,v 1.8 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -21,12 +21,12 @@
 #include <vector>
 
 // Framework includes.
-#include "DataFormats/Common/interface/Handle.h"
+#include "art/Persistency/Common/Handle.h"
 
 // Mu2e includes.
 #include "ToyDP/inc/CrudeStrawHitPData.hh"
 
-namespace edm{
+namespace art{
   class Event;
 }
 
@@ -40,17 +40,17 @@ namespace mu2e {
 
     // No default constructor by design.
     
-    CrudeStrawHitCollection( edm::Event const& event,
-                             edm::Handle<CrudeStrawHitPData> const& hits );
+    CrudeStrawHitCollection( art::Event const& event,
+                             art::Handle<CrudeStrawHitPData> const& hits );
 
-    CrudeStrawHitCollection( edm::Event const& event,
+    CrudeStrawHitCollection( art::Event const& event,
                              CrudeStrawHitPData const& hits );
 
     // Compiler generated versions of the following will be OK:
     //   destructor, copy constructor, assignment operator.
 
     // For now, this must be called to fix transients lost in persistency.
-    void resolveTransients(edm::Event const& event );
+    void resolveTransients(art::Event const& event );
 
     // Accessor via index in the persistent container.
     CrudeStrawHit const& get( int i ) const{
@@ -95,7 +95,7 @@ namespace mu2e {
     void FillIndex();
 
     // These are non-owning pointers.
-    edm::Event const*         _event;
+    art::Event const*         _event;
     CrudeStrawHitPData const* _hits;
 
     // A second view of the hits, via StrawIndex.

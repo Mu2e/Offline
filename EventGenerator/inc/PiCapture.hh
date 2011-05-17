@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 // 
-// $Id: PiCapture.hh,v 1.11 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $ 
-// $Date: 2011/05/17 06:00:47 $
+// $Id: PiCapture.hh,v 1.12 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke, P. Shanahan
 // 
@@ -28,7 +28,7 @@
 
 // Forward declarations outside of namespace mu2e.
 class TH1D;
-namespace edm{
+namespace art{
   class Run;
 }
 
@@ -40,7 +40,7 @@ namespace mu2e {
   class PiCapture: public GeneratorBase{
 
   public:
-    PiCapture( edm::Run& run, const SimpleConfig& config );
+    PiCapture( art::Run& run, const SimpleConfig& config );
     virtual ~PiCapture();
 
     virtual void generate( ToyGenParticleCollection&  );

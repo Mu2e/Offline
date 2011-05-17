@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the tracker.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyTracker.cc,v 1.3 2010/11/30 16:39:55 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/30 16:39:55 $
+// $Id: constructDummyTracker.cc,v 1.4 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -14,8 +14,8 @@
 #include <string>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructDummyTracker.hh"
@@ -50,7 +50,7 @@ namespace mu2e{
     double z0            = config.getDouble("dummytracker.z0" ,        10200.);
     G4Material* material = materialFinder.get("dummytracker.materialName","WAGVacuum");
 
-    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool doSurfaceCheck = config.get<bool>("g4.doSurfaceCheck",false);
 
     // Parameters of a G4Tubs.
     TubsParams params(rIn, rOut, halfLength);

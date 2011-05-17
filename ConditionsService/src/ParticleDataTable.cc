@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable 
 //
-//   $Id: ParticleDataTable.cc,v 1.8 2011/03/10 00:00:58 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2011/03/10 00:00:58 $
+//   $Id: ParticleDataTable.cc,v 1.9 2011/05/17 15:35:59 greenc Exp $
+//   $Author: greenc $
+//   $Date: 2011/05/17 15:35:59 $
 //
 //
 // 1) The Geant4 particle table is a superset of this table.  It includes
@@ -34,9 +34,9 @@
 #include <iomanip>
 
 // Framework include files.
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/ParameterSet/FileInPath.h"
+#include "cetlib/exception.h"
 
 // Mu2e include files
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -73,11 +73,11 @@ namespace mu2e {
     _pdt("Mu2eParticleData"),
     _unitsChanged(false){
 
-    edm::FileInPath tableFiP(config.getString("particleDataTable.filename",
+    art::FileInPath tableFiP(config.get<std::string>("particleDataTable.filename",
                                               "ConditionsService/data/particle.tbl"));
     _tableFilename = tableFiP.fullPath();
 
-    edm::FileInPath auxFiP(config.getString("particleDataTable.auxillaryFilename",
+    art::FileInPath auxFiP(config.get<std::string>("particleDataTable.auxillaryFilename",
                                             "ConditionsService/data/mass_width_2008.mc"));
     _auxillaryFilename = auxFiP.fullPath();
     
@@ -94,7 +94,7 @@ namespace mu2e {
       // Build the table from the data file.
       ifstream in(_tableFilename.c_str());
       if ( !in ) {
-        throw cms::Exception("FILE")
+        throw cet::exception("FILE")
           << "Unable to open particle data file: " 
           << _tableFilename << "\n";
       }
@@ -146,7 +146,7 @@ namespace mu2e {
     }
 
     if ( units == 0 ){
-      edm::LogWarning("CONDITIONS") 
+      mf::LogWarning("CONDITIONS") 
         << "Did not recognize the units of masses in the particle data table.\n"
         << "The electron mass appears to be: "
         << eMass 
@@ -157,7 +157,7 @@ namespace mu2e {
     if ( units == 2 ){
       _unitsChanged = true;
 
-      edm::LogWarning("CONDITIONS") 
+      mf::LogWarning("CONDITIONS") 
         << "The HepPDT particle data table has masses in GeV. Changing to MeV.\n"
         << "  ( This leaves the lifetimes in a screwed up state: they are in kilo-seconds."
         << "    This does not affect Geant4 which has its own table of lifetimes. )";
@@ -204,7 +204,7 @@ namespace mu2e {
       // Build the table from the data file.
       ifstream in( _auxillaryFilename.c_str() );
       if ( !in ) {
-        throw cms::Exception("FILE")
+        throw cet::exception("FILE")
           << "Unable to open auxillary particle data file: " 
           << _auxillaryFilename << "\n";
       }

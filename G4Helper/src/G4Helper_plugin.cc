@@ -1,9 +1,9 @@
 //
 // G4Helper plugin.
 //
-// $Id: G4Helper_plugin.cc,v 1.1 2010/12/22 17:36:49 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/22 17:36:49 $
+// $Id: G4Helper_plugin.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -18,8 +18,8 @@ using namespace std;
 
 namespace mu2e {
 
-  G4Helper::G4Helper(edm::ParameterSet const& iPS, 
-                     edm::ActivityRegistry&iRegistry){
+  G4Helper::G4Helper(fhicl::ParameterSet const& iPS, 
+                     art::ActivityRegistry&iRegistry){
   }
 
   G4Helper::~G4Helper(){
@@ -29,7 +29,7 @@ namespace mu2e {
   VolumeInfo& G4Helper::locateVolInfo( const std::string key){
     std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(key);
     if ( i == _volumeInfoList.end() ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "G4Helper::locateVolInfo cannot find the volume named: "
         << key 
         << "\n";
@@ -42,7 +42,7 @@ namespace mu2e {
   void G4Helper::addVolInfo( const VolumeInfo& info ){
     std::map<std::string,VolumeInfo>::iterator i = _volumeInfoList.find(info.name);
     if ( i != _volumeInfoList.end() ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "locateVolInfo already has the key: "
         << info.name
         << "\n";
@@ -53,4 +53,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::G4Helper;
-DEFINE_FWK_SERVICE(G4Helper);
+DEFINE_ART_SERVICE(G4Helper);

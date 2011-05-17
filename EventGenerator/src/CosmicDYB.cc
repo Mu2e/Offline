@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.12 2010/10/27 19:56:07 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/10/27 19:56:07 $
+// $Id: CosmicDYB.cc,v 1.13 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Yury Kolomensky
 //
@@ -24,12 +24,12 @@
 #include <iostream>
 
 // Framework includes.
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/RandomNumberGeneratorService.h"
-#include "FWCore/Services/interface/TFileService.h"
+#include "art/Framework/Core/Run.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Core/RandomNumberGeneratorService.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -66,7 +66,7 @@ namespace mu2e {
   // Once we have the HepPDT package installed, get the mass from there.
   static const double mMu = 105.6584;
 
-  CosmicDYB::CosmicDYB( edm::Run& run, const SimpleConfig& config )
+  CosmicDYB::CosmicDYB( art::Run& run, const SimpleConfig& config )
   : GeneratorBase()
     // Histograms
   , _cosmicMultiplicityH( 0 )
@@ -90,11 +90,11 @@ namespace mu2e {
   , _y0( config.getDouble("cosmicDYB.y0",0) )
 
     // Dimensions of the 2d working space for hrndg2.
-  , _ne ( config.getInt("cosmicDYB.nBinsE", _default_ne) )
-  , _nth( config.getInt("cosmicDYB.nBinsTheta",_default_nth) )
+  , _ne ( config.get<int>("cosmicDYB.nBinsE", _default_ne) )
+  , _nth( config.get<int>("cosmicDYB.nBinsTheta",_default_nth) )
 
     // Control of histograms.
-  , _doHistograms( config.getBool("cosmicDYB.doHistograms", true) )
+  , _doHistograms( config.get<bool>("cosmicDYB.doHistograms", true) )
 
     // end of configurable parameters
 
@@ -113,7 +113,7 @@ namespace mu2e {
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "CosmicDYB has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
@@ -122,7 +122,7 @@ namespace mu2e {
     // Allocate hrndg2 working space on the heap.
     _workingSpace.resize(_ne*_nth);
 
-    edm::LogInfo log("COSMIC");
+    mf::LogInfo log("COSMIC");
     log << "cosmicDYB.mean = " << _mean << "\n"
         << "cosmicDYB.muEMin = " << _muEMin
         << ", cosmicDYB.muEMax = " << _muEMax << "\n"
@@ -151,9 +151,9 @@ namespace mu2e {
     // Book histograms in a separate subdirectory.
     if ( _doHistograms ){
 
-      edm::Service<edm::TFileService> tfs;
+      art::ServiceHandle<art::TFileService> tfs;
 
-      edm::TFileDirectory tfdir = tfs->mkdir( "CosmicDYB" );
+      art::TFileDirectory tfdir = tfs->mkdir( "CosmicDYB" );
       _cosmicMultiplicityH = tfdir.make<TH1D>( "MultiplicityH", "Cosmic Multiplicity", 20, -0.5, 19.5);
       
       // log of muon energy (GeV)

@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter 
 
-$Id: FilterEmptyEvents_plugin.cc,v 1.3 2010/12/06 18:04:02 onoratog Exp $
-$Author: onoratog $
-$Date: 2010/12/06 18:04:02 $
+$Id: FilterEmptyEvents_plugin.cc,v 1.4 2011/05/17 15:35:59 greenc Exp $
+$Author: greenc $
+$Date: 2011/05/17 15:35:59 $
    
 Original author Giovanni Onorato
 
@@ -24,12 +24,11 @@ Original author Giovanni Onorato
 #include <string>
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/EDFilter.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "fhiclcpp/ParameterSet.h"
 //#include <boost/shared_ptr.hpp>
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -48,16 +47,16 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   //
-  class FilterEmptyEvents : public edm::EDFilter {
+  class FilterEmptyEvents : public art::EDFilter {
   public:
-    explicit FilterEmptyEvents(edm::ParameterSet const& pset):
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _keepTrackOrCalo(pset.getUntrackedParameter<int>("keepTrackOrCalo",1)),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")){
+    explicit FilterEmptyEvents(fhicl::ParameterSet const& pset):
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _keepTrackOrCalo(pset.get<int>("keepTrackOrCalo",1)),
+      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")){
     }
     virtual ~FilterEmptyEvents() {
     }
-    virtual bool filter(edm::Event& e, edm::EventSetup const& c);
+    virtual bool filter(art::Event& e, art::EventSetup const& c);
     
   private:
     
@@ -74,7 +73,7 @@ namespace mu2e {
     
   };
   
-  bool FilterEmptyEvents::filter(edm::Event& e, edm::EventSetup const&) {
+  bool FilterEmptyEvents::filter(art::Event& e, art::EventSetup const&) {
     
     if (_keepTrackOrCalo < 0 || _keepTrackOrCalo>2) {
       cout << "Meaningless KeepTrackOrCalo parameter value."
@@ -88,14 +87,14 @@ namespace mu2e {
     // const Tracker& tracker = getTrackerOrThrow();
     
     //Get Tracker hits and set a boolean true if there are hits.
-    edm::Handle<StrawHitCollection> pdataHandle;
+    art::Handle<StrawHitCollection> pdataHandle;
     e.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
     
     _hasTHits = (hits->size()>0);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     e.getByType(genParticles);
 
     if (!_hasTHits) {
@@ -105,11 +104,11 @@ namespace mu2e {
     }
     
     //Get handle to the calorimeter
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if( geom->hasElement<Calorimeter>() ) {
       
       // Get handles to calorimeter collections
-      edm::Handle<CaloHitCollection> caloHits;
+      art::Handle<CaloHitCollection> caloHits;
       e.getByType(caloHits);
       
       //Set a boolean true if there are calorimeter hits
@@ -145,4 +144,4 @@ namespace mu2e {
 }
 
 using mu2e::FilterEmptyEvents;
-DEFINE_FWK_MODULE(FilterEmptyEvents);
+DEFINE_ART_MODULE(FilterEmptyEvents);

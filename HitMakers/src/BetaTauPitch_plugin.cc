@@ -6,9 +6,9 @@
 // Starts from ReadDPIStrawCluster_plugin.cc, adding the quantities of
 // interest to these angles, and gradually eliminating the rest.
 //
-// $Id: BetaTauPitch_plugin.cc,v 1.1 2011/05/12 19:23:55 mf Exp $
-// $Author: mf $
-// $Date: 2011/05/12 19:23:55 $
+// $Id: BetaTauPitch_plugin.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author: Mark Fischler modifying code by Hans Wenzel
 //
@@ -23,17 +23,16 @@
 #include "CLHEP/Vector/TwoVector.h"
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "DataFormats/Provenance/interface/Provenance.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Persistency/Provenance/Provenance.h"
 
 // Root includes.
 #include "TFile.h"
@@ -172,15 +171,15 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
   //--------------------------------------------------------------------
   //
   // 
-  class BetaTauPitch : public edm::EDAnalyzer {
+  class BetaTauPitch : public art::EDAnalyzer {
   public:
-    explicit BetaTauPitch(edm::ParameterSet const& pset):
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
-      _clmakerModuleLabel(pset.getParameter<std::string>("clmakerModuleLabel")),
+    explicit BetaTauPitch(fhicl::ParameterSet const& pset):
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+      _clmakerModuleLabel(pset.get<std::string>("clmakerModuleLabel")),
       _hNInter(0),
       _hNClusters(0),
       _hNHits(0),
@@ -246,9 +245,9 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     }
     virtual ~BetaTauPitch() { }
     
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void analyze( art::Event const& e, art::EventSetup const&);
     void FitCircle(vector<double> X,vector<double> Y);
     void FitSinus( vector<double> R,vector<double> Z);
     void FitSinus2( vector<double> R,vector<double> Z);
@@ -366,12 +365,12 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
   }; // end of BetaTauPich class definition
 
   
-  void BetaTauPitch::beginJob(edm::EventSetup const& ){
+  void BetaTauPitch::beginJob(art::EventSetup const& ){
     cout << "Diaglevel: " 
          << _diagLevel << " "
          << _maxFullPrint<<endl; 
 
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );  
     _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 100, 0., 100. );
     _hNHits        = tfs->make<TH1F>( "hNHits",    "Number of straw Hits", 100, 0., 100. );
@@ -449,7 +448,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //
   }
   
-  void BetaTauPitch::analyze(edm::Event const& evt, edm::EventSetup const&)
+  void BetaTauPitch::analyze(art::Event const& evt, art::EventSetup const&)
   {
     if ( _diagLevel > 2 ) cout << "BetaTauPitch: analyze() begin"<<endl;
     // Geometry info for the TTracker.
@@ -582,23 +581,23 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //
     // Get the persistent data about pointers to StrawHits
     //
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_clmakerModuleLabel,"DPIStrawCluster",mcptrHandle);
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     evt.getByType(genParticles);
     
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     evt.getByType(simParticles);
     
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByType(volumes);
     
     //Some files might not have the SimParticle and volume information.
@@ -1180,4 +1179,4 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
 
 using mu2e::BetaTauPitch;
-DEFINE_FWK_MODULE(BetaTauPitch);
+DEFINE_ART_MODULE(BetaTauPitch);

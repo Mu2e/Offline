@@ -1,9 +1,9 @@
 //
 //  A second hello world plugin, with a little more detail.
 //
-//  $Id: HelloWorld2_plugin.cc,v 1.1 2010/09/01 18:55:36 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2010/09/01 18:55:36 $
+//  $Id: HelloWorld2_plugin.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/05/17 15:36:00 $
 //   
 //  Original author Rob Kutschke
 //
@@ -12,22 +12,21 @@
 #include <iostream>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 using namespace std;
 
 namespace mu2e {
 
-  class HelloWorld2 : public edm::EDAnalyzer {
+  class HelloWorld2 : public art::EDAnalyzer {
 
   public:
-    explicit HelloWorld2(edm::ParameterSet const& pset):
-      _magicNumber(pset.getUntrackedParameter<int>("magicNumber",-1)){
+    explicit HelloWorld2(fhicl::ParameterSet const& pset):
+      _magicNumber(pset.get<int>("magicNumber",-1)){
 
       cerr << "Hello, world.  From constructor. "
            << "My magic number is: "
@@ -37,12 +36,12 @@ namespace mu2e {
 
     ~HelloWorld2() { }
 
-    void beginJob(edm::EventSetup const&);
+    void beginJob(art::EventSetup const&);
 
-    void beginRun(edm::Run const &run, 
-                          edm::EventSetup const& eSetup );
+    void beginRun(art::Run const &run, 
+                          art::EventSetup const& eSetup );
  
-    void analyze(const edm::Event& event, edm::EventSetup const&);
+    void analyze(const art::Event& event, art::EventSetup const&);
 
     void endJob();
 
@@ -52,15 +51,15 @@ namespace mu2e {
 
   };
 
-  void HelloWorld2::beginJob(edm::EventSetup const& ){
+  void HelloWorld2::beginJob(art::EventSetup const& ){
     cerr << "Hello, world.  From beginJob. "
          << "  Magic number: " 
          << _magicNumber
          << endl;
   }
 
-  void HelloWorld2::beginRun(edm::Run const& run,
-                              edm::EventSetup const& eSetup ){
+  void HelloWorld2::beginRun(art::Run const& run,
+                              art::EventSetup const& eSetup ){
 
     cerr << "Hello, world.  From beginRun: "
          << run.id().run()
@@ -69,7 +68,7 @@ namespace mu2e {
          << endl;
   }
 
-  void HelloWorld2::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void HelloWorld2::analyze(const art::Event& event, art::EventSetup const&) {
     cerr << "Hello, world.  From analyze: "
          << event.id()
          << "  Magic number: " 
@@ -88,4 +87,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::HelloWorld2;
-DEFINE_FWK_MODULE(HelloWorld2);
+DEFINE_ART_MODULE(HelloWorld2);

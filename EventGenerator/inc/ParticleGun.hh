@@ -3,9 +3,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.4 2010/08/20 14:47:07 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/20 14:47:07 $
+// $Id: ParticleGun.hh,v 1.5 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward references.
-namespace edm{
+namespace art{
   class Run;
 }
 class TH1F;
@@ -36,7 +36,7 @@ namespace mu2e {
   class ParticleGun: public GeneratorBase{
 
   public:
-    ParticleGun( edm::Run const& run, const SimpleConfig& config );
+    ParticleGun( art::Run const& run, const SimpleConfig& config );
     virtual ~ParticleGun();
 
     virtual void generate( ToyGenParticleCollection&  );

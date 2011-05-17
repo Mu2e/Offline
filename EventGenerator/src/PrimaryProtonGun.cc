@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.8 2010/08/20 20:19:04 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2010/08/20 20:19:04 $
+// $Id: PrimaryProtonGun.cc,v 1.9 2011/05/17 15:36:00 greenc Exp $ 
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 // 
@@ -14,11 +14,11 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/PrimaryProtonGun.hh" 
@@ -46,7 +46,7 @@ namespace mu2e {
   // The kinetic energy of proton is 8 Gev; E = T + m, p = sqrt(E^2 - m^2)
   static const double pBeam = 8888.6*CLHEP::MeV;
 
-  PrimaryProtonGun::PrimaryProtonGun( edm::Run& run, const SimpleConfig& config ):
+  PrimaryProtonGun::PrimaryProtonGun( art::Run& run, const SimpleConfig& config ):
 
     // The base class;
     GeneratorBase(),
@@ -61,11 +61,11 @@ namespace mu2e {
     _phimax(config.getDouble("primaryProtonGun.phimax", CLHEP::twopi)),
     _tmin(config.getDouble("primaryProtonGun.tmin",   0.)),
     _tmax(config.getDouble("primaryProtonGun.tmax", 100.)),
-    _doHistograms(config.getBool("primaryProtonGun.doHistograms", true)){
+    _doHistograms(config.get<bool>("primaryProtonGun.doHistograms", true)){
 
     if ( _doHistograms ){
-      edm::Service<edm::TFileService> tfs;
-      edm::TFileDirectory tfdir = tfs->mkdir( "PrimaryProtonGun" );
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = tfs->mkdir( "PrimaryProtonGun" );
       _hmomentum = tfdir.make<TH1D>( "hmomentum", "Primary Proton Momentum, MeV",        10, 7000., 9000.);
       _hKE       = tfdir.make<TH1D>( "hKE",       "Primary Proton Kinetic Energy, MeV", 200, 7000., 9000.);
     }

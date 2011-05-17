@@ -4,9 +4,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.hh,v 1.3 2010/08/18 22:40:15 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/18 22:40:15 $
+// $Id: CosmicToy.hh,v 1.4 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@
 
 // Forward references outside of namespace mu2e.
 class TH1D;
-namespace edm{
+namespace art{
   class Run;
 }
 
@@ -32,7 +32,7 @@ namespace mu2e {
   class CosmicToy: public GeneratorBase{
 
   public:
-    CosmicToy( edm::Run& run, const SimpleConfig& config );
+    CosmicToy( art::Run& run, const SimpleConfig& config );
     virtual ~CosmicToy();
 
     virtual void generate( ToyGenParticleCollection&  );

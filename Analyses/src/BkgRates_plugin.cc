@@ -8,17 +8,16 @@
 #include <memory>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "DataFormats/Provenance/interface/Provenance.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Persistency/Provenance/Provenance.h"
 
 // Root includes.
 #include "TFile.h"
@@ -57,14 +56,14 @@ using namespace std;
 namespace mu2e {
 
 
-  class BkgRates : public edm::EDAnalyzer {
+  class BkgRates : public art::EDAnalyzer {
   public:
-    explicit BkgRates(edm::ParameterSet const& pset):
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.getParameter<std::string>("makerModuleLabel")),
-      _minimumEnergy(pset.getUntrackedParameter<double>("minimumEnergy",0.0001)), // MeV
-      _skipStoppedParticle(pset.getUntrackedParameter<bool>("skipStoppedParticle",false)),
+    explicit BkgRates(fhicl::ParameterSet const& pset):
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+      _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
+      _skipStoppedParticle(pset.get<bool>("skipStoppedParticle",false)),
       _nAnalyzed(0),
       _hHitMult(0),
       _hStrawEvt(0),
@@ -93,17 +92,17 @@ namespace mu2e {
     virtual ~BkgRates() {
     }
     
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
 
-    void analyze(edm::Event const& e, edm::EventSetup const&);
+    void analyze(art::Event const& e, art::EventSetup const&);
 
   private:
 
-    void doTracker(edm::Event const& evt, bool skip);
-    void doITracker(edm::Event const& evt, bool skip);
+    void doTracker(art::Event const& evt, bool skip);
+    void doITracker(art::Event const& evt, bool skip);
 
-    void doCalorimeter(edm::Event const& evt, bool skip);
-    void doStoppingTarget(edm::Event const& evt);
+    void doCalorimeter(art::Event const& evt, bool skip);
+    void doStoppingTarget(art::Event const& evt);
 
     // Diagnostic level
     int _diagLevel;
@@ -174,11 +173,11 @@ namespace mu2e {
   }
 
 
-  void BkgRates::beginJob(edm::EventSetup const& ) {
+  void BkgRates::beginJob(art::EventSetup const& ) {
 
     CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
 
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     _hHitMult       = tfs->make<TH1F>( "hHitMult",    "Multiplicity of g4 hit per Straw ",       100,    0.,  100. );
     _hCaloHitMult   = tfs->make<TH1F>( "hCaloHitMult","Multiplicity of g4 hit per Crystal ",     100,    0.,  100. );
@@ -217,7 +216,7 @@ namespace mu2e {
     
   }    
   
-  void BkgRates::analyze(edm::Event const& evt, edm::EventSetup const&) {
+  void BkgRates::analyze(art::Event const& evt, art::EventSetup const&) {
 
     ++_nAnalyzed;
 
@@ -225,14 +224,14 @@ namespace mu2e {
         static int ncalls(0);
     ++ncalls;
     
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     
     if (ncalls == 1) {
 
       // cout << "This should be done only in the first event" << endl;
       
       
-      edm::Service<edm::TFileService> tfs;
+      art::ServiceHandle<art::TFileService> tfs;
       
       if (geom->hasElement<TTracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
@@ -264,7 +263,7 @@ namespace mu2e {
 
   } // end of analyze
 
-  void BkgRates::doTracker(edm::Event const& evt, bool skip) {
+  void BkgRates::doTracker(art::Event const& evt, bool skip) {
     
     if (skip) return;
 
@@ -273,18 +272,18 @@ namespace mu2e {
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
     
-    edm::Handle<StrawHitCollection> pdataHandle;
+    art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
     // Get the persistent data about the StrawHitsMCTruth.
     
-    edm::Handle<StrawHitMCTruthCollection> truthHandle;
+    art::Handle<StrawHitMCTruthCollection> truthHandle;
     evt.getByLabel(_makerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
     // Get the persistent data about pointers to StepPointMCs
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
@@ -292,7 +291,7 @@ namespace mu2e {
     // should look for product ids in DPIndexVectorCollection, rather than 
     // use producer name directly ("g4run"). 
 
-    edm::Handle<StepPointMCCollection> mchitsHandle;
+    art::Handle<StepPointMCCollection> mchitsHandle;
     evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
     StepPointMCCollection const* mchits = mchitsHandle.product();
 
@@ -308,21 +307,21 @@ namespace mu2e {
 
     if (!(hits->size() == hits_truth->size() &&
           hits_mcptr->size() == hits->size() ) ) {
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Strawhits: " << hits->size() 
         << " MCTruthStrawHits: " << hits_truth->size() 
         << " MCPtr: " << hits_mcptr->size(); 
     }
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     evt.getByType(genParticles);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     evt.getByType(simParticles);
 
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByType(volumes);
 
     // Some files might not have the SimParticle and volume information.
@@ -560,22 +559,22 @@ namespace mu2e {
   
   } // end of doTracker
 
-  void BkgRates::doITracker(edm::Event const& evt, bool skip) {
+  void BkgRates::doITracker(art::Event const& evt, bool skip) {
 
     if (skip) return;    
 
     const Tracker& tracker = getTrackerOrThrow();
-    edm::Handle<StrawHitCollection> pdataHandle;
+    art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
     // Get the persistent data about the StrawHitsMCTruth.
-    edm::Handle<StrawHitMCTruthCollection> truthHandle;
+    art::Handle<StrawHitMCTruthCollection> truthHandle;
     evt.getByLabel(_makerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
     // Get the persistent data about pointers to StepPointMCs
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<DPIndexVectorCollection> mcptrHandle;
     evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
@@ -583,27 +582,27 @@ namespace mu2e {
     // should look for product ids in DPIndexVectorCollection, rather than 
     // use producer name directly ("g4run"). 
 
-    edm::Handle<StepPointMCCollection> mchitsHandle;
+    art::Handle<StepPointMCCollection> mchitsHandle;
     evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
     StepPointMCCollection const* mchits = mchitsHandle.product();
 
     if (!(hits->size() == hits_truth->size() &&
           hits_mcptr->size() == hits->size() ) ) {
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Strawhits: " << hits->size() 
         << " MCTruthStrawHits: " << hits_truth->size() 
         << " MCPtr: " << hits_mcptr->size(); 
     }
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     evt.getByType(genParticles);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     evt.getByType(simParticles);
 
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByType(volumes);
 
     // Some files might not have the SimParticle and volume information.
@@ -823,14 +822,14 @@ namespace mu2e {
   
   } // end of doITracker
 
-  void BkgRates::doCalorimeter(edm::Event const& evt, bool skip) {
+  void BkgRates::doCalorimeter(art::Event const& evt, bool skip) {
 
     if (skip) return;
 
     const double CrDensity = 8.28; //from G4. It is in g/cm^3 
 
     //Get handle to the calorimeter
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
 
@@ -844,13 +843,13 @@ namespace mu2e {
     //     << '\t' << CrDensity << '\t' << CrMassKg << endl;
 
     // Get handles to calorimeter collections
-    edm::Handle<CaloHitCollection> caloHits;
-    edm::Handle<CaloHitMCTruthCollection> caloMC; //unused
-    edm::Handle<CaloCrystalHitCollection>  caloCrystalHits;
+    art::Handle<CaloHitCollection> caloHits;
+    art::Handle<CaloHitMCTruthCollection> caloMC; //unused
+    art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
 
     // Get the persistent data about pointers to StepPointMCs
-    edm::Handle<DPIndexVectorCollection> mcptrHandle;
-    edm::Handle<StepPointMCCollection> steps;
+    art::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<StepPointMCCollection> steps;
 
     evt.getByLabel("CaloROHitsMaker","CaloHitMCCrystalPtr",mcptrHandle);
     evt.getByLabel("g4run","calorimeter",steps);
@@ -871,14 +870,14 @@ namespace mu2e {
 
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     evt.getByType(genParticles);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     evt.getByType(simParticles);
     
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByType(volumes);
     
     // Some files might not have the SimParticle and volume information.
@@ -1090,20 +1089,20 @@ namespace mu2e {
     } 
   } // end of doCalorimeter
 
-  void BkgRates::doStoppingTarget(const edm::Event& event) {
+  void BkgRates::doStoppingTarget(const art::Event& event) {
     
     bool generatedStopped = false;
 
     // Find original G4 steps in the stopping target
-    edm::Handle<StepPointMCCollection> sthits;
+    art::Handle<StepPointMCCollection> sthits;
     event.getByLabel("g4run","stoppingtarget",sthits);
 
     // SimParticles container
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
     if( !(simParticles.isValid()) || simParticles->empty() ) return;
 
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     event.getRun().getByType(volumes);
 
     set<SimParticleCollection::key_type> stoppedtracks;
@@ -1148,5 +1147,5 @@ namespace mu2e {
 }
 
 using mu2e::BkgRates;
-DEFINE_FWK_MODULE(BkgRates);
+DEFINE_ART_MODULE(BkgRates);
  

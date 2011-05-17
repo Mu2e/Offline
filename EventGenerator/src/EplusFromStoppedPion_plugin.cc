@@ -5,9 +5,9 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_plugin.cc,v 1.2 2011/05/03 05:10:45 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/03 05:10:45 $
+// $Id: EplusFromStoppedPion_plugin.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke.
 //
@@ -25,9 +25,9 @@
 #include <string>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Services/interface/TFileService.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
@@ -45,13 +45,13 @@ using namespace std;
 
 namespace mu2e {
 
-  class EplusFromStoppedPion : public edm::EDProducer {
+  class EplusFromStoppedPion : public art::EDProducer {
   public:
-    explicit EplusFromStoppedPion(edm::ParameterSet const& pset);
+    explicit EplusFromStoppedPion(fhicl::ParameterSet const& pset);
     virtual ~EplusFromStoppedPion() { }
 
-    void beginRun(edm::Run& run,     edm::EventSetup const& eSetup );
-    void produce( edm::Event& event, edm::EventSetup const& eSetup );
+    void beginRun(art::Run& run,     art::EventSetup const& eSetup );
+    void produce( art::Event& event, art::EventSetup const& eSetup );
 
   private:
 
@@ -87,19 +87,19 @@ namespace mu2e {
 
   };
 
-  EplusFromStoppedPion::EplusFromStoppedPion(edm::ParameterSet const& pset):
+  EplusFromStoppedPion::EplusFromStoppedPion(fhicl::ParameterSet const& pset):
 
     // Run time arguments from the pset.
-    inputModuleLabel_(pset.getParameter<string>("inputModuleLabel")),
+    inputModuleLabel_(pset.get<string>("inputModuleLabel")),
 
     randomUnitSphere_(createEngine( get_seed_value(pset)),
-                      pset.getParameter<double>("czmin"),
-                      pset.getParameter<double>("czmax")
+                      pset.get<double>("czmin"),
+                      pset.get<double>("czmax")
                       ),
 
-    doHistograms_(pset.getUntrackedParameter<bool>("doHistograms",true)),
+    doHistograms_(pset.get<bool>("doHistograms",true)),
 
-    maxNtup_(pset.getUntrackedParameter<bool>("maxNtup",20000)),
+    maxNtup_(pset.get<bool>("maxNtup",20000)),
 
     // Other data members used for generation.
     me_(),
@@ -119,7 +119,7 @@ namespace mu2e {
 
   }
 
-  void EplusFromStoppedPion::beginRun(edm::Run& run, edm::EventSetup const& eSetup ){
+  void EplusFromStoppedPion::beginRun(art::Run& run, art::EventSetup const& eSetup ){
 
     // Get the positron and pi+ masses from the particle data table.  See note 1.
     ConditionsHandle<ParticleDataTable> pdt("ignored");
@@ -139,7 +139,7 @@ namespace mu2e {
     if ( nt_ ) return;
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     hzPos_  =  tfs->make<TH1F>( "hzPos", "Z of Stopping Position;[mm]", 1800, 5400., 6400. );
 
@@ -165,12 +165,12 @@ namespace mu2e {
   }
 
   void
-  EplusFromStoppedPion::produce(edm::Event& event, edm::EventSetup const&) {
+  EplusFromStoppedPion::produce(art::Event& event, art::EventSetup const&) {
 
     auto_ptr<ToyGenParticleCollection> output(new ToyGenParticleCollection);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genHandle;
+    art::Handle<ToyGenParticleCollection> genHandle;
     event.getByLabel(inputModuleLabel_,genHandle);
     ToyGenParticleCollection const& gens(*genHandle);
 
@@ -222,4 +222,4 @@ namespace mu2e {
 }
 
 using mu2e::EplusFromStoppedPion;
-DEFINE_FWK_MODULE(EplusFromStoppedPion);
+DEFINE_ART_MODULE(EplusFromStoppedPion);

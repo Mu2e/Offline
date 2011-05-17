@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.2 2011/02/13 22:33:10 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/13 22:33:10 $
+// $Id: constructVirtualDetectors.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -44,10 +44,10 @@ namespace mu2e {
 
     // Place virtual detectors
 
-    bool vdVisible           = _config->getBool("vd.visible",true);
-    bool vdSolid             = _config->getBool("vd.solid",true);
-    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool vdVisible           = _config->get<bool>("vd.visible",true);
+    bool vdSolid             = _config->get<bool>("vd.solid",true);
+    bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV       = true;
     
     GeomHandle<VirtualDetector> vdg;
@@ -68,7 +68,7 @@ namespace mu2e {
     G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
 
-    G4Helper* _helper = &(*(edm::Service<G4Helper>()));
+    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
 
     for( int id=1; id<=2; ++id) if( vdg->exist(id) ) {
       VolumeInfo const & parent = _helper->locateVolInfo("ToyTS1Vacuum");
@@ -127,7 +127,7 @@ namespace mu2e {
     double Z0 = 0;
     double deltaZ = 1.0;
 
-    if ( _config->getBool("hasNeutronAbsorber",false) ) {
+    if ( _config->get<bool>("hasNeutronAbsorber",false) ) {
       double NAIInnerRadius0     = _config->getDouble("neutronabsorber.internalInnerRadius0");
       double NAIInnerRadius1     = _config->getDouble("neutronabsorber.internalInnerRadius1");
       Ravr   = (NAIInnerRadius0+NAIInnerRadius1)/2;

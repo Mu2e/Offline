@@ -7,7 +7,7 @@
 #include <boost/shared_ptr.hpp>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "ITrackerGeom/inc/WireDetail.hh"
@@ -28,21 +28,21 @@ public:
 
   double      CirumscribedRadius()   const { return _circumscribedRadius;}
   double      InscribedCircleRadius()   const { return _inscribedCircleRadius;}
-  double      wireRadius() const throw(cms::Exception) {
+  double      wireRadius() const throw(cet::exception) {
           try {
                   return _senseWire.get()->outerRadius();
-          } catch (cms::Exception e) {
-              throw cms::Exception("GEOM")
+          } catch (cet::exception e) {
+              throw cet::exception("GEOM")
                 << "No sense wire defined for the Cell \n";
           return 0.0;
           }
   }
 
-  double      halfLength() const throw(cms::Exception) {
+  double      halfLength() const throw(cet::exception) {
           try {
                   return _senseWire->halfLength();
-          } catch (cms::Exception e) {
-              throw cms::Exception("GEOM")
+          } catch (cet::exception e) {
+              throw cet::exception("GEOM")
                 << "No sense wire defined for the Cell \n";
           return 0.0;
           }

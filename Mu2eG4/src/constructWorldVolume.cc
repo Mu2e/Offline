@@ -1,9 +1,9 @@
 //
 // Free function to create world mother volume
 //
-// $Id: constructWorldVolume.cc,v 1.1 2011/01/05 21:04:47 genser Exp $
-// $Author: genser $
-// $Date: 2011/01/05 21:04:47 $
+// $Id: constructWorldVolume.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -39,10 +39,10 @@ namespace mu2e {
     _config->getVectorDouble("world.halfLengths", worldHLen, 3);
     G4Material* worldMaterial = materialFinder.get("world.materialName");
 
-    bool worldBoxVisible = _config->getBool("world.boxVisible",true);
-    bool worldBoxSolid   = _config->getBool("world.boxSolid",false);
+    bool worldBoxVisible = _config->get<bool>("world.boxVisible",true);
+    bool worldBoxSolid   = _config->get<bool>("world.boxSolid",false);
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
     bool const placePV             = true;
 
     VolumeInfo worldInfo;

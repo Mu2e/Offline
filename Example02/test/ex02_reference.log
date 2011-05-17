@@ -1,6 +1,6 @@
- $Id: ex02_reference.log,v 1.2 2009/10/23 22:23:00 kutschke Exp $
- $Author: kutschke $
- $Date: 2009/10/23 22:23:00 $
+ $Id: ex02_reference.log,v 1.3 2011/05/17 15:36:00 greenc Exp $
+ $Author: greenc $
+ $Date: 2011/05/17 15:36:00 $
 
 ---- Reference log file starts after next blank line ----
 
@@ -9,7 +9,7 @@
 Geometry input file is: Example02/test/ex02geom.txt
 
 %MSG
-Begin processing the 1st record. Run 1, Event 1, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 1st record. Run 1, Event 1, SubRun 1 at 23-Oct-2009 17:14:46 CDT
 %MSG-! ToyHitInfo:  Ex02InspectHits:hitinspect 23-Oct-2009 17:14:46 CDT  Run: 1 Event: 1 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 1. Number of hits: 8.
 %MSG
@@ -21,7 +21,7 @@ Event: 1  | Hit #: 4  | Position: (11.8719,22.0013,2.86486) | Pulse Height: 8.19
 Event: 1  | Hit #: 5  | Position: (14.2463,26.4016,3.43783) | Pulse Height: 9.42132
 Event: 1  | Hit #: 6  | Position: (16.6207,30.8018,4.0108) | Pulse Height: 12.443
 Event: 1  | Hit #: 7  | Position: (18.9951,35.2021,4.58377) | Pulse Height: 10.1882
-Begin processing the 2nd record. Run 1, Event 2, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 2nd record. Run 1, Event 2, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 2 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 2. Number of hits: 8.
 %MSG
@@ -33,7 +33,7 @@ Event: 2  | Hit #: 4  | Position: (15.3639,-19.7218,10.9807) | Pulse Height: 9.4
 Event: 2  | Hit #: 5  | Position: (18.4367,-23.6662,13.1768) | Pulse Height: 9.82449
 Event: 2  | Hit #: 6  | Position: (21.5095,-27.6106,15.3729) | Pulse Height: 7.61093
 Event: 2  | Hit #: 7  | Position: (24.5822,-31.5549,17.569) | Pulse Height: 13.4387
-Begin processing the 3rd record. Run 1, Event 3, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 3rd record. Run 1, Event 3, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 3 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 3. Number of hits: 6.
 %MSG
@@ -43,7 +43,7 @@ Event: 3  | Hit #: 2  | Position: (-12.0354,-8.95265,0.157494) | Pulse Height: 1
 Event: 3  | Hit #: 3  | Position: (-20.0589,-14.9211,0.262489) | Pulse Height: 10.6683
 Event: 3  | Hit #: 4  | Position: (-28.0825,-20.8895,0.367485) | Pulse Height: 11.382
 Event: 3  | Hit #: 5  | Position: (-32.0943,-23.8737,0.419983) | Pulse Height: 10.0301
-Begin processing the 4th record. Run 1, Event 4, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 4th record. Run 1, Event 4, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 4 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 4. Number of hits: 8.
 %MSG
@@ -55,7 +55,7 @@ Event: 4  | Hit #: 4  | Position: (-19.9049,-15.126,-5.82419) | Pulse Height: 8.
 Event: 4  | Hit #: 5  | Position: (-23.8859,-18.1512,-6.98902) | Pulse Height: 9.94927
 Event: 4  | Hit #: 6  | Position: (-27.8668,-21.1764,-8.15386) | Pulse Height: 12.7261
 Event: 4  | Hit #: 7  | Position: (-31.8478,-24.2016,-9.3187) | Pulse Height: 14.5279
-Begin processing the 5th record. Run 1, Event 5, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 5th record. Run 1, Event 5, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 5 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 5. Number of hits: 7.
 %MSG
@@ -109,7 +109,7 @@ Event: 9  | Hit #: 3  | Position: (-6.33133,-24.185,3.78014) | Pulse Height: 8.6
 Event: 9  | Hit #: 4  | Position: (-7.59759,-29.022,4.53617) | Pulse Height: 7.14893
 Event: 9  | Hit #: 5  | Position: (-8.86386,-33.859,5.2922) | Pulse Height: 8.05418
 Event: 9  | Hit #: 6  | Position: (-10.1301,-38.696,6.04822) | Pulse Height: 8.65029
-Begin processing the 10th record. Run 1, Event 10, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 10th record. Run 1, Event 10, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 10 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 10. Number of hits: 8.
 %MSG
@@ -133,7 +133,7 @@ Analyzing event #: 13. Number of hits: 7.
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 14 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 14. Number of hits: 6.
 %MSG
-Begin processing the 15th record. Run 1, Event 15, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 15th record. Run 1, Event 15, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 15 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 15. Number of hits: 7.
 %MSG
@@ -164,7 +164,7 @@ Analyzing event #: 23. Number of hits: 7.
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 24 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 24. Number of hits: 8.
 %MSG
-Begin processing the 25th record. Run 1, Event 25, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 25th record. Run 1, Event 25, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 25 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 25. Number of hits: 8.
 %MSG
@@ -225,7 +225,7 @@ Analyzing event #: 43. Number of hits: 6.
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 44 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 44. Number of hits: 7.
 %MSG
-Begin processing the 45th record. Run 1, Event 45, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 45th record. Run 1, Event 45, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 45 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 45. Number of hits: 8.
 %MSG
@@ -346,7 +346,7 @@ Analyzing event #: 83. Number of hits: 7.
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 84 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 84. Number of hits: 8.
 %MSG
-Begin processing the 85th record. Run 1, Event 85, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 85th record. Run 1, Event 85, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 85 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 85. Number of hits: 8.
 %MSG
@@ -587,7 +587,7 @@ Analyzing event #: 163. Number of hits: 8.
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 164 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 164. Number of hits: 7.
 %MSG
-Begin processing the 165th record. Run 1, Event 165, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 165th record. Run 1, Event 165, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 165 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 165. Number of hits: 8.
 %MSG
@@ -1068,7 +1068,7 @@ Analyzing event #: 323. Number of hits: 8.
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 324 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 324. Number of hits: 8.
 %MSG
-Begin processing the 325th record. Run 1, Event 325, LumiSection 1 at 23-Oct-2009 17:14:46 CDT
+Begin processing the 325th record. Run 1, Event 325, SubRun 1 at 23-Oct-2009 17:14:46 CDT
  %MSG -!   ToyHitInfo:    Ex02InspectHits:hitinspect  23-Oct-2009 17:14:46 CDT  Run: 1 Event: 325 Ex02InspectHits_plugin.cc:131
 Analyzing event #: 325. Number of hits: 7.
 %MSG

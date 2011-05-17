@@ -1,16 +1,16 @@
 // 
 // Crystal hit info plus possible additional information produced by HitMaker
 //
-// $Id: CaloCrystalOnlyHit.cc,v 1.1 2010/12/13 06:10:33 logash Exp $
-// $Author: logash $
-// $Date: 2010/12/13 06:10:33 $
+// $Id: CaloCrystalOnlyHit.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 
 // C++ includes
 #include <ostream>
 
 // Framework includes.
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "ToyDP/inc/CaloCrystalOnlyHit.hh"

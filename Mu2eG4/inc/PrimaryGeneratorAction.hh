@@ -6,9 +6,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.3 2010/08/20 22:13:30 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/20 22:13:30 $
+// $Id: PrimaryGeneratorAction.hh,v 1.4 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,7 @@
 #include <string>
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 
 // G4 includes
 #include "globals.hh"
@@ -45,7 +45,7 @@ namespace mu2e {
     void GeneratePrimaries(G4Event*);
 
     // Should change the interface for Primary 
-    void setEvent( edm::Event const& event) {_event = &event;}
+    void setEvent( art::Event const& event) {_event = &event;}
 
     void setWorld( Mu2eWorld const* world ){
       _world=world;
@@ -59,7 +59,7 @@ namespace mu2e {
     // The event we are working on;
     // Must be set before the call to GeneratePrimaries.
     // Should change to a pull method, rather than a push.
-    edm::Event const* _event;
+    art::Event const* _event;
 
     // The particle I am generating.
     G4ParticleDefinition* _particleDefinition;

@@ -3,9 +3,9 @@
 //
 // An anti-leak system to aid in using G4 from the Mu2e framework.
 //
-// $Id: AntiLeakRegistry.hh,v 1.1 2010/12/22 17:36:49 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/22 17:36:49 $
+// $Id: AntiLeakRegistry.hh,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@
 // The logical volume does not take ownership of the G4VisAttributes object.
 // The recommended practice for this situation is:
 //
-//      AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+//      AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 //      G4LogicalVolume v = ...;
 //
 //      lvol->SetVisAttributes( reg.add(G4VisAttributes(true, color)) );

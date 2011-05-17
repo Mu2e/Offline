@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.17 2011/03/22 18:51:21 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/22 18:51:21 $
+// $Id: constructTTrackerv3.cc,v 1.18 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -21,8 +21,8 @@
 #include <string>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructTTracker.hh"
@@ -55,17 +55,17 @@ namespace mu2e{
                                   double zOff,
                                   SimpleConfig const& config ){
 
-    G4Helper    & _helper = *(edm::Service<G4Helper>());
+    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
-    int verbosityLevel = config.getInt("ttracker.verbosityLevel",0);
+    int verbosityLevel = config.get<int>("ttracker.verbosityLevel",0);
     
     // Control of graphics for debugging the geometry.
     // Only instantiate sectors to be drawn.
-    int devDraw = config.getInt("ttracker.devDraw",-1);
-    int secDraw = config.getInt("ttracker.secDraw",-1);
-    bool const doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
-    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    int devDraw = config.get<int>("ttracker.devDraw",-1);
+    int secDraw = config.get<int>("ttracker.secDraw",-1);
+    bool const doSurfaceCheck = config.get<bool>("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = config.get<bool>("g4.forceAuxEdgeVisible",false);
 
     G4ThreeVector const zeroVector(0.0,0.0,0.0);
 
@@ -101,9 +101,9 @@ namespace mu2e{
                                       trackerOffset,
                                       mother,
                                       0,
-                                      config.getBool("ttracker.envelopeVisible",false),
+                                      config.get<bool>("ttracker.envelopeVisible",false),
                                       G4Colour::Blue(),
-                                      config.getBool("ttracker.envelopeSolid",true),
+                                      config.get<bool>("ttracker.envelopeSolid",true),
                                       forceAuxEdgeVisible,
                                       true,
                                       doSurfaceCheck
@@ -111,14 +111,14 @@ namespace mu2e{
 
     TubsParams deviceEnvelopeParams = ttracker.getDeviceEnvelopeParams();
 
-    bool ttrackerDeviceEnvelopeVisible = config.getBool("ttracker.deviceEnvelopeVisible",false);
-    bool ttrackerDeviceEnvelopeSolid   = config.getBool("ttracker.deviceEnvelopeSolid",true);
-    bool ttrackerSupportVisible        = config.getBool("ttracker.supportVisible",false);
-    bool ttrackerSupportSolid          = config.getBool("ttracker.supportSolid",true);
-    bool ttrackerSectorEnvelopeVisible = config.getBool("ttracker.sectorEnvelopeVisible",false);
-    bool ttrackerSectorEnvelopeSolid   = config.getBool("ttracker.sectorEnvelopeSolid",true);
-    bool ttrackerStrawVisible          = config.getBool("ttracker.strawVisible",false);
-    bool ttrackerStrawSolid            = config.getBool("ttracker.strawSolid",true);
+    bool ttrackerDeviceEnvelopeVisible = config.get<bool>("ttracker.deviceEnvelopeVisible",false);
+    bool ttrackerDeviceEnvelopeSolid   = config.get<bool>("ttracker.deviceEnvelopeSolid",true);
+    bool ttrackerSupportVisible        = config.get<bool>("ttracker.supportVisible",false);
+    bool ttrackerSupportSolid          = config.get<bool>("ttracker.supportSolid",true);
+    bool ttrackerSectorEnvelopeVisible = config.get<bool>("ttracker.sectorEnvelopeVisible",false);
+    bool ttrackerSectorEnvelopeSolid   = config.get<bool>("ttracker.sectorEnvelopeSolid",true);
+    bool ttrackerStrawVisible          = config.get<bool>("ttracker.strawVisible",false);
+    bool ttrackerStrawSolid            = config.get<bool>("ttracker.strawSolid",true);
 
     // construct one logical device (device # 0) with straws inside it
 

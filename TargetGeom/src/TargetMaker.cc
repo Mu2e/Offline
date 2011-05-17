@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.4 2011/05/16 00:18:26 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/16 00:18:26 $
+// $Id: TargetMaker.cc,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Peter Shanahan
 //
@@ -15,7 +15,7 @@
 
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "TargetGeom/inc/TargetMaker.hh"
@@ -50,7 +50,7 @@ namespace mu2e {
 
     // Downstream code counts on this so test it here.
     if ( _rOut.size() < 1 ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Specified a stopping target with no foils!\n";
     }
 
@@ -97,7 +97,7 @@ namespace mu2e {
       _materials.push_back(_materials[size-1]);
 
     // material of the target enclosing volume
-    _fillMaterial=c.getString("target.fillMaterial","Target_Unknown");
+    _fillMaterial=c.get<std::string>("target.fillMaterial","Target_Unknown");
 
     // debugging print...
     PrintConfig();
@@ -136,7 +136,7 @@ namespace mu2e {
 
       double zCos=1-_xCos[i]*_xCos[i]-_yCos[i]*_yCos[i];
       if (zCos<0.) {
-        throw cms::Exception("RANGE") <<"Target Foil "<<i
+        throw cet::exception("RANGE") <<"Target Foil "<<i
                                       <<" ZCos^2 is negative, ="<< zCos<<"\n";
       } else {
         zCos=sqrt(zCos);

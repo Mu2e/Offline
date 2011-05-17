@@ -1,15 +1,15 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.21 2011/01/11 20:41:36 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/01/11 20:41:36 $
+// $Id: classes.h,v 1.22 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
 // Notes:
 // 1) The system is not able to deal with
-//    edm::Wrapper<std::vector<std::string> >;
+//    art::Wrapper<std::vector<std::string> >;
 //    The problem is somewhere inside root's reflex mechanism
 //    and Philippe Canal says that it is ( as of March 2010) a
 //    known problem.  He also says that they do not have any
@@ -18,10 +18,10 @@
 
 #include <vector>
 
-#include "DataFormats/Common/interface/AssociationVector.h"
-#include "DataFormats/Common/interface/OwnVector.h"
-#include "DataFormats/Common/interface/SortedCollection.h"
-#include "DataFormats/Common/interface/Wrapper.h"
+#include "art/Persistency/Common/AssociationVector.h"
+#include "art/Persistency/Common/OwnVector.h"
+#include "art/Persistency/Common/SortedCollection.h"
+#include "art/Persistency/Common/Wrapper.h"
 
 
 #include "ToyDP/inc/CrudeStrawHitPData.hh"
@@ -60,22 +60,22 @@ template class std::pair<MapVectorKey,mu2e::PointTrajectory>;
 template class std::map<MapVectorKey,mu2e::PointTrajectory>;
 
 
-template class edm::Wrapper<mu2e::ToyHitCollection>;
-template class edm::Wrapper<mu2e::ToyGenParticleCollection>;
-template class edm::Wrapper<mu2e::StepPointMCCollection>;
-template class edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>;
-template class edm::Wrapper<mu2e::CrudeStrawHitPData>;
-template class edm::Wrapper<mu2e::SimParticleCollection>;
-template class edm::Wrapper<mu2e::HoughCircleCollection>;
-template class edm::Wrapper<mu2e::StrawHitCollection>;
-template class edm::Wrapper<mu2e::StrawClusterCollection>;
-template class edm::Wrapper<mu2e::StrawHitMCTruthCollection>;
-template class edm::Wrapper<mu2e::G4BeamlineInfo>;
-template class edm::Wrapper<mu2e::G4BeamlineInfoCollection>;
-template class edm::Wrapper<mu2e::CaloHitCollection>;
-template class edm::Wrapper<mu2e::CaloHitMCTruthCollection>;
-template class edm::Wrapper<mu2e::CaloCrystalHitCollection>;
-template class edm::Wrapper<mu2e::CaloCrystalOnlyHitCollection>;
-template class edm::Wrapper<mu2e::PointTrajectoryCollection>;
-template class edm::Wrapper<mu2e::DPIndexVectorCollection>;
-template class edm::Wrapper<mu2e::StatusG4>;
+template class art::Wrapper<mu2e::ToyHitCollection>;
+template class art::Wrapper<mu2e::ToyGenParticleCollection>;
+template class art::Wrapper<mu2e::StepPointMCCollection>;
+template class art::Wrapper<mu2e::PhysicalVolumeInfoCollection>;
+template class art::Wrapper<mu2e::CrudeStrawHitPData>;
+template class art::Wrapper<mu2e::SimParticleCollection>;
+template class art::Wrapper<mu2e::HoughCircleCollection>;
+template class art::Wrapper<mu2e::StrawHitCollection>;
+template class art::Wrapper<mu2e::StrawClusterCollection>;
+template class art::Wrapper<mu2e::StrawHitMCTruthCollection>;
+template class art::Wrapper<mu2e::G4BeamlineInfo>;
+template class art::Wrapper<mu2e::G4BeamlineInfoCollection>;
+template class art::Wrapper<mu2e::CaloHitCollection>;
+template class art::Wrapper<mu2e::CaloHitMCTruthCollection>;
+template class art::Wrapper<mu2e::CaloCrystalHitCollection>;
+template class art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>;
+template class art::Wrapper<mu2e::PointTrajectoryCollection>;
+template class art::Wrapper<mu2e::DPIndexVectorCollection>;
+template class art::Wrapper<mu2e::StatusG4>;

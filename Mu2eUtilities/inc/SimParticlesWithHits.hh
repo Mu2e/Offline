@@ -11,9 +11,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.hh,v 1.3 2010/12/09 15:54:37 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/09 15:54:37 $
+// $Id: SimParticlesWithHits.hh,v 1.4 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke.
 //
@@ -30,7 +30,7 @@
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
 
-namespace edm{
+namespace art{
   class Event;
 }
 
@@ -48,7 +48,7 @@ namespace mu2e {
 
     // No default c'tor by design.
 
-    SimParticlesWithHits( const edm::Event& evt,
+    SimParticlesWithHits( const art::Event& evt,
                           string const& _g4ModuleLabel,
                           string const& _hitMakerModuleLabel,
                           string const& _trackerStepPoints,

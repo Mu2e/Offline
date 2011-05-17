@@ -420,7 +420,7 @@ void EventDisplayFrame::fillGeometry()
   _mainPad->Update();
 }
 
-void EventDisplayFrame::setEvent(const edm::Event& event, bool firstLoop)
+void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
 {
   char eventInfoText[50];
   sprintf(eventInfoText,"Event #: %i",event.id().event());

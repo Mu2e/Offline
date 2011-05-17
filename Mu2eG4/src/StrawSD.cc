@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 // 
-// $Id: StrawSD.cc,v 1.23 2011/03/09 16:50:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/09 16:50:47 $
+// $Id: StrawSD.cc,v 1.24 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -13,8 +13,8 @@
 #include <cstdio>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e incldues
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -50,7 +50,7 @@ namespace mu2e {
     _nStrawsPerSector(0),
     _TrackerVersion(0),
     _debugList(0),
-    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
+    _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
     _currentSize(0)
   {
     // Get list of events for which to make debug printout.
@@ -61,10 +61,10 @@ namespace mu2e {
       _debugList.add(list);
     }
 
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
 
     if ( !geom->hasElement<TTracker>() && !geom->hasElement<LTracker>() ) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Expected one of L or T Trackers but found neither.\n";
     }
 
@@ -79,10 +79,10 @@ namespace mu2e {
       _nStrawsPerSector = sector.nLayers()  * layer.nStraws();
       _nStrawsPerDevice = device.nSectors() * _nStrawsPerSector;
 
-      _TrackerVersion = config.getInt("TTrackerVersion",3);
+      _TrackerVersion = config.get<int>("TTrackerVersion",3);
 
       if ( _TrackerVersion != 3) {
-        throw cms::Exception("StrawSD")
+        throw cet::exception("StrawSD")
           << "Expected TTrackerVersion of 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
@@ -93,10 +93,10 @@ namespace mu2e {
       
       GeomHandle<LTracker> ltracker;
 
-      _TrackerVersion = config.getInt("LTrackerVersion",3); // also see Mu2eWorld.cc
+      _TrackerVersion = config.get<int>("LTrackerVersion",3); // also see Mu2eWorld.cc
 
       if ( _TrackerVersion != 3) {
-        throw cms::Exception("StrawSD")
+        throw cet::exception("StrawSD")
           << "Expected LTrackerVersion of 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
@@ -121,7 +121,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	edm::LogWarning("G4") << "Maximum number of particles reached in StrawSD: " 
+	mf::LogWarning("G4") << "Maximum number of particles reached in StrawSD: " 
 			      << _currentSize << endl;
       }
       return false;
@@ -210,7 +210,7 @@ namespace mu2e {
 
     } else {
 
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Expected TrackerVersion of 3 but found " << _TrackerVersion << endl;
       
     }
@@ -284,7 +284,7 @@ namespace mu2e {
 
     // Reconstruction Geometry for the LTracker.
     // Need to make this work for the TTracker too.
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if ( geom->hasElement<LTracker>() ) {
 
       GeomHandle<LTracker> ltracker;
@@ -372,7 +372,7 @@ namespace mu2e {
   void StrawSD::EndOfEvent(G4HCofThisEvent*){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      edm::LogWarning("G4") << "Total of " << _currentSize 
+      mf::LogWarning("G4") << "Total of " << _currentSize 
 			    << " straw hits were generated in the event." 
 			    << endl
 			    << "Only " << _sizeLimit << " are saved in output collection." 
@@ -401,7 +401,7 @@ namespace mu2e {
 
     size_t td = 3;
 
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if ( geom->hasElement<TTracker>() ) {
       td =_TrackerVersion +1;
     }

@@ -23,21 +23,21 @@ ITracker::ITracker() {
         _displayWires    =false;
 }
 
-SuperLayer* ITracker::getSuperLayer(int n) const throw(cms::Exception) {
+SuperLayer* ITracker::getSuperLayer(int n) const throw(cet::exception) {
         if (n>=0 && n< _nSuperLayers){
                 return &(_sprlr[n]);
         }
-        else throw cms::Exception("GEOM")<< "Super Layer number: "<< n <<" not present";
+        else throw cet::exception("GEOM")<< "Super Layer number: "<< n <<" not present";
 }
 
-//        const boost::shared_ptr<Wall> ITracker::getWall(int n) throw(cms::Exception) {
+//        const boost::shared_ptr<Wall> ITracker::getWall(int n) throw(cet::exception) {
 //                if (n>=0 && n< _nWalls){
 //                        //_walls_it --;//+= (n-_lastSeenWall);
 //                        advance (_walls_it,n-_lastSeenWall);
 //                        _lastSeenWall = n;
 //                        return _walls_it->second;
 //                }
-//                else throw cms::Exception("GEOM")<< "Wall number: "<< n <<" not present";
+//                else throw cet::exception("GEOM")<< "Wall number: "<< n <<" not present";
 //        }
 
 void ITracker::addWall(Wall *wall){

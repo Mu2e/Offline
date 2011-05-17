@@ -1,9 +1,9 @@
 //
 // Free function to create  DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.2 2011/04/29 17:43:06 genser Exp $
-// $Author: genser $
-// $Date: 2011/04/29 17:43:06 $
+// $Id: constructDS.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -41,7 +41,7 @@ namespace mu2e {
                     SimpleConfig const * const _config
                     ){
 
-    int const verbosityLevel = _config->getInt("toyDS.verbosityLevel",0);
+    int const verbosityLevel = _config->get<int>("toyDS.verbosityLevel",0);
 
     // Extract information from the config file.
     TubsParams detSolCoilParams( _config->getDouble("toyDS.rIn"),
@@ -92,7 +92,7 @@ namespace mu2e {
 
     double BSTSHLength = ds3HalfLength + 1.;
     double BSTSZ       = ds3OriginalZ0 + 1.;
-    if ( _config->getBool("hasMBS",false) ) {
+    if ( _config->get<bool>("hasMBS",false) ) {
       BSTSHLength = _config->getDouble("mbs.BSTSHLength");
       BSTSZ       = _config->getDouble("mbs.BSTSZ");
     }
@@ -110,7 +110,7 @@ namespace mu2e {
                              detSolCoilParams.innerRadius,
                              ds3HalfLength);
 
-    double SPBSOuterRadius   = _config->getBool("hasMBS",false) ? 
+    double SPBSOuterRadius   = _config->get<bool>("hasMBS",false) ? 
       _config->getDouble("mbs.SPBSOuterRadius") : 0.;
     TubsParams ds3VacSubtrParams( SPBSOuterRadius,
                                   detSolCoilParams.innerRadius,
@@ -148,10 +148,10 @@ namespace mu2e {
 
     // Single volume representing the DS coils + cryostat in an average way.
 
-    bool toyDSVisible        = _config->getBool("toyDS.visible",true);
-    bool toyDSSolid          = _config->getBool("toyDS.solid",true);
-    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool toyDSVisible        = _config->get<bool>("toyDS.visible",true);
+    bool toyDSSolid          = _config->get<bool>("toyDS.solid",true);
+    bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();

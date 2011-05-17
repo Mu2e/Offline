@@ -3,9 +3,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.4 2010/08/18 22:40:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/08/18 22:40:15 $
+// $Id: CosmicDYB.hh,v 1.5 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Yury Kolomensky
 //
@@ -20,7 +20,7 @@
 // Forward declarations.
 class TH1D;
 class TH2D;
-namespace edm{
+namespace art{
   class Run;
 }
 
@@ -32,7 +32,7 @@ namespace mu2e {
   class CosmicDYB: public GeneratorBase {
 
   public:
-    CosmicDYB( edm::Run& run, const SimpleConfig& config );
+    CosmicDYB( art::Run& run, const SimpleConfig& config );
     virtual ~CosmicDYB();
 
     virtual void generate( ToyGenParticleCollection&  );

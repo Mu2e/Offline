@@ -5,7 +5,7 @@
 #include <string>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace mu2e {
 
@@ -25,22 +25,22 @@ public:
   
   ~WireDetail ();
 
-  std::string const materialName(int idx) const throw(cms::Exception) {
+  std::string const materialName(int idx) const throw(cet::exception) {
           try {
                   return _materialNames.at(idx);
-          } catch (cms::Exception e) {
-              throw cms::Exception("GEOM")
+          } catch (cet::exception e) {
+              throw cet::exception("GEOM")
                 << "No material defined for the wire \n";
           }
   }
 
   const std::vector<std::string> &materialNames() const { return _materialNames;}
 
-  double const shellThickness(int idx) const throw(cms::Exception) {
+  double const shellThickness(int idx) const throw(cet::exception) {
           try {
                   return _shellsThicknesses.at(idx);
-          } catch (cms::Exception e) {
-              throw cms::Exception("GEOM")
+          } catch (cet::exception e) {
+              throw cet::exception("GEOM")
                 << "No shells thicknesses defined for the wire \n";
           }
   }

@@ -1,9 +1,9 @@
 //
 // A plugin to test FileInPath.
 //
-// $Id: FileInPathTest_plugin.cc,v 1.1 2010/09/27 19:45:21 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/27 19:45:21 $
+// $Id: FileInPathTest_plugin.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -13,13 +13,12 @@
 #include <string>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "FWCore/Services/interface/TFileService.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/ParameterSet/FileInPath.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 using namespace std;
 
@@ -27,23 +26,23 @@ namespace mu2e {
 
   class Straw;
 
-  class FileInPathTest : public edm::EDAnalyzer {
+  class FileInPathTest : public art::EDAnalyzer {
   public:
     
-    explicit FileInPathTest(edm::ParameterSet const& pset);
+    explicit FileInPathTest(fhicl::ParameterSet const& pset);
     virtual ~FileInPathTest() { }
 
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
   };
 
-  FileInPathTest::FileInPathTest(edm::ParameterSet const& pset){
+  FileInPathTest::FileInPathTest(fhicl::ParameterSet const& pset){
     cout  << "FipTest::constructor." << endl;
-    edm::FileInPath fp = pset.getParameter<edm::FileInPath>("inputfile");
-    edm::FileInPath fp2("Mu2eG4/test/ttracker_v0.txt");
-    edm::FileInPath fp3("BFieldMaps/MECO/dsmap_unfmt_rad100.dat");
+    art::FileInPath fp = pset.get<art::FileInPath>("inputfile");
+    art::FileInPath fp2("Mu2eG4/test/ttracker_v0.txt");
+    art::FileInPath fp3("BFieldMaps/MECO/dsmap_unfmt_rad100.dat");
     cout << "fp is:  " << fp.location()  << " " << fp.isLocal()  << " " << fp.fullPath()  << endl;
     cout << "fp2 is: " << fp2.location() << " " << fp2.isLocal() << " " << fp2.fullPath() << endl;
     cout << "fp3 is: " << fp3.location() << " " << fp3.isLocal() << " " << fp3.fullPath() << endl;
@@ -51,10 +50,10 @@ namespace mu2e {
 
   }
   
-  void FileInPathTest::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void FileInPathTest::analyze(const art::Event& event, art::EventSetup const&) {
   }
 
 }  // end namespace mu2e
 
 using mu2e::FileInPathTest;
-DEFINE_FWK_MODULE(FileInPathTest);
+DEFINE_ART_MODULE(FileInPathTest);

@@ -2,9 +2,9 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 // 
-// $Id: RandomUnitSphere.cc,v 1.5 2010/08/26 15:49:22 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/26 15:49:22 $
+// $Id: RandomUnitSphere.cc,v 1.6 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -12,8 +12,8 @@
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/RandomNumberGeneratorService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Core/RandomNumberGeneratorService.h"
 
 using CLHEP::Hep3Vector;
 using CLHEP::RandFlat;
@@ -28,7 +28,7 @@ namespace mu2e{
     _czmax(czmax),
     _phimin(phimin),
     _phimax(phimax),
-    _randFlat( edm::Service<edm::RandomNumberGeneratorService>()->getEngine() ){
+    _randFlat( art::ServiceHandle<art::RandomNumberGeneratorService>()->getEngine() ){
   }
 
   RandomUnitSphere::RandomUnitSphere( CLHEP::HepRandomEngine& engine,

@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.4 2011/04/25 19:20:14 genser Exp $
-// $Author: genser $
-// $Date: 2011/04/25 19:20:14 $
+// $Id: constructSteel.cc,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -41,17 +41,17 @@ namespace mu2e {
                        SimpleConfig const * const _config
                        ){
 
-    int const verbosityLevel = _config->getInt("crs.verbosityLevel",0);
+    int const verbosityLevel = _config->get<int>("crs.verbosityLevel",0);
 
     MaterialFinder materialFinder(*_config);
 
     G4Material* CRSSteelShieldMaterial = materialFinder.get("fluxcrv.HallSteelMaterialName");
 
-    bool CRSSteelShieldVisible = _config->getBool("fluxcrv.visible",true);
-    bool CRSSteelShieldSolid   = _config->getBool("fluxcrv.solid",false);
+    bool CRSSteelShieldVisible = _config->get<bool>("fluxcrv.visible",true);
+    bool CRSSteelShieldSolid   = _config->get<bool>("fluxcrv.solid",false);
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     // get the CRS parameters from the geometry service and place the steel boxes

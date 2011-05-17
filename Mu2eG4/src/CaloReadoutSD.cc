@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 // 
-// $Id: CaloReadoutSD.cc,v 1.5 2011/02/23 00:36:47 logash Exp $
-// $Author: logash $ 
-// $Date: 2011/02/23 00:36:47 $
+// $Id: CaloReadoutSD.cc,v 1.6 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Ivan Logashenko
 //
@@ -11,8 +11,8 @@
 #include <cstdio>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e incldues
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
@@ -40,7 +40,7 @@ namespace mu2e {
       _nro(0),
       _minE(0.0),
       _debugList(0),
-      _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
+      _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
       _currentSize(0)
   {
 
@@ -85,7 +85,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	edm::LogWarning("G4") << "Maximum number of particles reached in CaloCrystalSD: " 
+	mf::LogWarning("G4") << "Maximum number of particles reached in CaloCrystalSD: " 
 			      << _currentSize << endl;
       }
       return false;
@@ -119,7 +119,7 @@ namespace mu2e {
   void CaloReadoutSD::EndOfEvent(G4HCofThisEvent*){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      edm::LogWarning("G4") << "Total of " << _currentSize 
+      mf::LogWarning("G4") << "Total of " << _currentSize 
 			    << " calorimeter RO hits were generated in the event." 
 			    << endl
 			    << "Only " << _sizeLimit << " are saved in output collection." 

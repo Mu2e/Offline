@@ -1,17 +1,17 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.26 2011/01/13 17:43:44 wenzel Exp $     -->
-<!--  $Author: wenzel $ -->
-<!--  $Date: 2011/01/13 17:43:44 $   -->
+<!--  $Id: classes_def.xml,v 1.27 2011/05/17 15:36:01 greenc Exp $     -->
+<!--  $Author: greenc $ -->
+<!--  $Date: 2011/05/17 15:36:01 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.26 $$Date: 2011/01/13 17:43:44 $"; -->
+<!--  rev="$Revision: 1.27 $$Date: 2011/05/17 15:36:01 $"; -->
 
-<!--  Only include edm::Wrapper lines for objects that we would like to put into the event -->
-<!--  Include the non-wrapper lines for all objects on the edm::Wrapper lines and     -->
+<!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
+<!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
 <!--  for all objects inside of those objects.                                        -->
 
 
@@ -27,8 +27,8 @@
  <class name="std::vector<MapVectorKey>"/>
  <class name="mu2e::StrawIndex"/>
  <class name="mu2e::PDGCode"/>
- <class name="edm::ProductID"/>
- <class name="edm::ProcessIndex"/>
+ <class name="art::ProductID"/>
+ <class name="art::ProcessIndex"/>
  <class name="mu2e::DPIndex"/>
  <class name="std::vector<mu2e::DPIndex>"/>
  <class name="CLHEP::Hep2Vector"/>
@@ -81,23 +81,23 @@
  <class name="std::map<MapVectorKey,mu2e::PointTrajectory>"/>
  <class name="mu2e::PointTrajectoryCollection"/> 
  <class name="mu2e::StatusG4"/>
- <class name="edm::Wrapper<mu2e::ToyHitCollection>"/>
- <class name="edm::Wrapper<mu2e::ToyGenParticleCollection>"/>
- <class name="edm::Wrapper<mu2e::StepPointMCCollection>"/>
- <class name="edm::Wrapper<mu2e::CrudeStrawHitPData>"/>
- <class name="edm::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>
- <class name="edm::Wrapper<mu2e::SimParticleCollection>"/>
- <class name="edm::Wrapper<mu2e::HoughCircleCollection>"/>
- <class name="edm::Wrapper<mu2e::StrawHitCollection>"/>
- <class name="edm::Wrapper<mu2e::StrawHitMCTruthCollection>"/>
- <class name="edm::Wrapper<mu2e::StrawClusterCollection>"/>
- <class name="edm::Wrapper<mu2e::DPIndexVectorCollection>"/>
- <class name="edm::Wrapper<mu2e::G4BeamlineInfo>"/>
- <class name="edm::Wrapper<mu2e::G4BeamlineInfoCollection>"/>
- <class name="edm::Wrapper<mu2e::CaloHitCollection>"/>
- <class name="edm::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
- <class name="edm::Wrapper<mu2e::CaloCrystalHitCollection>"/>
- <class name="edm::Wrapper<mu2e::CaloCrystalOnlyHitCollection>"/>
- <class name="edm::Wrapper<mu2e::PointTrajectoryCollection>"/>
- <class name="edm::Wrapper<mu2e::StatusG4>"/>
+ <class name="art::Wrapper<mu2e::ToyHitCollection>"/>
+ <class name="art::Wrapper<mu2e::ToyGenParticleCollection>"/>
+ <class name="art::Wrapper<mu2e::StepPointMCCollection>"/>
+ <class name="art::Wrapper<mu2e::CrudeStrawHitPData>"/>
+ <class name="art::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>
+ <class name="art::Wrapper<mu2e::SimParticleCollection>"/>
+ <class name="art::Wrapper<mu2e::HoughCircleCollection>"/>
+ <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
+ <class name="art::Wrapper<mu2e::StrawHitMCTruthCollection>"/>
+ <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::DPIndexVectorCollection>"/>
+ <class name="art::Wrapper<mu2e::G4BeamlineInfo>"/>
+ <class name="art::Wrapper<mu2e::G4BeamlineInfoCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>"/>
+ <class name="art::Wrapper<mu2e::PointTrajectoryCollection>"/>
+ <class name="art::Wrapper<mu2e::StatusG4>"/>
 </lcgdict>

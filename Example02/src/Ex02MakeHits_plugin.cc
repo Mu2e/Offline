@@ -3,9 +3,9 @@
 A producer module that makes a collection of overly simplified "hits"
 and adds them to the event.
 
-$Id: Ex02MakeHits_plugin.cc,v 1.13 2011/03/06 00:38:34 kutschke Exp $
-$Author: kutschke $
-$Date: 2011/03/06 00:38:34 $
+$Id: Ex02MakeHits_plugin.cc,v 1.14 2011/05/17 15:36:00 greenc Exp $
+$Author: greenc $
+$Date: 2011/05/17 15:36:00 $
    
 Original author Rob Kutschke
 
@@ -22,14 +22,13 @@ Original author Rob Kutschke
 #include <cstdlib>
 
 // Framework includes.
-#include "FWCore/Framework/interface/Event.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>
@@ -53,13 +52,13 @@ namespace mu2e {
 
   static double const czmax = 0.5;
 
-  class Ex02MakeHits : public edm::EDProducer {
+  class Ex02MakeHits : public art::EDProducer {
     
   public:
-    explicit Ex02MakeHits(edm::ParameterSet const& pSet) : 
+    explicit Ex02MakeHits(fhicl::ParameterSet const& pSet) : 
       
       // Information from the parameter set.
-      minPulseHeight_(pSet.getParameter<double>("minPulseHeight")),
+      minPulseHeight_(pSet.get<double>("minPulseHeight")),
 
       // Random number distributions share one engine.
       _randGauss( createEngine( get_seed_value(pSet)) ),
@@ -70,7 +69,7 @@ namespace mu2e {
     }
     virtual ~Ex02MakeHits() { }
 
-    virtual void produce(edm::Event& e, edm::EventSetup const& c);
+    virtual void produce(art::Event& e, art::EventSetup const& c);
     
   private:
 
@@ -83,7 +82,7 @@ namespace mu2e {
   };
 
   void
-  Ex02MakeHits::produce(edm::Event& event, edm::EventSetup const&) {
+  Ex02MakeHits::produce(art::Event& event, art::EventSetup const&) {
 
     // Geometry information about the CTracker.
     GeomHandle<CTracker> ctracker;
@@ -127,4 +126,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::Ex02MakeHits;
-DEFINE_FWK_MODULE(Ex02MakeHits);
+DEFINE_ART_MODULE(Ex02MakeHits);

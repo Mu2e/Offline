@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.18 2011/01/04 22:09:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/04 22:09:27 $
+// $Id: TrackingAction.cc,v 1.19 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -28,8 +28,8 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
@@ -53,11 +53,11 @@ namespace mu2e {
     _debugList(),
     _physVolHelper(0),
     _timer(),
-    _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
+    _sizeLimit(config.get<int>("g4.particlesSizeLimit",0)),
     _currentSize(0),
     _overflowSimParticles(false),
     _steppingAction(steppingAction),
-    _printPhysicsProcessSummary(config.getBool("g4.printPhysicsProcessSummary",false)){
+    _printPhysicsProcessSummary(config.get<bool>("g4.printPhysicsProcessSummary",false)){
 
     string name("g4.trackingActionEventList");
     if ( config.hasName(name) ){
@@ -141,7 +141,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        edm::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: " 
+        mf::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: " 
                               << _currentSize << endl;
         _overflowSimParticles = true;
       }
@@ -164,7 +164,7 @@ namespace mu2e {
 
     // Track should not yet be in the map.  Add a debug clause to skip this test?
     if ( _transientMap.find(kid) != _transientMap.end() ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "SimParticle already in the event.  This should never happen. id is: "
         << id
         << "\n";
@@ -190,7 +190,7 @@ namespace mu2e {
     if ( parentId != 0 ){
       map_type::iterator i(_transientMap.find(key_type(parentId)));
       if ( i == _transientMap.end() ){
-        throw cms::Exception("RANGE")
+        throw cet::exception("RANGE")
           << "Could not find parent SimParticle in PreUserTrackingAction.  id: "
           << id
           << "\n";
@@ -209,7 +209,7 @@ namespace mu2e {
     // Find the particle in the map.
     map_type::iterator i(_transientMap.find(id));
     if ( i == _transientMap.end() ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Could not find existing SimParticle in PostUserTrackingAction.  id: "
         << id
         << "\n";
@@ -326,11 +326,11 @@ namespace mu2e {
           // Daughter does not point back to the parent.
           ok = false;
           if ( doPrint ){
-            edm::LogError("G4") 
+            mf::LogError("G4") 
               << "TrackingAction::checkCrossReferences: daughter does not point back to mother.\n";
           }
           if ( doThrow ){
-            throw cms::Exception("MU2EG4") 
+            throw cet::exception("MU2EG4") 
               << "TrackingAction::checkCrossReferences: daughter does not point back to mother.\n";
           }
         }
@@ -352,11 +352,11 @@ namespace mu2e {
         if ( !inList ){
           ok = false;
           if ( doPrint ){
-            edm::LogError("G4") 
+            mf::LogError("G4") 
               << "TrackingAction::checkCrossReferences: daughter is not found amoung mother's daughters.\n";
           }
           if ( doThrow ){
-            throw cms::Exception("MU2EG4") 
+            throw cet::exception("MU2EG4") 
               << "TrackingAction::checkCrossReferences: daughter is not found amoung mother's daughters.\n";
           }
         }

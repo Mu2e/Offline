@@ -1,15 +1,15 @@
 //
 // Make a plugin for the ReadBack Module.
 //
-// $Id: ReadBack_plugin.cc,v 1.7 2010/02/11 15:24:48 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/02/11 15:24:48 $
+// $Id: ReadBack_plugin.cc,v 1.8 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
 
 #include "Mu2eG4/src/ReadBack.hh"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 using mu2e::ReadBack;
-DEFINE_FWK_MODULE(ReadBack);
+DEFINE_ART_MODULE(ReadBack);

@@ -2,8 +2,8 @@
 #include <cstdio>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e incldues
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
@@ -31,7 +31,7 @@ namespace mu2e {
                   G4VSensitiveDetector(name),
                   _collection(0),
                   _debugList(0),
-                  _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
+                  _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
                   _currentSize(0)
 
 
@@ -44,10 +44,10 @@ namespace mu2e {
                   _debugList.add(list);
           }
 
-          edm::Service<GeometryService> geom;
+          art::ServiceHandle<GeometryService> geom;
 
           if ( !geom->hasElement<ITracker>() ) {
-                  throw cms::Exception("GEOM")
+                  throw cet::exception("GEOM")
                   << "Expected I Trackers but found neither.\n";
           }
 
@@ -62,7 +62,7 @@ namespace mu2e {
           //        itracker->getCellGeometryHandle()->SelectCell(_superlayer,_ring,0);
           //            _nwires=itracker->getCellGeometryHandle()->GetITLayer()->nCells();
           //            _Dphi=CLHEP::twopi/_nwires;
-          //    }catch (cms::Exception e) {
+          //    }catch (cet::exception e) {
           //            cerr<<e;
           //            _nwires=0;
           //            _Dphi=0.0;
@@ -103,7 +103,7 @@ namespace mu2e {
   void ITGasLayerSD::EndOfEvent(G4HCofThisEvent*){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      edm::LogWarning("G4") << "Total of " << _currentSize
+      mf::LogWarning("G4") << "Total of " << _currentSize
                             << " Drift Chamber hits were generated in the event."
                             << endl
                             << "Only " << _sizeLimit << " are saved in output collection."
@@ -132,7 +132,7 @@ namespace mu2e {
 //
 //    size_t td = 3;
 //
-////    edm::Service<GeometryService> geom;
+////    art::ServiceHandle<GeometryService> geom;
 ////    if ( geom->hasElement<TTracker>() ) {
 ////      td =_TrackerVersion +1;
 ////    }

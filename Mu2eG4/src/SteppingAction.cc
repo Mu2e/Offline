@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.17 2011/05/15 17:47:34 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/15 17:47:34 $
+// $Id: SteppingAction.cc,v 1.18 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -13,8 +13,8 @@
 #include <cmath>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
@@ -51,9 +51,9 @@ namespace mu2e {
     _zref(0.){ 
 
     // Look up parameter values in the run time configuration.
-    _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
-    _doKillInHallAir = config.getBool("g4SteppingAction.killInHallAir", _doKillInHallAir);
-    _killerVerbose   = config.getBool("g4SteppingAction.killerVerbose", _killerVerbose);
+    _doKillLowEKine  = config.get<bool>("g4.killLowEKine",                _doKillLowEKine);
+    _doKillInHallAir = config.get<bool>("g4SteppingAction.killInHallAir", _doKillInHallAir);
+    _killerVerbose   = config.get<bool>("g4SteppingAction.killerVerbose", _killerVerbose);
 
 
     // If this cut is enabled, the cut value must be supplied in the run time config.
@@ -92,7 +92,7 @@ namespace mu2e {
     */
 
     // Get maximum allowed number of steps per event
-    _maxSteps = config.getInt("g4.steppingActionMaxSteps", 0);
+    _maxSteps = config.get<int>("g4.steppingActionMaxSteps", 0);
     if( _maxSteps>0 ) {
       cout << "Limit maximum number of steps in SteppingAction to "
 	   << _maxSteps << endl;

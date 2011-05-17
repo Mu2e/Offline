@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.16 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $
-// $Date: 2010/09/29 19:37:58 $
+// $Id: CalorimeterMaker.cc,v 1.17 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -22,7 +22,7 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 
 // Framework include files
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 //
 // other includes
@@ -53,11 +53,11 @@ namespace mu2e{
     {
       _calo = auto_ptr<Calorimeter>(new Calorimeter());
       
-      _calo->_nVane      = config.getInt   ("calorimeter.numberOfVanes");
+      _calo->_nVane      = config.get<int>   ("calorimeter.numberOfVanes");
       _calo->_crystalHW  = config.getDouble("calorimeter.crystalHalfTrans");
       _calo->_crystalHL  = config.getDouble("calorimeter.crystalHalfLong");
-      _calo->_nCrystalR  = config.getInt   ("calorimeter.nCrystalRSlices");   
-      _calo->_nCrystalZ  = config.getInt   ("calorimeter.nCrystalZSlices");   
+      _calo->_nCrystalR  = config.get<int>   ("calorimeter.nCrystalRSlices");   
+      _calo->_nCrystalZ  = config.get<int>   ("calorimeter.nCrystalZSlices");   
       _calo->_rMin       = config.getDouble("calorimeter.rInscribed");
 
       _calo->_wrapperHalfThickness = config.getDouble("calorimeter.crystalWrapperHalfThickness");
@@ -70,9 +70,9 @@ namespace mu2e{
       _calo->_origin = CLHEP::Hep3Vector(-solenoidOffset,0,center.z());
 
       // Check number of readouts
-      int nRO = config.getInt("calorimeter.crystalReadoutChannelCount");
+      int nRO = config.get<int>("calorimeter.crystalReadoutChannelCount");
       if( ! (nRO==1 || nRO==2 || nRO==4) ) {
-	throw cms::Exception("CaloGeom")
+	throw cet::exception("CaloGeom")
 	  << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";
       }
       _calo->_nROPerCrystal = nRO;
@@ -80,12 +80,12 @@ namespace mu2e{
       // Check size of readouts
       if( nRO==1 ) {
 	if( _calo->_roHalfTrans > _calo->_crystalHW ) {
-	  throw cms::Exception("CaloGeom")
+	  throw cet::exception("CaloGeom")
 	    << "calorimeter.crystalReadoutHalfTrans > calorimeter.crystalHalfTrans.\n";
 	}
       } else {
 	if( _calo->_roHalfTrans > 0.5*_calo->_crystalHW ) {
-	  throw cms::Exception("CaloGeom")
+	  throw cet::exception("CaloGeom")
 	    << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";
 	}
       }

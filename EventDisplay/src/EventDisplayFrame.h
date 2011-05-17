@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.8 2011/03/09 07:50:54 ehrlich Exp $
-// $Author: ehrlich $ 
-// $Date: 2011/03/09 07:50:54 $
+// $Id: EventDisplayFrame.h,v 1.9 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Ralf Ehrlich
 //
@@ -14,7 +14,7 @@
 #include <iostream>
 #include <TGFrame.h>
 #ifndef __CINT__
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 #include "boost/shared_ptr.hpp"
 #endif
 
@@ -45,8 +45,8 @@ namespace mu2e_eventdisplay
     EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h);
     virtual        ~EventDisplayFrame();
     void           fillGeometry();
-#ifndef __CINT__   //hide edm::Event from ROOTCint
-    void           setEvent(const edm::Event& event, bool firstLoop=false);
+#ifndef __CINT__   //hide art::Event from ROOTCint
+    void           setEvent(const art::Event& event, bool firstLoop=false);
 #endif
     bool           isClosed() const;
     bool           getSelectedHitsName(std::string &className, 

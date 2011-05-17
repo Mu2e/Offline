@@ -1,9 +1,9 @@
 //
 // Add StepPointMC objects to the event.
 //
-// $Id: addStepPointMCs.cc,v 1.4 2010/05/18 21:16:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:30 $
+// $Id: addStepPointMCs.cc,v 1.5 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -30,7 +30,7 @@ namespace mu2e{
   // Public entry point: CLHEP::pick an tracker specific thing to do. See note 1).
   void addStepPointMCs( const G4Event* g4event, StepPointMCCollection& hits  ){
 
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
 
     if ( geom->hasElement<LTracker>() ||
          geom->hasElement<TTracker>()    ){

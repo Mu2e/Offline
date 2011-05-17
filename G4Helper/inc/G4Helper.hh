@@ -8,9 +8,9 @@
 // support of G4.  For technical reasons, this cannot be done by making 
 // Mu2eG4RunManager a singleton.
 //
-// $Id: G4Helper.hh,v 1.1 2010/12/22 17:36:49 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/22 17:36:49 $
+// $Id: G4Helper.hh,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@
 #include <string>
 
 // Framework include files
-#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Mu2e includes
 #include "G4Helper/inc/VolumeInfo.hh"
@@ -30,7 +30,7 @@ namespace mu2e {
 
   class G4Helper {
   public:
-    G4Helper(const edm::ParameterSet&, edm::ActivityRegistry&);
+    G4Helper(const fhicl::ParameterSet&, art::ActivityRegistry&);
     ~G4Helper();
     
     AntiLeakRegistry& antiLeakRegistry(){ return _antiLeakRegistry; }

@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.hh,v 1.1 2011/01/20 21:28:39 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/01/20 21:28:39 $
+// $Id: MCCaloUtilities.hh,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Gianni Onorato
 //
@@ -10,10 +10,10 @@
 #define MCCALOUTILITIES_HH
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "FWCore/Utilities/interface/EDMException.h"
-#include "FWCore/Framework/interface/Event.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/ParameterSet/FileInPath.h"
+#include "art/Utilities/Exception.h"
+#include "art/Framework/Core/Event.h"
 
 // Mu2e includes
 
@@ -29,7 +29,7 @@ namespace mu2e {
 
     ~MCCaloUtilities();
 
-    void setTrackAndRO(const edm::Event & event,
+    void setTrackAndRO(const art::Event & event,
                        SimParticleCollection::key_type track,
                        uint32_t RO);
 

@@ -5,17 +5,17 @@
 //
 // The wrapper does the job of throwing if the pointer comes back null.
 //
-// $Id: getPhysicalVolumeOrThrow.cc,v 1.1 2010/09/01 18:57:19 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/01 18:57:19 $
+// $Id: getPhysicalVolumeOrThrow.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
 //
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
@@ -31,7 +31,7 @@ namespace mu2e {
     G4VPhysicalVolume* pVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume(name);
 
     if ( pVol == 0 ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Could not find requested Physical Volume: "
         << name
         << "\n";

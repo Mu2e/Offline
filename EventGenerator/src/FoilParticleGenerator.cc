@@ -25,7 +25,7 @@
 #include <fstream>
 
 //Framework includes
-#include "FWCore/ParameterSet/interface/FileInPath.h"
+#include "art/ParameterSet/FileInPath.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
@@ -38,7 +38,7 @@
 
 using namespace std;
 
-static const edm::FileInPath StMuFileName("ConditionsService/data/StoppedMuons.txt"); 
+static const art::FileInPath StMuFileName("ConditionsService/data/StoppedMuons.txt"); 
 static const string StMuFileString = StMuFileName.fullPath();
 static const double timeMaxDelay = 3000;
 static const int nBinsForTimeDelayPDF = 150;
@@ -47,7 +47,7 @@ static fstream inMuFile(StMuFileString.c_str(), ios::in);
 
 namespace mu2e {
   
-  FoilParticleGenerator::FoilParticleGenerator(edm::RandomNumberGeneratorService::base_engine_t& engine,
+  FoilParticleGenerator::FoilParticleGenerator(art::RandomNumberGeneratorService::base_engine_t& engine,
                                                double tmin, double tmax, 
                                                foilGen_enum foilAlgo, 
                                                posGen_enum  posAlgo, 
@@ -91,18 +91,18 @@ namespace mu2e {
     CLHEP::Hep3Vector g4beamlineExtraOffset_default;
     _g4beamlineExtraOffset = g4beamlineExtraOffset_default;
 
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& geomConfig = geom->config();
     _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");;
 
   // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "no foils are present";
     }
 
     if (!inMuFile.is_open()) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "no stopped muon file is present";
     }
 
@@ -224,7 +224,7 @@ namespace mu2e {
     
     vector<double> volumes = binnedFoilsVolume();
     if (volumes.size()!= (size_t) _nfoils) {
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "something wrong in number of foils";
     }
     double step = 1./_nfoils;
@@ -242,7 +242,7 @@ namespace mu2e {
   vector<double> FoilParticleGenerator::timePathDelay() {
 
     vector<double> muonTimeDelay;
-    edm::FileInPath muonDelayFileName("ConditionsService/data/timeDelayDist.txt");
+    art::FileInPath muonDelayFileName("ConditionsService/data/timeDelayDist.txt");
     string MuonFileFIP = muonDelayFileName.fullPath();
     fstream infile(MuonFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
@@ -339,7 +339,7 @@ namespace mu2e {
   ConditionsHandle<PhysicsParams> phyPar("ignored");
   double tau = phyPar->decayTime; 
   if (tau < 0 || tau > 3500) { //bigger than muon decay time
-    throw cms::Exception("RANGE")
+    throw cet::exception("RANGE")
       << "nonsense decay time of bound state"; 
     }
   return tau;

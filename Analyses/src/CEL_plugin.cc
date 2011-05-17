@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_plugin.cc,v 1.7 2011/01/28 23:51:57 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/28 23:51:57 $
+// $Id: CEL_plugin.cc,v 1.8 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author R. Bernstein
 //
@@ -18,23 +18,22 @@
 #include <cstdlib>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Framework includes
-#include "FWCore/Services/interface/RandomNumberGeneratorService.h"
+#include "art/Framework/Core/RandomNumberGeneratorService.h"
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
@@ -82,19 +81,19 @@ namespace mu2e {
   //
   // 
 
-  class CEL : public edm::EDAnalyzer{
+  class CEL : public art::EDAnalyzer{
   public:
 
     typedef SimParticleCollection::key_type key_type;
 
-    CEL(edm::ParameterSet const& pset):
+    CEL(fhicl::ParameterSet const& pset):
 
       //
       // Run time parameters
-      _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-      _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-      _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",10)),
+      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _minimumEnergy(pset.get<double>("minimumEnergy")),
+      _maxFullPrint(pset.get<int>("maxFullPrint",10)),
       _nAnalyzed(0),
       _messageCategory("ToyHitInfo"),
       _dEdXelow(0.),
@@ -102,22 +101,22 @@ namespace mu2e {
       _dEdXnbins(2000) {}
     virtual ~CEL() {}
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     virtual void endJob();
 
-    virtual void beginRun(edm::Run const &r, 
-                          edm::EventSetup const& eSetup );
+    virtual void beginRun(art::Run const &r, 
+                          art::EventSetup const& eSetup );
 
-    virtual void beginLuminosityBlock(edm::LuminosityBlock const& lblock, 
-                                      edm::EventSetup const&);
+    virtual void beginSubRun(art::SubRun const& lblock, 
+                                      art::EventSetup const&);
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
 
   private:
 
-    //    edm::Service<edm::RandomNumberGeneratorService>()->getEngine();  
+    //    art::ServiceHandle<art::RandomNumberGeneratorService>()->getEngine();  
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
@@ -195,10 +194,10 @@ namespace mu2e {
   };
 
 
-  void CEL::beginJob(edm::EventSetup const& ){
+  void CEL::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    //    edm::Service<edm::TFileService> tfs;
+    //    art::ServiceHandle<art::TFileService> tfs;
 
   }
 
@@ -209,16 +208,16 @@ namespace mu2e {
 
 
 
-  void CEL::beginRun(edm::Run const& run,
-		     edm::EventSetup const& eSetup ){
+  void CEL::beginRun(art::Run const& run,
+		     art::EventSetup const& eSetup ){
   }
 
-  void CEL::beginLuminosityBlock(edm::LuminosityBlock const& lblock,
-				 edm::EventSetup const&){
+  void CEL::beginSubRun(art::SubRun const& lblock,
+				 art::EventSetup const&){
   }
 
 
-  void CEL::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void CEL::analyze(const art::Event& event, art::EventSetup const&) {
 
     static int ncalls(0);
     ++ncalls;
@@ -249,17 +248,17 @@ namespace mu2e {
       _cELEnergyLossSpectrum->Scale(1./energyLossIntegral);
 
     }
-    edm::LogVerbatim log(_messageCategory);
+    mf::LogVerbatim log(_messageCategory);
     log << "CEL event #: " 
         << event.id();
 
     // 
     // start looking through SimParticles
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     event.getRun().getByType(volumes);
 
     // Some files might not have the SimParticle and volume information.
@@ -274,7 +273,7 @@ namespace mu2e {
 
     //
     // get handle to hits:  with _trackerStepPoints, if there are hits they belong to the tracker
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
 
@@ -294,7 +293,7 @@ namespace mu2e {
 	  if (sim.pdgId() != PDGCode::e_minus) {
 	    //
 	    // this can't happen if we're studying CELs so throw and die
-	    throw cms::Exception("GEOM")
+	    throw cet::exception("GEOM")
 	      << "CEL with a parent not an electron, but parent PDG code is "
 	      << sim.pdgId();
 	  } else
@@ -489,7 +488,7 @@ namespace mu2e {
   void CEL::bookEventHistos(double const elow, double const ehigh)
   {        
     //    cout << "booking histos" << endl; assert(2==1);
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
 
 
@@ -591,7 +590,7 @@ namespace mu2e {
       { loss = 4691.*TMath::Landau(e,1.29229,.38467);}// fudge numbers from histo in denom
     if (e >= 2.8 && e <= 20) {loss = TMath::Exp(6.28+ -0.264*(e)); }
     if (e<0){
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "Nonsense energy in CEL_plugin.cc="
         << e
         << "\n";
@@ -607,7 +606,7 @@ namespace mu2e {
 
     // Sanity check.
     if (_dEdXnbins <= 0) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "Nonsense CEL_plugin.nbins requested="
         << _dEdXnbins
         << "\n";
@@ -633,4 +632,4 @@ namespace mu2e {
 } // namespace mu2e
 
 
-DEFINE_FWK_MODULE(CEL);
+DEFINE_ART_MODULE(CEL);

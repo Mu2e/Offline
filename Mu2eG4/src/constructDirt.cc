@@ -1,9 +1,9 @@
 //
 // Free function to create the earthen overburden.
 //
-// $Id: constructDirt.cc,v 1.1 2011/01/05 21:04:47 genser Exp $
-// $Author: genser $
-// $Date: 2011/01/05 21:04:47 $
+// $Id: constructDirt.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -43,8 +43,8 @@ namespace mu2e {
     // A helper class.
     MaterialFinder materialFinder(*_config);
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     // Get parameters related to the overall dimensions of the hall and to
@@ -84,10 +84,10 @@ namespace mu2e {
     // Half lengths of the dirt box.
     double dirtHLen[3] = { worldHLen[0], yLDirt, worldHLen[2] };
 
-    bool dirtVisible    = _config->getBool("dirt.visible",true);
-    bool dirtSolid      = _config->getBool("dirt.solid",false);
-    bool dirtCapVisible = _config->getBool("dirt.capVisible",true);
-    bool dirtCapSolid   = _config->getBool("dirt.capSolid",false);
+    bool dirtVisible    = _config->get<bool>("dirt.visible",true);
+    bool dirtSolid      = _config->get<bool>("dirt.solid",false);
+    bool dirtCapVisible = _config->get<bool>("dirt.capVisible",true);
+    bool dirtCapSolid   = _config->get<bool>("dirt.capSolid",false);
 
     // Main body of dirt around the hall.
     VolumeInfo dirtInfo = nestBox( "DirtBody",
@@ -118,7 +118,7 @@ namespace mu2e {
     G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight, 
                                  dsz0+VolumeInfo::getMu2eOriginInWorld().z());
 
-    AntiLeakRegistry& reg = edm::Service<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4RotationMatrix* dirtCapRot = reg.add(G4RotationMatrix());
     dirtCapRot->rotateX( -90*CLHEP::degree);
 

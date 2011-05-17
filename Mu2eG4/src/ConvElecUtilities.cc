@@ -1,16 +1,16 @@
 //
-// $Id: ConvElecUtilities.cc,v 1.5 2010/12/01 23:05:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/01 23:05:18 $
+// $Id: ConvElecUtilities.cc,v 1.6 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Gianni Onorato
 //
 
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "FWCore/Utilities/interface/EDMException.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/ParameterSet/FileInPath.h"
+#include "art/Utilities/Exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConvElecUtilities.hh"
@@ -21,7 +21,7 @@ using namespace std;
 
 namespace mu2e {
 
-  ConvElecUtilities::ConvElecUtilities(const edm::Event & event,
+  ConvElecUtilities::ConvElecUtilities(const art::Event & event,
                                        string g4ModuleLabel, 
                                        string trackerStepPoints):
     _g4ModuleLabel( g4ModuleLabel ),
@@ -30,7 +30,7 @@ namespace mu2e {
     _nconv = 0;
     checkConvElec(event);
     if (_nconv>1) {
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "More than 1 conversion electron in the event";
     }
     lookAtHits(event);
@@ -45,7 +45,7 @@ namespace mu2e {
   //generated conversion electron.
   //This method is called by the constructor
 
-  void ConvElecUtilities::checkConvElec(const edm::Event & event) {
+  void ConvElecUtilities::checkConvElec(const art::Event & event) {
 
     event.getByType(_genParticles);
     event.getByType(_simParticles);
@@ -89,7 +89,7 @@ namespace mu2e {
   //and earliest hit
   //This method is called by the constructor
 
-  void ConvElecUtilities::lookAtHits(const edm::Event & event) {
+  void ConvElecUtilities::lookAtHits(const art::Event & event) {
     event.getByLabel(_g4ModuleLabel, _trackerStepPoints, hits);   
     double time = 10e15; // dummy value
     _earliestidx = 10000; // dummy value
@@ -114,7 +114,7 @@ namespace mu2e {
     if (hasStepPointMC()) {
       return (*hits)[_earliestidx]; 
     } else { 
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "No hit associated to Conversion Electron track.";
     }
   }
@@ -124,7 +124,7 @@ namespace mu2e {
     if (hasStepPointMC()) {
     return (*hits)[_earliestidx].strawIndex();
     } else { 
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "No hit associated to Conversion Electron track.";
     }
   }

@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.  
 //
-// $Id: EjectedNeutronGun.hh,v 1.2 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/05/17 06:00:47 $
+// $Id: EjectedNeutronGun.hh,v 1.3 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 //
 
@@ -26,7 +26,7 @@
 
 // Forward declarations outside of namespace mu2e
 class TH1D;
-namespace edm {
+namespace art {
   class Run;
 }
 
@@ -38,7 +38,7 @@ namespace mu2e {
   class EjectedNeutronGun: public GeneratorBase{
 
   public:
-    EjectedNeutronGun( edm::Run& run, const SimpleConfig& config );
+    EjectedNeutronGun( art::Run& run, const SimpleConfig& config );
     virtual ~EjectedNeutronGun();
 
     virtual void generate( ToyGenParticleCollection&  );

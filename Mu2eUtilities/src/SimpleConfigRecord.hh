@@ -6,9 +6,9 @@
  * A class to hold one record within the primitive 
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.hh,v 1.3 2010/08/31 21:49:40 kutschke Exp $
- * $Author: kutschke $ 
- * $Date: 2010/08/31 21:49:40 $
+ * $Id: SimpleConfigRecord.hh,v 1.4 2011/05/17 15:36:01 greenc Exp $
+ * $Author: greenc $ 
+ * $Date: 2011/05/17 15:36:01 $
  *
  * Original author Rob Kutschke
  *
@@ -98,14 +98,14 @@ class SimpleConfigRecord {
    * Return the value as string.  This will work for any data type.
    * @return The value as a string.
    */
-  std::string getString () const;
+  std::string get<std::string> () const;
 
   /**
    * Return the value as an int.  Only works for recrods that are of type int.
    *
    * @return The value of an int record.
    */
-  int getInt () const;
+  int get<int> () const;
   
   /**
    * Return the value as an double.  Only works for records that are of type double.
@@ -119,7 +119,7 @@ class SimpleConfigRecord {
    * 
    * @return The value of a bool record.
    */
-  bool getBool() const;
+  bool get<bool>() const;
   
   /**
    * Return the value as a vector of strings.  Works for all record types.

@@ -1,9 +1,9 @@
 //
 // Dump information about all data products in the file.
 //
-// $Id: DataProductDump_plugin.cc,v 1.1 2011/02/23 07:03:22 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/02/23 07:03:22 $
+// $Id: DataProductDump_plugin.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -15,25 +15,24 @@
 #include <vector>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "fhiclcpp/ParameterSet.h"
 
 using namespace std;
 
 namespace mu2e {
 
-  class DataProductDump : public edm::EDAnalyzer {
+  class DataProductDump : public art::EDAnalyzer {
   public:
     
-    explicit DataProductDump(edm::ParameterSet const& pset);
+    explicit DataProductDump(fhicl::ParameterSet const& pset);
     virtual ~DataProductDump() { }
 
-    typedef std::vector<edm::Provenance const*> provs_type;
+    typedef std::vector<art::Provenance const*> provs_type;
 
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
     // A utility function to print info about a vector of provenances.
     void print( provs_type const& provs);
@@ -42,13 +41,13 @@ namespace mu2e {
 
   };
 
-  DataProductDump::DataProductDump(edm::ParameterSet const& pset){
+  DataProductDump::DataProductDump(fhicl::ParameterSet const& pset){
   }
 
-  void DataProductDump::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void DataProductDump::analyze(const art::Event& event, art::EventSetup const&) {
 
-    edm::Run const& run(event.getRun());
-    edm::LuminosityBlock const& lumi(event.getLuminosityBlock());
+    art::Run const& run(event.getRun());
+    art::LuminosityBlock const& lumi(event.getLuminosityBlock());
 
     // Get provenance information for all data products.
     provs_type evtProvs;
@@ -101,7 +100,7 @@ namespace mu2e {
     // Loop over all products and compute maximum lengths for each column.
     for ( provs_type::const_iterator i=provs.begin();
           i != provs.end(); ++i ){
-      edm::Provenance const& prov = **i;
+      art::Provenance const& prov = **i;
 
       string::size_type lclass, lmodule, linstance, lprocess;
       lclass    = prov.friendlyClassName().size();
@@ -125,7 +124,7 @@ namespace mu2e {
     // Printer body of header.
     for ( provs_type::const_iterator i=provs.begin();
           i != provs.end(); ++i ){
-      edm::Provenance const& prov = **i;
+      art::Provenance const& prov = **i;
       cout << setw(maxlclass)    << prov.friendlyClassName()   << "  "
            << setw(maxlmodule)   << prov.moduleLabel()         << "  "
            << setw(maxlinstance) << prov.productInstanceName() << "  "
@@ -140,4 +139,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::DataProductDump;
-DEFINE_FWK_MODULE(DataProductDump);
+DEFINE_ART_MODULE(DataProductDump);

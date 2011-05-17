@@ -1,5 +1,5 @@
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "ITrackerGeom/inc/Wall.hh"
@@ -58,10 +58,10 @@ Wall::Wall(const Wall &wl) {
         }
 }
 
-void Wall::addMaterials(int &wShellNumber, std::vector<std::string> *wShellsMatName, std::vector<double> *wShellsThicknesses) throw(cms::Exception) {
+void Wall::addMaterials(int &wShellNumber, std::vector<std::string> *wShellsMatName, std::vector<double> *wShellsThicknesses) throw(cet::exception) {
         _nShells=wShellNumber;
         if ( _nShells!=((int)wShellsMatName->size()) && _nShells!=((int)wShellsThicknesses->size()) )
-                throw cms::Exception("GEOM")<< "Error in Configuration file! There is a disagreement between the vectors dimensions of a ITracker wall.\n";
+                throw cet::exception("GEOM")<< "Error in Configuration file! There is a disagreement between the vectors dimensions of a ITracker wall.\n";
 
         _materialsName.reset(wShellsMatName);
         _thicknesses.reset(wShellsThicknesses);

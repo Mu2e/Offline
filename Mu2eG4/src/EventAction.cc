@@ -1,9 +1,9 @@
 //
 // G4 begin and end of event actions for Mu2e.
 //
-// $Id: EventAction.cc,v 1.2 2010/09/20 02:57:05 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/20 02:57:05 $
+// $Id: EventAction.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 {
   _stepping->EndOfEvent();
 
-  // Change  G4_plugin so that we copy to the edm::event from here.
+  // Change  G4_plugin so that we copy to the art::event from here.
 
 }
 

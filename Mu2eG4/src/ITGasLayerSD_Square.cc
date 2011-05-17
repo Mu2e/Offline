@@ -22,7 +22,7 @@ namespace mu2e {
 
           if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
             if( (_currentSize - _sizeLimit)==1 ) {
-              edm::LogWarning("G4") << "Maximum number of particles reached in ItrackerSD: "
+              mf::LogWarning("G4") << "Maximum number of particles reached in ItrackerSD: "
                                     << _currentSize << endl;
             }
             return false;
@@ -50,7 +50,7 @@ namespace mu2e {
               itracker->getCellGeometryHandle()->SelectCell(_superlayer,_ring,0);
                   _nwires=itracker->getCellGeometryHandle()->GetITLayer()->nCells();
                   _Dphi=CLHEP::twopi/_nwires;
-          }catch (cms::Exception e) {
+          }catch (cet::exception e) {
                   cerr<<e;
                   _nwires=0;
                   _Dphi=0.0;
@@ -192,7 +192,7 @@ namespace mu2e {
                   if ( !_debugList.inList() ) return true;
 
                   return true;
-          }catch (cms::Exception e) {
+          }catch (cet::exception e) {
                   cerr<<e;
                   return false;
           }

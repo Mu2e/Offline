@@ -7,7 +7,7 @@
 #include <boost/shared_ptr.hpp>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "ITrackerGeom/inc/Cell.hh"
@@ -55,18 +55,18 @@ public:
 
   double voxelizationFactor() const { return _voxelizationFactor; }
 
-  boost::shared_ptr<Cell> getCell( int n ) const throw(cms::Exception) {
+  boost::shared_ptr<Cell> getCell( int n ) const throw(cet::exception) {
         if (n>=0 && n<_nCells) return _cells.at(n);
-        else throw cms::Exception("GEOM")<< "Cell number: "<< n <<" not present in "<<_id;
+        else throw cet::exception("GEOM")<< "Cell number: "<< n <<" not present in "<<_id;
   }
 
   boost::shared_ptr<Cell> getCell( const CellId& id ) const {
     return getCell(id.getCell());
   }
 
-  boost::shared_ptr<Wire> getFWire( int n ) const throw(cms::Exception) {
+  boost::shared_ptr<Wire> getFWire( int n ) const throw(cet::exception) {
         if (n>=0 && n<_nFiledWires) return _fieldWires.at(n);
-        else throw cms::Exception("GEOM")<< "Field wire number: "<< n <<" not present in "<<_id;
+        else throw cet::exception("GEOM")<< "Field wire number: "<< n <<" not present in "<<_id;
   }
 
   boost::shared_ptr<Wire> getFWire( const WireId& id ) const {

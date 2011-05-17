@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.40 2011/05/16 23:26:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/16 23:26:27 $
+// $Id: ReadBack.cc,v 1.41 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -14,10 +14,10 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes.
 #include "Mu2eG4/src/ReadBack.hh"
@@ -69,19 +69,19 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  ReadBack::ReadBack(edm::ParameterSet const& pset) : 
+  ReadBack::ReadBack(fhicl::ParameterSet const& pset) : 
 
     // Run time parameters
-    _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-    _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-    _generatorModuleLabel(pset.getParameter<string>("generatorModuleLabel")),
-    _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-    _caloCrystalHitsMaker(pset.getUntrackedParameter<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
-    _targetStepPoints(pset.getUntrackedParameter<string>("targetStepPoints","stoppingtarget")),
-    _crvStepPoints(pset.getUntrackedParameter<string>("CRVStepPoints","CRV")),
-    _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
-    _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
-    _xyHitsMax(pset.getUntrackedParameter<int>("xyHitsMax",10000)),
+    _diagLevel(pset.get<int>("diagLevel",0)),
+    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+    _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
+    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+    _caloCrystalHitsMaker(pset.get<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
+    _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
+    _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
+    _minimumEnergy(pset.get<double>("minimumEnergy")),
+    _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+    _xyHitsMax(pset.get<int>("xyHitsMax",10000)),
 
     // Histograms
     _nAnalyzed(0),
@@ -126,10 +126,10 @@ namespace mu2e {
     _nBadG4Status(0){
   }
   
-  void ReadBack::beginJob(edm::EventSetup const& ){
+  void ReadBack::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     
     // Create some 1D histograms.
     _hRadius       = tfs->make<TH1F>( "hRadius",       "Radius of Hits;(mm)",     100,  0., 1000. );
@@ -227,13 +227,13 @@ namespace mu2e {
 
   }
 
-  void ReadBack::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void ReadBack::analyze(const art::Event& event, art::EventSetup const&) {
     
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
     // Inquire about the completion status of G4.
-    edm::Handle<StatusG4> g4StatusHandle;
+    art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( _g4ModuleLabel, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
     if ( _nAnalyzed < _maxFullPrint ){
@@ -244,14 +244,14 @@ namespace mu2e {
     // Use your own judgement about whether to abort or to continue.
     if ( g4Status.status() > 1 ) {
       ++_nBadG4Status;
-      edm::LogError("G4") 
+      mf::LogError("G4") 
         << "Aborting ReadBack::analyze due to G4 status\n"  
         << g4Status;
       return;
     }
 
     // Call code appropriate for the tracker that is installed in this job.
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if( geom->hasElement<LTracker>() || geom->hasElement<TTracker>() ){
       doLTracker(event);
     }
@@ -268,17 +268,17 @@ namespace mu2e {
     }
   }
 
-  void ReadBack::doCalorimeter(const edm::Event& event) {
+  void ReadBack::doCalorimeter(const art::Event& event) {
     
     // Get handles to calorimeter collections
-    edm::Handle<CaloHitCollection> caloHits;
-    edm::Handle<CaloHitMCTruthCollection> caloMC;
+    art::Handle<CaloHitCollection> caloHits;
+    art::Handle<CaloHitMCTruthCollection> caloMC;
     event.getByType(caloHits);
     event.getByType(caloMC);
 
     // Find pointers to the original G4 steps
-    edm::Handle<DPIndexVectorCollection> crystalPtr;
-    edm::Handle<DPIndexVectorCollection> readoutPtr;
+    art::Handle<DPIndexVectorCollection> crystalPtr;
+    art::Handle<DPIndexVectorCollection> readoutPtr;
 
     // One can use simple approach - find collection directly by label, e.g.:
     // event.getByLabel("CaloReadoutHitsMaker","CaloHitMCCrystalPtr",crystalPtr);
@@ -286,7 +286,7 @@ namespace mu2e {
     // The following code shows how to find collection only by name, not knowing 
     // the producer module name
 
-    vector<edm::Handle<DPIndexVectorCollection> > ptr_coll;
+    vector<art::Handle<DPIndexVectorCollection> > ptr_coll;
     event.getManyByType(ptr_coll);
     for( size_t i=0; i<ptr_coll.size(); ++i ) {
       if(ptr_coll[i].provenance()->productInstanceName()=="CaloHitMCCrystalPtr") crystalPtr = ptr_coll[i];
@@ -294,14 +294,14 @@ namespace mu2e {
     }
 
     // Find original G4 steps in the APDs
-    edm::Handle<StepPointMCCollection> rohits;
+    art::Handle<StepPointMCCollection> rohits;
     event.getByLabel(_g4ModuleLabel,"calorimeterRO",rohits);
 
     bool haveCalo = ( caloHits.isValid() && caloMC.isValid() );
 
     if( ! haveCalo) return;
 
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
 
@@ -368,7 +368,7 @@ namespace mu2e {
 
 
     // caloCrystalHits
-    edm::Handle<CaloCrystalHitCollection>  caloCrystalHits;
+    art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
 
     event.getByType(caloCrystalHits);
     if (!caloCrystalHits.isValid()) {
@@ -426,7 +426,7 @@ namespace mu2e {
 
     // templetize it?
     // caloCrystalOnlyHits
-    edm::Handle<CaloCrystalOnlyHitCollection>  caloCrystalOnlyHits;
+    art::Handle<CaloCrystalOnlyHitCollection>  caloCrystalOnlyHits;
 
     event.getByType(caloCrystalOnlyHits);
     if (!caloCrystalOnlyHits.isValid()) {
@@ -482,25 +482,25 @@ namespace mu2e {
 
   }
 
-  void ReadBack::doLTracker(const edm::Event& event){
+  void ReadBack::doLTracker(const art::Event& event){
 
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     event.getByLabel(_generatorModuleLabel,genParticles);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     event.getRun().getByType(volumes);
 
     // Some files might not have the SimParticle and volume information.
@@ -516,7 +516,7 @@ namespace mu2e {
       
     // A silly example just to show that we have a messsage logger.
     if ( hits->size() > 300 ){
-      edm::LogWarning("HitInfo")
+      mf::LogWarning("HitInfo")
         << "Number of hits "
         << hits->size() 
         << " may be too large.";
@@ -524,7 +524,7 @@ namespace mu2e {
 
     // A silly example just to show how to throw.
     if ( hits->size() > 1000000 ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Way too many hits in this event.  Something is really wrong."
         << hits->size();
     }
@@ -725,7 +725,7 @@ namespace mu2e {
 
   } // end doLTracker
 
-  void ReadBack::doITracker(const edm::Event& event){
+  void ReadBack::doITracker(const art::Event& event){
      
     // Instance name of the module that created the hits of interest;
     //static const string creatorName("g4run");
@@ -738,18 +738,18 @@ namespace mu2e {
     ++_nAnalyzed;
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     event.getByLabel(_generatorModuleLabel,genParticles);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     event.getRun().getByType(volumes);
 
     // Some files might not have the SimParticle and volume information.
@@ -765,7 +765,7 @@ namespace mu2e {
 
     // A silly example just to show that we have a messsage logger.
     if ( hits->size() > 300 ){
-      edm::LogWarning("HitInfo")
+      mf::LogWarning("HitInfo")
         << "Number of hits "
         << hits->size()
         << " may be too large.";
@@ -773,7 +773,7 @@ namespace mu2e {
 
     // A silly example just to show how to throw.
     if ( hits->size() > 1000000 ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Way too many hits in this event.  Something is really wrong."
         << hits->size();
     }
@@ -909,7 +909,7 @@ namespace mu2e {
   // If we have enough hits per event, it will make sense to make
   // a class to let us direct index into a list of which straws have hits.
   int ReadBack::countHitNeighbours( Straw const& straw, 
-                                    edm::Handle<StepPointMCCollection>& hits ){
+                                    art::Handle<StepPointMCCollection>& hits ){
     
     int count(0);
     vector<StrawIndex> const& nearest = straw.nearestNeighboursByIndex();
@@ -938,14 +938,14 @@ namespace mu2e {
   // Here we assume that the primary particles are the conversion
   // electrons generated in the stopping target. 
   //
-  void ReadBack::doStoppingTarget(const edm::Event& event) {
+  void ReadBack::doStoppingTarget(const art::Event& event) {
     
     // Find original G4 steps in the stopping target
-    edm::Handle<StepPointMCCollection> sthits;
+    art::Handle<StepPointMCCollection> sthits;
     event.getByLabel(_g4ModuleLabel,_targetStepPoints,sthits);
 
     // SimParticles container
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
     if( !(simParticles.isValid()) || simParticles->empty() ) return;
 
@@ -1019,7 +1019,7 @@ namespace mu2e {
          << endl;
   }
 
-  void ReadBack::doCRV(const edm::Event& event){
+  void ReadBack::doCRV(const art::Event& event){
 
     // Get a reference to CosmicRayShield (it contains crv)
 
@@ -1035,23 +1035,23 @@ namespace mu2e {
                                                      barDetail.getHalfLengths()[1],
                                                      barDetail.getHalfLengths()[2]);
 
-    edm::Handle<StatusG4> g4StatusHandle;
+    art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( _g4ModuleLabel, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_crvStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<ToyGenParticleCollection> genParticles;
     event.getByLabel(_generatorModuleLabel,genParticles);
 
-    edm::Handle<SimParticleCollection> simParticles;
+    art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
 
     // Handle to information about G4 physical volumes.
-    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
     event.getRun().getByType(volumes);
 
     // Some files might not have the SimParticle and volume information.
@@ -1064,7 +1064,7 @@ namespace mu2e {
 
     // A silly example just to show that we have a messsage logger.
     if ( hits->size() > 300 ){
-      edm::LogWarning("HitInfo")
+      mf::LogWarning("HitInfo")
         << "Number of CRV hits "
         << hits->size() 
         << " may be too large.";
@@ -1072,7 +1072,7 @@ namespace mu2e {
 
     // A silly example just to show how to throw.
     if ( hits->size() > 1000000 ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Way too many CRV hits in this event.  Something is really wrong."
         << hits->size();
     }

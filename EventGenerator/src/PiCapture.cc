@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.17 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $ 
-// $Date: 2011/05/17 06:00:47 $
+// $Id: PiCapture.cc,v 1.18 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke/P. Shanahan
 // 
@@ -12,11 +12,11 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/PiCapture.hh"
@@ -39,7 +39,7 @@ namespace mu2e {
 
   static const double emax = 138.2; // 
 
-  PiCapture::PiCapture( edm::Run& run, const SimpleConfig& config ):
+  PiCapture::PiCapture( art::Run& run, const SimpleConfig& config ):
     
     // Base class
     GeneratorBase(),
@@ -48,10 +48,10 @@ namespace mu2e {
     _mean(config.getDouble("picapture.mean", -1.)),
     _elow(config.getDouble("picapture.elow", 38.2)),
     _ehi(config.getDouble("picapture.ehi",   emax)),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", false)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
-    _nbins(config.getInt("picapture.nbins",  1000)),
-    _doHistograms(config.getBool("picapture.doHistograms",true)),
+    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", false)),
+    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
+    _nbins(config.get<int>("picapture.nbins",  1000)),
+    _doHistograms(config.get<bool>("picapture.doHistograms",true)),
 
     // Random number distributions; getEngine is found in the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
@@ -70,13 +70,13 @@ namespace mu2e {
 
     // Sanity checks
     if ( std::abs(_mean) > 99999. ) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "PiCapture has been asked to produce a crazily large number of photons ."
         << _mean
         << "\n";
     }
     if (_nbins <= 0) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "Nonsense picapture.nbins requested="
         << _nbins
         << "\n";
@@ -84,8 +84,8 @@ namespace mu2e {
 
     // Book histograms.
     if ( _doHistograms ){
-      edm::Service<edm::TFileService> tfs;
-      edm::TFileDirectory tfdir = tfs->mkdir( "PiCapture" );
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = tfs->mkdir( "PiCapture" );
 
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "DIO Multiplicity",    20,     0.,      20. );
 
@@ -179,7 +179,7 @@ namespace mu2e {
 
     // Sanity check.
     if (_nbins <= 0) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "Nonsense PiCaptureGun.nbins requested="
         << _nbins
         << "\n";

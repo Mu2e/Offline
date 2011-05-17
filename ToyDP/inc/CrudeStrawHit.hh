@@ -35,9 +35,9 @@
 //    to be defined.
 // 
 // 
-// $Id: CrudeStrawHit.hh,v 1.7 2010/03/16 23:02:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/03/16 23:02:49 $
+// $Id: CrudeStrawHit.hh,v 1.8 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,7 @@
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
 
 // Forward declarations
-namespace edm{
+namespace art{
   class Event;
 }
 
@@ -104,7 +104,7 @@ namespace mu2e {
                    float              sigmaD_,
                    float              energy_,
                    DPIndex const&     precursorIndex_,
-                   edm::Event const * event_ = 0
+                   art::Event const * event_ = 0
                    );
 
 
@@ -117,7 +117,7 @@ namespace mu2e {
                    precursor_type              precursorType_,
                    std::vector<DPIndex> const& precursorIndices_,
                    float                       trueDriftDistance_,
-                   edm::Event const *          event_ = 0
+                   art::Event const *          event_ = 0
                    );
 
     // A special case of the previous c'tor when there is only one precursor.
@@ -129,7 +129,7 @@ namespace mu2e {
                    precursor_type    precursorType_,
                    DPIndex const&    precursorIndex_,
                    float             trueDriftDistance_,
-                   edm::Event const* event_ = 0
+                   art::Event const* event_ = 0
                    );
     
     // Accept compiler generated versions of:
@@ -141,13 +141,13 @@ namespace mu2e {
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
     // Return the pointers to the precursors of this hit.
-    std::vector<StepPointMC const *> const& getStepPointMC( edm::Event const& event) const{
+    std::vector<StepPointMC const *> const& getStepPointMC( art::Event const& event) const{
       resolveTransients(event);
       return stepPointMCPointers;
     }
 
     // Fill a std::vector with (pointers to const) of the precursors of this hit.
-    void getStepPointMC( edm::Event const&    event, 
+    void getStepPointMC( art::Event const&    event, 
                          std::vector<StepPointMC const*>& v ) const{
       resolveTransients(event);
       v.insert(v.end(), stepPointMCPointers.begin(), stepPointMCPointers.end());
@@ -163,7 +163,7 @@ namespace mu2e {
     bool stepPointMCsValid() const { return stepPointMCPointersValid;}
 
     // Resolve all of the transient information in this object.
-    void resolveTransients( edm::Event const& event) const;
+    void resolveTransients( art::Event const& event) const;
 
   private:
 

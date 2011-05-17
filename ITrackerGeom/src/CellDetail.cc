@@ -15,8 +15,8 @@ namespace mu2e {
   CellDetail::~CellDetail (){
 //                try {
 //                        if (*_senseWire) {delete *_senseWire; *_senseWire=NULL;};
-//                } catch (cms::Exception e) {
-//                    throw cms::Exception("GEOM")
+//                } catch (cet::exception e) {
+//                    throw cet::exception("GEOM")
 //                        << "Error during deleting cell wire detail data \n";
 //                }
 

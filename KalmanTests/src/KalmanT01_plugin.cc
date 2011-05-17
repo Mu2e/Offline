@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_plugin.cc,v 1.7 2010/11/09 03:45:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/09 03:45:24 $
+// $Id: KalmanT01_plugin.cc,v 1.8 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -19,16 +19,15 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
 #include "TFile.h"
@@ -67,14 +66,14 @@ namespace mu2e {
   // Is there an official Babar version of this for 1 based indices?
   enum TrkParIdx { kd0 =1, kphi0, kom, kz0, kct };
 
-  class KalmanT01 : public edm::EDAnalyzer {
+  class KalmanT01 : public art::EDAnalyzer {
   public:
-    explicit KalmanT01(edm::ParameterSet const& pset) : 
+    explicit KalmanT01(fhicl::ParameterSet const& pset) : 
 
       // Parameters
-      _generatorModuleLabel(pset.getUntrackedParameter<string>("generatorModuleLabel","g4run")),
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",1)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+      _generatorModuleLabel(pset.get<string>("generatorModuleLabel","g4run")),
+      _diagLevel(pset.get<int>("diagLevel",1)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _hDriftDist(0),
       _hCheckPointRadius(0),
 
@@ -85,9 +84,9 @@ namespace mu2e {
     }
     virtual ~KalmanT01() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
  
-    void analyze( const edm::Event& e, edm::EventSetup const&);
+    void analyze( const art::Event& e, art::EventSetup const&);
 
   private:
     
@@ -120,12 +119,12 @@ namespace mu2e {
 
   };
 
-  void KalmanT01::beginJob(edm::EventSetup const& ){
+  void KalmanT01::beginJob(art::EventSetup const& ){
 
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ){
 
-      edm::Service<edm::TFileService> tfs;
+      art::ServiceHandle<art::TFileService> tfs;
 
       _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Generated Drift Distance;(mm)", 100, -3., 3. );
       _hCheckPointRadius = tfs->make<TH1F>( "hCheckPointRadius",  "Radius of Reference point; (mm)",
@@ -139,7 +138,7 @@ namespace mu2e {
     }
   }
 
-  void KalmanT01::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void KalmanT01::analyze(const art::Event& event, art::EventSetup const&) {
 
     // Counter used by debug printout. 
     static int ncalls(0);
@@ -152,16 +151,16 @@ namespace mu2e {
     const Tracker& tracker = getTrackerOrThrow();
 
     // Ask the event to give us a handle to the requested hits.
-    edm::Handle<StepPointMCCollection> points;
+    art::Handle<StepPointMCCollection> points;
     static const string collectionName("tracker");
     event.getByLabel(_generatorModuleLabel,collectionName,points);
 
     // Get handles to the generated and simulated particles.
-    edm::Handle<ToyGenParticleCollection> gensHandle;
+    art::Handle<ToyGenParticleCollection> gensHandle;
     event.getByType(gensHandle);
     const ToyGenParticleCollection& gens = *gensHandle;
 
-    edm::Handle<SimParticleCollection> simsHandle;
+    art::Handle<SimParticleCollection> simsHandle;
     event.getByType(simsHandle);
     const SimParticleCollection& sims = *simsHandle;
 
@@ -296,4 +295,4 @@ namespace mu2e {
 } // end of namespace mu2e
 
 using mu2e::KalmanT01;
-DEFINE_FWK_MODULE(KalmanT01);
+DEFINE_ART_MODULE(KalmanT01);

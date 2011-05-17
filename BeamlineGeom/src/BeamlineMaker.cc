@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.1 2010/08/31 00:24:51 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/08/31 00:24:51 $
+// $Id: BeamlineMaker.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Peter Shanahan
 //
@@ -14,7 +14,7 @@
 #include <cmath>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "BeamlineGeom/inc/BeamlineMaker.hh"

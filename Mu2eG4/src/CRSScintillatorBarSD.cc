@@ -1,9 +1,9 @@
 //
 // Defines sensitive detector for CRSScintillatorBar
 //
-// $Id: CRSScintillatorBarSD.cc,v 1.1 2011/03/09 19:26:52 genser Exp $
-// $Author: genser $ 
-// $Date: 2011/03/09 19:26:52 $
+// $Id: CRSScintillatorBarSD.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author KLG 
 //
@@ -11,8 +11,8 @@
 #include <cstdio>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e incldues
 #include "Mu2eG4/inc/CRSScintillatorBarSD.hh"
@@ -35,7 +35,7 @@ namespace mu2e {
     G4VSensitiveDetector(name),
     _collection(0),
     _debugList(0),
-    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
+    _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
     _currentSize(0)
   {
 
@@ -65,7 +65,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	edm::LogWarning("G4") << "Maximum number of particles reached in CRSScintillatorBarSD: " 
+	mf::LogWarning("G4") << "Maximum number of particles reached in CRSScintillatorBarSD: " 
 			      << _currentSize << endl;
       }
       return false;
@@ -93,7 +93,7 @@ namespace mu2e {
   void CRSScintillatorBarSD::EndOfEvent(G4HCofThisEvent*){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      edm::LogWarning("G4") << "Total of " << _currentSize 
+      mf::LogWarning("G4") << "Total of " << _currentSize 
 			    << " CRS Scintillator Bar hits were generated in the event." 
 			    << endl
 			    << "Only " << _sizeLimit << " are saved in output collection." 

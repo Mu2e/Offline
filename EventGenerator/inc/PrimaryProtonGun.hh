@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.6 2010/08/20 20:19:04 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/08/20 20:19:04 $
+// $Id: PrimaryProtonGun.hh,v 1.7 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 //
 // The coordinate system used in this class is:
@@ -29,11 +29,11 @@
 #include "EventGenerator/inc/GeneratorBase.hh"
 
 // Framework Includes
-#include "FWCore/Framework/interface/Run.h"
+#include "art/Framework/Core/Run.h"
 
 // Forward references outside of namespace mu2e
 class TH1D;
-namespace edm {
+namespace art {
   class Run;
 }
 
@@ -45,7 +45,7 @@ namespace mu2e {
   class PrimaryProtonGun: public GeneratorBase{
 
   public:
-    PrimaryProtonGun( edm::Run& run, const SimpleConfig& config );
+    PrimaryProtonGun( art::Run& run, const SimpleConfig& config );
     virtual ~PrimaryProtonGun();
 
     virtual void generate( ToyGenParticleCollection&  );

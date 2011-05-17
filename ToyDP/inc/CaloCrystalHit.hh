@@ -1,9 +1,9 @@
 #ifndef CaloCrystalHit_H
 #define CaloCrystalHit_H
 
-// $Id: CaloCrystalHit.hh,v 1.4 2010/11/12 21:44:58 genser Exp $
-// $Author: genser $
-// $Date: 2010/11/12 21:44:58 $
+// $Id: CaloCrystalHit.hh,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG
 
@@ -14,7 +14,7 @@
 // Mu2e includes
 #include "ToyDP/inc/DPIndex.hh"
 
-class edm::ProductID;
+class art::ProductID;
 
 namespace mu2e { 
 
@@ -32,7 +32,7 @@ namespace mu2e {
       _numberOfROIdsUsed(0)
     {}
 
-    CaloCrystalHit(int  crystalId, edm::ProductID const & caloHitCollId, CaloHit const & hit);
+    CaloCrystalHit(int  crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit);
 
     // Accessors
 
@@ -49,15 +49,15 @@ namespace mu2e {
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
     // almost operator += CaloHit
-    CaloCrystalHit& add(edm::ProductID const & caloHitCollId, CaloHit const & hit);
+    CaloCrystalHit& add(art::ProductID const & caloHitCollId, CaloHit const & hit);
 
-    CaloCrystalHit& addEnergyToTot(edm::ProductID const & caloHitCollId, CaloHit const & hit);
+    CaloCrystalHit& addEnergyToTot(art::ProductID const & caloHitCollId, CaloHit const & hit);
 
     // almost like one of the constructors, plays a role of a two
     // argument assignment operator
-    void assign(int crystalId, edm::ProductID const & caloHitCollId, CaloHit const & hit);
+    void assign(int crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit);
 
-    void assignEnergyToTot(int crystalId, edm::ProductID const & caloHitCollId, CaloHit const & hit);
+    void assignEnergyToTot(int crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit);
 
     void setEnergyDep(double energy);
 

@@ -7,9 +7,9 @@
  *    Data Product.
  * 2) Get a list of all handles in the event and look at each of them.
 
- * $Id: Ex03InspectProvenance_plugin.cc,v 1.2 2010/05/18 21:15:42 kutschke Exp $
- * $Author: kutschke $
- * $Date: 2010/05/18 21:15:42 $
+ * $Id: Ex03InspectProvenance_plugin.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
+ * $Author: greenc $
+ * $Date: 2011/05/17 15:36:00 $
  *  
  * Original author Rob Kutschke
  *
@@ -21,16 +21,15 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/Registry.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/ParameterSetRegistry.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Root includes.
 #include "TFile.h"
@@ -47,14 +46,14 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class Ex03InspectProvenance : public edm::EDAnalyzer {
+  class Ex03InspectProvenance : public art::EDAnalyzer {
   public:
-    explicit Ex03InspectProvenance(edm::ParameterSet const& pset):
+    explicit Ex03InspectProvenance(fhicl::ParameterSet const& pset):
       _done(false){ 
     }
     virtual ~Ex03InspectProvenance() { }
 
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
@@ -64,7 +63,7 @@ namespace mu2e {
   };
   
   void
-  Ex03InspectProvenance::analyze(const edm::Event& evt, edm::EventSetup const&) {
+  Ex03InspectProvenance::analyze(const art::Event& evt, art::EventSetup const&) {
 
     // Only do this once.
     if ( _done ) return;
@@ -73,33 +72,33 @@ namespace mu2e {
     static const string creatorName("ex02hitmaker");
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<ToyHitCollection> handle;
+    art::Handle<ToyHitCollection> handle;
     evt.getByLabel(creatorName,handle);
     
     // Only say we are done after we actually found something in the event.
     _done = true;
     
     // Get the provenance of the data product.
-    const edm::Provenance& prov = *(handle.provenance());
+    const art::Provenance& prov = *(handle.provenance());
 
     // Print the provenance and keep the message open for additions.
-    edm::LogInfo log("ProvenanceInfo");
+    mf::LogInfo log("ProvenanceInfo");
     log << "Provenance of the hits in this event: \n"
          << prov 
          << "\n";
     
     // Extract the parameter set IDs from the provenance.
-    const set<edm::ParameterSetID>&  ids = prov.psetIDs();
+    const set<art::ParameterSetID>&  ids = prov.psetIDs();
     log << "Number of Parameter set IDs: " << ids.size() << "\n";
 
     // Parameter set Registry singleton.
-    edm::pset::Registry* reg = edm::pset::Registry::instance();
+    art::pset::Registry* reg = art::pset::Registry::instance();
 
     // Loop over all parameter set IDs.
-    set<edm::ParameterSetID>::const_iterator b = ids.begin();
-    set<edm::ParameterSetID>::const_iterator e = ids.end();
+    set<art::ParameterSetID>::const_iterator b = ids.begin();
+    set<art::ParameterSetID>::const_iterator e = ids.end();
     for ( ; b!=e; ++b){
-      edm::ParameterSet result;
+      fhicl::ParameterSet result;
 
       if (!reg->getMapped(*b, result)){
         log << "Could not get the parameter set... \n";
@@ -108,20 +107,20 @@ namespace mu2e {
 
         // We know that there is only one provenance and that it has
         // a parameter named minPulseHeight.
-        double minPulseHeight = result.getParameter<double>("minPulseHeight");
+        double minPulseHeight = result.get<double>("minPulseHeight");
         log << "\nminimum pulse height: " << minPulseHeight << "\n";
       }
     }
 
     // Get all of the provenances in this event.
-    vector<edm::Provenance const*> Prov;
+    vector<art::Provenance const*> Prov;
     evt.getAllProvenance( Prov );
     log << "\nNumber of provenances in this event: " << Prov.size();
 
     //Loop over all of the provenances in this event.
-    for ( vector<edm::Provenance const *>::size_type i=0;
+    for ( vector<art::Provenance const *>::size_type i=0;
           i<Prov.size(); ++i ){
-      const edm::Provenance&  prov = *Prov[i];
+      const art::Provenance&  prov = *Prov[i];
       log  << "\nNext Provenance: \n"
            << prov; 
     }
@@ -129,4 +128,4 @@ namespace mu2e {
 }
 
 using mu2e::Ex03InspectProvenance;
-DEFINE_FWK_MODULE(Ex03InspectProvenance);
+DEFINE_ART_MODULE(Ex03InspectProvenance);

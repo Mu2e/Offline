@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: SimParticlesWithHitsExample_plugin.cc,v 1.2 2011/01/26 23:10:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/26 23:10:18 $
+// $Id: SimParticlesWithHitsExample_plugin.cc,v 1.3 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke.
 //
@@ -13,9 +13,9 @@
 #include <string>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -26,18 +26,18 @@ using namespace std;
 
 namespace mu2e {
 
-  class SimParticlesWithHitsExample : public edm::EDAnalyzer {
+  class SimParticlesWithHitsExample : public art::EDAnalyzer {
   public:
-    explicit SimParticlesWithHitsExample(edm::ParameterSet const& pset):
-      _g4ModuleLabel(pset.getParameter<std::string>("g4ModuleLabel")),
-      _hitMakerModuleLabel(pset.getParameter<std::string>("hitMakerModuleLabel")),
-      _trackerStepPoints(pset.getParameter<std::string>("trackerStepPoints")),
-      _minEnergyDep(pset.getParameter<double>("minEnergyDep")),
-      _minHits(pset.getParameter<uint32_t>("minHits")){
+    explicit SimParticlesWithHitsExample(fhicl::ParameterSet const& pset):
+      _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
+      _hitMakerModuleLabel(pset.get<std::string>("hitMakerModuleLabel")),
+      _trackerStepPoints(pset.get<std::string>("trackerStepPoints")),
+      _minEnergyDep(pset.get<double>("minEnergyDep")),
+      _minHits(pset.get<uint32_t>("minHits")){
     }
     virtual ~SimParticlesWithHitsExample() { }
 
-    void analyze( edm::Event const& e, edm::EventSetup const&);
+    void analyze( art::Event const& e, art::EventSetup const&);
 
   private:
 
@@ -57,7 +57,7 @@ namespace mu2e {
   };
 
   void
-  SimParticlesWithHitsExample::analyze(edm::Event const& evt, edm::EventSetup const&) {
+  SimParticlesWithHitsExample::analyze(art::Event const& evt, art::EventSetup const&) {
 
     const Tracker& tracker = getTrackerOrThrow();
     
@@ -118,4 +118,4 @@ namespace mu2e {
 }
 
 using mu2e::SimParticlesWithHitsExample;
-DEFINE_FWK_MODULE(SimParticlesWithHitsExample);
+DEFINE_ART_MODULE(SimParticlesWithHitsExample);

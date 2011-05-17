@@ -1,9 +1,9 @@
 //
 // Plugin for the Geometry Service.
 //
-// $Id: GeometryService_plugin.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: GeometryService_plugin.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -13,4 +13,4 @@
 
 using mu2e::GeometryService;
 
-DEFINE_FWK_SERVICE(GeometryService);
+DEFINE_ART_SERVICE(GeometryService);

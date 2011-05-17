@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.2 2011/02/13 22:33:10 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/13 22:33:10 $
+// $Id: constructProtonAbsorber.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -14,7 +14,7 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
@@ -38,7 +38,7 @@ namespace mu2e {
   void constructProtonAbsorber( SimpleConfig const * const _config
                                 ){
     // Access to the G4HelperService.
-    G4Helper* _helper = &(*(edm::Service<G4Helper>()));
+    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
     
     VolumeInfo const & parent1  = _helper->locateVolInfo("ToyDS2Vacuum");
     VolumeInfo const & parent2  = _helper->locateVolInfo("ToyDS3Vacuum");
@@ -58,7 +58,7 @@ namespace mu2e {
 
     // Add virtual detector before and after target
     double vdHL = 0.;
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<VirtualDetector>() ) return;
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()>0 ) vdHL = vdg->getHalfLength();
@@ -82,17 +82,17 @@ namespace mu2e {
     
     // proton absorber in DS2
     double pabs1Param[7] = { pabs1rIn0, pabs1rOut0, pabs1rIn1, pabs1rOut1, pabs1len/2.0, 0.0, 360.0*CLHEP::degree };
-    bool pabsVisible = _config->getBool("protonabsorber.visible",true);
-    bool pabsSolid   = _config->getBool("protonabsorber.solid",true);
+    bool pabsVisible = _config->get<bool>("protonabsorber.visible",true);
+    bool pabsSolid   = _config->get<bool>("protonabsorber.solid",true);
 
-    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV       = true;
     
     
-    if( _config->getBool("hasProtonAbsorber", true) ){
+    if( _config->get<bool>("hasProtonAbsorber", true) ){
       
-      edm::LogInfo log("GEOM");
+      mf::LogInfo log("GEOM");
       log << "Constructing Proton Absorber -- \n";
       log << "Proton Abs Offset in DS2:  " << pabs1Offset <<"\n";
       log << "rIn,  rOut (-z): "<< pabs1rIn0 <<"  "<< pabs1rOut0<<"  ";

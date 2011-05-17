@@ -6,9 +6,9 @@
 //  that this is round off error and set the answer
 //  to zero.  If the argument is very negative, throw.
 //
-// $Id: sqrtOrThrow.cc,v 1.2 2010/05/18 21:16:40 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:40 $
+// $Id: sqrtOrThrow.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -20,8 +20,8 @@
 #include <cmath>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/EDMException.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Utilities/Exception.h"
 
 namespace mu2e { 
 
@@ -31,7 +31,7 @@ namespace mu2e {
     }else if ( x > -eps ){
       return 0.;
     }else {
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "sqrtOrThrow has an input of: "
         << x;
     }
@@ -44,7 +44,7 @@ namespace mu2e {
     }else if ( x > -eps ){
       return 0.;
     }else {
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "sqrtOrThrow has an input of: "
         << x;
     }

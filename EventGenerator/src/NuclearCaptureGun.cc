@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 // 
 //
-// $Id: NuclearCaptureGun.cc,v 1.1 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/05/17 06:00:47 $
+// $Id: NuclearCaptureGun.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Gianni Onorato
 // 
@@ -16,10 +16,10 @@
 #include <iostream>
 
 // Framework includes
-#include "FWCore/Framework/interface/Run.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/Run.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/NuclearCaptureGun.hh"
@@ -50,7 +50,7 @@ static const double spectrumEndPointNeutron = 0.1;
 
 namespace mu2e {
 
-  NuclearCaptureGun::NuclearCaptureGun( edm::Run& run, const SimpleConfig& config ):
+  NuclearCaptureGun::NuclearCaptureGun( art::Run& run, const SimpleConfig& config ):
     
     // Base class.
     GeneratorBase(),
@@ -70,13 +70,13 @@ namespace mu2e {
     _czmax(config.getDouble("nuclearCaptureGun.czmax",  1.)),
     _phimin(config.getDouble("nuclearCaptureGun.phimin", 0. )),
     _phimax(config.getDouble("nuclearCaptureGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
-    _nProtonBins(config.getInt("nuclearCaptureGun.nProtonBins",1000)),
+    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
+    _nProtonBins(config.get<int>("nuclearCaptureGun.nProtonBins",1000)),
     _nNeutronBins(evaluateNeutronBins()),
-    _nPhotonBins(config.getInt("nuclearCaptureGun.nPhotonBins",1000)),
-    _doHistograms(config.getBool("nuclearCaptureGun.doHistograms",true)),
-    _targetFrame(config.getBool("nuclearCaptureGun.targetFrame",false)),
+    _nPhotonBins(config.get<int>("nuclearCaptureGun.nPhotonBins",1000)),
+    _doHistograms(config.get<bool>("nuclearCaptureGun.doHistograms",true)),
+    _targetFrame(config.get<bool>("nuclearCaptureGun.targetFrame",false)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randPoissonP( getEngine(), std::abs(_protonMean) ),
@@ -140,8 +140,8 @@ namespace mu2e {
 
     // Book histograms.
     if ( _doHistograms ){
-      edm::Service<edm::TFileService> tfs;
-      edm::TFileDirectory tfdir  = tfs->mkdir( "NuclearCaptureGun" );
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir  = tfs->mkdir( "NuclearCaptureGun" );
 
       _hNuclearCaptureMultiplicity = tfdir.make<TH1D>( "hNucCaptMultiplicity", "Multiplicity of Nuclear Capture Events",   20,     0,     20  );
       _hProtonMultiplicity = tfdir.make<TH1D>( "hProtonMultiplicity", "Proton Multiplicity",                20,     0,     20  );
@@ -384,7 +384,7 @@ namespace mu2e {
     
     // Sanity check.
     if (_nProtonBins <= 0) {
-      throw cms::Exception("RANGE") 
+      throw cet::exception("RANGE") 
         << "Nonsense nbins requested in "
         << "nuclearCaptureGun (proton) = "
         << _nProtonBins
@@ -414,7 +414,7 @@ namespace mu2e {
     //The neutron spectum is taken from MARS simulation
     
     vector<double> neutronSpectrum;
-    edm::FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
+    art::FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
     string NeutronFileFIP = spectrumFileName.fullPath();
     fstream infile(NeutronFileFIP.c_str(), ios::in);
     if (infile.is_open()) {

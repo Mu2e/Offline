@@ -7,9 +7,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle. 
 //
-// $Id: StrawHitMCInfo.hh,v 1.2 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:36 $
+// $Id: StrawHitMCInfo.hh,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke.
 //
@@ -27,7 +27,7 @@
 #include "ToyDP/inc/DPIndexVector.hh"
 
 // Forward declarations.
-namespace edm{
+namespace art{
   class Event;
 }
 
@@ -47,7 +47,7 @@ namespace mu2e {
 
     // No default c'tor by design.
 
-    StrawHitMCInfo( edm::Event      const& event,
+    StrawHitMCInfo( art::Event      const& event,
                     key_type               trackId,
                     size_t                 index,
                     StrawHit        const& strawHit,
@@ -106,7 +106,7 @@ namespace mu2e {
     double _time;
 
     // Fill _stepPointMCs and fill the variable time.
-    void fillStepPointMCs(edm::Event const& event, key_type trackId );
+    void fillStepPointMCs(art::Event const& event, key_type trackId );
   };
 
 } // namespace mu2e

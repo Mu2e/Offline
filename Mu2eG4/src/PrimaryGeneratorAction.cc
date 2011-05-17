@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.19 2011/05/17 06:00:47 onoratog Exp $
-// $Author: onoratog $ 
-// $Date: 2011/05/17 06:00:47 $
+// $Id: PrimaryGeneratorAction.cc,v 1.20 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -17,12 +17,12 @@
 #include <stdexcept>
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // G4 Includes
 #include "G4Event.hh"
@@ -58,7 +58,7 @@ namespace mu2e {
     _particleDefinition = particleTable->FindParticle("chargedgeantino");
 
     // Book histograms.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total Multiplicity", 20, 0, 20);
 
   }
@@ -91,7 +91,7 @@ namespace mu2e {
     G4RotationMatrix const& primaryProtonGunRotation = _world->getPrimaryProtonGunRotation();
 
     // Get generated particles from the event.
-    edm::Handle<ToyGenParticleCollection> handle;
+    art::Handle<ToyGenParticleCollection> handle;
     _event->getByLabel(_generatorModuleLabel,handle);
 
     // Fill multiplicity histogram.
@@ -125,7 +125,7 @@ namespace mu2e {
                   genpart.generatorId() == GenId::fromG4BLFile ){
         pos += mu2eOrigin;
       } else {
-        edm::LogError("KINEMATICS")
+        mf::LogError("KINEMATICS")
           << "Do not know what to do with this generator id: " 
           << genpart.generatorId()
           << "  Skipping this track.";

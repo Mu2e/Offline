@@ -12,8 +12,8 @@
 #include <boost/regex.hpp>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
@@ -53,12 +53,12 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
         G4ThreeVector trackerOffset(0.,0.,z0-zOff);
 
 	/*	if ( itracker->rOut() >= ((G4Tubs *)mother->GetSolid())->GetOuterRadius() )
-	  throw cms::Exception("GEOM") <<"The ITracker doesn't fit inside the DS, please check the external radius of the ITracker\n"
+	  throw cet::exception("GEOM") <<"The ITracker doesn't fit inside the DS, please check the external radius of the ITracker\n"
 				       <<"rout ITracker="<<itracker->rOut()<<" DS outer radius="<<((G4Tubs *)mother->GetSolid())->GetOuterRadius()<<"\n"
 				       <<(*(G4Tubs *)mother->GetSolid());
 	*/
         if (itracker->isExternal()) {
-                throw cms::Exception("GEOM") <<"This GDML file option is temporarily disabled\n";
+                throw cet::exception("GEOM") <<"This GDML file option is temporarily disabled\n";
                 //            G4GDMLParser parser;
                 //            parser.Read(itracker->extFile().c_str());
                 //            trackerInfo.logical = parser.GetWorldVolume()->GetLogicalVolume();
@@ -225,7 +225,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                 //                                                pow(ily->getDetail()->halfLength()*tan(ily->getDetail()->stereoAngleOuterRing()),2) ) <<" "<< outerWallInnerRadius<<endl;
                                 //if ( sqrt( pow(ily->getDetail()->centerOuterRadiusRing(),2) +
                                 //                pow(ily->getDetail()->halfLength()*tan(ily->getDetail()->stereoAngleOuterRing()),2) ) > outerWallInnerRadius )
-                                //        throw cms::Exception("GEOM") <<"The ITracker layer "<<ily->Id()<<" doesn't fit inside the ITracker outer wall\n";
+                                //        throw cet::exception("GEOM") <<"The ITracker layer "<<ily->Id()<<" doesn't fit inside the ITracker outer wall\n";
 
                                 LayerInfo.solid = new G4Hype(shape,ily->getDetail()->centerInnerRadiusRing(),
                                                 ily->getDetail()->centerOuterRadiusRing(),ily->getDetail()->stereoAngleInnerRing(),

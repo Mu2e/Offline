@@ -1,9 +1,9 @@
 //
 //  The first example of a producer.
 //
-//  $Id: HelloProducer_plugin.cc,v 1.2 2011/03/04 23:34:25 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/03/04 23:34:25 $
+//  $Id: HelloProducer_plugin.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/05/17 15:36:00 $
 //   
 //  Original author Rob Kutschke
 //
@@ -12,8 +12,8 @@
 #include <iostream>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
@@ -22,20 +22,20 @@ using namespace std;
 
 namespace mu2e {
 
-  class HelloProducer : public edm::EDProducer {
+  class HelloProducer : public art::EDProducer {
 
   public:
-    explicit HelloProducer(edm::ParameterSet const& pset){
+    explicit HelloProducer(fhicl::ParameterSet const& pset){
       produces<ToyGenParticleCollection>();
     }
 
-    void produce( edm::Event& event, edm::EventSetup const&);
+    void produce( art::Event& event, art::EventSetup const&);
 
   private:
 
   };
 
-  void HelloProducer::produce( edm::Event& event, edm::EventSetup const&){
+  void HelloProducer::produce( art::Event& event, art::EventSetup const&){
 
     auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);
 
@@ -57,4 +57,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::HelloProducer;
-DEFINE_FWK_MODULE(HelloProducer);
+DEFINE_ART_MODULE(HelloProducer);

@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.13 2011/04/29 22:33:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/04/29 22:33:40 $
+// $Id: constructCalorimeter.cc,v 1.14 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Ivan Logashenko
 // 
@@ -45,7 +45,7 @@ namespace mu2e {
                              double              zOffset,
                              SimpleConfig const& config ){
 
-    int const verbosityLevel = config.getInt("calorimeter.verbosityLevel",0);
+    int const verbosityLevel = config.get<int>("calorimeter.verbosityLevel",0);
 
     // A helper class for parsing the config file.
     MaterialFinder materialFinder(config);
@@ -53,14 +53,14 @@ namespace mu2e {
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
     // Read parameters from config file
-    bool isVaneBoxVisible     = config.getBool("calorimeter.vaneBoxVisible",true);
-    bool isVaneBoxSolid       = config.getBool("calorimeter.vaneBoxSolid",true);
-    bool isCrystalVisible     = config.getBool("calorimeter.crystalVisible",false);
-    bool isCrystalSolid       = config.getBool("calorimeter.crystalSolid",true);
-    bool forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
-    G4bool doSurfaceCheck     = config.getBool("g4.doSurfaceCheck",false);
+    bool isVaneBoxVisible     = config.get<bool>("calorimeter.vaneBoxVisible",true);
+    bool isVaneBoxSolid       = config.get<bool>("calorimeter.vaneBoxSolid",true);
+    bool isCrystalVisible     = config.get<bool>("calorimeter.crystalVisible",false);
+    bool isCrystalSolid       = config.get<bool>("calorimeter.crystalSolid",true);
+    bool forceAuxEdgeVisible  = config.get<bool>("g4.forceAuxEdgeVisible",false);
+    G4bool doSurfaceCheck     = config.get<bool>("g4.doSurfaceCheck",false);
     bool const placePV = true;
-    int roSide = config.getInt("calorimeter.crystalReadoutSide",1);
+    int roSide = config.get<int>("calorimeter.crystalReadoutSide",1);
     if( roSide>=0 ) roSide=1; else roSide=-1;
 
     G4Material* fillMaterial = materialFinder.get("calorimeter.calorimeterFillMaterial");

@@ -5,9 +5,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle. 
 //
-// $Id: StrawHitMCInfo.cc,v 1.2 2010/11/30 02:51:36 logash Exp $
-// $Author: logash $
-// $Date: 2010/11/30 02:51:36 $
+// $Id: StrawHitMCInfo.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke.
 //
@@ -15,7 +15,7 @@
 // 
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
+#include "art/Framework/Core/Event.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"
@@ -26,7 +26,7 @@
 
 namespace mu2e {
 
-  void StrawHitMCInfo::fillStepPointMCs(edm::Event const& event, key_type trackId ){
+  void StrawHitMCInfo::fillStepPointMCs(art::Event const& event, key_type trackId ){
     for ( size_t i=0; i<_mcPtr->size(); ++i){
 
       StepPointMC const* step = 

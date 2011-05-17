@@ -65,11 +65,11 @@ public:
                 return _thicknesses;
         }
 
-        void addMaterials(int &wShellNumber, std::vector<std::string> *wShellsMatName, std::vector<double> *wShellsThicknesses) throw(cms::Exception);
+        void addMaterials(int &wShellNumber, std::vector<std::string> *wShellsMatName, std::vector<double> *wShellsThicknesses) throw(cet::exception);
         /*{
                 _nShells=wShellNumber;
                 if ( _nShells!=wShellsMatName.size() && _nShells!=wShellsThicknesses.size() )
-                        throw cms::Exception("GEOM")<< "Error in Configuration file! There is a disagreement between the vectors dimensions of a ITracker wall.\n";
+                        throw cet::exception("GEOM")<< "Error in Configuration file! There is a disagreement between the vectors dimensions of a ITracker wall.\n";
 
                 _materialsName.reset(&wShellsMatName);
                 _thicknesses.reset(&wShellsThicknesses);

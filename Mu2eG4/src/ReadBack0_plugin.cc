@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_plugin.cc,v 1.3 2011/01/31 23:45:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/31 23:45:48 $
+// $Id: ReadBack0_plugin.cc,v 1.4 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -15,9 +15,9 @@
 #include <set>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeomHandle.hh"
@@ -37,17 +37,17 @@ using namespace std;
 
 namespace mu2e {
 
-  class ReadBack0 : public edm::EDAnalyzer {
+  class ReadBack0 : public art::EDAnalyzer {
   public:
     
-    explicit ReadBack0(edm::ParameterSet const& pset);
+    explicit ReadBack0(fhicl::ParameterSet const& pset);
     virtual ~ReadBack0() { }
 
     // The framework calls this at the start of the job.
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
  
     // The framework calls this for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
@@ -69,19 +69,19 @@ namespace mu2e {
     TNtuple* _ntup;
 
     // Partition the per event work into two steps.
-    void doTTracker(const edm::Event& event);
-    void doCalorimeter(const edm::Event& event);
+    void doTTracker(const art::Event& event);
+    void doCalorimeter(const art::Event& event);
 
   };
 
-  ReadBack0::ReadBack0(edm::ParameterSet const& pset) : 
+  ReadBack0::ReadBack0(fhicl::ParameterSet const& pset) : 
 
     // These will become run time parameters in a later example.
     _g4ModuleLabel("g4run"),
     _trackerStepPoints("tracker"),
   
     // Run time parameters
-    _minimumEnergy(pset.getParameter<double>("minimumEnergy")),
+    _minimumEnergy(pset.get<double>("minimumEnergy")),
     
     // Histograms
     _hStrawEDep(0),
@@ -92,10 +92,10 @@ namespace mu2e {
   }
   
   // At the start of the job, book histograms.
-  void ReadBack0::beginJob(edm::EventSetup const& ){
+  void ReadBack0::beginJob(art::EventSetup const& ){
 
     // Get a handle to the TFile service.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     // Create some histograms for the tracker.
     _hStrawEDep    = tfs->make<TH1F>( "hStrawEDep", "Energy Deposited in straw;(keV)", 100,  0.,   10. );
@@ -111,17 +111,17 @@ namespace mu2e {
   } // end beginJob
 
   // For each event, look at tracker hits and calorimeter hits.
-  void ReadBack0::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void ReadBack0::analyze(const art::Event& event, art::EventSetup const&) {
     
     doTTracker(event);
     doCalorimeter(event);
 
   }
 
-  void ReadBack0::doCalorimeter(const edm::Event& event) {
+  void ReadBack0::doCalorimeter(const art::Event& event) {
 
     // Get handle to calorimeter hit collection.
-    edm::Handle<CaloHitCollection> caloHitsHandle;
+    art::Handle<CaloHitCollection> caloHitsHandle;
     event.getByLabel("g4run",caloHitsHandle);
     CaloHitCollection const& caloHits = *caloHitsHandle;
 
@@ -143,10 +143,10 @@ namespace mu2e {
     _hNcrystal->Fill(hit_crystals.size());
   }
 
-  void ReadBack0::doTTracker(const edm::Event& event){
+  void ReadBack0::doTTracker(const art::Event& event){
 
     // Get a handle to the hits created by G4.
-    edm::Handle<StepPointMCCollection> hitsHandle;
+    art::Handle<StepPointMCCollection> hitsHandle;
     event.getByLabel("g4run","tracker",hitsHandle);
     StepPointMCCollection const& hits = *hitsHandle;
 
@@ -198,4 +198,4 @@ namespace mu2e {
 // Part of the magic that makes this class a module.
 // create an instance of the module.  It also registers
 using mu2e::ReadBack0;
-DEFINE_FWK_MODULE(ReadBack0);
+DEFINE_ART_MODULE(ReadBack0);

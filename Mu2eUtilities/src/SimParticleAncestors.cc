@@ -1,9 +1,9 @@
 //
 // Start with a SimParticle and trace its ancestry back to a generated particle.
 //  
-// $Id: SimParticleAncestors.cc,v 1.1 2010/11/30 23:50:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/30 23:50:22 $
+// $Id: SimParticleAncestors.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
@@ -12,7 +12,7 @@
 #include "Mu2eUtilities/inc/SimParticleAncestors.hh"
 
 // Framework includes
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 using namespace std;
 
@@ -50,7 +50,7 @@ namespace mu2e{
     while ( s->hasParent()){
       s = sims.findOrNull( s->parentId() );
       if ( ++_depth > _maxDepth ){
-        throw cms::Exception("LIMIT")
+        throw cet::exception("LIMIT")
           << "SimParticleAncestors did not find the generated particle after "
           << _depth
           << " generations.";

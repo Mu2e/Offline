@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.2 2011/04/29 17:44:15 genser Exp $
-// $Author: genser $
-// $Date: 2011/04/29 17:44:15 $
+// $Id: constructNeutronAbsorber.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author KLG 
 //
@@ -43,7 +43,7 @@ namespace mu2e {
 
   void constructNeutronAbsorber(SimpleConfig const * const _config){
 
-    int const verbosityLevel = _config->getInt("neutronabsorber.verbosityLevel",0);
+    int const verbosityLevel = _config->get<int>("neutronabsorber.verbosityLevel",0);
 
     // the absorber is split into two major pieces internal & external (wrt to the coil)
 
@@ -54,8 +54,8 @@ namespace mu2e {
 
     // Extract information from the config file.
 
-    string NAMaterialName      = _config->getString("neutronabsorber.materialName");
-    // string NADopantElementName = _config->getString("neutronabsorber.dopantElementName");
+    string NAMaterialName      = _config->get<std::string>("neutronabsorber.materialName");
+    // string NADopantElementName = _config->get<std::string>("neutronabsorber.dopantElementName");
     // double NAMaterialDensity   = _config->getDouble("neutronabsorber.materialDensity");
     // double NADopantFraction    = _config->getDouble("neutronabsorber.dopantFraction");
     double NAIOuterRadius      = _config->getDouble("neutronabsorber.internalOuterRadius");
@@ -71,11 +71,11 @@ namespace mu2e {
     double NAEHalfThickness    = _config->getDouble("neutronabsorber.externalHalfThickness");
     double NAEZ0               = _config->getDouble("neutronabsorber.externalZ0");
 
-    bool NAVisible             = _config->getBool("neutronabsorber.visible");
-    bool NASolid               = _config->getBool("neutronabsorber.solid");
+    bool NAVisible             = _config->get<bool>("neutronabsorber.visible");
+    bool NASolid               = _config->get<bool>("neutronabsorber.solid");
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     G4Material* NAMaterial = findMaterialOrThrow(NAMaterialName);
@@ -83,7 +83,7 @@ namespace mu2e {
     // constructing External Neutron Absorber, placing it in HallAir (the name is hardcoded here...)
 
     // Access to the G4HelperService.
-    G4Helper* _helper = &(*(edm::Service<G4Helper>()));
+    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
     
     VolumeInfo const & hallInfo = _helper->locateVolInfo("HallAir");
 
@@ -278,17 +278,17 @@ namespace mu2e {
     // conical absorber is fully contained in ds2
 
     if ( ds2FrontZG>NAI1FrontZ ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Internal Neutron Absorber 1 front is outside of DS2Vaccum \n";
     }
 
     if ( ds23BoudaryZG<NAI12BoundaryZ ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Internal Neutron Absorber 1 end is outside of DS2Vaccum \n";
     }
 
     if ( ds3EndZG<NAI2EndZ ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Internal Neutron Absorber 2 end is outside of DS3Vaccum \n";
     }
 

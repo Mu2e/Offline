@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_plugin.cc,v 1.49 2011/05/16 23:25:46 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/16 23:25:46 $
+// $Id: G4_plugin.cc,v 1.50 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -28,16 +28,15 @@
 #include <iomanip>
 
 // Framework includes
-#include "FWCore/Framework/interface/Event.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/ParameterSet/FileInPath.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
 
 // Geant4 includes
 #include "G4UImanager.hh"
@@ -105,10 +104,10 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
-  class G4 : public edm::EDProducer {
+  class G4 : public art::EDProducer {
 
   public:
-    explicit G4(edm::ParameterSet const& pSet):
+    explicit G4(fhicl::ParameterSet const& pSet):
       _runManager(0),
       _genAction(0),
       _trackingAction(0),
@@ -117,9 +116,9 @@ namespace mu2e {
       _session(0),
       _visManager(0),
       _UI(0),
-      _rmvlevel(pSet.getUntrackedParameter<int>("rmvlevel",0)),
-      _visMacro(pSet.getUntrackedParameter<std::string>("visMacro","")),
-      _generatorModuleLabel(pSet.getParameter<std::string>("generatorModuleLabel")),
+      _rmvlevel(pSet.get<int>("rmvlevel",0)),
+      _visMacro(pSet.get<std::string>("visMacro","")),
+      _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
       _trackerOutputName("tracker"),
       _vdOutputName("virtualdetector"),
       _stOutputName("stoppingtarget"),
@@ -135,7 +134,7 @@ namespace mu2e {
       produces<StepPointMCCollection>(_caloOutputName);
       produces<StepPointMCCollection>(_caloROOutputName);
       produces<SimParticleCollection>();
-      produces<PhysicalVolumeInfoCollection,edm::InRun>();
+      produces<PhysicalVolumeInfoCollection,art::InRun>();
       produces<PointTrajectoryCollection>();
       produces<StatusG4>();
 
@@ -148,15 +147,15 @@ namespace mu2e {
       // See note 1.
     }
 
-    virtual void produce(edm::Event& e, edm::EventSetup const& c);
+    virtual void produce(art::Event& e, art::EventSetup const& c);
     
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     virtual void endJob();
  
-    virtual void beginRun(edm::Run &r, edm::EventSetup const& eSetup );
-    virtual void endRun(edm::Run &, edm::EventSetup const&);
+    virtual void beginRun(art::Run &r, art::EventSetup const& eSetup );
+    virtual void endRun(art::Run &, art::EventSetup const&);
 
-    static void fillDescription(edm::ParameterSetDescription& iDesc,
+    static void fillDescription(art::ParameterSetDescription& iDesc,
                                 string const& moduleLabel) {
       iDesc.setAllowAnything();
     }
@@ -202,30 +201,30 @@ namespace mu2e {
   };
   
   // Create an instance of the run manager.
-  void G4::beginJob(edm::EventSetup const&){
+  void G4::beginJob(art::EventSetup const&){
     _runManager = auto_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
 
     // If you want job scope histograms.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
     _diagnostics.beginJob();
     
   }
 
   // Initialze G4.
-  void G4::beginRun( edm::Run &run, edm::EventSetup const& eSetup ){
+  void G4::beginRun( art::Run &run, art::EventSetup const& eSetup ){
 
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& config = geom->config();
 
     static int ncalls(0);
     
     if ( ++ncalls > 1 ){
-      edm::LogWarning("GEOM") 
+      mf::LogWarning("GEOM") 
         << "This version of the code does not update the G4 geometry on run boundaries.";
       return;
     }
 
-    edm::LogInfo logInfo("GEOM");
+    mf::LogInfo logInfo("GEOM");
     logInfo << "Initializing Geant 4 for run: " << run.id() << endl;
 
     // Create user actions and register them with G4.
@@ -278,7 +277,7 @@ namespace mu2e {
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
       
-      edm::FileInPath visPath(_visMacro);
+      art::FileInPath visPath(_visMacro);
 
       G4String command("/control/execute ");
       command += visPath.fullPath();
@@ -309,8 +308,8 @@ namespace mu2e {
 
   } 
 
-  // Create one G4 event and copy its output to the edm::event.
-  void G4::produce(edm::Event& event, edm::EventSetup const&) {
+  // Create one G4 event and copy its output to the art::event.
+  void G4::produce(art::Event& event, art::EventSetup const&) {
 
     // Create empty data products.
     auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
@@ -331,10 +330,10 @@ namespace mu2e {
     G4SDManager* SDman      = G4SDManager::GetSDMpointer();
 
     // Get access to the master geometry system and its run time config.
-    edm::Service<GeometryService> geom;
+    art::ServiceHandle<GeometryService> geom;
     SimpleConfig const* _config = &(geom->config());
 
-    if ( _config->getBool("hasITracker",false) ) {
+    if ( _config->get<bool>("hasITracker",false) ) {
             static_cast<ITGasLayerSD*>
             (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
             beforeG4Event(*outputHits);
@@ -433,7 +432,7 @@ namespace mu2e {
         // Checks only the first character; we should check first non-blank.
         char c = tolower( userinput[0] );
         if ( c == 'q' ){
-          throw cms::Exception("CONTROL")
+          throw cet::exception("CONTROL")
             << "Early end of event loop requested inside G4, \n";
         } else if ( c == 'v' ){
           G4int argc=1;
@@ -455,7 +454,7 @@ namespace mu2e {
   }
 
   // Tell G4 that this run is over.
-  void G4::endRun(edm::Run & run, edm::EventSetup const&){
+  void G4::endRun(art::Run & run, art::EventSetup const&){
 
     _diagnostics.endRun(run);
 
@@ -475,4 +474,4 @@ namespace mu2e {
 } // End of namespace mu2e
 
 using mu2e::G4;
-DEFINE_FWK_MODULE(G4);
+DEFINE_ART_MODULE(G4);

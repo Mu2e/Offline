@@ -9,9 +9,9 @@
 // muMinusConversionAtRest.do - turns on the at rest G4 process 
 // MuonMinusConversionAtRest and turns off MuonMinusCaptureAtRest
 //
-// $Id: toggleProcesses.cc,v 1.2 2011/03/08 23:29:15 kutschke Exp $ 
-// $Author: kutschke $
-// $Date: 2011/03/08 23:29:15 $
+// $Id: toggleProcesses.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $ 
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 //-----------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ namespace mu2e{
     G4ProcessVector const* pVector      = pmanager->GetProcessList(); 
     
     G4VRestProcess *muProcess = 0;
-    if ( config.getBool( "g4.doMuMinusConversionAtRest", 1) ) { 
+    if ( config.get<bool>( "g4.doMuMinusConversionAtRest", 1) ) { 
         
         // add muMinusConversionAtRest 
         muProcess = new muMinusConversionAtRest( config );

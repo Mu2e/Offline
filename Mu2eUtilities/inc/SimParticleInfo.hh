@@ -5,9 +5,9 @@
 // associated with hit.  This is a building block of the
 // the class SimParticlesWithHits.
 //
-// $Id: SimParticleInfo.hh,v 1.4 2011/03/08 14:14:17 ayarritu Exp $
-// $Author: ayarritu $
-// $Date: 2011/03/08 14:14:17 $
+// $Id: SimParticleInfo.hh,v 1.5 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke.
 //
@@ -19,7 +19,7 @@
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 
-namespace edm{
+namespace art{
   class Event;
 }
 
@@ -58,7 +58,7 @@ namespace mu2e {
 
     SimParticleInfo( key_type simId,
                      SimParticle const& simParticle,
-                     edm::Event const& event);
+                     art::Event const& event);
 
     vector<StrawHitMCInfo>& strawHitInfos()  { return _hitInfos; }
 
@@ -69,7 +69,7 @@ namespace mu2e {
     SimParticle const* _simParticle;
 
     // The event in which this information is found.
-    edm::Event const* _event;
+    art::Event const* _event;
 
     // Vector of information about the StrawHits to which this track contributed.
     vector<StrawHitMCInfo>  _hitInfos;

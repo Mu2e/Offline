@@ -40,13 +40,13 @@ bool ContentSelector::compareLists(const std::vector<entryStruct> &newEntries, c
 }
 
 template<class CollectionType>
-void ContentSelector::createNewEntries(std::vector<edm::Handle<CollectionType> > &dataVector, 
-                                       const edm::Event &event, const std::string &className,
+void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> > &dataVector, 
+                                       const art::Event &event, const std::string &className,
                                        std::vector<entryStruct> &newEntries, int entryIDStart)
 {
   int entryID;
   event.getManyByType(dataVector);
-  typedef std::vector<edm::Handle<CollectionType> > CollectionVector;
+  typedef std::vector<art::Handle<CollectionType> > CollectionVector;
   typedef typename CollectionVector::const_iterator itertype;
   itertype iter;
   for(iter=dataVector.begin(), entryID=entryIDStart; 
@@ -61,7 +61,7 @@ void ContentSelector::createNewEntries(std::vector<edm::Handle<CollectionType> >
   }
 }
 
-void ContentSelector::setAvailableCollections(const edm::Event& event)
+void ContentSelector::setAvailableCollections(const art::Event& event)
 {
   std::vector<entryStruct> newEntries;
 
@@ -145,16 +145,16 @@ void ContentSelector::setSelectedHitsName()
   int i=_hitBox->GetSelected();
   int classtype=i/1000;
   int index=i%1000;
-  edm::Provenance *provenance=NULL;
+  art::Provenance *provenance=NULL;
   switch(classtype)
   {
     case 1 : if(index>=static_cast<int>(_stepPointMCVector.size())) return;
              _hitsAreSelected=true;
-             provenance=const_cast<edm::Provenance*>(_stepPointMCVector[index].provenance());
+             provenance=const_cast<art::Provenance*>(_stepPointMCVector[index].provenance());
              break;
     case 2 : if(index>=static_cast<int>(_strawHitVector.size())) return;
              _hitsAreSelected=true;
-             provenance=const_cast<edm::Provenance*>(_strawHitVector[index].provenance());
+             provenance=const_cast<art::Provenance*>(_strawHitVector[index].provenance());
              break;
     default: return;
   };

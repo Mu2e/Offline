@@ -3,16 +3,16 @@
 // many of the keys have a value of true. Throw if more than 
 // one is true.  Optionally, throw if none are true.
 //
-// $Id: requireUniqueKey.cc,v 1.2 2010/05/18 21:16:39 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:39 $
+// $Id: requireUniqueKey.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 //
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/EDMException.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Utilities/Exception.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/requireUniqueKey.hh"
@@ -30,7 +30,7 @@ namespace mu2e {
     int count(0);
     string found;
     for ( size_t i=0; i<keys.size(); ++i ){
-      if ( config.getBool(keys[i],false) ) {
+      if ( config.get<bool>(keys[i],false) ) {
         if ( !found.empty() ) found += " ";
         found += keys[i];
         ++count;
@@ -41,7 +41,7 @@ namespace mu2e {
     if ( count == 0 ) {
 
       if ( throwOnZero ){
-        cms::Exception exception("CONFIG");
+        cet::exception exception("CONFIG");
         exception << "None of the configuration parameters is true: ";
         for ( size_t i=0; i<keys.size(); ++i){
           if ( i != 0 ) exception << " ";
@@ -52,7 +52,7 @@ namespace mu2e {
       }
 
     } else if ( count > 1 ) {
-        throw cms::Exception("CONFIG")
+        throw cet::exception("CONFIG")
           << "More than one of the requested configuration parameters is true: "
           << found
           << "\n";

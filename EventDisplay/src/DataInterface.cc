@@ -11,7 +11,7 @@
 #include <TGFrame.h>
 #include <TMath.h>
 
-#include "FWCore/Framework/interface/Run.h"
+#include "art/Framework/Core/Run.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -138,7 +138,7 @@ void DataInterface::fillGeometry()
   resetBoundaryP(_calorimeterMinmax);
   resetBoundaryP(_tracksMinmax);
 
-  edm::Service<mu2e::GeometryService> geom;
+  art::ServiceHandle<mu2e::GeometryService> geom;
 
   const mu2e::SimpleConfig &config = geom->config();
   _xOffset=config.getDouble("mu2e.solenoidOffset");    //between Mu2e and Tracker coordinates
@@ -757,7 +757,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   }
 
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
-  edm::Service<mu2e::GeometryService> geoservice;
+  art::ServiceHandle<mu2e::GeometryService> geoservice;
   if(calohits!=NULL && geoservice->hasElement<mu2e::Calorimeter>())
   {
     mu2e::GeomHandle<mu2e::Calorimeter> calo;  

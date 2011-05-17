@@ -1,9 +1,9 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.cc,v 1.2 2011/01/04 22:10:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/04 22:10:23 $
+// $Id: PhysicsProcessInfo.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@
 #include <utility>
 
 // Framework
-#include "FWCore/Utilities/interface/Exception.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
@@ -98,7 +98,7 @@ namespace mu2e{
     }   // end loop over particle table
 
     if (nUnknownProcesses > 0 ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "There was one or more phyics processes that are not in the ProcessCode enum.\n"
         << "Number of processes: " << nUnknownProcesses
         << "\nPlease extend to the enum to add these processes and recompile.\n";
@@ -121,7 +121,7 @@ namespace mu2e{
   ProcessCode PhysicsProcessInfo::findAndCount( G4String const& name ){
     map_type::iterator i = _allProcesses.find(name);
     if ( i == _allProcesses.end() ){
-      throw cms::Exception("RANGE")
+      throw cet::exception("RANGE")
         << "Could not find physics process in PhysicsProcessInfo.  : "
         << name
         << "\n";

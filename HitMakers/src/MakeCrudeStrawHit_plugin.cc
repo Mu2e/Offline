@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_plugin.cc,v 1.10 2010/09/30 02:16:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 02:16:34 $
+// $Id: MakeCrudeStrawHit_plugin.cc,v 1.11 2011/05/17 15:36:00 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:00 $
 //
 // Original author Rob Kutschke
 //
@@ -15,16 +15,15 @@
 #include <cmath>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/TFileDirectory.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
 #include "TFile.h"
@@ -50,13 +49,13 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   // 
-  class MakeCrudeStrawHit : public edm::EDProducer {
+  class MakeCrudeStrawHit : public art::EDProducer {
   public:
-    explicit MakeCrudeStrawHit(edm::ParameterSet const& pset) : 
+    explicit MakeCrudeStrawHit(fhicl::ParameterSet const& pset) : 
 
       // Parameters
-      _diagLevel(pset.getUntrackedParameter<int>("diagLevel",0)),
-      _maxFullPrint(pset.getUntrackedParameter<int>("maxFullPrint",5)),
+      _diagLevel(pset.get<int>("diagLevel",0)),
+      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
 
       // Random number distributions
       _gaussian( createEngine( get_seed_value(pset)) ),
@@ -74,9 +73,9 @@ namespace mu2e {
     }
     virtual ~MakeCrudeStrawHit() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
  
-    void produce( edm::Event& e, edm::EventSetup const&);
+    void produce( art::Event& e, art::EventSetup const&);
 
   private:
     
@@ -98,12 +97,12 @@ namespace mu2e {
 
   };
 
-  void MakeCrudeStrawHit::beginJob(edm::EventSetup const& ){
+  void MakeCrudeStrawHit::beginJob(art::EventSetup const& ){
 
     // Create histograms if diagnostics are enabled.
     if ( _diagLevel > 0 ){
 
-      edm::Service<edm::TFileService> tfs;
+      art::ServiceHandle<art::TFileService> tfs;
 
       _hTime      = tfs->make<TH1F>( "hTime", "Pulse Height;(ns)",              100,  0.,  2000. );
       _hDriftDist = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)", 100,  0.,     3.  );
@@ -114,7 +113,7 @@ namespace mu2e {
   }
 
   void
-  MakeCrudeStrawHit::produce(edm::Event& event, edm::EventSetup const&) {
+  MakeCrudeStrawHit::produce(art::Event& event, art::EventSetup const&) {
 
     static int ncalls(0);
     ++ncalls;
@@ -130,11 +129,11 @@ namespace mu2e {
     static const string collectionName("tracker");
 
     // Ask the event to give us a handle to the requested hits.
-    edm::Handle<StepPointMCCollection> points;
+    art::Handle<StepPointMCCollection> points;
     event.getByLabel(creatorName,collectionName,points);
 
     // Product Id of the input points.
-    edm::ProductID const& id(points.id());
+    art::ProductID const& id(points.id());
 
     for ( size_t i=0; i<points->size(); ++i){
       
@@ -209,4 +208,4 @@ namespace mu2e {
 
 
 using mu2e::MakeCrudeStrawHit;
-DEFINE_FWK_MODULE(MakeCrudeStrawHit);
+DEFINE_ART_MODULE(MakeCrudeStrawHit);

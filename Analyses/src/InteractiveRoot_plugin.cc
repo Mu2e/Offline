@@ -1,9 +1,9 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_plugin.cc,v 1.2 2010/09/24 17:01:53 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/24 17:01:53 $
+// $Id: InteractiveRoot_plugin.cc,v 1.3 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 // Original author Rob Kutschke
 //
@@ -49,13 +49,12 @@
 #include <memory>
 
 // Framework includes.
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Services/interface/TFileService.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -72,17 +71,17 @@ namespace mu2e {
 
   class Straw;
 
-  class InteractiveRoot : public edm::EDAnalyzer {
+  class InteractiveRoot : public art::EDAnalyzer {
   public:
     
-    explicit InteractiveRoot(edm::ParameterSet const& pset);
+    explicit InteractiveRoot(fhicl::ParameterSet const& pset);
     virtual ~InteractiveRoot() { }
 
-    virtual void beginJob(edm::EventSetup const&);
+    virtual void beginJob(art::EventSetup const&);
     void endJob();
  
     // This is called for each event.
-    void analyze(const edm::Event& e, edm::EventSetup const&);
+    void analyze(const art::Event& e, art::EventSetup const&);
 
   private:
 
@@ -116,13 +115,13 @@ namespace mu2e {
 
   };
 
-  InteractiveRoot::InteractiveRoot(edm::ParameterSet const& pset) : 
+  InteractiveRoot::InteractiveRoot(fhicl::ParameterSet const& pset) : 
 
     // Run time parameters
-    _moduleLabel(pset.getParameter<string>("@module_label")),
-    _g4ModuleLabel(pset.getParameter<string>("g4ModuleLabel")),
-    _trackerStepPoints(pset.getUntrackedParameter<string>("trackerStepPoints","tracker")),
-    _nAccumulate(pset.getUntrackedParameter<int>("nAccumulate",20)),
+    _moduleLabel(pset.get<string>("@module_label")),
+    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+    _nAccumulate(pset.get<int>("nAccumulate",20)),
 
     // ROOT objects that are the main focus of this example.
     _hMultiplicity(0),
@@ -134,10 +133,10 @@ namespace mu2e {
 
   }
 
-  void InteractiveRoot::beginJob(edm::EventSetup const& ){
+  void InteractiveRoot::beginJob(art::EventSetup const& ){
 
     // Get access to the TFile service and save current directory for later use.
-    edm::Service<edm::TFileService> tfs;
+    art::ServiceHandle<art::TFileService> tfs;
 
     // Create a histogram.
     _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event", 100,  0.,  100. );
@@ -163,10 +162,10 @@ namespace mu2e {
 
   }
 
-  void InteractiveRoot::analyze(const edm::Event& event, edm::EventSetup const&) {
+  void InteractiveRoot::analyze(const art::Event& event, art::EventSetup const&) {
 
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hitsHandle;
+    art::Handle<StepPointMCCollection> hitsHandle;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hitsHandle);
     StepPointMCCollection const& hits = *hitsHandle;
 
@@ -203,4 +202,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::InteractiveRoot;
-DEFINE_FWK_MODULE(InteractiveRoot);
+DEFINE_ART_MODULE(InteractiveRoot);

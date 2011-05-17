@@ -1,9 +1,9 @@
 //
 // A crudely calibrated hit in a straw. See header for full details.
 //
-// $Id: CrudeStrawHit.cc,v 1.7 2010/05/18 21:16:45 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:45 $
+// $Id: CrudeStrawHit.cc,v 1.8 2011/05/17 15:36:01 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/17 15:36:01 $
 //
 // Original author Rob Kutschke
 
@@ -11,8 +11,8 @@
 #include <ostream>
 
 // Framework includes.
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "art/Framework/Core/Event.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "ToyDP/inc/CrudeStrawHit.hh"
@@ -28,7 +28,7 @@ namespace mu2e {
                                 float             sigmaD_,
                                 float             energy_,
                                 DPIndex const&    precursorIndex_,
-                                edm::Event const* event_
+                                art::Event const* event_
                                 ):
     precursorType(unpackedDigi),
     strawIndex(strawIndex_),
@@ -54,7 +54,7 @@ namespace mu2e {
                                 precursor_type              precursorType_,
                                 std::vector<DPIndex> const& precursorIndices_,
                                 float                       trueDriftDistance_,
-                                edm::Event const*           event_
+                                art::Event const*           event_
                                 ):
     precursorType(precursorType_),
     strawIndex(strawIndex_),
@@ -80,7 +80,7 @@ namespace mu2e {
                                 precursor_type    precursorType_,
                                 DPIndex  const&   precursorIndex_,
                                 float             trueDriftDistance_,
-                                edm::Event const* event_
+                                art::Event const* event_
                                 ):
     precursorType(precursorType_),
     strawIndex(strawIndex_),
@@ -105,18 +105,18 @@ namespace mu2e {
     if ( stepPointMCPointersValid || override ) {
       return stepPointMCPointers;
     }
-    throw cms::Exception("ProductNotFound")
+    throw cet::exception("ProductNotFound")
       << "Cannot compute pointers to StepPointMC without an event being supplied.";
   }  
 
   // Populate the transient data members.
   // This will get more complicated as different sorts of precursors become available.
-  void CrudeStrawHit::resolveTransients( edm::Event const& event) const{
+  void CrudeStrawHit::resolveTransients( art::Event const& event) const{
 
     if (stepPointMCPointersValid ) return;
 
     if ( precursorType != stepPointMC ) {
-      throw cms::Exception("ProductNotFound")
+      throw cet::exception("ProductNotFound")
         << "Cannot compute pointers to StepPointMC from a precursor of type: "
         << precursorType;
     }

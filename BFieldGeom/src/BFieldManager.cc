@@ -1,17 +1,17 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.7 2011/05/02 15:51:25 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/02 15:51:25 $
+// $Id: BFieldManager.cc,v 1.8 2011/05/17 15:35:59 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/05/17 15:35:59 $
 //
 
 // Includes from C++
 #include <iostream>
 
 // Framework includes
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/Utilities/interface/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // Includes from Mu2e
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -83,7 +83,7 @@ namespace mu2e {
 
     MapType::const_iterator i = _map.find(key);
     if ( i == _map.end() ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Requested map not found: " << key << "\n";      
     }
     return i->second;
@@ -106,7 +106,7 @@ namespace mu2e {
 
     // If there already was another Map with the same key, then it is a hard error.
     if ( !retval.second ){
-      throw cms::Exception("GEOM")
+      throw cet::exception("GEOM")
         << "Trying to add a new magnetic field when the named field map already exists: "
         << key
         << "\n";
