@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.17 2011/05/17 16:30:13 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/17 16:30:13 $
+# $Id: setup.sh,v 1.18 2011/05/17 18:43:57 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/17 18:43:57 $
 #
 # Original author Rob Kutschke
 #
@@ -59,6 +59,8 @@ case ${EXTERNALSVERSION} in
 
     # This is not as expected in the product
     export CLHEP_LIB=${CLHEP_DIR}/lib
+
+    export FHICL_FILE_PATH=.:fcl;
 
   ;;
   1)
