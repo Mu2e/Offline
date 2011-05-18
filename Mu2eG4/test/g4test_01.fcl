@@ -1,26 +1,26 @@
 # Configuration file for G4Test01
 #
-# $Id: g4test_01.fcl,v 1.1 2011/05/18 04:35:37 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/18 04:35:37 $
+# $Id: g4test_01.fcl,v 1.2 2011/05/18 14:53:21 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 14:53:21 $
 
 #include "minimalMessageService.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process : G4Test01
 
 # Start form an empty source
-source : 
-{ 
+source :
+{
   module_type : EmptyEvent
   maxEvents : 1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "g4test_01.root"
   }
@@ -32,7 +32,7 @@ services :
     GeometryService :
     {
       inputFile : "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
-    }  
+    }
 
     ConditionsService :
     {
@@ -54,7 +54,7 @@ physics :
     generate:
     {
       module_type   : EventGenerator
-      inputfile     : "Mu2eG4/test/genconfig_01.txt" 
+      inputfile     : "Mu2eG4/test/genconfig_01.txt"
     }
 
     # Run G4 and add hits to the event

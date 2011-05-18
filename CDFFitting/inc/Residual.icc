@@ -34,7 +34,7 @@ using std::endl;
 //## end module.additionalDeclarations
 
 
-// Class Residual 
+// Class Residual
 
 inline Residual::Residual(const Residual &right)
   //## begin Residual::Residual%copy.hasinit preserve=no
@@ -58,7 +58,7 @@ inline Residual::Residual(const HepVector &magnitude, const HepSymMatrix &error)
 {
   //## begin Residual::Residual%869346324.body preserve=yes
   if (_magnitude.num_row() != _error.num_row()) {
-    std::cerr << "Ominous warning in construction of Residual:  residual and error matrix do not have same dimension" << std::endl; 
+    std::cerr << "Ominous warning in construction of Residual:  residual and error matrix do not have same dimension" << std::endl;
   }
   //## end Residual::Residual%869346324.body
 }
@@ -116,7 +116,7 @@ inline double Residual::getDeltaChiSquared() const
 
 // Additional Declarations
 //## begin Residual.declarations preserve=yes
-inline Residual::Residual() : 
+inline Residual::Residual() :
 _magnitude(HepVector()),
 _error(HepSymMatrix())
 {}

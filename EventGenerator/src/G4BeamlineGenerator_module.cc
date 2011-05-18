@@ -65,11 +65,6 @@ namespace mu2e {
 
     virtual void beginRun(art::Run &r);
 
-    static void fillDescription(art::ParameterSetDescription& iDesc,
-                                string const& moduleLabel) {
-      iDesc.setAllowAnything();
-    }
-
   private:
 
     // Name of the run-time configuration file.

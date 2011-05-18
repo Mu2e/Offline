@@ -93,7 +93,7 @@ void ProgressiveFitter<Measureable>::fit()
   // if the data has already been fit, then reset the fit
   //
   if (_fit || _numAppliedFitActions) resetFit();
-  // 
+  //
   // apply all fit actions simultaneously
   //
   _degreesOfFreedom = -Measureable::getParameterSpaceSize();
@@ -117,7 +117,7 @@ void ProgressiveFitter<Measureable>::apply(const Measurement<Measureable> *measu
   double       deltaChiSquared;
   unsigned int   parDim                   = Measureable::getParameterSpaceSize();
   unsigned int   meaDim                   = measurement->getDimensionality();
-	
+
   _errorMatrix        = measurement->getErrorMatrix(*Fitter<Measureable>::getReference());
   _derivativeMatrix   = measurement->getDerivativeMatrix(*Fitter<Measureable>::getReference());
   _displacementVector = measurement->getDisplacementFrom(*Fitter<Measureable>::getReference());
@@ -143,7 +143,7 @@ void ProgressiveFitter<Measureable>::apply(const Measurement<Measureable> *measu
     // perform an innovation
     //
     HepMatrix   H_t      = H.T();
-        
+
     HepMatrix   K        = _covariance*H_t*((_errorMatrix+H*_covariance*H_t).inverse(error));
     if (error) {
       std::cerr << "Ominous Warning in KalmanFitter::apply(Measurement):  matrix inversion failure " << std::endl;
@@ -157,7 +157,7 @@ void ProgressiveFitter<Measureable>::apply(const Measurement<Measureable> *measu
     HepMatrix   P_t      = P.T();
     _covariance.assign(P*_covariance*P_t + K*_errorMatrix*K_t);
     _estimate = _estimate + K*(_displacementVector);
-    _residual     =  Q*(_displacementVector); 
+    _residual     =  Q*(_displacementVector);
     _residualCov.assign(Q*_errorMatrix);
     deltaChiSquared = (_residual.T()*_residualCov.inverse(error)*_residual)[0];
 
@@ -170,9 +170,9 @@ void ProgressiveFitter<Measureable>::apply(const Measurement<Measureable> *measu
 
     //
     // Noninvertible residual covariance <==> deltaChiSquared virtually zero.
-    // 
-    if (error) deltaChiSquared=0.0;	
-    
+    //
+    if (error) deltaChiSquared=0.0;
+
     // test for convergence.  Has the reference value shifted by more than the tolerance?
     if (iteration!=MAXFILTERITERATION) {
       HepVector dd=_estimate-Fitter<Measureable>::getReference()->getParameters();
@@ -190,7 +190,7 @@ void ProgressiveFitter<Measureable>::apply(const Measurement<Measureable> *measu
         return;
       }
       break;
-    } 
+    }
     else {
       *Fitter<Measureable>::getReference()=Measureable::create(_estimate);
     }
@@ -267,7 +267,7 @@ const Fit<Measureable> * ProgressiveFitter<Measureable>::getFit() const
 }
 
 template <class Measureable>
-const Residual * ProgressiveFitter<Measureable>::newResidual(const Measurement<Measureable> *measurement) 
+const Residual * ProgressiveFitter<Measureable>::newResidual(const Measurement<Measureable> *measurement)
 {
   if (!_fit) return NULL;
   unsigned int length=measurement->getDimensionality();

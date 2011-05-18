@@ -29,7 +29,7 @@ double Circle2D::getPhiAtR(double rho) const {
 
 unsigned int Circle2D::getParameterSpaceSize() { return _parameterSpaceSize; }
 
-Circle2D Circle2D::create(const HepVector& v) 
+Circle2D Circle2D::create(const HepVector& v)
 {
   return Circle2D(v(1),v(2),v(3));
 }

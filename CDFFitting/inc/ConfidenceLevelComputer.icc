@@ -1,6 +1,6 @@
 
 #ifndef __GNUC__
-extern "C" double lgamma(double); 
+extern "C" double lgamma(double);
 #endif
 
 #include <math.h>
@@ -11,7 +11,7 @@ extern "C" double lgamma(double);
 inline double ConfidenceLevelComputer::getConfidenceLevel(double chiSquared, unsigned int degreesOfFreedom)
 {
   if (chiSquared<0) {
-    std::cerr << "Warning in ConfidenceLevelComputer, negative chiSquared" 
+    std::cerr << "Warning in ConfidenceLevelComputer, negative chiSquared"
               << std::endl;
     return 0;
   }
@@ -24,34 +24,34 @@ inline double ConfidenceLevelComputer::getConfidenceLevel(double chiSquared, uns
 
 /*---------------------Incomplete gamma function---------------*/
 
-inline float  ConfidenceLevelComputer::gammp(float a,float x) 
+inline float  ConfidenceLevelComputer::gammp(float a,float x)
 {
     float LogGamma;
     if (x<0.0 || a<= 0.0) raise(SIGFPE);
     LogGamma = lgamma(a);
-    if (x < (a+1.0)) 
+    if (x < (a+1.0))
         return gamser(a,x,LogGamma);
-    else 
+    else
         return 1.0-gammcf(a,x,LogGamma);
 }
 
 /*---------------------Incomplete gamma function complement----*/
 
-inline float  ConfidenceLevelComputer::gammq(float a, float x) 
+inline float  ConfidenceLevelComputer::gammq(float a, float x)
 {
     float LogGamma;
     if (x<0.0 || a<= 0.0) raise(SIGFPE);
 
     LogGamma =  lgamma(a);
-    if (x < (a+1.0)) 
+    if (x < (a+1.0))
         return 1.0 - gamser(a,x,LogGamma);
-    else 
+    else
         return gammcf(a,x,LogGamma);
 }
 
 /* ------------------Incomplete gamma function-----------------*/
 /* ------------------via its series representation-------------*/
-              
+
 inline float  ConfidenceLevelComputer::gamser(float a, float x, float LogGamma)
 {
     float n;
@@ -67,7 +67,7 @@ inline float  ConfidenceLevelComputer::gamser(float a, float x, float LogGamma)
     }
     raise(SIGFPE);
     return 0;
-}        
+}
 
 /* ------------------Incomplete gamma function complement------*/
 /* ------------------via its continued fraction representation-*/
@@ -91,7 +91,7 @@ inline float  ConfidenceLevelComputer::gammcf(float a, float x, float LogGamma) 
         d = 1.0/d;
         del=d*c;
         h *= del;
-        if (fabs(del-1.0) < EPS) return exp(-x+a*log(x)-LogGamma)*h;  
+        if (fabs(del-1.0) < EPS) return exp(-x+a*log(x)-LogGamma)*h;
     }
     raise(SIGFPE);
     return 0;

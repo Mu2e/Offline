@@ -26,9 +26,9 @@ template <class Measureable>
 const Fit<Measureable> & Fit<Measureable>::operator=(const Fit<Measureable> &right)
 {
   if (this != &right) {
-    _degreesOfFreedom=right._degreesOfFreedom; 
-    _chiSquared=right._chiSquared; 
-    _estimate=right._estimate; 
+    _degreesOfFreedom=right._degreesOfFreedom;
+    _chiSquared=right._chiSquared;
+    _estimate=right._estimate;
     _covariance=right._covariance;
     _derivativeMatrix=right._derivativeMatrix;
   }
@@ -133,8 +133,8 @@ Fit<Measureable>::Fit(double chiSquared,
   _degreesOfFreedom(degreesOfFreedom),
   _estimate(estimate),
   _covariance(covariance),
-  _derivativeMatrix(Measureable::getParameterSpaceSize(),1)	
-{	
+  _derivativeMatrix(Measureable::getParameterSpaceSize(),1)
+{
 }
 
 

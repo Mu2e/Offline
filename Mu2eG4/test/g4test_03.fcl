@@ -8,27 +8,27 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.1 2011/05/18 04:35:37 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/18 04:35:37 $
+# $Id: g4test_03.fcl,v 1.2 2011/05/18 14:53:21 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 14:53:21 $
 
 #include "minimalMessageService.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process : G4Test03
 
 # Start form an empty source
-source : 
-{ 
+source :
+{
   module_type : EmptyEvent
   maxEvents : 200
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "g4test_03.root"
   }
@@ -48,7 +48,7 @@ services :
     GeometryService :
     {
       inputFile : "Mu2eG4/test/geom_01"
-    }  
+    }
 
     ConditionsService :
     {
@@ -79,7 +79,7 @@ physics :
     generate:
     {
       module_type   : EventGenerator
-      inputfile     : "Mu2eG4/test/genconfig_02.txt" 
+      inputfile     : "Mu2eG4/test/genconfig_02.txt"
       seed          : [7789]
     }
 
@@ -157,9 +157,9 @@ outputs:
   {
     module_type   :   RootOutput
     filename      :   "data_03.root"
-    outputCommands:   [ "keep *_*_*_*" 
+    outputCommands:   [ "keep *_*_*_*"
                         "drop mu2ePointTrajectoryMapVector"
-#                       "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size. 
+#                       "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size.
                       ]
   }
 

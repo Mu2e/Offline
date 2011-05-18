@@ -17,7 +17,7 @@ using std::cerr;
 inline const HepGeom::Vector3D<double>& Trajectory::Location::direction(void) const {
   if ( ! _dirIsValid ) {
     std::cerr
-      << "Ominous warning in Trajectory::Location::direction: " 
+      << "Ominous warning in Trajectory::Location::direction: "
       << "_dirIsValid is false!" << std::endl;
   }
   return _direction;

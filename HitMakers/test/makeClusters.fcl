@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeClusters.fcl,v 1.1 2011/05/17 23:28:23 mf Exp $
-# $Author: mf $
-# $Date: 2011/05/17 23:28:23 $
+# $Id: makeClusters.fcl,v 1.2 2011/05/18 14:53:21 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 14:53:21 $
 #
 # Original author Rob Kutschke
 #
@@ -16,22 +16,22 @@ BEGIN_PROLOG
 
 END_PROLOG
 
-# Give this job a name.  
+# Give this job a name.
 process : HitTest01
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
-source : 
-{ 
-  module_type : RootInput 
-  fileNames : ["makeclusters.root"]        
+source :
+{
+  module_type : RootInput
+  fileNames : ["makeclusters.root"]
   maxEvents : 200
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "makeDPIStrawClusters.root"
   }
@@ -43,7 +43,7 @@ services :
     GeometryService :
     {
       inputFile : "Mu2eG4/test/geom_01.txt"
-    }  
+    }
 
   }
 
@@ -68,7 +68,7 @@ physics :
       module_type      : MakeStrawCluster
       makerModuleLabel : makeSH
       diagLevel        : 1
-      maxFullPrint     : @local::maxFullPrint  
+      maxFullPrint     : @local::maxFullPrint
     }
 
   }

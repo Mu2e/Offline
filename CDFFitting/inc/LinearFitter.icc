@@ -36,10 +36,10 @@ const LinearFitter<Measureable> & LinearFitter<Measureable>::operator=(const Lin
     Fitter<Measureable>::operator=(right);
     _numAppliedFitActions=right._numAppliedFitActions;
     _derivatives=right._derivatives;
-    _weight=right._weight; 
-    _residuals=right._residuals; 
+    _weight=right._weight;
+    _residuals=right._residuals;
     _constraintMatrices=right._constraintMatrices;
-    _measurementPtr=right._measurementPtr; 
+    _measurementPtr=right._measurementPtr;
     _degreesOfFreedom=right._degreesOfFreedom;
     if (right._fit) {
       if (_fit) {
@@ -78,7 +78,7 @@ void LinearFitter<Measureable>::fit()
   // if the data has already been fit, then reset the fit
   //
   if (_fit || _numAppliedFitActions) resetFit();
-  // 
+  //
   // apply all fit actions simultaneously
   //
   _degreesOfFreedom = -Measureable::getParameterSpaceSize();
@@ -101,7 +101,7 @@ void LinearFitter<Measureable>::fit()
     _status = 0;
     return ;
   }
-  HepSymMatrix         covariance;            
+  HepSymMatrix         covariance;
   covariance.assign( A_t*V_y_i*A);
   HepSymMatrix         V_a                    = covariance.inverse(error);
   if (error) {
@@ -113,7 +113,7 @@ void LinearFitter<Measureable>::fit()
   HepVector    estimate      = Fitter<Measureable>::getReference()->getParameters() + eta;
                _residuals   -= A*eta;
   double       chiSquared    = (_residuals.T()*V_y*_residuals)[0];
-  HepSymMatrix errorMatrix_i; 
+  HepSymMatrix errorMatrix_i;
   errorMatrix_i.assign(A_t*V_y*A);
   HepSymMatrix errorMatrix   = errorMatrix_i.inverse(error);
   if (error) {
@@ -129,8 +129,8 @@ void LinearFitter<Measureable>::fit()
   if (_constraintVectors.num_row() !=0) {
     // prepare
     HepVector              eta0       = eta;
-    const HepMatrix        V_eta0     = V_a; 
-    HepMatrix              D          = _constraintMatrices; 
+    const HepMatrix        V_eta0     = V_a;
+    HepMatrix              D          = _constraintMatrices;
     HepMatrix              D_t        = D.T();
     HepVector              d          = _constraintVectors;
     // solve
@@ -143,8 +143,8 @@ void LinearFitter<Measureable>::fit()
     }
     HepVector              lambda     = V_d*(D*eta0+d);
     HepMatrix              V_eta      = V_eta0 - V_eta0*D_t*V_d*D*V_eta0;
-    
-    // package 
+
+    // package
     /*HepVector*/          eta        = eta0 - V_eta0*D_t*lambda;
     /*HepMatrix*/          covariance.assign(V_eta.inverse(error));
     if (error) {
@@ -154,7 +154,7 @@ void LinearFitter<Measureable>::fit()
     }
     /*double   */          chiSquared = (lambda.T()*V_d_i*lambda)[0];
   }
-  
+
   //
   // construct the fit result.
   //
@@ -167,43 +167,43 @@ void LinearFitter<Measureable>::fit()
 }
 
 
-template <class Measureable> 
-void 
+template <class Measureable>
+void
 LinearFitter<Measureable>::apply(const Scatter<Measureable> *) {
   std::cerr << "Warning: Linear fitter ignoring scatter fit action!" << std::endl;
 
 }
 
-template <class Measureable> 
-void 
+template <class Measureable>
+void
 LinearFitter<Measureable>::apply(const StartingPoint<Measureable> *) {
   std::cerr << "Warning: Linear fitter ignoring starting point fit action!" << std::endl;
 
 }
 
-template <class Measureable> 
-void 
+template <class Measureable>
+void
 LinearFitter<Measureable>::apply(const Transport<Measureable> *) {
   std::cerr << "Warning: Linear fitter ignoring transport fit action!" << std::endl;
 
 }
 
-template <class Measureable> 
-void 
+template <class Measureable>
+void
 LinearFitter<Measureable>::apply(const FitAction<Measureable> *) {
   std::cerr << "Warning: Linear fitter ignoring unknown fit action!" << std::endl;
 
 }
 
 
-template <class Measureable> 
-void 
+template <class Measureable>
+void
 LinearFitter<Measureable>::apply(const Measurement<Measureable> *measurement)
 {
   int error;
-  // 
+  //
   // Access everything you need from the measurement.
-  // 
+  //
   const HepSymMatrix   errorMatrix        = measurement->getErrorMatrix(*Fitter<Measureable>::getReference());
   const HepMatrix      derivativeMatrix   = measurement->getDerivativeMatrix(*Fitter<Measureable>::getReference());
   const HepVector      displacementVector = measurement->getDisplacementFrom(*Fitter<Measureable>::getReference());
@@ -244,8 +244,8 @@ LinearFitter<Measureable>::apply(const Measurement<Measureable> *measurement)
   // Make a matrix equal to the direct sum of derivatives
   //
   if (_derivatives.num_row()==0) {
-    _derivatives = derivativeMatrix; 
-  } 
+    _derivatives = derivativeMatrix;
+  }
   else {
     HepMatrix newDerivative(
       _derivatives.num_row()+meaDim,_derivatives.num_col() );
@@ -267,9 +267,9 @@ LinearFitter<Measureable>::apply(const Measurement<Measureable> *measurement)
 template <class Measureable>
 void LinearFitter<Measureable>::apply(const Constraint<Measureable> *constraint)
 {
-  // 
+  //
   // Access everything you need from the constraint.
-  // 
+  //
   HepMatrix     constraintMatrix   = constraint->getConstraintMatrix(*Fitter<Measureable>::getReference());
   HepVector     constraintVector   = constraint->getConstraintVector(*Fitter<Measureable>::getReference());
   unsigned int  parDim             = Measureable::getParameterSpaceSize();
@@ -317,11 +317,11 @@ void LinearFitter<Measureable>::apply(const Constraint<Measureable> *constraint)
 template <class Measureable>
 const Fit<Measureable> * LinearFitter<Measureable>::getFit() const
 {
-  return _fit; 
+  return _fit;
 }
 
 template <class Measureable>
-const Residual * LinearFitter<Measureable>::newResidual(const Measurement<Measureable> *measurement) 
+const Residual * LinearFitter<Measureable>::newResidual(const Measurement<Measureable> *measurement)
 {
   int error;
   if (!_fit) return NULL;
@@ -336,7 +336,7 @@ const Residual * LinearFitter<Measureable>::newResidual(const Measurement<Measur
       if (error) {
 	std::cerr << "Ominous Warning in LinearFitter::newResidual(Measurement):  matrix inversion failure " << std::endl;
 	return NULL;
-      }    
+      }
       return new Residual(res,cov);
     }
     offset+=_measurementPtr[index++];

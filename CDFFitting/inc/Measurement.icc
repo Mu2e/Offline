@@ -3,7 +3,7 @@
 // while other compilers require it!
 //--------------------------------------------------------
 
-//DYNLOAD inlined everything to avoid multiply def'd symbols 
+//DYNLOAD inlined everything to avoid multiply def'd symbols
 
 template <class Measureable>
 inline

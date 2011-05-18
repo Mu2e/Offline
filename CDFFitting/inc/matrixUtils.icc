@@ -2,7 +2,7 @@
 #include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
-#define JACOBI_ROTATION(A,i,j,k,l) g=A[i][j]; h=A[k][l]; A[i][j] = g-s*(h+g*tau); A[k][l] = h + s*(g-h*tau); 
+#define JACOBI_ROTATION(A,i,j,k,l) g=A[i][j]; h=A[k][l]; A[i][j] = g-s*(h+g*tau); A[k][l] = h + s*(g-h*tau);
 inline HepMatrix jacobi(HepSymMatrix * Source) {
 
 //  AS IN NUMERICAL RECIPES IN C, PAGE 467
@@ -25,7 +25,7 @@ inline HepMatrix jacobi(HepSymMatrix * Source) {
       }
     }
     if (SumOffDiagonal==0.0) break;
-    if (Iteration<4) 
+    if (Iteration<4)
       Threshold = 0.2*SumOffDiagonal/(mtrxSize*mtrxSize);
     else
       Threshold = 0.0;
@@ -44,7 +44,7 @@ inline HepMatrix jacobi(HepSymMatrix * Source) {
 	  else {
 	    float Theta = 0.5*h/(*Source)[irow][icol];
 	    t = 1.0/(fabs(Theta) + sqrt(1.0 + Theta*Theta));
-	    if (Theta<0) t = -t; 
+	    if (Theta<0) t = -t;
 	  }
 	  float c = 1.0/sqrt(1.0+t*t);
 	  float s = t*c;
@@ -55,7 +55,7 @@ inline HepMatrix jacobi(HepSymMatrix * Source) {
 	  EigenValues[irow] -= h;
 	  EigenValues[icol] += h;
 	  (*Source)[irow][icol] = 0.0;
-	  
+
 	  int j;
 	  for (j=0;j<irow;j++) {
 	    JACOBI_ROTATION((*Source),j,irow,j,icol)
@@ -71,8 +71,8 @@ inline HepMatrix jacobi(HepSymMatrix * Source) {
 	      }
 	  NumberRotations++;
 	}
-      }            
-    }    
+      }
+    }
     B+=Z;
     EigenValues=B;
     Z=HepVector(mtrxSize,0);

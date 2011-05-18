@@ -1,26 +1,26 @@
 # Configuration file for running beamline_01
 #
-# $Id: beamline_01.fcl,v 1.1 2011/05/18 04:35:37 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/18 04:35:37 $
+# $Id: beamline_01.fcl,v 1.2 2011/05/18 14:53:21 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 14:53:21 $
 
 #include "minimalMessageService.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process : Beamline01
 
 # Start from an Empty event
-source : 
-{ 
+source :
+{
   module_type : EmptyEvent
   maxEvents : 100
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "beamline_01.root"
   }
@@ -32,7 +32,7 @@ services :
     GeometryService :
     {
       inputFile : "Mu2eG4/test/beamline_geom.txt"
-    }  
+    }
 
     ConditionsService :
     {
@@ -54,7 +54,7 @@ physics :
     generate:
     {
       module_type   : EventGenerator
-      inputfile     : "Mu2eG4/test/beamline_genconfig.txt" 
+      inputfile     : "Mu2eG4/test/beamline_genconfig.txt"
       seed          : [7789]
     }
 
@@ -62,7 +62,7 @@ physics :
 #   generate:
 #   {
 #     module_type   : G4BeamlineGenerator
-#     inputfile     : "Mu2eG4/test/beamline_genconfig.txt" 
+#     inputfile     : "Mu2eG4/test/beamline_genconfig.txt"
 #     seed          : [7789]
 #   }
 
@@ -110,8 +110,8 @@ outputs:
   {
     module_type   :   RootOutput
     filename      :   "beamlineData_01.root"
-    outputCommands:   [ "keep *_*_*_*" 
-#                       "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size. 
+    outputCommands:   [ "keep *_*_*_*"
+#                       "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size.
                       ]
   }
 

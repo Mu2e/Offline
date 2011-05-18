@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
-  $Author: greenc $
-  $Date: 2011/05/18 14:21:44 $
+  $Id: EventGenerator_module.cc,v 1.5 2011/05/18 14:53:21 wb Exp $
+  $Author: wb $
+  $Date: 2011/05/18 14:53:21 $
 
   Original author Rob Kutschke
 
@@ -95,11 +95,6 @@ namespace mu2e {
     virtual void produce(art::Event& e);
 
     virtual void beginRun(art::Run &r);
-
-    static void fillDescription(art::ParameterSetDescription& iDesc,
-                                string const& moduleLabel) {
-      iDesc.setAllowAnything();
-    }
 
   private:
 

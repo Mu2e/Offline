@@ -33,7 +33,7 @@ KalmanFitter<Measureable>::~KalmanFitter()
 {
 }
 
-template <class Measureable> 
+template <class Measureable>
 void KalmanFitter<Measureable>::resetFit() {
   ProgressiveFitter<Measureable>::resetFit();
   _FilteredEstimate.erase(_FilteredEstimate.begin(),_FilteredEstimate.end()),
@@ -56,7 +56,7 @@ template <class Measureable>
 const KalmanFitter<Measureable> & KalmanFitter<Measureable>::operator=(const KalmanFitter<Measureable> &right)
 {
   if (this != &right) {
-    ProgressiveFitter<Measureable>::operator=(right); 
+    ProgressiveFitter<Measureable>::operator=(right);
     _FilteredEstimate=right._FilteredEstimate;
     _FilteredCovariance=right._FilteredCovariance;
     _FilteredResidual=right._FilteredResidual;
@@ -92,8 +92,8 @@ template <class Measureable>
 void KalmanFitter<Measureable>::apply(const Measurement<Measureable> *measurement)
 {
 
-  ProgressiveFitter<Measureable>::apply(measurement); 
-  if (ProgressiveFitter<Measureable>::failed()) return;	
+  ProgressiveFitter<Measureable>::apply(measurement);
+  if (ProgressiveFitter<Measureable>::failed()) return;
 
   int error;
   HepSymMatrix cinv=ProgressiveFitter<Measureable>::_covariance.inverse(error);
@@ -137,7 +137,7 @@ template <class Measureable> void KalmanFitter<Measureable>::smooth(unsigned int
     _SmoothedResidual[j]   = _FilteredResidual[j]-_DerivativeMatrix[j]*(_SmoothedEstimate[j]-_FilteredEstimate[j]);
     _SmoothedResidualCovariance[j].assign(_FilteredResidualCovariance[j]-
                             _DerivativeMatrix[j]*_SmoothedCovariance[j]*_DerivativeMatrix[j].T());
-                            
+
     _FitArray[j]           = Fit<Measureable>(ProgressiveFitter<Measureable>::_chiSquared,
 	ProgressiveFitter<Measureable>::_degreesOfFreedom,
 	ProgressiveFitter<Measureable>::_estimate,
@@ -174,7 +174,7 @@ const Fit<Measureable> * KalmanFitter<Measureable>::getFit() const
 }
 
 template <class Measureable>
-const Fit<Measureable> * KalmanFitter<Measureable>::getFit(const FitAction<Measureable> *action) 
+const Fit<Measureable> * KalmanFitter<Measureable>::getFit(const FitAction<Measureable> *action)
 {
   //
   // Locate the proper measurement.
@@ -196,7 +196,7 @@ const Fit<Measureable> * KalmanFitter<Measureable>::getFit(const FitAction<Measu
 }
 
 template <class Measureable>
-const Residual * KalmanFitter<Measureable>::newResidual(const Measurement<Measureable> *measurement) 
+const Residual * KalmanFitter<Measureable>::newResidual(const Measurement<Measureable> *measurement)
 {
   //
   // Locate the proper measurement.

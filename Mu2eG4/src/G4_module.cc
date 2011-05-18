@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: G4_module.cc,v 1.6 2011/05/18 14:53:21 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 14:53:21 $
 //
 // Original author Rob Kutschke
 //
@@ -154,11 +154,6 @@ namespace mu2e {
 
     virtual void beginRun(art::Run &r);
     virtual void endRun(art::Run &);
-
-    static void fillDescription(art::ParameterSetDescription& iDesc,
-                                string const& moduleLabel) {
-      iDesc.setAllowAnything();
-    }
 
   private:
     auto_ptr<Mu2eG4RunManager> _runManager;

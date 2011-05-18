@@ -4,7 +4,7 @@ inline void Helix::_refreshCache() const {
     _isStale=false;
     double theta;
     if ( _cotTheta==0.0 ) {
-       theta = M_PI/2.0;          
+       theta = M_PI/2.0;
     }
     else {
        theta=atan(1.0/_cotTheta);
@@ -99,10 +99,10 @@ inline Helix::Helix(const Helix &right)
 }
 
 
-inline Helix::Helix( 
+inline Helix::Helix(
               double cotTheta,
               double curvature,
-              double z0, 
+              double z0,
               double d0,
               Angle  phi0
             )
@@ -207,14 +207,14 @@ inline void Helix::setParameters(const CLHEP::HepVector & p) {
 /*
 inline const CLHEP::HepVector & Helix::getParameters() const {
   if (!_vParameters) _vParameters = new CLHEP::HepVector(5);
-  (*_vParameters)(1)=getCotTheta(); 
+  (*_vParameters)(1)=getCotTheta();
   (*_vParameters)(2)=getCurvature();
   (*_vParameters)(3)=getZ0();
   (*_vParameters)(4)=getD0();
   (*_vParameters)(5)=getPhi0();
   return *_vParameters;;
 }
-  
+
 inline Helix Helix::create(const CLHEP::HepVector & v)  {
   return Helix(v(1),v(2),v(3),v(4),v(5));
 }
