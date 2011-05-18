@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructCRV.cc,v 1.6 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG
 //
@@ -53,13 +53,13 @@ namespace mu2e {
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
-    bool scintillatorShieldVisible = _config->get<bool>("crs.vetoVisible",true);
-    bool scintillatorShieldSolid   = _config->get<bool>("crs.vetoSolid",false);
+    bool scintillatorShieldVisible = _config->getBool("crs.vetoVisible",true);
+    bool scintillatorShieldSolid   = _config->getBool("crs.vetoSolid",false);
 
-    int verbosityLevel = _config->get<int>("crs.verbosityLevel",0);
+    int verbosityLevel = _config->getInt("crs.verbosityLevel",0);
 
-    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
 
     // get the CRS parameters from the geometry service and place the veto elements
 

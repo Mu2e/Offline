@@ -5,9 +5,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.7 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: PhysicsList.cc,v 1.8 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -159,7 +159,7 @@ namespace mu2e{
     //
     // are we doing Mu2eReflection?
 
-    if (!( _config->get<bool>("mu2eReflection",false))) {
+    if (!( _config->getBool("mu2eReflection",false))) {
       // Loop over all defined particle types.
       //      cout << "defining physics processes" << endl; assert (2==1);
       theParticleIterator->reset();
@@ -237,7 +237,7 @@ namespace mu2e{
       }
     }
 
-    if (_config->get<bool>("mu2eReflection",false))
+    if (_config->getBool("mu2eReflection",false))
       {
         //mu2e reflection; segregate code for debugging
         Mu2eReflection* theReflectionProcess = new Mu2eReflection(

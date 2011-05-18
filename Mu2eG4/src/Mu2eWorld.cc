@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.89 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: Mu2eWorld.cc,v 1.90 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -173,7 +173,7 @@ namespace mu2e {
     CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloReadoutSD::setMu2eOriginInWorld( _mu2eOrigin );
     CRSScintillatorBarSD::setMu2eOriginInWorld( _mu2eOrigin );
-    if ( _config->get<bool>("hasITracker",false) ) {
+    if ( _config->getBool("hasITracker",false) ) {
             ITGasLayerSD::setMu2eDetCenterInWorld( _mu2eDetectorOrigin -
                             G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
     }
@@ -221,16 +221,16 @@ namespace mu2e {
     constructCal();
     constructMagnetYoke();
 
-    if ( _config->get<bool>("hasCosmicRayShield",false) ) {
+    if ( _config->getBool("hasCosmicRayShield",false) ) {
       constructSteel(hallInfo,_config);
       constructCRV(hallInfo,_config);
     }
 
-    if ( _config->get<bool>("hasNeutronAbsorber",false) ) {
+    if ( _config->getBool("hasNeutronAbsorber",false) ) {
       constructNeutronAbsorber(_config);
     }
 
-    if ( _config->get<bool>("hasMBS",false) ) {
+    if ( _config->getBool("hasMBS",false) ) {
       constructMBS(_config);
     }
 
@@ -243,7 +243,7 @@ namespace mu2e {
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();
     constructStepLimiters();
-    if ( _config->get<bool>("hasITracker",false) ) {
+    if ( _config->getBool("hasITracker",false) ) {
             constructITStepLimiters();
     }
 
@@ -345,19 +345,19 @@ namespace mu2e {
 
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
-    if( _config->get<bool>("hasLTracker",false) ){
-      int ver = _config->get<int>("LTrackerVersion",3);
+    if( _config->getBool("hasLTracker",false) ){
+      int ver = _config->getInt("LTrackerVersion",3);
       //cout << "LTracker version: " << ver << "\n";
       if ( ver == 3 ){
         trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
       }
-    } else if ( _config->get<bool>("hasITracker",false) ) {
+    } else if ( _config->getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
       // Hack alert: These belong in constructTracker
       trackerInfo.name = "TrackerMother"; // this belongs to construct..., some of them do it now
       _helper->addVolInfo(trackerInfo);
-    } else if ( _config->get<bool>("hasTTracker",false) ) {
-      int ver = _config->get<int>("TTrackerVersion",3);
+    } else if ( _config->getBool("hasTTracker",false) ) {
+      int ver = _config->getInt("TTrackerVersion",3);
       if ( ver == 3 ){
         trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
       }
@@ -387,7 +387,7 @@ namespace mu2e {
     cout << "_hallOriginInMu2e.z()=" << _hallOriginInMu2e.z() << endl;
 
     // Buid the stopping target
-    VolumeInfo targetInfo = ( _config->get<bool>("hasTarget",false) ) ?
+    VolumeInfo targetInfo = ( _config->getBool("hasTarget",false) ) ?
 
       constructStoppingTarget( detSolUpstreamVacInfo.logical,
                                             z0DSup,
@@ -407,13 +407,13 @@ namespace mu2e {
   void Mu2eWorld::constructBFieldAndManagers(){
 
     // Figure out which magnetic field managers are needed.
-    int dsFieldForm    = _config->get<int>("detSolFieldForm", dsModelUniform);
+    int dsFieldForm    = _config->getInt("detSolFieldForm", dsModelUniform);
 
     // Decide on the G4 Stepper
 
     bool needDSUniform = (dsFieldForm == dsModelSplit || dsFieldForm == dsModelUniform );
 
-    string stepper = _config->get<std::string>("g4.stepper","G4SimpleRunge");
+    string stepper = _config->getString("g4.stepper","G4SimpleRunge");
 
     // Create field manager for the uniform DS field.
     if ( needDSUniform){
@@ -532,7 +532,7 @@ namespace mu2e {
 
   void Mu2eWorld::constructITStepLimiters(){
 
-    bool physicalStep =  _config->get<bool>("itracker.usePhysicalStep",false);
+    bool physicalStep =  _config->getBool("itracker.usePhysicalStep",false);
     // Maximum step length, in mm.
     double maxStep = 10.0;
     if (physicalStep){
@@ -573,7 +573,7 @@ namespace mu2e {
   // Construct calorimeter if needed.
   void Mu2eWorld::constructCal(){
 
-    if ( ! _config->get<bool>("hasCalorimeter",false) ) return;
+    if ( ! _config->getBool("hasCalorimeter",false) ) return;
 
     VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
@@ -597,7 +597,7 @@ namespace mu2e {
 
     // G4 takes ownership and will delete the detectors at the job end
 
-    if ( _config->get<bool>("hasITracker",false) ) {
+    if ( _config->getBool("hasITracker",false) ) {
       GeomHandle<ITracker> itracker;
       ITGasLayerSD* itrackerSD=0x0;
       if ( itracker->geomType()==ITracker::Hexagonal )

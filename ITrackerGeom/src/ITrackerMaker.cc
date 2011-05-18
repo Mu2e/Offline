@@ -55,40 +55,40 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
 
         _isExternal     = false;
         int nWireShells, nWallShells;
-        _extFile        = config.get<std::string>("itracker.extFile");
+        _extFile        = config.getString("itracker.extFile");
         if ( _extFile.size()>1 && ( _extFile.find_last_of(".gdml") || _extFile.find_last_of(".GDML") )!=0 ) _isExternal = true;
-        _extWireFile    = config.get<std::string>("itracker.extWireFile");
+        _extWireFile    = config.getString("itracker.extWireFile");
         if ( _isExternal && _extWireFile.size()<1 ) throw cet::exception("GEOM")<< "Using the external geometry file you have to insert the file name for the Wire Rotation matrix data\n";
         _r0             = config.getDouble("itracker.r0");
         _z0             = config.getDouble("itracker.z0");
         _halfLength     = config.getDouble("itracker.zHalfLength");
         _rOut           = config.getDouble("itracker.rOut");
         _drop           = config.getDouble("itracker.drop");
-        _fillMaterial   = config.get<std::string>("itracker.fillMaterial");
+        _fillMaterial   = config.getString("itracker.fillMaterial");
 
-        _geomType       = config.get<int>("itracker.geomType");
-        _endCapType     = config.get<int>("itracker.endCapType");
+        _geomType       = config.getInt("itracker.geomType");
+        _endCapType     = config.getInt("itracker.endCapType");
         _voxFactor      = config.getDouble("itracker.voxelization");
         if (_voxFactor<0) _notExtVoxel=true;
         else _notExtVoxel=false;
 
-        _displayGasLayer= config.get<bool>("itracker.displayGasLayer",false);
-        _displayWires   = config.get<bool>("itracker.displayWires",false);
+        _displayGasLayer= config.getBool("itracker.displayGasLayer",false);
+        _displayWires   = config.getBool("itracker.displayWires",false);
 
-        _nSWire         = config.get<int>("itracker.nSWire",-1);
-        _nSDeltaWire    = config.get<int>("itracker.nSDeltaWire",-1);
-        _nSuperLayer    = config.get<int>("itracker.nSuperLayer",1);
-        _nRing          = config.get<int>("itracker.nRing",1);
-        _nVerticalFWire = config.get<int>("itracker.nVerticalFWire",0);
+        _nSWire         = config.getInt("itracker.nSWire",-1);
+        _nSDeltaWire    = config.getInt("itracker.nSDeltaWire",-1);
+        _nSuperLayer    = config.getInt("itracker.nSuperLayer",1);
+        _nRing          = config.getInt("itracker.nRing",1);
+        _nVerticalFWire = config.getInt("itracker.nVerticalFWire",0);
         _cellDimension  = config.getDouble("itracker.cellDimension",0.0);
         _FWireStep      = config.getDouble("itracker.FWireStep",0.0);
-        _StoFWireRatio  = config.get<int>("itracker.StoFWireRation",1);
+        _StoFWireRatio  = config.getInt("itracker.StoFWireRation",1);
         if (_geomType==30 || _geomType==31 || _geomType==41) {
-                _nSuperLayer    = config.get<int>("itracker.nLayer");
+                _nSuperLayer    = config.getInt("itracker.nLayer");
                 _nRing          = 1;
         }
 
-        nWireShells     = config.get<int>("itracker.nFieldWireShells");
+        nWireShells     = config.getInt("itracker.nFieldWireShells");
         config.getVectorString("itracker.fieldWireMaterials", _fwMaterialsName, nWireShells);
         config.getVectorDouble("itracker.fieldWireShellsThicknesses", _fwShellsThicknesses, nWireShells);
         _fWireDiameter  = 0.0;
@@ -97,7 +97,7 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
         }
         _fWireDiameter*=2.0;
 
-        nWireShells     = config.get<int>("itracker.nSenseWireShells");
+        nWireShells     = config.getInt("itracker.nSenseWireShells");
         config.getVectorString("itracker.senseWireMaterials", _swMaterialsName, nWireShells);
         config.getVectorDouble("itracker.senseWireShellsThicknesses", _swShellsThicknesses, nWireShells);
         _sWireDiameter  = 0.0;
@@ -107,7 +107,7 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
         _sWireDiameter*=2.0;
 
         _walls.insert( pair<Wall::Walltype,Wall*>(Wall::inner,new Wall(Wall::inner)) );
-        nWallShells    = config.get<int>("itracker.nInnerWallShells");
+        nWallShells    = config.getInt("itracker.nInnerWallShells");
         std::vector<std::string> *tempWallMaterialsName = new std::vector<std::string>();
         std::vector<double> *tempWallShellsThicknesses = new std::vector<double>();
         config.getVectorString("itracker.innerWallMaterials", *tempWallMaterialsName, nWallShells);
@@ -117,7 +117,7 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
         walls_it->second->addMaterials(nWallShells,tempWallMaterialsName,tempWallShellsThicknesses);
 
         _walls.insert( pair<Wall::Walltype,Wall*>(Wall::outer,new Wall(Wall::outer)) );
-        nWallShells    = config.get<int>("itracker.nOuterWallShells");
+        nWallShells    = config.getInt("itracker.nOuterWallShells");
         tempWallMaterialsName = new std::vector<std::string>();
         tempWallShellsThicknesses = new std::vector<double>();
         config.getVectorString("itracker.outerWallMaterials", *tempWallMaterialsName, nWallShells);
@@ -126,7 +126,7 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
         walls_it->second->addMaterials(nWallShells,tempWallMaterialsName,tempWallShellsThicknesses);
 
         _walls.insert( pair<Wall::Walltype,Wall*>(Wall::endcap,new Wall(Wall::endcap)) );
-        nWallShells    = config.get<int>("itracker.nEndCapWallShells");
+        nWallShells    = config.getInt("itracker.nEndCapWallShells");
         tempWallMaterialsName = new std::vector<std::string>();
         tempWallShellsThicknesses = new std::vector<double>();
         config.getVectorString("itracker.endcapWallMaterials", *tempWallMaterialsName, nWallShells);

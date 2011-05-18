@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructVirtualDetectors.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -44,10 +44,10 @@ namespace mu2e {
 
     // Place virtual detectors
 
-    bool vdVisible           = _config->get<bool>("vd.visible",true);
-    bool vdSolid             = _config->get<bool>("vd.solid",true);
-    bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
+    bool vdVisible           = _config->getBool("vd.visible",true);
+    bool vdSolid             = _config->getBool("vd.solid",true);
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     GeomHandle<VirtualDetector> vdg;
@@ -127,7 +127,7 @@ namespace mu2e {
     double Z0 = 0;
     double deltaZ = 1.0;
 
-    if ( _config->get<bool>("hasNeutronAbsorber",false) ) {
+    if ( _config->getBool("hasNeutronAbsorber",false) ) {
       double NAIInnerRadius0     = _config->getDouble("neutronabsorber.internalInnerRadius0");
       double NAIInnerRadius1     = _config->getDouble("neutronabsorber.internalInnerRadius1");
       Ravr   = (NAIInnerRadius0+NAIInnerRadius1)/2;

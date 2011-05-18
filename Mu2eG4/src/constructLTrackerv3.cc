@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.19 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructLTrackerv3.cc,v 1.20 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -51,7 +51,7 @@ namespace mu2e{
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
-    int verbosityLevel = config.get<int>("ltracker.verbosityLevel",0);
+    int verbosityLevel = config.getInt("ltracker.verbosityLevel",0);
 
     // Master geometry for the LTracker.
     // GeomHandle<LTracker> ltracker;
@@ -64,15 +64,15 @@ namespace mu2e{
     double zHalf = CLHEP::mm * ltracker.zHalfLength()+30.;
     double z0    = CLHEP::mm * ltracker.z0();
 
-    bool const trackerSolid        = config.get<bool>("ltracker.solid",true);
-    bool const trackerVisible      = config.get<bool>("ltracker.visible",true);
+    bool const trackerSolid        = config.getBool("ltracker.solid",true);
+    bool const trackerVisible      = config.getBool("ltracker.visible",true);
 
-    bool const strawVisible        = config.get<bool>("ltracker.strawVisible",false);
-    bool const strawSolid          = config.get<bool>("ltracker.strawSolid",true);
+    bool const strawVisible        = config.getBool("ltracker.strawVisible",false);
+    bool const strawSolid          = config.getBool("ltracker.strawSolid",true);
 
 
-    bool const forceAuxEdgeVisible = config.get<bool>("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = config.get<bool>("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV = true;
 
     // Make the mother volume for the LTracker.

@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.14 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: LTrackerMaker.cc,v 1.15 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -103,7 +103,7 @@ namespace mu2e {
     _vaneInfo(),
     _center(){
 
-    _nSides          = config.get<int>("ltracker.nSides");
+    _nSides          = config.getInt("ltracker.nSides");
     _r0              = config.getDouble("ltracker.r0");
     _z0              = config.getDouble("ltracker.z0");
     _halfLength      = config.getDouble("ltracker.zHalfLength");
@@ -117,7 +117,7 @@ namespace mu2e {
     _rwire           = config.getDouble("ltracker.rWire");
     _carbonThick     = config.getDouble("ltracker.carbonThick");
     _vaneOffset      = config.getHep3Vector("ltracker.vaneOffset");
-    _fillMaterial    = config.get<std::string>("ltracker.fillMaterial");
+    _fillMaterial    = config.getString("ltracker.fillMaterial");
 
     config.getVectorString("ltracker.strawMaterials0", _strawMaterialNames0, 3);
     config.getVectorString("ltracker.strawMaterials1", _strawMaterialNames1, 3);

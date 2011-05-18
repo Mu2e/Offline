@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.7 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: CaloReadoutSD.cc,v 1.8 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Ivan Logashenko
 //
@@ -40,7 +40,7 @@ namespace mu2e {
       _nro(0),
       _minE(0.0),
       _debugList(0),
-      _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
+      _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
       _currentSize(0)
   {
 

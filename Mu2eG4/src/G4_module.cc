@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.4 2011/05/18 05:10:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 05:10:58 $
+// $Id: G4_module.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -333,7 +333,7 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const* _config = &(geom->config());
 
-    if ( _config->get<bool>("hasITracker",false) ) {
+    if ( _config->getBool("hasITracker",false) ) {
             static_cast<ITGasLayerSD*>
             (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
             beforeG4Event(*outputHits);

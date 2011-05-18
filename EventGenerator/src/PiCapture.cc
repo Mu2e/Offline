@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.19 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: PiCapture.cc,v 1.20 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -48,10 +48,10 @@ namespace mu2e {
     _mean(config.getDouble("picapture.mean", -1.)),
     _elow(config.getDouble("picapture.elow", 38.2)),
     _ehi(config.getDouble("picapture.ehi",   emax)),
-    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", false)),
-    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
-    _nbins(config.get<int>("picapture.nbins",  1000)),
-    _doHistograms(config.get<bool>("picapture.doHistograms",true)),
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", false)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _nbins(config.getInt("picapture.nbins",  1000)),
+    _doHistograms(config.getBool("picapture.doHistograms",true)),
 
     // Random number distributions; getEngine is found in the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),

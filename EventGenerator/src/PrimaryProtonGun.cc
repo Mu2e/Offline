@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.10 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: PrimaryProtonGun.cc,v 1.11 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -61,7 +61,7 @@ namespace mu2e {
     _phimax(config.getDouble("primaryProtonGun.phimax", CLHEP::twopi)),
     _tmin(config.getDouble("primaryProtonGun.tmin",   0.)),
     _tmax(config.getDouble("primaryProtonGun.tmax", 100.)),
-    _doHistograms(config.get<bool>("primaryProtonGun.doHistograms", true)){
+    _doHistograms(config.getBool("primaryProtonGun.doHistograms", true)){
 
     if ( _doHistograms ){
       art::ServiceHandle<art::TFileService> tfs;

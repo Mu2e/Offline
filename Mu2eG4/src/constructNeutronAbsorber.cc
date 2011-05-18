@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructNeutronAbsorber.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG
 //
@@ -43,7 +43,7 @@ namespace mu2e {
 
   void constructNeutronAbsorber(SimpleConfig const * const _config){
 
-    int const verbosityLevel = _config->get<int>("neutronabsorber.verbosityLevel",0);
+    int const verbosityLevel = _config->getInt("neutronabsorber.verbosityLevel",0);
 
     // the absorber is split into two major pieces internal & external (wrt to the coil)
 
@@ -54,8 +54,8 @@ namespace mu2e {
 
     // Extract information from the config file.
 
-    string NAMaterialName      = _config->get<std::string>("neutronabsorber.materialName");
-    // string NADopantElementName = _config->get<std::string>("neutronabsorber.dopantElementName");
+    string NAMaterialName      = _config->getString("neutronabsorber.materialName");
+    // string NADopantElementName = _config->getString("neutronabsorber.dopantElementName");
     // double NAMaterialDensity   = _config->getDouble("neutronabsorber.materialDensity");
     // double NADopantFraction    = _config->getDouble("neutronabsorber.dopantFraction");
     double NAIOuterRadius      = _config->getDouble("neutronabsorber.internalOuterRadius");
@@ -71,11 +71,11 @@ namespace mu2e {
     double NAEHalfThickness    = _config->getDouble("neutronabsorber.externalHalfThickness");
     double NAEZ0               = _config->getDouble("neutronabsorber.externalZ0");
 
-    bool NAVisible             = _config->get<bool>("neutronabsorber.visible");
-    bool NASolid               = _config->get<bool>("neutronabsorber.solid");
+    bool NAVisible             = _config->getBool("neutronabsorber.visible");
+    bool NASolid               = _config->getBool("neutronabsorber.solid");
 
-    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     G4Material* NAMaterial = findMaterialOrThrow(NAMaterialName);

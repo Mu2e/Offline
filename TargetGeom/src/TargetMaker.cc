@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.6 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: TargetMaker.cc,v 1.7 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Peter Shanahan
 //
@@ -97,7 +97,7 @@ namespace mu2e {
       _materials.push_back(_materials[size-1]);
 
     // material of the target enclosing volume
-    _fillMaterial=c.get<std::string>("target.fillMaterial","Target_Unknown");
+    _fillMaterial=getString("target.fillMaterial","Target_Unknown");
 
     // debugging print...
     PrintConfig();

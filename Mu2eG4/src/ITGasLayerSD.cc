@@ -31,7 +31,7 @@ namespace mu2e {
                   G4VSensitiveDetector(name),
                   _collection(0),
                   _debugList(0),
-                  _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
+                  _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
                   _currentSize(0)
 
 

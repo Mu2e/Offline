@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.18 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: EjectedProtonGun.cc,v 1.19 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -61,10 +61,10 @@ namespace mu2e {
     _czmax(config.getDouble("ejectedProtonGun.czmax",  1.)),
     _phimin(config.getDouble("ejectedProtonGun.phimin", 0. )),
     _phimax(config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi )),
-    _nbins(config.get<int>("ejectedProtonGun.nbins",1000)),
-    _doHistograms(config.get<bool>("ejectedProtonGun.doHistograms",true)),
-    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
+    _nbins(config.getInt("ejectedProtonGun.nbins",1000)),
+    _doHistograms(config.getBool("ejectedProtonGun.doHistograms",true)),
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),

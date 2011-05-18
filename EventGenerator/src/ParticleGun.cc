@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.10 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: ParticleGun.cc,v 1.11 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,7 @@ namespace mu2e {
 
     // From run time configuration file.
     _mean(config.getDouble("particleGun.mean",-1.)),
-    _pdgId(static_cast<PDGCode::type>(config.get<int>("particleGun.id",  PDGCode::mu_minus))),
+    _pdgId(static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::mu_minus))),
     _czmin( config.getDouble("particleGun.czmin",  0.5)),
     _czmax( config.getDouble("particleGun.czmax",  0.7)),
     _phimin(config.getDouble("particleGun.phimin", 0. )),
@@ -65,7 +65,7 @@ namespace mu2e {
     _tmax(0),
     _point(),
     _halfLength(),
-    _doHistograms(config.get<bool>("particleGun.doHistograms", false)),
+    _doHistograms(config.getBool("particleGun.doHistograms", false)),
 
     // Random number distributions; getEngine() comes from base class.
     _randFlat( getEngine() ),

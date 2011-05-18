@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructTS.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -55,8 +55,8 @@ namespace mu2e {
     double ts3HalfLength  = beamg->getTS().getTS3().getHalfLength();
     double ts5HalfLength  = beamg->getTS().getTS5().getHalfLength();
 
-    bool toyTSVisible = _config->get<bool>("toyTS.visible",true);
-    bool toyTSSolid   = _config->get<bool>("toyTS.solid",true);
+    bool toyTSVisible = _config->getBool("toyTS.visible",true);
+    bool toyTSSolid   = _config->getBool("toyTS.solid",true);
 
     double coll1HalfLength     = beamg->getTS().getColl1().getHalfLength();
     double coll31HalfLength    = beamg->getTS().getColl31().getHalfLength();
@@ -79,10 +79,10 @@ namespace mu2e {
     double coll3HoleHalfHeight   = _config->getDouble("coll3.holeHalfHeight");
     double coll3HoleDisplacement = _config->getDouble("coll3.holeDisplacement");
 
-    bool collVisible         = _config->get<bool>("coll.visible",true);
-    bool collSolid           = _config->get<bool>("coll.solid",true);
-    bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
+    bool collVisible         = _config->getBool("coll.visible",true);
+    bool collSolid           = _config->getBool("coll.solid",true);
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     // For how all pieces are made from one of two types of material,

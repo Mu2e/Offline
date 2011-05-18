@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors
 //
-// $Id: VirtualDetectorSD.cc,v 1.9 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: VirtualDetectorSD.cc,v 1.10 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Ivan Logashenko
 //
@@ -35,7 +35,7 @@ namespace mu2e {
     G4VSensitiveDetector(name),
     _collection(0),
     _debugList(0),
-    _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
+    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0)
   {
 

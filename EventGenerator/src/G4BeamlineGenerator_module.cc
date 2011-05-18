@@ -101,11 +101,11 @@ namespace mu2e {
     SimpleConfig config(_configfile);
     checkConfig(config);
 
-    if ( config.get<bool>("printConfig",false) ){
+    if ( config.getBool("printConfig",false) ){
       log << config;
     }
 
-    if ( config.get<bool>("printConfigStats",false) ){
+    if ( config.getBool("printConfigStats",false) ){
       // Work around absence of << operator for this print method.
       ostringstream os;
       config.printStatistics(os);

@@ -28,7 +28,7 @@ namespace mu2e {
   {
     _vd = auto_ptr<VirtualDetector>(new VirtualDetector());
 
-    if( ! c.get<bool>("hasVirtualDetector",false) ) return;
+    if( ! c.getBool("hasVirtualDetector",false) ) return;
 
     double vdHL = c.getDouble("vd.halfLength",0.1*mm);
     _vd->_halfLength = vdHL;

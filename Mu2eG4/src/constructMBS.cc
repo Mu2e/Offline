@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructMBS.cc,v 1.6 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG
 //
@@ -55,35 +55,35 @@ namespace mu2e {
     double const BSTSInnerRadius   = _config->getDouble("mbs.BSTSInnerRadius");
     double const BSTSOuterRadius   = _config->getDouble("mbs.BSTSOuterRadius");
     double const BSTSHLength       = _config->getDouble("mbs.BSTSHLength");
-    string const BSTSMaterialName  = _config->get<std::string>("mbs.BSTSMaterialName");
+    string const BSTSMaterialName  = _config->getString("mbs.BSTSMaterialName");
     double const BSTSZ             = _config->getDouble("mbs.BSTSZ");
     double const SPBSInnerRadius   = _config->getDouble("mbs.SPBSInnerRadius");
     double const SPBSOuterRadius   = _config->getDouble("mbs.SPBSOuterRadius");
     double const SPBSHLength       = _config->getDouble("mbs.SPBSHLength");
-    string const SPBSMaterialName  = _config->get<std::string>("mbs.SPBSMaterialName");
+    string const SPBSMaterialName  = _config->getString("mbs.SPBSMaterialName");
     double const SPBSZ             = BSTSZ + BSTSHLength - SPBSHLength;
     double const BSTCInnerRadius   = _config->getDouble("mbs.BSTCInnerRadius");
     double const BSTCOuterRadius   = _config->getDouble("mbs.BSTCOuterRadius");
     double const BSTCHLength       = _config->getDouble("mbs.BSTCHLength");
-    string const BSTCMaterialName  = _config->get<std::string>("mbs.BSTCMaterialName");
+    string const BSTCMaterialName  = _config->getString("mbs.BSTCMaterialName");
     double const BSTCZ             = BSTSZ - BSTSHLength + BSTCHLength;
     double const BSBSInnerRadius   = _config->getDouble("mbs.BSBSInnerRadius");
     double const BSBSOuterRadius   = _config->getDouble("mbs.BSBSOuterRadius");
     double const BSBSHLength       = BSTSHLength - BSTCHLength;
-    string const BSBSMaterialName  = _config->get<std::string>("mbs.BSBSMaterialName");
+    string const BSBSMaterialName  = _config->getString("mbs.BSBSMaterialName");
     double const BSBSZ             = BSTSZ + BSTSHLength - BSBSHLength;
     double const CLV2InnerRadius   = _config->getDouble("mbs.CLV2InnerRadius");
     double const CLV2OuterRadius   = _config->getDouble("mbs.CLV2OuterRadius");
     double const CLV2HLength       = _config->getDouble("mbs.CLV2HLength");
-    string const CLV2MaterialName  = _config->get<std::string>("mbs.CLV2MaterialName");
+    string const CLV2MaterialName  = _config->getString("mbs.CLV2MaterialName");
     double const CLV2Z             = BSTSZ + BSTSHLength - CLV2HLength;
 
-    bool const MBSisVisible        = _config->get<bool>("mbs.visible",true);
-    bool const MBSisSolid          = _config->get<bool>("mbs.solid", false);
-    int  const verbosityLevel           = _config->get<int>("mbs.verbosityLevel", 0);
+    bool const MBSisVisible        = _config->getBool("mbs.visible",true);
+    bool const MBSisSolid          = _config->getBool("mbs.solid", false);
+    int  const verbosityLevel           = _config->getInt("mbs.verbosityLevel", 0);
 
-    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     // Access to the G4HelperService.
@@ -322,7 +322,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector CryoSealOffset = CryoSealOffsetInMu2e - hallInfo.centerInMu2e();
 
-    string const CryoSealMaterialName  = _config->get<std::string>("mbs.CryoSealMaterialName");
+    string const CryoSealMaterialName  = _config->getString("mbs.CryoSealMaterialName");
 
     VolumeInfo CryoSealInfo  = nestTubs("DSCryoSeal",
                                         CryoSealParams,
@@ -393,7 +393,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector EndPlug1Offset = EndPlug1OffsetInMu2e - hallInfo.centerInMu2e();
 
-    string const EndPlug1MaterialName  = _config->get<std::string>("mbs.EndPlugMaterialName");
+    string const EndPlug1MaterialName  = _config->getString("mbs.EndPlugMaterialName");
 
     VolumeInfo EndPlug1Info  = nestTubs("DSEndPlug1",
                                         EndPlug1Params,
@@ -441,7 +441,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector EndPlugDiskOffset = EndPlugDiskOffsetInMu2e - hallInfo.centerInMu2e();
 
-    string const EndPlugDiskMaterialName  = _config->get<std::string>("mbs.EndPlugMaterialName");
+    string const EndPlugDiskMaterialName  = _config->getString("mbs.EndPlugMaterialName");
 
     VolumeInfo EndPlugDiskInfo  = nestTubs("DSEndPlugDisk",
                                            EndPlugDiskParams,

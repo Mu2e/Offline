@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.25 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: StrawSD.cc,v 1.26 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -50,7 +50,7 @@ namespace mu2e {
     _nStrawsPerSector(0),
     _TrackerVersion(0),
     _debugList(0),
-    _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
+    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0)
   {
     // Get list of events for which to make debug printout.
@@ -79,7 +79,7 @@ namespace mu2e {
       _nStrawsPerSector = sector.nLayers()  * layer.nStraws();
       _nStrawsPerDevice = device.nSectors() * _nStrawsPerSector;
 
-      _TrackerVersion = config.get<int>("TTrackerVersion",3);
+      _TrackerVersion = config.getInt("TTrackerVersion",3);
 
       if ( _TrackerVersion != 3) {
         throw cet::exception("StrawSD")
@@ -93,7 +93,7 @@ namespace mu2e {
 
       GeomHandle<LTracker> ltracker;
 
-      _TrackerVersion = config.get<int>("LTrackerVersion",3); // also see Mu2eWorld.cc
+      _TrackerVersion = config.getInt("LTrackerVersion",3); // also see Mu2eWorld.cc
 
       if ( _TrackerVersion != 3) {
         throw cet::exception("StrawSD")

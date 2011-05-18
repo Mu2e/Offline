@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.13 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: ConstructMaterials.cc,v 1.14 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -67,13 +67,13 @@ namespace mu2e {
     constructMu2eMaterials( config );
 
     // Print element table, if requested.
-    if ( config.get<bool>("g4.printElements",false) ){
+    if ( config.getBool("g4.printElements",false) ){
       mf::LogInfo  log("GEOM");
       log << *G4Element::GetElementTable();
     }
 
     // Print material table, if requested.
-    if ( config.get<bool>("g4.printMaterials",false) ){
+    if ( config.getBool("g4.printMaterials",false) ){
       mf::LogInfo  log("GEOM");
       log << *G4Material::GetMaterialTable();
     }

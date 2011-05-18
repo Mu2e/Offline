@@ -1,9 +1,9 @@
 //
 // Free function to create the earthen overburden.
 //
-// $Id: constructDirt.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructDirt.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -43,8 +43,8 @@ namespace mu2e {
     // A helper class.
     MaterialFinder materialFinder(*_config);
 
-    bool const forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     // Get parameters related to the overall dimensions of the hall and to
@@ -84,10 +84,10 @@ namespace mu2e {
     // Half lengths of the dirt box.
     double dirtHLen[3] = { worldHLen[0], yLDirt, worldHLen[2] };
 
-    bool dirtVisible    = _config->get<bool>("dirt.visible",true);
-    bool dirtSolid      = _config->get<bool>("dirt.solid",false);
-    bool dirtCapVisible = _config->get<bool>("dirt.capVisible",true);
-    bool dirtCapSolid   = _config->get<bool>("dirt.capSolid",false);
+    bool dirtVisible    = _config->getBool("dirt.visible",true);
+    bool dirtSolid      = _config->getBool("dirt.solid",false);
+    bool dirtCapVisible = _config->getBool("dirt.capVisible",true);
+    bool dirtCapSolid   = _config->getBool("dirt.capSolid",false);
 
     // Main body of dirt around the hall.
     VolumeInfo dirtInfo = nestBox( "DirtBody",

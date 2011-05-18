@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.14 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CosmicDYB.cc,v 1.15 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Yury Kolomensky
 //
@@ -90,11 +90,11 @@ namespace mu2e {
   , _y0( config.getDouble("cosmicDYB.y0",0) )
 
     // Dimensions of the 2d working space for hrndg2.
-  , _ne ( config.get<int>("cosmicDYB.nBinsE", _default_ne) )
-  , _nth( config.get<int>("cosmicDYB.nBinsTheta",_default_nth) )
+  , _ne ( config.getInt("cosmicDYB.nBinsE", _default_ne) )
+  , _nth( config.getInt("cosmicDYB.nBinsTheta",_default_nth) )
 
     // Control of histograms.
-  , _doHistograms( config.get<bool>("cosmicDYB.doHistograms", true) )
+  , _doHistograms( config.getBool("cosmicDYB.doHistograms", true) )
 
     // end of configurable parameters
 

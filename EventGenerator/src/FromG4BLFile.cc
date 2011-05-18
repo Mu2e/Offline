@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the ToyGenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.15 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: FromG4BLFile.cc,v 1.16 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -80,11 +80,11 @@ namespace mu2e {
     _prodTargetCenter(),
     _g4beamlineOrigin(),
     _g4beamlineExtraOffset(CLHEP::Hep3Vector()),
-    _inputFileName(config.get<std::string>("fromG4BLFile.filename")),
+    _inputFileName(config.getString("fromG4BLFile.filename")),
     _pdgIdToKeep(),
-    _doHistograms(config.get<bool>("fromG4BLFile.doHistograms", false)),
-    _targetFrame(config.get<bool>("fromG4BLFile.targetFrame", false)),
-    _nPartToSkip(config.get<int>("fromG4BLFile.particlesToSkip",0)),
+    _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
+    _targetFrame(config.getBool("fromG4BLFile.targetFrame", false)),
+    _nPartToSkip(config.getInt("fromG4BLFile.particlesToSkip",0)),
 
     // Random number distributions; getEngine() comes from base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),

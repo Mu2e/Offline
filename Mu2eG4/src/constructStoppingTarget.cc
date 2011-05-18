@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.11 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructStoppingTarget.cc,v 1.12 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Peter Shanahan
 //
@@ -97,7 +97,7 @@ namespace mu2e {
                                               mother,
                                               0,
                                               0,
-                                              config.get<bool>("g4.doSurfaceCheck",false));
+                                              config.getBool("g4.doSurfaceCheck",false));
 
     // Visualization attributes of the the mother volume.
     {
@@ -143,14 +143,14 @@ namespace mu2e {
                            targetInfo.logical,
                            0,
                            itf,
-                           config.get<bool>("g4.doSurfaceCheck",false));
+                           config.getBool("g4.doSurfaceCheck",false));
 
-        if (!config.get<bool>("target.visible",true)) {
+        if (!config.getBool("target.visible",true)) {
           foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Magenta()));
-          visAtt->SetForceAuxEdgeVisible(config.get<bool>("g4.forceAuxEdgeVisible",false));
-          visAtt->SetForceSolid(config.get<bool>("target.solid",true));
+          visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
+          visAtt->SetForceSolid(config.getBool("target.solid",true));
           foilInfo.logical->SetVisAttributes(visAtt);
         }
       }// target foils

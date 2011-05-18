@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.20 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: TrackingAction.cc,v 1.21 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -53,11 +53,11 @@ namespace mu2e {
     _debugList(),
     _physVolHelper(0),
     _timer(),
-    _sizeLimit(config.get<int>("g4.particlesSizeLimit",0)),
+    _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
     _currentSize(0),
     _overflowSimParticles(false),
     _steppingAction(steppingAction),
-    _printPhysicsProcessSummary(config.get<bool>("g4.printPhysicsProcessSummary",false)){
+    _printPhysicsProcessSummary(config.getBool("g4.printPhysicsProcessSummary",false)){
 
     string name("g4.trackingActionEventList");
     if ( config.hasName(name) ){

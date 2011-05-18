@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.24 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: DecayInOrbitGun.cc,v 1.25 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -60,16 +60,16 @@ namespace mu2e {
     _mean(config.getDouble("decayinorbitGun.mean",1.)),
     _elow(config.getDouble("decayinorbitGun.elow",100.)),
     _ehi(config.getDouble("decayinorbitGun.ehi",conversionEnergyAluminum)),
-    _nbins(config.get<int>("decayinorbitGun.nbins",1000)),
+    _nbins(config.getInt("decayinorbitGun.nbins",1000)),
     _czmin(config.getDouble("decayinorbitGun.czmin", -1.0)),
     _czmax(config.getDouble("decayinorbitGun.czmax",  1.0)),
     _phimin(config.getDouble("decayinorbitGun.phimin", 0. )),
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
-    _doHistograms(config.get<bool>("decayinorbitGun.doHistograms", true)),
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
-    _useSimpleSpectrum(config.get<bool>("decayinorbitGun.useSimpleSpectrum", false)),
+    _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
 
     // Random number distributions; getEngine comes from the base class.
     _randSimpleEnergy(getEngine(), &(binnedEnergySpectrum()[0]), _nbins ),

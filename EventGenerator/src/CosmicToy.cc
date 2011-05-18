@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.10 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: CosmicToy.cc,v 1.11 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -52,7 +52,7 @@ namespace mu2e {
 
     // From run time configuration.
     _mean(config.getDouble("cosmictoy.mean",2.)),
-    _doHistograms(config.get<bool>("cosmictoy.doHistograms",true)),
+    _doHistograms(config.getBool("cosmictoy.doHistograms",true)),
 
     // Histograms.
     _hMultiplicity(0),

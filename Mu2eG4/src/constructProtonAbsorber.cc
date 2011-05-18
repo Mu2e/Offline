@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructProtonAbsorber.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -82,15 +82,15 @@ namespace mu2e {
 
     // proton absorber in DS2
     double pabs1Param[7] = { pabs1rIn0, pabs1rOut0, pabs1rIn1, pabs1rOut1, pabs1len/2.0, 0.0, 360.0*CLHEP::degree };
-    bool pabsVisible = _config->get<bool>("protonabsorber.visible",true);
-    bool pabsSolid   = _config->get<bool>("protonabsorber.solid",true);
+    bool pabsVisible = _config->getBool("protonabsorber.visible",true);
+    bool pabsSolid   = _config->getBool("protonabsorber.solid",true);
 
-    bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
 
-    if( _config->get<bool>("hasProtonAbsorber", true) ){
+    if( _config->getBool("hasProtonAbsorber", true) ){
 
       mf::LogInfo log("GEOM");
       log << "Constructing Proton Absorber -- \n";

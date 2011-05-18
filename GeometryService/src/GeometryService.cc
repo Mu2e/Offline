@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.14 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: GeometryService.cc,v 1.15 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -75,11 +75,11 @@ namespace mu2e {
 
     _config = auto_ptr<SimpleConfig>(new SimpleConfig(_inputfile));
 
-    if ( _config->get<bool>("printConfig",false) ){
+    if ( _config->getBool("printConfig",false) ){
       log << *_config;
     }
 
-    if ( _config->get<bool>("printConfigStats",false) ){
+    if ( _config->getBool("printConfigStats",false) ){
       // Work around absence of << operator for this print method.
       ostringstream os;
       _config->printStatistics(os);
@@ -93,47 +93,47 @@ namespace mu2e {
     addDetector( DetectorSystemMaker( *_config).getDetectorSystemPtr() );
 
     // Make a detector for every component present in the configuration.
-    if(_config->get<bool>("hasBeamline",false)){
+    if(_config->getBool("hasBeamline",false)){
       BeamlineMaker beamlinem( *_config );
       addDetector( beamlinem.getBeamlinePtr() );
     }
 
-    if(_config->get<bool>("hasTarget",false)){
+    if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );
       addDetector( targm.getTargetPtr() );
     }
 
-    if(_config->get<bool>("hasCTracker",false)){
+    if(_config->getBool("hasCTracker",false)){
       addDetector( std::auto_ptr<CTracker>(new CTracker(*_config)) );
     }
 
-    if(_config->get<bool>("hasLTracker",false)){
+    if(_config->getBool("hasLTracker",false)){
       LTrackerMaker ltm( *_config );
       addDetector( ltm.getLTrackerPtr() );
-    } else if (_config->get<bool>("hasITracker",false)){
+    } else if (_config->getBool("hasITracker",false)){
       ITrackerMaker itm( *_config );
       addDetector( itm.getITrackerPtr() );
-    } else if (_config->get<bool>("hasTTracker",false)){
+    } else if (_config->getBool("hasTTracker",false)){
       TTrackerMaker ttm( *_config );
       addDetector( ttm.getTTrackerPtr() );
     }
 
-    if(_config->get<bool>("hasCalorimeter",false)){
+    if(_config->getBool("hasCalorimeter",false)){
       CalorimeterMaker calorm( *_config );
       addDetector( calorm.getCalorimeterPtr() );
     }
 
-    if(_config->get<bool>("hasBFieldManager",false)){
+    if(_config->getBool("hasBFieldManager",false)){
       BFieldManagerMaker bfmgr( *_config);
       addDetector( bfmgr.getBFieldManager() );
     }
 
-    if(_config->get<bool>("hasVirtualDetector",false)){
+    if(_config->getBool("hasVirtualDetector",false)){
       VirtualDetectorMaker vdm( *_config );
       addDetector( vdm.getVirtualDetectorPtr() );
     }
 
-    if(_config->get<bool>("hasCosmicRayShield",false)){
+    if(_config->getBool("hasCosmicRayShield",false)){
       CosmicRayShieldMaker crs( *_config );
       addDetector( crs.getCosmicRayShieldPtr() );
     }
@@ -144,19 +144,19 @@ namespace mu2e {
   void GeometryService::checkConfig(){
     int ntrackers(0);
     string allTrackers;
-    if ( _config->get<bool>("hasLTracker",false) ) {
+    if ( _config->getBool("hasLTracker",false) ) {
       allTrackers += " LTracker";
       ++ntrackers;
     }
-    if ( _config->get<bool>("hasTTracker",false) ) {
+    if ( _config->getBool("hasTTracker",false) ) {
       allTrackers += " TTracker";
       ++ntrackers;
     }
-    if ( _config->get<bool>("hasCTracker",false) ) {
+    if ( _config->getBool("hasCTracker",false) ) {
       allTrackers += " CTracker";
       ++ntrackers;
     }
-    if ( _config->get<bool>("hasITracker",false) ) {
+    if ( _config->getBool("hasITracker",false) ) {
       allTrackers += " ITracker";
       ++ntrackers;
     }

@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.19 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: SteppingAction.cc,v 1.20 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -51,9 +51,9 @@ namespace mu2e {
     _zref(0.){
 
     // Look up parameter values in the run time configuration.
-    _doKillLowEKine  = config.get<bool>("g4.killLowEKine",                _doKillLowEKine);
-    _doKillInHallAir = config.get<bool>("g4SteppingAction.killInHallAir", _doKillInHallAir);
-    _killerVerbose   = config.get<bool>("g4SteppingAction.killerVerbose", _killerVerbose);
+    _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
+    _doKillInHallAir = config.getBool("g4SteppingAction.killInHallAir", _doKillInHallAir);
+    _killerVerbose   = config.getBool("g4SteppingAction.killerVerbose", _killerVerbose);
 
 
     // If this cut is enabled, the cut value must be supplied in the run time config.
@@ -92,7 +92,7 @@ namespace mu2e {
     */
 
     // Get maximum allowed number of steps per event
-    _maxSteps = config.get<int>("g4.steppingActionMaxSteps", 0);
+    _maxSteps = config.getInt("g4.steppingActionMaxSteps", 0);
     if( _maxSteps>0 ) {
       cout << "Limit maximum number of steps in SteppingAction to "
 	   << _maxSteps << endl;

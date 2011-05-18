@@ -1,9 +1,9 @@
 //
 // Defines sensitive detector for CRSScintillatorBar
 //
-// $Id: CRSScintillatorBarSD.cc,v 1.3 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: CRSScintillatorBarSD.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG
 //
@@ -35,7 +35,7 @@ namespace mu2e {
     G4VSensitiveDetector(name),
     _collection(0),
     _debugList(0),
-    _sizeLimit(config.get<int>("g4.stepsSizeLimit",0)),
+    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0)
   {
 

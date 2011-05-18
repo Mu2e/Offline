@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: constructPS.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -60,10 +60,10 @@ namespace mu2e {
     double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength;
     G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
 
-    bool toyPSVisible        = _config->get<bool>("toyPS.visible",true);
-    bool toyPSSolid          = _config->get<bool>("toyPS.solid",true);
-    bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
+    bool toyPSVisible        = _config->getBool("toyPS.visible",true);
+    bool toyPSSolid          = _config->getBool("toyPS.solid",true);
+    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -129,8 +129,8 @@ namespace mu2e {
     prodTargetRotation->rotateY( -targetPS_rotY);
     prodTargetRotation->rotateX( -targetPS_rotX);
 
-    bool prodTargetVisible = _config->get<bool>("targetPS.visible",true);
-    bool prodTargetSolid   = _config->get<bool>("targetPS.solid",true);
+    bool prodTargetVisible = _config->getBool("targetPS.visible",true);
+    bool prodTargetSolid   = _config->getBool("targetPS.solid",true);
 
     VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
                                             prodTargetParams,

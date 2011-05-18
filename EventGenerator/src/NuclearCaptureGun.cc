@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: NuclearCaptureGun.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Gianni Onorato
 //
@@ -70,13 +70,13 @@ namespace mu2e {
     _czmax(config.getDouble("nuclearCaptureGun.czmax",  1.)),
     _phimin(config.getDouble("nuclearCaptureGun.phimin", 0. )),
     _phimax(config.getDouble("nuclearCaptureGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
-    _nProtonBins(config.get<int>("nuclearCaptureGun.nProtonBins",1000)),
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _nProtonBins(config.getInt("nuclearCaptureGun.nProtonBins",1000)),
     _nNeutronBins(evaluateNeutronBins()),
-    _nPhotonBins(config.get<int>("nuclearCaptureGun.nPhotonBins",1000)),
-    _doHistograms(config.get<bool>("nuclearCaptureGun.doHistograms",true)),
-    _targetFrame(config.get<bool>("nuclearCaptureGun.targetFrame",false)),
+    _nPhotonBins(config.getInt("nuclearCaptureGun.nPhotonBins",1000)),
+    _doHistograms(config.getBool("nuclearCaptureGun.doHistograms",true)),
+    _targetFrame(config.getBool("nuclearCaptureGun.targetFrame",false)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randPoissonP( getEngine(), std::abs(_protonMean) ),

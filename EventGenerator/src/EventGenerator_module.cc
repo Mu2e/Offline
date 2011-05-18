@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-  $Author: wb $
-  $Date: 2011/05/18 02:27:16 $
+  $Id: EventGenerator_module.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
+  $Author: greenc $
+  $Date: 2011/05/18 14:21:44 $
 
   Original author Rob Kutschke
 
@@ -132,11 +132,11 @@ namespace mu2e {
     SimpleConfig config(_configfile);
     checkConfig(config);
 
-    if ( config.get<bool>("printConfig",false) ){
+    if ( config.getBool("printConfig",false) ){
       log << config;
     }
 
-    if ( config.get<bool>("printConfigStats",false) ){
+    if ( config.getBool("printConfigStats",false) ){
       // Work around absence of << operator for this print method.
       ostringstream os;
       config.printStatistics(os);
@@ -150,18 +150,18 @@ namespace mu2e {
     _generators.clear();
 
     // Which generators will we run?
-    bool doConv                 = config.get<bool>( "conversionGun.do",    true );
-    bool doParticleGun          = config.get<bool>( "particleGun.do",      false );
-    bool doCosmicToy            = config.get<bool>( "cosmictoy.do",        false );
-    bool doCosmicDYB            = config.get<bool>( "cosmicDYB.do",        false );
-    bool doPiCapture            = config.get<bool>( "picapture.do",        false );
-    bool doEjectedProton        = config.get<bool>( "ejectedProtonGun.do", false );
-    bool doEjectedNeutron       = config.get<bool>( "ejectedNeutronGun.do",false );
-    bool doDIO                  = config.get<bool>( "decayinorbitGun.do",  false );
-    bool doPiEplusNu            = config.get<bool>( "piEplusNuGun.do",     false );
-    bool doPrimaryProtonGun     = config.get<bool>( "primaryProtonGun.do", false );
-    bool doFromG4BLFile         = config.get<bool>( "fromG4BLFile.do",     false );
-    bool doNuclearCapture       = config.get<bool>( "nuclearCaptureGun.do",false );
+    bool doConv                 = config.getBool( "conversionGun.do",    true );
+    bool doParticleGun          = config.getBool( "particleGun.do",      false );
+    bool doCosmicToy            = config.getBool( "cosmictoy.do",        false );
+    bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
+    bool doPiCapture            = config.getBool( "picapture.do",        false );
+    bool doEjectedProton        = config.getBool( "ejectedProtonGun.do", false );
+    bool doEjectedNeutron       = config.getBool( "ejectedNeutronGun.do",false );
+    bool doDIO                  = config.getBool( "decayinorbitGun.do",  false );
+    bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
+    bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
+    bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
+    bool doNuclearCapture       = config.getBool( "nuclearCaptureGun.do",false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );

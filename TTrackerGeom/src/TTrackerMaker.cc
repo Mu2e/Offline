@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.26 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: TTrackerMaker.cc,v 1.27 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -45,13 +45,13 @@ namespace mu2e {
 
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
-    _numDevices         = config.get<int>("ttracker.numDevices");
-    _sectorsPerDevice   = config.get<int>("ttracker.sectorsPerDevice");
-    _layersPerSector    = config.get<int>("ttracker.layersPerSector");
-    _manifoldsPerEnd    = config.get<int>("ttracker.manifoldsPerEnd");
-    _strawsPerManifold  = config.get<int>("ttracker.strawsPerManifold");
-    _rotationPattern    = config.get<int>("ttracker.rotationPattern");
-    _spacingPattern     = config.get<int>("ttracker.spacingPattern");
+    _numDevices         = config.getInt("ttracker.numDevices");
+    _sectorsPerDevice   = config.getInt("ttracker.sectorsPerDevice");
+    _layersPerSector    = config.getInt("ttracker.layersPerSector");
+    _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
+    _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
+    _rotationPattern    = config.getInt("ttracker.rotationPattern");
+    _spacingPattern     = config.getInt("ttracker.spacingPattern");
 
     _zCenter              = config.getDouble("ttracker.z0")*CLHEP::mm;
     _envelopeInnerRadius  = config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
@@ -76,8 +76,8 @@ namespace mu2e {
 
     config.getVectorString("ttracker.strawMaterials", _strawMaterials, 3);
 
-    _envelopeMaterial = config.get<std::string>("ttracker.mat.vacuum");
-    _supportMaterial = config.get<std::string>("ttracker.mat.support");
+    _envelopeMaterial = config.getString("ttracker.mat.vacuum");
+    _supportMaterial = config.getString("ttracker.mat.support");
 
     //string ttracker.mat.manifold  = "G4_Al";  // Placeholder.
 

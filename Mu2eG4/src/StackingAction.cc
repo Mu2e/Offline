@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.16 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: StackingAction.cc,v 1.17 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -60,12 +60,12 @@ namespace mu2e {
     _dirtG4Ymax(0){
 
     // Get control info from run time configuration.
-    _doCosmicKiller       = config.get<bool>  ("g4.doCosmicKiller",   _doCosmicKiller );
-    _killLevel            = config.get<int>   ("g4.cosmicKillLevel",  _killLevel      );
+    _doCosmicKiller       = config.getBool  ("g4.doCosmicKiller",   _doCosmicKiller );
+    _killLevel            = config.getInt   ("g4.cosmicKillLevel",  _killLevel      );
     _cosmicpcut           = config.getDouble("g4.cosmicPcut",       _cosmicpcut     );
     _yaboveDirtYmin       = config.getDouble("g4.yaboveDirtYmin",   _yaboveDirtYmin );
-    _primaryOnly          = config.get<bool>  ("g4.stackPrimaryOnly", _primaryOnly    );
-    _killLowKineticEnergy = config.get<bool>  ("g4.killLowEKine",     _killLowKineticEnergy );
+    _primaryOnly          = config.getBool  ("g4.stackPrimaryOnly", _primaryOnly    );
+    _killLowKineticEnergy = config.getBool  ("g4.killLowEKine",     _killLowKineticEnergy );
 
     config.getVectorInt("g4.stackingActionDropPDG", _pdgToDrop, vector<int>() );
     config.getVectorInt("g4.stackingActionKeepPDG", _pdgToKeep, vector<int>() );

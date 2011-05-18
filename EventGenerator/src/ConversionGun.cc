@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.22 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: ConversionGun.cc,v 1.23 2011/05/18 14:21:44 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 14:21:44 $
 //
 // Original author Rob Kutschke
 //
@@ -53,8 +53,8 @@ namespace mu2e {
     _czmax (config.getDouble("conversionGun.czmax",  0.5)),
     _phimin(config.getDouble("conversionGun.phimin", 0. )),
     _phimax(config.getDouble("conversionGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
     _tmin(0.),
     _tmax(0.),
     _doHistograms(config.getDouble("conversionGun.doHistograms", true )),
