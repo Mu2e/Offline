@@ -1,0 +1,113 @@
+# Configuration file for G4Test02
+#  - Generate 10 events including one conversion electron plus
+#    some number of background processes.
+#  - Run these through G4.
+#  - Event display with yz view.
+#
+# $Id: simpleENtest_01.fcl,v 1.1 2011/05/18 20:17:43 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/18 20:17:43 $
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.
+process : ENTest01
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 10
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService :
+  {
+    fileName : "entest_01.root"
+  }
+
+  RandomNumberGeneratorService : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+    G4Helper : { }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+
+    # Generate Event
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/enconfig_02.txt"
+    }
+
+    # Run G4 and add hits to the event
+    g4run :
+    {
+      module_type          : G4
+      generatorModuleLabel : generate
+      visMacro             : "Mu2eG4/test/visyz.mac"
+      seed                 : [9877]
+    }
+
+    sen:
+    {
+      module_type          : SimpleEffyNoise
+      diagLevel            : 1
+      noiseRate            : .00
+      hitIneffy            : .00                  
+    }
+  }
+
+
+  analyzers:
+  {
+
+    checkhits:
+    {
+      module_type          : ReadBack
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      minumumEnergy        : 0.001
+      maxFullPrint         : 5
+    }
+
+    checkhits2:
+    {
+      module_type          : ReadBack
+      generatorModuleLabel : generate
+      g4ModuleLabel        : sen
+      minumumEnergy        : 0.001
+      maxFullPrint         : 5
+    }
+
+  }
+
+  p1 : [generate , g4run , sen]
+  e1 : [checkhits, checkhits2]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
