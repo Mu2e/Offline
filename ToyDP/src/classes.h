@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.24 2011/05/18 18:41:36 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 18:41:36 $
+// $Id: classes.h,v 1.25 2011/05/18 19:46:19 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 19:46:19 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,7 @@ template class std::pair<MapVectorKey,mu2e::SimParticle>;
 template class std::map<MapVectorKey,mu2e::SimParticle>;
 template class std::pair<MapVectorKey,mu2e::PointTrajectory>;
 template class std::map<MapVectorKey,mu2e::PointTrajectory>;
-
+template class std::vector<uint32_t>;
 
 template class art::Wrapper<mu2e::ToyGenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;

@@ -24,7 +24,7 @@ class ITrackerWiredata : public TObject {
     Float_t   *alfa;      //[NcelLayer]  alfa
     Float_t   *radius_z0; //[NcelLayer]  layer radius at z=0
 
-//  ClassDef(ITrackerWiredata,1)                                // DCH geometry class
+  ClassDef(ITrackerWiredata,1)                                // DCH geometry class
 };
 
 #endif
@@ -45,6 +45,8 @@ class IlcDCHwiredata : public ITrackerWiredata {
     IlcDCHwiredata():ITrackerWiredata(){}
 
     virtual ~IlcDCHwiredata(){}
+
+  ClassDef(IlcDCHwiredata,1)
 };
 
 #endif /* ITrackerGeom_ITrackerWiredata_hh */
