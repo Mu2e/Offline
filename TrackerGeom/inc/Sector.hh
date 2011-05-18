@@ -5,13 +5,14 @@
 //
 
 //
-// $Id: Sector.hh,v 1.7 2011/05/18 02:27:19 wb Exp $
+// $Id: Sector.hh,v 1.8 2011/05/18 16:31:04 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/18 16:31:04 $
 //
 // Original author Rob Kutschke
 //
 
+#include <algorithm>
 #include <vector>
 
 #include "TrackerGeom/inc/SectorId.hh"

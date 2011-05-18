@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.17 2011/05/18 15:06:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:06:33 $
+// $Id: GenId.hh,v 1.18 2011/05/18 16:31:04 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:31:04 $
 //
 // Original author Rob Kutschke
 //
@@ -21,9 +21,10 @@
 //    at the end of the .cc file.
 // 4) Root stores enum types as 32 bit ints.
 
+#include <cstdlib>
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace mu2e {
 
@@ -74,7 +75,7 @@ namespace mu2e {
       _id(static_cast<enum_type>(id)){
       if ( !isValid() ){
         // throw or something
-        exit(-1);
+        std::exit(-1);
       }
     }
 

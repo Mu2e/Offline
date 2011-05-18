@@ -3,20 +3,19 @@
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.7 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: Layer.hh,v 1.8 2011/05/18 16:31:04 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:31:04 $
 //
 // Original author Rob Kutschke
 //
 
-#include <vector>
-#include <deque>
-
+#include "CLHEP/Vector/ThreeVector.h"
 #include "TrackerGeom/inc/LayerId.hh"
 #include "TrackerGeom/inc/Straw.hh"
-
-#include "CLHEP/Vector/ThreeVector.h"
+#include <algorithm>
+#include <deque>
+#include <vector>
 
 namespace mu2e {
 
