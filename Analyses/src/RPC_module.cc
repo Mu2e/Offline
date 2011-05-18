@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.5 2011/05/18 16:21:55 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 16:21:55 $
+// $Id: RPC_module.cc,v 1.6 2011/05/18 18:40:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 18:40:24 $
 //
 // Original author R. Bernstein
 //
@@ -91,7 +91,7 @@ namespace mu2e {
       _minimumEnergy(pset.get<double>("minimumEnergy")),
       _maxFullPrint(pset.get<int>("maxFullPrint",10)),
       _nAnalyzed(0),
-      _messageCategory("ToyHitInfo"),
+      _messageCategory("RPC"),
       _dEdXelow(0.),
       _dEdXehi(20.),
       _dEdXnbins(2000) {}

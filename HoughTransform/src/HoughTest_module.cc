@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Id: HoughTest_module.cc,v 1.5 2011/05/18 18:40:24 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Date: 2011/05/18 18:40:24 $
 //
 // Original author R. Bernstein
 //
@@ -82,7 +82,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
       _hTime(0),
       _hMultiplicity(0),
       _hDriftDist(0),
-      _messageCategory("ToyHitInfo"),
+      _messageCategory("HitInfo"),
       _hitCreatorName(pset.get<string>("hitCreatorName")),
       _useStepPointMC(pset.get<bool>("UseMCHits"))
     {

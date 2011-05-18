@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Id: HoughTuner_module.cc,v 1.5 2011/05/18 18:40:24 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Date: 2011/05/18 18:40:24 $
 //
 // Original author P. Shanahan
 //
@@ -72,7 +72,7 @@ namespace mu2e {
     explicit HoughTuner(fhicl::ParameterSet const& pset) :
       _maxFullPrint(pset.get<int>("maxFullPrint",10)),
       _nAnalyzed(0),
-      _messageCategory("ToyHitInfo"),
+      _messageCategory("HoughTuner"),
       _hitCreatorName(pset.get<string>("hitCreatorName"))
     { }
     virtual ~HoughTuner() { }
