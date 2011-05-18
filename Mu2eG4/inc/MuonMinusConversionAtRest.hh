@@ -5,9 +5,9 @@
 // muon. Configurable parameters include endpoint of momentum, limits of polar
 // and azimuthal angle.
 //
-// $Id: MuonMinusConversionAtRest.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: MuonMinusConversionAtRest.hh,v 1.4 2011/05/18 05:10:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 05:10:17 $
 //
 //-----------------------------------------------------------------------------
 
@@ -20,9 +20,6 @@
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-
-// Framework includes
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
