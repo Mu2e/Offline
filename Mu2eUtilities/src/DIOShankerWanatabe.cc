@@ -3,9 +3,9 @@
 // data, merged to Shanker's formula near the endpoint. The construction
 // of the spectrum is made by ShankerWanatabeSpectrum class
 //
-// $Id: DIOShankerWanatabe.cc,v 1.8 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: DIOShankerWanatabe.cc,v 1.9 2011/05/18 16:21:55 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 16:21:55 $
 //
 //
 
@@ -26,7 +26,7 @@ using namespace std;
 namespace mu2e {
 
   DIOShankerWanatabe::DIOShankerWanatabe(int atomicZ, double emin, double emax, double spectRes,
-                                         art::RandomNumberGeneratorService::base_engine_t& engine):
+                                         art::RandomNumberGenerator::base_engine_t& engine):
   //atomic number of the foil material
     _Znum ( atomicZ ),
   //limits on energy generation

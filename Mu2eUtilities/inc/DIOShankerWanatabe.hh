@@ -4,9 +4,9 @@
 // Generate a momentum for the DIO electrons, using Wanatabe
 // data, merged to Shanker's formula near the endpoint
 //
-// $Id: DIOShankerWanatabe.hh,v 1.8 2011/05/18 16:11:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Id: DIOShankerWanatabe.hh,v 1.9 2011/05/18 16:21:55 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 16:21:55 $
 //
 //
 
@@ -14,7 +14,7 @@
 #include <vector>
 
 // Framework includes
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/DIOBase.hh"
@@ -29,7 +29,7 @@ namespace mu2e {
   public:
 
     DIOShankerWanatabe(int atomicZ, double emin, double emax, double spectRes,
-                       art::RandomNumberGeneratorService::base_engine_t & engine);
+                       art::RandomNumberGenerator::base_engine_t & engine);
 
     ~DIOShankerWanatabe();
 

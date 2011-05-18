@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.12 2011/05/18 16:11:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Id: PrimaryProtonGun.cc,v 1.13 2011/05/18 16:21:55 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 16:21:55 $
 //
 // Original author Rob Kutschke
 //
@@ -77,7 +77,7 @@ namespace mu2e {
 
   void PrimaryProtonGun::generate( ToyGenParticleCollection& genParts ){
 
-    // For all distributions, use the engine managed by the RandomNumberGeneratorService.
+    // For all distributions, use the engine managed by the RandomNumberGenerator.
     static CLHEP::RandFlat   randFlat        ( getEngine() );
     static CLHEP::RandGaussQ randGaussQ      ( getEngine(), 0., _beamSpotSigma );
     static RandomUnitSphere  randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax);

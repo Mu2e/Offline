@@ -3,9 +3,9 @@
 // Also provides access to the random number engine associated with the
 // EventGenerator module.
 //
-// $Id: GeneratorBase.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: GeneratorBase.cc,v 1.4 2011/05/18 16:21:55 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 16:21:55 $
 //
 // Original author Rob Kutschke
 //
@@ -18,10 +18,10 @@
 
 namespace mu2e {
 
-  art::RandomNumberGeneratorService::base_engine_t&
-  GeneratorBase::getEngine( const art::RandomNumberGeneratorService::label_t& engine_label ){
+  art::RandomNumberGenerator::base_engine_t&
+  GeneratorBase::getEngine( const art::RandomNumberGenerator::label_t& engine_label ){
 
-    static art::ServiceHandle<art::RandomNumberGeneratorService> rng;
+    static art::ServiceHandle<art::RandomNumberGenerator> rng;
     return rng->getEngine(engine_label);
 
   }

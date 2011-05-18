@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.4 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: RPC_module.cc,v 1.5 2011/05/18 16:21:55 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 16:21:55 $
 //
 // Original author R. Bernstein
 //
@@ -30,9 +30,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-
-// Framework includes
-//#include "art/Framework/Core/RandomNumberGeneratorService.h"
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
@@ -112,8 +109,6 @@ namespace mu2e {
 
 
   private:
-
-    //    art::ServiceHandle<art::RandomNumberGeneratorService>()->getEngine();
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;

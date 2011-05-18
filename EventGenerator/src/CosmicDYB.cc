@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.15 2011/05/18 14:21:44 greenc Exp $
+// $Id: CosmicDYB.cc,v 1.16 2011/05/18 16:21:55 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Date: 2011/05/18 16:21:55 $
 //
 // Original author Yury Kolomensky
 //
@@ -28,7 +28,6 @@
 #include "art/Framework/Core/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.

@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.6 2011/05/18 14:53:21 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 14:53:21 $
+// $Id: G4_module.cc,v 1.7 2011/05/18 16:21:55 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/18 16:21:55 $
 //
 // Original author Rob Kutschke
 //
@@ -138,7 +138,7 @@ namespace mu2e {
       produces<PointTrajectoryCollection>();
       produces<StatusG4>();
 
-      // The string "G4Engine" is magic; see the docs for RandomNumberGeneratorService.
+      // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
       createEngine( get_seed_value(pSet), "G4Engine");
 
     }
