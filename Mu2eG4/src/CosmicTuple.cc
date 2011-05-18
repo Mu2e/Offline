@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.19 2011/05/18 15:47:40 kutschke Exp $
+// $Id: CosmicTuple.cc,v 1.20 2011/05/18 16:40:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Date: 2011/05/18 16:40:25 $
 //
 // Original author Rob Kutschke
 //
@@ -224,7 +224,7 @@ namespace mu2e {
 	prSt   = sim_parent->stoppingCode();
       } else {
 	prspos  = posGen;
-	prsmom  = gen_parent._momentum.e();
+	prsmom  = gen_parent._momentum;
 	prntPdg = gen_parent._pdgId;
       }
 
