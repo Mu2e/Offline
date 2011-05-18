@@ -1,9 +1,9 @@
 //
-// Class for all cube structures, e.g. vanes, crystals. The structure is displayed via EventDisplayGeoVolumeBox (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). 
+// Class for all cube structures, e.g. vanes, crystals. The structure is displayed via EventDisplayGeoVolumeBox (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cube.h,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: Cube.h,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -22,17 +22,17 @@
 namespace mu2e_eventdisplay
 {
 
-class Cube: public VirtualShape 
+class Cube: public VirtualShape
 {
   Cube();
   Cube(const Cube &);
   Cube& operator=(const Cube &);
 
-  //bare pointer needed, since ROOT manages this object 
+  //bare pointer needed, since ROOT manages this object
   EventDisplayGeoVolumeBox *_volume;
   TGeoRotation *_rotation;
   TGeoCombiTrans *_translation;
-  struct line_struct 
+  struct line_struct
   {
     boost::shared_ptr<EventDisplayPolyLine3D> line;
   };
@@ -40,8 +40,8 @@ class Cube: public VirtualShape
   bool _notDrawn;
 
   struct points{double x,y,z;};
-  
-  points rotateAndTranslate(double x, double y, double z, 
+
+  points rotateAndTranslate(double x, double y, double z,
                             double dx, double dy, double dz,
                             double phi, double theta, double psi)
   {
@@ -53,14 +53,14 @@ class Cube: public VirtualShape
     double cs=cos(psi);
 
     //Start with the cylinder centered at (0,0,0).
-    //Before the rotation, the vector from the center of the cube 
+    //Before the rotation, the vector from the center of the cube
     //to its corner is (dx,dy,dz).
     //After the rotation, the vector from the center of the cube
     //to its corner is (rx,ry,rz).
     double rx,ry,rz;
     rotate(dx,dy,dz,  rx,ry,rz,  sp,cp,st,ct,ss,cs);
 
-    //After the translation (i.e. when the center of the cube moves 
+    //After the translation (i.e. when the center of the cube moves
     //from (0,0,0) to (x,y,z)), the points of the cube points move to
     //(x+rx,y+ry,z+rz).
     points to_return;
@@ -71,12 +71,12 @@ class Cube: public VirtualShape
     return to_return;
   }
 
- 
+
   public:
   Cube(double x, double y, double z, double dx, double dy, double dz,
            double phi, double theta, double psi,
-           double time, int color, 
-           const TGeoManager *geomanager, TGeoVolume *topvolume, 
+           double time, int color,
+           const TGeoManager *geomanager, TGeoVolume *topvolume,
            const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info,
            bool defaultVisibility):
            VirtualShape(geomanager, topvolume, info, true)
@@ -98,11 +98,11 @@ class Cube: public VirtualShape
     _topvolume->AddNode(_volume, i, _translation);
 
     //Start with the cylinder centered at (0,0,0).
-    //Before the rotation, the vectors from the center of the cube 
-    //to its corners are 
+    //Before the rotation, the vectors from the center of the cube
+    //to its corners are
     //(dx,dy,dz), (-dx,dy,dz), (-dx,-dy,dz), (dx,-dy,dz), and so on.
 
-    //Now rotate this cylinder with the angles phi, theta, psi, 
+    //Now rotate this cylinder with the angles phi, theta, psi,
     //and move the center of the cylinder from (0,0,0) to (x,y,z)
     points p[8];
     p[0]=rotateAndTranslate(x, y, z,  dx,  dy,  dz, phi, theta, psi);
@@ -148,11 +148,11 @@ class Cube: public VirtualShape
     start();
   }
 
-  virtual ~Cube() 
+  virtual ~Cube()
   {
     _lines.clear();   //deletes all lines
     _volume->SetVisibility(0);  //can only be deleted by deleting TGeoManager
-                                //deleting TGeoManager should also delete 
+                                //deleting TGeoManager should also delete
                                 //TGeoRotation, and TGeoTranslation
   }
 

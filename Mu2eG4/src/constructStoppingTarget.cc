@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.10 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructStoppingTarget.cc,v 1.11 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Peter Shanahan
 //
@@ -43,7 +43,7 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructStoppingTarget( G4LogicalVolume* mother, 
+  VolumeInfo constructStoppingTarget( G4LogicalVolume* mother,
                                       double zOff,
                                       SimpleConfig const& config ){
 
@@ -72,30 +72,30 @@ namespace mu2e {
     std::cout<<"Done Looking for material "<<target->fillMaterial()<<std::endl;
     G4ThreeVector targetOffset(0.,0.,(12000+z0-zOff));
 
-    cout << "Target Offset: z0, zOff, z0-zOff: " 
+    cout << "Target Offset: z0, zOff, z0-zOff: "
          << z0 << " "
          << zOff << " "
          << z0-zOff << " "
          << endl;
-   
+
 
 
     targetInfo.solid  = new G4Tubs( targetInfo.name,
                                     0., rOut, zHalf, 0., 2.*M_PI );
-    
-    targetInfo.logical = new G4LogicalVolume( targetInfo.solid, fillMaterial, targetInfo.name); 
-    
+
+    targetInfo.logical = new G4LogicalVolume( targetInfo.solid, fillMaterial, targetInfo.name);
+
     std::cout<<"targetOffset="<<targetOffset<<std::endl;
     std::cout<<"mother has "<<mother->GetNoDaughters()<<" daughters"<<std::endl;
     std::cout<<" they are:"<<std::endl;
     for (int id=0; id<mother->GetNoDaughters(); id++) cout<<id<<"="<<
       mother->GetDaughter(id)->GetName()<<" at "<<mother->GetDaughter(id)->GetTranslation()<<std::endl;
-    targetInfo.physical =  new G4PVPlacement( 0, 
-                                              targetOffset, 
-                                              targetInfo.logical, 
-                                              targetInfo.name, 
-                                              mother, 
-                                              0, 
+    targetInfo.physical =  new G4PVPlacement( 0,
+                                              targetOffset,
+                                              targetInfo.logical,
+                                              targetInfo.name,
+                                              mother,
+                                              0,
                                               0,
                                               config.get<bool>("g4.doSurfaceCheck",false));
 
@@ -129,7 +129,7 @@ namespace mu2e {
                                                 );
 	foilInfo.logical->SetSensitiveDetector(stSD);
 
-        // rotation matrix... 
+        // rotation matrix...
         G4RotationMatrix* rot = 0; //... will have to wait
 
         G4ThreeVector foilOffset(foil.center()-G4ThreeVector(0.,0.,z0));

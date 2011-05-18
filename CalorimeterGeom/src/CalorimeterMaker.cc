@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.17 2011/05/17 15:35:59 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:35:59 $
+// $Id: CalorimeterMaker.cc,v 1.18 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -39,8 +39,8 @@ using namespace std;
 
 
 //
-// naming conventions:  
-// a) a vane is one of the sets of crystals; 
+// naming conventions:
+// a) a vane is one of the sets of crystals;
 // b) a "z-slice" is one set of crystals in a vane with long side aligned, at constant
 //    z in an ideal array;
 // c) an "r-slice" is one set of crystals in a vane at the same distance
@@ -52,12 +52,12 @@ namespace mu2e{
     CalorimeterMaker::CalorimeterMaker( SimpleConfig const& config)
     {
       _calo = auto_ptr<Calorimeter>(new Calorimeter());
-      
-      _calo->_nVane      = config.get<int>   ("calorimeter.numberOfVanes");
+
+      _calo->_nVane      = config.getInt   ("calorimeter.numberOfVanes");
       _calo->_crystalHW  = config.getDouble("calorimeter.crystalHalfTrans");
       _calo->_crystalHL  = config.getDouble("calorimeter.crystalHalfLong");
-      _calo->_nCrystalR  = config.get<int>   ("calorimeter.nCrystalRSlices");   
-      _calo->_nCrystalZ  = config.get<int>   ("calorimeter.nCrystalZSlices");   
+      _calo->_nCrystalR  = config.getInt   ("calorimeter.nCrystalRSlices");
+      _calo->_nCrystalZ  = config.getInt   ("calorimeter.nCrystalZSlices");
       _calo->_rMin       = config.getDouble("calorimeter.rInscribed");
 
       _calo->_wrapperHalfThickness = config.getDouble("calorimeter.crystalWrapperHalfThickness");
@@ -70,7 +70,7 @@ namespace mu2e{
       _calo->_origin = CLHEP::Hep3Vector(-solenoidOffset,0,center.z());
 
       // Check number of readouts
-      int nRO = config.get<int>("calorimeter.crystalReadoutChannelCount");
+      int nRO = config.getInt("calorimeter.crystalReadoutChannelCount");
       if( ! (nRO==1 || nRO==2 || nRO==4) ) {
 	throw cet::exception("CaloGeom")
 	  << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";
@@ -151,7 +151,7 @@ namespace mu2e{
 				       _calo->_origin.y()+radius*sin(phi),
 				       _calo->_origin.z() );
 	v._originLocal = CLHEP::Hep3Vector(radius*cos(phi),radius*sin(phi),0);
-				      
+
 	v._rotation = CLHEP::HepRotation::IDENTITY;
 	v._rotation *= CLHEP::HepRotationZ(-CLHEP::pi/2 - i*dphi);
 

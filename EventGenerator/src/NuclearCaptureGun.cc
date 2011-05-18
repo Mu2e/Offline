@@ -2,15 +2,15 @@
 //
 // Simulate the complete process of the nuclear capture of muons by aluminum atoms
 // which results in protons, neutrons and photons
-// 
 //
-// $Id: NuclearCaptureGun.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+//
+// $Id: NuclearCaptureGun.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Gianni Onorato
-// 
-// 
+//
+//
 
 // C++ incldues.
 #include <iostream>
@@ -51,10 +51,10 @@ static const double spectrumEndPointNeutron = 0.1;
 namespace mu2e {
 
   NuclearCaptureGun::NuclearCaptureGun( art::Run& run, const SimpleConfig& config ):
-    
+
     // Base class.
     GeneratorBase(),
-    
+
     // Configurable parameters
     _mean(config.getDouble("nuclearCaptureGun.mean",1.)),
     _protonMean(config.getDouble("nuclearCaptureGun.protonMean",0.1)),
@@ -82,7 +82,7 @@ namespace mu2e {
     _randPoissonP( getEngine(), std::abs(_protonMean) ),
     _randPoissonN( getEngine(), std::abs(_neutronMean) ),
     _randPoissonG( getEngine(), std::abs(_photonMean) ),
-    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),  
+    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _shapeP ( getEngine() , &(binnedEnergySpectrumProton()[0]), _nProtonBins ),
     _shapeN ( getEngine() , &(binnedEnergySpectrumNeutron()[0]), _nNeutronBins ),
     _shapeG ( getEngine() , &(binnedEnergySpectrumPhoton()[0]), _nPhotonBins ),
@@ -128,12 +128,12 @@ namespace mu2e {
     const HepPDT::ParticleData& n_data     = pdt->particle(PDGCode::n0).ref();
     _pMass = p_data.mass().value();
     _nMass = n_data.mass().value();
-    
+
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
     _tmin = daqPar->t0;
     _tmax = accPar->deBuncherPeriod;
-    
+
     _tmin = config.getDouble("nuclearCaptureGun.tmin",  _tmin );
     _tmax = config.getDouble("nuclearCaptureGun.tmax",  _tmax );
 
@@ -172,10 +172,10 @@ namespace mu2e {
       _hPhotonTime         = tfdir.make<TH1D>( "hPhotontime",         "Photon time ",                      210,   -200.,  2000. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
-                                                                             FoilParticleGenerator::muonFileInputFoil, 
-                                                                             FoilParticleGenerator::muonFileInputPos, 
-                                                                             FoilParticleGenerator::negExp, 
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+                                                                             FoilParticleGenerator::muonFileInputFoil,
+                                                                             FoilParticleGenerator::muonFileInputPos,
+                                                                             FoilParticleGenerator::negExp,
                                                                              _targetFrame,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay));
@@ -186,29 +186,29 @@ namespace mu2e {
 
 
 
-  
+
   void NuclearCaptureGun::generate( ToyGenParticleCollection& genParts ){
 
     // Choose the number of nuclear capture event to generate this event.
     long n = (_mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire());
-    
-    if ( _doHistograms ) { 
-        _hNuclearCaptureMultiplicity->Fill(n); 
+
+    if ( _doHistograms ) {
+        _hNuclearCaptureMultiplicity->Fill(n);
     }
 
     //Loop over nuclear captures to generate
 
     long totalP(0), totalN(0), totalG(0);
-    
+
     for (int i=0; i<n; ++i) {
-      
+
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
       _fGenerator->generatePositionAndTime(pos, time);
-      
+
       //Define the number of protons, neutrons and photons to generate
-      
+
       long np = (_protonMean < 0 ? static_cast<long>(-_protonMean) : _randPoissonP.fire());
       long nn = (_neutronMean < 0 ? static_cast<long>(-_neutronMean) : _randPoissonN.fire());
       long ng = (_photonMean < 0 ? static_cast<long>(-_photonMean) : _randPoissonG.fire());
@@ -216,27 +216,27 @@ namespace mu2e {
       totalP += np;
       totalN += nn;
       totalG += ng;
-      
+
 
       //Loop over particles to generate
-      
+
       for (int ip = 0; ip<np; ++ip) {
-      
+
           //Pick up energy
         double eKine = _protonElow + _shapeP.fire() * ( _protonEhi - _protonElow );
         double e   = eKine + _pMass;
-        
+
         //Pick up momentum vector
-        
+
         _p = safeSqrt(e*e - _pMass*_pMass);
         CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
-        
+
         //Set Four-momentum
         CLHEP::HepLorentzVector mom(p3,e);
-        
+
         // Add the particle to  the list.
-        genParts.push_back( ToyGenParticle(PDGCode::p_plus, GenId::nuclearCaptureGun, pos, mom, time));    
-      
+        genParts.push_back( ToyGenParticle(PDGCode::p_plus, GenId::nuclearCaptureGun, pos, mom, time));
+
         // Fill histograms.
         if ( _doHistograms) {
           _hProtonKE->Fill( eKine );
@@ -246,27 +246,27 @@ namespace mu2e {
           _hProtonCz->Fill( mom.cosTheta() );
           _hProtonPhi->Fill( mom.phi() );
           _hProtonTime->Fill( time );
-          
+
         }
       } // end of loop on protons
 
       for (int ineu = 0; ineu<nn; ++ineu) {
-      
+
         //Pick up energy
         double eKine = _neutronElow + _shapeN.fire() * ( _neutronEhi - _neutronElow );
         double e   = eKine + _nMass;
-        
+
         //Pick up momentum vector
-        
+
         _p = safeSqrt(e*e - _nMass*_nMass);
         CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
-        
+
         //Set Four-momentum
         CLHEP::HepLorentzVector mom(p3,e);
-        
+
         // Add the particle to  the list.
-        genParts.push_back( ToyGenParticle(PDGCode::n0, GenId::nuclearCaptureGun, pos, mom, time));    
-      
+        genParts.push_back( ToyGenParticle(PDGCode::n0, GenId::nuclearCaptureGun, pos, mom, time));
+
         // Fill histograms.
         if ( _doHistograms) {
           _hNeutronKE->Fill( eKine );
@@ -276,25 +276,25 @@ namespace mu2e {
           _hNeutronCz->Fill( mom.cosTheta() );
           _hNeutronPhi->Fill( mom.phi() );
           _hNeutronTime->Fill( time );
-          
+
         }
       } // end of loop on neutrons
 
       for (int ig = 0; ig<ng; ++ig) {
-        
+
         //Pick up energy
         double e   = _photonElow + _shapeG.fire() * ( _photonEhi - _photonElow );
 
         //Pick up momentum vector
 
         CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(e);
-        
+
         //Set Four-momentum
         CLHEP::HepLorentzVector mom(p3,e);
-        
+
         // Add the particle to  the list.
-        genParts.push_back( ToyGenParticle(PDGCode::gamma, GenId::nuclearCaptureGun, pos, mom, time));    
-      
+        genParts.push_back( ToyGenParticle(PDGCode::gamma, GenId::nuclearCaptureGun, pos, mom, time));
+
         // Fill histograms.
         if ( _doHistograms) {
           _hPhotonKE->Fill( e );
@@ -304,22 +304,22 @@ namespace mu2e {
           _hPhotonCz->Fill( mom.cosTheta() );
           _hPhotonPhi->Fill( mom.phi() );
           _hPhotonTime->Fill( time );
-          
+
         }
       } // end of loop on photons
     }
-   
+
 
     if ( _doHistograms) {
       _hProtonMultiplicity->Fill(totalP);
       _hNeutronMultiplicity->Fill(totalN);
       _hPhotonMultiplicity->Fill(totalG);
     }
-    
+
   } // end generate
-  
+
   // Evaluate the number of bins for the neutron spectrum.
-  // It has to be compatible with the spectrum table (0.5 KeV) 
+  // It has to be compatible with the spectrum table (0.5 KeV)
 
   int NuclearCaptureGun::evaluateNeutronBins() {
 
@@ -333,17 +333,17 @@ namespace mu2e {
   double NuclearCaptureGun::protonEnergySpectrum( double e )
   {
 
-    //taken from GMC 
+    //taken from GMC
     //
-    //   Ed Hungerford  Houston University May 17 1999 
-    //   Rashid Djilkibaev New York University (modified) May 18 1999 
+    //   Ed Hungerford  Houston University May 17 1999
+    //   Rashid Djilkibaev New York University (modified) May 18 1999
     //
     //   e - proton kinetic energy (MeV)
     //   p - proton Momentum (MeV/c)
-    // 
+    //
     //   Generates a proton spectrum similar to that observed in
     //   u capture in Si.  JEPT 33(1971)11 and PRL 20(1967)569
-    
+
     //these numbers are in MeV!!!!
     static const double emn = 1.4; // replacing par1 from GMC
     static const double par2 = 1.3279;
@@ -353,14 +353,14 @@ namespace mu2e {
     static const double par6=10.014;
     static const double par7=1050.;
     static const double par8=5.103;
-    
+
     double spectrumWeight;
 
     if (e >= 20)
       {
         spectrumWeight=par5*TMath::Exp(-(e-20.)/par6);
       }
-    
+
     else if(e >= 8.0 && e <= 20.0)
       {
         spectrumWeight=par7*exp(-(e-8.)/par8);
@@ -372,47 +372,47 @@ namespace mu2e {
         double xv=par3*TMath::Exp(-par4*e);
         spectrumWeight=xv*xu;
       }
-    else 
+    else
       {
         spectrumWeight = 0.;
       }
     return spectrumWeight;
-  } 
-  
+  }
+
   // Compute a binned representation of the energy spectrum of the proton.
   std::vector<double> NuclearCaptureGun::binnedEnergySpectrumProton(){
-    
+
     // Sanity check.
     if (_nProtonBins <= 0) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense nbins requested in "
         << "nuclearCaptureGun (proton) = "
         << _nProtonBins
         << "\n";
     }
-    
+
     // Bin width.
     double dE = (_protonEhi - _protonElow) / _nProtonBins;
-    
+
     // Vector to hold the binned representation of the energy spectrum.
     std::vector<double> spectrum;
     spectrum.reserve(_nProtonBins);
-    
+
     for (int ib=0; ib<_nProtonBins; ib++) {
       double x = _protonElow+(ib+0.5) * dE;
       spectrum.push_back(protonEnergySpectrum(x));
     }
-    
+
     return spectrum;
   } // NuclearCaptureGun::binnedEnergySpectrumProton
 
-  
+
   // Compute a binned representation of the energy spectrum of the neutron.
   //Energy in MeV
   std::vector<double> NuclearCaptureGun::binnedEnergySpectrumNeutron(){
 
     //The neutron spectum is taken from MARS simulation
-    
+
     vector<double> neutronSpectrum;
     art::FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
     string NeutronFileFIP = spectrumFileName.fullPath();
@@ -447,9 +447,9 @@ namespace mu2e {
     for (int i=0; i < _nNeutronBins; ++i) {
       photonSpectrum.push_back(1);
     }
-    
+
     return photonSpectrum;
   } // end binnedEnergySpectrumPhoton
-  
-  
+
+
 } // namespace mu2e

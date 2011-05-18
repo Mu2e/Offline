@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.6 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:37 $
+// $Id: Sector.hh,v 1.7 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -42,22 +42,22 @@ namespace mu2e {
     Sector( const SectorId& id ):_id(id){};
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
-  
+
     const SectorId& Id() const { return _id;}
 
-    const std::vector<Layer>& getLayers() const{ 
+    const std::vector<Layer>& getLayers() const{
       return _layers;
     }
 
-    int nLayers() const{ 
+    int nLayers() const{
       return _layers.size();
     }
 
-    const Layer& getLayer ( int n ) const { 
+    const Layer& getLayer ( int n ) const {
       return _layers.at(n);
     }
 
-    const Layer& getLayer ( const LayerId& lid) const { 
+    const Layer& getLayer ( const LayerId& lid) const {
       return _layers.at(lid.getLayer());
     }
 
@@ -120,9 +120,9 @@ namespace mu2e {
 
 
 #endif
-  
+
   protected:
-  
+
     SectorId _id;
     std::vector<Layer> _layers;
 

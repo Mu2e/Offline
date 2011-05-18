@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: Track.h,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -20,7 +20,7 @@
 namespace mu2e_eventdisplay
 {
 
-class Track: public VirtualShape 
+class Track: public VirtualShape
 {
   Track();
   Track(const Track &);
@@ -33,7 +33,7 @@ class Track: public VirtualShape
   int _particleId;
 
   public:
-  Track(double x1, double y1, double z1, double t1, 
+  Track(double x1, double y1, double z1, double t1,
         double x2, double y2, double z2, double t2,
         int particleId,
         const TGeoManager *geomanager, TGeoVolume *topvolume,
@@ -41,18 +41,18 @@ class Track: public VirtualShape
         VirtualShape(geomanager, topvolume, info, false)
   {
     pt p;
-    p.x=x1;    
-    p.y=y1;    
-    p.z=z1;    
-    p.t=t1;   
-    _pVec.push_back(p); 
-    p.x=x2;    
-    p.y=y2;    
-    p.z=z2;    
-    p.t=t2;    
-    _pVec.push_back(p); 
-    setStartTime(t1); 
-    setEndTime(t2); 
+    p.x=x1;
+    p.y=y1;
+    p.z=z1;
+    p.t=t1;
+    _pVec.push_back(p);
+    p.x=x2;
+    p.y=y2;
+    p.z=z2;
+    p.t=t2;
+    _pVec.push_back(p);
+    setStartTime(t1);
+    setEndTime(t2);
     _particleId=particleId;
     _trajectory=false;
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
@@ -69,7 +69,7 @@ class Track: public VirtualShape
     if(!_trajectory) {start(); _trajectory=true;}
   }
 
-  virtual ~Track() 
+  virtual ~Track()
   { //_line gets deleted automatically via boost
   }
 
@@ -94,7 +94,7 @@ class Track: public VirtualShape
     if(time<getStartTime()) return;
     for(unsigned int i=1; i<_pVec.size(); i++)
     {
-      if(time>_pVec[i].t || isnan(time)) 
+      if(time>_pVec[i].t || isnan(time))
       {
         _line->SetPoint(i,_pVec[i].x,_pVec[i].y,_pVec[i].z);
         _line->SetLineColor(getColor());

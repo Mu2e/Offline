@@ -2,9 +2,9 @@
 #define Mu2eG4_nestTorus_hh
 //
 // Free function to create and place a new G4Torus inside a logical volume.
-// 
-// $Id: nestTorus.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
+//
+// $Id: nestTorus.hh,v 1.7 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
 // $Date: 2010/03/15
 //
 
@@ -39,7 +39,7 @@ namespace mu2e {
                          bool const placePV,
                          bool const doSurfaceCheck
                          );
-  
+
 
 
   // Alternate argument list, using a vector for the half dimensions.
@@ -57,7 +57,7 @@ namespace mu2e {
                                 bool const placePV,
                                 bool const doSurfaceCheck
                                 ){
-    return nestTorus( name, 
+    return nestTorus( name,
                       &halfDim[0],
                       material,
                       rot,
@@ -75,7 +75,7 @@ namespace mu2e {
 
 
   // Alternate argument list (and different behavior)
-  // using  VolumeInfo object 
+  // using  VolumeInfo object
   VolumeInfo nestTorus ( std::string const& name,
                          double const halfDim[5],
                          G4Material* material,
@@ -90,7 +90,7 @@ namespace mu2e {
                          bool const placePV,
                          bool const doSurfaceCheck
                          );
-  
+
 
   // Alternate argument list, using (and different behavior)
   // using  VolumeInfo object aand vector for the half dimensions.
@@ -108,7 +108,7 @@ namespace mu2e {
                                 bool const placePV,
                                 bool const doSurfaceCheck
                                 ){
-    return nestTorus( name, 
+    return nestTorus( name,
                       &halfDim[0],
                       material,
                       rot,

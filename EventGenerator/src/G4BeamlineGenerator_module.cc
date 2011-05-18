@@ -3,8 +3,8 @@
 
   A plug_in for running G4Beamline-based event generator.
 
-  Adds additional data collection to the event with extra data 
-  available in G4Beamline data file. 
+  Adds additional data collection to the event with extra data
+  available in G4Beamline data file.
 
   The code is kept very similar to EventGenerator_plugin
 
@@ -94,7 +94,7 @@ namespace mu2e {
     }
 
     mf::LogInfo log("G4BeamlineGenerator");
-    log << "Event generator configuration file: " 
+    log << "Event generator configuration file: "
         << _configfile
         << "\n\n";
 
@@ -114,7 +114,7 @@ namespace mu2e {
 
     // Instantiate generators for this run.
     _generator = GeneratorBasePtr(new FromG4BLFile(run, config));
-    
+
   }
 
   void
@@ -123,7 +123,7 @@ namespace mu2e {
     // Make the collection to hold the output.
     auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);
     auto_ptr<G4BeamlineInfoCollection> extraData(new G4BeamlineInfoCollection);
-    
+
     _generator->generate(*genParticles,&(*extraData));
 
     // Put the generated particles into the event.
@@ -134,7 +134,7 @@ namespace mu2e {
 
   // Look for inconsistencies in the config file.
   void G4BeamlineGenerator::checkConfig( const SimpleConfig&  config){
-    
+
     // There is nothing to do for this generator
 
   }

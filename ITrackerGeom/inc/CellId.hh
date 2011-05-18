@@ -3,7 +3,7 @@
 
 #include "ITrackerGeom/inc/WireId.hh"
 
-namespace mu2e { 
+namespace mu2e {
 
 struct CellId{
 
@@ -13,7 +13,7 @@ public:
     _swid()
   {
   }
-  
+
   CellId( WireId &swid):
     _swid(swid._lid, swid._n)
   {
@@ -32,7 +32,7 @@ public:
   const ITLayerId& getLayerId() const {
     return _swid.getLayerId();
   }
-  
+
   const int getLayer() const{
     return _swid.getLayer();
   }
@@ -46,10 +46,10 @@ public:
   }
 
   WireId _swid;
-  
+
 };
 
-inline std::ostream& operator<<(std::ostream& ost, 
+inline std::ostream& operator<<(std::ostream& ost,
                                 const CellId& c ){
   ost << "Cell Id: ("
       << c.getLayerId() << " "

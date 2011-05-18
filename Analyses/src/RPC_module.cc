@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.3 2011/05/17 22:33:42 wb Exp $
-// $Author: wb $ 
-// $Date: 2011/05/17 22:33:42 $
+// $Id: RPC_module.cc,v 1.4 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author R. Bernstein
 //
@@ -78,7 +78,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
 
   class RPC : public art::EDAnalyzer{
   public:
@@ -106,14 +106,14 @@ namespace mu2e {
     virtual void beginRun(art::Run const &r );
 
     virtual void beginSubRun(art::SubRun const& lblock );
- 
+
     // This is called for each event.
     void analyze(const art::Event& e );
 
 
   private:
 
-    //    art::ServiceHandle<art::RandomNumberGeneratorService>()->getEngine();  
+    //    art::ServiceHandle<art::RandomNumberGeneratorService>()->getEngine();
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
@@ -126,7 +126,7 @@ namespace mu2e {
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
- 
+
 
     // Number of events analyzed.
     int _nAnalyzed;
@@ -180,9 +180,9 @@ namespace mu2e {
     // Compute a binned representation of the dE/dx spectrm.
     std::vector<double> binnedEnergyLossSpectrum();
     std::vector<double> isotropicBinnedEnergyLossSpectrum();
-    double _dEdXelow;         //< lower dE/dx for binned plot 
-    double _dEdXehi;          //< upper  
-    int    _dEdXnbins;        //< number of bins 
+    double _dEdXelow;         //< lower dE/dx for binned plot
+    double _dEdXehi;          //< upper
+    int    _dEdXnbins;        //< number of bins
     TH1D* _piCaptureEnergyLossSpectrum;
     //CLHEP::RandGeneral _dEdXspectrum;
 
@@ -248,10 +248,10 @@ namespace mu2e {
 
     }
     mf::LogVerbatim log(_messageCategory);
-    log << "RPC event #: " 
+    log << "RPC event #: "
         << event.id();
 
-    // 
+    //
     // start looking through SimParticles
     art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
@@ -324,17 +324,17 @@ namespace mu2e {
 
               const StepPointMC& hit = (*hits)[i];
 
-              //step point mc associated with generated electrons     
+              //step point mc associated with generated electrons
               key_type trackId = hit.trackId();
               //
-              // now I have the track Id of this hit.  
+              // now I have the track Id of this hit.
               SimParticle const& simParticleHit = simParticles->at(trackId);
               //
               // is this simParticle associated with the hit the same as the one I started with?
               if (sim.id() == simParticleHit.id()){
                 electronHitTracker = true;
 
-                // 
+                //
                 //let's make a distribution of the z position of all hits associated with this track
                 _piCaptureZofHit->Fill(hit.position().z());
 
@@ -370,7 +370,7 @@ namespace mu2e {
               }
             }
             //
-            // the above doesn't give a great angular distribution; 
+            // the above doesn't give a great angular distribution;
             //but just hitting the tracker looks good up to an overall scale
             //
             // uncomment iff i'm forcing the normalization to 19% from TTracker memo anyway, and using MECO's weight function
@@ -403,16 +403,16 @@ namespace mu2e {
             // as a function of cos theta
             double weight = 0.;
 
-            // 
-            // the integrals of these weight functions over d(cos theta) from 0 to 1 and -1 to 0 are .150 and .133 respectively, 
+            //
+            // the integrals of these weight functions over d(cos theta) from 0 to 1 and -1 to 0 are .150 and .133 respectively,
             // see doc-db 1087. weight integral over -1 to 1 to 19% to match Rashid's memo on T-tracker.  Used to use 29% but that
             // was before calorimeter acceptance and track quality cuts.
-            // 
-            // last fudge factor is because Rashid's 19% is for events in signal box.  But that includes energy loss, and I'm too early in the code 
-            // for that, so scale up using energy loss 
+            //
+            // last fudge factor is because Rashid's 19% is for events in signal box.  But that includes energy loss, and I'm too early in the code
+            // for that, so scale up using energy loss
 
             //one has to be very careful with these weights.  The weight is for 105 MeV conversion electrons, so if I look in a restricted region
-            // where the acceptance is about the same as conversion electrons, it's fine. 
+            // where the acceptance is about the same as conversion electrons, it's fine.
 
             //
             // last factor of two is because \int_1^1 d(cos theta) = 2 so I need this to give me 19% acceptance.  I'm essentially multiplying
@@ -443,7 +443,7 @@ namespace mu2e {
               _piCaptureConvertedElectronCosThetaWeightedSignal->Fill(cost,weight );
             }
             //
-            // weight events according to energy loss spectrum (big clause below "demand they entered tracker" computes this, 
+            // weight events according to energy loss spectrum (big clause below "demand they entered tracker" computes this,
             //     we re-use here
             //   there's some correlation between the weight and the angle so this isn't
             //  quite right
@@ -455,7 +455,7 @@ namespace mu2e {
             _piCaptureConvertedFinalSpectrumWeighted->Fill(momentumForPlot,weight);
             //
             // and now demand they entered tracker -- these should not be weighted since the weight mocks up the acceptance
-            // however, this allows us to plot what we measure -- momentum at the tracker after energy loss in 
+            // however, this allows us to plot what we measure -- momentum at the tracker after energy loss in
             // stopping target and foils -- hence we get RPCs that are smeared down and lose RPCs that are smeared out.
             //  If the # of events and distributions in cos theta and momentum (at birth)
             // are the same as when weighted, then this hitting the tracker is a good mock-up of accepted events.
@@ -492,7 +492,7 @@ namespace mu2e {
           }
         }
       }
-      // 
+      //
       // check geant4's photon conversion.  if there was no conversion you won't see anything so check
       if (simParticles->size() >= 3 && electronEnergy > 0. && positronEnergy > 0. && photonEnergy > 0.){
         _conversionAsymmetry->Fill( abs(electronEnergy - positronEnergy)/ (electronEnergy + positronEnergy) );
@@ -500,78 +500,78 @@ namespace mu2e {
     }
   }
   void RPC::bookEventHistos(double const elow, double const ehigh)
-  {        
+  {
     //    cout << "booking histos" << endl; assert(2==1);
     art::ServiceHandle<art::TFileService> tfs;
 
 
 
-    _piCaptureEnergyLossSpectrum = 
+    _piCaptureEnergyLossSpectrum =
       tfs->make<TH1D>( "piCaptureEnergyLossSpectrum",
                        "Pi Capture Energy Loss Spectrum",_dEdXnbins,_dEdXelow,_dEdXehi);
-    _piCaptureZofHit = 
+    _piCaptureZofHit =
       tfs->make<TH1D>( "piCaptureZofHit",
                        "Pi Capture Z of Hit", 200, -2000., 2000.);
 
 
     //
     // all events, unweighted
-    _piCaptureConvertedElectronMomentum = 
+    _piCaptureConvertedElectronMomentum =
       tfs->make<TH1D>( "piCaptureConvertedElectronMomentum",
-                       "Pi Capture Converted Electron Momentum", 200, 0., 200.);  
-    _piCaptureConvertedFinalSpectrum = 
+                       "Pi Capture Converted Electron Momentum", 200, 0., 200.);
+    _piCaptureConvertedFinalSpectrum =
       tfs->make<TH1D>( "piCaptureConvertedFinalSpectrum",
                        "Pi Capture Converted Final Spectrum", 15, elow, ehigh);
-    _piCaptureConvertedFinalSpectrumWeighted = 
+    _piCaptureConvertedFinalSpectrumWeighted =
       tfs->make<TH1D>( "piCaptureConvertedFinalSpectrumWeighted",
                        "Pi Capture Converted Final Spectrum, Weighted for Acceptance", 15, elow, ehigh);
-    _piCaptureConvertedElectronMomentumSignal = 
+    _piCaptureConvertedElectronMomentumSignal =
       tfs->make<TH1D>( "piCaptureConvertedElectronMomentumSignal",
                        "Pi Capture Converted Electron MomentumSignal", 15, elow, ehigh);
-    _piCaptureConvertedElectronCosTheta = 
+    _piCaptureConvertedElectronCosTheta =
       tfs->make<TH1D>( "piCaptureConvertedElectronCosTheta",
                        "Pi Capture Converted Electron CosTheta", 200, -1., 1.);
-    _piCaptureConvertedElectronCosThetaSignal = 
+    _piCaptureConvertedElectronCosThetaSignal =
       tfs->make<TH1D>( "piCaptureConvertedElectronCosThetaSignal",
                        "Pi Capture Converted Electron CosThetaSignal", 200, -1., 1.);
 
     //
     // same, but now weighted by acceptance
-    _piCaptureConvertedElectronMomentumWeighted = 
+    _piCaptureConvertedElectronMomentumWeighted =
       tfs->make<TH1D>( "piCaptureConvertedElectronMomentumWeighted",
                        "Pi Capture Converted Electron MomentumWeighted", 200, 0., 200.);
-    _piCaptureConvertedElectronMomentumWeightedSignal = 
+    _piCaptureConvertedElectronMomentumWeightedSignal =
       tfs->make<TH1D>( "piCaptureConvertedElectronMomentumWeightedSignal",
                        "Pi Capture Converted Electron MomentumWeightedSignal", 15, elow, ehigh);
-    _piCaptureConvertedElectronCosThetaWeighted = 
+    _piCaptureConvertedElectronCosThetaWeighted =
       tfs->make<TH1D>( "piCaptureConvertedElectronCosThetaWeighted",
                        "Pi Capture Converted Electron CosThetaWeighted", 200, -1., 1.);
-    _piCaptureConvertedElectronCosThetaWeightedSignal = 
+    _piCaptureConvertedElectronCosThetaWeightedSignal =
       tfs->make<TH1D>( "piCaptureConvertedElectronCosThetaWeightedSignal",
                        "Pi Capture Converted Electron CosThetaWeightedSignal", 200, -1., 1.);
 
 
     //
     // and now demand a tracker hit -- but not weighted, since tracker hit is like an acceptance is like a weight
-    _piCaptureConvertedElectronMomentumHitTracker = 
+    _piCaptureConvertedElectronMomentumHitTracker =
       tfs->make<TH1D>( "piCaptureConvertedElectronMomentumHitTracker",
                        "Pi Capture Converted Electron Momentum and Hit Tracker", 200, 0., 200.);
     //
     // this plot is the original momentum of electrons that end up in signal region after energy loss so ehigh
     // needs to be bigger
-    _piCaptureConvertedElectronMomentumSignalHitTracker = 
+    _piCaptureConvertedElectronMomentumSignalHitTracker =
       tfs->make<TH1D>( "piCaptureConvertedElectronMomentumSignalHitTracker",
                        "Pi Capture Converted Electron Momentum Signal and Hit Tracker", 15, elow, 110.);
-    _piCaptureConvertedElectronCosThetaHitTracker = 
+    _piCaptureConvertedElectronCosThetaHitTracker =
       tfs->make<TH1D>( "piCaptureConvertedElectronCosThetaHitTracker",
                        "Pi Capture Converted Electron CosTheta Hit Tracker", 200, -1., 1.);
-    _piCaptureConvertedElectronCosThetaSignalHitTracker = 
+    _piCaptureConvertedElectronCosThetaSignalHitTracker =
       tfs->make<TH1D>( "piCaptureConvertedElectronCosThetaSignalHitTracker",
                        "Pi Capture Converted Electron CosTheta Signal Hit Tracker", 200, -1., 1.);
-    _piCaptureConvertedElectronCosThetaAtTracker= 
+    _piCaptureConvertedElectronCosThetaAtTracker=
       tfs->make<TH1D>( "piCaptureConvertedElectronCosThetaAtTracker",
                        "Pi Capture Converted Electron CosTheta At Tracker", 200, -1., 1.);
-    _piCaptureConvertedElectronCosThetaSignalAtTracker = 
+    _piCaptureConvertedElectronCosThetaSignalAtTracker =
       tfs->make<TH1D>( "_piCaptureConvertedElectronCosThetaSignalAtTracker",
                        "Pi Capture Converted Electron CosTheta Signal At Tracker", 200, -1., 1.);
     _piCaptureConvertedElectronMomentumAtTracker =
@@ -585,28 +585,28 @@ namespace mu2e {
 
     //
     //positron plots
-    _piCaptureConvertedPositronCosTheta = 
+    _piCaptureConvertedPositronCosTheta =
       tfs->make<TH1D>( "piCaptureConvertedPositronCosTheta",
                        "Pi Capture Converted Positron CosTheta", 200, -1., 1.);
-    _piCaptureConvertedPositronCosThetaSignal = 
+    _piCaptureConvertedPositronCosThetaSignal =
       tfs->make<TH1D>( "piCaptureConvertedPositronCosThetaSignal",
                        "Pi Capture Converted Positron CosThetaSignal", 200, -1., 1.);
-    _piCaptureConvertedPositronMomentum = 
+    _piCaptureConvertedPositronMomentum =
       tfs->make<TH1D>( "piCaptureConvertedPositronMomentum",
                        "Pi Capture Converted Positron Momentum", 200, 0., 200.);
-    _piCaptureConvertedPositronMomentumSignal = 
+    _piCaptureConvertedPositronMomentumSignal =
       tfs->make<TH1D>( "piCaptureConvertedPositronMomentumSignal",
                        "Pi Capture Converted Positron MomentumSignal", 20, elow, ehigh);
 
 
 
-    _conversionAsymmetry = 
+    _conversionAsymmetry =
       tfs->make<TH1D>("conversionAsymmetry","electron-positron/ephoton", 100,0.,1.);
 
     _numberOfHitStraws =
       tfs->make<TH1D>("numberOfHitStraws"," Number Of Hit Straws", 100,0.,100.);
 
-    _piCaptureZDiff = 
+    _piCaptureZDiff =
       tfs->make<TH1D>("piCaptureZDiff","Length of Track", 100,0.,5000.);
 
 
@@ -625,7 +625,7 @@ namespace mu2e {
     if (e >= 2.5 && e <= 10) {loss = TMath::Exp(6.40 + -0.5899*(e) + .02638*e*e); }
     if (e > 10) {loss = 0.;}
     if (e<0){
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense energy in RPC_plugin.cc="
         << e
         << "\n";
@@ -642,7 +642,7 @@ namespace mu2e {
 
     // Sanity check.
     if (_dEdXnbins <= 0) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense RPC_plugin.nbins requested="
         << _dEdXnbins
         << "\n";
@@ -675,7 +675,7 @@ namespace mu2e {
     if (e > 4.0 && e <= 10) {loss = TMath::Exp(4.5029+ -0.6358*(e) + 2.619E-02*(e)*(e)); }
     if (e>10){loss = 0.;}
     if (e<0){
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense energy in RPC_plugin.cc="
         << e
         << "\n";
@@ -692,7 +692,7 @@ namespace mu2e {
 
     // Sanity check.
     if (_dEdXnbins <= 0) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense RPC_plugin.nbins requested="
         << _dEdXnbins
         << "\n";

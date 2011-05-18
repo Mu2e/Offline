@@ -1,6 +1,6 @@
 //
 // Define a sensitive detector for stopping target
-// 
+//
 // Original author Ivan Logashenko
 //
 
@@ -53,7 +53,7 @@ namespace mu2e {
     _currentSize=0;
 
   }
-  
+
 
   G4bool StoppingTargetSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
@@ -61,7 +61,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	mf::LogWarning("G4") << "Maximum number of particles reached in StoppingTargetSD: " 
+	mf::LogWarning("G4") << "Maximum number of particles reached in StoppingTargetSD: "
 			      << _currentSize << endl;
       }
       return false;
@@ -95,24 +95,24 @@ namespace mu2e {
   void StoppingTargetSD::EndOfEvent(G4HCofThisEvent*){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      mf::LogWarning("G4") << "Total of " << _currentSize 
-			    << " stopping target hits were generated in the event." 
+      mf::LogWarning("G4") << "Total of " << _currentSize
+			    << " stopping target hits were generated in the event."
 			    << endl
-			    << "Only " << _sizeLimit << " are saved in output collection." 
+			    << "Only " << _sizeLimit << " are saved in output collection."
 			    << endl;
-      cout << "Total of " << _currentSize 
-	   << " stopping target hits were generated in the event." 
+      cout << "Total of " << _currentSize
+	   << " stopping target hits were generated in the event."
 	   << endl
-	   << "Only " << _sizeLimit << " are saved in output collection." 
+	   << "Only " << _sizeLimit << " are saved in output collection."
 	   << endl;
     }
 
-    if (verboseLevel>0) { 
+    if (verboseLevel>0) {
       G4int NbHits = _collection->size();
-      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
+      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits
              << " hits in the stopping target: " << G4endl;
       for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
-    } 
+    }
 
   }
 

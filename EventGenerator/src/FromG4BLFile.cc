@@ -2,33 +2,33 @@
 // Read particles from a file in G4beamline input format.
 // Position of the ToyGenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.14 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: FromG4BLFile.cc,v 1.15 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
 // The position is given in the Mu2e coordinate system.
 //
 // Notes:
-// 1) There are two modes that are selected by the config variable: 
+// 1) There are two modes that are selected by the config variable:
 //      fromG4BLFile.targetFrame = true or false
 //
 //    True:
 //       Particles should be created in the production target.
 //       For historical reasons, some versions of the G4beamline
 //       have the production target in different locations.
-//       So the variable 
+//       So the variable
 //          fromG4BLFile.prodTargetOff
-//       should be set to the position of the center of the production 
+//       should be set to the position of the center of the production
 //       target in the G4beamline coordinate system.  This is subtracted
 //       from the position read from the file to yield a position that
-//       is centered on the production target.  The code then uses 
+//       is centered on the production target.  The code then uses
 //       the GeometryService value of the target position to place the
 //       generated particles in the event.
-//       
+//
 //    False:
-//       Positions in the input file are specified in the G4beamline 
+//       Positions in the input file are specified in the G4beamline
 //       coordinate system.  This is transformed to the Mu2e coordinate
 //       system using the configuration parameter:
 //              fromG4BLFile.g4beamlineOrigin
@@ -175,7 +175,7 @@ namespace mu2e {
 
     // Read particles from the file until the requested number of particle have been read.
     for ( int j =0; j<n; ++j ){
-      
+
       // Format of one line from the input file is: x y z Px Py Pz t PDGid EventID TrackID ParentID Weight
       double x, y, z, px, py, pz, t,  weight;
       int id, evtid, trkid, parentid;

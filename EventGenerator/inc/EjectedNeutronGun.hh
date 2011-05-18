@@ -4,11 +4,11 @@
 //
 // Simulate the neutrons that come from the stopping target when muons capture
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
-// neutron.  
+// neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.4 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: EjectedNeutronGun.hh,v 1.5 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 //
 
@@ -49,9 +49,9 @@ namespace mu2e {
 
     double _mean;    // Mean number of neutrons per event
     double _elow;    // Range of neutrons energy.
-    double _ehi;     // 
+    double _ehi;     //
     double _czmin;   // Range of cos(polar angle)
-    double _czmax;  
+    double _czmax;
     double _phimin;  // Range of azimuth
     double _phimax;
     bool _PStoDSDelay;

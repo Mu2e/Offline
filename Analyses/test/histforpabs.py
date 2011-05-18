@@ -2,12 +2,12 @@
 # Histforpabs the output of g4test_03.py; make histograms and printout.
 #
 # $Id: histforpabs.py,v 1.0 2010/09/16
-# $Author: avdhesh $
+# $Author: wb $
 
 # Define the default configuratio for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("Histforpabs01")
 
 # Maximum number of events to do.

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace mu2e { 
+namespace mu2e {
 
 ITracker::ITracker() {
         _r0              =0.0;

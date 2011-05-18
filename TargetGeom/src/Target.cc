@@ -1,9 +1,9 @@
 //
 // Class to represent the system of target foils.
 //
-// $Id: Target.cc,v 1.2 2010/02/15 16:59:23 shanahan Exp $
-// $Author: shanahan $ 
-// $Date: 2010/02/15 16:59:23 $
+// $Id: Target.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 

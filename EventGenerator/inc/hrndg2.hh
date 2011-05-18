@@ -3,12 +3,12 @@
 //
 // Interface to the fortran subroutine hrndg2.
 //
-// $Id: hrndg2.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: hrndg2.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Rob Kutschke
-// 
+//
 // Notes:
 // 1) Inside hrndg2, the working space is:
 //     double work[nth][ne];
@@ -22,7 +22,7 @@
 
 // The interface to hrndg2
 extern "C" {
-  void hrndg2_( double*, 
+  void hrndg2_( double*,
                 const long*   const,
                 const double* const,
                 const double* const,

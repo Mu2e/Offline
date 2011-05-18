@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.8 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: PrimaryProtonGun.hh,v 1.9 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 //
 // The coordinate system used in this class is:
@@ -13,12 +13,12 @@
 // 1) The origin is at the upstream face of the production target.
 //    (upstream in the sense of the proton beam).
 //
-// 2) The positive z direction is along the cylinder axis of the production target, 
+// 2) The positive z direction is along the cylinder axis of the production target,
 //    in the usual Mu2e sense (from PS toward DS); ie the ideal beam direction
-//    is in the -z direction.  The target is slightly tilted from the Mu2e z axis. 
-//    The x and y axes are in the plane of the upstream face of the production target; 
-//    the sense of these axes is defined by the rotation matrix that was used to position 
-//    the production target inside the PS vacuum volume; see the section titled 
+//    is in the -z direction.  The target is slightly tilted from the Mu2e z axis.
+//    The x and y axes are in the plane of the upstream face of the production target;
+//    the sense of these axes is defined by the rotation matrix that was used to position
+//    the production target inside the PS vacuum volume; see the section titled
 //    "Production Target" inside Mu2e-doc-938.
 //
 // 3) The transformation from this coordinate system to the G4 world coordinate
@@ -58,8 +58,8 @@ namespace mu2e {
     double _p;
 
     // Offset of production point relative to the origin described above; in mm.
-    CLHEP::Hep3Vector _beamDisplacementOnTarget; 
-    
+    CLHEP::Hep3Vector _beamDisplacementOnTarget;
+
     // Beamspot is a 2D gaussian with this sigma in both x and y.
     double _beamSpotSigma;
 

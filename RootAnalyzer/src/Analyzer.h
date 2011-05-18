@@ -1,9 +1,9 @@
 //
-// header for Analyzer.C 
+// header for Analyzer.C
 
-// $Id: Analyzer.h,v 1.6 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: Analyzer.h,v 1.7 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author KLG
 //
@@ -50,7 +50,7 @@ class Analyzer {
   void analyze();
   void plot();
   void write();
-  
+
   void printOutCanvases();
 
   TCanvas* prepareNextCanvas( Int_t nx = 1, Int_t ny = 1,
@@ -59,7 +59,7 @@ class Analyzer {
   void Analyzer::plotHist(TH1* hist, char const * opt="");
   void Analyzer::plotNHist(std::vector<TH1*>, char const * opt="");
   void Analyzer::plotNT(const char* nts, char const * cut="", char const * opt="");
-  
+
 /* void Analyzer::doLTracker(art::EventAuxiliary*                              EventAuxiliaryWrppd, */
 /*                           art::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd, */
 /*                           art::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd, */
@@ -70,7 +70,7 @@ class Analyzer {
 
   static Long_t const canvasOriginX = 10;
   static Long_t const canvasOriginY = 10;
-  
+
   static Long_t const canvasWX = 600;
   static Long_t const canvasWY = 600;
 

@@ -1,6 +1,6 @@
 #include "ITrackerGeom/inc/ITLayer.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using namespace std;
 

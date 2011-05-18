@@ -3,12 +3,12 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.21 2011/05/17 15:36:00 greenc Exp $ 
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: ConversionGun.cc,v 1.22 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Rob Kutschke
-// 
+//
 
 // C++ incldues.
 #include <iostream>
@@ -36,7 +36,7 @@
 using namespace std;
 
 namespace mu2e {
-  
+
   // Need a Conditions entity to hold info about conversions:  // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
   static const double pEndPoint = 104.96;
@@ -93,10 +93,10 @@ namespace mu2e {
     //Get particle mass
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _mass = e_data.mass().value();
-    
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
-                                                                             FoilParticleGenerator::volWeightFoil, 
-                                                                             FoilParticleGenerator::flatPos, 
+
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+                                                                             FoilParticleGenerator::volWeightFoil,
+                                                                             FoilParticleGenerator::flatPos,
                                                                              FoilParticleGenerator::limitedExpoTime,
                                                                              false, //dummy value
                                                                              _PStoDSDelay,
@@ -104,12 +104,12 @@ namespace mu2e {
     if ( _doHistograms ) bookHistograms();
   }
 
-  
+
   ConversionGun::~ConversionGun(){
   }
-  
+
   void ConversionGun::generate( ToyGenParticleCollection& genParts ){
-    
+
     // Compute position and momentum
     double time;
     CLHEP::Hep3Vector pos;
@@ -119,7 +119,7 @@ namespace mu2e {
     CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
 
     // Compute energy
-    double e = sqrt( _p*_p + _mass*_mass );    
+    double e = sqrt( _p*_p + _mass*_mass );
 
     // Set four-momentum
     CLHEP::HepLorentzVector mom(p3, e);
@@ -155,7 +155,7 @@ namespace mu2e {
 
     _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity", "Conversion Multiplicity",  10,  0.,  10.  );
     _hcz           = tfdir.make<TH1F>( "hcz",
-                                       "Conversion Electron cos(theta) at Production;(MeV)",  
+                                       "Conversion Electron cos(theta) at Production;(MeV)",
                                        100,  -1.,  1.  );
     _hphi          = tfdir.make<TH1F>( "hphi",
                                        "Conversion Electron phi at Production;(MeV)",

@@ -1,16 +1,16 @@
 //
 // A PhysicsConstructor that adds step limiters to some particles.
 //
-// $Id: StepLimiterPhysConstructor.cc,v 1.1 2010/04/11 15:15:12 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/11 15:15:12 $
+// $Id: StepLimiterPhysConstructor.cc,v 1.2 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
 // Notes
 // 1) These methods are simple enough that one might be tempted to put
 //    them in the .hh file.  But that will not work since they are never
-//    called by code that we compile; except for the constructor, are 
+//    called by code that we compile; except for the constructor, are
 //    all methods callbacks that are called be G4.
 
 // Mu2e includes

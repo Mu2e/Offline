@@ -1,15 +1,15 @@
 C
 C  Part of the Daya Bay Cosmic code.
 C
-C  $Id: d2_integral.f,v 1.1 2010/03/13 00:13:09 kutschke Exp $
-C  $Author: kutschke $
-C  $Date: 2010/03/13 00:13:09 $
+C  $Id: d2_integral.f,v 1.2 2011/05/18 02:27:16 wb Exp $
+C  $Author: wb $
+C  $Date: 2011/05/18 02:27:16 $
 C
 C  Original Mu2e author Yury Kolomensky
 C
 
 *********************************************************************
-* do integral of the Funcation || 
+* do integral of the Funcation ||
 *  method Divide to sub mini bins & add content ||
 *********************************************************************
       Subroutine d2_integral(a1,a2,b1,b2,sum,m,n)
@@ -21,7 +21,7 @@ C
       real*8 sum,sumbox,binx,biny
       real*8 x,y
       Real*8 fff(m,n)
-      
+
 **********************************
       binx=(a2-a1)/m
       biny=(b2-b1)/n

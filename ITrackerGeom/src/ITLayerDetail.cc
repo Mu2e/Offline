@@ -25,7 +25,7 @@ namespace mu2e {
     _materialNames(materialNames)
   {
   }
-  
+
   ITLayerDetail::~ITLayerDetail (){
   }
 

@@ -9,9 +9,9 @@
 //  that this is round off error and set the answer
 //  to zero.  If the argument is very negative, throw.
 //
-// $Id: sqrtOrThrow.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: sqrtOrThrow.hh,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //

@@ -11,7 +11,7 @@ namespace mu2e {
                            _senseWire(senseWire)
   {
   }
-  
+
   CellDetail::~CellDetail (){
 //                try {
 //                        if (*_senseWire) {delete *_senseWire; *_senseWire=NULL;};

@@ -3,9 +3,9 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: PhysicsProcessInfo.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -38,7 +38,7 @@ namespace mu2e {
     // Locate a process by its name, return the corresponding process code and
     // increment the counter.
     ProcessCode findAndCount( G4String const& name );
-    
+
     void printAll ( std::ostream& os) const;
     void printSummary ( std::ostream& os) const;
 
@@ -51,7 +51,7 @@ namespace mu2e {
         particleNames(),
         code(acode),
         count(0){}
-      
+
       std::string procName;
       std::vector<std::string> particleNames;
       ProcessCode code;

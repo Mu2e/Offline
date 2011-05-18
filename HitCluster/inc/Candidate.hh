@@ -2,12 +2,12 @@
 #define HitCluster_Candidate_hh
 
 //
-// Helper struct for cluster finding.  
+// Helper struct for cluster finding.
 // Holds a StrawIndex and an index into a container of hits.
-// 
-// $Id: Candidate.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+//
+// $Id: Candidate.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -51,11 +51,11 @@ namespace mu2e {
 
   inline std::ostream& operator<<( std::ostream& ost,
                                    Candidate const& c){
-    ost << "( " 
-        << c.id << "," 
+    ost << "( "
+        << c.id << ","
         << c.hitIndex <<")";
     return ost;
-  }  
+  }
 
 }
 

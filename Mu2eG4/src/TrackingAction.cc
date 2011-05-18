@@ -1,27 +1,27 @@
 //
-// Steering routine for user tracking actions. 
+// Steering routine for user tracking actions.
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.19 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: TrackingAction.cc,v 1.20 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
 // Notes:
 // 1) I anticipate that this class might eventually do a lot of
-//    different jobs.  Please keep Pre/Post UserTrackingAction, 
+//    different jobs.  Please keep Pre/Post UserTrackingAction,
 //    free of real work - they should just dispatch other
 //    methods or classes that will themselves to the real work.
 //
 // 2) Same comment as 1 for the beginEvent and endEvent methods.
 //
 // 3) Internally G4 numbers tracks 1...N.  An earlier version of this class
-//    renumbered them 0...(N-1); this was an artifact of the 
+//    renumbered them 0...(N-1); this was an artifact of the
 //    SimParticleCollection class being a std::vector, which starts at 0.
 //    But now SimParticleCollection is a MapVector, so it is no longer
-//    necessary to do the renumbering.  
+//    necessary to do the renumbering.
 //
 
 // C++ includes
@@ -66,14 +66,14 @@ namespace mu2e {
       _debugList.add(list);
     }
 
-    
+
   }
-  
+
   TrackingAction::~TrackingAction(){
   }
 
   // Receive persistent volume information and save it for the duration of the run.
-  void TrackingAction::beginRun( const PhysicalVolumeHelper& physVolHelper, 
+  void TrackingAction::beginRun( const PhysicalVolumeHelper& physVolHelper,
                                  CLHEP::Hep3Vector const& mu2eOrigin ){
     _physVolHelper = &physVolHelper;
     _mu2eOrigin    =  mu2eOrigin;
@@ -141,7 +141,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: " 
+        mf::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: "
                               << _currentSize << endl;
         _overflowSimParticles = true;
       }
@@ -194,7 +194,7 @@ namespace mu2e {
           << "Could not find parent SimParticle in PreUserTrackingAction.  id: "
           << id
           << "\n";
-      } 
+      }
       i->second.addDaughter(kid);
     }
   }
@@ -213,7 +213,7 @@ namespace mu2e {
         << "Could not find existing SimParticle in PostUserTrackingAction.  id: "
         << id
         << "\n";
-    }   
+    }
 
     // Reason why tracking stopped, decay, range out, etc.
     G4String pname  = findStoppingProcess(trk);
@@ -296,8 +296,8 @@ namespace mu2e {
       }
 
       cout << trk->GetGlobalTime() << " | ";
-      cout << _timer.cpuTime() << " " 
-           << _timer.realTime() 
+      cout << _timer.cpuTime() << " "
+           << _timer.realTime()
            << endl;
     }
 
@@ -322,15 +322,15 @@ namespace mu2e {
       for ( size_t j=0; j<dau.size(); ++j ){
         key_type parentId = _transientMap[(key_type(dau[j]))].parentId();
         if ( parentId != sim.id() ){
-          
+
           // Daughter does not point back to the parent.
           ok = false;
           if ( doPrint ){
-            mf::LogError("G4") 
+            mf::LogError("G4")
               << "TrackingAction::checkCrossReferences: daughter does not point back to mother.\n";
           }
           if ( doThrow ){
-            throw cet::exception("MU2EG4") 
+            throw cet::exception("MU2EG4")
               << "TrackingAction::checkCrossReferences: daughter does not point back to mother.\n";
           }
         }
@@ -352,11 +352,11 @@ namespace mu2e {
         if ( !inList ){
           ok = false;
           if ( doPrint ){
-            mf::LogError("G4") 
+            mf::LogError("G4")
               << "TrackingAction::checkCrossReferences: daughter is not found amoung mother's daughters.\n";
           }
           if ( doThrow ){
-            throw cet::exception("MU2EG4") 
+            throw cet::exception("MU2EG4")
               << "TrackingAction::checkCrossReferences: daughter is not found amoung mother's daughters.\n";
           }
         }

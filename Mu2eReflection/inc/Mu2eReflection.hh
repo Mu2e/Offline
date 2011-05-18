@@ -2,7 +2,7 @@
 #define Mu2eReflection_Mu2eReflection_hh
 
 //
-// derived class that defines a reflection process in G4; reverses 
+// derived class that defines a reflection process in G4; reverses
 // particle momentum and charge, used for debugging magnetic field
 // code
 
@@ -38,9 +38,9 @@ namespace mu2e{
       alreadyReflected(false)
     {
       //tell the user what I'm doing; could iterate over all volumes and check names exist
-      G4cout << "Reflecting through following volumes" 
+      G4cout << "Reflecting through following volumes"
              << G4endl
-             << "starting Volume was: " <<startingVolume 
+             << "starting Volume was: " <<startingVolume
              << "\n"
              << "ending Volume was:   " <<endingVolume
              << G4endl;
@@ -58,7 +58,7 @@ namespace mu2e{
 
 
   protected:
-    // GetMeanFreePath returns ctau*beta*gamma for decay in flight 
+    // GetMeanFreePath returns ctau*beta*gamma for decay in flight
     virtual G4double GetMeanFreePath(const G4Track& aTrack,
                                      G4double   previousStepSize,
                                      G4ForceCondition* condition
@@ -87,7 +87,7 @@ namespace mu2e{
     }
 
   };
-  
+
 
 } //end namespace mu2e
 #endif /* Mu2eReflection_Mu2eReflection_hh */

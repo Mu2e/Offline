@@ -12,7 +12,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Geometry/Transform3D.h"
 
-namespace mu2e { 
+namespace mu2e {
 
 class Wire{
 

@@ -19,12 +19,12 @@ public:
         _nLayers(nLayers),
     _cellType(cellType){
   }
-  
+
   ~SuperLayerInfo  (){}
-  
+
   int _nLayers;
   Stype _cellType;
-  
+
 };
 
 }  //namespace mu2e

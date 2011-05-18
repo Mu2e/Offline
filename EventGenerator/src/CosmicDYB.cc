@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.13 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: CosmicDYB.cc,v 1.14 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Yury Kolomensky
 //
@@ -113,7 +113,7 @@ namespace mu2e {
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "CosmicDYB has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
@@ -155,16 +155,16 @@ namespace mu2e {
 
       art::TFileDirectory tfdir = tfs->mkdir( "CosmicDYB" );
       _cosmicMultiplicityH = tfdir.make<TH1D>( "MultiplicityH", "Cosmic Multiplicity", 20, -0.5, 19.5);
-      
+
       // log of muon energy (GeV)
       _cosmicMomH = tfdir.make<TH1D>( "MomH", "log (Momentum, GeV)", 60, -3, 3);
-      
+
       // charge
       _cosmicChargeH = tfdir.make<TH1D>( "ChargeH", "Muon Charge", 2, -2, 2.);
 
       // cos(theta)
       _cosmicCosThetaH = tfdir.make<TH1D>( "CosThetaH", "Cos(Theta)", 60, -1, 1.);
-      
+
       // cos(theta) vs log(energy)
       _cosmicCosThetaVsEH = tfdir.make<TH2D>( "CosThetavsEH", "Cos(Theta) vs log (Momentum, GeV)",
                                               60, -3., 3., 60, -1., 1.);

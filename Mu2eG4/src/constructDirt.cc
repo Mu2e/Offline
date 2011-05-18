@@ -1,9 +1,9 @@
 //
 // Free function to create the earthen overburden.
 //
-// $Id: constructDirt.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructDirt.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -32,7 +32,7 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructDirt( const VolumeInfo& parent, 
+  VolumeInfo constructDirt( const VolumeInfo& parent,
                             SimpleConfig const * const _config
                             ){
 
@@ -67,20 +67,20 @@ namespace mu2e {
 
     // Bottom of the ceiling in G4 world coordinates.
     double yCeilingInSide = yFloor + 2.*hallInHLen[1];
-    
+
     // Top of the ceiling in G4 world coordinates.
     double yCeilingOutside  = yCeilingInSide + ceilingThick;
 
     // Surface of the earth in G4 world coordinates.
     double ySurface  = yCeilingOutside + overburdenDepth;
-    
+
     // Half length and y origin of the dirt box.
     double yLDirt = ( ySurface + worldHLen[1] )/2.;
     double y0Dirt = -worldHLen[1] + yLDirt;
-    
+
     // Center of the dirt box, in the G4 world system.
     G4ThreeVector dirtOffset(0.,y0Dirt,0.);
-    
+
     // Half lengths of the dirt box.
     double dirtHLen[3] = { worldHLen[0], yLDirt, worldHLen[2] };
 
@@ -115,7 +115,7 @@ namespace mu2e {
     GeomHandle<Beamline> beamg;
     double solenoidOffset = beamg->solenoidOffset();
 
-    G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight, 
+    G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight,
                                  dsz0+VolumeInfo::getMu2eOriginInWorld().z());
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
@@ -128,7 +128,7 @@ namespace mu2e {
     VolumeInfo dirtCapInfo( dirtCapName, dirtCapOffset, dirtInfo.centerInWorld);
 
     dirtCapInfo.solid = new G4Paraboloid( dirtCapName, capHalfHeight, capTopR, capBottomR);
-    
+
     finishNesting(dirtCapInfo,
                   dirtMaterial,
                   dirtCapRot,

@@ -2,10 +2,10 @@
 #define Mu2eG4_nestTubs_hh
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
-// 
-// $Id: nestTubs.hh,v 1.9 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: nestTubs.hh,v 1.10 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,7 @@ namespace mu2e {
                         bool const placePV,
                         bool const doSurfaceCheck
                         );
-  
+
 
 
   // Alternate argument list, using a vector for the parameters.
@@ -61,7 +61,7 @@ namespace mu2e {
                                bool const placePV,
                                bool const doSurfaceCheck
                                ){
-    return nestTubs( name, 
+    return nestTubs( name,
                      &params[0],
                      material,
                      rot,
@@ -92,7 +92,7 @@ namespace mu2e {
                                bool const placePV,
                                bool const doSurfaceCheck
                                ){
-    return nestTubs( name, 
+    return nestTubs( name,
                      &params.innerRadius,
                      material,
                      rot,
@@ -125,7 +125,7 @@ namespace mu2e {
                         bool const doSurfaceCheck
                         );
 
-  // Alternate argument list (and different behavior) 
+  // Alternate argument list (and different behavior)
   // using a TubsParams & VolumeInfo object for the parameters.
   inline VolumeInfo nestTubs ( std::string const& name,
                                TubsParams const & params,
@@ -141,7 +141,7 @@ namespace mu2e {
                                bool const placePV,
                                bool const doSurfaceCheck
                                ){
-    return nestTubs( name, 
+    return nestTubs( name,
                      &params.innerRadius,
                      material,
                      rot,

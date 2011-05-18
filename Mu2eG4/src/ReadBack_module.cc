@@ -1,9 +1,9 @@
 //
 // Make a plugin for the ReadBack Module.
 //
-// $Id: ReadBack_module.cc,v 1.1 2011/05/17 16:30:15 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:15 $
+// $Id: ReadBack_module.cc,v 1.2 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //

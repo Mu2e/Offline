@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: NeutronCRV.py,v 1.1 2011/05/12 16:15:08 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2011/05/12 16:15:08 $
+# $Id: NeutronCRV.py,v 1.2 2011/05/18 02:27:14 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:14 $
 #
 # Original author Gianni Onorato.
 #
@@ -75,7 +75,7 @@ process.source = mu2e.Source("EmptySource")
 
 #  Make some generated tracks and add them to the event.
 process.generate = mu2e.EDProducer(
-    "EventGenerator", 
+    "EventGenerator",
 #    inputfile = mu2e.untracked.string("Analyses/test/genconfig_fromBeam.txt"),
 #    inputfile = mu2e.untracked.string("Mu2eG4/test/genconfig_05.txt"),
     inputfile = mu2e.untracked.string("Analyses/test/genconfigCRV.txt"),
@@ -89,7 +89,7 @@ process.g4run = mu2e.EDProducer(
     seed=mu2e.untracked.vint32(9877)
     )
 
-# Form StrawHits (SH). 
+# Form StrawHits (SH).
 process.makeTH = mu2e.EDProducer(
     "MakeStrawHit",
     # uncomment line below for ITracker, and comment line above.
@@ -168,7 +168,7 @@ process.MessageLogger.categories.append("GEOM")
 
 # Tell the system to execute all paths.
 #process.output = mu2e.EndPath(  process.generate*process.g4run*
-#                                process.makeTH*  
+#                                process.makeTH*
 #                                process.CaloROHitsMaker*
 #                                process.CaloCrystalHitsMaker*
 #                                process.CountRates*

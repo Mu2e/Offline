@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e detector with the Mu2e G4 world.
 //
-// $Id: DetectorConstruction.cc,v 1.3 2010/05/18 21:16:13 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:13 $
+// $Id: DetectorConstruction.cc,v 1.4 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -43,26 +43,26 @@ namespace mu2e {
      _exactHelix(0),
      _chordFinder(0){
   }
-  
- 
+
+
   DetectorConstruction::~DetectorConstruction(){
-    
+
     // For most of the objects that are new'ed in the construct method,
     // G4 takes ownship of the object and will delete it when finished.
     //
     // The exceptions are:
-    
+
     if ( _magField    != 0 ) delete _magField;
     if ( _stepLimit   != 0 ) delete _stepLimit;
     if ( _usualRHS    != 0 ) delete _usualRHS;
     if ( _exactHelix  != 0 ) delete _exactHelix;
     if ( _chordFinder != 0 ) delete _chordFinder;
-    
+
   }
-  
- 
+
+
   G4VPhysicalVolume* DetectorConstruction::Construct(){
-    
+
     // Some made up parameters to describe vacuum.
     G4double density     = 1.e-10*g/cm3;
     G4double pressure    = 3.e-18*pascal;
@@ -70,28 +70,28 @@ namespace mu2e {
     G4Material* vacuum =
       new G4Material( "Vacuum", 1., 1.01*g/mole,
                       density, kStateGas, temperature, pressure);
-    
+
     // Print all the materials defined.
     G4cout << G4endl << "The materials defined are : " << G4endl << G4endl;
     G4cout << *(G4Material::GetMaterialTable()) << G4endl;
-    
+
     // Half dimensions of the world.  Roughly the size of the Detector Solenoid.
     _xwHalf = 1000.*CLHEP::mm;
     _ywHalf = 1000.*CLHEP::mm;
     _zwHalf = 3000.*CLHEP::mm;
-    
+
     // Thickness in z of the reference boxes.
     const G4double zHalfThick(0.010*CLHEP::mm);
-    
+
     // Number of reference volumes to make;
     const G4int nRef(11);
-    
+
     // Offset of the first and last reference volumes from the edge of the world
     const double zoff(_zwHalf*0.05);
-    
+
     // Color for visualizing the reference boxes
     const G4VisAttributes visRefBox(true,G4Color::Red());
-    
+
     // Magnetic Vector.
     const G4ThreeVector bfield(0.,0.,1.*tesla);
 
@@ -108,28 +108,28 @@ namespace mu2e {
     _dz = 2.*(_zwHalf-zoff)/(nRef-1);
 
     // End of the parameter definitions.  Start making things.
-    
+
     // Make the global magnetic field.
     G4UniformMagField* _magField = new G4UniformMagField(bfield);
 
     // Tell the global field manager to use this field.
     G4FieldManager* fieldMgr= G4TransportationManager::GetTransportationManager()->GetFieldManager();
     fieldMgr->SetDetectorField(_magField);
-    
+
     // Define propagation code that does an exact helix in a uniform magnetic field.
     G4double stepMinimum(1.0e-2*CLHEP::mm);
     _usualRHS    = new G4Mag_UsualEqRhs( _magField );
     _exactHelix  = new G4ExactHelixStepper(_usualRHS);
     _chordFinder = new G4ChordFinder( _magField, stepMinimum, _exactHelix );
-    
+
     // Tell the field manager to use the exact propagation code.
     fieldMgr->SetChordFinder(_chordFinder);
-    
+
     // Make the world.
-    
+
     G4Box* solidWorld = new G4Box( "world", _xwHalf, _ywHalf, _zwHalf );
     G4LogicalVolume* logicWorld = new G4LogicalVolume( solidWorld, vacuum, "World", 0, 0, 0 );
-    G4VPhysicalVolume* physiWorld = 
+    G4VPhysicalVolume* physiWorld =
       new G4PVPlacement(0,               // no rotation
                         G4ThreeVector(), // at (0,0,0)
                         logicWorld,      // its logical volume
@@ -137,36 +137,36 @@ namespace mu2e {
                         0,               // its mother  volume
                         false,           // no boolean operations
                         0);              // copy number
-    
-    // Divide the work into two hemispheres.
-    
 
-  
-    
+    // Divide the work into two hemispheres.
+
+
+
+
     // Give each box a name.
     G4String sname = "Ref_Solid";
     G4String lname = "Ref_Log";
     G4String pname = "Ref_Phys";
 
-    
+
     // Make a solid.
     G4Box* solid = new G4Box( sname, _xwHalf, _ywHalf, zHalfThick);
-    
+
     // Make a logical volume and set its color.
     G4LogicalVolume* logical  = new G4LogicalVolume( solid,
                                                      vacuum,
                                                      lname);
     logical->SetVisAttributes(visRefBox);
 
-  
+
 
     // Create and position the reference boxes.
     for ( int i=0; i<nRef; ++i ){
-      
+
       // Position of this reference box.
       double z = z0 +i*_dz;
       G4ThreeVector position( 0., 0., z);
-      
+
       // Place the volume.
       new G4PVPlacement( 0,
                          position,
@@ -177,13 +177,13 @@ namespace mu2e {
                          i
                          );
     }
-    
+
     // Set a maximum set length.  This does not seem to work.
     _stepLimit = new G4UserLimits(5.*CLHEP::mm);
     logicWorld->SetUserLimits(_stepLimit);
-    
+
     return physiWorld;
-    
+
   }
 
 } // end namespace mu2e

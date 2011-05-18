@@ -3,9 +3,9 @@
 //
 // Representation of one ScintillatorShield in CosmicRayShield.
 //
-// $Id: CRSScintillatorShield.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSScintillatorShield.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG based on Rob Kutschke's Device
 //
@@ -30,7 +30,7 @@ namespace mu2e {
 
     CRSScintillatorShield():_id(-1){}
 
-    CRSScintillatorShield( 
+    CRSScintillatorShield(
                           CRSScintillatorShieldId const & id,
                           std::string       const & name,
                           CLHEP::Hep3Vector const & localOffset,  // offset in Hall Air
@@ -60,11 +60,11 @@ namespace mu2e {
       return _numberOfFullModules;
     }
 
-    const std::vector<CRSScintillatorModule>& getCRSScintillatorModules() const{ 
+    const std::vector<CRSScintillatorModule>& getCRSScintillatorModules() const{
       return _modules;
     }
 
-    const CRSScintillatorModule& getModule( int n) const { 
+    const CRSScintillatorModule& getModule( int n) const {
       return _modules.at(n);
     }
 
@@ -80,7 +80,7 @@ namespace mu2e {
       return _modules.at(bid.getModuleNumber()).getBar(bid);
     }
 
-    // Formatted string embedding the id of the shield. 
+    // Formatted string embedding the id of the shield.
 
     std::string name( std::string const & base ) const;
 

@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.13 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: LTrackerMaker.cc,v 1.14 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -29,7 +29,7 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 
 
@@ -38,36 +38,36 @@ using namespace std;
 namespace mu2e {
 
   void strawPrinter( const Straw& s){
-    cout << "StrawInfo: " 
-         << s.Id()          << " " 
+    cout << "StrawInfo: "
+         << s.Id()          << " "
          << s.getMidPoint() << " "
          << s.direction()   << " "
          << endl;
   }
 
   void strawPrinter2( const Straw* s, int& i){
-    cout << s->Id() <<  " | " 
-         << s->hack << " " 
+    cout << s->Id() <<  " | "
+         << s->hack << " "
          << ++i << endl;
   }
 
   void strawHacker( Straw* s, int& i){
     s->hack = 2;
   }
-  
+
   void layerPrinter( const Layer& l){
     cout << "    Layer: " << l.Id() << endl;
   }
-  
+
   void sectorPrinter( const Sector& s){
     cout << "  Sector: " << s.Id() << endl;
   }
-  
+
   void devicePrinter( const Device& d){
     cout << "  Device: " << d.Id() << endl;
   }
-  
-  
+
+
   LTrackerMaker::LTrackerMaker(int nSides,
                                std::vector<LayerInfo> sideInfo,
                                std::vector<LayerInfo> vaneInfo,
@@ -121,19 +121,19 @@ namespace mu2e {
 
     config.getVectorString("ltracker.strawMaterials0", _strawMaterialNames0, 3);
     config.getVectorString("ltracker.strawMaterials1", _strawMaterialNames1, 3);
-    
+
     vector<int> nStrawsSide, nStrawsVane;
     config.getVectorInt("ltracker.nStrawsSide", nStrawsSide);
     config.getVectorInt("ltracker.nStrawsVane", nStrawsVane);
-    
+
     LayerInfo::Stype edge = LayerInfo::nonconductive;
     LayerInfo::Stype mid  = LayerInfo::conductive;
-    
+
     for ( size_t i=0; i<nStrawsSide.size(); ++i ){
       LayerInfo::Stype stype = ( i == 0 || i == nStrawsSide.size()-1 ) ? edge : mid;
       _sideInfo.push_back( LayerInfo( nStrawsSide[i], stype) );
     }
-    
+
     for ( size_t i=0; i<nStrawsVane.size(); ++i ){
       LayerInfo::Stype stype = ( i == 0 || i == nStrawsVane.size()-1 ) ? edge : mid;
       _vaneInfo.push_back( LayerInfo( nStrawsVane[i], stype) );
@@ -144,7 +144,7 @@ namespace mu2e {
   }
 
 
-  
+
   LTrackerMaker::~LTrackerMaker (){}
 
   void LTrackerMaker::BuildIt(){
@@ -153,17 +153,17 @@ namespace mu2e {
     _tphiHalf = tan(_phiHalf);
     _cphiHalf = cos(_phiHalf);
     _sphiHalf = sin(_phiHalf);
-    
+
     CheckFit();
 
     _ltt = auto_ptr<LTracker>(new LTracker());
-    
+
     _ltt->_r0         = _r0;
     _ltt->_z0         = _z0;
     _ltt->_rOut       = _rOut;
     _ltt->_halfLength = _halfLength;
     _ltt->_rInscribed = _r0-_strawRadius*(1.+sqrt(3.));
-    
+
     _ltt->_fillMaterial = _fillMaterial;
 
     MakeDetails();
@@ -177,19 +177,19 @@ namespace mu2e {
     // Testing.
     cout << "Straw Printer: " << endl;
     _ltt->forAllStraws(strawPrinter);
-      
+
     cout << "Layer Printer: " << endl;
     _ltt->forAllLayers(layerPrinter);
-      
+
     cout << "Sector Printer: " << endl;
     _ltt->forAllSectors(sectorPrinter);
-      
+
     cout << "Device Printer: " << endl;
     _ltt->forAllDevices(devicePrinter);
     */
     //const Layer& l0 = _ltt->getLayer( LayerId(LTracker::wedge,0,0) );
     //const vector<const Straw*>& v = l0.getStraws();
-    
+
     //int nn(-1);
     //  for_all ( v, strawHacker, nn);
     //  for_all ( v, strawPrinter2, nn);
@@ -198,10 +198,10 @@ namespace mu2e {
     //for_all ( v, test, mm);
 
 
-    // Must do this after the LTracker has been built since this 
+    // Must do this after the LTracker has been built since this
     // computes pointers to things that must remain in  static
     // memory locations.
-    
+
     FillNearestNeighbours();
     _ltt->FillPointers2();
 
@@ -216,14 +216,14 @@ namespace mu2e {
     for( vector<LayerInfo>::size_type i=0;
          i<_sideInfo.size(); ++i){
       LayerInfo& lay = _sideInfo[i];
-      
+
       double f = 1. + double(i)*sqrt(3.);
 
       double r = _r0-_strawRadius*(1.+sqrt(3.));
-      
+
       double maxRadius = (r*_tphiHalf)/
         ( lay._nStraws - 1. + _cphiHalf - (f-_sphiHalf)*_tphiHalf);
-      
+
       if ( _strawRadius > maxRadius ){
         throw cet::exception("GEOM")
           << "Straw radius too big for straws to fit in the defined space: \n"
@@ -235,7 +235,7 @@ namespace mu2e {
           << "maxradius:  " << maxRadius
           << "\n";
       }
-      
+
     }
   }
 
@@ -249,12 +249,12 @@ namespace mu2e {
     n *= _nSides;
     return n;
   }
-  
+
   void LTrackerMaker::MakeDetails(){
-        
-    _ltt->_strawDetail.push_back( 
+
+    _ltt->_strawDetail.push_back(
                                  StrawDetail( 0,  _strawMaterialNames0, _strawRadius, _strawThick, _strawHalfLength, _rwire) );
-    _ltt->_strawDetail.push_back( 
+    _ltt->_strawDetail.push_back(
                                  StrawDetail( 1, _strawMaterialNames1, _strawRadius, _strawThick, _strawHalfLength, _rwire) );
   }
 
@@ -289,7 +289,7 @@ namespace mu2e {
 
       sectors.push_back(Sector(SectorId(LTracker::wedge,isec)));
       Sector& sec = sectors.back();
-      
+
       vector<Layer>& layers = sec._layers;
       layers.reserve(nlayers);
 
@@ -303,32 +303,32 @@ namespace mu2e {
 
       // Wire direction for all wires in this sector.
       CLHEP::Hep3Vector wireDir = RZ*(RY*baseWire);
-    
+
       SectorId secId(LTracker::wedge,isec);
 
       int maxStrawsThisSector(0);
 
-      for ( vector<LayerInfo>::size_type j=0; 
+      for ( vector<LayerInfo>::size_type j=0;
             j<nlayers; ++j ){
-        
+
         LayerInfo& linfo = _sideInfo[j];
         int n = linfo._nStraws;
 
         maxStrawsThisSector = ( n > maxStrawsThisSector ) ? n : maxStrawsThisSector;
-        
-        // For a sector centered at the origin, compute location of wire 0 
+
+        // For a sector centered at the origin, compute location of wire 0
         // and offset between wires within this layer.
         double x0 = (n-1)*_strawRadius;
-        double y0 = ( nlayers%2 == 1)? 
+        double y0 = ( nlayers%2 == 1)?
           (double(j)-halfnlayers)*yoffset :
           (double(j)-halfnlayers+0.5)*yoffset;
-        
+
         CLHEP::Hep3Vector origin = CLHEP::Hep3Vector( x0,   y0, 0.);
         CLHEP::Hep3Vector delta  = CLHEP::Hep3Vector( -2.*_strawRadius, 0., 0.);
-      
+
         LayerId lid(secId,j);
         layers.push_back( Layer(lid, n, origin, delta));
-        
+
         //vector<const Straw*>& straws = layers[j]._straws;
         vector<StrawIndex>& indices  = layers[j]._indices;
 
@@ -345,16 +345,16 @@ namespace mu2e {
 
           // Index into master container.
           StrawIndex index = StrawIndex(allStraws.size());
-          
+
           // Final position with rotation and translation.
           CLHEP::Hep3Vector q = RZ*(RY*p) + sectorOffset;
 
           // This operation must not invalidate pointers to
           // previous elements in allStraws.
-          allStraws.push_back( Straw( StrawId(lid,is), 
+          allStraws.push_back( Straw( StrawId(lid,is),
                                       index, q, detail, detailIndex, wireDir) );
           indices.push_back( index );
-          
+
           //This is why two lines back must not invalidate pointers.
           //straws.push_back( &allStraws[index] );
 
@@ -399,12 +399,12 @@ namespace mu2e {
 
 
   void LTrackerMaker::MakeVanes(){
-  
+
     deque<Straw>& allStraws = _ltt->_allStraws;
 
     vector<LayerInfo>::size_type nlayers = _sideInfo.size();
     int halfnlayers = nlayers/2;
-  
+
     vector<Device>& dev = _ltt->_devices;
 
     dev.push_back( Device(LTracker::vane) );
@@ -424,49 +424,49 @@ namespace mu2e {
 
       sectors.push_back(Sector(SectorId(LTracker::vane,isec)));
       Sector& sec = sectors.back();
-   
+
       vector<Layer>& layers = sec._layers;
       layers.reserve(nlayers);
 
       // Define the rotation from the canonical position.
       double angle = 2.*isec*M_PI/_nSides  + _phi0;
       CLHEP::HepRotationZ RZ(angle);
-    
+
       // Wire direction for all wires in this sector.
       CLHEP::Hep3Vector wireDir = RZ*(RX*(RY*baseWire));
-    
+
       SectorId secId(LTracker::vane,isec);
 
       int maxStrawsThisSector(0);
-    
-      for ( vector<LayerInfo>::size_type j=0; 
+
+      for ( vector<LayerInfo>::size_type j=0;
             j<nlayers; ++j ){
 
         LayerInfo& linfo = _vaneInfo[j];
-      
+
         int n = linfo._nStraws;
 
         maxStrawsThisSector = ( n > maxStrawsThisSector ) ? n : maxStrawsThisSector;
-      
+
         // Center of first wire in this layer.
         double x0 = -(n-1)*_strawRadius;
-        double y0 = ( nlayers%2 == 1)? 
+        double y0 = ( nlayers%2 == 1)?
           (double(j)-halfnlayers)*yoffset :
           (double(j)-halfnlayers+0.5)*yoffset;
 
         // For testing purposes
         //y0 += 4*isec + 2;
-      
+
         // Rotate origin and offset to this sector.
         CLHEP::Hep3Vector origin = CLHEP::Hep3Vector( x0,   y0, 0.);
         CLHEP::Hep3Vector delta  = CLHEP::Hep3Vector( 2.*_strawRadius, 0., 0.);
-      
+
         LayerId lid(secId,j);
         layers.push_back( Layer(lid, linfo._nStraws, origin, delta));
-      
+
         vector<StrawIndex>& indices  = layers[j]._indices;
         indices.reserve(n);
-      
+
         int detailIndex = linfo._strawType;
         StrawDetail* detail = &_ltt->_strawDetail[detailIndex];
 
@@ -481,14 +481,14 @@ namespace mu2e {
 
           // This operation must not invalidate pointers to
           // previous elements in allStraws.
-          allStraws.push_back( Straw( StrawId(lid,is), 
+          allStraws.push_back( Straw( StrawId(lid,is),
                                       index, q, detail, detailIndex, wireDir) );
           indices.push_back( index );
-        
+
           // This is why two lines back must not invalidate pointers.
           //straws.push_back( &allStraws[index] );
         } // end loop over straws
-      
+
       } // end loop over layers
 
       // Offset for constructing straw positions.
@@ -556,15 +556,15 @@ namespace mu2e {
   //
   // This algorithm assumes that the number of straws in adjacent
   // layers differs by at most 1.
-  // 
+  //
   void LTrackerMaker::FillNearestNeighbours(){
 
     // Build the nearest neighbour info for each straw.
-    for ( deque<Straw>::iterator i=_ltt->_allStraws.begin(), 
+    for ( deque<Straw>::iterator i=_ltt->_allStraws.begin(),
             e=_ltt->_allStraws.end();
-          i!=e; 
+          i!=e;
           ++i){
-    
+
       // For readability.
       Straw& str = *i;
 
@@ -592,8 +592,8 @@ namespace mu2e {
         str._nearestById.push_back(StrawId(secid,jl0,js0-1));
         str._nearestById.push_back(StrawId(secid,jl0,js0+1));
       }
-      
-      // Add straws one layer inward one layer, unless already in innermost layer. 
+
+      // Add straws one layer inward one layer, unless already in innermost layer.
       // Deal with edge cases.
       if ( jl0 != 0 ){
         int nstrawsInside = sector.getLayer(jl0-1).nStraws();
@@ -619,7 +619,7 @@ namespace mu2e {
         }
       }
 
-      // Add straws from one layer outward, unless already in outermost layer. 
+      // Add straws from one layer outward, unless already in outermost layer.
       // Deal with edge cases.
       if ( jl0 != nlayers-1){
         int nStrawsOutside = sector.getLayer(jl0+1).nStraws();
@@ -644,8 +644,8 @@ namespace mu2e {
           }
         }
       }
-    
-    
+
+
     }
   }
 
@@ -654,7 +654,7 @@ namespace mu2e {
 
     // Fill the main link
     for ( vector<Device>::iterator idev = _ltt->_devices.begin(),
-            edev = _ltt->_devices.end(); 
+            edev = _ltt->_devices.end();
           idev != edev;  ++idev ){
       for ( vector<Sector>::iterator isec = idev->_sectors.begin(),
               esec = idev->_sectors.end();
@@ -680,9 +680,9 @@ namespace mu2e {
   void LTrackerMaker::FillPointersAndIndices2(){
 
     // Fill nearest neighbour indices and pointers from the NN Ids.
-    for ( deque<Straw>::iterator i=_ltt->_allStraws.begin(), 
+    for ( deque<Straw>::iterator i=_ltt->_allStraws.begin(),
             e=_ltt->_allStraws.end();
-          i!=e; 
+          i!=e;
           ++i){
       vector<StrawId>& byId = i->_nearestById;
       vector<StrawIndex>& byIndex = i->_nearestByIndex;
@@ -731,7 +731,7 @@ namespace mu2e {
         if ( strawJ.Id().getSectorId() ==
              strawI.Id().getSectorId()    ) continue;
         ++nChecked;
-        
+
         CLHEP::Hep3Vector const& midj = strawJ.getMidPoint();
         CLHEP::Hep3Vector const& wj   = strawJ.getDirection();
         double radiusJ         = strawJ.getDetail().outerRadius();
@@ -761,7 +761,7 @@ namespace mu2e {
           }else{
             tag = "Close to overlap: ";
           }
-          
+
           if ( bad || printWarnings ){
             log << tag
                 << strawI.Id() << " "
@@ -774,17 +774,17 @@ namespace mu2e {
         }
       }
     }
-    
+
     // Print summary.
     if ( nBad == 0 && nWarn == 0 ){
       log << "Completed check for overlapping straws: none found.\n"
-          << "Number of straw pairs checked: " 
+          << "Number of straw pairs checked: "
           << nChecked;
     } else{
       log << "Completed check for overlapping straws. Number of overlaps: "
           << nBad << "  Number of warnings: "
           << nWarn << "\n"
-          << "Number of straws pairs checked: " 
+          << "Number of straws pairs checked: "
           << nChecked;
     }
 

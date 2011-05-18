@@ -5,9 +5,9 @@
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
-// $Id: Container3D.hh,v 1.8 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: Container3D.hh,v 1.9 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 
 #include <vector>
@@ -56,19 +56,19 @@ namespace mu2e {
 
     ~Container3D() { }
 
-    // Set element, without safety features.  Use if the calller has 
+    // Set element, without safety features.  Use if the calller has
     // already ensured the validity of the arguments.
     void set(unsigned int ix, unsigned int iy, unsigned int iz, OBJ const& obj ){
       _vec[index(ix,iy,iz)] = obj;
     }
 
-    // Get element, without safety features. Use if the calller has 
+    // Get element, without safety features. Use if the calller has
     // already ensured the validity of the arguments.
     OBJ const& get( unsigned int ix, unsigned int iy, unsigned int iz) const {
       return _vec[index(ix,iy,iz)];
     }
 
-    // Get element, without safety features. Use if the calller has 
+    // Get element, without safety features. Use if the calller has
     // already ensured the validity of the arguments.
     OBJ& get( unsigned int ix, unsigned int iy, unsigned int iz){
       return _vec[index(ix,iy,iz)];
@@ -103,13 +103,13 @@ namespace mu2e {
     void isValidOrThrow( unsigned int ix, unsigned int iy, unsigned int iz) const {
       if ( !isValid(ix, iy, iz) ){
         std::ostringstream os;
-        os << "Invalid index into Container3D: " 
+        os << "Invalid index into Container3D: "
            << ix << " "
            << iy << " "
            << iz << " | Limits are: "
            << _nx << " "
            << _ny << " "
-           << _nz;          
+           << _nz;
         throw std::domain_error(os.str());
       }
     }
@@ -187,13 +187,13 @@ namespace mu2e {
 
     ~Container3D() { }
 
-    // Set element, without safety features.  Use if the calller has 
+    // Set element, without safety features.  Use if the calller has
     // already ensured the validity of the arguments.
     void set(unsigned int ix, unsigned int iy, unsigned int iz, bool obj ){
       _vec[index(ix,iy,iz)] = obj;
     }
 
-    // Get element, without safety features. Use if the calller has 
+    // Get element, without safety features. Use if the calller has
     // already ensured the validity of the arguments.
     bool get( unsigned int ix, unsigned int iy, unsigned int iz) const {
       return _vec[index(ix,iy,iz)];
@@ -232,13 +232,13 @@ namespace mu2e {
     void isValidOrThrow( unsigned int ix, unsigned int iy, unsigned int iz) const {
       if ( !isValid(ix, iy, iz) ){
         std::ostringstream os;
-        os << "Invalid index into Container3D: " 
+        os << "Invalid index into Container3D: "
            << ix << " "
            << iy << " "
            << iz << " | Limits are: "
            << _nx << " "
            << _ny << " "
-           << _nz;          
+           << _nz;
         throw std::domain_error(os.str());
       }
     }

@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: ReadBack0_module.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -39,13 +39,13 @@ namespace mu2e {
 
   class ReadBack0 : public art::EDAnalyzer {
   public:
-    
+
     explicit ReadBack0(fhicl::ParameterSet const& pset);
     virtual ~ReadBack0() { }
 
     // The framework calls this at the start of the job.
     virtual void beginJob();
- 
+
     // The framework calls this for each event.
     void analyze(const art::Event& e);
 
@@ -74,15 +74,15 @@ namespace mu2e {
 
   };
 
-  ReadBack0::ReadBack0(fhicl::ParameterSet const& pset) : 
+  ReadBack0::ReadBack0(fhicl::ParameterSet const& pset) :
 
     // These will become run time parameters in a later example.
     _g4ModuleLabel("g4run"),
     _trackerStepPoints("tracker"),
-  
+
     // Run time parameters
     _minimumEnergy(pset.get<double>("minimumEnergy")),
-    
+
     // Histograms
     _hStrawEDep(0),
     _hNstraw(0),
@@ -90,7 +90,7 @@ namespace mu2e {
     _hNcrystal(0),
     _ntup(0){
   }
-  
+
   // At the start of the job, book histograms.
   void ReadBack0::beginJob(){
 
@@ -112,7 +112,7 @@ namespace mu2e {
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadBack0::analyze(const art::Event& event) {
-    
+
     doTTracker(event);
     doCalorimeter(event);
 
@@ -161,19 +161,19 @@ namespace mu2e {
 
     // Loop over all hits.
     for ( size_t i=0; i<hits.size(); ++i ){
-      
+
       // Alias, used for readability.
       const StepPointMC& hit = hits[i];
 
       // Skip hits with low pulse height.
       if ( hit.eDep() < _minimumEnergy ) continue;
-      
+
       // Position of the hit.
       const CLHEP::Hep3Vector& pos = hit.position();
-      
+
       // Information about the straw.
       const Straw& straw = tracker->getStraw( hit.strawIndex() );
-      
+
       // Fill a histogram.
       _hStrawEDep->Fill(hit.eDep()/CLHEP::keV);
 

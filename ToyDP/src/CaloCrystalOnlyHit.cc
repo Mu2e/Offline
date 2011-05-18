@@ -1,9 +1,9 @@
-// 
+//
 // Crystal hit info plus possible additional information produced by HitMaker
 //
-// $Id: CaloCrystalOnlyHit.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: CaloCrystalOnlyHit.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 
 // C++ includes
@@ -32,11 +32,11 @@ namespace mu2e {
         << " crystal id: "  << _crystalId
         << " time "         << _time
         << " energyDep: "   << _energyDep;
- 
+
     if ( doEndl ){
       ost << endl;
     }
-    
+
   }
-  
+
 } // namespace mu2e

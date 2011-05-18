@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.17 2011/05/17 22:22:46 wb Exp $
+// $Id: CosmicTuple.cc,v 1.18 2011/05/18 02:27:17 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
- 
+
 #include "art/Framework/Core/EDFilter.h"
 
 // Root includes.
@@ -53,19 +53,19 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  CosmicTuple::CosmicTuple(fhicl::ParameterSet const& pset) : 
+  CosmicTuple::CosmicTuple(fhicl::ParameterSet const& pset) :
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _minimump(pset.get<double>("minimump")),
     _maximump(pset.get<double>("maximump")),
     _minHits(pset.get<int>("minHits")),
-  
+
     _nAnalyzed(0),
     _hEventsize(0),
     _ntupTrk(0)
 
   {
   }
-  
+
   void CosmicTuple::beginJob(){
 
     // Get access to the TFile service.
@@ -73,19 +73,19 @@ namespace mu2e {
 
     // Create some 1D histograms.
     _hEventsize     = tfs->make<TH1F>( "EventSize",       "Size of the Event",     100,  0., 100000. );
-    
+
     // Create an ntuple.
-    _ntupTrk = tfs->make<TNtuple>( "ntupTrk", "Trk ntuple", 
+    _ntupTrk = tfs->make<TNtuple>( "ntupTrk", "Trk ntuple",
 "evt:trk:pid:pmag:genId:pidGen:eGen:thGen:xGen:yGen:zGen:nHits:ptrs:xtrs:ytrs:ztrs:pprs:xprs:yprs:zprs:prnId:time:calE:nCryst:nAPD:pAng:prCrea:prStop:trCrea:trStop:run:px:py:pz:E:vx:vy:vz:vt:isSh:ppre:xpre:ypre:zpre:trvs:trve:prvs:prve:calEi");
   }
 
-  bool CosmicTuple:: beginRun(art::Run& run) {  
+  bool CosmicTuple:: beginRun(art::Run& run) {
     _runNumber = run.id().run();
     return true;
   }
-   
+
   bool CosmicTuple::filter(art::Event& event) {
-    
+
     typedef SimParticleCollection::key_type key_type;
 
     // Maintain a counter for number of events seen.
@@ -100,7 +100,7 @@ namespace mu2e {
        static const string collectionName("tracker");
        art::Handle<StepPointMCCollection> hits;
        event.getByLabel(_g4ModuleLabel,collectionName,hits);
-  
+
     // Get handles to the generated and simulated particles.
     art::Handle<ToyGenParticleCollection> genParticles;
     event.getByType(genParticles);
@@ -111,39 +111,39 @@ namespace mu2e {
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() );
-   
+
     // Other files might have empty collections.
     if ( haveSimPart ){
       haveSimPart = !(simParticles->empty() );
     }
 
     // ntuple buffer.
-    float ntT[_ntupTrk->GetNvar()];   
+    float ntT[_ntupTrk->GetNvar()];
 
     bool    pass     = false;
     bool    isSh     = false;
     double  calEne   = 0.;
-    double  calEind  = 0.;    
-    int     prntPdg  = 0;     
+    double  calEind  = 0.;
+    int     prntPdg  = 0;
     int     prCr     = 0;
     int     prSt     = 0;
     int     trCr     = 0;
     int     trSt     = 0;
-    double  px       = 0.; 
+    double  px       = 0.;
     double  py       = 0.;
     double  pz       = 0.;
-    double  E        = 0.; 
-    double  vx       = 0.; 
-    double  vy       = 0.;    
-    double  vz       = 0.;    
+    double  E        = 0.;
+    double  vx       = 0.;
+    double  vy       = 0.;
+    double  vz       = 0.;
     double  vt       = 0.;
     double  rmass    = 0.;
     uint32_t trSVolume = 0;
     uint32_t trEVolume = 0;
-    uint32_t prSVolume = 0;                   
-    uint32_t prEVolume = 0;               
+    uint32_t prSVolume = 0;
+    uint32_t prEVolume = 0;
 
-    map<int,int> hit_crystals;       
+    map<int,int> hit_crystals;
     map<int,int> hit_apds;
 
     art::ServiceHandle<GeometryService> geom;
@@ -152,7 +152,7 @@ namespace mu2e {
 
       // Fill some histograms
       _hEventsize->Fill(simParticles->size());
-  
+
     if ( simParticles->size() >= 50000 ) return pass;
 
     art::Handle<StepPointMCCollection> rohits;
@@ -162,7 +162,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,"calorimeterRO",apdhits);
 
     ConditionsHandle<ParticleDataTable> pdt("ignored");
-    
+
     // Construct an object that ties together all of the simulated particle and hit info.
     SimParticlesWithHits sims( event,
                                "g4run",
@@ -170,12 +170,12 @@ namespace mu2e {
 			       "tracker",
                                0.001,
                                0 );
-    
+
     typedef SimParticlesWithHits::map_type map_type;
-     
+
     for ( map_type::const_iterator i=sims.begin();
           i != sims.end(); ++i ){
-      
+
       // All information about this SimParticle
       SimParticleInfo const& simInfo = i->second;
       SimParticle const& sim = simInfo.simParticle();
@@ -206,7 +206,7 @@ namespace mu2e {
       trspos = sim.startPosition();
       trsmom = sim.startMomentum();
       trSVolume = sim.startVolumeIndex();
-      trEVolume = sim.endVolumeIndex(); 
+      trEVolume = sim.endVolumeIndex();
       ProcessCode creationCode = sim.creationCode();
       ProcessCode stoppingCode = sim.stoppingCode();
       trCr = creationCode;
@@ -220,23 +220,23 @@ namespace mu2e {
 	prSVolume = sim_parent->startVolumeIndex();
 	prEVolume = sim_parent->endVolumeIndex();
 	prntPdg= sim_parent->pdgId();
-	prCr   = sim_parent->creationCode();  
+	prCr   = sim_parent->creationCode();
 	prSt   = sim_parent->stoppingCode();
       } else {
 	prspos  = posGen;
 	prsmom  = gen_parent._momentum.e();
-	prntPdg = gen_parent._pdgId;   
+	prntPdg = gen_parent._pdgId;
       }
 
       double  momentum = -1.;
       double  pitchAng = -1.;
-  
+
      //Get particle mass
      ParticleDataTable::maybe_ref e_data = pdt->particle(sim.pdgId());
      if ( e_data ){
        rmass = e_data.ref().mass().value();
      } else{
-       
+
        // If particle is unknown, set rest mass to 0.
        rmass = 0.;
        mf::LogWarning("PDGID")
@@ -248,10 +248,10 @@ namespace mu2e {
 
       // First  StrawsHits to which this SimParticle contributed.
       StrawHitMCInfo const& info = infos.at(0);
-            
+
       // Loop over all StepPointMC's that contribute to this StrawHit.
       std::vector<StepPointMC const *> const& steps = info.steps();
-      
+
       for ( size_t k=0; k<steps.size(); ++k){
 	StepPointMC const& step = *(steps[k]);
 
@@ -262,16 +262,16 @@ namespace mu2e {
           py = step.momentum().y();
           pz = step.momentum().z();
           E  = sqrt(step.momentum().mag()*step.momentum().mag() + rmass*rmass);
-          vx = step.position().x();          
-          vy = step.position().y();          
+          vx = step.position().x();
+          vy = step.position().y();
           vz = step.position().z();
           vt = step.time();
-          isSh = info.isShared();          
+          isSh = info.isShared();
 	  break;
         }
       }
 
-      if( rohits.isValid() ) { 
+      if( rohits.isValid() ) {
 	calEne = 0.0;
 	calEind= 0.0;
 	for ( size_t i=0; i<rohits->size(); ++i ) {
@@ -284,7 +284,7 @@ namespace mu2e {
 	    csim = simParticles->findOrNull(csim->parentId());
 	  }
 	  if(csim){
-	    calEind += rohit.eDep(); 
+	    calEind += rohit.eDep();
 	  }
 	}
       } else{
@@ -301,7 +301,7 @@ namespace mu2e {
 	  hit_apds[cida] =1;
 	}
       }
-      
+
       if( momentum < _minimump || momentum > _maximump ) continue;
       if( nHits< _minHits ) continue;
       pass = true;
@@ -334,16 +334,16 @@ namespace mu2e {
       ntT[25] = pitchAng;
       ntT[26] = prCr;
       ntT[27] = prSt;
-      ntT[28] = trCr;  
-      ntT[29] = trSt;  
+      ntT[28] = trCr;
+      ntT[29] = trSt;
       ntT[30] = _runNumber;
-      ntT[31] = px;  
-      ntT[32] = py;        
-      ntT[33] = pz;        
-      ntT[34] = E;        
-      ntT[35] = vx;        
-      ntT[36] = vy;        
-      ntT[37] = vz;        
+      ntT[31] = px;
+      ntT[32] = py;
+      ntT[33] = pz;
+      ntT[34] = E;
+      ntT[35] = vx;
+      ntT[36] = vy;
+      ntT[37] = vz;
       ntT[38] = vt;
       ntT[39] = isSh;
       ntT[40] = premom.mag();
@@ -357,11 +357,11 @@ namespace mu2e {
       ntT[48] = calEind;
 
       _ntupTrk->Fill(ntT);
-      
+
     } // end loop over hits.
 
     return pass;
 
   } // end analyze
-  
+
 }  // end namespace mu2e

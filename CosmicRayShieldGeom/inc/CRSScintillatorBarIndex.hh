@@ -4,12 +4,12 @@
 //
 // Dense integer identifier of one CRSScintillatorBar.
 // Has values 0...(N-1), where N is the number
-// of CRSScintillatorBars in the system. 
+// of CRSScintillatorBars in the system.
 
 //
-// $Id: CRSScintillatorBarIndex.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSScintillatorBarIndex.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG; based on Rob Kutschke StrawIndex
 //
@@ -29,7 +29,7 @@ namespace mu2e {
     explicit CRSScintillatorBarIndex(int32_t idx):
       _idx(idx){
     }
-    
+
     // Compiler generated versions are OK for:
     // copy c'tor, destructor, operator=
 
@@ -59,7 +59,7 @@ namespace mu2e {
     return ost;
   }
 
-  inline bool operator!=( CRSScintillatorBarIndex const & lhs, 
+  inline bool operator!=( CRSScintillatorBarIndex const & lhs,
                           CRSScintillatorBarIndex const & rhs) {
     return !( lhs == rhs);
   }

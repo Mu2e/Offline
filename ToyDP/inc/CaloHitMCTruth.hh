@@ -1,9 +1,9 @@
 #ifndef ToyDP_CaloHitMCTruth_hh
 #define ToyDP_CaloHitMCTruth_hh
 
-// $Id: CaloHitMCTruth.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: CaloHitMCTruth.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Ivan Logashenko
 
@@ -13,7 +13,7 @@
 
 // Mu2e includes
 
-namespace mu2e { 
+namespace mu2e {
 
   struct CaloHitMCTruth{
 
@@ -44,7 +44,7 @@ namespace mu2e {
     int   charge()    const { return _charged; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
-    
+
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 

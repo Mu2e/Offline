@@ -5,9 +5,9 @@
 // One can imagine that some day we will have smarter
 // trajectory classes but this is what we have for now.
 //
-// $Id: PointTrajectory.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: PointTrajectory.hh,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@ namespace mu2e {
     }
 
     // Accept compiler written d'tor, copy c'tor and assignment operator.
-    
+
     // Accessors
     int   simId() const { return _simid; }
     size_t size() const { return _points.size(); }

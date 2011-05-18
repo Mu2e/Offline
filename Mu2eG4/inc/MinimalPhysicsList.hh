@@ -4,9 +4,9 @@
 // Define a minimal physics list for G4, just transportation.
 // Used for debugging geometry.
 //
-// $Id: MinimalPhysicsList.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: MinimalPhysicsList.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -32,4 +32,4 @@ namespace mu2e {
 
 #endif /* Mu2eG4_MinimalPhysicsList_hh */
 
- 
+

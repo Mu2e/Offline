@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_plugin.hh,v 1.1 2010/08/23 15:45:28 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/08/23 15:45:28 $
+// $Id: RPC_plugin.hh,v 1.2 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author R. Bernstein
 //

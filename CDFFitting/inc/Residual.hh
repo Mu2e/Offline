@@ -15,30 +15,30 @@ class Residual {
 public:
 
   inline Residual(const Residual &right);
-  
+
   inline Residual(const HepVector &magnitude, const HepSymMatrix &error);
-  
+
   inline ~Residual();
-  
+
   inline const Residual & operator=(const Residual &right);
-  
-  
+
+
   inline const HepVector & getDisplacement() const;
-  
+
   inline const HepSymMatrix & getErrorMatrix() const;
-  
+
   inline unsigned int getDimensionality() const;
-  
+
   inline double getDeltaChiSquared() const;
-  
+
   inline Residual();
-  
-  
+
+
 private:
 
   HepVector     _magnitude;
   HepSymMatrix  _error;
-  
+
 };
 
 #include "CDFFitting/inc/Residual.icc"

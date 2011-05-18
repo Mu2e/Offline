@@ -1,9 +1,9 @@
 //
 // Start with a SimParticle and trace its ancestry back to a generated particle.
-//  
-// $Id: SimParticleAncestors.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+//
+// $Id: SimParticleAncestors.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -59,6 +59,6 @@ namespace mu2e{
     _sim0 = s;
     _gen0 = &gens.at(s->generatorIndex());
   }
-  
+
 
 } // end namespace mu2e

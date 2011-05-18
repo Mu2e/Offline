@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.18 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructLTrackerv3.cc,v 1.19 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -44,7 +44,7 @@ using namespace std;
 
 namespace mu2e{
 
-  VolumeInfo constructLTrackerv3( G4LogicalVolume* mother, 
+  VolumeInfo constructLTrackerv3( G4LogicalVolume* mother,
                                   double zOff,
                                   SimpleConfig const& config ){
 
@@ -57,7 +57,7 @@ namespace mu2e{
     // GeomHandle<LTracker> ltracker;
     LTracker const & ltracker = *(GeomHandle<LTracker>());
 
-    // Ugly hack; 
+    // Ugly hack;
     // add padding to ensure that this encloses the rotated volumes
     // This should be done inside the LTracker object.
     double rOut  = CLHEP::mm * ltracker.rOut()+10.;
@@ -66,8 +66,8 @@ namespace mu2e{
 
     bool const trackerSolid        = config.get<bool>("ltracker.solid",true);
     bool const trackerVisible      = config.get<bool>("ltracker.visible",true);
-    
-    bool const strawVisible        = config.get<bool>("ltracker.strawVisible",false); 
+
+    bool const strawVisible        = config.get<bool>("ltracker.strawVisible",false);
     bool const strawSolid          = config.get<bool>("ltracker.strawSolid",true);
 
 
@@ -80,8 +80,8 @@ namespace mu2e{
     G4Material* fillMaterial = findMaterialOrThrow(ltracker.fillMaterial());
     G4ThreeVector trackerOffset(0.,0.,z0-zOff);
 
-    verbosityLevel > 0 && 
-      cout << "Tracker Offset: z0, zOff, z0-zOff: " 
+    verbosityLevel > 0 &&
+      cout << "Tracker Offset: z0, zOff, z0-zOff: "
            << z0 << " "
            << zOff << " "
            << z0-zOff << " "
@@ -130,12 +130,12 @@ namespace mu2e{
                                      false,
                                      doSurfaceCheck
                                      );
-                                     
+
     // Place straw gas inside StrawWall
 
     TubsParams strawGasTubeParams(0., detail.innerRadius() * CLHEP::mm, detail.halfLength() * CLHEP::mm);
 
-    VolumeInfo strawGas = nestTubs( "StrawGas", 
+    VolumeInfo strawGas = nestTubs( "StrawGas",
                                     strawGasTubeParams,
                                     findMaterialOrThrow(detail.gasMaterialName()),
                                     0,
@@ -181,7 +181,7 @@ namespace mu2e{
         // Name of this sector as string.
         string name = sector.name("LTrackerSector_");
 
-        // Construct the rotation.  
+        // Construct the rotation.
         // This rotation is the inverse of the one in v2.
         // Note the sign and the reversed order : active/passive  confusion.
         // Need to understand if this causes memory leak.
@@ -199,7 +199,7 @@ namespace mu2e{
         G4RotationMatrix* rot   = reg.add(G4RotationMatrix( RY*RX*RZ));
         G4RotationMatrix* rottr = reg.add(G4RotationMatrix( RForTrapezoids*RY*RX*RZ));
 
-        // Make a physical volume for this sector.  Same material as the 
+        // Make a physical volume for this sector.  Same material as the
         // main LTracker volume ( some sort of vacuum ).
 
         VolumeInfo tmp = ( device.Id() ==  LTracker::vane) ?
@@ -273,8 +273,8 @@ namespace mu2e{
                                  position,
                                  strawWall.logical,
                                  straw.name( "LTrackerStrawWall_"),
-                                 sectorBoxInfo.logical, 
-                                 0, 
+                                 sectorBoxInfo.logical,
+                                 0,
                                  straw.Index().asInt(),
                                  doSurfaceCheck);
             }else{
@@ -282,15 +282,15 @@ namespace mu2e{
                                  trapezoidposition,
                                  strawWall.logical,
                                  straw.name( "LTrackerStrawWall_"),
-                                 sectorBoxInfo.logical, 
-                                 0, 
+                                 sectorBoxInfo.logical,
+                                 0,
                                  straw.Index().asInt(),
                                  doSurfaceCheck);
             }
-            
+
           } // loop over straws
         }   // loop over layers
-        
+
       } // loop over sectors
     }   // loop over devices
 

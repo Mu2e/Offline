@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/17 22:06:50 $
+// $Id: StoppingTarget00_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke.
 //
@@ -93,12 +93,12 @@ namespace mu2e {
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
-    
+
     _hStopFoil = tfs->make<TH1F>( "hStopFoil", "Number of Stopping Foil;(mm)", 34, 0., 17. );
     _hnSimPart = tfs->make<TH1F>( "hnSimPart", "Number of SimParticles", 200, 0., 1000. );
     _hnSimPartZoom = tfs->make<TH1F>( "hnSimPartZoom", "Number of SimParticles", 50, 0., 50. );
 
-    _nt = tfs->make<TNtuple>( "nt", "Muon ntuple", 
+    _nt = tfs->make<TNtuple>( "nt", "Muon ntuple",
                                 "cx:cy:cz:cp:cpt:cpz:cke:ct:sx:sy:sz:sp:spt:st:stau:scode:edep:sfoil:nfoils:x9:y9:pt9:pz9:x10:y10:pt10:pz10");
 
   }
@@ -120,9 +120,9 @@ namespace mu2e {
 
 
     for ( size_t i = 0; i<vols.size(); ++i){
-      cout << "Info: " 
+      cout << "Info: "
            << i  << " "
-           << vols.at(i) 
+           << vols.at(i)
            << endl;
     }
     */
@@ -139,7 +139,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,simsHandle);
     SimParticleCollection const& sims(*simsHandle);
     if ( sims.size() == 0 ){
-      mf::LogInfo("G4") 
+      mf::LogInfo("G4")
         << "No particles in SimParticleCollection.  Hope that's OK.";
       return;
     }
@@ -198,12 +198,12 @@ namespace mu2e {
     }
 
     if ( !hitFoils.empty() && nFoils > (int(hitFoils.size())+1) ){
-      cout << "Mark: " 
+      cout << "Mark: "
            << event.id() << " "
            << endVol << " "
-           << nFoils << " " 
-           << hitFoils.size() << " " 
-           << muIndex 
+           << nFoils << " "
+           << hitFoils.size() << " "
+           << muIndex
            << endl;
       int nn(0);
       set<int> dummy;
@@ -213,11 +213,11 @@ namespace mu2e {
         if ( hit.trackId() != muIndex ) continue;
         dummy.insert(hit.volumeId());
         cout << "Hit Foil: "
-             << nn++ <<  " " 
+             << nn++ <<  " "
              << hit.trackId() << " "
              << hit.volumeId() << " | "
-             << dummy.size() << " | " 
-             << hit.time() << " " 
+             << dummy.size() << " | "
+             << hit.time() << " "
              << hit.properTime() <<  " "
              << hit.stepLength() <<  " "
              << hit.totalEDep() <<  " | "
@@ -289,7 +289,7 @@ namespace mu2e {
         xx.pz10 = hit.momentum().z();
       }
       /*
-      cout << "VD: " 
+      cout << "VD: "
            << hit.volumeId() << " "
            << hit.position().z() << " "
            << hit.momentum().mag() << " "
@@ -304,15 +304,15 @@ namespace mu2e {
     /*
     double deTest = mu.startMomentum().e()-mu.endMomentum().e() - sumEDep;
     cout << "Energetics: "
-         << mu.startMomentum().e() << " " 
-         << mu.endMomentum().e() << " " 
-         << mu.startMomentum().e()-mu.endMomentum().e() << " " 
+         << mu.startMomentum().e() << " "
+         << mu.endMomentum().e() << " "
+         << mu.startMomentum().e()-mu.endMomentum().e() << " "
          << sumEDep << " "
          << deTest << " "
          << mu.stoppingCode() << " "
          << endVol << " | "
          << nFoils << " "
-         << hitFoils.size() << " | " 
+         << hitFoils.size() << " | "
          << vdCounts.size() << " "
          << nvd
          << endl;
@@ -350,7 +350,7 @@ namespace mu2e {
       SimParticle const& sim = i->second;
       ++_particleCounts[sim.pdgId()];
     }
-    
+
   } // end of ::analyze.
 
   void StoppingTarget00::endJob(){
@@ -359,7 +359,7 @@ namespace mu2e {
     for ( map<int,int>::const_iterator i=_particleCounts.begin();
           i != _particleCounts.end(); ++i ){
       cout << "   Tracked Particle: "
-           << n++ << " " 
+           << n++ << " "
            << i->first << ": "
            << i->second
            << endl;
@@ -370,7 +370,7 @@ namespace mu2e {
     for ( map<int,int>::const_iterator i=_nonMuon.begin();
           i != _nonMuon.end(); ++i ){
       cout << "   nonMuon: "
-           << n++ << " " 
+           << n++ << " "
            << i->first << ": "
            << i->second
            << endl;
@@ -381,7 +381,7 @@ namespace mu2e {
     for ( map<ProcessCode,int>::const_iterator i=_stopCodes.begin();
           i != _stopCodes.end(); ++i ){
       cout << "   Stopping Code: "
-           << n++ << " " 
+           << n++ << " "
            << i->first << ": "
            << i->second
            << endl;
@@ -392,7 +392,7 @@ namespace mu2e {
     for ( map<PhysicalVolumeInfo const*,int>::const_iterator i=_stoppingVols.begin();
           i != _stoppingVols.end(); ++i ){
       cout << "   Stopping Volume: "
-           << n++ << " " 
+           << n++ << " "
            << *i->first << ": "
            << i->second
            << endl;
@@ -403,7 +403,7 @@ namespace mu2e {
     for ( map<PhysicalVolumeInfo const*,int>::const_iterator i=_startVols.begin();
           i != _startVols.end(); ++i ){
       cout << "   Start Volume: "
-           << n++ << " " 
+           << n++ << " "
            << *i->first << ": "
            << i->second
            << endl;
@@ -414,7 +414,7 @@ namespace mu2e {
     for ( map<int,int>::const_iterator i=_vdGlobalCounts.begin();
           i != _vdGlobalCounts.end(); ++i ){
       cout << "   Virtual Detector: "
-           << n++ << " " 
+           << n++ << " "
            << i->first << ": "
            << i->second
            << endl;

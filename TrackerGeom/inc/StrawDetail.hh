@@ -2,14 +2,14 @@
 #define TrackerGeom_StrawDetail_hh
 
 //
-// Class to hold information about the properties of each type of straw.  
-// We need different types of straws for the conducting and non-conducting 
+// Class to hold information about the properties of each type of straw.
+// We need different types of straws for the conducting and non-conducting
 // straws in the LTracker and for different lengths of straws in the TTracker.
-// 
 //
-// $Id: StrawDetail.hh,v 1.4 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:37 $
+//
+// $Id: StrawDetail.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -41,11 +41,11 @@ namespace mu2e {
                  double rwire
                  );
 
-    // Compiler generated versions are OK for destructor 
+    // Compiler generated versions are OK for destructor
     // and for copy and assignment constructors.
 
     int Id() const { return  _id; }
-  
+
     double outerRadius()   const { return _radius;}
     double innerRadius()   const { return _radius-_thickness;}
     double wireRadius()    const { return _rwire; }
@@ -57,13 +57,13 @@ namespace mu2e {
     std::string const&  gasMaterialName() const{ return _materialNames[1]; }
     std::string const& wireMaterialName() const{ return _materialNames[2]; }
 
-    // Return G4TUBS parameters outer volume for this straw, includes 
+    // Return G4TUBS parameters outer volume for this straw, includes
     // wire, gas and straw materials.
     TubsParams getOuterTubsParams() const;
 
     // Return G4TUBS parameters for the straw skin.
     TubsParams getWallTubsParams() const;
-  
+
     // Return G4TUBS parameters for the wire.
     TubsParams getWireTubsParams() const;
 
@@ -79,7 +79,7 @@ namespace mu2e {
   private:
 
     // Identifier for this type of straw.
-    int32_t _id; 
+    int32_t _id;
 
     // Order of materials is:
     // straw material, gas volume, wire

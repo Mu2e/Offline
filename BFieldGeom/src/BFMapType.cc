@@ -2,9 +2,9 @@
 // An enum-matched-to-names class for magnetic field types.
 //
 //
-// $Id: BFMapType.cc,v 1.1 2011/03/08 00:38:15 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/03/08 00:38:15 $
+// $Id: BFMapType.cc,v 1.2 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke
 
@@ -21,12 +21,12 @@
 using namespace std;
 
 namespace mu2e {
-    
+
   BFMapType::BFMapType( int id):
     _id(static_cast<enum_type>(id)){
     if ( !isValid(_id) ){
       ostringstream os;
-      os << "BFMapType: identifier is out of range: " << id 
+      os << "BFMapType: identifier is out of range: " << id
          << "  Allowed range: [" << unknown << "," << lastEnum << ")";
       throw std::out_of_range(os.str());
     }

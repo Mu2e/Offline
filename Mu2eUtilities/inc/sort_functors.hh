@@ -1,9 +1,9 @@
 #ifndef Mu2eUtilities_sort_functors_hh
 #define Mu2eUtilities_sort_functors_hh
 //
-// $Id: sort_functors.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: sort_functors.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG
 //
@@ -18,7 +18,7 @@ namespace mu2e {
   class lessByTime {
 
   public:
-    
+
     bool operator() (HitT const & a, HitT const & b) const {
       return ( a.time() < b.time() );
     }
@@ -31,12 +31,12 @@ namespace mu2e {
   class lessByIdAndTime {
 
   public:
-    
+
     bool operator() (HitT const & a, HitT const & b) const {
       return (a.id() < b.id() ||
               (a.id() == b.id() &&
-               a.time() < b.time() 
-               ) 
+               a.time() < b.time()
+               )
               );
     }
 
@@ -48,16 +48,16 @@ namespace mu2e {
   class lessByCIdAndTime {
 
   public:
-    
+
 
     explicit lessByCIdAndTime(Calorimeter const & cal): _cal(cal) {}
 
     bool operator() (HitT const & a, HitT const & b) const {
-      
+
       return ( _cal.getCrystalByRO(a.id()) < _cal.getCrystalByRO(b.id()) ||
                (_cal.getCrystalByRO(a.id()) == _cal.getCrystalByRO(b.id()) &&
-                a.time() < b.time() 
-                ) 
+                a.time() < b.time()
+                )
                );
     }
 
@@ -66,7 +66,7 @@ namespace mu2e {
     Calorimeter const & _cal;
 
   };
-  
+
 }
 
 #endif /* Mu2eUtilities_sort_functors_hh */

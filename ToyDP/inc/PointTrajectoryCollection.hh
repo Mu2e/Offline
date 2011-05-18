@@ -3,12 +3,12 @@
 
 //
 // Define a type for a collection of PointTrajectory objects.
-// The key is the simulated particle ID (same as for the 
+// The key is the simulated particle ID (same as for the
 // SimParticleCollection).
 //
-// $Id: PointTrajectoryCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: PointTrajectoryCollection.hh,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //

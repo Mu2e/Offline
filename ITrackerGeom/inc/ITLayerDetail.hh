@@ -13,7 +13,7 @@ public:
   ITLayerDetail( double center_radius_ringIn, double center_radius_ringOut, double epsilonIn,
      double epsilonOut, double halfLength, std::string materialNames
   );
-  
+
   ~ITLayerDetail ();
 
   double      centerInnerRadiusRing()    const { return _center_radius_ringIn;}
@@ -22,7 +22,7 @@ public:
   double      stereoAngleOuterRing()     const { return _epsilonOut;}
   double      halfLength()               const { return _halfLength; }
   std::string materialName()             const { return _materialNames; }
-  
+
 private:
 
   double _center_radius_ringIn;   //Inner surface radius

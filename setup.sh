@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.18 2011/05/17 18:43:57 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/17 18:43:57 $
+# $Id: setup.sh,v 1.19 2011/05/18 02:27:14 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:14 $
 #
 # Original author Rob Kutschke
 #
@@ -70,17 +70,17 @@ case ${EXTERNALSVERSION} in
     # For historical reasons, Geant4 has different qualifiers on SLF4 and SLF5.
     mu2eG4Qual="gfortran-OpenGL-GDML"
     if grep 'release 4' /etc/redhat-release >/dev/null;then
-      mu2eG4Qual=g77-OpenGL-GDML  
+      mu2eG4Qual=g77-OpenGL-GDML
     fi
 
     # Chose version of G4 and its cross-section files.
     setup geant4 v4_9_3_p02 -q $mu2eG4Qual
-    
+
   ;;
   *)
     # Deprecated: backwards compatibility with the old externals system.
     setup framework v1_1_3
-    setup geant4 v4_9_3_p01 -q g77-OpenGL        
+    setup geant4 v4_9_3_p01 -q g77-OpenGL
     setup heppdt      v3_04_01
 esac
 

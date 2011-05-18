@@ -3,7 +3,7 @@
 
 #include "ITrackerGeom/inc/SuperLayerId.hh"
 
-namespace mu2e { 
+namespace mu2e {
 
 struct ITLayerId{
 
@@ -16,7 +16,7 @@ public:
     _id(-1)
     {
   }
-  
+
   ITLayerId( SuperLayerId *sid,
            int &id
            ):
@@ -46,10 +46,10 @@ public:
 
   SuperLayerId *_sid;
   int _id;
-  
+
 };
 
-inline std::ostream& operator<<(std::ostream& ost, 
+inline std::ostream& operator<<(std::ostream& ost,
                                 const ITLayerId& l ){
   ost << "Layer Id: ("
       << l.getSuperLayerId() << " "

@@ -14,15 +14,15 @@ public:
   // Constructor
   SpacePoint(double x=0, double y=0, double z=0)
     : HepPoint3D(x, y, z) {}
-  
+
   // Copy constructor
   SpacePoint(const Hep3Vector &v) : HepPoint3D(v) {}
-  
+
   // Assignment
   SpacePoint& operator=(const HepPoint3D &v) {
     setX(v.x()); setY(v.y()); setZ(v.z()); return *this;
   }
-  
+
   // Assignment of Hep3Vector and classes derived from it (Vector3D, Normal3D)
   SpacePoint& operator=(const Hep3Vector &v) {
     setX(v.x()); setY(v.y()); setZ(v.z()); return *this;

@@ -2,16 +2,16 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: PhysicalVolumeHelper.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
 // Notes:
 // 1) This should be instantiated after the G4 initialization phase is complete.
 //    ( After  _runManager->BeamOnBeginRun(); ).
-//    At this time the information in PhysicalVolumeStore is static until 
+//    At this time the information in PhysicalVolumeStore is static until
 //    the end of the run; in particular, the addresses of all physical
 //    volumes are valid until the end of the run.
 //
@@ -27,7 +27,7 @@
 //    than the alternate solution which use a key that is a std::pair of
 //    volume name and copy number.
 //
-// 5) The implementation will always correctly satisfy the request or 
+// 5) The implementation will always correctly satisfy the request or
 //    will throw. The client code need not check for errors.
 
 // Framework includes
@@ -43,7 +43,7 @@
 using namespace std;
 
 namespace mu2e {
-  
+
   PhysicalVolumeHelper::PhysicalVolumeHelper():
     _persistentInfo(),
     _volumeMap(){

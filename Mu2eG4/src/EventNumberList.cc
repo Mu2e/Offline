@@ -1,9 +1,9 @@
 //
 // Utility class to select listed events within G4.
 //
-// $Id: EventNumberList.cc,v 1.4 2010/09/30 02:44:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/09/30 02:44:43 $
+// $Id: EventNumberList.cc,v 1.5 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -56,13 +56,13 @@ namespace mu2e {
   }
 
   bool EventNumberList::inList( int eventNumber) const{
-    
-    // Special case: if the list contains only event -1, then 
+
+    // Special case: if the list contains only event -1, then
     // always accept the event.
     if ( _eventNumbers.size() == 1 && _eventNumbers[0] == -1 ){
       return true;
     }
-    
+
     // Normal behaviour.  Check to see if event number is in the list.
     for ( std::size_t i=0; i<_eventNumbers.size(); ++i ){
       if ( _eventNumbers[i] == eventNumber ) return true;
@@ -70,6 +70,6 @@ namespace mu2e {
 
     return false;
   }
-  
-  
+
+
 }

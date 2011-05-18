@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: GeometryService.hh,v 1.7 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@ namespace mu2e {
 public:
     GeometryService(const fhicl::ParameterSet&, art::ActivityRegistry&);
     ~GeometryService();
-    
+
     void preBeginRun( art::RunID const& id, art::Timestamp const& ts);
 
     SimpleConfig const& config() const { return *_config;}
@@ -44,11 +44,11 @@ public:
     template <class DET>
     bool hasElement()
     {
-      if(_run_count==0) 
+      if(_run_count==0)
         throw cet::exception("GEOM")
           << "Cannot get detectors from an unconfigured geometry service.\n"
           << "You've attempted to a get an element before the first run\n";
-      
+
       // to use this generic way requires a map of names (typeid?) to
       // abstract elements.
       // find the detector element requested
@@ -75,11 +75,11 @@ private:
     template <class DET>
     DET* getElement()
     {
-      if(_run_count==0) 
+      if(_run_count==0)
         throw cet::exception("GEOM")
           << "Cannot get detectors from an unconfigured geometry service.\n"
           << "You've attempted to a get an element before the first run\n";
-      
+
       // to use this generic way requires a map of names (typeid?) to
       // abstract elements.
       // find the detector element requested
@@ -99,7 +99,7 @@ private:
 
       return d;
     }
-    
+
     // The name of the input file.  Later will be a db key or similar.
     std::string _inputfile;
 
@@ -109,7 +109,7 @@ private:
     // This is not copyable or assignable - private and unimplemented.
     GeometryService const& operator=(GeometryService const& rhs);
     GeometryService(GeometryService const& rhs);
-    
+
     template <typename DET>
     void addDetector(std::auto_ptr<DET> d)
     {
@@ -117,11 +117,11 @@ private:
         throw cet::exception("GEOM") << "failed to install detector "
                                      << d->name() << "\nwith type name "
                                      << typeid(DET).name() << "\n";
-      
+
       DetectorPtr ptr(d.release());
       _detectors[typeid(DET).name()] = ptr;
     }
-    
+
 
   };
 

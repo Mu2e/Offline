@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.88 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: Mu2eWorld.cc,v 1.89 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -122,7 +122,7 @@ namespace mu2e {
     _mu2eOrigin(),
     _info(){
   }
-  
+
   Mu2eWorld::~Mu2eWorld(){
 
     // Do not destruct the solids, logical volumes or physical volumes.
@@ -198,7 +198,7 @@ namespace mu2e {
 
     VolumeInfo hallInfo  = constructHall( dirtInfo,_config );
 
-    if ( diagLevel > 0) {    
+    if ( diagLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
       cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
     }
@@ -271,7 +271,7 @@ namespace mu2e {
     // Top of the floor in G4 world coordinates.
     double yFloor = -worldHLen[1] + floorThick;
 
-    if ( diagLevel > 0) {    
+    if ( diagLevel > 0) {
       cout << __func__ << " yFlor : " <<  yFloor  << endl;
     }
 
@@ -279,13 +279,13 @@ namespace mu2e {
     double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
 
     // Position of the origin of the mu2e coordinate system
-    _mu2eOrigin = G4ThreeVector( 
+    _mu2eOrigin = G4ThreeVector(
                                 _config->getDouble("world.mu2eOrigin.xoffset")*CLHEP::mm,
                                 yFloor + yOriginHeight,
                                 _config->getDouble("world.mu2eOrigin.zoffset")*CLHEP::mm
                                 );
 
-    if ( diagLevel > 0) {    
+    if ( diagLevel > 0) {
       cout << __func__ << " _mu2eOrigin : " <<  _mu2eOrigin  << endl;
     }
 
@@ -293,7 +293,7 @@ namespace mu2e {
     // Magic number to fix:
     _mu2eDetectorOrigin = _mu2eOrigin + G4ThreeVector( -3904., 0., 12000.);
 
-    if ( diagLevel > 0) {    
+    if ( diagLevel > 0) {
       cout << __func__ << " _mu2eDetectorOrigin : " <<  _mu2eDetectorOrigin  << endl;
     }
 
@@ -305,7 +305,7 @@ namespace mu2e {
 
     // Bottom of the ceiling in G4 world coordinates.
     double yCeilingInSide = yFloor + 2.*hallInHLen[1];
-    
+
     // Top of the ceiling in G4 world coordinates.
     double yCeilingOutside  = yCeilingInSide + ceilingThick;
 
@@ -321,7 +321,7 @@ namespace mu2e {
     _dirtG4Ymax = ySurface;
     _dirtG4Ymin = yCeilingOutside;
 
-    if ( diagLevel > 0) {    
+    if ( diagLevel > 0) {
       cout << __func__ << " yEverest : " <<  yEverest  << endl;
     }
 
@@ -360,7 +360,7 @@ namespace mu2e {
       int ver = _config->get<int>("TTrackerVersion",3);
       if ( ver == 3 ){
         trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
-      }        
+      }
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
     }
@@ -387,14 +387,14 @@ namespace mu2e {
     cout << "_hallOriginInMu2e.z()=" << _hallOriginInMu2e.z() << endl;
 
     // Buid the stopping target
-    VolumeInfo targetInfo = ( _config->get<bool>("hasTarget",false) ) ? 
+    VolumeInfo targetInfo = ( _config->get<bool>("hasTarget",false) ) ?
 
-      constructStoppingTarget( detSolUpstreamVacInfo.logical, 
+      constructStoppingTarget( detSolUpstreamVacInfo.logical,
                                             z0DSup,
                                             *_config )
       :
 
-      constructDummyStoppingTarget( detSolUpstreamVacInfo.logical, 
+      constructDummyStoppingTarget( detSolUpstreamVacInfo.logical,
                                                  z0DSup,
                                                  *_config );
     return targetInfo;
@@ -407,7 +407,7 @@ namespace mu2e {
   void Mu2eWorld::constructBFieldAndManagers(){
 
     // Figure out which magnetic field managers are needed.
-    int dsFieldForm    = _config->get<int>("detSolFieldForm", dsModelUniform); 
+    int dsFieldForm    = _config->get<int>("detSolFieldForm", dsModelUniform);
 
     // Decide on the G4 Stepper
 
@@ -423,7 +423,7 @@ namespace mu2e {
     }
 
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership
-    
+
     G4MagneticField * _field = new DSField("", _mu2eOrigin);
     G4Mag_UsualEqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
@@ -441,9 +441,9 @@ namespace mu2e {
       _stepper = new G4HelixSimpleRunge(_rhs);
     } else {
       _stepper = new G4SimpleRunge(_rhs);
-    } 
+    }
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,1.0e-2*CLHEP::mm,_stepper);
-    G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true); 
+    G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
 
     // G4TransportationManager takes ownership of _manager
     G4TransportationManager::GetTransportationManager()->SetFieldManager(_manager);
@@ -452,7 +452,7 @@ namespace mu2e {
 
     G4LogicalVolume* ds2Vacuum = _helper->locateVolInfo("ToyDS2Vacuum").logical;
     G4LogicalVolume* ds3Vacuum = _helper->locateVolInfo("ToyDS3Vacuum").logical;
-    
+
     if (dsFieldForm == dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
       ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
@@ -481,7 +481,7 @@ namespace mu2e {
   // 1) In the physics list constructor add a G4StepLimiter to the list of discrete
   //    physics processes attached to each particle species of interest.
   //
-  // 2) In this code, create a G4UserLimits object and attach it to the logical 
+  // 2) In this code, create a G4UserLimits object and attach it to the logical
   //    volumes of interest.
   // The net result is specifying a step limiter for pairs of (logical volume, particle species).
   //

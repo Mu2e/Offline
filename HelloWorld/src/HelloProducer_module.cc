@@ -1,10 +1,10 @@
 //
 //  The first example of a producer.
 //
-//  $Id: HelloProducer_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+//  $Id: HelloProducer_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 //  $Author: wb $
-//  $Date: 2011/05/17 22:22:46 $
-//   
+//  $Date: 2011/05/18 02:27:16 $
+//
 //  Original author Rob Kutschke
 //
 
@@ -43,13 +43,13 @@ namespace mu2e {
     CLHEP::HepLorentzVector momentum(50.,0.,0.,50.);
     double time(0.);
 
-    genParticles->push_back( ToyGenParticle( PDGCode::gamma, 
-                                             GenId::particleGun, 
+    genParticles->push_back( ToyGenParticle( PDGCode::gamma,
+                                             GenId::particleGun,
                                              position,
                                              momentum,
                                              time)
                             );
-    
+
     event.put( genParticles );
 
   }

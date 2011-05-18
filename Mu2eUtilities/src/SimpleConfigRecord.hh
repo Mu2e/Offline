@@ -3,12 +3,12 @@
 
 /**
  *
- * A class to hold one record within the primitive 
+ * A class to hold one record within the primitive
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
- * $Author: greenc $ 
- * $Date: 2011/05/17 15:41:36 $
+ * $Id: SimpleConfigRecord.hh,v 1.6 2011/05/18 02:27:19 wb Exp $
+ * $Author: wb $
+ * $Date: 2011/05/18 02:27:19 $
  *
  * Original author Rob Kutschke
  *
@@ -24,7 +24,7 @@ namespace mu2e {
 // This class holds a single record from the configuration file.
 // It parses the record, checks for internal consistency and provides
 // accesors for information in the record.
-// 
+//
 // Notes:
 // 1) Supported types:
 //    string, int, double, bool
@@ -41,10 +41,10 @@ namespace mu2e {
 class SimpleConfigRecord {
 
  public:
-    
+
   // Constructor.
   SimpleConfigRecord( const std::string& record_a );
-  
+
   /**
    * Returns a copy of the input record as it was found in the input file
    * but with line breaks removed.
@@ -52,25 +52,25 @@ class SimpleConfigRecord {
    * @return A copy of the raw record.
    */
   std::string getRecord() const { return record; }
-  
+
   /**
    * Returns the type field of this record.
    * @return The type.
    */
   std::string getType () const { return Type; }
-  
+
   /**
    * Returns the variable name field of this record.
    * @return The variable name.
    */
   std::string getName () const { return Name; }
-  
+
   /**
    * Returns the comment field, if any, of this record.
    * @return The comment, if any, that is part of this record.
    */
   std::string getComment() const { return comment; }
-  
+
   /**
    * Returns true if the record contains nothing more than a comment or if the
    * the record is blank.
@@ -106,21 +106,21 @@ class SimpleConfigRecord {
    * @return The value of an int record.
    */
   int get<int> () const;
-  
+
   /**
    * Return the value as an double.  Only works for records that are of type double.
-   * 
+   *
    * @return The value of a double record.
    */
   double getDouble () const;
 
   /**
    * Return the value as a bool.  Only works for records that are of type bool.
-   * 
+   *
    * @return The value of a bool record.
    */
   bool get<bool>() const;
-  
+
   /**
    * Return the value as a vector of strings.  Works for all record types.
    *
@@ -128,37 +128,37 @@ class SimpleConfigRecord {
    */
   // Can return any type of vector as a vector of strings.
   void getVectorString( std::vector<std::string>& v) const;
-  
+
   /**
-   * Return the value as a std::vector<int>.  
+   * Return the value as a std::vector<int>.
    * Only works for records that are of type std::vector<int>.
-   * 
+   *
    * @return The value of a std::vector<int> record.
    */
   void getVectorInt( std::vector<int>& v) const;
-  
+
   /**
-   * Return the value as a std::vector<Double>.  
+   * Return the value as a std::vector<Double>.
    * Only works for records that are of type std::vector<Double>.
-   * 
+   *
    * @return return the value of a std::vector<double> record.
    */
   void getVectorDouble( std::vector<double>& v ) const;
-  
+
   /**
-   * 
+   *
    * Format the record as a string with standard spacing, ignoring the spacing
-   * on the input line. If the data are strings, then enclose each string in 
+   * on the input line. If the data are strings, then enclose each string in
    * quotes, even if it has no embedded spaces.
-   * 
+   *
    * @return A formatted copy of the record.
    */
   std::string toString() const;
 
   /**
-   * 
+   *
    * Formatted printing of the record to the specified stream.
-   * 
+   *
    * @return A formatted copy of the record.
    */
   void print( std::ostream& ) const;
@@ -171,68 +171,68 @@ class SimpleConfigRecord {
 
 private:
   // Private instance data.
-  
-  
+
+
   // A copy of the record as it came in.
-  // An external class does the concatenation of records that span lines into a single 
+  // An external class does the concatenation of records that span lines into a single
   // string.
   std::string record;
 
   // Record with comments and enclosing white space stripped out.
   std::string barerecord;
-  
+
   // Comment field, if any, including the // delimiter.
   std::string comment;
-  
+
   // Data type: int, double, bool ...
   std::string Type;
-  
+
   // Name of the datum.
   std::string Name;
-  
+
   // The value field - not yet parsed into components.
   std::string Value;
-  
+
   // The value field, parsed into components.
   std::vector<std::string> Values;
-  
+
   // State data.
   bool _isCommentOrBlank;
   bool _isVector;
   bool _superceded;
-  
+
   //  Private methods.
 
   /**
-   * 
+   *
    * Parse this record, starting from its input string.
-   * 
+   *
    */
   void Parse ();
 
   /**
-   * 
-   * Split this record into 3 fields: Type Name = Value; 
-   * 
+   *
+   * Split this record into 3 fields: Type Name = Value;
+   *
    */
-  void SplitLine();  
-  
+  void SplitLine();
+
   /**
-   * 
+   *
    * Parse the Value part of the record.
-   * 
+   *
    */
   void ParseValue();
-  
+
   /**
-   * 
+   *
    * Check that the type of the current record matches the specified type.
    *
    */
   void CheckType( std::string s) const;
 
   /**
-   * 
+   *
    * Check that the type of the current record matches one of the known types.
    * Throw if it does not.
    *
@@ -241,28 +241,28 @@ private:
 
 
   /**
-   * 
+   *
    * Check that the type of the current record is one of the vector types.
    *
    */
   void AnyVector() const;
 
   /**
-   * 
+   *
    * Return value of string as an int, or throw.
    *
    */
   int toInt ( const std::string& s ) const ;
 
   /**
-   * 
+   *
    * Return value of string as a double, or throw.
    *
    */
   double toDouble ( const std::string& s ) const;
 
   /**
-   * 
+   *
    * Return value of string as a bool, or throw.
    *
    */

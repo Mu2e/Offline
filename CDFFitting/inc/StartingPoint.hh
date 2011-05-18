@@ -15,17 +15,17 @@ template <class Measureable>
 class StartingPoint : public FitAction<Measureable> {
 
 public:
-  
+
   // constructor
   StartingPoint();
 
   // destructor
   virtual ~StartingPoint();
-  
+
   // Gets the error matrix of the reference value at the start of the fit;  not
-  // necessarily in Cartesian 3-space 
+  // necessarily in Cartesian 3-space
   virtual HepSymMatrix getErrorMatrix(const Measureable &measureable) const = 0;
-  
+
   // Get the dimensionality of this constraint
   virtual unsigned int getDimensionality() const = 0;
 

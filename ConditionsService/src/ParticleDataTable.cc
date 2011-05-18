@@ -1,19 +1,19 @@
 //
-// Mu2e wrapper around HepPDT::ParticleDataTable 
+// Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.cc,v 1.9 2011/05/17 15:35:59 greenc Exp $
-//   $Author: greenc $
-//   $Date: 2011/05/17 15:35:59 $
+//   $Id: ParticleDataTable.cc,v 1.10 2011/05/18 02:27:15 wb Exp $
+//   $Author: wb $
+//   $Date: 2011/05/18 02:27:15 $
 //
 //
 // 1) The Geant4 particle table is a superset of this table.  It includes
 //    various nuclei and ions.
 //
-// 2) In changeUnits and improveData I want to loop over all elements in the 
-//    and modify their contents. The minor complication is that there is no 
-//    non-const iterator over the table.  But we can stitch one together using 
-//    two components.  First, there is an accessor by ParticleID to give a 
-//    non-const pointer to any element in the table.  Also, there is a const 
+// 2) In changeUnits and improveData I want to loop over all elements in the
+//    and modify their contents. The minor complication is that there is no
+//    non-const iterator over the table.  But we can stitch one together using
+//    two components.  First, there is an accessor by ParticleID to give a
+//    non-const pointer to any element in the table.  Also, there is a const
 //    iterator over the table.
 //
 // 3) The table is populated in the destructor of the table builder.  So it is
@@ -29,14 +29,14 @@
 //    an auxillary table. For all particles that are present in both tables, the
 //    code copies the masses and widths from the auxillary table to the permanent table.
 //    Then the auxillary table goes out of scope.
-//    
+//
 #include <fstream>
 #include <iomanip>
 
 // Framework include files.
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/ParameterSet/FileInPath.h"
 #include "cetlib/exception.h"
+#include "cetlib/search_path.h"
 
 // Mu2e include files
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -73,14 +73,18 @@ namespace mu2e {
     _pdt("Mu2eParticleData"),
     _unitsChanged(false){
 
-    art::FileInPath tableFiP(config.get<std::string>("particleDataTable.filename",
-                                              "ConditionsService/data/particle.tbl"));
-    _tableFilename = tableFiP.fullPath();
+    cet::search_path sp("MU2E_SEARCH_PATH");
 
-    art::FileInPath auxFiP(config.get<std::string>("particleDataTable.auxillaryFilename",
-                                            "ConditionsService/data/mass_width_2008.mc"));
-    _auxillaryFilename = auxFiP.fullPath();
-    
+    std::string tableFiP(config.getString("particleDataTable.filename",
+                                          "ConditionsService/data/particle.tbl"));
+    if( ! sp.find_file(tableFiP, _tableFilename) )
+      throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
+
+    std::string auxFiP(config.getString("particleDataTable.auxillaryFilename",
+                                        "ConditionsService/data/mass_width_2008.mc"));
+    if( ! sp.find_file(auxFiP, _auxillaryFilename) )
+      throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
+
     loadTableFromFile();
   }
 
@@ -95,7 +99,7 @@ namespace mu2e {
       ifstream in(_tableFilename.c_str());
       if ( !in ) {
         throw cet::exception("FILE")
-          << "Unable to open particle data file: " 
+          << "Unable to open particle data file: "
           << _tableFilename << "\n";
       }
       //HepPDT::addPDGParticles( in, tb);
@@ -112,7 +116,7 @@ namespace mu2e {
 
   // Accessor by ID that checks that the requested particle exists in the table.
   ParticleDataTable::maybe_ref ParticleDataTable::particle( ParticleID id ) const{
-    ParticleData const* p = _pdt.particle(id); 
+    ParticleData const* p = _pdt.particle(id);
     return p ? maybe_ref(*p): maybe_ref();
   }
 
@@ -123,7 +127,7 @@ namespace mu2e {
   }
 
   void ParticleDataTable::changeUnits(){
- 
+
     // Electron mass, in MeV.
     double eMassMeV = 0.510999;
 
@@ -146,10 +150,10 @@ namespace mu2e {
     }
 
     if ( units == 0 ){
-      mf::LogWarning("CONDITIONS") 
+      mf::LogWarning("CONDITIONS")
         << "Did not recognize the units of masses in the particle data table.\n"
         << "The electron mass appears to be: "
-        << eMass 
+        << eMass
         << "  Hope that's OK.\n";
     }
 
@@ -157,7 +161,7 @@ namespace mu2e {
     if ( units == 2 ){
       _unitsChanged = true;
 
-      mf::LogWarning("CONDITIONS") 
+      mf::LogWarning("CONDITIONS")
         << "The HepPDT particle data table has masses in GeV. Changing to MeV.\n"
         << "  ( This leaves the lifetimes in a screwed up state: they are in kilo-seconds."
         << "    This does not affect Geant4 which has its own table of lifetimes. )";
@@ -167,7 +171,7 @@ namespace mu2e {
 
         // Get non-const reference to the particle data.  See Note 2.
         ParticleData& particle = *_pdt.particle(i->first.pid());
-          
+
         // Extract properties with dimensions of mass.
         Measurement mass   = particle.mass();
         Measurement width  = particle.totalWidth();
@@ -178,7 +182,7 @@ namespace mu2e {
         Measurement newmass (  mass.value()*GeV,  mass.sigma()*GeV );
         Measurement newwidth( width.value()*GeV, width.sigma()*GeV );
 
-        // Reset the properties in the table.  
+        // Reset the properties in the table.
         particle.setMass(newmass);
         particle.setTotalWidth(newwidth);
         particle.setLowerCutoff( lowerCutoff*GeV );
@@ -205,7 +209,7 @@ namespace mu2e {
       ifstream in( _auxillaryFilename.c_str() );
       if ( !in ) {
         throw cet::exception("FILE")
-          << "Unable to open auxillary particle data file: " 
+          << "Unable to open auxillary particle data file: "
           << _auxillaryFilename << "\n";
       }
       HepPDT::addPDGParticles( in, tb);
@@ -217,7 +221,7 @@ namespace mu2e {
 
       // Get non-const access to each particle. See note 2.
       ParticleData* particle = _pdt.particle( i->first.pid() );
-      
+
       ParticleData* tmp = auxTable.particle( std::abs(i->first.pid()) );
       if ( !tmp ) continue;
 
@@ -229,7 +233,7 @@ namespace mu2e {
         particle->setMass(tmp->mass());
         particle->setTotalWidth(tmp->totalWidth());
       }
-      
+
     }
 
 

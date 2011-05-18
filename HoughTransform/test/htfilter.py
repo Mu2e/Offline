@@ -1,8 +1,8 @@
 # Configuration file for G4Test03
 #
-# $Id: htfilter.py,v 1.3 2010/08/18 05:12:34 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/08/18 05:12:34 $
+# $Id: htfilter.py,v 1.4 2011/05/18 02:27:16 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:16 $
 #
 # Original author Rob Kutschke
 #
@@ -11,7 +11,7 @@
 # Define the default configuratio for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("HoughTest0501")
 
 # Maximum number of events to do.
@@ -73,14 +73,14 @@ process.outfile = mu2e.OutputModule(
 
 # apply noise and inefficiency
 process.simpleen = mu2e.EDProducer(
-    "SimpleEffyNoise",    
-    diagLevel = mu2e.untracked.int32(1),    
-    noiseRate = mu2e.double(.02),    
+    "SimpleEffyNoise",
+    diagLevel = mu2e.untracked.int32(1),
+    noiseRate = mu2e.double(.02),
     hitIneffy = mu2e.double(.0) )
 
 # Look at the hits from G4.
 process.checkhits = mu2e.EDProducer(
-# this line tells me where to get the plugin file from    
+# this line tells me where to get the plugin file from
     "HoughTest",
     NPeakSearch = mu2e.uint32(50),
     UseMCHits = mu2e.bool(True),
@@ -90,7 +90,7 @@ process.checkhits = mu2e.EDProducer(
 
 # Look at the hits from G4.
 process.plothits = mu2e.EDAnalyzer(
-# this line tells me where to get the plugin file from    
+# this line tells me where to get the plugin file from
     "HoughTuner",
     hitCreatorName = mu2e.string("simpleen"),
     maxFullPrint = mu2e.untracked.int32(5)

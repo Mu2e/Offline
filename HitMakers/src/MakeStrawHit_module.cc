@@ -2,12 +2,12 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: MakeStrawHit_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
-//                               Updated by Hans Wenzel to include sigma in deltat 
+//                               Updated by Hans Wenzel to include sigma in deltat
 
 // C++ includes.
 #include <iostream>
@@ -65,20 +65,20 @@ namespace mu2e {
     double _t2;
 
     StepHit(int hit_id, double edep, double dca, double driftT, double toMid, double t1, double t2):
-      _hit_id(hit_id), _edep(edep), _dca(dca), _driftTime(driftT), 
+      _hit_id(hit_id), _edep(edep), _dca(dca), _driftTime(driftT),
       _distanceToMid(toMid), _t1(t1), _t2(t2) { }
 
-    // This operator is overloaded in order to time-sort the hits 
+    // This operator is overloaded in order to time-sort the hits
     bool operator <(const StepHit& b) const { return (_t1 < b._t1); }
 
   };
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class MakeStrawHit : public art::EDProducer {
   public:
-    explicit MakeStrawHit(fhicl::ParameterSet const& pset) : 
+    explicit MakeStrawHit(fhicl::ParameterSet const& pset) :
 
       // Parameters
       _diagLevel(pset.get<int>("diagLevel",0)),
@@ -94,7 +94,7 @@ namespace mu2e {
 
       // Random number distributions
       _gaussian( createEngine( get_seed_value(pset)) ),
-      
+
       _messageCategory("StrawHitMaker"){
 
       // Tell the framework what we make.
@@ -106,11 +106,11 @@ namespace mu2e {
     virtual ~MakeStrawHit() { }
 
     virtual void beginJob();
- 
+
     void produce( art::Event& e);
 
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -124,11 +124,11 @@ namespace mu2e {
 
     // Parameters
     double _t0Sigma;        // T0 spread in ns
-    double _minimumEnergy;  // minimum energy deposition of G4 step 
+    double _minimumEnergy;  // minimum energy deposition of G4 step
     double _minimumLength;  // is G4Step is shorter than this, consider it a point
-    double _driftVelocity;  
+    double _driftVelocity;
     double _driftSigma;
-    double _minimumTimeGap; 
+    double _minimumTimeGap;
     string _g4ModuleLabel;  // Name of the module that made these hits.
 
     // Random number distributions
@@ -140,14 +140,14 @@ namespace mu2e {
   };
 
   void MakeStrawHit::beginJob(){
-    
+
   }
 
   void
   MakeStrawHit::produce(art::Event& event) {
 
     if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() begin" << endl;
-      
+
     static int ncalls(0);
     ++ncalls;
 
@@ -184,20 +184,20 @@ namespace mu2e {
       vector<int> &hits_id = hitmap[straw_id];
       hits_id.push_back(i);
     }
- 
+
     vector<StepHit> straw_hits;
 
-    // Loop over all straws and create StrawHits. There can be several 
-    // hits per straw if they are separated by time. The general algorithm 
-    // is as follows: calculate signal time for each G4step, order them 
-    // in time and look for gaps. If gap exceeds _minimumTimeGap create 
+    // Loop over all straws and create StrawHits. There can be several
+    // hits per straw if they are separated by time. The general algorithm
+    // is as follows: calculate signal time for each G4step, order them
+    // in time and look for gaps. If gap exceeds _minimumTimeGap create
     // separate hit.
 
     for(StrawHitMap::const_iterator istraw = hitmap.begin(); istraw != hitmap.end(); ++istraw) {
 
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-        cout << "MakeStrawHit: straw ID=" << istraw->first 
-             << ": number of G4 step hits " << istraw->second.size() 
+        cout << "MakeStrawHit: straw ID=" << istraw->first
+             << ": number of G4 step hits " << istraw->second.size()
              << endl;
       }
 
@@ -230,12 +230,12 @@ namespace mu2e {
         double hitTime = hit.time();
 
         if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-          cout << "MakeStrawHit: Hit #" << i << " : length=" << length 
-               << " energy=" << edep << " time=" << hitTime 
+          cout << "MakeStrawHit: Hit #" << i << " : length=" << length
+               << " energy=" << edep << " time=" << hitTime
                << endl;
         }
-        
-        // Calculate the drift distance from this step. 
+
+        // Calculate the drift distance from this step.
         double hit_dca;
         CLHEP::Hep3Vector hit_pca;
 
@@ -246,10 +246,10 @@ namespace mu2e {
           LinePointPCA pca(mid, w, pos);
           hit_dca = pca.dca();
           hit_pca = pca.pca();
-          
+
         } else {
 
-          // Step is not a point. Calculate the distance between two lines. 
+          // Step is not a point. Calculate the distance between two lines.
 
           TwoLinePCA pca( mid, w, pos, mom);
           CLHEP::Hep3Vector const& p2 = pca.point2();
@@ -261,7 +261,7 @@ namespace mu2e {
             hit_pca = pca.point1();
 
           } else {
-            
+
             // The point of closest approach is not within the step. In this case
             // the closes distance should be calculated from the ends
 
@@ -273,14 +273,14 @@ namespace mu2e {
             } else {
               hit_dca = pca2.dca();
               hit_pca = pca2.pca();
-            } 
-          
-          }          
+            }
+
+          }
 
         } // drift distance calculation
 
         // Calculate signal time. It is Geant4 time + signal propagation time
-        // t1 is signal time at positive end (along w vector), 
+        // t1 is signal time at positive end (along w vector),
         // t2 - at negative end (opposite to w vector)
 
 
@@ -301,7 +301,7 @@ namespace mu2e {
 
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
         for( size_t i=0; i<straw_hits.size(); i++ ) {
-          cout << "MakeStrawHit: StepHit #" << straw_hits[i]._hit_id 
+          cout << "MakeStrawHit: StepHit #" << straw_hits[i]._hit_id
                << " DCA=" << straw_hits[i]._dca
                << " driftT=" << straw_hits[i]._driftTime
                << " distToMid=" << straw_hits[i]._distanceToMid
@@ -361,11 +361,11 @@ namespace mu2e {
       mcptrHits->push_back(mcptr);
 
     }
-    
+
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
       cout << "MakeStrawHit: Total number of hit straws = " << strawHits->size() << endl;
       for( size_t i=0; i<strawHits->size(); ++i ) {
-        cout << "MakeStrawHit: Straw #" << (*strawHits)[i].strawIndex() 
+        cout << "MakeStrawHit: Straw #" << (*strawHits)[i].strawIndex()
              << " time="  << (*strawHits)[i].time()
              << " dt="    << (*strawHits)[i].dt()
              << " edep="  << (*strawHits)[i].energyDep()
@@ -382,7 +382,7 @@ namespace mu2e {
     if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() end" << endl;
 
   } // end of ::analyze.
-  
+
 }
 
 using mu2e::MakeStrawHit;

@@ -1,13 +1,13 @@
 #include "CDFTrajectory/inc/Circle2D.hh"
 namespace mu2e {
 
-double Circle2D::getCurvature(void) const { 
+double Circle2D::getCurvature(void) const {
   double delta = 2.0*_b/(1.0 + sqrt(1.0-4.0*_a*_b));
   double c     = _a/(1.0-2.0*_a*delta);
   return c;
 }
 
-double Circle2D::getD0(void) const { 
+double Circle2D::getD0(void) const {
   return 2.0*_b/(1.0 + sqrt(1.0-4.0*_a*_b));
 }
 

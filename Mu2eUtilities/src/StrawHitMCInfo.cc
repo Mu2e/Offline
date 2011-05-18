@@ -1,18 +1,18 @@
 //
-// Integrated access to all information about a StrawHit that was 
-// created by a SimParticle.   This class is a building block of 
+// Integrated access to all information about a StrawHit that was
+// created by a SimParticle.   This class is a building block of
 // the SimParticlesWithHits class. If a StrawHit contains contributions
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
-// objects, one attached to each SimParticle. 
+// objects, one attached to each SimParticle.
 //
-// $Id: StrawHitMCInfo.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: StrawHitMCInfo.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke.
 //
 // See the notes in the header file for the meaning of the member datum _time.
-// 
+//
 
 // Framework includes
 #include "art/Framework/Core/Event.h"
@@ -29,7 +29,7 @@ namespace mu2e {
   void StrawHitMCInfo::fillStepPointMCs(art::Event const& event, key_type trackId ){
     for ( size_t i=0; i<_mcPtr->size(); ++i){
 
-      StepPointMC const* step = 
+      StepPointMC const* step =
         resolveDPIndex<StepPointMCCollection>(event, _mcPtr->at(i));
 
       _stepPointMCs.push_back( step );

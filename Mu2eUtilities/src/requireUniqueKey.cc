@@ -1,11 +1,11 @@
 //
 // Given a list of keys and a SimpleConfig object, count how
-// many of the keys have a value of true. Throw if more than 
+// many of the keys have a value of true. Throw if more than
 // one is true.  Optionally, throw if none are true.
 //
-// $Id: requireUniqueKey.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: requireUniqueKey.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -61,5 +61,5 @@ namespace mu2e {
     // Successful return.
     return count;
   }
- 
+
 } // end namespace mu2e

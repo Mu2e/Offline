@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
-// $Author: wb $ 
-// $Date: 2011/05/17 22:22:46 $
+// $Id: HoughTuner_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author P. Shanahan
 //
@@ -65,11 +65,11 @@ namespace mu2e {
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
 
   class HoughTuner : public art::EDAnalyzer {
   public:
-    explicit HoughTuner(fhicl::ParameterSet const& pset) : 
+    explicit HoughTuner(fhicl::ParameterSet const& pset) :
       _maxFullPrint(pset.get<int>("maxFullPrint",10)),
       _nAnalyzed(0),
       _messageCategory("ToyHitInfo"),
@@ -83,7 +83,7 @@ namespace mu2e {
     virtual void beginRun(art::Run const &r);
 
     virtual void beginSubRun(art::SubRun const& lblock);
- 
+
     // This is called for each event.
     void analyze(const art::Event& e);
 
@@ -120,13 +120,13 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 
     // Create some 1D histograms.
-    _hBiasRadiusNoise= tfs->make<TH1F>( "hBiasRadiusNoise", 
+    _hBiasRadiusNoise= tfs->make<TH1F>( "hBiasRadiusNoise",
             "Mean Radius of noise hits vs. hough track",200,-20,20);
-    _hBiasRadiusPhys= tfs->make<TH1F>( "hBiasRadiusPhys", 
+    _hBiasRadiusPhys= tfs->make<TH1F>( "hBiasRadiusPhys",
             "Mean Radius of physics hits vs. hough track",200,-20,20);
-    _hBiasRadiusNoiseW= tfs->make<TH1F>( "hBiasRadiusNoiseW", 
+    _hBiasRadiusNoiseW= tfs->make<TH1F>( "hBiasRadiusNoiseW",
             "Mean Radius of noise hits vs. hough track (wide)",200,-1000,1000);
-    _hBiasRadiusPhysW= tfs->make<TH1F>( "hBiasRadiusPhysW", 
+    _hBiasRadiusPhysW= tfs->make<TH1F>( "hBiasRadiusPhysW",
             "Mean Radius of physics hits vs. hough track (wide)",200,-1000,1000);
 
 
@@ -159,7 +159,7 @@ namespace mu2e {
     // Ask the event to give us a "handle" to the requested hits.
     //    art::Handle<StepPointMCCollection> hits;
     //evt.getByLabel(creatorName,hits);
-    
+
     static const string collectionName("tracker");
     art::Handle<StepPointMCCollection> hitsHandle;
     evt.getByLabel(_hitCreatorName,collectionName,hitsHandle);
@@ -174,7 +174,7 @@ namespace mu2e {
 
     // Fill histogram with number of hits per event.
     //_hHitMultiplicity->Fill(hits->size());
- 
+
     // and number of Hough Tracks
    // _hHoughMultiplicity->Fill(hcHandle->size());
 
@@ -209,20 +209,20 @@ std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
      tp[kNoise]=new TPolyMarker(); tp[kNoise]->SetMarkerStyle(24);
             tp[kNoise]->SetMarkerColor(kCyan);
      int npm[2]={0,0};
-     
+
      // also want to calculate mean hit radius from Hough Center
      double rmean[2]={0,0};
 
 // loop over hits
      for (size_t ih=0; ih<hits->size(); ih++)
      {
-          
+
          const StepPointMC& hit=hits->at(ih);
 
 
           // add hit to noise or physics TPolyMarker and stats as appropriate
          unsigned int kType=kPhys;
-         if ( 2==hit.trackId().asInt() && TMath::Abs(hit.totalEDep()-0)<1e-10) 
+         if ( 2==hit.trackId().asInt() && TMath::Abs(hit.totalEDep()-0)<1e-10)
                                                               kType=kNoise;
          tp[kType]->SetPoint(npm[kType]++,hit.position()[0],hit.position()[1]);
 
@@ -247,29 +247,29 @@ std::cout<<"nCircles="<<hcHandle->size()<<std::endl;
      delete tp[kNoise];
      for (size_t ic=0; ic<circles.size(); ic++) delete circles[ic];
 
-     
+
      if (hcp) {
        _hBiasRadiusNoise->Fill(rmean[kNoise]-hcp->Radius());
        _hBiasRadiusPhys->Fill(rmean[kPhys]-hcp->Radius());
        _hBiasRadiusNoiseW->Fill(rmean[kNoise]-hcp->Radius());
        _hBiasRadiusPhysW->Fill(rmean[kPhys]-hcp->Radius());
-      if (TMath::Abs(rmean[kPhys]-hcp->Radius())>100) 
+      if (TMath::Abs(rmean[kPhys]-hcp->Radius())>100)
        std::cout<<"Event "<< evtno <<"diff="<<rmean[kPhys]-hcp->Radius()<<std::endl;
      }
 
 
- 
+
   } // end of ::analyze.
 
 
   void HoughTuner::bookEventHistos(art::EventNumber_t evtno)
   {
   } //bookEventHistos
-  
+
  void HoughTuner::fillEventHistos(
-         mu2e::houghtransform::HoughTransform::houghCircleStruct houghCircle) 
+         mu2e::houghtransform::HoughTransform::houghCircleStruct houghCircle)
  {
-  
+
  } // fillEventHistos()
 
 

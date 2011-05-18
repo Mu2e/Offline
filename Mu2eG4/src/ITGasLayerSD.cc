@@ -88,7 +88,7 @@ namespace mu2e {
 //          HCE->AddHitsCollection( HCE->GetNumberOfCollections(), _collection );
 
   }
-  
+
 
 //  void ITGasLayerSD::EndOfEvent(G4HCofThisEvent*){
 //
@@ -115,12 +115,12 @@ namespace mu2e {
            << endl;
     }
 
-    if (verboseLevel>0) { 
+    if (verboseLevel>0) {
       G4int NbHits = _collection->size();
-      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
+      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits
              << " hits in the Drift Chamber: " << G4endl;
       for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
-    } 
+    }
   }
 
 //  G4ThreeVector ITGasLayerSD::GetTrackerOrigin(const G4TouchableHandle & touchableHandle) {

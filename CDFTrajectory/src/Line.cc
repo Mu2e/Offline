@@ -42,7 +42,7 @@ Line::Line(const Line &right)
 }
 
 Line::Line(const HepGeom::Point3D<double> &point, const HepGeom::Vector3D<double> &direction_tmp, bool checkNormalisation) {
-  
+
   // By default, renormalise the direction vector. Skip if checkNormalisation is set to false
   // for faster operation :
   HepGeom::Vector3D<double> direction(direction_tmp);
@@ -50,10 +50,10 @@ Line::Line(const HepGeom::Point3D<double> &point, const HepGeom::Vector3D<double
     {
       direction.setMag(1.0);
     }
-  
+
   // This is the pathological case, parallel to z-axis.
-  if (direction.perp2()<NUM_PREC) 
-    { 
+  if (direction.perp2()<NUM_PREC)
+    {
       _sinTheta=0.0;
       _cosTheta = direction.z()>0 ? 1.0:-1.0;
       _d0=point.perp();
@@ -62,14 +62,14 @@ Line::Line(const HepGeom::Point3D<double> &point, const HepGeom::Vector3D<double
 	_cosPhi0 = 0;
 	_phi0    = 0;
       }
-      else 
+      else
 	{
-	  if (fabs(_d0)>NUM_PREC) 
+	  if (fabs(_d0)>NUM_PREC)
 	    {
 	      _sinPhi0= -point.x()/_d0;
 	      _cosPhi0=  point.y()/_d0;
 	    }
-	  else 
+	  else
 	    {
 	      double perp = direction.perp();
 	      _sinPhi0 = direction.y()/perp;
@@ -78,9 +78,9 @@ Line::Line(const HepGeom::Point3D<double> &point, const HepGeom::Vector3D<double
 	  _phi0=atan2(_sinPhi0,_cosPhi0);
 	}
       _z0=0;
-    } 
+    }
   else if (fabs(direction.z())<NUM_PREC) // this is another one, perpendicular
-    { 
+    {
       _sinTheta = 1.0;
       _cosTheta = 0.0;
       _d0 = (direction.cross(point)).z();
@@ -95,7 +95,7 @@ Line::Line(const HepGeom::Point3D<double> &point, const HepGeom::Vector3D<double
       CLHEP::Hep3Vector dPerp=direction;
       dPerp.setZ(0);
       dPerp.setMag(1.0);
-    
+
       double dirz = direction.z();
       double theta = dirz>0 ? atan(direction.perp()/dirz) : M_PI + atan(direction.perp()/dirz);
       _sinTheta=sin(theta);
@@ -126,7 +126,7 @@ Line::Line(const HepGeom::Point3D<double> &point, const HepGeom::Vector3D<double
       double delta_y = y-point.y();
       double trans = sqrt(delta_x*delta_x + delta_y*delta_y);
       _z0 = point.z() + trans*_cosTheta/_sinTheta;
-    
+
 #endif
 #endif
     }
@@ -150,7 +150,7 @@ const Line & Line::operator=(const Line &right)
     _phi0=right._phi0;
     _sinPhi0=right._sinPhi0;
     _cosPhi0=right._cosPhi0;
-  } 
+  }
   return *this;
 }
 
@@ -198,7 +198,7 @@ Trajectory::Location * Line::newIntersectionWith(const HepGeom::Plane3D<double> 
     }
     else {
       delete tmp;
-    }      
+    }
   }
   return NULL;
 }
@@ -215,7 +215,7 @@ double Line::getPathLengthTo(const HepGeom::Point3D<double> &point) const {
 }
 
 //double Line::getPathLengthTo(const HepGeom::Point3D<double> &point) const {
-double Line::getDzeroTo(const HepGeom::Point3D<double> &point) const {  
+double Line::getDzeroTo(const HepGeom::Point3D<double> &point) const {
 
   //  double opposite = getDzeroTo(point);
   double adjacent = getPathLengthTo(point);
@@ -248,17 +248,17 @@ double Line::getDzeroTo(const HepGeom::Point3D<double> &point) const {
 //   double old_delta = 0.0;
 //   HepGeom::Point3D<double> old_pointB; // may not need this
 
-//   do { 
+//   do {
 
 //     old_delta=delta;
 
 //     pointCurr=getPosition(getPathLengthTo(pointB));
 //     old_pointB=pointB;
 //     pointB=helix.getPosition(helix.getPathLengthTo(pointCurr));
-    
+
 //     delta = (pointB - pointCurr).mag();
 
-//     if (ntries && (delta > old_delta)) { 
+//     if (ntries && (delta > old_delta)) {
 //       // divide the distance between pointB and
 //       // old_pointB into bits and work backwards
 //       double start = getPathLengthTo(pointB);
@@ -275,7 +275,7 @@ double Line::getDzeroTo(const HepGeom::Point3D<double> &point) const {
 //     }
 
 //   } while (ntries++ < MAXtries && delta >= EEFINE);
-  
+
 //   if (ntries == MAXtries) {
 //     std::cout << "Problem with Line.cc. MAXtries exceeded. Check or mail greenc@fnal.gov" << std::endl;
 //   }

@@ -3,9 +3,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.8 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: BFieldManager.hh,v 1.9 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -18,7 +18,7 @@
 
 // C++ includes
 #include <string>
-#include <iosfwd> 
+#include <iosfwd>
 #include <map>
 
 // Includes from Mu2e
@@ -48,7 +48,7 @@ namespace mu2e {
 
     // Check if point belongs to any map
     bool isValid(CLHEP::Hep3Vector const& point) const;
-    
+
     // The identifier for treating the BFieldManager as a field map itself.
     const std::string& getKey() const { return _key; };
 
@@ -97,8 +97,8 @@ namespace mu2e {
 
     // Add an empty map to the list.  Used by BFieldManagerMaker.
     BFMap& addBFMap( const std::string& key,
-                     int const nx, 
-                     int const ny, 
+                     int const nx,
+                     int const ny,
                      int const nz,
                      BFMapType::enum_type type,
                      double scaleFactor );

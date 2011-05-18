@@ -3,13 +3,13 @@
 
 //
 // Generate an electron with the conversion energy
-// Uses FoilParticleGenerator to extract a random spot 
+// Uses FoilParticleGenerator to extract a random spot
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.11 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: ConversionGun.hh,v 1.12 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 
 // C++ includes

@@ -1,9 +1,9 @@
 //
 // Describe a found HoughCircle
 //
-// $Id: HoughCircle.cc,v 1.1 2010/04/12 22:44:51 shanahan Exp $
-// $Author: shanahan $
-// $Date: 2010/04/12 22:44:51 $
+// $Id: HoughCircle.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Peter Shanahan
 
@@ -21,6 +21,6 @@ namespace mu2e {
 
   HoughCircle::~HoughCircle(){
   }
-  
+
 }
 

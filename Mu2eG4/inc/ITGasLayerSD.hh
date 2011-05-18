@@ -39,7 +39,7 @@ namespace mu2e {
   public:
     ITGasLayerSD(G4String, const SimpleConfig& config);
     ~ITGasLayerSD();
-    
+
     void Initialize(G4HCofThisEvent*);
     virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*) { return false; }
 //    G4bool ProcessHits(G4Step*, G4TouchableHistory*) { return false; }

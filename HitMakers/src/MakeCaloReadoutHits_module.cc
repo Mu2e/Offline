@@ -57,20 +57,20 @@ namespace mu2e {
     double _time;
 
     ROHit(int hit_id, double edep, double edep1, int charged, double time):
-      _hit_id(hit_id), _edep(edep), _edep_corr(edep1), 
+      _hit_id(hit_id), _edep(edep), _edep_corr(edep1),
       _charged(charged), _time(time) { }
 
-    // This operator is overloaded in order to time-sort the hits 
+    // This operator is overloaded in order to time-sort the hits
     bool operator <(const ROHit& b) const { return (_time < b._time); }
 
   };
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class MakeCaloReadoutHits : public art::EDProducer {
   public:
-    explicit MakeCaloReadoutHits(fhicl::ParameterSet const& pset) : 
+    explicit MakeCaloReadoutHits(fhicl::ParameterSet const& pset) :
 
       // Parameters
       _diagLevel(pset.get<int>("diagLevel",0)),
@@ -92,11 +92,11 @@ namespace mu2e {
     virtual ~MakeCaloReadoutHits() { }
 
     virtual void beginJob();
- 
+
     void produce( art::Event& e);
 
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -113,9 +113,9 @@ namespace mu2e {
     // A category for the error logger.
     const std::string _messageCategory;
 
-    void makeCalorimeterHits (const art::Handle<StepPointMCCollection>&, 
-			      const art::Handle<StepPointMCCollection>&, 
-			      CaloHitCollection &, 
+    void makeCalorimeterHits (const art::Handle<StepPointMCCollection>&,
+			      const art::Handle<StepPointMCCollection>&,
+			      CaloHitCollection &,
 			      CaloHitMCTruthCollection&,
 			      CaloCrystalOnlyHitCollection&,
 			      DPIndexVectorCollection&,
@@ -124,14 +124,14 @@ namespace mu2e {
   };
 
   void MakeCaloReadoutHits::beginJob(){
-    
+
   }
 
   void
   MakeCaloReadoutHits::produce(art::Event& event) {
 
     if ( _diagLevel > 0 ) cout << "MakeCaloReadoutHits: produce() begin" << endl;
-      
+
     static int ncalls(0);
     ++ncalls;
 
@@ -157,17 +157,17 @@ namespace mu2e {
     int nroHits = rohits->size();
 
     if( nHits>0 || nroHits>0 ) {
-      makeCalorimeterHits(points, rohits, 
+      makeCalorimeterHits(points, rohits,
 			  *caloHits, *caloMCHits, *caloCrystalMCHits,
 			  *caloMCptrHits, *caloMCroptrHits);
     }
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-      cout << "MakeCaloReadoutHits: Total number of calorimeter hits = " 
-	   << caloHits->size() 
+      cout << "MakeCaloReadoutHits: Total number of calorimeter hits = "
+	   << caloHits->size()
 	   << endl;
-      cout << "MakeCaloReadoutHits: Total number of crystal MC hits = " 
-	   << caloCrystalMCHits->size() 
+      cout << "MakeCaloReadoutHits: Total number of crystal MC hits = "
+	   << caloCrystalMCHits->size()
 	   << endl;
     }
 
@@ -181,10 +181,10 @@ namespace mu2e {
     if ( _diagLevel > 0 ) cout << "MakeCaloReadoutHits: produce() end" << endl;
 
   } // end of ::analyze.
- 
-  void MakeCaloReadoutHits::makeCalorimeterHits (const art::Handle<StepPointMCCollection>& steps, 
-				      const art::Handle<StepPointMCCollection>& rosteps, 
-				      CaloHitCollection &caloHits, 
+
+  void MakeCaloReadoutHits::makeCalorimeterHits (const art::Handle<StepPointMCCollection>& steps,
+				      const art::Handle<StepPointMCCollection>& rosteps,
+				      CaloHitCollection &caloHits,
 				      CaloHitMCTruthCollection& caloHitsMCTruth,
 				      CaloCrystalOnlyHitCollection& caloCrystalHitsMCTruth,
 				      DPIndexVectorCollection& caloHitsMCCrystalPtr,
@@ -196,7 +196,7 @@ namespace mu2e {
 
     // Get calorimeter geometry description
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
-    
+
     double length     = cal.crystalHalfLength();
     double nonUniform = cal.getNonuniformity();
     double timeGap    = cal.getTimeGap();
@@ -304,7 +304,7 @@ namespace mu2e {
 	  caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
 	  caloHitsMCCrystalPtr.push_back(mcptr_crystal);
 	  caloHitsMCReadoutPtr.push_back(mcptr_readout);
-	  // ...and create new hit	  
+	  // ...and create new hit
 	  mcptr_crystal.clear();
 	  mcptr_readout.clear();
 	  if( ro_hits[i]._charged==0 ) {
@@ -330,7 +330,7 @@ namespace mu2e {
       }
 
       /*
-      cout << "CaloHit: id=" << roid 
+      cout << "CaloHit: id=" << roid
 	   << " time=" << h_time
 	   << " trueEdep=" << h_edep
 	   << " corrEdep=" << h_edepc
@@ -342,7 +342,7 @@ namespace mu2e {
       caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
       caloHitsMCCrystalPtr.push_back(mcptr_crystal);
       caloHitsMCReadoutPtr.push_back(mcptr_readout);
-      
+
     }
 
     // now CaloCrystalOnlyHit
@@ -370,7 +370,7 @@ namespace mu2e {
 
       for( size_t i=0; i<isteps.size(); i++ ) {
 	StepPointMC const& h = (*steps)[isteps[i]];
-	cr_hits.push_back(CaloCrystalOnlyHit(cid,h.time(),h.eDep()));        
+	cr_hits.push_back(CaloCrystalOnlyHit(cid,h.time(),h.eDep()));
       }
 
       sort(cr_hits.begin(), cr_hits.end(), lessByTime<CaloCrystalOnlyHitCollection::value_type>());
@@ -387,7 +387,7 @@ namespace mu2e {
 
           caloCrystalHitsMCTruth.push_back(cHitMCTruth);
 
-	  // ...and create new hit	  
+	  // ...and create new hit
 
           cHitMCTruth  = cr_hits[i];
 
@@ -407,7 +407,7 @@ namespace mu2e {
 
 
   }
- 
+
 }
 
 using mu2e::MakeCaloReadoutHits;

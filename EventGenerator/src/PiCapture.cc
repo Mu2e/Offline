@@ -2,12 +2,12 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.18 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: PiCapture.cc,v 1.19 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke/P. Shanahan
-// 
+//
 
 #include <iostream>
 
@@ -37,10 +37,10 @@ namespace mu2e {
   // Also need a home for this - the cycle time of the debuncher.
   static const double tcycle = 1694.;
 
-  static const double emax = 138.2; // 
+  static const double emax = 138.2; //
 
   PiCapture::PiCapture( art::Run& run, const SimpleConfig& config ):
-    
+
     // Base class
     GeneratorBase(),
 
@@ -70,13 +70,13 @@ namespace mu2e {
 
     // Sanity checks
     if ( std::abs(_mean) > 99999. ) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "PiCapture has been asked to produce a crazily large number of photons ."
         << _mean
         << "\n";
     }
     if (_nbins <= 0) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense picapture.nbins requested="
         << _nbins
         << "\n";
@@ -98,23 +98,23 @@ namespace mu2e {
       _hFoilNumber = tfdir.make<TH1D>( "hFoilNumber", "Foil Number", 20,0.,20.);
 
     }
-     // UNUSED CODE. 
+     // UNUSED CODE.
       // set up exponential RNG for foils.  this code is a complete hack which is why I'm not dignifying it
     // by putting something in the config file.
 
     //    foilMean = 1./0.693;
 
     //
-    // 24.5 is from Rick Coleman telling me the stopped pi's fall a factor of two over the 17 foils  
+    // 24.5 is from Rick Coleman telling me the stopped pi's fall a factor of two over the 17 foils
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>( new FoilParticleGenerator(getEngine(), 0 ,tcycle, 
-                                                                             FoilParticleGenerator::expoVolWeightFoil, 
-                                                                             FoilParticleGenerator::flatPos, 
+    _fGenerator = auto_ptr<FoilParticleGenerator>( new FoilParticleGenerator(getEngine(), 0 ,tcycle,
+                                                                             FoilParticleGenerator::expoVolWeightFoil,
+                                                                             FoilParticleGenerator::flatPos,
                                                                              FoilParticleGenerator::limitedExpoTime,
                                                                              false, //dummy value
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay));
-    
+
   } // end PiCapture::PiCapture
 
   PiCapture::~PiCapture(){
@@ -124,8 +124,8 @@ namespace mu2e {
 
     // Choose the number of photons to generate this event.
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
-    if ( _doHistograms ) { 
-      _hMultiplicity->Fill(n); 
+    if ( _doHistograms ) {
+      _hMultiplicity->Fill(n);
     }
 
     for ( long i=0; i<n; ++i ){
@@ -142,7 +142,7 @@ namespace mu2e {
 
       // Make the 4 vector.
       CLHEP::HepLorentzVector mom( _randomUnitSphere.fire(e), e);
-      
+
       // Add the photon to the list of generated particles.
       genParticles.push_back( ToyGenParticle( PDGCode::gamma, GenId::pionCapture, pos, mom, time));
 
@@ -179,7 +179,7 @@ namespace mu2e {
 
     // Sanity check.
     if (_nbins <= 0) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense PiCaptureGun.nbins requested="
         << _nbins
         << "\n";
@@ -191,7 +191,7 @@ namespace mu2e {
     // Vector to hold the binned representation of the energy spectrum.
     std::vector<double> spectrum;
     spectrum.reserve(_nbins);
-    
+
     for (int ib=0; ib<_nbins; ib++) {
       double x = _elow+(ib+0.5) * dE;
       spectrum.push_back(energySpectrum(x));

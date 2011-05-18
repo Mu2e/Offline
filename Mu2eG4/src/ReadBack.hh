@@ -1,10 +1,10 @@
 //
-// An EDAnalyzer module that reads back the hits created by G4 and makes 
+// An EDAnalyzer module that reads back the hits created by G4 and makes
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.21 2011/05/17 22:22:46 wb Exp $
+// $Id: ReadBack.hh,v 1.22 2011/05/18 02:27:18 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -32,13 +32,13 @@ namespace mu2e {
 
   class ReadBack : public art::EDAnalyzer {
   public:
-    
+
     explicit ReadBack(fhicl::ParameterSet const& pset);
     virtual ~ReadBack() { }
 
     virtual void beginJob();
     virtual void endJob();
- 
+
     // This is called for each event.
     virtual void analyze(const art::Event& e);
 
@@ -60,7 +60,7 @@ namespace mu2e {
 
     // Module which made the CaloCrystalHits
     std::string _caloCrystalHitsMaker;
- 
+
     // Name of the stopping target StepPoint collection
     std::string _targetStepPoints;
 
@@ -97,7 +97,7 @@ namespace mu2e {
     TH1F* _hCheckPointWireZ;
     TH1F* _hMomentumG4;
     TH1F* _hStepLength;
-    
+
     TH1F* _hEdep;
     TH1F* _hEdepMC;
     TH1F* _hNcrystal;
@@ -138,9 +138,9 @@ namespace mu2e {
     void doCRV(const art::Event& event);
 
     // A helper function.
-    int countHitNeighbours( Straw const& straw, 
+    int countHitNeighbours( Straw const& straw,
                             art::Handle<StepPointMCCollection>& hits );
 
   };
-  
+
 } // end namespace mu2e

@@ -3,9 +3,9 @@
 //
 // An anti-leak system to aid in using G4 from the Mu2e framework.
 //
-// $Id: AntiLeakRegistry.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: AntiLeakRegistry.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -48,21 +48,21 @@
 //      lvol->SetVisAttributes( reg.add( visAtt ) );
 //
 // There are two distinct add methods, one of which takes an object by const reference
-// and one of which takes an object by pointer.  The first add method will make a copy of 
-// its argument, placing that copy in a std::list of the correct type and will return a 
-// pointer to the object in the list. The type std::list was chosen ( not, for example, 
-// std::vector ) because subsequent insertions into the list do not invalidate the pointer 
+// and one of which takes an object by pointer.  The first add method will make a copy of
+// its argument, placing that copy in a std::list of the correct type and will return a
+// pointer to the object in the list. The type std::list was chosen ( not, for example,
+// std::vector ) because subsequent insertions into the list do not invalidate the pointer
 // that was returned.
 //
 // The second add method puts a shared pointer to the object into a list of the correct type.
 // So no copy is necessary and the returned pointer points directly to the new'ed object.
 //
 // The first method has the advantage that the interface is cleaner but it has the
-// disadvantage that it requires a copy, which has two sorts of potential problems. The big 
-// problem is if the type T is not copyable ( or should not be copyable because copying 
-// breaks smething); the solution is that must use add a pointer to the object.  The lesser 
-// problem is that the copy operation is wasteful of time and memory; however the add 
-// operations are done once at the start of the job, which makes the waste a minor consideration; 
+// disadvantage that it requires a copy, which has two sorts of potential problems. The big
+// problem is if the type T is not copyable ( or should not be copyable because copying
+// breaks smething); the solution is that must use add a pointer to the object.  The lesser
+// problem is that the copy operation is wasteful of time and memory; however the add
+// operations are done once at the start of the job, which makes the waste a minor consideration;
 // with C++0X, which supports move aware objects,  we may be able to remove this objection too.
 //
 
@@ -162,13 +162,13 @@ namespace mu2e
       std::string name(typeid(T).name());
 
       // Keep track of the length of the names.
-      _maxNameLength = ( name.size() > _maxNameLength ) 
+      _maxNameLength = ( name.size() > _maxNameLength )
         ? name.size() : _maxNameLength;
-      
+
       // Find the key in the map; if absent, create a new entry in the map.
       ListMap::iterator i = _mapOfLists.find(name);
       if ( i == _mapOfLists.end() ){
-        std::pair<ListMap::iterator,bool> r = 
+        std::pair<ListMap::iterator,bool> r =
           _mapOfLists.insert( std::make_pair(name,ListPtr(new ObjectList<T>())));
         i = r.first;
       }

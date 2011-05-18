@@ -212,9 +212,9 @@ namespace mu2e {
                                                _nRCryPerVane, 0, _nRCryPerVane));
       _hCrystalRates[i]->Sumw2();
     }
-    
-  }    
-  
+
+  }
+
   void BkgRates::analyze(art::Event const& evt ) {
 
     ++_nAnalyzed;

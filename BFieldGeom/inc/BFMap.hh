@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.11 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: BFMap.hh,v 1.12 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -56,9 +56,9 @@ namespace mu2e {
       _scaleFactor(scale){
     }
 
-    BFMap(std::string filename, 
-          int const nx, 
-          int const ny, 
+    BFMap(std::string filename,
+          int const nx,
+          int const ny,
           int const nz,
           BFMapType::enum_type atype,
           double scale,
@@ -75,7 +75,7 @@ namespace mu2e {
       _type(atype),
       _scaleFactor(scale){
     };
-    
+
     virtual ~BFMap();
 
     // Accessors
@@ -95,7 +95,7 @@ namespace mu2e {
     double ymin() const {return _ymin;}; double ymax() const {return _ymax;};
     double zmin() const {return _zmin;}; double zmax() const {return _zmax;};
 
-    double dx() const {return _dx;}; 
+    double dx() const {return _dx;};
     double dy() const {return _dy;};
     double dz() const {return _dz;};
 
@@ -111,7 +111,7 @@ namespace mu2e {
     // where this map came from.
     std::string _key;
 
-    // If true, then print a warning message when a point is outside the region 
+    // If true, then print a warning message when a point is outside the region
     // in which the map is defined; else return a field with a value of (0.,0.,0.);
     // This does happen under normal operation of G4 so we should not warn by default.
     bool _warnIfOutside;

@@ -1,9 +1,9 @@
 //
 //  Adapter to make CLHEP::RandFlat look like the cernlib rn48.
 //
-//  $Id: rm48.cc,v 1.2 2010/05/17 21:47:32 genser Exp $
-//  $Author: genser $
-//  $Date: 2010/05/17 21:47:32 $
+//  $Id: rm48.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/18 02:27:19 $
 //
 //  Original author Rob Kutschke.
 //
@@ -24,7 +24,7 @@ namespace mu2e {
 }
 
 void rm48_ ( double *v, int *n){
-  
+
   //if (!distribution){
   // throw here.
   //}

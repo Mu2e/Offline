@@ -1,11 +1,11 @@
 #ifndef ConditionsService_ParticleDataTable_hh
 #define ConditionsService_ParticleDataTable_hh
 //
-// Mu2e wrapper around HepPDT::ParticleDataTable 
+// Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.hh,v 1.7 2011/05/17 15:41:35 greenc Exp $
-//   $Author: greenc $
-//   $Date: 2011/05/17 15:41:35 $
+//   $Id: ParticleDataTable.hh,v 1.8 2011/05/18 02:27:15 wb Exp $
+//   $Author: wb $
+//   $Date: 2011/05/18 02:27:15 $
 //
 //  Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@
 //    We are waiting for a change from HepPDT to be able to get the
 //    lifetimes in ns.
 //
-// 3) Why do we have a wrapper?  
+// 3) Why do we have a wrapper?
 //      a) For safety.  See bullet 4.
 //      b) So that this class can be managed by the Conditions system, this class
 //         needs to inherit from ConditionsEntity.
@@ -60,7 +60,7 @@ namespace mu2e {
   class SimpleConfig;
 
   class ParticleDataTable : public ConditionsEntity{
-  
+
   public:
 
     // Return type of accessors

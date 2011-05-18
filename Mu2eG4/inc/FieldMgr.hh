@@ -4,9 +4,9 @@
 // Create a G4FieldManager object. Provide accessors to the field manager
 // and to the parts from which it is made.
 //
-// $Id: FieldMgr.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: FieldMgr.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -23,14 +23,14 @@
 // 3) This class also manages the lifetime of the 5 objects: they will have
 //    a lifetime equal to the lifetime of an object in this class.
 //
-// 4) For case of 1b), this class provides the option of supplying different 
-//    G4StepperIntegrator objects.  Examples include G4ExplicitEuler, 
+// 4) For case of 1b), this class provides the option of supplying different
+//    G4StepperIntegrator objects.  Examples include G4ExplicitEuler,
 //    G4ImplicitEuler, G4ClassicalRK4, G4CashKarpRKF45 and others.
-// 
+//
 // 5) To implement the options in 5, this class uses templates, rather
 //    than a base class and many concrete classes.
 //
-// 6) For case 1b), because of limitations in C++ syntax, this class does 
+// 6) For case 1b), because of limitations in C++ syntax, this class does
 //    not provide a constructor for FieldMgr objects.  Instead it provides
 //    provides a templated factory method to create instances of FieldMgr objects.
 //    It is possible to write a constructor but it requires a confusing
@@ -77,7 +77,7 @@ namespace mu2e {
 
     // Factory method to construct a manager for a magnetic field described by a Mu2e field map
     // and will a user supplied G4IntegratorStepper.  See Note 8.
-    template <class INTEGRATOR> 
+    template <class INTEGRATOR>
     static std::auto_ptr<FieldMgr> forMappedField(const std::string& fieldName,
                                                   const G4ThreeVector& mu2eOrigin,
                                                   double stepMinimum=1.0e-2*CLHEP::mm){

@@ -1,20 +1,20 @@
 //=============================================================================
 //
-// Plugin to test that I can read back the persistent data about straw hits.  
+// Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
-// Uses three methods to reconstruct the track helix of a conversion electron: 
-// * use single straws associated to Simparticle., use deltat to form 3D 
+// Uses three methods to reconstruct the track helix of a conversion electron:
+// * use single straws associated to Simparticle., use deltat to form 3D
 //   reconstructed points
-// * use intersection of Pseudo straws and use stereo information to form 
+// * use intersection of Pseudo straws and use stereo information to form
 //   3D reconstructed points
-// * form pseudo straws from clusters in a panel. Use the combined information 
+// * form pseudo straws from clusters in a panel. Use the combined information
 //   to form 3D reconstructed points
 // For all three cases estimate Pt,Pz of the conversion electron by performing
-// a simple circle/sinus fit.  
+// a simple circle/sinus fit.
 //
-// $Id: ReadDPIStrawCluster_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: ReadDPIStrawCluster_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author: Hans Wenzel
 //
@@ -62,7 +62,7 @@
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "Mu2eG4/inc/ConvElecUtilities.hh" 
+#include "Mu2eG4/inc/ConvElecUtilities.hh"
 #include "ToyDP/inc/StatusG4.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "ToyDP/inc/ToyGenParticle.hh"
@@ -76,11 +76,11 @@ namespace mu2e {;
   enum PrintLevel { quiet  =-1,
 		    normal = 0,
 		    verbose= 1};
-  Double_t Radius;  
+  Double_t Radius;
   Double_t curv;
   Double_t zstep;
   static bool magset(false);
-  static Double_t Bmagnet; 
+  static Double_t Bmagnet;
   static Double_t Const(1.49898e-4);
   TGraphErrors *error;
 void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
@@ -115,7 +115,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 }
  class pstraw{
    //
-   // pseudo straw class 
+   // pseudo straw class
    //
  public:
    Int_t   lay;
@@ -127,7 +127,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    Float_t mpz;
    Float_t dirx;
    Float_t diry;
-   Float_t dirz; // should always be 0 
+   Float_t dirz; // should always be 0
    /*
     bool operator>(const pstraw other) const {
       if (id > other.id) {
@@ -167,13 +167,13 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       cout<< "mpz:    " << mpz  <<endl;
       cout<< "dirx:   " << dirx <<endl;
       cout<< "diry:   " << diry <<endl;
-      cout<< "dirz:   " << dirz <<endl;     
+      cout<< "dirz:   " << dirz <<endl;
     }
  };
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class ReadDPIStrawCluster : public art::EDAnalyzer {
   public:
     explicit ReadDPIStrawCluster(fhicl::ParameterSet const& pset):
@@ -238,17 +238,17 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     {
     }
     virtual ~ReadDPIStrawCluster() { }
-    
+
     virtual void beginJob();
-    
+
     void analyze( art::Event const& e);
     bool FitCircle(vector<double> X,vector<double> Y);
     bool FitSinus2( vector<double> R,vector<double> Z);
   private:
- 
+
     // Diagnostics level.
     int _diagLevel;
-    
+
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
     // Module label of the g4 module that made the hits.
@@ -260,7 +260,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     std::string _makerModuleLabel;
     // Label of the module that made the Clusters.
     std::string _clmakerModuleLabel;
-    
+
     // Some diagnostic histograms.
     TH1F* _hNInter;
     TH1F* _hNClusters;
@@ -322,7 +322,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //
     Double_t R_rec,x0,y0,chi2;
     Double_t Pt,Pz;
-    CLHEP::Hep3Vector  X_in;  
+    CLHEP::Hep3Vector  X_in;
     CLHEP::Hep3Vector  P_in_si;
     CLHEP::Hep3Vector  P_out_si;
     //
@@ -335,14 +335,14 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
    };
 
-  
+
   void ReadDPIStrawCluster::beginJob(){
-    cout << "Diaglevel: " 
+    cout << "Diaglevel: "
          << _diagLevel << " "
-         << _maxFullPrint<<endl; 
+         << _maxFullPrint<<endl;
 
     art::ServiceHandle<art::TFileService> tfs;
-    _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );  
+    _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );
     _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 100, 0., 100. );
     _hNHits        = tfs->make<TH1F>( "hNHits",    "Number of straw Hits", 100, 0., 100. );
     _hNEleHits     = tfs->make<TH1F>( "hNEleHits", "Number of straw Hits/conversion electron", 100, 0., 100. );
@@ -400,11 +400,11 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     _Rdiff_c         = tfs->make<TH1F>( "Rdiff_c",     "s R(stepMC)  - R(stereo hit) mm ", 100, -50., 50.);
     _Phidiff_c       = tfs->make<TH1F>( "Phidiff_c",   "s Phi(stepMC)- Phi(stereo hit) mm ", 100, -0.5, 0.5);
 
-    _ntup          = tfs->make<TNtuple>( "ntup", "Pattern Recognition Ntuple", 
+    _ntup          = tfs->make<TNtuple>( "ntup", "Pattern Recognition Ntuple",
                       "evt:Pgenx:Pgeny:Pgenz:Pinx:Piny:Pinz:Poutx:Pouty:Poutz:Nint:Rrec:Ptrec:Precz:Nstraws:Rrec_s:Ptrec_s:Prec_sz:NClusters:Rrec_c:Ptrec_c:Prec_cz");
     //
   }
-  
+
   void ReadDPIStrawCluster::analyze(art::Event const& evt)
   {
     if ( _diagLevel > 2 ) cout << "ReadDPIStrawCluster: analyze() begin"<<endl;
@@ -413,18 +413,18 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
     //
-    // Get the magnetic field in the tracker: 
-    // Note there are some issues with the magnetic field units 
+    // Get the magnetic field in the tracker:
+    // Note there are some issues with the magnetic field units
     // that's why the two methods yield different results.
-    // 
+    //
     if (!magset)
       {
 	GeomHandle<BFieldManager> bfMgr;
-	B= bfMgr->getDSUniformValue(); 
+	B= bfMgr->getDSUniformValue();
 	cout << " B-field (getDSUniformValue()):  " <<B<<endl;
 	Bmagnet=B.getZ();
 	magset=true;
-	
+
 	const HepGeom::Point3D<double> position = HepGeom::Point3D<double>(0.,0.,0.);
 	const HepGeom::Vector3D<double> direction=HepGeom::Vector3D<double>(1.,1.,1.);
 	Helix helix = Helix(direction,position,-1,Bmagnet);
@@ -451,39 +451,39 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     vector<double> Y;       // y of cluster intersections
     vector<double> Z;       // z of cluster intersections
     vector<double> X_res;   // x residuals
-    vector<double> Y_res;   // y residual 
+    vector<double> Y_res;   // y residual
     vector<double> R_res;   // R residuals
-    vector<double> Phi_res; // phi residual 
+    vector<double> Phi_res; // phi residual
     vector<double> R;       // radius of cluster intersections
     vector<double> Phi;     // angle of cluster intersections
-    
-    vector<CLHEP::Hep3Vector> Points3d; 
+
+    vector<CLHEP::Hep3Vector> Points3d;
     //
     vector<double> X_straw;       // x of dt straw
-    vector<double> Y_straw; 
-    vector<double> Z_straw; 
+    vector<double> Y_straw;
+    vector<double> Z_straw;
     vector<double> X_res_straw;   // x residuals
-    vector<double> Y_res_straw;   // y residual 
+    vector<double> Y_res_straw;   // y residual
     vector<double> R_res_straw;   // R residuals
-    vector<double> Phi_res_straw; // phi residual 
+    vector<double> Phi_res_straw; // phi residual
     vector<double> R_straw;       // radius
-    vector<double> Phi_straw;     // angle 
+    vector<double> Phi_straw;     // angle
     vector<CLHEP::Hep3Vector> Points3d_straw; // x,y measurement packed in
 
     vector<double> X_cluster;       // x of dt straw
-    vector<double> Y_cluster; 
-    vector<double> Z_cluster; 
+    vector<double> Y_cluster;
+    vector<double> Z_cluster;
     vector<double> X_res_cluster;   // x residuals
-    vector<double> Y_res_cluster;   // y residual 
+    vector<double> Y_res_cluster;   // y residual
     vector<double> R_res_cluster;   // R residuals
-    vector<double> Phi_res_cluster; // phi residual 
+    vector<double> Phi_res_cluster; // phi residual
     vector<double> R_cluster;       // radius
-    vector<double> Phi_cluster;     // angle 
+    vector<double> Phi_cluster;     // angle
     vector<CLHEP::Hep3Vector> Points3d_cluster; // x,y measurement packed in
     double  edep[36] ;
     int nhitdev[36];
     CLHEP::Hep3Vector  MCPoint[36];
-   
+
     X.clear();
     Y.clear();
     Z.clear();
@@ -494,7 +494,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     R.clear();
     Phi.clear();
     Points3d.clear();
-    
+
     X_straw.clear();
     Y_straw.clear();
     Z_straw.clear();
@@ -544,14 +544,14 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     // Get handles to the generated and simulated particles.
     art::Handle<ToyGenParticleCollection> genParticles;
     evt.getByType(genParticles);
-    
+
     art::Handle<SimParticleCollection> simParticles;
     evt.getByType(simParticles);
-    
+
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByType(volumes);
-    
+
     //Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
 
@@ -562,14 +562,14 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
     // Construct an object that ties together all of the simulated particle and hit info.
     SimParticlesWithHits sims( evt,
-                               _g4ModuleLabel, 
+                               _g4ModuleLabel,
                                _makerModuleLabel,
                                "tracker",
                                0.001,
                                5 );
     if (sims.size()<1) return;  // no sim particles found
     nt[EVT]  = evt.id().event();
-    bool foundcele=false;       
+    bool foundcele=false;
     typedef SimParticlesWithHits::map_type map_type;
     for ( map_type::const_iterator i=sims.begin();
           i != sims.end(); ++i )                      // loop over simparticles
@@ -592,7 +592,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		StepPointMC const& lstep =simInfo.lastStepPointMCinTracker();
 		P_in_si= fstep.momentum();     // momentum as the track enters the tracker
 		Pt_inval_si =  P_in_si.rho();
-		P_inval_si  =  P_in_si.mag();		
+		P_inval_si  =  P_in_si.mag();
 		_Pt_in_si->Fill(Pt_inval_si);
 		_P_in_si ->Fill(P_inval_si);
 		_Pz_in_si->Fill(P_in_si.z());
@@ -613,12 +613,12 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		_hNEleHits->Fill(infos.size());
 		// calculate the average hit position of track at a plane
 
-		for (int idev = 0; idev < 36 ; idev++) { 
+		for (int idev = 0; idev < 36 ; idev++) {
 		  nhitdev[idev] = 0 ;
 		  edep[idev] = 0.0 ;
 		  MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
 		}
-		
+
 		for ( size_t jdev=0; jdev<infos.size(); ++jdev) // Loop over associated Hits
 		  {
 		    StrawHitMCInfo const& info = infos.at(jdev);
@@ -644,7 +644,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		    {
 		      double a = 1.0/double(nhitdev[idev]);
 		      MCPoint[idev] = MCPoint[idev]*a;
-		    }      
+		    }
 		}
 		for ( size_t jhit=0; jhit<infos.size(); ++jhit) // Loop over associated Hits
 		  {
@@ -676,7 +676,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		    X_res_straw.push_back(smcpos.getX()-hitpos.getX());
 		    Y_res_straw.push_back(smcpos.getY()-hitpos.getY());
 		    _Xdiff_s -> Fill(smcpos.getX()-hitpos.getX());
-		    _Ydiff_s -> Fill(smcpos.getY()-hitpos.getY());		
+		    _Ydiff_s -> Fill(smcpos.getY()-hitpos.getY());
 		  }                        // end loop over hits
 		nt[NSTRAWS]= X_straw.size();
 		if ( X_straw.size()>4)
@@ -704,7 +704,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		  }
 	      }
 	}
-      }           // end loop over simparticles 
+      }           // end loop over simparticles
     if (!foundcele) return;       // no conversion electron found
     Int_t totalHits=0;
     _hNClusters->Fill(mcptrHandle->size());
@@ -754,12 +754,12 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       mpstraws.insert(pair<int,pstraw>(did,pstr));
     }
     _hNHits->Fill(totalHits);
-    //cout << " size of pseudo straw map: " <<mpstraws.size()<<endl; 
+    //cout << " size of pseudo straw map: " <<mpstraws.size()<<endl;
 
     Int_t nint = 0;
     for (int i = 0;i<36;i++)
       {
-	if (mpstraws.count(i)>1) 
+	if (mpstraws.count(i)>1)
 	  {
 	    pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
 	    ppp1 = mpstraws.equal_range(i);
@@ -776,14 +776,14 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		  {
 		    pstraw junk  = (*first1).second;
 		    pstraw pjunk = (*first2).second;
-		    const CLHEP::Hep2Vector p0 = 
+		    const CLHEP::Hep2Vector p0 =
 		      CLHEP::Hep2Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
-		    const CLHEP::Hep2Vector p1 = 
+		    const CLHEP::Hep2Vector p1 =
 		      CLHEP::Hep2Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
 		    const CLHEP::Hep2Vector p2 =
-		      CLHEP::Hep2Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry); 
-		    const CLHEP::Hep2Vector p3 = 
-		      CLHEP::Hep2Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry); 
+		      CLHEP::Hep2Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry);
+		    const CLHEP::Hep2Vector p3 =
+		      CLHEP::Hep2Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
 		    LineSegmentPCA linesegment0(p0, p1);
 		    LineSegmentPCA linesegment1(p2, p3);
 		    CLHEP::Hep2Vector intersection;
@@ -817,7 +817,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 			_Ydiff -> Fill(MCPoint[i].getX()-intersection.y());
 			nint ++;
 			break;
-		      }  // end switch 
+		      }  // end switch
 		  } // end for first2
 	      }// end for first1
 	  }// end count >1
@@ -865,7 +865,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	    //double Time   = strawhit.time();
 	    double deltaT = strawhit.dt();
 	    StrawIndex si   = strawhit.strawIndex();
-	    Straw str       = tracker.getStraw(si);	 
+	    Straw str       = tracker.getStraw(si);
 	    const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
 	    const CLHEP::Hep3Vector dirvec = str.getDirection();
 	    double disttomid = deltaT* _timetodist;   // convert delta T into delta x along the wire
@@ -891,7 +891,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	_Ydiff_c -> Fill(MCPoint[i].getY()-clusterpos.getY());
 	nclusters++;
 
-      } //  end Loop over Clusters    
+      } //  end Loop over Clusters
     nt[NCLUSTERS]= X_cluster.size();
     if (X_cluster.size()>4)
       {
@@ -913,7 +913,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		_P_rec_c->Fill(Ptot);
 		_P_diff_c->Fill(Ptot-P_inval_si);
 		nt[PREC_CZ]  = Pz;
-	    
+
 	      }
 	  }
       }
@@ -929,11 +929,11 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     for ( size_t i=0; i<X.size(); ++i ) {
       x[i]=X[i];
       y[i]=Y[i];
-      ex[i] = 5.0 ; 
+      ex[i] = 5.0 ;
       ey[i] = 5.0 ;
     }
     error = new TGraphErrors(n,x,y,ex,ey);
-    TMinuit *gmMinuit = new TMinuit(3); 
+    TMinuit *gmMinuit = new TMinuit(3);
     gmMinuit->SetPrintLevel(quiet);
     gmMinuit->SetFCN(myfcn);
     const int dim(3);
@@ -942,24 +942,24 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Double_t sfpar[dim]={0.0,0.0,175.};
     Double_t errsfpar[dim]={0.0,0.0,0.0};
     int ierflg = 0;
-    for (int ii = 0; ii<dim; ii++) {    
+    for (int ii = 0; ii<dim; ii++) {
       gmMinuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
     }
     //int result=gmMinuit->Migrad();
     //cout << " Result: "<< result <<endl;
     bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
-    if (!converged) 
+    if (!converged)
       {
 	cout <<"-----------Circle fit didn't converge---------------------------" <<endl;
 	return converged;
       }
     for (int i = 0;i<3;i++) {
      gmMinuit->GetParameter(i,sfpar[i],errsfpar[i]);
-    } 
+    }
     x0    = sfpar[0];
     y0    = sfpar[1];
     R_rec = sfpar[2];
-    Double_t  edm, errdef; 
+    Double_t  edm, errdef;
     Int_t nvpar, nparx,istat;
     gmMinuit->mnstat(chi2,edm,errdef,nvpar,nparx,istat);
     return converged;
@@ -973,11 +973,11 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     for ( size_t i=0; i<X.size(); ++i ) {
       x[i]=X[i];
       y[i]=Y[i];
-      ex[i] = 5.0 ; 
+      ex[i] = 5.0 ;
       ey[i] = 5.0 ;
     }
     error = new TGraphErrors(n,x,y,ex,ey);
-    TMinuit *gmMinuit2 = new TMinuit(4); 
+    TMinuit *gmMinuit2 = new TMinuit(4);
     gmMinuit2->SetPrintLevel(quiet);
     gmMinuit2->SetFCN(myfcn2);
     const int dim(4);
@@ -988,24 +988,24 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Double_t sfpar[dim]={offset,radius,0.005,0.1};
     Double_t errsfpar[dim]={0.0,0.0,0.0,0.0};
     int ierflg = 0;
-    for (int ii = 0; ii<dim; ii++) {    
+    for (int ii = 0; ii<dim; ii++) {
       gmMinuit2->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
     }
     gmMinuit2->FixParameter(0);
     gmMinuit2->FixParameter(1);
     //int result=gmMinuit2->Migrad();
     bool converged = gmMinuit2->fCstatu.Contains("CONVERGED");
-    if (!converged) 
+    if (!converged)
       {
 	cout <<"-----------Sin fit didn't converge---------------------------" <<endl;
 	return converged;
       }
     for (int i = 0;i<dim;i++) {
      gmMinuit2->GetParameter(i,sfpar[i],errsfpar[i]);
-    } 
+    }
     Double_t p2 = sfpar[2];
     Pz = 10./(33.36*p2);
-    Double_t  edm, errdef; 
+    Double_t  edm, errdef;
     Int_t nvpar, nparx,istat;
     gmMinuit2->mnstat(chi2,edm,errdef,nvpar,nparx,istat);
     return converged;

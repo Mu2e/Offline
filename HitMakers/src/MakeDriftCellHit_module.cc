@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: MakeDriftCellHit_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -62,17 +62,17 @@ namespace mu2e {
     double _t1;
 
     StepHit(int hit_id, double edep, double dca, double driftT, double toMid, double t1):
-      _hit_id(hit_id), _edep(edep), _dca(dca), _driftTime(driftT), 
+      _hit_id(hit_id), _edep(edep), _dca(dca), _driftTime(driftT),
       _distanceToMid(toMid), _t1(t1) { }
 
-    // This operator is overloaded in order to time-sort the hits 
+    // This operator is overloaded in order to time-sort the hits
     bool operator <(const StepHit& b) const { return (_t1 < b._t1); }
 
   };
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class MakeDriftCellHit : public art::EDProducer {
   public:
     explicit MakeDriftCellHit(fhicl::ParameterSet const& pset) :
@@ -93,7 +93,7 @@ namespace mu2e {
 
       // Random number distributions
       _gaussian( createEngine( get_seed_value(pset)) ),
-      
+
       _messageCategory("DriftCellHitMaker"/*"StrawHitMaker"*/){
 
       // Tell the framework what we make.
@@ -105,11 +105,11 @@ namespace mu2e {
     virtual ~MakeDriftCellHit() { }
 
     virtual void beginJob();
- 
+
     void produce( art::Event& e);
 
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -123,11 +123,11 @@ namespace mu2e {
     double _t0Sigma;        // T0 spread in ns
     double _timetodist;     // const to convert delata t in delat z along the wire in mm/ns
     double _distSigma;      // sigma of dealta z in mm
-    double _minimumEnergy;  // minimum energy deposition of G4 step 
+    double _minimumEnergy;  // minimum energy deposition of G4 step
     double _minimumLength;  // is G4Step is shorter than this, consider it a point
-    double _driftVelocity;  
+    double _driftVelocity;
     double _driftSigma;
-    double _minimumTimeGap; 
+    double _minimumTimeGap;
     string _g4ModuleLabel;  // Name of the module that made these hits.
 
     // Random number distributions
@@ -139,14 +139,14 @@ namespace mu2e {
   };
 
   void MakeDriftCellHit::beginJob(){
-    
+
   }
 
   void
   MakeDriftCellHit::produce(art::Event& event) {
 
     if ( _diagLevel > 0 ) cout << "MakeDriftCellHit: produce() begin" << endl;
-      
+
     static int ncalls(0);
     ++ncalls;
 
@@ -185,13 +185,13 @@ namespace mu2e {
       vector<int> &hits_id = hitmap[dcell_id];
       hits_id.push_back(i);
     }
- 
+
     vector<StepHit> dcell_hits;
 
     // Loop over all drift cells and create StrawHits. There can be several
     // hits per cell if they are separated by time. The general algorithm
-    // is as follows: calculate signal time for each G4step, order them 
-    // in time and look for gaps. If gap exceeds _minimumTimeGap create 
+    // is as follows: calculate signal time for each G4step, order them
+    // in time and look for gaps. If gap exceeds _minimumTimeGap create
     // separate hit.
 
     for(DriftCellHitMap::const_iterator idcell = hitmap.begin(); idcell != hitmap.end(); ++idcell) {
@@ -249,11 +249,11 @@ namespace mu2e {
 
         if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
           cout << "MakeDriftCellHit: Hit #" << i << " : length=" << length
-               << " energy=" << edep << " time=" << hitTime 
+               << " energy=" << edep << " time=" << hitTime
                << endl;
         }
-        
-        // Calculate the drift distance from this step. 
+
+        // Calculate the drift distance from this step.
         double hit_dca,sign;
         CLHEP::Hep3Vector hit_pca;
 
@@ -267,7 +267,7 @@ namespace mu2e {
 	  continue;
         } else {
 
-          // Step is not a point. Calculate the distance between two lines. 
+          // Step is not a point. Calculate the distance between two lines.
 
           TwoLinePCA pca( mid, w, pos, mom);
           CLHEP::Hep3Vector const& p2 = pca.point2();
@@ -280,7 +280,7 @@ namespace mu2e {
 	    sign=w.cross(mom).dot(hit_pca-p2);
 	    /*
           } else {
-            
+
             // The point of closest approach is not within the step. In this case
             // the closes distance should be calculated from the ends
 
@@ -293,13 +293,13 @@ namespace mu2e {
               hit_dca = pca2.dca();
               hit_pca = pca2.pca();
             }
-	    
-          }          
+
+          }
 	    */
         } // drift distance calculation
 
         // Calculate signal time. It is Geant4 time + signal propagation time
-        // t1 is signal time at positive end (along w vector), 
+        // t1 is signal time at positive end (along w vector),
         // (Not used for ITracker) t2 - at negative end (opposite to w vector)
 
         const double signalVelocity = 299.792458; // mm/ns
@@ -378,7 +378,7 @@ namespace mu2e {
       mcptrHits->push_back(mcptr);
 
     }
-    
+
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
       cout << "MakeDriftCellHit: Total number of hit cells = " << strawHits->size() << endl;
       for( size_t i=0; i<strawHits->size(); ++i ) {
@@ -399,7 +399,7 @@ namespace mu2e {
     if ( _diagLevel > 0 ) cout << "MakeDriftCellHit: produce() end" << endl;
 
   } // end of ::analyze.
-  
+
 }
 
 using mu2e::MakeDriftCellHit;

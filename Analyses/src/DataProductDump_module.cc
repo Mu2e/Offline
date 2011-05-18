@@ -1,9 +1,9 @@
 //
 // Dump information about all data products in the file.
 //
-// $Id: DataProductDump_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 22:06:50 $
+// $Id: DataProductDump_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke
 //
@@ -26,7 +26,7 @@ namespace mu2e {
 
   class DataProductDump : public art::EDAnalyzer {
   public:
-    
+
     explicit DataProductDump(fhicl::ParameterSet const& pset);
     virtual ~DataProductDump() { }
 

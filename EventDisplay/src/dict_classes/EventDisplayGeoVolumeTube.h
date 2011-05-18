@@ -1,9 +1,9 @@
 //
 // Class which displays a cylinder (used, e.g. by the Cyliner class). It is inherited from ROOT's TGeoVolume and the ComponentInfo class which stores specific information for this support structure. The class' constructure creates a TGeoTube, which is put into the TGeoVolume. The context menu is overwritten with a menu item allowing the user to display information for this support structure.
 //
-// $Id: EventDisplayGeoVolumeTube.h,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: EventDisplayGeoVolumeTube.h,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -43,7 +43,7 @@ class EventDisplayGeoVolumeTube : public TGeoVolume, public ComponentInfo
   }
 #endif
 
-  virtual ~EventDisplayGeoVolumeTube() 
+  virtual ~EventDisplayGeoVolumeTube()
   {
   }
 
@@ -51,7 +51,7 @@ class EventDisplayGeoVolumeTube : public TGeoVolume, public ComponentInfo
   {
     IsA()->SetName(getName()->c_str());
     return(IsA()->GetName());
-  } 
+  }
 
   ClassDef(EventDisplayGeoVolumeTube,0);
 };

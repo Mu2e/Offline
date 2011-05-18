@@ -5,16 +5,16 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: EplusFromStoppedPion_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke.
 //
 // Notes:
 //
 // 1) At the writing of this code, it was not possible to access the particle data table in
-//    the constructor.  This is because the ConditionsService is not initialized until 
+//    the constructor.  This is because the ConditionsService is not initialized until
 //    begin run time.  The service will be rewritten to initialize in its ctor those parts that can
 //    be initialized without a run number.  At that time we can move the PDT related stuff to
 //    the c'tor from the beginRun method.
@@ -69,7 +69,7 @@ namespace mu2e {
 
     // The rest mass of an electron.
     double me_;
-    
+
     // The momentum of the electron, in the pi rest frame, from pi -> e nu decay.
     double pe_;
 
@@ -181,7 +181,7 @@ namespace mu2e {
       CLHEP::Hep3Vector p = randomUnitSphere_.fire(pe_);
       double ee = sqrt(pe_*pe_+ me_*me_);
 
-      output->push_back( ToyGenParticle( PDGCode::e_plus, 
+      output->push_back( ToyGenParticle( PDGCode::e_plus,
                                          GenId::fromG4BLFile,
                                          stoppedGen.position(),
                                          CLHEP::HepLorentzVector(p.x(), p.y(), p.z(), ee),
@@ -216,7 +216,7 @@ namespace mu2e {
     }
 
     event.put(output);
- 
+
   } // end of ::analyze.
 
 }

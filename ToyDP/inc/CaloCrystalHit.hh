@@ -1,9 +1,9 @@
 #ifndef ToyDP_CaloCrystalHit_hh
 #define ToyDP_CaloCrystalHit_hh
 
-// $Id: CaloCrystalHit.hh,v 1.7 2011/05/17 22:22:46 wb Exp $
+// $Id: CaloCrystalHit.hh,v 1.8 2011/05/18 02:27:19 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author KLG
 
@@ -18,7 +18,7 @@ namespace art {
   class ProductID;
 }
 
-namespace mu2e { 
+namespace mu2e {
 
   class CaloHit;
 
@@ -29,8 +29,8 @@ namespace mu2e {
     CaloCrystalHit():
       _crystalId(-1),
       _time(0.),
-      _energyDep(0.), 
-      _energyDepTotal(0.), 
+      _energyDep(0.),
+      _energyDepTotal(0.),
       _numberOfROIdsUsed(0)
     {}
 
@@ -46,7 +46,7 @@ namespace mu2e {
     std::vector<DPIndex> const & roIds() const { return _roIds; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
-    
+
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 

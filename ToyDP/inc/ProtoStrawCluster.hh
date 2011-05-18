@@ -3,9 +3,9 @@
 //
 // A crude step along the way to forming real clusters.
 //
-// $Id: ProtoStrawCluster.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: ProtoStrawCluster.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 //
 #include <vector>
@@ -20,7 +20,7 @@ namespace mu2e {
     std::vector<int32_t> hitIndices;
 
     ProtoStrawCluster( SectorId const& sectorId, int index);
-    
+
     void add( int idx){
       hitIndices.push_back(idx);
     }
@@ -30,7 +30,7 @@ namespace mu2e {
     //int operator[]( int i) const { return hitIndices[i]; }
 
     int at( int i) const { return hitIndices.at(i); }
-    
+
   };
 
 }

@@ -2,9 +2,9 @@
 // Instantiate CLHEP::Hep3Vectors using polar coordinates.
 // (Not provided in the the native class).
 //
-// $Id: polar3Vector.cc,v 1.3 2010/05/18 21:16:38 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:38 $
+// $Id: polar3Vector.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -42,5 +42,5 @@ namespace mu2e {
                               p0*cz
                               );
   }
-  
+
 } // end namespace mu2e

@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4ExtrudedSolid inside a logical volume.
-// 
-// $Id: nestExtrudedSolid.cc,v 1.1 2010/12/06 22:28:46 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/06 22:28:46 $
+//
+// $Id: nestExtrudedSolid.cc,v 1.2 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -24,10 +24,10 @@
 using namespace std;
 
 namespace mu2e {
- 
+
   //
   // Create and place a G4ExtrudedSolid inside a logical volume.
-  // 
+  //
   VolumeInfo nestExtrudedSolid( std::string const& name,
                                 double hz,
                                 std::vector<double> &x,
@@ -44,9 +44,9 @@ namespace mu2e {
                                 bool const placePV,
                                 bool const doSurfaceCheck
                                 ){
-    
+
     VolumeInfo info;
-    
+
     info.name    = name;
 
     if( x.size()!=y.size() || x.size()==0 ) return info;
@@ -57,7 +57,7 @@ namespace mu2e {
     info.solid   = new G4ExtrudedSolid( name, polygon, hz,
 					G4TwoVector(0.0,0.0), 1.0,
 					G4TwoVector(0.0,0.0), 1.0 );
-    
+
     finishNesting(info,
                   material,
                   rot,
@@ -92,9 +92,9 @@ namespace mu2e {
                                 bool const placePV,
                                 bool const doSurfaceCheck
                                 ){
-    
+
     VolumeInfo info(name,offset,parent.centerInWorld);
-    
+
     if( x.size()!=y.size() || x.size()==0 ) return info;
 
     vector<G4TwoVector> polygon;

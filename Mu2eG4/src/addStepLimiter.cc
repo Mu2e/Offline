@@ -1,9 +1,9 @@
 //
 // Free functions to add step limiters to some particles.
 //
-// $Id: addStepLimiter.cc,v 1.4 2011/01/04 22:07:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/01/04 22:07:56 $
+// $Id: addStepLimiter.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -38,8 +38,8 @@ namespace mu2e{
     list.push_back( "e-"  );
     list.push_back( "mu+" );
     list.push_back( "mu-" );
-    list.push_back( "pi+" ); 
-    list.push_back( "pi-" ); 
+    list.push_back( "pi+" );
+    list.push_back( "pi-" );
     list.push_back( "kaon+"  );
     list.push_back( "kaon-"  );
     list.push_back( "proton" );
@@ -75,6 +75,6 @@ namespace mu2e{
 
     }
   }
-  
+
 
 }  // end namespace mu2e

@@ -1,12 +1,12 @@
 #ifndef HoughTransform_HoughTransform_hh
 #define HoughTransform_HoughTransform_hh
 //
-// $Id: HoughTransform.hh,v 1.11 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: HoughTransform.hh,v 1.12 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
-// closely tied to HitCluster algorithms.  
+// closely tied to HitCluster algorithms.
 //original author R. Bernstein. Rework by P. Shanahan
 //
 
@@ -112,9 +112,9 @@ namespace mu2e{
 
       ClusterList& _hitClusters; // list of clusters input to Hough finding
 
-      // regardless of where clusters come from, it's a good idea to 
+      // regardless of where clusters come from, it's a good idea to
       // make a list of centers so we don't keep recalculating them in
-      // nested loops. 
+      // nested loops.
       // we only use x and y, so it could probably be Hep2Vector, but
       // why tempt fate?
       typedef std::vector<CLHEP::Hep3Vector> clusterCenterVector;
@@ -123,10 +123,10 @@ namespace mu2e{
       std::vector<int> _clusterSizes;
       houghCandidates _houghCircles;
 
-      //these are index numbers of hit straws associated with the found 
+      //these are index numbers of hit straws associated with the found
       //Hough tracks, and then someone else
       //knows which straw goes with which index
-      // PSH - not used? std::vector<int> strawHitIndices; 
+      // PSH - not used? std::vector<int> strawHitIndices;
 
       // PSH - not used? double _x0;
       // PSH - not used? double _y0;
@@ -137,9 +137,9 @@ namespace mu2e{
                           const CLHEP::Hep3Vector& v3,
                           double& radius, double& x0,double& y0, double& dca);
 
-      bool solveForCircle3P(const CLHEP::Hep3Vector& v1, 
-                            const CLHEP::Hep3Vector& v2, 
-                            const CLHEP::Hep3Vector& v3, 
+      bool solveForCircle3P(const CLHEP::Hep3Vector& v1,
+                            const CLHEP::Hep3Vector& v2,
+                            const CLHEP::Hep3Vector& v3,
                             double& radius, double& x0,double& y0, double& dca);
 
       bool solveForCircle2P(const CLHEP::Hep3Vector& v1,

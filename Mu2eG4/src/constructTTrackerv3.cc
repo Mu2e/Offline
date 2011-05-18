@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.18 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructTTrackerv3.cc,v 1.19 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -51,7 +51,7 @@ using namespace std;
 
 namespace mu2e{
 
-  VolumeInfo constructTTrackerv3( G4LogicalVolume* mother, 
+  VolumeInfo constructTTrackerv3( G4LogicalVolume* mother,
                                   double zOff,
                                   SimpleConfig const& config ){
 
@@ -59,7 +59,7 @@ namespace mu2e{
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     int verbosityLevel = config.get<int>("ttracker.verbosityLevel",0);
-    
+
     // Control of graphics for debugging the geometry.
     // Only instantiate sectors to be drawn.
     int devDraw = config.get<int>("ttracker.devDraw",-1);
@@ -80,9 +80,9 @@ namespace mu2e{
     static int const newpr = 8;
     static int const newwdth = 14;
 
-    verbosityLevel > 0 && 
+    verbosityLevel > 0 &&
       cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
-      "   " << 
+      "   " <<
       fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.innerRadius << ", " <<
       fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.outerRadius << ", " <<
       fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.zHalfLength << ", " <<
@@ -161,9 +161,9 @@ namespace mu2e{
                                        doSurfaceCheck
                                        );
 
-    verbosityLevel > 0 && 
+    verbosityLevel > 0 &&
       cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
-      idev << ", " << 
+      idev << ", " <<
       fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.innerRadius << ", " <<
       fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.outerRadius << ", " <<
       fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.zHalfLength << ", " <<
@@ -183,7 +183,7 @@ namespace mu2e{
 
     // constructing sector envelope
 
-    // Make a logical volume for this sector, 
+    // Make a logical volume for this sector,
 
     // G4IntersectionSolid of G4Box and G4Trd to avoid overlaps of two envelopes
 
@@ -194,7 +194,7 @@ namespace mu2e{
     Straw const& straw0        = layer0.getStraw(0);
     StrawDetail const& detail0 = straw0.getDetail();
 
-    verbosityLevel > 0 && 
+    verbosityLevel > 0 &&
       cout << "Debugging sector box isec detail0.halfLength(): " << detail0.halfLength() << endl;
 
 
@@ -203,7 +203,7 @@ namespace mu2e{
 
     G4Box* secBox = new G4Box(secInfo.name+"Box",
                               detail0.halfLength(),
-                              sector.boxHalfLengths()[2], 
+                              sector.boxHalfLengths()[2],
                               sector.boxHalfLengths()[1]
                               );
 
@@ -217,7 +217,7 @@ namespace mu2e{
 
     // one could also intersect it with a ring to decrease its radial spread
 
-    secInfo.solid = 
+    secInfo.solid =
       new G4IntersectionSolid(secInfo.name, secBox, secTrd);
 
     // false for placing physical volume, just create a logical one
@@ -235,9 +235,9 @@ namespace mu2e{
                   doSurfaceCheck
                   );
 
-    verbosityLevel > 0 && 
+    verbosityLevel > 0 &&
       cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
-      isec << ", " << 
+      isec << ", " <<
       fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(4) << ", " <<
       fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(3) << ", " <<
       fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(2) << ", " <<
@@ -251,7 +251,7 @@ namespace mu2e{
     CLHEP::HepRotationX RX2ForTrapezoids(tRAngle2);
     CLHEP::HepRotationY RYForTrapezoids(tRAngle);
     CLHEP::HepRotationZ RZForTrapezoids(tRAngle);
-    
+
     G4RotationMatrix* rotTub = reg.add(G4RotationMatrix(RYForTrapezoids));
 
     for ( int ilay =0; ilay<sector.nLayers(); ++ilay ){
@@ -259,11 +259,11 @@ namespace mu2e{
       verbosityLevel > 1 &&   cout << "Debugging constructTTrackerv3 ilay: " << ilay << endl;
 
       const Layer& layer = sector.getLayer(ilay);
-          
+
       for ( int istr=0; istr<layer.nStraws(); ++istr ){
 
         // "second" layer will have fewer straws (for now) also see TTrackerMaker
-        // no, it complicates StrawSD and TTrackerMaker 
+        // no, it complicates StrawSD and TTrackerMaker
         // if( ilay%2==1 && istr+1 == layer.nStraws() ) break;
 
         const Straw& straw = layer.getStraw(istr);
@@ -285,29 +285,29 @@ namespace mu2e{
 
         if ( verbosityLevel > 2 ) {
 
-          cout << "Debugging istr: " << istr << 
-            " mid: " << mid << 
-            ", straw.MidPoint " << straw.getMidPoint() << 
-            ", sector.boxOffset " <<  sector.boxOffset() << 
+          cout << "Debugging istr: " << istr <<
+            " mid: " << mid <<
+            ", straw.MidPoint " << straw.getMidPoint() <<
+            ", sector.boxOffset " <<  sector.boxOffset() <<
             ", device.origin " << device.origin() <<
             endl;
 
-          cout << "Debugging istr: " << istr << " mid: " << 
+          cout << "Debugging istr: " << istr << " mid: " <<
             mid << ", halflenght " << detail.halfLength() << endl;
 
           // look at StrawSD to see how the straw index is reconstructed
 
-          cout << "Debugging straw.Id(), straw.Index() " << 
+          cout << "Debugging straw.Id(), straw.Index() " <<
             straw.Id() << ", " << straw.Index() << endl;
 
         }
 
         // make the straws more distinguishable when displayed
-        G4Colour wallColor = (ilay%2 == 1) ? 
+        G4Colour wallColor = (ilay%2 == 1) ?
           ((istr%2 == 0) ? G4Colour::Green() : G4Colour::Yellow()) :
           ((istr%2 == 0) ? G4Colour::Red() : G4Colour::Blue());
 
-        G4Colour gasColor = (ilay%2 == 0) ? 
+        G4Colour gasColor = (ilay%2 == 0) ?
           ((istr%2 == 0) ? G4Colour::Green() : G4Colour::Yellow()) :
           ((istr%2 == 0) ? G4Colour::Red() : G4Colour::Blue());
 
@@ -318,7 +318,7 @@ namespace mu2e{
           istr << ", " << RYForTrapezoids << ", " <<
           fixed << setprecision(newpr) << setw(newwdth) << mid << ", " <<
           endl << setprecision(oldpr) << setw(oldwdth);
-        
+
         VolumeInfo strawWallInfo  = nestTubs(straw.name("TTrackerStrawWall_"),
                                              strawWallParams,
                                              findMaterialOrThrow(detail.wallMaterialName() ),
@@ -382,7 +382,7 @@ namespace mu2e{
 
       if ( secDraw > -1 && isec > secDraw ) continue;
 
-      verbosityLevel > 1 && 
+      verbosityLevel > 1 &&
         cout << "Debugging sector: " << isec << " " << secInfo.name << " secDraw: " << secDraw << endl;
 
       const Sector& sector = device.getSector(isec);
@@ -391,23 +391,23 @@ namespace mu2e{
 
       CLHEP::HepRotationZ RZ(sector.boxRzAngle() - device.rotation()); // well we know it is only arround z...
 
-      verbosityLevel > 1 && 
-        cout << "Debugging sector.boxRzAngle(), device.rotation(): " << sector.boxRzAngle() << " " << 
-        device.rotation() << endl;      
-      
+      verbosityLevel > 1 &&
+        cout << "Debugging sector.boxRzAngle(), device.rotation(): " << sector.boxRzAngle() << " " <<
+        device.rotation() << endl;
+
       // we add an 180deg rotation for even sectors
-      G4RotationMatrix* secRotation = ((isec%2)==1) ? 
+      G4RotationMatrix* secRotation = ((isec%2)==1) ?
       reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RZ.inverse())):
       reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*RZ.inverse()));
 
       // origin a.k.a offset wrt current mother volume
       CLHEP::Hep3Vector origin = sector.boxOffset() - device.origin();
 
-      verbosityLevel > 1 && 
+      verbosityLevel > 1 &&
         cout << "Debugging sector.origin:      "   << isec << " " << secInfo.name << origin << endl;
-      verbosityLevel > 1 && 
+      verbosityLevel > 1 &&
         cout << "Debugging sector.boxOffset(): " << isec << " " << secInfo.name << sector.boxOffset() << endl;
-      
+
       // we may need to keep those pointers somewhre... (this is only the last one...)
 
       secInfo.physical =  new G4PVPlacement(secRotation,
@@ -428,8 +428,8 @@ namespace mu2e{
       // changes here affect StrawSD
 
       if ( devDraw > -1 && idev > devDraw ) continue;
-      
-      verbosityLevel > 1 && 
+
+      verbosityLevel > 1 &&
         cout << "Debugging dev: " << idev << " " << devInfo.name << " devDraw: " << devDraw << endl;
 
       const Device& device = ttracker.getDevice(idev);
@@ -438,9 +438,9 @@ namespace mu2e{
 
       G4RotationMatrix* devRotation  = reg.add(G4RotationMatrix(RZ));
 
-      verbosityLevel > 1 && 
+      verbosityLevel > 1 &&
         cout << "Debugging -device.rotation(): " << -device.rotation() << " " << endl;
-      verbosityLevel > 1 && 
+      verbosityLevel > 1 &&
         cout << "Debugging device.origin(): " << device.origin() << " " << endl;
 
       // could we descend the final hierarchy and set the "true" copy numbers?

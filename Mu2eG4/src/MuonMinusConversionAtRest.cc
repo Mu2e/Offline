@@ -5,9 +5,9 @@
 // muon. Configurable parameters include endpoint of momentum, limits of polar
 // and azimuthal angle.
 //
-// $Id: MuonMinusConversionAtRest.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $ 
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: MuonMinusConversionAtRest.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 //-----------------------------------------------------------------------------
 // Framework includes
@@ -33,7 +33,7 @@ namespace mu2e {
 static const double pEndPoint = 104.96;
 
 muMinusConversionAtRest::muMinusConversionAtRest( const SimpleConfig& config, const G4String& processName, G4ProcessType aType ) :
-    G4VRestProcess (processName, aType), 
+    G4VRestProcess (processName, aType),
   _p(config.getDouble("conversionGun.p", pEndPoint )),
   _czmin(config.getDouble("conversionGun.czmin",  0.3)),
   _czmax(config.getDouble("conversionGun.czmax",  0.6)),
@@ -62,14 +62,14 @@ G4bool muMinusConversionAtRest::IsApplicable(const G4ParticleDefinition& p)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void muMinusConversionAtRest::PreparePhysicsTable(const G4ParticleDefinition& p) 
+void muMinusConversionAtRest::PreparePhysicsTable(const G4ParticleDefinition& p)
 {
   G4HadronicProcessStore::Instance()->RegisterParticleForExtraProcess(this, &p);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void muMinusConversionAtRest::BuildPhysicsTable(const G4ParticleDefinition& p) 
+void muMinusConversionAtRest::BuildPhysicsTable(const G4ParticleDefinition& p)
 {
   G4HadronicProcessStore::Instance()->PrintInfo(&p);
 }
@@ -77,11 +77,11 @@ void muMinusConversionAtRest::BuildPhysicsTable(const G4ParticleDefinition& p)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-G4VParticleChange* muMinusConversionAtRest::AtRestDoIt(const G4Track& track, 
+G4VParticleChange* muMinusConversionAtRest::AtRestDoIt(const G4Track& track,
 							const G4Step&)
 {
-  // 
-  // Handles MuonMinus at rest; 
+  //
+  // Handles MuonMinus at rest;
   //
   aParticleChange.Initialize(track);
   G4ThreeVector position = track.GetPosition();
@@ -92,8 +92,8 @@ G4VParticleChange* muMinusConversionAtRest::AtRestDoIt(const G4Track& track,
 
   aParticleChange.SetNumberOfSecondaries( 1 );
 
-  G4ParticleDefinition *theElectron = G4Electron::Electron(); 
-  G4double Emass = theElectron->GetPDGMass(); 
+  G4ParticleDefinition *theElectron = G4Electron::Electron();
+  G4double Emass = theElectron->GetPDGMass();
 
   G4GHEKinematicsVector ConvElectron;
 
@@ -104,8 +104,8 @@ G4VParticleChange* muMinusConversionAtRest::AtRestDoIt(const G4Track& track,
 
   G4ParticleDefinition* pd = ConvElectron.GetParticleDef();
   if(pd) {
-    
-    // G4 takes ownership of this object   
+
+    // G4 takes ownership of this object
     G4DynamicParticle* aNewParticle = new G4DynamicParticle;
     aNewParticle->SetDefinition( pd );
     aNewParticle->SetMomentum( ConvElectron.GetMomentum() );
@@ -117,7 +117,7 @@ G4VParticleChange* muMinusConversionAtRest::AtRestDoIt(const G4Track& track,
     }
 
   aParticleChange.ProposeLocalEnergyDeposit(0.0);
-  aParticleChange.ProposeTrackStatus(fStopAndKill); 
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
 
   return &aParticleChange;
 }

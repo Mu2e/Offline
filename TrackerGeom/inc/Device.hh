@@ -3,9 +3,9 @@
 //
 // Hold information about one device in a tracker.
 //
-// $Id: Device.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: Device.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -45,7 +45,7 @@ namespace mu2e {
       _rotation(rotation),
       _origin(origin){
     }
-    
+
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     // Accessors
@@ -59,11 +59,11 @@ namespace mu2e {
       return _sectors.size();
     }
 
-    const std::vector<Sector>& getSectors () const{ 
+    const std::vector<Sector>& getSectors () const{
       return _sectors;
     }
 
-    const Sector& getSector ( int n) const { 
+    const Sector& getSector ( int n) const {
       return _sectors.at(n);
     }
 

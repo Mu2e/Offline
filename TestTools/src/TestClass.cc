@@ -2,9 +2,9 @@
 // A trivial class instrumented with some printout.  To
 // be used in tests of other classes.
 //
-//  $Id: TestClass.cc,v 1.1 2011/03/04 19:54:17 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/03/04 19:54:17 $
+//  $Id: TestClass.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@ using namespace std;
 namespace mu2e {
 
   int TestClass::counter = -1;
-  
+
   TestClass::TestClass ( ):
     _datum1(0),
     _datum2(0){
@@ -30,7 +30,7 @@ namespace mu2e {
          << _datum2
          << "  _serial: "
          << _serial
-         << endl; 
+         << endl;
   }
 
   TestClass::TestClass ( int i, int j ):
@@ -72,9 +72,9 @@ namespace mu2e {
   }
 
   TestClass& TestClass::operator=(TestClass rhs){
-    cout << "Invoking assignment:  From: " 
+    cout << "Invoking assignment:  From: "
          << rhs._serial
-         << "  To: " 
+         << "  To: "
          << _serial
          << endl;
     rhs.swap(*this);

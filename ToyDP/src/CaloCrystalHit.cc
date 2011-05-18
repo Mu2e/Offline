@@ -1,9 +1,9 @@
-// 
-// CaloCrystalHit to be created based on CaloHit's 
 //
-// $Id: CaloCrystalHit.cc,v 1.5 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// CaloCrystalHit to be created based on CaloHit's
+//
+// $Id: CaloCrystalHit.cc,v 1.6 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 
 // C++ includes
@@ -96,7 +96,7 @@ namespace mu2e {
     if ( doEndl ){
       ost << endl;
     }
-    
+
   }
-  
+
 } // namespace mu2e

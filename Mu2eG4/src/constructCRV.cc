@@ -1,11 +1,11 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.4 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: constructCRV.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
-// Original author KLG 
+// Original author KLG
 //
 // Notes:
 
@@ -46,7 +46,7 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructCRV( const VolumeInfo& parent, 
+  void constructCRV( const VolumeInfo& parent,
                      SimpleConfig const * const _config
                      ){
 
@@ -65,39 +65,39 @@ namespace mu2e {
 
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    std::map<std::string,CRSScintillatorShield> const & shields = 
+    std::map<std::string,CRSScintillatorShield> const & shields =
       CosmicRayShieldGeomHandle->getCRSScintillatorShields();
 
     CLHEP::Hep3Vector perentCenterInMu2e = parent.centerInWorld - VolumeInfo::getMu2eOriginInWorld();
 
     // all materials and dimensions are the same
 
-    CRSScintillatorBarDetail const & barDetail = 
+    CRSScintillatorBarDetail const & barDetail =
       CosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
 
-    G4Material* scintillatorBarMaterial = 
+    G4Material* scintillatorBarMaterial =
       findMaterialOrThrow(barDetail.getMaterialName(0));
 
     std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
 
-    // each solid is the same, 
+    // each solid is the same,
     // is each logical volume the same?
     // but each physical volume has different name...
     // this seems not quite compatible with VolumeInfo and their registry, so we will not use it
-    
+
     //    VolumeInfo scintillatorBarInfo;
 
     std::string scintillatorBarName = "CRSScintillatorBar";
 
-    G4VSolid* scintillatorBarSolid = 
+    G4VSolid* scintillatorBarSolid =
       new G4Box( scintillatorBarName,
                  scintillatorBarHalfLengths[0],
                  scintillatorBarHalfLengths[1],
                  scintillatorBarHalfLengths[2]);
 
-    G4LogicalVolume* scintillatorBarLogical = 
-      new G4LogicalVolume( scintillatorBarSolid, 
-                           scintillatorBarMaterial, 
+    G4LogicalVolume* scintillatorBarLogical =
+      new G4LogicalVolume( scintillatorBarSolid,
+                           scintillatorBarMaterial,
                            scintillatorBarName);
 
     // visibility attributes
@@ -149,10 +149,10 @@ namespace mu2e {
         cout << __func__ << " shieldLocalOffset       : " << shield.getLocalOffset() << endl;
         cout << __func__ << " shieldGlobalOffset      : " << shield.getGlobalOffset() << endl;
         cout << __func__ << " shieldAirOffset         : " << shield.getGlobalOffset() - perentCenterInMu2e << endl;
-        cout << __func__ << " getGlobalRotationAngles : " << 
+        cout << __func__ << " getGlobalRotationAngles : " <<
           shield.getGlobalRotationAngles()[0] << ", " <<
           shield.getGlobalRotationAngles()[1] << ", " <<
-          shield.getGlobalRotationAngles()[2] << ", " << endl; 
+          shield.getGlobalRotationAngles()[2] << ", " << endl;
         cout << __func__ << " shieldRotation and *    : " << shieldRotation << *shieldRotation << endl;
       }
 
@@ -200,13 +200,13 @@ namespace mu2e {
             cout << __func__ << " nBars                   : " << nBars << endl;
 
           for (int ib = 0; ib < nBars; ++ib) {
-          
+
             verbosityLevel > 2 &&
               cout << __func__ << " working on bar          : " << ib << endl;
 
             CRSScintillatorBar const & bar = layer.getBar(ib);
 
-            // placing the bar; 
+            // placing the bar;
 
             // we need the offsets "local" to the air
             // so we need the globaloffsets for each bar and the air (parent volume)
@@ -225,11 +225,11 @@ namespace mu2e {
                                barAirOffset,
                                scintillatorBarLogical,
                                bar.name(scintillatorBarName+"_"),
-                               parent.logical, 
+                               parent.logical,
                                0,
                                bar.Index().asInt(),
                                doSurfaceCheck);
-          
+
           }
 
         }
@@ -237,7 +237,7 @@ namespace mu2e {
       }
 
     }
- 
+
   }
 
 }

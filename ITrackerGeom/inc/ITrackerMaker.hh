@@ -24,7 +24,7 @@ class ITrackerMaker{
 
 public:
 
-  ITrackerMaker( SimpleConfig const& config );  
+  ITrackerMaker( SimpleConfig const& config );
   ~ITrackerMaker ();
 
   // This is the accessor that will remain.

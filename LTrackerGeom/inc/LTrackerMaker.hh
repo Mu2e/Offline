@@ -4,9 +4,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: LTrackerMaker.hh,v 1.7 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -43,10 +43,10 @@ namespace mu2e {
                    CLHEP::Hep3Vector vaneOffset
                    );
 
-    LTrackerMaker( SimpleConfig const& config );  
+    LTrackerMaker( SimpleConfig const& config );
     ~LTrackerMaker ();
 
-    // This is depracted and will go away soon.  
+    // This is depracted and will go away soon.
     // Still needed for root graphics version.
     const LTracker& getLTracker() const { return *_ltt;}
 
@@ -82,7 +82,7 @@ namespace mu2e {
 
     // Nominal radius of the tracker; radius to mid-plane of a layer at z=0.
     double _r0;
-  
+
     // Length of the tracker mother volume.
     double _halfLength;
 
@@ -115,7 +115,7 @@ namespace mu2e {
     double _tiltX;
     double _tiltY;
 
-    // 
+    //
     CLHEP::Hep3Vector _vaneOffset;
 
     // Half of the angle subtended by one side of the polygon.

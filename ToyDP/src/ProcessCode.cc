@@ -5,9 +5,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.cc,v 1.1 2011/01/04 22:04:53 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/01/04 22:04:53 $
+// $Id: ProcessCode.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@
 using namespace std;
 
 namespace mu2e {
-  
+
   const char* ProcessCode::_name[] = { PROCESSCODE_NAMES };
 
   BOOST_STATIC_ASSERT(sizeof(ProcessCode::_name)/sizeof(char*) == ProcessCode::lastEnum);
@@ -44,7 +44,7 @@ namespace mu2e {
       throw std::logic_error ( os.str());
     }
   }
-  
+
   ProcessCode ProcessCode::findByName ( std::string const& name){
 
     // Size must be at least 2 (for unknown and lastEnum).

@@ -20,7 +20,7 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepRotationY;

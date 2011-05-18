@@ -5,9 +5,9 @@
 // A persistable index into another data product.
 //
 //
-// $Id: DPIndex.hh,v 1.7 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: DPIndex.hh,v 1.8 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 
 // Framework includes.
@@ -27,38 +27,38 @@ namespace mu2e {
     DPIndex( art::ProductID const& id_, int index_):
       id(id_),
       index(index_){
-    } 
+    }
 
     // Compiler generated versions are OK for:
     // destructor, copy c'tor, assignment operator.
 
   };
 
-  inline bool operator==(const DPIndex& lhs, 
+  inline bool operator==(const DPIndex& lhs,
                          const DPIndex& rhs){
       return ( lhs.id == rhs.id && lhs.index == rhs.index );
   }
 
-  inline bool operator!=(const DPIndex& lhs, 
+  inline bool operator!=(const DPIndex& lhs,
                          const DPIndex& rhs){
     return !(lhs==rhs);
   }
 
   // Sort first on ProductID and then on index.
-  inline bool operator<(const DPIndex& lhs, 
+  inline bool operator<(const DPIndex& lhs,
                         const DPIndex& rhs){
-    return ( lhs.id < rhs.id ) || 
+    return ( lhs.id < rhs.id ) ||
       ( lhs.id == rhs.id && lhs.index < rhs.index );
   }
 
-  // ProductID does not define operators >, <=, >= so we would need 
+  // ProductID does not define operators >, <=, >= so we would need
   // to fix that before defining those operators for this class.
 
 
   inline std::ostream& operator<<( std::ostream& ost,
                                    DPIndex const& dpi ){
-    ost << "(" << dpi.id 
-        << ","  << dpi.index 
+    ost << "(" << dpi.id
+        << ","  << dpi.index
         << ")";
     return ost;
   }

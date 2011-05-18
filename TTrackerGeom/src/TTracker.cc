@@ -2,9 +2,9 @@
 // Geometry and identifier info about an TTracker.
 //
 //
-// $Id: TTracker.cc,v 1.3 2010/09/01 19:55:45 genser Exp $
-// $Author: genser $
-// $Date: 2010/09/01 19:55:45 $
+// $Id: TTracker.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@
 
 using namespace std;
 
-namespace mu2e { 
+namespace mu2e {
 
   void TTracker::fillPointers () const{
     for ( size_t i=0; i<_devices.size(); ++i){
@@ -51,6 +51,6 @@ namespace mu2e {
 
     ;
   }
-  
+
 
 } // namespace mu2e

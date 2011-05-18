@@ -22,7 +22,7 @@ public:
   WireDetail( std::vector<double> & thicknesses, std::vector<std::string> & materialNames,
                double halfLength
                );
-  
+
   ~WireDetail ();
 
   std::string const materialName(int idx) const throw(cet::exception) {

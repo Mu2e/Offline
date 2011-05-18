@@ -1,5 +1,5 @@
 //
-// This class makes available a collection of SimParticles that 
+// This class makes available a collection of SimParticles that
 // have more than a minimum number of StrawHits with energy deposition
 // in the gas above some cut.  The class can also return a
 // vector of information about all of the StrawHits on each track
@@ -9,16 +9,16 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: SimParticlesWithHits.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke.
 //
 // Notes:
 // 1) Near the end of the c'tor we loop over a map and remove entries with
-//    too few hits. To make erase work properly we must use the 
-//     postincrement ++ on the iterator that is the argument to erase. See 
+//    too few hits. To make erase work properly we must use the
+//     postincrement ++ on the iterator that is the argument to erase. See
 //     Josuttis (1999) section 6.6 p 205.
 
 // Framework includes
@@ -90,7 +90,7 @@ namespace mu2e{
         // Find the SimParticleInfo in the map; if absent, create it.
         map<key_type,SimParticleInfo>::iterator ii = _hitsPerTrack.find(key);
         if ( ii == _hitsPerTrack.end() ){
-          pair<map<key_type,SimParticleInfo>::iterator,bool> yy = _hitsPerTrack.insert( 
+          pair<map<key_type,SimParticleInfo>::iterator,bool> yy = _hitsPerTrack.insert(
               make_pair(key,SimParticleInfo( key, sims[*icontrib], evt)) );
           ii = yy.first;
         }

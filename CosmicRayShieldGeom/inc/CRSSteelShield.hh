@@ -4,9 +4,9 @@
 //
 // Representation of CRSSteelShield aka the flux return yoke
 //
-// $Id: CRSSteelShield.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSSteelShield.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG
 //
@@ -47,7 +47,7 @@ namespace mu2e {
       _rotation(rotation),
       _globalOffset(globalOffset),
       _holeRadius(holeRadius)
-    {      
+    {
       _halfLengths[0] = halfLengths[0];
       _halfLengths[1] = halfLengths[1];
       _halfLengths[2] = halfLengths[2];

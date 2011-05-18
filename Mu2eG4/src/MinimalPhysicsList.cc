@@ -1,10 +1,10 @@
 //
-// Define a minimal physics list. 
+// Define a minimal physics list.
 // Just transportation; used for debugging geometry.
 //
-// $Id: MinimalPhysicsList.cc,v 1.3 2010/06/08 21:20:44 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/08 21:20:44 $
+// $Id: MinimalPhysicsList.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -22,12 +22,12 @@ namespace mu2e {
     defaultCutValue = 1.0*cm;
     SetVerboseLevel(1);
   }
-  
+
   MinimalPhysicsList::~MinimalPhysicsList(){
   }
-  
+
   void MinimalPhysicsList::ConstructParticle(){
-    
+
     G4ChargedGeantino::ChargedGeantinoDefinition();
     G4Electron::ElectronDefinition();
     G4Positron::PositronDefinition();
@@ -46,8 +46,8 @@ namespace mu2e {
     addStepLimiter();
 
   }
-  
+
   void MinimalPhysicsList::SetCuts(){
   }
-  
+
 }  // end namespace mu2e

@@ -2,10 +2,10 @@
 #define Mu2eG4_finishNesting_hh
 //
 // Free function to be used by the nest... functions
-// 
-// $Id: finishNesting.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: finishNesting.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author KLG
 //

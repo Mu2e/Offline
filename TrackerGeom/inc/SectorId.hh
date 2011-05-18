@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: SectorId.hh,v 1.4 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:37 $
+// $Id: SectorId.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 #include <ostream>
 #include "TrackerGeom/inc/DeviceId.hh"
 
-namespace mu2e { 
+namespace mu2e {
 
   struct SectorId{
 
@@ -26,17 +26,17 @@ namespace mu2e {
       _did(-1),
       _sector(-1){
     }
-  
+
     SectorId( DeviceId device,
               int sector
               ):
       _did(device),
       _sector(sector){
     }
-  
+
     ~SectorId  (){
     }
-  
+
     // Compiler generated copy and assignment constructors
     // should be OK.
 
@@ -59,13 +59,13 @@ namespace mu2e {
     bool operator!=(SectorId const& rhs) const{
       return !( *this == rhs);
     }
-  
+
     DeviceId _did;
     int32_t _sector;
-  
+
   };
 
-  inline std::ostream& operator<<(std::ostream& ost, 
+  inline std::ostream& operator<<(std::ostream& ost,
                                   const SectorId& s ){
     ost << s._did << " " << s._sector;
     return ost;

@@ -1,19 +1,19 @@
 //
 // Generate a generic particle coming from target foils.
-// Position, time and foil number of generated particle 
+// Position, time and foil number of generated particle
 // is extracted random from appropiate distributions
 //
-// 
+//
 // Original author Gianni Onorato
-// 
-// 
+//
+//
 // Notes
 //
 // 1) About the initialization of _randFoils.
 //    The c'tor of RandGeneral wants, as its second argument, the starting
 //    address of an array of doubles that describes the required shape.
 //    The method binnedFoilsVolume returns, by value, a std::vector<double>.
-//    We can get the required argument by taking the address of the first element 
+//    We can get the required argument by taking the address of the first element
 //    of the std::vector. There is a subtlety about the return value of
 //    those methods:  they return by value to a temporary variable that
 //    we cannot see; this variable goes out of scope after the c'tor completes;
@@ -38,7 +38,7 @@
 
 using namespace std;
 
-static const art::FileInPath StMuFileName("ConditionsService/data/StoppedMuons.txt"); 
+static const art::FileInPath StMuFileName("ConditionsService/data/StoppedMuons.txt");
 static const string StMuFileString = StMuFileName.fullPath();
 static const double timeMaxDelay = 3000;
 static const int nBinsForTimeDelayPDF = 150;
@@ -46,11 +46,11 @@ static fstream inMuFile(StMuFileString.c_str(), ios::in);
 
 
 namespace mu2e {
-  
+
   FoilParticleGenerator::FoilParticleGenerator(art::RandomNumberGeneratorService::base_engine_t& engine,
-                                               double tmin, double tmax, 
-                                               foilGen_enum foilAlgo, 
-                                               posGen_enum  posAlgo, 
+                                               double tmin, double tmax,
+                                               foilGen_enum foilAlgo,
+                                               posGen_enum  posAlgo,
                                                timeGen_enum  timeAlgo,
                                                bool targetFrame,
                                                bool PTtoSTdelay,
@@ -58,11 +58,11 @@ namespace mu2e {
     _prodTargetOffset(),
     _prodTargetCenter(),
     _g4beamlineOrigin(),
-    _g4beamlineExtraOffset(CLHEP::Hep3Vector()),   
+    _g4beamlineExtraOffset(CLHEP::Hep3Vector()),
     // time generation range
     _tmin ( tmin ),
     _tmax ( tmax ),
-    // selected algorithm for foils 
+    // selected algorithm for foils
     _foilAlgo ( foilAlgo ),
     _posAlgo ( posAlgo ),
     _timeAlgo ( timeAlgo ),
@@ -75,12 +75,12 @@ namespace mu2e {
     _randNegExpoTime( engine, -_muTimeDecay ),
     _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils ),
     _randExpoFoils ( engine, &(weightedBinnedFoilsVolume()[0]), _nfoils ),
-    _delayTime( engine, &(timePathDelay()[0]), nBinsForTimeDelayPDF ), 
+    _delayTime( engine, &(timePathDelay()[0]), nBinsForTimeDelayPDF ),
     _targetFrame( targetFrame ),
     _PTtoSTdelay ( PTtoSTdelay ),
     _pPulseDelay ( pPulseDelay )
   {
-  
+
 
     CLHEP::Hep3Vector offset_default(0.0,0.0,1764.5);
     _prodTargetOffset = offset_default;
@@ -107,7 +107,7 @@ namespace mu2e {
     }
 
   }
-  
+
   FoilParticleGenerator::~FoilParticleGenerator()
   {
   }
@@ -115,12 +115,12 @@ namespace mu2e {
   void FoilParticleGenerator::generatePositionAndTime(CLHEP::Hep3Vector& pos,
                                                       double& time) {
 
-    
-    // Pick a foil 
+
+    // Pick a foil
 
     time = -1000;
     while (time < _tmin) {
-      
+
       switch (_foilAlgo) {
       case flatFoil:
         _ifoil = getFlatRndFoil();
@@ -137,11 +137,11 @@ namespace mu2e {
       default:
         break;
       }
-      
+
       // Get access to the geometry system.
       GeomHandle<Target> target;
       TargetFoil const& foil = target->foil(_ifoil);
-      
+
       //Pick up position
       switch (_posAlgo) {
       case flatPos:
@@ -153,8 +153,8 @@ namespace mu2e {
       default:
         break;
       }
-      
-      
+
+
       //Pick up time
       switch (_timeAlgo) {
       case flatTime:
@@ -168,7 +168,7 @@ namespace mu2e {
       default:
         break;
       }
-      
+
       if (_PTtoSTdelay) {
         double deltat = includeTimeDelay();
         time += deltat;
@@ -186,14 +186,14 @@ namespace mu2e {
     }
   }
 
-  
+
 
   int FoilParticleGenerator::iFoil() {
     return _ifoil;
   }
-  
+
   vector<double> FoilParticleGenerator::binnedFoilsVolume() {
-    
+
     vector<double> volumes;
     GeomHandle<Target> target;
     for (int i=0; i< _nfoils; ++i) {
@@ -206,9 +206,9 @@ namespace mu2e {
       // cout << "Foil " << i+1 << "  volume  " << volume << endl;
     }
     return volumes;
-  } //FoilParticleGenerator::binnedFoilsVolume() 
-  
-  
+  } //FoilParticleGenerator::binnedFoilsVolume()
+
+
   //For Pi Capture production: the previous code used a randexponential to describe
   // the generation in foils. Lambda of the distribution was 1. Since the dist
   // output goes over 1, it was forced to regenerate the rnd number if bigger than 1.
@@ -217,11 +217,11 @@ namespace mu2e {
   //The integral of the exponential between i/_nfoils and (i+1)/_nfoils, divided for
   //the x-axis step of the integral (1/_nfoils), is the mean value of the exponential
   //function in the bin corresponding to a foil. I use this value as a weight for
-  //the foil volume associated to the bin. 
+  //the foil volume associated to the bin.
   //Procedure surely to refine.
-  
+
   vector<double> FoilParticleGenerator::weightedBinnedFoilsVolume() {
-    
+
     vector<double> volumes = binnedFoilsVolume();
     if (volumes.size()!= (size_t) _nfoils) {
       throw cet::exception("GEOM")
@@ -236,8 +236,8 @@ namespace mu2e {
       cout << volumes[i] << endl;
     }
     return volumes;
-  } //FoilParticleGenerator::weightedBinnedFoilsVolume() 
-  
+  } //FoilParticleGenerator::weightedBinnedFoilsVolume()
+
 
   vector<double> FoilParticleGenerator::timePathDelay() {
 
@@ -247,7 +247,7 @@ namespace mu2e {
     fstream infile(MuonFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
       double val;
-      
+
       for (int i=0; i < nBinsForTimeDelayPDF; ++i) {
         infile >> val;
         muonTimeDelay.push_back(val);
@@ -258,9 +258,9 @@ namespace mu2e {
         muonTimeDelay.push_back(1);
       }
     }
-    
+
     return muonTimeDelay;
-    
+
   }
 
 
@@ -269,32 +269,32 @@ namespace mu2e {
     return static_cast<int>(_nfoils*_randFlat.fire());
   }
 
-  // Pick up a random foil from a flat distribution 
+  // Pick up a random foil from a flat distribution
   // weighted by foil volume
   int FoilParticleGenerator::getVolumeRndFoil() {
     return  static_cast<int>(_nfoils*_randFoils.fire());
   }
 
-  // Pick up a random foil from a negative exponential 
-  // distribution weighted by foil volume 
+  // Pick up a random foil from a negative exponential
+  // distribution weighted by foil volume
   int FoilParticleGenerator::getVolumeAndExpoRndFoil() {
     return static_cast<int>(_nfoils*_randExpoFoils.fire());
   }
 
   // Pick up a random position within the foil
   CLHEP::Hep3Vector FoilParticleGenerator::getFlatRndPos(TargetFoil const& theFoil) {
-    
+
     // Foil properties.
     CLHEP::Hep3Vector const& center = theFoil.center();
     const double r1 = theFoil.rIn();
     const double dr = theFoil.rOut() - r1;
-    
+
     // A random point within the foil.
     const double r   = r1 + dr*_randFlat.fire();
     const double dz  = (-1.+2.*_randFlat.fire())*theFoil.halfThickness();
     const double phi = CLHEP::twopi*_randFlat.fire();
-    return CLHEP::Hep3Vector ( center.x()+r*cos(phi), 
-                               center.y()+r*sin(phi), 
+    return CLHEP::Hep3Vector ( center.x()+r*cos(phi),
+                               center.y()+r*sin(phi),
                                center.z()+dz );
 
   }
@@ -319,11 +319,11 @@ namespace mu2e {
         time = t;
         gotthem = true;
         return;
-      }  
+      }
       inMuFile.clear();
       inMuFile.seekg(0, ios::beg);
     }
-    
+
     return;
 
   }
@@ -337,14 +337,14 @@ namespace mu2e {
   double FoilParticleGenerator::getMuTimeDecay() {
 
   ConditionsHandle<PhysicsParams> phyPar("ignored");
-  double tau = phyPar->decayTime; 
+  double tau = phyPar->decayTime;
   if (tau < 0 || tau > 3500) { //bigger than muon decay time
     throw cet::exception("RANGE")
-      << "nonsense decay time of bound state"; 
+      << "nonsense decay time of bound state";
     }
   return tau;
   }
-  
+
   // Pick up a random generation time from a flat distribution
   double FoilParticleGenerator::getFlatRndTime() {
     return _tmin + _randFlat.fire() * (_tmax-_tmin);
@@ -357,7 +357,7 @@ namespace mu2e {
   }
 
 
-  // Pick up a time random from am exponential distribution, 
+  // Pick up a time random from am exponential distribution,
   // with a given lifetime and in a defined range.
   double FoilParticleGenerator::getLimitedExpRndTime() {
 

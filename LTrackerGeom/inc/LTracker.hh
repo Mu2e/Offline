@@ -2,13 +2,13 @@
 #define LTrackerGeom_LTracker_hh
 //
 // Hold all geometry and identifier information about
-// an LTracker.  In order to insulate this class from 
+// an LTracker.  In order to insulate this class from
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.9 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: LTracker.hh,v 1.10 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -30,7 +30,7 @@ namespace mu2e {
   public:
     LTracker(){}
     ~LTracker(){};
-    
+
     // Compiler generated copy and assignment constructors
     // should be OK.
 
@@ -38,7 +38,7 @@ namespace mu2e {
 
 
     enum LTrackerDeviceId { undefined=-1, wedge, vane};
-    
+
     double r0()   const { return _r0;}
     double z0()   const { return _z0;}
     double rOut() const { return _rOut;}
@@ -62,17 +62,17 @@ namespace mu2e {
     }
 
     std::string const& fillMaterial() const { return _fillMaterial; }
-    
+
     // Check for legal identifiers.
     bool isLegal(DeviceId d) const{
-      return ( d>-1 && 
-               std::vector<Device>::size_type(d) <_devices.size() 
+      return ( d>-1 &&
+               std::vector<Device>::size_type(d) <_devices.size()
                );
     };
 
-    
+
     bool isLegal(const SectorId& sid) const{
-      return (isLegal(sid._did) && 
+      return (isLegal(sid._did) &&
               sid._sector >-1   &&
               std::vector<Sector>::size_type(sid._sector) < getDevice(sid._did).getSectors().size()
               );
@@ -94,19 +94,19 @@ namespace mu2e {
     }
 
     // Accessors
-    const std::vector<Device>& getDevices() const{ 
+    const std::vector<Device>& getDevices() const{
       return _devices;
     }
-    
-    const Device& getDevice ( DeviceId id) const{ 
+
+    const Device& getDevice ( DeviceId id) const{
       return _devices.at(id);
     }
-    
-    const Device& getSides() const { 
+
+    const Device& getSides() const {
       return _devices.at(wedge);
     }
 
-    const Device& getVanes() const { 
+    const Device& getVanes() const {
       return _devices.at(vane);
     }
 
@@ -161,7 +161,7 @@ namespace mu2e {
         i->forAllSectors(f);
       }
     }
-    
+
     template <class F>
     inline void forAllDevices ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
@@ -175,7 +175,7 @@ namespace mu2e {
 
   protected:
 
-    // Nominal values.  
+    // Nominal values.
     // _r0 = Nominal radius of the center of the sector.
     // _z0 = position of the center of the tracker relative to the origin
     //       of the Mu2e coordinate system.
@@ -187,7 +187,7 @@ namespace mu2e {
     double _tiltY;
     double _tiltX;
 
-    // Outer radius and half length ( in z ) of a logical volume that will 
+    // Outer radius and half length ( in z ) of a logical volume that will
     // just contain the entire tracker.  Use to make the mother volume.
     double _rOut;
     double _halfLength;

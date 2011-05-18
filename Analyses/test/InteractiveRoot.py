@@ -3,9 +3,9 @@
 # It requires the existence of the input file data_03.root, that was
 # made by g4test_03.py
 #
-# $Id: InteractiveRoot.py,v 1.3 2010/09/24 17:06:53 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/09/24 17:06:53 $
+# $Id: InteractiveRoot.py,v 1.4 2011/05/18 02:27:14 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:14 $
 #
 # Original author Rob Kutschke
 #
@@ -14,7 +14,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("InteractiveRoot")
 
 # Maximum number of events to do.

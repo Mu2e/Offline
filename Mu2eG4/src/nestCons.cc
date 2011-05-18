@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4Cons inside a logical volume.
-// 
-// $Id: nestCons.cc,v 1.1 2010/12/06 22:27:57 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/06 22:27:57 $
+//
+// $Id: nestCons.cc,v 1.2 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -23,10 +23,10 @@
 using namespace std;
 
 namespace mu2e {
- 
+
   //
   // Create and place a G4Cons inside a logical volume.
-  // 
+  //
   VolumeInfo nestCons ( string const & name,
                         double const params[7],
                         G4Material* material,
@@ -41,15 +41,15 @@ namespace mu2e {
                         bool const placePV,
                         bool const doSurfaceCheck
                         ){
-    
+
 
     VolumeInfo info;
-    
+
     info.name    = name;
 
-    info.solid   = new G4Cons( name, params[0], params[1], params[2], params[3], 
+    info.solid   = new G4Cons( name, params[0], params[1], params[2], params[3],
                                params[4], params[5], params[6]  );
-    
+
     finishNesting(info,
                   material,
                   rot,
@@ -82,13 +82,13 @@ namespace mu2e {
                         bool const placePV,
                         bool const doSurfaceCheck
                         ){
-    
+
 
     VolumeInfo info(name,offset,parent.centerInWorld);
-    
-    info.solid   = new G4Cons( name, params[0], params[1], params[2], params[3], 
+
+    info.solid   = new G4Cons( name, params[0], params[1], params[2], params[3],
                                params[4], params[5], params[6]  );
-    
+
     finishNesting(info,
                   material,
                   rot,

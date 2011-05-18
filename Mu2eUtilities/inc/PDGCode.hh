@@ -3,11 +3,11 @@
 
 //
 // A convenience class to allow compile time access
-// to the PDG identifier codes for various particles.  
+// to the PDG identifier codes for various particles.
 //
-// $Id: PDGCode.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: PDGCode.hh,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // This file is taken directly from BaBar's pdt/PdtPdg.hh
 //
@@ -16,13 +16,13 @@
 //
 // We will use the HepPDT package for our particle data
 // table; HepPDT does not provide a convenience class
-// like this one.  
+// like this one.
 //
-// These codes have been stable for along time but we 
+// These codes have been stable for along time but we
 // should still periodically check that this class matches
 // HepPDT.
 //
-// The names in this class do not exactly match the 
+// The names in this class do not exactly match the
 // particle names in HEPPDT because those names are
 // written in pseudo-TeX, "e^-", for example; this means
 // that some HepPDT names are not legal C++ names.
@@ -470,7 +470,7 @@ namespace mu2e {
         null = 0
       };  // end enum PDGCode_type
   };      // end class PDGCode
-  
+
 } // end namespace mu2e.
 
 #endif /* Mu2eUtilities_PDGCode_hh */

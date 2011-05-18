@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.13 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: GeometryService.cc,v 1.14 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -50,7 +50,7 @@ using namespace std;
 
 namespace mu2e {
 
-  GeometryService::GeometryService(fhicl::ParameterSet const& iPS, 
+  GeometryService::GeometryService(fhicl::ParameterSet const& iPS,
                                    art::ActivityRegistry&iRegistry) :
     _inputfile(iPS.get<std::string>("inputfile","geom000.txt")),
     _detectors(),
@@ -62,7 +62,7 @@ namespace mu2e {
   GeometryService::~GeometryService(){
   }
 
-  void 
+  void
   GeometryService::preBeginRun(art::RunID const& iID, art::Timestamp const& iTime) {
 
     if(++_run_count > 1) {
@@ -122,7 +122,7 @@ namespace mu2e {
       CalorimeterMaker calorm( *_config );
       addDetector( calorm.getCalorimeterPtr() );
     }
-    
+
     if(_config->get<bool>("hasBFieldManager",false)){
       BFieldManagerMaker bfmgr( *_config);
       addDetector( bfmgr.getBFieldManager() );

@@ -4,9 +4,9 @@
 //   - CrudeStrawHitCollection
 //   - the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: MCSH_Test_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: MCSH_Test_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -48,7 +48,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class MCSH_Test : public art::EDAnalyzer {
   public:
     explicit MCSH_Test(fhicl::ParameterSet const& pset):
@@ -63,7 +63,7 @@ namespace mu2e {
     void analyze( art::Event const& e);
 
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -77,9 +77,9 @@ namespace mu2e {
 
   void MCSH_Test::beginJob(){
 
-    cout << "Diaglevel: " 
+    cout << "Diaglevel: "
          << _diagLevel << " "
-         << _maxFullPrint 
+         << _maxFullPrint
          << endl;
 
     // Create histograms if diagnostics are enabled.
@@ -112,9 +112,9 @@ namespace mu2e {
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
       for ( std::size_t i=0; i<pdata->size(); ++i){
-        cout << "Before pdata: " 
-             << evt.id().event() <<  " " 
-             << i << " " 
+        cout << "Before pdata: "
+             << evt.id().event() <<  " "
+             << i << " "
              << pdata->at(i).stepPointMCsValid() << " "
              << pdata->at(i).getStepPointMCs(true).size() << " "
              << pdata->at(i).getStepPointMCs(true).capacity() << " "
@@ -126,13 +126,13 @@ namespace mu2e {
     //    CrudeStrawHitCollection crudeHits(evt, pdata);
     //crudeHits.resolveTransients(evt);
 
-    resolveTransients<CrudeStrawHitPData>( *pdata, evt); 
+    resolveTransients<CrudeStrawHitPData>( *pdata, evt);
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
       for ( std::size_t i=0; i<pdata->size(); ++i){
-        cout << "After pdata: " 
-             << evt.id().event() <<  " " 
-             << i << " " 
+        cout << "After pdata: "
+             << evt.id().event() <<  " "
+             << i << " "
              << pdata->at(i).stepPointMCsValid() << " "
              << pdata->at(i).getStepPointMCs().size() << " "
              << pdata->at(i).getStepPointMCs().capacity() << " "
@@ -141,8 +141,8 @@ namespace mu2e {
     }
 
 
-    for ( vector<CrudeStrawHit>::size_type i=0; 
-          i<pdata->size(); 
+    for ( vector<CrudeStrawHit>::size_type i=0;
+          i<pdata->size();
           ++i){
 
       // Aliases for readability.
@@ -156,18 +156,18 @@ namespace mu2e {
       if ( _diagLevel > 0){
         _hDriftDist->Fill(hit.trueDriftDistance);
       }
-      
+
       // Diagnostic printout.
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ){
-        
+
         // Print list of nearest neighbours that are hit.
-        cout << "Hit neighbours : " 
+        cout << "Hit neighbours : "
              << setw(4) << i <<  " : "
              << setw(4) << straw.Id() << " : ";
 
         /*
         for ( vector<StrawIndex>::size_type j=0;
-              j<nearest.size(); 
+              j<nearest.size();
               ++j ){
 
           if ( crudeHits.hasHitByStrawIndex(nearest[j]) ){
@@ -182,7 +182,7 @@ namespace mu2e {
         // Get pointers back to precursors of this hit.
         vector<StepPointMC const*> v;
         pdata->at(i).getStepPointMC(evt, v);
-        
+
         cout << "Roundtrip Id Check for straw: "
              << hit.strawIndex << " | #points: "
              << v.size() << " | points: ";
@@ -212,9 +212,9 @@ namespace mu2e {
       } // end of ncalls < _maxFullPrint
 
     } // end of loop over hits.
-    
+
   } // end of ::analyze.
-  
+
 }
 
 

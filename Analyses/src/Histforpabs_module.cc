@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 22:06:50 $
+// $Id: Histforpabs_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke
 //
@@ -42,12 +42,12 @@ namespace mu2e {
 
   class Histforpabs : public art::EDAnalyzer {
   public:
-    
+
     explicit Histforpabs(fhicl::ParameterSet const& pset);
     virtual ~Histforpabs() { }
 
     virtual void beginJob();
- 
+
     // This is called for each event.
     void analyze(const art::Event& e );
 
@@ -66,7 +66,7 @@ namespace mu2e {
 
     // Number of events analyzed.
     int _nAnalyzed;
- 
+
     TH1F* _hEnergyat0;
     TH1F* _hEnergyat1;
     TH1F* _hEnergysim;
@@ -74,31 +74,31 @@ namespace mu2e {
     void FillHistograms(const art::Event& event);
   };
 
-  Histforpabs::Histforpabs(fhicl::ParameterSet const& pset) : 
+  Histforpabs::Histforpabs(fhicl::ParameterSet const& pset) :
 
     // Run time parameters
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _minimumEnergy(pset.get<double>("minimumEnergy")),
-    
+
     // Histograms
     _hEnergyat0(0),
     _hEnergyat1(0),
     _hEnergysim(0){}
 
   void Histforpabs::beginJob( ){
-    
+
     art::ServiceHandle<art::TFileService> tfs;
     _hEnergyat0 = tfs->make<TH1F>( "hEnergyat0", "Energy Deposited before 1st straw hist", 80, 102., 106.);
     _hEnergyat1 = tfs->make<TH1F>( "hEnergyat1", "Energy Deposited after 1st straw hist", 80, 102., 106.);
     _hEnergysim = tfs->make<TH1F>( "hEnergysim", "Sim particle energy", 80, 102.0, 106.0);
-    
+
   }
 
 
   void Histforpabs::analyze(const art::Event& event ) {
     ++_nAnalyzed;
-    FillHistograms(event);   
+    FillHistograms(event);
   } // end analyze
 
 
@@ -118,16 +118,16 @@ namespace mu2e {
       const StepPointMC& hit = (*hits)[i];
       // Skip hits with low pulse height.
       if ( hit.eDep() < _minimumEnergy ) continue;
-     
-      const CLHEP::Hep3Vector& mom = hit.momentum();  
+
+      const CLHEP::Hep3Vector& mom = hit.momentum();
       SimParticleCollection::key_type trackId = hit.trackId();
 
       // Fill some histograms
-      SimParticle const& simfm = simParticles->at(trackId);  
+      SimParticle const& simfm = simParticles->at(trackId);
       double trkrestm = simfm.endMomentum().e();
       if(i==0)_hEnergyat0->Fill(sqrt(mom.mag2() + trkrestm*trkrestm));
       if(i==1)_hEnergyat1->Fill(sqrt(mom.mag2() + trkrestm*trkrestm));
-      
+
     } // end loop over hits.
 
     for ( SimParticleCollection::const_iterator i=simParticles->begin();

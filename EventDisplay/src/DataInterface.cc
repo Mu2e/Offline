@@ -114,17 +114,17 @@ void DataInterface::createGeometryManager()
   gPad->SetPhi(-90-180);
   gPad->SetTheta(90-65);
   gPad->GetView()->ShowAxis();
-  TAxis3D::GetPadAxis(gPad)->SetLabelSize(0.025); 
-  TAxis3D::GetPadAxis(gPad)->SetTitleOffset(-0.5); 
-  TAxis3D::GetPadAxis(gPad)->SetXTitle("x [mm]"); 
-  TAxis3D::GetPadAxis(gPad)->SetYTitle("y [mm]"); 
-  TAxis3D::GetPadAxis(gPad)->SetZTitle("z [mm]"); 
-  TAxis3D::GetPadAxis(gPad)->GetXaxis()->SetTitleColor(kRed); 
-  TAxis3D::GetPadAxis(gPad)->GetYaxis()->SetTitleColor(kGreen); 
-  TAxis3D::GetPadAxis(gPad)->GetZaxis()->SetTitleColor(kBlue); 
-  TAxis3D::GetPadAxis(gPad)->GetXaxis()->SetTitleSize(0.025); 
-  TAxis3D::GetPadAxis(gPad)->GetYaxis()->SetTitleSize(0.025); 
-  TAxis3D::GetPadAxis(gPad)->GetZaxis()->SetTitleSize(0.025); 
+  TAxis3D::GetPadAxis(gPad)->SetLabelSize(0.025);
+  TAxis3D::GetPadAxis(gPad)->SetTitleOffset(-0.5);
+  TAxis3D::GetPadAxis(gPad)->SetXTitle("x [mm]");
+  TAxis3D::GetPadAxis(gPad)->SetYTitle("y [mm]");
+  TAxis3D::GetPadAxis(gPad)->SetZTitle("z [mm]");
+  TAxis3D::GetPadAxis(gPad)->GetXaxis()->SetTitleColor(kRed);
+  TAxis3D::GetPadAxis(gPad)->GetYaxis()->SetTitleColor(kGreen);
+  TAxis3D::GetPadAxis(gPad)->GetZaxis()->SetTitleColor(kBlue);
+  TAxis3D::GetPadAxis(gPad)->GetXaxis()->SetTitleSize(0.025);
+  TAxis3D::GetPadAxis(gPad)->GetYaxis()->SetTitleSize(0.025);
+  TAxis3D::GetPadAxis(gPad)->GetZaxis()->SetTitleSize(0.025);
   gPad->Modified();
   gPad->Update();
 }
@@ -157,7 +157,7 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::TTracker>())
   {
 //Straws
-    mu2e::GeomHandle<mu2e::TTracker> ttracker;  
+    mu2e::GeomHandle<mu2e::TTracker> ttracker;
     const std::deque<mu2e::Straw>& allStraws = ttracker->getAllStraws();
     std::deque<mu2e::Straw>::const_iterator iter;
     for(iter=allStraws.begin(); iter!=allStraws.end(); iter++)
@@ -206,7 +206,7 @@ void DataInterface::fillGeometry()
     info->setText(2,c);
     sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
     info->setText(3,c);
-    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0, 
+    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0,
                                           zHalfLength,innerRadius,outerRadius,
                                           _geometrymanager, _topvolume, _mainframe, info, true));
     _components.push_back(shape);
@@ -227,7 +227,7 @@ void DataInterface::fillGeometry()
     infoEnvelope->setText(2,c);
     sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
     infoEnvelope->setText(3,c);
-    boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,0, 0,0,0, 
+    boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,0, 0,0,0,
                                                   zHalfLength,innerRadius,outerRadius,
                                                   _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
     _components.push_back(shapeEnvelope);
@@ -249,7 +249,7 @@ void DataInterface::fillGeometry()
     infoToyDS->setText(2,c);
     sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
     infoToyDS->setText(3,c);
-    boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0, 
+    boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0,
                                                zHalfLength,innerRadius,outerRadius,
                                                _geometrymanager, _topvolume, _mainframe, infoToyDS, true));
     _components.push_back(shapeToyDS);
@@ -258,7 +258,7 @@ void DataInterface::fillGeometry()
 
   if(geom->hasElement<mu2e::Target>())
   {
-    mu2e::GeomHandle<mu2e::Target> target;  
+    mu2e::GeomHandle<mu2e::Target> target;
     double radius=target->cylinderRadius();
     double length=target->cylinderLength();
     double z=target->cylinderCenter()+_zOffsetDS;
@@ -287,13 +287,13 @@ void DataInterface::fillGeometry()
     _components.push_back(shape);
     _supportstructures.push_back(shape);
   }
-  
+
   if(geom->hasElement<mu2e::Calorimeter>())
   {
-    mu2e::GeomHandle<mu2e::Calorimeter> calo;  
+    mu2e::GeomHandle<mu2e::Calorimeter> calo;
     unsigned int n=calo->nVane();
     for(unsigned int i=0; i<n; i++)
-    { 
+    {
       const mu2e::Vane &v=calo->getVane(i);
       double x=v.getOrigin().x()+_xOffset;
       double y=v.getOrigin().y();
@@ -320,7 +320,7 @@ void DataInterface::fillGeometry()
       info->setText(2,c);
       sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
       info->setText(3,c);
-      boost::shared_ptr<Cube> shape(new Cube(x,y,z,  sx,sy,sz,  phi,theta,psi,   NAN,0, 
+      boost::shared_ptr<Cube> shape(new Cube(x,y,z,  sx,sy,sz,  phi,theta,psi,   NAN,0,
                                         _geometrymanager, _topvolume, _mainframe, info, true));
       _components.push_back(shape);
       _supportstructures.push_back(shape);
@@ -348,7 +348,7 @@ void DataInterface::fillGeometry()
       double sz=v.getSize().z();
 
       //Start with an unrotated vane centered at (0,0,0).
-      //Before the rotation, the vector from the center of the vane 
+      //Before the rotation, the vector from the center of the vane
       //to the center of a crystal is (crystalX,crystalY,crystalZ).
       double crystalX=0;
       double crystalY=-sy+crystalHalfSize*(2.0*rPos+1.0);
@@ -361,12 +361,12 @@ void DataInterface::fillGeometry()
       double ss=sin(psi);
       double cs=cos(psi);
 
-      //After the rotation of the vane, the vector from the center of the vane 
+      //After the rotation of the vane, the vector from the center of the vane
       //to the center of a crystal is (rotatedX,rotatedY,rotatedZ).
       double rotatedX,rotatedY,rotatedZ;
       VirtualShape::rotate(crystalX,crystalY,crystalZ,  rotatedX,rotatedY,rotatedZ,  sp,cp,st,ct,ss,cs);
 
-      //After the vane gets shifted from (0,0,0) to (x,y,z), 
+      //After the vane gets shifted from (0,0,0) to (x,y,z),
       //the crystal centers need to be shifted to (x+rotatedX,y+rotatedY,z+rotatedZ).
       char c[200];
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
@@ -379,8 +379,8 @@ void DataInterface::fillGeometry()
       info->setText(2,c);
       sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",(x+rotatedX)/CLHEP::mm,(y+rotatedY)/CLHEP::mm,(z+rotatedZ)/CLHEP::mm);
       info->setText(3,c);
-      boost::shared_ptr<Cube> shape(new Cube(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfSize,crystalHalfSize,  
-                                        phi,theta,psi,  NAN,0,  
+      boost::shared_ptr<Cube> shape(new Cube(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfSize,crystalHalfSize,
+                                        phi,theta,psi,  NAN,0,
                                         _geometrymanager, _topvolume, _mainframe, info, false));
       _components.push_back(shape);
       _crystals[crystalid]=shape;
@@ -389,9 +389,9 @@ void DataInterface::fillGeometry()
 
 //   if(geom->hasElement<mu2e::CosmicRayShield>())
 //   {
-//     mu2e::GeomHandle<mu2e::CosmicRayShield> crs;  
+//     mu2e::GeomHandle<mu2e::CosmicRayShield> crs;
 
-//     std::map<std::string,mu2e::CRSSteelShield> const & shields = 
+//     std::map<std::string,mu2e::CRSSteelShield> const & shields =
 //       crs->getCRSSteelShields();
 
 //     for (std::map<std::string,mu2e::CRSSteelShield>::const_iterator ishield=shields.begin();
@@ -446,7 +446,7 @@ void DataInterface::makeSupportStructuresVisible(bool visible)
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
   if(visible) toForeground();
-} 
+}
 
 void DataInterface::makeOtherStructuresVisible(bool visible)
 {
@@ -459,7 +459,7 @@ void DataInterface::makeOtherStructuresVisible(bool visible)
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
   if(visible) toForeground();
-} 
+}
 
 void DataInterface::makeStrawsVisibleBeforeStart(bool visible)
 {
@@ -470,7 +470,7 @@ void DataInterface::makeStrawsVisibleBeforeStart(bool visible)
     straw->second->start();
   }
   _showUnhitStraws=visible;
-} 
+}
 
 void DataInterface::makeCrystalsVisibleBeforeStart(bool visible)
 {
@@ -481,8 +481,8 @@ void DataInterface::makeCrystalsVisibleBeforeStart(bool visible)
     crystal->second->start();
   }
   _showUnhitCrystals=visible;
-} 
-  
+}
+
 void DataInterface::toForeground()
 {
   std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;
@@ -553,11 +553,11 @@ void DataInterface::useTrackColors(bool trackcolors, bool whitebackground)
         case  -13: color=3; break;   //mu+,mu-
         case   22: color=4; break;   //gamma
         case 2112: color=6; break;   //n0
-        case   12: 
-        case  -12: 
-        case   14: 
-        case  -14: 
-        case   16: 
+        case   12:
+        case  -12:
+        case   14:
+        case  -14:
+        case   16:
         case  -16: color=28; break;   //neutrinos
       };
       (*track)->setColor(color);
@@ -640,7 +640,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   _numberCrystalHits=0;
 
   const mu2e::StepPointMCCollection *steppointMChits=contentSelector->getSelectedHitCollection<mu2e::StepPointMCCollection>();
-  if(steppointMChits!=NULL)  
+  if(steppointMChits!=NULL)
   {
     _numberHits=steppointMChits->size();
     std::vector<mu2e::StepPointMC>::const_iterator iter;
@@ -680,7 +680,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   }
 
   const mu2e::StrawHitCollection *strawhits=contentSelector->getSelectedHitCollection<mu2e::StrawHitCollection>();
-  if(strawhits!=NULL)  
+  if(strawhits!=NULL)
   {
     _numberHits=strawhits->size();
     std::vector<mu2e::StrawHit>::const_iterator iter;
@@ -721,7 +721,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
 
 
   const mu2e::CaloCrystalHitCollection *calocrystalhits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>();
-  if(calocrystalhits!=NULL)  
+  if(calocrystalhits!=NULL)
   {
     _numberCrystalHits=calocrystalhits->size();
     std::vector<mu2e::CaloCrystalHit>::const_iterator iter;
@@ -760,7 +760,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   art::ServiceHandle<mu2e::GeometryService> geoservice;
   if(calohits!=NULL && geoservice->hasElement<mu2e::Calorimeter>())
   {
-    mu2e::GeomHandle<mu2e::Calorimeter> calo;  
+    mu2e::GeomHandle<mu2e::Calorimeter> calo;
     _numberCrystalHits=calohits->size();  //this is not accurate since the return value gives the RO hits
     std::vector<mu2e::CaloHit>::const_iterator iter;
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)
@@ -807,7 +807,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
 
   resetBoundaryP(_tracksMinmax);
   std::vector<const mu2e::SimParticleCollection*> trackCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::SimParticleCollection>();
-  for(unsigned int i=0; i<trackCollectionVector.size(); i++) 
+  for(unsigned int i=0; i<trackCollectionVector.size(); i++)
   {
     const mu2e::SimParticleCollection *simParticles=trackCollectionVector[i];
     MapVector<mu2e::SimParticle>::const_iterator iter;
@@ -822,8 +822,8 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
       unsigned int endVolume  =particle.endVolumeIndex();
       std::string startVolumeName="unknown volume";
       std::string endVolumeName="unknown volume";
-      if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(startVolume).name();     
-      if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(endVolume).name();     
+      if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(startVolume).name();
+      if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(endVolume).name();
 
       double x1=particle.startPosition().x()+_xOffset;
       double y1=particle.startPosition().y();
@@ -856,7 +856,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
       info->setText(4,"Daughter IDs:");
       std::vector<int> daughterVect;
       std::vector<MapVectorKey>::const_iterator daughter;
-      for(daughter=particle.daughterIds().begin(); 
+      for(daughter=particle.daughterIds().begin();
           daughter!=particle.daughterIds().end();
           daughter++)
       {
@@ -889,7 +889,7 @@ void DataInterface::findTrajectory(const ContentSelector *contentSelector,
       int trajectory_id = trajectory.simId();
       if(id==trajectory_id)
       {
-// fill a vector with all trajectory points, leave the times as NAN, 
+// fill a vector with all trajectory points, leave the times as NAN,
 // except the first and last point, which get the times from the track
         std::vector<trajectoryStruct> trajectoryVect;
         const std::vector<CLHEP::Hep3Vector>& pVect=trajectory.points();
@@ -927,7 +927,7 @@ void DataInterface::findTrajectory(const ContentSelector *contentSelector,
               {
                 CLHEP::Hep3Vector diff=trajectoryVect[j].v-v;
                 double diff_magnitude=diff.getR();
-                if(diff_magnitude<mindiff || isnan(mindiff)) 
+                if(diff_magnitude<mindiff || isnan(mindiff))
                 {
                   mindiff=diff_magnitude;
                   mindiffPoint=j;
@@ -971,7 +971,7 @@ void DataInterface::findTrajectory(const ContentSelector *contentSelector,
 //replace the track, which previously had only two points, with a complete trajectory
         for(unsigned int i=0; i<trajectoryVect.size(); i++)
         {
-          track->addTrajectoryPoint(trajectoryVect[i].v.getX(), 
+          track->addTrajectoryPoint(trajectoryVect[i].v.getX(),
                                     trajectoryVect[i].v.getY(),
                                     trajectoryVect[i].v.getZ(),
                                     trajectoryVect[i].t);
@@ -985,13 +985,13 @@ void DataInterface::findTrajectory(const ContentSelector *contentSelector,
 void DataInterface::removeNonGeometryComponents()
 {
   std::list<boost::shared_ptr<VirtualShape> >::iterator iter=_components.begin();
-  while(iter!=_components.end()) 
+  while(iter!=_components.end())
   {
     if(!(*iter)->isGeometry()) {iter=_components.erase(iter);}
-    else 
+    else
     {
       (*iter)->setStartTime(NAN);
-      (*iter)->start(); 
+      (*iter)->start();
       iter++;
     }
   }

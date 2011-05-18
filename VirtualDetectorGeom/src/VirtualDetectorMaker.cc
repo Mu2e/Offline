@@ -102,7 +102,7 @@ namespace mu2e {
     _vd->addVirtualDetector( 10, "ST_Out", ds2Offset, 0, targetOffset+shift);
 
   }
-  
+
   VirtualDetectorMaker::~VirtualDetectorMaker (){}
 
 } // namespace mu2e

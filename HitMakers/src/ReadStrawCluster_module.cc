@@ -1,10 +1,10 @@
 //
-// Plugin to test that I can read back the persistent data about straw hits.  
+// Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Hans Wenzel
 //
@@ -77,36 +77,36 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
  class Vector
   {
   public:
-    float x_, y_;  
+    float x_, y_;
     Vector(float f = 0.0f)
       : x_(f), y_(f) {}
-    
+
     Vector(float x, float y)
       : x_(x), y_(y) {}
   };
-  
+
   class LineSegment
   {
   public:
     Vector begin_;
     Vector end_;
-    
+
     LineSegment(const Vector& begin, const Vector& end)
       : begin_(begin), end_(end) {}
-    
+
     enum IntersectResult { PARALLEL, COINCIDENT, NOT_INTERSECTING, INTERSECTING };
-    
+
     IntersectResult Intersect(const LineSegment& other_line, Vector& intersection)
     {
       float denom = ((other_line.end_.y_ - other_line.begin_.y_)*(end_.x_ - begin_.x_)) -
 	((other_line.end_.x_ - other_line.begin_.x_)*(end_.y_ - begin_.y_));
-      
+
       float nume_a = ((other_line.end_.x_ - other_line.begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
 	((other_line.end_.y_ - other_line.begin_.y_)*(begin_.x_ - other_line.begin_.x_));
-      
+
       float nume_b = ((end_.x_ - begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
 	((end_.y_ - begin_.y_)*(begin_.x_ - other_line.begin_.x_));
-      
+
       if(denom == 0.0f)
 	{
 	  if(nume_a == 0.0f && nume_b == 0.0f)
@@ -115,25 +115,25 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	    }
 	  return PARALLEL;
 	}
-      
+
       float ua = nume_a / denom;
       float ub = nume_b / denom;
-      
+
       if(ua >= 0.0f && ua <= 1.0f && ub >= 0.0f && ub <= 1.0f)
 	{
 	  // Get the intersection point.
 	  intersection.x_ = begin_.x_ + ua*(end_.x_ - begin_.x_);
 	  intersection.y_ = begin_.y_ + ua*(end_.y_ - begin_.y_);
-	  
+
 	  return INTERSECTING;
 	}
-      
+
       return NOT_INTERSECTING;
     }
   };
  class pstraw{
    //
-   // pseudo straw class 
+   // pseudo straw class
    //
  public:
    Int_t   lay;
@@ -145,7 +145,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    Float_t mpz;
    Float_t dirx;
    Float_t diry;
-   Float_t dirz; // should always be 0 
+   Float_t dirz; // should always be 0
    /*
     bool operator>(const pstraw other) const {
       if (id > other.id) {
@@ -185,13 +185,13 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       cout<< "mpz:    " << mpz  <<endl;
       cout<< "dirx:   " << dirx <<endl;
       cout<< "diry:   " << diry <<endl;
-      cout<< "dirz:   " << dirz <<endl;     
+      cout<< "dirz:   " << dirz <<endl;
     }
  };
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class ReadStrawCluster : public art::EDAnalyzer {
   public:
     explicit ReadStrawCluster(fhicl::ParameterSet const& pset):
@@ -206,19 +206,19 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     {
     }
     virtual ~ReadStrawCluster() { }
-    
+
     virtual void beginJob();
-    
+
     void analyze( art::Event const& e);
     void FitCircle(    vector<double> X,vector<double> Y);
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
-    
+
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
-    
+
     // Label of the module that made the Clusters.
     std::string _clmakerModuleLabel;
     // Some diagnostic histograms.
@@ -228,28 +228,28 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     TH1F* _R_rec;
     TH2F* _x0y0;
   };
-  
+
   void ReadStrawCluster::beginJob(){
-    
-    cout << "Diaglevel: " 
+
+    cout << "Diaglevel: "
          << _diagLevel << " "
-         << _maxFullPrint 
+         << _maxFullPrint
          << endl;
-    
+
     art::ServiceHandle<art::TFileService> tfs;
-    _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );  
+    _hNInter       = tfs->make<TH1F>( "hNInter",   "intersection ", 100  , 0., 100. );
     _hNClusters    = tfs->make<TH1F>( "hNClusters","Number of straw clusters", 500, 0., 500. );
     _hNStraws      = tfs->make<TH1F>( "hNStraws",  "Number of straws/cluster", 5  , 0., 5. );
     _R_rec         = tfs->make<TH1F>( "R_rec",  "reconstructed track radius", 100, 250., 350. );
     _x0y0          = tfs->make<TH2F>( "x0y0","x0 of circle vs y0 of circle ", 500,-650.,650.,500,-650.,650.);
 
   }
-  
+
   void ReadStrawCluster::analyze(art::Event const& evt) {
     if ( _diagLevel > 2 ) cout << "ReadStrawCluster: analyze() begin"<<endl;
     static int ncalls(0);
     ++ncalls;
- 
+
     // Geometry info for the TTracker.
     // Get a reference to one of the T trackers.
     // Throw exception if not successful.
@@ -274,7 +274,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     StrawCluster::const_iterator strawIter;
     CLHEP::Hep3Vector dvec;
     for ( size_t i=0; i<clusters->size(); ++i ) {
-      
+
       // Access data
       StrawCluster        const&      cluster(clusters->at(i));
       _hNStraws->Fill(cluster.size());
@@ -303,7 +303,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	    {
 	      hlen=str.getHalfLength();
 	    }
-	  /* cout 
+	  /* cout
 	       << " Layer:  " << lid.getLayer()
 	       << " DID:    " << did
 	       << " Sector: " << secid.getSector()
@@ -330,12 +330,12 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       mpstraws.insert(pair<int,pstraw>(did,pstr));
       //pstr.Print();
     }
-    cout << " size of pseudo straw map: " <<mpstraws.size()<<endl; 
+    cout << " size of pseudo straw map: " <<mpstraws.size()<<endl;
 
     Int_t nint = 0;
     for (int i = 0;i<36;i++)
       {
-	if (mpstraws.count(i)>1) 
+	if (mpstraws.count(i)>1)
 	  {
 	    pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
 	    ppp1 = mpstraws.equal_range(i);
@@ -354,7 +354,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		  pstraw pjunk = (*first2).second;
 		  const Vector p0= Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
 		  const Vector p1= Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
-		  const Vector p2= Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry); 
+		  const Vector p2= Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry);
 		  const Vector p3= Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
 		  LineSegment linesegment0(p0, p1);
 		  LineSegment linesegment1(p2, p3);
@@ -379,7 +379,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 		      nint ++;
 		      //cout<<nint<<endl;
 		      break;
-		    }  // end switch 
+		    }  // end switch
 		} // end for first2
 	    }// end for first1
 	}// end count >1
@@ -413,7 +413,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //Int_t ci = TColor::GetColor("#ffffcc");
     //ellipse->SetFillColor(ci);
     //ellipse->Draw();
-    
+
     //el1.Draw("SAME");
     //gr->SetLineColor(2);
     //gr->SetLineWidth(4);

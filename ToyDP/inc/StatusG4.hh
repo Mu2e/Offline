@@ -1,11 +1,11 @@
 #ifndef ToyDP_StatusG4_hh
 #define ToyDP_StatusG4_hh
-// 
+//
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: StatusG4.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,7 @@
 //     1  - one or more tracks were stopped in SteppingAction because they took too many steps.
 //          Usually these are particles trapped in the field.
 //     10 - The SimParticleCollection has overflowed.  So there can be hits that point back to
-//          a Simparticle that is not in the collection. 
+//          a Simparticle that is not in the collection.
 
 // C++ includes
 #include <iosfwd>
@@ -66,13 +66,13 @@ namespace mu2e {
     int      nKilledStepLimit() const { return _nKilledStepLimit; }
     float             cpuTime() const { return _cpuTime; }
     float            realTime() const { return _realTime; }
-    
+
   private:
 
     // Status=0 is all good.  Higher numbers indicate some issue has occured. See note 1.
     int _status;
 
-    // Total number of G4 tracks that reach TrackingAction.  
+    // Total number of G4 tracks that reach TrackingAction.
     // These are stored as SimParticles and that collection has a limited size; indicate an overflow.
     int  _nG4Tracks;
     bool _overflowSimParticles;
@@ -95,6 +95,6 @@ namespace mu2e {
   }
 
 
-} // end namespace mu2e 
+} // end namespace mu2e
 
 #endif /* ToyDP_StatusG4_hh */

@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
-// $Author: wb $ 
-// $Date: 2011/05/17 22:22:46 $
+// $Id: EventDisplay_module.cc,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 
 #include <iostream>
@@ -24,9 +24,9 @@
 
 #include "EventDisplayFrame.h"
 
-namespace mu2e 
+namespace mu2e
 {
-  class EventDisplay : public art::EDAnalyzer 
+  class EventDisplay : public art::EDAnalyzer
   {
     public:
     explicit EventDisplay(fhicl::ParameterSet const&);
@@ -36,15 +36,15 @@ namespace mu2e
     void analyze(const art::Event& e);
 
     private:
-    template<class collectionType> void checkMinimumHits(const art::Event &event, 
+    template<class collectionType> void checkMinimumHits(const art::Event &event,
                                                          const std::string &classNameToCheck,
-                                                         const mu2e_eventdisplay::EventDisplayFrame *_frame, 
+                                                         const mu2e_eventdisplay::EventDisplayFrame *_frame,
                                                          bool &showEvent);
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
   };
 
-  EventDisplay::EventDisplay(fhicl::ParameterSet const& ) 
+  EventDisplay::EventDisplay(fhicl::ParameterSet const& )
   {
     _firstLoop=true;
   }
@@ -54,9 +54,9 @@ namespace mu2e
     //Bare pointer are needed for gApplication and _mainframe to avoid
     //that the destructor for these two objects gets called, i.e.
     //there cannot be a "delete" for these two objects.
-    //The reason is that at least one of the ROOT destructors 
-    //(which a destructor call for these two objects would trigger) 
-    //has a bug (perhaps deletes things twice), so that the program 
+    //The reason is that at least one of the ROOT destructors
+    //(which a destructor call for these two objects would trigger)
+    //has a bug (perhaps deletes things twice), so that the program
     //would crash.
     if (!gApplication) gApplication = new TApplication("EventDisplay",0,0);
 
@@ -64,7 +64,7 @@ namespace mu2e
     //eventdisplay window, because it usually takes a while until the first event gets pushed through
   }
 
-  void EventDisplay::analyze(const art::Event& event) 
+  void EventDisplay::analyze(const art::Event& event)
   {
     if(_firstLoop)
     {

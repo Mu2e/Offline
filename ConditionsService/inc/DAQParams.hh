@@ -3,9 +3,9 @@
 //
 // Parameters of the DAQ system.
 //
-// $Id: DAQParams.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: DAQParams.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@ namespace mu2e
 
   struct DAQParams: public ConditionsEntity{
 
-    // Start of the daq live window, in ns, relative to the arrival time of 
+    // Start of the daq live window, in ns, relative to the arrival time of
     // the protons on the production target.
     double t0;
 

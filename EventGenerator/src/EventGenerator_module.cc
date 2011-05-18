@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+  $Id: EventGenerator_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
   $Author: wb $
-  $Date: 2011/05/17 22:22:46 $
+  $Date: 2011/05/18 02:27:16 $
 
   Original author Rob Kutschke
 
@@ -125,7 +125,7 @@ namespace mu2e {
     }
 
     mf::LogInfo log("EventGenerator");
-    log << "Event generator configuration file: " 
+    log << "Event generator configuration file: "
         << _configfile
         << "\n\n";
 

@@ -2,16 +2,16 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: KalmanT01_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
 // Notes:
 // 1) First version is designed to work with measurements only; ie
 //    no multiple scattering.  It should work with the
-//    
+//
 
 // C++ includes.
 #include <iostream>
@@ -60,7 +60,7 @@ using namespace std;
 
 namespace mu2e {
 
-  // Indices of track parametes within the 
+  // Indices of track parametes within the
   // For the () operator;
   // The [] operator uses 0 based numbers.  See TrkBase/HelixTraj.hh
   // Is there an official Babar version of this for 1 based indices?
@@ -68,7 +68,7 @@ namespace mu2e {
 
   class KalmanT01 : public art::EDAnalyzer {
   public:
-    explicit KalmanT01(fhicl::ParameterSet const& pset) : 
+    explicit KalmanT01(fhicl::ParameterSet const& pset) :
 
       // Parameters
       _generatorModuleLabel(pset.get<string>("generatorModuleLabel","g4run")),
@@ -85,11 +85,11 @@ namespace mu2e {
     virtual ~KalmanT01() { }
 
     virtual void beginJob();
- 
+
     void analyze( const art::Event& e);
 
   private:
-    
+
     // Name of the module that made these hits.
     string _generatorModuleLabel;
 
@@ -140,7 +140,7 @@ namespace mu2e {
 
   void KalmanT01::analyze(const art::Event& event) {
 
-    // Counter used by debug printout. 
+    // Counter used by debug printout.
     static int ncalls(0);
     ++ncalls;
 
@@ -182,7 +182,7 @@ namespace mu2e {
     const BFieldFixed bfield(0.,0.,-1.,0.);
     const CLHEP::Hep3Vector pos0 = sim.startPosition() - trackerOrigin;
 
-    TrkHelixUtils::helixFromMom( startPar, s0, 
+    TrkHelixUtils::helixFromMom( startPar, s0,
                                  toHepPoint(pos0),
                                  sim.startMomentum(),
                                  charge,
@@ -210,8 +210,8 @@ namespace mu2e {
     double beta   = sim.startMomentum().getV().mag()/sim.startMomentum().e();
 
     double t0 = sim.startGlobalTime();
-    cout << "beta: " 
-         << beta << " " 
+    cout << "beta: "
+         << beta << " "
          << sim.startMomentum().getV().mag() << " "
          << sim.startMomentum().e() << " "
          << radius << " "
@@ -219,17 +219,17 @@ namespace mu2e {
          << endl;
 
     cout << "Constants: "
-         << Constants::c <<  " " 
+         << Constants::c <<  " "
          << BField::cmTeslaToGeVc
          << endl;
 
     for ( int i=0; i<points->size(); ++i){
-      
+
       // Aliases (references), used for readability.
       StepPointMC const& hit = (*points)[i];
       CLHEP::Hep3Vector  const& pos = hit.position();
       CLHEP::Hep3Vector  const& mom = hit.momentum();
-      
+
       // Get the straw information, also by reference.
       Straw const&      straw = tracker.getStraw(hit.strawIndex());
       CLHEP::Hep3Vector const& mid   = straw.getMidPoint();
@@ -280,10 +280,10 @@ namespace mu2e {
                << mom                << " "
                << point.mag()        << " "
                << s                  << " "
-               << hit.time()-t0      << " " 
-               << arc << " " 
-               << turns << " " 
-               << turns2 << " " 
+               << hit.time()-t0      << " "
+               << arc << " "
+               << turns << " "
+               << turns2 << " "
                << endl;
         }
       }

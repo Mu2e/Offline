@@ -5,17 +5,17 @@
 // Base class to allow generic access to all the classes that define
 // DIO momentum spectrum.
 //
-// $Id: DIOBase.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: DIOBase.hh,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Gianni Onorato
-// 
+//
 
 namespace mu2e {
-  
+
   class DIOBase {
-    
+
   public:
 
     DIOBase() {

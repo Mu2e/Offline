@@ -1,9 +1,9 @@
 //
 // Details common to many straws.
 //
-// $Id: StrawDetail.cc,v 1.2 2010/05/18 21:16:46 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/05/18 21:16:46 $
+// $Id: StrawDetail.cc,v 1.3 2011/05/18 02:27:20 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:20 $
 //
 // Original author Rob Kutschke
 //
@@ -44,7 +44,7 @@ namespace mu2e {
   TubsParams StrawDetail::getWallTubsParams() const{
     return TubsParams ( 0., innerRadius(), halfLength() );
   }
-  
+
   // Return G4TUBS parameters for the wire.
   TubsParams StrawDetail::getWireTubsParams() const{
     return TubsParams ( 0., wireRadius(), halfLength() );
@@ -62,5 +62,5 @@ namespace mu2e {
     return os.str();
   }
 
-  
+
 } // namespace mu2e

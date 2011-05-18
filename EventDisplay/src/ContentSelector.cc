@@ -40,7 +40,7 @@ bool ContentSelector::compareLists(const std::vector<entryStruct> &newEntries, c
 }
 
 template<class CollectionType>
-void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> > &dataVector, 
+void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> > &dataVector,
                                        const art::Event &event, const std::string &className,
                                        std::vector<entryStruct> &newEntries, int entryIDStart)
 {
@@ -49,8 +49,8 @@ void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> >
   typedef std::vector<art::Handle<CollectionType> > CollectionVector;
   typedef typename CollectionVector::const_iterator itertype;
   itertype iter;
-  for(iter=dataVector.begin(), entryID=entryIDStart; 
-      iter!=dataVector.end(); 
+  for(iter=dataVector.begin(), entryID=entryIDStart;
+      iter!=dataVector.end();
       iter++, entryID++)
   {
     entryStruct e;
@@ -128,7 +128,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     for(unsigned int i=0; i<newEntries.size(); i++)
     {
       _trackBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
-      if(find(oldSelections.begin(),oldSelections.end(),newEntries[i].entryText)!=oldSelections.end()) 
+      if(find(oldSelections.begin(),oldSelections.end(),newEntries[i].entryText)!=oldSelections.end())
            _trackBox->Select(newEntries[i].entryID);
     }
   }
@@ -163,8 +163,8 @@ void ContentSelector::setSelectedHitsName()
   _hitsProductInstanceName=provenance->productInstanceName();
 }
 
-bool ContentSelector::getSelectedHitsName(std::string &className, 
-                                          std::string &moduleLabel, 
+bool ContentSelector::getSelectedHitsName(std::string &className,
+                                          std::string &moduleLabel,
                                           std::string &productInstanceName) const
 {
   className          =_hitsClassName;
@@ -173,7 +173,7 @@ bool ContentSelector::getSelectedHitsName(std::string &className,
   return(_hitsAreSelected);
 }
 
-template<typename CollectionType> 
+template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedHitCollection() const
 {
   int i=_hitBox->GetSelected();
@@ -192,8 +192,8 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 //type of the vector element and the CollectionType are identical. The compiler doesn't see this, the compiler
 //knows that this template function (and therefore CollectionType) gets implemented with different types (see below),
 //which created an incompatibility between the return type of the function and the object which is returned.
-//However, the compiler doesn't see that the object gets returned only if both types match. 
-//In order to satisfy the compiler, an reinterpret_cast is used, while during run time the argument type and the 
+//However, the compiler doesn't see that the object gets returned only if both types match.
+//In order to satisfy the compiler, an reinterpret_cast is used, while during run time the argument type and the
 //return type of the reinterpret_cast will always be the same, i.e. no "reinterpretation" will happen
   };
   return(NULL);
@@ -202,7 +202,7 @@ template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitColle
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
 
 
-template<typename CollectionType> 
+template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
 {
   int i=_caloHitBox->GetSelected();

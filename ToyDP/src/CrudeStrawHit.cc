@@ -1,9 +1,9 @@
 //
 // A crudely calibrated hit in a straw. See header for full details.
 //
-// $Id: CrudeStrawHit.cc,v 1.8 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: CrudeStrawHit.cc,v 1.9 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 
@@ -107,7 +107,7 @@ namespace mu2e {
     }
     throw cet::exception("ProductNotFound")
       << "Cannot compute pointers to StepPointMC without an event being supplied.";
-  }  
+  }
 
   // Populate the transient data members.
   // This will get more complicated as different sorts of precursors become available.
@@ -144,13 +144,13 @@ namespace mu2e {
     if ( doEndl ){
       ost << endl;
     }
-    
+
   }
-  
+
   void CrudeStrawHit::formatPrecursorIndices( ostream& ost) const {
 
     if ( precursorIndices.empty() ) return;
-    
+
     if ( precursorIndices.size() == 1 ){
       ost << precursorIndices[0];
     } else{
@@ -164,7 +164,7 @@ namespace mu2e {
       }
       ost << ")";
     }
-    
+
   }
 
 } // namespace mu2e

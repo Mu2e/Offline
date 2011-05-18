@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: TTracker.hh,v 1.7 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -34,7 +34,7 @@ namespace mu2e {
   public:
     TTracker(){}
     ~TTracker(){};
-    
+
     // Compiler generated copy and assignment constructors
     // should be OK.
 
@@ -51,16 +51,16 @@ namespace mu2e {
     }
 
     std::string const& envelopeMaterial() const { return _envelopeMaterial; }
-    
+
     // Check for legal identifiers.
     bool isLegal(DeviceId d) const{
-      return ( d>-1 && 
-               std::vector<Device>::size_type(d) <_devices.size() 
+      return ( d>-1 &&
+               std::vector<Device>::size_type(d) <_devices.size()
                );
     };
-    
+
     bool isLegal(const SectorId& sid) const{
-      return (isLegal(sid._did) && 
+      return (isLegal(sid._did) &&
               sid._sector >-1   &&
               std::vector<Sector>::size_type(sid._sector) < getDevice(sid._did).getSectors().size()
               );
@@ -86,14 +86,14 @@ namespace mu2e {
       return _devices.size();
     }
 
-    const std::vector<Device>& getDevices() const{ 
+    const std::vector<Device>& getDevices() const{
       return _devices;
     }
-    
-    const Device& getDevice ( DeviceId id) const{ 
+
+    const Device& getDevice ( DeviceId id) const{
       return _devices.at(id);
     }
-    
+
     const Sector& getSector ( const SectorId& sid ) const{
       return _devices.at(sid.getDevice()).getSector(sid);
     }
@@ -157,7 +157,7 @@ namespace mu2e {
         i->forAllSectors(f);
       }
     }
-    
+
     template <class F>
     inline void forAllDevices ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
@@ -198,7 +198,7 @@ namespace mu2e {
 
     // Inner radius of inside edge of innermost straw.
     double _envelopeInnerRadius;
- 
+
   };
 
 } //namespace mu2e

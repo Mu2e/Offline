@@ -1,9 +1,9 @@
 //
 // A plugin to test FileInPath.
 //
-// $Id: FileInPathTest_module.cc,v 1.4 2011/05/17 22:50:55 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 22:50:55 $
+// $Id: FileInPathTest_module.cc,v 1.5 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,6 @@
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
-//#include "art/ParameterSet/FileInPath.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
 using namespace std;
@@ -28,7 +27,7 @@ namespace mu2e {
 
   class FileInPathTest : public art::EDAnalyzer {
   public:
-    
+
     explicit FileInPathTest(fhicl::ParameterSet const& pset);
     virtual ~FileInPathTest() { }
 
@@ -52,9 +51,8 @@ namespace mu2e {
     //cout << "fp2 is: " << fp2.location() << " " << fp2.isLocal() << " " << fp2.fullPath() << endl;
     //cout << "fp3 is: " << fp3.location() << " " << fp3.isLocal() << " " << fp3.fullPath() << endl;
 
-
   }
-  
+
   void FileInPathTest::analyze(const art::Event& event) {
   }
 

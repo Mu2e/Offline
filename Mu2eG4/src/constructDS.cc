@@ -1,9 +1,9 @@
 //
 // Free function to create  DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructDS.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -37,7 +37,7 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructDS( const VolumeInfo& parent, 
+  void constructDS( const VolumeInfo& parent,
                     SimpleConfig const * const _config
                     ){
 
@@ -110,7 +110,7 @@ namespace mu2e {
                              detSolCoilParams.innerRadius,
                              ds3HalfLength);
 
-    double SPBSOuterRadius   = _config->get<bool>("hasMBS",false) ? 
+    double SPBSOuterRadius   = _config->get<bool>("hasMBS",false) ?
       _config->getDouble("mbs.SPBSOuterRadius") : 0.;
     TubsParams ds3VacSubtrParams( SPBSOuterRadius,
                                   detSolCoilParams.innerRadius,
@@ -130,7 +130,7 @@ namespace mu2e {
       cout << __func__ << " ds3OriginalHalfLength             : " << ds3OriginalHalfLength << endl;
       cout << __func__ << " ds3Vac Z Offset in Mu2e           : " << ds3Z0 << endl;
       cout << __func__ << " ds3HalfLength                     : " << zhl << endl;
-      cout << __func__ << " ds3Vac Z extent in Mu2e           : " << 
+      cout << __func__ << " ds3Vac Z extent in Mu2e           : " <<
         ds3Z0 - zhl << ", " << ds3Z0 + zhl << endl;
     }
 
@@ -138,7 +138,7 @@ namespace mu2e {
       double zhl  =  ds3SubtrHalfLength;
       cout << __func__ << " ds3Subtr Z Offset in Mu2e         : " << ds3SubtrZ0 << endl;
       cout << __func__ << " ds3SubtrHalfLength                : " << zhl << endl;
-      cout << __func__ << " ds3Subtr Z extent in Mu2e         : " << 
+      cout << __func__ << " ds3Subtr Z extent in Mu2e         : " <<
         ds3SubtrZ0 - zhl << ", " << ds3SubtrZ0 + zhl << endl;
     }
 
@@ -228,19 +228,19 @@ namespace mu2e {
                                      ds3VacParams.innerRadius,
                                      ds3VacParams.outerRadius,
                                      ds3VacParams.zHalfLength,
-                                     ds3VacParams.phi0, 
+                                     ds3VacParams.phi0,
                                      ds3VacParams.phiMax);
 
     G4Tubs* ds3VacSubtrSolid = new G4Tubs(ds3VacInfo.name+"Subtr",
                                           ds3VacSubtrParams.innerRadius,
                                           ds3VacSubtrParams.outerRadius,
                                           ds3VacSubtrParams.zHalfLength,
-                                          ds3VacSubtrParams.phi0, 
+                                          ds3VacSubtrParams.phi0,
                                           ds3VacSubtrParams.phiMax);
 
-    ds3VacInfo.solid = new G4SubtractionSolid(ds3VacInfo.name, 
+    ds3VacInfo.solid = new G4SubtractionSolid(ds3VacInfo.name,
                                               ds3VacSolid, ds3VacSubtrSolid,0,ds3SubtrPosition-ds3Position);
-    
+
     ds3VacInfo.centerInParent = ds3Position-_hallOriginInMu2e;
     ds3VacInfo.centerInWorld  = ds3VacInfo.centerInParent + parent.centerInWorld;
     // the above should probably be done by finishNesting

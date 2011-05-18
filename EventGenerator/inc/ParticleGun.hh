@@ -3,14 +3,14 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: ParticleGun.hh,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Rob Kutschke
 //
 // The position is given in the Mu2e coordinate system.
-// 
+//
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
@@ -67,8 +67,8 @@ namespace mu2e {
     double _tmin;
     double _tmax;
 
-    // Particles will be produced in a box, specified by 
-    // a point in the Tracker coordinate system and 
+    // Particles will be produced in a box, specified by
+    // a point in the Tracker coordinate system and
     // the half lengths of the box.  Units are mm.
     // The point (0,0,0) is at the origin of the Mu2e coordinate system.
     CLHEP::Hep3Vector _point;

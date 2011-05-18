@@ -1,9 +1,9 @@
 
 # Configuration file for reading back StrawHits from a file.
 #
-# $Id: read.py,v 1.6 2010/08/26 19:16:45 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/08/26 19:16:45 $
+# $Id: read.py,v 1.7 2011/05/18 02:27:16 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:16 $
 #
 # Original author Rob Kutschke
 #
@@ -12,7 +12,7 @@
 # Define the default configuratio for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("ReadTest01")
 
 # Maximum number of events to do.

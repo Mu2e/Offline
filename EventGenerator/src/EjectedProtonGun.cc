@@ -2,15 +2,15 @@
 //
 // Simulate the protons that come from the stopping target when muons capture
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
-// protons.  
+// protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.17 2011/05/17 15:36:00 greenc Exp $ 
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: EjectedProtonGun.cc,v 1.18 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
-// 
-// 
+//
+//
 
 // C++ incldues.
 #include <iostream>
@@ -49,10 +49,10 @@ using namespace std;
 namespace mu2e {
 
   EjectedProtonGun::EjectedProtonGun( art::Run& run, const SimpleConfig& config ):
-    
+
     // Base class.
     GeneratorBase(),
-    
+
     // Configurable parameters
     _mean(config.getDouble("ejectedProtonGun.mean",1.)),
     _elow(config.getDouble("ejectedProtonGun.elow",0.)),
@@ -67,7 +67,7 @@ namespace mu2e {
     _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
-    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),  
+    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),
 
     // Histogram pointers
@@ -91,13 +91,13 @@ namespace mu2e {
     //Set particle mass
     const HepPDT::ParticleData& p_data = pdt->particle(PDGCode::p_plus).ref();
     _mass = p_data.mass().value();
-    
-    
+
+
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
     _tmin = daqPar->t0;
     _tmax = accPar->deBuncherPeriod;
-    
+
     _tmin = config.getDouble("ejectedProtonGun.tmin",  _tmin );
     _tmax = config.getDouble("ejectedProtonGun.tmax",  _tmax );
 
@@ -116,9 +116,9 @@ namespace mu2e {
       _htime         = tfdir.make<TH1D>( "htime",         "Proton time ",                      210,   -200.,  2000. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
-                                                                             FoilParticleGenerator::volWeightFoil, 
-                                                                             FoilParticleGenerator::flatPos, 
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+                                                                             FoilParticleGenerator::volWeightFoil,
+                                                                             FoilParticleGenerator::flatPos,
                                                                              FoilParticleGenerator::limitedExpoTime,
                                                                              false, //dummy value
                                                                              _PStoDSDelay,
@@ -127,43 +127,43 @@ namespace mu2e {
 
   EjectedProtonGun::~EjectedProtonGun(){
   }
-  
+
   void EjectedProtonGun::generate( ToyGenParticleCollection& genParts ){
 
     // Choose the number of protons to generate this event.
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
-    if ( _doHistograms ) { 
-      _hMultiplicity->Fill(n); 
+    if ( _doHistograms ) {
+      _hMultiplicity->Fill(n);
     }
-    
+
     //Loop over particles to generate
-    
+
     for (int i=0; i<n; ++i) {
-      
+
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
       _fGenerator->generatePositionAndTime(pos, time);
-      
+
       //Pick up energy
       double eKine = _elow + _shape.fire() * ( _ehi - _elow );
       double e   = eKine + _mass;
-      
+
       //Pick up momentum vector
 
       _p = safeSqrt(e*e - _mass*_mass);
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
-      
+
       //Set Four-momentum
       CLHEP::HepLorentzVector mom(0,0,0,0);
       mom.setPx( p3.x() );
       mom.setPy( p3.y() );
       mom.setPz( p3.z() );
       mom.setE( e );
-      
+
       // Add the particle to  the list.
-      genParts.push_back( ToyGenParticle(PDGCode::p_plus, GenId::ejectedProtonGun, pos, mom, time));    
-      
+      genParts.push_back( ToyGenParticle(PDGCode::p_plus, GenId::ejectedProtonGun, pos, mom, time));
+
       // Fill histograms.
       if ( _doHistograms) {
         _hKE->Fill( eKine );
@@ -173,29 +173,29 @@ namespace mu2e {
         _hcz->Fill( mom.cosTheta() );
         _hphi->Fill( mom.phi() );
         _htime->Fill( time );
-        
+
       }
     } // end of loop on particles
 
   } // end generate
-  
+
 
   // Energy spectrum of the electron from DIO.
   // Input energy in MeV
   double EjectedProtonGun::energySpectrum( double e )
   {
 
-    //taken from GMC 
+    //taken from GMC
     //
-    //   Ed Hungerford  Houston University May 17 1999 
-    //   Rashid Djilkibaev New York University (modified) May 18 1999 
+    //   Ed Hungerford  Houston University May 17 1999
+    //   Rashid Djilkibaev New York University (modified) May 18 1999
     //
     //   e - proton kinetic energy (MeV)
     //   p - proton Momentum (MeV/c)
-    // 
+    //
     //   Generates a proton spectrum similar to that observed in
     //   u capture in Si.  JEPT 33(1971)11 and PRL 20(1967)569
-    
+
     //these numbers are in MeV!!!!
     static const double emn = 1.4; // replacing par1 from GMC
     static const double par2 = 1.3279;
@@ -205,14 +205,14 @@ namespace mu2e {
     static const double par6=10.014;
     static const double par7=1050.;
     static const double par8=5.103;
-    
+
     double spectrumWeight;
 
     if (e >= 20)
       {
         spectrumWeight=par5*TMath::Exp(-(e-20.)/par6);
       }
-    
+
     else if(e >= 8.0 && e <= 20.0)
       {
         spectrumWeight=par7*exp(-(e-8.)/par8);
@@ -224,32 +224,32 @@ namespace mu2e {
         double xv=par3*TMath::Exp(-par4*e);
         spectrumWeight=xv*xu;
       }
-    else 
+    else
       {
         spectrumWeight = 0.;
       }
     return spectrumWeight;
-  } 
-  
+  }
+
   // Compute a binned representation of the energy spectrum of the proton.
   std::vector<double> EjectedProtonGun::binnedEnergySpectrum(){
-    
+
     // Sanity check.
     if (_nbins <= 0) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense nbins requested in "
         << "ejectedProtonGun = "
         << _nbins
         << "\n";
     }
-    
+
     // Bin width.
     double dE = (_ehi - _elow) / _nbins;
 
     // Vector to hold the binned representation of the energy spectrum.
     std::vector<double> spectrum;
     spectrum.reserve(_nbins);
-    
+
     for (int ib=0; ib<_nbins; ib++) {
       double x = _elow+(ib+0.5) * dE;
       spectrum.push_back(energySpectrum(x));

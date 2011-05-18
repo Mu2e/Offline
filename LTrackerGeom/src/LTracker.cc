@@ -2,9 +2,9 @@
 // Geometry and identifier info about an LTracker.
 //
 //
-// $Id: LTracker.cc,v 1.5 2010/04/18 00:05:03 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/18 00:05:03 $
+// $Id: LTracker.cc,v 1.6 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@
 
 using namespace std;
 
-namespace mu2e { 
+namespace mu2e {
 
 
   // On readback from persistency, recursively recompute mutable members.
@@ -27,9 +27,9 @@ namespace mu2e {
   void LTracker::FillPointers1(){
 
     for ( vector<Device>::iterator idev = _devices.begin(),
-            edev = _devices.end(); 
+            edev = _devices.end();
           idev != edev;  ++idev ){
-  
+
       for ( vector<Sector>::iterator isec = idev->_sectors.begin(),
               esec = idev->_sectors.end();
             isec != esec; ++isec ){
@@ -53,17 +53,17 @@ namespace mu2e {
   void LTracker::FillPointers2(){
 
     // Fill nearest neighbour indices and pointers from the NN Ids.
-    for ( deque<Straw>::iterator i= _allStraws.begin(), 
+    for ( deque<Straw>::iterator i= _allStraws.begin(),
             e= _allStraws.end();
-          i!=e; 
+          i!=e;
           ++i){
       //vector<const Straw *>& byPtr = i->_nearest;
       vector<StrawId>& byId        = i->_nearestById;
       vector<StrawIndex>& byIndex  = i->_nearestByIndex;
-    
+
       //    byPtr.clear();
       byIndex.clear();
-    
+
       for ( vector<StrawId>::iterator j=byId.begin(), je=byId.end();
             j != je; ++j){
         const StrawId& id = *j;

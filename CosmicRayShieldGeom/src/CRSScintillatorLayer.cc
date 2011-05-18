@@ -2,9 +2,9 @@
 // Representation of one Scintillator Layer in CosmicRayShield
 //
 //
-// $Id: CRSScintillatorLayer.cc,v 1.1 2011/03/09 19:41:38 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:41:38 $
+// $Id: CRSScintillatorLayer.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG based on Rob Kutschke's Layer
 //
@@ -14,7 +14,7 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using namespace std;
 
@@ -49,7 +49,7 @@ namespace mu2e {
     _nBars(nBars),
     _localOffset(localOffset),
     _globalRotationAngles(globalRotationAngles),
-    _globalOffset(globalOffset)    
+    _globalOffset(globalOffset)
   {}
 
 //   CRSScintillatorLayer::CRSScintillatorLayer(CRSScintillatorLayerId const& id ):
@@ -77,6 +77,6 @@ namespace mu2e {
 //     }
 //   }
 
-} // namespace mu2e 
+} // namespace mu2e
 #endif
-  
+

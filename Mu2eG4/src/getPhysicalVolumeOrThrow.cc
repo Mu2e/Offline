@@ -5,9 +5,9 @@
 //
 // The wrapper does the job of throwing if the pointer comes back null.
 //
-// $Id: getPhysicalVolumeOrThrow.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:01 $
+// $Id: getPhysicalVolumeOrThrow.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,7 @@
 #include "G4PhysicalVolumeStore.hh"
 
 namespace mu2e {
-  
+
   G4VPhysicalVolume* getPhysicalVolumeOrThrow( G4String const& name, bool mustHave ){
 
     G4VPhysicalVolume* pVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume(name);

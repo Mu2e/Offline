@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.33 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: Mu2eWorld.hh,v 1.34 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -40,7 +40,7 @@ class G4UserLimits;
 #include "G4Helper/inc/G4Helper.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
-//G4 includes 
+//G4 includes
 #include "G4String.hh"
 #include "G4Colour.hh"
 #include "G4ThreeVector.hh"
@@ -54,7 +54,7 @@ namespace mu2e {
 
   class Mu2eWorld {
   public:
-    
+
     Mu2eWorld();
     ~Mu2eWorld();
 
@@ -86,7 +86,7 @@ namespace mu2e {
     double getDirtG4Ymax() const{
       return _dirtG4Ymax;
     }
- 
+
     G4RotationMatrix const& getPrimaryProtonGunRotation() const{
       return _primaryProtonGunRotation;
     }

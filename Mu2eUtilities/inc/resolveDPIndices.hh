@@ -6,9 +6,9 @@
 // collection of DPIndex's into pointers to the objects
 // that they describe.
 //
-// $Id: resolveDPIndices.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: resolveDPIndices.hh,v 1.6 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -28,10 +28,10 @@ namespace mu2e {
   template<typename T>
   typename T::value_type const * resolveDPIndex( art::Event const& event,
                                                  DPIndex const&    dpi ){
-    
+
     art::Handle<T> handle;
     event.get( dpi.id, handle);
-    
+
     return &handle->at(dpi.index);
   }
 
@@ -43,15 +43,15 @@ namespace mu2e {
                          std::vector<typename T::value_type const*>& vout
                          ){
 
-    for ( std::vector<DPIndex>::const_iterator 
+    for ( std::vector<DPIndex>::const_iterator
             i = indices.begin(),
             e = indices.end();
           i!=e; ++i ){
-     
+
       vout.push_back( resolveDPIndex<T>(event,*i) );
-      
+
     }
-    
+
   }
 
   // Resolve multiple objects within a single ProductID.
@@ -61,19 +61,19 @@ namespace mu2e {
                          std::vector<int> const&            indices,
                          std::vector<typename T::value_type const*>& vout
                          ){
-    
+
     art::Handle<T> handle;
     event.get( id, handle);
 
-    for ( std::vector<int>::const_iterator 
+    for ( std::vector<int>::const_iterator
             i = indices.begin(),
             e = indices.end();
           i!=e; ++i ){
-     
+
       vout.push_back( &handle->at(*i) );
-      
+
     }
-    
+
   }
 
 }

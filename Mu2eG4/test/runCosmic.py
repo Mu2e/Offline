@@ -5,9 +5,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: runCosmic.py,v 1.8 2010/11/24 22:47:26 logash Exp $
-# $Author: logash $
-# $Date: 2010/11/24 22:47:26 $
+# $Id: runCosmic.py,v 1.9 2011/05/18 02:27:18 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:18 $
 #
 # Original author Rob Kutschke
 #
@@ -16,7 +16,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this process a name.  
+# Give this process a name.
 process = mu2e.Process("runCosmic")
 
 # Maximum number of events to do.

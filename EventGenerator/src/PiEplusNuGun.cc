@@ -3,12 +3,12 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.5 2011/05/17 15:36:00 greenc Exp $ 
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: PiEplusNuGun.cc,v 1.6 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
-// 
+//
 
 // C++ incldues.
 #include <iostream>
@@ -45,7 +45,7 @@ namespace mu2e {
   // Mass of the electron.
   // Once we have the HepPDT package installed, get this number from there.
   static const double m = 0.510999;
-  
+
   // Need a Conditions entity to hold info about conversions:
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
@@ -60,14 +60,14 @@ namespace mu2e {
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
-    
+
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
     double _tmin = daqPar->t0;
     double _tmax = accPar->deBuncherPeriod;
-    
+
     _p      = config.getDouble("piEplusNuGun.p", pEplus );
-    
+
     _czmin  = config.getDouble("piEplusNuGun.czmin",  0.3);
     _czmax  = config.getDouble("piEplusNuGun.czmax",  0.6);
     _phimin = config.getDouble("piEplusNuGun.phimin", 0. );
@@ -76,10 +76,10 @@ namespace mu2e {
     _tmax   = config.getDouble("piEplusNuGun.tmax",  _tmax );
 
   }
-  
+
   PiEplusNuGun::~PiEplusNuGun(){
   }
-  
+
   void PiEplusNuGun::generate( ToyGenParticleCollection& genParts ){
 
     // getEngine comes from the base class.
@@ -88,9 +88,9 @@ namespace mu2e {
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
-    
+
     int nFoils = target->nFoils();
-    
+
     // Pick a foil.
     int ifoil = static_cast<int>(nFoils*randFlat.fire());
     TargetFoil const& foil = target->foil(ifoil);
@@ -99,13 +99,13 @@ namespace mu2e {
     CLHEP::Hep3Vector const& center = foil.center();
     const double r1 = foil.rIn();
     const double dr = foil.rOut() - r1;
-    
+
     // A random point within the foil.
     const double r   = r1 + dr*randFlat.fire();
     const double dz  = (-1.+2.*randFlat.fire())*foil.halfThickness();
     const double phi = CLHEP::twopi*randFlat.fire();
-    CLHEP::Hep3Vector pos( center.x()+r*cos(phi), 
-                           center.y()+r*sin(phi), 
+    CLHEP::Hep3Vector pos( center.x()+r*cos(phi),
+                           center.y()+r*sin(phi),
                            center.z()+dz );
 
     // This is not the correct distribution but it is good enough for now.

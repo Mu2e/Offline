@@ -4,11 +4,11 @@
 //
 // Simulate the protons that come from the stopping target when muons capture
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
-// protons.  
+// protons.
 //
-// $Id: EjectedProtonGun.hh,v 1.10 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: EjectedProtonGun.hh,v 1.11 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 //
 
@@ -49,9 +49,9 @@ namespace mu2e {
 
     double _mean;    // Mean number of protons per event
     double _elow;    // Range of proton energy.
-    double _ehi;     // 
+    double _ehi;     //
     double _czmin;   // Range of cos(polar angle)
-    double _czmax;  
+    double _czmax;
     double _phimin;  // Range of azimuth
     double _phimax;
     int    _nbins;   // number of bins in proton energy pdf

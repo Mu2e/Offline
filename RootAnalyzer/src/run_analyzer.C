@@ -1,16 +1,16 @@
 //
 // cint (not c++) Root "script" to run Analyzer.C
 //
-// $Id: run_analyzer.C,v 1.3 2010/06/29 17:43:35 genser Exp $
-// $Author: genser $
-// $Date: 2010/06/29 17:43:35 $
+// $Id: run_analyzer.C,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author KLG
 //
 
 void run_analyzer(TString const fname="data_03.root",
-                  ULong64_t nevents=300000000, 
-                  ULong64_t maxPrintEvents=2, 
+                  ULong64_t nevents=300000000,
+                  ULong64_t maxPrintEvents=2,
                   Double_t minEnergy=0.001,
                   TString const cformat="png")
 {
@@ -21,7 +21,7 @@ void run_analyzer(TString const fname="data_03.root",
   // Get rid of grey background on print out.
   gROOT->SetStyle("Plain");
 
-  gSystem->Load("libCintex"); 
+  gSystem->Load("libCintex");
   Cintex::Enable();
   gSystem->Load("libCore.so");
   gSystem->Load("libMatrix.so");
@@ -51,5 +51,5 @@ void run_analyzer(TString const fname="data_03.root",
   analyzer->printOutCanvases();
   analyzer->write();
   return;
-} 
+}
 

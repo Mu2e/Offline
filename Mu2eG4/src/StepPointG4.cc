@@ -1,9 +1,9 @@
 //
 // A class to hold hits created by G4 in most sensitive detectors.
-// 
-// $Id: StepPointG4.cc,v 1.4 2010/11/09 20:25:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/09 20:25:41 $
+//
+// $Id: StepPointG4.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -11,7 +11,7 @@
 // Mu2e incldues
 #include "Mu2eG4/inc/StepPointG4.hh"
 
-// G4 includes 
+// G4 includes
 #include "G4UnitsTable.hh"
 #include "G4VVisManager.hh"
 #include "G4Circle.hh"
@@ -27,7 +27,7 @@ namespace mu2e {
   {
     return (this==&right) ? 1 : 0;
   }
-  
+
 
   void StepPointG4::Draw(){
     G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
@@ -51,10 +51,10 @@ namespace mu2e {
       G4cout << "  trackId: "        << _hit.trackId()
              << "  volumeId: "       << _hit.volumeId()
              << "  energy deposit: " << G4BestUnit(_hit.eDep(),"Energy")
-             << "  position: "       << G4BestUnit(_hit.position(),"Length") 
-             << "  momentum: "       << G4BestUnit(_hit.momentum(),"Energy") 
-             << "  time: "           << G4BestUnit(_hit.time(),"Time") 
-             << "  proper time: "    << G4BestUnit(_hit.properTime(),"Time") 
+             << "  position: "       << G4BestUnit(_hit.position(),"Length")
+             << "  momentum: "       << G4BestUnit(_hit.momentum(),"Energy")
+             << "  time: "           << G4BestUnit(_hit.time(),"Time")
+             << "  proper time: "    << G4BestUnit(_hit.properTime(),"Time")
              << "  step Length: "    << G4BestUnit(_hit.stepLength(),"Length")
              << G4endl;
     }

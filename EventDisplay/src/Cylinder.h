@@ -1,9 +1,9 @@
 //
-// Class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, target. The structure is displayed via EventDisplayGeoVolumeTube (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). 
+// Class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, target. The structure is displayed via EventDisplayGeoVolumeTube (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cylinder.h,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: Cylinder.h,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -21,17 +21,17 @@
 namespace mu2e_eventdisplay
 {
 
-class Cylinder: public VirtualShape 
+class Cylinder: public VirtualShape
 {
   Cylinder();
   Cylinder(const Cylinder &);
   Cylinder& operator=(const Cylinder &);
 
-  //bare pointer needed, since ROOT manages this object 
+  //bare pointer needed, since ROOT manages this object
   EventDisplayGeoVolumeTube *_volume;
   TGeoRotation *_rotation;
   TGeoCombiTrans *_translation;
-  struct line_struct 
+  struct line_struct
   {
     double x1, y1, z1, x2, y2, z2;
     boost::shared_ptr<EventDisplayPolyLine3D> line;
@@ -56,7 +56,7 @@ class Cylinder: public VirtualShape
   };
   std::map<layersegment_struct,line_struct> _lines;
   bool _notDrawn;
- 
+
   void addline(double x1, double y1, double z1, double x2, double y2, double z2,
                int layer, int segment, int direction, const TObject *mainframe)
   {
@@ -82,9 +82,9 @@ class Cylinder: public VirtualShape
   public:
 
   Cylinder(double x, double y, double z,
-           double phi, double theta, double psi, double halflength, 
-           double innerRadius, double outerRadius, 
-           const TGeoManager *geomanager, TGeoVolume *topvolume, 
+           double phi, double theta, double psi, double halflength,
+           double innerRadius, double outerRadius,
+           const TGeoManager *geomanager, TGeoVolume *topvolume,
            const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info,
            bool defaultVisibility):
            VirtualShape(geomanager, topvolume, info, true)
@@ -121,7 +121,7 @@ class Cylinder: public VirtualShape
         double azimuth=j*2*TMath::Pi()/nseg;
 
         //Start with an unrotated cylinder with its center at (0,0,0).
-        //The vectors to points on the end planes of the cylinder 
+        //The vectors to points on the end planes of the cylinder
         //before rotation are (ex,ey,-halflength) and (ex,ey,halflength).
         double dx = cos(azimuth+TMath::Pi()/2.0)*r;
         double dy = sin(azimuth+TMath::Pi()/2.0)*r;
@@ -129,14 +129,14 @@ class Cylinder: public VirtualShape
         double dz2=halflength;
 
         //After the rotation, the vectors from the center of the cylinder
-        //to the points on the end planes of the cylinder 
+        //to the points on the end planes of the cylinder
         //are (rx1,ry1,-halflength) and (rx2,ry2,halflength).
         double rx1,ry1,rz1;
         double rx2,ry2,rz2;
         rotate(dx,dy,dz1,  rx1,ry1,rz1,  sp,cp,st,ct,ss,cs);
         rotate(dx,dy,dz2,  rx2,ry2,rz2,  sp,cp,st,ct,ss,cs);
 
-        //After the translation (i.e. when the center of the cylinder moves 
+        //After the translation (i.e. when the center of the cylinder moves
         //from (0,0,0) to (x,y,z)), the points of the cylinder points move to
         //(x+rx1,y+ry1,z+rz1) and (x+rx2,y+ry2,z+rz2).
         addline(rx1+x, ry1+y, rz1+z,   rx2+x, ry2+y, rz2+z,   i, j, 0, mainframe);
@@ -186,11 +186,11 @@ class Cylinder: public VirtualShape
     start();
   }
 
-  virtual ~Cylinder() 
+  virtual ~Cylinder()
   {
     _lines.clear();   //deletes all lines
     _volume->SetVisibility(0);  //can only be deleted by deleting TGeoManager
-                                //deleting TGeoManager should also delete 
+                                //deleting TGeoManager should also delete
                                 //TGeoRotation, and TGeoTranslation
   }
 

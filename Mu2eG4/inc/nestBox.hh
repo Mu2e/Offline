@@ -2,10 +2,10 @@
 #define Mu2eG4_nestBox_hh
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
-// 
-// $Id: nestBox.hh,v 1.7 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: nestBox.hh,v 1.8 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -56,7 +56,7 @@ namespace mu2e {
                               bool const placePV,
                               bool const doSurfaceCheck
                               ){
-    return nestBox( name, 
+    return nestBox( name,
                     &halfDim[0],
                     material,
                     rot,
@@ -72,7 +72,7 @@ namespace mu2e {
                     );
   }
 
-  // Alternate argument list (and different behavior) 
+  // Alternate argument list (and different behavior)
   // using VolumeInfo object
   VolumeInfo nestBox ( std::string const& name,
                        double const halfDim[3],
@@ -89,7 +89,7 @@ namespace mu2e {
                        bool const doSurfaceCheck
                        );
 
-  // Alternate argument list, (and different behavior) 
+  // Alternate argument list, (and different behavior)
   // using VolumeInfo object and using a vector for the half dimensions.
   inline VolumeInfo nestBox ( std::string const& name,
                               std::vector<double> const&  halfDim,
@@ -105,7 +105,7 @@ namespace mu2e {
                               bool const placePV,
                               bool const doSurfaceCheck
                               ){
-    return nestBox( name, 
+    return nestBox( name,
                     &halfDim[0],
                     material,
                     rot,

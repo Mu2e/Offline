@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/17 22:06:50 $
+// $Id: HitDisplay_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke.
 //
@@ -130,7 +130,7 @@ namespace mu2e {
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
-    
+
     // Create some 1D histograms.
     _hnHits     =  tfs->make<TH1F>( "hnHits",      "StrawHits per Event",              100,    0.,    200. );
     _hEnergyDep =  tfs->make<TH1F>( "hEnergyDep",  "Energy Deposition per Hit;(keV)",  100,    0.,     20. );
@@ -284,7 +284,7 @@ namespace mu2e {
         continue;
       }
 
-      // Get the straw information: 
+      // Get the straw information:
       const Straw&             straw = ttracker->getStraw( hit.strawIndex() );
       const CLHEP::Hep3Vector& mid   = straw.getMidPoint();
       const CLHEP::Hep3Vector& w     = straw.getDirection();
@@ -317,14 +317,14 @@ namespace mu2e {
 
       /*
       double dcaMid = pcaMid.dca();
-      cout << "Compare: " 
+      cout << "Compare: "
            << mid.z() << " "
            << dca << " "
            << dcaMid << " | "
            << dca-dcaMid << " | "
            << mom.unit().dot(w) << " "
            << momMid.unit().dot(w) << " | "
-           << pos << " " 
+           << pos << " "
            << posMid <<  " "
            << endl;
       */
@@ -348,7 +348,7 @@ namespace mu2e {
       CLHEP::Hep3Vector x0 = mid + v*w;
       CLHEP::Hep3Vector x1 = x0 + sigv*w;
       CLHEP::Hep3Vector x2 = x0 - sigv*w;
-    
+
       if ( doDisplay_  ){
         if ( isFromConversion ) line->DrawLine( x1.x(), x1.y(), x2.x(), x2.y() );
       }
@@ -408,24 +408,24 @@ namespace mu2e {
       genPointo.SetMarkerStyle(kPlus);
       genPointo.Draw("PSAME");
 
-      
+
 
       canvas_->Modified();
       canvas_->Update();
-    
+
       cerr << "Double click in the Canvas " << moduleLabel_ << " to continue:" ;
       gPad->WaitPrimitive();
       cerr << endl;
     }
 
     cout << "TubsParams: "
-         << envelope.innerRadius << " " 
-         << envelope.outerRadius << " " 
-         << envelope.zHalfLength << " " 
+         << envelope.innerRadius << " "
+         << envelope.outerRadius << " "
+         << envelope.zHalfLength << " "
          << endl;
 
   } // end of ::analyze.
-  
+
 }
 
 using mu2e::HitDisplay;

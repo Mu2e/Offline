@@ -3,9 +3,9 @@
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.5 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:37 $
+// $Id: Layer.hh,v 1.6 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -47,9 +47,9 @@ namespace mu2e {
           );
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
- 
+
     const LayerId& Id() const { return _id;}
-  
+
     int nStraws() const { return _straws.size(); }
 
     const CLHEP::Hep3Vector getOrigin() const {return _orig;}
@@ -63,7 +63,7 @@ namespace mu2e {
       return getStraw(id._n);
     }
 
-    const std::vector<const Straw*>& getStraws() const { 
+    const std::vector<const Straw*>& getStraws() const {
       return _straws;
     }
 

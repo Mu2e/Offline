@@ -1,7 +1,7 @@
 #include "ITrackerGeom/inc/Wire.hh"
 #include "CLHEP/Geometry/Vector3D.h"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using CLHEP::Hep3Vector;
 

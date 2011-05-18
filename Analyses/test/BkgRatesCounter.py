@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.py,v 1.6 2011/05/09 16:33:05 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/09 16:33:05 $
+# $Id: BkgRatesCounter.py,v 1.7 2011/05/18 02:27:14 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:14 $
 #
 # Original author Gianni Onorato.
 #
@@ -74,7 +74,7 @@ process.source = mu2e.Source("EmptySource")
 
 #  Make some generated tracks and add them to the event.
 process.generate = mu2e.EDProducer(
-    "EventGenerator", 
+    "EventGenerator",
     inputfile = mu2e.untracked.string("Analyses/test/genconfig_Bkg.txt"),
     seed=mu2e.untracked.vint32(7789)
 )
@@ -86,7 +86,7 @@ process.g4run = mu2e.EDProducer(
     seed=mu2e.untracked.vint32(9877)
     )
 
-# Form StrawHits (SH). 
+# Form StrawHits (SH).
 process.makeTH = mu2e.EDProducer(
     "MakeStrawHit",
     # uncomment line below for ITracker, and comment line above.

@@ -5,9 +5,9 @@
 // to construct an LTracker.
 //
 //
-// $Id: LayerInfo.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: LayerInfo.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -32,14 +32,14 @@ namespace mu2e {
       _nStraws(nStraws),
       _strawType(strawType){
     }
-  
+
     ~LayerInfo  (){}
-  
+
     // Compiler generated copy and assignment constructors
     // should be OK.
     int _nStraws;
     Stype _strawType;
-  
+
   };
 
 }  //namespace mu2e

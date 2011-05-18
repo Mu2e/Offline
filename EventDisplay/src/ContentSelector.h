@@ -1,9 +1,9 @@
 //
-// Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries. 
+// Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.4 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: ContentSelector.h,v 1.5 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -59,7 +59,7 @@ class ContentSelector
 
   private:
   bool compareLists(const std::vector<entryStruct> &newEntries, const TGListBox *boxContent) const;
-  template<class CollectionType> void createNewEntries(std::vector<art::Handle<CollectionType> > &dataVector, 
+  template<class CollectionType> void createNewEntries(std::vector<art::Handle<CollectionType> > &dataVector,
                                                        const art::Event &event, const std::string &className,
                                                        std::vector<entryStruct> &newEntries, int entryIDStart);
 
@@ -69,8 +69,8 @@ class ContentSelector
   void setAvailableCollections(const art::Event& event);
 
   void setSelectedHitsName();
-  bool getSelectedHitsName(std::string &className, 
-                           std::string &moduleLabel, 
+  bool getSelectedHitsName(std::string &className,
+                           std::string &moduleLabel,
                            std::string &productInstanceName) const;
 
   template<typename CollectionType> const CollectionType* getSelectedHitCollection() const;

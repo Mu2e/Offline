@@ -1,9 +1,9 @@
 //
 // Hold information about one Straw.
 //
-// $Id: Straw.cc,v 1.3 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: Straw.cc,v 1.4 2011/05/18 02:27:20 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:20 $
 //
 // Original author Rob Kutschke
 //
@@ -12,7 +12,7 @@
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using std::vector;
 using CLHEP::Hep3Vector;
@@ -66,7 +66,7 @@ namespace mu2e {
   bool Straw::isNearestNeighbour( StrawIndex idx ) const{
 
     for ( vector<StrawIndex>::const_iterator i=_nearestByIndex.begin(),
-            e=_nearestByIndex.end(); 
+            e=_nearestByIndex.end();
           i<e; ++i ){
       if ( *i == idx ) return true;
     }

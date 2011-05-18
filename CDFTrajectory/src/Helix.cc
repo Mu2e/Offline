@@ -44,7 +44,7 @@ HepGeom::Point3D<double> Helix::getPosition(double s) const
       return HepGeom::Point3D<double>((_cosPhi0*_ss-_sinPhi0*(2.0*_curvature*_d0+1.0-_cc))
                         /(2.0*_curvature),
                         (_sinPhi0*_ss+_cosPhi0*(2.0*_curvature*_d0+1.0-_cc))
-                        /(2.0*_curvature),   
+                        /(2.0*_curvature),
                         _s*_cosTheta + _z0);
   }
 }
@@ -55,14 +55,14 @@ HepGeom::Vector3D<double> Helix::getDirection(double s) const
   if (s==0.0) {
       return HepGeom::Vector3D<double>(_cosPhi0*_sinTheta,_sinPhi0*_sinTheta,_cosTheta);
   }
-  double   xtan     = _sinTheta*(_cosPhi0*_cc -_sinPhi0*_ss); 
-  double   ytan     = _sinTheta*(_cosPhi0*_ss +_sinPhi0*_cc); 
+  double   xtan     = _sinTheta*(_cosPhi0*_cc -_sinPhi0*_ss);
+  double   ytan     = _sinTheta*(_cosPhi0*_ss +_sinPhi0*_cc);
   double ztan       = _cosTheta;
     return HepGeom::Vector3D<double>(xtan,ytan,ztan);
 }
 
 void Helix::getLocation(Trajectory::Location & loc, double s) const {
-  
+
   _cacheSinesAndCosines(s);
   double cP0sT = _cosPhi0*_sinTheta, sP0sT = _sinPhi0*_sinTheta;
   if ( s && _curvature) {
@@ -182,7 +182,7 @@ Angle Helix::getPhiAtR(double rho) const {
     // if ( diff > 1.0E-8 )
     // {
     //   errlog.setSubroutine("Helix::getPhiAtR(rho)");
-    //   errlog(ELwarning, "[rho out of bounds]") 
+    //   errlog(ELwarning, "[rho out of bounds]")
     //         << " arcsin = " << arcsin << endmsg;
     // }
     //------------------------------------------------------------------
@@ -212,8 +212,8 @@ double Helix::getL2DAtR(double rho) const {
       // // smaller than closest approach). Otherwise, assume it should be zero.
       // // Tolerance of 10^-8 => error of order 1 um at 300 GeV
       // if ( rad < -1.0E-8 ) {
-      //   errlog(ELwarning, "[rho out of bounds]") 
-      //          << "@SUB=Helix::getL2DAtR(rho)" 
+      //   errlog(ELwarning, "[rho out of bounds]")
+      //          << "@SUB=Helix::getL2DAtR(rho)"
       //          << " rho = " << rho
       //          << ", d0 = " << d << endmsg;
       // }
@@ -228,10 +228,10 @@ double Helix::getL2DAtR(double rho) const {
       // // Warning if product is significantly out of range (=> testing at
       // // radius larger than apogee). Otherwise, assume it should be unity.
       // if ( abs( c*rprime ) - 1.0 > 1.0E-8 ) {
-      //   errlog(ELwarning, "[workaround illegal asin argument]") 
-      //          << "@SUB=Helix::getL2DAtR(rho)" 
-      //          << " c = " << c 
-      //          << ", rprime = " << rprime 
+      //   errlog(ELwarning, "[workaround illegal asin argument]")
+      //          << "@SUB=Helix::getL2DAtR(rho)"
+      //          << " c = " << c
+      //          << ", rprime = " << rprime
       //          << ", (c*rprime)-1 = " << (c * rprime ) - 1.0 << endmsg;
       // }
       //------------------------------------------------------------------
@@ -245,7 +245,7 @@ double Helix::getL2DAtR(double rho) const {
     double rprime;
     if (rad<0.0) rprime = 0.0;
     else rprime = sqrt( rad );
-    
+
     L2D = rprime;
   }
   return L2D;
@@ -293,7 +293,7 @@ double Helix::getCosAlphaAtR(double rho) const {
 //     > the intersection of the tangent line at the point and the plane.    <
 //     > We plan to use one of these approaches in the near future, but      <
 //     > this is NOT YET IMPLEMENTED!                                        <
-//     > For the time being, we invoke the old numerical                     < 
+//     > For the time being, we invoke the old numerical                     <
 //     > Trajectory::newIntersectionWith in such circumstances.              <
 //     >                                                                     <
 //     >>>>>>>>>>  W A R N I N G    W A R N I N G    W A R N I N G  <<<<<<<<<<
@@ -306,9 +306,9 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
 // (Weiming 8-Aug-2001) Commented out analytical calculation
 // See comments below.
 //-------------------------------------------------------------
-// 
+//
 //   if (!getSinTheta()) return NULL; // fastest way out of a screwy situation.
-// 
+//
 //   double alpha0, alpha1, alpha2, deltaAlpha1, deltaAlpha2; //angles measured around center of circle
 //   double PHI0; //global phi coordinate
 //   double n_x, n_y; //defines plane orientation
@@ -318,108 +318,108 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
 //   double s_x2, s_y2; //second intersection point
 //   double A, B, C, B2_4AC, SQRTB2_4AC; //some quantities to simplify notation
 //   double t1, t2; //line parameters
-// 
+//
 //   double sign = getHelicity();
-// 
+//
 //   HepGeom::Vector3D<double> normal = plane.normal();
-// 
+//
 //   n_x = normal.x();
 //   n_y = normal.y();
-// 
+//
 //   if (fabs(normal.z()) > 1.0E-6) {
-// 
+//
 //     //see WARNING above...
 //     if((fabs(n_x) > 1.0E-6) || (fabs(n_y) > 1.0E-6)){
 //       return Trajectory::newIntersectionWith(plane);
-// 
+//
 //     //the perpendicular case
-//     }else{ 
+//     }else{
 //       r = 0.5 / fabs(_curvature); // 1 / | 2 kappa |
-// 
+//
 //       PHI0 = _phi0 + sign * 0.5 * M_PI;
 //       alpha0 = _phi0 - sign * M_PI * 0.5;
-// 
+//
 //       // compute center of circle (only if not already done)
 //       if(!_centerIsValid){
 // 	_m_x = (sign*_d0 + r) * cos(PHI0);
 // 	_m_y = (sign*_d0 + r) * sin(PHI0);
 // 	_centerIsValid = true;
 //       }
-// 
+//
 //       double s_z = plane.point().z();
 //       double s = (s_z - _z0)/(_cotTheta);
 //       double alpha = sign*s/r + alpha0;
-//       
+//
 //       double s_x = _m_x + r*cos(alpha);
 //       double s_y = _m_y + r*sin(alpha);
-//       
-//       return new Trajectory::Location(s/getSinTheta(), 
+//
+//       return new Trajectory::Location(s/getSinTheta(),
 //                                       s_x, s_y, s_z);
-//       
+//
 //     }
 //   }
-// 
+//
 //   r = 0.5 / fabs(_curvature); // 1 / | 2 kappa |
-// 
+//
 //   p_x = plane.point().x();
 //   p_y = plane.point().y();
-// 
+//
 //   alpha0 = _phi0 - sign * M_PI * 0.5;
 //   if(alpha0 < 0.0){
 //     alpha0 += 2.0*M_PI;
 //   }else if(alpha0 > 2.0*M_PI){
 //     alpha0 -= 2.0*M_PI;
 //   };
-// 
+//
 //   PHI0 = _phi0 + sign * 0.5 * M_PI;
-// 
+//
 //   // compute center of circle (only if not already done)
 //   if(!_centerIsValid){
 //     _m_x = (sign*_d0 + r) * cos(PHI0);
 //     _m_y = (sign*_d0 + r) * sin(PHI0);
 //     _centerIsValid = true;
 //   }
-// 
+//
 //   // coefficients of quadratic equation
 //   A = n_x*n_x + n_y*n_y;
 //   B = 2.0*(n_y*p_x - n_y*_m_x - n_x*p_y + n_x*_m_y);
 //   C = (p_x - _m_x)*(p_x - _m_x) + (p_y - _m_y)*(p_y - _m_y) - r*r;
-//   
+//
 //   B2_4AC = B*B - 4.0*A*C;
-// 
+//
 //   //ther may be no solution...
 //   if (B2_4AC >= 0.0){
 //     SQRTB2_4AC = sqrt(B2_4AC);
-// 
+//
 //     // the two solutions
 //     t1 =  (-B + SQRTB2_4AC)/(2.0*A);
 //     t2 =  (-B - SQRTB2_4AC)/(2.0*A);
-//     
+//
 //     // compute first intersection
 //     s_x1 = p_x + t1*n_y;
 //     s_y1 = p_y - t1*n_x;
 //     double deltaX1 = s_x1 - _m_x;
 //     double deltaY1 = s_y1 - _m_y;
-//     alpha1 = ( deltaX1 ? 
+//     alpha1 = ( deltaX1 ?
 //                atan2(deltaY1,deltaX1):
 //                ( deltaY1 > 0.0 ? M_PI*0.5 : -M_PI*0.5));
 //     alpha1 = ( alpha1 < 0 ? alpha1 + 2*M_PI : alpha1 );
 //     deltaAlpha1 = sign*(alpha1 - alpha0); //note the sign!
-//     
+//
 //     // compute second intersection
 //     s_x2 = p_x + t2*n_y;
 //     s_y2 = p_y - t2*n_x;
 //     double deltaX2 = s_x2 - _m_x;
 //     double deltaY2 = s_y2 - _m_y;
-//     alpha2 = ( deltaX2 ? 
+//     alpha2 = ( deltaX2 ?
 //                atan2(deltaY2,deltaX2):
 //                ( deltaY2 > 0.0 ? M_PI*0.5 : -M_PI*0.5));
 //     alpha2 = ( alpha2 < 0 ? alpha2 + 2*M_PI : alpha2 );
 //     deltaAlpha2 = sign*(alpha2 - alpha0); //note the sign!
-// 
+//
 //     // We choose the solution with the smallest arclength measured from the perihel in
 //     // the correct direction. This boils down to the difference in alpha.
-// 
+//
 //     if((deltaAlpha2 - deltaAlpha1) > 0.0 ) {
 //       if(deltaAlpha1 > 0.0) {
 //         double s = r*deltaAlpha1;
@@ -461,7 +461,7 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
   for (int iteration=0;iteration<100;iteration++) {
     if (fabs(deltaS)>0.0001){
       getLocation(*ploc,s);
-      deltaS=((-(plane.distance(ploc->position())))/(normal.dot(ploc->direction()))); 
+      deltaS=((-(plane.distance(ploc->position())))/(normal.dot(ploc->direction())));
       s+=deltaS;
     }
     else {
@@ -470,13 +470,13 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
   }
   delete ploc;
   return NULL;
- 
+
 }
 
 
-Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev, 
+Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev,
 	     const HepGeom::Point3D<double>  & PositionCm,
-	     double q, 
+	     double q,
 	     double BFieldTesla) {
 
 
@@ -486,16 +486,16 @@ Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev,
     double CurvatureConstant=0.0029979;
     double Helicity       = -1.0 * fabs(BFieldTesla) * fabs(q) / (BFieldTesla*q);
     double Radius         = fabs(MomentumGev.perp()/(CurvatureConstant*BFieldTesla*q));
-    
+
     if(Radius==0.0) {
-      W = HUGE_VAL;   
+      W = HUGE_VAL;
       CotTheta = 0.0;
     } else {
       W = Helicity/Radius;
       CotTheta = MomentumGev.z()/MomentumGev.perp();
     }
     Angle phi1      = MomentumGev.phi();
-    double x        = PositionCm.x(),        y        = PositionCm.y(),    z = PositionCm.z(); 
+    double x        = PositionCm.x(),        y        = PositionCm.y(),    z = PositionCm.z();
     double sinPhi1  = sin(phi1),             cosPhi1  = cos(phi1);
     double gamma    = atan((x*cosPhi1 + y*sinPhi1)/(x*sinPhi1-y*cosPhi1 -1/W));
     Phi0            = phi1+gamma;
@@ -503,13 +503,13 @@ Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev,
     Z0              = z + gamma*CotTheta/W;
   }
   else {
-    Line  auxLine(PositionCm,MomentumGev.unit());  
+    Line  auxLine(PositionCm,MomentumGev.unit());
     Z0       = auxLine.getZ0();
     Phi0     = auxLine.getPhi0();
     CotTheta = auxLine.getCotTheta();
     D0       = auxLine.getD0();
     W        = 0.0;
-    //    Hep3Vector direction          = MomentumGev.unit(); 
+    //    Hep3Vector direction          = MomentumGev.unit();
     //    Hep3Vector projectedDirection = Hep3Vector(direction.x(),direction.y(),0.0).unit();
     //    double s                      = projectedDirection.dot(PositionCm);
     //    double sprime                 = s/sin(direction.theta());
@@ -518,8 +518,8 @@ Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev,
     //    CotTheta                      = MomentumGev.z()/MomentumGev.perp();
     //    W                             = 0.0;
     //    D0                           = (PositionCm.y()*cos(Phi0) - PositionCm.x()*sin(Phi0));
-  } 
-  
+  }
+
   // The line commented out below doesn't appear to work (Msm and Dsw Jul 2000)
   //  Helix(CotTheta,W/2,Z0,D0,Phi0);
   // So replace it with the contents of the constructor
@@ -530,9 +530,9 @@ Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev,
    _phi0=Phi0;
    _isStale=1;
    _s=-999.999;
-   _aa =-999.999; 
-   _ss =-999.999; 
-   _cc =-999.999; 
+   _aa =-999.999;
+   _ss =-999.999;
+   _cc =-999.999;
    _sinPhi0 = 1.0;
    _cosPhi0 = 1.0;
    _sinTheta = 1.0;
@@ -542,5 +542,5 @@ Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev,
    _m_x=0.0;
    _m_y=0.0;
 }
-	     
+
 } //namespace mu2e

@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.5 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructSteel.cc,v 1.6 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -37,7 +37,7 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructSteel( const VolumeInfo& parent, 
+  void constructSteel( const VolumeInfo& parent,
                        SimpleConfig const * const _config
                        ){
 
@@ -58,7 +58,7 @@ namespace mu2e {
 
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    std::map<std::string,CRSSteelShield> const & shields = 
+    std::map<std::string,CRSSteelShield> const & shields =
       CosmicRayShieldGeomHandle->getCRSSteelShields();
 
     for (std::map<std::string,CRSSteelShield>::const_iterator ishield=shields.begin();
@@ -81,14 +81,14 @@ namespace mu2e {
                 forceAuxEdgeVisible,
                 placePV,
                 doSurfaceCheck
-                );      
+                );
       } else {
 
         // constructing "hollow" upstream/downstream steel
 
         G4Box* CRSSteelShieldBox = new G4Box(shield.name()+"Box",
-                                  shield.getHalfLengths()[0], 
-                                  shield.getHalfLengths()[1], 
+                                  shield.getHalfLengths()[0],
+                                  shield.getHalfLengths()[1],
                                   shield.getHalfLengths()[2]);
 
         //Hole in  shield for TS is centered in the shield
@@ -97,19 +97,19 @@ namespace mu2e {
                             shield.getHoleRadius(),
                             shield.getHalfLengths()[2]+1.0);//  added for better rendering
 
-        G4Tubs* CRSSteelShieldHoleTubs = new G4Tubs(shield.name()+"HoleTubs", 
+        G4Tubs* CRSSteelShieldHoleTubs = new G4Tubs(shield.name()+"HoleTubs",
                                                     HoleDims.innerRadius,
                                                     HoleDims.outerRadius,
                                                     HoleDims.zHalfLength,
-                                                    HoleDims.phi0, 
+                                                    HoleDims.phi0,
                                                     HoleDims.phiMax);
 
         VolumeInfo CRSSteelShieldInfo;
 
         CRSSteelShieldInfo.name = shield.name();
 
-        CRSSteelShieldInfo.solid = 
-          new G4SubtractionSolid(CRSSteelShieldInfo.name, 
+        CRSSteelShieldInfo.solid =
+          new G4SubtractionSolid(CRSSteelShieldInfo.name,
                                  CRSSteelShieldBox, CRSSteelShieldHoleTubs);
 
         finishNesting(CRSSteelShieldInfo,
@@ -130,7 +130,7 @@ namespace mu2e {
           double zhl  =  shield.getHalfLengths()[2];
           cout << __func__ << " " << shield.name() << " zhl    : " << zhl << endl;
          double CRSSteelShieldOffsetInMu2eZ = shield.getGlobalOffset()[CLHEP::Hep3Vector::Z];
-         cout << __func__ << " " << shield.name() << " Z extent in Mu2e    : " << 
+         cout << __func__ << " " << shield.name() << " Z extent in Mu2e    : " <<
             CRSSteelShieldOffsetInMu2eZ - zhl << ", " << CRSSteelShieldOffsetInMu2eZ + zhl << endl;
         }
 

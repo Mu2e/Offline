@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_module.cc,v 1.3 2011/05/17 22:33:42 wb Exp $
-// $Author: wb $ 
-// $Date: 2011/05/17 22:33:42 $
+// $Id: CEL_module.cc,v 1.4 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author R. Bernstein
 //
@@ -79,7 +79,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
 
   class CEL : public art::EDAnalyzer{
   public:
@@ -110,7 +110,7 @@ namespace mu2e {
 
   private:
 
-    //    art::ServiceHandle<art::RandomNumberGeneratorService>()->getEngine();  
+    //    art::ServiceHandle<art::RandomNumberGeneratorService>()->getEngine();
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
@@ -123,7 +123,7 @@ namespace mu2e {
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
- 
+
 
     // Number of events analyzed.
     int _nAnalyzed;
@@ -175,9 +175,9 @@ namespace mu2e {
     const double energyLossSpectrum(const double e);
     // Compute a binned representation of the dE/dx spectrm.
     std::vector<double> binnedEnergyLossSpectrum();
-    double _dEdXelow;         //< lower dE/dx for binned plot 
-    double _dEdXehi;          //< upper  
-    int    _dEdXnbins;        //< number of bins 
+    double _dEdXelow;         //< lower dE/dx for binned plot
+    double _dEdXehi;          //< upper
+    int    _dEdXnbins;        //< number of bins
     TH1D* _cELEnergyLossSpectrum;
     //CLHEP::RandGeneral _dEdXspectrum;
 
@@ -232,10 +232,10 @@ namespace mu2e {
 
     }
     mf::LogVerbatim log(_messageCategory);
-    log << "CEL event #: " 
+    log << "CEL event #: "
         << event.id();
 
-    // 
+    //
     // start looking through SimParticles
     art::Handle<SimParticleCollection> simParticles;
     event.getByType(simParticles);
@@ -307,17 +307,17 @@ namespace mu2e {
 
             const StepPointMC& hit = (*hits)[i];
 
-            //step point mc associated with generated electrons     
+            //step point mc associated with generated electrons
             key_type trackId = hit.trackId();
             //
-            // now I have the track Id of this hit.  
+            // now I have the track Id of this hit.
             SimParticle const& simParticleHit = simParticles->at(trackId);
             //
             // is this simParticle associated with the hit the same as the one I started with?
             if (sim.id() == simParticleHit.id()){
               electronHitTracker = true;
 
-              // 
+              //
               //let's make a distribution of the z position of all hits associated with this track
               _cELZofHit->Fill(hit.position().z());
 
@@ -384,12 +384,12 @@ namespace mu2e {
           // as a function of cos theta
           double weight = 0.;
 
-          // 
+          //
           // the integrals of these weight functions over d(cos theta)from 0 to 1 and from 0 to -1
           // are .150 and .133 respectively. Need to double to make integral from -1 to 1 match.
           //
           // See doc-db 1087: needs to end up with 19% in signal box so energy loss is the
-          // source of the final fudge factor -- we don't know what it looks like at this point in the code.  
+          // source of the final fudge factor -- we don't know what it looks like at this point in the code.
 
 
           //
@@ -413,7 +413,7 @@ namespace mu2e {
           if (cost < -0.5 || weight < 0.) {weight = 0.;}
 
           //
-          // and final weight fudge, based on energy loss for 
+          // and final weight fudge, based on energy loss for
           //isotropic conversion electrons entering tracker.  Not perfect since entering tracker isn't necessarily
           // a good representation of reconstructed events, but not wrong either.  Really 1.50 within errors
           weight *= 1.5;
@@ -438,7 +438,7 @@ namespace mu2e {
           _cELConvertedFinalSpectrumWeighted->Fill(momentumForPlot,weight);
           //
           // and now demand they entered tracker -- these should not be weighted since the weight mocks up the acceptance
-          // however, this allows us to plot what we measure -- momentum at the tracker after energy loss in 
+          // however, this allows us to plot what we measure -- momentum at the tracker after energy loss in
           // stopping target and foils -- hence we get CELs that are smeared down and lose CELs that are smeared out.
           //  If the # of events and distributions in cos theta and momentum (at birth)
           // are the same as when weighted, then this hitting the tracker is a good mock-up of accepted events.
@@ -469,78 +469,78 @@ namespace mu2e {
     }
   }
   void CEL::bookEventHistos(double const elow, double const ehigh)
-  {        
+  {
     //    cout << "booking histos" << endl; assert(2==1);
     art::ServiceHandle<art::TFileService> tfs;
 
 
 
-    _cELEnergyLossSpectrum = 
+    _cELEnergyLossSpectrum =
       tfs->make<TH1D>( "cELEnergyLossSpectrum",
                        "Conversion Electron Energy Loss Spectrum",_dEdXnbins,_dEdXelow,_dEdXehi);
-    _cELZofHit = 
+    _cELZofHit =
       tfs->make<TH1D>( "cELZofHit",
                        "Conversion Electron Z of Hit", 200, -2000., 2000.);
 
 
     //
     // all events, unweighted
-    _cELConvertedElectronMomentum = 
+    _cELConvertedElectronMomentum =
       tfs->make<TH1D>( "cELConvertedElectronMomentum",
-                       "Conversion Electron Converted Electron Momentum", 200, 0., 200.);  
-    _cELConvertedFinalSpectrum = 
+                       "Conversion Electron Converted Electron Momentum", 200, 0., 200.);
+    _cELConvertedFinalSpectrum =
       tfs->make<TH1D>( "cELConvertedFinalSpectrum",
                        "Conversion Electron Converted Final Spectrum", 15, elow, ehigh);
-    _cELConvertedFinalSpectrumWeighted = 
+    _cELConvertedFinalSpectrumWeighted =
       tfs->make<TH1D>( "cELConvertedFinalSpectrumWeighted",
                        "Conversion Electron Converted Final Spectrum, Weighted for Acceptance", 15, elow, ehigh);
-    _cELConvertedElectronMomentumSignal = 
+    _cELConvertedElectronMomentumSignal =
       tfs->make<TH1D>( "cELConvertedElectronMomentumSignal",
                        "Conversion Electron Converted Electron MomentumSignal", 15, elow, ehigh);
-    _cELConvertedElectronCosTheta = 
+    _cELConvertedElectronCosTheta =
       tfs->make<TH1D>( "cELConvertedElectronCosTheta",
                        "Conversion Electron Converted Electron CosTheta", 200, -1., 1.);
-    _cELConvertedElectronCosThetaSignal = 
+    _cELConvertedElectronCosThetaSignal =
       tfs->make<TH1D>( "cELConvertedElectronCosThetaSignal",
                        "Conversion Electron Converted Electron CosThetaSignal", 200, -1., 1.);
 
     //
     // same, but now weighted by acceptance
-    _cELConvertedElectronMomentumWeighted = 
+    _cELConvertedElectronMomentumWeighted =
       tfs->make<TH1D>( "cELConvertedElectronMomentumWeighted",
                        "Conversion Electron Converted Electron MomentumWeighted", 200, 0., 200.);
-    _cELConvertedElectronMomentumWeightedSignal = 
+    _cELConvertedElectronMomentumWeightedSignal =
       tfs->make<TH1D>( "cELConvertedElectronMomentumWeightedSignal",
                        "Conversion Electron Converted Electron MomentumWeightedSignal", 15, elow, ehigh);
-    _cELConvertedElectronCosThetaWeighted = 
+    _cELConvertedElectronCosThetaWeighted =
       tfs->make<TH1D>( "cELConvertedElectronCosThetaWeighted",
                        "Conversion Electron Converted Electron CosThetaWeighted", 200, -1., 1.);
-    _cELConvertedElectronCosThetaWeightedSignal = 
+    _cELConvertedElectronCosThetaWeightedSignal =
       tfs->make<TH1D>( "cELConvertedElectronCosThetaWeightedSignal",
                        "Conversion Electron Converted Electron CosThetaWeightedSignal", 200, -1., 1.);
 
 
     //
     // and now demand a tracker hit -- but not weighted, since tracker hit is like an acceptance is like a weight
-    _cELConvertedElectronMomentumHitTracker = 
+    _cELConvertedElectronMomentumHitTracker =
       tfs->make<TH1D>( "cELConvertedElectronMomentumHitTracker",
                        "Conversion Electron Converted Electron Momentum and Hit Tracker", 200, 0., 200.);
     //
     // this plot is the original momentum of electrons that end up in signal region after energy loss so ehigh
     // needs to be bigger
-    _cELConvertedElectronMomentumSignalHitTracker = 
+    _cELConvertedElectronMomentumSignalHitTracker =
       tfs->make<TH1D>( "cELConvertedElectronMomentumSignalHitTracker",
                        "Conversion Electron Converted Electron Momentum Signal and Hit Tracker", 15, elow, 110.);
-    _cELConvertedElectronCosThetaHitTracker = 
+    _cELConvertedElectronCosThetaHitTracker =
       tfs->make<TH1D>( "cELConvertedElectronCosThetaHitTracker",
                        "Conversion Electron Converted Electron CosTheta Hit Tracker", 200, -1., 1.);
-    _cELConvertedElectronCosThetaSignalHitTracker = 
+    _cELConvertedElectronCosThetaSignalHitTracker =
       tfs->make<TH1D>( "cELConvertedElectronCosThetaSignalHitTracker",
                        "Conversion Electron Converted Electron CosTheta Signal Hit Tracker", 200, -1., 1.);
-    _cELConvertedElectronCosThetaAtTracker= 
+    _cELConvertedElectronCosThetaAtTracker=
       tfs->make<TH1D>( "cELConvertedElectronCosThetaAtTracker",
                        "Conversion Electron Converted Electron CosTheta At Tracker", 200, -1., 1.);
-    _cELConvertedElectronCosThetaSignalAtTracker = 
+    _cELConvertedElectronCosThetaSignalAtTracker =
       tfs->make<TH1D>( "_cELConvertedElectronCosThetaSignalAtTracker",
                        "Conversion Electron Converted Electron CosTheta Signal At Tracker", 200, -1., 1.);
     _cELConvertedElectronMomentumAtTracker =
@@ -555,7 +555,7 @@ namespace mu2e {
     _numberOfHitStraws =
       tfs->make<TH1D>("numberOfHitStraws"," Number Of Hit Straws", 100,0.,100.);
 
-    _cELZDiff = 
+    _cELZDiff =
       tfs->make<TH1D>("cELZDiff","Length of Track", 100,0.,5000.);
 
 
@@ -573,7 +573,7 @@ namespace mu2e {
       { loss = 4691.*TMath::Landau(e,1.29229,.38467);}// fudge numbers from histo in denom
     if (e >= 2.8 && e <= 20) {loss = TMath::Exp(6.28+ -0.264*(e)); }
     if (e<0){
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense energy in CEL_plugin.cc="
         << e
         << "\n";
@@ -589,7 +589,7 @@ namespace mu2e {
 
     // Sanity check.
     if (_dEdXnbins <= 0) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense CEL_plugin.nbins requested="
         << _dEdXnbins
         << "\n";

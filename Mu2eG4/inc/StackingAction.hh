@@ -1,13 +1,13 @@
 #ifndef Mu2eG4_StackingAction_hh
 #define Mu2eG4_StackingAction_hh
 //
-// Steering routine for user stacking actions. 
+// Steering routine for user stacking actions.
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.13 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: StackingAction.hh,v 1.14 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,7 @@ namespace mu2e {
   public:
     StackingAction( const SimpleConfig& config);
     ~StackingAction();
-    
+
   public:
 
     // Specified by G4UserStackingAction.
@@ -63,14 +63,14 @@ namespace mu2e {
     // Only stack primary particles.
     bool _primaryOnly;
 
-    // Enable the code to kill particles with kinetic energy below threshold.  
+    // Enable the code to kill particles with kinetic energy below threshold.
     // See Note 1).
     bool _killLowKineticEnergy;
     double _eKineMin;
 
     // Only one of these may be non-empty.
     // List of particles to remove (others will be kept).
-    // List of particles to keep (others will be dropped).    
+    // List of particles to keep (others will be dropped).
     std::vector<int> _pdgToDrop;
     std::vector<int> _pdgToKeep;
 

@@ -1,9 +1,9 @@
 //
 // G4 begin and end of event actions for Mu2e.
 //
-// $Id: EventAction.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: EventAction.cc,v 1.4 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -19,19 +19,19 @@
 
 namespace mu2e {
 
-EventAction::EventAction(SteppingAction *stepping_action) { 
+EventAction::EventAction(SteppingAction *stepping_action) {
   _stepping = stepping_action;
 }
 
 EventAction::~EventAction()
 {}
 
- 
+
 void EventAction::BeginOfEventAction(const G4Event*) {
   _stepping->BeginOfEvent();
 }
 
- 
+
 void EventAction::EndOfEventAction(const G4Event* evt)
 {
   _stepping->EndOfEvent();

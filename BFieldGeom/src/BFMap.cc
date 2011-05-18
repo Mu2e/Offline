@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.12 2011/05/17 15:35:59 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:35:59 $
+// $Id: BFMap.cc,v 1.13 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -61,7 +61,7 @@ namespace mu2e {
 
   // Populate a 3x3x3 array with the field values centered on the grid point
   // that is the closest to the requested point.
-  bool BFMap::getNeighbors( int ix, int iy, int iz, 
+  bool BFMap::getNeighbors( int ix, int iy, int iz,
                             CLHEP::Hep3Vector neighborsBF[3][3][3]) const {
     for (int i = 0; i != 3; ++i){
       unsigned int xindex = ix + i - 1;
@@ -71,10 +71,10 @@ namespace mu2e {
           unsigned int zindex = iz + k - 1;
 	  if ( ! _isDefined(xindex,yindex,zindex) ) return false;
           neighborsBF[i][j][k] = _field(xindex, yindex, zindex);
-          /*        
-                    cout << "Neighbor(" << xindex << "," << yindex << "," << zindex 
+          /*
+                    cout << "Neighbor(" << xindex << "," << yindex << "," << zindex
                     << ") = (" << neighborsBF(i,j,k).x() << ","
-                    << neighborsBF(i,j,k).y() << "," << neighborsBF(i,j,k).z() 
+                    << neighborsBF(i,j,k).y() << "," << neighborsBF(i,j,k).z()
                     << ")" << endl;
           */
         }
@@ -84,7 +84,7 @@ namespace mu2e {
   }
 
   // Function to interpolate the BField value at the point from the values
-  // at in the neighbor grid. 
+  // at in the neighbor grid.
   CLHEP::Hep3Vector BFMap::interpolate(CLHEP::Hep3Vector const vec[3][3][3],
                                        double const frac[3]) const {
 
@@ -96,7 +96,7 @@ namespace mu2e {
     double yin = frac[1];
     double zin = frac[2];
 
-    /*  cout << "--------Starting interpolation-------- \n" << "Input: (" 
+    /*  cout << "--------Starting interpolation-------- \n" << "Input: ("
         << xin << "," << yin << "," << zin << ")" << endl;*/
 
     // First loop - interpolate xin
@@ -141,7 +141,7 @@ namespace mu2e {
                              gmcpoly2(z1d,zin))*_scaleFactor;
   }
 
-  // Standard Lagrange formula for 2nd order polynomial fit of 
+  // Standard Lagrange formula for 2nd order polynomial fit of
   // univariate function
   double BFMap::gmcpoly2(double const f1d[3], double const& x) const {
 
@@ -151,7 +151,7 @@ namespace mu2e {
       f1d[1]*(x-x0)*(x-x2)/((x1-x0)*(x1-x2)) +
       f1d[2]*(x-x0)*(x-x1)/((x2-x0)*(x2-x1));
 
-  } 
+  }
 
   // Function to return the BField for any point
   bool BFMap::getBFieldWithStatus(const CLHEP::Hep3Vector & testpoint,
@@ -169,9 +169,9 @@ namespace mu2e {
       double y = -testpoint.y();
       point.setY(y);
     }
-    
-    if ( dflag ){ 
-      cout 
+
+    if ( dflag ){
+      cout
       << "Testpoint:          " << testpoint << endl
       << "Point:              " << point << endl;
     }
@@ -190,12 +190,12 @@ namespace mu2e {
     unsigned int ix = static_cast<int>((point.x() - _xmin)/_dx + 0.5);
     unsigned int iy = static_cast<int>((point.y() - _ymin)/_dy + 0.5);
     unsigned int iz = static_cast<int>((point.z() - _zmin)/_dz + 0.5);
-    
+
     if ( dflag ){
       cout << "Initial ix,iy,iz " << endl
-           << "& dx, dy, dy:    " 
-           << setw(4) << ix << " "  
-           << setw(4) << iy << " " 
+           << "& dx, dy, dy:    "
+           << setw(4) << ix << " "
+           << setw(4) << iy << " "
            << setw(4) << iz << " " << endl
            << setw(4) << _dx << " "
            << setw(4) << _dy << " "
@@ -206,8 +206,8 @@ namespace mu2e {
     if ( dflag ){
       cout << "Map's info nx,ny,nz "
            << "& xmin, ymin, zmin & xmax, ymax, zmax :    " << endl
-           << setw(4) << _nx << " "  
-           << setw(4) << _ny << " " 
+           << setw(4) << _nx << " "
+           << setw(4) << _ny << " "
            << setw(4) << _nz << " " << endl
            << setw(7) << _xmin << " "
            << setw(7) << _ymin << " "
@@ -217,7 +217,7 @@ namespace mu2e {
            << setw(7) << _zmax << " "
            << endl;
     }
-    
+
     // Correct for edge points by moving their NGPt just inside the edge
     if (ix ==     0){++ix;}
     if (ix == _nx-1){--ix;}
@@ -225,9 +225,9 @@ namespace mu2e {
     if (iy == _ny-1){--iy;}
     if (iz ==     0){++iz;}
     if (iz == _nz-1){--iz;}
-    
+
     if ( dflag ) {
-      cout << "Final ix,iy,iz:  " 
+      cout << "Final ix,iy,iz:  "
            << setw(4) << ix << " "
            << setw(4) << iy << " "
            << setw(4) << iz << " "
@@ -238,7 +238,7 @@ namespace mu2e {
     }
 
     // check if the point had a field defined
-    
+
     if ( ! _isDefined(ix,iy,iz) ){
       if ( _warnIfOutside ){
 	mf::LogWarning("GEOM")
@@ -267,15 +267,15 @@ namespace mu2e {
     // as spanning from (0,0,0) to (2,2,2), so we find the location of the point
     // within this frame.
 
-    // klg it is done to be consistent with the getNeighbors point selection 
+    // klg it is done to be consistent with the getNeighbors point selection
     // klg doing it on the unit grid saves passing the _grid neighbor points to the interpolator
 
     int xindex = ix-1;
-    int yindex = iy-1; 
+    int yindex = iy-1;
     int zindex = iz-1;
 
     if ( dflag ){
-      cout << "Used   x, y, z:  " 
+      cout << "Used   x, y, z:  "
            << setw(4) << xindex << " "
            << setw(4) << yindex << " "
            << setw(4) << zindex << " "
@@ -288,7 +288,7 @@ namespace mu2e {
     double frac[] = {
       (point.x() - _grid(xindex,yindex,zindex).x())/_dx,
       (point.y() - _grid(xindex,yindex,zindex).y())/_dy,
-      (point.z() - _grid(xindex,yindex,zindex).z())/_dz 
+      (point.z() - _grid(xindex,yindex,zindex).z())/_dz
     };
 
     // Run the interpolator
@@ -330,7 +330,7 @@ namespace mu2e {
     cout << "Range Z:    " << _zmin << " : " << _zmax << "  Middle: " << (_zmin+_zmax)/2. << endl;
     cout << "Distance:       " << _dx << " " << _dy << " " << _dz << endl;
 
-    cout << "Field at the edges: " 
+    cout << "Field at the edges: "
          << _field(    0,     0,     0) << ", "
          << _field(_nx-1,     0,     0) << ", "
          << _field(    0, _ny-1,     0) << ", "

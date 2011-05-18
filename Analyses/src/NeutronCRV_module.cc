@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/17 22:06:50 $
+// $Id: NeutronCRV_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke
 //
@@ -89,7 +89,7 @@ namespace mu2e {
 
     typedef SimParticleCollection::key_type key_type;
 
-    NeutronCRV(fhicl::ParameterSet const& pset) : 
+    NeutronCRV(fhicl::ParameterSet const& pset) :
 
       // Run time parameters
       _diagLevel(pset.get<int>("diagLevel",0)),
@@ -169,7 +169,7 @@ namespace mu2e {
 
     // Module which made the CaloCrystalHits
     std::string _caloCrystalHitsMaker;
- 
+
     // Name of the stopping target StepPoint collection
     std::string _targetStepPoints;
 
@@ -202,24 +202,24 @@ namespace mu2e {
 
 
   };
-  
+
   void NeutronCRV::beginJob( ){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
-    
+
     // CRV
 
     _hCRVMultiplicity = tfs->make<TH1F>( "hCRVMultiplicity", "CRV StepPointMC per Bar", 5000,  0.,  5000. );
 
     // Create CRV ntuple.
-    _ntupCRV = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple", 
+    _ntupCRV = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple",
                                    "evt:trk:bid:hx:hy:hz:bx:by:bz:dx:dy:dz:lx:ly:lz:time:shld:mod:lay:pdgId:genId:edep:p:step");
 
   }
 
   void NeutronCRV::analyze(const art::Event& event ) {
-    
+
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
@@ -231,12 +231,12 @@ namespace mu2e {
       cerr << g4Status << endl;
     }
 
-    // Abort if G4 did not complete correctly.  
+    // Abort if G4 did not complete correctly.
     // Use your own judgement about whether to abort or to continue.
     if ( g4Status.status() != 0 ) {
       ++_nBadG4Status;
-      mf::LogError("G4") 
-        << "Aborting NeutronCRV::analyze due to G4 status\n"  
+      mf::LogError("G4")
+        << "Aborting NeutronCRV::analyze due to G4 status\n"
         << g4Status;
       return;
     }
@@ -265,10 +265,10 @@ namespace mu2e {
 
     GeomHandle<CosmicRayShield> cosmicRayShieldGeomHandle;
 
-    std::vector<CRSScintillatorBar> const & allBars = 
+    std::vector<CRSScintillatorBar> const & allBars =
       cosmicRayShieldGeomHandle->getAllCRSScintillatorBars();
 
-    CRSScintillatorBarDetail const & barDetail = 
+    CRSScintillatorBarDetail const & barDetail =
       cosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
 
     CLHEP::Hep3Vector barLengths = CLHEP::Hep3Vector(barDetail.getHalfLengths()[0],
@@ -306,7 +306,7 @@ namespace mu2e {
     if ( hits->size() > 300 ){
       mf::LogWarning("HitInfo")
         << "Number of CRV hits "
-        << hits->size() 
+        << hits->size()
         << " may be too large.";
     }
 
@@ -326,18 +326,18 @@ namespace mu2e {
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
-      
+
       // Alias, used for readability.
       const StepPointMC& hit = (*hits)[i];
 
       // Get the hit information.
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
-      
-      // Get the CRSScintillatorBar information: 
+
+      // Get the CRSScintillatorBar information:
       const CRSScintillatorBar&  bar = allBars.at( hit.volumeId() );
       CLHEP::Hep3Vector const &  mid = bar.getGlobalOffset();
-      
+
       CLHEP::HepRotationX RX(bar.getGlobalRotationAngles()[0]);
       CLHEP::HepRotationY RY(bar.getGlobalRotationAngles()[1]);
       CLHEP::HepRotationZ RZ(bar.getGlobalRotationAngles()[2]);
@@ -417,7 +417,7 @@ namespace mu2e {
              << hit.totalEDep()/keV << " "
              << hit.stepLength()
              << endl;
-   
+
         _hCRVMultiplicity->Fill(hit.volumeId());
       }
       // Print out limited to the first few events.
@@ -439,13 +439,13 @@ namespace mu2e {
              << hit.stepLength()
              << endl;
       }
-      
+
     } // end loop over hits.
 
   } // end doCRV
 
 }  // end namespace mu2e
-                                      
+
 
                                        using mu2e::NeutronCRV;
 DEFINE_ART_MODULE(NeutronCRV);

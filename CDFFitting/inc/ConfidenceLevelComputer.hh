@@ -9,12 +9,12 @@ class ConfidenceLevelComputer  {
 public:
 
   // Calculate a confidence level:
-  static double getConfidenceLevel(double chiSquared, 
+  static double getConfidenceLevel(double chiSquared,
 				   unsigned int degreesOfFreedom);
 
 
 private:
-  
+
   static inline float gammp(float,float);
   static inline float gammq(float,float);
   static inline float gamser(float, float, float);

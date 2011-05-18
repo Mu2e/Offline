@@ -1,8 +1,8 @@
 //
 //
-// $Id: SortedStepPoints.cc,v 1.1 2011/05/17 00:28:23 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 00:28:23 $
+// $Id: SortedStepPoints.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -42,10 +42,10 @@ namespace mu2e {
 
     // Middle of the z range of the track.
     double zmid = (zmin + zmax)/2.;
-    cout << "Mid: " 
+    cout << "Mid: "
          << trackId_ << " "
-         << steps_.size() << " " 
-         << allSteps.size() << " " 
+         << steps_.size() << " "
+         << allSteps.size() << " "
          << zmin << " "
          << zmax << " "
          << zmid
@@ -71,17 +71,17 @@ namespace mu2e {
         midByZ_ = step;
         cout << "             Mark" <<endl;
       }
-      cout << "Test: " 
+      cout << "Test: "
            << step->position().z() << " "
            << step << " "
            << d << " "
-           << dmin 
+           << dmin
            << endl;
 
     }
     cout << "Answer: "
          << midByZ_->position().z() << " "
-         << midByZ_->position().z()-dmin << " "      
+         << midByZ_->position().z()-dmin << " "
          << endl;
   }
 

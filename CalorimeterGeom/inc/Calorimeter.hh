@@ -2,13 +2,13 @@
 #define CalorimeterGeom_Calorimeter_hh
 //
 // Hold all geometry and identifier information about
-// a Calorimeter.  In order to insulate this class from 
+// a Calorimeter.  In order to insulate this class from
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.9 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: Calorimeter.hh,v 1.10 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -28,12 +28,12 @@ namespace mu2e {
     public:
       Calorimeter(){}
       ~Calorimeter(){};
-    
+
       virtual std::string name() const { return "Calorimeter";}
 
       CLHEP::Hep3Vector const& getOrigin() const { return _origin; }
 
-      unsigned int nVane() const { return _nVane; }; 
+      unsigned int nVane() const { return _nVane; };
       Vane const& getVane(int i) const { return _vanes.at(i); }
 
       unsigned int nCrystalPerVane() const { return _nCrystalZ*_nCrystalR; }
@@ -43,7 +43,7 @@ namespace mu2e {
 
       unsigned int nROPerCrystal() const { return _nROPerCrystal; }
       unsigned int nRO() const { return _nROPerCrystal*_nVane*_nCrystalZ*_nCrystalR; }
-      
+
       double crystalHalfSize()   const { return _crystalHW; }
       double crystalHalfLength() const { return _crystalHL; }
       double wrapperHalfThickness() const { return _wrapperHalfThickness; }
@@ -56,22 +56,22 @@ namespace mu2e {
       double getElectronEmin() const { return _electronEmin; }
 
       // Vane ID (0..nVanes-1)
-      int getVaneByRO(int roid) const { 
-	return roid/(_nCrystalZ*_nCrystalR*_nROPerCrystal); 
+      int getVaneByRO(int roid) const {
+	return roid/(_nCrystalZ*_nCrystalR*_nROPerCrystal);
       }
       // Crystal ID (0..Number_of_crystals_in_calorimeter-1)
       int getCrystalByRO(int roid) const { return (roid/_nROPerCrystal); }
       // Crystal ID within a vane (0..Number_of_crystals_in_vane-1)
-      int getCrystalVaneByRO(int roid) const { 
-	return (roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR); 
+      int getCrystalVaneByRO(int roid) const {
+	return (roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR);
       }
       // Crystal R-coordinate within a vane (0..nCrystalR-1)
-      int getCrystalRByRO(int roid) const { 
-	return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))/_nCrystalZ; 
+      int getCrystalRByRO(int roid) const {
+	return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))/_nCrystalZ;
       }
       // Crystal Z-coordinate within a vane (0..nCrystalZ-1)
-      int getCrystalZByRO(int roid) const { 
-	return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))%_nCrystalZ; 
+      int getCrystalZByRO(int roid) const {
+	return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))%_nCrystalZ;
       }
 
       // Transfer Mu2e coordinates to local crystal coordinates
@@ -87,7 +87,7 @@ namespace mu2e {
       int _nVane;
       int _nCrystalZ;
       int _nCrystalR;
-      
+
       double _crystalHL;
       double _crystalHW;
 
@@ -106,7 +106,7 @@ namespace mu2e {
       std::vector<Vane> _vanes;
 
       double _nonUniformity;
-      double _timeGap; 
+      double _timeGap;
       double _electronEdep; // energy deposition of charged particle crossing APD
       double _electronEmin; // minimum energy deposition of charged particle crossing APD
 

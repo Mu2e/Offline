@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: CRSScintillatorLayerId.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSScintillatorLayerId.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG; based on Rob Kutschke LayerId
 //
@@ -74,15 +74,15 @@ namespace mu2e {
     bool operator!=(CRSScintillatorLayerId const & rhs) const{
       return !( *this == rhs);
     }
-  
+
   private:
 
     CRSScintillatorModuleId _moduleId;
     int32_t _layerNumber;
-  
+
   };
 
-  inline std::ostream& operator<<(std::ostream& ost, 
+  inline std::ostream& operator<<(std::ostream& ost,
                                   const CRSScintillatorLayerId& layerId ){
     ost << layerId.getModuleId() << " " << layerId.getLayerNumber();
     return ost;

@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.2 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: DiagnosticsG4.cc,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -43,5 +43,5 @@ namespace mu2e {
                                StepPointMCCollection     const& vdSteps,
                                PointTrajectoryCollection const& trajectories,
                                PhysicalVolumeHelper      const& volInfo ){}
-  
+
 }  // end namespace mu2e

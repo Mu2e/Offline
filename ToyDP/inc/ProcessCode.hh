@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: ProcessCode.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -57,10 +57,10 @@ namespace mu2e {
       PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic,
       StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic,
       XiZeroInelastic,        mu2eLowEKine,            mu2eHallAir,         mu2eMaxSteps,
-      mu2ePrimary,            muMinusConversionAtRest, 
+      mu2ePrimary,            muMinusConversionAtRest,
       lastEnum
     };
-  
+
     // Keep this list of names in sync with the enum. Used in ProcessCode.cc
     // lastEnum does not appear in this list of names.
 #define PROCESSCODE_NAMES                                                                                   \
@@ -78,7 +78,7 @@ namespace mu2e {
     "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic",        \
     "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic",          \
     "XiZeroInelastic",        "mu2eLowEKine",            "mu2eHallAir",         "mu2eMaxSteps",              \
-    "mu2ePrimary",            "muMinusConversionAtRest" 
+    "mu2ePrimary",            "muMinusConversionAtRest"
 
   public:
 
@@ -96,7 +96,7 @@ namespace mu2e {
     }
 
     // Accept compiler supplied d'tor, copy c'tor and assignment operator.
-    
+
     enum_type id() const { return _id;}
 
     // Return the name that corresponds to this enum.
@@ -135,12 +135,12 @@ namespace mu2e {
 
     // Accessor for the version.
     static int version() { return _version; }
- 
+
     // Static version of the name method.
-    static const std::string name( enum_type id ){ 
+    static const std::string name( enum_type id ){
       return std::string( _name[id] );
     }
-    
+
     // Check validity of an Id. Unknown is defined to be valid.
     static bool isValid( enum_type id){
       if ( id <  unknown  ) return false;

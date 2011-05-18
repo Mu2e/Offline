@@ -1,10 +1,10 @@
 //
-// c++ (not cint) Root "script" to make some plots based on a root example 
+// c++ (not cint) Root "script" to make some plots based on a root example
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.7 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: Analyzer.C,v 1.8 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author KLG
 //
@@ -45,11 +45,11 @@ using namespace std;
 
 // do not make it inline so that root can see the symbols
 Analyzer::Analyzer (char const * file,
-                    ULong64_t maxevent, 
+                    ULong64_t maxevent,
                     ULong64_t maxFullPrint,
                     Double_t minEnergy,
                     char const * cformat):
-  _file(file), 
+  _file(file),
   _mevent(maxevent),
   //  _g4ModuleLabel(g4ModuleLabel),
   _minimumEnergy(minEnergy),
@@ -122,7 +122,7 @@ void Analyzer::begin(){
   _hStepLength = new TH1F("hStepLength",  "G4 Step Length in Sensitive Detector; (mm)",     100, 0.,  10. );
 
   // Create an ntuple.
-  _ntup           = new TNtuple("ntup", "Hit ntuple", 
+  _ntup           = new TNtuple("ntup", "Hit ntuple",
                                 "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:pdgId:genId:edep:p:step");
   _canvases = new std::vector<TCanvas*>();
   _canvases->reserve(20);
@@ -160,7 +160,7 @@ void Analyzer::plotNHist(vector<TH1*> vhist, char const * opt) {
     theCanvas->cd(ipad);
     canvasTitle += vhist.at(i)->GetTitle();
     if (ipad<nhist) canvasTitle += ", ";
-    cout << "drawing: " << vhist[i]->GetTitle() << " on canvas" << 
+    cout << "drawing: " << vhist[i]->GetTitle() << " on canvas" <<
       theCanvas->GetName() << " on pad " << ipad << endl;
     vhist.at(i)->Draw(opt);
 
@@ -178,7 +178,7 @@ void Analyzer::plotNT(char const * nts, char const * cut, char const * opt) {
   theCanvas->SetTitle(canvasTitle.Data());
   cout << "drawing: " << canvasTitle << " on canvas" << theCanvas->GetName() << endl;
   // Long64_t TTree::Draw(const char* varexp, const TCut& selection, Option_t* option = "", ...
-  _ntup->Draw(nts,cut,opt); 
+  _ntup->Draw(nts,cut,opt);
   theCanvas->Update();
 
 }
@@ -198,7 +198,7 @@ void Analyzer::plot() {
   htp.push_back(_hRadius);
   htp.push_back(_hEnergyDep);
   htp.push_back(_hTime);
-  htp.push_back(_hxHit);  
+  htp.push_back(_hxHit);
   htp.push_back(_hyHit);
   htp.push_back(_hzHit);
 
@@ -209,13 +209,13 @@ void Analyzer::plot() {
   plotHist( _hMomentumG4);
   plotHist( _hStepLength);
 
-  plotNT("hx:hy"); 
-  plotNT("hz:time"); 
-  plotNT("hz:step"); 
-  plotNT("sid:trk"); 
-  plotNT("pdgId"); 
-  plotNT("genId"); 
-  plotNT("step:edep"); 
+  plotNT("hx:hy");
+  plotNT("hz:time");
+  plotNT("hz:step");
+  plotNT("sid:trk");
+  plotNT("pdgId");
+  plotNT("genId");
+  plotNT("step:edep");
 
 }
 
@@ -232,7 +232,7 @@ void Analyzer::write() {
 
   // get the current objects in memory, here: histogrmas and the nutuple and write them out
 
-  gROOT->GetList()->Write(); 
+  gROOT->GetList()->Write();
   gROOT->GetListOfCanvases()->Write();
 
   gDirectory->ls("-m");
@@ -248,7 +248,7 @@ void Analyzer::printOutCanvases() {
 
   // write out individual canvase files (e.g. png)
 
-  TIter citer(gROOT->GetListOfCanvases());  
+  TIter citer(gROOT->GetListOfCanvases());
   while ( TCanvas* nc =  dynamic_cast<TCanvas*>(citer.Next()) ) {
     TString cn = nc->GetName();
     nc->Print(cn+"."+_canvasPrintFormat,_canvasPrintFormat);
@@ -273,7 +273,7 @@ TCanvas* Analyzer::prepareNextCanvas( Int_t nx, Int_t ny,
   cout << "constructing canvas " << forCanvasSuffix.str() << ", position id: " <<  canvasPosID << endl;
 
   TString canvasName = _outputFileNamePrefix + "_c" + forCanvasSuffix.str();
-  
+
   Long_t canvasox = canvasOriginX + (canvasPosID%2)*(canvasWX+canvasSpace) + (canvasPosID/2)*canvasShiftX;
   Long_t canvasoy = canvasOriginY + (canvasPosID/2)*canvasShiftY;
 
@@ -288,7 +288,7 @@ TCanvas* Analyzer::prepareNextCanvas( Int_t nx, Int_t ny,
   ULong64_t npads = nx*ny;
 
   for (ULong_t ipad=1; ipad<=npads; ++ipad) {
-    
+
     theCanvas->cd(ipad);
 
     gPad->SetLogx(logx);
@@ -317,12 +317,12 @@ void Analyzer::analyze() {
   TTree* RunsTree; file->GetObject(RunsTree_name,RunsTree);
 
   // Br    3 :mu2eRandomEngineStates_randomsaver__G4Test03.obj :
-  // Br    9 :mu2eSimParticles_g4run__G4Test03.obj :            
-  // Br   41 :mu2eStepPointMCs_g4run__G4Test03.obj :            
-  // Br   55 :mu2eToyGenParticles_generate__G4Test03.obj :     
+  // Br    9 :mu2eSimParticles_g4run__G4Test03.obj :
+  // Br   41 :mu2eStepPointMCs_g4run__G4Test03.obj :
+  // Br   55 :mu2eToyGenParticles_generate__G4Test03.obj :
 
   // Br    3 :mu2ePhysicalVolumeInfos_g4run__G4Test03.obj :
- 
+
 
   // Branch names without the trailing "." if any
 
@@ -334,22 +334,22 @@ void Analyzer::analyze() {
   TString PhysicalVolumeInfoBranchName("mu2ePhysicalVolumeInfos_g4run__G4Test03"); // volumes / Runs tree
 
   // we should create a class/struct for all data needed for one wrapped type
-  // here is the running list: BranchName, Wrppd, 
+  // here is the running list: BranchName, Wrppd,
 
-  // art::Wrapper<mu2e::SimParticleCollection>   w; 
+  // art::Wrapper<mu2e::SimParticleCollection>   w;
   // art::Wrapper<mu2e::SimParticleCollection>* ww; ww = &w;
   // make sure to not to use cint for the code below, rely on a complier
 
 
   art::EventAuxiliary* EventAuxiliaryWrppd = new art::EventAuxiliary(); // this is a very different branch
 
-  art::Wrapper<mu2e::SimParticleCollection>* SimParticleWrppd = 
+  art::Wrapper<mu2e::SimParticleCollection>* SimParticleWrppd =
     new art::Wrapper<mu2e::SimParticleCollection>();
-  art::Wrapper<mu2e::StepPointMCCollection>* StepPointMCWrppd = 
+  art::Wrapper<mu2e::StepPointMCCollection>* StepPointMCWrppd =
     new art::Wrapper<mu2e::StepPointMCCollection>();
-  art::Wrapper<mu2e::ToyGenParticleCollection>* ToyGenParticleWrppd = 
+  art::Wrapper<mu2e::ToyGenParticleCollection>* ToyGenParticleWrppd =
     new art::Wrapper<mu2e::ToyGenParticleCollection>();
-  art::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd = 
+  art::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd =
     new art::Wrapper<mu2e::PhysicalVolumeInfoCollection>();
 
   //disable branch ("*");
@@ -359,17 +359,17 @@ void Analyzer::analyze() {
 
   //enable subbranches, relies on the "." in the branch name
 
-  EventsTree->SetBranchStatus(EventAuxiliaryBranchName+"*",1); 
+  EventsTree->SetBranchStatus(EventAuxiliaryBranchName+"*",1);
   EventsTree->SetBranchAddress(EventAuxiliaryBranchName,&EventAuxiliaryWrppd);
 
-  EventsTree->SetBranchStatus(SimParticleBranchName+"*",1); 
+  EventsTree->SetBranchStatus(SimParticleBranchName+"*",1);
   EventsTree->SetBranchAddress(SimParticleBranchName+".",&SimParticleWrppd);
-  EventsTree->SetBranchStatus(StepPointMCBranchName+"*",1); 
+  EventsTree->SetBranchStatus(StepPointMCBranchName+"*",1);
   EventsTree->SetBranchAddress(StepPointMCBranchName+".",&StepPointMCWrppd);
-  EventsTree->SetBranchStatus(ToyGenParticleBranchName+"*",1); 
+  EventsTree->SetBranchStatus(ToyGenParticleBranchName+"*",1);
   EventsTree->SetBranchAddress(ToyGenParticleBranchName+".",&ToyGenParticleWrppd);
 
-  RunsTree->SetBranchStatus(PhysicalVolumeInfoBranchName+"*",1); 
+  RunsTree->SetBranchStatus(PhysicalVolumeInfoBranchName+"*",1);
   RunsTree->SetBranchAddress(PhysicalVolumeInfoBranchName+".",&PhysicalVolumeInfoWrppd);
 
   ULong64_t EventsNEntries = EventsTree->GetEntries();
@@ -380,7 +380,7 @@ void Analyzer::analyze() {
 
   cout << "EventAuxiliaryWrppd->id().event()  " << EventAuxiliaryWrppd->id().event() << endl;
 
-  cout << "Size of SimParticle branch          " << 
+  cout << "Size of SimParticle branch          " <<
     EventsTree->GetBranch(SimParticleBranchName+".")->GetEntries() << endl;
 
   ULong64_t EventsMaxEntries = min(EventsNEntries,Analyzer::_mevent);
@@ -397,11 +397,11 @@ void Analyzer::analyze() {
 
       key_type zero(0);
 
-      cout << "Event i " << i << " SimParticle _endPosition.dx " << 
+      cout << "Event i " << i << " SimParticle _endPosition.dx " <<
         SimParticleWrppd->product()->at(zero).endPosition().x() << endl;
-      cout << "Event i " << i << " StepPointMC    _position.dx " 
+      cout << "Event i " << i << " StepPointMC    _position.dx "
            << StepPointMCWrppd->product()->at(0).position().x() << endl;
-      cout << "Event i " << i << " ToyGenParticle _position.dx " 
+      cout << "Event i " << i << " ToyGenParticle _position.dx "
            << ToyGenParticleWrppd->product()->at(0)._position.x() << endl;
 
       cout << "Size of StepPointMCWrppd->product() " << StepPointMCWrppd->product()->size() << endl;
@@ -425,11 +425,11 @@ void Analyzer::analyze() {
 
     // "aliases/handles"
     art::EventAuxiliary                const & event        = *EventAuxiliaryWrppd;
-    mu2e::StepPointMCCollection        const * hits         = StepPointMCWrppd->product(); 
+    mu2e::StepPointMCCollection        const * hits         = StepPointMCWrppd->product();
     mu2e::ToyGenParticleCollection     const * genParticles = ToyGenParticleWrppd->product();
     mu2e::SimParticleCollection        const * simParticles = SimParticleWrppd->product();
     mu2e::PhysicalVolumeInfoCollection const * volumes      = PhysicalVolumeInfoWrppd->product();
-  
+
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles!=0 && volumes!=0 );
 
@@ -440,35 +440,35 @@ void Analyzer::analyze() {
 
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
-      
+
     // ntuple buffer.
     float nt[18];
 
     // Loop over all hits.
     UInt_t maxhit = hits->size();
     for ( UInt_t i=0; i<maxhit; ++i ){
-      
+
       // Alias, used for readability.
       const mu2e::StepPointMC& hit = hits->at(i);
 
       // Skip hits with low pulse height.
       if ( hit.eDep() < _minimumEnergy ) continue;
-      
+
       // Get the hit information.
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
-      
-      //     // Get the straw information: 
+
+      //     // Get the straw information:
       //     const mu2e::Straw&      straw = tracker.getStraw( hit.strawIndex() );
       //     const CLHEP::Hep3Vector& mid   = straw.getMidPoint();
       //     const CLHEP::Hep3Vector& w     = straw.getDirection();
-      
+
       //     // Count how many nearest neighbours are also hit.
       //     int nNeighbours = countHitNeighbours( straw, hits );
-      
+
       //     // Compute an estimate of the drift distance.
       //     TwoLinePCA pca( mid, w, pos, mom);
-      
+
       //     // Check that the radius of the reference point in the local
       //     // coordinates of the straw.  Should be 2.5 mm.
       //     double s = w.dot(pos-mid);
@@ -486,7 +486,7 @@ void Analyzer::analyze() {
 
         // PDG Particle Id of the sim particle that made this hit.
         pdgId = sim.pdgId();
-      
+
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
@@ -501,7 +501,7 @@ void Analyzer::analyze() {
       _hTime->Fill(hit.time());
       // _hHitNeighbours->Fill(nNeighbours);
       // _hCheckPointRadius->Fill(point.mag());
-      
+
       _hxHit->Fill(pos.x());
       _hyHit->Fill(pos.y());
       _hzHit->Fill(pos.z());
@@ -549,7 +549,7 @@ void Analyzer::analyze() {
       //            << s
       //            << endl;
       //     }
-      
+
     } // end loop over hits.
 
 
@@ -572,12 +572,12 @@ void Analyzer::analyze() {
       }
 
     }
-    
+
     //       } else {
 
     //         // Particle Data group Id number.
     //         int pdgId = sim.pdgId();
-          
+
     //         // Information about generated particle.
     //         ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
     //         GenId genId(gen._generatorId);
@@ -585,7 +585,7 @@ void Analyzer::analyze() {
     //         // Physical volume in which this track started.
     //         PhysicalVolumeInfo const& volInfo = volumes->at(sim.startVolumeIndex());
 
-    //         cerr << "Simulated Particle: " 
+    //         cerr << "Simulated Particle: "
     //              << i                   << " "
     //              << pdgId               << " "
     //              << genId.name()        << " "

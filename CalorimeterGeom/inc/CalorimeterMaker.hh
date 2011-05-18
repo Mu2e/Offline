@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_CalorimeterMaker_hh
 #define CalorimeterGeom_CalorimeterMaker_hh
-// $Id: CalorimeterMaker.hh,v 1.11 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CalorimeterMaker.hh,v 1.12 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -37,9 +37,9 @@ namespace mu2e{
 
     public:
       CalorimeterMaker(SimpleConfig const& config);
-  
+
       ~CalorimeterMaker();
-    
+
       //
       // simple dumb vector
 

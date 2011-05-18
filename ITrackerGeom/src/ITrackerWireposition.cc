@@ -1,11 +1,11 @@
-/////////////////////////////////////////////////////////////////////////////// 
-//                                                                           // 
-//  DCH wireposition class                                                   // 
-//                                                                           // 
-/////////////////////////////////////////////////////////////////////////////// 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  DCH wireposition class                                                   //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
- 
-#include <sys/stat.h> 
+
+#include <sys/stat.h>
 
 #include "TError.h"
 #include "TGeoMatrix.h"
@@ -13,30 +13,30 @@
 #include "TSystem.h"
 #include "ITrackerGeom/inc/ITrackerWireposition.hh"
 #include <iostream>
-using namespace std; 
+using namespace std;
 
 
 namespace mu2e {
-//_____________________________________________________________________________ 
-ITrackerWireposition::ITrackerWireposition(Bool_t newFile, const char *WireDataFile ) 
-{ 
-  
+//_____________________________________________________________________________
+ITrackerWireposition::ITrackerWireposition(Bool_t newFile, const char *WireDataFile )
+{
 
 
 
-  // 
-  // ITrackerWireposition default constructor 
-  // 
+
+  //
+  // ITrackerWireposition default constructor
+  //
 
   fwiredata= new ITrackerWiredata();
   if (newFile) {
     wirefile = new TFile(WireDataFile,"RECREATE");
     trwdata = new TTree("WireData","WireData");
     trwdata->Branch("WireDataMatrix","ITrackerWiredata",&fwiredata);
-    
+
   }
   else {
- 
+
     struct stat stFileInfo;
     int intStat;
 
@@ -45,16 +45,16 @@ ITrackerWireposition::ITrackerWireposition(Bool_t newFile, const char *WireDataF
     if(intStat == 0) {
       // We were able to get the file attributes
       // so the file obviously exists.
-      
+
       wirefile = new TFile(WireDataFile,"READ");
       trwdata = (TTree*) wirefile->Get("WireData");
       trwdata->SetBranchAddress("WireDataMatrix",&fwiredata);
-      for(int i=0;i< trwdata->GetEntries();i++){        
+      for(int i=0;i< trwdata->GetEntries();i++){
         fWireDataAll[i]=new ITrackerWiredata();
               trwdata->SetBranchAddress("WireDataMatrix",&fWireDataAll[i]);
               trwdata->GetEntry(i);
       }
-                
+
 
     }
     else {
@@ -72,8 +72,8 @@ ITrackerWireposition::ITrackerWireposition(Bool_t newFile, const char *WireDataF
     }
   }
 
-  fSuperLayer=-1; 
-  fLayer=-1;      
+  fSuperLayer=-1;
+  fLayer=-1;
   fWire=-1;
   SelectedSL=-1;
   SelectedL=-1;
@@ -87,14 +87,14 @@ ITrackerWireposition::ITrackerWireposition(Bool_t newFile, const char *WireDataF
   DCHEndcapZ = 150.;
   SenseWireRadius = 0.5 * .0015;
 
-} 
- 
-//_____________________________________________________________________________ 
+}
+
+//_____________________________________________________________________________
 void ITrackerWireposition::AddSuperLayer(Int_t nCelLayer, Int_t nwire){
   fwiredata->NcelLayer = nCelLayer;
-  fwiredata->epsilon = new Float_t [nCelLayer]; 
-  fwiredata->alfa = new Float_t [nCelLayer];    
-  fwiredata->radius_z0 = new Float_t [nCelLayer];    
+  fwiredata->epsilon = new Float_t [nCelLayer];
+  fwiredata->alfa = new Float_t [nCelLayer];
+  fwiredata->radius_z0 = new Float_t [nCelLayer];
   fwiredata->PosMatrix->Clear();
   fwiredata->PosMatrix->Expand( nCelLayer );
   for (Int_t i=0; i<nCelLayer; i++){
@@ -130,31 +130,31 @@ void ITrackerWireposition::FillData(){
 
   if (SupLayer==SelectedSL && CelLayer==SelectedL && Wire==SelectedCell) return;
   if (SupLayer!=SelectedSL) fwiredata=fWireDataAll[SupLayer];
-  
-  
+
+
   selectedMat = (TGeoHMatrix *) ((TObjArray*)fwiredata->PosMatrix->At(CelLayer))->At(Wire);
   selectedAlfa = fwiredata->alfa[CelLayer];
   selectedEpsilon = fwiredata->epsilon[CelLayer];
   selectedRadius = fwiredata->radius_z0[CelLayer];
   SelectedSL=SupLayer;
   SelectedL=CelLayer;
-  SelectedCell=Wire; 
+  SelectedCell=Wire;
 
 }
 
 void ITrackerWireposition::SelectWireDet(ULong_t det){
 
-  // Return the SuperLayer 
+  // Return the SuperLayer
   fSuperLayer=(Int_t)(det*0.00001);
 
   //Return the Layer
   fLayer=(Int_t)((det)-((fSuperLayer)*100000));
-  
+
   fLayer/=1000;
 
   //Return the Wire
   fWire=(((det)-((fSuperLayer)*100000))-fLayer*1000);
-  
+
   fSuperLayer--;
 
   //Call the upper method
@@ -163,16 +163,16 @@ void ITrackerWireposition::SelectWireDet(ULong_t det){
 }
 
 Double_t ITrackerWireposition::DistFromWireCenter(Double_t *global){
-  
+
   selectedMat->MasterToLocal(global, templocal);
-  
+
   return (TMath::Sqrt( pow(templocal[0],2) + pow(templocal[1],2) ));
 }
 
 Double_t ITrackerWireposition::DistFromWire(Double_t *global){
-  
+
   selectedMat->MasterToLocal(global, templocal);
-  
+
   return (TMath::Sqrt( pow(templocal[0],2) + pow(templocal[1],2) ) - SenseWireRadius);
 }
 
@@ -185,12 +185,12 @@ void ITrackerWireposition::WirePosAtEndcap(Float_t *right, Float_t *left){
   templocal[0] = 0.;
   templocal[1] = 0.;
   templocal[2] = DCHEndcapZ/TMath::Cos(selectedEpsilon);
-  
+
   selectedMat->LocalToMaster(templocal, tempglobal);
   right[0] = tempglobal[0];
   right[1] = tempglobal[1];
   right[2] = tempglobal[2];
-  
+
   templocal[2] *= -1.;
   selectedMat->LocalToMaster(templocal, tempglobal);
   left[0] = tempglobal[0];
@@ -209,16 +209,16 @@ void ITrackerWireposition::WirePosAtZ(Float_t z, Float_t *pos){
     cout<<"z exceeds maximum length\n";
     return;
   }
-  
+
   templocal[0] = 0.;
   templocal[1] = 0.;
   templocal[2] = z;
-  
+
   selectedMat->LocalToMaster(templocal, tempglobal);
   pos[0] = tempglobal[0];
   pos[1] = tempglobal[1];
   pos[2] = tempglobal[2];
-  
+
 }
 
 } // namespace mu2e

@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.10 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: SteppingAction.hh,v 1.11 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,7 @@ namespace mu2e {
   public:
     SteppingAction( const SimpleConfig& config );
     ~SteppingAction(){};
-    
+
     void UserSteppingAction(const G4Step*);
 
     void BeginOfEvent();
@@ -48,14 +48,14 @@ namespace mu2e {
 
     // Called by G4_plugin.
     void beginRun();
-    
+
     G4ThreeVector const& lastPosition() const { return _lastPosition; }
     G4ThreeVector const& lastMomentum() const { return _lastMomentum; }
 
-    void setZRef( G4double zref){ 
+    void setZRef( G4double zref){
       _zref=zref;
     }
-  
+
   private:
 
     // Start: information from the run time configuration.
@@ -96,6 +96,6 @@ namespace mu2e {
     void killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status );
 
   };
-  
+
 } // end namespace mu2e
 #endif /* Mu2eG4_SteppingAction_hh */

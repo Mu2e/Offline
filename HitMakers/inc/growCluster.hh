@@ -3,16 +3,16 @@
 //
 // Free function to grow a cluster.
 //
-// $Id: growCluster.hh,v 1.4 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: growCluster.hh,v 1.5 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 //
 // Consider all straws in the cluster in the range,
 // int i=startIndex, i<cluster.size()
 //
 // Loop over the unused hits.  If there are any unused hits that
-// are nearest neighbours of a straw in the cluster, add that 
+// are nearest neighbours of a straw in the cluster, add that
 // hit to the cluster.
 //
 // Arguments:
@@ -41,7 +41,7 @@ namespace mu2e {
 
   class ProtoStrawCluster;
   class LTracker;
-  
+
   int growCluster ( ProtoStrawCluster&              cluster,
                     int                             startCluster,
                     int                             startHit,

@@ -6,9 +6,9 @@
 //  that this is round off error and set the answer
 //  to zero.  If the argument is very negative, throw.
 //
-// $Id: sqrtOrThrow.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:01 $
+// $Id: sqrtOrThrow.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Utilities/Exception.h"
 
-namespace mu2e { 
+namespace mu2e {
 
   double sqrtOrThrow( double x, double eps){
     if ( x > 0. ) {

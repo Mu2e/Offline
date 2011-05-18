@@ -2,7 +2,7 @@
 #define Mu2eG4_StoppingTargetSD_hh
 //
 // Define a sensitive detector for stopping target
-// 
+//
 // Original author Ivan Logashenko
 //
 
@@ -26,11 +26,11 @@ namespace mu2e {
   public:
     StoppingTargetSD(G4String, const SimpleConfig& config);
     ~StoppingTargetSD();
-    
+
     void Initialize(G4HCofThisEvent*);
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
-  
+
     void beforeG4Event(StepPointMCCollection& outputHits);
 
     static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
@@ -50,7 +50,7 @@ namespace mu2e {
     // Limit maximum size of the steps collection
     int _sizeLimit;
     int _currentSize;
-    
+
   };
 
 } // namespace mu2e

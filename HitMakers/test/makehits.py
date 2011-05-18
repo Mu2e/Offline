@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makehits.py,v 1.12 2011/03/14 19:45:42 wenzel Exp $
-# $Author: wenzel $
-# $Date: 2011/03/14 19:45:42 $
+# $Id: makehits.py,v 1.13 2011/05/18 02:27:16 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:16 $
 #
 # Original author Rob Kutschke
 #
@@ -11,7 +11,7 @@
 # Define the default configuratio for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("HitTest01")
 
 # Maximum number of events to do.
@@ -28,10 +28,10 @@ process.TFileService = mu2e.Service("TFileService",
                        fileName = mu2e.string("makehits.root"),
                        closeFileFast = mu2e.untracked.bool(False)
 )
-# Load the Conditions service 
+# Load the Conditions service
 process.ConditionsService = mu2e.Service("ConditionsService",
       conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
-) 
+)
 
 # Initialize the random number sequences.
 process.add_(mu2e.Service("RandomNumberGeneratorService"))

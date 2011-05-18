@@ -1,9 +1,9 @@
 //
 // Main program of the test suite for the make_ref class template.
 //
-//  $Id: maybe_ref_test.cc,v 1.1 2011/03/04 19:54:17 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/03/04 19:54:17 $
+//  $Id: maybe_ref_test.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -25,8 +25,8 @@ int main (){
   // Check swap
   o2.swap(o1);
   cout << "After swap: \n"
-       << "  o1: " << o1.ref() 
-       << "  o2: " << o2.ref() 
+       << "  o1: " << o1.ref()
+       << "  o2: " << o2.ref()
        << endl;
 
   cout << "Check bool o1: " << o1 << " " << o1.isValid() << endl;

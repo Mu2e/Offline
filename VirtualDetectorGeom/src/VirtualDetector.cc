@@ -7,7 +7,7 @@ namespace mu2e {
   }
 
   void VirtualDetector::addVirtualDetector( int id, std::string name,
-					    CLHEP::Hep3Vector posParent, 
+					    CLHEP::Hep3Vector posParent,
 					    CLHEP::HepRotation *rotParent,
 					    CLHEP::Hep3Vector posLocal) {
     _name[id] = name;

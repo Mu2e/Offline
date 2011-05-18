@@ -21,11 +21,11 @@ class VirtualDetectorMaker {
 
 public:
 
-  VirtualDetectorMaker( SimpleConfig const& config );  
+  VirtualDetectorMaker( SimpleConfig const& config );
 
   ~VirtualDetectorMaker ();
 
-  // This is depracted and will go away soon.  
+  // This is depracted and will go away soon.
   // Still needed for root graphics version.
   const VirtualDetector& getVirtualDetector() const { return *_vd;}
 

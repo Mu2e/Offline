@@ -2,10 +2,10 @@
 // Information about a physical volume.  Used by Mu2eWorld and its utility routines.
 // The center information is not fully general: it does not know about rotations
 // and is useful only for the top few levels of the detector.
-// 
-// $Id: VolumeInfo.cc,v 1.1 2010/12/22 17:36:49 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/22 17:36:49 $
+//
+// $Id: VolumeInfo.cc,v 1.2 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //

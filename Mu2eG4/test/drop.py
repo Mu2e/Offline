@@ -1,8 +1,8 @@
 # Drop all information except the saved random number engine state.
 #
-# $Id: drop.py,v 1.3 2010/09/27 20:01:46 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/09/27 20:01:46 $
+# $Id: drop.py,v 1.4 2011/05/18 02:27:18 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:18 $
 #
 # Original author Rob Kutschke
 #
@@ -16,7 +16,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("Drop01")
 
 # Maximum number of events to do.

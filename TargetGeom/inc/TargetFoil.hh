@@ -5,13 +5,13 @@
 // Class to represent one target foil.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: TargetFoil.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: TargetFoil.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
-// Coordinates are given in the detector coordinate 
+// Coordinates are given in the detector coordinate
 // system in cm.
 //
 
@@ -26,10 +26,10 @@ namespace mu2e {
 
   public:
     TargetFoil( int id,
-                CLHEP::Hep3Vector const& c, 
-                CLHEP::Hep3Vector const& n, 
-                double rOut, 
-                double rIn, 
+                CLHEP::Hep3Vector const& c,
+                CLHEP::Hep3Vector const& n,
+                double rOut,
+                double rIn,
                 double t,
                 std::string m):
       _id(id),
@@ -44,8 +44,8 @@ namespace mu2e {
 
     int id() const { return _id; }
 
-    CLHEP::Hep3Vector const& center()  const { return _c;} 
-    CLHEP::Hep3Vector const& normal()  const { return _norm;} 
+    CLHEP::Hep3Vector const& center()  const { return _c;}
+    CLHEP::Hep3Vector const& normal()  const { return _norm;}
 
     double rOut()          const { return _rOut;}
     double rIn()           const { return _rIn;}
@@ -61,14 +61,14 @@ namespace mu2e {
     CLHEP::Hep3Vector _c;
     // "+z" normal vector
     CLHEP::Hep3Vector _norm;
-    
+
     // Inner and outer radii.
     double _rOut;
     double _rIn;
 
     // Thickness in z.
     double _t;
-    
+
     std::string _material;
 
 };

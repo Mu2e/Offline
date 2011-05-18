@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.12 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: TTrackerMaker.hh,v 1.13 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -31,7 +31,7 @@ class TTrackerMaker{
 
 public:
 
-  TTrackerMaker( SimpleConfig const& config );  
+  TTrackerMaker( SimpleConfig const& config );
   ~TTrackerMaker ();
 
   // This is the accessor that will remain.
@@ -118,7 +118,7 @@ private:
   // relative layer shift (in X)
   double _layerHalfShift;
 
-  // Space between first/last straw and edge of manifold 
+  // Space between first/last straw and edge of manifold
   double _manifoldXEdgeExcessSpace;
   double _manifoldZEdgeExcessSpace;
 

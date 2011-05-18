@@ -4,11 +4,11 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: GrokGeometry_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: GrokGeometry_module.cc,v 1.3 2011/05/18 02:27:15 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:15 $
 //
-// Original author: Mark Fischler 
+// Original author: Mark Fischler
 //
 //=============================================================================
 // C++ includes
@@ -48,7 +48,7 @@
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "Mu2eG4/inc/ConvElecUtilities.hh" 
+#include "Mu2eG4/inc/ConvElecUtilities.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 
@@ -64,7 +64,7 @@ namespace mu2e {;
  struct PRF_Straw{
  public:
    PRF_Straw() : index(-1) {}
-   PRF_Straw(Straw const& str) 
+   PRF_Straw(Straw const& str)
    : sid        (str.Id())
    , deviceId   (sid.getDeviceId())
    , layer      (sid.getLayerId().getLayer())
@@ -72,12 +72,12 @@ namespace mu2e {;
    , halfLength (str.getHalfLength())
    , midpoint   (str.getMidPoint())
    , direction  (str.getDirection())
-   , index      (str.Index()) 
+   , index      (str.Index())
    { assert(std::abs(direction.z()) < 0.0001); }
-   
+
    bool operator<(const PRF_Straw other) const {
    // Here so that PRF_Straw can be put into a standard container
-      return (index.asInt() < other.index.asInt()); 
+      return (index.asInt() < other.index.asInt());
    }
 
   public:
@@ -86,16 +86,16 @@ namespace mu2e {;
    Int_t   layer;
    Int_t   sector;
    Float_t halfLength;
-   CLHEP::Hep3Vector midpoint;   
-   CLHEP::Hep3Vector direction;   
+   CLHEP::Hep3Vector midpoint;
+   CLHEP::Hep3Vector direction;
    StrawIndex index;
 
    std::ostream & Print(std::ostream & os) const
     {
-      os  << "Straw " << index << ": " 
-          << " Device Id " << deviceId << "Layer " << layer   
+      os  << "Straw " << index << ": "
+          << " Device Id " << deviceId << "Layer " << layer
           << "Sector " << sector  << "\n"
-          << "half-length " << halfLength 
+          << "half-length " << halfLength
 	  << " mid-point " << midpoint << "\n"
           << "direction  " << direction << "\n";
       return os;
@@ -103,10 +103,10 @@ namespace mu2e {;
  }; // end of definition of struct PRF_Straw
   std::ostream & operator<<(std::ostream & os, PRF_Straw const & straw)
   { return straw.Print(os); }
- 
+
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class GrokGeometry : public art::EDAnalyzer {
   public:
     explicit GrokGeometry(fhicl::ParameterSet const& pset):
@@ -124,16 +124,16 @@ namespace mu2e {;
     {
     }
     virtual ~GrokGeometry() { }
-    
+
     virtual void beginJob();
     virtual void beginRun(art::Run const &);
-    
+
     void analyze( art::Event const& e);
   private:
- 
+
     // Diagnostics level.
     int _diagLevel;
-    
+
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
     // Module label of the g4 module that made the hits.
@@ -145,7 +145,7 @@ namespace mu2e {;
     std::string _makerModuleLabel;
     // Label of the module that made the Clusters.
     std::string _clmakerModuleLabel;
-    
+
     // Some diagnostic histograms.
     TH1F* _EnergyDep_s;
     TH1F* _EnergyDepX_s;
@@ -155,37 +155,37 @@ namespace mu2e {;
     //
   }; // end of GrokGeometry class definition
 
-  
+
   void GrokGeometry::beginJob(){
-    cout << "Diaglevel: " 
+    cout << "Diaglevel: "
          << _diagLevel << " "
-         << _maxFullPrint<<endl; 
+         << _maxFullPrint<<endl;
 
     art::ServiceHandle<art::TFileService> tfs;
     _EnergyDep_s     = tfs->make<TH1F>( "EnergyDep_s", "s Energy Deposited in Straw (KeV)", 100, 0.0, 10.0);
     _EnergyDepX_s    = tfs->make<TH1F>( "EnergyDepX_s","s Energy Deposited in Straw (KeV)", 100, 0.0, 10.0);
     _beta_c 	     = tfs->make<TH1F>( "beta_c",      "s straw incidence angle beta", 45, 0., 90. );
     _tanTau_c	     = tfs->make<TH1F>( "tanTau_c",    "s panel attack angle tan tau", 50, 0., 2.0 );
-    _tanTheta_c      = tfs->make<TH1F>( "tanTheta_c",  "s pitch tan theta", 50, 0., 2. ); 
+    _tanTheta_c      = tfs->make<TH1F>( "tanTheta_c",  "s pitch tan theta", 50, 0., 2. );
 
    } // end of GrokGeometry beginJob
-  
+
   void GrokGeometry::beginRun(art::Run const &){
 
     const Tracker& tracker = getTrackerOrThrow();
-    const std::deque<Straw>&  trackerStraws = tracker.getAllStraws();    
-    typedef std::deque<Straw>::const_iterator DecIt; 
-    for (DecIt s = (DecIt)trackerStraws.begin(); s != trackerStraws.end(); ++s) 
+    const std::deque<Straw>&  trackerStraws = tracker.getAllStraws();
+    typedef std::deque<Straw>::const_iterator DecIt;
+    for (DecIt s = (DecIt)trackerStraws.begin(); s != trackerStraws.end(); ++s)
     {
       Straw const& str           = *s;
-      PRF_Straw straw ( str ); 
+      PRF_Straw straw ( str );
       cout << straw;
     }
-    
+
     // HERE IS WHERE THE WORK OF GROKKING THE GEOMETRY WILL GO
 
    } // end of GrokGeometry beginRun
-  
+
   void GrokGeometry::analyze(art::Event const& evt)
   {
     if ( _diagLevel > 2 ) cout << "GrokGeometry: analyze() begin"<<endl;
@@ -193,14 +193,14 @@ namespace mu2e {;
     // Geometry info for the TTracker.
 
     const Tracker& tracker = getTrackerOrThrow();
-   
+
     //
     //
     // Position of the center of the tracker in mu2e coordinates.
     //
     //CLHEP::Hep2Vector tt =CLHEP::Hep2Vector( 0.0, 10200.);
     //CLHEP::Hep3Vector point =CLHEP::Hep3Vector( -3904, 0.0, 10200.);
-    //CLHEP::Hep3Vector bf = bfMgr->getBField(point); 
+    //CLHEP::Hep3Vector bf = bfMgr->getBField(point);
     //cout << " B-field: (getBField(center of tracker)) " <<bf<<endl;
     static int ncalls(0);
     ++ncalls;
@@ -211,7 +211,7 @@ namespace mu2e {;
     DeviceId did;
     SectorId secid;
     int sector;
-    
+
     vector<CLHEP::Hep3Vector> momentum_cluster(36);
     vector<CLHEP::Hep3Vector> deviceStrawDirections(36);
     vector<double> beta_cluster;	    // angle against projection of wire
@@ -221,7 +221,7 @@ namespace mu2e {;
     double  edep[36] ;
     int nhitdev[36];
     CLHEP::Hep3Vector  MCPoint[36];
-   
+
     tanTheta_cluster.clear();	  // helix pitch
     beta_cluster.clear();	  // angle against projection of wire
     tanTau_cluster.clear();       // attack angle of path to panel
@@ -243,14 +243,14 @@ namespace mu2e {;
     // Get handles to the generated and simulated particles.
     art::Handle<ToyGenParticleCollection> genParticles;
     evt.getByType(genParticles);
-    
+
     art::Handle<SimParticleCollection> simParticles;
     evt.getByType(simParticles);
-    
+
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByType(volumes);
-    
+
     //Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
 
@@ -262,13 +262,13 @@ namespace mu2e {;
 //cout << "[[  3 ]]\n";
     // Construct an object that ties together all of the simulated particle and hit info.
     SimParticlesWithHits sims( evt,
-                               _g4ModuleLabel, 
+                               _g4ModuleLabel,
                                _makerModuleLabel,
                                "tracker",
                                0.001,
                                5 );
     if (sims.size()<1) return;  // no sim particles found
-    bool foundcele=false;       
+    bool foundcele=false;
     typedef SimParticlesWithHits::map_type map_type;
     for ( map_type::const_iterator i=sims.begin();
           i != sims.end(); ++i )                      // loop over simparticles
@@ -280,7 +280,7 @@ namespace mu2e {;
 	if (simInfo.simParticle().generatorIndex()>=0)
 	  {
 	    const ToyGenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
-	    
+
 	    //cout<< genpar.generatorId()<<endl;
 	    if (genpar.generatorId()== GenId::conversionGun)
 	      {
@@ -288,19 +288,19 @@ namespace mu2e {;
 		/*
 		cout << "SimParticle associated to conversion electron: "
 		     << " Event: " << evt.id().event()
-		     << " Track: " << i->first 
-		     << " PdgId: " << simInfo.simParticle().pdgId() 
+		     << " Track: " << i->first
+		     << " PdgId: " << simInfo.simParticle().pdgId()
 		     << " |p|: "   << simInfo.simParticle().startMomentum().vect().mag()
 		     << " Hits: "  << infos.size()
-		     << " CC:   "  << simInfo.simParticle().creationCode() 
-		     << " GI:   "  << simInfo.simParticle().generatorIndex() 
+		     << " CC:   "  << simInfo.simParticle().creationCode()
+		     << " GI:   "  << simInfo.simParticle().generatorIndex()
 		     << endl;
 		cout << "Polar: "<<simInfo.simParticle().startMomentum().vect().getTheta ()<<endl;
 		*/
 		double _timetodist=149.8962;
 
 		// calculate the average hit position of track at a plane
-		for (int idev = 0; idev < 36 ; idev++) { 
+		for (int idev = 0; idev < 36 ; idev++) {
 		  nhitdev[idev] = 0 ;
 		  edep[idev] = 0.0 ;
 		  MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
@@ -345,7 +345,7 @@ namespace mu2e {;
 			{
 			  energyAH  += step.totalEDep();
 			  //			  cout << "delta: " << step.momentum().mag()<<endl;
-			} // end of if/else for momentum > 5 
+			} // end of if/else for momentum > 5
 		    } // end of loops over steps in this hit
 		    // mf study 2
 		    // cout << "Energy for associated hit " << associatedHit << " =  " << energyAH << "\n";
@@ -353,7 +353,7 @@ namespace mu2e {;
 		    _EnergyDepX_s->Fill(1000.0*energyAHX);
 		    // --- mf
 		  } // end of loop over associated hits
-		  
+
 		// Device quantity normalization loop
 		for (int idev = 0; idev < 36 ; idev++) {
 		  if (nhitdev[idev] <= 0) continue;
@@ -373,7 +373,7 @@ namespace mu2e {;
 		  // --- mf
 		} // End of Device quantity normalization loop
 //cout << "[[  4 ]]\n";
-		
+
 		for ( size_t jhit=0; jhit<infos.size(); ++jhit) // Loop over associated Hits
 		  {
 		    StrawHitMCInfo const& info = infos.at(jhit);
@@ -392,10 +392,10 @@ namespace mu2e {;
 		    }
 		    smcpos=smcpos/steps.size();
 		  }                        // end loop over hits
-	      
+
 	      }   // end code done if the simparticle is conversionGun
-	}	  // end if on generatorINdex >= 0 	   
-      }           // end loop over simparticles 
+	}	  // end if on generatorINdex >= 0
+      }           // end loop over simparticles
     if (!foundcele) return;       // no conversion electron found
     Int_t totalHits=0;
     CLHEP::Hep3Vector dvec;
@@ -440,14 +440,14 @@ namespace mu2e {;
       pstr.direction=dvec;
       mpstraws.insert(pair<int,PRF_Straw>(did,pstr));
     }
-    //cout << " size of pseudo straw map: " <<mpstraws.size()<<endl; 
+    //cout << " size of pseudo straw map: " <<mpstraws.size()<<endl;
 
     // Loop over PAIRS of pseudostraws in the same plane, but only if they intersect
     // This will create doublets, and fill:
-    //   
+    //
     for (int i = 0;i<36;i++)
       {
-	if (mpstraws.count(i)>1) 
+	if (mpstraws.count(i)>1)
 	  {
 	    pair<multimap<int,PRF_Straw>::iterator, multimap<int,PRF_Straw>::iterator> ppp1;
 	    ppp1 = mpstraws.equal_range(i);
@@ -482,8 +482,8 @@ namespace mu2e {;
 	      }// end for first1
 	  }// end count >1
       }   ///endloop over all devices
-      
- 
+
+
 //cout << "[[ 10 ]]\n";
     int nclusters=0;
     double _timetodist=149.8962;
@@ -502,7 +502,7 @@ namespace mu2e {;
 	    //double Time   = strawhit.time();
 	    double deltaT = strawhit.dt();
 	    StrawIndex si   = strawhit.strawIndex();
-	    Straw str       = tracker.getStraw(si);	 
+	    Straw str       = tracker.getStraw(si);
 	    const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
 	    const CLHEP::Hep3Vector dirvec = str.getDirection();
 	    double disttomid = deltaT* _timetodist;   // convert delta T into delta x along the wire
@@ -514,7 +514,7 @@ namespace mu2e {;
 	clusterpos=clusterpos*a;
 	nclusters++;
 
-      } //  end Loop over Clusters      
+      } //  end Loop over Clusters
   } // end of ::analyze.
 
 }

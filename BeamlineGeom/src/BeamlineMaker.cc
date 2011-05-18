@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.2 2011/05/17 15:35:59 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Id: BeamlineMaker.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Peter Shanahan
 //
@@ -22,7 +22,7 @@
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using namespace std;
 
@@ -36,7 +36,7 @@ namespace mu2e {
     BuildBeamline(c);
     BuildTS(c);
   }
-  
+
   BeamlineMaker::~BeamlineMaker (){}
 
   void BeamlineMaker::BuildBeamline(SimpleConfig const& c){
@@ -50,7 +50,7 @@ namespace mu2e {
   }//::BuildBeamline
 
   void BeamlineMaker::BuildTS(SimpleConfig const& c){
-    
+
     // Build the TransportSolenoid Geometry.
 
     // Read or calculate data

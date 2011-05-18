@@ -3,9 +3,9 @@
 //
 // Start with a SimParticle and trace its ancestry back to a generated particle.
 //
-// $Id: SimParticleAncestors.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: SimParticleAncestors.hh,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@ namespace mu2e{
 
     // Compiler generated code is Ok for:
     //  d'tor, copy c'tor assignment operator.
-   
+
     SimParticle    const& sim()         const {return *_sim;}
     SimParticle    const& originalSim() const {return *_sim0;}
     ToyGenParticle const& originalGen() const {return *_gen0;}
@@ -48,7 +48,7 @@ namespace mu2e{
     SimParticle    const* _sim;
 
     // Non-owning pointers the generated particle that is in the ancestry list
-    // of the input particle; also the sim particle that comes 
+    // of the input particle; also the sim particle that comes
     // directly from the generated particle.
     SimParticle    const* _sim0;
     ToyGenParticle const* _gen0;

@@ -1,11 +1,11 @@
 //
 // Given two lines in 3D, compute the distance of closest
-// approach between the two lines.  The lines are 
+// approach between the two lines.  The lines are
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA.cc,v 1.3 2010/05/18 21:16:37 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/05/18 21:16:37 $
+// $Id: TwoLinePCA.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -53,7 +53,7 @@ namespace mu2e {
 
       // return;
 
-    } 
+    }
     // Normal case: lines far from parallel.
     else {
 
@@ -76,5 +76,5 @@ namespace mu2e {
 
   TwoLinePCA::~TwoLinePCA(){
   }
-  
+
 } // end namespace mu2e

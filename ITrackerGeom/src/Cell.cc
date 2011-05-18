@@ -4,7 +4,7 @@
 // Mu2e includes
 #include "ITrackerGeom/inc/Cell.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using CLHEP::Hep3Vector;
 

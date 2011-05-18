@@ -4,9 +4,9 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: PhysicalVolumeHelper.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -53,7 +53,7 @@ namespace mu2e {
 
   private:
 
-    // The persistent info about each volume. 
+    // The persistent info about each volume.
     PhysicalVolumeInfoCollection _persistentInfo;
 
     // Map used to look up persistent index of each physical volume.

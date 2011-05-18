@@ -6,9 +6,9 @@
 // TTracker ). Return a reference to the one that is present.
 // If neither are present, throw.
 //
-// $Id: getTrackerOrThrow.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: getTrackerOrThrow.hh,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //

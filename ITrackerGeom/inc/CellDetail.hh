@@ -23,7 +23,7 @@ public:
   {}
 
   CellDetail( double circumscribedRadius, double inscribedCircleRadius, boost::shared_ptr<WireDetail> senseWire );
-  
+
   ~CellDetail ();
 
   double      CirumscribedRadius()   const { return _circumscribedRadius;}

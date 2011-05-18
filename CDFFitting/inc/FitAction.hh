@@ -16,12 +16,12 @@
 
 template <class Measureable>
 class FitAction  {
-  
+
 public:
 
   // Constructor
   FitAction();
-  
+
   // Destructor
   virtual ~FitAction();
 
@@ -30,7 +30,7 @@ public:
   //	particular kind of fitter is then requested to
   //	incorporate the particular kind of fit.
   virtual void applyYourselfTo(Fitter<Measureable> *theFitter) const=0;
-  
+
 };
 
 #include "CDFFitting/inc/FitAction.icc"

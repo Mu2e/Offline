@@ -1,6 +1,6 @@
 #ifndef ToyDP_StrawHitMCTruth_hh
 #define ToyDP_StrawHitMCTruth_hh
-// 
+//
 // This is a place to put additional information produced by HitMaker,
 // like true drift distance, signal propagation time, etc.
 //
@@ -13,7 +13,7 @@
 
 // Mu2e includes
 
-namespace mu2e { 
+namespace mu2e {
 
   struct StrawHitMCTruth{
 
@@ -45,7 +45,7 @@ namespace mu2e {
     float   distanceToMid()  const { return _distanceToMid; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
-    
+
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 

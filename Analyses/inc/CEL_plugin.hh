@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion energy loss
 //
-// $Id: CEL_plugin.hh,v 1.1 2010/09/30 16:40:48 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2010/09/30 16:40:48 $
+// $Id: CEL_plugin.hh,v 1.2 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author R. Bernstein
 //

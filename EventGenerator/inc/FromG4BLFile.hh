@@ -3,14 +3,14 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.8 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: FromG4BLFile.hh,v 1.9 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Rob Kutschke
 //
 // The position is given in the Mu2e coordinate system.
-// 
+//
 
 #include <fstream>
 

@@ -1,9 +1,9 @@
 //
 // An anti-leak system to aid in using G4 from the Mu2e framework.
 //
-// $Id: AntiLeakRegistry.cc,v 1.1 2010/12/22 17:36:49 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/22 17:36:49 $
+// $Id: AntiLeakRegistry.cc,v 1.2 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -38,11 +38,11 @@ namespace mu2e {
           << i->first
           << " Number of entries: "
           << std::setw(sizeFieldWidth)
-          << i->second->size() 
+          << i->second->size()
           << std::endl;
     }
 
   } // end AntiLeakRegistry::print
 
-} // end namespace mu2e 
+} // end namespace mu2e
 

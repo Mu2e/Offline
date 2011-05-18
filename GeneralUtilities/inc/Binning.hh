@@ -3,9 +3,9 @@
 //
 // A definition of the binning of a histogram.
 //
-// $Id: Binning.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: Binning.hh,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 #include <cmath>
 
 class Binning{
-  
+
 public:
 
   Binning():
@@ -28,7 +28,7 @@ public:
     low_(low),
     high_(high){
   }
-  
+
   // Accessors.
   int    nbins() const {return nbins_;}
   double low()   const {return low_;  }

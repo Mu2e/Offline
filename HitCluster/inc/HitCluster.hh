@@ -2,9 +2,9 @@
 #define HitCluster_HitCluster_hh
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.hh,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: HitCluster.hh,v 1.7 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 //original author R. Bernstein
 //
@@ -52,7 +52,7 @@ namespace mu2e{
     //
     //
 
-  
+
     struct Candidate{
 
       //Identifier of the hit straw ( StrawIndex or VolumeId ).

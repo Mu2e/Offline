@@ -1,14 +1,14 @@
 #ifndef Mu2eUtilities_ShankerWanatabeSpectrum_hh
 #define Mu2eUtilities_ShankerWanatabeSpectrum_hh
 //
-// Read Wanatabe data about DIO spectrum from a table and merge it 
+// Read Wanatabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWanatabeSpectrum.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: ShankerWanatabeSpectrum.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
-// 
+//
 
 // C++ incldues
 #include <vector>
@@ -26,13 +26,13 @@
 namespace mu2e {
 
   class ShankerWanatabeSpectrum {
-    
+
   public:
 
     ShankerWanatabeSpectrum(int atomicZ);
-    
+
     ~ShankerWanatabeSpectrum();
-    
+
     double operator[](double E);
 
   private:

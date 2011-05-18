@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: SimParticlesWithHitsExample_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/17 22:06:50 $
+// $Id: SimParticlesWithHitsExample_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke.
 //
@@ -60,10 +60,10 @@ namespace mu2e {
   SimParticlesWithHitsExample::analyze(art::Event const& evt ) {
 
     const Tracker& tracker = getTrackerOrThrow();
-    
+
     // Construct an object that ties together all of the simulated particle and hit info.
     SimParticlesWithHits sims( evt,
-                               _g4ModuleLabel, 
+                               _g4ModuleLabel,
                                _hitMakerModuleLabel,
                                _trackerStepPoints,
                                _minEnergyDep,
@@ -82,8 +82,8 @@ namespace mu2e {
 
       cout << "SimParticle: "
            << " Event: " << evt.id().event()
-           << " Track: " << i->first 
-           << " PdgId: " << simInfo.simParticle().pdgId() 
+           << " Track: " << i->first
+           << " PdgId: " << simInfo.simParticle().pdgId()
            << " |p|: "   << simInfo.simParticle().startMomentum().vect().mag()
            << " Hits: "  << infos.size()
            << endl;
@@ -114,7 +114,7 @@ namespace mu2e {
     }
 
   } // end of ::analyze.
-  
+
 }
 
 using mu2e::SimParticlesWithHitsExample;

@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: MakeStrawCluster_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Hans Wenzel
 //
@@ -42,10 +42,10 @@
 using namespace std;
 
 namespace mu2e {
-  
+
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class MakeStrawCluster : public art::EDProducer {
   public:
     explicit MakeStrawCluster(fhicl::ParameterSet const& pset):
@@ -59,37 +59,37 @@ namespace mu2e {
       produces<StrawClusterCollection>();
     }
     virtual ~MakeStrawCluster() { }
-    
+
     virtual void beginJob();
     void produce( art::Event& e);
     //  void analyze( art::Event const& e);
-    
+
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
-    
+
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
-    
+
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
-    
+
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
 
     // A category for the error logger.
     const std::string _messageCategory;
-    
+
   };
-     
+
   void MakeStrawCluster::beginJob(){
-    
-    cout << "Diaglevel: " 
+
+    cout << "Diaglevel: "
          << _diagLevel << " "
-         << _maxFullPrint 
+         << _maxFullPrint
          << endl;
-    
+
     art::ServiceHandle<art::TFileService> tfs;
   }
    void MakeStrawCluster::produce(art::Event& evt)
@@ -99,16 +99,16 @@ namespace mu2e {
      ++ncalls;
      // A container to hold the output hits.
      auto_ptr<StrawClusterCollection>        listofClusterspointer(new StrawClusterCollection);
-     
+
      StrawCluster Cluster;
      StrawCluster tmpCluster;
      StrawClusterCollection&  listofClusters = *listofClusterspointer;
 
      StrawCluster::const_iterator ostrawIter;
-     StrawClusterCollection::const_iterator oClusterIter;    
+     StrawClusterCollection::const_iterator oClusterIter;
      StrawCluster::const_iterator istrawIter;
      StrawClusterCollection::const_iterator iClusterIter;
-     
+
      // Geometry info for the TTracker.
      // Get a reference to one of the L or T trackers.
      // Throw exception if not successful.
@@ -120,7 +120,7 @@ namespace mu2e {
        // Access data
        StrawHit        const&      hit(hits->at(i));
        StrawIndex si = hit.strawIndex();
-       Straw str = tracker.getStraw(si);	 
+       Straw str = tracker.getStraw(si);
        StrawId sid = str.Id();
        // first check if  straw already has been used
        bool used =false;
@@ -144,11 +144,11 @@ namespace mu2e {
 	   vector<StrawId>::const_iterator ncid;
 	   for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
 	     {
-	       for ( size_t jj=0; jj<hits->size(); ++jj ) 
+	       for ( size_t jj=0; jj<hits->size(); ++jj )
 		 {
 		   StrawHit        const&      hit(hits->at(jj));
-		   StrawIndex nsi = hit.strawIndex();	    
-		   Straw nstr = tracker.getStraw(nsi);	 
+		   StrawIndex nsi = hit.strawIndex();
+		   Straw nstr = tracker.getStraw(nsi);
 		   StrawId nsid = nstr.Id();
 		   if (nsid==*ncid)
 		     {
@@ -166,17 +166,17 @@ namespace mu2e {
 			     }
 			 }
 		       if ( !nused) Cluster.push_back(nsid);
-		     } 
-		 } // end loop over all hits 
-	     } // end loop over neighbors 
-	   bool added=false; 
+		     }
+		 } // end loop over all hits
+	     } // end loop over neighbors
+	   bool added=false;
 	   if (Cluster.size()>1) added = true;
 	   while (added)
 	     {
 	       added = false;
 	       for(size_t kk=0;kk<Cluster.size(); kk++)
 		 {
-		   Straw straw = tracker.getStraw(Cluster[kk]);		      
+		   Straw straw = tracker.getStraw(Cluster[kk]);
 		   const std::vector<StrawId> nnearid= straw.nearestNeighboursById();
 		   vector<StrawId>::const_iterator nncid;
 		   for(nncid=nnearid.begin(); nncid!=nnearid.end(); nncid++)
@@ -188,7 +188,7 @@ namespace mu2e {
 		       bool usedincl=false;
 		      for(sIter=Cluster.begin();sIter!=Cluster.end(); sIter++)
 			{
-			  if (*sIter==*nncid) 
+			  if (*sIter==*nncid)
 			    {
 			      usedincl=true;
 			      break;
@@ -196,11 +196,11 @@ namespace mu2e {
 			}
 		      if (!usedincl)
 			{
-			  for ( size_t jj=0; jj<hits->size(); jj++ ) 
+			  for ( size_t jj=0; jj<hits->size(); jj++ )
 			    {
 			      StrawHit        const&      hit(hits->at(jj));
-			      StrawIndex nsi = hit.strawIndex();	    
-			      Straw nstr = tracker.getStraw(nsi);	 
+			      StrawIndex nsi = hit.strawIndex();
+			      Straw nstr = tracker.getStraw(nsi);
 			      StrawId nsid = nstr.Id();
 			      if (nsid==*nncid)
 				{
@@ -224,11 +224,11 @@ namespace mu2e {
 				    }
 				}
 			    } // end loop over all straws that fired
-			}  // end used in cluster     
+			}  // end used in cluster
 		    }// end loop over neighbors
 		} // end loop over straws in cluster
 	    } // end while added
-	  if (Cluster.size()>0) 
+	  if (Cluster.size()>0)
 	    {
 	      listofClusters.push_back(Cluster);
 	    }
@@ -237,7 +237,7 @@ namespace mu2e {
     }
     // Add the output hit collection to the event
     //evt.put(listofClusterspointer);
-     
+
     if (_diagLevel>2){
       cout << " Nr of Hits:  "<< hits->size()<<endl;
       cout << " nr of clusters:  " <<listofClusters.size()<<endl;
@@ -251,9 +251,9 @@ namespace mu2e {
 	    }
 	}
     }
-    evt.put(listofClusterspointer);			
+    evt.put(listofClusterspointer);
   } // end of ::analyze.
-  
+
 }
 
 

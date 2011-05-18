@@ -1,9 +1,9 @@
 //
 // G4Helper plugin.
 //
-// $Id: G4Helper_service.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:14 $
+// $Id: G4Helper_service.cc,v 1.2 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,7 @@ using namespace std;
 
 namespace mu2e {
 
-  G4Helper::G4Helper(fhicl::ParameterSet const& iPS, 
+  G4Helper::G4Helper(fhicl::ParameterSet const& iPS,
                      art::ActivityRegistry&iRegistry){
   }
 
@@ -31,7 +31,7 @@ namespace mu2e {
     if ( i == _volumeInfoList.end() ){
       throw cet::exception("GEOM")
         << "G4Helper::locateVolInfo cannot find the volume named: "
-        << key 
+        << key
         << "\n";
     }
     return i->second;

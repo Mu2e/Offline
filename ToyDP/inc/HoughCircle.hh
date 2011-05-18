@@ -5,9 +5,9 @@
 // A candidate hough circle - i.e., a geometric cicle and some information
 // about hough peak quality (eventually)
 //
-// $Id: HoughCircle.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: HoughCircle.hh,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Peter Shanahan
 //
@@ -29,7 +29,7 @@ namespace mu2e {
       const double Radius() const {return _radius;};
       const uint32_t NStraws() const {return _nStraws;};
 
-    private: 
+    private:
       CLHEP::Hep2Vector _center;
       double _radius;
       uint32_t _nStraws;

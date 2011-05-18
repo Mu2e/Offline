@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.12 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: ConstructMaterials.cc,v 1.13 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -51,7 +51,7 @@ namespace mu2e {
 
   ConstructMaterials::ConstructMaterials(){
   }
-  
+
   ConstructMaterials::~ConstructMaterials(){
   }
 
@@ -65,31 +65,31 @@ namespace mu2e {
     // Construct the requested materials.
     constructG4Materials( config );
     constructMu2eMaterials( config );
-    
+
     // Print element table, if requested.
     if ( config.get<bool>("g4.printElements",false) ){
       mf::LogInfo  log("GEOM");
       log << *G4Element::GetElementTable();
     }
-    
+
     // Print material table, if requested.
     if ( config.get<bool>("g4.printMaterials",false) ){
       mf::LogInfo  log("GEOM");
       log << *G4Material::GetMaterialTable();
     }
-    
+
     //cout << "Big test: " << endl;
     //cout << *::G4Element::GetElementTable();
   }
-  
+
   void ConstructMaterials::constructG4Materials( SimpleConfig const& config){
-    
+
     // Get list of G4 predefined elements we need to load.
     vector<string> elementsToLoad;
     if ( config.hasName("g4.elements") ){
       config.getVectorString("g4.elements",elementsToLoad);
     }
-    
+
     // Load the elements.
     for ( vector<string>::const_iterator i=elementsToLoad.begin();
           i!=elementsToLoad.end(); ++i ){
@@ -107,7 +107,7 @@ namespace mu2e {
           i!=materialsToLoad.end(); ++i ){
       findMaterialOrThrow(*i);
     }
-    
+
   }
 
   // Build the requested Mu2e specific materials.
@@ -128,7 +128,7 @@ namespace mu2e {
       // Concrete is 2.00 for fraction, but shielding concrete has reinforcing Iron bars:
       // www-esh.fnal.gov/TM1834_PDF_FILES/TM_1834_Revision_9.pdf
       //
-      G4Material* ShieldingConcrete = 
+      G4Material* ShieldingConcrete =
         new G4Material( mat.name, 2.5*g/cm3, 6);
       G4Element* eO  = getElementOrThrow("O");
       G4Element* eSi = getElementOrThrow("Si");
@@ -140,24 +140,24 @@ namespace mu2e {
       ShieldingConcrete->AddElement( eSi,  0.3250);
       ShieldingConcrete->AddElement( eCa,  0.0600);
       ShieldingConcrete->AddElement( eNa,  0.0150);
-      ShieldingConcrete->AddElement( eFe,  0.0400); 
+      ShieldingConcrete->AddElement( eFe,  0.0400);
       ShieldingConcrete->AddElement( eAl,  0.0400);
     }
-    
+
     mat = isNeeded(materialsToLoad, "Polyethylene");
     if ( mat.doit ){
-      G4Material* Polyethylene = 
+      G4Material* Polyethylene =
         new G4Material( mat.name, 0.956*g/cm3, 2);
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eH  = getElementOrThrow("H");
       Polyethylene->AddElement( eC, 1);
       Polyethylene->AddElement( eH, 2);
     }
-    
+
     // polyethylene data below as in John Caunt Scientific, also see shieldwerx
     mat = isNeeded(materialsToLoad, "Polyethylene092");
     if ( mat.doit ){
-      G4Material* Polyethylene092 = 
+      G4Material* Polyethylene092 =
         new G4Material( mat.name, 0.92*g/cm3, 2);
       G4Material* mC  = findMaterialOrThrow("G4_C");
       G4Material* mH  = findMaterialOrThrow("G4_H");
@@ -167,7 +167,7 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "Polyethylene0956");
     if ( mat.doit ){
-      G4Material* Polyethylene0956 = 
+      G4Material* Polyethylene0956 =
         new G4Material( mat.name, 0.956*g/cm3, 2);
       G4Material* mC  = findMaterialOrThrow("G4_C");
       G4Material* mH  = findMaterialOrThrow("G4_H");
@@ -184,7 +184,7 @@ namespace mu2e {
     // borated polyethylene data as in John Caunt Scientific
     mat = isNeeded(materialsToLoad, "Polyethylene092B050d095");
     if ( mat.doit ){
-      G4Material* Polyethylene092B050d095 = 
+      G4Material* Polyethylene092B050d095 =
         new G4Material( mat.name, 0.95*g/cm3, 2);
       // we will use the Polyethylene092 and add B as a material
       G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
@@ -196,7 +196,7 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "Polyethylene092B300d119");
     if ( mat.doit ){
-      G4Material* Polyethylene092B300d119 = 
+      G4Material* Polyethylene092B300d119 =
         new G4Material( mat.name, 1.19*g/cm3, 2);
       // we will use the Polyethylene092 and add B as a material
       G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
@@ -208,7 +208,7 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "Polyethylene092Li075d106");
     if ( mat.doit ){
-      G4Material* Polyethylene092Li075d106 = 
+      G4Material* Polyethylene092Li075d106 =
         new G4Material( mat.name, 1.06*g/cm3, 2);
       // we will use the Polyethylene092 and add Li as a material
       G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
@@ -221,7 +221,7 @@ namespace mu2e {
     // Stainless Steel (Medical Physics, Vol 25, No 10, Oct 1998) based on brachytherapy example
     mat = isNeeded(materialsToLoad, "StainlessSteel");
     if ( mat.doit ){
-      G4Material* StainlessSteel = 
+      G4Material* StainlessSteel =
         new G4Material( mat.name, 8.02*g/cm3, 5);
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.02);
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Si"), 0.01);
@@ -232,7 +232,7 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "IsoButane");
     if ( mat.doit ){
-      G4Material* IsoButane = 
+      G4Material* IsoButane =
         new G4Material( mat.name, 0.00265*g/cm3, 2);
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eH  = getElementOrThrow("H");
@@ -242,7 +242,7 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "StrawGas");
     if ( mat.doit ) {
-      G4Material* StrawGas = 
+      G4Material* StrawGas =
         new G4Material(mat.name, 0.0028561*g/cm3, 3); // it is OK not to use kStateGas
       G4Element* eAr = getElementOrThrow("Ar");
       G4Element* eC  = getElementOrThrow("C");
@@ -251,13 +251,13 @@ namespace mu2e {
       StrawGas->AddElement( eC,  1);
       StrawGas->AddElement( eF,  4);
     }
-    
+
     mat = isNeeded(materialsToLoad, "Kapton");
     if ( mat.doit ){
       //
       // Kapton: from NIST: physics.nist.gov/cgi-bin/Star/compos.pl?matno=179
       //
-      G4Material* Kapton = 
+      G4Material* Kapton =
         new G4Material(mat.name, 1.42*g/cm3, 4);
       G4Element* eH  = getElementOrThrow("H");
       G4Element* eC  = getElementOrThrow("C");
@@ -271,12 +271,12 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "Scintillator");
     if ( mat.doit ){
-      //  
-      // Scintillator.  
+      //
+      // Scintillator.
       // We probably want several flavors of scintillator so that we can change the
       // detector by just changing a name in the config file.
       //
-      G4Material* Sci = 
+      G4Material* Sci =
         new G4Material( mat.name, 1.032*g/cm3, 2);
       G4Element* eC  = getElementOrThrow("C");
       G4Element* eH  = getElementOrThrow("H");
@@ -287,7 +287,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "WAGVacuum");
     if ( mat.doit ){
       //
-      // WAG at properties of Vacuum.  
+      // WAG at properties of Vacuum.
       // May need several different levels of vacuum in different parts
       // of Mu2e.
       //
@@ -304,7 +304,7 @@ namespace mu2e {
     if ( mat.doit ){
       //
       // MiniBoone model of the earthen overburden.  See Mu2e-doc
-      //  
+      //
       G4Material* mbOverburden = new G4Material( mat.name, 2.15*g/cm3, 3);
       G4Element* eO  = getElementOrThrow("O");
       G4Element* eSi = getElementOrThrow("Si");
@@ -480,7 +480,7 @@ namespace mu2e {
 
     // Completed constructing Mu2e specific materials.
 
-    // Check that all requested materials are present. 
+    // Check that all requested materials are present.
     for ( vector<string>::const_iterator i=materialsToLoad.begin();
           i!=materialsToLoad.end(); ++i ){
       if ( *i != DoAllValue ){
@@ -509,7 +509,7 @@ namespace mu2e {
 
   }
 
-  // Return true if the requested string is present in the container. 
+  // Return true if the requested string is present in the container.
   // The match must be exact.
   bool ConstructMaterials::isRequested( vector<string> const& V, string const& s){
     for ( vector<string>::const_iterator i=V.begin(), e=V.end();
@@ -536,9 +536,9 @@ namespace mu2e {
 
     // G4 manager for elements and materials.
     G4NistManager* nistMan = G4NistManager::Instance();
-    
+
     G4Element* answer = nistMan->FindOrBuildElement(name,true);
-      
+
     // Throw if we could not find a requested element.
     if ( !answer ){
       throw cet::exception("GEOM")

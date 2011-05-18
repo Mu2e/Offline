@@ -4,9 +4,9 @@
 //
 // The parameters of a TUBS
 //
-// $Id: TubsParams.hh,v 1.3 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:37 $
+// $Id: TubsParams.hh,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@ namespace mu2e {
     double zHalfLength;
     double phi0;
     double phiMax;
-    
+
     TubsParams( double innerRadius_,
                 double outerRadius_,
                 double zHalfLength_,
@@ -36,8 +36,8 @@ namespace mu2e {
       phi0(phi0_),
       phiMax(phiMax_){
     }
-      
-    
+
+
   };
 
   inline std::ostream& operator<<(std::ostream& ost,

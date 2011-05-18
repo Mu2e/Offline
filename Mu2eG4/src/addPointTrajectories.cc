@@ -2,9 +2,9 @@
 // Extract trajectories from the G4 internals and add them to the event.
 // Skip trajectories with too few points.
 //
-// $Id: addPointTrajectories.cc,v 1.1 2010/11/18 07:22:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/11/18 07:22:43 $
+// $Id: addPointTrajectories.cc,v 1.2 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@ using namespace std;
 
 namespace mu2e{
 
-  void addPointTrajectories ( const G4Event*             g4event, 
+  void addPointTrajectories ( const G4Event*             g4event,
                               PointTrajectoryCollection& pointTrajectories,
                               CLHEP::Hep3Vector const&   mu2eOriginInWorld ){
 

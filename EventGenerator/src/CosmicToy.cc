@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.9 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: CosmicToy.cc,v 1.10 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -65,7 +65,7 @@ namespace mu2e {
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "CosmicToy has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
@@ -120,7 +120,7 @@ namespace mu2e {
       double sy = sin(theta);
 
       double phi = 2.*M_PI*_randFlat.fire();
-     
+
       double e = sqrt(p*p +m*m);
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), e);
 
@@ -147,7 +147,7 @@ namespace mu2e {
       if ( _doHistograms ){
         static CLHEP::Hep3Vector vertical( 0., -1., 0.);
         double angle = mom.angle(vertical);
-        
+
         _hMomentum->Fill(p);
         _hAngle->Fill(angle);
       }

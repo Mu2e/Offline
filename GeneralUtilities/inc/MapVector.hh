@@ -3,13 +3,13 @@
 //
 // An STL-like class template that looks and feels std::map<key_type,T>,
 // with the exception that it is has a few extra modifier and accessor
-// functions described below.  So far as I know, all accessor and 
+// functions described below.  So far as I know, all accessor and
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.12 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: MapVector.hh,v 1.13 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 //   Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@
 //      - If the key does not exist it throws.
 //
 //  VALUE const& findOrThrow( key_type key ) const;
-//      - same as the previous method except that it may run on a 
+//      - same as the previous method except that it may run on a
 //        const MapVector and returns a const reference.
 //
 //  VALUE*       findOrNull( key_type key );
@@ -27,7 +27,7 @@
 //      - If the key does not exist it returns a null pointer.
 //
 //  VALUE const* findOrNull( key_type key ) const;
-//      - same as the previous method except that it may run on a 
+//      - same as the previous method except that it may run on a
 //        const MapVector and returns a const pointer.
 //
 //  VALUE const& operator[]( key_type key ) const;
@@ -61,7 +61,7 @@
 //        T const& t = col[i].
 //      }
 //  This will give a compiler error because there is no operator[] that takes
-//  an int as an argument, only an operator[] that takes a 
+//  an int as an argument, only an operator[] that takes a
 //  MapVector<T>::key_type as an argument.
 //
 // Other Notes:
@@ -84,7 +84,7 @@
 //    and other wise forwards to std::map.  In the process I added a few
 //    other methods.
 //
-// 6) In the future we can replace the underlying container with 
+// 6) In the future we can replace the underlying container with
 //    a different implementation that is better optimized for lookup.
 //
 // Todo:
@@ -115,7 +115,7 @@ public:
 
   typedef typename map_type::size_type             size_type;
   typedef typename map_type::difference_type difference_type;
-  
+
   typedef typename map_type::iterator                             iterator;
   typedef typename map_type::const_iterator                 const_iterator;
   typedef typename map_type::reverse_iterator             reverse_iterator;
@@ -216,7 +216,7 @@ public:
     return _map[key];
   }
 
-  // Need this 
+  // Need this
   void swap ( MapVector<VALUE>& mv ){
     _map.swap(mv._map);
   }

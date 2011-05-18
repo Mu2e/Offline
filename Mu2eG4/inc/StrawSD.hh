@@ -2,10 +2,10 @@
 #define Mu2eG4_StrawSD_hh
 //
 // Define a sensitive detector for Straws.
-// 
-// $Id: StrawSD.hh,v 1.9 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: StrawSD.hh,v 1.10 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -30,11 +30,11 @@ namespace mu2e {
   public:
     StrawSD(G4String, const SimpleConfig& config);
     ~StrawSD();
-    
+
     void Initialize(G4HCofThisEvent*);
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
-  
+
     void beforeG4Event(StepPointMCCollection& outputHits);
 
   private:

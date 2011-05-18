@@ -2,10 +2,10 @@
 // Define a sensitive detector for Straws.
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
-// 
-// $Id: StrawSD.cc,v 1.24 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+//
+// $Id: StrawSD.cc,v 1.25 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -69,7 +69,7 @@ namespace mu2e {
     }
 
     if ( geom->hasElement<TTracker>() ) {
-      
+
       GeomHandle<TTracker> ttracker;
 
       const Device& device = ttracker->getDevice(0);
@@ -90,7 +90,7 @@ namespace mu2e {
     }
 
     if ( geom->hasElement<LTracker>() ) {
-      
+
       GeomHandle<LTracker> ltracker;
 
       _TrackerVersion = config.get<int>("LTrackerVersion",3); // also see Mu2eWorld.cc
@@ -113,7 +113,7 @@ namespace mu2e {
     _currentSize=0;
 
   }
-  
+
 
   G4bool StrawSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
@@ -121,7 +121,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	mf::LogWarning("G4") << "Maximum number of particles reached in StrawSD: " 
+	mf::LogWarning("G4") << "Maximum number of particles reached in StrawSD: "
 			      << _currentSize << endl;
       }
       return false;
@@ -157,10 +157,10 @@ namespace mu2e {
 //     G4int cn = touchableHandle->GetCopyNumber();
 //     G4int rn = touchableHandle->GetReplicaNumber();
 
-//     G4TouchableHistory* theTouchable = 
+//     G4TouchableHistory* theTouchable =
 //       (G4TouchableHistory*)( aStep->GetPreStepPoint()->GetTouchable() );
 
-//     cout << "Debugging history depth " << 
+//     cout << "Debugging history depth " <<
 //       setw(4) << theTouchable->GetHistoryDepth() << endl;
 
 //     cout << "Debugging replica 0 1 2 " <<
@@ -189,10 +189,10 @@ namespace mu2e {
 //       touchableHandle->GetVolume(3)->GetName() << " " <<
 //       touchableHandle->GetVolume(4)->GetName() << endl;
 
-//     cout << "Debugging hit info event track copyn replican: " << 
-//       setw(4) << en << " " << 
-//       setw(4) << ti << " " << 
-//       setw(4) << cn << " " << 
+//     cout << "Debugging hit info event track copyn replican: " <<
+//       setw(4) << en << " " <<
+//       setw(4) << ti << " " <<
+//       setw(4) << cn << " " <<
 //       setw(4) << rn << endl;
 
     // getting the sector/device number
@@ -200,11 +200,11 @@ namespace mu2e {
     G4int sdcn = 0;
 
     if ( _TrackerVersion == 3) {
-      
+
 //       cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
 //       cout << "Debugging _nStrawsPerSector " << _nStrawsPerSector << endl;
 
-      sdcn = touchableHandle->GetCopyNumber(1) + 
+      sdcn = touchableHandle->GetCopyNumber(1) +
         _nStrawsPerSector*(touchableHandle->GetReplicaNumber(2)) +
         _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(3));
 
@@ -212,7 +212,7 @@ namespace mu2e {
 
       throw cet::exception("GEOM")
         << "Expected TrackerVersion of 3 but found " << _TrackerVersion << endl;
-      
+
     }
 
     //    cout << "Debugging sdcn " << sdcn << endl;
@@ -235,10 +235,10 @@ namespace mu2e {
     // Transformations between world to local coordinate systems.
     G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
     G4AffineTransform        toWorld = toLocal.Inverse();
-    
+
     G4ThreeVector postPosWorld = aStep->GetPostStepPoint()->GetPosition();
     G4ThreeVector postPosLocal = toLocal.TransformPoint(postPosWorld);
-    
+
     G4ThreeVector prePosLocal  = toLocal.TransformPoint(prePosWorld);
 
     G4ThreeVector preMomLocal = toLocal.TransformAxis(preMomWorld);
@@ -276,7 +276,7 @@ namespace mu2e {
     printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %10.7f %10.7f\n",
              eventNo,  _collection->size(), copy,
              aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
-             prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
+             prePosTracker.x(), prePosTracker.y(), prePosTracker.z(),
              preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(),
              prePosLocal.perp(),  postPosLocal.perp()  );
     fflush(stdout);
@@ -295,7 +295,7 @@ namespace mu2e {
       // Point of closest approach of track to wire.
       // Straight line approximation.
       TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);
-    
+
       // Point on the wire that is closest to the step point.
       LinePointPCA lppca( mid, w, prePosTracker);
       double ddd = lppca.unit().cosTheta(preMomWorld);
@@ -305,7 +305,7 @@ namespace mu2e {
       printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f | %10.7f %10.7f\n",
                eventNo,  int(_collection->size()), copy,
                aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
-               prePosTracker.x(), prePosTracker.y(), prePosTracker.z(), 
+               prePosTracker.x(), prePosTracker.y(), prePosTracker.z(),
                preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
                prePosLocal.perp(),  postPosLocal.perp()  );
       fflush(stdout);
@@ -331,8 +331,8 @@ namespace mu2e {
 
       // Point of closest approach of track to wire.
       // Straight line approximation.
-      TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);    
-    
+      TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);
+
       // Check that the radius of the reference point in the local
       // coordinates of the straw.  Should be 2.5 mm.
       double s = w.dot(prePosTracker-mid);
@@ -354,7 +354,7 @@ namespace mu2e {
 //              << point.mag()        << " "
 //              << newHit->eDep()     << " "
 //              << s                  << " | "
-//              << mid                
+//              << mid
 //              << endl;
 //       }
 
@@ -364,7 +364,7 @@ namespace mu2e {
 
     //    newHit->Print();
     //    newHit->Draw();
-    
+
     return true;
 
   }
@@ -372,31 +372,31 @@ namespace mu2e {
   void StrawSD::EndOfEvent(G4HCofThisEvent*){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      mf::LogWarning("G4") << "Total of " << _currentSize 
-			    << " straw hits were generated in the event." 
+      mf::LogWarning("G4") << "Total of " << _currentSize
+			    << " straw hits were generated in the event."
 			    << endl
-			    << "Only " << _sizeLimit << " are saved in output collection." 
+			    << "Only " << _sizeLimit << " are saved in output collection."
 			    << endl;
-      cout << "Total of " << _currentSize 
-	   << " straw hits were generated in the event." 
+      cout << "Total of " << _currentSize
+	   << " straw hits were generated in the event."
 	   << endl
-	   << "Only " << _sizeLimit << " are saved in output collection." 
+	   << "Only " << _sizeLimit << " are saved in output collection."
 	   << endl;
     }
 
-    if (verboseLevel>0) { 
+    if (verboseLevel>0) {
       G4int NbHits = _collection->size();
-      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
+      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits
              << " hits in the straw chambers: " << G4endl;
       for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
-    } 
+    }
   }
 
   G4ThreeVector StrawSD::GetTrackerOrigin(const G4TouchableHandle & touchableHandle) {
 
     // how deep in the hierachy is the tracker a.k.a tracker depth
     // (depends on the tracker version)
-    // for LTracker 1,2,3 it is 3 
+    // for LTracker 1,2,3 it is 3
     // the tracker version is set in the constructor
 
     size_t td = 3;
@@ -416,7 +416,7 @@ namespace mu2e {
 
       if (dd>=td) cdo += touchableHandle->GetVolume(dd)->GetTranslation();
 
-//       cout << "Debugging: det depth name copy#: " << dd << " " << 
+//       cout << "Debugging: det depth name copy#: " << dd << " " <<
 //         touchableHandle->GetVolume(dd)->GetName() << " " <<
 //         touchableHandle->GetVolume(dd)->GetCopyNo() << endl;
 
@@ -427,7 +427,7 @@ namespace mu2e {
 //           lvp->GetDaughter(d)->GetCopyNo() << endl;
 //       }
 
-//       cout << "Debugging det origin: " << touchableHandle->GetVolume(dd)->GetTranslation() << 
+//       cout << "Debugging det origin: " << touchableHandle->GetVolume(dd)->GetTranslation() <<
 //         " " << cdo << endl;
 
     }
@@ -440,5 +440,5 @@ namespace mu2e {
     _collection = &outputHits;
     return;
   } // end of beforeG4Event
-  
+
 } //namespace mu2e

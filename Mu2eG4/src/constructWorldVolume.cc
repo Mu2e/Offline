@@ -1,9 +1,9 @@
 //
 // Free function to create world mother volume
 //
-// $Id: constructWorldVolume.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructWorldVolume.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -33,7 +33,7 @@ namespace mu2e {
 
     // A helper class.
     MaterialFinder materialFinder(*_config);
-    
+
     // Dimensions and material of the world.
     vector<double> worldHLen;
     _config->getVectorDouble("world.halfLengths", worldHLen, 3);
@@ -46,11 +46,11 @@ namespace mu2e {
     bool const placePV             = true;
 
     VolumeInfo worldInfo;
-  
+
     worldInfo.name    = "World";
-  
+
     worldInfo.solid   = new G4Box( worldInfo.name, worldHLen[0], worldHLen[1], worldHLen[2] );
-    
+
     finishNesting(worldInfo,
                   worldMaterial,
                   0,

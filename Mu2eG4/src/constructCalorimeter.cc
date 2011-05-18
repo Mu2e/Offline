@@ -1,12 +1,12 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.14 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructCalorimeter.cc,v 1.15 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Ivan Logashenko
-// 
+//
 // Notes
 // 1) The argument zOff is the zlocation of the center of the mother volume,
 //    as mesaured in the mu2e coordinate system.
@@ -79,8 +79,8 @@ namespace mu2e {
 
       double dim[3] = { size.x(), size.y(), size.z() };
 
-      cout << "Calorimeter Vane position: (" 
-           << pos.x() << "," << pos.y() << "," << pos.z() 
+      cout << "Calorimeter Vane position: ("
+           << pos.x() << "," << pos.y() << "," << pos.z()
            << ")" << endl;
 
       ostringstream name;
@@ -108,11 +108,11 @@ namespace mu2e {
       double CalorimeterVaneOffsetInMu2eZ = CalorimeterVaneOffsetInMu2e[CLHEP::Hep3Vector::Z];
       cout << __func__ << " Calorimeter mother center in Mu2e   : " << CalorimeterVaneOffsetInMu2e << endl;
       cout << __func__ << " CalorimeterVane   center in Mu2e    : " << CalorimeterVaneOffsetInMu2e << endl;
-      cout << __func__ << " CalorimeterVane Z extent in Mu2e    : " << 
+      cout << __func__ << " CalorimeterVane Z extent in Mu2e    : " <<
         CalorimeterVaneOffsetInMu2eZ - zhl << ", " << CalorimeterVaneOffsetInMu2eZ + zhl << endl;
     }
 
-    // Create materials for crystals 
+    // Create materials for crystals
 
     G4Material* crysMaterial = materialFinder.get("calorimeter.crystalMaterial");
     G4Material* wrapMaterial = materialFinder.get("calorimeter.crystalWrapper");
@@ -120,41 +120,41 @@ namespace mu2e {
 
     // Create solids for one crystal
 
-    G4Box * shell = new G4Box("CrystalShell", 
-                              cal.crystalHalfLength()+cal.roHalfThickness(), 
+    G4Box * shell = new G4Box("CrystalShell",
+                              cal.crystalHalfLength()+cal.roHalfThickness(),
                               cal.crystalHalfSize(),
                               cal.crystalHalfSize() );
-    G4Box * wrap  = new G4Box("CrystalWrap", 
-                              cal.crystalHalfLength(), 
+    G4Box * wrap  = new G4Box("CrystalWrap",
+                              cal.crystalHalfLength(),
                               cal.crystalHalfSize(),
                               cal.crystalHalfSize() );
-    G4Box * crys  = new G4Box("Crystal", 
-                              cal.crystalHalfLength()-2.0*cal.wrapperHalfThickness(), 
-                              cal.crystalHalfSize()-2.0*cal.wrapperHalfThickness(), 
+    G4Box * crys  = new G4Box("Crystal",
+                              cal.crystalHalfLength()-2.0*cal.wrapperHalfThickness(),
+                              cal.crystalHalfSize()-2.0*cal.wrapperHalfThickness(),
                               cal.crystalHalfSize()-2.0*cal.wrapperHalfThickness() );
-    G4Box * ro    = new G4Box("CrystalRO", 
-                              cal.roHalfThickness(), 
+    G4Box * ro    = new G4Box("CrystalRO",
+                              cal.roHalfThickness(),
                               cal.roHalfSize(),
                               cal.roHalfSize() );
-    
+
     int nro    = cal.nROPerCrystal();
     int ncrys  = cal.nCrystalPerVane();
     int ncrysR = cal.nCrystalR();
     int ncrysZ = cal.nCrystalZ();
 
     // Create logical volumes - we are going to reuse these
-        
-    G4LogicalVolume * l_wrap  = new G4LogicalVolume( wrap,  wrapMaterial, "l_CrystalWrap"); 
+
+    G4LogicalVolume * l_wrap  = new G4LogicalVolume( wrap,  wrapMaterial, "l_CrystalWrap");
     l_wrap->SetVisAttributes(G4VisAttributes::Invisible);
 
-    G4LogicalVolume * l_crys  = new G4LogicalVolume( crys,  crysMaterial, "l_Crystal"); 
+    G4LogicalVolume * l_crys  = new G4LogicalVolume( crys,  crysMaterial, "l_Crystal");
     l_crys->SetVisAttributes(new G4VisAttributes(false,G4Colour::Green()));
 
     G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
     l_crys->SetSensitiveDetector(ccSD);
 
-    G4LogicalVolume * l_ro = new G4LogicalVolume( ro,    readMaterial,  "l_CrystalRO" ); 
+    G4LogicalVolume * l_ro = new G4LogicalVolume( ro,    readMaterial,  "l_CrystalRO" );
     if(!isCrystalVisible) {
       l_ro->SetVisAttributes(G4VisAttributes::Invisible);
     } else {
@@ -172,7 +172,7 @@ namespace mu2e {
     //
     // Create crystals in the loop, one at a time. I do it this way, not using
     // replica or reusing the same logical volume to avoid problem with volume
-    // index in physHelper. 
+    // index in physHelper.
     //
 
     double step = cal.crystalHalfSize()*2.0;
@@ -186,7 +186,7 @@ namespace mu2e {
 
         ostringstream lname; lname << "l_CrystalShell" << id;
 
-        G4LogicalVolume * l_shell = new G4LogicalVolume( shell, fillMaterial, lname.str()); 
+        G4LogicalVolume * l_shell = new G4LogicalVolume( shell, fillMaterial, lname.str());
         if(!isCrystalVisible) {
           l_shell->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
@@ -198,7 +198,7 @@ namespace mu2e {
 
         ostringstream wname; wname << "l_CrystalWrap" << id;
 
-        G4LogicalVolume * l_wrap  = new G4LogicalVolume( wrap,  wrapMaterial, wname.str()); 
+        G4LogicalVolume * l_wrap  = new G4LogicalVolume( wrap,  wrapMaterial, wname.str());
         l_wrap->SetVisAttributes(G4VisAttributes::Invisible);
 
         // -- place crystal inside wrap
@@ -226,20 +226,20 @@ namespace mu2e {
           }
         }
 
-        // Place crystal shell for each crystal in the vane. 
-        
+        // Place crystal shell for each crystal in the vane.
+
         // Position - first run along Z, then along Y, both times in positive direction
         double x = 0.0;
         double y = 0.5*step*(2*(ic/ncrysZ)-ncrysR+1);
         double z = 0.5*step*(2*(ic%ncrysZ)-ncrysZ+1);
 
-        // Create volumes 
-        
+        // Create volumes
+
         new G4PVPlacement(0,G4ThreeVector(x,y,z),l_shell,"Crystal"
                           ,vaneInfo[iv].logical,0,id,doSurfaceCheck);
       }
     }
-    
+
   }
-  
+
 } // end namespace mu2e

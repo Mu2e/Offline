@@ -3,9 +3,9 @@
 //
 // Pure virtual base class that will used by both LTracker or TTracker.
 //
-// $Id: Tracker.hh,v 1.3 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:37 $
+// $Id: Tracker.hh,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -23,12 +23,12 @@ namespace mu2e {
   public:
     // No constructor on purpose.
     ~Tracker();
-    
+
     // Compiler generated copy and assignment constructors
     // should be OK.
 
     // Check for legal identifiers; add these later.
-    //virtual isLegal(DeviceId d) const = 0;    
+    //virtual isLegal(DeviceId d) const = 0;
     //virtual bool isLegal(const SectorId& sid) const = 0;
     //vitrual bool isLegal(const LayerId& lid ) const = 0;
     //virtual bool isLegal(const StrawId& sid) const =0;

@@ -1,9 +1,9 @@
 //
 // Add StepPointMC objects to the event.
 //
-// $Id: addStepPointMCs.cc,v 1.5 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: addStepPointMCs.cc,v 1.6 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -43,20 +43,20 @@ namespace mu2e{
 
   // For the LTracker and the TTracker.
   void addLT( const G4Event* g4event, StepPointMCCollection& outputHits  ){
-    
+
     // G4 Hit collections for this event.
     G4HCofThisEvent* hce = g4event->GetHCofThisEvent();
-    
+
     // Get the collection ID for the Sensitive Layer hits.
     // Magic name needs to move to a proper home.
     G4SDManager* SDman = G4SDManager::GetSDMpointer();
     G4int colId = SDman->GetCollectionID("StepPointG4Collection");
-    
+
     if ( colId >= 0 && hce != 0 ){
-      
+
       StepPointG4Collection* hits = static_cast<StepPointG4Collection*>(hce->GetHC(colId));
       G4int nHits = hits->entries();
-        
+
       for (G4int i=0;i<nHits;i++) {
         StepPointG4* h = (*hits)[i];
         outputHits.push_back( h->hit() );

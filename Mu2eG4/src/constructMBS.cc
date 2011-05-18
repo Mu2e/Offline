@@ -1,15 +1,15 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.4 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructMBS.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
-// Original author KLG 
+// Original author KLG
 //
-// Notes: 
+// Notes:
 //
-// The initial implementaion is described in Mu2e Document 1519 
+// The initial implementaion is described in Mu2e Document 1519
 
 // Note the interdependence of the position of the CryoSeal on
 // the position of the neutron absorber to avoid overlaps, it should
@@ -88,11 +88,11 @@ namespace mu2e {
 
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
-    
-    GeomHandle<Beamline> beamg;
-    double solenoidOffset = -beamg->solenoidOffset(); 
 
- 
+    GeomHandle<Beamline> beamg;
+    double solenoidOffset = -beamg->solenoidOffset();
+
+
     cout << __func__ << " verbosityLevel                          : " << verbosityLevel  << endl;
 
     if ( verbosityLevel > 0) {
@@ -106,9 +106,9 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double pzhl = static_cast<G4Tubs*>(detSolDownstreamVacInfo.solid->GetConstituentSolid(0))->GetZHalfLength();
       double pZOffset = detSolDownstreamVacInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " ToyDS3Vacuum   Offset in Mu2e    : " << 
+      cout << __func__ << " ToyDS3Vacuum   Offset in Mu2e    : " <<
         detSolDownstreamVacInfo.centerInMu2e() << endl;
-      cout << __func__ << " ToyDS3Vacuum Z extent in Mu2e    : " << 
+      cout << __func__ << " ToyDS3Vacuum Z extent in Mu2e    : " <<
         pZOffset - pzhl << ", " << pZOffset + pzhl << endl;
     }
 
@@ -133,7 +133,7 @@ namespace mu2e {
                                     0,
                                     BSTSOffset,
                                     detSolDownstreamVacInfo,
-                                    0, 
+                                    0,
                                     MBSisVisible,
                                     G4Colour::Gray(),
                                     MBSisSolid,
@@ -145,9 +145,9 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(BSTSInfo.solid)->GetZHalfLength();
       double BSTSOffsetInMu2eZ = BSTSOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " BSTSOffsetZ           in Mu2e    : " << 
+      cout << __func__ << " BSTSOffsetZ           in Mu2e    : " <<
         BSTSOffsetInMu2eZ << endl;
-      cout << __func__ << " BSTS         Z extent in Mu2e    : " << 
+      cout << __func__ << " BSTS         Z extent in Mu2e    : " <<
         BSTSOffsetInMu2eZ - zhl << ", " << BSTSOffsetInMu2eZ + zhl << endl;
     }
 
@@ -172,7 +172,7 @@ namespace mu2e {
                                     0,
                                     SPBSOffset,
                                     detSolDownstreamVacInfo,
-                                    0, 
+                                    0,
                                     MBSisVisible,
                                     G4Colour::Blue(),
                                     MBSisSolid,
@@ -184,7 +184,7 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(SPBSInfo.solid)->GetZHalfLength();
       double SPBSOffsetInMu2eZ = SPBSOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " SPBS         Z extent in Mu2e    : " << 
+      cout << __func__ << " SPBS         Z extent in Mu2e    : " <<
         SPBSOffsetInMu2eZ - zhl << ", " << SPBSOffsetInMu2eZ + zhl << endl;
     }
 
@@ -210,7 +210,7 @@ namespace mu2e {
                                     0,
                                     BSTCOffset,
                                     detSolDownstreamVacInfo,
-                                    0, 
+                                    0,
                                     MBSisVisible,
                                     orange,
                                     MBSisSolid,
@@ -223,7 +223,7 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(BSTCInfo.solid)->GetZHalfLength();
       double BSTCOffsetInMu2eZ = BSTCOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " BSTC         Z extent in Mu2e    : " << 
+      cout << __func__ << " BSTC         Z extent in Mu2e    : " <<
         BSTCOffsetInMu2eZ - zhl << ", " << BSTCOffsetInMu2eZ + zhl << endl;
     }
 
@@ -248,7 +248,7 @@ namespace mu2e {
                                     0,
                                     BSBSOffset,
                                     detSolDownstreamVacInfo,
-                                    0, 
+                                    0,
                                     MBSisVisible,
                                     G4Colour::Yellow(),
                                     MBSisSolid,
@@ -261,7 +261,7 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(BSBSInfo.solid)->GetZHalfLength();
       double BSBSOffsetInMu2eZ = BSBSOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " BSBS         Z extent in Mu2e    : " << 
+      cout << __func__ << " BSBS         Z extent in Mu2e    : " <<
         BSBSOffsetInMu2eZ - zhl << ", " << BSBSOffsetInMu2eZ + zhl << endl;
     }
 
@@ -286,7 +286,7 @@ namespace mu2e {
                                     0,
                                     CLV2Offset,
                                     detSolDownstreamVacInfo,
-                                    0, 
+                                    0,
                                     MBSisVisible,
                                     orange,
                                     MBSisSolid,
@@ -298,7 +298,7 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(CLV2Info.solid)->GetZHalfLength();
       double CLV2OffsetInMu2eZ = CLV2OffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " CLV2         Z extent in Mu2e    : " << 
+      cout << __func__ << " CLV2         Z extent in Mu2e    : " <<
         CLV2OffsetInMu2eZ - zhl << ", " << CLV2OffsetInMu2eZ + zhl << endl;
     }
 
@@ -315,7 +315,7 @@ namespace mu2e {
                                 CryoSealHLength);
 
     double CryoSealZ = _config->getDouble("neutronabsorber.internalZ01") +
-      _config->getDouble("neutronabsorber.internalHalfLengthZ01") + 
+      _config->getDouble("neutronabsorber.internalHalfLengthZ01") +
       2.*_config->getDouble("neutronabsorber.internalHalfLengthZ02") + CryoSealHLength;
 
     CLHEP::Hep3Vector CryoSealOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,CryoSealZ);
@@ -330,7 +330,7 @@ namespace mu2e {
                                         0,
                                         CryoSealOffset,
                                         hallInfo,
-                                        0, 
+                                        0,
                                         MBSisVisible,
                                         G4Colour::Green(),
                                         MBSisSolid,
@@ -343,7 +343,7 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(CryoSealInfo.solid)->GetZHalfLength();
       double CryoSealOffsetInMu2eZ = CryoSealOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " CryoSeal     Z extent in Mu2e    : " << 
+      cout << __func__ << " CryoSeal     Z extent in Mu2e    : " <<
         CryoSealOffsetInMu2eZ - zhl << ", " << CryoSealOffsetInMu2eZ + zhl << endl;
     }
 
@@ -364,7 +364,7 @@ namespace mu2e {
 
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    CRSSteelShield const & dssshield = 
+    CRSSteelShield const & dssshield =
       CosmicRayShieldGeomHandle->getCRSSteelShield("CRSSteelDownstreamShield");
 
     double EndPlug1USZ = dssshield.getHalfLengths()[2] + dssshield.getGlobalOffset()[CLHEP::Hep3Vector::Z];
@@ -401,7 +401,7 @@ namespace mu2e {
                                         0,
                                         EndPlug1Offset,
                                         hallInfo,
-                                        0, 
+                                        0,
                                         MBSisVisible,
                                         G4Colour::Gray(),
                                         MBSisSolid,
@@ -414,11 +414,11 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(EndPlug1Info.solid)->GetZHalfLength();
       double EndPlug1OffsetInMu2eZ = EndPlug1OffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " EndPlug1     Z extent in Mu2e    : " << 
+      cout << __func__ << " EndPlug1     Z extent in Mu2e    : " <<
         EndPlug1OffsetInMu2eZ - zhl << ", " << EndPlug1OffsetInMu2eZ + zhl << endl;
     }
 
-    // the end plug end disk 
+    // the end plug end disk
 
     double EndPlugDiskInnerRadius = 0.0;
     double EndPlugDiskOuterRadius = CryoSealOuterRadius;
@@ -449,7 +449,7 @@ namespace mu2e {
                                            0,
                                            EndPlugDiskOffset,
                                            hallInfo,
-                                           0, 
+                                           0,
                                            MBSisVisible,
                                            G4Colour::Gray(),
                                            MBSisSolid,
@@ -462,7 +462,7 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(EndPlugDiskInfo.solid)->GetZHalfLength();
       double EndPlugDiskOffsetInMu2eZ = EndPlugDiskOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " EndPlugDisk  Z extent in Mu2e    : " << 
+      cout << __func__ << " EndPlugDisk  Z extent in Mu2e    : " <<
         EndPlugDiskOffsetInMu2eZ - zhl << ", " << EndPlugDiskOffsetInMu2eZ + zhl << endl;
     }
 

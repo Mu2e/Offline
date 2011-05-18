@@ -4,9 +4,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: TargetMaker.hh,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Peter Shanahan
 //
@@ -26,11 +26,11 @@ class TargetMaker{
 
 public:
 
-  TargetMaker( SimpleConfig const& config );  
+  TargetMaker( SimpleConfig const& config );
 
   ~TargetMaker ();
 
-  // This is depracted and will go away soon.  
+  // This is depracted and will go away soon.
   // Still needed for root graphics version.
   const Target& getTarget() const { return *_targ;}
 
@@ -48,12 +48,12 @@ private:
   // pointer to the Mu2E Geometry Target being made
   std::auto_ptr<Target> _targ;
 
-  // variables needed to build the Target.  Read in from config file, 
-  // data base, etc.  These (and the TargetMaker object itself) only need 
-  // to persist long enough to make the Target.  After that, the definition 
+  // variables needed to build the Target.  Read in from config file,
+  // data base, etc.  These (and the TargetMaker object itself) only need
+  // to persist long enough to make the Target.  After that, the definition
   // resides entirely in the Target object.
 
-  double _z0 ; // nominal center of foils.  
+  double _z0 ; // nominal center of foils.
   double _deltaZ ; // nominal spacing of foils.
   double _rIn; // inner radius of foils.  Currently 0.
 

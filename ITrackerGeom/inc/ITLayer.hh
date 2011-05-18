@@ -14,7 +14,7 @@
 #include "ITrackerGeom/inc/ITLayerId.hh"
 #include "ITrackerGeom/inc/ITLayerDetail.hh"
 
-namespace mu2e { 
+namespace mu2e {
 
 class ITLayer{
 
@@ -40,7 +40,7 @@ public:
          std::vector<boost::shared_ptr<Cell> > &cells,
          std::vector<boost::shared_ptr<Wire> > &fieldWires
          );
-  
+
   ~ITLayer ();
 
   const ITLayerId& Id() const { return _id;}

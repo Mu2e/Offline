@@ -113,12 +113,12 @@ for i in xrange(nevents):
     if i%1000==0 and time.time()>(tnow+5) :
         print i," event read, ",nwrite," events written"
         tnow = time.time()
-        
+
     # get the next tree in the chain and verify
     ientry = chain.LoadTree( i )
     if ientry < 0:
         break
-    
+
     # copy next entry into memory and verify
     nb = chain.GetEntry( i )
     if nb <= 0:
@@ -137,4 +137,4 @@ for i in xrange(nevents):
 
 fout.close()
 
-    
+

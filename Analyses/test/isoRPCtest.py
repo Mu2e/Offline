@@ -2,9 +2,9 @@
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: isoRPCtest.py,v 1.1 2010/09/30 16:42:30 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2010/09/30 16:42:30 $
+# $Id: isoRPCtest.py,v 1.2 2011/05/18 02:27:14 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:14 $
 #
 # Original author Rob Kutschke
 #
@@ -13,7 +13,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this process a name.  
+# Give this process a name.
 process = mu2e.Process("RadiativePiTest")
 
 # Maximum number of events to do.
@@ -69,7 +69,7 @@ process.g4run = mu2e.EDProducer(
 #    visMacro = mu2e.untracked.string("Mu2eG4/test/visyz.mac"),
 # StepPoint
           stepsSizeLimit = mu2e.untracked.int32(10000),
-# SimParticle    
+# SimParticle
           particlesSizeLimit = mu2e.untracked.int32(10000),
     seed=mu2e.untracked.vint32(9877)
 )

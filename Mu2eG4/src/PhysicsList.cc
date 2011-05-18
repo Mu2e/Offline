@@ -1,13 +1,13 @@
 //
 // Construct particles; construct and register physics processes.
 // This is modeled on:
-//   $G4INSTALL/examples/novice/N02/include/ExN02PhysicsList.hh 
+//   $G4INSTALL/examples/novice/N02/include/ExN02PhysicsList.hh
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.6 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: PhysicsList.cc,v 1.7 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -86,10 +86,10 @@ namespace mu2e{
 
   // Called by the RunManager to set cuts.
   void PhysicsList::SetCuts(){
-    //G4VUserPhysicsList::SetCutsWithDefault method sets 
-    //the default cut value for all particle types 
+    //G4VUserPhysicsList::SetCutsWithDefault method sets
+    //the default cut value for all particle types
     SetCutsWithDefault();
-    
+
     if (verboseLevel>0) DumpCutValuesTable();
   }
 
@@ -155,9 +155,9 @@ namespace mu2e{
 
   // Electromagnetic processes.
   void PhysicsList::ConstructEM(){
-   
+
     //
-    // are we doing Mu2eReflection? 
+    // are we doing Mu2eReflection?
 
     if (!( _config->get<bool>("mu2eReflection",false))) {
       // Loop over all defined particle types.
@@ -171,47 +171,47 @@ namespace mu2e{
         G4String particleName = particle->GetParticleName();
 
         // In the following, do the new's leak?
-      
+
         // Define processes for each particle type.
         if (particleName == "gamma") {
 
           pmanager->AddDiscreteProcess(new G4PhotoElectricEffect);
           pmanager->AddDiscreteProcess(new G4ComptonScattering);
           pmanager->AddDiscreteProcess(new G4GammaConversion);
-        
+
         } else if (particleName == "e-") {
           pmanager->AddProcess(new G4eMultipleScattering, -1, 1, 1);
           pmanager->AddProcess(new G4eIonisation,         -1, 2, 2);
-          pmanager->AddProcess(new G4eBremsstrahlung,     -1, 3, 3);      
+          pmanager->AddProcess(new G4eBremsstrahlung,     -1, 3, 3);
         } else if (particleName == "e+") {
           pmanager->AddProcess(new G4eMultipleScattering, -1, 1, 1);
           pmanager->AddProcess(new G4eIonisation,         -1, 2, 2);
           pmanager->AddProcess(new G4eBremsstrahlung,     -1, 3, 3);
           pmanager->AddProcess(new G4eplusAnnihilation,    0,-1, 4);
-        
-        } else if( particleName == "mu+" || 
+
+        } else if( particleName == "mu+" ||
                    particleName == "mu-"    ) {
           pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
           pmanager->AddProcess(new G4MuIonisation,        -1, 2, 2);
           pmanager->AddProcess(new G4MuBremsstrahlung,    -1, 3, 3);
-          pmanager->AddProcess(new G4MuPairProduction,    -1, 4, 4);       
-        
+          pmanager->AddProcess(new G4MuPairProduction,    -1, 4, 4);
+
         } else if( particleName == "proton" ||
                    particleName == "pi-" ||
                    particleName == "pi+"    ) {
           pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
           pmanager->AddProcess(new G4hIonisation,         -1, 2, 2);
           pmanager->AddProcess(new G4hBremsstrahlung,     -1, 3, 3);
-          pmanager->AddProcess(new G4hPairProduction,     -1, 4, 4);       
-        
-        } else if( particleName == "alpha" || 
-                   particleName == "He3" || 
+          pmanager->AddProcess(new G4hPairProduction,     -1, 4, 4);
+
+        } else if( particleName == "alpha" ||
+                   particleName == "He3" ||
                    particleName == "GenericIon" ) {
           pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
           pmanager->AddProcess(new G4ionIonisation,       -1, 2, 2);
-        
+
         } else if ((!particle->IsShortLived()) &&
-                   (particle->GetPDGCharge() != 0.0) && 
+                   (particle->GetPDGCharge() != 0.0) &&
                    (particle->GetParticleName() != "chargedgeantino")) {
           pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
           pmanager->AddProcess(new G4hIonisation,         -1, 2, 2);
@@ -226,10 +226,10 @@ namespace mu2e{
     // Does this leak?
     G4Decay* theDecayProcess = new G4Decay();
     theParticleIterator->reset();
-    while( (*theParticleIterator)() ){ 
+    while( (*theParticleIterator)() ){
       G4ParticleDefinition* particle = theParticleIterator->value();
       G4ProcessManager* pmanager = particle->GetProcessManager();
-      if (theDecayProcess->IsApplicable(*particle)) { 
+      if (theDecayProcess->IsApplicable(*particle)) {
         pmanager ->AddProcess(theDecayProcess);
         // set ordering for PostStepDoIt and AtRestDoIt
         pmanager ->SetProcessOrdering(theDecayProcess, idxPostStep);
@@ -239,7 +239,7 @@ namespace mu2e{
 
     if (_config->get<bool>("mu2eReflection",false))
       {
-        //mu2e reflection; segregate code for debugging 
+        //mu2e reflection; segregate code for debugging
         Mu2eReflection* theReflectionProcess = new Mu2eReflection(
                                                                   "TargetFoil_",
                                                                   "ToyDSDownstreamVacuum",

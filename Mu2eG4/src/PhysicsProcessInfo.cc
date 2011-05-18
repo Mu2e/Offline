@@ -1,9 +1,9 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: PhysicsProcessInfo.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -71,7 +71,7 @@ namespace mu2e{
         G4String const& name  = proc->GetProcessName();
 
         map_type::iterator jj = _allProcesses.find(name);
-        
+
         // If not already in the map, then create it.
         if ( jj == _allProcesses.end() ){
           _longestName = (name.size() > _longestName) ? name.size() : _longestName;
@@ -84,13 +84,13 @@ namespace mu2e{
                  << endl;
           }
 
-          pair<map_type::iterator,bool> result = _allProcesses.insert( 
+          pair<map_type::iterator,bool> result = _allProcesses.insert(
                  std::make_pair(proc->GetProcessName(),ProcInfo(name,code) ));
           jj = result.first;
 
         }
 
-        // Add a particle to the 
+        // Add a particle to the
         ProcInfo& ojj = jj->second;
         ojj.particleNames.push_back(particleName);
 
@@ -111,7 +111,7 @@ namespace mu2e{
       _allProcesses.insert(std::make_pair(name,ProcInfo(code.name(),code) ));
     }
 
-  } // PhysicsProcessInfo::beginRun 
+  } // PhysicsProcessInfo::beginRun
 
   void PhysicsProcessInfo::endRun(){
     printSummary(cout);
@@ -162,7 +162,7 @@ namespace mu2e{
     os << "Number of registered processes: "
        << _allProcesses.size() << " "
        << endl;
-    
+
     for ( map_type::const_iterator i=_allProcesses.begin();
           i != _allProcesses.end(); ++i ){
       ProcInfo const& oi        = i->second;
@@ -171,10 +171,10 @@ namespace mu2e{
          << setw(4)            << oi.code.id() << " "
          << oi.count
          << endl;
-      
+
     }
   }
 
-  
+
 
 }  // end namespace mu2e

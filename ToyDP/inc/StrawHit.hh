@@ -1,11 +1,11 @@
 #ifndef ToyDP_StrawHit_hh
 #define ToyDP_StrawHit_hh
-// 
+//
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: StrawHit.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,7 @@
 // Mu2e includes
 #include "TrackerGeom/inc/StrawIndex.hh"
 
-namespace mu2e { 
+namespace mu2e {
 
   struct StrawHit{
   private:
@@ -59,7 +59,7 @@ namespace mu2e {
       return (_strawIndex==other._strawIndex&&
 	  _time==other._time&&
           _dt==other._dt&&
-	      _energyDep==other._energyDep); 
+	      _energyDep==other._energyDep);
     }
     bool operator<( const StrawHit other) const{
       return ( _strawIndex< other._strawIndex);

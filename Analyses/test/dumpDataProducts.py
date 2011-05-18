@@ -1,9 +1,9 @@
 #
 # Print information about all data products in a file.
 #
-# $Id: dumpDataProducts.py,v 1.1 2011/02/23 07:03:22 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/02/23 07:03:22 $
+# $Id: dumpDataProducts.py,v 1.2 2011/05/18 02:27:14 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:14 $
 #
 # Original author Rob Kutschke
 #
@@ -12,7 +12,7 @@
 # Define the default configuratio for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("DumpDataProducts")
 
 # Maximum number of events to do.

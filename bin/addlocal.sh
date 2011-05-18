@@ -1,13 +1,13 @@
 #
-# $Id: 
-# $Author: kutschke $
-# $Date: 2011/05/12 22:44:09 $
+# $Id:
+# $Author: wb $
+# $Date: 2011/05/18 02:27:20 $
 #
 # Original author Rob Kutschke
 #
 # Setup the environment to tell mute to look for certain files first in
-# the local directory and then in the base release. This script requires 
-# that you have already setup a base release.  The files that can be looked 
+# the local directory and then in the base release. This script requires
+# that you have already setup a base release.  The files that can be looked
 # in this manner include the geometry file(s), the generator configuration
 # file(s), the conditions data file(s), the particle data tables and
 # the magnetic field maps.  This list may be extended in the future.
@@ -40,7 +40,7 @@ if [ "${FW_BASE}" != '' ];then
 fi
 
 # Do the real work.
-# Add the local directory to the search path.  
+# Add the local directory to the search path.
 # The / before the : in FW_SEARCH_PATH is significant.
 export FW_BASE=$PWD
 export FW_SEARCH_PATH=$PWD/:$FW_SEARCH_PATH

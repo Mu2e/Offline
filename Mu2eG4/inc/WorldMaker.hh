@@ -2,10 +2,10 @@
 #define Mu2eG4_WorldMaker_hh
 //
 // The Mu2e version of G4VUserDetectorConstruction.
-// 
-// $Id: WorldMaker.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: WorldMaker.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -33,10 +33,10 @@ namespace mu2e {
   class WorldMaker : public G4VUserDetectorConstruction
   {
   public:
-    
+
     WorldMaker();
     ~WorldMaker();
-    
+
     // This is the required method prescribed by G4.
     G4VPhysicalVolume* Construct();
 

@@ -3,14 +3,14 @@
 //
 // A persistable class representing a point that is on a track and
 // is also inside, or on the boundary of, some G4 volume.  This can be
-// used for saving points on the trajectory of the tracking and 
-// cosmic ray veto systems and for non-senstive material that we wish 
-// to record for purposes of debugging fitters.  We may need a different 
+// used for saving points on the trajectory of the tracking and
+// cosmic ray veto systems and for non-senstive material that we wish
+// to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.13 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: StepPointMC.hh,v 1.14 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,7 @@
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e { 
+namespace mu2e {
 
   class StepPointMC{
 
@@ -44,7 +44,7 @@ namespace mu2e {
       _proper(0.),
       _stepLength(0.){
     }
-    
+
     StepPointMC( uint32_t                 trackId,
                  VolumeId_type            volumeId,
                  double                   totalEDep,
@@ -63,18 +63,18 @@ namespace mu2e {
       _proper(proper),
       _stepLength(stepLength){
     }
-    
+
     // Accept compiler generated versions of:
     //  d'tor
-    //  copy c'tor 
+    //  copy c'tor
     //  assignment operator
-    
+
     void print( std::ostream& ost, bool doEndl = true ) const;
     void print() const { print(std::cout); }
 
     MapVectorKey             trackId()    const { return _trackId;   }
     VolumeId_type            volumeId()   const { return _volumeId;  }
-    double                   totalEDep()  const { return _totalEDep; } 
+    double                   totalEDep()  const { return _totalEDep; }
     CLHEP::Hep3Vector const& position()   const { return _position;  }
     CLHEP::Hep3Vector const& momentum()   const { return _momentum;  }
     double                   time()       const { return _time;      }
@@ -82,14 +82,14 @@ namespace mu2e {
     double                   stepLength() const { return _stepLength;}
 
     // Kept for backwards compatibility.
-    double                   eDep()     const { return _totalEDep;    } 
+    double                   eDep()     const { return _totalEDep;    }
 
     // Return the volumeId as a StrawIndex.
     // It's the user's job to know if this is a reasonable thing to do.
     StrawIndex strawIndex() const { return StrawIndex(_volumeId); }
 
   private:
-  
+
     MapVectorKey      _trackId;
     VolumeId_type     _volumeId;
     double            _totalEDep;
@@ -98,7 +98,7 @@ namespace mu2e {
     double            _time;
     double            _proper;
     double            _stepLength;
-    
+
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
@@ -106,7 +106,7 @@ namespace mu2e {
     h.print(ost, false);
     return ost;
   }
-  
+
 
 } // namespace mu2e
 

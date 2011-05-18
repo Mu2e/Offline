@@ -1,10 +1,10 @@
 //
-// Plugin to test that I can read back the persistent data about straw hits.  
+// Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: ReadStrawHit_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -49,7 +49,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class ReadStrawHit : public art::EDAnalyzer {
   public:
     explicit ReadStrawHit(fhicl::ParameterSet const& pset):
@@ -80,7 +80,7 @@ namespace mu2e {
     void analyze( art::Event const& e);
 
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -113,9 +113,9 @@ namespace mu2e {
 
   void ReadStrawHit::beginJob(){
 
-    cout << "Diaglevel: " 
+    cout << "Diaglevel: "
          << _diagLevel << " "
-         << _maxFullPrint 
+         << _maxFullPrint
          << endl;
 
     art::ServiceHandle<art::TFileService> tfs;
@@ -132,9 +132,9 @@ namespace mu2e {
     _hT0           = tfs->make<TH1F>( "hT0",           "T0, ns", 100, -50., 50. );
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
-    _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple", 
+    _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple",
                       "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
-   _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple", 
+   _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple",
                       "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
   }
 
@@ -148,9 +148,9 @@ namespace mu2e {
     // Print the content of current event
     std::vector<art::Provenance const*> edata;
     evt.getAllProvenance(edata);
-    cout << "Event info: " 
-    << evt.id().event() <<  " " 
-    << " found " << edata.size() << " objects " 
+    cout << "Event info: "
+    << evt.id().event() <<  " "
+    << " found " << edata.size() << " objects "
     << endl;
     for( int i=0; i<edata.size(); i++ ) cout << *(edata[i]) << endl;
     */
@@ -163,7 +163,7 @@ namespace mu2e {
     // Get the persistent data about the StrawHits.
 
     if (ncalls==1){
-      const std::deque<Straw>& allstraws = tracker.getAllStraws();    
+      const std::deque<Straw>& allstraws = tracker.getAllStraws();
       float detnt[11];
       cout<<"Number of straws:  "<< allstraws.size()<<endl;
       for (size_t i = 0;i<allstraws.size();i++)
@@ -173,7 +173,7 @@ namespace mu2e {
 	  LayerId lid = sid.getLayerId();
 	  DeviceId did = sid.getDeviceId();
 	  SectorId secid = sid.getSectorId();
-	  
+
 	  //cout << "index: "  << i << " Layer: "<< lid.getLayer()<< " Device: "<< did <<"  Sector:  "<<secid.getSector()<<endl;
 	  //cout<<str.getHalfLength()<<endl;
 	  const CLHEP::Hep3Vector vec3j = str.getMidPoint();
@@ -224,8 +224,8 @@ namespace mu2e {
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in DPIndexVectorCollection, rather than 
-    // use producer name directly ("g4run"). 
+    // should look for product ids in DPIndexVectorCollection, rather than
+    // use producer name directly ("g4run").
 
     art::Handle<StepPointMCCollection> mchitsHandle;
     evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
@@ -243,7 +243,7 @@ namespace mu2e {
       StrawHit        const&      hit(hits->at(i));
       StrawHitMCTruth const&    truth(hits_truth->at(i));
       DPIndexVector   const&    mcptr(hits_mcptr->at(i));
-      
+
       // Fill per-event histograms
       if( i==0 ) {
         _hT0->Fill(truth.t0());
@@ -306,7 +306,7 @@ namespace mu2e {
     }
 
   } // end of ::analyze.
-  
+
 }
 
 

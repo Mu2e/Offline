@@ -16,18 +16,18 @@ public:
   // Construct from particle momentum, position, field, and charge.
   Helix(const HepGeom::Vector3D<double> &,
 	const HepGeom::Point3D<double> &,
-	double q, 
+	double q,
 	double Field);
 
   // Copy Constructor
   inline Helix(const Helix &right);
 
   // Construct on five helix parameters
-  inline Helix( 
-        double cotTheta, 
-        double curvature, 
-        double z0, 
-        double d0, 
+  inline Helix(
+        double cotTheta,
+        double curvature,
+        double z0,
+        double d0,
         Angle  phi0
         );
 
@@ -70,11 +70,11 @@ public:
 
   // Get pathlength at fixed rho=sqrt(x^2 + y^2)
   virtual double getPathLengthAtRhoEquals(double rho) const;
-  
+
   //////////////////////////////////////////////////////////////////////////////////
   // KCDF: analytical computation of helix/plane intersection.
   //
-  // What we really compute is the intersection of a line and 
+  // What we really compute is the intersection of a line and
   // a circle (projected helix) in the x-y plane.
   //
   //     >>>>>>>>>>  W A R N I N G    W A R N I N G    W A R N I N G  <<<<<<<<<<
@@ -91,7 +91,7 @@ public:
   //     > the intersection of the tangent line at the point and the plane.    <
   //     > We plan to use one of these approaches in the near future, but      <
   //     > this is NOT YET IMPLEMENTED!                                        <
-  //     > For the time being, we invoke the old numerical                     < 
+  //     > For the time being, we invoke the old numerical                     <
   //     > Trajectory::newIntersectionWith in such circumstances.              <
   //     >                                                                     <
   //     >>>>>>>>>>  W A R N I N G    W A R N I N G    W A R N I N G  <<<<<<<<<<
@@ -142,12 +142,12 @@ public:
   double getSinTheta() const;
   double getCosTheta() const;
 
-  // Set Parameters.  
+  // Set Parameters.
   inline void setParameters(const CLHEP::HepVector &p);
   /*
   // Get the parameters as a vector.
   inline const CLHEP::HepVector & getParameters() const;
-  
+
   // Create a helix from a vector
   static Helix create(const CLHEP::HepVector & v);
   */
@@ -184,7 +184,7 @@ private:
 
   // neede whenever _ss or _cc are used.
   inline void _cacheSinesAndCosines(double s) const;
-  
+
 };
 
 #include "CDFTrajectory/inc/Helix.icc"

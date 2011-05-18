@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.15 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: GenId.hh,v 1.16 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,7 @@
 // 2) I do want both the name() operator and the << operator.
 //    If only <<, then users will need to make temp ostringsteams
 //    if they want to do their own formatting.
-// 3) There are some notes on alternate implementations 
+// 3) There are some notes on alternate implementations
 //    at the end of the .cc file.
 // 4) Root stores enum types as 32 bit ints.
 
@@ -36,12 +36,12 @@ namespace mu2e {
       unknown,       particleGun,       conversionGun,
       cosmicToy,     cosmicDYB,         cosmic,            dio1,
       dio2,          dio3,              pionCapture,
-      muonCapture,   muonDecayInFlight, ejectedProtonGun, 
+      muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, nuclearCaptureGun,
       lastEnum
     };
-  
+
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                                \
       "unknown",      "particleGun",       "conversionGun",                        \
@@ -57,18 +57,18 @@ namespace mu2e {
     explicit GenId( enum_type id):
       _id(id)
     {};
-    
+
     enum_type Id() const { return _id;}
-    
-    const std::string name() const { 
+
+    const std::string name() const {
       return std::string( _name[_id] );
     }
-    
+
     // ROOT requires a default c'tor.
     GenId():
       _id(unknown){
     };
-    
+
     // Need this to interface with HepMC::GenEvent which stores an int.
     explicit GenId( int id):
       _id(static_cast<enum_type>(id)){
@@ -77,7 +77,7 @@ namespace mu2e {
         exit(-1);
       }
     }
-    
+
     virtual ~GenId(){}
 
     bool operator==(const GenId g) const{
@@ -90,12 +90,12 @@ namespace mu2e {
 
     // Accessor for the version.
     static int version() { return _version; }
- 
+
     // Static version of the name method.
-    static const std::string name( enum_type id ){ 
+    static const std::string name( enum_type id ){
       return std::string( _name[id] );
     }
-    
+
     // Check validity of an Id. Unknown is defined to be valid.
     static bool isValid( enum_type id){
       if ( id <  unknown  ) return false;
@@ -126,9 +126,9 @@ namespace mu2e {
     // files that have different versions?  Should I use cvs version instead?
     // This is really an edm question not a question for the class itself.
     static const uint32_t _version = 1000;
-    
+
   };
-  
+
   // Shift left (printing) operator.
   inline std::ostream& operator<<(std::ostream& ost,
                                   const GenId& id ){

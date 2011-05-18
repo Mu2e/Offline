@@ -7,9 +7,9 @@
 //   - it provides a view to return a hit by StrawIndex.
 //   - it provides a convenience method getStepPointMC().
 //
-// $Id: CrudeStrawHitCollection.hh,v 1.9 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CrudeStrawHitCollection.hh,v 1.10 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +39,7 @@ namespace mu2e {
   public:
 
     // No default constructor by design.
-    
+
     CrudeStrawHitCollection( art::Event const& event,
                              art::Handle<CrudeStrawHitPData> const& hits );
 
@@ -81,7 +81,7 @@ namespace mu2e {
       return *_hits;
     }
 
-    // Fill the array of pointers to const, v, elements of which point 
+    // Fill the array of pointers to const, v, elements of which point
     // to the precursors of the specified hit.
     void getStepPointMC( int i,
                          std::vector<StepPointMC const*>& v ) const;

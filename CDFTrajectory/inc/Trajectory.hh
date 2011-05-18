@@ -13,7 +13,7 @@ namespace mu2e {
 
 class Line;
 class Trajectory  {
-  
+
 public:
 
   // Constructor
@@ -22,7 +22,7 @@ public:
   virtual ~Trajectory();
 
   class Location {
-    
+
 
 
   public:
@@ -43,9 +43,9 @@ public:
       , _dirIsValid(true)
       {}
 
-    Location(double s, 
-             double a, double b, double c, 
-             double x, double y, double z) : 
+    Location(double s,
+             double a, double b, double c,
+             double x, double y, double z) :
       __s(s), _position(a,b,c), _direction(x,y,z)
       , _dirIsValid(true)
       {}
@@ -80,8 +80,8 @@ public:
       _dirIsValid=true;
     }
 
-    void setLocation(double s, 
-                     double a, double b, double c, 
+    void setLocation(double s,
+                     double a, double b, double c,
                      double x, double y, double z) {
       __s=s;
       _position.setX(a); // should avoid any destructors / constructors this way
@@ -93,7 +93,7 @@ public:
       _dirIsValid=true;
     }
 
-    void setLocation(double s, double a, double b, double c) { 
+    void setLocation(double s, double a, double b, double c) {
       __s=s;
       _position.setX(a); // should avoid any destructors / constructors this way
       _position.setY(b); // The set? method should be inlined in CLHEP
@@ -108,7 +108,7 @@ public:
 
     const HepGeom::Point3D<double> & position(void) const { return _position; }
 
-    inline const HepGeom::Vector3D<double> & direction(void) const; 
+    inline const HepGeom::Vector3D<double> & direction(void) const;
 
     void print(std::ostream & os=std::cerr) const;
 
@@ -123,10 +123,10 @@ public:
 
   // Get position as a function of pathlength
   virtual HepGeom::Point3D<double> getPosition(double s = 0.0) const = 0;
-  
+
   // Get direction as a function of pathlength
   virtual HepGeom::Vector3D<double> getDirection(double s = 0.0) const = 0;
-  
+
   // Get both position and location as a function of pathlength
   virtual void getLocation(Trajectory::Location & loc, double s = 0.0) const;
 
@@ -135,28 +135,28 @@ public:
 
   // Get pathlength at specifed distance from z-axis
   virtual double getPathLengthAtRhoEquals(double rho) const;
-  
+
   // Get D0 to a point
   virtual double getPathLengthTo(const HepGeom::Point3D<double> &point) const;
-  
+
 
   // Get pathlength to another trajectory
   virtual double getPathLengthTo(const Trajectory &traj) const;
-  
+
   // Get D0 to another trajectory
   virtual double getDzeroTo(const HepGeom::Point3D<double> &point) const;
-  
+
   // Get D0 to another trajectory
   virtual double getDzeroTo(const Trajectory &traj) const;
-  
+
   // Return a new intersection with a plane.  Deletion is NOT the
   // responsibility of the caller.
   virtual Location * newIntersectionWith(const HepGeom::Plane3D<double> &plane) const;
-  
+
   // Get the second derivative vector.
   virtual HepGeom::Vector3D<double> getSecondDerivative(double s = 0.0) const = 0;
-  
-  
+
+
 protected:
 
   static const double ECOARSE; // various numbers defining search precision
@@ -166,9 +166,9 @@ protected:
   static const double EEFINE ;
   static const double COMP_PREC; // Minimum precision for comparisons
   static const double NUM_PREC; // Minimum precision for things which *should* be zero
-    
 
-  
+
+
 };
 
 #include "CDFTrajectory/inc/Trajectory.icc"

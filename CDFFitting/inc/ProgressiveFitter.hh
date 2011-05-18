@@ -24,7 +24,7 @@ class ProgressiveFitter : public Fitter<Measureable> {
 
 
 public:
-  
+
   // Constructor
   ProgressiveFitter();
 
@@ -36,31 +36,31 @@ public:
 
   // Assignment
   const ProgressiveFitter<Measureable> & operator=(const ProgressiveFitter<Measureable> &right);
-  
+
   // Returns the number of Fit Actions applied so far by the fitter.
   virtual unsigned int getNumAppliedFitActions() const;
-  
+
   // Apply all of the fit actions sequentially, first through last.
   virtual void fit();
-  
+
   // Incorporate the next unincorporated fit action; return
   // true if an action remained to be incorporated, false
   // otherwise.
   virtual bool incorporateNextAction();
-  
+
   // Return the fit.  Return NULL if no fit has been
   // performed.
   virtual const Fit<Measureable> * getFit() const;
-  
+
   // return the Residual of the ith measurement.  In the
   // presence of system noise, this will be an inaccurate
   // estimate.
   virtual const Residual * newResidual(const Measurement<Measureable> *measurement) ;
-  
+
   // Reset the fit
   virtual void resetFit();
-  
-  
+
+
 protected:
 
   HepVector _estimate;
@@ -68,7 +68,7 @@ protected:
   double _chiSquared;
   int _degreesOfFreedom;
   int _numAppliedFitActions;
-  Fit<Measureable> *   _fit;  
+  Fit<Measureable> *   _fit;
 
 
   // Some workspace:  These are not part of the state and would
@@ -78,8 +78,8 @@ protected:
   // at these variables.   In order to stow them away for itself.
   HepVector      _residual;
   HepSymMatrix   _residualCov;
-  HepSymMatrix   _errorMatrix;       
-  HepMatrix      _derivativeMatrix;  
+  HepSymMatrix   _errorMatrix;
+  HepMatrix      _derivativeMatrix;
   HepVector      _displacementVector;
 
 
@@ -91,7 +91,7 @@ protected:
   virtual void apply(const Transport<Measureable> *theFitterAction);
   virtual void apply(const StartingPoint<Measureable> *theFitterAction);
   virtual void apply(const FitAction<Measureable> *theFitterAction);
-  
+
 };
 
 #include "CDFFitting/inc/ProgressiveFitter.icc"

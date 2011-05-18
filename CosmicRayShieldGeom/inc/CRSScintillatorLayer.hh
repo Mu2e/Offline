@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Layer in  CosmicRayShield
 //
-// $Id: CRSScintillatorLayer.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSScintillatorLayer.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG; somewhat based on  Rob Kutschke's Layer
 //
@@ -44,9 +44,9 @@ namespace mu2e {
                          );
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
- 
+
     CRSScintillatorLayerId const & Id() const { return _id;}
-  
+
     int nBars() const { return _nBars; }
 
     CLHEP::Hep3Vector const & getLocalOffset() const {return _localOffset;}

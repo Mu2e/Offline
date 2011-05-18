@@ -1,11 +1,11 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructNeutronAbsorber.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
-// Original author KLG 
+// Original author KLG
 //
 // Notes:
 // Construct the Neutron Absorbers in G4
@@ -84,14 +84,14 @@ namespace mu2e {
 
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
-    
+
     VolumeInfo const & hallInfo = _helper->locateVolInfo("HallAir");
 
     // NAEZ0 is the offset in mu2e
     // the Z offset in World is NAEZ0+mu2eOrigin
 
     GeomHandle<Beamline> beamg;
-    double solenoidOffset = -beamg->solenoidOffset(); 
+    double solenoidOffset = -beamg->solenoidOffset();
     // this is an offset in X (and in what?) and should be negative?
 
     if ( verbosityLevel > 0) {
@@ -118,7 +118,7 @@ namespace mu2e {
     double NAETopHalfZ   = NAEHalfLengthZ;
     double NAESideHalfX  = NAEHalfThickness;
     double NAESideHalfY  = NAEHalfLengthXY - NAEHalfThickness;
-    double NAESideHalfZ  = NAEHalfLengthZ; 
+    double NAESideHalfZ  = NAEHalfLengthZ;
 
     double NAETopDims[3] = {
       NAETopHalfX,
@@ -159,9 +159,9 @@ namespace mu2e {
                                     0,
                                     NAEBottomOffset + NAEOffset,
                                     hallInfo,
-                                    0, 
+                                    0,
                                     NAVisible,
-                                    G4Colour::Cyan(), 
+                                    G4Colour::Cyan(),
                                     NASolid,
                                     forceAuxEdgeVisible,
                                     placePV,
@@ -174,14 +174,14 @@ namespace mu2e {
                                     0,
                                     NAELeftOffset + NAEOffset,
                                     hallInfo,
-                                    0, 
+                                    0,
                                     NAVisible,
                                     G4Colour::Cyan(),
                                     NASolid,
                                     forceAuxEdgeVisible,
                                     placePV,
                                     doSurfaceCheck
-                                    ); 
+                                    );
 
     VolumeInfo RightInfo  = nestBox("ExternalNeutronAbsorberRight",
                                     NAESideDims,
@@ -189,14 +189,14 @@ namespace mu2e {
                                     0,
                                     NAERightOffset + NAEOffset,
                                     hallInfo,
-                                    0, 
+                                    0,
                                     NAVisible,
                                     G4Colour::Cyan(),
                                     NASolid,
                                     forceAuxEdgeVisible,
                                     placePV,
                                     doSurfaceCheck
-                                    ); 
+                                    );
 
     // now constructing the internal neutron absorber
     // it is placed inside ToyDS2Vacuum & ToyDS3Vacuum like the protonabs1 & 2
@@ -240,17 +240,17 @@ namespace mu2e {
     // G4VSolid* dsv1s = toyDS2VacuumInfo.solid
     // G4VPhysicalVolume* dsv1p = toyDS2VacuumInfo.physical;
 
-    double ds2HalfLength = 
+    double ds2HalfLength =
       dynamic_cast<G4Tubs* const>(toyDS2VacuumInfo.solid)->GetZHalfLength();
 
-     double ds3HalfLength = 
+     double ds3HalfLength =
       dynamic_cast<G4Tubs* const>(toyDS3VacuumInfo.solid->GetConstituentSolid(0))->GetZHalfLength();
 
    if ( verbosityLevel > 0) {
-      cout << __func__ << " toyDS2VacuumInfo.solid->GetZHalfLength()    : " << 
+      cout << __func__ << " toyDS2VacuumInfo.solid->GetZHalfLength()    : " <<
         ds2HalfLength  << endl;
 
-      cout << __func__ << " toyDS3VacuumInfo.solid->GetZHalfLength()    : " << 
+      cout << __func__ << " toyDS3VacuumInfo.solid->GetZHalfLength()    : " <<
         ds3HalfLength  << endl;
 
     }
@@ -258,13 +258,13 @@ namespace mu2e {
     // what are the offsets of the DS2,3Vacuum in the Mu2e system?
     // the ds2/ds3 boundary in mu2e coordinates
 
-    double ds23BoudaryZG = toyDS2VacuumInfo.centerInMu2e()(2) + 
+    double ds23BoudaryZG = toyDS2VacuumInfo.centerInMu2e()(2) +
       ds2HalfLength;
 
     double ds2FrontZG    = toyDS2VacuumInfo.centerInMu2e()(2) -
       ds2HalfLength;
 
-    double ds3EndZG      = ds23BoudaryZG + 
+    double ds3EndZG      = ds23BoudaryZG +
       2.*ds3HalfLength;
 
 
@@ -300,18 +300,18 @@ namespace mu2e {
 
     // spliting the InternalNeutronAbsorber2
 
-    
+
     double halfDeltaBoundary = (ds23BoudaryZG - NAI12BoundaryZ)*.5;
     double averageBoundary = (ds23BoudaryZG + NAI12BoundaryZ)*.5;
 
-    CLHEP::Hep3Vector NAI23OffsetInMu2e = 
+    CLHEP::Hep3Vector NAI23OffsetInMu2e =
       CLHEP::Hep3Vector(solenoidOffset,0.,NAIZ02+halfDeltaBoundary);
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " NAI23OffsetInMu2e                : " << NAI23OffsetInMu2e << endl;
     }
 
-    CLHEP::Hep3Vector NAI22OffsetInMu2e = 
+    CLHEP::Hep3Vector NAI22OffsetInMu2e =
       CLHEP::Hep3Vector(solenoidOffset,0.,averageBoundary);
 
     if ( verbosityLevel > 0) {
@@ -323,9 +323,9 @@ namespace mu2e {
     CLHEP::Hep3Vector NAI23Offset =  NAI23OffsetInMu2e - toyDS3VacuumInfo.centerInMu2e();
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " toyDS2VacuumInfo.centerInMu2e()  : " << 
+      cout << __func__ << " toyDS2VacuumInfo.centerInMu2e()  : " <<
         toyDS2VacuumInfo.centerInMu2e() << endl;
-      cout << __func__ << " toyDS3VacuumInfo.centerInMu2e()  : " << 
+      cout << __func__ << " toyDS3VacuumInfo.centerInMu2e()  : " <<
         toyDS3VacuumInfo.centerInMu2e() << endl;
       cout << __func__ << " NAI1Offset                       : " << NAI1Offset  << endl;
       cout << __func__ << " NAI22Offset                      : " << NAI22Offset << endl;
@@ -343,11 +343,11 @@ namespace mu2e {
                            NAIOuterRadius,
                            NAIHalfLengthZ01);
 
-    G4Tubs* NAI1STubs = new G4Tubs(INA1Info.name + "Tubs", 
+    G4Tubs* NAI1STubs = new G4Tubs(INA1Info.name + "Tubs",
                                    NAI1Params.innerRadius,
                                    NAI1Params.outerRadius,
                                    NAI1Params.zHalfLength,
-                                   NAI1Params.phi0, 
+                                   NAI1Params.phi0,
                                    NAI1Params.phiMax);
 
     // to be subtracted conical section
@@ -386,14 +386,14 @@ namespace mu2e {
                             NAIOuterRadius,
                             NAIHalfLengthZ02-halfDeltaBoundary);
 
- 
+
     VolumeInfo INA22Info  = nestTubs("InternalNeutronAbsorber22",
                                      NAI22Params,
                                      NAMaterial,
                                      0,
                                      NAI22Offset,
                                      toyDS2VacuumInfo,
-                                     0, 
+                                     0,
                                      NAVisible,
                                      G4Colour::Cyan(),
                                      NASolid,
@@ -408,21 +408,21 @@ namespace mu2e {
                                      0,
                                      NAI23Offset,
                                      toyDS3VacuumInfo,
-                                     0, 
+                                     0,
                                      NAVisible,
                                      G4Colour::Cyan(),
                                      NASolid,
                                      forceAuxEdgeVisible,
                                      placePV,
                                      doSurfaceCheck
-                                     ); 
+                                     );
 
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(INA23Info.solid)->GetZHalfLength();
       CLHEP::Hep3Vector const & IntNeutronAbs23OffsetInMu2e = INA23Info.centerInMu2e();
       double IntNeutronAbs23OffsetInMu2eZ = IntNeutronAbs23OffsetInMu2e[CLHEP::Hep3Vector::Z];
       cout << __func__ << " INA23Info Z center in Mu2e    : " << IntNeutronAbs23OffsetInMu2eZ << endl;
-      cout << __func__ << " INA23Info Z extent in Mu2e    : " << 
+      cout << __func__ << " INA23Info Z extent in Mu2e    : " <<
         IntNeutronAbs23OffsetInMu2eZ - zhl << ", " << IntNeutronAbs23OffsetInMu2eZ + zhl << endl;
     }
 

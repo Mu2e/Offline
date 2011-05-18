@@ -2,9 +2,9 @@
 // Representation of one Scintillator Module in  CosmicRayShield
 //
 //
-// $Id: CRSScintillatorModule.cc,v 1.1 2011/03/09 19:42:24 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:42:24 $
+// $Id: CRSScintillatorModule.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG based on Rob Kutschke's Sector
 //
@@ -25,7 +25,7 @@ namespace mu2e {
       _globalOffset(CLHEP::Hep3Vector(0.,0.,0.))
     {};
 
-    CRSScintillatorModule::CRSScintillatorModule( CRSScintillatorModuleId const& id, 
+    CRSScintillatorModule::CRSScintillatorModule( CRSScintillatorModuleId const& id,
                                                   int const nBarsPerLayer ):
       _id(id),
       _nBarsPerLayer(nBarsPerLayer)

@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructTS.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -41,7 +41,7 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructTS( const VolumeInfo& parent, 
+  void constructTS( const VolumeInfo& parent,
                     SimpleConfig const * const _config
                     ){
 
@@ -134,9 +134,9 @@ namespace mu2e {
 
     // Place collimator 1
 
-    double coll1Param[7] = { coll1InnerRadius1, rVac, 
+    double coll1Param[7] = { coll1InnerRadius1, rVac,
 			     coll1InnerRadius2, rVac,
-			     coll1HalfLength-2*vdHalfLength, 
+			     coll1HalfLength-2*vdHalfLength,
 			     0.0, 360.0*CLHEP::degree };
 
     VolumeInfo coll1VacInfo = nestCons( "Coll1",
@@ -199,7 +199,7 @@ namespace mu2e {
 
     TubsParams ts3VacParams (   0.,  rVac, ts3HalfLength);
     TubsParams ts3CryoParams( rVac, rCryo, ts3HalfLength);
-    
+
     VolumeInfo ts3VacInfo = nestTubs( "ToyTS3Vacuum",
                                       ts3VacParams,
                                       vacuumMaterial,
@@ -229,12 +229,12 @@ namespace mu2e {
                                        placePV,
                                        doSurfaceCheck
                                        );
-    
+
     // Place collimator 3
-    
+
     // Collimator 3 has peculiar shape, described in doc_db 853.
     // Construct this shape using boolean functions on solids
-   
+
     // First, construct hole; make it slightly longer that any collimator
     double hDz = coll31HalfLength;
     if( hDz<coll32HalfLength ) hDz=coll32HalfLength;
@@ -247,45 +247,45 @@ namespace mu2e {
     G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
 							      coll3_hole_box,
 							      coll3_hole_circle);
-    
-    // Make collimators themselves. At this moment the collimators 
+
+    // Make collimators themselves. At this moment the collimators
     // coll31 and coll32 are the same size. But it is possible to make them
-    // different length. Therefore two solids are created, but the same hole 
+    // different length. Therefore two solids are created, but the same hole
     // is subtracted from both solids.
-    
+
     VolumeInfo coll31Info;
     VolumeInfo coll32Info;
-    
+
     coll31Info.name = "Coll31";
     coll32Info.name = "Coll32";
-    
+
     G4Tubs* coll31_mother = new G4Tubs("Coll31_mother",
 				       0, rVac, coll31HalfLength-2*vdHalfLength,
 				       0.0, 360.0*CLHEP::degree );
-    
+
     G4Tubs* coll32_mother = new G4Tubs("Coll32_mother",
 				       0, rVac, coll32HalfLength-2*vdHalfLength,
 				       0.0, 360.0*CLHEP::degree );
-    
+
     coll31Info.solid = new G4SubtractionSolid(coll31Info.name,
 					      coll31_mother,
 					      coll3_hole,
 					      0,
 					      G4ThreeVector(0,coll3HoleDisplacement,0));
-    
+
     coll32Info.solid = new G4SubtractionSolid(coll32Info.name,
 					      coll32_mother,
 					      coll3_hole,
 					      0,
 					      G4ThreeVector(0,coll3HoleDisplacement,0));
-    
+
     // Now use finishNesting to place collimators 31 and 32
-    
+
     G4RotationMatrix* coll31Rot = reg.add(G4RotationMatrix());
     G4RotationMatrix* coll32Rot = reg.add(G4RotationMatrix());
     coll31Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
     coll32Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
-    
+
     finishNesting(coll31Info,
 		  coll3Material,
 		  coll31Rot,
@@ -311,7 +311,7 @@ namespace mu2e {
 		  forceAuxEdgeVisible,
 		  placePV,
 		  doSurfaceCheck);
-  
+
     // Place Pbar absorber between Coll31 and Coll32
 
     double pbarHalfLength     = _config->getDouble("pbar.halfLength");
@@ -374,7 +374,7 @@ namespace mu2e {
                                        placePV,
                                        doSurfaceCheck
                                        );
-    
+
     // Build TS5.
 
     TubsParams ts5VacParams (   0.,  rVac, ts5HalfLength);
@@ -412,7 +412,7 @@ namespace mu2e {
 
     // Place collimator 5
 
-    double coll5Param[5] = { coll5InnerRadius, rVac, 
+    double coll5Param[5] = { coll5InnerRadius, rVac,
 			     coll5HalfLength-2*vdHalfLength, 0.0, 360.0*CLHEP::degree };
 
     VolumeInfo coll5VacInfo = nestTubs( "Coll5",
@@ -429,7 +429,7 @@ namespace mu2e {
                                         placePV,
                                         doSurfaceCheck
                                         );
-    
+
   } // end Mu2eWorld::constructTS
-  
+
 }

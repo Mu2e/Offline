@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author KLG
 //
@@ -46,14 +46,14 @@ namespace mu2e {
 
   public:
 
-    explicit MakeCaloCrystalHits(fhicl::ParameterSet const& pset) : 
+    explicit MakeCaloCrystalHits(fhicl::ParameterSet const& pset) :
 
       // Parameters
 
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
-      _maximumEnergy(pset.get<double>("maximumEnergy",1000.0)), //MeV 
+      _maximumEnergy(pset.get<double>("maximumEnergy",1000.0)), //MeV
       _minimumTimeGap(pset.get<double>("minimumTimeGap",100.0)),// ns
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _messageCategory("CaloHitMaker")
@@ -65,11 +65,11 @@ namespace mu2e {
     virtual ~MakeCaloCrystalHits() { }
 
     virtual void beginJob();
- 
+
     void produce( art::Event& e);
 
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -82,7 +82,7 @@ namespace mu2e {
     double _maximumEnergy;  // energy of a saturated RO
 
     double _minimumTimeGap; // to merge the hits
-      
+
     string _g4ModuleLabel;  // Name of the module that made the input hits.
 
     // A category for the error logger.
@@ -96,21 +96,21 @@ namespace mu2e {
   void MakeCaloCrystalHits::beginJob(){
   }
 
-  void MakeCaloCrystalHits::fixEnergy(CaloCrystalHitCollection::value_type & caloCrystalHit, 
+  void MakeCaloCrystalHits::fixEnergy(CaloCrystalHitCollection::value_type & caloCrystalHit,
                                       int tnro, double electronEdep) {
 
     int nridu = caloCrystalHit.numberOfROIdsUsed();
 
     if ( _diagLevel > 0 ) {
       cout << __func__ << ": fixing energy: " << caloCrystalHit.energyDep()
-           << ", used roids: " << nridu 
+           << ", used roids: " << nridu
            << ", energyDepT: " << caloCrystalHit.energyDepTotal() << endl;
     }
 
     if (nridu > 0 && nridu < tnro ) {
       caloCrystalHit.setEnergyDep(caloCrystalHit.energyDep()/
                                   double(nridu)*double(tnro));
-    } 
+    }
 
     // fix only if all ro are saturated
     if (nridu == 0 && caloCrystalHit.energyDepTotal()/tnro >= electronEdep) {
@@ -121,7 +121,7 @@ namespace mu2e {
 
     if ( _diagLevel > 0 ) {
       cout << __func__ << ": fixed  energy: " <<  caloCrystalHit.energyDep()
-           << ", used roids: " << nridu 
+           << ", used roids: " << nridu
            << ", energyDepT: " << caloCrystalHit.energyDepTotal() << endl;
     }
 
@@ -137,7 +137,7 @@ namespace mu2e {
     auto_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
 
     if ( _diagLevel > 0 ) cout << __func__ << ": begin" << endl;
-      
+
     static int ncalls(0);
     ++ncalls;
 
@@ -170,10 +170,10 @@ namespace mu2e {
     double electronEdep = cal.getElectronEdep();
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-      _diagLevel > 0 && 
+      _diagLevel > 0 &&
         cout << __func__ << ": Total number of hit RO = " << caloHits->size() << endl;
       for( size_t i=0; i<caloHits->size(); ++i ) {
-        _diagLevel > 0 && 
+        _diagLevel > 0 &&
           cout << __func__ << ": " << (*caloHits)[i]
                << " CrystalId: " << cal.getCrystalByRO((*caloHits)[i].id()) << endl;
       }
@@ -186,17 +186,17 @@ namespace mu2e {
     art::ProductID const& caloHitCollId(caloHits.id());
     //mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
 
-    // Instatiate caloHitsSorted from caloHits which is const, 
+    // Instatiate caloHitsSorted from caloHits which is const,
     //  we may do it with pointers to hits later instead
     CaloHitCollection caloHitsSorted(*caloHits);
 
     // Sort them by id & time
-    sort(caloHitsSorted.begin(), caloHitsSorted.end(), 
+    sort(caloHitsSorted.begin(), caloHitsSorted.end(),
          lessByCIdAndTime<CaloHitCollection::value_type>(cal));
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
       cout << __func__ << ": Total number of hit RO Sorted = " << caloHitsSorted.size() << endl;
-      for(CaloHitCollection::const_iterator i = caloHitsSorted.begin(); 
+      for(CaloHitCollection::const_iterator i = caloHitsSorted.begin();
           i != caloHitsSorted.end(); ++i) {
         //      for( size_t i=0; i<caloHitsSorted.size(); ++i ) {
         cout << __func__ << ": ";
@@ -223,7 +223,7 @@ namespace mu2e {
     } else {
       caloCrystalHit.assignEnergyToTot(cal.getCrystalByRO(hit0.id()),caloHitCollId,hit0);
     }
-    
+
     _diagLevel > 0 && cout << __func__ << ": As in CaloCrystalHit: "
                            << caloCrystalHit << endl;
 
@@ -233,26 +233,26 @@ namespace mu2e {
       CaloHitCollection::value_type const & hit = *i;
 
       _diagLevel > 0 && cout << __func__ << ": Original RO hit: " << hit << endl;
-      
+
       int cid = cal.getCrystalByRO(hit.id());
 
-      _diagLevel > 0 && 
+      _diagLevel > 0 &&
         cout << __func__ << ": old, new cid:  " << caloCrystalHit.id() << ", " << cid << endl;
-      _diagLevel > 0 && 
+      _diagLevel > 0 &&
         cout << __func__ << ": old, new time: " << caloCrystalHit.time() << ", " << hit.time() << endl;
 
-      _diagLevel > 0 && 
-        cout << __func__ << ": time difference, gap: " 
+      _diagLevel > 0 &&
+        cout << __func__ << ": time difference, gap: "
              << (hit.time() - caloCrystalHit.time()) << ", "
              << _minimumTimeGap << endl;
 
-      if (caloCrystalHit.id() == cid && 
+      if (caloCrystalHit.id() == cid &&
           (( hit.time() - caloCrystalHit.time()) < _minimumTimeGap) ) {
 
         // here we decide if the hit is "good"
 
         if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
-          
+
           caloCrystalHit.add(caloHitCollId, hit);
 
         } else {
@@ -305,8 +305,8 @@ namespace mu2e {
       _diagLevel > 0 && cout << __func__ << ": Inserting last old hit: " << caloCrystalHit << endl;
       (*caloCrystalHits).push_back(caloCrystalHit);
     }
-  
-    if ( _diagLevel > 0 ) cout << __func__ << ": (*caloCrystalHits).size() " 
+
+    if ( _diagLevel > 0 ) cout << __func__ << ": (*caloCrystalHits).size() "
                                << (*caloCrystalHits).size() << endl;
 
     // Add the output hit collection to the event (invalidates caloCrystalHits handle)

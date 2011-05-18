@@ -1,11 +1,11 @@
 #ifndef ToyDP_G4BeamlineInfo_hh
 #define ToyDP_G4BeamlineInfo_hh
-// 
+//
 // Simple holder for extra data available from G4Beamline generator
 //
 #include <iostream>
 
-namespace mu2e { 
+namespace mu2e {
 
   class G4BeamlineInfo {
 
@@ -25,7 +25,7 @@ namespace mu2e {
     float time()    const { return _time; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
-    
+
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 

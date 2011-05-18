@@ -4,14 +4,14 @@
 // TTracker ). Return a pointer to the one that is present.
 // If neither are present, throw.
 //
-// $Id: getTrackerOrThrow.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: getTrackerOrThrow.cc,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
 
-// Framework includes 
+// Framework includes
 #include "cetlib/exception.h"
 
 // Mu2e includes
@@ -39,7 +39,7 @@ namespace mu2e{
     }
 
 
-    throw cet::exception("GEOM") 
+    throw cet::exception("GEOM")
       << "Expected one of L or T or I Trackers but found neither.\n";
 
   }

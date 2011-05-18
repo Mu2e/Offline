@@ -1,9 +1,9 @@
-// 
+//
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.cc,v 1.2 2010/12/17 22:25:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/17 22:25:05 $
+// $Id: StatusG4.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,7 @@ namespace mu2e{
 
   void StatusG4::print ( ostream& ost, bool newLine ) const {
     ost << "G4 status: " << _status
-        << "; Number G4 Tracks: " 
+        << "; Number G4 Tracks: "
         << _nG4Tracks << ";";
     if ( _overflowSimParticles ){
       ost << " SimParticleCollection overflowed;";

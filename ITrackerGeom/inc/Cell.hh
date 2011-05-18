@@ -14,7 +14,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e { 
+namespace mu2e {
 
 class Cell : public Straw {
 
@@ -45,7 +45,7 @@ public:
 //         int detailIndex,
 //         boost::shared_ptr<Wire> senseWire
 //         );
-  
+
   ~Cell ();
 
   CellId Id() const { return _id;}
@@ -62,7 +62,7 @@ public:
   double getHalfLength() const { return _senseWire.get()->getDetail()->halfLength();}
 
 //  int hack;
-  
+
 protected:
 
   // Identifier

@@ -1,11 +1,11 @@
 //
-// A hit in a CTracker.  
+// A hit in a CTracker.
 // The CTracker is a toy device that is present only to illustrate the
 // framework.
 //
-// $Id: ToyHit.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: ToyHit.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 
@@ -23,6 +23,6 @@ namespace mu2e {
 
   ToyHit::~ToyHit(){
   }
-  
+
 }
 

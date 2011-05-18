@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: CRSScintillatorModuleId.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSScintillatorModuleId.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG; based on Rob Kutschke's SectorId
 //
@@ -30,14 +30,14 @@ namespace mu2e {
       _shieldId(-1),
       _moduleNumber(-1){
     }
-  
+
     CRSScintillatorModuleId( CRSScintillatorShieldId shieldId,
                              int moduleNumber
                              ):
       _shieldId(shieldId),
       _moduleNumber(moduleNumber){
     }
-  
+
     // Compiler generated d'tor, copy and assignment constructors
     // should be OK.
 
@@ -60,15 +60,15 @@ namespace mu2e {
     bool operator!=(CRSScintillatorModuleId const & rhs) const{
       return !( *this == rhs);
     }
-  
+
   private:
 
     CRSScintillatorShieldId _shieldId;
     int32_t _moduleNumber;
-  
+
   };
 
-  inline std::ostream& operator<<(std::ostream& ost, 
+  inline std::ostream& operator<<(std::ostream& ost,
                                   const CRSScintillatorModuleId& moduleId ){
     ost << moduleId.getShieldId() << " " << moduleId.getModuleNumber();
     return ost;

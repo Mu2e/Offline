@@ -1,13 +1,13 @@
 #ifndef Mu2eG4_TrackingAction_hh
 #define Mu2eG4_TrackingAction_hh
 //
-// Steering routine for user tracking actions. 
+// Steering routine for user tracking actions.
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.13 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: TrackingAction.hh,v 1.14 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -60,7 +60,7 @@ namespace mu2e {
     void saveSimParticleEnd  (const G4Track* trk);
 
     // Receive persistent volume information and save it for the duration of the run.
-    void beginRun( const PhysicalVolumeHelper& physVolHelper, 
+    void beginRun( const PhysicalVolumeHelper& physVolHelper,
                    CLHEP::Hep3Vector const& mu2eOrigin );
 
     // Clean up at end of run.
@@ -72,7 +72,7 @@ namespace mu2e {
     // Accessors for status information.
     int             nG4Tracks() const { return _currentSize;}
     bool overflowSimParticles() const { return _overflowSimParticles; }
-    
+
 
   private:
 

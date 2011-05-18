@@ -1,9 +1,9 @@
 //
 // Representation of one ScintillatorShield in CosmicRayShield
 //
-// $Id: CRSScintillatorShield.cc,v 1.1 2011/03/09 19:42:33 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:42:33 $
+// $Id: CRSScintillatorShield.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Device
 //
@@ -18,7 +18,7 @@ using namespace std;
 
 namespace mu2e {
 
-  CRSScintillatorShield::CRSScintillatorShield( 
+  CRSScintillatorShield::CRSScintillatorShield(
                         CRSScintillatorShieldId const & id,
                         std::string             const & name,
                         CLHEP::Hep3Vector       const & localOffset,

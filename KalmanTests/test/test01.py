@@ -1,9 +1,9 @@
 # Configuration file for Kalman tests - run a few events with lots
 # of printout.
 #
-# $Id: test01.py,v 1.3 2010/08/18 05:12:34 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/08/18 05:12:34 $
+# $Id: test01.py,v 1.4 2011/05/18 02:27:17 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:17 $
 #
 # Original author Rob Kutschke
 #
@@ -67,7 +67,7 @@ process.kalmanTest = mu2e.EDAnalyzer("KalmanT01",
      diagLevel    = mu2e.untracked.int32(2),
      maxFullPrint = mu2e.untracked.int32(2)
 )
-                                     
+
 # End of the section that defines and configures modules.
 
 

@@ -2,15 +2,15 @@
 #define EventGenerator_GeneratorBase_hh
 //
 // Base class to allow generic access to all of the event generator classes.
-// Also provides access to the random number engine associated with the 
+// Also provides access to the random number engine associated with the
 // EventGenerator module.
 //
-// $Id: GeneratorBase.hh,v 1.4 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: GeneratorBase.hh,v 1.5 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Rob Kutschke
-// 
+//
 
 // Framework includes
 #include "art/Framework/Core/RandomNumberGeneratorService.h"
@@ -36,7 +36,7 @@ namespace mu2e {
   protected:
 
     // A helper function to access the random number engine associated with this module.
-    static art::RandomNumberGeneratorService::base_engine_t& 
+    static art::RandomNumberGeneratorService::base_engine_t&
     getEngine( const art::RandomNumberGeneratorService::label_t& engine_label = "" );
 
 };

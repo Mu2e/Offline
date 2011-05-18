@@ -1,9 +1,9 @@
-// 
+//
 // This is a place to put additional information produced by HitMaker,
 //
-// $Id: CaloHitMCTruth.cc,v 1.4 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: CaloHitMCTruth.cc,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Ivan Logashenko
 //
@@ -33,7 +33,7 @@ namespace mu2e {
     if ( doEndl ){
       ost << endl;
     }
-    
+
   }
-  
+
 } // namespace mu2e

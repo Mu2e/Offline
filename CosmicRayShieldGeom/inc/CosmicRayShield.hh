@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.5 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CosmicRayShield.hh,v 1.6 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG
 //
@@ -86,7 +86,7 @@ namespace mu2e {
     // position of the center in the parent frame
     CLHEP::Hep3Vector _localOffset;
 
-    // position of the center in  Mu2e frame 
+    // position of the center in  Mu2e frame
     CLHEP::Hep3Vector _globalOffset;
 
     std::map<std::string,CRSSteelShield>         _steelShields;
@@ -99,7 +99,7 @@ namespace mu2e {
     // global holder of all scintillator bars
     std::vector<CRSScintillatorBar>  _allCRSScintillatorBars;
 
-    // for a future reference: 
+    // for a future reference:
 
     // given that the bars, layers and modules have the same rotation
     // angles as their shield, one could e.g. store the rotations as

@@ -2,9 +2,9 @@
 #define Mu2eUtilities_TrackTool_hh
 //
 //
-// $Id: TrackTool.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: TrackTool.hh,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,7 @@ namespace mu2e {
     double cx() const { return cx_; }
     double cy() const { return cy_; }
     double cz() const { return cz_; }
- 
+
     CLHEP::Hep3Vector center() const { return CLHEP::Hep3Vector(xc_, yc_, z0_); };
 
     // Turning angle from PCA to a given z.

@@ -5,16 +5,16 @@
 //
 
 //
-// $Id: CRSScintillatorBarId.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSScintillatorBarId.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG somewhat based on Rob Kutschke's StrawId
 //
 #include <ostream>
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayerId.hh"
 
-namespace mu2e { 
+namespace mu2e {
 
   class CRSScintillatorBarId{
 
@@ -24,14 +24,14 @@ namespace mu2e {
       _layerId(CRSScintillatorLayerId()),
       _barNumber(-1){
     }
-  
+
     CRSScintillatorBarId( CRSScintillatorLayerId layerId,
                           int barNumber
                           ):
       _layerId(layerId),
       _barNumber(barNumber){
     }
-  
+
     CRSScintillatorBarId( CRSScintillatorModuleId moduleId,
                           int layerNumber,
                           int barNumber
@@ -63,7 +63,7 @@ namespace mu2e {
     const CRSScintillatorLayerId& getLayerId() const {
       return _layerId;
     }
-  
+
     const int getShieldNumber() const {
       return _layerId._moduleId._shieldId; // it is a typdef for now anyway
     }
@@ -92,10 +92,10 @@ namespace mu2e {
 
     CRSScintillatorLayerId _layerId;
     int32_t _barNumber;
-  
+
   };
 
-  inline std::ostream& operator<<(std::ostream& ost, 
+  inline std::ostream& operator<<(std::ostream& ost,
                                   const CRSScintillatorBarId& barId ){
     ost << "CRSScintillatorBar Id: ("
         << barId.getLayerId() << " "

@@ -2,9 +2,9 @@
 // Geometry and identifier info about the Calorimeter.
 //
 //
-// $Id: Calorimeter.cc,v 1.5 2010/09/29 19:37:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/29 19:37:58 $
+// $Id: Calorimeter.cc,v 1.6 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -13,12 +13,12 @@
 
 using namespace std;
 
-namespace mu2e { 
+namespace mu2e {
 
   //
   // Convert coordinates from Mu2e frame to local frame of crystal, identified by roid
   //
-  CLHEP::Hep3Vector Calorimeter::toCrystalFrame(int roid, 
+  CLHEP::Hep3Vector Calorimeter::toCrystalFrame(int roid,
 						CLHEP::Hep3Vector const& pos) const {
     int vaneid = getVaneByRO(roid);
     const Vane & vane = getVane(vaneid);
@@ -47,7 +47,7 @@ namespace mu2e {
   }
 
   //
-  // Get crystal axis in Mu2e coordinates - direction from front of 
+  // Get crystal axis in Mu2e coordinates - direction from front of
   // the crystal to readout side
   //
   CLHEP::Hep3Vector Calorimeter::getCrystalAxisByRO(int roid) const {

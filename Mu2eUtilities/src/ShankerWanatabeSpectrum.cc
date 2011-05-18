@@ -1,13 +1,13 @@
 //
-// Read the table with wanatabe data about DIO spectrum, and 
-// merge the spectrum with the corrected Shanker analytic expression 
+// Read the table with wanatabe data about DIO spectrum, and
+// merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.4 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
-// 
+//
 
 // C++ includes
 #include <iostream>
@@ -58,21 +58,21 @@ namespace mu2e {
   }
 
   void ShankerWanatabeSpectrum::ReadWanatabeTable() {
-    
+
     art::FileInPath filename("ConditionsService/data/wanatabe.tbl");
 
     fstream intable(filename.fullPath().c_str(),ios::in);
     if (!(intable.is_open())) {
       throw cet::exception("ProductNotFound")
-        << "No Wanatabe spectrum table file found"; 
+        << "No Wanatabe spectrum table file found";
     }
     double en, prob;
     while (!(intable.eof())) {
       intable >> en >> prob;
-      if (en!=0&&prob!=0) 
+      if (en!=0&&prob!=0)
         _wanatable.push_back(pair<double,double>(en,prob));
     }
-    
+
     _WanaEndPoint = _wanatable.front().first;
     _WanaEndPointVal = _wanatable.front().second;
 
@@ -85,7 +85,7 @@ namespace mu2e {
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     double mumass = mu_data.mass().value();
     double emass = e_data.mass().value();
-    double BindEnergy = 13.6 * ( mumass / emass ) * _Znum * _Znum / 1e6; 
+    double BindEnergy = 13.6 * ( mumass / emass ) * _Znum * _Znum / 1e6;
     double atMassToMev = CLHEP::amu_c2;
 
     double AlAtWeight = 26.9815;
@@ -148,7 +148,7 @@ namespace mu2e {
     double B = (e1*e1*p2 + e3*e3*p1 + e2*e2*p3 - e3*e3*p2 - e1*e1*p3 - e2*e2*p1) / discr;
 
     double C = (e1*e1*e2*p3 + e3*e3*e1*p2 + e2*e2*e3*p1 -
-                e3*e3*e2*p1 - e1*e1*e3*p2 - e2*e2*e1*p3) / discr; 
+                e3*e3*e2*p1 - e1*e1*e3*p2 - e2*e2*e1*p3) / discr;
 
     return (A*E*E + B*E + C);
 

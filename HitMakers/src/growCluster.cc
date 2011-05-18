@@ -1,14 +1,14 @@
 //
 // Loop over straws added in the previous iteration and add
 // their nearest neighbours to the list.
-// 
+//
 // If a hit straw appears more than once in input list, then
 // all of those hits to the cluster.
 //
-// $Id: growCluster.cc,v 1.3 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
-// 
+// $Id: growCluster.cc,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
+//
 
 // C++ includes
 #include <iostream>
@@ -22,7 +22,7 @@
 using namespace std;
 
 namespace mu2e {
-  
+
   int growCluster ( ProtoStrawCluster&              cluster,
                     int                             startCluster,
                     int                             startHit,
@@ -55,9 +55,9 @@ namespace mu2e {
         // Skip hits that are already used.
         if ( j       == i ) continue;
         if ( used[j] == 1 ) continue;
-        
+
         CrudeStrawHit const& hit(hits.at(j));
-        
+
         // Add neighbours to the cluster and mark the hit as used.
         if ( baseStraw.isNearestNeighbour(hit.strawIndex) ) {
           used[j] = 1;
@@ -72,7 +72,7 @@ namespace mu2e {
         }
 
       }
-      
+
     }
     return nadded;
   }

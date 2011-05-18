@@ -2,9 +2,9 @@
 # Configuration file for Beamline 01.
 # This can be used to debug the muon beamline.
 #
-# $Id: beamline_01.py,v 1.9 2010/12/14 01:03:39 logash Exp $
-# $Author: logash $
-# $Date: 2010/12/14 01:03:39 $
+# $Id: beamline_01.py,v 1.10 2011/05/18 02:27:18 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:18 $
 #
 # Original author Rob Kutschke
 #
@@ -13,7 +13,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this process a name.  
+# Give this process a name.
 process = mu2e.Process("Beamline01")
 
 # Maximum number of events to do.

@@ -1,17 +1,17 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 22:06:50 $
+// $Id: InteractiveRoot_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke
 //
 // Notes
 // 1) The key to making this work is the management of the TApplication instance.
 //    In order for ROOT interactive graphics to work, exactly one instance
-//    of TApplication must be created somewhere in the job.  If several 
-//    modules wish to do ROOT graphics then exactly one of them needs to 
+//    of TApplication must be created somewhere in the job.  If several
+//    modules wish to do ROOT graphics then exactly one of them needs to
 //    create the TApplication; which ever module does this must also
 //    delete the TApplication at end of job.  In this module, the test
 //    to see if the TApplication was created relies on the value of gApplication.
@@ -19,7 +19,7 @@
 //
 // 2) ROOT requires that TCanvas objects have unique names, even if we create
 //    them in different modules or write them to different TDirectory's. If we
-//    don't respect this, ROOT will crash.  I presume this is because TCanvas's 
+//    don't respect this, ROOT will crash.  I presume this is because TCanvas's
 //    are all owned by the TApplication, which no knowledge of modules or TDirectories.
 //    In the framework the module label is guaranteed to be unique within a job.
 //    So this example embeds the module label into the canvas name.  Making the titles
@@ -33,15 +33,15 @@
 //    This should be corrected in a new version of TFileService.
 //
 // 4) For background see http://mu2e.fnal.gov/atwork/computing/ROOTFAQ.shtml .
-//    There is something broken in the interactions among ROOT, TFileService, the EDM and the 
+//    There is something broken in the interactions among ROOT, TFileService, the EDM and the
 //    framework.  I expected to be able to code the following right after instantiating the
 //    canvas:
 //       gDirectory->Append(_canvas)
 //    Then we would not need anything in the endJob method.  I am not sure why but
-//    this causes a crash at the end of the job; the current guess is that there is a 
+//    this causes a crash at the end of the job; the current guess is that there is a
 //    double delete of the histogram in the canvas, once when the histogram is deleted and
 //    once when the canvas is deleted.  The hack solution is to do a Write() in endJob.
-//    
+//
 
 // C++ includes.
 #include <iostream>
@@ -73,13 +73,13 @@ namespace mu2e {
 
   class InteractiveRoot : public art::EDAnalyzer {
   public:
-    
+
     explicit InteractiveRoot(fhicl::ParameterSet const& pset);
     virtual ~InteractiveRoot() { }
 
     virtual void beginJob();
     void endJob();
- 
+
     // This is called for each event.
     void analyze(const art::Event& e);
 
@@ -115,7 +115,7 @@ namespace mu2e {
 
   };
 
-  InteractiveRoot::InteractiveRoot(fhicl::ParameterSet const& pset) : 
+  InteractiveRoot::InteractiveRoot(fhicl::ParameterSet const& pset) :
 
     // Run time parameters
     _moduleLabel(pset.get<string>("@module_label")),

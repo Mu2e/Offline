@@ -1,14 +1,14 @@
 //
 // A persistable class representing a point that is on a track and
 // is also inside, or on the boundary of, some G4 volume.  This can be
-// used for saving points on the trajectory of the tracking and 
-// cosmic ray veto systems and for non-senstive material that we wish 
-// to record for purposes of debugging fitters.  We may need a different 
+// used for saving points on the trajectory of the tracking and
+// cosmic ray veto systems and for non-senstive material that we wish
+// to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.cc,v 1.4 2010/09/13 23:43:58 logash Exp $
-// $Author: logash $ 
-// $Date: 2010/09/13 23:43:58 $
+// $Id: StepPointMC.cc,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 
@@ -21,7 +21,7 @@ namespace mu2e {
 
   void StepPointMC::print( ostream& ost, bool doEndl ) const {
 
-    ost << "  trackId: "           << _trackId 
+    ost << "  trackId: "           << _trackId
         << "  volumeId: "          << _volumeId
         << "  energy deposit: "    << _totalEDep
         << "  position: "          << _position

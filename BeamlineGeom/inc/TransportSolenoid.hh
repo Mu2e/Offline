@@ -8,7 +8,7 @@
 #include "BeamlineGeom/inc/Collimator.hh"
 
 namespace mu2e {
-  
+
   class TransportSolenoid {
 
   friend class BeamlineMaker;

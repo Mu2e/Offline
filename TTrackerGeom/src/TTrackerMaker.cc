@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.25 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: TTrackerMaker.cc,v 1.26 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -40,7 +40,7 @@ namespace mu2e {
     parseConfig(config);
     buildIt( );
   }
-  
+
   TTrackerMaker::~TTrackerMaker (){}
 
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
@@ -67,30 +67,30 @@ namespace mu2e {
     _supportHalfThickness = config.getDouble("ttracker.supportHalfThickness")*CLHEP::mm;
 
     _wireRadius           = config.getDouble("ttracker.wireRadius")*CLHEP::mm;
-    
+
     _manifoldYOffset      = config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
     config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
     for ( size_t i=0; i<_manifoldHalfLengths.size(); ++i ){
       _manifoldHalfLengths.at(i) *= CLHEP::mm;
     }
-    
+
     config.getVectorString("ttracker.strawMaterials", _strawMaterials, 3);
 
     _envelopeMaterial = config.get<std::string>("ttracker.mat.vacuum");
     _supportMaterial = config.get<std::string>("ttracker.mat.support");
-    
+
     //string ttracker.mat.manifold  = "G4_Al";  // Placeholder.
 
     // Also define some parameters that may become variable some day.
     _sectorBaseRotations.clear();
     _sectorZSide.clear();
-    
+
     if (_rotationPattern == 0 && _sectorsPerDevice == 4 ){
       _sectorBaseRotations.push_back(   0.*CLHEP::degree);
       _sectorBaseRotations.push_back(  90.*CLHEP::degree);
       _sectorBaseRotations.push_back( 180.*CLHEP::degree);
       _sectorBaseRotations.push_back( 270.*CLHEP::degree);
-      
+
       _sectorZSide.push_back(-1.);
       _sectorZSide.push_back(+1.);
       _sectorZSide.push_back(-1.);
@@ -103,7 +103,7 @@ namespace mu2e {
       _sectorBaseRotations.push_back( 180.*CLHEP::degree);
       _sectorBaseRotations.push_back( 240.*CLHEP::degree);
       _sectorBaseRotations.push_back( 300.*CLHEP::degree);
-      
+
       _sectorZSide.push_back(-1.);
       _sectorZSide.push_back(+1.);
       _sectorZSide.push_back(-1.);
@@ -139,12 +139,12 @@ namespace mu2e {
   } // end TTrackerMaker::parseConfig
 
   void lptest( const Layer& lay){
-    cout << lay.Id() << " |  " 
+    cout << lay.Id() << " |  "
          << lay.nStraws()  <<  " |  "
          << lay.getStraws().capacity() << " "
          << endl;
   }
-  
+
   void devtest( const Device& dev){
     cout << "Device: "
          << dev.Id() << " "
@@ -157,7 +157,7 @@ namespace mu2e {
     const Straw& straw = lay.getStraw( 0 );
     cout << "Layer: "
          << lay.Id() << " "
-         << straw.getMidPoint().z() <<  " " 
+         << straw.getMidPoint().z() <<  " "
          << straw.getDirection().z() << " "
          << endl;
   }
@@ -185,7 +185,7 @@ namespace mu2e {
     makeDetails();
 
     // Reserve space for straws so that pointers are valid.
-    _nStrawsToReserve = _numDevices * _sectorsPerDevice * _layersPerSector * 
+    _nStrawsToReserve = _numDevices * _sectorsPerDevice * _layersPerSector *
       _manifoldsPerEnd * _strawsPerManifold;
     //_tt->_allStraws.reserve(_nStrawsToReserve); // see makeLayer
 
@@ -221,7 +221,7 @@ namespace mu2e {
     _tt->_devices.push_back(Device(devId, origin, phi));
     Device& dev = _tt->_devices.back();
     dev._sectors.reserve(_sectorsPerDevice);
-    
+
     for ( int isec=0; isec<_sectorsPerDevice; ++isec ){
       makeSector ( SectorId(devId,isec), dev );
     }
@@ -238,7 +238,7 @@ namespace mu2e {
     static double const tolerance = 1.e-6; // this should be in a config file
 
     if ((2.*_manifoldHalfLengths.at(2)+_supportHalfThickness)>_deviceHalfSeparation + tolerance) {
-      cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _deviceHalfSeparation " << 
+      cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _deviceHalfSeparation " <<
         (2.*_manifoldHalfLengths.at(2)+_supportHalfThickness) << ", " <<_deviceHalfSeparation << endl;
       throw cet::exception("GEOM")  << "Devices are to close \n";
     }
@@ -250,18 +250,18 @@ namespace mu2e {
     for ( int ilay=0; ilay<_layersPerSector; ++ilay ){
       makeLayer( LayerId(secId,ilay), sector );
 
-      // checking spacing of the individual layers 
+      // checking spacing of the individual layers
       // are the manifolds sized correctly for the straws?
 
       Layer const & layer = sector.getLayer(ilay);
       //      cout << "Debugging looking at the layer   : " << layer.Id() << endl;
       for (int ns = 0; ns!=layer.nStraws()-1; ++ns) {
-        double layerDeltaMag = 
+        double layerDeltaMag =
           (layer.getStraw(ns+1).getMidPoint() - layer.getStraw(ns).getMidPoint()).mag();
         if ( abs(layerDeltaMag-strawSpacing)> tolerance ) {
-          cout << "Layer straw spacing is (mm)   : " << layerDeltaMag 
+          cout << "Layer straw spacing is (mm)   : " << layerDeltaMag
                << " for layer " << layer.Id() << " straw " << layer.getStraw(ns).Id()  << endl;
-          cout << "It should be                  : " << strawSpacing << " diff: " 
+          cout << "It should be                  : " << strawSpacing << " diff: "
                << (layerDeltaMag-strawSpacing) << endl;
 
           throw cet::exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes rtc..\n";
@@ -273,22 +273,22 @@ namespace mu2e {
     // check spacing between layers/straws
 
     if (_layersPerSector>1) {
-      
+
       Layer const & layer0 = sector.getLayer(0);
       Layer const & layer1 = sector.getLayer(1);
       // cout << "Debugging looking at the layers   : " << layer0.Id() << ", " << layer1.Id() << endl;
 
       for (int ns = 0; ns!=layer0.nStraws(); ++ns) {
-        double xLayerDeltaMag = 
+        double xLayerDeltaMag =
           (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns).getMidPoint()).mag();
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
-          cout << "xLayer straw spacing is (mm)   : " 
-               << xLayerDeltaMag 
-               << " for straws: " 
-               << layer0.getStraw(ns).Id() << ", " << layer1.getStraw(ns).Id()  
+          cout << "xLayer straw spacing is (mm)   : "
+               << xLayerDeltaMag
+               << " for straws: "
+               << layer0.getStraw(ns).Id() << ", " << layer1.getStraw(ns).Id()
                << endl;
-          cout << "It should be                   : " 
-               << strawSpacing << " diff: " 
+          cout << "It should be                   : "
+               << strawSpacing << " diff: "
                << (xLayerDeltaMag-strawSpacing) << endl;
 
           throw cet::exception("GEOM")  << "Incorrect interlayer straw spacing \n";
@@ -298,16 +298,16 @@ namespace mu2e {
 
 
       for (int ns = 1; ns!=layer0.nStraws(); ++ns) {
-        double xLayerDeltaMag = 
+        double xLayerDeltaMag =
           (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns-1).getMidPoint()).mag();
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
-          cout << "xLayer straw spacing is (mm)   : " 
-               << xLayerDeltaMag 
-               << " for straws: " 
-               << layer0.getStraw(ns).Id() << ", " << layer1.getStraw(ns-1).Id()  
+          cout << "xLayer straw spacing is (mm)   : "
+               << xLayerDeltaMag
+               << " for straws: "
+               << layer0.getStraw(ns).Id() << ", " << layer1.getStraw(ns-1).Id()
                << endl;
-          cout << "It should be                   : " 
-               << strawSpacing << " diff: " 
+          cout << "It should be                   : "
+               << strawSpacing << " diff: "
                << (xLayerDeltaMag-strawSpacing) << endl;
 
           throw cet::exception("GEOM")  << "Incorrect interlayer straw spacing \n";
@@ -346,7 +346,7 @@ namespace mu2e {
     //    double zOffset = _supportHalfThickness + _strawOuterRadius + ilay*2.*_layerHalfSpacing;
     // the above commented out calculation places the straws at the edge of the manifold in Z
 
-    double zOffset = _supportHalfThickness + _manifoldZEdgeExcessSpace + 
+    double zOffset = _supportHalfThickness + _manifoldZEdgeExcessSpace +
       _strawOuterRadius + ilay*2.*_layerHalfSpacing;
 
     // Rotation that puts wire direction and wire mid-point into their
@@ -372,9 +372,9 @@ namespace mu2e {
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
         ++_istraw;
 
-        // layers with fewer straws would complicate StrawSD, constructTTrackerv, TTrackerMaker 
+        // layers with fewer straws would complicate StrawSD, constructTTrackerv, TTrackerMaker
 
-        // Construct straw midpoint in its base position in the 
+        // Construct straw midpoint in its base position in the
         // coord system of the device envelope.
         // we will shift the "second" layer from the manifold edge
 
@@ -384,7 +384,7 @@ namespace mu2e {
 
         CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_sectorZSide.at(isec) );
         mid += device.origin();
-        
+
         // Rotate straw midpoint to its actual location.
         CLHEP::Hep3Vector offset = RZ*mid;
 
@@ -400,8 +400,8 @@ namespace mu2e {
                              );
         layer._straws.push_back(&allStraws.back());
         layer._indices.push_back(index);
-        
-        
+
+
 //         if ( layId.getDevice() != -1 ){
 //           cout << "Position: " << setw(3) <<
 //             layId << " | " << setw(3) <<
@@ -416,13 +416,13 @@ namespace mu2e {
 //             allStraws.size() << " "  << setw(3) <<
 //             layer._straws.size() << " | " << setw(5) <<
 //             (allStraws.back()).Id() << ", " << setw(5) <<
-//             (allStraws.back()).Index() 
+//             (allStraws.back()).Index()
 //           << endl;
 //           }
 
       }
     }
-    
+
   }
 
   void TTrackerMaker::makeManifolds( const SectorId& secId){
@@ -439,12 +439,12 @@ namespace mu2e {
     // manifold objects are not used for now...
 
     for ( int i=0; i<_manifoldsPerEnd; ++i){
-    
+
       // First compute everything in their nominal positions: sector 0, right ?
-      double x0 = _envelopeInnerRadius + 
+      double x0 = _envelopeInnerRadius +
         _strawsPerManifold*_strawOuterRadius +
         _manifoldHalfLengths.at(0);
-    
+
       double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
 
       double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
@@ -455,12 +455,12 @@ namespace mu2e {
 
       // is the above assuming correct Z? why not secId.getSector()%2?
       // are manifolds ever used?
-      // is it correct at all? I mean the origin? It is always the same for each device... 
+      // is it correct at all? I mean the origin? It is always the same for each device...
       // x never changes
 
       CLHEP::Hep3Vector origin(x0,y0,z0);
 
-//       cout << "Manifold device, sector, origin, length[0] :" << 
+//       cout << "Manifold device, sector, origin, length[0] :" <<
 //         _tt->getDevice(secId.getDevice()).Id() << ", " <<
 //         secId.getSector() << ", " <<
 //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
@@ -481,14 +481,14 @@ namespace mu2e {
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
 
-      double xA = 
+      double xA =
         _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace;
-      
-//    double xA = (_layersPerSector==1) ? 
+
+//    double xA = (_layersPerSector==1) ?
 //      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace :
-//      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace + 
-//       _strawOuterRadius; 
-      
+//      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace +
+//       _strawOuterRadius;
+
       // we ignore the further laying straws in the multi layer case,
       // as this would make the straws shorter than they need to be
       // the wire positioning is not affected by this though
@@ -499,7 +499,7 @@ namespace mu2e {
       _strawHalfLengths.push_back(yB);
     }
   }
-  
+
   void TTrackerMaker::makeDetails(){
 
     computeConstantSectorBoxParams();
@@ -516,7 +516,7 @@ namespace mu2e {
             )
           );
     }
-    
+
   }
 
   void  TTrackerMaker::computeSectorBoxParams(Sector& sector, Device& dev){
@@ -549,13 +549,13 @@ namespace mu2e {
     }
 
 //     cout << "Debugging sector box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
-//       isec << ", " << 
+//       isec << ", " <<
 //       by << ", " <<
 //       bz << ", " <<
 //       bxl << ", " <<
 //       bxs << ", " <<
 //       sector._boxRzAngle << ", " <<
-//       sector._boxOffset << 
+//       sector._boxOffset <<
 //       endl;
 
 //     cout << "Debugging sector box isec, straw lengths: ";
@@ -582,11 +582,11 @@ namespace mu2e {
 
     // Computes space between first/last straw and edge of manifold
 
-    _manifoldXEdgeExcessSpace = _manifoldHalfLengths.at(0) - 
-      _strawOuterRadius*_strawsPerManifold - 
+    _manifoldXEdgeExcessSpace = _manifoldHalfLengths.at(0) -
+      _strawOuterRadius*_strawsPerManifold -
       _strawGap*(_strawsPerManifold-1)*0.5;
 
-    _manifoldZEdgeExcessSpace = _manifoldHalfLengths.at(2) - _strawOuterRadius - 
+    _manifoldZEdgeExcessSpace = _manifoldHalfLengths.at(2) - _strawOuterRadius -
       (_layersPerSector-1)*_layerHalfSpacing;
 
 //     cout << "Debugging,  _manifoldXEdgeExcessSpace, _manifoldZEdgeExcessSpace: " <<
@@ -603,7 +603,7 @@ namespace mu2e {
 
     computeStrawHalfLengths();
 
-    // the box is a trapezoid ; 
+    // the box is a trapezoid ;
 
     // note that G4 has it own coordinate convention for each solid
     // (see mu2e<->G4 translation below):
@@ -613,9 +613,9 @@ namespace mu2e {
     // trapezoid z dimension  (or y in G4)
 
     // shorter y             is the length of the straws in the top/last (shortest) manifold
-    // longer  y is longer than the length of the straws in the longest manifold 
+    // longer  y is longer than the length of the straws in the longest manifold
     // the other dimentions are "x", the combined manifold width + _manifoldXEdgeExcessSpace
-    // the "thickness" of the trpezoid z, ~ the layer thickness * number of layers 
+    // the "thickness" of the trpezoid z, ~ the layer thickness * number of layers
 
     // x
 
@@ -629,7 +629,7 @@ namespace mu2e {
     double bx = _manifoldHalfLengths.at(0)*double(_manifoldsPerEnd) + _layerHalfShift;
 
     // calculating "longer" x;
-    // starting from the tng of the slope 
+    // starting from the tng of the slope
 
     // calculate the largest slope starting from the longest straws manifold
     double maxtg = 0.0;
@@ -637,7 +637,7 @@ namespace mu2e {
     // the code below looks at the slope "seen" from the longest set of straws
     for (int i=1; i!=_manifoldsPerEnd; ++i) {
 
-      double ttg = ( _manifoldHalfLengths.at(0) + _layerHalfShift )*double(i) / 
+      double ttg = ( _manifoldHalfLengths.at(0) + _layerHalfShift )*double(i) /
         ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i) ) ;
 
       if (maxtg < ttg ) {
@@ -676,7 +676,7 @@ namespace mu2e {
     _sectorBoxHalfLengths.push_back(byl+pad);
 
     if (_sectorBoxHalfLengths.size()!=sectorBoxHalfLengthsSize) {
-      cout << " _sectorBoxHalfLengths.size() sould be " << sectorBoxHalfLengthsSize << 
+      cout << " _sectorBoxHalfLengths.size() sould be " << sectorBoxHalfLengthsSize <<
         ", but is : " << _sectorBoxHalfLengths.size() << endl;
       throw cet::exception("GEOM")
         << "something is wrong with sector _sectorBoxHalfLengths calculations \n";
@@ -688,7 +688,7 @@ namespace mu2e {
     // we need to make sure the trapezoids do not extend beyond the device envelope...
     // we will check if the dev envelope radius acomodates the newly created box
 
-    double outerSupportRadiusRequireds = 
+    double outerSupportRadiusRequireds =
       sqrt(square(_envelopeInnerRadius + 2.0*_sectorBoxHalfLengths.at(1))+
            square(_sectorBoxHalfLengths.at(3)));
     double outerSupportRadiusRequiredl =
@@ -697,7 +697,7 @@ namespace mu2e {
 
 //     if (true) {
 //       cout << "Debugging _strawHalfLengths: ";
-//       for (size_t i=0; i!=_manifoldsPerEnd; ++i) {        
+//       for (size_t i=0; i!=_manifoldsPerEnd; ++i) {
 //         cout << _strawHalfLengths.at(i)  << ", ";
 //       }
 //       cout << endl;
@@ -706,7 +706,7 @@ namespace mu2e {
 //       cout << "Debugging _supportParams.outerRadius rs:   " << outerSupportRadiusRequireds << endl;
 //       cout << "Debugging _supportParams.outerRadius rl:   " << outerSupportRadiusRequiredl << endl;
 //     }
-   
+
     if (_tt->_supportParams.outerRadius < outerSupportRadiusRequiredl) {
       cout << " _supportParams.outerRadius         :   " << _tt->_supportParams.outerRadius << endl;
       cout << " _supportParams.outerRadius required:   " << outerSupportRadiusRequiredl << endl;
@@ -745,7 +745,7 @@ namespace mu2e {
       throw cet::exception("GEOM")
         << "Unrecognized rotation pattern in TTrackerMaker. \n";
     }
-  
+
   } //end TTrackerMaker::chooseDeviceRotation
 
 
@@ -769,7 +769,7 @@ namespace mu2e {
 
     throw cet::exception("GEOM")
       << "Unrecognized separation pattern in TTrackerMaker. \n";
-  
+
   }
 
   double TTrackerMaker::findFirstDevZ0() const{
@@ -789,29 +789,29 @@ namespace mu2e {
   }
 
 
-  // Identify the neighbour straws for all straws in the tracker  
+  // Identify the neighbour straws for all straws in the tracker
   void TTrackerMaker::identifyNeighbourStraws() {
-    
+
     deque<Straw>& allStraws = _tt->_allStraws;
-    
-    for (deque<Straw>::iterator i = allStraws.begin(); 
+
+    for (deque<Straw>::iterator i = allStraws.begin();
          i != allStraws.end(); ++i) {
       // throw exception if more than 2 layers per sector
-      
+
       if (_tt->getSector(i->Id().getSectorId()).nLayers() > 2 ) {
         throw cet::exception("GEOM")
           << "The code works with no more than 2 layers per sector. \n";
       }
-      
+
       LayerId lId = i->Id().getLayerId();
       int layer = lId._layer;
       int nStrawLayer = _tt->getLayer(lId)._nStraws;
-      
-      //  cout << lId << " has " << nStrawLayer << " straws" << endl; 
+
+      //  cout << lId << " has " << nStrawLayer << " straws" << endl;
       //  cout << "Analyzed straw: " << i->Id() << '\t' << i->Index() << endl;
-      
+
       // add the "same layer" n-1 neighbours straw (if exist)
-      
+
       if ( i->Id()._n ) {
         const StrawId nsId(lId, (i->Id()._n)-1 );
         i->_nearestById.push_back( nsId );
@@ -819,9 +819,9 @@ namespace mu2e {
         // cout << "Neighbour left straw: " << temp.Id() << '\t' << temp.Index() << endl;
         i->_nearestByIndex.push_back( _tt->getStraw(nsId).Index() );
       }
-      
+
       // add the "same layer" n+1 neighbours straw (if exist)
-      
+
       if ( i->Id()._n < (nStrawLayer-1) ) {
         const StrawId nsId(lId, (i->Id()._n)+ 1 );
         i->_nearestById.push_back( nsId );
@@ -829,39 +829,39 @@ namespace mu2e {
         // cout << "Neighbour right straw: " << temp.Id() << '\t' << temp.Index() << endl;
         i->_nearestByIndex.push_back( _tt->getStraw(nsId).Index() );
       }
-      
+
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
-      
-      if (_layersPerSector == 2) { 
+
+      if (_layersPerSector == 2) {
         const StrawId nsId( i->Id().getSectorId(), (layer+1)%2, (i->Id()._n) );
-        
+
         // throw exception if the two layer of the same sector have different
-        // number of straws 
+        // number of straws
         if (_tt->getLayer(lId)._nStraws != nStrawLayer) {
           throw cet::exception("GEOM")
             << "The code works only with the same number of straws "
             << "per layer in the same sector. \n";
         }
-        
+
         i->_nearestById.push_back( nsId );
         // Straw temp = _tt->getStraw( nsId );
         // cout << "Neighbour opposite straw: " << temp.Id() << '\t' << temp.Index() << endl;
         i->_nearestByIndex.push_back( _tt->getStraw( nsId ).Index() );
-        
+
         // add the "opposite layer" n+-1 neighbours straw (if exist)
-        
+
         if ( i->Id()._n > 0 && i->Id()._n < nStrawLayer-1 ) {
-          const StrawId nsId( i->Id().getSectorId(), (layer+1)%2, 
+          const StrawId nsId( i->Id().getSectorId(), (layer+1)%2,
                               (i->Id()._n) + (layer?1:-1));
           i->_nearestById.push_back( nsId );
           // Straw temp = _tt->getStraw( nsId );
           // cout << "Neighbour opposite +- 1 straw: " << temp.Id() << '\t' << temp.Index() << endl;
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).Index() );
         }
-        
+
       }
     }
   }
-  
-  
+
+
 } // namespace mu2e

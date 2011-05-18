@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.18 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: SteppingAction.cc,v 1.19 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -48,7 +48,7 @@ namespace mu2e {
     _hallAirPhysVol(0),
     _lastPosition(),
     _lastMomentum(),
-    _zref(0.){ 
+    _zref(0.){
 
     // Look up parameter values in the run time configuration.
     _doKillLowEKine  = config.get<bool>("g4.killLowEKine",                _doKillLowEKine);
@@ -101,7 +101,7 @@ namespace mu2e {
   }
 
   // A helper function to manage the printout.
-  void printit( G4String const& s, 
+  void printit( G4String const& s,
                 G4int id,
                 G4ThreeVector const& pos,
                 G4ThreeVector const& mom,
@@ -111,7 +111,7 @@ namespace mu2e {
     // It is easier to line up printout in columns with printf than with cout.
     printf ( "%-8s %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %13.4f %13.4f\n",
              s.data(), id,
-             pos.x(), pos.y(), pos.z(), 
+             pos.x(), pos.y(), pos.z(),
              mom.x(), mom.y(), mom.z(),
              mom.mag(),
              localTime, globalTime);
@@ -121,7 +121,7 @@ namespace mu2e {
     _hallAirPhysVol  = getPhysicalVolumeOrThrow("HallAir");
   }
 
-  void SteppingAction::UserSteppingAction(const G4Step* step){  
+  void SteppingAction::UserSteppingAction(const G4Step* step){
 
     _nSteps++;
 
@@ -129,7 +129,7 @@ namespace mu2e {
 
     // Have we reached maximum allowed number of steps per track?
     if( _maxSteps>0 && _nSteps>_maxSteps ) {
-      cout << "SteppingAction: kill particle pdg=" 
+      cout << "SteppingAction: kill particle pdg="
 	   << track->GetDefinition()->GetPDGEncoding()
 	   << " due to large number of steps." << endl;
       killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
@@ -165,7 +165,7 @@ namespace mu2e {
     // Position and momentum at the the pre point.
     G4ThreeVector const& pos = prept->GetPosition();
     G4ThreeVector const& mom = prept->GetMomentum();
-  
+
     // On the last step on a track the post step point does not have an
     // associated physical volume. So we need to protect against that.
     G4String preVolume, postVolume;
@@ -182,11 +182,11 @@ namespace mu2e {
       postCopy   = postpt->GetPhysicalVolume()->GetCopyNo();
     }
 
-    // On the forward trace, save the particle status at the start of the 
+    // On the forward trace, save the particle status at the start of the
     // last reporting volume.
     bool save = (std::abs(pos.z()+_zref)<0.0001) && (mom.z() > 0.);
 
-    // On the backward trace, report the position when at the first 
+    // On the backward trace, report the position when at the first
     // reporting volume.
     //bool report = (std::abs(pos.z()-_zref)<0.0001) && (mom.z() < 0.);
 
@@ -197,23 +197,23 @@ namespace mu2e {
     }
 
     // Status report.
-    printf ( "Step number: %d\n", _nSteps ); 
+    printf ( "Step number: %d\n", _nSteps );
 
-    printit ( "Pre: ", id, 
+    printit ( "Pre: ", id,
               prept->GetPosition(),
               prept->GetMomentum(),
               track->GetLocalTime(),
               track->GetGlobalTime()
               );
 
-    printit ( "Step:", id, 
+    printit ( "Step:", id,
               track->GetPosition(),
               track->GetMomentum(),
               track->GetLocalTime(),
               track->GetGlobalTime()
               );
 
-    printit ( "Post: ", id, 
+    printit ( "Post: ", id,
               postpt->GetPosition(),
               postpt->GetMomentum(),
               track->GetLocalTime(),
@@ -245,8 +245,8 @@ namespace mu2e {
   bool SteppingAction::killInHallAir( const G4Track* trk ){
 
     // If we are not in the hall air, keep the track.
-    if ( trk->GetVolume() != _hallAirPhysVol ) { 
-      return false; 
+    if ( trk->GetVolume() != _hallAirPhysVol ) {
+      return false;
     }
 
     if ( _killerVerbose ){
@@ -263,7 +263,7 @@ namespace mu2e {
     }
 
     if ( _killerVerbose ) {
-      cout << "SteppingAction: kill particle pdg=" 
+      cout << "SteppingAction: kill particle pdg="
            << track->GetDefinition()->GetPDGEncoding()
            << " due to large number of steps." << endl;
     }

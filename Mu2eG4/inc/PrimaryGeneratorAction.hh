@@ -6,9 +6,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: PrimaryGeneratorAction.hh,v 1.6 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -38,13 +38,13 @@ namespace mu2e {
   public:
     PrimaryGeneratorAction( const std::string& generatorModuleLabel);
     ~PrimaryGeneratorAction();
-    
+
   public:
-    
+
     // This is the interface specified by G4.
     void GeneratePrimaries(G4Event*);
 
-    // Should change the interface for Primary 
+    // Should change the interface for Primary
     void setEvent( art::Event const& event) {_event = &event;}
 
     void setWorld( Mu2eWorld const* world ){
@@ -66,13 +66,13 @@ namespace mu2e {
 
     // Module label used to find the event generator input.
     std::string _generatorModuleLabel;
-    
+
     // Non-owing pointer to the detector information.
     Mu2eWorld const* _world;
 
     TH1D* _totalMultiplicity;
-    
+
   };
-  
+
 }  // end namespace mu2e
 #endif /* Mu2eG4_PrimaryGeneratorAction_hh */

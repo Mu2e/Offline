@@ -2,15 +2,15 @@
 //
 // Simulate the neutrons that come from the stopping target when muons capture
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
-// neutrons.  
+// neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.4 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: EjectedNeutronGun.cc,v 1.5 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
-// 
-// 
+//
+//
 
 // C++ incldues.
 #include <iostream>
@@ -52,10 +52,10 @@ static const double spectrumEndPoint = 0.1;
 namespace mu2e {
 
   EjectedNeutronGun::EjectedNeutronGun( art::Run& run, const SimpleConfig& config ):
-    
+
     // Base class.
     GeneratorBase(),
-    
+
     // Configurable parameters
     _mean(config.getDouble("ejectedNeutronGun.mean",1.)),
     _elow(config.getDouble("ejectedNeutronGun.elow",0.)),
@@ -71,7 +71,7 @@ namespace mu2e {
 
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
-    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),  
+    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),
 
     // Histogram pointers
@@ -86,7 +86,7 @@ namespace mu2e {
 
 
     if (_nbins!=((_ehi-_elow)/0.0005)) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Number f bins for the energy spectrum must be consistent with the data table binning: "
         << "0.5 KeV" ;
     }
@@ -102,13 +102,13 @@ namespace mu2e {
     //Set particle mass
     const HepPDT::ParticleData& p_data = pdt->particle(PDGCode::n0).ref();
     _mass = p_data.mass().value();
-    
-    
+
+
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
     _tmin = daqPar->t0;
     _tmax = accPar->deBuncherPeriod;
-    
+
     _tmin = config.getDouble("ejectedNeutronGun.tmin",  _tmin );
     _tmax = config.getDouble("ejectedNeutronGun.tmax",  _tmax );
 
@@ -127,9 +127,9 @@ namespace mu2e {
       _htime         = tfdir.make<TH1D>( "htime",         "Neutron time ",                      210,   -200.,  2000. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
-                                                                             FoilParticleGenerator::volWeightFoil, 
-                                                                             FoilParticleGenerator::flatPos, 
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+                                                                             FoilParticleGenerator::volWeightFoil,
+                                                                             FoilParticleGenerator::flatPos,
                                                                              FoilParticleGenerator::limitedExpoTime,
                                                                              false, //dummy value
                                                                              _PStoDSDelay,
@@ -138,43 +138,43 @@ namespace mu2e {
 
   EjectedNeutronGun::~EjectedNeutronGun(){
   }
-  
+
   void EjectedNeutronGun::generate( ToyGenParticleCollection& genParts ){
 
     // Choose the number of neutrons to generate this event.
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
-    if ( _doHistograms ) { 
-      _hMultiplicity->Fill(n); 
+    if ( _doHistograms ) {
+      _hMultiplicity->Fill(n);
     }
-    
+
     //Loop over particles to generate
-    
+
     for (int i=0; i<n; ++i) {
-      
+
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
       _fGenerator->generatePositionAndTime(pos, time);
-      
+
       //Pick up energy
       double eKine = _elow + _shape.fire() * ( _ehi - _elow );
       double e   = eKine + _mass;
-      
+
       //Pick up momentum vector
 
       _p = safeSqrt(e*e - _mass*_mass);
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
-      
+
       //Set Four-momentum
       CLHEP::HepLorentzVector mom(0,0,0,0);
       mom.setPx( p3.x() );
       mom.setPy( p3.y() );
       mom.setPz( p3.z() );
       mom.setE( e );
-      
+
       // Add the particle to  the list.
-      genParts.push_back( ToyGenParticle(PDGCode::n0, GenId::ejectedNeutronGun, pos, mom, time));    
-      
+      genParts.push_back( ToyGenParticle(PDGCode::n0, GenId::ejectedNeutronGun, pos, mom, time));
+
       // Fill histograms.
       if ( _doHistograms) {
         _hKE->Fill( eKine );
@@ -184,17 +184,17 @@ namespace mu2e {
         _hcz->Fill( mom.cosTheta() );
         _hphi->Fill( mom.phi() );
         _htime->Fill( time );
-        
+
       }
     } // end of loop on particles
 
   } // end generate
-  
+
 
   // Compute a binned representation of the energy spectrum of the neutron.
   //Energy in MeV
   std::vector<double> EjectedNeutronGun::binnedEnergySpectrum(){
-  
+
     vector<double> neutronSpectrum;;
     art::FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
     string NeutronFileFIP = spectrumFileName.fullPath();

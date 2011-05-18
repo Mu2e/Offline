@@ -1,9 +1,9 @@
 //
 // Representation of common properties of the Scintillator Bars etc...
 //
-// $Id: CRSScintillatorBarDetail.cc,v 1.1 2011/03/09 19:41:31 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:41:31 $
+// $Id: CRSScintillatorBarDetail.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG; somewhat based on Rob Kutschke StrawDetail
 //
@@ -35,5 +35,5 @@ namespace mu2e {
     return os.str();
   }
 
-  
+
 } // namespace mu2e

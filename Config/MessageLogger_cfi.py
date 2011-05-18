@@ -1,6 +1,6 @@
-# $Id: MessageLogger_cfi.py,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2009/09/30 22:57:47 $
+# $Id: MessageLogger_cfi.py,v 1.2 2011/05/18 02:27:15 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:15 $
 #
 # Original author Rob Kutschke
 #
@@ -44,7 +44,7 @@ MessageLogger = mu2e.Service("MessageLogger",
         DEBUG = mu2e.untracked.PSet(
            limit = mu2e.untracked.int32(5)
         ),
-        
+
         noTimeStamps = mu2e.untracked.bool(False),
 
         # Per event heartbeat from the InputSource.
@@ -95,15 +95,15 @@ MessageLogger = mu2e.Service("MessageLogger",
         ),
         placeholder = mu2e.untracked.bool(True)
     ),
-    destinations = mu2e.untracked.vstring('warnings', 
-        'errors', 
-        'infos', 
-        'debugs', 
-        'cout', 
+    destinations = mu2e.untracked.vstring('warnings',
+        'errors',
+        'infos',
+        'debugs',
+        'cout',
         'cerr'),
     debugModules = mu2e.untracked.vstring(),
-    categories = mu2e.untracked.vstring('FwkJob', 
-        'FwkReport', 
+    categories = mu2e.untracked.vstring('FwkJob',
+        'FwkReport',
         'FwkSummary',
         'fileAction',
         'Root_NoDictionary'),

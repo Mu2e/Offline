@@ -4,23 +4,23 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.9 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: SimParticle.hh,v 1.10 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
 // Notes:
 // 1) Internally G4 numbers tracks 1...N.  An earlier version of TrackingAction
-//    renumbered them 0...(N-1); this was an artifact of the SimParticleCollection 
-//    class being a std::vector, which starts at 0. But now SimParticleCollection 
-//    is a MapVector, so it is no longer necessary to do the renumbering.  
+//    renumbered them 0...(N-1); this was an artifact of the SimParticleCollection
+//    class being a std::vector, which starts at 0. But now SimParticleCollection
+//    is a MapVector, so it is no longer necessary to do the renumbering.
 //    Therefore the correct test to see if a particle has a parent is
 //
 // 2) The trackId, parentIds and daughterIds are all of the correct type to be
 //    used to find the corresponding information in SimParticleCollection
-// 
-// 3) I would like to make the PDG id code of type PDGCode::type.  
+//
+// 3) I would like to make the PDG id code of type PDGCode::type.
 //    However I am worried that this might screw up the persistency
 //    mechanism if it resolves to different types on different machines.
 //
@@ -105,7 +105,7 @@ namespace mu2e {
     // PDG particle ID code.  See note 3.
     int32_t pdgId() const {return _pdgId;}
 
-    // Index into the container of generated tracks; 
+    // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.
     int32_t generatorIndex() const { return _genIndex;}
     bool fromGenerator() const { return (_genIndex != -1); }
@@ -139,7 +139,7 @@ namespace mu2e {
     bool endDefined() const { return _endDefined;}
 
   private:
-    // G4 ID number of this track and of its parent.  
+    // G4 ID number of this track and of its parent.
     // See notes 1 and 2.
     key_type _id;
     key_type _parentId;
@@ -147,7 +147,7 @@ namespace mu2e {
     // PDG particle ID code.  See note 1.
     int32_t _pdgId;
 
-    // Index into the container of generated tracks; 
+    // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.
     int32_t _genIndex;
 
@@ -179,7 +179,7 @@ namespace mu2e {
 
     // Is the second half defined?
     bool _endDefined;
- 
+
   };
 
 }

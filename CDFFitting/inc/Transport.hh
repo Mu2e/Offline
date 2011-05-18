@@ -13,13 +13,13 @@ template <class Measureable>
 class Transport : public FitAction<Measureable> {
 
 public:
-  
+
   // Constructor
   Transport();
-  
+
   // Destructor
   virtual ~Transport();
-  
+
   // Transportation Matrix
   virtual HepMatrix getTransportMatrix(const Measureable &  measureable) const = 0;
 

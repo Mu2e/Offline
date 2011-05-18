@@ -2,9 +2,9 @@
 // Hold information about the toy tracker, the CTracker.
 //
 //
-// $Id: CTracker.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: CTracker.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Rob Kutschke
 //

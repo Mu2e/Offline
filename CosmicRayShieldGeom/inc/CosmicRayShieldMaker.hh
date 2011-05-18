@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CosmicRayShieldMaker.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG
 //
@@ -29,7 +29,7 @@ class CosmicRayShieldMaker {
 
 public:
 
-  CosmicRayShieldMaker( SimpleConfig const & config );  
+  CosmicRayShieldMaker( SimpleConfig const & config );
 
   void parseConfig( SimpleConfig const & _config );
 
@@ -45,7 +45,7 @@ public:
   void makeBars(CRSScintillatorLayer& layer);
 
 
-  // This is deprected and will go away soon.  
+  // This is deprected and will go away soon.
   // Still needed for root graphics version.
   const CosmicRayShield& getCosmicRayShield() const { return *_crs;}
 
@@ -117,7 +117,7 @@ private:
   double _scintillatorModuleCoreHalfThickness; // no unistruts
 
   double _scintillatorFullModuleHalfWidth;
-  double _scintillatorHalfModuleHalfWidth;  
+  double _scintillatorHalfModuleHalfWidth;
 
   double _scintillatorModuleHalfThickness;
 

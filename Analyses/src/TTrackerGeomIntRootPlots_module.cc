@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.3 2011/05/17 22:33:42 wb Exp $
-// $Author: wb $ 
-// $Date: 2011/05/17 22:33:42 $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.4 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -65,7 +65,7 @@ namespace mu2e {
 
   class TTrackerGeomIntRootPlots : public art::EDAnalyzer {
   public:
-    
+
     explicit TTrackerGeomIntRootPlots(fhicl::ParameterSet const& pset);
     virtual ~TTrackerGeomIntRootPlots() { }
 
@@ -84,7 +84,7 @@ namespace mu2e {
     void beginJob();
     void beginRun(art::Run const& );
     void endJob();
- 
+
     // This is called for each event and is pure virtual
     void analyze(const art::Event& e);
 
@@ -100,7 +100,7 @@ namespace mu2e {
     TH1F*         _hdummy;
     TCanvas*      _canvas;
     TApplication* _application;
-    
+
     // aux funtions/data
 
     double _span;
@@ -118,16 +118,16 @@ namespace mu2e {
 
     void drawEnvelopesSupport(bool dolabels);
     void drawSector(bool dolabels);
-    void drawSectorXZdetail(size_t dolabels, 
-			    double lx=-std::numeric_limits<double>::max(), 
+    void drawSectorXZdetail(size_t dolabels,
+			    double lx=-std::numeric_limits<double>::max(),
 			    double ux= std::numeric_limits<double>::max(),
-			    double lz=-std::numeric_limits<double>::max(), 
+			    double lz=-std::numeric_limits<double>::max(),
 			    double uz= std::numeric_limits<double>::max());
     void drawStraws(bool dolabels);
     void drawStrawsXZdetail(bool dolabels,
-			    double lx=-std::numeric_limits<double>::max(), 
+			    double lx=-std::numeric_limits<double>::max(),
 			    double ux= std::numeric_limits<double>::max(),
-			    double lz=-std::numeric_limits<double>::max(), 
+			    double lz=-std::numeric_limits<double>::max(),
 			    double uz= std::numeric_limits<double>::max());
 
     void drawManifolds(bool dolabels);
@@ -145,10 +145,10 @@ namespace mu2e {
 
   };
 
-  TTrackerGeomIntRootPlots::TTrackerGeomIntRootPlots(fhicl::ParameterSet const& pset) : 
+  TTrackerGeomIntRootPlots::TTrackerGeomIntRootPlots(fhicl::ParameterSet const& pset) :
 
     // ROOT objects
-      
+
     _hdummy(0),
     _canvas(0),
     _application(0),
@@ -162,7 +162,7 @@ namespace mu2e {
     _file(0){
 
   }
-  
+
   void TTrackerGeomIntRootPlots::beginJob( ){
 
     // Get access to the TFile service.
@@ -178,7 +178,7 @@ namespace mu2e {
     MyStyle->SetPadRightMargin(0.1);
     MyStyle->SetPadLeftMargin(0.1);
     MyStyle->SetPadBottomMargin(0.1);
-  
+
     // This also resets the offsets.
     MyStyle->SetTitleXSize(0.025);
     MyStyle->SetTitleYSize(0.025);
@@ -189,7 +189,7 @@ namespace mu2e {
 
     //  MyStyle->SetTitleAlign(13);
     MyStyle->SetTitleX(0.15);
- 
+
     MyStyle->SetTitleTextColor(kBlack);
     MyStyle->SetTitleFontSize(0.075);
     MyStyle->SetNdivisions(505,"X");
@@ -225,14 +225,14 @@ namespace mu2e {
 
     // code to deal with a framework feature
     // first disable interactive behavior
-    gROOT->SetBatch(1); 
+    gROOT->SetBatch(1);
     static int const cpsize = 10;
-    _canvas = tfs->make<TCanvas>("c0", "dummy canvas to force a directory creation", 
+    _canvas = tfs->make<TCanvas>("c0", "dummy canvas to force a directory creation",
                                  0, 0, cpsize, cpsize );
     _canvas->Close();
     delete _canvas;
     // back to interactive mode
-    gROOT->SetBatch(0); 
+    gROOT->SetBatch(0);
     std::cout << "We are in the directory named: " << gDirectory->GetName() << std::endl;
     _directory = gDirectory;
     _dirname = gDirectory->GetName();
@@ -250,7 +250,7 @@ namespace mu2e {
 
     GeomHandle<TTracker> ttracker;
     _ttracker = &*ttracker;
-    
+
   }
 
   void TTrackerGeomIntRootPlots::analyze(const art::Event& event ) {
@@ -290,15 +290,15 @@ namespace mu2e {
 
 //     TH1F* frame = _canvas->DrawFrame(
 //                                      _mu2eDetectorOrigin.x(),
-//                                      _mu2eDetectorOrigin.y(), 
-//                                      _mu2eDetectorOrigin.x()+_span, 
+//                                      _mu2eDetectorOrigin.y(),
+//                                      _mu2eDetectorOrigin.x()+_span,
 //                                      _mu2eDetectorOrigin.y()+_span
 //                                      );
 
     TH1F* frame = _canvas->DrawFrame(
                                      _drawingOrigin.x(),
-                                     _drawingOrigin.y(), 
-                                     _drawingOrigin.x()+_span, 
+                                     _drawingOrigin.y(),
+                                     _drawingOrigin.x()+_span,
                                      _drawingOrigin.y()+_span
                                      );
 
@@ -312,7 +312,7 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawEnvelopesSupport(true);    
+    drawEnvelopesSupport(true);
     drawSector(true);
     drawStraws(true);
     drawManifolds(true);
@@ -347,13 +347,13 @@ namespace mu2e {
 
     //    double xf = int(_drawingOrigin.x()+envelopeParams.innerRadius/10.)*10.;
 
-    //     std::cout << "xf :" << 
+    //     std::cout << "xf :" <<
     //       xf << " " << std::endl;
-    
+
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()-_spanx,
                                _drawingOrigin.z()-_spanz,
-                               _drawingOrigin.x()+_spanx, 
+                               _drawingOrigin.x()+_spanx,
                                _drawingOrigin.z()+_spanz
                                );
 
@@ -389,7 +389,7 @@ namespace mu2e {
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()-_spanx,
                                _drawingOrigin.z()-_spanz,
-                               _drawingOrigin.x()+_spanx, 
+                               _drawingOrigin.x()+_spanx,
                                _drawingOrigin.z()+_spanz
                                );
     gPad->SetGridx(kTRUE);
@@ -422,7 +422,7 @@ namespace mu2e {
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()+_lx,
                                _drawingOrigin.z()+_lz,
-                               _drawingOrigin.x()+_ux, 
+                               _drawingOrigin.x()+_ux,
                                _drawingOrigin.z()+_uz
                                );
     gPad->SetGridx(kTRUE);
@@ -455,7 +455,7 @@ namespace mu2e {
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()+_lx,
                                _drawingOrigin.z()+_lz,
-                               _drawingOrigin.x()+_ux, 
+                               _drawingOrigin.x()+_ux,
                                _drawingOrigin.z()+_uz
                                );
     gPad->SetGridx(kTRUE);
@@ -479,8 +479,8 @@ namespace mu2e {
 
   }
 
-  void TTrackerGeomIntRootPlots::drawSectorXZdetail(size_t dolabels, 
-                                                    double lx, double ux, 
+  void TTrackerGeomIntRootPlots::drawSectorXZdetail(size_t dolabels,
+                                                    double lx, double ux,
                                                     double lz, double uz
                                                     ){
 
@@ -497,9 +497,9 @@ namespace mu2e {
     const Sector& sector = device.getSector(isec);
 
     std::cout << "sector.boxHalfLengths : " <<
-      sector.boxHalfLengths()[1] << " " << 
-      sector.boxHalfLengths()[2] << " " << 
-      sector.boxHalfLengths()[3] << " " << 
+      sector.boxHalfLengths()[1] << " " <<
+      sector.boxHalfLengths()[2] << " " <<
+      sector.boxHalfLengths()[3] << " " <<
       sector.boxHalfLengths()[4] << " " << std::endl;
 
     std::cout << " sector.boxOffset : " <<
@@ -519,8 +519,8 @@ namespace mu2e {
     double z1 = _drawingOrigin.z()-sector.boxHalfLengths()[2];
     double z2 = _drawingOrigin.z()+sector.boxHalfLengths()[2];
 
-    std::cout << "x1, z1 :" << 
-      x1 << " " << 
+    std::cout << "x1, z1 :" <<
+      x1 << " " <<
       z1 << " " << std::endl;
 
     boundit (x1,lx,ux);
@@ -569,12 +569,12 @@ namespace mu2e {
     } else if (dolabels==4) {
 
       labelPoint(x1,z1,"PilE",0.,0.);
-      labelPoint(x2,z2,"PiuE",0.,0.);      
+      labelPoint(x2,z2,"PiuE",0.,0.);
 
     } else if (dolabels==5) {
 
       labelPoint(x1,z1,"PolE",0.,0.);
-      labelPoint(x2,z2,"PouE",0.,0.);      
+      labelPoint(x2,z2,"PouE",0.,0.);
 
     }
 
@@ -584,8 +584,8 @@ namespace mu2e {
 
   }
 
-  void TTrackerGeomIntRootPlots::drawStrawsXZdetail(bool dolabels, 
-                                                    double lx, double ux, 
+  void TTrackerGeomIntRootPlots::drawStrawsXZdetail(bool dolabels,
+                                                    double lx, double ux,
                                                     double lz, double uz
                                                     ){
     //    int _strawsPerManifold  = _config->get<int>("ttracker.strawsPerManifold");
@@ -600,7 +600,7 @@ namespace mu2e {
     poly->SetMarkerSize(0.5);
     // poly->SetMarkerStyle(kFull);
     poly->SetMarkerColor(kOrange);
-    
+
     const size_t idev = 0;
     const Device& device = _ttracker->getDevice(idev);
     const size_t isec = 0;
@@ -615,13 +615,13 @@ namespace mu2e {
     for ( int ilay=0; ilay<sector.nLayers(); ++ilay ) {
 
       const Layer& layer = sector.getLayer(ilay);
-      
+
       if(ilay%2==0) {
         line->SetLineColor(kBlue);
       } else {
         line->SetLineColor(kMagenta);
       }
-      
+
       // draw outer straw edges
       for ( int istr=0; istr<layer.nStraws(); ++istr ){
 
@@ -634,14 +634,14 @@ namespace mu2e {
         double sx = straw.getMidPoint().x() - sector.boxOffset().x();
         double sz = straw.getMidPoint().z() - sector.boxOffset().z();
 
-        std::cout << "sx, sz :" << 
-          sx << " " << 
-          sz << " " << std::endl; 
+        std::cout << "sx, sz :" <<
+          sx << " " <<
+          sz << " " << std::endl;
 
 	if ( sx>ux || sz>uz || sx<lx || sz<lz ) continue;
 
         arc->DrawArc(sx,sz,strawDetail.outerRadius(),0.,360.,"only");
-        poly->DrawPolyMarker( 1, &sx, &sz ); 
+        poly->DrawPolyMarker( 1, &sx, &sz );
 
         if (dolabels) {
 
@@ -655,7 +655,7 @@ namespace mu2e {
 	  labelPoint(sx,sz,mlab.str(),-0.75,0.3);
 
         }
- 
+
       }
 
     }
@@ -682,13 +682,13 @@ namespace mu2e {
     for ( int ilay=0; ilay<sector.nLayers(); ++ilay ) {
 
       const Layer& layer = sector.getLayer(ilay);
-      
+
       if(ilay%2==0) {
         line->SetLineColor(kBlue);
       } else {
         line->SetLineColor(kMagenta);
       }
-      
+
       // draw outer straw edges
       for ( int istr=0; istr<layer.nStraws(); ++istr ){
 
@@ -706,7 +706,7 @@ namespace mu2e {
         // if (istr%_strawsPerManifold==0) {
         if (true) {
           // draw "lower" straw edge
-          
+
           double sx1 = _drawingOrigin.x() + straw.getMidPoint().x() - strawDetail.outerRadius();
           double sx2 = sx1;
           double sy1 = _drawingOrigin.y();
@@ -721,12 +721,12 @@ namespace mu2e {
           }
 
           if (dolabels && istr%_strawsPerManifold==0 && istr!=0 && ilay==0) {
-            
+
             // radius is sx2
             // drawArrowFromOrigin( sx2, sx2, "MT", kFullCircle, kOrange);
 
           }
- 
+
         }
 
       }
@@ -754,13 +754,13 @@ namespace mu2e {
     for ( int ilay=0; ilay<sector.nLayers(); ++ilay ) {
 
       const Layer& layer = sector.getLayer(ilay);
-      
+
       if(ilay%2==0) {
         line->SetLineColor(kRed);
       } else {
         line->SetLineColor(kBlack);
       }
-      
+
       // drawing manifolds (based on the first straw & manifold size)
 
       // deriving the strawGap
@@ -770,15 +770,15 @@ namespace mu2e {
       Straw const& straw0 = layer.getStraw(istr0);
       Straw const& straw1 = layer.getStraw(istr1);
       StrawDetail const& strawDetail0 = straw0.getDetail();
-      double _strawGap = straw1.getMidPoint().x() - straw0.getMidPoint().x() - 
+      double _strawGap = straw1.getMidPoint().x() - straw0.getMidPoint().x() -
         strawDetail0.outerRadius()*2.0;
 
       double const dx = _manifoldHalfLengths.at(0) -
-        strawDetail0.outerRadius()*_strawsPerManifold - 
+        strawDetail0.outerRadius()*_strawsPerManifold -
         _strawGap*(_strawsPerManifold-1)*0.5;
 
       std::cout << "_strawGap, dx : " <<
-        _strawGap << ", " << 
+        _strawGap << ", " <<
         dx << std::endl;
 
       int iman = 0;
@@ -789,14 +789,14 @@ namespace mu2e {
 
         StrawDetail const& strawDetail = straw.getDetail();
 
-        double sx1 = _drawingOrigin.x() + 
+        double sx1 = _drawingOrigin.x() +
           straw.getMidPoint().x() - strawDetail.outerRadius() - dx;
         double sx2 = sx1;
         double sy1 = _drawingOrigin.y() + strawDetail.halfLength();
         double sy2 = sy1 + _manifoldHalfLengths.at(1)*2.0;
-        
-        std::cout << "sx1, sy1 :" << 
-          sx1 << " " << 
+
+        std::cout << "sx1, sy1 :" <<
+          sx1 << " " <<
           sy1 << " " << std::endl;
 
         printAndDraw(line, sx1, sy1, sx2, sy2 );
@@ -808,13 +808,13 @@ namespace mu2e {
         printAndDraw(line,  sx1, sy2, sx3, sy2 );
 
         if (dolabels && ilay==0) {
-        
+
           std::ostringstream mlab("");
           // mlab.str("");
           mlab.width(3);
           //mlab.fill('0');
           mlab << "m" << iman;
-          
+
           labelPoint(sx1,sy1,mlab.str(),15.);
 
         }
@@ -835,12 +835,12 @@ namespace mu2e {
     size_t const oldp = std::cout.precision();
     size_t const oldw = std::cout.width();
     std::cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
-      "   " << 
+      "   " <<
       std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.innerRadius << ", " <<
       std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.outerRadius << ", " <<
       std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.zHalfLength << ", " <<
       std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.phi0        << ", " <<
-      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.phiMax 
+      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.phiMax
          << std::setprecision(oldp) << std::setw(oldw) << std::endl;
 
     TArc* arc = new TArc();
@@ -872,7 +872,7 @@ namespace mu2e {
       drawArrowFromOrigin( 75., envelopeParams.innerRadius, "IER",kFullCircle,kRed);
       drawArrowFromOrigin(200., supportParams.innerRadius,  "ISR",kFullCircle,kRed);
       drawArrowFromOrigin(300., supportParams.outerRadius,  "OSR",kFullCircle,kRed);
-      
+
     }
 
     return;
@@ -894,9 +894,9 @@ namespace mu2e {
     const Sector& sector = device.getSector(isec);
 
     std::cout << "sector.boxHalfLengths : " <<
-      sector.boxHalfLengths()[1] << " " << 
-      sector.boxHalfLengths()[2] << " " << 
-      sector.boxHalfLengths()[3] << " " << 
+      sector.boxHalfLengths()[1] << " " <<
+      sector.boxHalfLengths()[2] << " " <<
+      sector.boxHalfLengths()[3] << " " <<
       sector.boxHalfLengths()[4] << " " << std::endl;
 
     std::cout << " sector.boxOffset : " <<
@@ -914,8 +914,8 @@ namespace mu2e {
     double y1 = -_drawingOrigin.y();
     double y2 = -_drawingOrigin.y() + sector.boxHalfLengths()[4];
 
-    std::cout << "x1, y1 :" << 
-      x1 << " " << 
+    std::cout << "x1, y1 :" <<
+      x1 << " " <<
       y1 << " " << std::endl;
 
     printAndDraw(line,x1,y1,x2,y2);
@@ -970,13 +970,13 @@ namespace mu2e {
   }
 
   void TTrackerGeomIntRootPlots::printAndDraw(TLine* line, double x1, double y1, double x2, double y2) {
-    
-    std::cout << "x2, y2 :" << 
-      x2 << " " << 
+
+    std::cout << "x2, y2 :" <<
+      x2 << " " <<
       y2 << " " << std::endl;
-    
+
     line->DrawLine( x1, y1, x2, y2 );
-    
+
   }
 
   void TTrackerGeomIntRootPlots::boundit(double& x,double lx, double ux) {
@@ -986,9 +986,9 @@ namespace mu2e {
 
   }
 
-  void TTrackerGeomIntRootPlots::drawArrowFromOrigin(double xt, double radius, 
-						     std::string const label, 
-						     short markerStyle, short markerColor, 
+  void TTrackerGeomIntRootPlots::drawArrowFromOrigin(double xt, double radius,
+						     std::string const label,
+						     short markerStyle, short markerColor,
 						     double xshift, double yshift){
 
     // Label the Radii
@@ -999,7 +999,7 @@ namespace mu2e {
     poly->SetMarkerStyle(markerStyle);
     poly->SetMarkerSize(0.75);
     poly->SetMarkerColor(markerColor);
-    
+
     double ts = text->GetTextSize();
     //    std::cout << "Old Text Size : " << ts << std::endl;
     text->SetTextSize(ts*0.5);
@@ -1008,7 +1008,7 @@ namespace mu2e {
 
     text->DrawText( xt+xshift, yt+yshift, label.c_str());
 
-    poly->DrawPolyMarker( 1, &xt, &yt   ); 
+    poly->DrawPolyMarker( 1, &xt, &yt   );
 
     TArrow* arrow = new TArrow();
     arrow->DrawArrow( _drawingOrigin.x(), _drawingOrigin.y(), xt, yt, 0.025, ">");
@@ -1021,7 +1021,7 @@ namespace mu2e {
   }
 
   double TTrackerGeomIntRootPlots::calculateDrawingAngle(double span, double radius) {
-  
+
     if (span<0. || radius<0.) return 0.;
     double angle = (span<radius) ? 90.0 - acos(span/radius)*180./M_PI :
       90.0;
@@ -1046,18 +1046,18 @@ namespace mu2e {
     double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
 
     // Position of the origin of the mu2e coordinate system
-    CLHEP::Hep3Vector _mu2eOrigin = 
-      CLHEP::Hep3Vector( 
+    CLHEP::Hep3Vector _mu2eOrigin =
+      CLHEP::Hep3Vector(
                         _config->getDouble("world.mu2eOrigin.xoffset")*CLHEP::mm,
                         yFloor + yOriginHeight,
                         _config->getDouble("world.mu2eOrigin.zoffset")*CLHEP::mm
                         );
-    
+
     // Origin used to construct the MECO detector.
     // Magic number to fix:
 
     _drawingOrigin = _mu2eOrigin + CLHEP::Hep3Vector( -3904., 0., 12000.);
-  
+
     std::cout << " _mu2eOrigin : " <<
       _mu2eOrigin.x() << " " <<
       _mu2eOrigin.y() << " " <<

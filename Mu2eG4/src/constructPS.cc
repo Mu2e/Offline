@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructPS.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -33,14 +33,14 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructPS( const VolumeInfo& parent, 
+  void constructPS( const VolumeInfo& parent,
                     SimpleConfig const * const _config,
                     G4ThreeVector&  _primaryProtonGunOrigin,
                     G4RotationMatrix& _primaryProtonGunRotation
                     ){
 
     // Extract information from the config file.
-    
+
     GeomHandle<Beamline> beamg;
     double solenoidOffset = beamg->solenoidOffset();
     double rTorus         = beamg->getTS().torusRadius();
@@ -59,13 +59,13 @@ namespace mu2e {
     // In the Mu2e coordinate system.
     double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength;
     G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
-    
+
     bool toyPSVisible        = _config->get<bool>("toyPS.visible",true);
     bool toyPSSolid          = _config->get<bool>("toyPS.solid",true);
     bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV       = true;
-    
+
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
     // Toy model of the PS coils + cryostat. It needs real structure.
@@ -92,8 +92,8 @@ namespace mu2e {
 
     // Position in the Mu2e coordinate system.
     double ps1Z0     = -rTorus + -2.*ts1HalfLength - ps1HalfLength;
-    G4ThreeVector ps1Position( solenoidOffset, 0., ps1Z0);    
-    
+    G4ThreeVector ps1Position( solenoidOffset, 0., ps1Z0);
+
     VolumeInfo ps1VacInfo   = nestTubs( "PS1Vacuum",
                                         ps1VacParams,
                                         vacuumMaterial,
@@ -108,13 +108,13 @@ namespace mu2e {
                                         placePV,
                                         doSurfaceCheck
                                         );
-    
+
     // Build the production target.
     TubsParams prodTargetParams( 0.,
                                  _config->getDouble("targetPS_rOut"),
                                  _config->getDouble("targetPS_halfLength"));
     G4Material* prodTargetMaterial = materialFinder.get("targetPS_materialName");
-    
+
     // Position in the Mu2e coordinate system.
     CLHEP::Hep3Vector prodTargetPosition = _config->getHep3Vector("productionTarget.position");
 
@@ -147,15 +147,15 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
-    
+
     // Set the parameters of the transformation from the PrimaryProtonGun
     // coordinates to G4 coordinates.  This needs an active sense rotation,
     // the opposite of what G4 needed.
     _primaryProtonGunRotation = prodTargetRotation->inverse();
 
     G4ThreeVector prodTargetFaceLocal(0.,0.,prodTargetParams.zHalfLength);
-    _primaryProtonGunOrigin = prodTargetPosition + VolumeInfo::getMu2eOriginInWorld() + 
+    _primaryProtonGunOrigin = prodTargetPosition + VolumeInfo::getMu2eOriginInWorld() +
       _primaryProtonGunRotation*prodTargetFaceLocal;
-    
+
   } // end Mu2eWorld::constructPS
   }

@@ -6,5 +6,5 @@ namespace mu2e {
     id(sectorId),
     hitIndices(1,index){
   }
-  
+
 }

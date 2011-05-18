@@ -2,10 +2,10 @@
 #define Mu2eG4_nestTrp_hh
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
-// 
-// $Id: nestTrp.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: nestTrp.hh,v 1.6 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Krzysztof Genser based on Rob Kutschke's nestBox
 //
@@ -40,7 +40,7 @@ namespace mu2e {
                        bool const placePV,
                        bool const doSurfaceCheck
                        );
-  
+
 
 
   // Alternate argument list, using a vector for the half dimensions.
@@ -58,7 +58,7 @@ namespace mu2e {
                               bool const placePV,
                               bool const doSurfaceCheck
                               ){
-    return nestTrp( name, 
+    return nestTrp( name,
                     &halfDim[0],
                     material,
                     rot,

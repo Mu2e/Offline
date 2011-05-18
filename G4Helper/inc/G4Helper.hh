@@ -2,15 +2,15 @@
 #define G4Helper_G4Helper_hh
 //
 // The design of G4 requires that users new many objects and then delete
-// them at the appropriate time, usually the end of the G4 run.  This 
+// them at the appropriate time, usually the end of the G4 run.  This
 // Service exists to manage the delete automatically.  It is also available
 // as a place to create any other required singleton-like behaviour for
-// support of G4.  For technical reasons, this cannot be done by making 
+// support of G4.  For technical reasons, this cannot be done by making
 // Mu2eG4RunManager a singleton.
 //
-// $Id: G4Helper.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: G4Helper.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -32,13 +32,13 @@ namespace mu2e {
   public:
     G4Helper(const fhicl::ParameterSet&, art::ActivityRegistry&);
     ~G4Helper();
-    
+
     AntiLeakRegistry& antiLeakRegistry(){ return _antiLeakRegistry; }
 
     // Versions of the map [] operator that check for errors.
     VolumeInfo& locateVolInfo( const std::string key);
     void addVolInfo( const VolumeInfo& info );
-    
+
   private:
 
     AntiLeakRegistry _antiLeakRegistry;

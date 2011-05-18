@@ -4,10 +4,10 @@
 //
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
-// 
-// $Id: RandomUnitSphere.hh,v 1.8 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: RandomUnitSphere.hh,v 1.9 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e { 
+namespace mu2e {
 
   class RandomUnitSphere {
 

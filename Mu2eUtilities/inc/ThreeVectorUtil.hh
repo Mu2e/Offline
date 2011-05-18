@@ -3,9 +3,9 @@
 //
 // Various utilities that construct or operate on CLHEP::Hep3Vectors;
 //
-// $Id: ThreeVectorUtil.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: ThreeVectorUtil.hh,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@
 //
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e { 
+namespace mu2e {
   // Construct a CLHEP::Hep3Vector using the represenation:
   // ( magnitude, cos(polar angle), azimuth) = ( r, cz, phi)
   // Uses safesqrt to compute sin(theta).

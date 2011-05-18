@@ -1,9 +1,9 @@
 //
 // A hack at makeing a cluster finder driven from CrudeTrackerHit objects.
 //
-// $Id: ClusterHackv00_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: ClusterHackv00_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -44,7 +44,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class ClusterHackv00 : public art::EDAnalyzer {
   public:
     explicit ClusterHackv00(fhicl::ParameterSet const& pset):
@@ -62,7 +62,7 @@ namespace mu2e {
     void analyze( art::Event const& e);
 
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -152,7 +152,7 @@ namespace mu2e {
 
       // Mark this hit as used.
       used[i] = 1;
-      
+
       // Iteratively grow the cluster until no new hits are added.
       int last(-1);
       while (true){
@@ -166,7 +166,7 @@ namespace mu2e {
         if ( nadded == 0 ) break;
 
       }
-      
+
     } // end of main loop over hits.
 
 
@@ -184,7 +184,7 @@ namespace mu2e {
 
       // Sum of cluster sizes.
       int sum(0);
-      
+
       for ( int i=0; i<nClusters; ++i){
         _hClusterSize->Fill( clusterList[i].size() );
         sum += clusterList[i].size();
@@ -203,7 +203,7 @@ namespace mu2e {
       }
 
       if ( _diagLevel > 1 ){
-        cout << "Check size: " 
+        cout << "Check size: "
              << sum << " "
              << pdata.size()
              << endl;
@@ -223,14 +223,14 @@ namespace mu2e {
     for ( int i=0; i<nClusters-2; ++i){
       ProtoStrawCluster const& ci( clusterList.at(i) );
       if ( ci.size() < minClusterSize ) continue;
-      
+
       for ( int j=i+1; j<nClusters-1; ++j){
         ProtoStrawCluster const& cj( clusterList.at(j) );
         if ( cj.size() < minClusterSize ) continue;
 
         // Skip a combination if two clusters are in the same sector.
         if ( ci.id == cj.id ) continue;
-        
+
         for ( int k=j+1; k<nClusters; ++k){
           ProtoStrawCluster const& ck( clusterList.at(k) );
           if ( ck.size() < minClusterSize ) continue;
@@ -240,7 +240,7 @@ namespace mu2e {
 
           // We like this combination.
           ++nCombo;
-          
+
           if ( _diagLevel > 1 ){
             cout << "Combo: "
                  << evt.id().event() << " "
@@ -250,14 +250,14 @@ namespace mu2e {
                  << ck.id << ") "
                  << endl;
           }
-            
+
         } // end of k loop
       }   // end of j loop
     }     // end of i loop
 
     if ( _diagLevel > 0 ) {
       _hNCombo->Fill(nCombo);
-    
+
       // Count how often each straw appears in this hit list.
       vector<int> strawHit(nstraws,0);
       for ( int i=0; i<nhits; ++i){
@@ -271,9 +271,9 @@ namespace mu2e {
         }
       }
     }
-    
+
   } // end of ::analyze.
-  
+
 }
 
 

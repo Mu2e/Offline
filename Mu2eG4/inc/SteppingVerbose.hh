@@ -2,10 +2,10 @@
 #define Mu2eG4_SteppingVerbose_hh
 //
 // Verbose version of the stepping action.
-// 
-// $Id: SteppingVerbose.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: SteppingVerbose.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -14,16 +14,16 @@
 
 #include "G4SteppingVerbose.hh"
 
-namespace mu2e { 
+namespace mu2e {
   class SteppingVerbose : public G4SteppingVerbose {
   public:
-    
+
     SteppingVerbose();
     ~SteppingVerbose();
-    
+
     void StepInfo();
     void TrackingStarted();
-    
+
   };
 
 } // end namespace mu2e

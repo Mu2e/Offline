@@ -1,25 +1,25 @@
 #ifndef GeneralUtilities_RootNameTitleHelper_hh
 #define GeneralUtilities_RootNameTitleHelper_hh
 
-// 
+//
 // Helper class to construct a series of similar
 // names and titles for root objects.
 //
-// $Id: RootNameTitleHelper.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: RootNameTitleHelper.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
-// This class helps to make a series of root objects that 
+// This class helps to make a series of root objects that
 // have names that differ only by a trailing integer, such as:
 //
 // xxx0001, xxx0002, xxx0003
 //
 // with corresponding titles that differ by a trailing integer,
 //
-// "Distribution of xxx for event = 1", 
-// "Distribution of xxx for event = 2", 
+// "Distribution of xxx for event = 1",
+// "Distribution of xxx for event = 2",
 //
-// and so on, where the numbers in the names match the numbers in 
+// and so on, where the numbers in the names match the numbers in
 // the titles.
 //
 //
@@ -35,7 +35,7 @@
 //    are zero filled.  If zero or negative, no leading zeros are included
 //    and the above names will appear as:
 //    xxx0, xxx1, xxx10, xxx999.
-// 
+//
 
 #include <string>
 
@@ -48,7 +48,7 @@ public:
                         std::string const& title_base,
                         int id,
                         int pad=-1 );
-  
+
   // Compiler generated versions of d'tor, copy c'tor
   // and assignment operator are OK.
 

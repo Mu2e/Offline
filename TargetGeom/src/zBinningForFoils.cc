@@ -1,13 +1,13 @@
 //
-// Free function to compute a convenient binning for a histogram that will show 
+// Free function to compute a convenient binning for a histogram that will show
 // the z positions of the target foils.  If the spacing of foils is uniform, then all
-// foil centers are guaranteed to be on bin centers. 
+// foil centers are guaranteed to be on bin centers.
 //
 // See additional details in the comments in the header file.
 //
-// $Id: zBinningForFoils.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:01 $
+// $Id: zBinningForFoils.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,7 @@ namespace mu2e{
     TargetFoil const& f2 = target.foil(nfoils-1);
     double z1 = f1.center().z();
     double z2 = f2.center().z();
-  
+
     // Compute bin width (dz) as advertised for the general case.
     double dz = (z2-z1)/(nfoils-1)/nBinsDZ;
 

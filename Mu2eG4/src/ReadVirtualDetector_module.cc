@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+//  $Id: ReadVirtualDetector_module.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
 //  $Author: wb $
-//  $Date: 2011/05/17 22:22:46 $
+//  $Date: 2011/05/18 02:27:18 $
 //
 // Original author Ivan Logashenko
 //
@@ -54,12 +54,12 @@ namespace mu2e {
     typedef vector<int> Vint;
     typedef SimParticleCollection::key_type key_type;
 
-    explicit ReadVirtualDetector(fhicl::ParameterSet const& pset) : 
+    explicit ReadVirtualDetector(fhicl::ParameterSet const& pset) :
       _vdStepPoints(pset.get<string>("vdStepPoints","virtualdetector")),
       _nAnalyzed(0),
       _maxPrint(pset.get<int>("maxPrint",0)),
       _ntvd(0), _ntpart(0) {
-      
+
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
         cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
@@ -83,7 +83,7 @@ namespace mu2e {
       nt = new float[200];
 
     }
-  
+
     virtual ~ReadVirtualDetector() { }
 
     virtual void beginJob();
@@ -116,7 +116,7 @@ namespace mu2e {
     set<int> vd_save;
 
   };
-  
+
   void ReadVirtualDetector::beginJob(){
 
     vid_stop.clear();
@@ -124,8 +124,8 @@ namespace mu2e {
     // Get access to the TFile service.
 
     art::ServiceHandle<art::TFileService> tfs;
-    
-    _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple", 
+
+    _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple",
                                 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:xl:yl:zl:pxl:pyl:pzl:gtime");
 
     // Have to use TTree here, because one cannot use more than 100 variables in TNtuple
@@ -194,7 +194,7 @@ namespace mu2e {
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
-      
+
       // Alias, used for readability.
       const StepPointMC& hit = (*hits)[i];
 
@@ -207,7 +207,7 @@ namespace mu2e {
 
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
- 
+
       CLHEP::Hep3Vector lpos = (pos-vdg->getGlobal(id));
       CLHEP::Hep3Vector lmom = mom;
       if( vdg->getRotation(id)!=0 ) {
@@ -250,7 +250,7 @@ namespace mu2e {
       _ntvd->Fill(nt);
 
       if ( _nAnalyzed < _maxPrint){
-        cout << "VD hit: " 
+        cout << "VD hit: "
              << event.id().event() << " | "
              << hit.volumeId()     << " "
              << pdgId              << " | "
@@ -258,7 +258,7 @@ namespace mu2e {
              << lpos               << " "
              << mom.mag()
              << endl;
-          
+
       }
 
     } // end loop over hits.
@@ -277,7 +277,7 @@ namespace mu2e {
         // It particle PDG ID is not in the list - skip it
         if( pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
 
-        // Clean the buffer 
+        // Clean the buffer
         for( int i=0; i<(id0+12*nvdet); ++i ) nt[i]=0;
 
         // Save SimParticle info
@@ -332,28 +332,28 @@ namespace mu2e {
         } else {
           nt[21]=-1;
         }
-          
+
         nt[id0] = nvdet;
-      
+
         // Loop over all virtual detectors and fill corresponding data
         for ( size_t i=0; i<hits->size(); ++i ){
 
           // Alias, used for readability.
           const StepPointMC& hit = (*hits)[i];
-          
+
           // Only use hits associated with current particle
           key_type trackId = hit.trackId();
           if( trackId != isp->first ) continue;
 
           // Get the hit information.
-          
+
           int id = hit.volumeId();
 
-          if( id<=0 || id>nvdet || (nt[id0+id]!=0) ) continue; 
+          if( id<=0 || id>nvdet || (nt[id0+id]!=0) ) continue;
 
           const CLHEP::Hep3Vector& pos = hit.position();
           const CLHEP::Hep3Vector& mom = hit.momentum();
- 
+
           CLHEP::Hep3Vector lpos = (pos-vdg->getGlobal(id));
           if( vdg->getRotation(id)!=0 ) {
             lpos *= *(vdg->getRotation(id));
@@ -375,7 +375,7 @@ namespace mu2e {
         } // end loop over hits.
 
         _ntpart->Fill();
-        
+
       }
     }
 

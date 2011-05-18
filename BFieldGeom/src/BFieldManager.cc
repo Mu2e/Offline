@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.8 2011/05/17 15:35:59 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Id: BFieldManager.cc,v 1.9 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 
 // Includes from C++
@@ -54,14 +54,14 @@ namespace mu2e {
     // First check cached map
     if( _last_map!=0 && _last_map->getBFieldWithStatus(point,result) ) return true;
 
-    // Loop over all maps and try to calculate field. 
+    // Loop over all maps and try to calculate field.
     for( MapType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
       if( im->second.getBFieldWithStatus(point,result) ) {
 	_last_map = &(im->second);
 	return true;
       }
     }
-    
+
     _last_map = 0;
     result = CLHEP::Hep3Vector(0.,0.,0.);
     return false;
@@ -84,7 +84,7 @@ namespace mu2e {
     MapType::const_iterator i = _map.find(key);
     if ( i == _map.end() ){
       throw cet::exception("GEOM")
-        << "Requested map not found: " << key << "\n";      
+        << "Requested map not found: " << key << "\n";
     }
     return i->second;
 
@@ -92,8 +92,8 @@ namespace mu2e {
 
   // Create a new BFMap in the container of BFMaps.
   BFMap& BFieldManager::addBFMap( const std::string& key,
-                                  int const nx, 
-                                  int const ny, 
+                                  int const nx,
+                                  int const ny,
                                   int const nz,
                                   BFMapType::enum_type type,
                                   double scaleFactor ){
@@ -115,13 +115,13 @@ namespace mu2e {
     // All Ok; return reference to the new BFMap.
     return retval.first->second;
   }
-  
+
   void BFieldManager::print( ostream& out){
     if ( _key.empty() ) {
-      cout << "BFieldManager key name is the empty string." 
+      cout << "BFieldManager key name is the empty string."
            << endl;
     } else{
-      cout << "BFieldManager key name is the empty string." 
+      cout << "BFieldManager key name is the empty string."
            << _key
            << endl;
     }

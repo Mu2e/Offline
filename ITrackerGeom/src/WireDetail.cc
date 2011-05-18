@@ -19,7 +19,7 @@ namespace mu2e {
                   ++ithick;
           }
   }
-  
+
   WireDetail::~WireDetail (){
   }
 

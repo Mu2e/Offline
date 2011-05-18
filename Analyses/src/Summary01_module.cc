@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: Summary01_module.cc,v 1.2 2011/05/17 22:06:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/17 22:06:50 $
+// $Id: Summary01_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke.
 //
@@ -120,7 +120,7 @@ namespace mu2e {
 
   };
 
-  void 
+  void
   Summary01::beginJob( ){
 
     // Get access to the TFile service.
@@ -181,7 +181,7 @@ namespace mu2e {
 
     // Construct an object that ties together all of the simulated particle and hit info.
     SimParticlesWithHits simsWithHits( event,
-                                       g4ModuleLabel_, 
+                                       g4ModuleLabel_,
                                        strawHitMakerModuleLabel_,
                                        trackerStepPoints_,
                                        minEnergyDep_,
@@ -204,8 +204,8 @@ namespace mu2e {
 
         cout << "SimParticle: "
              << " Event: " << event.id().event()
-             << " Track: " << i->first 
-             << " PdgId: " << sim.pdgId() 
+             << " Track: " << i->first
+             << " PdgId: " << sim.pdgId()
              << " |p|: "   << sim.startMomentum().vect().mag()
              << " Hits: "  << infos.size()
              << " | "
@@ -218,7 +218,7 @@ namespace mu2e {
 
   } // end of ::analyze.
 
-  void 
+  void
   Summary01::deltaRaySpectra( art::Event const& event ){
 
     art::Handle<SimParticleCollection> simsHandle;
@@ -250,7 +250,7 @@ namespace mu2e {
 
       ++deltaRayVolumeId_[sim.startVolumeIndex()];
     }
-    
+
   } // end Summary01::deltaRaySpectra
 
 
@@ -282,7 +282,7 @@ namespace mu2e {
 
 
   // Investigate how much space we can save by compressing the SimParticleCollection.
-  void 
+  void
   Summary01::compressSims( art::Event const& event ){
 
     art::Handle<StepPointMCCollection> trkStepsHandle;
@@ -305,7 +305,7 @@ namespace mu2e {
     event.getByLabel( g4ModuleLabel_, simsHandle);
     SimParticleCollection const& sims = *simsHandle;
 
-    // Count how often each track is on the path from 
+    // Count how often each track is on the path from
     // a StepPointMC to a generated particle.
     typedef SimParticleCollection::key_type key_type;
     map<key_type,int> used;
@@ -349,19 +349,19 @@ namespace mu2e {
     cout << "\n Creation volumes of Delta Rays: " << endl;
     for ( std::map<int,int>::const_iterator i=deltaRayVolumeId_.begin();
           i !=deltaRayVolumeId_.end(); ++i ){
-      cout << " Volume: " 
-           << i->first << " "   
+      cout << " Volume: "
+           << i->first << " "
            << vols[i->first] << " "
-           << i->second 
+           << i->second
            << endl;
-    }    
+    }
 
     cout << "\n Parents of Delta Rays: " << endl;
     for ( std::map<int,int>::const_iterator i=deltaRayParentId_.begin();
           i !=deltaRayParentId_.end(); ++i ){
-      cout << " " 
-           << i->first << " "   
-           << i->second 
+      cout << " "
+           << i->first << " "
+           << i->second
            << endl;
     }
 
@@ -375,7 +375,7 @@ namespace mu2e {
       cout << "\nAll events completed G4 correctly" << endl;
     }
   } // end Summary01::endJob
-  
+
 }
 
 using mu2e::Summary01;

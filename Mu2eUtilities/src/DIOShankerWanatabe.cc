@@ -3,11 +3,11 @@
 // data, merged to Shanker's formula near the endpoint. The construction
 // of the spectrum is made by ShankerWanatabeSpectrum class
 //
-// $Id: DIOShankerWanatabe.cc,v 1.7 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: DIOShankerWanatabe.cc,v 1.8 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
-// 
+//
 
 // C++ includes
 #include <iostream>
@@ -49,7 +49,7 @@ namespace mu2e {
   double DIOShankerWanatabe::fire() {
 
     return _emin + (_emax-_emin)*_randEnergy.fire();
- 
+
   }
 
   int DIOShankerWanatabe::calculateNBins() {
@@ -81,6 +81,6 @@ namespace mu2e {
 
     return spectrum;
   }
-  
+
 }
 

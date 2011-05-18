@@ -35,7 +35,7 @@
 namespace mu2e_eventdisplay
 {
 
-EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) : 
+EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
                    TGMainFrame(p, w, h)
 {
   int x,y;
@@ -154,8 +154,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   subFrame->AddFrame(subFrameAnimTime, lh0);
   _timeIntervalField1->Associate(this);
   _timeIntervalField2->Associate(this);
-  _timeIntervalField1->SetWidth(50); 
-  _timeIntervalField2->SetWidth(50); 
+  _timeIntervalField1->SetWidth(50);
+  _timeIntervalField2->SetWidth(50);
 
   _repeatAnimationButton = new TGCheckButton(subFrame,"Repeat Animation",43);
   subFrame->AddFrame(_repeatAnimationButton, lh1);
@@ -223,15 +223,15 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   _psiField   = new TGTextEntry(angleFrame, new TGTextBuffer, 1603);
   _perspectiveButton = new TGRadioButton(perspectiveFrame, "perspective", 1700);
   _parallelButton    = new TGRadioButton(perspectiveFrame, "parallel", 1701);
-  _minXField->SetWidth(50); 
-  _minYField->SetWidth(50); 
-  _minZField->SetWidth(50); 
-  _maxXField->SetWidth(50); 
-  _maxYField->SetWidth(50); 
-  _maxZField->SetWidth(50); 
-  _phiField->SetWidth(50); 
-  _thetaField->SetWidth(50); 
-  _psiField->SetWidth(50); 
+  _minXField->SetWidth(50);
+  _minYField->SetWidth(50);
+  _minZField->SetWidth(50);
+  _maxXField->SetWidth(50);
+  _maxYField->SetWidth(50);
+  _maxZField->SetWidth(50);
+  _phiField->SetWidth(50);
+  _thetaField->SetWidth(50);
+  _psiField->SetWidth(50);
   TGTextButton *setRangeButton = new TGTextButton(zoomangleFrame, "Set &Range", 1500);
   TGTextButton *setAngleButton = new TGTextButton(zoomangleFrame, "Set &Angle", 1600);
   zoomFrame1->AddFrame(zoomLabel1, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
@@ -290,12 +290,12 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   TGLabel *eventToFindLabel = new TGLabel(jumpFrame, "jump to event number");
   _minHitField = new TGTextEntry(filterFrame, new TGTextBuffer, 1101);
   _eventToFindField = new TGTextEntry(jumpFrame, new TGTextBuffer, 1103);
-  _minHits=0;  
-  _minHitField->SetWidth(50); 
+  _minHits=0;
+  _minHitField->SetWidth(50);
   _minHitField->SetText("0");
   _findEvent=false;
   _eventToFind=0;
-  _eventToFindField->SetWidth(50); 
+  _eventToFindField->SetWidth(50);
   _eventToFindField->SetText("");
   TGTextButton *applyButton = new TGTextButton(filterFrame, "&Apply", 1100);
   TGTextButton *goButton    = new TGTextButton(jumpFrame, "&Go", 1102);
@@ -337,13 +337,13 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   MapWindow();
 
   _mainCanvas->GetCanvas()->cd();
-  _mainPad = new EventDisplayPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);  
+  _mainPad = new EventDisplayPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);
   _mainPad->setEventDisplayFrame(this);
   _mainPad->SetFillColor(1);
   _mainPad->Draw();
 
   _infoCanvas->GetCanvas()->cd();
-  _infoPad = new TPad("infoPad","InfoField", 0, 0, 1, 1, 5,1,1);  
+  _infoPad = new TPad("infoPad","InfoField", 0, 0, 1, 1, 5,1,1);
   _infoPad->SetFillColor(0);
   _infoPad->Draw();
 
@@ -369,7 +369,7 @@ EventDisplayFrame::~EventDisplayFrame()
 Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
 {
 // This is a modified version of the function from TGFrame.cxx
-   if ((event->fWidth != fWidth) || (event->fHeight != fHeight)) 
+   if ((event->fWidth != fWidth) || (event->fHeight != fHeight))
    {
       fWidth  = event->fWidth;
       fHeight = event->fHeight;
@@ -450,7 +450,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
 
   //set zoom only if "all tracks" option is on, or if it is the first event
-  if(_outsideTracksButton->GetState()==kButtonDown || firstLoop) 
+  if(_outsideTracksButton->GetState()==kButtonDown || firstLoop)
   {
     DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(_targetViewButton->GetState()==kButtonDown,
                                                    _calorimeterViewButton->GetState()==kButtonDown,
@@ -474,13 +474,13 @@ void EventDisplayFrame::updateTimeIntervalFields()
   double mint, maxt;
   if(_outsideTracksButton->GetState()==kButtonDown)
   {
-    mint=_dataInterface->getTracksTimeBoundary().mint; 
+    mint=_dataInterface->getTracksTimeBoundary().mint;
     maxt=_dataInterface->getTracksTimeBoundary().maxt;
   }
   else
   {
-    mint=_dataInterface->getHitsTimeBoundary().mint; 
-    maxt=_dataInterface->getHitsTimeBoundary().maxt; 
+    mint=_dataInterface->getHitsTimeBoundary().mint;
+    maxt=_dataInterface->getHitsTimeBoundary().maxt;
   }
 
   char c[50];
@@ -549,7 +549,7 @@ void EventDisplayFrame::updateTrackLegend(bool draw)
     }
     _legendParticleLine[0]->SetLineColor(2);
     _legendParticleLine[1]->SetLineColor(3);
-    _legendParticleLine[2]->SetLineColor(4); 
+    _legendParticleLine[2]->SetLineColor(4);
     _legendParticleLine[3]->SetLineColor(6);
     _legendParticleLine[4]->SetLineColor(28);
     _legendParticleLine[5]->SetLineColor(kGray);
@@ -567,8 +567,8 @@ bool EventDisplayFrame::isClosed() const
   return _isClosed;
 }
 
-bool EventDisplayFrame::getSelectedHitsName(std::string &className, 
-                                            std::string &moduleLabel, 
+bool EventDisplayFrame::getSelectedHitsName(std::string &className,
+                                            std::string &moduleLabel,
                                             std::string &productInstanceName) const
 {
   return _contentSelector->getSelectedHitsName(className, moduleLabel, productInstanceName);
@@ -598,20 +598,20 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
 {
   switch (GET_MSG(msg))
   {
-    case kC_COMMAND: 
+    case kC_COMMAND:
       switch (GET_SUBMSG(msg))
       {
         case kCM_BUTTON: if(param1==1001) CloseWindow();
                          if(param1==40) prepareAnimation();
-                         if(param1==41) 
+                         if(param1==41)
                          {
-                           _timer->Stop(); 
+                           _timer->Stop();
                            _timeCurrent=NAN;
                            if(_saveAnim) combineAnimFiles();
                          }
-                         if(param1==42) 
+                         if(param1==42)
                          {
-                           _timer->Stop(); 
+                           _timer->Stop();
                            _timeCurrent=NAN;
                            drawEverything();
                          }
@@ -628,7 +628,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==1102)
                          {
-                           _eventToFind=atoi(_eventToFindField->GetText()); 
+                           _eventToFind=atoi(_eventToFindField->GetText());
                            _findEvent=true;
                            _timer->Stop();
                            _timeCurrent=NAN;
@@ -803,7 +803,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
   }
   return kTRUE;
 }
-                                        
+
 void EventDisplayFrame::prepareAnimation()
 {
   _timer->Stop();           //needed if an animation is already running
@@ -830,7 +830,7 @@ Bool_t EventDisplayFrame::HandleTimer(TTimer *)
   _timer->Reset();
   _timeCurrent+=(_timeStop-_timeStart)/50;
   drawSituation();
-  if(_saveAnim) 
+  if(_saveAnim)
   {
     _saveAnimCounter++;
     if(_saveAnimCounter%3==0) //save only every 3rd gif to make final file smaller
@@ -840,7 +840,7 @@ Bool_t EventDisplayFrame::HandleTimer(TTimer *)
       _mainPad->SaveAs(c);
     }
   }
-  if(_timeCurrent>=_timeStop) 
+  if(_timeCurrent>=_timeStop)
   {
     _timer->Stop();
     _timeCurrent=NAN;
@@ -888,7 +888,7 @@ void EventDisplayFrame::drawEverything()
   _mainPad->cd();
   if(_clock) {delete _clock; _clock=NULL;}
   if(TAxis3D::GetPadAxis(_mainPad)==NULL) _mainPad->GetView()->ShowAxis();
-  TAxis3D::GetPadAxis(_mainPad)->SetLabelSize(0.025); 
+  TAxis3D::GetPadAxis(_mainPad)->SetLabelSize(0.025);
   _mainPad->Modified();
   _mainPad->Update();
   _dataInterface->updateComponents(NAN);
@@ -898,12 +898,12 @@ void EventDisplayFrame::drawEverything()
 
 void EventDisplayFrame::showInfo(TObject *o)  //ROOT accepts only bare pointers here
 {
-  _infoPad->cd();  
+  _infoPad->cd();
   _infoPad->Clear();
   (dynamic_cast<ComponentInfo*>(o))->showInfo();
   _infoPad->Modified();
   _infoPad->Update();
-  _mainPad->cd();  
+  _mainPad->cd();
 }
 
 }

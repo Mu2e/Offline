@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: LayerId.hh,v 1.4 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:37 $
+// $Id: LayerId.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -73,16 +73,16 @@ namespace mu2e {
       return !( *this == rhs);
     }
 
-  
+
     // Compiler generated copy and assignment constructors
     // should be OK.
 
     SectorId _sid;
     int32_t _layer;
-  
+
   };
 
-  inline std::ostream& operator<<(std::ostream& ost, 
+  inline std::ostream& operator<<(std::ostream& ost,
                                   const LayerId& l ){
     ost << l._sid << " " << l._layer;
     return ost;

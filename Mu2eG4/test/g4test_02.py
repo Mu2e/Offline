@@ -4,9 +4,9 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: g4test_02.py,v 1.13 2011/05/03 04:16:47 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/03 04:16:47 $
+# $Id: g4test_02.py,v 1.14 2011/05/18 02:27:18 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:18 $
 #
 # Original author Rob Kutschke
 #
@@ -15,7 +15,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this process a name.  
+# Give this process a name.
 process = mu2e.Process("G4Test02")
 
 # Maximum number of events to do.

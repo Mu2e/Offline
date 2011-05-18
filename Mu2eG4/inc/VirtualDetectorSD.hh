@@ -2,10 +2,10 @@
 #define Mu2eG4_VirtualDetectorSD_hh
 //
 // Define a sensitive detector for virtual detectors (like G4Beamline)
-// 
-// $Id: VirtualDetectorSD.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: VirtualDetectorSD.hh,v 1.7 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Ivan Logashenko
 //
@@ -30,11 +30,11 @@ namespace mu2e {
   public:
     VirtualDetectorSD(G4String, const SimpleConfig& config);
     ~VirtualDetectorSD();
-    
+
     void Initialize(G4HCofThisEvent*);
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
-  
+
     void beforeG4Event(StepPointMCCollection& outputHits);
 
     static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
@@ -54,7 +54,7 @@ namespace mu2e {
     // Limit maximum size of the steps collection
     int _sizeLimit;
     int _currentSize;
-    
+
   };
 
 } // namespace mu2e

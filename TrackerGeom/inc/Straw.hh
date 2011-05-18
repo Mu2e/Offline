@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.8 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:37 $
+// $Id: Straw.hh,v 1.9 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e { 
+namespace mu2e {
 
   // Forward declarations.
   class Tracker;
@@ -67,7 +67,7 @@ namespace mu2e {
     // I don't think that this class should have virtual functions but since it does it
     // must have a virtual destructor.
     virtual ~Straw(){}
-  
+
 
     const StrawId& Id() const { return _id;}
     StrawIndex Index() const { return _index;}
@@ -85,7 +85,7 @@ namespace mu2e {
     }
     // Formatted string embedding the id of the straw.
     std::string name( std::string const& base ) const;
-  
+
     // Compiler generated copy and assignment constructors
     // should be OK.
 
@@ -104,7 +104,7 @@ namespace mu2e {
     TubsParams getWallTubsParams() const{
       return _detail->getWallTubsParams();
     }
-  
+
     // Return G4TUBS parameters for the wire.
     TubsParams getWireTubsParams() const{
       return _detail->getWireTubsParams();

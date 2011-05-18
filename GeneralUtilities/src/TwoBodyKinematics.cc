@@ -1,9 +1,9 @@
 //
 // Kinematics of 2 body decay.
 //
-// $Id: TwoBodyKinematics.cc,v 1.1 2011/05/02 16:08:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/02 16:08:34 $
+// $Id: TwoBodyKinematics.cc,v 1.2 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 
@@ -18,15 +18,15 @@ TwoBodyKinematics::TwoBodyKinematics( double m0, double m1, double m2):
   m0_(m0),
   m1_(m1),
   m2_(m2){
-  
+
   // Numerator of the expression for the momentum.
   double num = ( square(m0_) - square(m1_+m2) )*( square(m0_) - square(m1_-m2_) );
   if ( num < 0. ){
     std::ostringstream out;
-    out << "TwoBodyKinematics: masses of daughters exceed that of mother: \n" 
+    out << "TwoBodyKinematics: masses of daughters exceed that of mother: \n"
         << "   Mother:     " << m0_ << " "
         << "   Daughter 1: " << m1_ << " "
-        << "   Daughter 2: " << m2_ << " " 
+        << "   Daughter 2: " << m2_ << " "
         << "   Numerator:  " << num;
     throw std::invalid_argument( out.str() );
   }

@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClusters.py,v 1.4 2011/03/02 16:02:21 wenzel Exp $
-# $Author: wenzel $
-# $Date: 2011/03/02 16:02:21 $
+# $Id: makeDPIStrawClusters.py,v 1.5 2011/05/18 02:27:16 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:16 $
 #
 # Original author Rob Kutschke
 #
@@ -11,7 +11,7 @@
 # Define the default configuratio for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("HitTest01")
 
 # Maximum number of events to do.
@@ -46,7 +46,7 @@ process.source = mu2e.Source("PoolSource",
 )
 process.ConditionsService = mu2e.Service("ConditionsService",
       conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
-) 
+)
 # Form StrawHits (SH).
 process.makeSH = mu2e.EDProducer(
     "MakeStrawHit",
@@ -72,8 +72,8 @@ process.makeSC = mu2e.EDProducer(
 
 # Check the StrawClusters.
 process.testSC = mu2e.EDAnalyzer("ReadDPIStrawCluster",
-       g4ModuleLabel = mu2e.string("g4run"),                             
-    makerModuleLabel = mu2e.string("makeSH"),                            
+       g4ModuleLabel = mu2e.string("g4run"),
+    makerModuleLabel = mu2e.string("makeSH"),
     clmakerModuleLabel = mu2e.string("makeSC"),
     diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)

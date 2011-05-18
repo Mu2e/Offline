@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.11 2011/05/17 22:22:46 wb Exp $
+ * $Id: SimpleConfig.cc,v 1.12 2011/05/18 02:27:19 wb Exp $
  * $Author: wb $
- * $Date: 2011/05/17 22:22:46 $
+ * $Date: 2011/05/18 02:27:19 $
  *
  * Original author Rob Kutschke
  *
@@ -28,16 +28,13 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/ParameterSet/FileInPath.h"
 #include "art/Utilities/EDMException.h"
+#include "cetlib/exception.h"
+#include "cetlib/search_path.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/TrimInPlace.hh"
 #include "Mu2eUtilities/src/SimpleConfigRecord.hh"
-
-// ======================================================================
-#include "cetlib/exception.h"
-#include "cetlib/search_path.h"
-// ======================================================================
 
 using namespace std;
 
@@ -60,7 +57,7 @@ namespace mu2e {
 
     cet::search_path sp("MU2E_SEARCH_PATH");
     if( ! sp.find_file(filename, _inputfile) )
-      throw "SimpleConfig c'tor: find_file failure!"  // TODO: improve exception
+      throw "SimpleConfig c'tor: find_file failure!";  // TODO: improve exception
 
     ReadFile();
   }

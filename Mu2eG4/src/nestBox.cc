@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
-// 
-// $Id: nestBox.cc,v 1.5 2010/12/02 17:46:51 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/02 17:46:51 $
+//
+// $Id: nestBox.cc,v 1.6 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -25,10 +25,10 @@
 using namespace std;
 
 namespace mu2e {
- 
+
   //
   // Place a box inside a logical volume.
-  // 
+  //
   VolumeInfo nestBox ( string const& name,
                        double const halfDim[3],
                        G4Material* material,
@@ -43,15 +43,15 @@ namespace mu2e {
                        bool const placePV,
                        bool const doSurfaceCheck
                        ){
-    
+
     VolumeInfo info;
-  
+
     info.name    = name;
-  
+
     info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
-    
-    info.logical = new G4LogicalVolume( info.solid, material, name); 
-    
+
+    info.logical = new G4LogicalVolume( info.solid, material, name);
+
     finishNesting(info,
                   material,
                   rot,
@@ -65,7 +65,7 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck
                   );
-    
+
     return info;
   }
 
@@ -83,11 +83,11 @@ namespace mu2e {
                        bool const placePV,
                        bool const doSurfaceCheck
                        ){
-    
+
     VolumeInfo info(name,offset,parent.centerInWorld);
-    
+
     info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
-    
+
     finishNesting(info,
                   material,
                   rot,
@@ -104,6 +104,6 @@ namespace mu2e {
 
     return info;
 
-  } 
+  }
 
 }

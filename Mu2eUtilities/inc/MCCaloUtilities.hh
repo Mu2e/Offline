@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.hh,v 1.4 2011/05/17 20:44:26 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 20:44:26 $
+// $Id: MCCaloUtilities.hh,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Gianni Onorato
 //
@@ -33,13 +33,13 @@ namespace mu2e {
                        uint32_t RO);
 
     void printOutCaloInfo();
-    
+
     bool fromOutside();
-    
+
     bool primary();
-    
+
     bool generated();
-    
+
     int startingVane();
 
     int getStartingVane(CLHEP::Hep3Vector origin);

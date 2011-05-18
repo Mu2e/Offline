@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.3 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructVirtualDetectors.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -49,7 +49,7 @@ namespace mu2e {
     bool forceAuxEdgeVisible = _config->get<bool>("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = _config->get<bool>("g4.doSurfaceCheck",false);
     bool const placePV       = true;
-    
+
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
 
@@ -119,7 +119,7 @@ namespace mu2e {
     // Virtual Detectors 9-10 are placed inside DS2, just before and after stopping target
 
     // If there is no neutron absorber, virtual detectors 9 and 10 extend to
-    // inner wall of DS2 minus 5 mm. If neutron absorber is define, these 
+    // inner wall of DS2 minus 5 mm. If neutron absorber is define, these
     // detectors extend to neutron absorber minus 5 mm.
 
     double Ravr = _config->getDouble("toyDS.rIn");
@@ -137,7 +137,7 @@ namespace mu2e {
     }
 
     for( int id=9; id<=10; ++id) if( vdg->exist(id) ) {
-      
+
       double zvd = vdg->getGlobal(id).z();
       double rvd = Ravr + deltaR/deltaZ*(zvd-Z0) - 5.0;
 

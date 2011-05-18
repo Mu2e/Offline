@@ -1,9 +1,9 @@
 //
 // Representation of one CRSScintillatorBar in CosmicRayShield
 //
-// $Id: CRSScintillatorBar.cc,v 1.1 2011/03/09 19:41:20 genser Exp $
-// $Author: genser $
-// $Date: 2011/03/09 19:41:20 $
+// $Id: CRSScintillatorBar.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG
 //
@@ -56,7 +56,7 @@ namespace mu2e {
 //   bool CRSScintillatorBar::isNearestNeighbour( CRSScintillatorBarIndex idx ) const{
 
 //     for ( vector<CRSScintillatorBarIndex>::const_iterator i=_nearestByIndex.begin(),
-//             e=_nearestByIndex.end(); 
+//             e=_nearestByIndex.end();
 //           i<e; ++i ){
 //       if ( *i == idx ) return true;
 //     }

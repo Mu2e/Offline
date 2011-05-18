@@ -24,14 +24,14 @@ template <class Measureable>
 class Measurement : public FitAction<Measureable> {
 
 public:
-  
+
   // Constructor
   Measurement();
-  
+
   // Destructor
   virtual ~Measurement();
-  
-  
+
+
   //	An abstract function that must be provided by the
   //	subclass.  The "displacement from" is the distance from
   //	the object in some vector space.  Examples:
@@ -49,31 +49,31 @@ public:
   //	Again, the displacement is in the five-dimensional space
   //	of the track parameters.
   virtual HepVector getDisplacementFrom(const Measureable &measureable) const = 0;
-  
+
   //	Gets the error matrix of the displacement; again, not
   //	necessarily in Cartesian 3-space (see getDisplacement).
   virtual HepSymMatrix getErrorMatrix(const Measureable &measureable) const = 0;
-  
+
   //	Abstract function which gets the matrix of derivatives
   //	between the space in which the measurement takes place
   //	and the parameters space of the measureable object.
   virtual HepMatrix getDerivativeMatrix(const Measureable &measureable) const = 0;
-  
+
   //	Abstract function.  Subclasses must provide thie
   //	dimensionality of the measurement.
   virtual unsigned int getDimensionality() const = 0;
-  
+
   //	Calculates the Chi-squared difference between this
   //	measurement and a measurable object.
   double getDeltaChiSquared(const Measureable &measureable) const;
-  
+
   //	Calculates the Chi-squared difference between this
   //	measurment and a fit to a measureable object.
   double getDeltaChiSquared(const Fit<Measureable> &fit) const;
 
   // Half of a double dispatch pair:
   virtual void applyYourselfTo(Fitter<Measureable> *theFitter) const;
-  
+
 };
 #include "CDFFitting/inc/Measurement.icc"
 

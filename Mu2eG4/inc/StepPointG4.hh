@@ -6,10 +6,10 @@
 // be Ok for trackers, scintillators etc.
 //
 // For details, see: ToyDP/inc/StepPointMC.hh .
-// 
-// $Id: StepPointG4.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+//
+// $Id: StepPointG4.hh,v 1.6 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -24,16 +24,16 @@
 
 #include "ToyDP/inc/StepPointMC.hh"
 
-namespace mu2e { 
-  
+namespace mu2e {
+
   class StepPointG4 : public G4VHit{
   public:
-    
+
     inline
     StepPointG4():
       _hit(){
     }
-    
+
     inline
     StepPointG4( G4int trackId,
                  G4int volumeId,
@@ -46,23 +46,23 @@ namespace mu2e {
                  ):
       _hit(trackId,volumeId,edep,time,proper,position,momentum,stepLength){
     }
-    
+
     // Accept compiler generated versions of:
     //  d'tor
-    //  copy c'tor 
+    //  copy c'tor
     //  assignment operator
 
     G4int operator==(const StepPointG4&) const;
-    
+
     // G4 requires these.
     inline void* operator new(size_t);
     inline void  operator delete(void*);
-  
+
     void Draw();
     void Print();
 
   public:
-  
+
     inline mu2e::StepPointMC const&   hit()      const { return _hit; }
     inline G4int                      trackId()  const { return _hit.trackId().asInt();  }
     inline G4double                   eDep()     const { return _hit.eDep();     }
@@ -73,10 +73,10 @@ namespace mu2e {
     inline StepPointMC::VolumeId_type volumeId() const { return _hit.volumeId(); }
 
   private:
-  
+
     // This is the persistent hit object.
     mu2e::StepPointMC _hit;
-    
+
   };
 
 

@@ -9,7 +9,7 @@
 //  - Uniform over the targets.
 //  - Need to be improved at a later date.
 //  - Limits on cos(theta) and phi but uniform within the range.
- 
+
 
 #include <memory>
 
@@ -31,8 +31,8 @@ namespace mu2e {
 
   class FoilParticleGenerator {
 
-  public: 
-    
+  public:
+
     enum foilGen_enum {
       flatFoil, volWeightFoil, expoFoil, expoVolWeightFoil, muonFileInputFoil
     };
@@ -46,14 +46,14 @@ namespace mu2e {
     };
 
     FoilParticleGenerator( art::RandomNumberGeneratorService::base_engine_t& engine,
-                           double tmin, double tmax, foilGen_enum foilAlgo, 
-                           posGen_enum  posAlgo, timeGen_enum  timeAlgo, 
+                           double tmin, double tmax, foilGen_enum foilAlgo,
+                           posGen_enum  posAlgo, timeGen_enum  timeAlgo,
                            bool targetFrame = true, bool PTtoSTdelay = true, bool pPulseDelay = true);
-    
+
     ~FoilParticleGenerator();
-    
-    void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time); 
-    
+
+    void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time);
+
     int iFoil();
 
   private:
@@ -104,11 +104,11 @@ namespace mu2e {
     CLHEP::Hep3Vector getFlatRndPos(TargetFoil const& theFoil) ;
     double getFlatRndTime() ;
     double getLimitedExpRndTime() ;
-    void getInfoFromFile(CLHEP::Hep3Vector& pos, double& time); 
+    void getInfoFromFile(CLHEP::Hep3Vector& pos, double& time);
     double getNegativeExpoRndTime();
     double getMuTimeDecay();
 
-    
+
   };
 } // end namespace mu2e,
 

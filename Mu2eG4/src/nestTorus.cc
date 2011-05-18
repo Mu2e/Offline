@@ -1,8 +1,8 @@
 //
 // Free function to create and place a new G4Torus, place inside a logical volume.
-// 
-// $Id: nestTorus.cc,v 1.4 2010/12/06 22:29:35 genser Exp $
-// $Author: genser $ 
+//
+// $Id: nestTorus.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
 // $Date: 2010/03/15
 //
 
@@ -19,10 +19,10 @@
 using namespace std;
 
 namespace mu2e {
- 
+
   //
   // Create and place a G4Torus inside a logical volume.
-  // 
+  //
   VolumeInfo nestTorus ( string const& name,
                          double const halfDim[5],
                          G4Material* material,
@@ -37,11 +37,11 @@ namespace mu2e {
                          bool const placePV,
                          bool const doSurfaceCheck
                          ){
-    
+
     VolumeInfo info;
 
     info.name     = name;
-    
+
     info.solid   = new G4Torus( name, halfDim[0], halfDim[1], halfDim[2], halfDim[3], halfDim[4]  );
 
     finishNesting(info,
@@ -76,12 +76,12 @@ namespace mu2e {
                          bool const placePV,
                          bool const doSurfaceCheck
                          ){
-    
+
 
     VolumeInfo info(name,offset,parent.centerInWorld);
-    
+
     info.solid    = new G4Torus( name, halfDim[0], halfDim[1], halfDim[2], halfDim[3], halfDim[4] );
-    
+
     finishNesting(info,
                   material,
                   rot,

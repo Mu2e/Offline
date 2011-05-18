@@ -41,7 +41,7 @@ namespace mu2e{
     // Geometry for the LTracker.
     GeomHandle<LTracker> ltracker;
     int nChannels = ltracker->getAllStraws().size();
-    
+
     // Fill the fast indexing array.
     _index.assign( nChannels, -1 );
     for ( size_t i=0; i<_hits->size(); ++i){
@@ -86,7 +86,7 @@ namespace mu2e{
 
     return ihit;
   }
-  
+
   void CrudeStrawHitCollection::resolveTransients(art::Event const& event ){
     //    resolveTransients<CrudeStrawHitPData>(*_hits, event);
   }

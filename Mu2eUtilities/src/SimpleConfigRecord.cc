@@ -1,11 +1,11 @@
 /**
  *
- * A class to hold one record within the primitive 
+ * A class to hold one record within the primitive
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.cc,v 1.6 2011/05/17 15:36:01 greenc Exp $
- * $Author: greenc $ 
- * $Date: 2011/05/17 15:36:01 $
+ * $Id: SimpleConfigRecord.cc,v 1.7 2011/05/18 02:27:19 wb Exp $
+ * $Author: wb $
+ * $Date: 2011/05/18 02:27:19 $
  *
  * Original author Rob Kutschke
  *
@@ -26,7 +26,7 @@ namespace mu2e {
   // This class holds a single record from the configuration file.
   // It parses the record, checks for internal consistency and provides
   // accesors for information in the record.
-  // 
+  //
   // Notes:
   // 1) Supported types:
   //    string, int, double, bool
@@ -38,7 +38,7 @@ namespace mu2e {
   // Work list:
   // 1) Warnings for:
   //    int i = 1.23;
-  // 2) 
+  // 2)
 
   using namespace std;
 
@@ -50,7 +50,7 @@ namespace mu2e {
     _superceded(false){
     Parse();
   }
-  
+
   // Accessors to return supported data types.
   string SimpleConfigRecord::get<std::string> () const {
     return Values.at(0);
@@ -60,7 +60,7 @@ namespace mu2e {
     CheckType("int");
     return toInt( Values.at(0) );
   }
-  
+
   double SimpleConfigRecord::getDouble () const {
     CheckType("double");
     return toDouble( Values.at(0) );
@@ -98,16 +98,16 @@ namespace mu2e {
       string s(*b);
       V.push_back(toDouble(s));
     }
-  }  
+  }
 
 
   /**
-   * 
+   *
    * Format the record as a string with standard spacing, ignoring the spacing
-   * on the input line. If the data are strings, then enclose each string in 
+   * on the input line. If the data are strings, then enclose each string in
    * quotes, even if it has no embedded spaces.
    *
-   * 
+   *
    * @return A formatted copy of the record.
    */
   string SimpleConfigRecord::toString() const {
@@ -152,22 +152,22 @@ namespace mu2e {
           s << *b;
         }
       } else {
-      
+
         vector<string> V;
         getVectorString(V);
         vector<string>::const_iterator b = V.begin();
         vector<string>::const_iterator e = V.end();
-      
+
         bool first = true;
         for ( ;b != e; ++b ){
           if( !first ){
             s << ", \"";
-          } else{ 
+          } else{
             s << "\"";
             first = false;
-          } 
-          s << *b; 
-          s << "\"";                
+          }
+          s << *b;
+          s << "\"";
         }
       }
       s << " }";
@@ -197,7 +197,7 @@ namespace mu2e {
     //}
     s << ";";
     return s.str();
-  
+
   }
 
   void SimpleConfigRecord::print( ostream& ost) const{
@@ -227,7 +227,7 @@ namespace mu2e {
       _isCommentOrBlank = true;
       return;
     }
-  
+
     // Check for syntax of a complete record.
     if ( tmp[tmp.size()-1] != ';' ){
       // Test: fail01.conf
@@ -235,30 +235,30 @@ namespace mu2e {
         << "SimpleConfigRecord: Not terminated by semicolon: "
         << record;
     }
-  
+
     // Strip the trailing semicolon and the leading and trailing whitespace.
     barerecord = tmp.substr(0,tmp.size()-1);
     TrimInPlace(barerecord);
- 
+
     // Split the line into: type name = value;
     SplitLine();
-  
+
     // Parse the value part of the record.
     ParseValue();
 
     // Check that the type is one of the known types.
     KnownType();
 
-  }  
+  }
 
 
   /**
-   * 
-   * Split this record into 3 fields: Type Name = Value; 
-   * 
+   *
+   * Split this record into 3 fields: Type Name = Value;
+   *
    */
   void SimpleConfigRecord::SplitLine(){
-  
+
     // Is there an equals sign with enough space before and after it?
     // The minimal line is:
     // t n=v
@@ -278,14 +278,14 @@ namespace mu2e {
 
       // Test: fail04.conf
       throw art::Exception(art::errors::Unknown)
-        << "SimpleConfigRecord: Impossible position for equals sign in record: " 
+        << "SimpleConfigRecord: Impossible position for equals sign in record: "
         << record;
     }
-  
+
     // The value part of the field, to be parsed elsewhere.
     Value = barerecord.substr(iequal+1);
     TrimInPlace(Value);
-  
+
     // Temporary containing the type and name.
     string tmp = barerecord.substr(0,iequal);
     TrimInPlace(tmp);
@@ -314,35 +314,35 @@ namespace mu2e {
         break;
       }
     }
-  
-    // There should be no more white space;  
+
+    // There should be no more white space;
     // Trailing white space has already been trimmed.
     string::size_type check = Name.find_first_of(" \t");
     if ( check != string::npos ){
 
       // Test: fail07.conf
       throw art::Exception(art::errors::Unknown)
-        << "SimpleConfigRecord: Too many fields before equals sign in record: " 
+        << "SimpleConfigRecord: Too many fields before equals sign in record: "
         << record;
     }
-  
+
   }
 
   /**
-   * 
+   *
    * Parse the Value part of the record.
-   * 
+   *
    */
   void SimpleConfigRecord::ParseValue(){
 
     // Check for a record that is a vector.
     _isVector = ( Type.find("vector<") != string::npos ) ? true: false;
-  
+
     // Part of the string to parse.
     // Default is for non-vectors.
     string::size_type iopen  = 0;
     string::size_type iclose = Value.size();
-  
+
     // If this is a vector, strip the enclosing {}.
     if ( _isVector ){
       iopen  = Value.find("{");
@@ -350,30 +350,30 @@ namespace mu2e {
       if ( ( iopen  == string::npos ) ||
            ( iclose == string::npos ) ||
            ( iclose < (iopen+1) ) ){
-        
+
         // Test: fail08.conf, fail09.conf
         throw art::Exception(art::errors::Unknown)
           << "SimpleConfigRecord: "
-          << "Missing or malformed {} in list of values for a vector: " 
+          << "Missing or malformed {} in list of values for a vector: "
           << record;
       }
       iopen += 1;
-    } 
-  
+    }
+
     // Remove {}, if present, and any leading and trailing whitespace.
     // What remains is the part of the line that holds the comma separated list of values.
     string listpart = Value.substr(iopen,iclose-iopen);
     TrimInPlace(listpart);
-  
+
     // Accumulate the next value in this variable.
     //stringBuffer next = new stringBuffer();
     string next;
-  
+
     // Some predefined characters that have special meaning.
     char quote  = '\"';
     char bslash = '\\';
     char comma  = ',';
-  
+
     // States:
     // 0: not within any value
     // 1: within a value that is not started by a quotation mark.
@@ -383,7 +383,7 @@ namespace mu2e {
     // 11: last character was an escape, otherwise in state 1
     // 12: last character was an escape, otherwise in state 2
     // 13: last character was an escape, otherwise in state 3
-    
+
     int state(0);
     for ( string::size_type i=0; i<listpart.size(); ++i ){
 
@@ -397,64 +397,64 @@ namespace mu2e {
         next.append(sc);
         state = state - 10;
         continue;
-      
-      } 
+
+      }
       // Not within an value in the list of values.
       else if ( state == 0 ){
-        
+
         // Skip white space between tokens.
         if ( isspace(c) ) {
           continue;
-        
-        } 
-      
+
+        }
+
         // Starting a new item with a quote, strip the quote.
         else if ( c == quote ){
           state = 2;
           continue;
-        
-        } 
-      
+
+        }
+
         // Starting a new item with a escape.
         else if ( c == bslash  ){
           next.append(sc);
           state = 11;
           continue;
-        
-        } 
-      
+
+        }
+
         // Consecutive commas add an empty item to the vector.
         // State stays at 0.
         else if ( c == comma && next.size() == 0 ){
           Values.push_back("");
           continue;
-        
-        } 
+
+        }
         // Starting a new item with neither escape nor quote.
         else {
           next.append(sc);
           state = 1;
           continue;
         }
-      
-      } 
-    
+
+      }
+
       // In the middle of a field not started by a quote.
       else if ( state == 1 ) {
-      
+
         // End of item is marked by white space.
         if ( isspace(c) ){
           state = 3;
           continue;
-        } 
-      
+        }
+
         // End of item marked by comma without preceeding whitespace.
         else if ( c == comma ){
           Values.push_back(next);
           next.clear();
           state = 0;
           continue;
-        } 
+        }
 
         // Do not allow an unescaped quote in mid word ...
         else if ( c == quote ){
@@ -464,58 +464,58 @@ namespace mu2e {
             << "SimpleConfigRecord: "
             << "Unexpected \" character in record: "
             << record;
-        } 
-      
+        }
+
         // Next character is to be escaped.
         else if ( c == bslash ) {
           next.append(sc);
           state = 11;
           continue;
-        
-        } 
-      
+
+        }
+
         // Not a special character, just add it to the string.
         else{
           next.append(sc);
           continue;
         }
-      
-      } 
-    
+
+      }
+
       // In the middle of a field started by a quote.
       else if ( state == 2 ){
-      
-      
+
+
         // Terminal quote marks the end of an item.
         if ( c == quote ){
           state = 3;
-        
-        } 
-      
+
+        }
+
         // Escape the next character.
         else if ( c == bslash ) {
           next.append(sc);
           state = 12;
           continue;
-        
-        } 
-      
+
+        }
+
         // Add character. Comma and white space are normal characters in this case.
         else {
           next.append(sc);
           continue;
         }
-      
-      } 
-    
+
+      }
+
       // Finished with a field but have not yet seen a comma or end of record.
       else if ( state == 3 ){
-      
+
         // Skip white space between fields.
         if ( isspace(c) ) {
           continue;
-        
-        } 
+
+        }
 
         // Add the previous item to the output vector.
         else if ( c == comma ) {
@@ -532,8 +532,8 @@ namespace mu2e {
             << "Unexpected white space inside an item in the value list: "
             << record;
         }
-      } 
-    
+      }
+
       // There should be no way to reach this else.
       else{
         // No test for this error.
@@ -541,49 +541,49 @@ namespace mu2e {
           << "SimpleConfigRecord: "
           << "Logic bug in the SimpleConfigRecord value parser: "
           << record;
-           
+
       }// end main branch, starting with: "if ( state > 9 )"
-    
+
     } // end loop over characters
-  
-  
+
+
     // Record ended with an unterminated quote
     if ( state == 2 || state == 12 ){
 
       // Test: fail11.conf
       throw art::Exception(art::errors::Unknown)
         << "SimpleConfigRecord: "
-        << "Unclosed quotes in this record: " 
+        << "Unclosed quotes in this record: "
         << record;
-        
+
       // Treat an end of record as the trailing delimiter for the last field.
     } else if ( state == 1 || state == 3 ){
       Values.push_back(next);
-    
+
       // Last non-blank item was a non-quoted comma.
       // So add a blank item to the vector.
     } else if ( _isVector && state ==0 ){
       if ( Values.size() > 0 ){
         Values.push_back("");
       }
-    } 
-  
+    }
+
     // On a legal record there is no way to reach this else.
     else{
       // No test for this error.
       throw art::Exception(art::errors::Unknown)
         << "SimpleConfigRecord: "
-        << "Logic bug at final state in SimpleConfigRecord parser: " 
+        << "Logic bug at final state in SimpleConfigRecord parser: "
         << record;
     }
-  
+
     // For a scalar record, make sure that there was exactly 1 item.
     if ( !_isVector ){
       if( Values.size() != 1 ){
         // Test: fail13.conf, fail19.conf
         throw art::Exception(art::errors::Unknown)
           << "SimpleConfigRecord: "
-          << "Scalar type record has more than one value: " 
+          << "Scalar type record has more than one value: "
           << record;
       }
     }
@@ -591,13 +591,13 @@ namespace mu2e {
   }
 
   /**
-   * 
+   *
    * Check that the type of the current record matches the specified type.
    *
    */
   void SimpleConfigRecord::CheckType( string s) const{
     if ( Type != s  ){
-      // Tests: fail14.conf, 
+      // Tests: fail14.conf,
       throw art::Exception(art::errors::Unknown)
         << "SimpleConfigRecord: "
         << "Type mismatch: "
@@ -607,7 +607,7 @@ namespace mu2e {
   }
 
   /**
-   * 
+   *
    * Check that the type of the current record is one of the vector types.
    *
    */
@@ -652,9 +652,9 @@ namespace mu2e {
     // Test: fail17.conf
     throw art::Exception(art::errors::Unknown)
       << "SimpleConfigRecord: "
-      << "Died converting value to int: " 
+      << "Died converting value to int: "
       << s
-      << " In record: " 
+      << " In record: "
       << record;
   }
 
@@ -668,9 +668,9 @@ namespace mu2e {
     // Test: fail15.conf
     throw art::Exception(art::errors::Unknown)
       << "SimpleConfigRecord: "
-      << "Died converting value to double: " 
-      << s 
-      << "In record: " 
+      << "Died converting value to double: "
+      << s
+      << "In record: "
       << record;
   }
 
@@ -692,9 +692,9 @@ namespace mu2e {
     // Test: fail18.conf
     throw art::Exception(art::errors::Unknown)
       << "SimpleConfigRecord: "
-      << "Died converting value to bool: " 
-      << s 
-      << "In record: " 
+      << "Died converting value to bool: "
+      << s
+      << "In record: "
       << record;
   }
 
@@ -720,7 +720,7 @@ namespace mu2e {
     // Test: fail02.conf
     throw art::Exception(art::errors::Unknown)
       << "SimpleConfigRecord: "
-      << "Unrecognized data type in record: " 
+      << "Unrecognized data type in record: "
       << record;
 
   }

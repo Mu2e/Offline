@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.hh,v 1.7 2011/05/17 22:22:46 wb Exp $
+// $Id: CosmicTuple.hh,v 1.8 2011/05/18 02:27:17 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -28,13 +28,13 @@ namespace mu2e {
 
   class CosmicTuple : public art::EDFilter {
   public:
-    
+
     explicit CosmicTuple(fhicl::ParameterSet const& pset);
     virtual ~CosmicTuple() { }
 
     virtual void beginJob();
     virtual bool beginRun(art::Run &r);
- 
+
     // This is called for each event.
     virtual bool filter(art::Event& e);
 
@@ -57,5 +57,5 @@ namespace mu2e {
     TNtuple* _ntupTrk;
 
   };
-  
+
 } // end namespace mu2e

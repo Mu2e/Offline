@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
-// 
-// $Id: nestTrp.cc,v 1.5 2010/12/02 17:46:19 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/02 17:46:19 $
+//
+// $Id: nestTrp.cc,v 1.6 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Krzysztof Genser based on Rob Kutschke's nestBox
 //
@@ -21,10 +21,10 @@
 using namespace std;
 
 namespace mu2e {
- 
+
   //
   // Place a trp inside a logical volume.
-  // 
+  //
   VolumeInfo nestTrp ( string const& name,
                        double const halfDim[5],
                        G4Material* material,
@@ -39,7 +39,7 @@ namespace mu2e {
                        bool const placePV,
                        bool const doSurfaceCheck
                        ){
-    
+
     VolumeInfo info;
 
     info.name     = name;

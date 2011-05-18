@@ -1,12 +1,12 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.23 2011/05/17 15:36:00 greenc Exp $ 
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: DecayInOrbitGun.cc,v 1.24 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
-// 
+//
 
 // C++ includes.
 #include <iostream>
@@ -50,7 +50,7 @@ namespace mu2e {
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
   static const double conversionEnergyAluminum = 104.96;
-  
+
   DecayInOrbitGun::DecayInOrbitGun( art::Run& run, const SimpleConfig& config ):
 
     // Base class
@@ -75,7 +75,7 @@ namespace mu2e {
     _randSimpleEnergy(getEngine(), &(binnedEnergySpectrum()[0]), _nbins ),
 
     _randPoissonQ( getEngine(), std::abs(_mean) ),
-    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),  
+    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
 
     // Histograms.
     _hMultiplicity(0),
@@ -88,7 +88,7 @@ namespace mu2e {
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "DecayInOrbit Gun has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
@@ -101,8 +101,8 @@ namespace mu2e {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
     ConditionsHandle<ParticleDataTable> pdt("ignored");
-    
-    //pick up particle mass    
+
+    //pick up particle mass
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _mass = e_data.mass().value();
 
@@ -110,7 +110,7 @@ namespace mu2e {
     _tmax   = config.getDouble("decayinorbitGun.tmax",  accPar->deBuncherPeriod );
 
     // Make ROOT subdirectory to hold diagnostic histograms; book those histograms.
-  
+
     if ( _doHistograms ){
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "DecayInOrbit" );
@@ -123,9 +123,9 @@ namespace mu2e {
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 210, -200., 2000. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax, 
-                                                                             FoilParticleGenerator::volWeightFoil, 
-                                                                             FoilParticleGenerator::flatPos, 
+    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+                                                                             FoilParticleGenerator::volWeightFoil,
+                                                                             FoilParticleGenerator::flatPos,
                                                                              FoilParticleGenerator::limitedExpoTime,
                                                                              false, //dummy value
                                                                              _PStoDSDelay,
@@ -139,39 +139,39 @@ namespace mu2e {
 
   DecayInOrbitGun::~DecayInOrbitGun(){
   }
-  
+
   void DecayInOrbitGun::generate( ToyGenParticleCollection& genParts ){
     // Choose the number of electrons to generate this event.
     long n = (_mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire());
-      
-    if ( _doHistograms ) { 
-      _hMultiplicity->Fill(n); 
+
+    if ( _doHistograms ) {
+      _hMultiplicity->Fill(n);
     }
-    
+
     //Loop over particles to generate
-    
+
     for (int i=0; i<n; ++i) {
 
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
       _fGenerator->generatePositionAndTime(pos, time);
-      
+
 
       //Pick up energy and momentum vector
       double e;
       if (_useSimpleSpectrum) {
-        e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow); 
+        e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow);
       } else if (!_useSimpleSpectrum) {
         e = _randEnergy->fire();
       }
 
       _p = safeSqrt(e*e - _mass*_mass);
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
-      
+
       //Set Four-momentum
       CLHEP::HepLorentzVector mom(p3,e);
-      
+
       // Add the particle to  the list.
       genParts.push_back( ToyGenParticle( PDGCode::e_minus, GenId::dio1, pos, mom, time));
 
@@ -183,41 +183,41 @@ namespace mu2e {
         _hphi      ->Fill( p3.phi() );
         _ht        ->Fill( time );
       }
-      
+
     } // End of loop over particles
-    
+
   } // DecayInOrbitGun::generate
-  
-  
+
+
   // Energy spectrum of the electron from DIO.
   // Input energy in MeV
   double DecayInOrbitGun::energySpectrum( double e )
   {
     return pow<5>(conversionEnergyAluminum - e) ;
   }
-    
+
 
   // Compute a binned representation of the energy spectrum of the electron from DIO.
-  // Not used. Still in the code until a new class can reproduce it. 
+  // Not used. Still in the code until a new class can reproduce it.
 
   std::vector<double> DecayInOrbitGun::binnedEnergySpectrum(){
-    
+
     // Sanity check.
     if (_nbins <= 0) {
-      throw cet::exception("RANGE") 
+      throw cet::exception("RANGE")
         << "Nonsense nbins requested in "
         << "DecayInOrbit = "
         << _nbins
         << "\n";
     }
-    
+
     // Bin width.
     double dE = (_ehi - _elow) / _nbins;
 
     // Vector to hold the binned representation of the energy spectrum.
     std::vector<double> spectrum;
     spectrum.reserve(_nbins);
-    
+
     for (int ib=0; ib<_nbins; ib++) {
       double x = _elow+(ib+0.5) * dE;
       spectrum.push_back(energySpectrum(x));

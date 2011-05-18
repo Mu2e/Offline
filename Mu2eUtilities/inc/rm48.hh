@@ -4,16 +4,16 @@
 //
 //  Adapter to make CLHEP::RandFlat look like the cernlib rn48.
 //
-//  $Id: rm48.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/05/17 15:41:36 $
+//  $Id: rm48.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/18 02:27:18 $
 //
 //  Original author Rob Kutschke.
 //
-//  The Daya Bay cosmic code, written in fortran, calls the 
+//  The Daya Bay cosmic code, written in fortran, calls the
 //  cernlib random number generator rm48, this is a flat
-//  distribution on ]0,1[.  
-//  The code in this file and rm48.cc is an adapter to 
+//  distribution on ]0,1[.
+//  The code in this file and rm48.cc is an adapter to
 //  allow calls to rm48 to call through to an instance of
 //  CLHEP::RandFlat.  The existence of the instance
 //  is managed in CosmicDYB.cc.

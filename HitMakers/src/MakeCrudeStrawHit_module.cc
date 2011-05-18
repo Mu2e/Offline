@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // CrudeStrawHit objects.
 //
-// $Id: MakeCrudeStrawHit_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+// $Id: MakeCrudeStrawHit_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -48,10 +48,10 @@ namespace mu2e {
 
   //--------------------------------------------------------------------
   //
-  // 
+  //
   class MakeCrudeStrawHit : public art::EDProducer {
   public:
-    explicit MakeCrudeStrawHit(fhicl::ParameterSet const& pset) : 
+    explicit MakeCrudeStrawHit(fhicl::ParameterSet const& pset) :
 
       // Parameters
       _diagLevel(pset.get<int>("diagLevel",0)),
@@ -74,11 +74,11 @@ namespace mu2e {
     virtual ~MakeCrudeStrawHit() { }
 
     virtual void beginJob();
- 
+
     void produce( art::Event& e);
 
   private:
-    
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -136,12 +136,12 @@ namespace mu2e {
     art::ProductID const& id(points.id());
 
     for ( size_t i=0; i<points->size(); ++i){
-      
+
       // Aliases (references), used for readability.
       StepPointMC const& hit = (*points)[i];
       CLHEP::Hep3Vector  const& pos = hit.position();
       CLHEP::Hep3Vector  const& mom = hit.momentum();
-      
+
       // Get the straw information, also by reference.
       Straw const&      straw = ltracker->getStraw(hit.strawIndex());
       CLHEP::Hep3Vector const& mid   = straw.getMidPoint();
@@ -160,11 +160,11 @@ namespace mu2e {
       double dca  = dcaTrue + _gaussian.fire(0.,sigma);
 
       // Add to the output collection.
-      crudeHits->push_back( CrudeStrawHit( straw.Index(), 
-                                           dca, 
-                                           time, 
-                                           sigma, 
-                                           hit.eDep(), 
+      crudeHits->push_back( CrudeStrawHit( straw.Index(),
+                                           dca,
+                                           time,
+                                           sigma,
+                                           hit.eDep(),
                                            CrudeStrawHit::stepPointMC,
                                            DPIndex(id,i),
                                            dcaTrue,
@@ -201,9 +201,9 @@ namespace mu2e {
     // All done.  Add the output to the event.
     event.put(crudeHits);
 
-    
+
   } // end of ::analyze.
-  
+
 }
 
 

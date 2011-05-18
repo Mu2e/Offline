@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.13 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: DataInterface.h,v 1.14 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -58,7 +58,7 @@ class DataInterface
   const TObject *_mainframe;       //points to the EventDisplayFrame object
                                    //ROOT needs a bare pointer to this object when dealing
                                    //with context menus (the function which gets called
-                                   //from the context menu belongs to this object) 
+                                   //from the context menu belongs to this object)
   std::list<boost::shared_ptr<VirtualShape> >   _components;
   std::map<int, boost::shared_ptr<Straw> >      _straws;
   std::map<int, boost::shared_ptr<Cube> >       _crystals;
@@ -96,7 +96,7 @@ class DataInterface
 
   public:
   DataInterface(const TGMainFrame *mainframe);
-  virtual ~DataInterface(); 
+  virtual ~DataInterface();
 
   void startComponents();
   void updateComponents(double time);

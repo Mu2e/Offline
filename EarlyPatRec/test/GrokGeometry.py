@@ -1,8 +1,8 @@
 # Configuration file for looking at the straws in the geometry
 #
-# $Id: GrokGeometry.py,v 1.1 2011/05/16 23:10:52 mf Exp $
-# $Author: mf $
-# $Date: 2011/05/16 23:10:52 $
+# $Id: GrokGeometry.py,v 1.2 2011/05/18 02:27:15 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:15 $
 #
 # From makeDPIStrawClusters by authors Rob Kutschke and Hans Wenzel
 #
@@ -11,7 +11,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("StrawDescriptionsTest")
 
 # Maximum number of events to do.
@@ -46,7 +46,7 @@ process.source = mu2e.Source("PoolSource",
 )
 process.ConditionsService = mu2e.Service("ConditionsService",
       conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")
-) 
+)
 # Form StrawHits (SH).
 process.makeSH = mu2e.EDProducer(
     "MakeStrawHit",
@@ -72,8 +72,8 @@ process.makeSC = mu2e.EDProducer(
 
 # Check the StrawClusters, and capture plots of tau, beta and tan theta
 process.testSC = mu2e.EDAnalyzer("GrokGeometry",
-       g4ModuleLabel = mu2e.string("g4run"),                             
-    makerModuleLabel = mu2e.string("makeSH"),                            
+       g4ModuleLabel = mu2e.string("g4run"),
+    makerModuleLabel = mu2e.string("makeSH"),
     clmakerModuleLabel = mu2e.string("makeSC"),
     diagLevel    = mu2e.untracked.int32(0),
     maxFullPrint = mu2e.untracked.int32(5)

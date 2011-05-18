@@ -1,9 +1,9 @@
 // Convert track from 3-point + 3-momentum representation to other
 //representations.
 //
-// $Id: TrackTool.cc,v 1.1 2011/05/17 00:28:23 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/05/17 00:28:23 $
+// $Id: TrackTool.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,7 @@ using namespace std;
 
 namespace mu2e {
 
-  TrackTool::TrackTool( int pdgId, 
+  TrackTool::TrackTool( int pdgId,
                         double                   q,
                         CLHEP::Hep3Vector const& pos,
                         CLHEP::Hep3Vector const& p,
@@ -96,19 +96,19 @@ namespace mu2e {
     //CLHEP::Hep3Vector qmom(momentumAtPsi(psi));
     CLHEP::Hep3Vector qmom(momentumAtZ(pos.z()));
 
-    cout << "px: " 
+    cout << "px: "
          << qmom.x()    << " "
          << p.x() << " "
          << qmom.x()-p.x()
          << endl;
 
-    cout << "py: " 
+    cout << "py: "
          << qmom.y()    << " "
          << p.y() << " "
          << qmom.y()-p.y()
          << endl;
-      
-    cout << "pz: " 
+
+    cout << "pz: "
          << qmom.z()    << " "
          << p.z() << " "
          << qmom.z()-p.z()
@@ -116,22 +116,22 @@ namespace mu2e {
 
     //CLHEP::Hep3Vector xyz(positionAtPsi(psi));
     CLHEP::Hep3Vector xyz(positionAtZ(pos.z()));
-    cout << "x: " 
+    cout << "x: "
          << xyz.x() << " "
-         << pos.x() << " " 
-         << xyz.x()-pos.x() 
+         << pos.x() << " "
+         << xyz.x()-pos.x()
          << endl;
 
-    cout << "y: " 
+    cout << "y: "
          << xyz.y() << " "
-         << pos.y() << " " 
-         << xyz.y()-pos.y() 
+         << pos.y() << " "
+         << xyz.y()-pos.y()
          << endl;
 
-    cout << "z: " 
+    cout << "z: "
          << xyz.z() << " "
-         << pos.z() << " " 
-         << xyz.z()-pos.z() 
+         << pos.z() << " "
+         << xyz.z()-pos.z()
          << endl;
 
     */

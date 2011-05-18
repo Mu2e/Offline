@@ -7,9 +7,9 @@
 //
 // The wrapper does the job of throwing if the pointer comes back null.
 //
-// $Id: getPhysicalVolumeOrThrow.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: getPhysicalVolumeOrThrow.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@ class G4VPhysicalVolume;
 class G4String;
 
 namespace mu2e {
-  
+
   G4VPhysicalVolume* getPhysicalVolumeOrThrow( G4String const& name, bool mustHave=true );
 
 } // end namespace mu2e

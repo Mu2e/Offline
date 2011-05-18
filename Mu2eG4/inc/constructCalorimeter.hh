@@ -3,9 +3,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.hh,v 1.5 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: constructCalorimeter.hh,v 1.6 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@ namespace mu2e {
 
   class SimpleConfig;
 
-  void constructCalorimeter( VolumeInfo const&   mother, 
+  void constructCalorimeter( VolumeInfo const&   mother,
 			     double              zOffset,
 			     SimpleConfig const& config );
 

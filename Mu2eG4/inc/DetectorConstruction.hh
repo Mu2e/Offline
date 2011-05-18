@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e detector with the Mu2e G4 world.
 //
-// $Id: DetectorConstruction.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: DetectorConstruction.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -26,12 +26,12 @@ namespace mu2e {
 
   class DetectorConstruction : public G4VUserDetectorConstruction{
   public:
-    
+
     DetectorConstruction();
     ~DetectorConstruction();
-    
+
   public:
-    
+
     G4VPhysicalVolume* Construct();
 
     G4double getZStart() const { return _zStart;}
@@ -42,7 +42,7 @@ namespace mu2e {
 
   private:
 
-    // Pointer to the magnetic field 
+    // Pointer to the magnetic field
     G4UniformMagField* _magField;
     G4UserLimits*      _stepLimit;
 
@@ -50,7 +50,7 @@ namespace mu2e {
     G4Mag_UsualEqRhs    *_usualRHS;
     G4ExactHelixStepper *_exactHelix;
     G4ChordFinder       *_chordFinder;
-    
+
     // Half lengths of the world.
     G4double _xwHalf;
     G4double _ywHalf;

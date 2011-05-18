@@ -4,11 +4,11 @@
 // Information about a physical volume.  Used by Mu2eWorld and its utility routines.
 // The center information is not fully general: it does not know about rotations
 // and is useful only for the top few levels of the detector.
-// 
-// 
-// $Id: VolumeInfo.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+//
+//
+// $Id: VolumeInfo.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -50,7 +50,7 @@ namespace mu2e {
     G4VSolid*          solid;
     G4LogicalVolume*   logical;
     G4VPhysicalVolume* physical;
-    
+
     // Location information in two coordinate systems.
     CLHEP::Hep3Vector      centerInParent;
     CLHEP::Hep3Vector      centerInWorld;

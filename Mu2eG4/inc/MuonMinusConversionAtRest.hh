@@ -5,15 +5,15 @@
 // muon. Configurable parameters include endpoint of momentum, limits of polar
 // and azimuthal angle.
 //
-// $Id: MuonMinusConversionAtRest.hh,v 1.2 2011/05/17 15:36:00 greenc Exp $ 
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: MuonMinusConversionAtRest.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 //-----------------------------------------------------------------------------
 
 #ifndef muMinusConversionAtRest_h
 #define muMinusConversionRest_h 1
- 
+
 #include "G4VRestProcess.hh"
 #include "G4VParticleChange.hh"
 #include "G4ParticleDefinition.hh"
@@ -31,10 +31,10 @@ namespace mu2e {
    class SimpleConfig;
 
 class muMinusConversionAtRest : public G4VRestProcess
- 
-{ 
+
+{
 public:
- 
+
   muMinusConversionAtRest( const SimpleConfig& config, const G4String& processName ="muMinusConversionAtRest", G4ProcessType   aType = fHadronic );
 
    ~muMinusConversionAtRest();
@@ -45,20 +45,20 @@ public:
 
   void BuildPhysicsTable(const G4ParticleDefinition&);
 
-  G4VParticleChange* AtRestDoIt(const G4Track&, const G4Step&); 
+  G4VParticleChange* AtRestDoIt(const G4Track&, const G4Step&);
 
-  G4double GetMeanLifeTime(const G4Track&, G4ForceCondition*) 
+  G4double GetMeanLifeTime(const G4Track&, G4ForceCondition*)
   {return 0;};
 
 private:
 
-  // hide assignment operator as private 
+  // hide assignment operator as private
   muMinusConversionAtRest& operator=(const muMinusConversionAtRest &right);
   muMinusConversionAtRest(const muMinusConversionAtRest& );
 
   // Conversion momentum.
   G4double _p;
-  
+
   // Limits on the generated direction.
   G4double _czmin;
   G4double _czmax;
@@ -67,7 +67,7 @@ private:
 
   //Utility to generate direction of the momentum
   mu2e::RandomUnitSphere    _randomUnitSphere;
-  
+
   G4bool isInitialised;
 
 };
@@ -76,7 +76,7 @@ private:
 }
 
 #endif
- 
+
 
 
 

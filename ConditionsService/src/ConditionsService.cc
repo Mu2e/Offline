@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.cc,v 1.9 2011/05/17 15:35:59 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:35:59 $
+// $Id: ConditionsService.cc,v 1.10 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Rob Kutschke
 //
@@ -37,7 +37,7 @@ using namespace std;
 
 namespace mu2e {
 
-  ConditionsService::ConditionsService(fhicl::ParameterSet const& iPS, 
+  ConditionsService::ConditionsService(fhicl::ParameterSet const& iPS,
                                        art::ActivityRegistry&iRegistry) :
     _conditionsFile(iPS.get<std::string>("conditionsfile","conditions.txt")),
     _config(_conditionsFile),
@@ -46,27 +46,27 @@ namespace mu2e {
   {
     iRegistry.watchPreBeginRun(this, &ConditionsService::preBeginRun);
   }
-  
+
 
   ConditionsService::~ConditionsService(){
   }
 
-  void 
+  void
   ConditionsService::preBeginRun(art::RunID const& iID, art::Timestamp const& iTime) {
 
     if(++_run_count > 1) {
       mf::LogWarning("CONDITIONS") << "This test version does not change geometry on run boundaries.";
       return;
     }
-    
+
     mf::LogInfo log("CONDITIONS");
     log << "Conditions input file is: " << _conditionsFile << "\n";
 
-    if ( _config.get<bool>("printConfig",false) ){
+    if ( _config.getBool("printConfig",false) ){
       log << "\n" << _config;
     }
 
-    if ( _config.get<bool>("printConfigStats",false) ){
+    if ( _config.getBool("printConfigStats",false) ){
       // Work around absence of << operator for this print method.
       ostringstream os;
       _config.printStatistics(os);

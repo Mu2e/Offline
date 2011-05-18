@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
-// 
-// $Id: nestTubs.cc,v 1.8 2010/12/06 22:29:46 genser Exp $
-// $Author: genser $ 
-// $Date: 2010/12/06 22:29:46 $
+//
+// $Id: nestTubs.cc,v 1.9 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -23,10 +23,10 @@
 using namespace std;
 
 namespace mu2e {
- 
+
   //
   // Create and place a G4Tubs inside a logical volume.
-  // 
+  //
   VolumeInfo nestTubs ( string const & name,
                         double const params[5],
                         G4Material* material,
@@ -41,14 +41,14 @@ namespace mu2e {
                         bool const placePV,
                         bool const doSurfaceCheck
                         ){
-    
+
 
     VolumeInfo info;
-    
+
     info.name     = name;
 
     info.solid    = new G4Tubs( name, params[0], params[1], params[2], params[3], params[4]  );
-    
+
     finishNesting(info,
                   material,
                   rot,
@@ -81,12 +81,12 @@ namespace mu2e {
                         bool const placePV,
                         bool const doSurfaceCheck
                         ){
-    
+
 
     VolumeInfo info(name,offset,parent.centerInWorld);
-    
+
     info.solid    = new G4Tubs( name, params[0], params[1], params[2], params[3], params[4] );
-    
+
     finishNesting(info,
                   material,
                   rot,

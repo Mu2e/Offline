@@ -2,9 +2,9 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: VirtualShape.h,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -24,7 +24,7 @@
 namespace mu2e_eventdisplay
 {
 
-class VirtualShape : public TObject 
+class VirtualShape : public TObject
 {
   VirtualShape();
   VirtualShape(const VirtualShape &);
@@ -32,7 +32,7 @@ class VirtualShape : public TObject
 
   double _startTime;
   double _endTime;
-  bool   _defaultVisibility;   //i.e. visibility of straws before hit, unhit straws, 
+  bool   _defaultVisibility;   //i.e. visibility of straws before hit, unhit straws,
                               //permanent structures, etc.
   bool   _isGeometry;
   int    _color;
@@ -44,14 +44,14 @@ class VirtualShape : public TObject
 
   public:
 
-  VirtualShape(const TGeoManager *geomanager, TGeoVolume *topvolume, 
+  VirtualShape(const TGeoManager *geomanager, TGeoVolume *topvolume,
                const boost::shared_ptr<ComponentInfo> info, bool isGeometry):
                _startTime(NAN),_endTime(NAN),
                _defaultVisibility(true), _isGeometry(isGeometry), _color(kGray),
                _geomanager(geomanager), _topvolume(topvolume), _info(info)
   {}
-  
-  virtual ~VirtualShape() 
+
+  virtual ~VirtualShape()
   {
 //TODO
   }

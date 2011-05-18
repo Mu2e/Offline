@@ -1,9 +1,9 @@
 # Configuration file for Readback
 # Readback the output of g4test_03.py; make histograms and printout.
 #
-# $Id: readback.py,v 1.11 2011/05/03 03:00:58 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/03 03:00:58 $
+# $Id: readback.py,v 1.12 2011/05/18 02:27:18 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:18 $
 #
 # Original author Rob Kutschke
 #
@@ -12,7 +12,7 @@
 # Define the default configuratio for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("ReadBack01")
 
 # Maximum number of events to do.

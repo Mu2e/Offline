@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <climits>
+#include <limits>
 #include <cmath>
 using std::ios_base;
 using std::streamsize;
@@ -21,7 +21,7 @@ const double Trajectory::COMP_PREC  =  EEFINE/10.;
 
 const double Trajectory::NUM_PREC = 1.0e-15; // empirical
 
-// Class Trajectory 
+// Class Trajectory
 
 Trajectory::~Trajectory()
 {
@@ -54,7 +54,7 @@ double Trajectory::getPathLengthAtRhoEquals(double rho) const
 double Trajectory::getPathLengthTo(const HepGeom::Point3D<double> &point) const {
   double s = 0;
   const int MAXTRIES=200;
-  Trajectory::Location location; 
+  Trajectory::Location location;
   //  for (int i=0;i<10;i++) {
   for (int ntries=0 ; ntries<MAXTRIES ; ntries++) {
     getLocation(location,s);
@@ -103,8 +103,8 @@ double Trajectory::getPathLengthTo(const Trajectory &traj) const {
         return s0;
       }
     double dxMag = deltaX.mag();
-    
-    // We have in fact increased.  Do not move forward, move back, reduce 
+
+    // We have in fact increased.  Do not move forward, move back, reduce
     // Reduce the factor and try again..
     //
     if (dxMag>dXPrev) {
@@ -130,28 +130,28 @@ double Trajectory::getDzeroTo(const HepGeom::Point3D<double> &point) const {
 
 
 // This is a signed quantity.  The sign is the *opposite* of the
-// angular momentum of this trajectory about the POCA of the 
+// angular momentum of this trajectory about the POCA of the
 // second trajectory, in the direction of the second
-// trajectory. It's the same convention as the CDF D0, if you 
-// consider the D0 to be the signed POCA w.r.t a trajectory 
+// trajectory. It's the same convention as the CDF D0, if you
+// consider the D0 to be the signed POCA w.r.t a trajectory
 // moving towards the positive z axis along the beam.
 //
 // Oh, subclasses!  You are exhorted to follow this convention!
-// Exhort! Exhort! Exhort! Exhort! Exhort! Exhort! Exhort! Exhort! 
+// Exhort! Exhort! Exhort! Exhort! Exhort! Exhort! Exhort! Exhort!
 double Trajectory::getDzeroTo(const Trajectory &traj) const {
 
   double s0=0,s1=0;
   Trajectory::Location x0Loc,x1Loc;
   for (int i=0;i<100;i++) {
     getLocation(x0Loc,s0);
-    traj.getLocation(x1Loc,s1);    
+    traj.getLocation(x1Loc,s1);
     HepGeom::Point3D<double>   deltaX=x1Loc.position()-x0Loc.position();
     double       d0Dotd1=x0Loc.direction().dot(x1Loc.direction());
     double       delta0 = (d0Dotd1*deltaX.dot(x1Loc.direction())
                            -deltaX.dot(x0Loc.direction()))/(d0Dotd1*d0Dotd1-1);
     double delta1 = (-d0Dotd1*deltaX.dot(x0Loc.direction())
                      +deltaX.dot(x1Loc.direction()))/(d0Dotd1*d0Dotd1-1);
-    
+
     if (std::abs(delta0)<EFINE && std::abs(delta1)<EFINE)
       {
         CLHEP::Hep3Vector R=x0Loc.position()-x1Loc.position();
@@ -167,7 +167,7 @@ double Trajectory::getDzeroTo(const Trajectory &traj) const {
 
   return 0.0;
 
-} 
+}
 
 Trajectory::Location * Trajectory::newIntersectionWith(const HepGeom::Plane3D<double> &plane) const
 {
@@ -178,7 +178,7 @@ Trajectory::Location * Trajectory::newIntersectionWith(const HepGeom::Plane3D<do
     //    if (((float)fabs(s+deltaS)!=(float)fabs(s))){
     if (std::abs(s+deltaS)!=std::abs(s)){
       getLocation(*ploc,s);
-      deltaS=((-(plane.distance(ploc->position())))/(normal.dot(ploc->direction()))); 
+      deltaS=((-(plane.distance(ploc->position())))/(normal.dot(ploc->direction())));
       s+=deltaS;
     }
     else {
@@ -200,7 +200,7 @@ void Trajectory::Location::print(std::ostream & os) const {
   streamsize old_prec = os.precision(4); // save old and set new
 
   os << __s ;
-  os << ": "; 
+  os << ": ";
   os << _position;
   os << ", ";
   os << _direction;
@@ -210,15 +210,15 @@ void Trajectory::Location::print(std::ostream & os) const {
   os.flags(oldopts);
 }
 
-// Backed out by CG 1998/09/10 
+// Backed out by CG 1998/09/10
 //
 // Storage of a pointer which may or may not disappear at some point in the
 // future is too dangerous for the advantage it gives.
-// 
+//
 // Trajectory::Location::direction(void) has been re-inlined.
 ////////////////////////////////////////////////////////////////
 //KCDF:
-// 
+//
 //We modified this to avoid computation of directions
 //where they are never needed. (See Trajectory.hh)
 //e.g. in Helix::newIntersectionWith(plane)
@@ -228,7 +228,7 @@ void Trajectory::Location::print(std::ostream & os) const {
 //The direction is computed only the first time it is accessed.
 //(If at all!)
 //
-//When the old constructors are used Trajectory::Location 
+//When the old constructors are used Trajectory::Location
 //behaves like before, i.e. nothing is computed.
 //
 //Kurt Rinnert 09/09/1998

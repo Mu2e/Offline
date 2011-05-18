@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.7 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: ConvElecUtilities.hh,v 1.8 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Gianni Onorato
 //
@@ -35,11 +35,11 @@
 namespace mu2e {
 
   class ConvElecUtilities{
-    
+
     typedef SimParticleCollection::key_type key_type;
 
   public:
-    
+
     /**
      * Constructor.  Takes an event as an argument
      * plus g4module name (string) and the trackerStepPoints name (string)
@@ -49,7 +49,7 @@ namespace mu2e {
                       std::string trackerStepPoints);
 
     ~ConvElecUtilities();
-    
+
   public:
 
     StepPointMC const& firstHit();
@@ -64,32 +64,32 @@ namespace mu2e {
     int nConvElec() const {
       return _nconv;
     }
-    
+
     //Returns how many hits come from the convElectron
     size_t hasStepPointMC() const {
       return _convElecHits.size();
     }
-        
+
     //return a vector of index related to the stepPointMCCollection
     //identifying hits of the conversion electron
     const std::vector<size_t> & convElecHitsIdx() const {
       return _convElecHits;
-    } //maybe it could be transformed in a vector of references to event hits 
-    
+    } //maybe it could be transformed in a vector of references to event hits
+
     //return a vector of StrawIndex related to hits of the conversion electron
     const std::vector<StrawIndex> & convElecStrawIdx() const {
       return _convElecStrawIdx;
     }
 
   private:
-    
+
     void checkConvElec(const art::Event & event);
     void lookAtHits(const art::Event & event);
     int _nconv;
     art::Handle<SimParticleCollection> _simParticles;
     art::Handle<ToyGenParticleCollection> _genParticles;
     art::Handle<StepPointMCCollection> hits;
-    std::vector<size_t> _convElecHits; 
+    std::vector<size_t> _convElecHits;
     std::vector<StrawIndex> _convElecStrawIdx;
     std::string _g4ModuleLabel, _trackerStepPoints;
     key_type _convTrackId;

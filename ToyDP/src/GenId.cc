@@ -2,9 +2,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.cc,v 1.1 2009/09/30 22:57:47 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2009/09/30 22:57:47 $
+// $Id: GenId.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 #include <iostream>
@@ -17,7 +17,7 @@
 using namespace std;
 
 namespace mu2e {
-  
+
   const char* GenId::_name[] = { GENID_NAMES };
 
   BOOST_STATIC_ASSERT(sizeof(GenId::_name)/sizeof(char*) == GenId::lastEnum);
@@ -48,7 +48,7 @@ Notes from Marc Paterno.  Other options for this class.
  I tried to do the following in the header but it made
  a compiler error:
  static const char* name[] = {};
- 
+
  The problem with making this a template is that if we add a new
  enum value this makes a new type - which will confuse the edm.
 

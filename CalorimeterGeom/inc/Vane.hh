@@ -6,15 +6,15 @@
 //
 
 //
-// $Id: Vane.hh,v 1.5 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: Vane.hh,v 1.6 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author R, Bernstein and Rob Kutschke
 //
 
 #include <vector>
-//#include <iostream> 
+//#include <iostream>
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -31,18 +31,18 @@ namespace mu2e {
       Vane():_id(-1){}
       Vane( int & id ):_id(id){}
       ~Vane(){}
- 
+
       // Compiler generated copy and assignment constructors
       // should be OK.
-  
+
       int Id() const { return _id;}
 
       // Get position in the global Mu2e frame
       CLHEP::Hep3Vector const& getOrigin() const { return _origin; }
       CLHEP::Hep3Vector const& getOriginLocal() const { return _originLocal; }
       CLHEP::Hep3Vector const& getSize() const { return _size; }
-      CLHEP::HepRotation * getRotation() const { 
-	return const_cast<CLHEP::HepRotation *>(&_rotation); 
+      CLHEP::HepRotation * getRotation() const {
+	return const_cast<CLHEP::HepRotation *>(&_rotation);
       }
 
     protected:
@@ -52,7 +52,7 @@ namespace mu2e {
       CLHEP::Hep3Vector _originLocal;
       CLHEP::Hep3Vector _size;
       CLHEP::HepRotation _rotation;
-      
+
     };
 
 } //namespace mu2e

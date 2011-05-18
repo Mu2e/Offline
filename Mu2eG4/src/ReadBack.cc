@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.42 2011/05/17 22:22:46 wb Exp $
+// $Id: ReadBack.cc,v 1.43 2011/05/18 02:27:18 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -69,7 +69,7 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  ReadBack::ReadBack(fhicl::ParameterSet const& pset) : 
+  ReadBack::ReadBack(fhicl::ParameterSet const& pset) :
 
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
@@ -125,12 +125,12 @@ namespace mu2e {
     // Remaining member data
     _nBadG4Status(0){
   }
-  
+
   void ReadBack::beginJob(){
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
-    
+
     // Create some 1D histograms.
     _hRadius       = tfs->make<TH1F>( "hRadius",       "Radius of Hits;(mm)",     100,  0., 1000. );
     _hEnergyDep    = tfs->make<TH1F>( "hEnergyDep",    "Energy Deposited;(keV)",  100,  0.,   10. );
@@ -166,50 +166,50 @@ namespace mu2e {
     _hEdepROMC = tfs->make<TH1F>( "hEdepROMC", "Direct energy deposition in the APD", 100, 0., 10. );
 
 
-    _hRCEdep    = tfs->make<TH1F>( "hRCEdep", 
-                                   "Total energy deposition in calorimeter reconstructed from ROs", 
+    _hRCEdep    = tfs->make<TH1F>( "hRCEdep",
+                                   "Total energy deposition in calorimeter reconstructed from ROs",
                                    2400, 0., 2400. );
 
-    _hRCTime    = tfs->make<TH1F>( "hRCTime", 
-                                   "Hit time in calorimeter reconstructed from ROs", 
+    _hRCTime    = tfs->make<TH1F>( "hRCTime",
+                                   "Hit time in calorimeter reconstructed from ROs",
                                    2400, 0., 2400. );
 
-    _hRCNCrystals = tfs->make<TH1F>( "hRCNCrystals", 
-                                     "Number of crystals reconstructed from ROs", 
+    _hRCNCrystals = tfs->make<TH1F>( "hRCNCrystals",
+                                     "Number of crystals reconstructed from ROs",
                                      50, 0., 50. );
 
-    _hRCEdepMC  = tfs->make<TH1F>( "hRCEdepMC", 
-                                   "Total energy deposition in calorimeter reconstructed from raw ROs MC", 
+    _hRCEdepMC  = tfs->make<TH1F>( "hRCEdepMC",
+                                   "Total energy deposition in calorimeter reconstructed from raw ROs MC",
                                    240, 0., 240. );
 
-    _hRCTimeMC  = tfs->make<TH1F>( "hRCTimeMC", 
-                                   "Hit time in calorimeter reconstructed from raw ROs MC", 
+    _hRCTimeMC  = tfs->make<TH1F>( "hRCTimeMC",
+                                   "Hit time in calorimeter reconstructed from raw ROs MC",
                                    2400, 0., 2400. );
 
-    _hRCNCrystalsMC = tfs->make<TH1F>( "hRCNCrystalsMC", 
-                                       "Number of crystals reconstructed from raw ROs MC", 
+    _hRCNCrystalsMC = tfs->make<TH1F>( "hRCNCrystalsMC",
+                                       "Number of crystals reconstructed from raw ROs MC",
                                        50, 0., 50. );
 
     // Stopping target histograms
 
-    _hTargetEdep = tfs->make<TH1F>( "hTargetEdep", 
-				    "Energy deposition in the stopping target", 
+    _hTargetEdep = tfs->make<TH1F>( "hTargetEdep",
+				    "Energy deposition in the stopping target",
 				    100, 0., 5. );
-    _hTargetPathLength = tfs->make<TH1F>( "hTargetPathLength", 
-					  "Path length in the stopping target", 
+    _hTargetPathLength = tfs->make<TH1F>( "hTargetPathLength",
+					  "Path length in the stopping target",
 					  100, 0., 5. );
-    _hTargetNfoils = tfs->make<TH1F>( "hTargetNfoils", 
-				      "Number of stopping target foils crossed by particle", 
+    _hTargetNfoils = tfs->make<TH1F>( "hTargetNfoils",
+				      "Number of stopping target foils crossed by particle",
 				      20, 0., 20. );
-    _hTargetNfoils2D = tfs->make<TH2F>( "hTargetNfoils2D", 
-					"Number of stopping target foils vs foil of origin", 
+    _hTargetNfoils2D = tfs->make<TH2F>( "hTargetNfoils2D",
+					"Number of stopping target foils vs foil of origin",
 					20, 0., 20., 20, 0, 20. );
 
     // Create tracker ntuple.
-    _ntup = tfs->make<TNtuple>( "ntup", "Hit ntuple", 
+    _ntup = tfs->make<TNtuple>( "ntup", "Hit ntuple",
                                           "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
 
-    // Create a TGraph; 
+    // Create a TGraph;
     // - Syntax to set name and title is weird; that's just root.
     // - Must append to the output file by hand.
     _xyHits = tfs->make<TGraph>(_xyHitsMax);
@@ -222,13 +222,13 @@ namespace mu2e {
     _hCRVMultiplicity = tfs->make<TH1F>( "hCRVMultiplicity", "CRV StepPointMC per Bar", 5000,  0.,  5000. );
 
     // Create CRV ntuple.
-    _ntupCRV = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple", 
+    _ntupCRV = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple",
                                           "evt:trk:bid:hx:hy:hz:bx:by:bz:dx:dy:dz:lx:ly:lz:time:shld:mod:lay:pdgId:genId:edep:p:step");
 
   }
 
   void ReadBack::analyze(const art::Event& event) {
-    
+
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
@@ -240,12 +240,12 @@ namespace mu2e {
       cerr << g4Status << endl;
     }
 
-    // Abort if G4 did not complete correctly.  
+    // Abort if G4 did not complete correctly.
     // Use your own judgement about whether to abort or to continue.
     if ( g4Status.status() > 1 ) {
       ++_nBadG4Status;
-      mf::LogError("G4") 
-        << "Aborting ReadBack::analyze due to G4 status\n"  
+      mf::LogError("G4")
+        << "Aborting ReadBack::analyze due to G4 status\n"
         << g4Status;
       return;
     }
@@ -269,7 +269,7 @@ namespace mu2e {
   }
 
   void ReadBack::doCalorimeter(const art::Event& event) {
-    
+
     // Get handles to calorimeter collections
     art::Handle<CaloHitCollection> caloHits;
     art::Handle<CaloHitMCTruthCollection> caloMC;
@@ -283,7 +283,7 @@ namespace mu2e {
     // One can use simple approach - find collection directly by label, e.g.:
     // event.getByLabel("CaloReadoutHitsMaker","CaloHitMCCrystalPtr",crystalPtr);
     // event.getByLabel("CaloReadoutHitsMaker","CaloHitMCReadoutPtr",readoutPtr);
-    // The following code shows how to find collection only by name, not knowing 
+    // The following code shows how to find collection only by name, not knowing
     // the producer module name
 
     vector<art::Handle<DPIndexVectorCollection> > ptr_coll;
@@ -331,13 +331,13 @@ namespace mu2e {
     }
 
     // Calculate direct energy deposition in the APD
-    // This is an example how one can propagate back to the original 
+    // This is an example how one can propagate back to the original
     // G4 data
     if( readoutPtr.isValid() && rohits.isValid() ) {
       for ( size_t i=0; i<caloHits->size(); ++i ) {
 	// Get vector of pointer to G4 steps in APDs for calorimeter hit #i
 	const DPIndexVector & ptr = readoutPtr->at(i);
-	// Skip calorimeter hits without G4 step in APD (for these hit 
+	// Skip calorimeter hits without G4 step in APD (for these hit
         // no charged particle crossed APD)
 	if( ptr.size()<=0 ) continue;
 	// Accumulator to count total energy deposition
@@ -382,7 +382,7 @@ namespace mu2e {
     typedef multimap<int,size_t> hitCrystalsMultiMap;
     hitCrystalsMultiMap hitCrystals;
 
-    _diagLevel > 0 && 
+    _diagLevel > 0 &&
       cout << __func__ << ": caloCrystalHits->size() " << caloCrystalHits->size() << endl;
 
     for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
@@ -390,7 +390,7 @@ namespace mu2e {
       CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
 
       totalEdep += hit.energyDep();
-      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHits)[i].id(): " 
+      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHits)[i].id(): "
                              << hit.id() << endl;
 
       // check if the crystal is there already (it may be ok if the timing is different)
@@ -399,9 +399,9 @@ namespace mu2e {
 
       if ( pos != hitCrystals.end() ) {
 
-        _diagLevel > 0 && cout << __func__ << ": Already saw " 
+        _diagLevel > 0 && cout << __func__ << ": Already saw "
                                << (*caloCrystalHits).at(pos->second) << endl;
-        
+
       }
 
       _diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
@@ -410,10 +410,10 @@ namespace mu2e {
       _hRCTime->Fill(hit.time());
 
     }
-    
-    _diagLevel > 0 && cout << __func__ << ": hitCrystals.size()     " 
+
+    _diagLevel > 0 && cout << __func__ << ": hitCrystals.size()     "
                            << hitCrystals.size() << endl;
-     
+
     _hRCEdep->Fill(totalEdep);
     _hRCNCrystals->Fill(hitCrystals.size());
 
@@ -438,7 +438,7 @@ namespace mu2e {
 
     hitCrystals.clear();
 
-    _diagLevel > 0 && 
+    _diagLevel > 0 &&
       cout << __func__ << ": caloCrystalOnlyHits->size() " << caloCrystalOnlyHits->size() << endl;
 
     for ( size_t i=0; i<caloCrystalOnlyHits->size(); ++i ) {
@@ -446,7 +446,7 @@ namespace mu2e {
       CaloCrystalOnlyHit const & hit = (*caloCrystalOnlyHits).at(i);
 
       simEdep += hit.energyDep();
-      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalOnlyHits)[i].id(): " 
+      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalOnlyHits)[i].id(): "
                              << hit.id() << endl;
 
       // check if the crystal is there already (it may be ok if the timing is different)
@@ -455,9 +455,9 @@ namespace mu2e {
 
       if ( pos != hitCrystals.end() ) {
 
-        _diagLevel > 0 && cout << __func__ << ": Already saw " 
+        _diagLevel > 0 && cout << __func__ << ": Already saw "
                                << (*caloCrystalOnlyHits).at(pos->second) << endl;
-        
+
       }
 
       _diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
@@ -466,10 +466,10 @@ namespace mu2e {
       _hRCTimeMC->Fill(hit.time());
 
     }
-    
-    _diagLevel > 0 && cout << __func__ << ": hitCrystals.size()     " 
+
+    _diagLevel > 0 && cout << __func__ << ": hitCrystals.size()     "
                            << hitCrystals.size() << endl;
-     
+
     _hRCEdepMC->Fill(simEdep);
     _hRCNCrystalsMC->Fill(hitCrystals.size());
 
@@ -513,12 +513,12 @@ namespace mu2e {
 
     // Fill histogram with number of hits per event.
     _hMultiplicity->Fill(hits->size());
-      
+
     // A silly example just to show that we have a messsage logger.
     if ( hits->size() > 300 ){
       mf::LogWarning("HitInfo")
         << "Number of hits "
-        << hits->size() 
+        << hits->size()
         << " may be too large.";
     }
 
@@ -534,28 +534,28 @@ namespace mu2e {
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
-      
+
       // Alias, used for readability.
       const StepPointMC& hit = (*hits)[i];
 
       // Skip hits with low pulse height.
       if ( hit.eDep() < _minimumEnergy ) continue;
-      
+
       // Get the hit information.
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
-      
-      // Get the straw information: 
+
+      // Get the straw information:
       const Straw&      straw = tracker.getStraw( hit.strawIndex() );
       const CLHEP::Hep3Vector& mid   = straw.getMidPoint();
       const CLHEP::Hep3Vector& w     = straw.getDirection();
-      
+
       // Count how many nearest neighbours are also hit.
       int nNeighbours = countHitNeighbours( straw, hits );
-      
+
       // Compute an estimate of the drift distance.
       TwoLinePCA pca( mid, w, pos, mom);
-      
+
       // Check that the radius of the reference point in the local
       // coordinates of the straw.  Should be 2.5 mm.
       double s = w.dot(pos-mid);
@@ -565,7 +565,7 @@ namespace mu2e {
       SimParticleCollection::key_type trackId(hit.trackId());
 
       // Debug info
-      
+
       StrawDetail const& strawDetail = straw.getDetail();
 
 //       // remove this for production, intended for transportOnly.py
@@ -595,7 +595,7 @@ namespace mu2e {
 
         // PDG Particle Id of the sim particle that made this hit.
         pdgId = sim.pdgId();
-      
+
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
@@ -612,7 +612,7 @@ namespace mu2e {
       _hCheckPointRadius->Fill(point.mag());
       _hCheckPointRadiusW->Fill(point.mag()/strawDetail.innerRadius());
       _hCheckPointWireZ->Fill(s/straw.getHalfLength());
-      
+
       _hxHit->Fill(pos.x());
       _hyHit->Fill(pos.y());
       _hzHit->Fill(pos.z());
@@ -669,7 +669,7 @@ namespace mu2e {
              << s
              << endl;
       }
-      
+
     } // end loop over hits.
 
 
@@ -694,7 +694,7 @@ namespace mu2e {
 
           // Name of this particle type.
           ParticleDataTable::maybe_ref particle = pdt->particle(pdgId);
-          string pname = particle ? 
+          string pname = particle ?
             particle.ref().name() :
             unknownPDGIdName(pdgId);
 
@@ -707,7 +707,7 @@ namespace mu2e {
           PhysicalVolumeInfo const& endInfo = volumes->at(sim.endVolumeIndex());
 
           cerr << "Readback"
-               << " Simulated Particle: " 
+               << " Simulated Particle: "
                << i->first            << " "
                << pdgId               << " "
                << genId.name()        << " "
@@ -726,14 +726,14 @@ namespace mu2e {
   } // end doLTracker
 
   void ReadBack::doITracker(const art::Event& event){
-     
+
     // Instance name of the module that created the hits of interest;
     //static const string creatorName("g4run");
- 
+
     // Gometry for the ITracker.
     GeomHandle<ITracker> itracker;
     CellGeometryHandle *itwp = itracker->getCellGeometryHandle();
-    
+
     // Maintain a counter for number of events seen.
     ++_nAnalyzed;
 
@@ -781,7 +781,7 @@ namespace mu2e {
     // ntuple buffer.
     //float nt[13];
     float nt[_ntup->GetNvar()];
-    
+
     // Loop over all hits.
     int n(0);
     StepPointMCCollection::const_iterator i = hits->begin();
@@ -856,7 +856,7 @@ namespace mu2e {
           genId = gen.generatorId();
         }
       }
-      
+
       // Fill the ntuple.
       nt[0]  = event.id().event();
       nt[1]  = hit.trackId().asInt();
@@ -899,7 +899,7 @@ namespace mu2e {
           /*<< point.mag()*/
              << endl;
       }
-      
+
     } // end loop over hits.
 
   }  // end doITracker
@@ -908,9 +908,9 @@ namespace mu2e {
   // Count how many of this straw's nearest neighbours are hit.
   // If we have enough hits per event, it will make sense to make
   // a class to let us direct index into a list of which straws have hits.
-  int ReadBack::countHitNeighbours( Straw const& straw, 
+  int ReadBack::countHitNeighbours( Straw const& straw,
                                     art::Handle<StepPointMCCollection>& hits ){
-    
+
     int count(0);
     vector<StrawIndex> const& nearest = straw.nearestNeighboursByIndex();
     for ( vector<int>::size_type ihit = 0;
@@ -918,7 +918,7 @@ namespace mu2e {
 
       StrawIndex idx = nearest[ihit];
 
-      for( StepPointMCCollection::const_iterator 
+      for( StepPointMCCollection::const_iterator
              i = hits->begin(),
              e = hits->end(); i!=e ; ++i ) {
         const StepPointMC& hit = *i;
@@ -931,15 +931,15 @@ namespace mu2e {
     }
     return count;
   }  // end countHitNeighbours
-  
-  // 
-  // Example of how to read information about stopping target 
+
+  //
+  // Example of how to read information about stopping target
   //
   // Here we assume that the primary particles are the conversion
-  // electrons generated in the stopping target. 
+  // electrons generated in the stopping target.
   //
   void ReadBack::doStoppingTarget(const art::Event& event) {
-    
+
     // Find original G4 steps in the stopping target
     art::Handle<StepPointMCCollection> sthits;
     event.getByLabel(_g4ModuleLabel,_targetStepPoints,sthits);
@@ -949,10 +949,10 @@ namespace mu2e {
     event.getByType(simParticles);
     if( !(simParticles.isValid()) || simParticles->empty() ) return;
 
-    // Loop over all hits in the stopping target. Check, that the 
-    // hit belongs to primary particle. If so, calculate total energy 
-    // deposition in the target, total path length and the number of 
-    // foils, crossed by the electron. 
+    // Loop over all hits in the stopping target. Check, that the
+    // hit belongs to primary particle. If so, calculate total energy
+    // deposition in the target, total path length and the number of
+    // foils, crossed by the electron.
 
     int id_start = -1;
     double eDep=0.0, pathLength=0.0;
@@ -960,19 +960,19 @@ namespace mu2e {
 
     // Loop over all hits in the stopping target
     for ( size_t i=0; i<sthits->size(); ++i ){
-      
+
       // This is G4 hit (step) in the target
       const StepPointMC& hit = (*sthits)[i];
 
       // Here we select only those hits, which are generated by
-      // the primary track - which is assumed to be the original 
+      // the primary track - which is assumed to be the original
       // particle, generated by ConversionGun
       SimParticleCollection::key_type trackId = hit.trackId();
       if( trackId.asInt() != 1 ) continue;
 
       // Here we require that there is information about the primary
       // particle in the SimParticle collection. It is not neccessary for
-      // this example, but it is typical requirement in the real analysis 
+      // this example, but it is typical requirement in the real analysis
       SimParticle const* sim = simParticles->findOrNull(trackId);
       if( !sim ) continue;
 
@@ -983,17 +983,17 @@ namespace mu2e {
 
       // Here we calculate number of steps in each foil. There could be
       // many hits in each foil. This number is not used in the example,
-      // it is calculated here just as an example. But we use this map to 
+      // it is calculated here just as an example. But we use this map to
       // calculate number of foils with the hits. Be aware, that if particle
-      // crosses foil without energy deposition (just passes it), it still 
-      // counts as a hit. Here we record all foils particle crosses. 
-      // If we want to record only those foils where particle had 
+      // crosses foil without energy deposition (just passes it), it still
+      // counts as a hit. Here we record all foils particle crosses.
+      // If we want to record only those foils where particle had
       // interactions, we would need to do the following:
       //      if( hit.totalEDep()>0 ) foils[id]++;
       foils[id]++;
 
       // Calculate total energy loss and path length primary particle
-      // has in the target. 
+      // has in the target.
       eDep += hit.totalEDep();
       pathLength += hit.stepLength();
 
@@ -1025,10 +1025,10 @@ namespace mu2e {
 
     GeomHandle<CosmicRayShield> cosmicRayShieldGeomHandle;
 
-    std::vector<CRSScintillatorBar> const & allBars = 
+    std::vector<CRSScintillatorBar> const & allBars =
       cosmicRayShieldGeomHandle->getAllCRSScintillatorBars();
 
-    CRSScintillatorBarDetail const & barDetail = 
+    CRSScintillatorBarDetail const & barDetail =
       cosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
 
     CLHEP::Hep3Vector barLengths = CLHEP::Hep3Vector(barDetail.getHalfLengths()[0],
@@ -1066,7 +1066,7 @@ namespace mu2e {
     if ( hits->size() > 300 ){
       mf::LogWarning("HitInfo")
         << "Number of CRV hits "
-        << hits->size() 
+        << hits->size()
         << " may be too large.";
     }
 
@@ -1086,18 +1086,18 @@ namespace mu2e {
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
-      
+
       // Alias, used for readability.
       const StepPointMC& hit = (*hits)[i];
 
       // Get the hit information.
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
-      
-      // Get the CRSScintillatorBar information: 
+
+      // Get the CRSScintillatorBar information:
       const CRSScintillatorBar&  bar = allBars.at( hit.volumeId() );
       CLHEP::Hep3Vector const &  mid = bar.getGlobalOffset();
-      
+
       CLHEP::HepRotationX RX(bar.getGlobalRotationAngles()[0]);
       CLHEP::HepRotationY RY(bar.getGlobalRotationAngles()[1]);
       CLHEP::HepRotationZ RZ(bar.getGlobalRotationAngles()[2]);
@@ -1121,7 +1121,7 @@ namespace mu2e {
 
           // PDG Particle Id of the sim particle that made this hit.
           pdgId = sim.pdgId();
-      
+
           // If this is a generated particle, which generator did it come from?
           // This default constructs to "unknown".
           if ( sim.fromGenerator() ){
@@ -1180,7 +1180,7 @@ namespace mu2e {
              << hit.stepLength()
              << endl;
       }
-      
+
     } // end loop over hits.
 
   } // end doCRV

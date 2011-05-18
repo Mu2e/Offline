@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.14 2011/05/17 15:35:59 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:35:59 $
+// $Id: BFieldManagerMaker.cc,v 1.15 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 
 // Includes from C++
@@ -26,8 +26,8 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/ParameterSet/FileInPath.h"
 #include "cetlib/exception.h"
+#include "cetlib/search_path.h"
 
 // Includes from Mu2e
 #include "BFieldGeom/inc/BFieldManagerMaker.hh"
@@ -62,10 +62,10 @@ namespace mu2e {
     // Instantiate an empty BFieldManager.
     _bfmgr = auto_ptr<BFieldManager>(new BFieldManager() );
 
-    
+
     _bfmgr->_xOffset =_config.getDouble("mu2e.solenoidOffset");
 
-    string format = _config.get<std::string>("bfield.format","GMC");
+    string format = _config.getString("bfield.format","GMC");
 
     if( format=="GMC" ) {
 
@@ -75,7 +75,7 @@ namespace mu2e {
       if( fabs(_config.getDouble(torusName,0.0)-torusRadius)>0.1 ){
 	throw cet::exception("GEOM")
 	  << "The GMC magnetic field files require torus radius of 2926 mm."
-	  << " Check " << torusName << " value in the config file." 
+	  << " Check " << torusName << " value in the config file."
 	  << " Maps are not loaded.\n";
       }
 
@@ -86,7 +86,7 @@ namespace mu2e {
       loadGMC( "DS", "bfield.dsFile", "bfield.dsDimensions" );
       loadGMC( "TS", "bfield.tsFile", "bfield.tsDimensions" );
       loadGMC( "PS", "bfield.psFile", "bfield.psDimensions" );
-      
+
       //throw cet::exception("GEOM") << "Temporal end." << "\n";
 
     } else if( format=="G4BL" ) {
@@ -97,7 +97,7 @@ namespace mu2e {
       if( fabs(_config.getDouble(torusName,0.0)-torusRadius)>0.1 ){
 	throw cet::exception("GEOM")
 	  << "The G4BL magnetic field files require torus radius of 2929 mm."
-	  << " Check " << torusName << " value in the config file." 
+	  << " Check " << torusName << " value in the config file."
 	  << " Maps are not loaded.\n";
       }
       _bfmgr->_type   = BFMapType::G4BL;
@@ -123,18 +123,18 @@ namespace mu2e {
 		 << keysToLoad[i]
 		 << "   Hope that's OK." << endl;
 	  } else {
-	    filesToLoad.push_back(_config.get<std::string>(keysToLoad[i]));
+	    filesToLoad.push_back(_config.getString(keysToLoad[i]));
 	  }
 	}
       }
 
       for( unsigned int i=0; i<filesToLoad.size(); ++i ) {
-	string filename = filesToLoad[i]; 
+	string filename = filesToLoad[i];
 	cout << "Read " << filename << endl;
 	ostringstream mapkey;
 	mapkey << "bfield" << i;
 	loadG4BL( mapkey.str(),  filename  );
-        if( _config.get<bool>("bfield.writeG4BLBinaries", false) ){
+        if( _config.getBool("bfield.writeG4BLBinaries", false) ){
           writeG4BLBinary( i, mapkey.str() );
         }
       }
@@ -148,7 +148,7 @@ namespace mu2e {
         << "\n";
 
     }
-    
+
     // For debug purposes: print the field in the target region
     CLHEP::Hep3Vector b = _bfmgr->getBField(CLHEP::Hep3Vector(3900.0,0.0,-6550.0));
     cout << "B-field at the proton target: ("
@@ -167,7 +167,7 @@ namespace mu2e {
 
   // Parse the config file to learn about one magnetic field map.
   // Create an empty map and call the code to load the map from the file.
-  void BFieldManagerMaker::loadGMC( const std::string& key,  
+  void BFieldManagerMaker::loadGMC( const std::string& key,
                                     const std::string& fileKey,
                                     const std::string& dimensionKey ){
 
@@ -179,7 +179,7 @@ namespace mu2e {
     }
 
     // Get filename and expected dimensions.
-    string filename = _config.get<std::string>(fileKey);
+    string filename = _config.getString(fileKey);
     vector<int> dim;
     _config.getVectorInt(dimensionKey,dim, 3);
 
@@ -201,16 +201,19 @@ namespace mu2e {
 
   // Parse the config file to learn about one magnetic field map.
   // Create an empty map and call the code to load the map from the file.
-  void BFieldManagerMaker::loadG4BL( const std::string& key,  
+  void BFieldManagerMaker::loadG4BL( const std::string& key,
 				     const std::string& filename ) {
 
     // Open the input file.
-    ifstream fin;
-    fin.open(art::FileInPath(filename).fullPath().c_str());
+    cet::search_path sp("MU2E_SEARCH_PATH");
+    string path;
+    if( ! sp.find_file(filename, path) )
+      throw "BFieldManagerMaker::loadG4BL: find_file failure!";  // TODO: improve exception
+    ifstream fin(path.c_str());
     if ( !fin.is_open() ) {
       throw cet::exception("GEOM")
         << "Could not open file containing the magnetic field data. "
-        << "Filename: " 
+        << "Filename: "
         << filename
         << "\n";
     }
@@ -253,21 +256,21 @@ namespace mu2e {
     for( int i=1; i<=3; i++ ) {
       double value;
       istringstream sin(string(matches[i].first, matches[i].second));
-      sin >> value; 
+      sin >> value;
       X0.push_back(value);
     }
 
     for( int i=4; i<=6; i++ ) {
       int value;
       istringstream sin(string(matches[i].first, matches[i].second));
-      sin >> value; 
+      sin >> value;
       dim.push_back(value);
     }
 
     for( int i=7; i<=9; i++ ) {
       double value;
       istringstream sin(string(matches[i].first, matches[i].second));
-      sin >> value; 
+      sin >> value;
       dX.push_back(value);
     }
 
@@ -298,7 +301,7 @@ namespace mu2e {
     } else {
       readG4BLMap( filename, dsmap, G4BL_offset );
     }
-    
+
     //dsmap.print(std::cout);
 
   }
@@ -319,12 +322,16 @@ namespace mu2e {
                                        BFMap& bfmap ){
 
     // Open the input file.
-    int fd = open( art::FileInPath(filename).fullPath().c_str(), O_RDONLY );
+    cet::search_path sp("MU2E_SEARCH_PATH");
+    string path;
+    if( ! sp.find_file(filename, path) )
+      throw "BFieldManagerMaker::readGMCMap: find_file failure!";  // TODO: improve exception
+    int fd = open( path.c_str(), O_RDONLY );
     if ( !fd ) {
       throw cet::exception("GEOM")
         << "Could not open file containing the magnetic filed map for: "
         << bfmap.getKey() << "\n"
-        << "Filename: " 
+        << "Filename: "
         << filename
         << "\n";
     }
@@ -341,16 +348,16 @@ namespace mu2e {
     if ( s != nbytes ) {
       if ( s == -1 ){
         throw cet::exception("GEOM")
-          << "Error reading magnetic field map: " 
+          << "Error reading magnetic field map: "
           << bfmap.getKey() << "\n"
-          << "Filename: " 
+          << "Filename: "
           << filename
           << "\n";
       } else{
         throw cet::exception("GEOM")
-          << "Wrong number of bytes read from magnetic field map: " 
+          << "Wrong number of bytes read from magnetic field map: "
           << bfmap.getKey() << "\n"
-          << "Filename: " 
+          << "Filename: "
           << filename
           << "\n";
       }
@@ -376,12 +383,12 @@ namespace mu2e {
       DiskRecord& r = *i;
 
       // Unit conversion: from (cm, kG) to (mm,T).
-      r.x  *= CLHEP::cm; 
-      r.y  *= CLHEP::cm; 
+      r.x  *= CLHEP::cm;
+      r.y  *= CLHEP::cm;
       r.z  *= CLHEP::cm;
-      r.bx *= ratio; 
-      r.by *= ratio; 
-      r.bz *= ratio; 
+      r.bx *= ratio;
+      r.by *= ratio;
+      r.bz *= ratio;
 
       // The one check I can do.
       if ( r.head != r.tail ){
@@ -390,7 +397,7 @@ namespace mu2e {
           << "Mismatched head and tail byte counts at record: " << data.size() << "\n"
           << "Could not open file containing the magnetic filed map for: "
           << bfmap.getKey() << "\n"
-          << "Filename: " 
+          << "Filename: "
           << filename
           << "\n";
       }
@@ -413,15 +420,15 @@ namespace mu2e {
 
     // Cross-check that the grid read from the file has the size we expected.
     // This is not really a perfect check since there could be round off error
-    // in the computation of the grid points.  But the MECO GMC files were written 
+    // in the computation of the grid points.  But the MECO GMC files were written
     // in a way that this test works.
     if ( X.size() != nx ||
          Y.size() != ny ||
          Z.size() != nz     ){
       throw cet::exception("GEOM")
-        << "Mismatch in expected and observed number of grid points for BField map: " 
+        << "Mismatch in expected and observed number of grid points for BField map: "
         << bfmap.getKey() << "\n"
-        << "From file: " 
+        << "From file: "
         << filename
         << "\n"
         << "Expected/Observed x: " << nx << " " << X.size() << "\n"
@@ -432,9 +439,9 @@ namespace mu2e {
     // Cross-check that we did not find more data than we have room for.
     if ( data.size() > nx*ny*nz-1){
       throw cet::exception("GEOM")
-        << "Too many values read into the field map: " 
+        << "Too many values read into the field map: "
         << bfmap.getKey() << "\n"
-        << "From file: " 
+        << "From file: "
         << filename
         << "\n"
         << "Expected/Observed size: " << nx*ny*nz << " " << data.size() << "\n";
@@ -450,13 +457,13 @@ namespace mu2e {
          i != e; ++i){
 
       DiskRecord const& r(*i);
-      
+
       // Find indices corresponding to this grid point.
       // By construction the indices must be in bounds ( we set the limits above ).
       std::size_t ix = bfmap.iX(r.x);
       std::size_t iy = bfmap.iY(r.y);
       std::size_t iz = bfmap.iZ(r.z);
-      
+
       // Store the information into the 3d arrays.
       bfmap._grid.set (ix, iy, iz, CLHEP::Hep3Vector(r.x,r.y,r.z));
       bfmap._field.set(ix, iy, iz, CLHEP::Hep3Vector(r.bx,r.by,r.bz));
@@ -493,9 +500,13 @@ namespace mu2e {
     */
 
     // Open the input file.
-    ifstream fin;
-    fin.open(art::FileInPath(filename).fullPath().c_str());
-    if ( !fin.is_open() ) throw cet::exception("GEOM")<<"Could not open file "<<filename<<"\n";
+    cet::search_path sp("MU2E_SEARCH_PATH");
+    string path;
+    if( ! sp.find_file(filename, path) )
+      throw "BFieldManagerMaker::readG4BLMap: find_file failure!";  // TODO: improve exception
+    ifstream fin(path.c_str());
+    if ( !fin.is_open() )
+      throw cet::exception("GEOM")<<"Could not open file "<<filename<<"\n";
 
     // Skip lines until "data" keyword
     boost::iostreams::filtering_istream in;
@@ -560,14 +571,17 @@ namespace mu2e {
     string::size_type i = headerFilename.find(".header");
     if ( i == string::npos ){
       throw cet::exception("GEOM")
-        << "BFieldManagerMaker:readG4BLBinary Expected a file type of .header: " 
+        << "BFieldManagerMaker:readG4BLBinary Expected a file type of .header: "
         << headerFilename << "\n";
     }
     string binFilename = headerFilename.substr(0,i);
     binFilename += ".bin";
 
     // Resolve filename into a full path.
-    string path = art::FileInPath(binFilename).fullPath();
+    cet::search_path sp("MU2E_SEARCH_PATH");
+    string path;
+    if( ! sp.find_file(binFilename, path) )
+      throw "BFieldManagerMaker::readG4BLBinary: find_file failure!";  // TODO: improve exception
 
     // Number of points in each big array.
     int nPoints = bf.nx()*bf.ny()*bf.nz();
@@ -579,7 +593,7 @@ namespace mu2e {
     int fd = open( path.c_str(), O_RDONLY );
     if ( fd < 0 ) {
       int errsave = errno;
-      char* errmsg = strerror(errsave); 
+      char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:readG4BLBinary Error opening " << path
         << "  errno: " << errsave << " " << errmsg << "\n";
@@ -596,18 +610,18 @@ namespace mu2e {
     ssize_t s0 = read( fd, &marker, sizeof(unsigned int) );
     if ( s0 != sizeof(unsigned int) ){
       int errsave = errno;
-      char* errmsg = strerror(errsave); 
+      char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:readG4BLBinary Error reading endian marker from " << path << "\n"
-        << "Status: " << s0 
+        << "Status: " << s0
         << "  errno: " << errsave << " " << errmsg << "\n";
     }
 
     static const unsigned int deadbeef(0XDEADBEEF);
     if ( marker != deadbeef ){
       throw cet::exception("GEOM")
-        << "BFieldManagerMaker:readG4BLBinary endian mismatch" << path 
-        << "  returned value: " << std:: hex << marker 
+        << "BFieldManagerMaker:readG4BLBinary endian mismatch" << path
+        << "  returned value: " << std:: hex << marker
         << "  expected value: " << deadbeef
         << std::dec << "\n"
         << "Suggestion: change from binary format field maps to the text or gzipped text format.\n"
@@ -618,10 +632,10 @@ namespace mu2e {
     ssize_t s1 = read( fd, gridAddr, nbytes );
     if ( s1 != nbytes ){
       int errsave = errno;
-      char* errmsg = strerror(errsave); 
+      char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:readG4BLBinary Error reading grid points from " << path << "\n"
-        << "Status: " << s1 
+        << "Status: " << s1
         << "  errno: " << errsave << " " << errmsg << "\n";
     }
 
@@ -629,10 +643,10 @@ namespace mu2e {
     ssize_t s2 = read( fd, fieldAddr, nbytes );
     if ( s2 != nbytes ){
       int errsave = errno;
-      char* errmsg = strerror(errsave); 
+      char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:readG4BLBinary Error reading field values from " << path << "\n"
-        << "Status: " << s2 
+        << "Status: " << s2
         << "  errno: " << errsave << " " << errmsg << "\n";
     }
 
@@ -665,7 +679,7 @@ namespace mu2e {
 
     cout << "Writing G4BL Magnetic field map in binary format: "
          << "map key: " << key
-         << "file: " << outputfile 
+         << "file: " << outputfile
          << endl;
 
     // A marker to catch endian mismatch on readback.
@@ -688,7 +702,7 @@ namespace mu2e {
           << "BFieldManagerMaker:writeG4BLBinary Error opening " << outputfile
           << "  File already exists.\n";
       }
-      char* errmsg = strerror(errsave); 
+      char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:writeG4BLBinary Error opening " << outputfile
         << "  errno: " << errsave << " " << errmsg << "\n";
@@ -698,7 +712,7 @@ namespace mu2e {
     ssize_t s0 = write( fd, &deadbeef, sizeof(unsigned int) );
     if ( s0 == -1 ){
       errsave = errno;
-      char* errmsg = strerror(errsave); 
+      char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:writeG4BLBinary Error writing endian marker to " << outputfile
         << "  errno: " << errsave << " " << errmsg << "\n";
@@ -706,7 +720,7 @@ namespace mu2e {
     ssize_t s1 = write( fd, gridAddr,  nBytes );
     if ( s1 == -1 ){
       errsave = errno;
-      char* errmsg = strerror(errsave); 
+      char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:writeG4BLBinary  Error writing grid points to " << outputfile
         << "  errno: " << errsave << " " << errmsg << "\n";
@@ -714,7 +728,7 @@ namespace mu2e {
     ssize_t s2 = write( fd, fieldAddr, nBytes );
     if ( s2 == -1 ){
       errsave = errno;
-      char* errmsg = strerror(errsave); 
+      char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:writeG4BLBinary Error writing field values to " << outputfile
         << "  errno: " << errsave << " " << errmsg << "\n";
@@ -737,7 +751,7 @@ namespace mu2e {
     int remainder = info.st_size % sizeof(DiskRecord);
     if ( remainder != 0 ){
       throw cet::exception("GEOM")
-        << "Field map file does not hold an integral number of records: \n" 
+        << "Field map file does not hold an integral number of records: \n"
         << "Filename:  " << filename << "\n"
         << "Size:      " << info.st_size << "\n"
         << "Remainder: " << remainder << "\n";

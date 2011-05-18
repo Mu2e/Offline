@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.4 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: BFieldManagerMaker.hh,v 1.5 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 
 // Includes from C++
@@ -39,12 +39,12 @@ namespace mu2e {
     std::auto_ptr<BFieldManager> _bfmgr;
 
     // Create a new magnetic field map, get information from config file.
-    void loadGMC( const std::string& key,  
+    void loadGMC( const std::string& key,
                   const std::string& fileKey,
                   const std::string& dimensionKey );
 
     // Create a new magnetic field map, get information from config file.
-    void loadG4BL( const std::string& key,  
+    void loadG4BL( const std::string& key,
 		   const std::string& fileKey );
 
     // Read a MECO GMC format map.

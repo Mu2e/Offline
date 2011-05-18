@@ -1,9 +1,9 @@
 //
 // Plugin for the Geometry Service.
 //
-// $Id: GeometryService_service.cc,v 1.1 2011/05/17 16:30:14 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 16:30:14 $
+// $Id: GeometryService_service.cc,v 1.2 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //

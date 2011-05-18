@@ -1,10 +1,10 @@
 //
 // Override the G4RunManager class so that the Mu2e framework can drive
-// the event loop. 
+// the event loop.
 //
-// $Id: Mu2eG4RunManager.cc,v 1.5 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: Mu2eG4RunManager.cc,v 1.6 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -67,11 +67,11 @@ namespace mu2e {
     _userElapsed   = 0;
 
     // Construct command to execute the macro.
-    if(_macroFile!=0){ 
+    if(_macroFile!=0){
       _msg = "/control/execute ";
       _msg += _macroFile;
-    } else{ 
-      _n_select = -1; 
+    } else{
+      _n_select = -1;
     }
 
     numberOfEventToBeProcessed = 1;
@@ -84,7 +84,7 @@ namespace mu2e {
   void Mu2eG4RunManager::BeamOnDoOneEvent( int eventNumber){
 
     timer->Start();
-    
+
     // This is the body of the event loop from DoEventLoop().
     currentEvent = GenerateEvent(eventNumber);
     eventManager->ProcessOneEvent(currentEvent);
@@ -123,9 +123,9 @@ namespace mu2e {
         { G4cout << "  G4Run Aborted after " << _nProcessed << " events processed." << G4endl; }
       else
         { G4cout << "  Number of events processed : " << _nProcessed << G4endl; }
-      G4cout << "  User="  << _userElapsed 
-             << "s Real="  << _realElapsed 
-             << "s Sys="   << _systemElapsed 
+      G4cout << "  User="  << _userElapsed
+             << "s Real="  << _realElapsed
+             << "s Sys="   << _systemElapsed
              << G4endl;
     }
 

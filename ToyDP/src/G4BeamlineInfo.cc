@@ -23,7 +23,7 @@ namespace mu2e {
     if ( doEndl ){
       ost << endl;
     }
-    
+
   }
 
   void G4BeamlineInfo::swap(G4BeamlineInfo & a) {
@@ -31,5 +31,5 @@ namespace mu2e {
     a = *this;
     *this = tmp;
   }
-  
+
 } // namespace mu2e

@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
-// $Author: wb $ 
-// $Date: 2011/05/17 22:22:46 $
+// $Id: G4_module.cc,v 1.3 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -72,7 +72,7 @@
 #include "Mu2eG4/inc/CRSScintillatorBarSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
-#include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"   
+#include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/DiagnosticsG4.hh"
 
@@ -143,15 +143,15 @@ namespace mu2e {
 
     }
 
-    virtual ~G4() { 
+    virtual ~G4() {
       // See note 1.
     }
 
     virtual void produce(art::Event& e);
-    
+
     virtual void beginJob();
     virtual void endJob();
- 
+
     virtual void beginRun(art::Run &r);
     virtual void endRun(art::Run &);
 
@@ -172,8 +172,8 @@ namespace mu2e {
     G4VisManager *_visManager;
     G4UImanager  *_UI;
     int _rmvlevel;
-    
-    
+
+
     // Position, in G4 world coord, of (0,0,0) of the mu2e coordinate system.
     CLHEP::Hep3Vector _mu2eOrigin;
 
@@ -199,7 +199,7 @@ namespace mu2e {
     DiagnosticsG4 _diagnostics;
 
   };
-  
+
   // Create an instance of the run manager.
   void G4::beginJob(){
     _runManager = auto_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
@@ -207,7 +207,7 @@ namespace mu2e {
     // If you want job scope histograms.
     art::ServiceHandle<art::TFileService> tfs;
     _diagnostics.beginJob();
-    
+
   }
 
   // Initialze G4.
@@ -217,9 +217,9 @@ namespace mu2e {
     SimpleConfig const& config = geom->config();
 
     static int ncalls(0);
-    
+
     if ( ++ncalls > 1 ){
-      mf::LogWarning("GEOM") 
+      mf::LogWarning("GEOM")
         << "This version of the code does not update the G4 geometry on run boundaries.";
       return;
     }
@@ -245,7 +245,7 @@ namespace mu2e {
 
     G4UserEventAction* event_action = new EventAction(_steppingAction);
     _runManager->SetUserAction(event_action);
-    
+
     _stackingAction = new StackingAction(config);
     _runManager->SetUserAction(_stackingAction);
 
@@ -260,7 +260,7 @@ namespace mu2e {
 
     // add user processes
     addUserProcesses(config);
-    
+
     // At this point G4 geometry has been initialized.  So it is safe to initialize
     // objects that depend on G4 geometry.
 
@@ -276,23 +276,23 @@ namespace mu2e {
 
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
-      
+
       art::FileInPath visPath(_visMacro);
 
       G4String command("/control/execute ");
       command += visPath.fullPath();
 
       _UI->ApplyCommand( command );
-      
+
     }
-    
+
     // Start a run
     _runManager->BeamOnBeginRun( run.id().run() );
 
     // Helps with indexology related to persisting G4 volume information.
     _physVolHelper.beginRun();
 
-    // Add info about the G4 volumes to the run-data.  
+    // Add info about the G4 volumes to the run-data.
     // The framework rules requires we make a copy and add the copy.
     const PhysicalVolumeInfoCollection& vinfo = _physVolHelper.persistentInfo();
     auto_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
@@ -306,7 +306,7 @@ namespace mu2e {
 
     _diagnostics.beginRun( run, _physVolHelper );
 
-  } 
+  }
 
   // Create one G4 event and copy its output to the art::event.
   void G4::produce(art::Event& event) {
@@ -387,7 +387,7 @@ namespace mu2e {
                                             _trackingAction->overflowSimParticles(),
                                             _steppingAction->nKilledStepLimit(),
                                             cpuTime,
-                                            timer->GetRealElapsed() ) 
+                                            timer->GetRealElapsed() )
                               );
 
     _diagnostics.analyze( *g4stat,
@@ -412,21 +412,21 @@ namespace mu2e {
     event.put(caloROHits,_caloROOutputName);
     event.put(pointTrajectories);
 
-    
-    // Pause to see graphics. 
+
+    // Pause to see graphics.
     if ( !_visMacro.empty() ){
 
       // We need to add a command here to flush the graphics to the screen
       // The only way that I know how does a full redraw ...
 
       // Prompt to continue and wait for reply.
-      cout << "Enter a character to go to the next event (q quits, v enters G4 interactive session)" << 
+      cout << "Enter a character to go to the next event (q quits, v enters G4 interactive session)" <<
         endl;
       cout << "(Once in G4 interactive session to quit it type exit): ";
       string userinput;
       cin >> userinput;
       G4cout << userinput << G4endl;
-      
+
       // Check if user is requesting an early termination of the event loop.
       if ( !userinput.empty() ){
         // Checks only the first character; we should check first non-blank.
@@ -446,7 +446,7 @@ namespace mu2e {
       _UI->ApplyCommand("/vis/scene/endOfEventAction refresh");
 
     }   // end !_visMacro.empty()
-     
+
 
     // This deletes the object pointed to by currentEvent.
     _runManager->BeamOnEndEvent();
@@ -469,7 +469,7 @@ namespace mu2e {
     _diagnostics.endJob();
   }
 
-  
+
 
 } // End of namespace mu2e
 

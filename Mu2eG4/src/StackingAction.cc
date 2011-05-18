@@ -1,16 +1,16 @@
 //
-// Steering routine for user stacking actions. 
+// Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.15 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: StackingAction.cc,v 1.16 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
 // The actions steered by this class are:
 //  1) cosmicKiller
 //      - Kill low momentum secondaries of cosmic rays if those
-//        secondaries are very unlikely to ever reach the detector. 
+//        secondaries are very unlikely to ever reach the detector.
 //      - The first implementation of this code is rather crude and
 //        is presented to show techniques for accessing information.
 //
@@ -22,7 +22,7 @@
 //      physical volumes are the same object by comparing pointers,
 //      rather than by comparing their names using string comparisons.
 //   4) Tracks created in PrimaryGeneratorAction do not have a defined
-//      volume pointer at stacking time.  Tracks created by G4 processes 
+//      volume pointer at stacking time.  Tracks created by G4 processes
 //      do a have defined volume pointer at stacking time.
 
 // Mu2e includes
@@ -78,9 +78,9 @@ namespace mu2e {
 
     if ( !_pdgToDrop.empty() && !_pdgToKeep.empty() ){
       throw cet::exception("G4CONTROL")
-        << "Both g4.stackingActionKeepPDG and g4.stackingActionDropPDG have entries: " 
-        << _pdgToDrop.size() <<  " " 
-        << _pdgToKeep.size() <<  " " 
+        << "Both g4.stackingActionKeepPDG and g4.stackingActionDropPDG have entries: "
+        << _pdgToDrop.size() <<  " "
+        << _pdgToKeep.size() <<  " "
         << "\n";
     }
 
@@ -115,7 +115,7 @@ namespace mu2e {
 
   // A utility function used by ClassifyNewTrack
   bool idInList( G4Track const * track, std::vector<int> const& v){
-    int id(track->GetDefinition()->GetPDGEncoding()); 
+    int id(track->GetDefinition()->GetPDGEncoding());
     for( size_t i=0; i<v.size(); ++i ) {
       if( v[i] == id ) {
         return true;
@@ -167,7 +167,7 @@ namespace mu2e {
   void StackingAction::NewStage(){
   }
 
-  void StackingAction::PrepareNewEvent(){ 
+  void StackingAction::PrepareNewEvent(){
     _ncalls = 0;
     ++_nevents;
   }
@@ -185,18 +185,18 @@ namespace mu2e {
 
       // just kill anything electromagnetic in the dirt
       killit =  ( pvol == _dirtBodyPhysVol &&
-                  (pType == PDGCode::e_minus || 
-                   pType ==  PDGCode::e_plus || 
+                  (pType == PDGCode::e_minus ||
+                   pType ==  PDGCode::e_plus ||
                    PDGCode::gamma ) );
     } else {
 
       const G4ThreeVector& ppos = trk->GetPosition();
       G4ThreeVector p3mom = trk->GetMomentum();
-      
+
       // Magic numbers for illustrative purposes.
       // You can probably get much more aggressive than this.
       // Get ycut from geometry and pcut from run time config.
-      
+
       // Decide if we want to kill the track.
       killit = ( ppos.y() > (_dirtG4Ymin + _yaboveDirtYmin) && p3mom.mag() <  _cosmicpcut );
     }
@@ -213,7 +213,7 @@ namespace mu2e {
       const G4ThreeVector& ppos = trk->GetPosition();
       G4ThreeVector p3mom = trk->GetMomentum();
 
-      cout << "Cosmic Killer: " 
+      cout << "Cosmic Killer: "
            << setw(4)  << _nevents << " "
            << setw(4)  << _ncalls << " "
            << setw(4)  << trk->GetTrackID() << " "

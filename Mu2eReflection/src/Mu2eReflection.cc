@@ -27,7 +27,7 @@ namespace mu2e {
     //   a) we're at the last step of the ending PhysicalVolume, in which case we should
     //      reflect
     //   b) we are back where we started, in which case we want to make a bunch of histograms
-    //      and report on our success or lack thereof.  We also want to stop the track since it's 
+    //      and report on our success or lack thereof.  We also want to stop the track since it's
     //      pointless to continue
 
     //
@@ -41,7 +41,7 @@ namespace mu2e {
         // need to save where track starts for future reference
         startingVertex = aTrack.GetVertexPosition();
         //
-        // and set reflection flag. 
+        // and set reflection flag.
         alreadyReflected = false;
       }
 
@@ -50,7 +50,7 @@ namespace mu2e {
          alreadyReflected = true;
          return ReflectIt(aTrack,aStep);
        }
-      else if (aTrack.GetVolume()->GetName() == _startingVolume && alreadyReflected 
+      else if (aTrack.GetVolume()->GetName() == _startingVolume && alreadyReflected
                && (abs (startingVertex.z() - aTrack.GetPosition().z()) < _toleranceForQuitting ) )
         {
           G4cout << "z difference at KillIt: " << startingVertex.z() << " " << aTrack.GetPosition().z() << " " <<
@@ -58,7 +58,7 @@ namespace mu2e {
           double zDistance = abs(startingVertex.z() - aTrack.GetPosition().z());
           double totalDistanceAtKill = Distance(startingVertex,aTrack.GetPosition());
           //  - pow<2>(zDistance) );
-          //          double totalDistanceAtKill = safeSqrt(pow<2>(Distance(startingVertex,aTrack.GetPosition())) 
+          //          double totalDistanceAtKill = safeSqrt(pow<2>(Distance(startingVertex,aTrack.GetPosition()))
           //  - pow<2>(zDistance) );
           double transverseDistanceAtKill = safeSqrt(totalDistanceAtKill*totalDistanceAtKill - zDistance*zDistance);
           G4cout << "and transverse distance is = " << transverseDistanceAtKill << G4endl;
@@ -74,7 +74,7 @@ namespace mu2e {
       }
   }
 
-  G4VParticleChange* Mu2eReflection::ReflectIt( const G4Track& aTrack, 
+  G4VParticleChange* Mu2eReflection::ReflectIt( const G4Track& aTrack,
                                                 const G4Step& aStep){
     //
     // reflect momentum and reverse charge since you hit the end of the ending volume
@@ -101,7 +101,7 @@ namespace mu2e {
     G4ParticleDefinition* particleType = aTrack.GetDefinition();
     G4int antiParticlePDGEncoding = - ( particleType->GetPDGEncoding() );
     //
-    //FindAntiParticle is not coded, I think; see 
+    //FindAntiParticle is not coded, I think; see
     //  http://www-geant4.kek.jp/lxr/source/particles/management/include/G4ParticleTable.hh
     //and that method is not hyperlinked, hence it probably doesn't exist, so do it this way
 
@@ -143,13 +143,13 @@ namespace mu2e {
    }
 
 
-  G4VParticleChange* Mu2eReflection::DoNothing( const G4Track& aTrack, 
+  G4VParticleChange* Mu2eReflection::DoNothing( const G4Track& aTrack,
                                                 const G4Step& aStep){
     fMu2eParticleChangeForReflection.Initialize(aTrack); // need to return a proper object
     return &fMu2eParticleChangeForReflection;
   }
 
-  G4double Mu2eReflection::GetMeanFreePath(const G4Track& aTrack, G4double previousStepSize, 
+  G4double Mu2eReflection::GetMeanFreePath(const G4Track& aTrack, G4double previousStepSize,
                                            G4ForceCondition* condition)
   {
 

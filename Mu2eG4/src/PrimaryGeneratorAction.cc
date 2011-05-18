@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.20 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: PrimaryGeneratorAction.cc,v 1.21 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //
@@ -67,7 +67,7 @@ namespace mu2e {
   }
 
   void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-  { 
+  {
 
     // For debugging.
     //testTrack(anEvent);
@@ -80,8 +80,8 @@ namespace mu2e {
   //
   // At the moment none of the supported generators make multi-particle vertices.
   // That may change in the future.
-  // 
-  void PrimaryGeneratorAction::fromEvent(G4Event* event){ 
+  //
+  void PrimaryGeneratorAction::fromEvent(G4Event* event){
 
     // Get the offsets to map from generator world to G4 world.
     G4ThreeVector const& mu2eOrigin                  = _world->getMu2eOrigin();
@@ -115,7 +115,7 @@ namespace mu2e {
           genpart.generatorId() == GenId::nuclearCaptureGun ){
         pos += detectorOrigin;
       } else if ( genpart.generatorId() == GenId::cosmicToy ||
-                  genpart.generatorId() == GenId::cosmicDYB || 
+                  genpart.generatorId() == GenId::cosmicDYB ||
                   genpart.generatorId() == GenId::cosmic ){
         pos += cosmicReferencePlane;
       } else if ( genpart.generatorId() == GenId::primaryProtonGun ){
@@ -126,13 +126,13 @@ namespace mu2e {
         pos += mu2eOrigin;
       } else {
         mf::LogError("KINEMATICS")
-          << "Do not know what to do with this generator id: " 
+          << "Do not know what to do with this generator id: "
           << genpart.generatorId()
           << "  Skipping this track.";
         continue;
       }
 
-      // Create a new vertex 
+      // Create a new vertex
       G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart.time());
 
       G4PrimaryParticle* particle =
@@ -141,7 +141,7 @@ namespace mu2e {
                               momentum.y(),
                               momentum.z(),
                               genpart.momentum().e() );
-    
+
       // Set the charge.  Do I really need to do this?
       G4ParticleDefinition const* g4id = particle->GetG4code();
       particle->SetCharge( g4id->GetPDGCharge()*eplus );
@@ -157,7 +157,7 @@ namespace mu2e {
   }
 
   // A very simple generator for debugging G4 volumes and graphics.
-  void PrimaryGeneratorAction::testTrack(G4Event* event){ 
+  void PrimaryGeneratorAction::testTrack(G4Event* event){
 
     // Generator for uniform coverage of a restricted region on a unit sphere.
     static RandomUnitSphere randomUnitSphere( *CLHEP::HepRandom::getTheEngine(), -0.7, 0.7 );
@@ -184,12 +184,12 @@ namespace mu2e {
     p0
     );
     */
- 
-    // Create a new vertex 
+
+    // Create a new vertex
     G4PrimaryVertex* vertex = new G4PrimaryVertex(position,0.);
 
     // Create a new particle.
-    G4PrimaryParticle* particle = new 
+    G4PrimaryParticle* particle = new
       G4PrimaryParticle(_particleDefinition,
                         momentum.x(),
                         momentum.y(),
@@ -201,7 +201,7 @@ namespace mu2e {
 
     // Add the particle to the event.
     vertex->SetPrimary( particle );
-  
+
     // Add the vertex to the event.
     event->AddPrimaryVertex( vertex );
 

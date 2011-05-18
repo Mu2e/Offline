@@ -1,12 +1,12 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.9 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:00 $
+// $Id: ParticleGun.cc,v 1.10 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
-// 
+//
 
 #include <iostream>
 
@@ -101,7 +101,7 @@ namespace mu2e {
 
     _dp  = ( _pmax - _pmin);
     _dt  = ( _tmax - _tmin);
-    
+
     // Book histograms if enabled.
     if ( !_doHistograms ) return;
 
@@ -160,7 +160,7 @@ namespace mu2e {
       // Magnitude of momentum and energy.
       double p = _pmin + _dp * _randFlat.fire();
       double e = sqrt( p*p + _mass*_mass);
-      
+
       // 4 Momentum.
       CLHEP::HepLorentzVector p4( _randomUnitSphere.fire(p), e);
 
@@ -169,7 +169,7 @@ namespace mu2e {
 
       genParts.push_back( ToyGenParticle( _pdgId, GenId::particleGun, pos, p4, time));
 
-      cout << "Generated position: " 
+      cout << "Generated position: "
            << pos << " "
            << p4 << " "
            << p4.vect().mag() << " "

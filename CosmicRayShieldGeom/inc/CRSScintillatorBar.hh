@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSScintillatorBar.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -19,7 +19,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e { 
+namespace mu2e {
 
   // Forward declarations.
   class CosmicRayShield;
@@ -40,7 +40,7 @@ namespace mu2e {
                        CRSScintillatorBarId    const & id,
                        CRSScintillatorBarIndex const & index
                        );
-  
+
     CRSScintillatorBar(
                        CRSScintillatorBarId    const & id,
                        CRSScintillatorBarIndex const & index,
@@ -48,7 +48,7 @@ namespace mu2e {
                        std::vector<double>     const & globalRotationAngles,
                        CLHEP::Hep3Vector       const & globalOffset
                        );
-  
+
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     const CRSScintillatorBarId& Id() const { return _id;}
@@ -56,7 +56,7 @@ namespace mu2e {
 
     // Formatted string embedding the id of the ScintillatorBar.
     std::string name( std::string const & base ) const;
-  
+
     CLHEP::Hep3Vector const & getLocalOffset() const {return _localOffset;}
 
     std::vector<double> const & getGlobalRotationAngles() const { return _globalRotationAngles;}
@@ -124,7 +124,7 @@ namespace mu2e {
 
     //     Nearest neighbours.// not filled out yet
     //     std::vector<CRSScintillatorBarId>    _nearestById;
-    //     std::vector<CRSScintillatorBarIndex> _nearestByIndex; 
+    //     std::vector<CRSScintillatorBarIndex> _nearestByIndex;
 
   };
 

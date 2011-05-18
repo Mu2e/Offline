@@ -1,6 +1,6 @@
 #include "ITrackerGeom/inc/SuperLayer.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using namespace std;
 
@@ -49,7 +49,7 @@ SuperLayer::~SuperLayer(){
         //         }
 }
 
-} // namespace mu2e 
+} // namespace mu2e
 
 #endif
 

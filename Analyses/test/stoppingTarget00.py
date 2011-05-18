@@ -1,9 +1,9 @@
 #
 # Run the StoppingTarget00 module.
 #
-# $Id: stoppingTarget00.py,v 1.1 2011/03/17 21:37:29 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/03/17 21:37:29 $
+# $Id: stoppingTarget00.py,v 1.2 2011/05/18 02:27:14 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:14 $
 #
 # Original author Rob Kutschke
 #
@@ -45,7 +45,7 @@ process.source = mu2e.Source("PoolSource",
    fileNames = mu2e.untracked.vstring("/prj/mu2e/users/kutschke/beamlineData_01.root")
 )
 
-# 
+#
 process.stopping = mu2e.EDAnalyzer(
     "StoppingTarget00",
     g4ModuleLabel        = mu2e.string("g4run")

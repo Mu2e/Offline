@@ -1,8 +1,8 @@
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.cc,v 1.3 2010/09/30 02:07:01 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/09/30 02:07:01 $
+// $Id: HitCluster.cc,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 //original author R. Bernstein
 //
@@ -12,7 +12,7 @@ namespace mu2e{
   namespace hitcluster{
 
     HitCluster::~HitCluster(){};
-  
+
     HitCluster::hitNeighbours HitCluster::findHitNeighbours()
     {
       vector<StrawIndex> const& nearest = _straw->nearestNeighboursByIndex();
@@ -50,15 +50,15 @@ namespace mu2e{
     {
       //this is owned by a trialCluster, so I can just get its list of straws and start comparing
       match = false;
-      for (std::vector<HitCluster::HitCluster>::size_type ithCluster = 0; (ithCluster <= finalClusters.size()-1) && !match; 
+      for (std::vector<HitCluster::HitCluster>::size_type ithCluster = 0; (ithCluster <= finalClusters.size()-1) && !match;
            ++ithCluster)
         {
           vector<Candidate> firstSet = finalClusters.at(ithCluster).getStraws();
           for (hitNeighbours::size_type ithStraw = 0; (ithStraw <= firstSet.size()-1) && !match; ++ithStraw)
             {
-              int lookingForThisStraw = firstSet.at(ithStraw).id; 
+              int lookingForThisStraw = firstSet.at(ithStraw).id;
               //loop over straws in our test cluster, and note the &&!match -- once there's a match
-              //we immediately merge the clusters and there's no reason to continue the loop.  
+              //we immediately merge the clusters and there's no reason to continue the loop.
               for (hitNeighbours::size_type jthStraw = 0; (jthStraw <= listOfStraws.size()-1) && !match; ++jthStraw)
                 {
                   int trialStraw = listOfStraws.at(jthStraw).id;
@@ -68,11 +68,11 @@ namespace mu2e{
                       match = true;
                       //gobble up all straws in this cluster and stick them in the finalCluster.  It would be
                       //nice to not have to go through the whole list but there's no guarantee the first straw
-                      //will be the one that matches.  
+                      //will be the one that matches.
                       //doing it this way will have duplicates; I can check now, but then I will but repeating
-                      //searches every time I look at a new trial cluster.  So I will save this to the end 
+                      //searches every time I look at a new trial cluster.  So I will save this to the end
                       //and crunch down just once.
-                      for (hitNeighbours::size_type eatThisStraw = 0; eatThisStraw <= listOfStraws.size()-1; 
+                      for (hitNeighbours::size_type eatThisStraw = 0; eatThisStraw <= listOfStraws.size()-1;
                            ++eatThisStraw)
                         {
                           finalClusters.at(ithCluster).addStraw(listOfStraws.at(eatThisStraw));
@@ -86,7 +86,7 @@ namespace mu2e{
 
 
     void HitCluster::cleanUpDuplicates()
-    { 
+    {
       //cleanup the list of straws by removing duplicates; this is easiest for containers
       //since erase screws up iterators
 
@@ -95,7 +95,7 @@ namespace mu2e{
       listOfStraws.erase(where,listOfStraws.end());
       return;
     }
- 
+
 
 
 

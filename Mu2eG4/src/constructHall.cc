@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.2 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Id: constructHall.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -25,7 +25,7 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructHall( const VolumeInfo& parent, 
+  VolumeInfo constructHall( const VolumeInfo& parent,
                             SimpleConfig const * const _config
                             ){
 
@@ -62,9 +62,9 @@ namespace mu2e {
       hallInHLen[1] + ( ceilingThick + floorThick )/2.,
       hallInHLen[2] + wallThick
     };
-    
+
     // Center of the concrete volume in the coordinate system of the dirt.
-    G4ThreeVector wallOffset = 
+    G4ThreeVector wallOffset =
       G4ThreeVector(hallPosition[0], hallY0, hallPosition[2]) - parent.centerInParent;
 
     // Origin of the hall air volume in the system of the hall concrete volume.
@@ -92,7 +92,7 @@ namespace mu2e {
                                    placePV,
                                    doSurfaceCheck
                                    );
-    
+
     // Air volume inside of the hall.
     VolumeInfo hallInfo = nestBox( "HallAir",
                                    hallInHLen,

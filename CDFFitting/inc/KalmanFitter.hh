@@ -22,35 +22,35 @@ class KalmanFitter : public ProgressiveFitter<Measureable> {
 
 public:
 
-  // constructor  
+  // constructor
   KalmanFitter();
-  
+
   // copy constructor
   KalmanFitter(const KalmanFitter<Measureable> &right);
-  
+
   // destructor
   virtual ~KalmanFitter();
-  
+
   // assignment
   const KalmanFitter<Measureable> & operator=(const KalmanFitter<Measureable> &right);
-  
+
   // get the fit as of the most "recent" innovation
   virtual const Fit<Measureable> * getFit() const;
-  
+
   // get the fit at the "time" of a particular fit action.
   virtual const Fit<Measureable> * getFit(const FitAction<Measureable> *action) ;
-  
+
   // get the residual, in this case, the "smoothed residual" (correct residual).
   virtual const Residual * newResidual(const Measurement<Measureable> *measurement);
-  
+
   // reset the fit
   virtual void resetFit();
-  
+
 private:
-  
+
   vector <HepVector>                                    _FilteredEstimate;
   vector <HepSymMatrix>                                _FilteredCovariance;
-  vector <HepVector>                                    _FilteredResidual; 
+  vector <HepVector>                                    _FilteredResidual;
   vector <HepSymMatrix>                                _FilteredResidualCovariance;
   vector <HepMatrix>                                    _SmootherGain;
   vector <HepMatrix>                                    _DerivativeMatrix;
@@ -62,7 +62,7 @@ private:
   vector <Fit <Measureable> >                            _FitArray;
   vector <Residual>                                     _ResidualArray;
   unsigned int                                          _validDepth;
-  
+
 protected:
 
   virtual void                                          smooth(unsigned int depth=0);
@@ -75,7 +75,7 @@ protected:
   virtual void apply(const Transport<Measureable> *theFitterAction);
   virtual void apply(const StartingPoint<Measureable> *theFitterAction);
   virtual void apply(const FitAction<Measureable> *theFitterAction);
-  
+
 };
 
 #include "CDFFitting/inc/KalmanFitter.icc"

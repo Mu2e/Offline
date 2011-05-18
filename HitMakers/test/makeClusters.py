@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeClusters.py,v 1.3 2011/01/14 21:32:43 wenzel Exp $
-# $Author: wenzel $
-# $Date: 2011/01/14 21:32:43 $
+# $Id: makeClusters.py,v 1.4 2011/05/18 02:27:16 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:16 $
 #
 # Original author Rob Kutschke
 #
@@ -11,7 +11,7 @@
 # Define the default configuratio for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("HitTest01")
 
 # Maximum number of events to do.
@@ -69,7 +69,7 @@ process.makeSC = mu2e.EDProducer(
 )
 # Check the StrawClusters.
 process.testSC = mu2e.EDAnalyzer("ReadStrawCluster",
-    makerModuleLabel = mu2e.string("makeSH"),                            
+    makerModuleLabel = mu2e.string("makeSH"),
     clmakerModuleLabel = mu2e.string("makeSC"),
     diagLevel    = mu2e.untracked.int32(1),
     maxFullPrint = mu2e.untracked.int32(5)

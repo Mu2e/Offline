@@ -1,9 +1,9 @@
 //
 // Test features of the Geometry Service.
-// 
-// $Id: Geom_t.cpp,v 1.2 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+//
+// $Id: Geom_t.cpp,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Jim Kowalkowski.
 //

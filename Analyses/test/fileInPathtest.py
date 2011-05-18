@@ -1,9 +1,9 @@
 #
 # Test of FileInPath.
 #
-# $Id: fileInPathtest.py,v 1.1 2010/09/27 19:45:20 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/09/27 19:45:20 $
+# $Id: fileInPathtest.py,v 1.2 2011/05/18 02:27:14 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/18 02:27:14 $
 #
 # Original author Rob Kutschke
 #
@@ -12,7 +12,7 @@
 # Define the default configuration for the framework.
 import FWCore.ParameterSet.python.Config as mu2e
 
-# Give this job a name.  
+# Give this job a name.
 process = mu2e.Process("FileInPathTester")
 
 # Maximum number of events to do.

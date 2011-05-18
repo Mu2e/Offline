@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.10 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: EventDisplayFrame.h,v 1.11 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -49,14 +49,14 @@ namespace mu2e_eventdisplay
     void           setEvent(const art::Event& event, bool firstLoop=false);
 #endif
     bool           isClosed() const;
-    bool           getSelectedHitsName(std::string &className, 
-                                       std::string &moduleLabel, 
+    bool           getSelectedHitsName(std::string &className,
+                                       std::string &moduleLabel,
                                        std::string &productInstanceName) const;
     int            getMinimumHits() const;
     int            getEventToFind(bool &findEvent) const;
     void           showInfo(TObject*);
     void           fillZoomAngleFields();
-    virtual void   CloseWindow(); //inherited from TGMainFrame 
+    virtual void   CloseWindow(); //inherited from TGMainFrame
 
     private:
     void fillEvent(bool firstLoop=false);
@@ -70,9 +70,9 @@ namespace mu2e_eventdisplay
     //the following functions are inherited from TGMainFrame
     virtual Bool_t HandleConfigureNotify(Event_t *event);
     virtual Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
-    virtual Bool_t HandleTimer(TTimer *); //inherited function 
-                                          //from TObject (gets called when 
-                                          //timer times out - knows about 
+    virtual Bool_t HandleTimer(TTimer *); //inherited function
+                                          //from TObject (gets called when
+                                          //timer times out - knows about
                                           //this via TTimer::SetObject)
 
 #ifndef __CINT__    //hide boost from ROOTCint
@@ -102,9 +102,9 @@ namespace mu2e_eventdisplay
     TGTextEntry         *_phiField, *_thetaField, *_psiField;
     TGRadioButton       *_perspectiveButton, *_parallelButton;
     TGLabel             **_eventInfo;
-    TText               *_legendText[30], *_legendParticleText[6];  
+    TText               *_legendText[30], *_legendParticleText[6];
     TBox                *_legendBox[30];
-    TPolyLine           *_legendParticleLine[6];  
+    TPolyLine           *_legendParticleLine[6];
 
     ClassDef(EventDisplayFrame,0);
   };

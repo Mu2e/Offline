@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for magnetic field types.
 //
-// $Id: BFMapType.hh,v 1.3 2011/05/17 22:33:42 wb Exp $
-// $Author: wb $ 
-// $Date: 2011/05/17 22:33:42 $
+// $Id: BFMapType.hh,v 1.4 2011/05/18 02:27:14 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:14 $
 //
 // Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 // 2) I do want both the name() operator and the << operator.
 //    If only <<, then users will need to make temp ostringsteams
 //    if they want to do their own formatting.
-// 3) There are some notes on alternate implementations 
+// 3) There are some notes on alternate implementations
 //    at the end of ToyDP/inc/GenId.cc file.
 // 4) Root stores enum types as 32 bit ints.
 // 5) I think it is impossible to construct an invalid object.

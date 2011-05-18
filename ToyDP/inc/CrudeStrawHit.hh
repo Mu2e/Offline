@@ -13,7 +13,7 @@
 //       processing of exactly 1 unpacked digitized waveform.
 //
 //    b) For MC events that have been through the full MC chain, including
-//       creation of digis, this hit will arise from the processing of 
+//       creation of digis, this hit will arise from the processing of
 //       exactly 1 unpacked digitized waveform.
 //
 //    c) For MC events for which there was no simulation of digis, this
@@ -33,11 +33,11 @@
 //
 // 2) For the LTracker this is a dense index 0...(N-1).  For the others it is
 //    to be defined.
-// 
-// 
-// $Id: CrudeStrawHit.hh,v 1.9 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+//
+//
+// $Id: CrudeStrawHit.hh,v 1.10 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
@@ -58,7 +58,7 @@ namespace art{
   class Event;
 }
 
-namespace mu2e { 
+namespace mu2e {
 
   struct CrudeStrawHit{
 
@@ -96,7 +96,7 @@ namespace mu2e {
       stepPointMCPointers(){
     }
 
-    // Constructor for a hit that came from an unpacked digi, either 
+    // Constructor for a hit that came from an unpacked digi, either
     // from data or from the full MC chain.
     CrudeStrawHit( StrawIndex         strawIndex_,
                    float              driftDistance_,
@@ -131,10 +131,10 @@ namespace mu2e {
                    float             trueDriftDistance_,
                    art::Event const* event_ = 0
                    );
-    
+
     // Accept compiler generated versions of:
     //   d'tor
-    //   copy c'tor 
+    //   copy c'tor
     //   assignment operator
 
     // Print contents of the object.
@@ -147,7 +147,7 @@ namespace mu2e {
     }
 
     // Fill a std::vector with (pointers to const) of the precursors of this hit.
-    void getStepPointMC( art::Event const&    event, 
+    void getStepPointMC( art::Event const&    event,
                          std::vector<StepPointMC const*>& v ) const{
       resolveTransients(event);
       v.insert(v.end(), stepPointMCPointers.begin(), stepPointMCPointers.end());
@@ -174,7 +174,7 @@ namespace mu2e {
 
     // Helper function to aid in printing.
     void formatPrecursorIndices( std::ostream& ost ) const;
-    
+
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
@@ -182,7 +182,7 @@ namespace mu2e {
     hit.print(ost,false);
     return ost;
   }
-  
+
 
 } // namespace mu2e
 

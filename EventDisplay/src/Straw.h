@@ -1,9 +1,9 @@
 //
 // Container class for all detector straws. Straws are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
 //
-// $Id: Straw.h,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: Straw.h,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -21,7 +21,7 @@
 namespace mu2e_eventdisplay
 {
 
-class Straw: public VirtualShape 
+class Straw: public VirtualShape
 {
   Straw();
   Straw(const Straw &);
@@ -29,17 +29,17 @@ class Straw: public VirtualShape
 
   boost::shared_ptr<EventDisplayPolyLine3D> _line;
   bool _notDrawn;
- 
+
   public:
 
   Straw(double x, double y, double z, double t1,
-        double theta, double phi, double halflength, 
-        const TGeoManager *geomanager, TGeoVolume *topvolume, 
-        const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info, 
+        double theta, double phi, double halflength,
+        const TGeoManager *geomanager, TGeoVolume *topvolume,
+        const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info,
         bool defaultVisibility):
         VirtualShape(geomanager, topvolume, info, true)
   {
-    setStartTime(t1); 
+    setStartTime(t1);
     setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
@@ -60,7 +60,7 @@ class Straw: public VirtualShape
     start();
   }
 
-  virtual ~Straw() 
+  virtual ~Straw()
   {
   }
 

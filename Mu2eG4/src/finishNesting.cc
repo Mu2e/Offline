@@ -1,9 +1,9 @@
 //
 // Free function to be used by the nest... functions
-// 
-// $Id: finishNesting.cc,v 1.4 2011/05/17 15:36:01 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:36:01 $
+//
+// $Id: finishNesting.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:18 $
 //
 // Original author KLG based on nest... functions
 //
@@ -50,7 +50,7 @@ namespace mu2e {
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     // the code below if activated prints the parameters of the solid
-    // being placed 
+    // being placed
     if (verbose) {
       ios::fmtflags oldfl = cout.flags();
       int const oldpr = cout.precision();
@@ -107,7 +107,7 @@ namespace mu2e {
 //           rot->set(colX,colY,colZ);
 //           rot->print(cout);
 //         }
-      } else { 
+      } else {
         cout << endl << 0 << endl;
       }
       cout << setprecision(oldpr) << setw(oldwdth);
@@ -115,16 +115,16 @@ namespace mu2e {
 
     }
 
-    info.logical  = new G4LogicalVolume( info.solid, material, info.name); 
+    info.logical  = new G4LogicalVolume( info.solid, material, info.name);
 
     info.physical  =  placePV ?
       info.physical = new G4PVPlacement( rot,
-                                         offset, 
-                                         info.logical, 
-                                         info.name, 
-                                         parent, 
-                                         0, 
-                                         copyNo, 
+                                         offset,
+                                         info.logical,
+                                         info.name,
+                                         parent,
+                                         0,
+                                         copyNo,
                                          doSurfaceCheck)
       :
       0;
@@ -138,7 +138,7 @@ namespace mu2e {
       info.logical->SetVisAttributes(G4VisAttributes::Invisible);
 
     } else {
-      
+
       G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, color));
       visAtt->SetForceSolid(forceSolid);
       // If I do not do this, then the rendering depends on what happens in

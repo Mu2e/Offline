@@ -4,11 +4,11 @@
 //
 // Simulate the complete process of the nuclear capture of muons by aluminum atoms
 // which results in protons, neutrons and photons
-// 
 //
-// $Id: NuclearCaptureGun.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+//
+// $Id: NuclearCaptureGun.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Gianni Onorato
 
@@ -58,7 +58,7 @@ namespace mu2e {
     double _photonElow; //Range of photon energy
     double _photonEhi;
     double _czmin; //Range of cos(polar angle) of ejection
-    double _czmax; 
+    double _czmax;
     double _phimin; //Range of azimuth
     double _phimax;
     bool _PStoDSDelay;

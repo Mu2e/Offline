@@ -4,7 +4,7 @@
 // Mu2e includes
 #include "ITrackerGeom/inc/Wall.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 namespace mu2e {
 

@@ -1,14 +1,14 @@
 /**
- * 
+ *
  * Remove leading and trailing whitespace from a string.
  * It modifies the input string.
  *
- * $Id: TrimInPlace.cc,v 1.2 2010/05/18 21:16:36 kutschke Exp $
- * $Author: kutschke $ 
- * $Date: 2010/05/18 21:16:36 $
+ * $Id: TrimInPlace.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+ * $Author: wb $
+ * $Date: 2011/05/18 02:27:19 $
  *
  * Original author Rob Kutschke
- * 
+ *
  */
 #include <string>
 
@@ -43,7 +43,7 @@ namespace mu2e {
       s.erase(0,s.size());
       return;
     }
-  
+
     // Find first non-white character.
     for ( string::size_type i=0;
           i<s.size(); ++i ){

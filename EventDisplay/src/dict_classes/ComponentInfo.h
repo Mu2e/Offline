@@ -1,9 +1,9 @@
 //
-// Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc. 
+// Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.5 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:35 $
+// $Id: ComponentInfo.h,v 1.6 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author Ralf Ehrlich
 //
@@ -68,7 +68,7 @@ namespace mu2e_eventdisplay
 
     const std::vector<boost::shared_ptr<TText> > &getText() const {return _text;}
 
-    void setText(const unsigned int lineNumber, const char *newText) 
+    void setText(const unsigned int lineNumber, const char *newText)
     {
       if(lineNumber<0 || lineNumber>=_text.size()) return; //TODO throw exception
       _text[lineNumber]->SetTitle(newText);

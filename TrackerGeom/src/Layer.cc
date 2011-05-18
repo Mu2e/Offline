@@ -2,9 +2,9 @@
 // Hold information about one Layer in a tracker.
 //
 //
-// $Id: Layer.cc,v 1.3 2010/05/17 21:47:32 genser Exp $
-// $Author: genser $
-// $Date: 2010/05/17 21:47:32 $
+// $Id: Layer.cc,v 1.4 2011/05/18 02:27:20 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:20 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 #include "TrackerGeom/inc/Layer.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
-#ifndef __CINT__ 
+#ifndef __CINT__
 
 using namespace std;
 
@@ -64,6 +64,6 @@ namespace mu2e {
     }
   }
 
-} // namespace mu2e 
+} // namespace mu2e
 #endif
-  
+

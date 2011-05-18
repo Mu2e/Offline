@@ -23,17 +23,17 @@ namespace mu2e {
     _origin(origin),
     _halfLengths(halfLengths)
   {}
-  
+
   // Construct a string containing the device Id.
   /*
     std::string Manifold::name( std::string const& base ) const{
     std::ostringstream os;
-    os << base 
+    os << base
     << _id.getSectorId()._did    << "_"
          << _id.getSectorId()._sector << "_"
          << _id.getManifold();
          return os.str();
          }
   */
-  
+
 } // end namespace mu2e

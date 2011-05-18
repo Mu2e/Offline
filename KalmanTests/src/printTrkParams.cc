@@ -1,9 +1,9 @@
 //
 // Free function to print the BaBar style track parameters.
 //
-// $Id: printTrkParams.cc,v 1.1 2010/04/23 20:18:57 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2010/04/23 20:18:57 $
+// $Id: printTrkParams.cc,v 1.2 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //

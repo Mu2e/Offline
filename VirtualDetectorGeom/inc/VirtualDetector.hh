@@ -28,10 +28,10 @@ namespace mu2e {
     ~VirtualDetector(){;};
 
     virtual std::string name() const { return "VirtualDetector";};
-    
+
     double getHalfLength() const { return _halfLength; };
 
-    unsigned int nDet() const { return _local.size(); }; 
+    unsigned int nDet() const { return _local.size(); };
 
     bool exist(int i) const { return _local.find(i) != _local.end(); };
 

@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: CRSScintillatorModule.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CRSScintillatorModule.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:15 $
 //
 // Original author KLG somewhat based on Rob Kutschke' Sector
 //
@@ -33,11 +33,11 @@ namespace mu2e {
 
     CRSScintillatorModule();
 
-    CRSScintillatorModule(CRSScintillatorModuleId const & id, 
+    CRSScintillatorModule(CRSScintillatorModuleId const & id,
                           int const nBarsPerLayer);
 
     CRSScintillatorModule(CRSScintillatorModuleId const & id,
-                          int                     const nBarsPerLayer,                          
+                          int                     const nBarsPerLayer,
                           CLHEP::Hep3Vector       const & localOffset,
                           std::vector<double>     const & globalRotationAngles,
                           CLHEP::Hep3Vector       const & globalOffset // offset in Mu2e
@@ -45,22 +45,22 @@ namespace mu2e {
 
     // Accept the compiler generated destructor, copy constructor and
     // assignment operators
-  
+
     const CRSScintillatorModuleId& Id() const { return _id;}
 
-    const std::vector<CRSScintillatorLayer>& getLayers() const{ 
+    const std::vector<CRSScintillatorLayer>& getLayers() const{
       return _layers;
     }
 
-    int nLayers() const{ 
+    int nLayers() const{
       return _layers.size();
     }
 
-    const CRSScintillatorLayer& getLayer ( int n ) const { 
+    const CRSScintillatorLayer& getLayer ( int n ) const {
       return _layers.at(n);
     }
 
-    const CRSScintillatorLayer& getLayer ( CRSScintillatorLayerId const & lid) const { 
+    const CRSScintillatorLayer& getLayer ( CRSScintillatorLayerId const & lid) const {
       return _layers.at(lid.getLayerNumber());
     }
 
@@ -68,7 +68,7 @@ namespace mu2e {
       return _layers.at(moduleid.getLayerNumber()).getBar(moduleid);
     }
 
-    // Formatted string embedding the id of the module. 
+    // Formatted string embedding the id of the module.
     std::string name( std::string const & base ) const;
 
     const std::vector<double>& halfLengths() const { return _halfLengths; }
@@ -91,7 +91,7 @@ namespace mu2e {
     //    void fillPointers ( const CosmicRayShield& cosmicRayShield ) const;
 
   private:
-  
+
     CRSScintillatorModuleId _id;
 
     // this defines if this is full or half module
@@ -99,11 +99,11 @@ namespace mu2e {
 
     // Properties of the enclosing logical volume (box).
 
-    CLHEP::Hep3Vector _localOffset; 
+    CLHEP::Hep3Vector _localOffset;
 
     std::vector<double> _globalRotationAngles;
 
-    // Mid-point 
+    // Mid-point
     CLHEP::Hep3Vector _globalOffset;
 
     std::vector<CRSScintillatorLayer> _layers;

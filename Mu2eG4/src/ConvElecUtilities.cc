@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.cc,v 1.6 2011/05/17 15:36:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: ConvElecUtilities.cc,v 1.7 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Gianni Onorato
 //
@@ -22,7 +22,7 @@ using namespace std;
 namespace mu2e {
 
   ConvElecUtilities::ConvElecUtilities(const art::Event & event,
-                                       string g4ModuleLabel, 
+                                       string g4ModuleLabel,
                                        string trackerStepPoints):
     _g4ModuleLabel( g4ModuleLabel ),
     _trackerStepPoints( trackerStepPoints )
@@ -41,7 +41,7 @@ namespace mu2e {
   }
 
 
-  //Loop within the Simulated Particles of the event and find the 
+  //Loop within the Simulated Particles of the event and find the
   //generated conversion electron.
   //This method is called by the constructor
 
@@ -58,12 +58,12 @@ namespace mu2e {
         SimParticle const& sim = i->second;
         ++n;
 
-        //        cout << "Id = " << sim.id() << "\t" << "PID = " 
-        //     << sim.pdgId() << " from " 
+        //        cout << "Id = " << sim.id() << "\t" << "PID = "
+        //     << sim.pdgId() << " from "
         //     << (sim.fromGenerator()?"generator":"")
         //     << (sim.madeInG4()?"G4":"") << endl;
         if ( sim.fromGenerator() ) {
-          //   cout << "index " << sim.generatorIndex() << " and " 
+          //   cout << "index " << sim.generatorIndex() << " and "
           //      << _genParticles->at(sim.generatorIndex()).generatorId().name() << endl;
           if (_genParticles->at(sim.generatorIndex()).generatorId() == GenId::conversionGun) {
             _convTrackId = sim.id();
@@ -76,7 +76,7 @@ namespace mu2e {
       }
     } else { cout << "No SimParticles in the event" << endl; }
   }
-  
+
   const SimParticle& ConvElecUtilities::simConvElec() const{
     return *_simParticle;
   }
@@ -90,7 +90,7 @@ namespace mu2e {
   //This method is called by the constructor
 
   void ConvElecUtilities::lookAtHits(const art::Event & event) {
-    event.getByLabel(_g4ModuleLabel, _trackerStepPoints, hits);   
+    event.getByLabel(_g4ModuleLabel, _trackerStepPoints, hits);
     double time = 10e15; // dummy value
     _earliestidx = 10000; // dummy value
     for (size_t i=0; i<hits->size(); ++i) {
@@ -100,9 +100,9 @@ namespace mu2e {
           time = hit.time();
           _earliestidx = i;
         }
-        _convElecHits.push_back(i);  
-        //        cout << "Hit straw index " << hit.strawIndex() 
-        //     << " and time " << hit.time() 
+        _convElecHits.push_back(i);
+        //        cout << "Hit straw index " << hit.strawIndex()
+        //     << " and time " << hit.time()
         //     << "earliest is " << time << endl;
         _convElecStrawIdx.push_back(hit.strawIndex());
       }
@@ -112,8 +112,8 @@ namespace mu2e {
   //Return a reference to the earliest ConvElectron Hit
   StepPointMC const& ConvElecUtilities::firstHit() {
     if (hasStepPointMC()) {
-      return (*hits)[_earliestidx]; 
-    } else { 
+      return (*hits)[_earliestidx];
+    } else {
       throw cet::exception("RANGE")
         << "No hit associated to Conversion Electron track.";
     }
@@ -123,11 +123,11 @@ namespace mu2e {
   StrawIndex ConvElecUtilities::earliestStrawIndex() const {
     if (hasStepPointMC()) {
     return (*hits)[_earliestidx].strawIndex();
-    } else { 
+    } else {
       throw cet::exception("RANGE")
         << "No hit associated to Conversion Electron track.";
     }
   }
-  
-  
+
+
 } // end namespace mu2e

@@ -3,12 +3,12 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.9 2011/05/17 15:36:00 greenc Exp $ 
-// $Author: greenc $
-// $Date: 2011/05/17 15:36:00 $
+// $Id: PrimaryProtonGun.cc,v 1.10 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
-// 
+//
 
 // C++ incldues.
 #include <iostream>
@@ -21,7 +21,7 @@
 #include "art/Framework/Core/TFileDirectory.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/PrimaryProtonGun.hh" 
+#include "EventGenerator/inc/PrimaryProtonGun.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
@@ -42,7 +42,7 @@ namespace mu2e {
   // Mass of the proton.
   // Once we have the HepPDT package installed, get this number from there.
   static const double m = 938.272*CLHEP::MeV;
-  
+
   // The kinetic energy of proton is 8 Gev; E = T + m, p = sqrt(E^2 - m^2)
   static const double pBeam = 8888.6*CLHEP::MeV;
 
@@ -71,17 +71,17 @@ namespace mu2e {
     }
 
   }
-  
+
   PrimaryProtonGun::~PrimaryProtonGun(){
   }
-  
+
   void PrimaryProtonGun::generate( ToyGenParticleCollection& genParts ){
 
     // For all distributions, use the engine managed by the RandomNumberGeneratorService.
     static CLHEP::RandFlat   randFlat        ( getEngine() );
     static CLHEP::RandGaussQ randGaussQ      ( getEngine(), 0., _beamSpotSigma );
     static RandomUnitSphere  randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax);
-    
+
     // Simulate the size of the beam spot.
     double dx = randGaussQ.fire();
     double dy = randGaussQ.fire();
@@ -90,14 +90,14 @@ namespace mu2e {
     CLHEP::Hep3Vector pos( _beamDisplacementOnTarget.x() + dx,
                            _beamDisplacementOnTarget.y() + dy,
                            _beamDisplacementOnTarget.z() );
-        
+
     // Distribution of generation time is flat.  This needs to be improved.
     const double time = _tmin + (_tmax-_tmin)*randFlat.fire();
 
     // Energy and kinetic energy.
     double e = sqrt( _p*_p +m*m);
     double ekine = e - m;
-    
+
     // Generated 4 momentum.
     CLHEP::HepLorentzVector mom(  randomUnitSphere.fire(_p), e );
 

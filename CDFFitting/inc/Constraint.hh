@@ -13,19 +13,19 @@ template <class Measureable>
 class Constraint : public FitAction<Measureable> {
 
 public:
-  
+
   // Constructor
   Constraint();
-  
+
   // Destructor
   virtual ~Constraint();
-  
+
   // Get the matrix
   virtual HepMatrix getConstraintMatrix(const Measureable &  measurable) const = 0;
-  
+
   // Get the vector
   virtual HepVector getConstraintVector(const Measureable &  measurable) const = 0;
-  
+
   // Get the dimensionality of this constraint
   virtual unsigned int getDimensionality() const = 0;
 

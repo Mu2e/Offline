@@ -3,9 +3,9 @@
 //
 // An object to be the key in a MapVector.
 //
-// $Id: MapVectorKey.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: MapVectorKey.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,7 @@ class MapVectorKey{
 
 public:
 
-  // Default c'tor needed for ROOT persistency. 
+  // Default c'tor needed for ROOT persistency.
   // Otherwise I would prefer that we not have one.
   MapVectorKey():_key(-1){}
 
@@ -37,7 +37,7 @@ public:
   // Compiler generated versions are OK for:
   // copy c'tor, destructor, operator=
 
-  // If we want to stick a MapVectorKey into a plain-old-ntuple, 
+  // If we want to stick a MapVectorKey into a plain-old-ntuple,
   // or to make a histogram of the keys, we need these accessors.
   // But we do not want automatic conversion to int:
   //  - Therefore do not implement operator(int);
@@ -71,7 +71,7 @@ inline std::ostream& operator<<( std::ostream& ost,
   return ost;
 }
 
-inline bool operator!=( MapVectorKey const& lhs, 
+inline bool operator!=( MapVectorKey const& lhs,
                         MapVectorKey const& rhs) {
   return !( lhs == rhs);
 }

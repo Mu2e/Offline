@@ -1,4 +1,4 @@
-// 
+//
 // This is a place to put additional information produced by HitMaker,
 // like true drift distance, signal propagation time, etc.
 //
@@ -30,7 +30,7 @@ namespace mu2e {
     if ( doEndl ){
       ost << endl;
     }
-    
+
   }
-  
+
 } // namespace mu2e

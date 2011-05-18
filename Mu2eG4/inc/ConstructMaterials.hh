@@ -3,9 +3,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/05/17 15:41:36 $
+// $Id: ConstructMaterials.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //
@@ -43,13 +43,13 @@ namespace mu2e {
 
   class ConstructMaterials{
   public:
-    
+
     ConstructMaterials();
     ~ConstructMaterials();
 
     // Construct all of the materials.
     void construct();
-    
+
   private:
 
 
@@ -64,13 +64,13 @@ namespace mu2e {
 
     // Do we need to build this material?
     CheckedG4String isNeeded(  std::vector<std::string> const& V, std::string const& name);
-    
+
     // Check that a material name is not already in use.
     void uniqueMaterialOrThrow( G4String const& name);
-    
+
     // Check to see if a string appear within a vector of strings.
     bool isRequested( std::vector<std::string> const& V, std::string const& name);
-    
+
   };
 
 } // end namespace mu2e

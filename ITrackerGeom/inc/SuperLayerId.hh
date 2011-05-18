@@ -30,10 +30,10 @@ public:
   }
 
   int _id;
-  
+
 };
 
-inline std::ostream& operator<<(std::ostream& ost, 
+inline std::ostream& operator<<(std::ostream& ost,
                                 const SuperLayerId& s ){
   ost << "SuperLayer Id: "<<s._id << " )";
   return ost;

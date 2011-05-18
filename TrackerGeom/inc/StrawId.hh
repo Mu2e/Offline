@@ -5,16 +5,16 @@
 //
 
 //
-// $Id: StrawId.hh,v 1.4 2011/05/17 15:41:37 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:37 $
+// $Id: StrawId.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
 #include <ostream>
 #include "TrackerGeom/inc/LayerId.hh"
 
-namespace mu2e { 
+namespace mu2e {
 
 struct StrawId{
 
@@ -24,14 +24,14 @@ public:
     _lid(LayerId()),
     _n(-1){
   }
-  
+
   StrawId( LayerId layer,
            int n
            ):
     _lid(layer),
     _n(n){
   }
-  
+
   StrawId( SectorId sectorid,
            int layer,
            int n
@@ -66,7 +66,7 @@ public:
   const LayerId& getLayerId() const {
     return _lid;
   }
-  
+
   const int getDevice() const{
     return _lid._sid._did;
   }
@@ -94,10 +94,10 @@ public:
 
   LayerId _lid;
   int32_t _n;
-  
+
 };
 
-inline std::ostream& operator<<(std::ostream& ost, 
+inline std::ostream& operator<<(std::ostream& ost,
                                 const StrawId& s ){
   ost << "Straw Id: ("
       << s.getLayerId() << " "
