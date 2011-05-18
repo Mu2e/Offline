@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.14 2011/05/17 16:30:15 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/17 16:30:15 $
+# $Id: SConscript,v 1.15 2011/05/18 18:21:00 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/18 18:21:00 $
 #
 # Original author Rob Kutschke.
 #
@@ -19,6 +19,7 @@ Import('env')
 
 g4inc   = os.environ['G4INCLUDE']
 g4lib   = os.environ['G4LIB']
+g4sys   = os.environ['G4SYSTEM']
 
 #g4gdml = os.environ['XERCESCROOT']
 
@@ -129,7 +130,7 @@ if non_plugin_cc:
                               OPENGL_LIBS
                            ],
                       CPPFLAGS= [  G4CPPFLAGS, G4OGL_CPPFLAGS ],
-                      parse_flags=[ '-L'+g4lib, '-I'+g4inc ]
+                      parse_flags=[ '-L'+g4lib+'/'+g4sys, '-I'+g4inc ]
 #                      parse_flags=[ '-L'+g4lib+'/Linux-g++', '-L'+g4gdml+'/lib', '-lxerces-c', '-I'+g4inc, '-I'+g4gdml+'/src' ]
                       )
     libs=[ local_lib_name ]
