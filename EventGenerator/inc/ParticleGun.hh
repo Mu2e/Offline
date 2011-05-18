@@ -3,9 +3,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Id: ParticleGun.hh,v 1.8 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -14,13 +14,13 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // External includes
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 // Forward references.
 namespace art{
@@ -39,7 +39,7 @@ namespace mu2e {
     ParticleGun( art::Run const& run, const SimpleConfig& config );
     virtual ~ParticleGun();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

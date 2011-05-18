@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.5 2011/05/18 14:53:21 wb Exp $
+  $Id: EventGenerator_module.cc,v 1.6 2011/05/18 22:01:46 wb Exp $
   $Author: wb $
-  $Date: 2011/05/18 14:53:21 $
+  $Date: 2011/05/18 22:01:46 $
 
   Original author Rob Kutschke
 
@@ -33,38 +33,38 @@
 
 // C++ includes.
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
 // Framework includes.
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "Mu2eUtilities/inc/requireUniqueKey.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/requireUniqueKey.hh"
 #include "ToyDP/inc/GenId.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
 #include "EventGenerator/inc/CosmicToy.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
-#include "EventGenerator/inc/EjectedProtonGun.hh"
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
+#include "EventGenerator/inc/EjectedProtonGun.hh"
+#include "EventGenerator/inc/FromG4BLFile.hh"
 #include "EventGenerator/inc/NuclearCaptureGun.hh"
 #include "EventGenerator/inc/ParticleGun.hh"
 #include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
-#include "EventGenerator/inc/FromG4BLFile.hh"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>
@@ -81,7 +81,7 @@ namespace mu2e {
       _configfile(pSet.get<std::string>("inputfile","generatorconfig.txt"))
     {
       // A placeholder until I make a real data product.
-      produces<ToyGenParticleCollection>();
+      produces<GenParticleCollection>();
 
       // Print generators for which Id's are defined.
       //GenId::printAll();
@@ -183,7 +183,7 @@ namespace mu2e {
   EventGenerator::produce(art::Event& evt) {
 
     // Make the collection to hold the output.
-    auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);
+    auto_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
 
     // Run all of the registered generators.
     for ( std::vector<GeneratorBasePtr>::const_iterator

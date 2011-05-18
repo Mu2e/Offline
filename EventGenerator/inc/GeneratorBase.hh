@@ -5,9 +5,9 @@
 // Also provides access to the random number engine associated with the
 // EventGenerator module.
 //
-// $Id: GeneratorBase.hh,v 1.6 2011/05/18 05:09:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 05:09:28 $
+// $Id: GeneratorBase.hh,v 1.7 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
@@ -31,7 +31,7 @@ namespace mu2e {
     virtual ~GeneratorBase(){
     }
 
-    virtual void generate( ToyGenParticleCollection&  ) = 0;
+    virtual void generate( GenParticleCollection&  ) = 0;
 
   protected:
 

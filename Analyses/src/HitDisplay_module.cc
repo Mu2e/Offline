@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: HitDisplay_module.cc,v 1.5 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke.
 //
@@ -16,26 +16,26 @@
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
+#include "Mu2eUtilities/inc/SortedStepPoints.hh"
 #include "Mu2eUtilities/inc/TrackTool.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/SortedStepPoints.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
 
 // ROOT includes
 #include "TApplication.h"
@@ -175,9 +175,9 @@ namespace mu2e {
     ConditionsHandle<TrackerCalibrations> trackCal("ignored");
 
     // Get information from the event.
-    art::Handle<ToyGenParticleCollection> gensHandle;
+    art::Handle<GenParticleCollection> gensHandle;
     event.getByLabel(generatorModuleLabel_,gensHandle);
-    ToyGenParticleCollection const& gens = *gensHandle;
+    GenParticleCollection const& gens = *gensHandle;
 
     art::Handle<SimParticleCollection> simsHandle;
     event.getByLabel(g4ModuleLabel_,simsHandle);
@@ -222,7 +222,7 @@ namespace mu2e {
     StepPointMC const& midStep(sortedSteps.middleByZ());
 
     // The generated particle.
-    ToyGenParticle const& gen = gens.at(0);
+    GenParticle const& gen = gens.at(0);
     TrackTool tt  ( gen.pdgId(), -1., firstStep.position(), firstStep.momentum(), 1., Hep3Vector() );
     TrackTool tg  ( gen.pdgId(), -1., gen.position(), gen.momentum(), 1., Hep3Vector() );
     TrackTool tmid( gen.pdgId(), -1., midStep.position(), midStep.momentum(), 1., Hep3Vector() );
@@ -295,7 +295,7 @@ namespace mu2e {
         StepPointMC const& step = *resolveDPIndex<StepPointMCCollection>( event, mcptr.at(j) );
         SimParticle const& sim  = sims[step.trackId()];
         if ( sim.fromGenerator() ){
-          ToyGenParticle const& gen = gens.at(sim.generatorIndex());
+          GenParticle const& gen = gens.at(sim.generatorIndex());
           if ( gen.generatorId() == GenId::conversionGun ){
             isFromConversion = true;
             break;

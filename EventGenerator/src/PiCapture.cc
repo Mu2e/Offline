@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.20 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: PiCapture.cc,v 1.21 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -13,16 +13,16 @@
 
 // Framework includes
 #include "art/Framework/Core/Run.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/PiCapture.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoisson.h"
@@ -120,7 +120,7 @@ namespace mu2e {
   PiCapture::~PiCapture(){
   }
 
-  void PiCapture::generate( ToyGenParticleCollection& genParticles ){
+  void PiCapture::generate( GenParticleCollection& genParticles ){
 
     // Choose the number of photons to generate this event.
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
@@ -144,7 +144,7 @@ namespace mu2e {
       CLHEP::HepLorentzVector mom( _randomUnitSphere.fire(e), e);
 
       // Add the photon to the list of generated particles.
-      genParticles.push_back( ToyGenParticle( PDGCode::gamma, GenId::pionCapture, pos, mom, time));
+      genParticles.push_back( GenParticle( PDGCode::gamma, GenId::pionCapture, pos, mom, time));
 
       if ( _doHistograms ){
         _hEPhot->Fill(e);

@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.25 2011/05/18 19:46:19 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 19:46:19 $
+// $Id: classes.h,v 1.26 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -20,25 +20,24 @@
 
 #include "art/Persistency/Common/Wrapper.h"
 
-
-#include "ToyDP/inc/CrudeStrawHitPData.hh"
-#include "ToyDP/inc/HoughCircleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/StrawClusterCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/G4BeamlineInfo.hh"
-#include "ToyDP/inc/G4BeamlineInfoCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
+#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ToyDP/inc/CrudeStrawHitPData.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/G4BeamlineInfo.hh"
+#include "ToyDP/inc/G4BeamlineInfoCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/HoughCircleCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/PointTrajectoryCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/StatusG4.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/StrawClusterCollection.hh"
+#include "ToyDP/inc/StrawHitCollection.hh"
+#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
 
 //
 // I am not 100% clear what needs to be here.  I do know:
@@ -56,7 +55,7 @@ template class std::pair<MapVectorKey,mu2e::PointTrajectory>;
 template class std::map<MapVectorKey,mu2e::PointTrajectory>;
 template class std::vector<uint32_t>;
 
-template class art::Wrapper<mu2e::ToyGenParticleCollection>;
+template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
 template class art::Wrapper<mu2e::PhysicalVolumeInfoCollection>;
 template class art::Wrapper<mu2e::CrudeStrawHitPData>;

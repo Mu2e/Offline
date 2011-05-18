@@ -1,33 +1,33 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Id: NeutronCRV_module.cc,v 1.4 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes
-#include <iostream>
-#include <string>
 #include <cmath>
 #include <deque>
-#include <map>
+#include <iostream>
 #include <list>
+#include <map>
 #include <memory>
+#include <string>
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
 #include "art/Persistency/Provenance/Provenance.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
 #include "TFile.h"
@@ -36,43 +36,43 @@
 #include "TNtuple.h"
 
 // Mu2e includes.
-#include "ToyDP/inc/StatusG4.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
 #include "ITrackerGeom/inc/Cell.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
+#include "Mu2eUtilities/inc/MCCaloUtilities.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "Mu2eUtilities/inc/MCCaloUtilities.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
+#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StatusG4.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/StrawHitCollection.hh"
+#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
+#include "TrackerGeom/inc/Straw.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
 #include "G4Helper/inc/G4Helper.hh"
 
 
 // Root includes.
 #include "TDirectory.h"
+#include "TGraph.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TNtuple.h"
-#include "TGraph.h"
 
 // Other includes.
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -284,7 +284,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,_crvStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     event.getByType(genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -365,7 +365,7 @@ namespace mu2e {
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
-          ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          GenParticle const& gen = genParticles->at(sim.generatorIndex());
           genId = gen.generatorId();
         }
       }

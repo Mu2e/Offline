@@ -1,13 +1,13 @@
 //
-// Read a ToyGenParticleCollection that contains the position
+// Read a GenParticleCollection that contains the position
 // of pions that have ranged out in the stopping target foils.
-// Generate new ToyGenParticleCollection that contains positrons
+// Generate new GenParticleCollection that contains positrons
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_module.cc,v 1.4 2011/05/18 20:09:10 wb Exp $
+// $Id: EplusFromStoppedPion_module.cc,v 1.5 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke.
 //
@@ -34,7 +34,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeneralUtilities/inc/TwoBodyKinematics.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -114,7 +114,7 @@ namespace mu2e {
     zend_(17360.){
 
     // What does this module produce?
-    produces<ToyGenParticleCollection>();
+    produces<GenParticleCollection>();
 
   }
 
@@ -166,30 +166,30 @@ namespace mu2e {
   void
   EplusFromStoppedPion::produce(art::Event& event) {
 
-    auto_ptr<ToyGenParticleCollection> output(new ToyGenParticleCollection);
+    auto_ptr<GenParticleCollection> output(new GenParticleCollection);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genHandle;
+    art::Handle<GenParticleCollection> genHandle;
     event.getByLabel(inputModuleLabel_,genHandle);
-    ToyGenParticleCollection const& gens(*genHandle);
+    GenParticleCollection const& gens(*genHandle);
 
-    for ( ToyGenParticleCollection::const_iterator i=gens.begin();
+    for ( GenParticleCollection::const_iterator i=gens.begin();
           i!=gens.end(); ++i ){
-      ToyGenParticle const& stoppedGen = *i;
+      GenParticle const& stoppedGen = *i;
 
       CLHEP::Hep3Vector p = randomUnitSphere_.fire(pe_);
       double ee = sqrt(pe_*pe_+ me_*me_);
 
-      output->push_back( ToyGenParticle( PDGCode::e_plus,
-                                         GenId::fromG4BLFile,
-                                         stoppedGen.position(),
-                                         CLHEP::HepLorentzVector(p.x(), p.y(), p.z(), ee),
-                                         stoppedGen.time() )
+      output->push_back( GenParticle( PDGCode::e_plus,
+                                      GenId::fromG4BLFile,
+                                      stoppedGen.position(),
+                                      CLHEP::HepLorentzVector(p.x(), p.y(), p.z(), ee),
+                                      stoppedGen.time() )
                          );
 
       if ( !doHistograms_ ) continue;
 
-      ToyGenParticle const& gen = output->back();
+      GenParticle const& gen = output->back();
 
       float buf[nt_->GetNvar()];
 

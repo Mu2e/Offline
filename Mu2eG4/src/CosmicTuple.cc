@@ -1,40 +1,40 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.21 2011/05/18 21:14:30 wb Exp $
+// $Id: CosmicTuple.cc,v 1.22 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
 #include <string>
-#include <cmath>
 #include <vector>
 
 // Framework includes.
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "Mu2eG4/src/CosmicTuple.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/ProcessCode.hh"
-#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
-#include "Mu2eUtilities/inc/SimParticleAncestors.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "Mu2eG4/src/CosmicTuple.hh"
+#include "Mu2eUtilities/inc/SimParticleAncestors.hh"
+#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/ProcessCode.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
-#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
 #include "art/Framework/Core/EDFilter.h"
@@ -102,7 +102,7 @@ namespace mu2e {
        event.getByLabel(_g4ModuleLabel,collectionName,hits);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     event.getByType(genParticles);
 
     // Get handles to the generated and simulated particles.
@@ -184,7 +184,7 @@ namespace mu2e {
       SimParticleAncestors ancestor( sim,
                                     *simParticles,
                                     *genParticles);
-      ToyGenParticle const& gen_parent = ancestor.originalGen();
+      GenParticle const& gen_parent = ancestor.originalGen();
 
       // Immediate parent particle
       SimParticle const* sim_parent = 0;
@@ -195,7 +195,7 @@ namespace mu2e {
       int nHits = infos.size();
 
       CLHEP::Hep3Vector y(0,-1,0);
-      CLHEP::Hep3Vector posGen = gen_parent._position;
+      CLHEP::Hep3Vector posGen = gen_parent.position();
       CLHEP::Hep3Vector trspos(0,0,0);
       CLHEP::Hep3Vector prspos(0,0,0);
       CLHEP::Hep3Vector trsmom(0,0,0);
@@ -224,8 +224,8 @@ namespace mu2e {
         prSt   = sim_parent->stoppingCode();
       } else {
         prspos  = posGen;
-        prsmom  = gen_parent._momentum;
-        prntPdg = gen_parent._pdgId;
+        prsmom  = gen_parent.momentum();
+        prntPdg = gen_parent.pdgId();
       }
 
       double  momentum = -1.;
@@ -310,10 +310,10 @@ namespace mu2e {
       ntT[1]  = sim.id().asInt();
       ntT[2]  = sim.pdgId();
       ntT[3]  = momentum;
-      ntT[4]  = gen_parent._generatorId.Id();
-      ntT[5]  = gen_parent._pdgId;
-      ntT[6]  = gen_parent._momentum.e();
-      ntT[7]  = y.angle(gen_parent._momentum.vect());
+      ntT[4]  = gen_parent.generatorId().Id();
+      ntT[5]  = gen_parent.pdgId();
+      ntT[6]  = gen_parent.momentum().e();
+      ntT[7]  = y.angle(gen_parent.momentum().vect());
       ntT[8]  = posGen.x();
       ntT[9]  = posGen.y();
       ntT[10] = posGen.z();

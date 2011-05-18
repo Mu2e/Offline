@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.29 2011/05/18 18:41:36 kutschke Exp $     -->
-<!--  $Author: kutschke $ -->
-<!--  $Date: 2011/05/18 18:41:36 $   -->
+<!--  $Id: classes_def.xml,v 1.30 2011/05/18 22:01:46 wb Exp $     -->
+<!--  $Author: wb $ -->
+<!--  $Date: 2011/05/18 22:01:46 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.29 $$Date: 2011/05/18 18:41:36 $"; -->
+<!--  rev="$Revision: 1.30 $$Date: 2011/05/18 22:01:46 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -35,8 +35,8 @@
  <class name="CLHEP::Hep3Vector"/>
  <class name="CLHEP::HepLorentzVector"/>
  <class name="mu2e::GenId"/>
- <class name="mu2e::ToyGenParticle"/>
- <class name="mu2e::ToyGenParticleCollection"/>
+ <class name="mu2e::GenParticle"/>
+ <class name="mu2e::GenParticleCollection"/>
  <class name="mu2e::StepPointMC"/>
  <class name="std::vector<const mu2e::StepPointMC*>"/>
  <class name="mu2e::StepPointMCCollection"/>
@@ -79,7 +79,7 @@
  <class name="std::map<MapVectorKey,mu2e::PointTrajectory>"/>
  <class name="mu2e::PointTrajectoryCollection"/>
  <class name="mu2e::StatusG4"/>
- <class name="art::Wrapper<mu2e::ToyGenParticleCollection>"/>
+ <class name="art::Wrapper<mu2e::GenParticleCollection>"/>
  <class name="art::Wrapper<mu2e::StepPointMCCollection>"/>
  <class name="art::Wrapper<mu2e::CrudeStrawHitPData>"/>
  <class name="art::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>

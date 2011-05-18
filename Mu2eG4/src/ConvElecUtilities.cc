@@ -1,15 +1,15 @@
 //
-// $Id: ConvElecUtilities.cc,v 1.8 2011/05/18 05:02:32 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 05:02:32 $
+// $Id: ConvElecUtilities.cc,v 1.9 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Gianni Onorato
 //
 
 
 // Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Utilities/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConvElecUtilities.hh"
@@ -78,7 +78,7 @@ namespace mu2e {
     return *_simParticle;
   }
 
-  const ToyGenParticle& ConvElecUtilities::genConvElec() {
+  const GenParticle& ConvElecUtilities::genConvElec() {
     return _genParticles->at(_simParticles->at(_convTrackId).generatorIndex());
   }
 

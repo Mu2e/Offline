@@ -4,9 +4,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.hh,v 1.6 2011/05/18 02:27:15 wb Exp $
+// $Id: CosmicToy.hh,v 1.7 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,7 @@ namespace mu2e {
     CosmicToy( art::Run& run, const SimpleConfig& config );
     virtual ~CosmicToy();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

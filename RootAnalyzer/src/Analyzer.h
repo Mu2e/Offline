@@ -1,9 +1,9 @@
 //
 // header for Analyzer.C
 
-// $Id: Analyzer.h,v 1.7 2011/05/18 02:27:19 wb Exp $
+// $Id: Analyzer.h,v 1.8 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author KLG
 //
@@ -21,7 +21,7 @@
 // one may want to revisit types relying on boost libraries
 
 /* #include "ToyDP/inc/SimParticleCollection.hh" */
-/* #include "ToyDP/inc/ToyGenParticleCollection.hh" */
+/* #include "ToyDP/inc/GenParticleCollection.hh" */
 /* #include "ToyDP/inc/StepPointMCCollection.hh" */
 /* #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh" */
 
@@ -62,7 +62,7 @@ class Analyzer {
 
 /* void Analyzer::doLTracker(art::EventAuxiliary*                              EventAuxiliaryWrppd, */
 /*                           art::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd, */
-/*                           art::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd, */
+/*                           art::Wrapper<mu2e::GenParticleCollection>*        GenParticleWrppd, */
 /*                           art::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd, */
 /*                           art::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd); */
 

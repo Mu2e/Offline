@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.16 2011/05/18 16:21:55 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 16:21:55 $
+// $Id: CosmicDYB.cc,v 1.17 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Yury Kolomensky
 //
@@ -26,9 +26,9 @@
 // Framework includes.
 #include "art/Framework/Core/Run.h"
 #include "art/Framework/Core/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -38,9 +38,9 @@
 #include "EventGenerator/inc/hrndg2.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/rm48.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/Target.hh"
 
 // From CLHEP
@@ -191,7 +191,7 @@ namespace mu2e {
 
   CosmicDYB::~CosmicDYB() { }
 
-  void CosmicDYB::generate( ToyGenParticleCollection& genParts ){
+  void CosmicDYB::generate( GenParticleCollection& genParts ){
 
     // Choose the number of electrons to generate this event.
     long n = (_mean < 0) ? static_cast<long>(-_mean) : _randPoissonQ.fire();
@@ -259,7 +259,7 @@ namespace mu2e {
       _cosmicChargeH->Fill(-pid/abs(pid));
 
       // Add the cosmic to  the list.
-      genParts.push_back( ToyGenParticle( pid, GenId::cosmicDYB, pos, mom, time));
+      genParts.push_back( GenParticle( pid, GenId::cosmicDYB, pos, mom, time));
 
     }
   }

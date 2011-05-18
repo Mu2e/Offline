@@ -4,18 +4,18 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: GrokGeometry_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
+// $Id: GrokGeometry_module.cc,v 1.5 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author: Mark Fischler
 //
 //=============================================================================
 // C++ includes
-#include <iostream>
-#include <string>
 #include <cmath>
+#include <iostream>
 #include <map>
+#include <string>
 #include <utility>
 
 #include "CLHEP/Vector/TwoVector.h"
@@ -23,34 +23,34 @@
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
 #include "art/Persistency/Provenance/Provenance.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
 #include "TFile.h"
 #include "TH1F.h"
 
 // Mu2e includes.
-#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/StrawId.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Mu2eG4/inc/ConvElecUtilities.hh"
+#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
+#include "Mu2eUtilities/inc/resolveDPIndices.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "Mu2eG4/inc/ConvElecUtilities.hh"
-#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
-#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+#include "TrackerGeom/inc/StrawId.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 
@@ -241,7 +241,7 @@ namespace mu2e {;
     evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     evt.getByType(genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -279,7 +279,7 @@ namespace mu2e {;
         vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
         if (simInfo.simParticle().generatorIndex()>=0)
           {
-            const ToyGenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
+            const GenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
 
             //cout<< genpar.generatorId()<<endl;
             if (genpar.generatorId()== GenId::conversionGun)

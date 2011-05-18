@@ -6,9 +6,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.hh,v 1.5 2011/05/18 02:27:15 wb Exp $
+// $Id: PiEplusNuGun.hh,v 1.6 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // For now this is limited to:
 //  - Uniform over the targets.
@@ -33,7 +33,7 @@ namespace mu2e {
     PiEplusNuGun( art::Run& run, const SimpleConfig& config );
     virtual ~PiEplusNuGun();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

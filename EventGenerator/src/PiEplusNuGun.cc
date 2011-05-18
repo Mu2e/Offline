@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.7 2011/05/18 16:11:17 wb Exp $
+// $Id: PiEplusNuGun.cc,v 1.8 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 //
@@ -18,16 +18,16 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/PiEplusNuGun.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "EventGenerator/inc/PiEplusNuGun.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "TargetGeom/inc/Target.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -80,7 +80,7 @@ namespace mu2e {
   PiEplusNuGun::~PiEplusNuGun(){
   }
 
-  void PiEplusNuGun::generate( ToyGenParticleCollection& genParts ){
+  void PiEplusNuGun::generate( GenParticleCollection& genParts ){
 
     // getEngine comes from the base class.
     static CLHEP::RandFlat randFlat( getEngine() );
@@ -118,7 +118,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector mom( randomUnitSphere.fire(_p), e);
 
     // Add the electron to  the list.
-    genParts.push_back( ToyGenParticle( PDGCode::e_plus, GenId::piEplusNuGun, pos, mom, time));
+    genParts.push_back( GenParticle( PDGCode::e_plus, GenId::piEplusNuGun, pos, mom, time));
 
   }
 

@@ -3,9 +3,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.6 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: CosmicDYB.hh,v 1.7 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Yury Kolomensky
 //
@@ -35,7 +35,7 @@ namespace mu2e {
     CosmicDYB( art::Run& run, const SimpleConfig& config );
     virtual ~CosmicDYB();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

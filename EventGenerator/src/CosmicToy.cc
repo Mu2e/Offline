@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.11 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: CosmicToy.cc,v 1.12 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -14,21 +14,21 @@
 
 // Framework includes.
 #include "art/Framework/Core/Run.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/DAQParams.hh"
 #include "EventGenerator/inc/CosmicToy.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "TargetGeom/inc/Target.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/DAQParams.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
@@ -98,7 +98,7 @@ namespace mu2e {
   CosmicToy::~CosmicToy(){
   }
 
-  void CosmicToy::generate( ToyGenParticleCollection& genParts ){
+  void CosmicToy::generate( GenParticleCollection& genParts ){
 
     // Pick a number of muons from a Poisson distribution.
     // Choose the number of electrons to generate this event.
@@ -142,7 +142,7 @@ namespace mu2e {
       PDGCode::type pid = (_randFlat.fire() >0.5) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
       // Add the cosmic ray muon to the list of generated particles.
-      genParts.push_back( ToyGenParticle( pid, GenId::cosmicToy, pos, mom, time));
+      genParts.push_back( GenParticle( pid, GenId::cosmicToy, pos, mom, time));
 
       if ( _doHistograms ){
         static CLHEP::Hep3Vector vertical( 0., -1., 0.);

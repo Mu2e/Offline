@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.24 2011/05/18 16:11:17 wb Exp $
+// $Id: ConversionGun.cc,v 1.25 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -14,18 +14,18 @@
 #include <iostream>
 
 // Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/ConversionGun.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "EventGenerator/inc/ConversionGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.
@@ -108,7 +108,7 @@ namespace mu2e {
   ConversionGun::~ConversionGun(){
   }
 
-  void ConversionGun::generate( ToyGenParticleCollection& genParts ){
+  void ConversionGun::generate( GenParticleCollection& genParts ){
 
     // Compute position and momentum
     double time;
@@ -125,7 +125,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector mom(p3, e);
 
     // Add the particle to  the list.
-    genParts.push_back( ToyGenParticle( PDGCode::e_minus, GenId::conversionGun, pos, mom, time));
+    genParts.push_back( GenParticle( PDGCode::e_minus, GenId::conversionGun, pos, mom, time));
 
     if ( !_doHistograms ) return;
 

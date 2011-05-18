@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.9 2011/05/18 02:27:15 wb Exp $
+// $Id: PrimaryProtonGun.hh,v 1.10 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 //
 // The coordinate system used in this class is:
@@ -48,7 +48,7 @@ namespace mu2e {
     PrimaryProtonGun( art::Run& run, const SimpleConfig& config );
     virtual ~PrimaryProtonGun();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

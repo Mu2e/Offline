@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.13 2011/05/18 16:21:55 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 16:21:55 $
+// $Id: PrimaryProtonGun.cc,v 1.14 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -15,22 +15,22 @@
 
 // Framework includes
 #include "art/Framework/Core/Run.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "TargetGeom/inc/Target.hh"
 
 // CLHEP includes.
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Random/RandGaussQ.h"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 //ROOT Includes
 #include "TH1D.h"
@@ -75,7 +75,7 @@ namespace mu2e {
   PrimaryProtonGun::~PrimaryProtonGun(){
   }
 
-  void PrimaryProtonGun::generate( ToyGenParticleCollection& genParts ){
+  void PrimaryProtonGun::generate( GenParticleCollection& genParts ){
 
     // For all distributions, use the engine managed by the RandomNumberGenerator.
     static CLHEP::RandFlat   randFlat        ( getEngine() );
@@ -102,7 +102,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector mom(  randomUnitSphere.fire(_p), e );
 
     // Add the proton to the list of generated particles.
-    genParts.push_back( ToyGenParticle( PDGCode::p_plus, GenId::primaryProtonGun, pos, mom, time));
+    genParts.push_back( GenParticle( PDGCode::p_plus, GenId::primaryProtonGun, pos, mom, time));
 
     if ( _doHistograms ){
       _hKE->Fill(ekine);

@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.11 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: ParticleGun.cc,v 1.12 2011/05/18 22:01:46 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -12,18 +12,18 @@
 
 // Framework includes
 #include "art/Framework/Core/Run.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/ParticleGun.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "EventGenerator/inc/ParticleGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
+#include "LTrackerGeom/inc/LTracker.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
@@ -141,7 +141,7 @@ namespace mu2e {
   ParticleGun::~ParticleGun(){
   }
 
-  void ParticleGun::generate( ToyGenParticleCollection& genParts ){
+  void ParticleGun::generate( GenParticleCollection& genParts ){
 
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
     if ( _doHistograms ){
@@ -167,7 +167,7 @@ namespace mu2e {
       // Time
       double time = _tmin + _dt*_randFlat.fire();
 
-      genParts.push_back( ToyGenParticle( _pdgId, GenId::particleGun, pos, p4, time));
+      genParts.push_back( GenParticle( _pdgId, GenId::particleGun, pos, p4, time));
 
       cout << "Generated position: "
            << pos << " "

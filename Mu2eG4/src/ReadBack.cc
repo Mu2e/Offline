@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.44 2011/05/18 21:14:30 wb Exp $
+// $Id: ReadBack.cc,v 1.45 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -16,48 +16,48 @@
 // Framework includes.
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "Mu2eG4/src/ReadBack.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
-#include "ToyDP/inc/CaloCrystalHitCollection.hh"
-#include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
-#include "ToyDP/inc/DPIndexVector.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StatusG4.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConditionsService/inc/unknownPDGIdName.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
+#include "LTrackerGeom/inc/LTracker.hh"
+#include "Mu2eG4/src/ReadBack.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "ToyDP/inc/CaloCrystalHitCollection.hh"
+#include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
+#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ToyDP/inc/DPIndexVector.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StatusG4.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
 #include "G4Helper/inc/G4Helper.hh"
 
 
 // Root includes.
 #include "TDirectory.h"
+#include "TGraph.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TNtuple.h"
-#include "TGraph.h"
 
 // Other includes.
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -493,7 +493,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     event.getByLabel(_generatorModuleLabel,genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -599,7 +599,7 @@ namespace mu2e {
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
-          ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          GenParticle const& gen = genParticles->at(sim.generatorIndex());
           genId = gen.generatorId();
         }
       }
@@ -699,7 +699,7 @@ namespace mu2e {
             unknownPDGIdName(pdgId);
 
           // Information about generated particle.
-          ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          GenParticle const& gen = genParticles->at(sim.generatorIndex());
           GenId genId(gen.generatorId());
 
           // Physical volume in which this track started.
@@ -742,7 +742,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     event.getByLabel(_generatorModuleLabel,genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -852,7 +852,7 @@ namespace mu2e {
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
-          ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          GenParticle const& gen = genParticles->at(sim.generatorIndex());
           genId = gen.generatorId();
         }
       }
@@ -1044,7 +1044,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,_crvStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     event.getByLabel(_generatorModuleLabel,genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -1125,7 +1125,7 @@ namespace mu2e {
           // If this is a generated particle, which generator did it come from?
           // This default constructs to "unknown".
           if ( sim.fromGenerator() ){
-            ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+            GenParticle const& gen = genParticles->at(sim.generatorIndex());
             genId = gen.generatorId();
           }
 

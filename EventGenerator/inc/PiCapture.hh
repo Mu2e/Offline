@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.14 2011/05/18 02:27:15 wb Exp $
+// $Id: PiCapture.hh,v 1.15 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -16,15 +16,15 @@
 #include<memory>
 
 // Mu2e includes
+#include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // CLHEP includes
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandPoissonQ.h"
-#include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Random/RandExponential.h"
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward declarations outside of namespace mu2e.
 class TH1D;
@@ -43,7 +43,7 @@ namespace mu2e {
     PiCapture( art::Run& run, const SimpleConfig& config );
     virtual ~PiCapture();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

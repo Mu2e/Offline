@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Id: KalmanT01_module.cc,v 1.4 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -14,19 +14,19 @@
 //
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
 #include <string>
-#include <cmath>
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
@@ -36,21 +36,21 @@
 #include "TNtuple.h"
 
 // Mu2e includes.
-#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "KalmanTests/inc/printTrkParams.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/toHepPoint.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "Mu2eUtilities/inc/toHepPoint.hh"
-#include "KalmanTests/inc/printTrkParams.hh"
 
 // Babar Kalman filter includes
-#include "TrkBase/TrkHelixUtils.hh"
 #include "BField/BFieldFixed.hh"
+#include "TrkBase/TrkHelixUtils.hh"
 
 // Other includes.
 #include "CLHEP/Matrix/Vector.h"
@@ -156,9 +156,9 @@ namespace mu2e {
     event.getByLabel(_generatorModuleLabel,collectionName,points);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> gensHandle;
+    art::Handle<GenParticleCollection> gensHandle;
     event.getByType(gensHandle);
-    const ToyGenParticleCollection& gens = *gensHandle;
+    const GenParticleCollection& gens = *gensHandle;
 
     art::Handle<SimParticleCollection> simsHandle;
     event.getByType(simsHandle);

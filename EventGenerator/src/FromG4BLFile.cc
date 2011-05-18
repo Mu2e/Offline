@@ -1,10 +1,10 @@
 //
 // Read particles from a file in G4beamline input format.
-// Position of the ToyGenParticles is in the Mu2e coordinate system.
+// Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.17 2011/05/18 21:14:30 wb Exp $
+// $Id: FromG4BLFile.cc,v 1.18 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -43,15 +43,15 @@
 
 // Framework includes
 #include "art/Framework/Core/Run.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/FromG4BLFile.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "EventGenerator/inc/FromG4BLFile.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -62,8 +62,8 @@
 #include "TNtuple.h"
 
 // Other external includes.
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 using namespace std;
 
@@ -155,11 +155,11 @@ namespace mu2e {
   FromG4BLFile::~FromG4BLFile(){
   }
 
-  void FromG4BLFile::generate(ToyGenParticleCollection& genParts) {
+  void FromG4BLFile::generate(GenParticleCollection& genParts) {
     generate(genParts,0);
   }
 
-  void FromG4BLFile::generate( ToyGenParticleCollection& genParts, G4BeamlineInfoCollection *extra ){
+  void FromG4BLFile::generate( GenParticleCollection& genParts, G4BeamlineInfoCollection *extra ){
 
     // How many tracks in this event?
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
@@ -225,7 +225,7 @@ namespace mu2e {
       CLHEP::HepLorentzVector p4(px,py,pz,e);
 
       // Add particle to the output collection.
-      genParts.push_back( ToyGenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );
+      genParts.push_back( GenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );
 
       // Add extra information to the output collection.
       if( extra ) {

@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.6 2011/05/18 20:09:10 wb Exp $
+// $Id: NuclearCaptureGun.cc,v 1.7 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Gianni Onorato
 //
@@ -185,7 +185,7 @@ namespace mu2e {
 
 
 
-  void NuclearCaptureGun::generate( ToyGenParticleCollection& genParts ){
+  void NuclearCaptureGun::generate( GenParticleCollection& genParts ){
 
     // Choose the number of nuclear capture event to generate this event.
     long n = (_mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire());
@@ -233,7 +233,7 @@ namespace mu2e {
         CLHEP::HepLorentzVector mom(p3,e);
 
         // Add the particle to  the list.
-        genParts.push_back( ToyGenParticle(PDGCode::p_plus, GenId::nuclearCaptureGun, pos, mom, time));
+        genParts.push_back( GenParticle(PDGCode::p_plus, GenId::nuclearCaptureGun, pos, mom, time));
 
         // Fill histograms.
         if ( _doHistograms) {
@@ -263,7 +263,7 @@ namespace mu2e {
         CLHEP::HepLorentzVector mom(p3,e);
 
         // Add the particle to  the list.
-        genParts.push_back( ToyGenParticle(PDGCode::n0, GenId::nuclearCaptureGun, pos, mom, time));
+        genParts.push_back( GenParticle(PDGCode::n0, GenId::nuclearCaptureGun, pos, mom, time));
 
         // Fill histograms.
         if ( _doHistograms) {
@@ -291,7 +291,7 @@ namespace mu2e {
         CLHEP::HepLorentzVector mom(p3,e);
 
         // Add the particle to  the list.
-        genParts.push_back( ToyGenParticle(PDGCode::gamma, GenId::nuclearCaptureGun, pos, mom, time));
+        genParts.push_back( GenParticle(PDGCode::gamma, GenId::nuclearCaptureGun, pos, mom, time));
 
         // Fill histograms.
         if ( _doHistograms) {

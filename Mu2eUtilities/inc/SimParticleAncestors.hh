@@ -3,9 +3,9 @@
 //
 // Start with a SimParticle and trace its ancestry back to a generated particle.
 //
-// $Id: SimParticleAncestors.hh,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Id: SimParticleAncestors.hh,v 1.4 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 //
 
 #include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 
 namespace mu2e{
 
@@ -26,12 +26,12 @@ namespace mu2e{
 
     SimParticleAncestors( key_type key,
                           SimParticleCollection const& sims,
-                          ToyGenParticleCollection const & gens,
+                          GenParticleCollection const & gens,
                           int maxDepth=100);
 
     SimParticleAncestors( SimParticle const& sim,
                           SimParticleCollection const& sims,
-                          ToyGenParticleCollection const & gens,
+                          GenParticleCollection const & gens,
                           int maxDepth=100);
 
     // Compiler generated code is Ok for:
@@ -39,7 +39,7 @@ namespace mu2e{
 
     SimParticle    const& sim()         const {return *_sim;}
     SimParticle    const& originalSim() const {return *_sim0;}
-    ToyGenParticle const& originalGen() const {return *_gen0;}
+    GenParticle const& originalGen() const {return *_gen0;}
     int                   depth()       const {return _depth;}
 
   private:
@@ -51,7 +51,7 @@ namespace mu2e{
     // of the input particle; also the sim particle that comes
     // directly from the generated particle.
     SimParticle    const* _sim0;
-    ToyGenParticle const* _gen0;
+    GenParticle const* _gen0;
 
     // Number of generations from the generated particle to this one.
     int _depth;
@@ -61,7 +61,7 @@ namespace mu2e{
 
     // A helper function to do the work that is common to the several constructors.
     void construct( SimParticleCollection const& sims,
-                    ToyGenParticleCollection const & gens);
+                    GenParticleCollection const & gens);
   };
 
 } // end namespace mu2e

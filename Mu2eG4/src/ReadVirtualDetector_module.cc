@@ -1,37 +1,37 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+//  $Id: ReadVirtualDetector_module.cc,v 1.4 2011/05/18 22:01:46 wb Exp $
 //  $Author: wb $
-//  $Date: 2011/05/18 02:27:18 $
+//  $Date: 2011/05/18 22:01:46 $
 //
 // Original author Ivan Logashenko
 //
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
 #include <string>
-#include <cmath>
 
 // Framework includes.
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Persistency/Common/Handle.h"
+#include "cetlib/exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/G4BeamlineInfoCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "ToyDP/inc/G4BeamlineInfoCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 
 // Root includes.
 #include "TH1F.h"

@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.21 2011/05/18 20:09:10 wb Exp $
+// $Id: EjectedProtonGun.cc,v 1.22 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -125,7 +125,7 @@ namespace mu2e {
   EjectedProtonGun::~EjectedProtonGun(){
   }
 
-  void EjectedProtonGun::generate( ToyGenParticleCollection& genParts ){
+  void EjectedProtonGun::generate( GenParticleCollection& genParts ){
 
     // Choose the number of protons to generate this event.
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
@@ -159,7 +159,7 @@ namespace mu2e {
       mom.setE( e );
 
       // Add the particle to  the list.
-      genParts.push_back( ToyGenParticle(PDGCode::p_plus, GenId::ejectedProtonGun, pos, mom, time));
+      genParts.push_back( GenParticle(PDGCode::p_plus, GenId::ejectedProtonGun, pos, mom, time));
 
       // Fill histograms.
       if ( _doHistograms) {

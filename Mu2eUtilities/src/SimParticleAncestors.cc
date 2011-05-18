@@ -1,9 +1,9 @@
 //
 // Start with a SimParticle and trace its ancestry back to a generated particle.
 //
-// $Id: SimParticleAncestors.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Id: SimParticleAncestors.cc,v 1.4 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@ namespace mu2e{
 
   SimParticleAncestors::SimParticleAncestors( key_type trackId,
                                               SimParticleCollection const& sims,
-                                              ToyGenParticleCollection const & gens,
+                                              GenParticleCollection const & gens,
                                               int maxDepth):
     _sim(&sims.at(trackId)),
     _depth(0),
@@ -32,7 +32,7 @@ namespace mu2e{
 
   SimParticleAncestors::SimParticleAncestors( SimParticle const& sim,
                                               SimParticleCollection const& sims,
-                                              ToyGenParticleCollection const & gens,
+                                              GenParticleCollection const & gens,
                                               int maxDepth):
     _sim(&sim),
     _depth(0),
@@ -44,7 +44,7 @@ namespace mu2e{
 
 
   void SimParticleAncestors::construct( SimParticleCollection const& sims,
-                                        ToyGenParticleCollection const & gens){
+                                        GenParticleCollection const & gens){
 
     SimParticle const * s(_sim);
     while ( s->hasParent()){

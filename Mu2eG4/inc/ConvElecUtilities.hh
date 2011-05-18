@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.8 2011/05/18 02:27:17 wb Exp $
+// $Id: ConvElecUtilities.hh,v 1.9 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Gianni Onorato
 //
@@ -10,12 +10,12 @@
 #define Mu2eG4_ConvElecUtilities_hh
 
 // C++ includes
+#include <cstdlib>
+#include <map>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
-#include <map>
-#include <cstdlib>
-#include <memory>
 
 // Framework includes
 #include "art/Framework/Core/Event.h"
@@ -24,9 +24,9 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // Mu2e includes
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 
@@ -55,7 +55,7 @@ namespace mu2e {
     StepPointMC const& firstHit();
     StrawIndex earliestStrawIndex() const;
     const SimParticle& simConvElec() const;
-    const ToyGenParticle& genConvElec();
+    const GenParticle& genConvElec();
 
 
     //Trivial accessors defined here
@@ -87,7 +87,7 @@ namespace mu2e {
     void lookAtHits(const art::Event & event);
     int _nconv;
     art::Handle<SimParticleCollection> _simParticles;
-    art::Handle<ToyGenParticleCollection> _genParticles;
+    art::Handle<GenParticleCollection> _genParticles;
     art::Handle<StepPointMCCollection> hits;
     std::vector<size_t> _convElecHits;
     std::vector<StrawIndex> _convElecStrawIdx;

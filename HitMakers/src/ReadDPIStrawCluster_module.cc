@@ -12,18 +12,18 @@
 // For all three cases estimate Pt,Pz of the conversion electron by performing
 // a simple circle/sinus fit.
 //
-// $Id: ReadDPIStrawCluster_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
+// $Id: ReadDPIStrawCluster_module.cc,v 1.5 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author: Hans Wenzel
 //
 //=============================================================================
 // C++ includes
-#include <iostream>
-#include <string>
 #include <cmath>
+#include <iostream>
 #include <map>
+#include <string>
 #include <utility>
 
 #include "CLHEP/Vector/TwoVector.h"
@@ -31,45 +31,45 @@
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
 #include "art/Persistency/Provenance/Provenance.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
+#include "TF1.h"
 #include "TFile.h"
+#include "TGraphErrors.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TF1.h"
-#include "TNtuple.h"
-#include "TGraphErrors.h"
 #include "TMath.h"
 #include "TMinuit.h"
+#include "TNtuple.h"
 
 // Mu2e includes.
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "CDFTrajectory/inc/Helix.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "Mu2eG4/inc/ConvElecUtilities.hh"
+#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
+#include "Mu2eUtilities/inc/resolveDPIndices.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/GenId.hh"
+#include "ToyDP/inc/GenParticle.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/StatusG4.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "Mu2eG4/inc/ConvElecUtilities.hh"
-#include "ToyDP/inc/StatusG4.hh"
-#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
-#include "ToyDP/inc/ToyGenParticle.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/GenId.hh"
-#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
-#include "CDFTrajectory/inc/Helix.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 using namespace std;
 
 namespace mu2e {;
@@ -542,7 +542,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     evt.getByType(genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -580,7 +580,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
         if (simInfo.simParticle().generatorIndex()>=0)
           {
-            const ToyGenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
+            const GenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
             if (genpar.generatorId()== GenId::conversionGun)
               {
                 nt[PGENX]=genpar.momentum().getX();

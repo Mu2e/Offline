@@ -1,9 +1,9 @@
 //
 //  The first example of a producer.
 //
-//  $Id: HelloProducer_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+//  $Id: HelloProducer_module.cc,v 1.4 2011/05/18 22:01:46 wb Exp $
 //  $Author: wb $
-//  $Date: 2011/05/18 02:27:16 $
+//  $Date: 2011/05/18 22:01:46 $
 //
 //  Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 
 using namespace std;
 
@@ -26,7 +26,7 @@ namespace mu2e {
 
   public:
     explicit HelloProducer(fhicl::ParameterSet const& pset){
-      produces<ToyGenParticleCollection>();
+      produces<GenParticleCollection>();
     }
 
     void produce( art::Event& event);
@@ -37,13 +37,13 @@ namespace mu2e {
 
   void HelloProducer::produce( art::Event& event){
 
-    auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);
+    auto_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
 
     CLHEP::Hep3Vector position(0.,0.,0.);
     CLHEP::HepLorentzVector momentum(50.,0.,0.,50.);
     double time(0.);
 
-    genParticles->push_back( ToyGenParticle( PDGCode::gamma,
+    genParticles->push_back( GenParticle( PDGCode::gamma,
                                              GenId::particleGun,
                                              position,
                                              momentum,

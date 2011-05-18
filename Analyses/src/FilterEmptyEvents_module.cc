@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+$Id: FilterEmptyEvents_module.cc,v 1.4 2011/05/18 22:01:45 wb Exp $
 $Author: wb $
-$Date: 2011/05/18 02:27:14 $
+$Date: 2011/05/18 22:01:45 $
 
 Original author Giovanni Onorato
 
@@ -19,25 +19,25 @@ Original author Giovanni Onorato
 
 // C++ includes
 #include <cassert>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 // Framework includes
-#include "art/Framework/Core/Event.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "art/Persistency/Common/Handle.h"
 //#include <boost/shared_ptr.hpp>
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "fhiclcpp/ParameterSet.h"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/StrawHitCollection.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 
 using namespace std;
@@ -94,7 +94,7 @@ namespace mu2e {
     _hasTHits = (hits->size()>0);
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     e.getByType(genParticles);
 
     if (!_hasTHits) {

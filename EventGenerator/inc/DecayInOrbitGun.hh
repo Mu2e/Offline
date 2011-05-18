@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.15 2011/05/18 02:27:15 wb Exp $
+// $Id: DecayInOrbitGun.hh,v 1.16 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 //
 
@@ -16,10 +16,10 @@
 #include "art/Framework/Core/Run.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
+#include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/DIOShankerWanatabe.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -41,7 +41,7 @@ namespace mu2e {
     DecayInOrbitGun( art::Run& run, const SimpleConfig& config );
     virtual ~DecayInOrbitGun();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

@@ -7,18 +7,18 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.12 2011/05/18 02:27:15 wb Exp $
+// $Id: ConversionGun.hh,v 1.13 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 
 // C++ includes
 #include <memory>
 
 // Mu2e includes
+#include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "EventGenerator/inc/FoilParticleGenerator.hh"
 
 // Forward declarations in other namespaces.
 namespace art {
@@ -41,7 +41,7 @@ namespace mu2e {
     ConversionGun( art::Run& run, const SimpleConfig& config );
     virtual ~ConversionGun();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.26 2011/05/18 20:09:10 wb Exp $
+// $Id: DecayInOrbitGun.cc,v 1.27 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -140,7 +140,7 @@ namespace mu2e {
   DecayInOrbitGun::~DecayInOrbitGun(){
   }
 
-  void DecayInOrbitGun::generate( ToyGenParticleCollection& genParts ){
+  void DecayInOrbitGun::generate( GenParticleCollection& genParts ){
     // Choose the number of electrons to generate this event.
     long n = (_mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire());
 
@@ -173,7 +173,7 @@ namespace mu2e {
       CLHEP::HepLorentzVector mom(p3,e);
 
       // Add the particle to  the list.
-      genParts.push_back( ToyGenParticle( PDGCode::e_minus, GenId::dio1, pos, mom, time));
+      genParts.push_back( GenParticle( PDGCode::e_minus, GenId::dio1, pos, mom, time));
 
       if( _doHistograms ){
         _hEElec    ->Fill( e );

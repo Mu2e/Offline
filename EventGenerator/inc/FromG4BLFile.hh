@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.9 2011/05/18 02:27:15 wb Exp $
+// $Id: FromG4BLFile.hh,v 1.10 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -20,8 +20,8 @@
 #include "ToyDP/inc/G4BeamlineInfoCollection.hh"
 
 // External includes
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 // Forward references.
 namespace art{
@@ -41,8 +41,8 @@ namespace mu2e {
     FromG4BLFile( art::Run const& run, const SimpleConfig& config );
     virtual ~FromG4BLFile();
 
-    virtual void generate( ToyGenParticleCollection&  );
-    void generate( ToyGenParticleCollection& , G4BeamlineInfoCollection*  );
+    virtual void generate( GenParticleCollection&  );
+    void generate( GenParticleCollection& , G4BeamlineInfoCollection*  );
 
   private:
 

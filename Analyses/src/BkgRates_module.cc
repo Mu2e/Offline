@@ -1,23 +1,23 @@
 // C++ includes
-#include <iostream>
-#include <string>
 #include <cmath>
 #include <deque>
-#include <map>
+#include <iostream>
 #include <list>
+#include <map>
 #include <memory>
+#include <string>
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
 #include "art/Persistency/Provenance/Provenance.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes.
 #include "TFile.h"
@@ -26,27 +26,27 @@
 #include "TNtuple.h"
 
 // Mu2e includes.
-#include "GeometryService/inc/GeometryService.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
 #include "ITrackerGeom/inc/Cell.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
+#include "Mu2eUtilities/inc/MCCaloUtilities.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "Mu2eUtilities/inc/MCCaloUtilities.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "ToyDP/inc/CaloHitCollection.hh"
+#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
+#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/StrawHitCollection.hh"
+#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
+#include "TrackerGeom/inc/Straw.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 // Other external includes
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -313,7 +313,7 @@ namespace mu2e {
     }
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     evt.getByType(genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -527,7 +527,7 @@ namespace mu2e {
              << "first one will be stored" << endl;
       }
       if (ngen > 0) {
-        ToyGenParticle const& gen = genParticles->at(0);
+        GenParticle const& gen = genParticles->at(0);
         tntpArray[idx++] = gen.generatorId().Id();
         tntpArray[idx++] = gen.momentum().vect().mag();
         tntpArray[idx++] = gen.momentum().e();
@@ -594,7 +594,7 @@ namespace mu2e {
     }
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     evt.getByType(genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -790,7 +790,7 @@ namespace mu2e {
              << "first one will be stored" << endl;
       }
       if (ngen > 0) {
-        ToyGenParticle const& gen = genParticles->at(0);
+        GenParticle const& gen = genParticles->at(0);
         tntpArray[idx++] = gen.generatorId().Id();
         tntpArray[idx++] = gen.momentum().vect().mag();
         tntpArray[idx++] = gen.momentum().e();
@@ -869,7 +869,7 @@ namespace mu2e {
 
 
     // Get handles to the generated and simulated particles.
-    art::Handle<ToyGenParticleCollection> genParticles;
+    art::Handle<GenParticleCollection> genParticles;
     evt.getByType(genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
@@ -1060,7 +1060,7 @@ namespace mu2e {
                << "first one will be stored" << endl;
         }
         if (ngen > 0) {
-          ToyGenParticle const& gen = genParticles->at(0);
+          GenParticle const& gen = genParticles->at(0);
           cntpArray[idx++] = gen.generatorId().Id();
           cntpArray[idx++] = gen.momentum().vect().mag();
           cntpArray[idx++] = gen.momentum().e();

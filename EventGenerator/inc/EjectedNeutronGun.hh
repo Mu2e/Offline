@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.5 2011/05/18 02:27:15 wb Exp $
+// $Id: EjectedNeutronGun.hh,v 1.6 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 22:01:46 $
 //
 //
 
@@ -16,13 +16,13 @@
 #include <memory>
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "EventGenerator/inc/GeneratorBase.hh"
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
+#include "EventGenerator/inc/GeneratorBase.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // CLHEP includes
-#include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward declarations outside of namespace mu2e
 class TH1D;
@@ -41,7 +41,7 @@ namespace mu2e {
     EjectedNeutronGun( art::Run& run, const SimpleConfig& config );
     virtual ~EjectedNeutronGun();
 
-    virtual void generate( ToyGenParticleCollection&  );
+    virtual void generate( GenParticleCollection&  );
 
   private:
 

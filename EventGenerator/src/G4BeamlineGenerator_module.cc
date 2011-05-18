@@ -12,24 +12,24 @@
 
 // C++ includes.
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
 // Framework includes.
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "ToyDP/inc/GenId.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
 #include "ToyDP/inc/G4BeamlineInfoCollection.hh"
+#include "ToyDP/inc/GenId.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/FromG4BLFile.hh"
@@ -49,7 +49,7 @@ namespace mu2e {
       _configfile(pSet.get<std::string>("inputfile","generatorconfig.txt"))
     {
       // A placeholder until I make a real data product.
-      produces<ToyGenParticleCollection>();
+      produces<GenParticleCollection>();
       produces<G4BeamlineInfoCollection>();
 
       // Print generators for which Id's are defined.
@@ -116,7 +116,7 @@ namespace mu2e {
   G4BeamlineGenerator::produce(art::Event& evt) {
 
     // Make the collection to hold the output.
-    auto_ptr<ToyGenParticleCollection> genParticles(new ToyGenParticleCollection);
+    auto_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
     auto_ptr<G4BeamlineInfoCollection> extraData(new G4BeamlineInfoCollection);
 
     _generator->generate(*genParticles,&(*extraData));

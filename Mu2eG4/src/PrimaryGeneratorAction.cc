@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.21 2011/05/18 02:27:18 wb Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.22 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author Rob Kutschke
 //
@@ -18,28 +18,28 @@
 
 // Framework includes
 #include "art/Framework/Core/Event.h"
-#include "art/Persistency/Common/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // G4 Includes
 #include "G4Event.hh"
+#include "G4ParticleDefinition.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
 #include "Randomize.hh"
 #include "globals.hh"
 
 // Mu2e includes
-#include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/DetectorConstruction.hh"
-#include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
+#include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
+#include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 
 // ROOT includes
 #include "TH1D.h"
@@ -91,7 +91,7 @@ namespace mu2e {
     G4RotationMatrix const& primaryProtonGunRotation = _world->getPrimaryProtonGunRotation();
 
     // Get generated particles from the event.
-    art::Handle<ToyGenParticleCollection> handle;
+    art::Handle<GenParticleCollection> handle;
     _event->getByLabel(_generatorModuleLabel,handle);
 
     // Fill multiplicity histogram.
@@ -100,7 +100,7 @@ namespace mu2e {
     // For each generated particle, add it to the event.
     for ( unsigned int i=0; i<handle->size(); ++i){
 
-      ToyGenParticle const& genpart = (*handle)[i];
+      GenParticle const& genpart = (*handle)[i];
 
       // Transform from generator coordinate system G4 world coordinate system.
       G4ThreeVector      pos(genpart.position());

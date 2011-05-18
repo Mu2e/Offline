@@ -2,40 +2,40 @@
 // c++ (not cint) Root "script" to make some plots based on a root example
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.8 2011/05/18 02:27:19 wb Exp $
+// $Id: Analyzer.C,v 1.9 2011/05/18 22:01:46 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/18 22:01:46 $
 //
 // Original author KLG
 //
 
 
+#include <TFile.h>
 #include <TROOT.h>
 #include <TSystem.h>
-#include <TFile.h>
 
 #include <Cintex/Cintex.h>
 
-#include <TH1.h>
-#include <TStyle.h>
-#include <TString.h>
 #include <TCanvas.h>
+#include <TH1.h>
+#include <TString.h>
+#include <TStyle.h>
 #include <TTree.h>
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "art/Persistency/Common/Wrapper.h"
 #include "art/Framework/Core/Event.h"
+#include "art/Persistency/Common/Wrapper.h"
 
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
 #include "LTrackerGeom/inc/LTracker.hh"
 
@@ -319,7 +319,7 @@ void Analyzer::analyze() {
   // Br    3 :mu2eRandomEngineStates_randomsaver__G4Test03.obj :
   // Br    9 :mu2eSimParticles_g4run__G4Test03.obj :
   // Br   41 :mu2eStepPointMCs_g4run__G4Test03.obj :
-  // Br   55 :mu2eToyGenParticles_generate__G4Test03.obj :
+  // Br   55 :mu2eGenParticles_generate__G4Test03.obj :
 
   // Br    3 :mu2ePhysicalVolumeInfos_g4run__G4Test03.obj :
 
@@ -330,7 +330,7 @@ void Analyzer::analyze() {
 
   TString SimParticleBranchName       ("mu2eSimParticles_g4run__G4Test03"); // simParticles / Events tree
   TString StepPointMCBranchName       ("mu2eStepPointMCs_g4run__G4Test03"); // hits / Events tree
-  TString ToyGenParticleBranchName    ("mu2eToyGenParticles_generate__G4Test03"); // genParticles / Events tree
+  TString GenParticleBranchName       ("mu2eGenParticles_generate__G4Test03"); // genParticles / Events tree
   TString PhysicalVolumeInfoBranchName("mu2ePhysicalVolumeInfos_g4run__G4Test03"); // volumes / Runs tree
 
   // we should create a class/struct for all data needed for one wrapped type
@@ -347,8 +347,8 @@ void Analyzer::analyze() {
     new art::Wrapper<mu2e::SimParticleCollection>();
   art::Wrapper<mu2e::StepPointMCCollection>* StepPointMCWrppd =
     new art::Wrapper<mu2e::StepPointMCCollection>();
-  art::Wrapper<mu2e::ToyGenParticleCollection>* ToyGenParticleWrppd =
-    new art::Wrapper<mu2e::ToyGenParticleCollection>();
+  art::Wrapper<mu2e::GenParticleCollection>* GenParticleWrppd =
+    new art::Wrapper<mu2e::GenParticleCollection>();
   art::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd =
     new art::Wrapper<mu2e::PhysicalVolumeInfoCollection>();
 
@@ -366,8 +366,8 @@ void Analyzer::analyze() {
   EventsTree->SetBranchAddress(SimParticleBranchName+".",&SimParticleWrppd);
   EventsTree->SetBranchStatus(StepPointMCBranchName+"*",1);
   EventsTree->SetBranchAddress(StepPointMCBranchName+".",&StepPointMCWrppd);
-  EventsTree->SetBranchStatus(ToyGenParticleBranchName+"*",1);
-  EventsTree->SetBranchAddress(ToyGenParticleBranchName+".",&ToyGenParticleWrppd);
+  EventsTree->SetBranchStatus(GenParticleBranchName+"*",1);
+  EventsTree->SetBranchAddress(GenParticleBranchName+".",&GenParticleWrppd);
 
   RunsTree->SetBranchStatus(PhysicalVolumeInfoBranchName+"*",1);
   RunsTree->SetBranchAddress(PhysicalVolumeInfoBranchName+".",&PhysicalVolumeInfoWrppd);
@@ -401,8 +401,8 @@ void Analyzer::analyze() {
         SimParticleWrppd->product()->at(zero).endPosition().x() << endl;
       cout << "Event i " << i << " StepPointMC    _position.dx "
            << StepPointMCWrppd->product()->at(0).position().x() << endl;
-      cout << "Event i " << i << " ToyGenParticle _position.dx "
-           << ToyGenParticleWrppd->product()->at(0)._position.x() << endl;
+      cout << "Event i " << i << " GenParticle _position.dx "
+           << GenParticleWrppd->product()->at(0)._position.x() << endl;
 
       cout << "Size of StepPointMCWrppd->product() " << StepPointMCWrppd->product()->size() << endl;
 
@@ -410,7 +410,7 @@ void Analyzer::analyze() {
 
 //     doLTracker(EventAuxiliaryWrppd,
 //                StepPointMCWrppd,
-//                ToyGenParticleWrppd,
+//                GenParticleWrppd,
 //                SimParticleWrppd,
 //                PhysicalVolumeInfoWrppd);
 
@@ -418,7 +418,7 @@ void Analyzer::analyze() {
 
 // void Analyzer::doLTracker(art::EventAuxiliary*                              EventAuxiliaryWrppd,
 //                           art::Wrapper<mu2e::StepPointMCCollection>*        StepPointMCWrppd,
-//                           art::Wrapper<mu2e::ToyGenParticleCollection>*     ToyGenParticleWrppd,
+//                           art::Wrapper<mu2e::GenParticleCollection>*        GenParticleWrppd,
 //                           art::Wrapper<mu2e::SimParticleCollection>*        SimParticleWrppd,
 //                           art::Wrapper<mu2e::PhysicalVolumeInfoCollection>* PhysicalVolumeInfoWrppd
 //                           ){
@@ -426,7 +426,7 @@ void Analyzer::analyze() {
     // "aliases/handles"
     art::EventAuxiliary                const & event        = *EventAuxiliaryWrppd;
     mu2e::StepPointMCCollection        const * hits         = StepPointMCWrppd->product();
-    mu2e::ToyGenParticleCollection     const * genParticles = ToyGenParticleWrppd->product();
+    mu2e::GenParticleCollection     const * genParticles    = GenParticleWrppd->product();
     mu2e::SimParticleCollection        const * simParticles = SimParticleWrppd->product();
     mu2e::PhysicalVolumeInfoCollection const * volumes      = PhysicalVolumeInfoWrppd->product();
 
@@ -490,7 +490,7 @@ void Analyzer::analyze() {
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
-          mu2e::ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+          mu2e::GenParticle const& gen = genParticles->at(sim.generatorIndex());
           genId = gen._generatorId;
         }
       }
@@ -579,7 +579,7 @@ void Analyzer::analyze() {
     //         int pdgId = sim.pdgId();
 
     //         // Information about generated particle.
-    //         ToyGenParticle const& gen = genParticles->at(sim.generatorIndex());
+    //         GenParticle const& gen = genParticles->at(sim.generatorIndex());
     //         GenId genId(gen._generatorId);
 
     //         // Physical volume in which this track started.
