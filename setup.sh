@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.20 2011/05/18 19:10:32 kutschke Exp $
+# $Id: setup.sh,v 1.21 2011/05/18 21:25:52 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/18 19:10:32 $
+# $Date: 2011/05/18 21:25:52 $
 #
 # Original author Rob Kutschke
 #
@@ -70,7 +70,7 @@ source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 
 # Build the symlink directories for the BaBar code.
 # Only do so if the BaBar package is checked out locally.
-if [  -f "./BaBar/makeInclude.csh" ]
+if [  -f "./BaBar/makeInclude.sh" ]
 then
-  ./BaBar/makeInclude.csh
+  ./BaBar/makeInclude.sh
 fi
