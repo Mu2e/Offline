@@ -1,0 +1,90 @@
+# Configuration file for Kalman tests - run enough events towith lots
+# get stats in histograms.
+#
+# $Id: test02.fcl,v 1.1 2011/05/18 22:04:42 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/18 22:04:42 $
+
+#include "minimalMessageService.fcl"
+#include "standardProducer.fcl"
+
+# Give this job a name.
+process : KalmanTest02
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 200
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService :
+  {
+    fileName : "kalmantest_02.root"
+  }
+
+  RandomNumberGeneratorService : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+
+    # Generate Event
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/genconfig_01.txt"
+    }
+
+    # Run G4 and add hits to the event
+    g4run :
+    {
+      module_type          : G4
+      generatorModuleLabel : generate
+      seed                 : [9877]
+    }
+
+  }
+
+
+  analyzers:
+  {
+
+    kalmanTest:
+    {
+      module_type   : kalmanT01
+      diagLevel     : 2
+      maxFullPrint  : 1
+    }
+
+  }
+
+  p1 : [generate , g4run]
+  e1 : [kalmanTest]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
