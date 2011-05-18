@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.5 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: EjectedNeutronGun.cc,v 1.6 2011/05/18 05:04:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 05:04:48 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -20,7 +20,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
-#include "art/ParameterSet/FileInPath.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
@@ -33,6 +32,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/FileInPath.hh"
 
 // General Utilities
 #include "GeneralUtilities/inc/pow.hh"
@@ -64,10 +64,10 @@ namespace mu2e {
     _czmax(config.getDouble("ejectedNeutronGun.czmax",  1.)),
     _phimin(config.getDouble("ejectedNeutronGun.phimin", 0. )),
     _phimax(config.getDouble("ejectedNeutronGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.get<bool>("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.get<bool>("conversionGun.pPulseDelay", true)),
-    _nbins(config.get<int>("ejectedNeutronGun.nbins",200)),
-    _doHistograms(config.get<bool>("ejectedNeutronGun.doHistograms",true)),
+    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
+    _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
 
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
@@ -196,7 +196,7 @@ namespace mu2e {
   std::vector<double> EjectedNeutronGun::binnedEnergySpectrum(){
 
     vector<double> neutronSpectrum;;
-    art::FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
+    FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
     string NeutronFileFIP = spectrumFileName.fullPath();
     fstream infile(NeutronFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
