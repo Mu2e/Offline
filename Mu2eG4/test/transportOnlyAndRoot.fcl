@@ -1,11 +1,12 @@
 # Variant of g4test_03 but with transport only.
 #
 #
-# $Id: transportOnlyAndRoot.fcl,v 1.1 2011/05/18 16:37:38 onoratog Exp $
+# $Id: transportOnlyAndRoot.fcl,v 1.2 2011/05/18 20:55:36 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/05/18 16:37:38 $
+# $Date: 2011/05/18 20:55:36 $
 
 #include "minimalMessageService.fcl"
+#include "standardProducer.fcl"
 
 # Give this job a name.
 process : transportAndRoot

@@ -8,11 +8,12 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.3 2011/05/18 16:37:38 onoratog Exp $
+# $Id: g4test_03.fcl,v 1.4 2011/05/18 20:55:36 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/05/18 16:37:38 $
+# $Date: 2011/05/18 20:55:36 $
 
 #include "minimalMessageService.fcl"
+#include "standardProducer.fcl"
 
 # Give this job a name.
 process : G4Test03
@@ -92,35 +93,14 @@ physics :
     }
 
     # Form StrawHits (SH).
-    makeSH :
-    {
-      module_type          : MakeStrawHit
-      g4ModuleLabel        : g4run
-      seed                 : [7790]
-      diagLevel            : 0
-      maxFullPrint         : 5
-    }
+    makeSH : @local::makeSH
 
     # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker :
-    {
-      module_type          : MakeCaloReadoutHits
-      diagLevel            : 0
-      maxFullPrint         : 201
-      g4ModuleLabel        : g4run
-    }
+    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
-    CaloCrystalHitsMaker :
-    {
-      module_type          : MakeCaloCrystalHits
-      diagLevel            : 0
-      maxFullPrint         : 201
-      g4ModuleLabel        : g4run
-      minimumEnergy        : 0.0
-      maximumEnergy        : 1000.0
-      minimumTimeGap       : 100.0
-    }
+    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+
   }
 
 
