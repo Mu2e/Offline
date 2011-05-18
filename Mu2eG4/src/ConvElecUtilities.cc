@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.cc,v 1.7 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: ConvElecUtilities.cc,v 1.8 2011/05/18 05:02:32 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 05:02:32 $
 //
 // Original author Gianni Onorato
 //
@@ -9,13 +9,10 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/ParameterSet/FileInPath.h"
 #include "art/Utilities/Exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConvElecUtilities.hh"
-
-
 
 using namespace std;
 
