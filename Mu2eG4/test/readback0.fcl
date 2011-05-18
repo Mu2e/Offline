@@ -1,0 +1,69 @@
+# First example of accessing Mu2e data.
+#
+# Read back the output of g4test_03.py; make a few histograms.
+#
+# $Id: readback0.fcl,v 1.1 2011/05/18 16:37:38 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/18 16:37:38 $
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.  
+process : ReadBack00
+
+# Start form an empty source
+source : 
+{ 
+  module_type : RootInput
+  fileNames   : "data_03.root"
+  maxEvents : -1
+}
+
+services : 
+{
+  message : @local::default_message 
+
+  TFileService : 
+  {
+    fileName : "readback0.root"
+  }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01"
+    }  
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {  }
+
+
+  analyzers:
+  {
+
+    checkhits:
+    {
+      module_type          : ReadBack0
+      minumumEnergy        : 0.001
+    }
+
+  }
+
+  e1 : [checkhits]
+
+  end_paths      : [e1]
+
+}
+

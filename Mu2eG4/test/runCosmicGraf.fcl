@@ -1,11 +1,5 @@
-# Configuration file for G4Test02
-#
-#  - Generate 10 events including one conversion electron plus
-#    some number of background processes.
-#  - Run these through G4.
-#  - Event display with yz view.
-#
-# $Id: g4test_02.fcl,v 1.3 2011/05/18 16:37:38 onoratog Exp $
+##
+# $Id: runCosmicGraf.fcl,v 1.1 2011/05/18 16:37:38 onoratog Exp $
 # $Author: onoratog $
 # $Date: 2011/05/18 16:37:38 $
 
@@ -32,11 +26,19 @@ services :
 
   RandomNumberGeneratorService : { }
 
+# Uncomment to enable memory use profiling
+# SimpleMemoryCheck :
+# {
+#   oncePerEventMode : false
+#   showMallocInfo   : false
+#   ignoreTotal      : 5
+#)
+
   user :
   {
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
+      inputFile : "Mu2eG4/test/geom_cosmic.txt"
     }
 
     ConditionsService :
@@ -59,7 +61,7 @@ physics :
     generate:
     {
       module_type   : EventGenerator
-      inputfile     : "Mu2eG4/test/genconfig_02.txt"
+      inputfile     : "Mu2eG4/test/cosmicconfig_01.txt"
     }
 
     # Run G4 and add hits to the event
@@ -79,21 +81,18 @@ physics :
 
     checkhits:
     {
-      module_type          : ReadBack
-      generatorModuleLabel : generate
+      module_type          : CosmicTuple
       g4ModuleLabel        : g4run
-      minumumEnergy        : 0.001
-      maxFullPrint         : 5
+      minumumEnergy        : 0.001      
     }
 
   }
 
-  p1 : [generate , g4run ]
+  p1 : [generate , g4run]
   e1 : [checkhits]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
 
 }
-
 

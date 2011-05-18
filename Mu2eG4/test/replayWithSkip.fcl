@@ -1,24 +1,21 @@
-# Configuration file for G4Test02
+# Same as replayAll.py, except skip the first 10 events.
 #
-#  - Generate 10 events including one conversion electron plus
-#    some number of background processes.
-#  - Run these through G4.
-#  - Event display with yz view.
-#
-# $Id: g4test_02.fcl,v 1.3 2011/05/18 16:37:38 onoratog Exp $
+# $Id: replayWithSkip.fcl,v 1.1 2011/05/18 16:37:38 onoratog Exp $
 # $Author: onoratog $
 # $Date: 2011/05/18 16:37:38 $
 
 #include "minimalMessageService.fcl"
 
 # Give this job a name.
-process : G4Test02
+process : replayAll
 
 # Start form an empty source
 source :
 {
-  module_type : EmptyEvent
-  maxEvents : 10
+  module_type : RootInput
+  fileNames   : "drop_03.root"
+  maxEvents   : -1
+  skipEvents  : 10
 }
 
 services :
@@ -27,16 +24,19 @@ services :
 
   TFileService :
   {
-    fileName : "g4test_02.root"
+    fileName : "replayWithSkip.root"
   }
 
-  RandomNumberGeneratorService : { }
+  RandomNumberGeneratorService : 
+  {
+    restoreStateLabel :  randomsaver 
+  }
 
   user :
   {
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
+      inputFile : "Mu2eG4/test/geom_01"
     }
 
     ConditionsService :
@@ -67,8 +67,6 @@ physics :
     {
       module_type          : G4
       generatorModuleLabel : generate
-      visMacro             : "Mu2eG4/test/visyz.mac"
-      seed                 : [9877]
     }
 
   }
@@ -77,23 +75,34 @@ physics :
   analyzers:
   {
 
-    checkhits:
+    checkhits2:
     {
       module_type          : ReadBack
       generatorModuleLabel : generate
       g4ModuleLabel        : g4run
-      minumumEnergy        : 0.001
-      maxFullPrint         : 5
+      minumumEnergy        : 0.000
+      maxFullPrint         : 201
     }
 
   }
 
   p1 : [generate , g4run ]
-  e1 : [checkhits]
+  e1 : [checkhits, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
 
 }
 
+outputs:
+{
+
+  outfile :
+  {
+    module_type   :   RootOutput
+    filename      :   "replayWithSkipData.root"
+    fastCloning   :   false
+  }
+
+}
 

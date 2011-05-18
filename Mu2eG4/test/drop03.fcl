@@ -1,0 +1,52 @@
+# Read the output file from g4test_03.py and rewrite it,
+# keeping only the random number state.
+#
+# $Id: drop03.fcl,v 1.1 2011/05/18 16:37:38 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/18 16:37:38 $
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.  
+process : Drop03
+
+# Start form an empty source
+source : 
+{ 
+  module_type : RootInput
+  fileNames   : "data_03.root"
+  maxEvents : -1
+}
+
+services : 
+{
+  message : @local::default_message 
+
+}
+
+physics :
+{
+  producers:
+  {  }
+
+
+  analyzers:
+  { }
+
+
+  e1 : [outfile]
+
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+
+  outfile:
+  {
+    module_type     : RootOutput
+    filename        : "drop_03.root"
+    outputCommands  : ["drop *_*_*_*" , "keep *_randomsaver_*_*"
+  }
+}

@@ -1,0 +1,72 @@
+# Configuration file for Readback
+#
+# Readback the output of g4test_03.py; make histograms and printout.
+#
+# $Id: readback.fcl,v 1.1 2011/05/18 16:37:38 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/18 16:37:38 $
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.  
+process : ReadBack01
+
+# Start form an empty source
+source : 
+{ 
+  module_type : RootInput
+  fileNames   : "data_03.root"
+  maxEvents : -1
+}
+
+services : 
+{
+  message : @local::default_message 
+
+  TFileService : 
+  {
+    fileName : "readback.root"
+  }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01"
+    }  
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {  }
+
+
+  analyzers:
+  {
+
+    checkhits:
+    {
+      module_type          : ReadBack
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      minumumEnergy        : 0.001
+      maxFullPrint         : 201
+    }
+
+  } 
+
+  e1 : [checkhits]
+
+  end_paths      : [e1]
+
+}
+

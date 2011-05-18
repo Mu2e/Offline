@@ -1,15 +1,18 @@
-# Configuration file for G4Test04
+# Configuration file for runCosmic.py
+#  - Generate N cosmic events (no other processes)
+#  - Run these through G4.
+#  - No event display.
+#  - Write event data to an output file
+#  - Save state of random numbers to the event-data output file
 #
-# Similar to g4test_03.py but do fewer events and do not make the output file.
-#
-# $Id: g4test_04.fcl,v 1.3 2011/05/18 16:37:38 onoratog Exp $
+# $Id: runCosmic.fcl,v 1.1 2011/05/18 16:37:38 onoratog Exp $
 # $Author: onoratog $
 # $Date: 2011/05/18 16:37:38 $
 
 #include "minimalMessageService.fcl"
 
 # Give this job a name.
-process : G4Test04
+process : RunCosmic
 
 # Start form an empty source
 source :
@@ -24,7 +27,7 @@ services :
 
   TFileService :
   {
-    fileName : "g4test_04.root"
+    fileName : "cosmic/cosmic.root"
   }
 
   RandomNumberGeneratorService : { }
@@ -41,7 +44,7 @@ services :
   {
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01"
+      inputFile : "Mu2eG4/test/geom_cosmic.txt"
     }
 
     ConditionsService :
@@ -57,9 +60,6 @@ services :
 #    useJobReport : true
 #   }
 
-# Uncomment to enable trace printout to show what the framework calls when.
-#   Tracer : { }
-
   }
 
 }
@@ -73,8 +73,7 @@ physics :
     generate:
     {
       module_type   : EventGenerator
-      inputfile     : "Mu2eG4/test/genconfig_02.txt"
-      seed          : [7789]
+      inputfile     : "Mu2eG4/test/cosmicconfig_01.txt"
     }
 
     # Run G4 and add hits to the event
@@ -118,31 +117,49 @@ physics :
   }
 
 
-  analyzers:
+  filters:
   {
 
     checkhits:
     {
-      module_type          : ReadBack
-      generatorModuleLabel : generate
+      module_type          : CosmicTuple
       g4ModuleLabel        : g4run
-      minumumEnergy        : 0.000
-      maxFullPrint         : 201
-    }
-
-    randomsaver:
-    {
-      module_type          : RandomSaverNumber
+      minumumEnergy        : 0.001      
+      traverseZ            : 1500.
+      minimump             : 103.
+      maximump             : 107. 
+      pdgidnumber          : 11
     }
 
   }
 
-  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCryHitsMaker ]
-  e1 : [randomsaver, checkhits]
+  analyzers:
+  {
+    randomsaver:
+    {
+      module_type          : RandomSaverNumber
+    }
+  }
+
+  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCryHitsMaker, checkhits ]
+  e1 : [randomsaver, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
 
 }
 
+outputs:
+{
+
+  outfile :
+  {
+    module_type   :   RootOutput
+    filename      :   "data_cosmic.root"
+    outputCommands:   [ "keep *_*_*_*"
+                        "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size.
+                      ]
+  }
+
+}
 
