@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: HoughTuner_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author P. Shanahan
 //
@@ -179,7 +179,7 @@ namespace mu2e {
    // _hHoughMultiplicity->Fill(hcHandle->size());
 
     // and make a pretty Plot
-     uint32_t evtno=evt.id().event();
+     unsigned evtno=evt.id().event();
 
      RootNameTitleHelper displayCanv("canvEvt","Display, Event",evtno,5);
      art::ServiceHandle<art::TFileService> tfs;

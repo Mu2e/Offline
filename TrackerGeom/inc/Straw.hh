@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.9 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: Straw.hh,v 1.10 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke
 //
@@ -166,7 +166,7 @@ namespace mu2e {
 
     // Detailed description of a straw.
     mutable const StrawDetail* _detail;
-    int32_t _detailIndex;
+    int _detailIndex;
 
     // Unit vector along the wire direction.
     // Need to add unit vectors along local u and v also.

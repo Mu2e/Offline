@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorBar.hh,v 1.5 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -120,7 +120,6 @@ namespace mu2e {
 
     // Detailed description of a bar
     mutable const CRSScintillatorBarDetail* _detail;
-    // not needed for one detail int32_t _detailIndex;
 
     //     Nearest neighbours.// not filled out yet
     //     std::vector<CRSScintillatorBarId>    _nearestById;

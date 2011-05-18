@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.hh,v 1.5 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: MCCaloUtilities.hh,v 1.6 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Gianni Onorato
 //
@@ -30,7 +30,7 @@ namespace mu2e {
 
     void setTrackAndRO(const art::Event & event,
                        SimParticleCollection::key_type track,
-                       uint32_t RO);
+                       unsigned RO);
 
     void printOutCaloInfo();
 
@@ -48,9 +48,9 @@ namespace mu2e {
 
   private:
 
-    uint32_t _localRO;
-    uint32_t _localCrystal;
-    uint32_t _localVane;
+    unsigned _localRO;
+    unsigned _localCrystal;
+    unsigned _localVane;
     int _startingVane;
     bool _fromOutside, _primary, _generated;
 

@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.cc,v 1.5 2011/05/18 04:27:42 kutschke Exp $
+// $Id: MCCaloUtilities.cc,v 1.6 2011/05/18 15:47:40 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/18 04:27:42 $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Gianni Onorato
 //
@@ -104,7 +104,7 @@ namespace mu2e {
 
   void MCCaloUtilities::setTrackAndRO(const art::Event & event,
                                       SimParticleCollection::key_type track,
-                                      uint32_t RO){
+                                      unsigned RO){
 
     _localRO = RO;
     art::ServiceHandle<GeometryService> geom;

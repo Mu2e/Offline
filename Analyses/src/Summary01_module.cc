@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: Summary01_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: Summary01_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke.
 //
@@ -46,7 +46,7 @@ namespace mu2e {
       calorimeterROStepPoints_(pset.get<std::string>("calorimeterROStepPoints")),
       crvStepPoints_(pset.get<std::string>("crvStepPoints")),
       minEnergyDep_(pset.get<double>("minEnergyDep")),
-      minHits_(pset.get<uint32_t>("minHits")),
+      minHits_(pset.get<unsigned>("minHits")),
       simsPlotMax_(pset.get<double>("simsPlotMax",400.)),
       productionMode_(pset.get<bool>("productionMode",true)),
       deltaRayParentId_(),

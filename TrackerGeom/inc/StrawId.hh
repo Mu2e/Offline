@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: StrawId.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: StrawId.hh,v 1.6 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke
 //
@@ -93,7 +93,7 @@ public:
 
 
   LayerId _lid;
-  int32_t _n;
+  int     _n;
 
 };
 

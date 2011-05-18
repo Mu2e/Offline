@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: MakeDriftCellHit_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -351,7 +351,6 @@ namespace mu2e {
         if( (dcell_hits[i]._t1-dcell_hits[i-1]._t1) > _minimumTimeGap ) {
           // The is bit time gap - save current data as a hit...
           strawHits->push_back(StrawHit(/*StrawIndex(*/dcell_id/*)*/,digi_time,digi_t2/*digi_t2-digi_time*/,digi_edep));
-          //strawHits->push_back(StrawHit(StrawIndex(static_cast<int32_t>(dcell_id)),digi_time,digi_t2/*digi_t2-digi_time*/,digi_edep));
           truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
           mcptrHits->push_back(mcptr);
           // ...and create new hit
@@ -373,7 +372,6 @@ namespace mu2e {
       //deltadigitime=(digi_t2-digi_time)+_gaussian.fire(0.,_distSigma/_timetodist);
       deltadigitime=0.0;
       strawHits->push_back(StrawHit(/*StrawIndex(*/dcell_id/*)*/,digi_time,deltadigitime/*deltadigitime*/,digi_edep));
-      //strawHits->push_back(StrawHit(StrawIndex(static_cast<int32_t>(dcell_id)),digi_time,digi_t2/*digi_t2-digi_time*/,digi_edep));
       truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
 

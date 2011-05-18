@@ -7,9 +7,9 @@
 // straws in the LTracker and for different lengths of straws in the TTracker.
 //
 //
-// $Id: StrawDetail.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: StrawDetail.hh,v 1.6 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke
 //
@@ -79,7 +79,7 @@ namespace mu2e {
   private:
 
     // Identifier for this type of straw.
-    int32_t _id;
+    int _id;
 
     // Order of materials is:
     // straw material, gas volume, wire

@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: LayerId.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: LayerId.hh,v 1.6 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke
 //
@@ -78,7 +78,7 @@ namespace mu2e {
     // should be OK.
 
     SectorId _sid;
-    int32_t _layer;
+    int      _layer;
 
   };
 

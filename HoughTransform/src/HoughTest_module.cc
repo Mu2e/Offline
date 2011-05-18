@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: HoughTest_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author R. Bernstein
 //
@@ -76,7 +76,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
   public:
     explicit HoughTest(fhicl::ParameterSet const& pset) :
       _maxFullPrint(pset.get<int>("maxFullPrint",10)),
-      _nPeakSearch(pset.get<uint32_t>("NPeakSearch")),
+      _nPeakSearch(pset.get<unsigned>("NPeakSearch")),
       _nAnalyzed(0),
       _hRadius(0),
       _hTime(0),
@@ -106,7 +106,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
     // number of peaks to look for
-    uint32_t _nPeakSearch;
+    unsigned _nPeakSearch;
 
     // Number of events analyzed.
     int _nAnalyzed;

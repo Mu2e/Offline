@@ -3,9 +3,9 @@
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.6 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: Layer.hh,v 1.7 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke
 //
@@ -113,7 +113,7 @@ namespace mu2e {
     // Number of straws.  Needed because of 2 phase construction.
     // The member _straws is not filled until the second phase
     // but this is neede beforehand. Keep it strictly private.
-    int32_t _nStraws;
+    int _nStraws;
 
     // Nominal position of wire 0 and offset from wire 0 to wire 1.
     // This is exactly only all wires are in their nominal positions.

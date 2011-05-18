@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: CRSScintillatorModuleId.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorModuleId.hh,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author KLG; based on Rob Kutschke's SectorId
 //
@@ -64,7 +64,7 @@ namespace mu2e {
   private:
 
     CRSScintillatorShieldId _shieldId;
-    int32_t _moduleNumber;
+    int _moduleNumber;
 
   };
 

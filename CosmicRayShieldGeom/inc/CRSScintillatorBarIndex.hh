@@ -7,9 +7,9 @@
 // of CRSScintillatorBars in the system.
 
 //
-// $Id: CRSScintillatorBarIndex.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorBarIndex.hh,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author KLG; based on Rob Kutschke StrawIndex
 //
@@ -26,7 +26,7 @@ namespace mu2e {
     // No default c'tor by design.
 
     // No automatic conversion of int to CRSScintillatorBarIndex.
-    explicit CRSScintillatorBarIndex(int32_t idx):
+    explicit CRSScintillatorBarIndex(int idx):
       _idx(idx){
     }
 
@@ -35,8 +35,8 @@ namespace mu2e {
 
     // Return the value as an int or as an unsigned in
     // Do not want automatic conversion to an int.
-    int32_t  asInt() const { return _idx;}
-    uint32_t asUint() const { return static_cast<uint32_t>(_idx);}
+    int      asInt() const { return _idx;}
+    unsigned asUint() const { return static_cast<unsigned>(_idx);}
 
     bool operator==( CRSScintillatorBarIndex const & rhs) const{
       return (_idx == rhs._idx);
@@ -50,7 +50,7 @@ namespace mu2e {
     }
   private:
 
-    int32_t _idx;
+    int _idx;
   };
 
   inline std::ostream& operator<<( std::ostream& ost,

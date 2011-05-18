@@ -4,9 +4,9 @@
 //
 // Representation of common properties of the Scintillator Bars etc...
 //
-// $Id: CRSScintillatorBarDetail.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorBarDetail.hh,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's StrawDetail
 //
@@ -28,7 +28,7 @@ namespace mu2e {
       _halfLengths()
     {};
 
-    CRSScintillatorBarDetail( int32_t const id,
+    CRSScintillatorBarDetail( int const id,
                               std::vector<std::string> const & materialNames,
                               std::vector<double> const & halfLengths
                               );
@@ -36,7 +36,7 @@ namespace mu2e {
     // Compiler generated versions are OK for destructor
     // and for copy and assignment constructors.
 
-    int32_t const  Id() const { return  _id; }
+    int const  Id() const { return  _id; }
 
     std::string const & getMaterialName(int idx) const { return _materialNames.at(idx);}
 
@@ -49,7 +49,7 @@ namespace mu2e {
   private:
 
     // Identifier for this type of CRSScintillatorBar.
-    int32_t _id;
+    int _id;
 
     // Order of materials is:
 

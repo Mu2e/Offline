@@ -3,9 +3,9 @@
 //
 // An object to be the key in a MapVector.
 //
-// $Id: MapVectorKey.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: MapVectorKey.hh,v 1.5 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke
 //
@@ -31,7 +31,7 @@ public:
   }
 
   explicit MapVectorKey(unsigned int key):
-    _key(static_cast<int32_t>(key)){
+    _key(static_cast<int>(key)){
   }
 
   // Compiler generated versions are OK for:
@@ -41,8 +41,8 @@ public:
   // or to make a histogram of the keys, we need these accessors.
   // But we do not want automatic conversion to int:
   //  - Therefore do not implement operator(int);
-  int32_t  asInt() const  { return _key;}
-  uint32_t asUint() const { return static_cast<uint32_t>(_key);}
+  int      asInt() const  { return _key;}
+  unsigned asUint() const { return static_cast<unsigned>(_key);}
 
   bool operator==( MapVectorKey const& rhs) const{
     return (_key == rhs._key);
@@ -62,7 +62,7 @@ public:
 
 private:
 
-  int32_t _key;
+  int _key;
 };
 
 inline std::ostream& operator<<( std::ostream& ost,

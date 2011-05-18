@@ -887,12 +887,12 @@ namespace mu2e {
       haveSimPart = !(simParticles->empty() || volumes->empty());
     }
 
-    map<uint32_t, size_t> CHMap;
+    map<unsigned, size_t> CHMap;
 
     for (size_t j=0; j<caloHits->size(); ++j) {
 
       CaloHit const & ahit = (*caloHits).at(j);
-      CHMap.insert(pair<uint32_t, size_t>(ahit.id(), j));
+      CHMap.insert(pair<unsigned, size_t>(ahit.id(), j));
 
     }
 

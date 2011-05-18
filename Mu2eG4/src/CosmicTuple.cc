@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.18 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: CosmicTuple.cc,v 1.19 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke
 //
@@ -138,10 +138,10 @@ namespace mu2e {
     double  vz       = 0.;
     double  vt       = 0.;
     double  rmass    = 0.;
-    uint32_t trSVolume = 0;
-    uint32_t trEVolume = 0;
-    uint32_t prSVolume = 0;
-    uint32_t prEVolume = 0;
+    unsigned trSVolume = 0;
+    unsigned trEVolume = 0;
+    unsigned prSVolume = 0;
+    unsigned prEVolume = 0;
 
     map<int,int> hit_crystals;
     map<int,int> hit_apds;

@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: HitDisplay_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke.
 //
@@ -110,7 +110,7 @@ namespace mu2e {
     hitMakerModuleLabel_(pset.get<std::string>("hitMakerModuleLabel")),
     trackerStepPoints_(pset.get<std::string>("trackerStepPoints")),
     minEnergyDep_(pset.get<double>("minEnergyDep")),
-    minHits_(pset.get<uint32_t>("minHits")),
+    minHits_(pset.get<unsigned>("minHits")),
     doDisplay_(pset.get<bool>("doDisplay",true)),
     application_(0),
     directory_(0),

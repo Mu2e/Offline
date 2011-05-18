@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.21 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: TrackingAction.cc,v 1.22 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke
 //
@@ -157,7 +157,7 @@ namespace mu2e {
     // Indices into the GenParticleCollection are 0 based.
     // The first n particles in the G4 track list are the same as the first n particles
     // from the generator.
-    int32_t generatorIndex = ( parentId == 0 ) ? id-1: -1;
+    int generatorIndex = ( parentId == 0 ) ? id-1: -1;
 
     // Find the physics process that created this track.
     ProcessCode creationCode = findCreationCode(trk);

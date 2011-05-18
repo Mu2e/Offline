@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: CRSScintillatorBarId.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorBarId.hh,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author KLG somewhat based on Rob Kutschke's StrawId
 //
@@ -91,7 +91,7 @@ namespace mu2e {
   private:
 
     CRSScintillatorLayerId _layerId;
-    int32_t _barNumber;
+    int _barNumber;
 
   };
 

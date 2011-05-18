@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: CRSScintillatorLayerId.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorLayerId.hh,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author KLG; based on Rob Kutschke LayerId
 //
@@ -78,7 +78,7 @@ namespace mu2e {
   private:
 
     CRSScintillatorModuleId _moduleId;
-    int32_t _layerNumber;
+    int _layerNumber;
 
   };
 

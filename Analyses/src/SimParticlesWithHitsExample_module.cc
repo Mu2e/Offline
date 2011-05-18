@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: SimParticlesWithHitsExample_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: SimParticlesWithHitsExample_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:47:40 $
 //
 // Original author Rob Kutschke.
 //
@@ -33,7 +33,7 @@ namespace mu2e {
       _hitMakerModuleLabel(pset.get<std::string>("hitMakerModuleLabel")),
       _trackerStepPoints(pset.get<std::string>("trackerStepPoints")),
       _minEnergyDep(pset.get<double>("minEnergyDep")),
-      _minHits(pset.get<uint32_t>("minHits")){
+      _minHits(pset.get<unsigned>("minHits")){
     }
     virtual ~SimParticlesWithHitsExample() { }
 
