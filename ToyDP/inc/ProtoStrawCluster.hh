@@ -3,9 +3,9 @@
 //
 // A crude step along the way to forming real clusters.
 //
-// $Id: ProtoStrawCluster.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: ProtoStrawCluster.hh,v 1.6 2011/05/18 15:06:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:06:33 $
 //
 //
 #include <vector>
@@ -17,7 +17,7 @@ namespace mu2e {
   struct ProtoStrawCluster{
 
     SectorId id;
-    std::vector<int32_t> hitIndices;
+    std::vector<int> hitIndices;
 
     ProtoStrawCluster( SectorId const& sectorId, int index);
 

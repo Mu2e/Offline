@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.10 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: SimParticle.hh,v 1.11 2011/05/18 15:06:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:06:33 $
 //
 // Original author Rob Kutschke
 //
@@ -45,14 +45,14 @@ namespace mu2e {
 
     SimParticle( key_type                       aid,
                  key_type                       aparentId,
-                 int32_t                        apdgId,
-                 int32_t                        agenIndex,
+                 int                            apdgId,
+                 int                            agenIndex,
                  const CLHEP::Hep3Vector&       aposition,
                  const CLHEP::HepLorentzVector& amomentum,
                  double                         astartGlobalTime,
                  double                         astartProperTime,
-                 uint32_t                       astartVolumeIndex,
-                 uint32_t                       astartG4Status,
+                 unsigned                       astartVolumeIndex,
+                 unsigned                       astartG4Status,
                  ProcessCode                    acreationCode,
                  double                         aweight=1.):
       _id(aid),
@@ -76,8 +76,8 @@ namespace mu2e {
                      CLHEP::HepLorentzVector aendMomentum,
                      double                  aendGlobalTime,
                      double                  aendProperTime,
-                     uint32_t                aendVolumeIndex,
-                     uint32_t                aendG4Status,
+                     unsigned                aendVolumeIndex,
+                     unsigned                aendG4Status,
                      ProcessCode             astoppingCode){
       _endDefined      = true;
       _endPosition     = aendPosition;
@@ -103,11 +103,11 @@ namespace mu2e {
     bool      hasParent() const { return (_parentId != key_type(0)); }
 
     // PDG particle ID code.  See note 3.
-    int32_t pdgId() const {return _pdgId;}
+    int pdgId() const {return _pdgId;}
 
     // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.
-    int32_t generatorIndex() const { return _genIndex;}
+    int  generatorIndex() const { return _genIndex;}
     bool fromGenerator() const { return (_genIndex != -1); }
     bool madeInG4()      const { return (_genIndex == -1); }
 
@@ -116,8 +116,8 @@ namespace mu2e {
     CLHEP::HepLorentzVector const& startMomentum() const { return _startMomentum;}
     double      startGlobalTime()  const { return _startGlobalTime;}
     double      startProperTime()  const { return _startProperTime;}
-    uint32_t    startVolumeIndex() const { return _startVolumeIndex;}
-    uint32_t    startG4Status()    const { return _startG4Status;}
+    unsigned    startVolumeIndex() const { return _startVolumeIndex;}
+    unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()      const { return _creationCode;  }
 
     // Information at the end of the track.
@@ -125,8 +125,8 @@ namespace mu2e {
     CLHEP::HepLorentzVector const& endMomentum() const { return _endMomentum;}
     double       endGlobalTime()  const { return _endGlobalTime; }
     double       endProperTime()  const { return _endProperTime; }
-    uint32_t     endVolumeIndex() const { return _endVolumeIndex;}
-    uint32_t     endG4Status()    const { return _endG4Status;   }
+    unsigned     endVolumeIndex() const { return _endVolumeIndex;}
+    unsigned     endG4Status()    const { return _endG4Status;   }
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
 
     // SimParticle indices of daughters of this track.
@@ -145,27 +145,27 @@ namespace mu2e {
     key_type _parentId;
 
     // PDG particle ID code.  See note 1.
-    int32_t _pdgId;
+    int _pdgId;
 
     // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.
-    int32_t _genIndex;
+    int _genIndex;
 
     // Information at the start of the track.
     CLHEP::Hep3Vector       _startPosition;
     CLHEP::HepLorentzVector _startMomentum;
     double                  _startGlobalTime;
     double                  _startProperTime;
-    uint32_t                _startVolumeIndex;
-    uint32_t                _startG4Status;
+    unsigned                _startVolumeIndex;
+    unsigned                _startG4Status;
 
     // Information at the end fo the track.
     CLHEP::Hep3Vector       _endPosition;
     CLHEP::HepLorentzVector _endMomentum;
     double                  _endGlobalTime;
     double                  _endProperTime;
-    uint32_t                _endVolumeIndex;
-    uint32_t                _endG4Status;
+    unsigned                _endVolumeIndex;
+    unsigned                _endG4Status;
 
     // The reason that the particle was created and why it stopped.
     ProcessCode             _creationCode;

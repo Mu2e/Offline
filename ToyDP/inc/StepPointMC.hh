@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.14 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: StepPointMC.hh,v 1.15 2011/05/18 15:06:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:06:33 $
 //
 // Original author Rob Kutschke
 //
@@ -45,7 +45,7 @@ namespace mu2e {
       _stepLength(0.){
     }
 
-    StepPointMC( uint32_t                 trackId,
+    StepPointMC( unsigned                 trackId,
                  VolumeId_type            volumeId,
                  double                   totalEDep,
                  double                   time,

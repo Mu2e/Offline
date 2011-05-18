@@ -4,9 +4,9 @@
 //
 // Persistable information about a G4 Physical Volume.
 //
-// $Id: PhysicalVolumeInfo.hh,v 1.4 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: PhysicalVolumeInfo.hh,v 1.5 2011/05/18 15:06:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 15:06:33 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@ namespace mu2e {
     PhysicalVolumeInfo(){};
 
     PhysicalVolumeInfo( const std::string& pname,
-                        uint32_t           pcopyNo ):
+                        unsigned           pcopyNo ):
       _name(pname),
       _copyNo(pcopyNo){}
 
@@ -33,11 +33,11 @@ namespace mu2e {
     // Accessors
 
     std::string const& name()   const { return _name;  }
-    uint32_t           copyNo() const { return _copyNo;}
+    unsigned           copyNo() const { return _copyNo;}
 
   private:
     std::string _name;
-    uint32_t _copyNo;
+    unsigned _copyNo;
 
   };
 
