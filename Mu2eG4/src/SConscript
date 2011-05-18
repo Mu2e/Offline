@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.15 2011/05/18 18:21:00 kutschke Exp $
+# $Id: SConscript,v 1.16 2011/05/18 19:06:05 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/18 18:21:00 $
+# $Date: 2011/05/18 19:06:05 $
 #
 # Original author Rob Kutschke.
 #
@@ -17,9 +17,8 @@ Import('env')
 # 3) Make an enviornment variable for the system flavor: Linux-g++.
 #
 
-g4inc   = os.environ['G4INCLUDE']
-g4lib   = os.environ['G4LIB']
-g4sys   = os.environ['G4SYSTEM']
+g4inc    = os.environ['G4INCLUDE']
+g4libdir = os.environ['G4LIBDIR']
 
 #g4gdml = os.environ['XERCESCROOT']
 
@@ -130,8 +129,7 @@ if non_plugin_cc:
                               OPENGL_LIBS
                            ],
                       CPPFLAGS= [  G4CPPFLAGS, G4OGL_CPPFLAGS ],
-                      parse_flags=[ '-L'+g4lib+'/'+g4sys, '-I'+g4inc ]
-#                      parse_flags=[ '-L'+g4lib+'/Linux-g++', '-L'+g4gdml+'/lib', '-lxerces-c', '-I'+g4inc, '-I'+g4gdml+'/src' ]
+                      parse_flags=[ '-L'+g4libdir, '-I'+g4inc ]
                       )
     libs=[ local_lib_name ]
 else:
@@ -150,8 +148,7 @@ for cc in plugin_cc:
                             'Tree' 
                           ],
                      CPPFLAGS= [ G4CPPFLAGS, G4OGL_CPPFLAGS ],
-                     parse_flags=[ '-L'+g4lib, '-I'+g4inc ]
-#                     parse_flags=[ '-L'+g4lib+'/Linux-g++', '-L'+g4gdml+'/lib', '-lxerces-c', '-I'+g4inc, '-I'+g4gdml+'/src' ]
+                     parse_flags=[ '-L'+g4libdir, '-I'+g4inc ]
                      )
 
 # This tells emacs to view this file in python mode.
