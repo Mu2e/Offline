@@ -1,0 +1,59 @@
+#
+# Event display for a sample of conversion electrons.
+#
+# $Id: EventDisplay.fcl,v 1.1 2011/05/18 20:27:53 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/18 20:27:53 $
+#
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.
+process : EventDisplay
+
+# Start form an empty source
+source :
+{
+  module_type : RootInput
+  fileNames   : "/mu2e/data/outstage/wasiko/56545/56545_176/data_cosmic.root"
+}
+
+services :
+{
+  message : @local::default_message
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_cosmic.txt"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+  }
+
+}
+
+physics :
+{
+  producers:  { }
+
+  analyzers:
+  {
+
+    eventdisplay: 
+    {
+      module_type          : EventDisplay
+    }
+  }
+
+  e1 : [eventdisplay]
+
+  end_paths      : [e1]
+
+}
+
