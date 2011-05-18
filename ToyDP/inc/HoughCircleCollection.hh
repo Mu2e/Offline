@@ -2,11 +2,11 @@
 #define ToyDP_HoughCircleCollection_hh
 
 //
-// Define a type for a collection of ToyHits.
+// Define a type for a collection of Hough Circle Objects
 //
-// $Id: HoughCircleCollection.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: HoughCircleCollection.hh,v 1.3 2011/05/18 18:12:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 18:12:40 $
 //
 // Original author Peter Shanahan
 //
