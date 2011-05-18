@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.7 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: physicsListDecider.cc,v 1.8 2011/05/18 16:11:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,7 @@
 // C++ includes
 #include <string>
 
-// Framework incldues
+// Framework includes
 #include "cetlib/exception.h"
 
 // Mu2e includes

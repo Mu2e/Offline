@@ -4,15 +4,15 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.19 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: EjectedProtonGun.cc,v 1.20 2011/05/18 16:11:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
 //
 
-// C++ incldues.
+// C++ includes.
 #include <iostream>
 
 // Framework includes

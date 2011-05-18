@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.26 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: StrawSD.cc,v 1.27 2011/05/18 16:11:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
 
-// Mu2e incldues
+// Mu2e includes
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "LTrackerGeom/inc/LTracker.hh"

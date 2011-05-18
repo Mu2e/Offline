@@ -6,13 +6,13 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.cc,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Id: StepPointMC.cc,v 1.6 2011/05/18 16:11:17 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Rob Kutschke
 
-// Mu2e incldues
+// Mu2e includes
 #include "ToyDP/inc/StepPointMC.hh"
 
 using namespace std;

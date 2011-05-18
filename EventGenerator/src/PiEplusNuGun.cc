@@ -3,14 +3,14 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.6 2011/05/18 02:27:16 wb Exp $
+// $Id: PiEplusNuGun.cc,v 1.7 2011/05/18 16:11:17 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 //
 
-// C++ incldues.
+// C++ includes.
 #include <iostream>
 
 // Framework includes

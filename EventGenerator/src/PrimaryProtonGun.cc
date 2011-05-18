@@ -3,14 +3,14 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.11 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: PrimaryProtonGun.cc,v 1.12 2011/05/18 16:11:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Rob Kutschke
 //
 
-// C++ incldues.
+// C++ includes.
 #include <iostream>
 
 // Framework includes

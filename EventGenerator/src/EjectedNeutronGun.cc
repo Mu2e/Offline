@@ -4,15 +4,15 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.6 2011/05/18 05:04:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 05:04:48 $
+// $Id: EjectedNeutronGun.cc,v 1.7 2011/05/18 16:11:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
 //
 
-// C++ incldues.
+// C++ includes.
 #include <iostream>
 
 // Framework includes

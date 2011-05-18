@@ -4,13 +4,13 @@
 // Generate a momentum for the DIO electrons, using Wanatabe
 // data, merged to Shanker's formula near the endpoint
 //
-// $Id: DIOShankerWanatabe.hh,v 1.7 2011/05/18 02:27:18 wb Exp $
+// $Id: DIOShankerWanatabe.hh,v 1.8 2011/05/18 16:11:17 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Date: 2011/05/18 16:11:17 $
 //
 //
 
-// C++ incldues
+// C++ includes
 #include <vector>
 
 // Framework includes

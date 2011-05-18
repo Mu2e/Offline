@@ -10,7 +10,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
 
-// Mu2e incldues
+// Mu2e includes
 #include "Mu2eG4/inc/StoppingTargetSD.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 

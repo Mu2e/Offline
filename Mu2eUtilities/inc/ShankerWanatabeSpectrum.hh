@@ -4,13 +4,13 @@
 // Read Wanatabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWanatabeSpectrum.hh,v 1.5 2011/05/18 04:26:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 04:26:49 $
+// $Id: ShankerWanatabeSpectrum.hh,v 1.6 2011/05/18 16:11:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:11:17 $
 //
 //
 
-// C++ incldues
+// C++ includes
 #include <vector>
 #include <utility>
 

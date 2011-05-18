@@ -1,7 +1,7 @@
 // C++ includes.
 #include <string>
 
-// Mu2e incldues
+// Mu2e includes
 #include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
 
 // ROOT includes

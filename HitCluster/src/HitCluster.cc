@@ -1,8 +1,8 @@
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.cc,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Id: HitCluster.cc,v 1.5 2011/05/18 16:11:17 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 16:11:17 $
 //
 //original author R. Bernstein
 //
@@ -46,11 +46,11 @@ namespace mu2e{
     return nearbyStraws;
   }
 
-    void HitCluster::matchAndMerge(bool& match,std::vector<HitCluster::HitCluster>& finalClusters)
+    void HitCluster::matchAndMerge(bool& match,std::vector<HitCluster>& finalClusters)
     {
       //this is owned by a trialCluster, so I can just get its list of straws and start comparing
       match = false;
-      for (std::vector<HitCluster::HitCluster>::size_type ithCluster = 0; (ithCluster <= finalClusters.size()-1) && !match;
+      for (std::vector<HitCluster>::size_type ithCluster = 0; (ithCluster <= finalClusters.size()-1) && !match;
            ++ithCluster)
         {
           vector<Candidate> firstSet = finalClusters.at(ithCluster).getStraws();

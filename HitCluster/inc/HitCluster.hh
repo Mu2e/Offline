@@ -2,9 +2,9 @@
 #define HitCluster_HitCluster_hh
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.hh,v 1.7 2011/05/18 02:27:16 wb Exp $
+// $Id: HitCluster.hh,v 1.8 2011/05/18 16:11:17 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 16:11:17 $
 //
 //original author R. Bernstein
 //
@@ -132,7 +132,7 @@ namespace mu2e{
       hitNeighbours getStraws();
 
 
-      void matchAndMerge    (bool& match, std::vector<HitCluster::HitCluster>& finalClusters);
+      void matchAndMerge    (bool& match, std::vector<HitCluster>& finalClusters);
       void cleanUpDuplicates();
 
 

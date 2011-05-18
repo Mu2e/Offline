@@ -4,34 +4,35 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: NuclearCaptureGun.cc,v 1.5 2011/05/18 16:11:17 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Gianni Onorato
 //
 //
 
-// C++ incldues.
+// C++ includes.
 #include <iostream>
 
 // Framework includes
 #include "art/Framework/Core/Run.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/NuclearCaptureGun.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "EventGenerator/inc/NuclearCaptureGun.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eUtilities/inc/FileInPath.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "TargetGeom/inc/Target.hh"
 
 // General Utilities
 #include "GeneralUtilities/inc/pow.hh"
@@ -414,7 +415,7 @@ namespace mu2e {
     //The neutron spectum is taken from MARS simulation
 
     vector<double> neutronSpectrum;
-    art::FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
+    mu2e::FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
     string NeutronFileFIP = spectrumFileName.fullPath();
     fstream infile(NeutronFileFIP.c_str(), ios::in);
     if (infile.is_open()) {

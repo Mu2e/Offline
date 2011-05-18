@@ -1,14 +1,14 @@
 //
 // A class to hold hits created by G4 in most sensitive detectors.
 //
-// $Id: StepPointG4.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
+// $Id: StepPointG4.cc,v 1.6 2011/05/18 16:11:17 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Date: 2011/05/18 16:11:17 $
 //
 // Original author Rob Kutschke
 //
 
-// Mu2e incldues
+// Mu2e includes
 #include "Mu2eG4/inc/StepPointG4.hh"
 
 // G4 includes
