@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.14 2011/05/17 19:54:17 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/17 19:54:17 $
+# $Id: SConstruct,v 1.15 2011/05/18 22:26:34 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/18 22:26:34 $
 #
 # Original author Rob Kutschke.
 #
@@ -27,7 +27,7 @@ base          = os.environ['MU2E_BASE_RELEASE']
 boost_lib     = os.environ['BOOST_LIB']
 boost_inc     = os.environ['BOOST_INC']
 clhep_inc     = os.environ['CLHEP_INC']
-clhep_base    = os.environ['CLHEP_BASE']
+clhep_lib     = os.environ['CLHEP_LIB_DIR']
 cppunit_dir   = os.environ['CPPUNIT_DIR']
 gccxml_dir    = os.environ['GCCXML_DIR']
 heppdt_lib    = os.environ['HEPPDT_LIB']
@@ -86,7 +86,7 @@ env = Environment( CPPPATH=[ #testrelease,
                              cetlib_lib,
                              cpp0x_lib,
                              boost_lib,
-                             clhep_base+'/lib',
+                             clhep_lib,
                              cppunit_dir+'/lib',
                              heppdt_lib,
                              libsigcpp_lib,

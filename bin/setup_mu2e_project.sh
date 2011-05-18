@@ -1,8 +1,8 @@
 #! /bin/sh
 #
-# $Id: setup_mu2e_project.sh,v 1.7 2011/05/17 18:33:37 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/17 18:33:37 $
+# $Id: setup_mu2e_project.sh,v 1.8 2011/05/18 22:26:34 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/18 22:26:34 $
 #
 # Original author Rob Kutschke
 #
@@ -35,14 +35,15 @@ if [ "`basename $0 2>/dev/null`" = "setup_mu2e_project.sh" ];then
     echo "You should be sourcing this file"; exit
 fi
 
-if [ "${FW_HOME}" = '' ];then
-    echo "FW_HOME is not set; "
-    echo "You need to do setup the framework before sourcing this file."
+if [ "${MU2E_BASE_RELEASE}" = '' ];then
+    echo "MU2E_BASE_RELEASE is not set; "
+    echo "You need to setup a base release of Mu2e Offline sourcing this file."
     return 21
 fi
 
-#source ${FW_HOME}/bin/funcs.sh
-bin_dir=`dirname ${BASH_SOURCE}`   # assume file is in bin subdir
+# Assume that this file lives one level below the root of he base release.
+# So step up one level of path to define the base release.
+bin_dir=`dirname ${BASH_SOURCE}`
 bin_dir=`cd $bin_dir >/dev/null 2>&1 && echo $PWD`
 user_root=`dirname $bin_dir`
 
