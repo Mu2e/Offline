@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.7 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: GeometryService.hh,v 1.8 2011/05/18 22:55:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 22:55:40 $
 //
 // Original author Rob Kutschke
 //
@@ -30,7 +30,6 @@ namespace mu2e {
 
 // Forward declarations
   class Target;
-  class CTracker;
 
   class GeometryService {
 public:

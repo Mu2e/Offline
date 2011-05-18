@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.15 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: GeometryService.cc,v 1.16 2011/05/18 22:55:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 22:55:40 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,6 @@
 #include "GeometryService/src/DetectorSystemMaker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/TargetMaker.hh"
-#include "CTrackerGeom/inc/CTracker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "LTrackerGeom/inc/LTrackerMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -103,10 +102,6 @@ namespace mu2e {
       addDetector( targm.getTargetPtr() );
     }
 
-    if(_config->getBool("hasCTracker",false)){
-      addDetector( std::auto_ptr<CTracker>(new CTracker(*_config)) );
-    }
-
     if(_config->getBool("hasLTracker",false)){
       LTrackerMaker ltm( *_config );
       addDetector( ltm.getLTrackerPtr() );
@@ -150,10 +145,6 @@ namespace mu2e {
     }
     if ( _config->getBool("hasTTracker",false) ) {
       allTrackers += " TTracker";
-      ++ntrackers;
-    }
-    if ( _config->getBool("hasCTracker",false) ) {
-      allTrackers += " CTracker";
       ++ntrackers;
     }
     if ( _config->getBool("hasITracker",false) ) {
