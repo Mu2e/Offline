@@ -4,9 +4,9 @@
 // Create a G4FieldManager object. Provide accessors to the field manager
 // and to the parts from which it is made.
 //
-// $Id: FieldMgr.hh,v 1.4 2011/05/18 16:31:04 wb Exp $
+// $Id: FieldMgr.hh,v 1.5 2011/05/18 17:02:14 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:31:04 $
+// $Date: 2011/05/18 17:02:14 $
 //
 // Original author Rob Kutschke
 //
@@ -45,13 +45,13 @@
 #include <memory>
 #include <string>
 
+#include "G4ChordFinder.hh"
+#include "G4FieldManager.hh"
+#include "G4MagIntegratorStepper.hh"
+#include "G4Mag_EqRhs.hh"
+#include "G4Mag_UsualEqRhs.hh"
+#include "G4MagneticField.hh"
 #include "Mu2eG4/inc/DSField.hh"
-
-class G4MagneticField;
-class G4Mag_EqRhs;
-class G4MagIntegratorStepper;
-class G4ChordFinder;
-class G4FieldManager;
 
 namespace mu2e {
 

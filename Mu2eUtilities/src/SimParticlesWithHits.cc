@@ -9,9 +9,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Id: SimParticlesWithHits.cc,v 1.5 2011/05/18 17:02:14 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/18 17:02:14 $
 //
 // Original author Rob Kutschke.
 //
@@ -27,6 +27,8 @@
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
+
+using namespace std;
 
 namespace mu2e{
 
