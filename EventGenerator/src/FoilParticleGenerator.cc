@@ -24,30 +24,28 @@
 #include <iostream>
 #include <fstream>
 
-//Framework includes
-#include "art/ParameterSet/FileInPath.h"
-
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
+#include "Mu2eUtilities/inc/FileInPath.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace std;
 
-static const art::FileInPath StMuFileName("ConditionsService/data/StoppedMuons.txt");
+
+static const mu2e::FileInPath StMuFileName("ConditionsService/data/StoppedMuons.txt");
 static const string StMuFileString = StMuFileName.fullPath();
 static const double timeMaxDelay = 3000;
 static const int nBinsForTimeDelayPDF = 150;
 static fstream inMuFile(StMuFileString.c_str(), ios::in);
 
-
 namespace mu2e {
 
-  FoilParticleGenerator::FoilParticleGenerator(art::RandomNumberGeneratorService::base_engine_t& engine,
+  FoilParticleGenerator::FoilParticleGenerator(art::RandomNumberGenerator::base_engine_t& engine,
                                                double tmin, double tmax,
                                                foilGen_enum foilAlgo,
                                                posGen_enum  posAlgo,
@@ -242,7 +240,7 @@ namespace mu2e {
   vector<double> FoilParticleGenerator::timePathDelay() {
 
     vector<double> muonTimeDelay;
-    art::FileInPath muonDelayFileName("ConditionsService/data/timeDelayDist.txt");
+    FileInPath muonDelayFileName("ConditionsService/data/timeDelayDist.txt");
     string MuonFileFIP = muonDelayFileName.fullPath();
     fstream infile(MuonFileFIP.c_str(), ios::in);
     if (infile.is_open()) {

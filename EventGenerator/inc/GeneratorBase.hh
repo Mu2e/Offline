@@ -5,15 +5,15 @@
 // Also provides access to the random number engine associated with the
 // EventGenerator module.
 //
-// $Id: GeneratorBase.hh,v 1.5 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: GeneratorBase.hh,v 1.6 2011/05/18 05:09:28 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 05:09:28 $
 //
 // Original author Rob Kutschke
 //
 
 // Framework includes
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
@@ -36,8 +36,8 @@ namespace mu2e {
   protected:
 
     // A helper function to access the random number engine associated with this module.
-    static art::RandomNumberGeneratorService::base_engine_t&
-    getEngine( const art::RandomNumberGeneratorService::label_t& engine_label = "" );
+    static art::RandomNumberGenerator::base_engine_t&
+    getEngine( const art::RandomNumberGenerator::label_t& engine_label = "" );
 
 };
 

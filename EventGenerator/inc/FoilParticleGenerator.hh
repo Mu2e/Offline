@@ -14,7 +14,7 @@
 #include <memory>
 
 // Framework includes
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/PDGCode.hh"
@@ -45,7 +45,7 @@ namespace mu2e {
       flatTime, limitedExpoTime, negExp
     };
 
-    FoilParticleGenerator( art::RandomNumberGeneratorService::base_engine_t& engine,
+    FoilParticleGenerator( art::RandomNumberGenerator::base_engine_t& engine,
                            double tmin, double tmax, foilGen_enum foilAlgo,
                            posGen_enum  posAlgo, timeGen_enum  timeAlgo,
                            bool targetFrame = true, bool PTtoSTdelay = true, bool pPulseDelay = true);
