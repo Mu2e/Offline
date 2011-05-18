@@ -1,0 +1,24 @@
+#
+# A minimal configuration of the message service.
+#
+# $Id: minimalMessageService.fcl,v 1.1 2011/05/18 19:10:32 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/18 19:10:32 $
+#
+
+BEGIN_PROLOG
+
+default_message:{ 
+  destinations:{
+    STDOUT:{
+      categories:{
+        ArtReport:{limit:3}
+	default:{limit:10}
+      }
+      threshold:INFO 
+      type:cout
+    } # end STDOUT:
+  }   # end destinations
+}     # end default_messages
+
+END_PROLOG

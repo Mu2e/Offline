@@ -1,0 +1,111 @@
+#
+# Standard configuration for the message service.
+#
+# $Id: messageservice.fcl,v 1.1 2011/05/18 19:10:32 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/18 19:10:32 $
+#
+
+BEGIN_PROLOG
+
+standard_out:
+{
+ debugModules: "*"         # list individual module names here if you only want output from specific modules
+ destinations:
+ {	
+  cout: { type: "cout" threshold: "DEBUG" }
+ }
+}
+
+standard_debug:
+{
+ debugModules: "*"         # list individual module names here if you only want output from specific modules
+ destinations:
+ {	
+  debugmsg:
+  {
+   type:      "file"       # record the messages in a file, could also be cout, cerr, archive, dds
+   filename:  "debug.log"  # name of the file in which to place the messages
+   append:    false        # if set to true will append messages to named file if it exists
+   threshold: "DEBUG"      # threshold of what level of messages to use
+   categories:             # place to list named categories, if you want to customize, 
+                           # I think the categories are what are the strings given to mf::LogXXX() commands
+   {
+     default:              # treat all unspecified categories using these values
+     {
+      limit:       10      # only show the first n messages and then back off exponentially
+      reportEvery: 20      # report every nth message
+      timespan:    600     # if more than this many seconds have elapsed without a message, print one
+     }
+   } # end categories
+  } # end debugmsg
+ } # end destinations
+} # end standard_debug
+
+# see comments for standard_debug configuration to figure out what each value is
+standard_info:
+{ 
+ destinations:
+ {  
+  infomsg:
+  {
+   type:      "file"	
+   filename:  "info.log"
+   threshold: "INFO"
+   categories:                                      
+   {
+     default:             
+     {
+      limit:       10
+      reportEvery: 5     
+      timespan:    60    
+     }
+   } # end categories
+  } # end infomsg
+ } # end destinations
+} # end standard_info
+
+# see comments for standard_debug configuration to figure out what each value is
+standard_warning:
+{ 
+ destinations:
+ {  
+  warningmsg:
+  {
+   type:      "file"	
+   filename:  "warnings.log"
+   threshold: "WARNING"
+   append:    true        
+   categories: 
+   {
+     default:             
+     {
+      limit:       10
+      reportEvery: 5     
+      timespan:    60    
+     }
+   } # end categories
+  } # end warningmsg
+ } # end destinations
+} # end standard_warning
+
+# see comments for standard_debug configuration to figure out what each value is
+standard_error:
+{ 
+ destinations:
+ {  
+  errormsg:
+  {
+   type:      "file"	
+   filename:  "error.log"
+   threshold: "ERROR"
+   append:    true        
+   categories: 
+   {
+     default: {} 
+   } # end categories
+  } # end errormsg
+ } # end destinations
+} # end standard_error
+
+END_PROLOG
