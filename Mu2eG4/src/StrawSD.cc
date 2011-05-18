@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.27 2011/05/18 16:11:17 wb Exp $
+// $Id: StrawSD.cc,v 1.28 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -121,8 +121,8 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	mf::LogWarning("G4") << "Maximum number of particles reached in StrawSD: "
-			      << _currentSize << endl;
+        mf::LogWarning("G4") << "Maximum number of particles reached in StrawSD: "
+                              << _currentSize << endl;
       }
       return false;
     }
@@ -373,15 +373,15 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
       mf::LogWarning("G4") << "Total of " << _currentSize
-			    << " straw hits were generated in the event."
-			    << endl
-			    << "Only " << _sizeLimit << " are saved in output collection."
-			    << endl;
+                            << " straw hits were generated in the event."
+                            << endl
+                            << "Only " << _sizeLimit << " are saved in output collection."
+                            << endl;
       cout << "Total of " << _currentSize
-	   << " straw hits were generated in the event."
-	   << endl
-	   << "Only " << _sizeLimit << " are saved in output collection."
-	   << endl;
+           << " straw hits were generated in the event."
+           << endl
+           << "Only " << _sizeLimit << " are saved in output collection."
+           << endl;
     }
 
     if (verboseLevel>0) {

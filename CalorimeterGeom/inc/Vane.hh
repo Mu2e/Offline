@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: Vane.hh,v 1.6 2011/05/18 02:27:15 wb Exp $
+// $Id: Vane.hh,v 1.7 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author R, Bernstein and Rob Kutschke
 //
@@ -42,7 +42,7 @@ namespace mu2e {
       CLHEP::Hep3Vector const& getOriginLocal() const { return _originLocal; }
       CLHEP::Hep3Vector const& getSize() const { return _size; }
       CLHEP::HepRotation * getRotation() const {
-	return const_cast<CLHEP::HepRotation *>(&_rotation);
+        return const_cast<CLHEP::HepRotation *>(&_rotation);
       }
 
     protected:

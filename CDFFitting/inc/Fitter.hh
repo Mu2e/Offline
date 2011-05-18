@@ -22,11 +22,11 @@ template <class Measureable> class StartingPoint;
 template <class Measureable> class Fit;
 class Residual;
 
-//	This is a very general interface for a fitter.  It
-//	basically provides the overhead for adding various fit
-//	actions (measuerment, constraint, transport, scatter, as
-//	well as user fit interventions) to the fit, for doing
-//	the fit, and for retrieving the result.
+//      This is a very general interface for a fitter.  It
+//      basically provides the overhead for adding various fit
+//      actions (measuerment, constraint, transport, scatter, as
+//      well as user fit interventions) to the fit, for doing
+//      the fit, and for retrieving the result.
 
 template <class Measureable>
 class Fitter
@@ -50,46 +50,46 @@ public:
   const Fitter<Measureable> & operator=(const Fitter<Measureable> &right);
 
 
-  //	Adds a fit action to the fitter.  The order of the fit
-  //	action is in general important, but whether it really
-  //	makes any difference or not depends on the fitter
-  //	subclass.
+  //    Adds a fit action to the fitter.  The order of the fit
+  //    action is in general important, but whether it really
+  //    makes any difference or not depends on the fitter
+  //    subclass.
   void addFitAction(const FitAction<Measureable> *action);
 
-  //	Gets the number of fit actions currenty attributed to
-  //	the fitter.  They may or not be incorporated into the
-  //	fit.
+  //    Gets the number of fit actions currenty attributed to
+  //    the fitter.  They may or not be incorporated into the
+  //    fit.
   unsigned int getNumFitActions() const;
 
-  //	Abstract function.  Subclasses are expected to implement
-  //	this function to provide the number of fit actions they
-  //	have actually incorporated into the fit.
+  //    Abstract function.  Subclasses are expected to implement
+  //    this function to provide the number of fit actions they
+  //    have actually incorporated into the fit.
   virtual unsigned int getNumAppliedFitActions() const = 0;
 
-  //	Returns a pointer to the ith fit action.
+  //    Returns a pointer to the ith fit action.
   const FitAction<Measureable> * getFitAction(unsigned int index) const;
 
-  //	Sets the reference "measurable"; all calculations of
-  //	residuals, derivates & cetera are w. r. t. this
-  //	reference measurable.
+  //    Sets the reference "measurable"; all calculations of
+  //    residuals, derivates & cetera are w. r. t. this
+  //    reference measurable.
   void setReference(Measureable *reference);
 
-  //	Returns the reference measureable
+  //    Returns the reference measureable
   const Measureable * getReference() const;
 
-  //	Abstract function for performing a fit.  The sequence of
-  //	operations that will be carried out when this function
-  //	is invoked is determined by the subclass.
+  //    Abstract function for performing a fit.  The sequence of
+  //    operations that will be carried out when this function
+  //    is invoked is determined by the subclass.
   virtual void fit() = 0;
 
 
-  //	An abstract function returning the "fit".  Provided by
-  //	the subclasses.
+  //    An abstract function returning the "fit".  Provided by
+  //    the subclasses.
   virtual const Fit<Measureable> * getFit() const = 0;
 
-  //	An abstract function that returns the residual for a
-  //	particular measurement.  The implementation is provided
-  //	in the subclasses.
+  //    An abstract function that returns the residual for a
+  //    particular measurement.  The implementation is provided
+  //    in the subclasses.
   virtual const Residual * newResidual(const Measurement<Measureable> *measurement) = 0;
 
   // Resets the fit
@@ -113,13 +113,13 @@ protected:
 
 protected:
 
-  //	The standard set of fit actions is invoked using
-  //	double-dispatch.  Subclasses of fitter handle the
-  //	incorporation of specific fit actions.  In case the
-  //	subclass doesn't handle the fit action (and if the fit
-  //	action doesn't apply itself directly), this method
-  //	simply prints out a hopefully not too bothersome warning
-  //	message.
+  //    The standard set of fit actions is invoked using
+  //    double-dispatch.  Subclasses of fitter handle the
+  //    incorporation of specific fit actions.  In case the
+  //    subclass doesn't handle the fit action (and if the fit
+  //    action doesn't apply itself directly), this method
+  //    simply prints out a hopefully not too bothersome warning
+  //    message.
   virtual void apply(const Measurement<Measureable> *theMeasurement);
   virtual void apply(const Constraint<Measureable> *theConstraint);
   virtual void apply(const Scatter<Measureable> *theScatter);

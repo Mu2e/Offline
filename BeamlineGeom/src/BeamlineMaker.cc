@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Id: BeamlineMaker.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Peter Shanahan
 //
@@ -80,14 +80,14 @@ namespace mu2e {
     _beamline->_ts._rCryo  = rCryo;
 
     _beamline->_ts._ts1.set(ts1HalfLength,
-			    CLHEP::Hep3Vector(solenoidOffset,0.0,ts1zOffset),
-			    0 );
+                            CLHEP::Hep3Vector(solenoidOffset,0.0,ts1zOffset),
+                            0 );
     _beamline->_ts._ts3.set(ts3HalfLength,
-			    CLHEP::Hep3Vector(0.0,0.0,0.0),
-			    new CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) );
+                            CLHEP::Hep3Vector(0.0,0.0,0.0),
+                            new CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) );
     _beamline->_ts._ts5.set(ts5HalfLength,
-			    CLHEP::Hep3Vector(-solenoidOffset,0.0,ts5zOffset),
-			    0 );
+                            CLHEP::Hep3Vector(-solenoidOffset,0.0,ts5zOffset),
+                            0 );
 
     _beamline->_ts._coll1.set( coll1HalfLength,CLHEP::Hep3Vector(0.0,0.0,-ts1HalfLength+coll1HalfLength));
     _beamline->_ts._coll31.set(coll3HalfLength,CLHEP::Hep3Vector(0.0,0.0,-coll3HalfLength-coll3Hole/2));

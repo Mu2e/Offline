@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructTS.cc,v 1.5 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -135,9 +135,9 @@ namespace mu2e {
     // Place collimator 1
 
     double coll1Param[7] = { coll1InnerRadius1, rVac,
-			     coll1InnerRadius2, rVac,
-			     coll1HalfLength-2*vdHalfLength,
-			     0.0, 360.0*CLHEP::degree };
+                             coll1InnerRadius2, rVac,
+                             coll1HalfLength-2*vdHalfLength,
+                             0.0, 360.0*CLHEP::degree };
 
     VolumeInfo coll1VacInfo = nestCons( "Coll1",
                                         coll1Param,
@@ -240,13 +240,13 @@ namespace mu2e {
     if( hDz<coll32HalfLength ) hDz=coll32HalfLength;
     // Hole is the intersection of box and circles
     G4Box* coll3_hole_box = new G4Box("coll3_hole_box",
-				      coll3HoleRadius+5.0,coll3HoleHalfHeight,hDz+1.0);
+                                      coll3HoleRadius+5.0,coll3HoleHalfHeight,hDz+1.0);
     G4Tubs* coll3_hole_circle = new G4Tubs("coll3_hole_circle",
-					   0.0,coll3HoleRadius,hDz+1.0,
-					   0.0, 360.0*CLHEP::degree );
+                                           0.0,coll3HoleRadius,hDz+1.0,
+                                           0.0, 360.0*CLHEP::degree );
     G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
-							      coll3_hole_box,
-							      coll3_hole_circle);
+                                                              coll3_hole_box,
+                                                              coll3_hole_circle);
 
     // Make collimators themselves. At this moment the collimators
     // coll31 and coll32 are the same size. But it is possible to make them
@@ -260,24 +260,24 @@ namespace mu2e {
     coll32Info.name = "Coll32";
 
     G4Tubs* coll31_mother = new G4Tubs("Coll31_mother",
-				       0, rVac, coll31HalfLength-2*vdHalfLength,
-				       0.0, 360.0*CLHEP::degree );
+                                       0, rVac, coll31HalfLength-2*vdHalfLength,
+                                       0.0, 360.0*CLHEP::degree );
 
     G4Tubs* coll32_mother = new G4Tubs("Coll32_mother",
-				       0, rVac, coll32HalfLength-2*vdHalfLength,
-				       0.0, 360.0*CLHEP::degree );
+                                       0, rVac, coll32HalfLength-2*vdHalfLength,
+                                       0.0, 360.0*CLHEP::degree );
 
     coll31Info.solid = new G4SubtractionSolid(coll31Info.name,
-					      coll31_mother,
-					      coll3_hole,
-					      0,
-					      G4ThreeVector(0,coll3HoleDisplacement,0));
+                                              coll31_mother,
+                                              coll3_hole,
+                                              0,
+                                              G4ThreeVector(0,coll3HoleDisplacement,0));
 
     coll32Info.solid = new G4SubtractionSolid(coll32Info.name,
-					      coll32_mother,
-					      coll3_hole,
-					      0,
-					      G4ThreeVector(0,coll3HoleDisplacement,0));
+                                              coll32_mother,
+                                              coll3_hole,
+                                              0,
+                                              G4ThreeVector(0,coll3HoleDisplacement,0));
 
     // Now use finishNesting to place collimators 31 and 32
 
@@ -287,30 +287,30 @@ namespace mu2e {
     coll32Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
 
     finishNesting(coll31Info,
-		  coll3Material,
-		  coll31Rot,
-		  beamg->getTS().getColl31().getLocal(),
-		  ts3VacInfo.logical,
-		  0,
-		  collVisible,
-		  G4Color::Gray(),
-		  collSolid,
-		  forceAuxEdgeVisible,
-		  placePV,
-		  doSurfaceCheck);
+                  coll3Material,
+                  coll31Rot,
+                  beamg->getTS().getColl31().getLocal(),
+                  ts3VacInfo.logical,
+                  0,
+                  collVisible,
+                  G4Color::Gray(),
+                  collSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck);
 
     finishNesting(coll32Info,
-		  coll3Material,
-		  coll32Rot,
-		  beamg->getTS().getColl32().getLocal(),
-		  ts3VacInfo.logical,
-		  0,
-		  collVisible,
-		  G4Color::Gray(),
-		  collSolid,
-		  forceAuxEdgeVisible,
-		  placePV,
-		  doSurfaceCheck);
+                  coll3Material,
+                  coll32Rot,
+                  beamg->getTS().getColl32().getLocal(),
+                  ts3VacInfo.logical,
+                  0,
+                  collVisible,
+                  G4Color::Gray(),
+                  collSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck);
 
     // Place Pbar absorber between Coll31 and Coll32
 
@@ -413,7 +413,7 @@ namespace mu2e {
     // Place collimator 5
 
     double coll5Param[5] = { coll5InnerRadius, rVac,
-			     coll5HalfLength-2*vdHalfLength, 0.0, 360.0*CLHEP::degree };
+                             coll5HalfLength-2*vdHalfLength, 0.0, 360.0*CLHEP::degree };
 
     VolumeInfo coll5VacInfo = nestTubs( "Coll5",
                                         coll5Param,

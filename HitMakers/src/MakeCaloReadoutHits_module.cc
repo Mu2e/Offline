@@ -114,12 +114,12 @@ namespace mu2e {
     const std::string _messageCategory;
 
     void makeCalorimeterHits (const art::Handle<StepPointMCCollection>&,
-			      const art::Handle<StepPointMCCollection>&,
-			      CaloHitCollection &,
-			      CaloHitMCTruthCollection&,
-			      CaloCrystalOnlyHitCollection&,
-			      DPIndexVectorCollection&,
-			      DPIndexVectorCollection&);
+                              const art::Handle<StepPointMCCollection>&,
+                              CaloHitCollection &,
+                              CaloHitMCTruthCollection&,
+                              CaloCrystalOnlyHitCollection&,
+                              DPIndexVectorCollection&,
+                              DPIndexVectorCollection&);
 
   };
 
@@ -158,17 +158,17 @@ namespace mu2e {
 
     if( nHits>0 || nroHits>0 ) {
       makeCalorimeterHits(points, rohits,
-			  *caloHits, *caloMCHits, *caloCrystalMCHits,
-			  *caloMCptrHits, *caloMCroptrHits);
+                          *caloHits, *caloMCHits, *caloCrystalMCHits,
+                          *caloMCptrHits, *caloMCroptrHits);
     }
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
       cout << "MakeCaloReadoutHits: Total number of calorimeter hits = "
-	   << caloHits->size()
-	   << endl;
+           << caloHits->size()
+           << endl;
       cout << "MakeCaloReadoutHits: Total number of crystal MC hits = "
-	   << caloCrystalMCHits->size()
-	   << endl;
+           << caloCrystalMCHits->size()
+           << endl;
     }
 
     // Add the output hit collection to the event
@@ -183,12 +183,12 @@ namespace mu2e {
   } // end of ::analyze.
 
   void MakeCaloReadoutHits::makeCalorimeterHits (const art::Handle<StepPointMCCollection>& steps,
-				      const art::Handle<StepPointMCCollection>& rosteps,
-				      CaloHitCollection &caloHits,
-				      CaloHitMCTruthCollection& caloHitsMCTruth,
-				      CaloCrystalOnlyHitCollection& caloCrystalHitsMCTruth,
-				      DPIndexVectorCollection& caloHitsMCCrystalPtr,
-				      DPIndexVectorCollection& caloHitsMCReadoutPtr ) {
+                                      const art::Handle<StepPointMCCollection>& rosteps,
+                                      CaloHitCollection &caloHits,
+                                      CaloHitMCTruthCollection& caloHitsMCTruth,
+                                      CaloCrystalOnlyHitCollection& caloCrystalHitsMCTruth,
+                                      DPIndexVectorCollection& caloHitsMCCrystalPtr,
+                                      DPIndexVectorCollection& caloHitsMCReadoutPtr ) {
 
     // Product Id of the input points.
     art::ProductID const& crystal_id(steps.id());
@@ -216,8 +216,8 @@ namespace mu2e {
     for ( int i=0; i<nSteps; ++i){
       StepPointMC const& h = (*steps)[i];
       for( int j=0; j<nro; ++j ) {
-	vector<int> &steps_id = hitmap[h.volumeId()*nro+j].first;
-	steps_id.push_back(i);
+        vector<int> &steps_id = hitmap[h.volumeId()*nro+j].first;
+        steps_id.push_back(i);
       }
     }
 
@@ -249,19 +249,19 @@ namespace mu2e {
       for( size_t i=0; i<isteps.size(); i++ ) {
 
         int hitRef = isteps[i];
-	StepPointMC const& h = (*steps)[hitRef];
+        StepPointMC const& h = (*steps)[hitRef];
 
         double edep    = h.eDep()/nro; // each ro has its crystal energy deposit assigned to it
-	if( edep<=0.0 ) continue; // Do not create hit if there is no energy deposition
+        if( edep<=0.0 ) continue; // Do not create hit if there is no energy deposition
 
-	// Hit position in Mu2e frame
+        // Hit position in Mu2e frame
         CLHEP::Hep3Vector const& pos = h.position();
-	// Hit position in local crystal frame
+        // Hit position in local crystal frame
         CLHEP::Hep3Vector posLocal = cal.toCrystalFrame(roid,pos);
-	// Calculate correction for edep
-	double edep_corr = edep * (1.0+(posLocal.z()/length)*nonUniform/2.0);
+        // Calculate correction for edep
+        double edep_corr = edep * (1.0+(posLocal.z()/length)*nonUniform/2.0);
 
-	ro_hits.push_back(ROHit(hitRef,edep,edep_corr,0,h.time()));
+        ro_hits.push_back(ROHit(hitRef,edep,edep_corr,0,h.time()));
 
       }
 
@@ -270,13 +270,13 @@ namespace mu2e {
       for( size_t i=0; i<irosteps.size(); i++ ) {
 
         int hitRef = irosteps[i];
-	StepPointMC const& h = (*rosteps)[hitRef];
+        StepPointMC const& h = (*rosteps)[hitRef];
 
-	// There is no cut on energy deposition here - may be, we need to add one?
+        // There is no cut on energy deposition here - may be, we need to add one?
 
         double hitTime = h.time();
 
-	ro_hits.push_back(ROHit(hitRef,0,0,1,hitTime));
+        ro_hits.push_back(ROHit(hitRef,0,0,1,hitTime));
 
       }
 
@@ -292,50 +292,50 @@ namespace mu2e {
       DPIndexVector mcptr_crystal;
       DPIndexVector mcptr_readout;
       if( ro_hits[0]._charged==0 ) {
-	mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[0]._hit_id));
+        mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[0]._hit_id));
       } else {
-	mcptr_readout.push_back(DPIndex(readout_id,ro_hits[0]._hit_id));
+        mcptr_readout.push_back(DPIndex(readout_id,ro_hits[0]._hit_id));
       }
 
       for( size_t i=1; i<ro_hits.size(); ++i ) {
-	if( (ro_hits[i]._time-ro_hits[i-1]._time) > timeGap ) {
-	  // Save current hit
-	  caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_charged*addEdep));
-	  caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
-	  caloHitsMCCrystalPtr.push_back(mcptr_crystal);
-	  caloHitsMCReadoutPtr.push_back(mcptr_readout);
-	  // ...and create new hit
-	  mcptr_crystal.clear();
-	  mcptr_readout.clear();
-	  if( ro_hits[i]._charged==0 ) {
-	    mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[i]._hit_id));
-	  } else {
-	    mcptr_readout.push_back(DPIndex(readout_id,ro_hits[i]._hit_id));
-	  }
-	  h_time    = ro_hits[i]._time;
-	  h_edep    = ro_hits[i]._edep;
-	  h_edepc   = ro_hits[i]._edep_corr;
-	  h_charged = ro_hits[i]._charged;
-	} else {
-	  // Append data to hit
-	  h_edep  += ro_hits[i]._edep;
-	  h_edepc += ro_hits[i]._edep_corr;
-	  if( ro_hits[i]._charged>0 ) h_charged = 1; // this does not count the charge...
-	  if( ro_hits[i]._charged==0 ) {
-	    mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[i]._hit_id));
-	  } else {
-	    mcptr_readout.push_back(DPIndex(readout_id,ro_hits[i]._hit_id));
-	  }
-	}
+        if( (ro_hits[i]._time-ro_hits[i-1]._time) > timeGap ) {
+          // Save current hit
+          caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_charged*addEdep));
+          caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_charged));
+          caloHitsMCCrystalPtr.push_back(mcptr_crystal);
+          caloHitsMCReadoutPtr.push_back(mcptr_readout);
+          // ...and create new hit
+          mcptr_crystal.clear();
+          mcptr_readout.clear();
+          if( ro_hits[i]._charged==0 ) {
+            mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[i]._hit_id));
+          } else {
+            mcptr_readout.push_back(DPIndex(readout_id,ro_hits[i]._hit_id));
+          }
+          h_time    = ro_hits[i]._time;
+          h_edep    = ro_hits[i]._edep;
+          h_edepc   = ro_hits[i]._edep_corr;
+          h_charged = ro_hits[i]._charged;
+        } else {
+          // Append data to hit
+          h_edep  += ro_hits[i]._edep;
+          h_edepc += ro_hits[i]._edep_corr;
+          if( ro_hits[i]._charged>0 ) h_charged = 1; // this does not count the charge...
+          if( ro_hits[i]._charged==0 ) {
+            mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[i]._hit_id));
+          } else {
+            mcptr_readout.push_back(DPIndex(readout_id,ro_hits[i]._hit_id));
+          }
+        }
       }
 
       /*
       cout << "CaloHit: id=" << roid
-	   << " time=" << h_time
-	   << " trueEdep=" << h_edep
-	   << " corrEdep=" << h_edepc
-	   << " chargedEdep=" << (h_edepc+h_charged*addEdep)
-	   << endl;
+           << " time=" << h_time
+           << " trueEdep=" << h_edep
+           << " corrEdep=" << h_edepc
+           << " chargedEdep=" << (h_edepc+h_charged*addEdep)
+           << endl;
       */
 
       caloHits.push_back(       CaloHit(roid,h_time,h_edepc+h_charged*addEdep));
@@ -369,8 +369,8 @@ namespace mu2e {
       vector<int> const& isteps = cr->second.first;
 
       for( size_t i=0; i<isteps.size(); i++ ) {
-	StepPointMC const& h = (*steps)[isteps[i]];
-	cr_hits.push_back(CaloCrystalOnlyHit(cid,h.time(),h.eDep()));
+        StepPointMC const& h = (*steps)[isteps[i]];
+        cr_hits.push_back(CaloCrystalOnlyHit(cid,h.time(),h.eDep()));
       }
 
       sort(cr_hits.begin(), cr_hits.end(), lessByTime<CaloCrystalOnlyHitCollection::value_type>());
@@ -381,23 +381,23 @@ namespace mu2e {
 
       for ( size_t i=1; i<cr_hits.size(); ++i ) {
 
-	if ( (cr_hits[i].time()-cr_hits[i-1].time()) > timeGap ) {
+        if ( (cr_hits[i].time()-cr_hits[i-1].time()) > timeGap ) {
 
-	  // Save current hit
+          // Save current hit
 
           caloCrystalHitsMCTruth.push_back(cHitMCTruth);
 
-	  // ...and create new hit
+          // ...and create new hit
 
           cHitMCTruth  = cr_hits[i];
 
-	} else {
+        } else {
 
-	  // Add energy to the old hit (keep the "earlier" time)
+          // Add energy to the old hit (keep the "earlier" time)
 
           cHitMCTruth.setEnergyDep(cHitMCTruth.energyDep()+cr_hits[i].energyDep());
 
-	}
+        }
 
       }
 

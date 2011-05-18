@@ -1,9 +1,9 @@
 //
 // Defines sensitive detector for CRSScintillatorBar
 //
-// $Id: CRSScintillatorBarSD.cc,v 1.5 2011/05/18 16:11:17 wb Exp $
+// $Id: CRSScintillatorBarSD.cc,v 1.6 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author KLG
 //
@@ -65,8 +65,8 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	mf::LogWarning("G4") << "Maximum number of particles reached in CRSScintillatorBarSD: "
-			      << _currentSize << endl;
+        mf::LogWarning("G4") << "Maximum number of particles reached in CRSScintillatorBarSD: "
+                              << _currentSize << endl;
       }
       return false;
     }
@@ -94,15 +94,15 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
       mf::LogWarning("G4") << "Total of " << _currentSize
-			    << " CRS Scintillator Bar hits were generated in the event."
-			    << endl
-			    << "Only " << _sizeLimit << " are saved in output collection."
-			    << endl;
+                            << " CRS Scintillator Bar hits were generated in the event."
+                            << endl
+                            << "Only " << _sizeLimit << " are saved in output collection."
+                            << endl;
       cout << "Total of " << _currentSize
-	   << " CRS Scintillator Bar hits were generated in the event."
-	   << endl
-	   << "Only " << _sizeLimit << " are saved in output collection."
-	   << endl;
+           << " CRS Scintillator Bar hits were generated in the event."
+           << endl
+           << "Only " << _sizeLimit << " are saved in output collection."
+           << endl;
     }
 
     if (verboseLevel>0) {

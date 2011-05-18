@@ -1,9 +1,9 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: DSField.cc,v 1.6 2011/05/18 02:27:17 wb Exp $
+// $Id: DSField.cc,v 1.7 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite by Rob Kutschke at version 1.4
@@ -49,9 +49,9 @@ namespace mu2e {
 
     /*
     cout << "DSField map=" << _map->getKey()
-	 << " point=("<<point.x()<<","<<point.y()<<","<<point.z()<<")"
-	 << " field=("<<Bfield[0]<<","<<Bfield[1]<<","<<Bfield[2]<<")"
-	 << endl;
+         << " point=("<<point.x()<<","<<point.y()<<","<<point.z()<<")"
+         << " field=("<<Bfield[0]<<","<<Bfield[1]<<","<<Bfield[2]<<")"
+         << endl;
     */
 
   }

@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.12 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructStoppingTarget.cc,v 1.13 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Peter Shanahan
 //
@@ -127,7 +127,7 @@ namespace mu2e {
                                                 , foilMaterial
                                                 , foilInfo.name
                                                 );
-	foilInfo.logical->SetSensitiveDetector(stSD);
+        foilInfo.logical->SetSensitiveDetector(stSD);
 
         // rotation matrix...
         G4RotationMatrix* rot = 0; //... will have to wait

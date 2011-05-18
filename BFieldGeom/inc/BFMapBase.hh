@@ -3,9 +3,9 @@
 //
 // Interface to the magnetic field maps. Used by BFMap and BFMapSet.
 //
-// $Id: BFMapBase.hh,v 1.6 2011/05/18 02:27:14 wb Exp $
+// $Id: BFMapBase.hh,v 1.7 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/18 21:14:30 $
 //
 
 #include <string>
@@ -22,7 +22,7 @@ namespace mu2e {
     virtual ~BFMapBase();
 
     virtual bool getBFieldWithStatus(const CLHEP::Hep3Vector &,
-				     CLHEP::Hep3Vector & ) const = 0;
+                                     CLHEP::Hep3Vector & ) const = 0;
 
     CLHEP::Hep3Vector getBField(const CLHEP::Hep3Vector& pos) const {
       CLHEP::Hep3Vector result;

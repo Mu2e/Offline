@@ -1,9 +1,9 @@
 //
 // Main program of the test suite for the make_ref class template.
 //
-//  $Id: maybe_ref_test.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+//  $Id: maybe_ref_test.cc,v 1.3 2011/05/18 21:14:30 wb Exp $
 //  $Author: wb $
-//  $Date: 2011/05/18 02:27:19 $
+//  $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -61,7 +61,7 @@ int main (){
   catch (std::logic_error& x)
     {
       cout << "Caught the expected exeption\n"
-	   << x.what() << endl;
+           << x.what() << endl;
       rc = 0;
     }
   catch (...)

@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: ReadStrawHit_module.cc,v 1.5 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -167,45 +167,45 @@ namespace mu2e {
       float detnt[11];
       cout<<"Number of straws:  "<< allstraws.size()<<endl;
       for (size_t i = 0;i<allstraws.size();i++)
-	{
-	  Straw str = allstraws[i];
-	  StrawId sid = str.Id();
-	  LayerId lid = sid.getLayerId();
-	  DeviceId did = sid.getDeviceId();
-	  SectorId secid = sid.getSectorId();
+        {
+          Straw str = allstraws[i];
+          StrawId sid = str.Id();
+          LayerId lid = sid.getLayerId();
+          DeviceId did = sid.getDeviceId();
+          SectorId secid = sid.getSectorId();
 
-	  //cout << "index: "  << i << " Layer: "<< lid.getLayer()<< " Device: "<< did <<"  Sector:  "<<secid.getSector()<<endl;
-	  //cout<<str.getHalfLength()<<endl;
-	  const CLHEP::Hep3Vector vec3j = str.getMidPoint();
-	  const CLHEP::Hep3Vector vec3j1 = str.getDirection();
-	  /*
-	  cout << i <<
-	    ","<<lid.getLayer()<<
-	    ","<<did <<
-	    ","<<secid.getSector()<<
-	    ","<<str.getHalfLength()<<
-	    ","<<vec3j.getX()<<
-	    ","<<vec3j.getY()<<
-	    ","<<vec3j.getZ()<<
-	    ","<<vec3j1.getX()<<
-	    ","<<vec3j1.getY()<<
-	    ","<<vec3j1.getZ()<<
-	    endl;
-	  */
-	  // Fill the ntuple.
-	  detnt[0]  = i;
-	  detnt[1]  = lid.getLayer();
-	  detnt[2]  = did;
-	  detnt[3]  = secid.getSector();
-	  detnt[4]  = str.getHalfLength();
-	  detnt[5]  = vec3j.getX();
-	  detnt[6]  = vec3j.getY();
-	  detnt[7]  = vec3j.getZ();
-	  detnt[8]  = vec3j1.getX();
-	  detnt[9]  = vec3j1.getY();
-	  detnt[10] = vec3j1.getZ();
-	  _detntup->Fill(detnt);
-	}
+          //cout << "index: "  << i << " Layer: "<< lid.getLayer()<< " Device: "<< did <<"  Sector:  "<<secid.getSector()<<endl;
+          //cout<<str.getHalfLength()<<endl;
+          const CLHEP::Hep3Vector vec3j = str.getMidPoint();
+          const CLHEP::Hep3Vector vec3j1 = str.getDirection();
+          /*
+          cout << i <<
+            ","<<lid.getLayer()<<
+            ","<<did <<
+            ","<<secid.getSector()<<
+            ","<<str.getHalfLength()<<
+            ","<<vec3j.getX()<<
+            ","<<vec3j.getY()<<
+            ","<<vec3j.getZ()<<
+            ","<<vec3j1.getX()<<
+            ","<<vec3j1.getY()<<
+            ","<<vec3j1.getZ()<<
+            endl;
+          */
+          // Fill the ntuple.
+          detnt[0]  = i;
+          detnt[1]  = lid.getLayer();
+          detnt[2]  = did;
+          detnt[3]  = secid.getSector();
+          detnt[4]  = str.getHalfLength();
+          detnt[5]  = vec3j.getX();
+          detnt[6]  = vec3j.getY();
+          detnt[7]  = vec3j.getZ();
+          detnt[8]  = vec3j1.getX();
+          detnt[9]  = vec3j1.getY();
+          detnt[10] = vec3j1.getZ();
+          _detntup->Fill(detnt);
+        }
     }
     art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);

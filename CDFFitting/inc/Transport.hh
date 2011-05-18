@@ -3,12 +3,12 @@
 #include "CDFFitting/inc/FitAction.hh"
 #include "CLHEP/Matrix/Matrix.h"
 
-//	This class is an Abstract Base Class that specifies the
-//	interface for "transports", e.g, in the case of track
-//	fitting,
-//	energy loss, magnetic field inhomogeneities.  In general
-//	a transport produces a deterministic shift of the state
-//	vector.
+//      This class is an Abstract Base Class that specifies the
+//      interface for "transports", e.g, in the case of track
+//      fitting,
+//      energy loss, magnetic field inhomogeneities.  In general
+//      a transport produces a deterministic shift of the state
+//      vector.
 template <class Measureable>
 class Transport : public FitAction<Measureable> {
 

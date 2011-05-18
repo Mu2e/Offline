@@ -15,9 +15,9 @@ public:
 
   // Construct from particle momentum, position, field, and charge.
   Helix(const HepGeom::Vector3D<double> &,
-	const HepGeom::Point3D<double> &,
-	double q,
-	double Field);
+        const HepGeom::Point3D<double> &,
+        double q,
+        double Field);
 
   // Copy Constructor
   inline Helix(const Helix &right);

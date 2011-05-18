@@ -1,7 +1,7 @@
 //
-// $Id: MakeDPIStrawCluster_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Id: MakeDPIStrawCluster_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Hans Wenzel
 // This modules create clusters of fired StrawHits in a panel
@@ -113,105 +113,105 @@ namespace mu2e {
      //    sort(hits->begin(),hits->end());
      for ( size_t i=0; i<hits->size(); ++i )
        {
-	 // Access data
-	 StrawHit hit = hits->at(i);
-	 StrawIndex si = hit.strawIndex();
-	 Straw str = tracker.getStraw(si);
-	 //	 StrawId sid = str.Id();
-	 bool used =false;
-	 for (size_t ii=0;ii<listofptrtoHits->size();ii++)
-	   {
-	     DPIndexVector tmpptrtoHits=listofptrtoHits->at(ii);
-	     for (size_t jj=0;jj<tmpptrtoHits.size();jj++)
-	       {
-		 DPIndex const& junkie = tmpptrtoHits[jj];
-		 StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-		 if (strawhit==hit)
-		 {
-		   used = true;
-		   break;		   		 }
-	       }
-	   }
-	 if ( !used )
-	   {
-	     ptrtoHits.push_back(DPIndex(id,i));
-	     const std::vector<StrawIndex> nearindex= str.nearestNeighboursByIndex();
-	     vector<StrawIndex>::const_iterator ncid;
-	     for(ncid=nearindex.begin(); ncid!=nearindex.end(); ncid++)
-	       {
-		 for ( size_t jj=0; jj<hits->size(); jj++ )
-		   {
-		     StrawHit nhit = hits->at(jj);
-		     StrawIndex nsi = nhit.strawIndex();
-		     if (nsi==*ncid) ptrtoHits.push_back(DPIndex(id,jj));
-		   } // end loop over all hits
-	       } // end loop over neighbors
-	     bool added=false;
-	     if (ptrtoHits.size()>1) added = true;
-	     while (added)
-	       {
-		 added = false;
-		 for(size_t kk=0;kk<ptrtoHits.size(); kk++)
-		   {
-		     DPIndex const& junkie = ptrtoHits[kk];
-		     StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-		     Straw straw = tracker.getStraw(strawhit.strawIndex());
-		     const std::vector<StrawIndex> nnearindex= straw.nearestNeighboursByIndex();
-		     vector<StrawIndex>::const_iterator nncid;
-		     for(nncid=nnearindex.begin(); nncid!=nnearindex.end(); nncid++)
-		       {
-			 //
-			 // first check if not already part of the cluster
-			 bool usedincl=false;
-			 for (size_t jjj=0;jjj<ptrtoHits.size();jjj++)
-			   {
-			     DPIndex const& junkie = ptrtoHits[jjj];
-			     StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-			     if (strawhit.strawIndex()==*nncid)
-			       {
-				 usedincl=true;
-				 break;
-			       }
-			   }
-			 if (!usedincl)
-			   {
-			     for ( size_t jj=0; jj<hits->size(); jj++ )
-			       {
-				 StrawHit const& nhit = hits->at(jj);
-				 StrawIndex nsi = nhit.strawIndex();
-				 if (nsi==*nncid)
-				   {
-				     ptrtoHits.push_back(DPIndex(id,jj));
-				     added = true;
-				   }
-			       } // end loop over all straws that fired
-			   }  // end used in cluster
-		       }// end loop over neighbors
-		   } // end loop over straws in cluster
-	       } // end while added
-	     if (ptrtoHits.size()>0)
-	       {
-		 listofptrtoHits->push_back(ptrtoHits);
-	       }
-	     ptrtoHits.clear();
+         // Access data
+         StrawHit hit = hits->at(i);
+         StrawIndex si = hit.strawIndex();
+         Straw str = tracker.getStraw(si);
+         //      StrawId sid = str.Id();
+         bool used =false;
+         for (size_t ii=0;ii<listofptrtoHits->size();ii++)
+           {
+             DPIndexVector tmpptrtoHits=listofptrtoHits->at(ii);
+             for (size_t jj=0;jj<tmpptrtoHits.size();jj++)
+               {
+                 DPIndex const& junkie = tmpptrtoHits[jj];
+                 StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+                 if (strawhit==hit)
+                 {
+                   used = true;
+                   break;                                }
+               }
+           }
+         if ( !used )
+           {
+             ptrtoHits.push_back(DPIndex(id,i));
+             const std::vector<StrawIndex> nearindex= str.nearestNeighboursByIndex();
+             vector<StrawIndex>::const_iterator ncid;
+             for(ncid=nearindex.begin(); ncid!=nearindex.end(); ncid++)
+               {
+                 for ( size_t jj=0; jj<hits->size(); jj++ )
+                   {
+                     StrawHit nhit = hits->at(jj);
+                     StrawIndex nsi = nhit.strawIndex();
+                     if (nsi==*ncid) ptrtoHits.push_back(DPIndex(id,jj));
+                   } // end loop over all hits
+               } // end loop over neighbors
+             bool added=false;
+             if (ptrtoHits.size()>1) added = true;
+             while (added)
+               {
+                 added = false;
+                 for(size_t kk=0;kk<ptrtoHits.size(); kk++)
+                   {
+                     DPIndex const& junkie = ptrtoHits[kk];
+                     StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+                     Straw straw = tracker.getStraw(strawhit.strawIndex());
+                     const std::vector<StrawIndex> nnearindex= straw.nearestNeighboursByIndex();
+                     vector<StrawIndex>::const_iterator nncid;
+                     for(nncid=nnearindex.begin(); nncid!=nnearindex.end(); nncid++)
+                       {
+                         //
+                         // first check if not already part of the cluster
+                         bool usedincl=false;
+                         for (size_t jjj=0;jjj<ptrtoHits.size();jjj++)
+                           {
+                             DPIndex const& junkie = ptrtoHits[jjj];
+                             StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+                             if (strawhit.strawIndex()==*nncid)
+                               {
+                                 usedincl=true;
+                                 break;
+                               }
+                           }
+                         if (!usedincl)
+                           {
+                             for ( size_t jj=0; jj<hits->size(); jj++ )
+                               {
+                                 StrawHit const& nhit = hits->at(jj);
+                                 StrawIndex nsi = nhit.strawIndex();
+                                 if (nsi==*nncid)
+                                   {
+                                     ptrtoHits.push_back(DPIndex(id,jj));
+                                     added = true;
+                                   }
+                               } // end loop over all straws that fired
+                           }  // end used in cluster
+                       }// end loop over neighbors
+                   } // end loop over straws in cluster
+               } // end while added
+             if (ptrtoHits.size()>0)
+               {
+                 listofptrtoHits->push_back(ptrtoHits);
+               }
+             ptrtoHits.clear();
 
-	   }// end if not used
+           }// end if not used
        } // end loop over all strawHits
      if ( _diagLevel > 1 )
        {
-	 cout << "Number of Clusters: "<< listofptrtoHits->size()<<"  Number of Hits:  "<<  hits->size()<<endl;
-	 for (size_t ii=0;ii<listofptrtoHits->size();ii++)
-	   {
-	     DPIndexVector tmpptrtoHits=listofptrtoHits->at(ii);
-	     cout << "Cluster Nr. "<<ii<<":  ";
-	     for(size_t kk=0;kk<tmpptrtoHits.size(); kk++)
-	       {
-	       DPIndex const& junkie = tmpptrtoHits[kk];
-	       StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-	       cout <<"  "<<strawhit.strawIndex();
-	       }
-	     cout<<endl;
-	   }
+         cout << "Number of Clusters: "<< listofptrtoHits->size()<<"  Number of Hits:  "<<  hits->size()<<endl;
+         for (size_t ii=0;ii<listofptrtoHits->size();ii++)
+           {
+             DPIndexVector tmpptrtoHits=listofptrtoHits->at(ii);
+             cout << "Cluster Nr. "<<ii<<":  ";
+             for(size_t kk=0;kk<tmpptrtoHits.size(); kk++)
+               {
+               DPIndex const& junkie = tmpptrtoHits[kk];
+               StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+               cout <<"  "<<strawhit.strawIndex();
+               }
+             cout<<endl;
+           }
        }
      // Add the output  to the event
      evt.put(listofptrtoHits,"DPIStrawCluster");

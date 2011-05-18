@@ -43,10 +43,10 @@ const LinearFitter<Measureable> & LinearFitter<Measureable>::operator=(const Lin
     _degreesOfFreedom=right._degreesOfFreedom;
     if (right._fit) {
       if (_fit) {
-	*_fit = *(right._fit);
+        *_fit = *(right._fit);
       }
       else {
-	_fit = new Fit<Measureable>(*right._fit);
+        _fit = new Fit<Measureable>(*right._fit);
       }
     }
     else {
@@ -334,8 +334,8 @@ const Residual * LinearFitter<Measureable>::newResidual(const Measurement<Measur
       const HepVector         res= _residuals.sub(offset,offset+length);
       HepSymMatrix           cov=_weight.sub(offset,offset+length).inverse(error);
       if (error) {
-	std::cerr << "Ominous Warning in LinearFitter::newResidual(Measurement):  matrix inversion failure " << std::endl;
-	return NULL;
+        std::cerr << "Ominous Warning in LinearFitter::newResidual(Measurement):  matrix inversion failure " << std::endl;
+        return NULL;
       }
       return new Residual(res,cov);
     }

@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.18 2011/05/18 02:27:15 wb Exp $
+// $Id: CalorimeterMaker.cc,v 1.19 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 21:14:30 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -72,22 +72,22 @@ namespace mu2e{
       // Check number of readouts
       int nRO = config.getInt("calorimeter.crystalReadoutChannelCount");
       if( ! (nRO==1 || nRO==2 || nRO==4) ) {
-	throw cet::exception("CaloGeom")
-	  << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";
+        throw cet::exception("CaloGeom")
+          << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";
       }
       _calo->_nROPerCrystal = nRO;
 
       // Check size of readouts
       if( nRO==1 ) {
-	if( _calo->_roHalfTrans > _calo->_crystalHW ) {
-	  throw cet::exception("CaloGeom")
-	    << "calorimeter.crystalReadoutHalfTrans > calorimeter.crystalHalfTrans.\n";
-	}
+        if( _calo->_roHalfTrans > _calo->_crystalHW ) {
+          throw cet::exception("CaloGeom")
+            << "calorimeter.crystalReadoutHalfTrans > calorimeter.crystalHalfTrans.\n";
+        }
       } else {
-	if( _calo->_roHalfTrans > 0.5*_calo->_crystalHW ) {
-	  throw cet::exception("CaloGeom")
-	    << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";
-	}
+        if( _calo->_roHalfTrans > 0.5*_calo->_crystalHW ) {
+          throw cet::exception("CaloGeom")
+            << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";
+        }
       }
 
       _calo->_nonUniformity = config.getDouble("calorimeter.crystalNonUniformity",0.0);
@@ -141,19 +141,19 @@ namespace mu2e{
 
       for( int i=0; i<_calo->_nVane; ++i ) {
 
-	_calo->_vanes.push_back(Vane(i));
-	Vane & v = _calo->_vanes.back();
+        _calo->_vanes.push_back(Vane(i));
+        Vane & v = _calo->_vanes.back();
 
-	v._size = CLHEP::Hep3Vector( _calo->_crystalHL+_calo->_roHalfThickness, dR, dZ );
+        v._size = CLHEP::Hep3Vector( _calo->_crystalHL+_calo->_roHalfThickness, dR, dZ );
 
-	double phi = -CLHEP::pi + i*dphi;
-	v._origin = CLHEP::Hep3Vector( _calo->_origin.x()+radius*cos(phi),
-				       _calo->_origin.y()+radius*sin(phi),
-				       _calo->_origin.z() );
-	v._originLocal = CLHEP::Hep3Vector(radius*cos(phi),radius*sin(phi),0);
+        double phi = -CLHEP::pi + i*dphi;
+        v._origin = CLHEP::Hep3Vector( _calo->_origin.x()+radius*cos(phi),
+                                       _calo->_origin.y()+radius*sin(phi),
+                                       _calo->_origin.z() );
+        v._originLocal = CLHEP::Hep3Vector(radius*cos(phi),radius*sin(phi),0);
 
-	v._rotation = CLHEP::HepRotation::IDENTITY;
-	v._rotation *= CLHEP::HepRotationZ(-CLHEP::pi/2 - i*dphi);
+        v._rotation = CLHEP::HepRotation::IDENTITY;
+        v._rotation *= CLHEP::HepRotationZ(-CLHEP::pi/2 - i*dphi);
 
       }
 

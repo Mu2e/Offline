@@ -3,11 +3,11 @@
 #include "CDFFitting/inc/FitAction.hh"
 
 
-//	This class is an Abstract Base Class representing
-//	constraints.  Constraints are handled through the use of
-//	Lagrange Multipliers.  In this formalism the constraint
-//	is expressed in terms of a matrix and a vector which are
-//	to be provided by the subclass.
+//      This class is an Abstract Base Class representing
+//      constraints.  Constraints are handled through the use of
+//      Lagrange Multipliers.  In this formalism the constraint
+//      is expressed in terms of a matrix and a vector which are
+//      to be provided by the subclass.
 
 template <class Measureable>
 class Constraint : public FitAction<Measureable> {

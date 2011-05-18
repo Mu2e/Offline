@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.14 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: ConstructMaterials.cc,v 1.15 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -423,8 +423,8 @@ namespace mu2e {
       G4double density;
       G4int nel;
       G4Material* CarbonFiber =
-	//        new G4Material(mat.name, density = 1.605*g/cm3, nel=1);
-	new G4Material(mat.name, density = 1.384*g/cm3, nel=1);
+        //        new G4Material(mat.name, density = 1.605*g/cm3, nel=1);
+        new G4Material(mat.name, density = 1.384*g/cm3, nel=1);
       G4Element* C  = getElementOrThrow("C");
       CarbonFiber->AddElement(C, 100.0*perCent );
     }

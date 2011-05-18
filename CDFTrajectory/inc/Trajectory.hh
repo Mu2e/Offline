@@ -52,7 +52,7 @@ public:
 
     //     //KR: a new constructor, see comment above
     //     Location(double s, Point3D position,
-    // 	     const Trajectory* t) :
+    //       const Trajectory* t) :
     //       __s(s), _position(position), _direction(0.0,0.0,0.0),
     //       _traj(t), _dirIsComputed(false)
     //       {}

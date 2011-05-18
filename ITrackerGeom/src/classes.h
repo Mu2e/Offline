@@ -4,9 +4,9 @@
 
 namespace {
 struct dictionary {
-	ITrackerWiredata		dummy0;
-	art::Wrapper<ITrackerWiredata>			dummy1;
-	IlcDCHwiredata			dummy2;
-	art::Wrapper<IlcDCHwiredata>			dummy3;
+        ITrackerWiredata                dummy0;
+        art::Wrapper<ITrackerWiredata>                  dummy1;
+        IlcDCHwiredata                  dummy2;
+        art::Wrapper<IlcDCHwiredata>                    dummy3;
 };
 }

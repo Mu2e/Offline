@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: MakeDriftCellHit_module.cc,v 1.5 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -264,7 +264,7 @@ namespace mu2e {
           LinePointPCA pca(mid, w, pos);
           hit_dca = pca.dca();
           hit_pca = pca.pca();
-	  continue;
+          continue;
         } else {
 
           // Step is not a point. Calculate the distance between two lines.
@@ -272,13 +272,13 @@ namespace mu2e {
           TwoLinePCA pca( mid, w, pos, mom);
           CLHEP::Hep3Vector const& p2 = pca.point2();
 
-	  //          if( (pos-p2).mag()<=length && (pos-p2).dot(mom)<=0 ) {
+          //          if( (pos-p2).mag()<=length && (pos-p2).dot(mom)<=0 ) {
 
             // If the point of closest approach is within the step and wire - thats it.
             hit_dca = pca.dca();
             hit_pca = pca.point1();
-	    sign=w.cross(mom).dot(hit_pca-p2);
-	    /*
+            sign=w.cross(mom).dot(hit_pca-p2);
+            /*
           } else {
 
             // The point of closest approach is not within the step. In this case
@@ -295,7 +295,7 @@ namespace mu2e {
             }
 
           }
-	    */
+            */
         } // drift distance calculation
 
         // Calculate signal time. It is Geant4 time + signal propagation time
@@ -364,7 +364,7 @@ namespace mu2e {
           digi_dca    = dcell_hits[i]._dca;
         } else {
           // Append existing hit
-	  //if( digi_t2 > dcell_hits[i]._t2 ) digi_t2 = dcell_hits[i]._t2;
+          //if( digi_t2 > dcell_hits[i]._t2 ) digi_t2 = dcell_hits[i]._t2;
           digi_edep += dcell_hits[i]._edep;
           mcptr.push_back(DPIndex(id,dcell_hits[i]._hit_id));
         }

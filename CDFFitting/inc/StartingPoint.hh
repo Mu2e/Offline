@@ -6,10 +6,10 @@
 
 class HepVector;
 class HepSymMatrix;
-//	This class is an Abstract Base Class representing a
-//	starting point, typically of use only for one of the
-//	recursive fitters.  This class is rather like a
-//	measurement but adds no degrees of freedom to the fit.
+//      This class is an Abstract Base Class representing a
+//      starting point, typically of use only for one of the
+//      recursive fitters.  This class is rather like a
+//      measurement but adds no degrees of freedom to the fit.
 
 template <class Measureable>
 class StartingPoint : public FitAction<Measureable> {

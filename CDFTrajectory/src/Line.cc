@@ -58,25 +58,25 @@ Line::Line(const HepGeom::Point3D<double> &point, const HepGeom::Vector3D<double
       _cosTheta = direction.z()>0 ? 1.0:-1.0;
       _d0=point.perp();
       if (_d0 == 0) {
-	_sinPhi0 = 0;
-	_cosPhi0 = 0;
-	_phi0    = 0;
+        _sinPhi0 = 0;
+        _cosPhi0 = 0;
+        _phi0    = 0;
       }
       else
-	{
-	  if (fabs(_d0)>NUM_PREC)
-	    {
-	      _sinPhi0= -point.x()/_d0;
-	      _cosPhi0=  point.y()/_d0;
-	    }
-	  else
-	    {
-	      double perp = direction.perp();
-	      _sinPhi0 = direction.y()/perp;
-	      _cosPhi0 = direction.x()/perp;
-	    }
-	  _phi0=atan2(_sinPhi0,_cosPhi0);
-	}
+        {
+          if (fabs(_d0)>NUM_PREC)
+            {
+              _sinPhi0= -point.x()/_d0;
+              _cosPhi0=  point.y()/_d0;
+            }
+          else
+            {
+              double perp = direction.perp();
+              _sinPhi0 = direction.y()/perp;
+              _cosPhi0 = direction.x()/perp;
+            }
+          _phi0=atan2(_sinPhi0,_cosPhi0);
+        }
       _z0=0;
     }
   else if (fabs(direction.z())<NUM_PREC) // this is another one, perpendicular
@@ -168,10 +168,10 @@ HepGeom::Vector3D<double> Line::getDirection(double ) const
 void Line::getLocation(Trajectory::Location & loc, double s) const {
   double cP0sT = _cosPhi0*_sinTheta, sP0sT = _sinPhi0*_sinTheta;
   loc.setLocation(s,
-		  -_d0*_sinPhi0+s*cP0sT,
-		  _d0*_cosPhi0+s*sP0sT,
-		  _z0+s*_cosTheta,
-		  cP0sT,sP0sT,_cosTheta);
+                  -_d0*_sinPhi0+s*cP0sT,
+                  _d0*_cosPhi0+s*sP0sT,
+                  _z0+s*_cosTheta,
+                  cP0sT,sP0sT,_cosTheta);
 }
 
 double Line::getPathLengthAtRhoEquals(double rho) const {

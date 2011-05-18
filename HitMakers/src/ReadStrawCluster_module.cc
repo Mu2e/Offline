@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Hans Wenzel
 //
@@ -99,34 +99,34 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     IntersectResult Intersect(const LineSegment& other_line, Vector& intersection)
     {
       float denom = ((other_line.end_.y_ - other_line.begin_.y_)*(end_.x_ - begin_.x_)) -
-	((other_line.end_.x_ - other_line.begin_.x_)*(end_.y_ - begin_.y_));
+        ((other_line.end_.x_ - other_line.begin_.x_)*(end_.y_ - begin_.y_));
 
       float nume_a = ((other_line.end_.x_ - other_line.begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
-	((other_line.end_.y_ - other_line.begin_.y_)*(begin_.x_ - other_line.begin_.x_));
+        ((other_line.end_.y_ - other_line.begin_.y_)*(begin_.x_ - other_line.begin_.x_));
 
       float nume_b = ((end_.x_ - begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
-	((end_.y_ - begin_.y_)*(begin_.x_ - other_line.begin_.x_));
+        ((end_.y_ - begin_.y_)*(begin_.x_ - other_line.begin_.x_));
 
       if(denom == 0.0f)
-	{
-	  if(nume_a == 0.0f && nume_b == 0.0f)
-	    {
-	      return COINCIDENT;
-	    }
-	  return PARALLEL;
-	}
+        {
+          if(nume_a == 0.0f && nume_b == 0.0f)
+            {
+              return COINCIDENT;
+            }
+          return PARALLEL;
+        }
 
       float ua = nume_a / denom;
       float ub = nume_b / denom;
 
       if(ua >= 0.0f && ua <= 1.0f && ub >= 0.0f && ub <= 1.0f)
-	{
-	  // Get the intersection point.
-	  intersection.x_ = begin_.x_ + ua*(end_.x_ - begin_.x_);
-	  intersection.y_ = begin_.y_ + ua*(end_.y_ - begin_.y_);
+        {
+          // Get the intersection point.
+          intersection.x_ = begin_.x_ + ua*(end_.x_ - begin_.x_);
+          intersection.y_ = begin_.y_ + ua*(end_.y_ - begin_.y_);
 
-	  return INTERSECTING;
-	}
+          return INTERSECTING;
+        }
 
       return NOT_INTERSECTING;
     }
@@ -149,26 +149,26 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    /*
     bool operator>(const pstraw other) const {
       if (id > other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
     }
    bool operator<(const pstraw other) const {
       if (id < other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
    }
    bool operator==(const straw other) const {
       if (id == other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
    }
    */
@@ -288,31 +288,31 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       DeviceId did;
       SectorId secid;
       for(strawIter=cluster.begin();strawIter!=cluster.end(); strawIter++)
-	{
-	  nsid=*strawIter;
-	  str = tracker.getStraw(nsid);
-	  sid = str.Id();
-	  lid = sid.getLayerId();
-	  did = sid.getDeviceId();
-	  secid = sid.getSectorId();
-	  const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-	  const CLHEP::Hep3Vector dirvec = str.getDirection();
-	  dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
-	  pvec = pvec + mpvec;
-	  if (str.getHalfLength()<hlen)
-	    {
-	      hlen=str.getHalfLength();
-	    }
-	  /* cout
-	       << " Layer:  " << lid.getLayer()
-	       << " DID:    " << did
-	       << " Sector: " << secid.getSector()
-	       << " hlen:   " << str.getHalfLength()
-	       << " mp:     "<< mpvec
-	       << " dir:    "<< dvec
-	       << endl;
-	  */
-	}
+        {
+          nsid=*strawIter;
+          str = tracker.getStraw(nsid);
+          sid = str.Id();
+          lid = sid.getLayerId();
+          did = sid.getDeviceId();
+          secid = sid.getSectorId();
+          const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+          const CLHEP::Hep3Vector dirvec = str.getDirection();
+          dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
+          pvec = pvec + mpvec;
+          if (str.getHalfLength()<hlen)
+            {
+              hlen=str.getHalfLength();
+            }
+          /* cout
+               << " Layer:  " << lid.getLayer()
+               << " DID:    " << did
+               << " Sector: " << secid.getSector()
+               << " hlen:   " << str.getHalfLength()
+               << " mp:     "<< mpvec
+               << " dir:    "<< dvec
+               << endl;
+          */
+        }
       double a = 1./double(cluster.size());
       pvec = pvec*a;
       //cout << pvec<<endl;
@@ -335,57 +335,57 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Int_t nint = 0;
     for (int i = 0;i<36;i++)
       {
-	if (mpstraws.count(i)>1)
-	  {
-	    pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
-	    ppp1 = mpstraws.equal_range(i);
-	    multimap<int,pstraw>::iterator first1 = ppp1.first;
-	    multimap<int,pstraw>::iterator first2 = ppp1.first;
-	    multimap<int,pstraw>::iterator last1 = ppp1.second;
-	    last1--;
-	    multimap<int,pstraw>::iterator last2 = ppp1.second;
-	    for (;first1 != last1;++first1)
-	      {
-		first2=first1;
-		first2++;
-		for (;first2 != last2;++first2)
-		  {
-		  pstraw junk  = (*first1).second;
-		  pstraw pjunk = (*first2).second;
-		  const Vector p0= Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
-		  const Vector p1= Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
-		  const Vector p2= Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry);
-		  const Vector p3= Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
-		  LineSegment linesegment0(p0, p1);
-		  LineSegment linesegment1(p2, p3);
-		  Vector intersection;
-		  switch(linesegment0.Intersect(linesegment1, intersection))
-		    {
-		    case LineSegment::PARALLEL:
-		      //std::cout << "The lines are parallel\n\n";
-		      break;
-		    case LineSegment::COINCIDENT:
-		      //std::cout << "The lines are coincident\n\n";
-		      break;
-		    case LineSegment::NOT_INTERSECTING:
-		      //std::cout << "The lines do not intersect\n\n";
-		      break;
-		    case LineSegment::INTERSECTING:
-		      //std::cout << "The lines intersect at (" << intersection.x_ << ", " << intersection.y_ << ")\n\n";
-		      X.push_back(intersection.x_);
-		      Y.push_back(intersection.y_);
-		      Z.push_back(0.5*(junk.mpz+pjunk.mpz));
-		      R.push_back(sqrt(intersection.x_*intersection.x_ + intersection.y_+intersection.y_));
-		      nint ++;
-		      //cout<<nint<<endl;
-		      break;
-		    }  // end switch
-		} // end for first2
-	    }// end for first1
-	}// end count >1
+        if (mpstraws.count(i)>1)
+          {
+            pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
+            ppp1 = mpstraws.equal_range(i);
+            multimap<int,pstraw>::iterator first1 = ppp1.first;
+            multimap<int,pstraw>::iterator first2 = ppp1.first;
+            multimap<int,pstraw>::iterator last1 = ppp1.second;
+            last1--;
+            multimap<int,pstraw>::iterator last2 = ppp1.second;
+            for (;first1 != last1;++first1)
+              {
+                first2=first1;
+                first2++;
+                for (;first2 != last2;++first2)
+                  {
+                  pstraw junk  = (*first1).second;
+                  pstraw pjunk = (*first2).second;
+                  const Vector p0= Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
+                  const Vector p1= Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
+                  const Vector p2= Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry);
+                  const Vector p3= Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
+                  LineSegment linesegment0(p0, p1);
+                  LineSegment linesegment1(p2, p3);
+                  Vector intersection;
+                  switch(linesegment0.Intersect(linesegment1, intersection))
+                    {
+                    case LineSegment::PARALLEL:
+                      //std::cout << "The lines are parallel\n\n";
+                      break;
+                    case LineSegment::COINCIDENT:
+                      //std::cout << "The lines are coincident\n\n";
+                      break;
+                    case LineSegment::NOT_INTERSECTING:
+                      //std::cout << "The lines do not intersect\n\n";
+                      break;
+                    case LineSegment::INTERSECTING:
+                      //std::cout << "The lines intersect at (" << intersection.x_ << ", " << intersection.y_ << ")\n\n";
+                      X.push_back(intersection.x_);
+                      Y.push_back(intersection.y_);
+                      Z.push_back(0.5*(junk.mpz+pjunk.mpz));
+                      R.push_back(sqrt(intersection.x_*intersection.x_ + intersection.y_+intersection.y_));
+                      nint ++;
+                      //cout<<nint<<endl;
+                      break;
+                    }  // end switch
+                } // end for first2
+            }// end for first1
+        }// end count >1
       //cout<<nint<<endl;
-	  // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
-	  //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
+          // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
+          //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
 
       }   ///endloop over all devices
     cout<<nint<<endl;
@@ -430,19 +430,19 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     fitter->SetParameter(0, "x0",   0, 0.1, 0,0);
     fitter->SetParameter(1, "y0",   0, 0.1, 0,0);
     fitter->SetParameter(2, "R",    175., 0.1, 0,0);
-    //	      fitter->SetParameter(3, "omega",    175., 0.1, 0,0);
-    //	      fitter->SetParameter(4, "phase",    175., 0.1, 0,0);
+    //        fitter->SetParameter(3, "omega",    175., 0.1, 0,0);
+    //        fitter->SetParameter(4, "phase",    175., 0.1, 0,0);
     Double_t arglist[1] = {0};
     fitter->ExecuteCommand("MIGRAD", arglist, 0);
     cout << "x0:   " << fitter->GetParameter(0)
-	 << " y0:  " << fitter->GetParameter(1)
-	 << " r:   " << fitter->GetParameter(2)
+         << " y0:  " << fitter->GetParameter(1)
+         << " r:   " << fitter->GetParameter(2)
     <<endl;
     _x0y0->Fill(fitter->GetParameter(0),fitter->GetParameter(1));
     _R_rec->Fill(fitter->GetParameter(2));
     //Draw the circle on top of the points
     //TArc *arc = new TArc(fitter->GetParameter(0),
-    //			 fitter->GetParameter(1),fitter->GetParameter(2));
+    //                   fitter->GetParameter(1),fitter->GetParameter(2));
   //arc->SetLineColor(kRed);
   //arc->SetLineWidth(4);
   // arc->Draw();

@@ -125,9 +125,9 @@ Measureable Fit<Measureable>::getMeasureable() const
 
 template <class Measureable>
 Fit<Measureable>::Fit(double chiSquared,
-		      unsigned  int degreesOfFreedom,
+                      unsigned  int degreesOfFreedom,
                       const HepVector     &estimate,
-		      const HepSymMatrix &covariance)
+                      const HepSymMatrix &covariance)
   :
   _chiSquared(chiSquared),
   _degreesOfFreedom(degreesOfFreedom),

@@ -1,9 +1,9 @@
 #ifndef ToyDP_CaloHitMCTruth_hh
 #define ToyDP_CaloHitMCTruth_hh
 
-// $Id: CaloHitMCTruth.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Id: CaloHitMCTruth.hh,v 1.6 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Ivan Logashenko
 
@@ -27,9 +27,9 @@ namespace mu2e {
     }
 
     CaloHitMCTruth( int   roId,
-		    float time,
-		    float energyDep,
-		    int   charged    ):
+                    float time,
+                    float energyDep,
+                    int   charged    ):
       _roId(roId),
       _time(time),
       _energyDep(energyDep),

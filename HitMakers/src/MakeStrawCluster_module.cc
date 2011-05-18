@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Id: MakeStrawCluster_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Hans Wenzel
 //
@@ -125,115 +125,115 @@ namespace mu2e {
        // first check if  straw already has been used
        bool used =false;
        for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
-	 {
-	   tmpCluster= *oClusterIter;
-	   for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
-	     {
-	       if (sid == *ostrawIter)
-		 {
-		   used = true;
-		   break;
-		 }
-	     }
-	 }
+         {
+           tmpCluster= *oClusterIter;
+           for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
+             {
+               if (sid == *ostrawIter)
+                 {
+                   used = true;
+                   break;
+                 }
+             }
+         }
        if ( !used )
-	 {
-	   Cluster.push_back(sid);
-	   // get list of neighbors and check if they fired:
-	   const std::vector<StrawId> nearid= str.nearestNeighboursById();
-	   vector<StrawId>::const_iterator ncid;
-	   for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
-	     {
-	       for ( size_t jj=0; jj<hits->size(); ++jj )
-		 {
-		   StrawHit        const&      hit(hits->at(jj));
-		   StrawIndex nsi = hit.strawIndex();
-		   Straw nstr = tracker.getStraw(nsi);
-		   StrawId nsid = nstr.Id();
-		   if (nsid==*ncid)
-		     {
-		       bool nused =false;
-		       for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
-			 {
-			   tmpCluster= *oClusterIter;
-			   for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
-			     {
-			       if (nsid == *ostrawIter)
-				 {
-				   nused = true;
-				   break;
-				}
-			     }
-			 }
-		       if ( !nused) Cluster.push_back(nsid);
-		     }
-		 } // end loop over all hits
-	     } // end loop over neighbors
-	   bool added=false;
-	   if (Cluster.size()>1) added = true;
-	   while (added)
-	     {
-	       added = false;
-	       for(size_t kk=0;kk<Cluster.size(); kk++)
-		 {
-		   Straw straw = tracker.getStraw(Cluster[kk]);
-		   const std::vector<StrawId> nnearid= straw.nearestNeighboursById();
-		   vector<StrawId>::const_iterator nncid;
-		   for(nncid=nnearid.begin(); nncid!=nnearid.end(); nncid++)
-		     {
-		       //
-		       // first check if not already part of the cluster
-		       //
-		       vector<StrawId>::const_iterator sIter;
-		       bool usedincl=false;
-		      for(sIter=Cluster.begin();sIter!=Cluster.end(); sIter++)
-			{
-			  if (*sIter==*nncid)
-			    {
-			      usedincl=true;
-			      break;
-			    }
-			}
-		      if (!usedincl)
-			{
-			  for ( size_t jj=0; jj<hits->size(); jj++ )
-			    {
-			      StrawHit        const&      hit(hits->at(jj));
-			      StrawIndex nsi = hit.strawIndex();
-			      Straw nstr = tracker.getStraw(nsi);
-			      StrawId nsid = nstr.Id();
-			      if (nsid==*nncid)
-				{
-				  bool nused =false;
-				  for(iClusterIter=listofClusters.begin();iClusterIter!=listofClusters.end(); iClusterIter++)
-				    {
-				      tmpCluster= *iClusterIter;
-				      for(istrawIter=tmpCluster.begin();istrawIter!=tmpCluster.end(); istrawIter++)
-					{
-					  if (nsid == *istrawIter)
-					    {
-					      nused = true;
-					      break;
-					    }
-					}
-				    }
-				  if ( !nused)
-				    {
-				      Cluster.push_back(nsid);
-				      added = true;
-				    }
-				}
-			    } // end loop over all straws that fired
-			}  // end used in cluster
-		    }// end loop over neighbors
-		} // end loop over straws in cluster
-	    } // end while added
-	  if (Cluster.size()>0)
-	    {
-	      listofClusters.push_back(Cluster);
-	    }
-	  Cluster.clear();
-	}// loop over all straws that fired.
+         {
+           Cluster.push_back(sid);
+           // get list of neighbors and check if they fired:
+           const std::vector<StrawId> nearid= str.nearestNeighboursById();
+           vector<StrawId>::const_iterator ncid;
+           for(ncid=nearid.begin(); ncid!=nearid.end(); ncid++)
+             {
+               for ( size_t jj=0; jj<hits->size(); ++jj )
+                 {
+                   StrawHit        const&      hit(hits->at(jj));
+                   StrawIndex nsi = hit.strawIndex();
+                   Straw nstr = tracker.getStraw(nsi);
+                   StrawId nsid = nstr.Id();
+                   if (nsid==*ncid)
+                     {
+                       bool nused =false;
+                       for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
+                         {
+                           tmpCluster= *oClusterIter;
+                           for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
+                             {
+                               if (nsid == *ostrawIter)
+                                 {
+                                   nused = true;
+                                   break;
+                                }
+                             }
+                         }
+                       if ( !nused) Cluster.push_back(nsid);
+                     }
+                 } // end loop over all hits
+             } // end loop over neighbors
+           bool added=false;
+           if (Cluster.size()>1) added = true;
+           while (added)
+             {
+               added = false;
+               for(size_t kk=0;kk<Cluster.size(); kk++)
+                 {
+                   Straw straw = tracker.getStraw(Cluster[kk]);
+                   const std::vector<StrawId> nnearid= straw.nearestNeighboursById();
+                   vector<StrawId>::const_iterator nncid;
+                   for(nncid=nnearid.begin(); nncid!=nnearid.end(); nncid++)
+                     {
+                       //
+                       // first check if not already part of the cluster
+                       //
+                       vector<StrawId>::const_iterator sIter;
+                       bool usedincl=false;
+                      for(sIter=Cluster.begin();sIter!=Cluster.end(); sIter++)
+                        {
+                          if (*sIter==*nncid)
+                            {
+                              usedincl=true;
+                              break;
+                            }
+                        }
+                      if (!usedincl)
+                        {
+                          for ( size_t jj=0; jj<hits->size(); jj++ )
+                            {
+                              StrawHit        const&      hit(hits->at(jj));
+                              StrawIndex nsi = hit.strawIndex();
+                              Straw nstr = tracker.getStraw(nsi);
+                              StrawId nsid = nstr.Id();
+                              if (nsid==*nncid)
+                                {
+                                  bool nused =false;
+                                  for(iClusterIter=listofClusters.begin();iClusterIter!=listofClusters.end(); iClusterIter++)
+                                    {
+                                      tmpCluster= *iClusterIter;
+                                      for(istrawIter=tmpCluster.begin();istrawIter!=tmpCluster.end(); istrawIter++)
+                                        {
+                                          if (nsid == *istrawIter)
+                                            {
+                                              nused = true;
+                                              break;
+                                            }
+                                        }
+                                    }
+                                  if ( !nused)
+                                    {
+                                      Cluster.push_back(nsid);
+                                      added = true;
+                                    }
+                                }
+                            } // end loop over all straws that fired
+                        }  // end used in cluster
+                    }// end loop over neighbors
+                } // end loop over straws in cluster
+            } // end while added
+          if (Cluster.size()>0)
+            {
+              listofClusters.push_back(Cluster);
+            }
+          Cluster.clear();
+        }// loop over all straws that fired.
     }
     // Add the output hit collection to the event
     //evt.put(listofClusterspointer);
@@ -242,14 +242,14 @@ namespace mu2e {
       cout << " Nr of Hits:  "<< hits->size()<<endl;
       cout << " nr of clusters:  " <<listofClusters.size()<<endl;
       for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
-	{
-	  tmpCluster= *oClusterIter;
-	  cout <<" Cluster length: "<< tmpCluster.size()<<endl;
-	  for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
-	    {
-	      cout<<*ostrawIter<<endl;
-	    }
-	}
+        {
+          tmpCluster= *oClusterIter;
+          cout <<" Cluster length: "<< tmpCluster.size()<<endl;
+          for(ostrawIter=tmpCluster.begin();ostrawIter!=tmpCluster.end(); ostrawIter++)
+            {
+              cout<<*ostrawIter<<endl;
+            }
+        }
     }
     evt.put(listofClusterspointer);
   } // end of ::analyze.

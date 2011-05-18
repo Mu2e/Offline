@@ -51,10 +51,10 @@ const ProgressiveFitter<Measureable> & ProgressiveFitter<Measureable>::operator=
     _displacementVector=right._displacementVector;
     if (right._fit) {
       if (_fit) {
-	*_fit=*right._fit;
+        *_fit=*right._fit;
       }
       else {
-	_fit = new Fit<Measureable>(*right._fit);
+        _fit = new Fit<Measureable>(*right._fit);
       }
     }
     else {
@@ -162,9 +162,9 @@ void ProgressiveFitter<Measureable>::apply(const Measurement<Measureable> *measu
     deltaChiSquared = (_residual.T()*_residualCov.inverse(error)*_residual)[0];
 
     if (deltaChiSquared/meaDim > MAXCHISQDOF) {
-	std::cerr << "Ominous Warning in KalmanFitter::apply(Measurement):  chi^2/dof=" << deltaChiSquared/meaDim << std::endl;
-	resetFit();
-	Fitter<Measureable>::setFailed(true);
+        std::cerr << "Ominous Warning in KalmanFitter::apply(Measurement):  chi^2/dof=" << deltaChiSquared/meaDim << std::endl;
+        resetFit();
+        Fitter<Measureable>::setFailed(true);
         return;
     }
 
@@ -178,15 +178,15 @@ void ProgressiveFitter<Measureable>::apply(const Measurement<Measureable> *measu
       HepVector dd=_estimate-Fitter<Measureable>::getReference()->getParameters();
       *Fitter<Measureable>::getReference()=Measureable::create(_estimate);
       if ((dd.T()*_covariance.inverse(error)*dd)[0] > MAXFILTERTOLERANCE*_covariance.num_row()) {
-	_errorMatrix        = measurement->getErrorMatrix(*Fitter<Measureable>::getReference());
+        _errorMatrix        = measurement->getErrorMatrix(*Fitter<Measureable>::getReference());
         _derivativeMatrix   = measurement->getDerivativeMatrix(*Fitter<Measureable>::getReference());
         _displacementVector = measurement->getDisplacementFrom(*Fitter<Measureable>::getReference());
         continue;
       }
       if (error) {
         std::cerr << "Ominous Warning in KalmanFitter::apply(Measurement):  matrix inversion failure " << std::endl;
-	resetFit();
-	Fitter<Measureable>::setFailed(true);
+        resetFit();
+        Fitter<Measureable>::setFailed(true);
         return;
       }
       break;

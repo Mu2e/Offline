@@ -10,7 +10,7 @@ public:
 
   // Calculate a confidence level:
   static double getConfidenceLevel(double chiSquared,
-				   unsigned int degreesOfFreedom);
+                                   unsigned int degreesOfFreedom);
 
 
 private:

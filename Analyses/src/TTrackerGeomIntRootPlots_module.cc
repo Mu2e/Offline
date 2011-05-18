@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.6 2011/05/18 20:09:10 wb Exp $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.7 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -114,24 +114,24 @@ namespace mu2e {
     void drawEnvelopesSupport(bool dolabels);
     void drawSector(bool dolabels);
     void drawSectorXZdetail(size_t dolabels,
-			    double lx=-std::numeric_limits<double>::max(),
-			    double ux= std::numeric_limits<double>::max(),
-			    double lz=-std::numeric_limits<double>::max(),
-			    double uz= std::numeric_limits<double>::max());
+                            double lx=-std::numeric_limits<double>::max(),
+                            double ux= std::numeric_limits<double>::max(),
+                            double lz=-std::numeric_limits<double>::max(),
+                            double uz= std::numeric_limits<double>::max());
     void drawStraws(bool dolabels);
     void drawStrawsXZdetail(bool dolabels,
-			    double lx=-std::numeric_limits<double>::max(),
-			    double ux= std::numeric_limits<double>::max(),
-			    double lz=-std::numeric_limits<double>::max(),
-			    double uz= std::numeric_limits<double>::max());
+                            double lx=-std::numeric_limits<double>::max(),
+                            double ux= std::numeric_limits<double>::max(),
+                            double lz=-std::numeric_limits<double>::max(),
+                            double uz= std::numeric_limits<double>::max());
 
     void drawManifolds(bool dolabels);
 
     double calculateDrawingAngle(double span, double radius);
     void printAndDraw(TLine* line, double x1, double y1, double x2, double y2);
     void drawArrowFromOrigin(double xt, double radius,
-			     std::string const label,
-			     short markerStyle=1, short markerColor=1, double xshift=5, double yshift=15);
+                             std::string const label,
+                             short markerStyle=1, short markerColor=1, double xshift=5, double yshift=15);
 
     void labelPoint(double xt, double yt, std::string const label, double xshift=0, double yshift=0);
 
@@ -633,7 +633,7 @@ namespace mu2e {
           sx << " " <<
           sz << " " << std::endl;
 
-	if ( sx>ux || sz>uz || sx<lx || sz<lz ) continue;
+        if ( sx>ux || sz>uz || sx<lx || sz<lz ) continue;
 
         arc->DrawArc(sx,sz,strawDetail.outerRadius(),0.,360.,"only");
         poly->DrawPolyMarker( 1, &sx, &sz );
@@ -647,7 +647,7 @@ namespace mu2e {
           mlab << "l" << ilay;
           mlab << "s" << istr;
 
-	  labelPoint(sx,sz,mlab.str(),-0.75,0.3);
+          labelPoint(sx,sz,mlab.str(),-0.75,0.3);
 
         }
 
@@ -948,8 +948,8 @@ namespace mu2e {
   }
 
   void TTrackerGeomIntRootPlots::labelPoint(double xt, double yt, std::string const label,
-					    double xshift, double yshift
-					    ){
+                                            double xshift, double yshift
+                                            ){
 
     // Label the Point
 
@@ -982,9 +982,9 @@ namespace mu2e {
   }
 
   void TTrackerGeomIntRootPlots::drawArrowFromOrigin(double xt, double radius,
-						     std::string const label,
-						     short markerStyle, short markerColor,
-						     double xshift, double yshift){
+                                                     std::string const label,
+                                                     short markerStyle, short markerColor,
+                                                     double xshift, double yshift){
 
     // Label the Radii
 

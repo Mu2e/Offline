@@ -9,9 +9,9 @@
 // muMinusConversionAtRest.do - turns on the at rest G4 process
 // MuonMinusConversionAtRest and turns off MuonMinusCaptureAtRest
 //
-// $Id: toggleProcesses.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: toggleProcesses.cc,v 1.6 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 //-----------------------------------------------------------------------------
 
@@ -46,29 +46,29 @@ namespace mu2e{
       int pdg = plist[i];
       G4ParticleDefinition* particle = theParticleTable->FindParticle(pdg);
       if( particle==0 ) {
-	cout << "SwitchDecayOff: cannot find particle pdgId=" << pdg << endl;
+        cout << "SwitchDecayOff: cannot find particle pdgId=" << pdg << endl;
       } else {
-	G4ProcessManager* pmanager = particle->GetProcessManager();
-	G4ProcessVector * pVector  = pmanager->GetProcessList();
-	G4VProcess *decayProcess = 0;
-	for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) {
-	  if( (*pVector)[j]->GetProcessName() == "Decay" ) {
-	    decayProcess = (*pVector)[j];
-	    break;
-	  }
-	}
-	if( decayProcess==0 ) {
-	  cout << "SwitchDecayOff: cannot find decay process for particle pdgId=" << pdg
-	       << " (" << particle->GetParticleName() << ")" << endl;
-	} else {
-	  pmanager->RemoveProcess(decayProcess);
-	  cout << "SwitchDecayOff: decay process is removed for particle pdgId=" << pdg
-	       << " (" << particle->GetParticleName() << ")" << endl;
-	}
-	cout << "SwitchDecayOff: list of processes defined for particle pdgId=" << pdg
-	     << " (" << particle->GetParticleName() << "):" << endl;
-	for( G4int j=0; j<pmanager->GetProcessListLength(); j++ )
-	  cout << (*pVector)[j]->GetProcessName() << endl;
+        G4ProcessManager* pmanager = particle->GetProcessManager();
+        G4ProcessVector * pVector  = pmanager->GetProcessList();
+        G4VProcess *decayProcess = 0;
+        for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) {
+          if( (*pVector)[j]->GetProcessName() == "Decay" ) {
+            decayProcess = (*pVector)[j];
+            break;
+          }
+        }
+        if( decayProcess==0 ) {
+          cout << "SwitchDecayOff: cannot find decay process for particle pdgId=" << pdg
+               << " (" << particle->GetParticleName() << ")" << endl;
+        } else {
+          pmanager->RemoveProcess(decayProcess);
+          cout << "SwitchDecayOff: decay process is removed for particle pdgId=" << pdg
+               << " (" << particle->GetParticleName() << ")" << endl;
+        }
+        cout << "SwitchDecayOff: list of processes defined for particle pdgId=" << pdg
+             << " (" << particle->GetParticleName() << "):" << endl;
+        for( G4int j=0; j<pmanager->GetProcessListLength(); j++ )
+          cout << (*pVector)[j]->GetProcessName() << endl;
       }
     }
 

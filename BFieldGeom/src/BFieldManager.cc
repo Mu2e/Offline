@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.9 2011/05/18 02:27:14 wb Exp $
+// $Id: BFieldManager.cc,v 1.10 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/18 21:14:30 $
 //
 
 // Includes from C++
@@ -36,8 +36,8 @@ namespace mu2e {
     // Loop over all maps
     for( MapType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
       if( im->second.isValid(point) ) {
-	_last_map = &(im->second);
-	return true;
+        _last_map = &(im->second);
+        return true;
       }
     }
 
@@ -49,7 +49,7 @@ namespace mu2e {
   // Get field at an arbitrary point. This code figures out which map to use
   // and looks up the field in that map.
   bool BFieldManager::getBFieldWithStatus( const CLHEP::Hep3Vector & point,
-					   CLHEP::Hep3Vector & result) const{
+                                           CLHEP::Hep3Vector & result) const{
 
     // First check cached map
     if( _last_map!=0 && _last_map->getBFieldWithStatus(point,result) ) return true;
@@ -57,8 +57,8 @@ namespace mu2e {
     // Loop over all maps and try to calculate field.
     for( MapType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
       if( im->second.getBFieldWithStatus(point,result) ) {
-	_last_map = &(im->second);
-	return true;
+        _last_map = &(im->second);
+        return true;
       }
     }
 

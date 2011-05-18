@@ -187,28 +187,28 @@ void ITrackerMaker::Build(){
 
                 //------------------------------------------------------------------------------
 
-                double inner_radius             =	 _r0				   ;
+                double inner_radius             =        _r0                               ;
                 double endcap_inner_radius;
-                double outer_radius             =	 _rOut  			   ;
-                double fieldwire_diameter       =	 _fWireDiameter 		   ;
-                //double sensewire_diameter       =	 _sWireDiameter 		   ;
-                double envelop_Inner_thickness  =	 tmpInnerWall->getTotalThickness() ;
-                double envelop_Outer_thickness  =	 tmpOuterWall->getTotalThickness() ;
-                double envelop_EndCap_thickness =	 tmpEndCapWall->getTotalThickness();
+                double outer_radius             =        _rOut                             ;
+                double fieldwire_diameter       =        _fWireDiameter                    ;
+                //double sensewire_diameter       =      _sWireDiameter                    ;
+                double envelop_Inner_thickness  =        tmpInnerWall->getTotalThickness() ;
+                double envelop_Outer_thickness  =        tmpOuterWall->getTotalThickness() ;
+                double envelop_EndCap_thickness =        tmpEndCapWall->getTotalThickness();
                 double extra_EndCap_dist;
 
-                int   num_wire_sense            =	 _nSWire			   ;
+                int   num_wire_sense            =        _nSWire                           ;
 
-                int   delta_num_wire_sense      =	 _nSDeltaWire			   ;
-                int   nsuperlayer               =	 _nSuperLayer			   ;
-                int   nring                     =	 _nRing 			   ;
-                int   geomType                  =	 _geomType			   ;
-                double voxelizationFactor       =	 _voxFactor			   ;
+                int   delta_num_wire_sense      =        _nSDeltaWire                      ;
+                int   nsuperlayer               =        _nSuperLayer                      ;
+                int   nring                     =        _nRing                            ;
+                int   geomType                  =        _geomType                         ;
+                double voxelizationFactor       =        _voxFactor                        ;
 
-                double drop                     =	 _drop  			   ;
-                double length                   =	 _halfLength			   ;
+                double drop                     =        _drop                             ;
+                double length                   =        _halfLength                       ;
 
-                int   EndCap_type               =	 _endCapType			   ;
+                int   EndCap_type               =        _endCapType                       ;
 
                 //-------------------
 
@@ -224,8 +224,8 @@ void ITrackerMaker::Build(){
                 int   sign_epsilon      = -1;
                 int   num_wire          =  0;
 
-                double secure           = 1.0e-2;			 //Extra volume layer thickness to avoid wire illegal overlap
-                double capGasLayer      = 1.0e-3;			 //Thickness of the closing inner gas layer, its is less enough just to be different from 0
+                double secure           = 1.0e-2;                        //Extra volume layer thickness to avoid wire illegal overlap
+                double capGasLayer      = 1.0e-3;                        //Thickness of the closing inner gas layer, its is less enough just to be different from 0
 
                 //char wshape[30], gshape[30], wvol[30], gvol[30], shape_name_FD[30], shape_name_SD[30], vol_name_FD[30], vol_name_SD[30];
 

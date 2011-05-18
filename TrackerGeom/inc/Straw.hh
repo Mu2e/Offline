@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.10 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: Straw.hh,v 1.11 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -131,26 +131,26 @@ namespace mu2e {
     int hack;
     bool operator==(const Straw other) const {
       if (_index == other.Index()) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
     }
     bool operator>(const Straw other) const {
       if (_index > other.Index()) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
     }
    bool operator<(const Straw other) const {
       if (_index < other.Index()) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
    }
  protected:

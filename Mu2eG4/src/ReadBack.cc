@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.43 2011/05/18 02:27:18 wb Exp $
+// $Id: ReadBack.cc,v 1.44 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -193,17 +193,17 @@ namespace mu2e {
     // Stopping target histograms
 
     _hTargetEdep = tfs->make<TH1F>( "hTargetEdep",
-				    "Energy deposition in the stopping target",
-				    100, 0., 5. );
+                                    "Energy deposition in the stopping target",
+                                    100, 0., 5. );
     _hTargetPathLength = tfs->make<TH1F>( "hTargetPathLength",
-					  "Path length in the stopping target",
-					  100, 0., 5. );
+                                          "Path length in the stopping target",
+                                          100, 0., 5. );
     _hTargetNfoils = tfs->make<TH1F>( "hTargetNfoils",
-				      "Number of stopping target foils crossed by particle",
-				      20, 0., 20. );
+                                      "Number of stopping target foils crossed by particle",
+                                      20, 0., 20. );
     _hTargetNfoils2D = tfs->make<TH2F>( "hTargetNfoils2D",
-					"Number of stopping target foils vs foil of origin",
-					20, 0., 20., 20, 0, 20. );
+                                        "Number of stopping target foils vs foil of origin",
+                                        20, 0., 20., 20, 0, 20. );
 
     // Create tracker ntuple.
     _ntup = tfs->make<TNtuple>( "ntup", "Hit ntuple",
@@ -325,8 +325,8 @@ namespace mu2e {
     // Fill number of G4 steps in crystal and APD, per APD
     if( crystalPtr.isValid() && readoutPtr.isValid() ) {
       for ( size_t i=0; i<caloHits->size(); ++i ) {
-	_hNcrstep->Fill(crystalPtr->at(i).size());
-	_hNrostep->Fill(readoutPtr->at(i).size());
+        _hNcrstep->Fill(crystalPtr->at(i).size());
+        _hNrostep->Fill(readoutPtr->at(i).size());
       }
     }
 
@@ -335,20 +335,20 @@ namespace mu2e {
     // G4 data
     if( readoutPtr.isValid() && rohits.isValid() ) {
       for ( size_t i=0; i<caloHits->size(); ++i ) {
-	// Get vector of pointer to G4 steps in APDs for calorimeter hit #i
-	const DPIndexVector & ptr = readoutPtr->at(i);
-	// Skip calorimeter hits without G4 step in APD (for these hit
+        // Get vector of pointer to G4 steps in APDs for calorimeter hit #i
+        const DPIndexVector & ptr = readoutPtr->at(i);
+        // Skip calorimeter hits without G4 step in APD (for these hit
         // no charged particle crossed APD)
-	if( ptr.size()<=0 ) continue;
-	// Accumulator to count total energy deposition
-	double esum = 0;
-	// Loop over that vector, get each G4 step and accumulate energy deposition
-	for( size_t j=0; j<ptr.size(); j++ ) {
-	  const StepPointMC & rohit = rohits->at(ptr[j].index);
-	  esum += rohit.eDep();
-	}
-	// Fill histogram
-	_hEdepROMC->Fill(esum);
+        if( ptr.size()<=0 ) continue;
+        // Accumulator to count total energy deposition
+        double esum = 0;
+        // Loop over that vector, get each G4 step and accumulate energy deposition
+        for( size_t j=0; j<ptr.size(); j++ ) {
+          const StepPointMC & rohit = rohits->at(ptr[j].index);
+          esum += rohit.eDep();
+        }
+        // Fill histogram
+        _hEdepROMC->Fill(esum);
       }
     }
 

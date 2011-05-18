@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: GrokGeometry_module.cc,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Id: GrokGeometry_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author: Mark Fischler
 //
@@ -56,8 +56,8 @@ using namespace std;
 
 namespace mu2e {;
   enum PrintLevel { quiet  =-1,
-		    normal = 0,
-		    verbose= 1};
+                    normal = 0,
+                    verbose= 1};
  //
  // Abstracted essence of geometric information about one straw,
  // for purposes of the PRF pattern regognition algorithm F
@@ -96,7 +96,7 @@ namespace mu2e {;
           << " Device Id " << deviceId << "Layer " << layer
           << "Sector " << sector  << "\n"
           << "half-length " << halfLength
-	  << " mid-point " << midpoint << "\n"
+          << " mid-point " << midpoint << "\n"
           << "direction  " << direction << "\n";
       return os;
    }
@@ -164,8 +164,8 @@ namespace mu2e {;
     art::ServiceHandle<art::TFileService> tfs;
     _EnergyDep_s     = tfs->make<TH1F>( "EnergyDep_s", "s Energy Deposited in Straw (KeV)", 100, 0.0, 10.0);
     _EnergyDepX_s    = tfs->make<TH1F>( "EnergyDepX_s","s Energy Deposited in Straw (KeV)", 100, 0.0, 10.0);
-    _beta_c 	     = tfs->make<TH1F>( "beta_c",      "s straw incidence angle beta", 45, 0., 90. );
-    _tanTau_c	     = tfs->make<TH1F>( "tanTau_c",    "s panel attack angle tan tau", 50, 0., 2.0 );
+    _beta_c          = tfs->make<TH1F>( "beta_c",      "s straw incidence angle beta", 45, 0., 90. );
+    _tanTau_c        = tfs->make<TH1F>( "tanTau_c",    "s panel attack angle tan tau", 50, 0., 2.0 );
     _tanTheta_c      = tfs->make<TH1F>( "tanTheta_c",  "s pitch tan theta", 50, 0., 2. );
 
    } // end of GrokGeometry beginJob
@@ -214,16 +214,16 @@ namespace mu2e {;
 
     vector<CLHEP::Hep3Vector> momentum_cluster(36);
     vector<CLHEP::Hep3Vector> deviceStrawDirections(36);
-    vector<double> beta_cluster;	    // angle against projection of wire
+    vector<double> beta_cluster;            // angle against projection of wire
     vector<double> tanTau_cluster;          // attack angle of path to panel
-    vector<double> tanTheta_cluster;	    // helix pitch
+    vector<double> tanTheta_cluster;        // helix pitch
 
     double  edep[36] ;
     int nhitdev[36];
     CLHEP::Hep3Vector  MCPoint[36];
 
-    tanTheta_cluster.clear();	  // helix pitch
-    beta_cluster.clear();	  // angle against projection of wire
+    tanTheta_cluster.clear();     // helix pitch
+    beta_cluster.clear();         // angle against projection of wire
     tanTau_cluster.clear();       // attack angle of path to panel
 
     multimap<int,PRF_Straw> mpstraws;
@@ -273,128 +273,128 @@ namespace mu2e {;
     for ( map_type::const_iterator i=sims.begin();
           i != sims.end(); ++i )                      // loop over simparticles
       {
-	// All information about this SimParticle
-	SimParticleInfo const& simInfo = i->second;
-	// Information about StrawHits that belong on this SimParticle.
-	vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
-	if (simInfo.simParticle().generatorIndex()>=0)
-	  {
-	    const ToyGenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
+        // All information about this SimParticle
+        SimParticleInfo const& simInfo = i->second;
+        // Information about StrawHits that belong on this SimParticle.
+        vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
+        if (simInfo.simParticle().generatorIndex()>=0)
+          {
+            const ToyGenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
 
-	    //cout<< genpar.generatorId()<<endl;
-	    if (genpar.generatorId()== GenId::conversionGun)
-	      {
-		foundcele=true;
-		/*
-		cout << "SimParticle associated to conversion electron: "
-		     << " Event: " << evt.id().event()
-		     << " Track: " << i->first
-		     << " PdgId: " << simInfo.simParticle().pdgId()
-		     << " |p|: "   << simInfo.simParticle().startMomentum().vect().mag()
-		     << " Hits: "  << infos.size()
-		     << " CC:   "  << simInfo.simParticle().creationCode()
-		     << " GI:   "  << simInfo.simParticle().generatorIndex()
-		     << endl;
-		cout << "Polar: "<<simInfo.simParticle().startMomentum().vect().getTheta ()<<endl;
-		*/
-		double _timetodist=149.8962;
+            //cout<< genpar.generatorId()<<endl;
+            if (genpar.generatorId()== GenId::conversionGun)
+              {
+                foundcele=true;
+                /*
+                cout << "SimParticle associated to conversion electron: "
+                     << " Event: " << evt.id().event()
+                     << " Track: " << i->first
+                     << " PdgId: " << simInfo.simParticle().pdgId()
+                     << " |p|: "   << simInfo.simParticle().startMomentum().vect().mag()
+                     << " Hits: "  << infos.size()
+                     << " CC:   "  << simInfo.simParticle().creationCode()
+                     << " GI:   "  << simInfo.simParticle().generatorIndex()
+                     << endl;
+                cout << "Polar: "<<simInfo.simParticle().startMomentum().vect().getTheta ()<<endl;
+                */
+                double _timetodist=149.8962;
 
-		// calculate the average hit position of track at a plane
-		for (int idev = 0; idev < 36 ; idev++) {
-		  nhitdev[idev] = 0 ;
-		  edep[idev] = 0.0 ;
-		  MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
-		}
-		for ( size_t associatedHit=0; associatedHit<infos.size(); ++associatedHit) // Loop over associated Hits
-		  {
-		    StrawHitMCInfo const& info = infos.at(associatedHit);
-		    StrawHit const& hit        = info.hit();
-		    Straw const& str           = tracker.getStraw(hit.strawIndex());
-		    sid = str.Id();
-		    did = sid.getDeviceId();
-		    std::vector<StepPointMC const *> const& steps = info.steps();
-		    // mf study 1
-		    sector = sid.getSector();
-		    const CLHEP::Hep3Vector straw_direction = str.getDirection();
-		    if ((straw_direction.z() > .000001) || (straw_direction.mag() > 1.000001)) {
-		      cout << "????? unexpected straw direction: \n      " << straw_direction << "\n";
-		    }
-		    if ((sector < 0) || (sector > 5)) {
-		      cout << "????? unexpected straw sector: \n      " << sector << "\n";
-		    }
-		    // --- mf
-		    deviceStrawDirections[did] = straw_direction;
-		    //cout << "Device " << did << " Straw Direction " << straw_direction << "\n";
-		    double energyAH  = 0.;
-		    double energyAHX = 0.;
-		    for ( size_t ks=0; ks<steps.size(); ++ks){
-		      StepPointMC const& step = *(steps[ks]);
-		      if (step.momentum().mag()>5)
-			{
-			  MCPoint[did] =  MCPoint[did]+step.position();
-			  // mf study 2
-			  // cout << "Energy Step =  " << step.totalEDep() << "\n";
-			  energyAH  += step.totalEDep();
-			  energyAHX += step.totalEDep();
-			  // mf study 1
-			  momentum_cluster[did] +=step.momentum();
-			  // --- mf
-			  nhitdev[did]++;
-			}
-		      else // step momentum is less than 5
-			{
-			  energyAH  += step.totalEDep();
-			  //			  cout << "delta: " << step.momentum().mag()<<endl;
-			} // end of if/else for momentum > 5
-		    } // end of loops over steps in this hit
-		    // mf study 2
-		    // cout << "Energy for associated hit " << associatedHit << " =  " << energyAH << "\n";
-		    _EnergyDep_s->Fill(1000.0*energyAH);
-		    _EnergyDepX_s->Fill(1000.0*energyAHX);
-		    // --- mf
-		  } // end of loop over associated hits
+                // calculate the average hit position of track at a plane
+                for (int idev = 0; idev < 36 ; idev++) {
+                  nhitdev[idev] = 0 ;
+                  edep[idev] = 0.0 ;
+                  MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
+                }
+                for ( size_t associatedHit=0; associatedHit<infos.size(); ++associatedHit) // Loop over associated Hits
+                  {
+                    StrawHitMCInfo const& info = infos.at(associatedHit);
+                    StrawHit const& hit        = info.hit();
+                    Straw const& str           = tracker.getStraw(hit.strawIndex());
+                    sid = str.Id();
+                    did = sid.getDeviceId();
+                    std::vector<StepPointMC const *> const& steps = info.steps();
+                    // mf study 1
+                    sector = sid.getSector();
+                    const CLHEP::Hep3Vector straw_direction = str.getDirection();
+                    if ((straw_direction.z() > .000001) || (straw_direction.mag() > 1.000001)) {
+                      cout << "????? unexpected straw direction: \n      " << straw_direction << "\n";
+                    }
+                    if ((sector < 0) || (sector > 5)) {
+                      cout << "????? unexpected straw sector: \n      " << sector << "\n";
+                    }
+                    // --- mf
+                    deviceStrawDirections[did] = straw_direction;
+                    //cout << "Device " << did << " Straw Direction " << straw_direction << "\n";
+                    double energyAH  = 0.;
+                    double energyAHX = 0.;
+                    for ( size_t ks=0; ks<steps.size(); ++ks){
+                      StepPointMC const& step = *(steps[ks]);
+                      if (step.momentum().mag()>5)
+                        {
+                          MCPoint[did] =  MCPoint[did]+step.position();
+                          // mf study 2
+                          // cout << "Energy Step =  " << step.totalEDep() << "\n";
+                          energyAH  += step.totalEDep();
+                          energyAHX += step.totalEDep();
+                          // mf study 1
+                          momentum_cluster[did] +=step.momentum();
+                          // --- mf
+                          nhitdev[did]++;
+                        }
+                      else // step momentum is less than 5
+                        {
+                          energyAH  += step.totalEDep();
+                          //                      cout << "delta: " << step.momentum().mag()<<endl;
+                        } // end of if/else for momentum > 5
+                    } // end of loops over steps in this hit
+                    // mf study 2
+                    // cout << "Energy for associated hit " << associatedHit << " =  " << energyAH << "\n";
+                    _EnergyDep_s->Fill(1000.0*energyAH);
+                    _EnergyDepX_s->Fill(1000.0*energyAHX);
+                    // --- mf
+                  } // end of loop over associated hits
 
-		// Device quantity normalization loop
-		for (int idev = 0; idev < 36 ; idev++) {
-		  if (nhitdev[idev] <= 0) continue;
-		  double a = 1.0/double(nhitdev[idev]);
-		  MCPoint[idev] = MCPoint[idev]*a;
-		  // mf study 1
-		  momentum_cluster[idev] *= a;
-		  CLHEP::Hep3Vector projectedMomentum = momentum_cluster[idev];
-		  projectedMomentum.setZ(0);
-		  double beta = std::acos(projectedMomentum.dot(deviceStrawDirections[idev])/projectedMomentum.mag());
-		  // double beta = 0;
-		  _beta_c->Fill(beta*180.0/3.141592653589793);
-		  double tanTheta = momentum_cluster[idev].perp()/momentum_cluster[idev].z();
-		  _tanTheta_c->Fill(tanTheta);
-		  double tanTau = tanTheta*std::sin(beta);
-		  _tanTau_c->Fill(tanTau);
-		  // --- mf
-		} // End of Device quantity normalization loop
+                // Device quantity normalization loop
+                for (int idev = 0; idev < 36 ; idev++) {
+                  if (nhitdev[idev] <= 0) continue;
+                  double a = 1.0/double(nhitdev[idev]);
+                  MCPoint[idev] = MCPoint[idev]*a;
+                  // mf study 1
+                  momentum_cluster[idev] *= a;
+                  CLHEP::Hep3Vector projectedMomentum = momentum_cluster[idev];
+                  projectedMomentum.setZ(0);
+                  double beta = std::acos(projectedMomentum.dot(deviceStrawDirections[idev])/projectedMomentum.mag());
+                  // double beta = 0;
+                  _beta_c->Fill(beta*180.0/3.141592653589793);
+                  double tanTheta = momentum_cluster[idev].perp()/momentum_cluster[idev].z();
+                  _tanTheta_c->Fill(tanTheta);
+                  double tanTau = tanTheta*std::sin(beta);
+                  _tanTau_c->Fill(tanTau);
+                  // --- mf
+                } // End of Device quantity normalization loop
 //cout << "[[  4 ]]\n";
 
-		for ( size_t jhit=0; jhit<infos.size(); ++jhit) // Loop over associated Hits
-		  {
-		    StrawHitMCInfo const& info = infos.at(jhit);
-		    StrawHit const& hit        = info.hit();
-		    Straw const& str           = tracker.getStraw(hit.strawIndex());
-		    const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-		    const CLHEP::Hep3Vector dirvec = str.getDirection();
-		    double dt =hit.dt();
-		    double disttomid =dt* _timetodist;
-		    CLHEP::Hep3Vector hitpos = mpvec+disttomid*dirvec;
-		    CLHEP::Hep3Vector smcpos = CLHEP::Hep3Vector( 0.0, 0.0, 0.0);
-		    std::vector<StepPointMC const *> const& steps = info.steps();
-		    for ( size_t k=0; k<steps.size(); ++k){
-		      StepPointMC const& step = *(steps[k]);
-		      smcpos= smcpos+step.position();
-		    }
-		    smcpos=smcpos/steps.size();
-		  }                        // end loop over hits
+                for ( size_t jhit=0; jhit<infos.size(); ++jhit) // Loop over associated Hits
+                  {
+                    StrawHitMCInfo const& info = infos.at(jhit);
+                    StrawHit const& hit        = info.hit();
+                    Straw const& str           = tracker.getStraw(hit.strawIndex());
+                    const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+                    const CLHEP::Hep3Vector dirvec = str.getDirection();
+                    double dt =hit.dt();
+                    double disttomid =dt* _timetodist;
+                    CLHEP::Hep3Vector hitpos = mpvec+disttomid*dirvec;
+                    CLHEP::Hep3Vector smcpos = CLHEP::Hep3Vector( 0.0, 0.0, 0.0);
+                    std::vector<StepPointMC const *> const& steps = info.steps();
+                    for ( size_t k=0; k<steps.size(); ++k){
+                      StepPointMC const& step = *(steps[k]);
+                      smcpos= smcpos+step.position();
+                    }
+                    smcpos=smcpos/steps.size();
+                  }                        // end loop over hits
 
-	      }   // end code done if the simparticle is conversionGun
-	}	  // end if on generatorINdex >= 0
+              }   // end code done if the simparticle is conversionGun
+        }         // end if on generatorINdex >= 0
       }           // end loop over simparticles
     if (!foundcele) return;       // no conversion electron found
     Int_t totalHits=0;
@@ -407,26 +407,26 @@ namespace mu2e {;
       totalHits = totalHits+mcptr.size();
       Double_t totalEnergy = 0.0;
       for( size_t j=0; j<mcptr.size(); j++ ) {  // Loop over straws in the cluster
-	DPIndex const& junkie = mcptr[j];
-       	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-	Double_t Energy = strawhit.energyDep();
-	//Double_t Time   = strawhit.time();
-	//Double_t deltaT = strawhit.dt();
-	totalEnergy=totalEnergy+Energy;
-	str = tracker.getStraw(strawhit.strawIndex());
-	sid = str.Id();
-	lid = sid.getLayerId();
-	did = sid.getDeviceId();
-	secid = sid.getSectorId();
-	const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-	const CLHEP::Hep3Vector dirvec = str.getDirection();
-	dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
-	//pvec = pvec + Energy * mpvec;     // weight straw by energy deposition
-	pvec = pvec + mpvec;
-	if (str.getHalfLength()<hlen)
-	  {
-	    hlen=str.getHalfLength();
-	  }
+        DPIndex const& junkie = mcptr[j];
+        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+        Double_t Energy = strawhit.energyDep();
+        //Double_t Time   = strawhit.time();
+        //Double_t deltaT = strawhit.dt();
+        totalEnergy=totalEnergy+Energy;
+        str = tracker.getStraw(strawhit.strawIndex());
+        sid = str.Id();
+        lid = sid.getLayerId();
+        did = sid.getDeviceId();
+        secid = sid.getSectorId();
+        const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+        const CLHEP::Hep3Vector dirvec = str.getDirection();
+        dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
+        //pvec = pvec + Energy * mpvec;     // weight straw by energy deposition
+        pvec = pvec + mpvec;
+        if (str.getHalfLength()<hlen)
+          {
+            hlen=str.getHalfLength();
+          }
       } // end of loop over straws in the cluster
       double a = 1./double(mcptr.size());
       pvec = pvec*a;
@@ -447,40 +447,40 @@ namespace mu2e {;
     //
     for (int i = 0;i<36;i++)
       {
-	if (mpstraws.count(i)>1)
-	  {
-	    pair<multimap<int,PRF_Straw>::iterator, multimap<int,PRF_Straw>::iterator> ppp1;
-	    ppp1 = mpstraws.equal_range(i);
-	    multimap<int,PRF_Straw>::iterator first11 = ppp1.first;
-	    multimap<int,PRF_Straw>::iterator first22 = ppp1.first;
-	    multimap<int,PRF_Straw>::iterator last1 = ppp1.second;
-	    last1--;
-	    multimap<int,PRF_Straw>::iterator last2 = ppp1.second;
-	    for ( multimap<int,PRF_Straw>::iterator first1=first11;first1 != last1;first1++)
-	      {
-		first22=first1;
-		first22++;
-		for ( multimap<int,PRF_Straw>::iterator first2=first22;first2 != last2;++first2)
-		  {
-		    PRF_Straw junk  = (*first1).second;
-		    PRF_Straw pjunk = (*first2).second;
-		    const CLHEP::Hep2Vector p0 (
-		    junk.midpoint.x()-junk.halfLength*junk.direction.x(),
+        if (mpstraws.count(i)>1)
+          {
+            pair<multimap<int,PRF_Straw>::iterator, multimap<int,PRF_Straw>::iterator> ppp1;
+            ppp1 = mpstraws.equal_range(i);
+            multimap<int,PRF_Straw>::iterator first11 = ppp1.first;
+            multimap<int,PRF_Straw>::iterator first22 = ppp1.first;
+            multimap<int,PRF_Straw>::iterator last1 = ppp1.second;
+            last1--;
+            multimap<int,PRF_Straw>::iterator last2 = ppp1.second;
+            for ( multimap<int,PRF_Straw>::iterator first1=first11;first1 != last1;first1++)
+              {
+                first22=first1;
+                first22++;
+                for ( multimap<int,PRF_Straw>::iterator first2=first22;first2 != last2;++first2)
+                  {
+                    PRF_Straw junk  = (*first1).second;
+                    PRF_Straw pjunk = (*first2).second;
+                    const CLHEP::Hep2Vector p0 (
+                    junk.midpoint.x()-junk.halfLength*junk.direction.x(),
                     junk.midpoint.y()-junk.halfLength*junk.direction.y());
-		    const CLHEP::Hep2Vector p1 (
-		    junk.midpoint.x()+junk.halfLength*junk.direction.x(),
+                    const CLHEP::Hep2Vector p1 (
+                    junk.midpoint.x()+junk.halfLength*junk.direction.x(),
                     junk.midpoint.y()+junk.halfLength*junk.direction.y());
-		    const CLHEP::Hep2Vector p2 (
-		    pjunk.midpoint.x()-pjunk.halfLength*pjunk.direction.x(),
+                    const CLHEP::Hep2Vector p2 (
+                    pjunk.midpoint.x()-pjunk.halfLength*pjunk.direction.x(),
                     pjunk.midpoint.y()-pjunk.halfLength*pjunk.direction.y());
-		    const CLHEP::Hep2Vector p3 (
-		    pjunk.midpoint.x()+pjunk.halfLength*pjunk.direction.x(),
+                    const CLHEP::Hep2Vector p3 (
+                    pjunk.midpoint.x()+pjunk.halfLength*pjunk.direction.x(),
                     pjunk.midpoint.y()+pjunk.halfLength*pjunk.direction.y());
-		    LineSegmentPCA linesegment0(p0, p1);
-		    LineSegmentPCA linesegment1(p2, p3);
-		  } // end for first2
-	      }// end for first1
-	  }// end count >1
+                    LineSegmentPCA linesegment0(p0, p1);
+                    LineSegmentPCA linesegment1(p2, p3);
+                  } // end for first2
+              }// end for first1
+          }// end count >1
       }   ///endloop over all devices
 
 
@@ -489,30 +489,30 @@ namespace mu2e {;
     double _timetodist=149.8962;
     for ( size_t i=0; i< mcptrHandle->size(); ++i )// Loop over Clusters
       {
-	DPIndexVector   const&    mcptr(hits_mcptr->at(i));
-	CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
-	CLHEP::Hep3Vector clusterpos =  CLHEP::Hep3Vector(0.,0.,0.);
-	//totalHits = totalHits+mcptr.size();
-	double totalEnergy = 0.0;
-	for( size_t j=0; j<mcptr.size(); j++ ) // Loop over Straws in Cluster
-	  {
-	    DPIndex const& junkie = mcptr[j];
-	    StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-	    double Energy = strawhit.energyDep();
-	    //double Time   = strawhit.time();
-	    double deltaT = strawhit.dt();
-	    StrawIndex si   = strawhit.strawIndex();
-	    Straw str       = tracker.getStraw(si);
-	    const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-	    const CLHEP::Hep3Vector dirvec = str.getDirection();
-	    double disttomid = deltaT* _timetodist;   // convert delta T into delta x along the wire
-	    CLHEP::Hep3Vector hitpos = mpvec+disttomid*dirvec;
-	    clusterpos=clusterpos+hitpos;
-	    totalEnergy=totalEnergy+Energy;
-	  } // end loop over straws in cluster
-	double a = 1./double(mcptr.size());
-	clusterpos=clusterpos*a;
-	nclusters++;
+        DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+        CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
+        CLHEP::Hep3Vector clusterpos =  CLHEP::Hep3Vector(0.,0.,0.);
+        //totalHits = totalHits+mcptr.size();
+        double totalEnergy = 0.0;
+        for( size_t j=0; j<mcptr.size(); j++ ) // Loop over Straws in Cluster
+          {
+            DPIndex const& junkie = mcptr[j];
+            StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+            double Energy = strawhit.energyDep();
+            //double Time   = strawhit.time();
+            double deltaT = strawhit.dt();
+            StrawIndex si   = strawhit.strawIndex();
+            Straw str       = tracker.getStraw(si);
+            const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+            const CLHEP::Hep3Vector dirvec = str.getDirection();
+            double disttomid = deltaT* _timetodist;   // convert delta T into delta x along the wire
+            CLHEP::Hep3Vector hitpos = mpvec+disttomid*dirvec;
+            clusterpos=clusterpos+hitpos;
+            totalEnergy=totalEnergy+Energy;
+          } // end loop over straws in cluster
+        double a = 1./double(mcptr.size());
+        clusterpos=clusterpos*a;
+        nclusters++;
 
       } //  end Loop over Clusters
   } // end of ::analyze.

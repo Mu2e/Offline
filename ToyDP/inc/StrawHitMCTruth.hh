@@ -29,9 +29,9 @@ namespace mu2e {
     // Constructor for a hit that came from an unpacked digi, either
     // from data or from the full MC chain.
     StrawHitMCTruth(float t0,
-		    float driftTime,
-		    float driftDistance,
-		    float distanceToMid) :
+                    float driftTime,
+                    float driftDistance,
+                    float distanceToMid) :
       _t0(t0),
       _driftTime(driftTime),
       _driftDistance(driftDistance),

@@ -5,10 +5,10 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Matrix/SymMatrix.h"
-//	This class encapsulates the residual of a measurement,
-//	and its covariance matrix, and also handles requests for
-//	the dimensionality of these two objects, and for the
-//	contribution to Chi-Squared that the residual makes.
+//      This class encapsulates the residual of a measurement,
+//      and its covariance matrix, and also handles requests for
+//      the dimensionality of these two objects, and for the
+//      contribution to Chi-Squared that the residual makes.
 
 class Residual {
 

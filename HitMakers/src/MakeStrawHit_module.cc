@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Id: MakeStrawHit_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -331,8 +331,8 @@ namespace mu2e {
       for( size_t i=1; i<straw_hits.size(); i++ ) {
         if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
           // The is bit time gap - save current data as a hit...
-	  distSigma = trackerCalibrations->TimeDivisionResolution(straw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
-	  deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
+          distSigma = trackerCalibrations->TimeDivisionResolution(straw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
+          deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
 
           strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_edep));
           truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
@@ -348,7 +348,7 @@ namespace mu2e {
           digi_dca    = straw_hits[i]._dca;
         } else {
           // Append existing hit
-	  if( digi_t2 > straw_hits[i]._t2 ) digi_t2 = straw_hits[i]._t2;
+          if( digi_t2 > straw_hits[i]._t2 ) digi_t2 = straw_hits[i]._t2;
           digi_edep += straw_hits[i]._edep;
           mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
         }

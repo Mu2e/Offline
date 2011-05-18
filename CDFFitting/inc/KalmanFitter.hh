@@ -9,14 +9,14 @@
 #include "CDFFitting/inc/Residual.hh"
 #include "CDFFitting/inc/KalmanFitter.hh"
 
-//	This class represents a Kalman Filter fitter.  The
-//	Kalman filter gets the residuals right, and gets the
-//	right estimate of parameters at any point along the fit,
-//	including at the beginning.
+//      This class represents a Kalman Filter fitter.  The
+//      Kalman filter gets the residuals right, and gets the
+//      right estimate of parameters at any point along the fit,
+//      including at the beginning.
 //
-//	The Kalman buffers all information it needs to calculate
-//	the so-called "smoothed estimate" at prior instants, and
-//	actually calculates the estimate upon demand.
+//      The Kalman buffers all information it needs to calculate
+//      the so-called "smoothed estimate" at prior instants, and
+//      actually calculates the estimate upon demand.
 template <class Measureable>
 class KalmanFitter : public ProgressiveFitter<Measureable> {
 

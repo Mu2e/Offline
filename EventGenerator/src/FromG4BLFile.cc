@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the ToyGenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.16 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: FromG4BLFile.cc,v 1.17 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -212,8 +212,8 @@ namespace mu2e {
       CLHEP::Hep3Vector pos(x,y,z);
       CLHEP::Hep3Vector oldpos(pos);
       if( _targetFrame ) {
-	pos -= _prodTargetOffset;           // Move to target coordinate system
-	pos += _prodTargetCenter; // Move to Mu2e coordinate system
+        pos -= _prodTargetOffset;           // Move to target coordinate system
+        pos += _prodTargetCenter; // Move to Mu2e coordinate system
       } else{
         pos += _g4beamlineOrigin;
         pos += _g4beamlineExtraOffset;
@@ -229,7 +229,7 @@ namespace mu2e {
 
       // Add extra information to the output collection.
       if( extra ) {
-	extra->push_back( G4BeamlineInfo(evtid,trkid,weight,t) );
+        extra->push_back( G4BeamlineInfo(evtid,trkid,weight,t) );
       }
 
       if ( _doHistograms ) {

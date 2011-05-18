@@ -61,8 +61,8 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-	mf::LogWarning("G4") << "Maximum number of particles reached in StoppingTargetSD: "
-			      << _currentSize << endl;
+        mf::LogWarning("G4") << "Maximum number of particles reached in StoppingTargetSD: "
+                              << _currentSize << endl;
       }
       return false;
     }
@@ -96,15 +96,15 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
       mf::LogWarning("G4") << "Total of " << _currentSize
-			    << " stopping target hits were generated in the event."
-			    << endl
-			    << "Only " << _sizeLimit << " are saved in output collection."
-			    << endl;
+                            << " stopping target hits were generated in the event."
+                            << endl
+                            << "Only " << _sizeLimit << " are saved in output collection."
+                            << endl;
       cout << "Total of " << _currentSize
-	   << " stopping target hits were generated in the event."
-	   << endl
-	   << "Only " << _sizeLimit << " are saved in output collection."
-	   << endl;
+           << " stopping target hits were generated in the event."
+           << endl
+           << "Only " << _sizeLimit << " are saved in output collection."
+           << endl;
     }
 
     if (verboseLevel>0) {

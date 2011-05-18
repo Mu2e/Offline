@@ -6,9 +6,9 @@
 // Starts from ReadDPIStrawCluster_plugin.cc, adding the quantities of
 // interest to these angles, and gradually eliminating the rest.
 //
-// $Id: BetaTauPitch_module.cc,v 1.4 2011/05/18 14:53:57 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:53:57 $
+// $Id: BetaTauPitch_module.cc,v 1.5 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author: Mark Fischler modifying code by Hans Wenzel
 //
@@ -70,8 +70,8 @@ using namespace std;
 
 namespace mu2e {;
   enum PrintLevel { quiet  =-1,
-		    normal = 0,
-		    verbose= 1};
+                    normal = 0,
+                    verbose= 1};
   Double_t Radius;
   Double_t curv;
   Double_t zstep;
@@ -128,26 +128,26 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    /*
     bool operator>(const pstraw other) const {
       if (id > other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
     }
    bool operator<(const pstraw other) const {
       if (id < other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
    }
    bool operator==(const straw other) const {
       if (id == other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
    }
    */
@@ -351,16 +351,16 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
     // labels for positions in the ntuple
     enum ntpos{EVT,
-	       PGENX    ,PGENY ,PGENZ  ,
-	       PINX     ,PINY  ,PINZ   ,
-	       POUTX    ,POUTY ,POUTZ  ,
-	       NINT     ,RREC  ,PTREC ,PRECZ,
-	       NSTRAWS  ,RREC_S,PTREC_S,PREC_SZ,
-	       NCLUSTERS,RREC_C,PTREC_C,PREC_CZ,
-	       // mf study 1
-	       BETA_C,TANTAU_C,TANTHETA_C,
-	       // --- mf
-	       NT_COUNT};
+               PGENX    ,PGENY ,PGENZ  ,
+               PINX     ,PINY  ,PINZ   ,
+               POUTX    ,POUTY ,POUTZ  ,
+               NINT     ,RREC  ,PTREC ,PRECZ,
+               NSTRAWS  ,RREC_S,PTREC_S,PREC_SZ,
+               NCLUSTERS,RREC_C,PTREC_C,PREC_CZ,
+               // mf study 1
+               BETA_C,TANTAU_C,TANTHETA_C,
+               // --- mf
+               NT_COUNT};
 
   }; // end of BetaTauPich class definition
 
@@ -432,18 +432,18 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     _Rdiff_c         = tfs->make<TH1F>( "Rdiff_c",     "c R(stepMC)  - R(stereo hit) mm ", 100, -50., 50.);
     _Phidiff_c       = tfs->make<TH1F>( "Phidiff_c",   "c Phi(stepMC)- Phi(stereo hit) mm ", 100, -0.5, 0.5);
     // mf study 1
-    _beta_c 	     = tfs->make<TH1F>( "beta_c",      "s straw incidence angle beta", 45, 0., 90. );
-    _tanTau_c	     = tfs->make<TH1F>( "tanTau_c",    "s panel attack angle tan tau", 50, 0., 2.0 );
+    _beta_c          = tfs->make<TH1F>( "beta_c",      "s straw incidence angle beta", 45, 0., 90. );
+    _tanTau_c        = tfs->make<TH1F>( "tanTau_c",    "s panel attack angle tan tau", 50, 0., 2.0 );
     _tanTheta_c      = tfs->make<TH1F>( "tanTheta_c",  "s pitch tan theta", 50, 0., 2. );
     // --- mf
     _ntup          = tfs->make<TNtuple>( "ntup", "Pattern Recognition Ntuple",
                                                  "evt:Pgenx:Pgeny:Pgenz:Pinx:Piny:Pinz:Poutx:Pouty:Poutz:Nint:"
-						 "Rrec:Ptrec:Precz:Nstraws:Rrec_s:Ptrec_s:Prec_sz:NClusters:"
-						 "Rrec_c:Ptrec_c:Prec_cz:"
-						 // mf study 1
-						 "Beta_c:TanTau_c:TanTheta_c"
-						// --- mf
-					);
+                                                 "Rrec:Ptrec:Precz:Nstraws:Rrec_s:Ptrec_s:Prec_sz:NClusters:"
+                                                 "Rrec_c:Ptrec_c:Prec_cz:"
+                                                 // mf study 1
+                                                 "Beta_c:TanTau_c:TanTheta_c"
+                                                // --- mf
+                                        );
     assert(_ntup->GetNvar()==NT_COUNT);
     //
   }
@@ -521,9 +521,9 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     // mf study 1
     vector<CLHEP::Hep3Vector> momentum_cluster(36);
     vector<CLHEP::Hep3Vector> deviceStrawDirections(36);
-    vector<double> beta_cluster;	    // angle against projection of wire
+    vector<double> beta_cluster;            // angle against projection of wire
     vector<double> tanTau_cluster;          // attack angle of path to panel
-    vector<double> tanTheta_cluster;	    // helix pitch
+    vector<double> tanTheta_cluster;        // helix pitch
     // --- mf
     //cout << "[[  1 ]]\n";
     vector<CLHEP::Hep3Vector> Points3d_cluster; // x,y measurement packed in
@@ -554,8 +554,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Points3d_straw.clear();
 
     // mf study 1
-    tanTheta_cluster.clear();	  // helix pitch
-    beta_cluster.clear();	  // angle against projection of wire
+    tanTheta_cluster.clear();     // helix pitch
+    beta_cluster.clear();         // angle against projection of wire
     tanTau_cluster.clear();       // attack angle of path to panel
     // --- mf
 
@@ -721,7 +721,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                       else // step momentum is less than 5
                         {
                           energyAH  += step.totalEDep();
-                          //			  cout << "delta: " << step.momentum().mag()<<endl;
+                          //                      cout << "delta: " << step.momentum().mag()<<endl;
                         } // end of if/else for momentum > 5
                     } // end of loops over steps in this hit
                     // mf study 2
@@ -743,15 +743,15 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                   double beta = std::acos(projectedMomentum.dot(deviceStrawDirections[idev])/projectedMomentum.mag());
                   // double beta = 0;
                   _beta_c->Fill(beta*180.0/3.141592653589793);
-                  //		  if (nt[BETA_C] == -9999.) nt[BETA_C] = beta;
+                  //              if (nt[BETA_C] == -9999.) nt[BETA_C] = beta;
                   nt[BETA_C] = beta;
                   double tanTheta = momentum_cluster[idev].perp()/momentum_cluster[idev].z();
                   _tanTheta_c->Fill(tanTheta);
-                  //		  if (nt[TANTHETA_C] == -9999.) nt[TANTHETA_C] = tanTheta;
+                  //              if (nt[TANTHETA_C] == -9999.) nt[TANTHETA_C] = tanTheta;
                   nt[TANTHETA_C] = tanTheta;
                   double tanTau = tanTheta*std::sin(beta);
                   _tanTau_c->Fill(tanTau);
-                  //		  if (nt[TANTAU_C] == -9999.) nt[TANTAU_C] = tanTau;
+                  //              if (nt[TANTAU_C] == -9999.) nt[TANTAU_C] = tanTau;
                   nt[TANTAU_C] = tanTau;
                   // --- mf
                 } // End of Device quantity normalization loop
@@ -797,7 +797,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
                 // Double_t Bmagnet=B.getZ();   // magnetic field
                 // Double_t Const=1.49898e-4;
-                //		cout << "Pt_inval:  "<< Pt_inval_si
+                //              cout << "Pt_inval:  "<< Pt_inval_si
                 //     << "  Radius:  "<< Radius
                 //     << "  curv:    "<< curv
                 //     << "  R_rec:  " << R_rec <<endl;
@@ -818,7 +818,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                 //FitSinus2(Z_straw, R_straw);
                 //cout<<"Sinus2: " << Pz<<endl;
               }   // end code done if the simparticle is conversionGun
-          }	  // end if on generatorINdex >= 0
+          }       // end if on generatorINdex >= 0
       }           // end loop over simparticles
     if (!foundcele) return;       // no conversion electron found
     Int_t totalHits=0;
@@ -836,7 +836,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       Double_t totalEnergy = 0.0;
       for( size_t j=0; j<mcptr.size(); j++ ) {  // Loop over straws in the cluster
         DPIndex const& junkie = mcptr[j];
-       	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
         Double_t Energy = strawhit.energyDep();
         //Double_t Time   = strawhit.time();
         //Double_t deltaT = strawhit.dt();
@@ -958,9 +958,9 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         _R_rec->Fill(R_rec);
         _chi2 -> Fill(chi2) ;
 
-        //	Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework)
+        //      Double_t Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework)
         // Double_t Const=1.49898e-4;
-        //	cout << "Pt_inval:  "<< Pt_inval_si
+        //      cout << "Pt_inval:  "<< Pt_inval_si
         //     << "  Radius:  "<< Radius
         //    << "  curv:    "<< curv
         //     << "  zstep:   "<< zstep
@@ -1034,7 +1034,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         _R_rec_c->Fill(R_rec);
         _chi2_c -> Fill(chi2) ;
 
-        //	double Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework)
+        //      double Bmagnet=10.;   // 10 KGauss magnetic field (hard wired should get from framework)
         // double Const=1.49898e-4;
         //cout << "Pt_inval:  "<< Pt_inval_si
         //     << "  Radius:  "<< Radius
@@ -1114,8 +1114,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
     if (!converged)
       {
-	// cout <<"-----------Circle fit didn't converge---------------------------" <<endl;
-	return;
+        // cout <<"-----------Circle fit didn't converge---------------------------" <<endl;
+        return;
       }
     for (int i = 0;i<3;i++) {
      gmMinuit->GetParameter(i,sfpar[i],errsfpar[i]);
@@ -1162,8 +1162,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     bool converged = gmMinuit2->fCstatu.Contains("CONVERGED");
     if (!converged)
       {
-	// cout <<"-----------Sin fit didn't converge---------------------------" <<endl;
-	return;
+        // cout <<"-----------Sin fit didn't converge---------------------------" <<endl;
+        return;
       }
     for (int i = 0;i<dim;i++) {
      gmMinuit2->GetParameter(i,sfpar[i],errsfpar[i]);

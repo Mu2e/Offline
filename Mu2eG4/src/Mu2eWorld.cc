@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.90 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: Mu2eWorld.cc,v 1.91 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -580,8 +580,8 @@ namespace mu2e {
     double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
 
     constructCalorimeter( detSolDownstreamVacInfo,
-			  -z0DSdown,
-			  *_config );
+                          -z0DSdown,
+                          *_config );
   }
 
 

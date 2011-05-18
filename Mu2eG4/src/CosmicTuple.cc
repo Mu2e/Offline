@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.20 2011/05/18 16:40:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 16:40:25 $
+// $Id: CosmicTuple.cc,v 1.21 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -167,7 +167,7 @@ namespace mu2e {
     SimParticlesWithHits sims( event,
                                "g4run",
                                "makeSH",
-			       "tracker",
+                               "tracker",
                                0.001,
                                0 );
 
@@ -182,8 +182,8 @@ namespace mu2e {
 
       // Information about primary ancestor
       SimParticleAncestors ancestor( sim,
-				    *simParticles,
-				    *genParticles);
+                                    *simParticles,
+                                    *genParticles);
       ToyGenParticle const& gen_parent = ancestor.originalGen();
 
       // Immediate parent particle
@@ -213,19 +213,19 @@ namespace mu2e {
       trSt = stoppingCode;
 
       if( sim.hasParent()) {
-	prspos = sim_parent->startPosition();
-	prsmom = sim_parent->startMomentum();
-	prepos = sim_parent->endPosition();
-	premom = sim_parent->endMomentum();
-	prSVolume = sim_parent->startVolumeIndex();
-	prEVolume = sim_parent->endVolumeIndex();
-	prntPdg= sim_parent->pdgId();
-	prCr   = sim_parent->creationCode();
-	prSt   = sim_parent->stoppingCode();
+        prspos = sim_parent->startPosition();
+        prsmom = sim_parent->startMomentum();
+        prepos = sim_parent->endPosition();
+        premom = sim_parent->endMomentum();
+        prSVolume = sim_parent->startVolumeIndex();
+        prEVolume = sim_parent->endVolumeIndex();
+        prntPdg= sim_parent->pdgId();
+        prCr   = sim_parent->creationCode();
+        prSt   = sim_parent->stoppingCode();
       } else {
-	prspos  = posGen;
-	prsmom  = gen_parent._momentum;
-	prntPdg = gen_parent._pdgId;
+        prspos  = posGen;
+        prsmom  = gen_parent._momentum;
+        prntPdg = gen_parent._pdgId;
       }
 
       double  momentum = -1.;
@@ -253,10 +253,10 @@ namespace mu2e {
       std::vector<StepPointMC const *> const& steps = info.steps();
 
       for ( size_t k=0; k<steps.size(); ++k){
-	StepPointMC const& step = *(steps[k]);
+        StepPointMC const& step = *(steps[k]);
 
-	if(step.trackId() == sim.id()) {
-	  momentum = step.momentum().mag();
+        if(step.trackId() == sim.id()) {
+          momentum = step.momentum().mag();
           pitchAng = acos(step.momentum().z()/step.momentum().mag())*180./3.14159;
           px = step.momentum().x();
           py = step.momentum().y();
@@ -267,39 +267,39 @@ namespace mu2e {
           vz = step.position().z();
           vt = step.time();
           isSh = info.isShared();
-	  break;
+          break;
         }
       }
 
       if( rohits.isValid() ) {
-	calEne = 0.0;
-	calEind= 0.0;
-	for ( size_t i=0; i<rohits->size(); ++i ) {
-	  const StepPointMC & rohit = rohits->at(i);
-	  calEne += rohit.eDep();
-	  int cid = rohit.volumeId();
-	  hit_crystals[cid] =1;
-	  SimParticle const * csim = simParticles->findOrNull(rohit.trackId());
-	  while ( csim && csim->id() != sim.id() ) {
-	    csim = simParticles->findOrNull(csim->parentId());
-	  }
-	  if(csim){
-	    calEind += rohit.eDep();
-	  }
-	}
+        calEne = 0.0;
+        calEind= 0.0;
+        for ( size_t i=0; i<rohits->size(); ++i ) {
+          const StepPointMC & rohit = rohits->at(i);
+          calEne += rohit.eDep();
+          int cid = rohit.volumeId();
+          hit_crystals[cid] =1;
+          SimParticle const * csim = simParticles->findOrNull(rohit.trackId());
+          while ( csim && csim->id() != sim.id() ) {
+            csim = simParticles->findOrNull(csim->parentId());
+          }
+          if(csim){
+            calEind += rohit.eDep();
+          }
+        }
       } else{
-	calEne = -1;
-	calEind= -1;
+        calEne = -1;
+        calEind= -1;
       }
 
       // Find original G4 steps in the APDs
       if( apdhits.isValid() ) {
-	for ( size_t i=0; i<apdhits->size(); ++i ) {
-	  const StepPointMC & apdhit = apdhits->at(i);
-	  int apdid = apdhit.volumeId();
-	  int cida  = cg->getCrystalByRO(apdid);
-	  hit_apds[cida] =1;
-	}
+        for ( size_t i=0; i<apdhits->size(); ++i ) {
+          const StepPointMC & apdhit = apdhits->at(i);
+          int apdid = apdhit.volumeId();
+          int cida  = cg->getCrystalByRO(apdid);
+          hit_apds[cida] =1;
+        }
       }
 
       if( momentum < _minimump || momentum > _maximump ) continue;

@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.20 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: SteppingAction.cc,v 1.21 2011/05/18 21:14:30 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -95,7 +95,7 @@ namespace mu2e {
     _maxSteps = config.getInt("g4.steppingActionMaxSteps", 0);
     if( _maxSteps>0 ) {
       cout << "Limit maximum number of steps in SteppingAction to "
-	   << _maxSteps << endl;
+           << _maxSteps << endl;
     }
 
   }
@@ -130,8 +130,8 @@ namespace mu2e {
     // Have we reached maximum allowed number of steps per track?
     if( _maxSteps>0 && _nSteps>_maxSteps ) {
       cout << "SteppingAction: kill particle pdg="
-	   << track->GetDefinition()->GetPDGEncoding()
-	   << " due to large number of steps." << endl;
+           << track->GetDefinition()->GetPDGEncoding()
+           << " due to large number of steps." << endl;
       killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
       ++_nKilledStepLimit;
     }

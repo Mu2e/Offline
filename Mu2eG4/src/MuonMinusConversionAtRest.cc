@@ -5,9 +5,9 @@
 // muon. Configurable parameters include endpoint of momentum, limits of polar
 // and azimuthal angle.
 //
-// $Id: MuonMinusConversionAtRest.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
+// $Id: MuonMinusConversionAtRest.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Date: 2011/05/18 21:14:30 $
 //
 //-----------------------------------------------------------------------------
 // Framework includes
@@ -78,7 +78,7 @@ void muMinusConversionAtRest::BuildPhysicsTable(const G4ParticleDefinition& p)
 
 
 G4VParticleChange* muMinusConversionAtRest::AtRestDoIt(const G4Track& track,
-							const G4Step&)
+                                                        const G4Step&)
 {
   //
   // Handles MuonMinus at rest;
@@ -112,7 +112,7 @@ G4VParticleChange* muMinusConversionAtRest::AtRestDoIt(const G4Track& track,
 
     // G4 takes ownership of this object
     G4Track* aNewTrack = new G4Track( aNewParticle, globaltime, position );
-	    aNewTrack->SetTouchableHandle(track.GetTouchableHandle());
+            aNewTrack->SetTouchableHandle(track.GetTouchableHandle());
         aParticleChange.AddSecondary( aNewTrack );
     }
 

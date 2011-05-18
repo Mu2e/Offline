@@ -52,11 +52,11 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
         double z0    = CLHEP::mm * itracker->z0();
         G4ThreeVector trackerOffset(0.,0.,z0-zOff);
 
-	/*	if ( itracker->rOut() >= ((G4Tubs *)mother->GetSolid())->GetOuterRadius() )
-	  throw cet::exception("GEOM") <<"The ITracker doesn't fit inside the DS, please check the external radius of the ITracker\n"
-				       <<"rout ITracker="<<itracker->rOut()<<" DS outer radius="<<((G4Tubs *)mother->GetSolid())->GetOuterRadius()<<"\n"
-				       <<(*(G4Tubs *)mother->GetSolid());
-	*/
+        /*      if ( itracker->rOut() >= ((G4Tubs *)mother->GetSolid())->GetOuterRadius() )
+          throw cet::exception("GEOM") <<"The ITracker doesn't fit inside the DS, please check the external radius of the ITracker\n"
+                                       <<"rout ITracker="<<itracker->rOut()<<" DS outer radius="<<((G4Tubs *)mother->GetSolid())->GetOuterRadius()<<"\n"
+                                       <<(*(G4Tubs *)mother->GetSolid());
+        */
         if (itracker->isExternal()) {
                 throw cet::exception("GEOM") <<"This GDML file option is temporarily disabled\n";
                 //            G4GDMLParser parser;

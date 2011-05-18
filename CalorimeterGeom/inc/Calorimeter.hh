@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.10 2011/05/18 02:27:15 wb Exp $
+// $Id: Calorimeter.hh,v 1.11 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -57,21 +57,21 @@ namespace mu2e {
 
       // Vane ID (0..nVanes-1)
       int getVaneByRO(int roid) const {
-	return roid/(_nCrystalZ*_nCrystalR*_nROPerCrystal);
+        return roid/(_nCrystalZ*_nCrystalR*_nROPerCrystal);
       }
       // Crystal ID (0..Number_of_crystals_in_calorimeter-1)
       int getCrystalByRO(int roid) const { return (roid/_nROPerCrystal); }
       // Crystal ID within a vane (0..Number_of_crystals_in_vane-1)
       int getCrystalVaneByRO(int roid) const {
-	return (roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR);
+        return (roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR);
       }
       // Crystal R-coordinate within a vane (0..nCrystalR-1)
       int getCrystalRByRO(int roid) const {
-	return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))/_nCrystalZ;
+        return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))/_nCrystalZ;
       }
       // Crystal Z-coordinate within a vane (0..nCrystalZ-1)
       int getCrystalZByRO(int roid) const {
-	return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))%_nCrystalZ;
+        return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))%_nCrystalZ;
       }
 
       // Transfer Mu2e coordinates to local crystal coordinates

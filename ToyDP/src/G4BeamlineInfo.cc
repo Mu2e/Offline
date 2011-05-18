@@ -18,7 +18,7 @@ namespace mu2e {
         << " eventId: "      << _event_id
         << " trackId: "      << _track_id
         << " weight: "       << _weight
-	<< " time: "         << _time;
+        << " time: "         << _time;
 
     if ( doEndl ){
       ost << endl;

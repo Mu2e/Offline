@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4ExtrudedSolid inside a logical volume.
 //
-// $Id: nestExtrudedSolid.cc,v 1.2 2011/05/18 02:27:18 wb Exp $
+// $Id: nestExtrudedSolid.cc,v 1.3 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -55,8 +55,8 @@ namespace mu2e {
     for( size_t i=0; i<x.size(); ++i ) polygon.push_back(G4TwoVector(x[i],y[i]));
 
     info.solid   = new G4ExtrudedSolid( name, polygon, hz,
-					G4TwoVector(0.0,0.0), 1.0,
-					G4TwoVector(0.0,0.0), 1.0 );
+                                        G4TwoVector(0.0,0.0), 1.0,
+                                        G4TwoVector(0.0,0.0), 1.0 );
 
     finishNesting(info,
                   material,
@@ -101,8 +101,8 @@ namespace mu2e {
     for( size_t i=0; i<x.size(); ++i ) polygon.push_back(G4TwoVector(x[i],y[i]));
 
     info.solid   = new G4ExtrudedSolid( name, polygon, hz,
-					G4TwoVector(0.0,0.0), 1.0,
-					G4TwoVector(0.0,0.0), 1.0 );
+                                        G4TwoVector(0.0,0.0), 1.0,
+                                        G4TwoVector(0.0,0.0), 1.0 );
     finishNesting(info,
                   material,
                   rot,

@@ -15,8 +15,8 @@
 namespace mu2e{
 
   void  copyStepPointG4toMC ( const G4Event* g4event,
-			      const std::string name,
-			      StepPointMCCollection& outputHits  ){
+                              const std::string name,
+                              StepPointMCCollection& outputHits  ){
 
     // G4 Hit collections for this event.
 

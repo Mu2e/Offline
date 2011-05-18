@@ -3,9 +3,9 @@
 //
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Id: StrawHit.hh,v 1.6 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //
@@ -57,9 +57,9 @@ namespace mu2e {
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
         bool operator==(StrawHit const& other) const {
       return (_strawIndex==other._strawIndex&&
-	  _time==other._time&&
+          _time==other._time&&
           _dt==other._dt&&
-	      _energyDep==other._energyDep);
+              _energyDep==other._energyDep);
     }
     bool operator<( const StrawHit other) const{
       return ( _strawIndex< other._strawIndex);

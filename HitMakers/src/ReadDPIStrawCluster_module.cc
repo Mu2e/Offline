@@ -12,9 +12,9 @@
 // For all three cases estimate Pt,Pz of the conversion electron by performing
 // a simple circle/sinus fit.
 //
-// $Id: ReadDPIStrawCluster_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Id: ReadDPIStrawCluster_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author: Hans Wenzel
 //
@@ -74,8 +74,8 @@ using namespace std;
 
 namespace mu2e {;
   enum PrintLevel { quiet  =-1,
-		    normal = 0,
-		    verbose= 1};
+                    normal = 0,
+                    verbose= 1};
   Double_t Radius;
   Double_t curv;
   Double_t zstep;
@@ -131,26 +131,26 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
    /*
     bool operator>(const pstraw other) const {
       if (id > other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
     }
    bool operator<(const pstraw other) const {
       if (id < other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
    }
    bool operator==(const straw other) const {
       if (id == other.id) {
-	return true;
+        return true;
       }
       else{
-	return false;
+        return false;
       }
    }
    */
@@ -419,23 +419,23 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //
     if (!magset)
       {
-	GeomHandle<BFieldManager> bfMgr;
-	B= bfMgr->getDSUniformValue();
-	cout << " B-field (getDSUniformValue()):  " <<B<<endl;
-	Bmagnet=B.getZ();
-	magset=true;
+        GeomHandle<BFieldManager> bfMgr;
+        B= bfMgr->getDSUniformValue();
+        cout << " B-field (getDSUniformValue()):  " <<B<<endl;
+        Bmagnet=B.getZ();
+        magset=true;
 
-	const HepGeom::Point3D<double> position = HepGeom::Point3D<double>(0.,0.,0.);
-	const HepGeom::Vector3D<double> direction=HepGeom::Vector3D<double>(1.,1.,1.);
-	Helix helix = Helix(direction,position,-1,Bmagnet);
-	cout << "Curvature:           " << helix.getCurvature()<<endl;
-	cout << "Helicity:            " << helix.getHelicity() << endl;
-	cout << "cotangent of theta:  " << helix.getCotTheta() << endl;
-	cout << "phi0:                " << helix.getPhi0() << endl;
-	cout << "d0:                  " << helix.getD0() << endl;
-	cout << "Z0:                  " << helix.getZ0() << endl;
-	cout << "Position after s=3.: " << helix.getPosition(3.) <<endl;
-	cout << "Direction after s=3: " << helix.getDirection(3.) <<endl;
+        const HepGeom::Point3D<double> position = HepGeom::Point3D<double>(0.,0.,0.);
+        const HepGeom::Vector3D<double> direction=HepGeom::Vector3D<double>(1.,1.,1.);
+        Helix helix = Helix(direction,position,-1,Bmagnet);
+        cout << "Curvature:           " << helix.getCurvature()<<endl;
+        cout << "Helicity:            " << helix.getHelicity() << endl;
+        cout << "cotangent of theta:  " << helix.getCotTheta() << endl;
+        cout << "phi0:                " << helix.getPhi0() << endl;
+        cout << "d0:                  " << helix.getD0() << endl;
+        cout << "Z0:                  " << helix.getZ0() << endl;
+        cout << "Position after s=3.: " << helix.getPosition(3.) <<endl;
+        cout << "Direction after s=3: " << helix.getDirection(3.) <<endl;
       }
 
     static int ncalls(0);
@@ -520,15 +520,15 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     mpstraws.clear();
     float nt[22];
     enum ntpos{EVT,
-	       PGENX    ,PGENY ,PGENZ  ,
-	       PINX     ,PINY  ,PINZ   ,
-	       POUTX    ,POUTY ,POUTZ  ,
-	       NINT     ,RREC  ,PTREC ,PRECZ,
-	       NSTRAWS  ,RREC_S,PTREC_S,PREC_SZ,
-	       NCLUSTERS,RREC_C,PTREC_C,PREC_CZ};
+               PGENX    ,PGENY ,PGENZ  ,
+               PINX     ,PINY  ,PINZ   ,
+               POUTX    ,POUTY ,POUTZ  ,
+               NINT     ,RREC  ,PTREC ,PRECZ,
+               NSTRAWS  ,RREC_S,PTREC_S,PREC_SZ,
+               NCLUSTERS,RREC_C,PTREC_C,PREC_CZ};
     for (int i = 0;i<22;i++)
       {
-	nt[i]=-9999.;
+        nt[i]=-9999.;
       }
     //
     // Get the persistent data about pointers to StrawHits
@@ -574,136 +574,136 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     for ( map_type::const_iterator i=sims.begin();
           i != sims.end(); ++i )                      // loop over simparticles
       {
-	// All information about this SimParticle
-	SimParticleInfo const& simInfo = i->second;
-	// Information about StrawHits that belong on this SimParticle.
-	vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
-	if (simInfo.simParticle().generatorIndex()>=0)
-	  {
-	    const ToyGenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
-	    if (genpar.generatorId()== GenId::conversionGun)
-	      {
-		nt[PGENX]=genpar.momentum().getX();
-		nt[PGENY]=genpar.momentum().getY() ;
- 		nt[PGENZ]=genpar.momentum().getZ() ;
+        // All information about this SimParticle
+        SimParticleInfo const& simInfo = i->second;
+        // Information about StrawHits that belong on this SimParticle.
+        vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
+        if (simInfo.simParticle().generatorIndex()>=0)
+          {
+            const ToyGenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
+            if (genpar.generatorId()== GenId::conversionGun)
+              {
+                nt[PGENX]=genpar.momentum().getX();
+                nt[PGENY]=genpar.momentum().getY() ;
+                nt[PGENZ]=genpar.momentum().getZ() ;
 
-		foundcele=true;
-		StepPointMC const& fstep =simInfo.firstStepPointMCinTracker();
-		StepPointMC const& lstep =simInfo.lastStepPointMCinTracker();
-		P_in_si= fstep.momentum();     // momentum as the track enters the tracker
-		Pt_inval_si =  P_in_si.rho();
-		P_inval_si  =  P_in_si.mag();
-		_Pt_in_si->Fill(Pt_inval_si);
-		_P_in_si ->Fill(P_inval_si);
-		_Pz_in_si->Fill(P_in_si.z());
-		P_out_si= lstep.momentum();   // momentum as the track leaves the tracker
-		Pt_outval_si =  P_out_si.rho();
-		P_outval_si  =  P_out_si.mag();
-		_Pt_out_si->Fill(Pt_outval_si);
-		_P_out_si ->Fill(P_outval_si);
-		_Pz_out_si->Fill(P_out_si.z());
-		nt[PINX] = P_in_si.getX();
-		nt[PINY] = P_in_si.getY();
-		nt[PINZ] = P_in_si.getZ();
-		nt[POUTX]= P_out_si.getX();
-		nt[POUTY]= P_out_si.getY();
-		nt[POUTZ]= P_out_si.getZ() ;
-		// Loop over all StrawsHits to which this SimParticle contributed.
-		double _timetodist=149.8962;
-		_hNEleHits->Fill(infos.size());
-		// calculate the average hit position of track at a plane
+                foundcele=true;
+                StepPointMC const& fstep =simInfo.firstStepPointMCinTracker();
+                StepPointMC const& lstep =simInfo.lastStepPointMCinTracker();
+                P_in_si= fstep.momentum();     // momentum as the track enters the tracker
+                Pt_inval_si =  P_in_si.rho();
+                P_inval_si  =  P_in_si.mag();
+                _Pt_in_si->Fill(Pt_inval_si);
+                _P_in_si ->Fill(P_inval_si);
+                _Pz_in_si->Fill(P_in_si.z());
+                P_out_si= lstep.momentum();   // momentum as the track leaves the tracker
+                Pt_outval_si =  P_out_si.rho();
+                P_outval_si  =  P_out_si.mag();
+                _Pt_out_si->Fill(Pt_outval_si);
+                _P_out_si ->Fill(P_outval_si);
+                _Pz_out_si->Fill(P_out_si.z());
+                nt[PINX] = P_in_si.getX();
+                nt[PINY] = P_in_si.getY();
+                nt[PINZ] = P_in_si.getZ();
+                nt[POUTX]= P_out_si.getX();
+                nt[POUTY]= P_out_si.getY();
+                nt[POUTZ]= P_out_si.getZ() ;
+                // Loop over all StrawsHits to which this SimParticle contributed.
+                double _timetodist=149.8962;
+                _hNEleHits->Fill(infos.size());
+                // calculate the average hit position of track at a plane
 
-		for (int idev = 0; idev < 36 ; idev++) {
-		  nhitdev[idev] = 0 ;
-		  edep[idev] = 0.0 ;
-		  MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
-		}
+                for (int idev = 0; idev < 36 ; idev++) {
+                  nhitdev[idev] = 0 ;
+                  edep[idev] = 0.0 ;
+                  MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
+                }
 
-		for ( size_t jdev=0; jdev<infos.size(); ++jdev) // Loop over associated Hits
-		  {
-		    StrawHitMCInfo const& info = infos.at(jdev);
-		    StrawHit const& hit        = info.hit();
-		    Straw const& str           = tracker.getStraw(hit.strawIndex());
-		    sid = str.Id();
-		    did = sid.getDeviceId();
-		    std::vector<StepPointMC const *> const& steps = info.steps();
-		    for ( size_t ks=0; ks<steps.size(); ++ks){
-		      StepPointMC const& step = *(steps[ks]);
-		      if (step.momentum().mag()>5)
-			{
-			  MCPoint[did] =  MCPoint[did]+step.position();
+                for ( size_t jdev=0; jdev<infos.size(); ++jdev) // Loop over associated Hits
+                  {
+                    StrawHitMCInfo const& info = infos.at(jdev);
+                    StrawHit const& hit        = info.hit();
+                    Straw const& str           = tracker.getStraw(hit.strawIndex());
+                    sid = str.Id();
+                    did = sid.getDeviceId();
+                    std::vector<StepPointMC const *> const& steps = info.steps();
+                    for ( size_t ks=0; ks<steps.size(); ++ks){
+                      StepPointMC const& step = *(steps[ks]);
+                      if (step.momentum().mag()>5)
+                        {
+                          MCPoint[did] =  MCPoint[did]+step.position();
 
-			  edep[did] =  edep[did]+step.totalEDep();
-			  nhitdev[did]++;
-			}
+                          edep[did] =  edep[did]+step.totalEDep();
+                          nhitdev[did]++;
+                        }
 
-		    }
-		  }                                             // end loop over associated Hits
-		for (int idev = 0; idev < 36 ; idev++) {
-		  if (nhitdev[idev]>0)
-		    {
-		      double a = 1.0/double(nhitdev[idev]);
-		      MCPoint[idev] = MCPoint[idev]*a;
-		    }
-		}
-		for ( size_t jhit=0; jhit<infos.size(); ++jhit) // Loop over associated Hits
-		  {
-		    StrawHitMCInfo const& info = infos.at(jhit);
-		    StrawHit const& hit        = info.hit();
-		    Straw const& str           = tracker.getStraw(hit.strawIndex());
-		    const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-		    const CLHEP::Hep3Vector dirvec = str.getDirection();
-		    double dt =hit.dt();
-		    double disttomid =dt* _timetodist;
-		    CLHEP::Hep3Vector hitpos = mpvec+disttomid*dirvec;
-		    X_straw.push_back(hitpos.getX());
-		    Y_straw.push_back(hitpos.getY());
-		    Z_straw.push_back(hitpos.getZ());
-		    Double_t Rhit = hitpos.rho();
-		    R_straw.push_back(Rhit);
-		    CLHEP::Hep3Vector smcpos = CLHEP::Hep3Vector( 0.0, 0.0, 0.0);
-		    std::vector<StepPointMC const *> const& steps = info.steps();
-		    for ( size_t k=0; k<steps.size(); ++k){
-		      StepPointMC const& step = *(steps[k]);
-		      smcpos= smcpos+step.position();
-		    }
-		    smcpos=smcpos/steps.size();
-		    Points3d_straw.push_back(smcpos);
-		    Double_t Rmc  = smcpos.rho();
-		    R_res_straw.push_back(Rmc-Rhit);
-		    _Rdiff_s-> Fill(Rmc-Rhit);
-		    _Phidiff_s->Fill(smcpos.phi()-hitpos.phi());
-		    X_res_straw.push_back(smcpos.getX()-hitpos.getX());
-		    Y_res_straw.push_back(smcpos.getY()-hitpos.getY());
-		    _Xdiff_s -> Fill(smcpos.getX()-hitpos.getX());
-		    _Ydiff_s -> Fill(smcpos.getY()-hitpos.getY());
-		  }                        // end loop over hits
-		nt[NSTRAWS]= X_straw.size();
-		if ( X_straw.size()>4)
-		  {
-		    if (FitCircle(X_straw, Y_straw))
-		      {
-			_x0y0_s->Fill(x0,y0);
-			_R_rec_s->Fill(R_rec);
-			_chi2_s -> Fill(chi2) ;
-			Pt =1000.*R_rec  * 2. * Bmagnet* Const;
-			_Pt_rec_s->Fill(Pt);
-			_Pt_diff_s->Fill(Pt-Pt_inval_si);
-			nt[RREC_S] = R_rec;
-			nt[PTREC_S]= Pt;
-			if (FitSinus2(Z_straw, R_straw))
-			  {
-			    _Pz_rec_s->Fill(Pz);
-			    _Pz_diff_s->Fill(Pz-P_in_si.z());
-			    Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
-			    _P_rec_s->Fill(Ptot);
-			    _P_diff_s->Fill(Ptot-P_inval_si);
-			    nt[PREC_SZ]= Pz;
-			  }
-		      }
-		  }
-	      }
-	}
+                    }
+                  }                                             // end loop over associated Hits
+                for (int idev = 0; idev < 36 ; idev++) {
+                  if (nhitdev[idev]>0)
+                    {
+                      double a = 1.0/double(nhitdev[idev]);
+                      MCPoint[idev] = MCPoint[idev]*a;
+                    }
+                }
+                for ( size_t jhit=0; jhit<infos.size(); ++jhit) // Loop over associated Hits
+                  {
+                    StrawHitMCInfo const& info = infos.at(jhit);
+                    StrawHit const& hit        = info.hit();
+                    Straw const& str           = tracker.getStraw(hit.strawIndex());
+                    const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+                    const CLHEP::Hep3Vector dirvec = str.getDirection();
+                    double dt =hit.dt();
+                    double disttomid =dt* _timetodist;
+                    CLHEP::Hep3Vector hitpos = mpvec+disttomid*dirvec;
+                    X_straw.push_back(hitpos.getX());
+                    Y_straw.push_back(hitpos.getY());
+                    Z_straw.push_back(hitpos.getZ());
+                    Double_t Rhit = hitpos.rho();
+                    R_straw.push_back(Rhit);
+                    CLHEP::Hep3Vector smcpos = CLHEP::Hep3Vector( 0.0, 0.0, 0.0);
+                    std::vector<StepPointMC const *> const& steps = info.steps();
+                    for ( size_t k=0; k<steps.size(); ++k){
+                      StepPointMC const& step = *(steps[k]);
+                      smcpos= smcpos+step.position();
+                    }
+                    smcpos=smcpos/steps.size();
+                    Points3d_straw.push_back(smcpos);
+                    Double_t Rmc  = smcpos.rho();
+                    R_res_straw.push_back(Rmc-Rhit);
+                    _Rdiff_s-> Fill(Rmc-Rhit);
+                    _Phidiff_s->Fill(smcpos.phi()-hitpos.phi());
+                    X_res_straw.push_back(smcpos.getX()-hitpos.getX());
+                    Y_res_straw.push_back(smcpos.getY()-hitpos.getY());
+                    _Xdiff_s -> Fill(smcpos.getX()-hitpos.getX());
+                    _Ydiff_s -> Fill(smcpos.getY()-hitpos.getY());
+                  }                        // end loop over hits
+                nt[NSTRAWS]= X_straw.size();
+                if ( X_straw.size()>4)
+                  {
+                    if (FitCircle(X_straw, Y_straw))
+                      {
+                        _x0y0_s->Fill(x0,y0);
+                        _R_rec_s->Fill(R_rec);
+                        _chi2_s -> Fill(chi2) ;
+                        Pt =1000.*R_rec  * 2. * Bmagnet* Const;
+                        _Pt_rec_s->Fill(Pt);
+                        _Pt_diff_s->Fill(Pt-Pt_inval_si);
+                        nt[RREC_S] = R_rec;
+                        nt[PTREC_S]= Pt;
+                        if (FitSinus2(Z_straw, R_straw))
+                          {
+                            _Pz_rec_s->Fill(Pz);
+                            _Pz_diff_s->Fill(Pz-P_in_si.z());
+                            Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
+                            _P_rec_s->Fill(Ptot);
+                            _P_diff_s->Fill(Ptot-P_inval_si);
+                            nt[PREC_SZ]= Pz;
+                          }
+                      }
+                  }
+              }
+        }
       }           // end loop over simparticles
     if (!foundcele) return;       // no conversion electron found
     Int_t totalHits=0;
@@ -718,24 +718,24 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       totalHits = totalHits+mcptr.size();
       Double_t totalEnergy = 0.0;
       for( size_t j=0; j<mcptr.size(); j++ ) {
-	DPIndex const& junkie = mcptr[j];
-       	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-	Double_t Energy = strawhit.energyDep();
-	totalEnergy=totalEnergy+Energy;
-	str = tracker.getStraw(strawhit.strawIndex());
-	sid = str.Id();
-	lid = sid.getLayerId();
-	did = sid.getDeviceId();
-	secid = sid.getSectorId();
-	const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-	const CLHEP::Hep3Vector dirvec = str.getDirection();
-	dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
-	//pvec = pvec + Energy * mpvec;     // weight straw by energy deposition
-	pvec = pvec + mpvec;
-	if (str.getHalfLength()<hlen)
-	  {
-	    hlen=str.getHalfLength();
-	  }
+        DPIndex const& junkie = mcptr[j];
+        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+        Double_t Energy = strawhit.energyDep();
+        totalEnergy=totalEnergy+Energy;
+        str = tracker.getStraw(strawhit.strawIndex());
+        sid = str.Id();
+        lid = sid.getLayerId();
+        did = sid.getDeviceId();
+        secid = sid.getSectorId();
+        const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+        const CLHEP::Hep3Vector dirvec = str.getDirection();
+        dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
+        //pvec = pvec + Energy * mpvec;     // weight straw by energy deposition
+        pvec = pvec + mpvec;
+        if (str.getHalfLength()<hlen)
+          {
+            hlen=str.getHalfLength();
+          }
       }
       double a = 1./double(mcptr.size());
       pvec = pvec*a;
@@ -759,163 +759,163 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Int_t nint = 0;
     for (int i = 0;i<36;i++)
       {
-	if (mpstraws.count(i)>1)
-	  {
-	    pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
-	    ppp1 = mpstraws.equal_range(i);
-	    multimap<int,pstraw>::iterator first11 = ppp1.first;
-	    multimap<int,pstraw>::iterator first22 = ppp1.first;
-	    multimap<int,pstraw>::iterator last1 = ppp1.second;
-	    last1--;
-	    multimap<int,pstraw>::iterator last2 = ppp1.second;
-	    for ( multimap<int,pstraw>::iterator first1=first11;first1 != last1;first1++)
-	      {
-		first22=first1;
-		first22++;
-		for ( multimap<int,pstraw>::iterator first2=first22;first2 != last2;++first2)
-		  {
-		    pstraw junk  = (*first1).second;
-		    pstraw pjunk = (*first2).second;
-		    const CLHEP::Hep2Vector p0 =
-		      CLHEP::Hep2Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
-		    const CLHEP::Hep2Vector p1 =
-		      CLHEP::Hep2Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
-		    const CLHEP::Hep2Vector p2 =
-		      CLHEP::Hep2Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry);
-		    const CLHEP::Hep2Vector p3 =
-		      CLHEP::Hep2Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
-		    LineSegmentPCA linesegment0(p0, p1);
-		    LineSegmentPCA linesegment1(p2, p3);
-		    CLHEP::Hep2Vector intersection;
-		    switch(linesegment0.Intersect(linesegment1, intersection))
-		      {
-		      case LineSegmentPCA::PARALLEL:
-			//std::cout << "The lines are parallel\n\n";
-			break;
-		      case LineSegmentPCA::COINCIDENT:
-			//std::cout << "The lines are coincident\n\n";
-			break;
-		      case LineSegmentPCA::NOT_INTERSECTING:
-			//std::cout << "The lines do not intersect\n\n";
-			break;
-		      case LineSegmentPCA::INTERSECTING:
-			X.push_back(intersection.x());
-			Y.push_back(intersection.y());
-			Z.push_back(0.5*(junk.mpz+pjunk.mpz));
-			CLHEP::Hep3Vector point3d  =
-			  CLHEP::Hep3Vector(intersection.x(),intersection.y(),0.5*(junk.mpz+pjunk.mpz));
-			Double_t Rhit=point3d.rho();
-			Points3d.push_back(point3d);
-			Double_t Rmc  = MCPoint[i].rho();
-			R.push_back(Rhit);
-			R_res.push_back(Rmc-Rhit);
-			_Rdiff-> Fill(Rmc-Rhit);
-			_Phidiff->Fill(MCPoint[i].phi()-point3d.phi());
-			X_res.push_back(MCPoint[i].getX()-intersection.x());
-			Y_res.push_back(MCPoint[i].getY()-intersection.y());
-			_Xdiff -> Fill(MCPoint[i].getX()-intersection.x());
-			_Ydiff -> Fill(MCPoint[i].getX()-intersection.y());
-			nint ++;
-			break;
-		      }  // end switch
-		  } // end for first2
-	      }// end for first1
-	  }// end count >1
+        if (mpstraws.count(i)>1)
+          {
+            pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
+            ppp1 = mpstraws.equal_range(i);
+            multimap<int,pstraw>::iterator first11 = ppp1.first;
+            multimap<int,pstraw>::iterator first22 = ppp1.first;
+            multimap<int,pstraw>::iterator last1 = ppp1.second;
+            last1--;
+            multimap<int,pstraw>::iterator last2 = ppp1.second;
+            for ( multimap<int,pstraw>::iterator first1=first11;first1 != last1;first1++)
+              {
+                first22=first1;
+                first22++;
+                for ( multimap<int,pstraw>::iterator first2=first22;first2 != last2;++first2)
+                  {
+                    pstraw junk  = (*first1).second;
+                    pstraw pjunk = (*first2).second;
+                    const CLHEP::Hep2Vector p0 =
+                      CLHEP::Hep2Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
+                    const CLHEP::Hep2Vector p1 =
+                      CLHEP::Hep2Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
+                    const CLHEP::Hep2Vector p2 =
+                      CLHEP::Hep2Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry);
+                    const CLHEP::Hep2Vector p3 =
+                      CLHEP::Hep2Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
+                    LineSegmentPCA linesegment0(p0, p1);
+                    LineSegmentPCA linesegment1(p2, p3);
+                    CLHEP::Hep2Vector intersection;
+                    switch(linesegment0.Intersect(linesegment1, intersection))
+                      {
+                      case LineSegmentPCA::PARALLEL:
+                        //std::cout << "The lines are parallel\n\n";
+                        break;
+                      case LineSegmentPCA::COINCIDENT:
+                        //std::cout << "The lines are coincident\n\n";
+                        break;
+                      case LineSegmentPCA::NOT_INTERSECTING:
+                        //std::cout << "The lines do not intersect\n\n";
+                        break;
+                      case LineSegmentPCA::INTERSECTING:
+                        X.push_back(intersection.x());
+                        Y.push_back(intersection.y());
+                        Z.push_back(0.5*(junk.mpz+pjunk.mpz));
+                        CLHEP::Hep3Vector point3d  =
+                          CLHEP::Hep3Vector(intersection.x(),intersection.y(),0.5*(junk.mpz+pjunk.mpz));
+                        Double_t Rhit=point3d.rho();
+                        Points3d.push_back(point3d);
+                        Double_t Rmc  = MCPoint[i].rho();
+                        R.push_back(Rhit);
+                        R_res.push_back(Rmc-Rhit);
+                        _Rdiff-> Fill(Rmc-Rhit);
+                        _Phidiff->Fill(MCPoint[i].phi()-point3d.phi());
+                        X_res.push_back(MCPoint[i].getX()-intersection.x());
+                        Y_res.push_back(MCPoint[i].getY()-intersection.y());
+                        _Xdiff -> Fill(MCPoint[i].getX()-intersection.x());
+                        _Ydiff -> Fill(MCPoint[i].getX()-intersection.y());
+                        nint ++;
+                        break;
+                      }  // end switch
+                  } // end for first2
+              }// end for first1
+          }// end count >1
       }   ///endloop over all devices
     _hNInter->Fill(X.size());
     nt[NINT] = X.size();
     if (X.size()>4)
       {
-	if (FitCircle(X, Y))
-	  {
-	    _x0y0->Fill(x0,y0);
-	    _R_rec->Fill(R_rec);
-	    _chi2 -> Fill(chi2) ;
-	    Pt =1000.*R_rec * 2. * Bmagnet* Const;
-	    _Pt_rec->Fill(Pt);
-	    _Pt_diff->Fill(Pt-Pt_inval_si);
-	    nt[RREC] = R_rec;
-	    nt[PTREC]= Pt;
-	    if (FitSinus2(Z, R))
-	      {
-		_Pz_rec->Fill(Pz);
-		_Pz_diff->Fill(Pz-P_in_si.z());
-		Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
-		_P_rec->Fill(Ptot);
-		_P_diff->Fill(Ptot-P_inval_si);
-		nt[PRECZ]= Pz;
-	      }
-	  }
+        if (FitCircle(X, Y))
+          {
+            _x0y0->Fill(x0,y0);
+            _R_rec->Fill(R_rec);
+            _chi2 -> Fill(chi2) ;
+            Pt =1000.*R_rec * 2. * Bmagnet* Const;
+            _Pt_rec->Fill(Pt);
+            _Pt_diff->Fill(Pt-Pt_inval_si);
+            nt[RREC] = R_rec;
+            nt[PTREC]= Pt;
+            if (FitSinus2(Z, R))
+              {
+                _Pz_rec->Fill(Pz);
+                _Pz_diff->Fill(Pz-P_in_si.z());
+                Double_t Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
+                _P_rec->Fill(Ptot);
+                _P_diff->Fill(Ptot-P_inval_si);
+                nt[PRECZ]= Pz;
+              }
+          }
       }
 
     int nclusters=0;
     double _timetodist=149.8962;
     for ( size_t i=0; i< mcptrHandle->size(); ++i )// Loop over Clusters
       {
-	DPIndexVector   const&    mcptr(hits_mcptr->at(i));
-	CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
-	CLHEP::Hep3Vector clusterpos =  CLHEP::Hep3Vector(0.,0.,0.);
-	//totalHits = totalHits+mcptr.size();
-	double totalEnergy = 0.0;
-	for( size_t j=0; j<mcptr.size(); j++ ) // Loop over Straws in Cluster
-	  {
-	    DPIndex const& junkie = mcptr[j];
-	    StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-	    double Energy = strawhit.energyDep();
-	    //double Time   = strawhit.time();
-	    double deltaT = strawhit.dt();
-	    StrawIndex si   = strawhit.strawIndex();
-	    Straw str       = tracker.getStraw(si);
-	    const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-	    const CLHEP::Hep3Vector dirvec = str.getDirection();
-	    double disttomid = deltaT* _timetodist;   // convert delta T into delta x along the wire
-	    CLHEP::Hep3Vector hitpos = mpvec+disttomid*dirvec;
-	    clusterpos=clusterpos+hitpos;
-	    totalEnergy=totalEnergy+Energy;
-	  } // end loop over straws in cluster
-	double a = 1./double(mcptr.size());
-	clusterpos=clusterpos*a;
-	X_cluster.push_back(clusterpos.getX());
-	Y_cluster.push_back(clusterpos.getY());
-	Z_cluster.push_back(clusterpos.getZ());
-	double Rhit =clusterpos.rho();
-	R_cluster.push_back(Rhit);
-	Points3d_cluster.push_back(clusterpos);
-	double Rmc  = MCPoint[i].rho();
-	R_res_cluster.push_back(Rmc-Rhit);
-	_Rdiff_c-> Fill(Rmc-Rhit);
-	_Phidiff_c->Fill(MCPoint[i].phi()- clusterpos.phi());
-	X_res_cluster.push_back(MCPoint[i].getX()-clusterpos.getX());
-	Y_res_cluster.push_back(MCPoint[i].getY()-clusterpos.getY());
-	_Xdiff_c -> Fill(MCPoint[i].getX()-clusterpos.getX());
-	_Ydiff_c -> Fill(MCPoint[i].getY()-clusterpos.getY());
-	nclusters++;
+        DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+        CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
+        CLHEP::Hep3Vector clusterpos =  CLHEP::Hep3Vector(0.,0.,0.);
+        //totalHits = totalHits+mcptr.size();
+        double totalEnergy = 0.0;
+        for( size_t j=0; j<mcptr.size(); j++ ) // Loop over Straws in Cluster
+          {
+            DPIndex const& junkie = mcptr[j];
+            StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+            double Energy = strawhit.energyDep();
+            //double Time   = strawhit.time();
+            double deltaT = strawhit.dt();
+            StrawIndex si   = strawhit.strawIndex();
+            Straw str       = tracker.getStraw(si);
+            const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+            const CLHEP::Hep3Vector dirvec = str.getDirection();
+            double disttomid = deltaT* _timetodist;   // convert delta T into delta x along the wire
+            CLHEP::Hep3Vector hitpos = mpvec+disttomid*dirvec;
+            clusterpos=clusterpos+hitpos;
+            totalEnergy=totalEnergy+Energy;
+          } // end loop over straws in cluster
+        double a = 1./double(mcptr.size());
+        clusterpos=clusterpos*a;
+        X_cluster.push_back(clusterpos.getX());
+        Y_cluster.push_back(clusterpos.getY());
+        Z_cluster.push_back(clusterpos.getZ());
+        double Rhit =clusterpos.rho();
+        R_cluster.push_back(Rhit);
+        Points3d_cluster.push_back(clusterpos);
+        double Rmc  = MCPoint[i].rho();
+        R_res_cluster.push_back(Rmc-Rhit);
+        _Rdiff_c-> Fill(Rmc-Rhit);
+        _Phidiff_c->Fill(MCPoint[i].phi()- clusterpos.phi());
+        X_res_cluster.push_back(MCPoint[i].getX()-clusterpos.getX());
+        Y_res_cluster.push_back(MCPoint[i].getY()-clusterpos.getY());
+        _Xdiff_c -> Fill(MCPoint[i].getX()-clusterpos.getX());
+        _Ydiff_c -> Fill(MCPoint[i].getY()-clusterpos.getY());
+        nclusters++;
 
       } //  end Loop over Clusters
     nt[NCLUSTERS]= X_cluster.size();
     if (X_cluster.size()>4)
       {
-	if (FitCircle(X_cluster, Y_cluster))
-	  {
-	    _x0y0_c->Fill(x0,y0);
-	    _R_rec_c->Fill(R_rec);
-	    _chi2_c -> Fill(chi2) ;
-	    Pt =1000.*R_rec * 2. * Bmagnet* Const;
-	    _Pt_rec_c->Fill(Pt);
-	    _Pt_diff_c->Fill(Pt-Pt_inval_si);
-	    nt[RREC_C]   = R_rec;
-	    nt[PTREC_C]  = Pt;
-	    if (FitSinus2(Z_cluster, R_cluster))
-	      {
-		_Pz_rec_c->Fill(Pz);
-		_Pz_diff_c->Fill(Pz-P_in_si.z());
-		double Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
-		_P_rec_c->Fill(Ptot);
-		_P_diff_c->Fill(Ptot-P_inval_si);
-		nt[PREC_CZ]  = Pz;
+        if (FitCircle(X_cluster, Y_cluster))
+          {
+            _x0y0_c->Fill(x0,y0);
+            _R_rec_c->Fill(R_rec);
+            _chi2_c -> Fill(chi2) ;
+            Pt =1000.*R_rec * 2. * Bmagnet* Const;
+            _Pt_rec_c->Fill(Pt);
+            _Pt_diff_c->Fill(Pt-Pt_inval_si);
+            nt[RREC_C]   = R_rec;
+            nt[PTREC_C]  = Pt;
+            if (FitSinus2(Z_cluster, R_cluster))
+              {
+                _Pz_rec_c->Fill(Pz);
+                _Pz_diff_c->Fill(Pz-P_in_si.z());
+                double Ptot = TMath::Sqrt(Pz*Pz+Pt*Pt);
+                _P_rec_c->Fill(Ptot);
+                _P_diff_c->Fill(Ptot-P_inval_si);
+                nt[PREC_CZ]  = Pz;
 
-	      }
-	  }
+              }
+          }
       }
     _ntup->Fill(nt);
   } // end of ::analyze.
@@ -950,8 +950,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
     if (!converged)
       {
-	cout <<"-----------Circle fit didn't converge---------------------------" <<endl;
-	return converged;
+        cout <<"-----------Circle fit didn't converge---------------------------" <<endl;
+        return converged;
       }
     for (int i = 0;i<3;i++) {
      gmMinuit->GetParameter(i,sfpar[i],errsfpar[i]);
@@ -997,8 +997,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     bool converged = gmMinuit2->fCstatu.Contains("CONVERGED");
     if (!converged)
       {
-	cout <<"-----------Sin fit didn't converge---------------------------" <<endl;
-	return converged;
+        cout <<"-----------Sin fit didn't converge---------------------------" <<endl;
+        return converged;
       }
     for (int i = 0;i<dim;i++) {
      gmMinuit2->GetParameter(i,sfpar[i],errsfpar[i]);

@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.15 2011/05/18 02:27:14 wb Exp $
+// $Id: BFieldManagerMaker.cc,v 1.16 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/18 21:14:30 $
 //
 
 // Includes from C++
@@ -73,10 +73,10 @@ namespace mu2e {
       std::string torusName("toyTS.rTorus");
       const double torusRadius = 2926.0; // Required number
       if( fabs(_config.getDouble(torusName,0.0)-torusRadius)>0.1 ){
-	throw cet::exception("GEOM")
-	  << "The GMC magnetic field files require torus radius of 2926 mm."
-	  << " Check " << torusName << " value in the config file."
-	  << " Maps are not loaded.\n";
+        throw cet::exception("GEOM")
+          << "The GMC magnetic field files require torus radius of 2926 mm."
+          << " Check " << torusName << " value in the config file."
+          << " Maps are not loaded.\n";
       }
 
       _bfmgr->_type   = BFMapType::GMC;
@@ -95,10 +95,10 @@ namespace mu2e {
       std::string torusName("toyTS.rTorus");
       const double torusRadius = 2929.0; // Required number
       if( fabs(_config.getDouble(torusName,0.0)-torusRadius)>0.1 ){
-	throw cet::exception("GEOM")
-	  << "The G4BL magnetic field files require torus radius of 2929 mm."
-	  << " Check " << torusName << " value in the config file."
-	  << " Maps are not loaded.\n";
+        throw cet::exception("GEOM")
+          << "The G4BL magnetic field files require torus radius of 2929 mm."
+          << " Check " << torusName << " value in the config file."
+          << " Maps are not loaded.\n";
       }
       _bfmgr->_type   = BFMapType::G4BL;
       _bfmgr->_rTorus = torusRadius;
@@ -110,30 +110,30 @@ namespace mu2e {
 
       vector<string> filesToLoad;
       if ( config.hasName("bfield.files") ){
-	config.getVectorString("bfield.files",filesToLoad);
+        config.getVectorString("bfield.files",filesToLoad);
       } else {
-	vector<string> keysToLoad;
-	keysToLoad.push_back("bfield.dsFile");
-	keysToLoad.push_back("bfield.psFile");
-	keysToLoad.push_back("bfield.tsuFile");
-	keysToLoad.push_back("bfield.tsdFile");
-	for( unsigned int i=0; i<keysToLoad.size(); ++i ) {
-	  if ( ! _config.hasName(keysToLoad[i]) ){
-	    cout << "No magnetic field file specified for: "
-		 << keysToLoad[i]
-		 << "   Hope that's OK." << endl;
-	  } else {
-	    filesToLoad.push_back(_config.getString(keysToLoad[i]));
-	  }
-	}
+        vector<string> keysToLoad;
+        keysToLoad.push_back("bfield.dsFile");
+        keysToLoad.push_back("bfield.psFile");
+        keysToLoad.push_back("bfield.tsuFile");
+        keysToLoad.push_back("bfield.tsdFile");
+        for( unsigned int i=0; i<keysToLoad.size(); ++i ) {
+          if ( ! _config.hasName(keysToLoad[i]) ){
+            cout << "No magnetic field file specified for: "
+                 << keysToLoad[i]
+                 << "   Hope that's OK." << endl;
+          } else {
+            filesToLoad.push_back(_config.getString(keysToLoad[i]));
+          }
+        }
       }
 
       for( unsigned int i=0; i<filesToLoad.size(); ++i ) {
-	string filename = filesToLoad[i];
-	cout << "Read " << filename << endl;
-	ostringstream mapkey;
-	mapkey << "bfield" << i;
-	loadG4BL( mapkey.str(),  filename  );
+        string filename = filesToLoad[i];
+        cout << "Read " << filename << endl;
+        ostringstream mapkey;
+        mapkey << "bfield" << i;
+        loadG4BL( mapkey.str(),  filename  );
         if( _config.getBool("bfield.writeG4BLBinaries", false) ){
           writeG4BLBinary( i, mapkey.str() );
         }
@@ -152,10 +152,10 @@ namespace mu2e {
     // For debug purposes: print the field in the target region
     CLHEP::Hep3Vector b = _bfmgr->getBField(CLHEP::Hep3Vector(3900.0,0.0,-6550.0));
     cout << "B-field at the proton target: ("
-	 << b.x() << ","
-	 << b.y() << ","
-	 << b.z() << ")"
-	 << endl;
+         << b.x() << ","
+         << b.y() << ","
+         << b.z() << ")"
+         << endl;
 
     // Special case for the uniform DS field.
     loadUniformDS();
@@ -202,7 +202,7 @@ namespace mu2e {
   // Parse the config file to learn about one magnetic field map.
   // Create an empty map and call the code to load the map from the file.
   void BFieldManagerMaker::loadG4BL( const std::string& key,
-				     const std::string& filename ) {
+                                     const std::string& filename ) {
 
     // Open the input file.
     cet::search_path sp("MU2E_SEARCH_PATH");
@@ -224,18 +224,18 @@ namespace mu2e {
     // Parse the string with parameters
     char cbuf[128];
     boost::regex re("^\\s*grid"
-		    "\\s+X0=([eE\\d\\-\\+\\.]+)\\s+Y0=([eE\\d\\-\\+\\.]+)\\s+Z0=([eE\\d\\-\\+\\.]+)"
-		    "\\s+nX=([eE\\d\\-\\+\\.]+)\\s+nY=([eE\\d\\-\\+\\.]+)\\s+nZ=([eE\\d\\-\\+\\.]+)"
-		    "\\s+dX=([eE\\d\\-\\+\\.]+)\\s+dY=([eE\\d\\-\\+\\.]+)\\s+dZ=([eE\\d\\-\\+\\.]+)"
-		    ".*$");
+                    "\\s+X0=([eE\\d\\-\\+\\.]+)\\s+Y0=([eE\\d\\-\\+\\.]+)\\s+Z0=([eE\\d\\-\\+\\.]+)"
+                    "\\s+nX=([eE\\d\\-\\+\\.]+)\\s+nY=([eE\\d\\-\\+\\.]+)\\s+nZ=([eE\\d\\-\\+\\.]+)"
+                    "\\s+dX=([eE\\d\\-\\+\\.]+)\\s+dY=([eE\\d\\-\\+\\.]+)\\s+dZ=([eE\\d\\-\\+\\.]+)"
+                    ".*$");
     boost::cmatch matches;
     bool paramFound = false;
     int nread=100; // Optimization - don't read more than 100 lines
     while( (!in.eof()) && (--nread>0) ) {
       in.getline(cbuf,128);
       if( boost::regex_match(cbuf,matches,re) ) {
-	paramFound = true;
-	break;
+        paramFound = true;
+        break;
       }
     }
     in.pop();
@@ -245,7 +245,7 @@ namespace mu2e {
       throw cet::exception("GEOM")
         << "Could not find param string in magnetic firld map. "
         << "Filename: " << filename
-	<< ", found " << matches.size() << " items."
+        << ", found " << matches.size() << " items."
         << "\n";
     }
 
@@ -292,8 +292,8 @@ namespace mu2e {
 
     // Set defined region for the map
     dsmap.setLimits(X0[0],X0[0]+(dim[0]-1)*dX[0],
-		    X0[1],X0[1]+(dim[1]-1)*dX[1],
-		    X0[2],X0[2]+(dim[2]-1)*dX[2]);
+                    X0[1],X0[1]+(dim[1]-1)*dX[1],
+                    X0[2],X0[2]+(dim[2]-1)*dX[2]);
 
     // Fill the map.
     if ( filename.find(".header") != string::npos ) {
@@ -480,8 +480,8 @@ namespace mu2e {
   //
 
   void BFieldManagerMaker::readG4BLMap( const string& filename,
-					BFMap& bfmap,
-					CLHEP::Hep3Vector G4BL_offset ){
+                                        BFMap& bfmap,
+                                        CLHEP::Hep3Vector G4BL_offset ){
 
 
     // Debug print
@@ -554,8 +554,8 @@ namespace mu2e {
 
     if( nread!=nrecord ) {
       throw cet::exception("GEOM")
-	<<"Error while reading "<<filename<<"\n"
-	<<"Read "<<nread<<" out of expected "<<nrecord<<" lines.\n"
+        <<"Error while reading "<<filename<<"\n"
+        <<"Read "<<nread<<" out of expected "<<nrecord<<" lines.\n"
         <<"Last line:\n"<<cbuf<<"\n";
     }
 

@@ -10,15 +10,15 @@
 #include "CDFFitting/inc/StartingPoint.hh"
 #include "CLHEP/Matrix/DiagMatrix.h"
 
-//	This class represents a progressive fitter.  A
-//	progressive fitter incorporates information
-//	sequentially, but in the presence of "system noise"
-//	cannot provide accurate estimates of the state vector at
-//	any position except the latest.  For cases where this is
-//	important it is better to use the Kalman Filter.
+//      This class represents a progressive fitter.  A
+//      progressive fitter incorporates information
+//      sequentially, but in the presence of "system noise"
+//      cannot provide accurate estimates of the state vector at
+//      any position except the latest.  For cases where this is
+//      important it is better to use the Kalman Filter.
 //
-//	The advantage of the Progressive Fitter is a possiblly
-//	faster execution time.
+//      The advantage of the Progressive Fitter is a possiblly
+//      faster execution time.
 template <class Measureable>
 class ProgressiveFitter : public Fitter<Measureable> {
 

@@ -2,9 +2,9 @@
 // Geometry and identifier info about the Calorimeter.
 //
 //
-// $Id: Calorimeter.cc,v 1.6 2011/05/18 02:27:15 wb Exp $
+// $Id: Calorimeter.cc,v 1.7 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -19,13 +19,13 @@ namespace mu2e {
   // Convert coordinates from Mu2e frame to local frame of crystal, identified by roid
   //
   CLHEP::Hep3Vector Calorimeter::toCrystalFrame(int roid,
-						CLHEP::Hep3Vector const& pos) const {
+                                                CLHEP::Hep3Vector const& pos) const {
     int vaneid = getVaneByRO(roid);
     const Vane & vane = getVane(vaneid);
 
     CLHEP::Hep3Vector vlocal(-_roHalfThickness,
-			     (2*getCrystalRByRO(roid)-_nCrystalR+1)*_crystalHW,
-			     (2*getCrystalZByRO(roid)-_nCrystalZ+1)*_crystalHW );
+                             (2*getCrystalRByRO(roid)-_nCrystalR+1)*_crystalHW,
+                             (2*getCrystalZByRO(roid)-_nCrystalZ+1)*_crystalHW );
 
     return *(vane.getRotation())*(pos-vane.getOrigin())-vlocal;
   }
@@ -40,8 +40,8 @@ namespace mu2e {
 
     // Crystal center in vane coordinates
     CLHEP::Hep3Vector vlocal(-_roHalfThickness,
-			     (2*getCrystalRByRO(roid)-_nCrystalR+1)*_crystalHW,
-			     (2*getCrystalZByRO(roid)-_nCrystalZ+1)*_crystalHW );
+                             (2*getCrystalRByRO(roid)-_nCrystalR+1)*_crystalHW,
+                             (2*getCrystalZByRO(roid)-_nCrystalZ+1)*_crystalHW );
 
     return vane.getOrigin() + (vane.getRotation()->inverse())*vlocal;
   }

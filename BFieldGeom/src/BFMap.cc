@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.13 2011/05/18 02:27:14 wb Exp $
+// $Id: BFMap.cc,v 1.14 2011/05/18 21:14:30 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/18 21:14:30 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -69,7 +69,7 @@ namespace mu2e {
         unsigned int yindex = iy + j - 1;
         for (int k = 0; k != 3; ++k){
           unsigned int zindex = iz + k - 1;
-	  if ( ! _isDefined(xindex,yindex,zindex) ) return false;
+          if ( ! _isDefined(xindex,yindex,zindex) ) return false;
           neighborsBF[i][j][k] = _field(xindex, yindex, zindex);
           /*
                     cout << "Neighbor(" << xindex << "," << yindex << "," << zindex
@@ -155,7 +155,7 @@ namespace mu2e {
 
   // Function to return the BField for any point
   bool BFMap::getBFieldWithStatus(const CLHEP::Hep3Vector & testpoint,
-				  CLHEP::Hep3Vector & result) const {
+                                  CLHEP::Hep3Vector & result) const {
 
     result = CLHEP::Hep3Vector(0.,0.,0.);
 
@@ -241,11 +241,11 @@ namespace mu2e {
 
     if ( ! _isDefined(ix,iy,iz) ){
       if ( _warnIfOutside ){
-	mf::LogWarning("GEOM")
-	  << "Point's field is not defined in the map: " << _key << "\n"
-	  << "Point in input coordinates: " << testpoint << "\n";
-	mf::LogWarning("GEOM")
-	  << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
+        mf::LogWarning("GEOM")
+          << "Point's field is not defined in the map: " << _key << "\n"
+          << "Point in input coordinates: " << testpoint << "\n";
+        mf::LogWarning("GEOM")
+          << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
       }
       return false;
     }
@@ -254,11 +254,11 @@ namespace mu2e {
     static CLHEP::Hep3Vector neighborsBF[3][3][3];
     if ( ! getNeighbors(ix, iy, iz, neighborsBF) ) {
       if ( _warnIfOutside ){
-	mf::LogWarning("GEOM")
-	  << "Point's neighboring field is not defined in the map: " << _key << "\n"
-	  << "Point in input coordinates: " << testpoint << "\n";
-	mf::LogWarning("GEOM")
-	  << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
+        mf::LogWarning("GEOM")
+          << "Point's neighboring field is not defined in the map: " << _key << "\n"
+          << "Point in input coordinates: " << testpoint << "\n";
+        mf::LogWarning("GEOM")
+          << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
       }
       return false;
     }

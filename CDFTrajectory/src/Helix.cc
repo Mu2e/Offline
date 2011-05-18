@@ -341,9 +341,9 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
 //
 //       // compute center of circle (only if not already done)
 //       if(!_centerIsValid){
-// 	_m_x = (sign*_d0 + r) * cos(PHI0);
-// 	_m_y = (sign*_d0 + r) * sin(PHI0);
-// 	_centerIsValid = true;
+//      _m_x = (sign*_d0 + r) * cos(PHI0);
+//      _m_y = (sign*_d0 + r) * sin(PHI0);
+//      _centerIsValid = true;
 //       }
 //
 //       double s_z = plane.point().z();
@@ -475,9 +475,9 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
 
 
 Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev,
-	     const HepGeom::Point3D<double>  & PositionCm,
-	     double q,
-	     double BFieldTesla) {
+             const HepGeom::Point3D<double>  & PositionCm,
+             double q,
+             double BFieldTesla) {
 
 
   double CotTheta,W,Z0,D0;

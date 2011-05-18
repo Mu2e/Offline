@@ -116,11 +116,11 @@ void KalmanFitter<Measureable>::apply(const Measurement<Measureable> *measuremen
   _SmoothedResidual.push_back(ProgressiveFitter<Measureable>::_residual);
   _SmoothedResidualCovariance.push_back(ProgressiveFitter<Measureable>::_residualCov);
   _FitArray.push_back(Fit<Measureable>(ProgressiveFitter<Measureable>::_chiSquared,
-	ProgressiveFitter<Measureable>::_degreesOfFreedom,
-	ProgressiveFitter<Measureable>::_estimate,
-	ProgressiveFitter<Measureable>::_covariance));
+        ProgressiveFitter<Measureable>::_degreesOfFreedom,
+        ProgressiveFitter<Measureable>::_estimate,
+        ProgressiveFitter<Measureable>::_covariance));
   _ResidualArray.push_back(Residual(ProgressiveFitter<Measureable>::_residual,
-	ProgressiveFitter<Measureable>::_residualCov));
+        ProgressiveFitter<Measureable>::_residualCov));
   _validDepth=_FitArray.size();
 }
 
@@ -130,18 +130,18 @@ template <class Measureable> void KalmanFitter<Measureable>::smooth(unsigned int
     j--;
     _SmoothedEstimate[j]   = _FilteredEstimate[j] +
                             _SmootherGain[j]*_SmoothedEstimate[j+1]-
-			    _SmootherGain[j]*_FilteredEstimate[j];
+                            _SmootherGain[j]*_FilteredEstimate[j];
     _SmoothedCovariance[j].assign( _FilteredCovariance[j] +
                             _SmootherGain[j]*_SmoothedCovariance[j+1]*_SmootherGain[j].T() -
-			    _SmootherGain[j]*_FilteredCovariance[j]*_SmootherGain[j].T());
+                            _SmootherGain[j]*_FilteredCovariance[j]*_SmootherGain[j].T());
     _SmoothedResidual[j]   = _FilteredResidual[j]-_DerivativeMatrix[j]*(_SmoothedEstimate[j]-_FilteredEstimate[j]);
     _SmoothedResidualCovariance[j].assign(_FilteredResidualCovariance[j]-
                             _DerivativeMatrix[j]*_SmoothedCovariance[j]*_DerivativeMatrix[j].T());
 
     _FitArray[j]           = Fit<Measureable>(ProgressiveFitter<Measureable>::_chiSquared,
-	ProgressiveFitter<Measureable>::_degreesOfFreedom,
-	ProgressiveFitter<Measureable>::_estimate,
-	ProgressiveFitter<Measureable>::_covariance);
+        ProgressiveFitter<Measureable>::_degreesOfFreedom,
+        ProgressiveFitter<Measureable>::_estimate,
+        ProgressiveFitter<Measureable>::_covariance);
     _ResidualArray[j]      = Residual(_SmoothedResidual[j],_SmoothedResidualCovariance[j]);
   }
   _validDepth=depth;

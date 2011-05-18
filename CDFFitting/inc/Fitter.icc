@@ -25,7 +25,7 @@ const Fitter<Measureable> & Fitter<Measureable>::operator=(const Fitter<Measurea
   if (this != &right) {
     _reference=right._reference;
     _fitActionSet=right._fitActionSet;
-    _failed=right._failed;	
+    _failed=right._failed;
   }
   return *this;
 }
