@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.23 2011/05/18 15:53:28 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 15:53:28 $
+// $Id: classes.h,v 1.24 2011/05/18 18:41:36 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 18:41:36 $
 //
 // Original author Rob Kutschke
 //
@@ -31,7 +31,6 @@
 #include "ToyDP/inc/StrawClusterCollection.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "ToyDP/inc/ToyHitCollection.hh"
 #include "ToyDP/inc/G4BeamlineInfo.hh"
 #include "ToyDP/inc/G4BeamlineInfoCollection.hh"
 #include "ToyDP/inc/CaloHitCollection.hh"
@@ -57,7 +56,6 @@ template class std::pair<MapVectorKey,mu2e::PointTrajectory>;
 template class std::map<MapVectorKey,mu2e::PointTrajectory>;
 
 
-template class art::Wrapper<mu2e::ToyHitCollection>;
 template class art::Wrapper<mu2e::ToyGenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
 template class art::Wrapper<mu2e::PhysicalVolumeInfoCollection>;
