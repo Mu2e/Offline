@@ -1,12 +1,13 @@
 #
 # Event display for a sample of conversion electrons.
 #
-# $Id: conversions.fcl,v 1.1 2011/05/18 20:27:53 onoratog Exp $
+# $Id: conversions.fcl,v 1.2 2011/05/18 20:57:38 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/05/18 20:27:53 $
+# $Date: 2011/05/18 20:57:38 $
 #
 
 #include "minimalMessageService.fcl"
+#include "standardProducer.fcl"
 
 # Give this job a name.
 process : EvtDisplyConversions

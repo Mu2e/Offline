@@ -4,11 +4,12 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: simpleENtest_01.fcl,v 1.1 2011/05/18 20:17:43 onoratog Exp $
+# $Id: simpleENtest_01.fcl,v 1.2 2011/05/18 20:58:54 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/05/18 20:17:43 $
+# $Date: 2011/05/18 20:58:54 $
 
 #include "minimalMessageService.fcl"
+#include "standardProducer.fcl"
 
 # Give this job a name.
 process : ENTest01
