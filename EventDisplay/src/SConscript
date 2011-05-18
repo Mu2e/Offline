@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.4 2011/03/27 00:42:47 ehrlich Exp $
-# $Author: ehrlich $
-# $Date: 2011/03/27 00:42:47 $
+# $Id: SConscript,v 1.5 2011/05/18 19:18:10 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/18 19:18:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -19,22 +19,20 @@ file.close()
 my_lib=[]  # default if no cc_files
 cc_files = Glob('*.cc',strings=True)
 cc_files2 = Glob('dict_classes/*.cc',strings=True)
-env.SharedLibrary('#/lib/EventDisplay_plugin', cc_files, cc_files2, 
+env.SharedLibrary('#/lib/EventDisplay_module', cc_files, cc_files2, 
                   # common libs
-                  LIBS=[ 'FWCoreFramework',
-                         'FWCoreUtilities',
-                         'FWCoreServiceRegistry',
+                  LIBS=[ 'art_Framework_Core',
+                         'art_Utilities',
+                         'art_Framework_Services_Registry',
                          'Mu2eUtilities',
                          'TrackerGeom',
                          'LTrackerGeom',
                          'TTrackerGeom',
                          'ITrackerGeom',
-                         'GeometryService',
-                         'GeometryService_plugin',
+                         'GeometryService_service',
                          'GeneralUtilities',
                          'CLHEP',
                          'HepPID',
-                         'boost_thread-gcc%s-mt'%(env.gcc_ver,),
                          'Core',
                          ],
                   LINKFLAGS=[ll.split(),'-lGeom']

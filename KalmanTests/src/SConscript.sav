@@ -1,7 +1,7 @@
 #
-# $Id: SConscript.sav,v 1.3 2011/05/17 16:30:15 greenc Exp $
+# $Id: SConscript.sav,v 1.4 2011/05/18 19:18:10 greenc Exp $
 # $Author: greenc $
-# $Date: 2011/05/17 16:30:15 $
+# $Date: 2011/05/18 19:18:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -19,7 +19,7 @@ if non_plugin_cc:
     dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
     local_lib_name=os.path.dirname(dd)
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'FWCoreFramework',
+                      LIBS=[ 'art_Framework_Core',
                              'BaBar_KalmanTrack',
                              'BaBar_DetectorModel',
                              'BaBar_TrkBase',
@@ -43,7 +43,7 @@ else:
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
-                     LIBS=[ 'FWCoreFramework', libs, 'ToyDP', 'GeometryService',
+                     LIBS=[ 'art_Framework_Core', libs, 'ToyDP', 'GeometryService',
                             'GeneralUtilities', 'CLHEP',
                           ],
                      )

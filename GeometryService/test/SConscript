@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.3 2010/08/10 19:06:58 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/08/10 19:06:58 $
+# $Id: SConscript,v 1.4 2011/05/18 19:18:10 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/18 19:18:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -9,18 +9,15 @@
 Import('env')
 
 #env.SharedLibrary('#/tmp/lib/FWCoreMute', Glob('*.cc')+Glob('*.c'),
-cLIBS=[ 'DataFormatsProvenance'
-             , 'DataFormatsCommon'
-             , 'FWCoreMessageLogger'
-             , 'FWCoreServices'      # temp for temp RootHandlers.cc
-             , 'FWCoreFramework'
-             , 'FWCoreParameterSet'
-             , 'FWCorePluginManager'
-             , 'FWCoreServiceRegistry'
-             , 'FWCoreUtilities'
-             , 'FWCoreVersion'
-             , 'boost_filesystem-gcc%s-mt'%(env.gcc_ver,)
-             , 'boost_program_options-gcc%s-mt'%(env.gcc_ver,)
+cLIBS=[ 'art_Persistency_Provenance'
+             , 'art_Persistency_Common'
+             , 'MF_MessageLogger'
+             , 'art_Framework_Core'
+             , 'fhiclcpp'
+             , 'art_Framework_Services_Registry'
+             , 'art_Utilities'
+             , 'boost_filesystem'
+             , 'boost_program_options'
              , 'sigc-2.0'
              , 'Core'
              , 'Reflex'

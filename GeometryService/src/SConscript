@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.9 2011/05/17 16:30:14 greenc Exp $
+# $Id: SConscript,v 1.10 2011/05/18 19:18:10 greenc Exp $
 # $Author: greenc $
-# $Date: 2011/05/17 16:30:14 $
+# $Date: 2011/05/18 19:18:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -29,16 +29,13 @@ env.SharedLibrary(libname, non_plugin_cc,
                'CalorimeterGeom',
                'BFieldGeom',
                'CosmicRayShieldGeom',
-               'DataFormatsProvenance',
-               'DataFormatsCommon',
-               'FWCoreServiceRegistry',
-               'FWCoreCatalog',
-               'FWCoreMessageLogger',
-               'FWCoreParameterSet',
-               'FWCorePluginManager',
-               'FWCoreRootAutoLibraryLoader',
-               'FWCoreUtilities',
-               'boost_thread-gcc%s-mt'%(env.gcc_ver,),
+               'art_Persistency_Provenance',
+               'art_Persistency_Common',
+               'art_Framework_Services_Registry',
+               'art_Framework_IO_Catalog',
+               'MF_MessageLogger',
+               'fhiclcpp',
+               'art_Utilities',
                'Core',
                'Hist',
                'Tree',

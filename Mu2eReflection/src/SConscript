@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.7 2011/05/18 19:06:11 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/18 19:06:11 $
+# $Id: SConscript,v 1.8 2011/05/18 19:18:10 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/18 19:18:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -64,7 +64,7 @@ G4GRANULARLIBS = [
            'G4had_string_diff',                   'G4hadronic_proc',
            'G4had_muon_nuclear',                  'G4hadronic_deex_photon_evaporation',
            'G4emlowenergy',                       'G4hadronic_mgt',
-           'G4hadronic_leading_particle',         'G4scoring',
+           'G4scoring',
            'G4optical',                           'G4hadronic_deex_fission',
            'G4detutils',                          'G4hadronic_deex_fermi_breakup',
            'G4parameterisation',                  'G4had_string_frag',
@@ -109,7 +109,7 @@ if non_plugin_cc:
     local_lib_name=os.path.dirname(dd)
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'FWCoreFramework',
+                      LIBS=[ 'art_Framework_Core',
                              'Mu2eUtilities',
                               G4GRANULARLIBS,
                               ROOTGEOM,                           
@@ -127,7 +127,7 @@ else:
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
-                     LIBS=[ 'FWCoreFramework', libs, 'Mu2eUtilities', G4GRANULARLIBS,
+                     LIBS=[ 'art_Framework_Core', libs, 'Mu2eUtilities', G4GRANULARLIBS,
                            'CLHEP', OPENGL_LIBS 
                           ],
                      CPPFLAGS= [ G4CPPFLAGS, G4OGL_CPPFLAGS ],

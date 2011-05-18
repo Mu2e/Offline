@@ -1,6 +1,6 @@
-# $Id: SConscript,v 1.6 2011/05/17 16:30:13 greenc Exp $
+# $Id: SConscript,v 1.7 2011/05/18 19:18:10 greenc Exp $
 # $Author: greenc $
-# $Date: 2011/05/17 16:30:13 $
+# $Date: 2011/05/18 19:18:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,19 +16,16 @@ libname='#/lib/ConditionsService'
 
 env._dict["LIBPATH"] += ['#/lib']
 env.SharedLibrary(libname, non_plugin_cc,
-        LIBS=[ 'Mu2eUtilities',
-               'DataFormatsProvenance',
-               'DataFormatsCommon',
-               'FWCoreServiceRegistry',
-               'FWCoreCatalog',
-               'FWCoreMessageLogger',
-               'FWCoreParameterSet',
-               'FWCorePluginManager',
-               'FWCoreRootAutoLibraryLoader',
-               'FWCoreUtilities',
-               'GeometryService',
+        LIBS=[ 'GeometryService',
+               'Mu2eUtilities',
+               'art_Persistency_Provenance',
+               'art_Persistency_Common',
+               'art_Framework_Services_Registry',
+               'art_Framework_IO_Catalog',
+               'MF_MessageLogger',
+               'art_Utilities',
+               'fhiclcpp',
                'HepPDT',
-               'boost_thread-gcc%s-mt'%(env.gcc_ver,),
                'Core',
                'Hist',
                'Tree',

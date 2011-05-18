@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.4 2011/05/17 19:54:17 greenc Exp $
+# $Id: SConscript,v 1.5 2011/05/18 19:18:10 greenc Exp $
 # $Author: greenc $
-# $Date: 2011/05/17 19:54:17 $
+# $Date: 2011/05/18 19:18:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -22,10 +22,9 @@ cc_files = Glob('*.cc',strings=True)
 if cc_files:
     env.SharedLibrary( '#/lib/%s'%(ff,), cc_files,
                        # common libs
-                       LIBS=[ 'FWCoreFramework',
-                              'FWCoreUtilities',
-                              'FWCoreServiceRegistry',
-                              'boost_thread-gcc%s-mt'%(env.gcc_ver,),
+                       LIBS=[ 'art_Framework_Core',
+                              'art_Utilities',
+                              'art_Framework_Services_Registry',
                               'Reflex',
                               'Core',
                             ],
