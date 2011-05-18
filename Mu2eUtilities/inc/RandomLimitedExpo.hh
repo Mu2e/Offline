@@ -9,7 +9,7 @@
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandomEngine.h"
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 namespace mu2e {
 
@@ -17,7 +17,7 @@ namespace mu2e {
 
   public:
 
-    RandomLimitedExpo(art::RandomNumberGeneratorService::base_engine_t& engine);
+    RandomLimitedExpo(art::RandomNumberGenerator::base_engine_t& engine);
 
     ~RandomLimitedExpo();
 

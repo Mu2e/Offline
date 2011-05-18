@@ -6,7 +6,6 @@
 
 // Framework includes
 #include "Mu2eUtilities/inc/RandomLimitedExpo.hh"
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
 
 //C++ includes
 #include <cmath>
@@ -16,7 +15,7 @@
 
 namespace mu2e{
 
-  RandomLimitedExpo::RandomLimitedExpo(art::RandomNumberGeneratorService::base_engine_t& engine):
+  RandomLimitedExpo::RandomLimitedExpo(art::RandomNumberGenerator::base_engine_t& engine):
     _randFlat(engine)
   {}
 
