@@ -1,6 +1,3 @@
-#include "art/Persistency/Common/SortedCollection.h"
-#include "art/Persistency/Common/OwnVector.h"
-#include "art/Persistency/Common/AssociationVector.h"
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "ITrackerGeom/inc/ITrackerWiredata.hh"

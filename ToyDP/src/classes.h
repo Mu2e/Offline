@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.22 2011/05/17 15:36:01 greenc Exp $
+// $Id: classes.h,v 1.23 2011/05/18 15:53:28 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/17 15:36:01 $
+// $Date: 2011/05/18 15:53:28 $
 //
 // Original author Rob Kutschke
 //
@@ -18,9 +18,6 @@
 
 #include <vector>
 
-#include "art/Persistency/Common/AssociationVector.h"
-#include "art/Persistency/Common/OwnVector.h"
-#include "art/Persistency/Common/SortedCollection.h"
 #include "art/Persistency/Common/Wrapper.h"
 
 
