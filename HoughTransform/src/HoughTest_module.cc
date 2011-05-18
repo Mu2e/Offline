@@ -1,55 +1,55 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.5 2011/05/18 18:40:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 18:40:24 $
+// $Id: HoughTest_module.cc,v 1.6 2011/05/18 20:09:10 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author R. Bernstein
 //
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
 #include <string>
-#include <cmath>
 
 // Framework includes.
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 
 // Root includes.
+#include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
-#include "TNtuple.h"
+#include "TMLPAnalyzer.h"
 #include "TMath.h"
-#include "TF1.h"
+#include "TMultiLayerPerceptron.h"
+#include "TNtuple.h"
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
 #include "TSpectrum3.h"
-#include "TMultiLayerPerceptron.h"
-#include "TMLPAnalyzer.h"
 
 
 // Mu2e includes.
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/HoughCircleCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "HoughTransform/inc/HoughTransform.hh"
-#include "HitCluster/inc/HitCluster.hh"
 #include "GeneralUtilities/inc/RootNameTitleHelper.hh"
 #include "GeneralUtilities/inc/pow.hh"
+#include "HitCluster/inc/HitCluster.hh"
+#include "HoughTransform/inc/HoughTransform.hh"
+#include "LTrackerGeom/inc/LTracker.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "ToyDP/inc/HoughCircleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -67,8 +67,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par);
 Double_t houghFitToRadius(Double_t *x, Double_t *par)
 {
   Double_t background = par[0] + par[1]*x[0];
-  //  Double_t peak = par[2] * (1./(TMath::Sqrt(2.*TMath::Pi())*par[4]) )* TMath::Exp(- 0.5*pow<2>((x[0] - par[3])/par[4]) );
-  Double_t peak = par[2] * TMath::Exp(- 0.5*pow<2>((x[0] - par[3])/par[4]) );
+  //  Double_t peak = par[2] * (1./(TMath::Sqrt(2.*TMath::Pi())*par[4]) )* TMath::Exp(- 0.5*square((x[0] - par[3])/par[4]) );
+  Double_t peak = par[2] * TMath::Exp(- 0.5*square((x[0] - par[3])/par[4]) );
   return background + peak;
 }
   static const bool singleHoughHisto = false;
@@ -745,7 +745,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     // if there are enough straws, fill the other histograms
     if (houghCircle.numberOfStraws >=6 )
     {
-       Double_t distance = TMath::Sqrt(pow<2>(houghCircle.x0) + pow<2>(houghCircle.y0));
+       Double_t distance = TMath::Sqrt(square(houghCircle.x0) + square(houghCircle.y0));
        _histoRadius->Fill(static_cast<Double_t>(houghCircle.radius));
        _histoRadiusDCA->Fill(static_cast<Float_t>(houghCircle.radius),
                   static_cast<Float_t>(houghCircle.dca),

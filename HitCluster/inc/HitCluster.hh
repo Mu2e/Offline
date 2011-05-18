@@ -2,32 +2,32 @@
 #define HitCluster_HitCluster_hh
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.hh,v 1.8 2011/05/18 16:11:17 wb Exp $
+// $Id: HitCluster.hh,v 1.9 2011/05/18 20:09:10 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/18 20:09:10 $
 //
 //original author R. Bernstein
 //
 
 // C++ includes.
-#include <iostream>
-#include <string>
 #include <cmath>
-#include <vector>
+#include <iostream>
 #include <ostream>
+#include <string>
+#include <vector>
 
 // Framework includes.
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 
 // Root includes.
 #include "TFile.h"
@@ -37,12 +37,8 @@
 
 // Mu2e includes.
 #include "LTrackerGeom/inc/LTracker.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/sqrtOrThrow.hh"
-#include "GeneralUtilities/inc/pow.hh"
-
-
-
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
 
 namespace mu2e{

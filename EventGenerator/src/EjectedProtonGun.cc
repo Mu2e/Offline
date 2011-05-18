@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.20 2011/05/18 16:11:17 wb Exp $
+// $Id: EjectedProtonGun.cc,v 1.21 2011/05/18 20:09:10 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -17,24 +17,21 @@
 
 // Framework includes
 #include "art/Framework/Core/Run.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/EjectedProtonGun.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "EventGenerator/inc/EjectedProtonGun.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
-
-// General Utilities
-#include "GeneralUtilities/inc/pow.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "TargetGeom/inc/Target.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"

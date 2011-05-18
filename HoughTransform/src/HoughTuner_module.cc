@@ -1,59 +1,58 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_module.cc,v 1.5 2011/05/18 18:40:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 18:40:24 $
+// $Id: HoughTuner_module.cc,v 1.6 2011/05/18 20:09:10 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author P. Shanahan
 //
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
 #include <string>
-#include <cmath>
 
 // Framework includes.
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 
 // Root includes.
+#include "TCanvas.h"
+#include "TEllipse.h"
+#include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
-#include "TNtuple.h"
-#include "TCanvas.h"
-#include "TEllipse.h"
-#include "TPolyMarker.h"
-#include "TMath.h"
-#include "TF1.h"
-#include "TMultiLayerPerceptron.h"
 #include "TMLPAnalyzer.h"
+#include "TMath.h"
+#include "TMultiLayerPerceptron.h"
+#include "TNtuple.h"
+#include "TPolyMarker.h"
 
 
 // Mu2e includes.
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/HoughCircleCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "HoughTransform/inc/HoughTransform.hh"
-#include "HitCluster/inc/HitCluster.hh"
 #include "GeneralUtilities/inc/RootNameTitleHelper.hh"
-#include "GeneralUtilities/inc/pow.hh"
+#include "HitCluster/inc/HitCluster.hh"
+#include "HoughTransform/inc/HoughTransform.hh"
+#include "LTrackerGeom/inc/LTracker.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "ToyDP/inc/HoughCircleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
 //CLHEP includes
-#include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Random/Randomize.h"
 
 using namespace std;

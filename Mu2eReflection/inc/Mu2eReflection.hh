@@ -11,14 +11,15 @@
 
 //
 // G4 includes
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleTable.hh"
+#include "G4Step.hh"
+#include "G4ThreeVector.hh"
+#include "G4Track.hh"
 #include "G4VDiscreteProcess.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
-#include "G4Track.hh"
-#include "G4Step.hh"
-#include "G4ThreeVector.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
+
 //
 // Mu2e includes
 #include "GeneralUtilities/inc/pow.hh"
@@ -83,7 +84,7 @@ namespace mu2e{
 
     double Distance(const G4ThreeVector a, const G4ThreeVector b)
     {
-      return safeSqrt( pow<2>(a.x() - b.x()) + pow<2>(a.y() - b.y()) + pow<2>(a.z() - b.z()) );
+      return safeSqrt( square(a.x() - b.x()) + square(a.y() - b.y()) + square(a.z() - b.z()) );
     }
 
   };

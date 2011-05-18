@@ -2,13 +2,14 @@
 // code for finding HoughTransform for circles in the L-tracker
 //
 //
-// $Id: HoughTransform.cc,v 1.9 2011/05/18 02:27:16 wb Exp $
+// $Id: HoughTransform.cc,v 1.10 2011/05/18 20:09:10 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author R.Bernstein
 //
 #include "HoughTransform/inc/HoughTransform.hh"
+#include "GeneralUtilities/inc/pow.hh"
 using namespace std;
 namespace mu2e{
   namespace houghtransform{
@@ -282,10 +283,10 @@ namespace mu2e{
       double x3=v3.x();
       double y3=v3.y();
 
-      radius =    (pow<2>(x1-x2) + pow<2>(y1-y2)) *
-                  (pow<2>(x1-x3) + pow<2>(y1-y3)) *
-                  (pow<2>(x2-x3) + pow<2>(y2-y3));
-      radius /=     pow<2> (x2*y1 - x3*y1 - x1*y2 + x3*y2 + x1*y3 - x2*y3);
+      radius =    (square(x1-x2) + square(y1-y2)) *
+                  (square(x1-x3) + square(y1-y3)) *
+                  (square(x2-x3) + square(y2-y3));
+      radius /=     square (x2*y1 - x3*y1 - x1*y2 + x3*y2 + x1*y3 - x2*y3);
       radius = 0.5*sqrtOrThrow(radius,1.0E-06);
 
       //now the x- and y-center; first common term

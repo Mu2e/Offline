@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.25 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: DecayInOrbitGun.cc,v 1.26 2011/05/18 20:09:10 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author Rob Kutschke
 //
@@ -12,20 +12,20 @@
 #include <iostream>
 
 // Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/DAQParams.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/DAQParams.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
 
 // General Utilities
 #include "GeneralUtilities/inc/pow.hh"

@@ -1,70 +1,67 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.6 2011/05/18 18:40:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 18:40:24 $
+// $Id: RPC_module.cc,v 1.7 2011/05/18 20:09:10 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author R. Bernstein
 //
 
 // C++ includes.
-#include <iostream>
-#include <string>
 #include <cmath>
-#include <set>
-#include <utility>
 #include <ctime>
+#include <iostream>
+#include <set>
+#include <string>
+#include <utility>
 
 // Framework includes.
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "cetlib/exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
 
-
 // Root includes.
+#include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
-#include "TNtuple.h"
+#include "TMLPAnalyzer.h"
 #include "TMath.h"
-#include "TF1.h"
+#include "TMultiLayerPerceptron.h"
+#include "TNtuple.h"
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
 #include "TSpectrum3.h"
-#include "TMultiLayerPerceptron.h"
-#include "TMLPAnalyzer.h"
-
 
 // Mu2e includes.
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "GeneralUtilities/inc/RootNameTitleHelper.hh"
 #include "GeneralUtilities/inc/pow.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 
-
 //CLHEP includes
-#include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/Randomize.h"
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandPoisson.h"
+#include "CLHEP/Random/Randomize.h"
 
 
 using namespace std;
@@ -280,28 +277,28 @@ namespace mu2e {
             ithPart!=simParticles->end(); ++ithPart ){
 
         SimParticle const& sim = ithPart->second;
-	PhysicalVolumeInfo const& startVol = volumes->at(sim.startVolumeIndex());
-	//
-	// is this the initial photon?
-	if ( !sim.hasParent() ){
-	  if (sim.pdgId() != PDGCode::gamma) {
-	    //
-	    // this can't happen if we're studying RPCs so throw and die
-	    throw cet::exception("GEOM")
-	      << "RPC with a parent not a photon, but parent PDG code is "
-	      << sim.pdgId();
-	  } else
-	    {	CLHEP::HepLorentzVector photonMomentum = sim.startMomentum();
-	      photonEnergy = photonMomentum.e();
-	    }
+        PhysicalVolumeInfo const& startVol = volumes->at(sim.startVolumeIndex());
+        //
+        // is this the initial photon?
+        if ( !sim.hasParent() ){
+          if (sim.pdgId() != PDGCode::gamma) {
+            //
+            // this can't happen if we're studying RPCs so throw and die
+            throw cet::exception("GEOM")
+              << "RPC with a parent not a photon, but parent PDG code is "
+              << sim.pdgId();
+          } else
+            {   CLHEP::HepLorentzVector photonMomentum = sim.startMomentum();
+              photonEnergy = photonMomentum.e();
+            }
 
-	}
-	//	cout << " volumename = " << startVol.name() << endl;
-	//
-	// check three things:  (1) the mother is the original photon, (2) you're an e+ or e-, and (3) the photon converts in the foil
-	if ( sim.parentId().asInt() == 1 && startVol.name() == "TargetFoil_" ){
-	  //	if ( sim.parentId() == 1 && startVol.name() == "ToyDSCoil" ){
-	  if (sim.pdgId() == PDGCode::e_minus) {
+        }
+        //      cout << " volumename = " << startVol.name() << endl;
+        //
+        // check three things:  (1) the mother is the original photon, (2) you're an e+ or e-, and (3) the photon converts in the foil
+        if ( sim.parentId().asInt() == 1 && startVol.name() == "TargetFoil_" ){
+          //    if ( sim.parentId() == 1 && startVol.name() == "ToyDSCoil" ){
+          if (sim.pdgId() == PDGCode::e_minus) {
             bool electronHitTracker = false;
             bool electronAccepted = false;
             //bool hitEnoughStraws = false;
@@ -344,7 +341,7 @@ namespace mu2e {
                 if (firstHitOnElectronTrack){
                   firstHitOnElectronTrack = false;
                   momentumAtEntranceToTracker = hit.momentum();
-                  //double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+                  //double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
                   //                  cout << "momentum at entrance to tracker = " << momentumAtEntranceToTracker.mag() << endl;
                   //cout << "original momentum was           = " << momentum << endl;
                   //cout << "track Id                        = " << trackId  << endl;
@@ -374,7 +371,7 @@ namespace mu2e {
             //
             // can't demand particle enters tracker if I apply the weight function below.  But I do want to know what
             // the energy loss distribution is for electrons that do hit.  So:
-            double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+            double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
             if (!electronAccepted){
               momentumAtEntranceToTracker = electronMomentum.getV();
               //              double zcheck = electronMomentum.getZ();
@@ -479,7 +476,7 @@ namespace mu2e {
           if (sim.pdgId() == PDGCode::e_plus) {
             CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
             positronEnergy = electronMomentum.e();
-            double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+            double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
             _piCaptureConvertedPositronMomentum->Fill(momentum);
             if(momentum > elow && momentum < ehigh) _piCaptureConvertedPositronMomentumSignal->Fill(momentum);
             _piCaptureConvertedPositronCosTheta->Fill(electronMomentum.cosTheta() );

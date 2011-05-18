@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.5 2011/05/18 16:11:17 wb Exp $
+// $Id: NuclearCaptureGun.cc,v 1.6 2011/05/18 20:09:10 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author Gianni Onorato
 //
@@ -33,9 +33,6 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"
-
-// General Utilities
-#include "GeneralUtilities/inc/pow.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"

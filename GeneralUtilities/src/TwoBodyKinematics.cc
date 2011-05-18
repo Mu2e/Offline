@@ -1,15 +1,15 @@
 //
 // Kinematics of 2 body decay.
 //
-// $Id: TwoBodyKinematics.cc,v 1.2 2011/05/18 02:27:16 wb Exp $
+// $Id: TwoBodyKinematics.cc,v 1.3 2011/05/18 20:09:10 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author Rob Kutschke
 
-#include <stdexcept>
-#include <sstream>
 #include <cmath>
+#include <sstream>
+#include <stdexcept>
 
 #include "GeneralUtilities/inc/TwoBodyKinematics.hh"
 #include "GeneralUtilities/inc/pow.hh"

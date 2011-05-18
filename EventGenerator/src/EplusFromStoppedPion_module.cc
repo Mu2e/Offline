@@ -5,9 +5,9 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
+// $Id: EplusFromStoppedPion_module.cc,v 1.4 2011/05/18 20:09:10 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author Rob Kutschke.
 //
@@ -30,16 +30,15 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.
-#include "ToyDP/inc/ToyGenParticleCollection.hh"
-#include "GeneralUtilities/inc/TwoBodyKinematics.hh"
-#include "GeneralUtilities/inc/pow.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GeneralUtilities/inc/TwoBodyKinematics.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "ToyDP/inc/ToyGenParticleCollection.hh"
 
 // Root includes.
-#include "TNtuple.h"
 #include "TH1F.h"
+#include "TNtuple.h"
 
 using namespace std;
 

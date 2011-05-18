@@ -1,71 +1,68 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_module.cc,v 1.6 2011/05/18 18:40:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 18:40:24 $
+// $Id: CEL_module.cc,v 1.7 2011/05/18 20:09:10 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author R. Bernstein
 //
 
 // C++ includes.
-#include <iostream>
-#include <string>
 #include <cmath>
-#include <set>
-#include <utility>
-#include <ctime>
 #include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <set>
+#include <string>
+#include <utility>
 
 // Framework includes.
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "cetlib/exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
 
-
 // Root includes.
+#include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
-#include "TNtuple.h"
+#include "TMLPAnalyzer.h"
 #include "TMath.h"
-#include "TF1.h"
+#include "TMultiLayerPerceptron.h"
+#include "TNtuple.h"
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
 #include "TSpectrum3.h"
-#include "TMultiLayerPerceptron.h"
-#include "TMLPAnalyzer.h"
-
 
 // Mu2e includes.
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "GeneralUtilities/inc/RootNameTitleHelper.hh"
 #include "GeneralUtilities/inc/pow.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 
-
 //CLHEP includes
-#include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/Randomize.h"
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandPoisson.h"
+#include "CLHEP/Random/Randomize.h"
 
 
 using namespace std;
@@ -264,26 +261,26 @@ namespace mu2e {
 
         SimParticle const& sim = i->second;
 
-	PhysicalVolumeInfo const& startVol = volumes->at(sim.startVolumeIndex());
-	//
-	// is this the initial electron?
-	if ( !sim.hasParent() ){
-	  if (sim.pdgId() != PDGCode::e_minus) {
-	    //
-	    // this can't happen if we're studying CELs so throw and die
-	    throw cet::exception("GEOM")
-	      << "CEL with a parent not an electron, but parent PDG code is "
-	      << sim.pdgId();
-	  } else
-	    {	CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
-	      double electronEnergy = electronMomentum.e();
+        PhysicalVolumeInfo const& startVol = volumes->at(sim.startVolumeIndex());
+        //
+        // is this the initial electron?
+        if ( !sim.hasParent() ){
+          if (sim.pdgId() != PDGCode::e_minus) {
+            //
+            // this can't happen if we're studying CELs so throw and die
+            throw cet::exception("GEOM")
+              << "CEL with a parent not an electron, but parent PDG code is "
+              << sim.pdgId();
+          } else
+            {   CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
+              double electronEnergy = electronMomentum.e();
               cout << " this had better be 105: " << electronEnergy << endl;
-	    }
+            }
 
-	}
-	//
-	// check you're the original electron and you were born in the foil
-	if ( !sim.hasParent() && startVol.name() == "TargetFoil_" && sim.pdgId() == PDGCode::e_minus){
+        }
+        //
+        // check you're the original electron and you were born in the foil
+        if ( !sim.hasParent() && startVol.name() == "TargetFoil_" && sim.pdgId() == PDGCode::e_minus){
           bool electronHitTracker = false;
           bool electronAccepted = false;
           //bool hitEnoughStraws = false;
@@ -327,7 +324,7 @@ namespace mu2e {
               if (firstHitOnElectronTrack){
                 firstHitOnElectronTrack = false;
                 momentumAtEntranceToTracker = hit.momentum();
-                //double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+                //double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
                 //                  cout << "momentum at entrance to tracker = " << momentumAtEntranceToTracker.mag() << endl;
                 //cout << "original momentum was           = " << momentum << endl;
                 //cout << "track Id                        = " << trackId  << endl;
@@ -355,7 +352,7 @@ namespace mu2e {
           //
           // can't demand particle enters tracker if I apply the weight function below.  But I do want to know what
           // the energy loss distribution is for electrons that do hit.  So:
-          double momentum = sqrt(pow(electronMomentum.e(),2) - pow(electronMomentum.invariantMass(),2));
+          double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
           if (!electronAccepted){
             momentumAtEntranceToTracker = electronMomentum.getV();
             //              double zcheck = electronMomentum.getZ();

@@ -1,9 +1,9 @@
 #ifndef HoughTransform_HoughTransform_hh
 #define HoughTransform_HoughTransform_hh
 //
-// $Id: HoughTransform.hh,v 1.12 2011/05/18 02:27:16 wb Exp $
+// $Id: HoughTransform.hh,v 1.13 2011/05/18 20:09:10 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/18 20:09:10 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.
@@ -11,27 +11,27 @@
 //
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
 #include <string>
-#include <cmath>
 #include <vector>
 
 // CLHEP inlcudes
-#include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 // Framework includes.
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 
 // Root includes.
 #include "TFile.h"
@@ -40,14 +40,10 @@
 #include "TNtuple.h"
 
 // Mu2e includes.
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/sqrtOrThrow.hh"
-#include "GeneralUtilities/inc/pow.hh"
 #include "HitCluster/inc/HitCluster.hh"
-
-
-
+#include "LTrackerGeom/inc/LTracker.hh"
+#include "Mu2eUtilities/inc/sqrtOrThrow.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
 
 namespace mu2e{

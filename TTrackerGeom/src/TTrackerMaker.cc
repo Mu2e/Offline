@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.27 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: TTrackerMaker.cc,v 1.28 2011/05/18 20:09:10 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author Rob Kutschke
 //
@@ -18,17 +18,17 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "TTrackerGeom/inc/TTrackerMaker.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "TrackerGeom/inc/Sector.hh"
-#include "TrackerGeom/inc/Straw.hh"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
-#include "Mu2eUtilities/inc/for_all.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 #include "GeneralUtilities/inc/pow.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/for_all.hh"
+#include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "TTrackerGeom/inc/TTrackerMaker.hh"
+#include "TrackerGeom/inc/Sector.hh"
+#include "TrackerGeom/inc/Straw.hh"
 
 using namespace std;
 

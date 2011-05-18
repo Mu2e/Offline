@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.5 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: CRSScintillatorBar.hh,v 1.6 2011/05/18 20:09:10 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -77,28 +77,13 @@ namespace mu2e {
     //    void fillPointers ( const CosmicRayShield& cosmicRayShield ) const;
 
     bool operator==(const CRSScintillatorBar other) const {
-      if (_index == other.Index()) {
-	return true;
-      }
-      else{
-	return false;
-      }
+      return _index == other.Index();
     }
     bool operator>(const CRSScintillatorBar other) const {
-      if (_index > other.Index()) {
-	return true;
-      }
-      else{
-	return false;
-      }
+      return _index > other.Index();
     }
-   bool operator<(const CRSScintillatorBar other) const {
-      if (_index < other.Index()) {
-	return true;
-      }
-      else{
-	return false;
-      }
+    bool operator<(const CRSScintillatorBar other) const {
+      return _index < other.Index();
    }
 
   private:

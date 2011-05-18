@@ -1,34 +1,33 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.6 2011/05/18 20:09:10 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/18 20:09:10 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
 
 
 // C++ includes.
-#include <iostream>
-#include <sstream>
 #include <iomanip>
-#include <string>
+#include <iostream>
 #include <limits>
+#include <sstream>
+#include <string>
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "art/Framework/Core/Run.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Core/Run.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "GeneralUtilities/inc/pow.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
-
 
 #include "TrackerGeom/inc/Sector.hh"
 #include "TrackerGeom/inc/Device.hh"
@@ -41,23 +40,19 @@
 
 // Root includes.
 #include "TApplication.h"
-#include "TCanvas.h"
-#include "TDirectory.h"
-#include "TH1.h"
-
-#include "TStyle.h"
-#include "TFile.h"
-#include "TROOT.h"
-
 #include "TArc.h"
 #include "TArrow.h"
-#include "TText.h"
+#include "TCanvas.h"
+#include "TDirectory.h"
+#include "TFile.h"
+#include "TH1.h"
 #include "TLatex.h"
 #include "TLine.h"
-
-#include "TString.h"
-
 #include "TPolyMarker.h"
+#include "TROOT.h"
+#include "TString.h"
+#include "TStyle.h"
+#include "TText.h"
 
 namespace mu2e {
 
