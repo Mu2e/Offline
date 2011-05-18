@@ -3,9 +3,9 @@
  * A class to hold one record within the primitive
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.cc,v 1.7 2011/05/18 02:27:19 wb Exp $
- * $Author: wb $
- * $Date: 2011/05/18 02:27:19 $
+ * $Id: SimpleConfigRecord.cc,v 1.8 2011/05/18 04:36:19 kutschke Exp $
+ * $Author: kutschke $
+ * $Date: 2011/05/18 04:36:19 $
  *
  * Original author Rob Kutschke
  *
@@ -14,11 +14,12 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
 
 #include "Mu2eUtilities/src/SimpleConfigRecord.hh"
 #include "Mu2eUtilities/inc/TrimInPlace.hh"
 
-#include "art/Utilities/EDMException.h"
+#include "art/Utilities/Exception.h"
 
 namespace mu2e {
 
@@ -52,11 +53,11 @@ namespace mu2e {
   }
 
   // Accessors to return supported data types.
-  string SimpleConfigRecord::get<std::string> () const {
+  string SimpleConfigRecord::getString() const {
     return Values.at(0);
   }
 
-  int SimpleConfigRecord::get<int> () const {
+  int SimpleConfigRecord::getInt () const {
     CheckType("int");
     return toInt( Values.at(0) );
   }
@@ -66,7 +67,7 @@ namespace mu2e {
     return toDouble( Values.at(0) );
   }
 
-  bool SimpleConfigRecord::get<bool>() const {
+  bool SimpleConfigRecord::getBool() const {
     CheckType("bool");
     return toBool( Values.at(0) );
   }
@@ -176,18 +177,18 @@ namespace mu2e {
 
       // Scalar types.
       if ( Type == "int" ){
-        s << get<int>();
+        s << getInt();
       } else if ( Type == "double" ){
         s << getDouble();
       } else if ( Type == "bool"){
-        if ( get<bool>() ){
+        if ( getBool() ){
           s << "true";
         }else{
           s << "false";
         }
       } else {
         s << "\"";
-        s << get<std::string>();
+        s << getString();
         s << "\"";
       }
     }
