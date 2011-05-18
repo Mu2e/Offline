@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.3 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: G4_module.cc,v 1.4 2011/05/18 05:10:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 05:10:58 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,6 @@
 #include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/ParameterSet/FileInPath.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -75,6 +74,7 @@
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/DiagnosticsG4.hh"
+#include "Mu2eUtilities/inc/FileInPath.hh"
 
 // Data products that will be produced by this module.
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -277,7 +277,7 @@ namespace mu2e {
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
 
-      art::FileInPath visPath(_visMacro);
+      FileInPath visPath(_visMacro);
 
       G4String command("/control/execute ");
       command += visPath.fullPath();
