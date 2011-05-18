@@ -1,0 +1,123 @@
+#
+# $Id: houghread.fcl,v 1.1 2011/05/18 21:50:21 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/18 21:50:21 $
+#
+
+#include "minimalMessageService.fcl"
+#include "standardProducer.fcl"
+
+# Give this job a name.
+process : HoughRead0501
+
+# Start form an empty source
+source :
+{
+  module_type : InputRoot
+  fileNames   : "hough_0501.root"
+  maxEvents   : 100
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService :
+  {
+    fileName : "houghread_histos_501.root"
+  }
+
+  RandomNumberGeneratorService : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+    G4Helper : { }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+
+    # Generate Event
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/genconfig_03.txt"
+    }
+
+    # Run G4 and add hits to the event
+    g4run :
+    {
+      module_type          : G4
+      generatorModuleLabel : generate
+      seed                 : [9877]
+    }
+
+   # apply noise and inefficiency
+    simpleen :
+    {
+      module_type    : SimpleEffyNoise
+      diagLevel      : 1
+      noiseRate      : .02
+      hitIneffy      : .0
+    }
+
+    # Look at the hits from G4.
+    plothits :
+    {
+      moule_type     : HoughTest
+      NPeakSearch    : 50
+      hitCreatorName : simpleen
+      maxFullPrint   : 5
+    }
+ 
+  }
+  
+  analyzers:
+  {
+    
+    plothits:
+    {
+      module_type    : HoughTuner
+      hitCreatorName : simpleen
+      maxFullPrint   : 5
+    }
+  }
+
+
+# just converted the py file, but looks like there modules that are defined but not used, included 
+# the output module. Why?
+
+#  p1 : [generate , g4run , simpleen]
+  e1 : [plothits]
+
+#  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+
+  outfile :
+  {
+    module_type   :   RootOutput
+    filename      :   "houghread_0501.root"
+  }
+
+}
+
