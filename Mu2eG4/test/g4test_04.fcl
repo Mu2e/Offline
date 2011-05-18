@@ -1,0 +1,146 @@
+# Configuration file for G4Test04
+#
+# Similar to g4test_03.py but do fewer events and do not make the output file.
+#
+# $Id: g4test_04.fcl,v 1.1 2011/05/18 04:35:37 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/18 04:35:37 $
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.  
+process : G4Test04
+
+# Start form an empty source
+source : 
+{ 
+  module_type : EmptyEvent
+  maxEvents : 200
+}
+
+services : 
+{
+  message : @local::default_message 
+
+  TFileService : 
+  {
+    fileName : "g4test_04.root"
+  }
+
+  RandomNumberGeneratorService : { }
+
+# Uncomment to enable memory use profiling
+# SimpleMemoryCheck :
+# {
+#   oncePerEventMode : false
+#   showMallocInfo   : false
+#   ignoreTotal      : 5
+#)
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01"
+    }  
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+    G4Helper : { }
+
+# Uncomment to enable per module timing
+#   Timing :
+#   {
+#    useJobReport : true
+#   }
+
+# Uncomment to enable trace printout to show what the framework calls when.
+#   Tracer : { }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+
+    # Generate Event
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/genconfig_02.txt" 
+      seed          : [7789]
+    }
+
+    # Run G4 and add hits to the event
+    g4run :
+    {
+      module_type          : G4
+      generatorModuleLabel : generate
+      seed                 : [9877]
+    }
+
+    # Form StrawHits (SH).
+    makeSH :
+    {
+      module_type          : MakeStrawHit
+      g4ModuleLabel        : g4run
+      seed                 : [7790]
+      diagLevel            : 0
+      maxFullPrint         : 5
+    }
+
+    # Form CaloHits (APD hits)
+    CaloReadoutHitsMaker :
+    {
+      module_type          : MakeCaloReadoutHits
+      diagLevel            : 0
+      maxFullPrint         : 201
+      g4ModuleLabel        : g4run
+    }
+
+    # Form CaloCrystalHits (reconstruct crystals from APDs)
+    CaloCrystalHitsMaker :
+    {
+      module_type          : MakeCaloCrystalHits
+      diagLevel            : 0
+      maxFullPrint         : 201
+      g4ModuleLabel        : g4run
+      minimumEnergy        : 0.0
+      maximumEnergy        : 1000.0
+      minimumTimeGap       : 100.0
+    }
+  }
+
+
+  analyzers:
+  {
+
+    checkhits:
+    {
+      module_type          : ReadBack
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      minumumEnergy        : 0.000
+      maxFullPrint         : 201
+    }
+
+    randomsaver:
+    {
+      module_type          : RandomSaverNumber
+    }
+
+  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCryHitsMaker ]
+  e1 : [randomsaver, checkhits]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+
