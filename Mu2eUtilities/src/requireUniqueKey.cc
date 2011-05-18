@@ -3,9 +3,9 @@
 // many of the keys have a value of true. Throw if more than
 // one is true.  Optionally, throw if none are true.
 //
-// $Id: requireUniqueKey.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: requireUniqueKey.cc,v 1.5 2011/05/18 04:28:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 04:28:24 $
 //
 // Original author Rob Kutschke
 //
@@ -30,7 +30,7 @@ namespace mu2e {
     int count(0);
     string found;
     for ( size_t i=0; i<keys.size(); ++i ){
-      if ( config.get<bool>(keys[i],false) ) {
+      if ( config.getBool(keys[i],false) ) {
         if ( !found.empty() ) found += " ";
         found += keys[i];
         ++count;
