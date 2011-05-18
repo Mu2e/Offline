@@ -1,0 +1,37 @@
+BEGIN_PROLOG
+
+diagLevel      : 0
+maxFullPrint   : 5 
+
+# Form StrawHits (SH).
+makeSH :
+{
+  module_type          : MakeStrawHit
+  g4ModuleLabel        : g4run
+  seed                 : [7790]
+  diagLevel            : @local::diagLevel
+  maxFullPrint         : @local::maxFullPrint
+}
+
+# Form CaloHits (APD hits)
+CaloReadoutHitsMaker :
+{
+  module_type          : MakeCaloReadoutHits
+  diagLevel            : @local::diagLevel
+  maxFullPrint         : @local::maxFullPrint
+  g4ModuleLabel        : g4run
+}
+
+# Form CaloCrystalHits (reconstruct crystals from APDs)
+CaloCrystalHitsMaker :
+{
+  module_type          : MakeCaloCrystalHits
+  diagLevel            : @local::diagLevel
+  maxFullPrint         : @local::maxFullPrint
+  g4ModuleLabel        : g4run
+  minimumEnergy        : 0.0
+  maximumEnergy        : 1000.0
+  minimumTimeGap       : 100.0
+}
+
+END_PROLOG
