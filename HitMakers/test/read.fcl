@@ -1,0 +1,76 @@
+# Configuration file for reading back StrawHits from a file.
+#
+# $Id: read.fcl,v 1.1 2011/05/18 16:17:57 mf Exp $
+# $Author: mf $
+# $Date: 2011/05/18 16:17:57 $
+#
+# Original author Rob Kutschke
+#
+
+#include "minimalMessageService.fcl"
+
+BEGIN_PROLOG
+
+  diagLevel    : 0
+  maxFullPrint : 5
+
+END_PROLOG
+
+# Give this job a name.  
+process : ReadTest01
+
+# Read events from a file (made by Mu2eG4 example g4test_03.py)
+source : 
+{ 
+  module_type : RootInput 
+  fileNames : ["hits_03.root"]        
+  maxEvents : 200
+}
+
+services : 
+{
+  message : @local::default_message 
+
+  TFileService : 
+  {
+    fileName : "readhits.root"
+    closeFileFast : false
+  }
+
+  RandomNumberGeneratorService : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01.txt"
+    }  
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+  }
+
+  analyzers:
+  {
+    # Check the crudeStrawHits
+    testSH:
+    {
+      module_type      : ReadStrawHit
+      makerModuleLabel : makeSH
+      diagLevel        : 3
+      maxFullPrint     : 100
+    }
+  }
+
+  e1 : [testSH ]
+
+  end_paths      : [e1]
+
+}
+

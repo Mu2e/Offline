@@ -1,6 +1,6 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeClusters.fcl,v 1.3 2011/05/18 16:17:57 mf Exp $
+# $Id: makehits.fcl,v 1.1 2011/05/18 16:17:57 mf Exp $
 # $Author: mf $
 # $Date: 2011/05/18 16:17:57 $
 #
@@ -16,10 +16,10 @@ BEGIN_PROLOG
 
 END_PROLOG
 
-# Give this job a name.
+# Give this job a name.  
 process : HitTest01
 
-# Read events from a file (made by Mu2eG4 example g4test_03.fcl)
+# Read events from a file (made by Mu2eG4 example g4test_03.py)
 source : 
 { 
   module_type : RootInput 
@@ -27,13 +27,13 @@ source :
   maxEvents : 200
 }
 
-services :
+services : 
 {
-  message : @local::default_message
+  message : @local::default_message 
 
-  TFileService :
+  TFileService : 
   {
-    fileName      : "makeclusters.root"
+    fileName : "makehits.root"
     closeFileFast : false
   }
 
@@ -44,7 +44,11 @@ services :
     GeometryService :
     {
       inputFile : "Mu2eG4/test/geom_01.txt"
-    }
+    }  
+    ConditionsService :
+    {
+      inputFile : "Mu2eG4/test/conditions_01.txt"
+    }  
 
   }
 
@@ -63,20 +67,11 @@ physics :
       diagLevel     : @local::diagLevel
       maxFullPrint  : @local::maxFullPrint
     }
-    # make  the StrawClusters
-    makeSC:
-    {
-      module_type      : MakeStrawCluster
-      makerModuleLabel : makeSH
-      diagLevel        : 1
-      maxFullPrint     : @local::maxFullPrint
-    }
-
   }
 
   analyzers:
   {
-    # Check the StrawHits
+    # Check the crudeStrawHits
     testSH:
     {
       module_type      : ReadStrawHit
@@ -84,21 +79,10 @@ physics :
       diagLevel        : 3
       maxFullPrint     : @local::maxFullPrint
     }
-
-    # Check the StrawClusters
-    testSC:
-    {
-      module_type        : ReadStrawCluster
-      makerModuleLabel   : makeSH
-      clmakerModuleLabel : makeSC
-      diagLevel          : 1
-      maxFullPrint       : @local::maxFullPrint
-    }
-
   }
 
-  p1 : [makeSH , makeSC ]
-  e1 : [testSH , testSC ]
+  p1 : [makeSH ]
+  e1 : [testSH ]
 
 
   trigger_paths  : [p1]
