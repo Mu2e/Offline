@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.5 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.6 2011/05/18 04:26:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 04:26:49 $
 //
 //
 
@@ -14,14 +14,12 @@
 #include <fstream>
 #include <cmath>
 
-// Framework includes
-#include "art/ParameterSet/FileInPath.h"
-
 // Mu2e includes
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/FileInPath.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -59,7 +57,7 @@ namespace mu2e {
 
   void ShankerWanatabeSpectrum::ReadWanatabeTable() {
 
-    art::FileInPath filename("ConditionsService/data/wanatabe.tbl");
+    FileInPath filename("ConditionsService/data/wanatabe.tbl");
 
     fstream intable(filename.fullPath().c_str(),ios::in);
     if (!(intable.is_open())) {

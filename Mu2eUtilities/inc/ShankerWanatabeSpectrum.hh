@@ -4,9 +4,9 @@
 // Read Wanatabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWanatabeSpectrum.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: ShankerWanatabeSpectrum.hh,v 1.5 2011/05/18 04:26:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/18 04:26:49 $
 //
 //
 
@@ -15,7 +15,7 @@
 #include <utility>
 
 // Framework includes
-#include "art/Framework/Core/RandomNumberGeneratorService.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/DIOBase.hh"
