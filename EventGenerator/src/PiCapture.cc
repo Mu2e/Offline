@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.21 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: PiCapture.cc,v 1.22 2011/05/19 18:37:42 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/19 18:37:42 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -160,7 +160,7 @@ namespace mu2e {
   }
 
   // Photon energy spectrum as a continuous function.
-  const double PiCapture::energySpectrum(const double x)
+  double PiCapture::energySpectrum(const double x)
   {
     // Parameters from doc 665-v2
     static const double emax  = 138.2;
