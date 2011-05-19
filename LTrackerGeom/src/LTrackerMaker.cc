@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.15 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: LTrackerMaker.cc,v 1.16 2011/05/19 21:53:36 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/19 21:53:36 $
 //
 // Original author Rob Kutschke
 //
@@ -222,7 +222,7 @@ namespace mu2e {
       double r = _r0-_strawRadius*(1.+sqrt(3.));
 
       double maxRadius = (r*_tphiHalf)/
-        ( lay._nStraws - 1. + _cphiHalf - (f-_sphiHalf)*_tphiHalf);
+        ( lay.nStraws() - 1. + _cphiHalf - (f-_sphiHalf)*_tphiHalf);
 
       if ( _strawRadius > maxRadius ){
         throw cet::exception("GEOM")
@@ -230,7 +230,7 @@ namespace mu2e {
           << "Layer:      " << i << "\n"
           << "rInscribed: " << r << "\n"
           << "nsides:     " << _nSides << "\n"
-          << "nstraws:    " << lay._nStraws << "\n"
+          << "nstraws:    " << lay.nStraws() << "\n"
           << "radius:     " << _strawRadius << "\n"
           << "maxradius:  " << maxRadius
           << "\n";
@@ -244,7 +244,7 @@ namespace mu2e {
     int n(0);
     for ( vector<LayerInfo>::size_type i = 0;
           i< _sideInfo.size(); ++i ){
-      n += _sideInfo[i]._nStraws;
+      n += _sideInfo[i].nStraws();
     }
     n *= _nSides;
     return n;
@@ -312,7 +312,7 @@ namespace mu2e {
             j<nlayers; ++j ){
 
         LayerInfo& linfo = _sideInfo[j];
-        int n = linfo._nStraws;
+        int n = linfo.nStraws();
 
         maxStrawsThisSector = ( n > maxStrawsThisSector ) ? n : maxStrawsThisSector;
 
@@ -332,13 +332,13 @@ namespace mu2e {
         //vector<const Straw*>& straws = layers[j]._straws;
         vector<StrawIndex>& indices  = layers[j]._indices;
 
-        int detailIndex = linfo._strawType;
+        int detailIndex = linfo.strawType();
         StrawDetail* detail = &_ltt->_strawDetail[detailIndex];
 
         // Save the base position of straw 0 in the sector.
         sec._basePosition.push_back(origin);
 
-        for ( int is=0; is<linfo._nStraws; ++is ){
+        for ( int is=0; is<linfo.nStraws(); ++is ){
 
           // Position in sector centered at the origin.
           CLHEP::Hep3Vector p = origin + is*delta;
@@ -444,7 +444,7 @@ namespace mu2e {
 
         LayerInfo& linfo = _vaneInfo[j];
 
-        int n = linfo._nStraws;
+        int n = linfo.nStraws();
 
         maxStrawsThisSector = ( n > maxStrawsThisSector ) ? n : maxStrawsThisSector;
 
@@ -462,18 +462,18 @@ namespace mu2e {
         CLHEP::Hep3Vector delta  = CLHEP::Hep3Vector( 2.*_strawRadius, 0., 0.);
 
         LayerId lid(secId,j);
-        layers.push_back( Layer(lid, linfo._nStraws, origin, delta));
+        layers.push_back( Layer(lid, linfo.nStraws(), origin, delta));
 
         vector<StrawIndex>& indices  = layers[j]._indices;
         indices.reserve(n);
 
-        int detailIndex = linfo._strawType;
+        int detailIndex = linfo.strawType();
         StrawDetail* detail = &_ltt->_strawDetail[detailIndex];
 
         // Save the base position of straw 0 in the sector.
         sec._basePosition.push_back(origin);
 
-        for ( int is=0; is<linfo._nStraws; ++is ){
+        for ( int is=0; is<linfo.nStraws(); ++is ){
           CLHEP::Hep3Vector p = origin + is*delta;
           StrawIndex index = StrawIndex(allStraws.size());
 
@@ -524,7 +524,7 @@ namespace mu2e {
     for ( vector<LayerInfo>::size_type i = 1;
           i<_sideInfo.size(); ++i ){
       unsigned int j = i-1;
-      if ( _sideInfo[i]._nStraws != _sideInfo[j]._nStraws + 1){
+      if ( _sideInfo[i].nStraws() != _sideInfo[j].nStraws() + 1){
         throw cet::exception("GEOM")
           << "This version only supports sectors in which straws/layer increases by 1.\n";
       }
@@ -543,7 +543,7 @@ namespace mu2e {
     for ( vector<LayerInfo>::size_type i = 1;
           i<_vaneInfo.size(); ++i ){
       unsigned int j = i-1;
-      int delta = _vaneInfo[i]._nStraws - _vaneInfo[j]._nStraws;
+      int delta = _vaneInfo[i].nStraws() - _vaneInfo[j].nStraws();
       if ( abs(delta) != 1 ){
         throw cet::exception("GEOM")
           << "This version only supports vanes in which straws/layer differs by +/1.\n";
