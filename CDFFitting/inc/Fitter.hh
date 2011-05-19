@@ -9,7 +9,7 @@
 
 #ifndef DEFECT_NO_NAMESPACES
 #ifndef DEFECT_NO_STDLIB_NAMESPACES
-using std::vector;
+///using std::vector;
 #endif
 #endif
 
@@ -101,7 +101,7 @@ public:
 
 private:
 
-  vector<const FitAction<Measureable> *> _fitActionSet;
+  std::vector<const FitAction<Measureable> *> _fitActionSet;
   Measureable *_reference;
   bool         _failed;
 
