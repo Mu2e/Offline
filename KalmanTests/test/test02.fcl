@@ -1,15 +1,15 @@
 # Configuration file for Kalman tests - run enough events towith lots
 # get stats in histograms.
 #
-# $Id: test02.fcl,v 1.1 2011/05/18 22:04:42 onoratog Exp $
+# $Id: test02.fcl,v 1.2 2011/05/19 02:36:09 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/05/18 22:04:42 $
+# $Date: 2011/05/19 02:36:09 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
 
 # Give this job a name.
-process : KalmanTest02
+process_name : KalmanTest02
 
 # Start form an empty source
 source :

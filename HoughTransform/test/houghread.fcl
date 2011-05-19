@@ -1,14 +1,14 @@
 #
-# $Id: houghread.fcl,v 1.1 2011/05/18 21:50:21 onoratog Exp $
+# $Id: houghread.fcl,v 1.2 2011/05/19 02:36:09 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/05/18 21:50:21 $
+# $Date: 2011/05/19 02:36:09 $
 #
 
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
 
 # Give this job a name.
-process : HoughRead0501
+process_name : HoughRead0501
 
 # Start form an empty source
 source :

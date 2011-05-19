@@ -1,14 +1,14 @@
 #
-# $Id: htfilter.fcl,v 1.1 2011/05/18 21:50:21 onoratog Exp $
+# $Id: htfilter.fcl,v 1.2 2011/05/19 02:36:09 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/05/18 21:50:21 $
+# $Date: 2011/05/19 02:36:09 $
 #
 
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
 
 # Give this job a name.
-process : HoughTest0501
+process_name : HoughTest0501
 
 # Start form an empty source
 source :

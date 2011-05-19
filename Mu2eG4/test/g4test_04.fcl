@@ -2,15 +2,15 @@
 #
 # Similar to g4test_03.py but do fewer events and do not make the output file.
 #
-# $Id: g4test_04.fcl,v 1.4 2011/05/18 20:55:36 onoratog Exp $
+# $Id: g4test_04.fcl,v 1.5 2011/05/19 02:36:09 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/05/18 20:55:36 $
+# $Date: 2011/05/19 02:36:09 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
 
 # Give this job a name.
-process : G4Test04
+process_name : G4Test04
 
 # Start form an empty source
 source :
