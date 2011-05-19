@@ -4,7 +4,7 @@
 //
 // Class to represent the transport solenoid
 //
-#include <memory>
+#include <string>
 
 // Includes from Mu2e
 #include "GeometryService/inc/Detector.hh"
@@ -20,8 +20,13 @@ namespace mu2e {
   friend class BeamlineMaker;
 
   public:
-    Beamline();
-    ~Beamline(){;};
+    Beamline():
+      Detector(),
+      _solenoidOffset(0.0),
+      _ts(){
+    }
+
+    // use compiler-generated copy c'tor, copy assignment, and d'tor
 
     virtual std::string name() const { return "Beamline";}
 

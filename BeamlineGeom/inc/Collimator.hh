@@ -5,9 +5,6 @@
 // Class to represent the collimators. Position is relative to
 // the corresponding TS straight section
 //
-#include <string>
-#include <memory>
-
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
@@ -18,16 +15,16 @@ namespace mu2e {
 
   public:
 
-    Collimator() { ; };
+    Collimator() : _halfZ(0.0), _origin() {;}
 
-    explicit Collimator(double halfZ, CLHEP::Hep3Vector origin) :  _halfZ(halfZ), _origin(origin) {;};
+    // use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    ~Collimator(){ };
+    Collimator(double halfZ, CLHEP::Hep3Vector origin) :  _halfZ(halfZ), _origin(origin) {;}
 
     void set(double halfZ, CLHEP::Hep3Vector origin) {
       _halfZ=halfZ;
       _origin=origin;
-    };
+    }
 
     double getHalfLength() const { return _halfZ; }
     CLHEP::Hep3Vector const& getLocal() const { return _origin; }

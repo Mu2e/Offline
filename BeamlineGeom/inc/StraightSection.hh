@@ -17,18 +17,19 @@ namespace mu2e {
 
   public:
 
-    StraightSection() { _rotation=0;};
+    StraightSection() :
+      _halfZ(0.0), _origin(), _rotation(0) {;}
 
-    explicit StraightSection(double halfZ, CLHEP::Hep3Vector origin, CLHEP::HepRotation *rotation) :
-      _halfZ(halfZ), _origin(origin), _rotation(rotation) {;};
+    StraightSection(double halfZ, CLHEP::Hep3Vector origin, CLHEP::HepRotation *rotation) :
+      _halfZ(halfZ), _origin(origin), _rotation(rotation) {;}
 
-    ~StraightSection(){ if( _rotation!=0 ) delete _rotation; };
+    ~StraightSection(){ delete _rotation; }
 
     void set(double halfZ, CLHEP::Hep3Vector origin, CLHEP::HepRotation *rotation) {
       _halfZ=halfZ;
       _origin=origin;
       _rotation=rotation;
-    };
+    }
 
     double getHalfLength() const { return _halfZ; }
     CLHEP::Hep3Vector const& getGlobal() const { return _origin; }
@@ -39,6 +40,10 @@ namespace mu2e {
     double _halfZ;
     CLHEP::Hep3Vector _origin;
     CLHEP::HepRotation * _rotation;
+
+    // no copying (because it would do the wrong thing):
+    StraightSection( StraightSection const & );
+    void  operator = ( StraightSection const & );
 };
 
 }

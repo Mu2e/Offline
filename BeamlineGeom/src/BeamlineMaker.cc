@@ -2,23 +2,23 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
+// $Id: BeamlineMaker.cc,v 1.5 2011/05/19 18:47:25 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Date: 2011/05/19 18:47:25 $
 //
 // Original author Peter Shanahan
 //
 
-#include <iostream>
-#include <iomanip>
 #include <cmath>
+#include <iomanip>
+#include <iostream>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "BeamlineGeom/inc/BeamlineMaker.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/BeamlineMaker.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
@@ -30,14 +30,13 @@ namespace mu2e {
 
   // Constructor that gets information from the config file instead of
   // from arguments.
-  BeamlineMaker::BeamlineMaker(SimpleConfig const& c)
+  BeamlineMaker::BeamlineMaker(SimpleConfig const& c):
+    _beamline()
   {
     // Do the real work.
     BuildBeamline(c);
     BuildTS(c);
   }
-
-  BeamlineMaker::~BeamlineMaker (){}
 
   void BeamlineMaker::BuildBeamline(SimpleConfig const& c){
 

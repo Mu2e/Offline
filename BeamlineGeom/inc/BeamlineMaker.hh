@@ -4,24 +4,23 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.hh,v 1.3 2011/05/18 02:27:14 wb Exp $
+// $Id: BeamlineMaker.hh,v 1.4 2011/05/19 18:47:25 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/19 18:47:25 $
 //
 // Original author Peter Shanahan
 //
 
-#include <vector>
-#include <string>
 #include <memory>
+#include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
 class Beamline;
-class TransportSolenoid;
 class SimpleConfig;
+class TransportSolenoid;
 
 class BeamlineMaker {
 
@@ -29,9 +28,9 @@ public:
 
   BeamlineMaker( SimpleConfig const& config );
 
-  ~BeamlineMaker ();
+  // use compiler-generated copy c'tor, copy assignment, and d'tor
 
-  // This is depracted and will go away soon.
+  // This is deprecated and will go away soon.
   // Still needed for root graphics version.
   const Beamline& getBeamline() const { return *_beamline;}
 
