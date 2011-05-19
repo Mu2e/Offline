@@ -2,9 +2,9 @@
 // An EDAnalyzer module that reads back the hits created by G4 and makes
 // histograms, ntuples and TGraphs.
 //
-// $Id: ReadBack.hh,v 1.23 2011/05/19 19:04:12 kutschke Exp $
+// $Id: ReadBack.hh,v 1.24 2011/05/19 19:18:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/19 19:04:12 $
+// $Date: 2011/05/19 19:18:10 $
 //
 // Original author Rob Kutschke
 //
@@ -59,10 +59,10 @@ namespace mu2e {
     std::string _trackerStepPoints;
 
     // Module which made the CaloHits
-    std::string _caloReadoutHitsMaker;
+    std::string _caloReadoutModuleLabel;
 
     // Module which made the CaloCrystalHits
-    std::string _caloCrystalHitsMaker;
+    std::string _caloCrystalModuleLabel;
 
     // Name of the stopping target StepPoint collection
     std::string _targetStepPoints;

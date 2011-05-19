@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.46 2011/05/19 19:04:12 kutschke Exp $
+// $Id: ReadBack.cc,v 1.47 2011/05/19 19:18:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/19 19:04:12 $
+// $Date: 2011/05/19 19:18:10 $
 //
 // Original author Rob Kutschke
 //
@@ -76,8 +76,8 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _caloReadoutHitsMaker(pset.get<string>("caloReadoutHitsMaker","CaloReadoutHitsMaker")),
-    _caloCrystalHitsMaker(pset.get<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
+    _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel","CaloReadoutModuleLabel")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalModuleLabel")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
     _minimumEnergy(pset.get<double>("minimumEnergy")),
@@ -274,16 +274,16 @@ namespace mu2e {
     // Get handles to calorimeter collections
     art::Handle<CaloHitCollection> caloHits;
     art::Handle<CaloHitMCTruthCollection> caloMC;
-    event.getByLabel(_caloReadoutHitsMaker,caloHits);
-    event.getByLabel(_caloReadoutHitsMaker,caloMC);
+    event.getByLabel(_caloReadoutModuleLabel,caloHits);
+    event.getByLabel(_caloReadoutModuleLabel,caloMC);
 
     // Find pointers to the original G4 steps
     art::Handle<DPIndexVectorCollection> crystalPtr;
     art::Handle<DPIndexVectorCollection> readoutPtr;
 
     // One can use simple approach - find collection directly by label, e.g.:
-    // event.getByLabel("CaloReadoutHitsMaker","CaloHitMCCrystalPtr",crystalPtr);
-    // event.getByLabel("CaloReadoutHitsMaker","CaloHitMCReadoutPtr",readoutPtr);
+    // event.getByLabel("CaloReadoutModuleLabel","CaloHitMCCrystalPtr",crystalPtr);
+    // event.getByLabel("CaloReadoutModuleLabel","CaloHitMCReadoutPtr",readoutPtr);
     // The following code shows how to find collection only by name, not knowing
     // the producer module name
 
@@ -371,7 +371,7 @@ namespace mu2e {
     // caloCrystalHits
     art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
 
-    event.getByLabel(_caloCrystalHitsMaker,caloCrystalHits);
+    event.getByLabel(_caloCrystalModuleLabel,caloCrystalHits);
     if (!caloCrystalHits.isValid()) {
       _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalHits" << endl;
       return;
@@ -429,7 +429,7 @@ namespace mu2e {
     // caloCrystalOnlyHits
     art::Handle<CaloCrystalOnlyHitCollection>  caloCrystalOnlyHits;
 
-    event.getByType(caloCrystalOnlyHits);
+    event.getByLabel(_caloCrystalModuleLabel,caloCrystalOnlyHits);
     if (!caloCrystalOnlyHits.isValid()) {
       _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalOnlyHits" << endl;
       return;
