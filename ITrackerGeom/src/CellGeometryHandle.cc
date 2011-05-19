@@ -1,5 +1,7 @@
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
 
+#include "GeneralUtilities/inc/pow.hh"
+
 namespace mu2e {
 
 CellGeometryHandle::CellGeometryHandle() {
@@ -107,7 +109,7 @@ double CellGeometryHandle::DistFromWireCenter(double *global)
 {
         tmpGlobal.set(global[0],global[1],global[2]);
         tmpLocal=_invmatrx*tmpGlobal;
-        return sqrt(pow(tmpLocal.x(),2)+pow(tmpLocal.y(),2));
+        return sqrt(square(tmpLocal.x())+square(tmpLocal.y()));
 }
 
 } // namespace mu2e

@@ -5,14 +5,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include <sys/stat.h>
-
+#include "GeneralUtilities/inc/pow.hh"
+#include "ITrackerGeom/inc/ITrackerWireposition.hh"
 #include "TError.h"
 #include "TGeoMatrix.h"
 #include "TMath.h"
 #include "TSystem.h"
-#include "ITrackerGeom/inc/ITrackerWireposition.hh"
 #include <iostream>
+#include <sys/stat.h>
+
 using namespace std;
 
 
@@ -166,20 +167,20 @@ Double_t ITrackerWireposition::DistFromWireCenter(Double_t *global){
 
   selectedMat->MasterToLocal(global, templocal);
 
-  return (TMath::Sqrt( pow(templocal[0],2) + pow(templocal[1],2) ));
+  return (TMath::Sqrt( square(templocal[0]) + square(templocal[1]) ));
 }
 
 Double_t ITrackerWireposition::DistFromWire(Double_t *global){
 
   selectedMat->MasterToLocal(global, templocal);
 
-  return (TMath::Sqrt( pow(templocal[0],2) + pow(templocal[1],2) ) - SenseWireRadius);
+  return (TMath::Sqrt( square(templocal[0]) + square(templocal[1]) ) - SenseWireRadius);
 }
 
 void ITrackerWireposition::WirePosAtEndcap(Float_t *right, Float_t *left){
 
 //  if (fParam->GetEndCapType()==1) {
-//    DCHEndcapZ = TMath::Sqrt( pow(fParam->GetMaxEndCapDim()-fParam->GetEndCapWallThickness(),2) - pow(selectedRadius,2) );
+//    DCHEndcapZ = TMath::Sqrt( square(fParam->GetMaxEndCapDim()-fParam->GetEndCapWallThickness()) - square(selectedRadius) );
 //  }
 
   templocal[0] = 0.;
@@ -202,7 +203,7 @@ void ITrackerWireposition::WirePosAtEndcap(Float_t *right, Float_t *left){
 void ITrackerWireposition::WirePosAtZ(Float_t z, Float_t *pos){
 
 //  if (fParam->GetEndCapType()==1) {
-//    DCHEndcapZ = TMath::Sqrt( pow(fParam->GetMaxEndCapDim()-fParam->GetEndCapWallThickness(),2) - pow(selectedRadius,2) );
+//    DCHEndcapZ = TMath::Sqrt( square(fParam->GetMaxEndCapDim()-fParam->GetEndCapWallThickness()) - square(selectedRadius) );
 //  }
 
   if (TMath::Abs(z)>DCHEndcapZ) {

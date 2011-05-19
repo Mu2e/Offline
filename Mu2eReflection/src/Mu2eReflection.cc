@@ -57,9 +57,9 @@ namespace mu2e {
             abs(startingVertex.z() - aTrack.GetPosition().z())<< G4endl;
           double zDistance = abs(startingVertex.z() - aTrack.GetPosition().z());
           double totalDistanceAtKill = Distance(startingVertex,aTrack.GetPosition());
-          //  - pow<2>(zDistance) );
-          //          double totalDistanceAtKill = safeSqrt(pow<2>(Distance(startingVertex,aTrack.GetPosition()))
-          //  - pow<2>(zDistance) );
+          //  - square(zDistance) );
+          //          double totalDistanceAtKill = safeSqrt(square(Distance(startingVertex,aTrack.GetPosition()))
+          //  - square(zDistance) );
           double transverseDistanceAtKill = safeSqrt(totalDistanceAtKill*totalDistanceAtKill - zDistance*zDistance);
           G4cout << "and transverse distance is = " << transverseDistanceAtKill << G4endl;
 

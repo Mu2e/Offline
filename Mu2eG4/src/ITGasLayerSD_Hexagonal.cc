@@ -2,6 +2,7 @@
 #include <string>
 
 // Mu2e includes
+#include "GeneralUtilities/inc/pow.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
 
 // ROOT includes
@@ -102,7 +103,7 @@ namespace mu2e {
 
                   if ( _debugList.inList() )  std::cout<<"0 wire center "<<xywire[0]<<" "<<xywire[1]<<" "<<xywire[2]<<std::endl;
                   if ( _debugList.inList() )  std::cout<<"hit pos "<<pos[0]<<" "<<pos[1]<<" "<<pos[2]<<std::endl;
-                  if ( _debugList.inList() )  std::cout<<"hit 0 wire dist "<<sqrt(pow(pos[0]-xywire[0],2)+pow(pos[1]-xywire[1],2)+pow(pos[2]-xywire[2],2))<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"hit 0 wire dist "<<sqrt(square(pos[0]-xywire[0])+square(pos[1]-xywire[1])+square(pos[2]-xywire[2]))<<std::endl;
 
    //                //---------------- test --------------------
    //                //TRandom *rn = new TRandom();

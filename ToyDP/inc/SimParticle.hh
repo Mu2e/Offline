@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.11 2011/05/18 15:06:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:06:33 $
+// $Id: SimParticle.hh,v 1.12 2011/05/19 07:55:53 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/19 07:55:53 $
 //
 // Original author Rob Kutschke
 //
@@ -149,7 +149,7 @@ namespace mu2e {
 
     // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.
-    int _genIndex;
+    int _genIndex;           // future Ptr<GenParticle>
 
     // Information at the start of the track.
     CLHEP::Hep3Vector       _startPosition;
@@ -159,7 +159,7 @@ namespace mu2e {
     unsigned                _startVolumeIndex;
     unsigned                _startG4Status;
 
-    // Information at the end fo the track.
+    // Information at the end of the track.
     CLHEP::Hep3Vector       _endPosition;
     CLHEP::HepLorentzVector _endMomentum;
     double                  _endGlobalTime;

@@ -3,23 +3,24 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.6 2011/05/18 04:26:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 04:26:49 $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.7 2011/05/19 07:55:53 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/19 07:55:53 $
 //
 //
 
 // C++ includes
-#include <iostream>
-#include <fstream>
 #include <cmath>
+#include <fstream>
+#include <iostream>
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "GeneralUtilities/inc/pow.hh"
 #include "Mu2eUtilities/inc/FileInPath.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -96,12 +97,12 @@ namespace mu2e {
 
     double deltaOne = mumass - BindEnergy - E - ((E*E)/(2*AtomicWeightMev));
 
-    double ShD = 7.21861e-4*pow((double)_Znum,3)-2.5289e-2*pow((double)_Znum,2)+0.388249*_Znum-1.98475;
-    double ShE = 1.76407e-3*pow((double)_Znum,3)-5.19805e-2*pow((double)_Znum,2)+0.736126*_Znum-3.69662;
-    double ShF = 5.41126e-3*pow((double)_Znum,3)-0.165584*pow((double)_Znum,2)+1.9329*_Znum-6.7013;
+    double ShD = 7.21861e-4*cube((double)_Znum)-2.5289e-2*square((double)_Znum)+0.388249*_Znum-1.98475;
+    double ShE = 1.76407e-3*cube((double)_Znum)-5.19805e-2*square((double)_Znum)+0.736126*_Znum-3.69662;
+    double ShF = 5.41126e-3*cube((double)_Znum)-0.165584*square((double)_Znum)+1.9329*_Znum-6.7013;
 
     double shterm1 = E*E / (mumass*mumass);
-    double shterm2 = pow(deltaOne/mumass,5);
+    double shterm2 = pow<5>(deltaOne/mumass);
     double shterm4 = ShE * deltaOne / mumass;
     double shterm5 = ShF * (deltaPrimeMax - E);
 

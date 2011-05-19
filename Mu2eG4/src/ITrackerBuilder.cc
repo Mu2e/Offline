@@ -12,27 +12,28 @@
 #include <boost/regex.hpp>
 
 // Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
+#include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+//#include "GeneralUtilities/inc/pow.hh"
 //#include "Mu2eG4/inc/ITGasLayerSD_ExtWireData.hh"
 //#include "Mu2eG4/inc/ITGasLayerSD_v2.hh"
 //#include "Mu2eG4/inc/ITGasLayerSD_v3.hh"
-#include "Mu2eG4/inc/ITGasLayerSD.hh"
 
 // G4 includes
-#include "G4Tubs.hh"
 #include "G4Hype.hh"
-#include "G4Sphere.hh"
-#include "G4VisAttributes.hh"
-#include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
 #include "G4SDManager.hh"
+#include "G4Sphere.hh"
+#include "G4ThreeVector.hh"
+#include "G4Tubs.hh"
+#include "G4VisAttributes.hh"
 #include "globals.hh"
 
 using namespace std;
@@ -221,10 +222,10 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                 //                                     ily->getDetail()->centerOuterRadiusRing()<<" SI "<<ily->getDetail()->stereoAngleInnerRing()<<" SO "<<
                                 //                                     ily->getDetail()->stereoAngleOuterRing()<<" HL "<<ily->getDetail()->halfLength()<<endl;
 
-                                //cout<<ily->getDetail()->centerOuterRadiusRing()<<" "<<sqrt( pow(ily->getDetail()->centerOuterRadiusRing(),2) +
-                                //                                                pow(ily->getDetail()->halfLength()*tan(ily->getDetail()->stereoAngleOuterRing()),2) ) <<" "<< outerWallInnerRadius<<endl;
-                                //if ( sqrt( pow(ily->getDetail()->centerOuterRadiusRing(),2) +
-                                //                pow(ily->getDetail()->halfLength()*tan(ily->getDetail()->stereoAngleOuterRing()),2) ) > outerWallInnerRadius )
+                                //cout<<ily->getDetail()->centerOuterRadiusRing()<<" "<<sqrt( square(ily->getDetail()->centerOuterRadiusRing()) +
+                                //                                                square(ily->getDetail()->halfLength()*tan(ily->getDetail()->stereoAngleOuterRing())) ) <<" "<< outerWallInnerRadius<<endl;
+                                //if ( sqrt( square(ily->getDetail()->centerOuterRadiusRing()) +
+                                //                square(ily->getDetail()->halfLength()*tan(ily->getDetail()->stereoAngleOuterRing())) ) > outerWallInnerRadius )
                                 //        throw cet::exception("GEOM") <<"The ITracker layer "<<ily->Id()<<" doesn't fit inside the ITracker outer wall\n";
 
                                 LayerInfo.solid = new G4Hype(shape,ily->getDetail()->centerInnerRadiusRing(),

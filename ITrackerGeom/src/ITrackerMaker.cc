@@ -6,18 +6,19 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "ITrackerGeom/inc/ITrackerMaker.hh"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "ITrackerGeom/inc/CellId.hh"
+#include "GeneralUtilities/inc/pow.hh"
 #include "ITrackerGeom/inc/Cell.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle_ExtGeom.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle_v2.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle_v3.hh"
-#include "Mu2eUtilities/inc/for_all.hh"
+#include "ITrackerGeom/inc/CellId.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
+#include "ITrackerGeom/inc/ITrackerMaker.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/for_all.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 
 #ifndef __CINT__
@@ -256,11 +257,11 @@ void ITrackerMaker::Build(){
                 }
                 else if(EndCap_type==1){
                         _ltt->_endcapType     = ITracker::Spherical;
-                        max_EndCap_dim = sqrt(pow(length,2)+pow(outer_radius,2));
+                        max_EndCap_dim = sqrt(square(length)+square(outer_radius));
                         EndCap_Wall_theta_inner = asin(inner_radius/(max_EndCap_dim-envelop_EndCap_thickness)) * CLHEP::radian;
                         EndCap_Wall_theta_outer = acos(length/max_EndCap_dim) * CLHEP::radian;
                         length-=envelop_EndCap_thickness*length/max_EndCap_dim;  // is equivalent (max_EndCap_dim-envelop_EndCap_thickness)*length/max_EndCap_dim;
-                        extra_EndCap_dist=sqrt(pow(max_EndCap_dim-envelop_EndCap_thickness,2)-pow(inner_radius,2))-length;
+                        extra_EndCap_dist=sqrt(square(max_EndCap_dim-envelop_EndCap_thickness)-square(inner_radius))-length;
 
                         tmpEndCapWall->_pRmin   = max_EndCap_dim-envelop_EndCap_thickness;
                         tmpEndCapWall->_pRmax   = max_EndCap_dim;
@@ -301,11 +302,11 @@ void ITrackerMaker::Build(){
                 radius_ringOut_0  = radius_ring_0-FWradii-secure;  // is the radius In, there is Out just for a computation optimization
                 radius_ringOut    = radius_ringOut_0+drop;
                 //epsilonOut        = atan((radius_ringOut+drop)/length*sin(alfa));
-                epsilonOut        = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                epsilonOut        = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
 
                 int superlayer=0, iring=0;
 
-                if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
 
                 _sprlr[0]._id._id=0;
 
@@ -346,7 +347,7 @@ void ITrackerMaker::Build(){
                                         radius_ringOut_0 = radius_ring_0+FWradii+secure;
                                         radius_ringOut   = radius_ringOut_0+drop;
                                         //epsilonOut       = atan((radius_ringOut+drop)/length*sin(alfa));
-                                        epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                                        epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
 
                                         if ((iring%2)==0){
                                                 ringangle = 0.;
@@ -358,7 +359,7 @@ void ITrackerMaker::Build(){
                                         cellBase = 2.*radius_ring_0*sin(theta_ring*0.5);
                                         delta_radius_ring = cellBase * cos(30.*CLHEP::degree);
 
-                                        if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                                        if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                                         else zlength = length;
 
                                         _sprlr[superlayer].addLayer(new ITLayer());
@@ -401,8 +402,8 @@ void ITrackerMaker::Build(){
                                         epsilonIn        = epsilonOut;
                                         radius_ringOut_0 = radius_ring_0-FWradii-secure;
                                         radius_ringOut   = radius_ringOut_0+drop;
-                                        epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
-                                        if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                                        epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
+                                        if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                                         else zlength  = length;
 
                                         _sprlr[superlayer].addLayer(new ITLayer());
@@ -428,9 +429,9 @@ void ITrackerMaker::Build(){
 
                         radius_ringOut_0 = radius_ring_0+FWradii+secure;
                         radius_ringOut   = radius_ringOut_0+drop;
-                        epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                        epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
                         ringangle = 0.;
-                        if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                        if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                         else zlength = length;
 
                         --superlayer;
@@ -496,9 +497,9 @@ void ITrackerMaker::Build(){
                                 radius_ringOut_0       = radius_ring_0+FWradii+secure;
                                 radius_ringOut         = radius_ringOut_0+drop;
                                 //epsilonOut             = atan((radius_ringOut+drop)/length*sin(alfa));
-                                epsilonOut             = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                                epsilonOut             = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
 
-                                if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                                if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                                 else zlength = length;
 
                                 _sprlr[superlayer].addLayer(new ITLayer());
@@ -526,8 +527,8 @@ void ITrackerMaker::Build(){
                                 epsilonIn        = epsilonOut;
                                 radius_ringOut_0 = radius_ring_0-FWradii-secure;
                                 radius_ringOut   = radius_ringOut_0+drop;
-                                epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
-                                if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                                epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
+                                if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                                 else zlength = length;
 
                                 _sprlr[superlayer].addLayer(new ITLayer());
@@ -565,9 +566,9 @@ void ITrackerMaker::Build(){
 
                         radius_ringOut_0 = radius_ring_0+FWradii+secure;
                         radius_ringOut   = radius_ringOut_0+drop;
-                        epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                        epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
 
-                        if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                        if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                         else zlength = length;
 
                         --superlayer;
@@ -642,9 +643,9 @@ void ITrackerMaker::Build(){
                                 radius_ringOut_0 = radius_ring_0+_fWireDiameter+secure;
                                 radius_ringOut   = radius_ringOut_0+drop;
                                 //epsilonOut       = atan((radius_ringOut+drop)/length*sin(alfa));
-                                epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                                epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
 
-                                if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                                if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                                 else zlength = length;
 
                                 _sprlr[superlayer].addLayer(new ITLayer());
@@ -678,8 +679,8 @@ void ITrackerMaker::Build(){
                                 epsilonIn        = epsilonOut;
                                 radius_ringOut_0 = radius_ring_0-_fWireDiameter-secure;
                                 radius_ringOut   = radius_ringOut_0+drop;
-                                epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
-                                if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                                epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
+                                if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                                 else zlength = length;
 
                                 _sprlr[superlayer].addLayer(new ITLayer());
@@ -718,9 +719,9 @@ void ITrackerMaker::Build(){
 
                         radius_ringOut_0 = radius_ring_0+_fWireDiameter+secure;
                         radius_ringOut   = radius_ringOut_0+drop;
-                        epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                        epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
 
-                        if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                        if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                         else zlength = length;
 
                         --superlayer;
@@ -805,9 +806,9 @@ void ITrackerMaker::Build(){
                                 radius_ringOut_0 = radius_ring_0+_fWireDiameter+secure;
                                 radius_ringOut   = radius_ringOut_0+drop;
                                 //epsilonOut       = atan((radius_ringOut+drop)/length*sin(alfa));
-                                epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                                epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
 
-                                //if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                                //if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                                 //else zlength = length;
                                 zlength = length;
 
@@ -838,8 +839,8 @@ void ITrackerMaker::Build(){
                                 epsilonIn        = epsilonOut;
                                 radius_ringOut_0 = radius_ring_0-_fWireDiameter-secure;
                                 radius_ringOut   = radius_ringOut_0+drop;
-                                epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
-                                //if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                                epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
+                                //if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                                 //else zlength = length;
                                 zlength = length;
 
@@ -881,9 +882,9 @@ void ITrackerMaker::Build(){
 
                         radius_ringOut_0 = radius_ring_0+_fWireDiameter+secure;
                         radius_ringOut   = radius_ringOut_0+drop;
-                        epsilonOut       = atan(sqrt(pow(radius_ringOut,2)-pow(radius_ringOut_0,2))/length) * CLHEP::radian;
+                        epsilonOut       = atan(sqrt(square(radius_ringOut)-square(radius_ringOut_0))/length) * CLHEP::radian;
 
-                        //if (EndCap_type==1) zlength = sqrt( pow(max_EndCap_dim,2) - pow(radius_ringOut,2) );
+                        //if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
                         //else zlength = length;
                         zlength = length;
 
