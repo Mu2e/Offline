@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.13 2011/05/19 04:57:35 kutschke Exp $
+# $Id: SConscript,v 1.14 2011/05/19 19:03:27 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/19 04:57:35 $
+# $Date: 2011/05/19 19:03:27 $
 #
 # Original author Rob Kutschke.
 #
@@ -40,7 +40,6 @@ else:
     libs=[]
 
 for cc in plugin_cc:
-    print libs
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc, LIBS=[libs,
                                           'art_Framework_Services_Optional_TFileService_service',
