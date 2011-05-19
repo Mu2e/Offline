@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.22 2011/05/18 22:26:34 kutschke Exp $
+# $Id: setup.sh,v 1.23 2011/05/19 04:51:48 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/18 22:26:34 $
+# $Date: 2011/05/19 04:51:48 $
 #
 # Original author Rob Kutschke
 #
@@ -60,6 +60,9 @@ export FHICL_FILE_PATH=.:fcl;
 
 # Tell the framework to look in the local area to find modules.
 source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
+
+# For now this must come after setup_mu2e_project - need to refactor the FW_ stuff.  It is no longer used.
+export MU2E_SEARCH_PATH=$FW_SEARCH_PATH
 
 # Build the symlink directories for the BaBar code.
 # Only do so if the BaBar package is checked out locally.
