@@ -1,6 +1,6 @@
-# $Id: SConscript,v 1.7 2011/05/18 19:18:10 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/18 19:18:10 $
+# $Id: SConscript,v 1.8 2011/05/19 04:50:45 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/19 04:50:45 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,31 +16,23 @@ libname='#/lib/ConditionsService'
 
 env._dict["LIBPATH"] += ['#/lib']
 env.SharedLibrary(libname, non_plugin_cc,
-        LIBS=[ 'GeometryService',
-               'Mu2eUtilities',
-               'art_Persistency_Provenance',
-               'art_Persistency_Common',
+        LIBS=[ 'art_Framework_Core',
                'art_Framework_Services_Registry',
-               'art_Framework_IO_Catalog',
-               'MF_MessageLogger',
-               'art_Utilities',
-               'fhiclcpp',
+               'Mu2eUtilities',
                'HepPDT',
-               'Core',
-               'Hist',
-               'Tree',
-               'RIO',
-               'Net',
-               'Reflex',
-               'Cintex',
+               'HepPID',
+               'MF_MessageLogger'
              ],
         )
 
 
 libnm=os.path.basename(libname)
+print "Mark: "+libnm
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
-    env.SharedLibrary( libname, cc, LIBS=[ libnm ] )
+    env.SharedLibrary( libname, cc, LIBS=[ 'art_Framework_Core',
+                                           libnm,
+                                           ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

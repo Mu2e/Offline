@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.cc,v 1.10 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: ConditionsService.cc,v 1.11 2011/05/19 04:50:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/19 04:50:45 $
 //
 // Original author Rob Kutschke
 //
@@ -14,11 +14,11 @@
 #include <typeinfo>
 
 // Framework include files
-#include "art/Persistency/Provenance/ModuleDescription.h"
-#include "art/Persistency/Provenance/EventID.h"
-#include "art/Persistency/Provenance/Timestamp.h"
-#include "art/Persistency/Provenance/SubRunID.h"
-#include "art/Persistency/Provenance/RunID.h"
+//#include "art/Persistency/Provenance/ModuleDescription.h"
+//#include "art/Persistency/Provenance/EventID.h"
+//#include "art/Persistency/Provenance/Timestamp.h"
+//#include "art/Persistency/Provenance/SubRunID.h"
+//#include "art/Persistency/Provenance/RunID.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 
@@ -76,11 +76,11 @@ namespace mu2e {
     checkConsistency();
 
     // Can we break the coupling to the entities?
-    addEntity( std::auto_ptr<ParticleDataTable>( new ParticleDataTable(_config)) );
-    addEntity( std::auto_ptr<AcceleratorParams>( new AcceleratorParams(_config)) );
-    addEntity( std::auto_ptr<DAQParams>        ( new DAQParams        (_config)) );
-    addEntity( std::auto_ptr<PhysicsParams>    ( new PhysicsParams    (_config)) );
-    addEntity( std::auto_ptr<TrackerCalibrations>    ( new TrackerCalibrations    (_config)) );
+    addEntity( std::auto_ptr<ParticleDataTable>  ( new ParticleDataTable  (_config)) );
+    addEntity( std::auto_ptr<AcceleratorParams>  ( new AcceleratorParams  (_config)) );
+    addEntity( std::auto_ptr<DAQParams>          ( new DAQParams          (_config)) );
+    addEntity( std::auto_ptr<PhysicsParams>      ( new PhysicsParams      (_config)) );
+    addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
   }
 
   // Check that the configuration is self consistent.
