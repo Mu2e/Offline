@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.5 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: ContentSelector.h,v 1.6 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Ralf Ehrlich
 //
@@ -43,9 +43,10 @@ class ContentSelector
   art::Handle<mu2e::PointTrajectoryCollection> _pointTrajectories;
   bool _hasPhysicalVolumes, _hasPointTrajectories;
 
-  TGComboBox *_hitBox;
-  TGComboBox *_caloHitBox;
-  TGListBox  *_trackBox;
+  TGComboBox  *_hitBox;
+  TGComboBox  *_caloHitBox;
+  TGListBox   *_trackBox;
+  std::string _g4ModuleLabel;
 
   struct entryStruct
   {
@@ -64,7 +65,7 @@ class ContentSelector
                                                        std::vector<entryStruct> &newEntries, int entryIDStart);
 
   public:
-  ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox);
+  ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel);
   void firstLoop();
   void setAvailableCollections(const art::Event& event);
 

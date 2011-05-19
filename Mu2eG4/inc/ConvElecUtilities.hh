@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.9 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: ConvElecUtilities.hh,v 1.10 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Gianni Onorato
 //
@@ -45,8 +45,9 @@ namespace mu2e {
      * plus g4module name (string) and the trackerStepPoints name (string)
      */
     ConvElecUtilities(const art::Event & event,
-                      std::string g4ModuleLabel,
-                      std::string trackerStepPoints);
+                      std::string const &generatorModuleLabel,
+                      std::string const &g4ModuleLabel,
+                      std::string const &trackerStepPoints);
 
     ~ConvElecUtilities();
 
@@ -91,7 +92,7 @@ namespace mu2e {
     art::Handle<StepPointMCCollection> hits;
     std::vector<size_t> _convElecHits;
     std::vector<StrawIndex> _convElecStrawIdx;
-    std::string _g4ModuleLabel, _trackerStepPoints;
+    std::string _generatorModuleLabel, _g4ModuleLabel, _trackerStepPoints;
     key_type _convTrackId;
     size_t _earliestidx;
     std::auto_ptr<SimParticle> _simParticle;

@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_module.cc,v 1.4 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: KalmanT01_module.cc,v 1.5 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Rob Kutschke
 //
@@ -71,7 +71,8 @@ namespace mu2e {
     explicit KalmanT01(fhicl::ParameterSet const& pset) :
 
       // Parameters
-      _generatorModuleLabel(pset.get<string>("generatorModuleLabel","g4run")),
+      _generatorModuleLabel(pset.get<string>("generatorModuleLabel","generate")),
+      _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _diagLevel(pset.get<int>("diagLevel",1)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _hDriftDist(0),
@@ -157,11 +158,11 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> gensHandle;
-    event.getByType(gensHandle);
+    event.getByLabel(_generatorModuleLabel, gensHandle);
     const GenParticleCollection& gens = *gensHandle;
 
     art::Handle<SimParticleCollection> simsHandle;
-    event.getByType(simsHandle);
+    event.getByLabel(_g4ModuleLabel, simsHandle);
     const SimParticleCollection& sims = *simsHandle;
 
     // Eventually get this from a calibration DB.

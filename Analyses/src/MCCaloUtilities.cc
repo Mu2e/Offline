@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.cc,v 1.1 2011/05/19 18:26:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/19 18:26:23 $
+// $Id: MCCaloUtilities.cc,v 1.2 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Gianni Onorato
 //
@@ -103,6 +103,7 @@ namespace mu2e {
   }
 
   void MCCaloUtilities::setTrackAndRO(const art::Event & event,
+                                      std::string const &_g4ModuleLabel,
                                       SimParticleCollection::key_type track,
                                       unsigned RO){
 
@@ -113,7 +114,7 @@ namespace mu2e {
     _localVane = cg->getVaneByRO(_localRO);
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel, simParticles);
 
     SimParticle const& sim = simParticles->at(track);
 
@@ -128,7 +129,7 @@ namespace mu2e {
     _generated = sim.fromGenerator();
 
     //    art::Handle<PhysicalVolumeInfoCollection> volumes;
-    //event.getRun().getByType(volumes);
+    //event.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     //PhysicalVolumeInfo const& volInfob = volumes->at(sim.startVolumeIndex());
     //PhysicalVolumeInfo const& volInfoe = volumes->at(sim.endVolumeIndex());

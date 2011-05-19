@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.4 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author KLG
 //
@@ -56,6 +56,7 @@ namespace mu2e {
       _maximumEnergy(pset.get<double>("maximumEnergy",1000.0)), //MeV
       _minimumTimeGap(pset.get<double>("minimumTimeGap",100.0)),// ns
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+      _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
       _messageCategory("CaloHitMaker")
 
     {
@@ -84,6 +85,8 @@ namespace mu2e {
     double _minimumTimeGap; // to merge the hits
 
     string _g4ModuleLabel;  // Name of the module that made the input hits.
+
+    string _caloReadoutModuleLabel; // Name of the module that made the calo hits.
 
     // A category for the error logger.
     const std::string _messageCategory;
@@ -143,7 +146,7 @@ namespace mu2e {
 
     // Get handles to calorimeter (RO aka APD) collection
 
-    event.getByType(caloHits);
+    event.getByLabel(_caloReadoutModuleLabel, caloHits);
     bool haveCalo = caloHits.isValid();
 
     if ( _diagLevel > -1 && !haveCalo) cout << __func__ << ": No CaloHits" << endl;

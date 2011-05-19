@@ -3,15 +3,16 @@
 namespace mu2e_eventdisplay
 {
 
-ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox)
-{
-  _hitBox=hitBox;
-  _caloHitBox=caloHitBox;
-  _trackBox=trackBox;
-  _hitsAreSelected=false;
-  _hasPhysicalVolumes=false;
-  _hasPointTrajectories=false;
-}
+ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel)
+  :
+  _hasPhysicalVolumes(false),
+  _hasPointTrajectories(false),
+  _hitBox(hitBox),
+  _caloHitBox(caloHitBox),
+  _trackBox(trackBox),
+  _g4ModuleLabel(g4ModuleLabel),
+  _hitsAreSelected(false)
+  {}
 
 void ContentSelector::firstLoop()  //This is useful for now, but may be changed later
 {
@@ -135,8 +136,8 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
 
 
 //Other
-  _hasPhysicalVolumes=event.getRun().getByType(_physicalVolumes);
-  _hasPointTrajectories=event.getByType(_pointTrajectories);
+  _hasPhysicalVolumes=event.getRun().getByLabel(_g4ModuleLabel, _physicalVolumes);
+  _hasPointTrajectories=event.getByLabel(_g4ModuleLabel, _pointTrajectories);
 }
 
 void ContentSelector::setSelectedHitsName()

@@ -12,9 +12,9 @@
 // For all three cases estimate Pt,Pz of the conversion electron by performing
 // a simple circle/sinus fit.
 //
-// $Id: ReadDPIStrawCluster_module.cc,v 1.5 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: ReadDPIStrawCluster_module.cc,v 1.6 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author: Hans Wenzel
 //
@@ -56,7 +56,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "Mu2eG4/inc/ConvElecUtilities.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
@@ -179,6 +178,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     explicit ReadDPIStrawCluster(fhicl::ParameterSet const& pset):
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
@@ -251,6 +251,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
+    // Module label of the geerator module.
+    std::string _generatorModuleLabel;
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
 
@@ -543,14 +545,14 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
-    evt.getByType(genParticles);
+    evt.getByLabel(_generatorModuleLabel, genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    evt.getByType(simParticles);
+    evt.getByLabel(_g4ModuleLabel, simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    evt.getRun().getByType(volumes);
+    evt.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     //Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );

@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.11 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: EventDisplayFrame.h,v 1.12 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Ralf Ehrlich
 //
@@ -29,6 +29,10 @@ class TGTextEntry;
 class TBox;
 class TPolyLine;
 
+namespace fhicl {
+  class ParameterSet;
+}
+
 namespace mu2e_eventdisplay
 {
   class DataInterface;
@@ -42,7 +46,7 @@ namespace mu2e_eventdisplay
     EventDisplayFrame& operator=(const EventDisplayFrame &);
 
     public:
-    EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h);
+    EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset);
     virtual        ~EventDisplayFrame();
     void           fillGeometry();
 #ifndef __CINT__   //hide art::Event from ROOTCint
@@ -105,6 +109,7 @@ namespace mu2e_eventdisplay
     TText               *_legendText[30], *_legendParticleText[6];
     TBox                *_legendBox[30];
     TPolyLine           *_legendParticleLine[6];
+    std::string         _g4ModuleLabel;
 
     ClassDef(EventDisplayFrame,0);
   };

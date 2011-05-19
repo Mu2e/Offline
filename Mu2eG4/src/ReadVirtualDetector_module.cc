@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.4 2011/05/18 22:01:46 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/18 22:01:46 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.5 2011/05/19 23:51:50 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/05/19 23:51:50 $
 //
 // Original author Ivan Logashenko
 //
@@ -58,7 +58,10 @@ namespace mu2e {
       _vdStepPoints(pset.get<string>("vdStepPoints","virtualdetector")),
       _nAnalyzed(0),
       _maxPrint(pset.get<int>("maxPrint",0)),
-      _ntvd(0), _ntpart(0) {
+      _ntvd(0), _ntpart(0),
+      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+      _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run"))
+ {
 
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
@@ -115,6 +118,12 @@ namespace mu2e {
     // List of virtual detectors to be saved
     set<int> vd_save;
 
+    // Label of the generator.
+    std::string _generatorModuleLabel;
+
+    // Module label of the g4 module that made the hits.
+    std::string _g4ModuleLabel;
+
   };
 
   void ReadVirtualDetector::beginJob(){
@@ -151,7 +160,7 @@ namespace mu2e {
 
     // Get pointers to the physical volumes we are interested
     art::Handle<PhysicalVolumeInfoCollection> physVolumes;
-    run.getByType(physVolumes);
+    run.getByLabel(_g4ModuleLabel, physVolumes);
     if( physVolumes.isValid() ) {
 
       for ( size_t i=0; i<physVolumes->size(); ++i ) {
@@ -181,12 +190,12 @@ namespace mu2e {
     event.getByLabel("g4run",_vdStepPoints,hits);
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel, simParticles);
     bool haveSimPart = simParticles.isValid();
     if ( haveSimPart ) haveSimPart = !(simParticles->empty());
 
     art::Handle<G4BeamlineInfoCollection> g4beamlineData;
-    event.getByType(g4beamlineData);
+    event.getByLabel(_generatorModuleLabel, g4beamlineData);
     bool haveG4BL = g4beamlineData.isValid();
     if ( haveG4BL ) haveG4BL = (g4beamlineData->size()==1);
 

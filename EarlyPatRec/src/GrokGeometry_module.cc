@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: GrokGeometry_module.cc,v 1.5 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: GrokGeometry_module.cc,v 1.6 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author: Mark Fischler
 //
@@ -40,11 +40,11 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "Mu2eG4/inc/ConvElecUtilities.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "ToyDP/inc/GenParticleCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
@@ -112,6 +112,7 @@ namespace mu2e {;
     explicit GrokGeometry(fhicl::ParameterSet const& pset):
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
@@ -136,6 +137,8 @@ namespace mu2e {;
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
+    // Module label of the geerator module.
+    std::string _generatorModuleLabel;
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
 
@@ -242,14 +245,14 @@ namespace mu2e {;
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
-    evt.getByType(genParticles);
+    evt.getByLabel(_generatorModuleLabel, genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    evt.getByType(simParticles);
+    evt.getByLabel(_g4ModuleLabel, simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    evt.getRun().getByType(volumes);
+    evt.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     //Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );

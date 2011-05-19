@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.hh,v 1.8 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: CosmicTuple.hh,v 1.9 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -39,6 +39,9 @@ namespace mu2e {
     virtual bool filter(art::Event& e);
 
   private:
+
+    // Module label of the geerator module.
+    std::string _generatorModuleLabel;
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;

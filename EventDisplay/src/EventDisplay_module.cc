@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.3 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: EventDisplay_module.cc,v 1.4 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 
 #include <iostream>
@@ -29,7 +29,7 @@ namespace mu2e
   class EventDisplay : public art::EDAnalyzer
   {
     public:
-    explicit EventDisplay(fhicl::ParameterSet const&);
+    explicit EventDisplay(fhicl::ParameterSet const &pset);
     virtual ~EventDisplay() { }
     virtual void beginJob();
     void endJob();
@@ -42,12 +42,16 @@ namespace mu2e
                                                          bool &showEvent);
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
+
+    fhicl::ParameterSet const &_pset;
   };
 
-  EventDisplay::EventDisplay(fhicl::ParameterSet const& )
-  {
-    _firstLoop=true;
-  }
+  EventDisplay::EventDisplay(fhicl::ParameterSet const &pset)
+    :
+    _frame(0),
+    _firstLoop(true),
+    _pset(pset)
+  {}
 
   void EventDisplay::beginJob()
   {
@@ -68,7 +72,7 @@ namespace mu2e
   {
     if(_firstLoop)
     {
-      _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550);
+      _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550, _pset);
       if(!_frame->isClosed()) _frame->fillGeometry();
     }
     if(!_frame->isClosed())

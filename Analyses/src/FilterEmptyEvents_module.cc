@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.4 2011/05/18 22:01:45 wb Exp $
-$Author: wb $
-$Date: 2011/05/18 22:01:45 $
+$Id: FilterEmptyEvents_module.cc,v 1.5 2011/05/19 23:51:50 greenc Exp $
+$Author: greenc $
+$Date: 2011/05/19 23:51:50 $
 
 Original author Giovanni Onorato
 
@@ -52,7 +52,10 @@ namespace mu2e {
     explicit FilterEmptyEvents(fhicl::ParameterSet const& pset):
       _diagLevel(pset.get<int>("diagLevel",0)),
       _keepTrackOrCalo(pset.get<int>("keepTrackOrCalo",1)),
-      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")){
+      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+      _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker"))
+    {
     }
     virtual ~FilterEmptyEvents() {
     }
@@ -66,7 +69,9 @@ namespace mu2e {
 
     int _diagLevel;
     int _keepTrackOrCalo;
+    string _generatorModuleLabel;
     string _makerModuleLabel;
+    string _caloReadoutModuleLabel;
 
     bool _hasTHits;
     bool _hasCHits;
@@ -95,7 +100,7 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
-    e.getByType(genParticles);
+    e.getByLabel(_generatorModuleLabel, genParticles);
 
     if (!_hasTHits) {
       if (_diagLevel > 0) {
@@ -109,7 +114,7 @@ namespace mu2e {
 
       // Get handles to calorimeter collections
       art::Handle<CaloHitCollection> caloHits;
-      e.getByType(caloHits);
+      e.getByLabel(_caloReadoutModuleLabel, caloHits);
 
       //Set a boolean true if there are calorimeter hits
       _hasCHits = (caloHits.isValid() && (caloHits->size() > 0));

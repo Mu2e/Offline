@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.hh,v 1.1 2011/05/19 04:48:14 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/19 04:48:14 $
+// $Id: MCCaloUtilities.hh,v 1.2 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Gianni Onorato
 //
@@ -18,6 +18,8 @@
 
 #include "ToyDP/inc/SimParticleCollection.hh"
 
+#include <string>
+
 namespace mu2e {
 
   class MCCaloUtilities {
@@ -29,6 +31,7 @@ namespace mu2e {
     ~MCCaloUtilities();
 
     void setTrackAndRO(const art::Event & event,
+                       std::string const &_g4ModuleLabel,
                        SimParticleCollection::key_type track,
                        unsigned RO);
 

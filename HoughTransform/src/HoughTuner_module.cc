@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_module.cc,v 1.6 2011/05/18 20:09:10 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Id: HoughTuner_module.cc,v 1.7 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author P. Shanahan
 //
@@ -72,7 +72,8 @@ namespace mu2e {
       _maxFullPrint(pset.get<int>("maxFullPrint",10)),
       _nAnalyzed(0),
       _messageCategory("HoughTuner"),
-      _hitCreatorName(pset.get<string>("hitCreatorName"))
+      _hitCreatorName(pset.get<string>("hitCreatorName")),
+      _houghCircleMaker(pset.get<string>("houghCircleMaker", "checkHits"))
     { }
     virtual ~HoughTuner() { }
 
@@ -106,6 +107,9 @@ namespace mu2e {
 
     //name of the module that created the hits to be used
     const std::string _hitCreatorName;
+
+    // Name of the maker of HoughCircles.
+    std::string const _houghCircleMaker;
 
     void bookEventHistos(art::EventNumber_t);
     void fillEventHistos(
@@ -165,7 +169,7 @@ namespace mu2e {
     StepPointMCCollection const* hits = hitsHandle.product();
 
     art::Handle<HoughCircleCollection> hcHandle;
-    evt.getByType(hcHandle);
+    evt.getByLabel(_houghCircleMaker, hcHandle);
 
    // primary hough circle: i.e., the first one in the collection
     const HoughCircle* hcp=0;

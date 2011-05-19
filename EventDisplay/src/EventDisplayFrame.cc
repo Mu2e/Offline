@@ -35,8 +35,9 @@
 namespace mu2e_eventdisplay
 {
 
-EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
-                   TGMainFrame(p, w, h)
+  EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) :
+    TGMainFrame(p, w, h),
+    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run"))
 {
   int x,y;
   unsigned int width,height;
@@ -94,7 +95,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) :
   subFrame->AddFrame(trackLabel, lh1);
   subFrame->AddFrame(trackBox, lh1);
 
-  _contentSelector=new ContentSelector(hitBox, caloHitBox, trackBox);
+  _contentSelector=new ContentSelector(hitBox, caloHitBox, trackBox, _g4ModuleLabel);
 
   _unhitButton = new TGCheckButton(subFrame,"Show Unhit Straws",31);
   subFrame->AddFrame(_unhitButton, lh1);

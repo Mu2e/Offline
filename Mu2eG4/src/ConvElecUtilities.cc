@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.cc,v 1.9 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: ConvElecUtilities.cc,v 1.10 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Gianni Onorato
 //
@@ -19,8 +19,10 @@ using namespace std;
 namespace mu2e {
 
   ConvElecUtilities::ConvElecUtilities(const art::Event & event,
-                                       string g4ModuleLabel,
-                                       string trackerStepPoints):
+                                       string const &generatorModuleLabel,
+                                       string const &g4ModuleLabel,
+                                       string const &trackerStepPoints):
+    _generatorModuleLabel( generatorModuleLabel ),
     _g4ModuleLabel( g4ModuleLabel ),
     _trackerStepPoints( trackerStepPoints )
   {
@@ -44,8 +46,8 @@ namespace mu2e {
 
   void ConvElecUtilities::checkConvElec(const art::Event & event) {
 
-    event.getByType(_genParticles);
-    event.getByType(_simParticles);
+    event.getByLabel(_generatorModuleLabel, _genParticles);
+    event.getByLabel(_g4ModuleLabel, _simParticles);
     if (_simParticles.isValid() && !_simParticles->empty()) {
 
       int n(0);

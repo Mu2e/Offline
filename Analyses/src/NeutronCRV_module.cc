@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.5 2011/05/19 04:48:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/19 04:48:59 $
+// $Id: NeutronCRV_module.cc,v 1.6 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Rob Kutschke
 //
@@ -93,6 +93,7 @@ namespace mu2e {
 
       // Run time parameters
       _diagLevel(pset.get<int>("diagLevel",0)),
+      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _caloCrystalHitsMaker(pset.get<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
@@ -160,6 +161,9 @@ namespace mu2e {
 
     // Diagnostics printout level
     int _diagLevel;
+
+    // Module label of the geerator module.
+    std::string _generatorModuleLabel;
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
@@ -285,14 +289,14 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
-    event.getByType(genParticles);
+    event.getByLabel(_generatorModuleLabel, genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel, simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByType(volumes);
+    event.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );

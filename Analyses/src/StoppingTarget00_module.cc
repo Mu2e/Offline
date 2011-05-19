@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: StoppingTarget00_module.cc,v 1.4 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Rob Kutschke.
 //
@@ -115,7 +115,7 @@ namespace mu2e {
     /*
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volsHandle;
-    run.getByType(volsHandle);
+    run.getByLabel(_g4ModuleLabel, volsHandle);
     PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
 
@@ -156,7 +156,7 @@ namespace mu2e {
 
     // Information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volsHandle;
-    event.getRun().getByType(volsHandle);
+    event.getRun().getByLabel(_g4ModuleLabel, volsHandle);
     PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
     _hnSimPart->Fill(sims.size());

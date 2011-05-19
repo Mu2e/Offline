@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: Histforpabs_module.cc,v 1.4 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Rob Kutschke
 //
@@ -111,7 +111,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel, simParticles);
 
     for( size_t i=0; i<hits->size(); ++i ){
 

@@ -62,6 +62,10 @@ namespace mu2e {
       _diagLevel(pset.get<int>("diagLevel",0)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+      _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
+      _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
+      _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
       _skipStoppedParticle(pset.get<bool>("skipStoppedParticle",false)),
       _nAnalyzed(0),
@@ -111,6 +115,18 @@ namespace mu2e {
 
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
+
+    // Label of the generator.
+    std::string _generatorModuleLabel;
+
+    // Label of the G4 module
+    std::string _g4ModuleLabel;
+
+    // Label of the calo readout hits maker
+    std::string _caloReadoutModuleLabel;
+
+    // Label of the calo crystal hists maker
+    std::string _caloCrystalModuleLabel;
 
     double _minimumEnergy; //minimum energy deposition of hits
     bool _skipStoppedParticle;
@@ -288,10 +304,10 @@ namespace mu2e {
 
     // Get the persistent data about the StepPointMCs. More correct implementation
     // should look for product ids in DPIndexVectorCollection, rather than
-    // use producer name directly ("g4run").
+    // use producer name directly (_g4ModuleLabel).
 
     art::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
+    evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,mchitsHandle);
     StepPointMCCollection const* mchits = mchitsHandle.product();
 
     /*
@@ -314,14 +330,14 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
-    evt.getByType(genParticles);
+    evt.getByLabel(_generatorModuleLabel, genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    evt.getByType(simParticles);
+    evt.getByLabel(_g4ModuleLabel, simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    evt.getRun().getByType(volumes);
+    evt.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
@@ -579,10 +595,10 @@ namespace mu2e {
 
     // Get the persistent data about the StepPointMCs. More correct implementation
     // should look for product ids in DPIndexVectorCollection, rather than
-    // use producer name directly ("g4run").
+    // use producer name directly (_g4ModuleLabel).
 
     art::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
+    evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,mchitsHandle);
     StepPointMCCollection const* mchits = mchitsHandle.product();
 
     if (!(hits->size() == hits_truth->size() &&
@@ -595,14 +611,14 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
-    evt.getByType(genParticles);
+    evt.getByLabel(_generatorModuleLabel, genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    evt.getByType(simParticles);
+    evt.getByLabel(_g4ModuleLabel, simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    evt.getRun().getByType(volumes);
+    evt.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
@@ -850,11 +866,11 @@ namespace mu2e {
     art::Handle<DPIndexVectorCollection> mcptrHandle;
     art::Handle<StepPointMCCollection> steps;
 
-    evt.getByLabel("CaloROHitsMaker","CaloHitMCCrystalPtr",mcptrHandle);
-    evt.getByLabel("g4run","calorimeter",steps);
-    evt.getByType(caloHits);
-    evt.getByType(caloMC);
-    evt.getByType(caloCrystalHits);
+    evt.getByLabel(_caloReadoutModuleLabel,"CaloHitMCCrystalPtr",mcptrHandle);
+    evt.getByLabel(_g4ModuleLabel,"calorimeter",steps);
+    evt.getByLabel(_caloReadoutModuleLabel, caloHits);
+    evt.getByLabel(_caloReadoutModuleLabel, caloMC);
+    evt.getByLabel(_caloCrystalModuleLabel, caloCrystalHits);
 
     DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
     StepPointMCCollection const* mchits = steps.product();
@@ -870,14 +886,14 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
-    evt.getByType(genParticles);
+    evt.getByLabel(_generatorModuleLabel, genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    evt.getByType(simParticles);
+    evt.getByLabel(_g4ModuleLabel, simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    evt.getRun().getByType(volumes);
+    evt.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
@@ -972,7 +988,7 @@ namespace mu2e {
               // The simulated particle that made this hit.
               SimParticleCollection::key_type trackId(mchit.trackId());
 
-              CaloManager->setTrackAndRO(evt, trackId, ROIds.at(it).index );
+              CaloManager->setTrackAndRO(evt, _g4ModuleLabel, trackId, ROIds.at(it).index );
 
               //cout << "Original Vane: " << CaloManager->localVane()
               //     << "\nStarting Vane: " << CaloManager->startingVane() << endl;
@@ -1094,15 +1110,15 @@ namespace mu2e {
 
     // Find original G4 steps in the stopping target
     art::Handle<StepPointMCCollection> sthits;
-    event.getByLabel("g4run","stoppingtarget",sthits);
+    event.getByLabel(_g4ModuleLabel,"stoppingtarget",sthits);
 
     // SimParticles container
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel, simParticles);
     if( !(simParticles.isValid()) || simParticles->empty() ) return;
 
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByType(volumes);
+    event.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     set<SimParticleCollection::key_type> stoppedtracks;
 

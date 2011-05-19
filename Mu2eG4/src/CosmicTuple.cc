@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple.cc,v 1.22 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: CosmicTuple.cc,v 1.23 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author Rob Kutschke
 //
@@ -54,6 +54,7 @@ using CLHEP::keV;
 namespace mu2e {
 
   CosmicTuple::CosmicTuple(fhicl::ParameterSet const& pset) :
+    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _minimump(pset.get<double>("minimump")),
     _maximump(pset.get<double>("maximump")),
@@ -103,11 +104,11 @@ namespace mu2e {
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
-    event.getByType(genParticles);
+    event.getByLabel(_generatorModuleLabel, genParticles);
 
     // Get handles to the generated and simulated particles.
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel, simParticles);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() );

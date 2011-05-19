@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_module.cc,v 1.7 2011/05/18 20:09:10 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Id: CEL_module.cc,v 1.8 2011/05/19 23:51:50 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/19 23:51:50 $
 //
 // Original author R. Bernstein
 //
@@ -230,11 +230,11 @@ namespace mu2e {
     //
     // start looking through SimParticles
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel, simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByType(volumes);
+    event.getRun().getByLabel(_g4ModuleLabel, volumes);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
