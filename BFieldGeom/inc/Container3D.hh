@@ -5,9 +5,9 @@
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
-// $Id: Container3D.hh,v 1.9 2011/05/18 02:27:14 wb Exp $
+// $Id: Container3D.hh,v 1.10 2011/05/19 17:03:16 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/19 17:03:16 $
 //
 
 #include <vector>
@@ -24,9 +24,9 @@ namespace mu2e {
     // Default constructor.
     // Need this for ROOT IO.  But normally should never use it.
     Container3D():
-      _nx(),
-      _ny(),
-      _nz(),
+      _nx(0u),
+      _ny(0u),
+      _nz(0u),
       _vec(){
     }
 
@@ -38,37 +38,21 @@ namespace mu2e {
       _vec(_nx*_ny*_nz,OBJ()){
     }
 
-    // Copy c'tor.
-    Container3D(const Container3D& rhs):
-      _nx(rhs._nx),
-      _ny(rhs._ny),
-      _nz(rhs._nz),
-      _vec(rhs._vec){
-    }
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    // Assignment operator.
-    Container3D& operator=(const Container3D& rhs){
-      _nx = rhs._nx;
-      _ny = rhs._ny;
-      _nz = rhs._nz;
-      _vec  = rhs._vec;
-    }
-
-    ~Container3D() { }
-
-    // Set element, without safety features.  Use if the calller has
+    // Set element, without safety features.  Use if the caller has
     // already ensured the validity of the arguments.
     void set(unsigned int ix, unsigned int iy, unsigned int iz, OBJ const& obj ){
       _vec[index(ix,iy,iz)] = obj;
     }
 
-    // Get element, without safety features. Use if the calller has
+    // Get element, without safety features. Use if the caller has
     // already ensured the validity of the arguments.
     OBJ const& get( unsigned int ix, unsigned int iy, unsigned int iz) const {
       return _vec[index(ix,iy,iz)];
     }
 
-    // Get element, without safety features. Use if the calller has
+    // Get element, without safety features. Use if the caller has
     // already ensured the validity of the arguments.
     OBJ& get( unsigned int ix, unsigned int iy, unsigned int iz){
       return _vec[index(ix,iy,iz)];
@@ -93,10 +77,9 @@ namespace mu2e {
 
     // Check for a valid index
     bool isValid(unsigned int ix, unsigned int iy, unsigned int iz) const{
-      if ( ix >= 0 && ix < _nx &&
-           iy >= 0 && iy < _ny &&
-           iz >= 0 && iz < _nz ) return true;
-      return false;
+      return ix >= 0 && ix < _nx &&
+             iy >= 0 && iy < _ny &&
+             iz >= 0 && iz < _nz;
     }
 
     // Throw if the point is not valid.
@@ -119,7 +102,7 @@ namespace mu2e {
       _nx = 0;
       _ny = 0;
       _nz = 0;
-      _vec.clear();
+      std::vector<OBJ>().swap(_vec);
     }
 
 
@@ -146,9 +129,9 @@ namespace mu2e {
     // Default constructor.
     // Need this for ROOT IO.  But normally should never use it.
     Container3D():
-      _nx(),
-      _ny(),
-      _nz(),
+      _nx(0u),
+      _ny(0u),
+      _nz(0u),
       _vec(){
     }
 
@@ -168,32 +151,15 @@ namespace mu2e {
       _vec(_nx*_ny*_nz,bv){
     }
 
-    // Copy c'tor.
-    Container3D(const Container3D& rhs):
-      _nx(rhs._nx),
-      _ny(rhs._ny),
-      _nz(rhs._nz),
-      _vec(rhs._vec){
-    }
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    // Assignment operator.
-    Container3D& operator=(const Container3D& rhs){
-      _nx = rhs._nx;
-      _ny = rhs._ny;
-      _nz = rhs._nz;
-      _vec  = rhs._vec;
-      return *this;
-    }
-
-    ~Container3D() { }
-
-    // Set element, without safety features.  Use if the calller has
+    // Set element, without safety features.  Use if the caller has
     // already ensured the validity of the arguments.
     void set(unsigned int ix, unsigned int iy, unsigned int iz, bool obj ){
       _vec[index(ix,iy,iz)] = obj;
     }
 
-    // Get element, without safety features. Use if the calller has
+    // Get element, without safety features. Use if the caller has
     // already ensured the validity of the arguments.
     bool get( unsigned int ix, unsigned int iy, unsigned int iz) const {
       return _vec[index(ix,iy,iz)];
@@ -222,10 +188,9 @@ namespace mu2e {
 
     // Check for a valid index
     bool isValid(unsigned int ix, unsigned int iy, unsigned int iz) const {
-      if ( ix >= 0 && ix < _nx &&
-           iy >= 0 && iy < _ny &&
-           iz >= 0 && iz < _nz ) return true;
-      return false;
+      return ix >= 0 && ix < _nx &&
+             iy >= 0 && iy < _ny &&
+             iz >= 0 && iz < _nz;
     }
 
     // Throw if the point is not valid.
