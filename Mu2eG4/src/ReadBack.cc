@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack.cc,v 1.45 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: ReadBack.cc,v 1.46 2011/05/19 19:04:12 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/19 19:04:12 $
 //
 // Original author Rob Kutschke
 //
@@ -76,6 +76,7 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+    _caloReadoutHitsMaker(pset.get<string>("caloReadoutHitsMaker","CaloReadoutHitsMaker")),
     _caloCrystalHitsMaker(pset.get<string>("caloCrystalHitsMaker","CaloCrystalHitsMaker")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
@@ -273,8 +274,8 @@ namespace mu2e {
     // Get handles to calorimeter collections
     art::Handle<CaloHitCollection> caloHits;
     art::Handle<CaloHitMCTruthCollection> caloMC;
-    event.getByType(caloHits);
-    event.getByType(caloMC);
+    event.getByLabel(_caloReadoutHitsMaker,caloHits);
+    event.getByLabel(_caloReadoutHitsMaker,caloMC);
 
     // Find pointers to the original G4 steps
     art::Handle<DPIndexVectorCollection> crystalPtr;
@@ -370,7 +371,7 @@ namespace mu2e {
     // caloCrystalHits
     art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
 
-    event.getByType(caloCrystalHits);
+    event.getByLabel(_caloCrystalHitsMaker,caloCrystalHits);
     if (!caloCrystalHits.isValid()) {
       _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalHits" << endl;
       return;
@@ -497,11 +498,11 @@ namespace mu2e {
     event.getByLabel(_generatorModuleLabel,genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel,simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByType(volumes);
+    event.getRun().getByLabel(_g4ModuleLabel,volumes);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
@@ -746,11 +747,11 @@ namespace mu2e {
     event.getByLabel(_generatorModuleLabel,genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel,simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByType(volumes);
+    event.getRun().getByLabel(_g4ModuleLabel,volumes);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
@@ -946,7 +947,7 @@ namespace mu2e {
 
     // SimParticles container
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel,simParticles);
     if( !(simParticles.isValid()) || simParticles->empty() ) return;
 
     // Loop over all hits in the stopping target. Check, that the
@@ -1048,11 +1049,11 @@ namespace mu2e {
     event.getByLabel(_generatorModuleLabel,genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByType(simParticles);
+    event.getByLabel(_g4ModuleLabel,simParticles);
 
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByType(volumes);
+    event.getRun().getByLabel(_g4ModuleLabel,volumes);
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
