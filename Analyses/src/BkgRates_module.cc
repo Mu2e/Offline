@@ -32,7 +32,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "ITrackerGeom/inc/Cell.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
-#include "Mu2eUtilities/inc/MCCaloUtilities.hh"
+#include "Analyses/inc/MCCaloUtilities.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
