@@ -2,7 +2,7 @@
 #define TTrackerGeom_Manifold_hh
 
 #include <vector>
-#include <string>
+//#include <string>
 
 #include "TTrackerGeom/inc/ManifoldId.hh"
 
@@ -22,8 +22,7 @@ namespace mu2e {
               const std::vector<double>& halfLengths
               );
 
-    // Destructor
-    ~Manifold(){};
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     // Return origin in tracker coordinates
     const CLHEP::Hep3Vector& getOrigin() const {return _origin;}

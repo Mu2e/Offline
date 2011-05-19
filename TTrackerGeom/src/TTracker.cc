@@ -2,9 +2,9 @@
 // Geometry and identifier info about an TTracker.
 //
 //
-// $Id: TTracker.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Id: TTracker.cc,v 1.5 2011/05/19 22:23:06 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/19 22:23:06 $
 //
 // Original author Rob Kutschke
 //
@@ -26,9 +26,9 @@ namespace mu2e {
 
     // Padding is half the size of the padding for the envelope of the full tracker.
     static double const pad = 0.00005;
-    double halfThick = _supportParams.halfThickness + 2.*_manifoldHalfLengths[2];
+    double halfThick = _supportParams.halfThickness() + 2.*_manifoldHalfLengths[2];
     return TubsParams( _envelopeInnerRadius-pad,
-                       _supportParams.outerRadius+pad,
+                       _supportParams.outerRadius()+pad,
                        halfThick+pad);
   }
 

@@ -189,8 +189,8 @@ void DataInterface::fillGeometry()
     }
 
 //Support Structure
-    double innerRadius=ttracker->getSupportParams().innerRadius;
-    double outerRadius=ttracker->getSupportParams().outerRadius;
+    double innerRadius=ttracker->getSupportParams().innerRadius();
+    double outerRadius=ttracker->getSupportParams().outerRadius();
     double zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength;
     findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
     findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);

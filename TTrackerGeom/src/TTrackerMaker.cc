@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.28 2011/05/18 20:09:10 wb Exp $
+// $Id: TTrackerMaker.cc,v 1.29 2011/05/19 22:23:06 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/19 22:23:06 $
 //
 // Original author Rob Kutschke
 //
@@ -40,8 +40,6 @@ namespace mu2e {
     parseConfig(config);
     buildIt( );
   }
-
-  TTrackerMaker::~TTrackerMaker (){}
 
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
@@ -701,14 +699,14 @@ namespace mu2e {
 //         cout << _strawHalfLengths.at(i)  << ", ";
 //       }
 //       cout << endl;
-//       cout << "Debugging _supportParams.innerRadius   :   " << _tt->_supportParams.innerRadius << endl;
-//       cout << "Debugging _supportParams.outerRadius   :   " << _tt->_supportParams.outerRadius << endl;
+//       cout << "Debugging _supportParams.innerRadius   :   " << _tt->_supportParams.innerRadius() << endl;
+//       cout << "Debugging _supportParams.outerRadius   :   " << _tt->_supportParams.outerRadius() << endl;
 //       cout << "Debugging _supportParams.outerRadius rs:   " << outerSupportRadiusRequireds << endl;
 //       cout << "Debugging _supportParams.outerRadius rl:   " << outerSupportRadiusRequiredl << endl;
 //     }
 
-    if (_tt->_supportParams.outerRadius < outerSupportRadiusRequiredl) {
-      cout << " _supportParams.outerRadius         :   " << _tt->_supportParams.outerRadius << endl;
+    if (_tt->_supportParams.outerRadius() < outerSupportRadiusRequiredl) {
+      cout << " _supportParams.outerRadius         :   " << _tt->_supportParams.outerRadius() << endl;
       cout << " _supportParams.outerRadius required:   " << outerSupportRadiusRequiredl << endl;
       throw cet::exception("GEOM")
         << "outerSupportRadius is to small given other paramters \n";

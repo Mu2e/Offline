@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.20 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructTTrackerv3.cc,v 1.21 2011/05/19 22:23:06 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/19 22:23:06 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -16,35 +16,35 @@
 
 
 // C++ includes
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <string>
 
 // Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/constructTTracker.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
+#include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eG4/inc/nestTubs.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 // G4 includes
-#include "G4Material.hh"
+#include "G4Box.hh"
 #include "G4Colour.hh"
+#include "G4IntersectionSolid.hh"
+#include "G4Material.hh"
+#include "G4PVPlacement.hh"
+#include "G4SDManager.hh"
 #include "G4String.hh"
 #include "G4ThreeVector.hh"
-#include "G4Box.hh"
 #include "G4Trd.hh"
-#include "G4SDManager.hh"
-#include "G4PVPlacement.hh"
-#include "G4IntersectionSolid.hh"
 
 
 using namespace std;
@@ -148,7 +148,7 @@ namespace mu2e{
     G4Colour  lightBlue (0.0, 0.0, 0.75);
     VolumeInfo supportInfo = nestTubs( "TTrackerDeviceSupport",
                                        ttracker.getSupportParams().getTubsParams(),
-                                       findMaterialOrThrow(ttracker.getSupportParams().materialName),
+                                       findMaterialOrThrow(ttracker.getSupportParams().materialName()),
                                        0,
                                        zeroVector,
                                        devInfo.logical,

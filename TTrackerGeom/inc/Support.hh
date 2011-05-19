@@ -5,9 +5,9 @@
 // Describe the properites of a support for the TTracker.
 //
 //
-//  $Id: Support.hh,v 1.3 2011/05/18 02:27:19 wb Exp $
+//  $Id: Support.hh,v 1.4 2011/05/19 22:23:06 wb Exp $
 //  $Author: wb $
-//  $Date: 2011/05/18 02:27:19 $
+//  $Date: 2011/05/19 22:23:06 $
 //
 //  Original author Rob Kutschke
 //
@@ -18,36 +18,45 @@
 
 namespace mu2e {
 
-  struct Support{
+  class Support{
+
+  public:
 
     Support():
-      innerRadius(0.),
-      outerRadius(0.),
-      halfThickness(0.),
-      materialName(){}
+      innerRadius_(0.),
+      outerRadius_(0.),
+      halfThickness_(0.),
+      materialName_(){}
 
     Support( double inRad, double outRad, double halfThick, const std::string& name):
-      innerRadius(inRad),
-      outerRadius(outRad),
-      halfThickness(halfThick),
-      materialName(name){}
+      innerRadius_(inRad),
+      outerRadius_(outRad),
+      halfThickness_(halfThick),
+      materialName_(name){}
 
     // Accept compiler supplied destructor, copy c'tor and assignment
     // operator.
 
-    // Shape parameters of the support:
-    // Inner and outer radii and half of thickness.
-    double innerRadius;
-    double outerRadius;
-    double halfThickness;
-
-    // Name of the G4material that makes up the support.
-    std::string materialName;
-
     // Return the information formatted to make a G4Tubs.
     TubsParams getTubsParams() const{
-      return TubsParams(innerRadius, outerRadius, halfThickness);
+      return TubsParams(innerRadius_, outerRadius_, halfThickness_);
     }
+
+    double innerRadius() const { return innerRadius_; }
+    double outerRadius() const { return outerRadius_; }
+    double halfThickness() const { return halfThickness_; }
+    std::string materialName() const { return materialName_; }
+
+  private:
+
+    // Shape parameters of the support:
+    // Inner and outer radii and half of thickness.
+    double innerRadius_;
+    double outerRadius_;
+    double halfThickness_;
+
+    // Name of the G4material that makes up the support.
+    std::string materialName_;
 
   };
 

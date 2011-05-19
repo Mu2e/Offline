@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.7 2011/05/18 21:14:30 wb Exp $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.8 2011/05/19 22:23:06 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Date: 2011/05/19 22:23:06 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -849,13 +849,13 @@ namespace mu2e {
 
     arc->SetLineColor(kGreen);
 
-    angle = calculateDrawingAngle(_span, supportParams.innerRadius);
+    angle = calculateDrawingAngle(_span, supportParams.innerRadius());
     arc->DrawArc(_drawingOrigin.x(),_drawingOrigin.y(),
-                 supportParams.innerRadius,0.,angle,"only");
+                 supportParams.innerRadius(),0.,angle,"only");
 
-    angle = calculateDrawingAngle(_span, supportParams.outerRadius);
+    angle = calculateDrawingAngle(_span, supportParams.outerRadius());
     arc->DrawArc(_drawingOrigin.x(),_drawingOrigin.y(),
-                 supportParams.outerRadius,0.,angle,"only");
+                 supportParams.outerRadius(),0.,angle,"only");
 
 //     double testCircleRadius = 720.0;
 //     angle = calculateDrawingAngle(_span, testCircleRadius);
@@ -865,8 +865,8 @@ namespace mu2e {
     if (dolabels) {
 
       drawArrowFromOrigin( 75., envelopeParams.innerRadius, "IER",kFullCircle,kRed);
-      drawArrowFromOrigin(200., supportParams.innerRadius,  "ISR",kFullCircle,kRed);
-      drawArrowFromOrigin(300., supportParams.outerRadius,  "OSR",kFullCircle,kRed);
+      drawArrowFromOrigin(200., supportParams.innerRadius(),  "ISR",kFullCircle,kRed);
+      drawArrowFromOrigin(300., supportParams.outerRadius(),  "OSR",kFullCircle,kRed);
 
     }
 

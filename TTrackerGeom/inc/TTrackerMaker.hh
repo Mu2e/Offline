@@ -3,38 +3,38 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.13 2011/05/18 02:27:19 wb Exp $
+// $Id: TTrackerMaker.hh,v 1.14 2011/05/19 22:23:06 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/19 22:23:06 $
 //
 // Original author Rob Kutschke
 //
 
-#include <vector>
 #include <memory>
 #include <string>
+#include <vector>
 
 //#include "TTrackerGeom/inc/TLayerInfo.hh"
 
 #include "TrackerGeom/inc/Device.hh"
-#include "TrackerGeom/inc/Sector.hh"
 #include "TrackerGeom/inc/Layer.hh"
+#include "TrackerGeom/inc/Sector.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
-class TTracker;
 class SimpleConfig;
+class TTracker;
 
 class TTrackerMaker{
 
 public:
 
   TTrackerMaker( SimpleConfig const& config );
-  ~TTrackerMaker ();
 
-  // This is the accessor that will remain.
+  // Use compiler-generated copy c'tor, copy assignment, and d'tor
+
   std::auto_ptr<TTracker> getTTrackerPtr() { return _tt; }
 
 private:

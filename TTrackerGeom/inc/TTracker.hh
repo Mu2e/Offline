@@ -5,23 +5,23 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.7 2011/05/18 02:27:19 wb Exp $
+// $Id: TTracker.hh,v 1.8 2011/05/19 22:23:06 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/19 22:23:06 $
 //
 // Original author Rob Kutschke
 //
 
-#include <vector>
 #include <deque>
+#include <vector>
 
-#include "TTrackerGeom/inc/Support.hh"
 #include "TTrackerGeom/inc/Manifold.hh"
+#include "TTrackerGeom/inc/Support.hh"
 
-#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Device.hh"
-#include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/SectorId.hh"
+#include "TrackerGeom/inc/StrawDetail.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
 
@@ -32,11 +32,9 @@ namespace mu2e {
     friend class TTrackerMaker;
 
   public:
-    TTracker(){}
-    ~TTracker(){};
+    TTracker(){}  // TODO: insert proper initializer list, starting w/ base class
 
-    // Compiler generated copy and assignment constructors
-    // should be OK.
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     void fillPointers () const;
 

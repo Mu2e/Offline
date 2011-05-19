@@ -23,13 +23,13 @@ namespace mu2e {
       _manifold(manifold)
     {}
 
-    ~ManifoldId(){}
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    const SectorId getSectorId() const {
+    SectorId getSectorId() const {
       return _sid;
     }
 
-    const int getManifold() const {
+    int getManifold() const {
       return _manifold;
     }
 
