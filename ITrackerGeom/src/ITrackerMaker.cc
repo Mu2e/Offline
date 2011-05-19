@@ -308,13 +308,14 @@ void ITrackerMaker::Build(){
 
                 if (EndCap_type==1) zlength = sqrt( square(max_EndCap_dim) - square(radius_ringOut) );
 
-                _sprlr[0]._id._id=0;
+                _sprlr[0]._id = SuperLayerId(0);
 
                 _sprlr[0].addLayer(new ITLayer());
                 itl = _sprlr[0]._layers.back();
                 itl->_detail.reset( new ITLayerDetail(inner_radius+envelop_Inner_thickness,radius_ringOut_0,0.0,epsilonOut,zlength,_fillMaterial) );
-                itl->_id._sid=&(_sprlr[0]._id);
-                itl->_id._id=-1;
+                //itl->_id._sid=&(_sprlr[0]._id);
+                //itl->_id._id=-1;
+                itl->_id = ITLayerId(&_sprlr[0]._id, -1);
 
 
                 if (geomType==20) {
@@ -324,7 +325,7 @@ void ITrackerMaker::Build(){
                         for ( superlayer=0;superlayer<nsuperlayer/*2*/;superlayer++ ) {
                                 cout <<"Building super layer: "<<superlayer+1<<endl;
 
-                                _sprlr[superlayer]._id._id=superlayer;
+                                _sprlr[superlayer]._id = SuperLayerId(superlayer);
 
                                 num_wire     = num_wire_sense+superlayer*delta_num_wire_sense;
                                 phi          = CLHEP::twopi/((double) num_wire);
@@ -366,8 +367,7 @@ void ITrackerMaker::Build(){
                                         itl = _sprlr[superlayer]._layers.back();
                                         //                itl->_detail = new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial);
                                         itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                                        itl->_id._sid=&(_sprlr[superlayer]._id);
-                                        itl->_id._id=iring;
+                                        itl->_id = ITLayerId(&_sprlr[superlayer]._id, iring);
                                         itl->_layerType=ITLayer::wire;
                                         itl->_voxelizationFactor=voxelizationFactor;
 
@@ -409,8 +409,7 @@ void ITrackerMaker::Build(){
                                         _sprlr[superlayer].addLayer(new ITLayer());
                                         itl = _sprlr[superlayer]._layers.back();
                                         itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                                        itl->_id._sid=&(_sprlr[superlayer]._id);
-                                        itl->_id._id=iring;
+                                        itl->_id = ITLayerId(&_sprlr[superlayer]._id, iring);
                                         itl->_layerType=ITLayer::gas;
 
                                         inscribedRadius = delta_radius_ring;
@@ -439,8 +438,7 @@ void ITrackerMaker::Build(){
                         _sprlr[superlayer].addLayer(new ITLayer());
                         itl = _sprlr[superlayer]._layers.back();
                         itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                        itl->_id._sid=&(_sprlr[superlayer]._id);
-                        itl->_id._id=iring;
+                        itl->_id = ITLayerId(&_sprlr[superlayer]._id, iring);
                         itl->_layerType=ITLayer::wire;
                         itl->_voxelizationFactor=voxelizationFactor;
 
@@ -469,10 +467,11 @@ void ITrackerMaker::Build(){
 
                         nHorizontalFWire    = _StoFWireRatio-_nVerticalFWire;
 
-                        for ( superlayer=0;superlayer<nsuperlayer;superlayer++ ) {
+                        for ( superlayer=0;superlayer!=nsuperlayer;++superlayer ) {
                                 std::cout <<"Building layer: "<<superlayer+1<<std::endl;
 
-                                _sprlr[superlayer]._id._id = superlayer;
+                                //_sprlr[superlayer]._id._id = superlayer;
+                                _sprlr[superlayer]._id = SuperLayerId(superlayer);
 
                                 senseWireRing_radius_0 = radius_ring_0+inscribedRadius;
                                 num_wire               = (int)(CLHEP::twopi*senseWireRing_radius_0/_cellDimension);
@@ -505,8 +504,7 @@ void ITrackerMaker::Build(){
                                 _sprlr[superlayer].addLayer(new ITLayer());
                                 itl = _sprlr[superlayer]._layers.back();
                                 itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                                itl->_id._sid=&(_sprlr[superlayer]._id);
-                                itl->_id._id=0;
+                                itl->_id = ITLayerId(&_sprlr[superlayer]._id, 0);
                                 itl->_layerType=ITLayer::wire;
                                 if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                                 itl->_voxelizationFactor=voxelizationFactor;
@@ -534,8 +532,7 @@ void ITrackerMaker::Build(){
                                 _sprlr[superlayer].addLayer(new ITLayer());
                                 itl = _sprlr[superlayer]._layers.back();
                                 itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                                itl->_id._sid=&(_sprlr[superlayer]._id);
-                                itl->_id._id=0;
+                                itl->_id = ITLayerId(&_sprlr[superlayer]._id, 0);
                                 itl->_layerType=ITLayer::gas;
                                 if (_notExtVoxel) voxelizationFactor = 5.0/((float)((1+_nVerticalFWire)*num_wire));
                                 itl->_voxelizationFactor=voxelizationFactor;
@@ -575,8 +572,7 @@ void ITrackerMaker::Build(){
                         _sprlr[superlayer].addLayer(new ITLayer());
                         itl = _sprlr[superlayer]._layers.back();
                         itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                        itl->_id._sid=&(_sprlr[superlayer]._id);
-                        itl->_id._id=1;
+                        itl->_id = ITLayerId(&_sprlr[superlayer]._id, 1);
                         itl->_layerType=ITLayer::wire;
                         if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                         itl->_voxelizationFactor=voxelizationFactor;
@@ -617,7 +613,7 @@ void ITrackerMaker::Build(){
                         for ( superlayer=0;superlayer<nsuperlayer;superlayer++ ) {
                                 std::cout <<"Building layer: "<<superlayer+1<<std::endl;
 
-                                _sprlr[superlayer]._id._id=superlayer;
+                                _sprlr[superlayer]._id = SuperLayerId(superlayer);
 
                                 //num_wire               = num_wire_sense+superlayer*delta_num_wire_sense;
                                 senseWireRing_radius_0 = radius_ring_0+inscribedRadius;
@@ -651,8 +647,7 @@ void ITrackerMaker::Build(){
                                 _sprlr[superlayer].addLayer(new ITLayer());
                                 itl = _sprlr[superlayer]._layers.back();
                                 itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                                itl->_id._sid=&(_sprlr[superlayer]._id);
-                                itl->_id._id=0;
+                                itl->_id = ITLayerId(&_sprlr[superlayer]._id, 0);
                                 itl->_layerType=ITLayer::wire;
                                 if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                                 itl->_voxelizationFactor=voxelizationFactor;
@@ -686,8 +681,7 @@ void ITrackerMaker::Build(){
                                 _sprlr[superlayer].addLayer(new ITLayer());
                                 itl = _sprlr[superlayer]._layers.back();
                                 itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                                itl->_id._sid=&(_sprlr[superlayer]._id);
-                                itl->_id._id=0;
+                                itl->_id = ITLayerId(&_sprlr[superlayer]._id, 0);
                                 itl->_layerType=ITLayer::gas;
                                 if (_notExtVoxel) voxelizationFactor = 5.0/((float)((1+_nVerticalFWire)*num_wire));
                                 itl->_voxelizationFactor=voxelizationFactor;
@@ -728,8 +722,7 @@ void ITrackerMaker::Build(){
                         _sprlr[superlayer].addLayer(new ITLayer());
                         itl = _sprlr[superlayer]._layers.back();
                         itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                        itl->_id._sid=&(_sprlr[superlayer]._id);
-                        itl->_id._id=1;
+                        itl->_id = ITLayerId(&_sprlr[superlayer]._id, 1);
                         itl->_layerType=ITLayer::wire;
                         if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                         itl->_voxelizationFactor=voxelizationFactor;
@@ -781,7 +774,7 @@ void ITrackerMaker::Build(){
                         for ( superlayer=0;superlayer<nsuperlayer;superlayer++ ) {
                                 std::cout <<"Building layer: "<<superlayer+1<<std::endl;
 
-                                _sprlr[superlayer]._id._id=superlayer;
+                                _sprlr[superlayer]._id = SuperLayerId(superlayer);
 
                                 //num_wire               = num_wire_sense+superlayer*delta_num_wire_sense;
                                 inscribedRadius        = 0.5*delta_radius_ring; //delta_radius_ring is equal to the cell height of each layer
@@ -815,8 +808,7 @@ void ITrackerMaker::Build(){
                                 _sprlr[superlayer].addLayer(new ITLayer());
                                 itl = _sprlr[superlayer]._layers.back();
                                 itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                                itl->_id._sid=&(_sprlr[superlayer]._id);
-                                itl->_id._id=0;
+                                itl->_id = ITLayerId(&_sprlr[superlayer]._id, 0);
                                 itl->_layerType=ITLayer::wire;
                                 if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                                 itl->_voxelizationFactor=voxelizationFactor;
@@ -847,8 +839,7 @@ void ITrackerMaker::Build(){
                                 _sprlr[superlayer].addLayer(new ITLayer());
                                 itl = _sprlr[superlayer]._layers.back();
                                 itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                                itl->_id._sid=&(_sprlr[superlayer]._id);
-                                itl->_id._id=0;
+                                itl->_id = ITLayerId(&_sprlr[superlayer]._id, 0);
                                 itl->_layerType=ITLayer::gas;
                                 if (_notExtVoxel) voxelizationFactor = 5.0/((float)((1+_nVerticalFWire)*num_wire));
                                 itl->_voxelizationFactor=voxelizationFactor;
@@ -892,8 +883,7 @@ void ITrackerMaker::Build(){
                         _sprlr[superlayer].addLayer(new ITLayer());
                         itl = _sprlr[superlayer]._layers.back();
                         itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
-                        itl->_id._sid=&(_sprlr[superlayer]._id);
-                        itl->_id._id=1;
+                        itl->_id = ITLayerId(&_sprlr[superlayer]._id, 1);
                         itl->_layerType=ITLayer::wire;
                         if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                         itl->_voxelizationFactor=voxelizationFactor;
@@ -921,8 +911,7 @@ void ITrackerMaker::Build(){
                 _sprlr[superlayer].addLayer(new ITLayer());
                 itl = _sprlr[superlayer]._layers.back();
                 itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,outer_radius-envelop_Outer_thickness,epsilonOut,0.0,length,_fillMaterial) );
-                itl->_id._sid=&(_sprlr[superlayer]._id);
-                itl->_id._id=++iring;
+                itl->_id = ITLayerId(&_sprlr[superlayer]._id, ++iring);
 
                 _ltt->_sprlr.reset(_sprlr);
 

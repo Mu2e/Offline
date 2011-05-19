@@ -3,16 +3,16 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
+// $Id: CosmicRayShieldMaker.hh,v 1.5 2011/05/19 21:36:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/19 21:36:23 $
 //
 // Original author KLG
 //
 
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -45,7 +45,7 @@ public:
   void makeBars(CRSScintillatorLayer& layer);
 
 
-  // This is deprected and will go away soon.
+  // This is deprecated and will go away soon.
   // Still needed for root graphics version.
   const CosmicRayShield& getCosmicRayShield() const { return *_crs;}
 

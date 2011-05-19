@@ -4,8 +4,11 @@
 #include <iostream>
 
 namespace mu2e {
+  class SuperLayerId;
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  const SuperLayerId& s );
 
-struct SuperLayerId{
+class SuperLayerId{
 
 public:
 
@@ -13,15 +16,14 @@ public:
     _id(-1){
   }
 
-  SuperLayerId( int &id ):
+  explicit SuperLayerId( int id ):
     _id(id)
   {
   }
 
-  ~SuperLayerId  (){
-  }
+  // use compiler-generated copy c'tor, copy assignment, and d'tor
 
-  const int getSuperLayer() const{
+  int getSuperLayer() const{
     return _id;
   }
 
@@ -29,15 +31,17 @@ public:
     return ( _id == s._id );
   }
 
+  friend std::ostream& operator<<(std::ostream& ost,
+                                  const SuperLayerId& s ){
+    ost << "SuperLayer Id: "<<s._id << " )";
+    return ost;
+  }
+
+private:
+
   int _id;
 
 };
-
-inline std::ostream& operator<<(std::ostream& ost,
-                                const SuperLayerId& s ){
-  ost << "SuperLayer Id: "<<s._id << " )";
-  return ost;
-}
 
 } //namespace mu2e
 

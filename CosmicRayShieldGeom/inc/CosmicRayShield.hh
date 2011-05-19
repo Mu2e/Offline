@@ -4,25 +4,25 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.6 2011/05/18 02:27:15 wb Exp $
+// $Id: CosmicRayShield.hh,v 1.7 2011/05/19 21:36:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/19 21:36:23 $
 //
 // Original author KLG
 //
 
 // c++ includes
-#include <string>
 #include <map>
+#include <string>
 
 // clhep includes
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 // Includes from Mu2e
-#include "GeometryService/inc/Detector.hh"
-#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
+#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
+#include "GeometryService/inc/Detector.hh"
 
 
 namespace mu2e {

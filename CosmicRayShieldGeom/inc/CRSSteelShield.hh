@@ -4,15 +4,15 @@
 //
 // Representation of CRSSteelShield aka the flux return yoke
 //
-// $Id: CRSSteelShield.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
+// $Id: CRSSteelShield.hh,v 1.4 2011/05/19 21:36:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/19 21:36:23 $
 //
 // Original author KLG
 //
 // c++ includes
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"

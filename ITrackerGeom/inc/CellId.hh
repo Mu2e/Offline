@@ -5,7 +5,11 @@
 
 namespace mu2e {
 
-struct CellId{
+class CellId;
+inline std::ostream& operator<<(std::ostream& ost,
+                                const CellId& c );
+
+class CellId{
 
 public:
 
@@ -15,29 +19,28 @@ public:
   }
 
   CellId( WireId &swid):
-    _swid(swid._lid, swid._n)
+    _swid(swid)
   {
   }
 
   CellId( ITLayerId *layer,
-           int n
-           ):
-    _swid(WireId(layer,n))
-    {
+          int n
+        ):
+    _swid(layer,n)
+  {
   }
 
-  ~CellId  (){
-  }
+  // use compiler-generated copy c'tor, copy assignment, and d'tor
 
   const ITLayerId& getLayerId() const {
     return _swid.getLayerId();
   }
 
-  const int getLayer() const{
+  int getLayer() const{
     return _swid.getLayer();
   }
 
-  const int getCell() const{
+  int getCell() const{
     return _swid.getWire();
   }
 
@@ -45,18 +48,20 @@ public:
     return ( _swid == c._swid );
   }
 
+  friend std::ostream& operator<<(std::ostream& ost,
+                                  const CellId& c ){
+    ost << "Cell Id: ("
+        << c.getLayerId() << " "
+        << c._swid.getWire()
+        << " )";
+    return ost;
+  }
+
+private:
+
   WireId _swid;
 
 };
-
-inline std::ostream& operator<<(std::ostream& ost,
-                                const CellId& c ){
-  ost << "Cell Id: ("
-      << c.getLayerId() << " "
-      << c._swid._n
-      << " )";
-  return ost;
-}
 
 }
 #endif /* ITrackerGeom_CellId_hh */

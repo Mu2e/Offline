@@ -5,9 +5,13 @@
 
 namespace mu2e {
 
-struct WireId{
+class WireId;
+inline std::ostream& operator<<(std::ostream& ost,
+                                const WireId& w );
 
-        friend struct ITLayerId;
+class WireId{
+
+        friend class ITLayerId;
 
 public:
 
@@ -23,18 +27,17 @@ public:
     _n(n){
   }
 
-  ~WireId  (){
-  }
+  // use compiler-generated copy c'tor, copy assignment, and d'tor
 
   const ITLayerId& getLayerId() const {
     return *_lid;
   }
 
-  const int getLayer() const{
-    return _lid->_id;
+  int getLayer() const{
+    return _lid->getLayer();
   }
 
-  const int getWire() const{
+  int getWire() const{
     return _n;
   }
 
@@ -42,19 +45,21 @@ public:
     return ( *_lid == *(w._lid) && _n == w._n );
   }
 
+  friend std::ostream& operator<<(std::ostream& ost,
+                                  const WireId& w ){
+    ost << "Wire Id: ("
+        << w.getLayerId() << " "
+        << w._n
+        << " )";
+    return ost;
+  }
+
+private:
+
   ITLayerId *_lid;
   int _n;
 
 };
-
-inline std::ostream& operator<<(std::ostream& ost,
-                                const WireId& w ){
-  ost << "Wire Id: ("
-      << w.getLayerId() << " "
-      << w._n
-      << " )";
-  return ost;
-}
 
 }
 #endif /* ITrackerGeom_WireId_hh */

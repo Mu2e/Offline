@@ -3,7 +3,7 @@
 
 namespace mu2e {
 
-struct SuperLayerInfo{
+class SuperLayerInfo{
 
   // The cells type
   enum Stype {undefined=-1, hexagonal, square};
@@ -16,12 +16,13 @@ public:
   }
   SuperLayerInfo( int nLayers, Stype cellType
              ):
-        _nLayers(nLayers),
+    _nLayers(nLayers),
     _cellType(cellType){
   }
 
-  ~SuperLayerInfo  (){}
+  // use compiler-generated copy c'tor, copy assignment, and d'tor
 
+private:
   int _nLayers;
   Stype _cellType;
 

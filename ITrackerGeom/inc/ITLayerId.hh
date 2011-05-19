@@ -5,7 +5,11 @@
 
 namespace mu2e {
 
-struct ITLayerId{
+class ITLayerId;
+inline std::ostream& operator<<(std::ostream& ost,
+                                const ITLayerId& l );
+
+class ITLayerId{
 
         friend struct SuperLayerId;
 
@@ -18,12 +22,14 @@ public:
   }
 
   ITLayerId( SuperLayerId *sid,
-           int &id
-           ):
+             int id
+             ):
     _sid(sid),
     _id(id)
   {
   }
+
+  // use compiler-generated copy c'tor and copy assignment
 
   ~ITLayerId  (){
   }
@@ -32,31 +38,33 @@ public:
     return *_sid;
   }
 
-  const int& getSuperLayer() const {
-    return _sid->_id;
+  int getSuperLayer() const {
+    return _sid->getSuperLayer();
   }
 
-  const int getLayer() const{
+  int getLayer() const{
     return _id;
   }
 
-  bool operator==(const ITLayerId l) const{
+  bool operator==(const ITLayerId& l) const{
     return ( *_sid == *(l._sid) && _id == l._id );
   }
+
+  friend std::ostream& operator<<(std::ostream& ost,
+                                  const ITLayerId& l ){
+    ost << "Layer Id: ("
+        << l.getSuperLayerId() << " "
+        << l._id
+        << " )";
+    return ost;
+  }
+
+private:
 
   SuperLayerId *_sid;
   int _id;
 
 };
-
-inline std::ostream& operator<<(std::ostream& ost,
-                                const ITLayerId& l ){
-  ost << "Layer Id: ("
-      << l.getSuperLayerId() << " "
-      << l._id
-      << " )";
-  return ost;
-}
 
 }
 #endif /* ITrackerGeom_ITLayerId_hh */
