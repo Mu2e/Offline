@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.15 2011/05/18 22:01:46 wb Exp $
+// $Id: PiCapture.hh,v 1.16 2011/05/19 16:55:19 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Date: 2011/05/19 16:55:19 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -81,7 +81,7 @@ namespace mu2e {
     TH1D* _hFoilNumber;
 
     // Photon energy spectrum as a continuous function.
-    const double energySpectrum(const double e);
+    double energySpectrum(double e);
 
     // Compute a binned representation of the photon energy spectrum.
     std::vector<double> binnedEnergySpectrum();
