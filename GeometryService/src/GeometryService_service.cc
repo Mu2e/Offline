@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.4 2011/05/20 17:58:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 17:58:00 $
+// $Id: GeometryService_service.cc,v 1.5 2011/05/20 22:25:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/20 22:25:22 $
 //
 // Original author Rob Kutschke
 //
@@ -52,7 +52,7 @@ namespace mu2e {
 
   GeometryService::GeometryService(fhicl::ParameterSet const& iPS,
                                    art::ActivityRegistry&iRegistry) :
-    _inputfile(iPS.get<std::string>("inputfile","geom000.txt")),
+    _inputfile(iPS.get<std::string>("inputFile","geom000.txt")),
     _detectors(),
     _run_count()
   {
