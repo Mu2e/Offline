@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.15 2011/05/18 15:06:33 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.16 2011/05/20 22:21:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/18 15:06:33 $
+// $Date: 2011/05/20 22:21:07 $
 //
 // Original author Rob Kutschke
 //
@@ -21,6 +21,7 @@
 // Mu2e includes
 #include "GeneralUtilities/inc/MapVectorKey.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
+#include "ToyDP/inc/ProcessCode.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -37,31 +38,37 @@ namespace mu2e {
     StepPointMC():
       _trackId(MapVectorKey()),
       _volumeId(0),
-      _totalEDep(0.),
+      _totalEnergyDeposit(0.),
+      _nonIonizingEnergyDeposit(0.),
       _position(),
       _momentum(),
       _time(0.),
       _proper(0.),
-      _stepLength(0.){
+      _stepLength(0.),
+      _endProcessCode(){
     }
 
     StepPointMC( unsigned                 trackId,
                  VolumeId_type            volumeId,
                  double                   totalEDep,
+                 double                   nonIonizingEDep,
                  double                   time,
                  double                   proper,
                  CLHEP::Hep3Vector const& position,
                  CLHEP::Hep3Vector const& momentum,
-                 double                   stepLength
+                 double                   stepLength,
+		 ProcessCode              endProcessCode
                  ):
       _trackId(MapVectorKey(trackId)),
       _volumeId(volumeId),
-      _totalEDep(totalEDep),
+      _totalEnergyDeposit(totalEDep),
+      _nonIonizingEnergyDeposit(nonIonizingEDep),
       _position(position),
       _momentum(momentum),
       _time(time),
       _proper(proper),
-      _stepLength(stepLength){
+      _stepLength(stepLength),
+      _endProcessCode(endProcessCode){
     }
 
     // Accept compiler generated versions of:
@@ -72,17 +79,18 @@ namespace mu2e {
     void print( std::ostream& ost, bool doEndl = true ) const;
     void print() const { print(std::cout); }
 
-    MapVectorKey             trackId()    const { return _trackId;   }
-    VolumeId_type            volumeId()   const { return _volumeId;  }
-    double                   totalEDep()  const { return _totalEDep; }
-    CLHEP::Hep3Vector const& position()   const { return _position;  }
-    CLHEP::Hep3Vector const& momentum()   const { return _momentum;  }
-    double                   time()       const { return _time;      }
-    double                   properTime() const { return _proper;      }
-    double                   stepLength() const { return _stepLength;}
+    MapVectorKey             trackId()          const { return _trackId;   }
+    VolumeId_type            volumeId()         const { return _volumeId;  }
+    double                   totalEDep()        const { return _totalEnergyDeposit; }
+    double                   nonIonizingEDep()  const { return _nonIonizingEnergyDeposit; }
+    CLHEP::Hep3Vector const& position()         const { return _position;  }
+    CLHEP::Hep3Vector const& momentum()         const { return _momentum;  }
+    double                   time()             const { return _time;      }
+    double                   properTime()       const { return _proper;      }
+    double                   stepLength()       const { return _stepLength;}
 
     // Kept for backwards compatibility.
-    double                   eDep()     const { return _totalEDep;    }
+    double eDep()     const { return _totalEnergyDeposit;    }
 
     // Return the volumeId as a StrawIndex.
     // It's the user's job to know if this is a reasonable thing to do.
@@ -92,12 +100,14 @@ namespace mu2e {
 
     MapVectorKey      _trackId;
     VolumeId_type     _volumeId;
-    double            _totalEDep;
+    double            _totalEnergyDeposit;
+    double            _nonIonizingEnergyDeposit;
     CLHEP::Hep3Vector _position;
     CLHEP::Hep3Vector _momentum;
     double            _time;
     double            _proper;
     double            _stepLength;
+    ProcessCode       _endProcessCode;
 
   };
 

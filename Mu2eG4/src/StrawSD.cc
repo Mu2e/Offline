@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.28 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: StrawSD.cc,v 1.29 2011/05/20 22:22:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/20 22:22:22 $
 //
 // Original author Rob Kutschke
 //
@@ -219,14 +219,18 @@ namespace mu2e {
 
     // We add the hit object to the framework strawHit collection created in produce
 
+    ProcessCode endCode;
+
     _collection->push_back( StepPointMC(aStep->GetTrack()->GetTrackID(),
                                         sdcn,
                                         edep,
+                                        aStep->GetNonIonizingEnergyDeposit(),
                                         aStep->GetPreStepPoint()->GetGlobalTime(),
                                         aStep->GetPreStepPoint()->GetProperTime(),
                                         prePosTracker,
                                         preMomWorld,
-                                        step
+                                        step,
+                                        endCode
                                         ));
 
     // Some debugging tests.

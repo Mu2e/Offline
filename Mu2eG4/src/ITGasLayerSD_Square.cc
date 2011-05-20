@@ -182,11 +182,13 @@ namespace mu2e {
                   _collection->push_back( StepPointMC(aStep->GetTrack()->GetTrackID(),
                                                       det,
                                                       idep,/*edep,*/
+                                                      aStep->GetNonIonizingEnergyDeposit(),
                                                       aStep->GetPreStepPoint()->GetGlobalTime(),
                                                       aStep->GetPreStepPoint()->GetProperTime(),
                                                       prePosTracker,
                                                       preMomWorld,
-                                                      step
+                                                      step,
+                                                      ProcessCode()
                                                       ));
 
                   // Some debugging tests.

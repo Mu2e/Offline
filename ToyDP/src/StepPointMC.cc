@@ -6,9 +6,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.cc,v 1.6 2011/05/18 16:11:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Id: StepPointMC.cc,v 1.7 2011/05/20 22:21:07 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/20 22:21:07 $
 //
 // Original author Rob Kutschke
 
@@ -21,14 +21,16 @@ namespace mu2e {
 
   void StepPointMC::print( ostream& ost, bool doEndl ) const {
 
-    ost << "  trackId: "           << _trackId
-        << "  volumeId: "          << _volumeId
-        << "  energy deposit: "    << _totalEDep
-        << "  position: "          << _position
-        << "  momentum: "          << _momentum
-        << "  time: "              << _time
-        << "  proper time: "       << _proper
-        << "  step length: "       << _stepLength;
+    ost << "  trackId: "                        << _trackId
+        << "  volumeId: "                       << _volumeId
+        << "  energy deposit: "                 << _totalEnergyDeposit
+        << "  non ionizing energy deposit: "    << _nonIonizingEnergyDeposit
+        << "  position: "                       << _position
+        << "  momentum: "                       << _momentum
+        << "  time: "                           << _time
+        << "  proper time: "                    << _proper
+        << "  step length: "                    << _stepLength
+	<< "  end process: "                    << _endProcessCode;
 
     if ( doEndl ){
       ost << endl;

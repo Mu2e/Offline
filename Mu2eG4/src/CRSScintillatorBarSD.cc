@@ -1,9 +1,9 @@
 //
 // Defines sensitive detector for CRSScintillatorBar
 //
-// $Id: CRSScintillatorBarSD.cc,v 1.6 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: CRSScintillatorBarSD.cc,v 1.7 2011/05/20 22:22:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/20 22:22:22 $
 //
 // Original author KLG
 //
@@ -78,11 +78,13 @@ namespace mu2e {
       push_back(StepPointMC(aStep->GetTrack()->GetTrackID(),
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetCopyNo(),
                             aStep->GetTotalEnergyDeposit(),
+                            aStep->GetNonIonizingEnergyDeposit(),
                             aStep->GetPreStepPoint()->GetGlobalTime(),
                             aStep->GetPreStepPoint()->GetProperTime(),
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPreStepPoint()->GetMomentum(),
-                            aStep->GetStepLength()
+                            aStep->GetStepLength(),
+                            ProcessCode()
                             ));
 
     return true;

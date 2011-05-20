@@ -172,6 +172,7 @@ std::cout<<"numberOfNoiseHits="<<numberOfNoiseHits<<"\n\n"<<std::endl;
       //add noise hits
       int trackIDnoise = 2;
       double eDepNoise = 0.;
+      double nonIonizingEDepNoise = 0.;
       double timeNoise = 0.;
       CLHEP::Hep3Vector momentumNoise;
 
@@ -185,7 +186,7 @@ std::cout<<"numberOfNoiseHits="<<numberOfNoiseHits<<"\n\n"<<std::endl;
         // Safe dummy value.
         double stepLength(1.0);
 
-        newPoints->push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,timeNoise,0,mid,momentumNoise,stepLength));
+        newPoints->push_back(StepPointMC(trackIDnoise,istraw,eDepNoise,nonIonizingEDepNoise,timeNoise,0,mid,momentumNoise,stepLength,ProcessCode()));
       } // noise hit ia
 
     } // non-zero noise rate
