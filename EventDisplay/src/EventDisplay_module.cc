@@ -1,23 +1,23 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.4 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: EventDisplay_module.cc,v 1.5 2011/05/20 20:18:23 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 20:18:23 $
 //
 
 #include <iostream>
-#include <string>
 #include <memory>
+#include <string>
 
-#include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "TApplication.h"
 #include "TGMsgBox.h"

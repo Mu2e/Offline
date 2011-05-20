@@ -1,17 +1,17 @@
 #ifndef ITrackerGeom_ITrackerMaker_hh
 #define ITrackerGeom_ITrackerMaker_hh
 
-#include <vector>
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
+#include <vector>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "ITrackerGeom/inc/SuperLayerInfo.hh"
 #include "ITrackerGeom/inc/SuperLayer.hh"
+#include "ITrackerGeom/inc/SuperLayerInfo.hh"
 #include "ITrackerGeom/inc/Wall.hh"
 
 namespace mu2e {

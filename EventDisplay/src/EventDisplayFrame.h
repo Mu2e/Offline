@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.12 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: EventDisplayFrame.h,v 1.13 2011/05/20 20:18:23 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Ralf Ehrlich
 //
@@ -18,16 +18,16 @@
 #include "boost/shared_ptr.hpp"
 #endif
 
-class TRootEmbeddedCanvas;
+class TBox;
+class TGCheckButton;
+class TGLabel;
+class TGRadioButton;
+class TGTextEntry;
 class TPad;
+class TPolyLine;
+class TRootEmbeddedCanvas;
 class TText;
 class TTimer;
-class TGCheckButton;
-class TGRadioButton;
-class TGLabel;
-class TGTextEntry;
-class TBox;
-class TPolyLine;
 
 namespace fhicl {
   class ParameterSet;
@@ -35,9 +35,9 @@ namespace fhicl {
 
 namespace mu2e_eventdisplay
 {
+  class ContentSelector;
   class DataInterface;
   class EventDisplayPad;
-  class ContentSelector;
 
   class EventDisplayFrame : public TGMainFrame
   {
@@ -116,4 +116,3 @@ namespace mu2e_eventdisplay
 }
 
 #endif /* EventDisplay_src_EventDisplayFrame_h */
-

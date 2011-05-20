@@ -4,9 +4,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.hh,v 1.7 2011/05/18 02:27:17 wb Exp $
+// $Id: LTrackerMaker.hh,v 1.8 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke
 //
@@ -17,8 +17,8 @@
 #include "LTrackerGeom/inc/LayerInfo.hh"
 
 #include "TrackerGeom/inc/Device.hh"
-#include "TrackerGeom/inc/Sector.hh"
 #include "TrackerGeom/inc/Layer.hh"
+#include "TrackerGeom/inc/Sector.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

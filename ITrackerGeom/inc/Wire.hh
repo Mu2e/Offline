@@ -6,11 +6,11 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "ITrackerGeom/inc/WireId.hh"
 #include "ITrackerGeom/inc/WireDetail.hh"
+#include "ITrackerGeom/inc/WireId.hh"
 
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Geometry/Transform3D.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 

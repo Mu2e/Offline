@@ -7,9 +7,9 @@
 // modifier methods of std::map work; I have not implemented the
 // constructors that allow user specified comparator and allocator objects.
 //
-// $Id: MapVector.hh,v 1.13 2011/05/18 02:27:16 wb Exp $
+// $Id: MapVector.hh,v 1.14 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/20 20:18:23 $
 //
 //   Original author Rob Kutschke
 //
@@ -233,7 +233,7 @@ public:
   // Iterators
   iterator begin (){
     return _map.begin();
-  };
+  }
 
   const_iterator begin () const{
     return _map.begin();
@@ -241,7 +241,7 @@ public:
 
   iterator end (){
     return _map.end();
-  };
+  }
 
   const_iterator end () const{
     return _map.end();
@@ -249,7 +249,7 @@ public:
 
   reverse_iterator rbegin (){
     return _map.rbegin();
-  };
+  }
 
   const_reverse_iterator rbegin () const{
     return _map.rbegin();
@@ -257,7 +257,7 @@ public:
 
   reverse_iterator rend (){
     return _map.rend();
-  };
+  }
 
   const_reverse_iterator rend () const{
     return _map.rend();

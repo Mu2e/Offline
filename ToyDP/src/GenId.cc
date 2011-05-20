@@ -2,13 +2,13 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
+// $Id: GenId.cc,v 1.3 2011/05/20 20:18:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author Rob Kutschke
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 #include "ToyDP/inc/GenId.hh"
 

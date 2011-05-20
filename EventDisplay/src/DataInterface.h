@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.14 2011/05/18 02:27:15 wb Exp $
+// $Id: DataInterface.h,v 1.15 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,13 +11,13 @@
 #ifndef EventDisplay_src_DataInterface_h
 #define EventDisplay_src_DataInterface_h
 
+#include "CLHEP/Vector/ThreeVector.h"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "art/Framework/Core/Event.h"
+#include "boost/shared_ptr.hpp"
 #include <TObject.h>
 #include <list>
 #include <map>
-#include "CLHEP/Vector/ThreeVector.h"
-#include "art/Framework/Core/Event.h"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "boost/shared_ptr.hpp"
 
 class TGeoManager;
 class TGeoVolume;

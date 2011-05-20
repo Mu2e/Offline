@@ -3,9 +3,9 @@
 //
 // Start with a SimParticle and trace its ancestry back to a generated particle.
 //
-// $Id: SimParticleAncestors.hh,v 1.4 2011/05/18 22:01:46 wb Exp $
+// $Id: SimParticleAncestors.hh,v 1.5 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke
 //
@@ -13,8 +13,8 @@
 // 1) This class is not designed to be persisted because it has bare pointers.
 //
 
-#include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/GenParticleCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
 
 namespace mu2e{
 

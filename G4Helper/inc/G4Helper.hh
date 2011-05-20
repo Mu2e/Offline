@@ -8,9 +8,9 @@
 // support of G4.  For technical reasons, this cannot be done by making
 // Mu2eG4RunManager a singleton.
 //
-// $Id: G4Helper.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Id: G4Helper.hh,v 1.5 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke
 //
@@ -23,8 +23,8 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Mu2e includes
-#include "G4Helper/inc/VolumeInfo.hh"
 #include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 namespace mu2e {
 

@@ -47,7 +47,7 @@ namespace mu2e{
              << G4endl;
       pParticleChange = &fMu2eParticleChangeForReflection;
 
-    };
+    }
     ~Mu2eReflection(){}
 
   public:

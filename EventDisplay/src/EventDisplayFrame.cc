@@ -1,34 +1,33 @@
-#include <TSystem.h>
-#include <TROOT.h>
 #include <TApplication.h>
-#include <TColor.h>
-#include <TPad.h>
 #include <TAxis3D.h>
-#include <TView3D.h>
+#include <TBox.h>
 #include <TCanvas.h>
-#include <TGLabel.h>
+#include <TColor.h>
 #include <TGButton.h>
+#include <TGComboBox.h>
+#include <TGFileDialog.h>
+#include <TGIcon.h>
+#include <TGLabel.h>
+#include <TGListBox.h>
 #include <TGTextBuffer.h>
 #include <TGTextEntry.h>
-#include <TGComboBox.h>
-#include <TGListBox.h>
-#include <TGIcon.h>
-#include <TGFileDialog.h>
-#include <TRootEmbeddedCanvas.h>
-#include <TTimer.h>
-#include <TText.h>
-#include <TBox.h>
+#include <TPad.h>
 #include <TPolyLine.h>
+#include <TROOT.h>
+#include <TRootEmbeddedCanvas.h>
+#include <TSystem.h>
+#include <TText.h>
+#include <TTimer.h>
+#include <TView3D.h>
 
-#include "EventDisplayFrame.h"
-#include "dict_classes/EventDisplayPad.h"
-#include "VirtualShape.h"
-#include "DataInterface.h"
 #include "ContentSelector.h"
+#include "DataInterface.h"
+#include "EventDisplayFrame.h"
+#include "VirtualShape.h"
+#include "dict_classes/EventDisplayPad.h"
 
-#include "TClassMenuItem.h"
 #include "TClass.h"
-
+#include "TClassMenuItem.h"
 
 #include <iostream>
 

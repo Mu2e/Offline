@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.18 2011/05/18 16:31:04 wb Exp $
+// $Id: GenId.hh,v 1.19 2011/05/20 20:18:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:31:04 $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@ namespace mu2e {
     // The most important c'tor and accessor methods are first.
     explicit GenId( enum_type id):
       _id(id)
-    {};
+    {}
 
     enum_type Id() const { return _id;}
 
@@ -68,7 +68,7 @@ namespace mu2e {
     // ROOT requires a default c'tor.
     GenId():
       _id(unknown){
-    };
+    }
 
     // Need this to interface with HepMC::GenEvent which stores an int.
     explicit GenId( int id):

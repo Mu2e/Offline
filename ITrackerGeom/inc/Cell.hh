@@ -6,8 +6,8 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "ITrackerGeom/inc/CellId.hh"
 #include "ITrackerGeom/inc/CellDetail.hh"
+#include "ITrackerGeom/inc/CellId.hh"
 #include "ITrackerGeom/inc/Wire.hh"
 
 #include "TrackerGeom/inc/Straw.hh"
@@ -18,12 +18,12 @@ namespace mu2e {
 
 class Cell : public Straw {
 
-  friend class SuperLayer;
-  friend class ITracker;
-  friend class ITrackerMaker;
   friend class CellGeometryHandle;
   friend class CellGeometryHandle_v2;
   friend class CellGeometryHandle_v3;
+  friend class ITracker;
+  friend class ITrackerMaker;
+  friend class SuperLayer;
 
 public:
 

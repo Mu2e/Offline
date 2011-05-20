@@ -4,15 +4,15 @@
 // Read Wanatabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWanatabeSpectrum.hh,v 1.6 2011/05/18 16:11:17 wb Exp $
+// $Id: ShankerWanatabeSpectrum.hh,v 1.7 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/20 20:18:23 $
 //
 //
 
 // C++ includes
-#include <vector>
 #include <utility>
+#include <vector>
 
 // Framework includes
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"

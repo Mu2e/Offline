@@ -4,9 +4,9 @@
 //
 // Persistable information about a G4 Physical Volume.
 //
-// $Id: PhysicalVolumeInfo.hh,v 1.5 2011/05/18 15:06:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:06:33 $
+// $Id: PhysicalVolumeInfo.hh,v 1.6 2011/05/20 20:18:24 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@ namespace mu2e {
   struct PhysicalVolumeInfo {
 
     // This c'tor is required for ROOT.
-    PhysicalVolumeInfo(){};
+    PhysicalVolumeInfo(){}
 
     PhysicalVolumeInfo( const std::string& pname,
                         unsigned           pcopyNo ):

@@ -2,9 +2,9 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Id: VirtualShape.h,v 1.8 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Ralf Ehrlich
 //
@@ -12,14 +12,14 @@
 #ifndef EventDisplay_src_VirtualShape_h
 #define EventDisplay_src_VirtualShape_h
 
-#include <string>
+#include "boost/shared_ptr.hpp"
+#include "dict_classes/ComponentInfo.h"
+#include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoVolume.h>
-#include <TGeoManager.h>
-#include <math.h>
 #include <iostream>
-#include "dict_classes/ComponentInfo.h"
-#include "boost/shared_ptr.hpp"
+#include <math.h>
+#include <string>
 
 namespace mu2e_eventdisplay
 {

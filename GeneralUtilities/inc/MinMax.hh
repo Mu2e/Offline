@@ -5,14 +5,14 @@
 // Find minimum, maximum and smallest in magnitude of a set of numbers
 // presented one at a time.
 //
-// $Id: MinMax.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
+// $Id: MinMax.hh,v 1.5 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke
 
-#include <limits>
 #include <cmath>
+#include <limits>
 
 class MinMax{
 
@@ -45,7 +45,6 @@ private:
   double _min;
   double _max;
   double _small;
-
 
 };
 

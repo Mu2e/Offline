@@ -35,23 +35,23 @@
 //    to be defined.
 //
 //
-// $Id: CrudeStrawHit.hh,v 1.10 2011/05/18 02:27:19 wb Exp $
+// $Id: CrudeStrawHit.hh,v 1.11 2011/05/20 20:18:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes
 #include <iosfwd>
-#include <vector>
 #include <string>
+#include <vector>
 
 // Mu2e includes
-#include "TrackerGeom/inc/StrawIndex.hh"
+#include "Mu2eUtilities/inc/resolveDPIndices.hh"
 #include "ToyDP/inc/DPIndex.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
+#include "TrackerGeom/inc/StrawIndex.hh"
 
 // Forward declarations
 namespace art{

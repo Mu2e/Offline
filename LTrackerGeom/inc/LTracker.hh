@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.11 2011/05/20 19:18:44 wb Exp $
+// $Id: LTracker.hh,v 1.12 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke
 //
@@ -29,7 +29,7 @@ namespace mu2e {
 
   public:
     LTracker(){}
-    ~LTracker(){};
+    ~LTracker(){}
 
     // Compiler generated copy and assignment constructors
     // should be OK.
@@ -68,7 +68,7 @@ namespace mu2e {
       return ( d>-1 &&
                std::vector<Device>::size_type(d) <_devices.size()
                );
-    };
+    }
 
 
     bool isLegal(const SectorId& sid) const{

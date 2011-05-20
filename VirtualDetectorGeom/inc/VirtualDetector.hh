@@ -5,8 +5,8 @@
 // Class to represent the virtual detectors
 //
 #include <map>
-#include <string>
 #include <memory>
+#include <string>
 
 // Includes from Mu2e
 #include "GeometryService/inc/Detector.hh"
@@ -25,23 +25,23 @@ namespace mu2e {
 
   public:
     VirtualDetector();
-    ~VirtualDetector(){;};
+    ~VirtualDetector(){;}
 
-    virtual std::string name() const { return "VirtualDetector";};
+    virtual std::string name() const { return "VirtualDetector";}
 
-    double getHalfLength() const { return _halfLength; };
+    double getHalfLength() const { return _halfLength; }
 
-    unsigned int nDet() const { return _local.size(); };
+    unsigned int nDet() const { return _local.size(); }
 
-    bool exist(int i) const { return _local.find(i) != _local.end(); };
+    bool exist(int i) const { return _local.find(i) != _local.end(); }
 
     // Get position in the parent frame
-    CLHEP::Hep3Vector  const& getLocal(int i) const { return _local.find(i)->second; };
+    CLHEP::Hep3Vector  const& getLocal(int i) const { return _local.find(i)->second; }
 
     // Get position in the global Mu2e frame
-    CLHEP::Hep3Vector  const& getGlobal(int i) const { return _global.find(i)->second; };
+    CLHEP::Hep3Vector  const& getGlobal(int i) const { return _global.find(i)->second; }
 
-    CLHEP::HepRotation *  getRotation(int i) const { return _rotation.find(i)->second; };
+    CLHEP::HepRotation *  getRotation(int i) const { return _rotation.find(i)->second; }
 
     void addVirtualDetector(int, std::string,CLHEP::Hep3Vector,CLHEP::HepRotation*,CLHEP::Hep3Vector);
 

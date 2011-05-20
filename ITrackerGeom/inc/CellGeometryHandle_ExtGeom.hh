@@ -42,7 +42,6 @@ public:
     Float_t  tmpLeft[3];
     Float_t  tmpPosAtZ[3];
 
-
 };
 
 }

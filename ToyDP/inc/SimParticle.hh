@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.12 2011/05/19 07:55:53 wb Exp $
+// $Id: SimParticle.hh,v 1.13 2011/05/20 20:18:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/19 07:55:53 $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author Rob Kutschke
 //
@@ -31,8 +31,8 @@
 #include "ToyDP/inc/ProcessCode.hh"
 
 // Includes from external packages.
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
@@ -41,7 +41,7 @@ namespace mu2e {
     typedef MapVectorKey key_type;
 
     // This c'tor is required for ROOT.
-    SimParticle(){};
+    SimParticle(){}
 
     SimParticle( key_type                       aid,
                  key_type                       aparentId,

@@ -1,9 +1,9 @@
 //
 // Container class for all detector straws. Straws are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
 //
-// $Id: Straw.h,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Id: Straw.h,v 1.8 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,10 +11,10 @@
 #ifndef EventDisplay_src_Straw_h
 #define EventDisplay_src_Straw_h
 
-#include "dict_classes/EventDisplayPolyLine3D.h"
-#include <TPad.h>
-#include <TMath.h>
 #include "VirtualShape.h"
+#include "dict_classes/EventDisplayPolyLine3D.h"
+#include <TMath.h>
+#include <TPad.h>
 #include <iostream>
 #include <vector>
 

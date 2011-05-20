@@ -108,8 +108,8 @@ namespace mu2e {
     double getNegativeExpoRndTime();
     double getMuTimeDecay();
 
-
   };
+
 } // end namespace mu2e,
 
 #endif /* EventGenerator_FoilParticleGenerator_hh */

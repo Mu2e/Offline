@@ -11,8 +11,8 @@
 
 // Mu2e includes
 #include "ITrackerGeom/inc/Cell.hh"
-#include "ITrackerGeom/inc/ITLayerId.hh"
 #include "ITrackerGeom/inc/ITLayerDetail.hh"
+#include "ITrackerGeom/inc/ITLayerId.hh"
 
 namespace mu2e {
 

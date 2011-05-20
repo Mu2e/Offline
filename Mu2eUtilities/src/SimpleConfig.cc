@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.14 2011/05/20 20:01:33 greenc Exp $
- * $Author: greenc $
- * $Date: 2011/05/20 20:01:33 $
+ * $Id: SimpleConfig.cc,v 1.15 2011/05/20 20:18:23 wb Exp $
+ * $Author: wb $
+ * $Date: 2011/05/20 20:18:23 $
  *
  * Original author Rob Kutschke
  *
@@ -19,19 +19,19 @@
 
 
 // C++ includes
-#include <string>
-#include <vector>
 #include <fstream>
 #include <iomanip>
+#include <string>
+#include <vector>
 
 // Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Utilities/Exception.h"
 #include "cetlib/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/TrimInPlace.hh"
 #include "Mu2eUtilities/src/SimpleConfigRecord.hh"
 

@@ -7,9 +7,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle.
 //
-// $Id: StrawHitMCInfo.hh,v 1.5 2011/05/17 22:22:46 wb Exp $
+// $Id: StrawHitMCInfo.hh,v 1.6 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke.
 //
@@ -23,8 +23,8 @@
 #include <limits>
 
 // Mu2e includes.
-#include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/DPIndexVector.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
 
 // Forward declarations.
 namespace art{

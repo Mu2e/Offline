@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.7 2011/05/18 02:27:15 wb Exp $
+// $Id: Track.h,v 1.8 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,10 +11,10 @@
 #ifndef EventDisplay_src_Track_h
 #define EventDisplay_src_Track_h
 
-#include "dict_classes/EventDisplayPolyLine3D.h"
 #include "VirtualShape.h"
-#include <TPad.h>
+#include "dict_classes/EventDisplayPolyLine3D.h"
 #include <TMath.h>
+#include <TPad.h>
 #include <vector>
 
 namespace mu2e_eventdisplay

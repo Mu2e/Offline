@@ -3,9 +3,9 @@
 //
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Id: StatusG4.hh,v 1.6 2011/05/20 20:18:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author Rob Kutschke
 //
@@ -24,12 +24,12 @@
 #include <iosfwd>
 
 // Mu2e includes
-#include "ToyDP/inc/GenId.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "ToyDP/inc/GenId.hh"
 
 // Includes from external packages.
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
@@ -38,7 +38,7 @@ namespace mu2e {
   public:
 
     // This c'tor is required for ROOT.
-    StatusG4(){};
+    StatusG4(){}
 
     StatusG4( int status,
               int nG4Tracks,

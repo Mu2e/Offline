@@ -18,7 +18,7 @@ public:
   ITLayerId():
     _sid(),
     _id(-1)
-    {
+  {
   }
 
   ITLayerId( SuperLayerId *sid,
@@ -29,10 +29,7 @@ public:
   {
   }
 
-  // use compiler-generated copy c'tor and copy assignment
-
-  ~ITLayerId  (){
-  }
+  // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
   const SuperLayerId& getSuperLayerId() const {
     return *_sid;

@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.9 2011/05/18 22:01:46 wb Exp $
+// $Id: Analyzer.C,v 1.10 2011/05/20 20:18:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author KLG
 //
@@ -71,7 +71,7 @@ Analyzer::Analyzer (char const * file,
   _hStepLength(0),
   _ntup(0),
   _canvases(0)
-{};
+{}
 
 // we want to keep the objects after the script exits
 // Analyzer::~Analyzer() {

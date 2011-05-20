@@ -1,10 +1,10 @@
 #ifndef ITrackerGeom_ITrackerWireposition_hh
 #define ITrackerGeom_ITrackerWireposition_hh
 
-#include "TObjArray.h"
 #include "TFile.h"
-#include "TTree.h"
 #include "TGeoMatrix.h"
+#include "TObjArray.h"
+#include "TTree.h"
 
 #include "ITrackerGeom/inc/ITrackerWiredata.hh"
 
@@ -47,7 +47,7 @@ class ITrackerWireposition {
     Double_t DistFromWire(Double_t *global);
     Double_t DistFromWireCenter(Double_t *global);
 
-  TGeoHMatrix *GetGeoMatrix(){return selectedMat;};
+  TGeoHMatrix *GetGeoMatrix(){return selectedMat;}
 
   private:
     ITrackerWiredata*  fWireDataAll[24];

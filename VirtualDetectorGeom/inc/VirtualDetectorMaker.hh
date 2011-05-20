@@ -6,16 +6,16 @@
 // Original author Peter Shanahan
 //
 
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
-class VirtualDetector;
 class SimpleConfig;
+class VirtualDetector;
 
 class VirtualDetectorMaker {
 

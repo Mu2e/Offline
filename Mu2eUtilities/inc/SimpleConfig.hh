@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.13 2011/05/20 20:01:33 greenc Exp $
- * $Author: greenc $
- * $Date: 2011/05/20 20:01:33 $
+ * $Id: SimpleConfig.hh,v 1.14 2011/05/20 20:18:23 wb Exp $
+ * $Author: wb $
+ * $Date: 2011/05/20 20:18:23 $
  *
  * Original author Rob Kutschke
  *
@@ -16,25 +16,24 @@
  * error checking of the global structure of the file and
  * for attempts to access non-existent parameters.
  *
- * Limitatiopns:
+ * Limitations:
  * 1) The following record will be incorrectly indentified as containing
  *    a comment.  It will then fail to parse: the closing " and ; are missing.
  *     string name = "//This is not a comment";
  * 2) Does not escape new lines within a string properly.
  *
- *@author $Author: greenc $
- *@version $Id: SimpleConfig.hh,v 1.13 2011/05/20 20:01:33 greenc Exp $
- *
- * Date $Date%
+ *@author $Author: wb $
+ *@version $Id: SimpleConfig.hh,v 1.14 2011/05/20 20:18:23 wb Exp $
+ * Date $Date: 2011/05/20 20:18:23 $
  *
  */
 
 // C++ includes
+#include <cstdlib>
+#include <map>
 #include <ostream>
 #include <string>
 #include <vector>
-#include <map>
-#include <cstdlib>
 
 // Boost includes
 #include <boost/shared_ptr.hpp>
@@ -43,11 +42,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // Mu2e includes
-
-// Forward declarations outside mu2e namespace.
-namespace art{
-  class FileInPath;
-}
 
 namespace mu2e {
 

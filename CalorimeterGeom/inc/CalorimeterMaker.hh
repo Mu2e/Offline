@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_CalorimeterMaker_hh
 #define CalorimeterGeom_CalorimeterMaker_hh
-// $Id: CalorimeterMaker.hh,v 1.12 2011/05/18 02:27:15 wb Exp $
+// $Id: CalorimeterMaker.hh,v 1.13 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Date: 2011/05/20 20:18:23 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -17,9 +17,9 @@
 
 //
 //Mu2e includes
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 //
 // other includes

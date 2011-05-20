@@ -1,12 +1,12 @@
 #ifndef ITrackerGeom_SuperLayer_hh
 #define ITrackerGeom_SuperLayer_hh
 
-#include <vector>
 #include <deque>
+#include <vector>
 
+#include "ITrackerGeom/inc/ITLayer.hh"
 #include "ITrackerGeom/inc/SuperLayerId.hh"
 #include "ITrackerGeom/inc/SuperLayerInfo.hh"
-#include "ITrackerGeom/inc/ITLayer.hh"
 
 
 namespace mu2e {

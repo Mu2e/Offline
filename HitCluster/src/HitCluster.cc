@@ -1,8 +1,8 @@
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.cc,v 1.5 2011/05/18 16:11:17 wb Exp $
+// $Id: HitCluster.cc,v 1.6 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Date: 2011/05/20 20:18:23 $
 //
 //original author R. Bernstein
 //
@@ -11,7 +11,7 @@ using namespace std;
 namespace mu2e{
   namespace hitcluster{
 
-    HitCluster::~HitCluster(){};
+    HitCluster::~HitCluster(){}
 
     HitCluster::hitNeighbours HitCluster::findHitNeighbours()
     {

@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.6 2011/05/18 15:06:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:06:33 $
+// $Id: ProcessCode.hh,v 1.7 2011/05/20 20:18:24 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author Rob Kutschke
 //
@@ -30,8 +30,8 @@
 // 4) Root stores enum types as 32 bit ints.
 
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace mu2e {
 

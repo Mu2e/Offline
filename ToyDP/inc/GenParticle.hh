@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: GenParticle.hh,v 1.1 2011/05/18 22:44:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 22:44:23 $
+// $Id: GenParticle.hh,v 1.2 2011/05/20 20:18:24 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 20:18:24 $
 //
 // Original author Rob Kutschke
 //
@@ -19,12 +19,12 @@
 //
 
 // Mu2e includes
-#include "ToyDP/inc/GenId.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
+#include "ToyDP/inc/GenId.hh"
 
 // Includes from external packages.
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 

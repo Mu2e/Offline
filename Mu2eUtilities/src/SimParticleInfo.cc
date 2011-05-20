@@ -5,9 +5,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle.
 //
-// $Id: SimParticleInfo.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Id: SimParticleInfo.cc,v 1.4 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // See the notes in the header file for the meaning of the member datum _time.
 //
@@ -17,12 +17,12 @@
 #include "art/Framework/Core/Event.h"
 
 // Mu2e includes
+#include "Mu2eUtilities/inc/SimParticleInfo.hh"
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/DPIndexVector.hh"
 #include "ToyDP/inc/StepPointMC.hh"
-#include "Mu2eUtilities/inc/SimParticleInfo.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 
 // C++ includes.
 #include <cfloat>
@@ -48,7 +48,7 @@ namespace mu2e {
         else if ( _hitInfos.size() == 0 )  {
           throw cet::exception("HITS")
             << "_hitInfos is empty at " << __func__ << "\n";
-        };
+        }
 
         double currentFirstTime = DBL_MAX;
         StepPointMC const* currentStepPoint = 0;

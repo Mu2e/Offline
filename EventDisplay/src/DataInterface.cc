@@ -1,35 +1,35 @@
-#include "DataInterface.h"
-#include "Track.h"
-#include "Straw.h"
-#include "Cylinder.h"
-#include "Cube.h"
-#include "dict_classes/ComponentInfo.h"
 #include "ContentSelector.h"
+#include "Cube.h"
+#include "Cylinder.h"
+#include "DataInterface.h"
+#include "Straw.h"
+#include "Track.h"
+#include "dict_classes/ComponentInfo.h"
 
-#include <TView.h>
 #include <TAxis3D.h>
 #include <TGFrame.h>
 #include <TMath.h>
+#include <TView.h>
 
-#include "art/Framework/Core/Run.h"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TargetGeom/inc/Target.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "HepPID/ParticleName.hh"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/PointTrajectoryCollection.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "HepPID/ParticleName.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "TargetGeom/inc/Target.hh"
 #include "ToyDP/inc/CaloCrystalHitCollection.hh"
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "ToyDP/inc/PointTrajectoryCollection.hh"
+#include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "ToyDP/inc/StrawHitCollection.hh"
+#include "TrackerGeom/inc/Tracker.hh"
+#include "art/Framework/Core/Run.h"
 
 #include <TGeoVolume.h>
 
@@ -559,7 +559,7 @@ void DataInterface::useTrackColors(bool trackcolors, bool whitebackground)
         case  -14:
         case   16:
         case  -16: color=28; break;   //neutrinos
-      };
+      }
       (*track)->setColor(color);
     }
     else (*track)->setColor(whitebackground?1:0);

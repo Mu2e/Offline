@@ -2,11 +2,11 @@
 #define ITrackerGeom_CellGeometryHandle_hh
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "ITrackerGeom/inc/ITLayer.hh"
 #include "ITrackerGeom/inc/Cell.hh"
+#include "ITrackerGeom/inc/ITLayer.hh"
 
-#include "CLHEP/Geometry/Transform3D.h"
 #include "CLHEP/Geometry/Point3D.h"
+#include "CLHEP/Geometry/Transform3D.h"
 
 namespace mu2e {
 

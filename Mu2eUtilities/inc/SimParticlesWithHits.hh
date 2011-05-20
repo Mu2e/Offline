@@ -11,9 +11,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.hh,v 1.6 2011/05/17 22:22:46 wb Exp $
+// $Id: SimParticlesWithHits.hh,v 1.7 2011/05/20 20:18:23 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke.
 //
@@ -25,8 +25,8 @@
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimParticleInfo.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
+#include "ToyDP/inc/StepPointMCCollection.hh"
 #include "ToyDP/inc/StrawHitCollection.hh"
 #include "ToyDP/inc/StrawHitMCTruthCollection.hh"
 

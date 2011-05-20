@@ -1,8 +1,8 @@
 #ifndef ITrackerGeom_CellDetail_hh
 #define ITrackerGeom_CellDetail_hh
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 

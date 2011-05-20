@@ -6,16 +6,16 @@
  * A class to hold one record within the primitive
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.hh,v 1.7 2011/05/18 04:36:19 kutschke Exp $
- * $Author: kutschke $
- * $Date: 2011/05/18 04:36:19 $
+ * $Id: SimpleConfigRecord.hh,v 1.8 2011/05/20 20:18:23 wb Exp $
+ * $Author: wb $
+ * $Date: 2011/05/20 20:18:23 $
  *
  * Original author Rob Kutschke
  *
  */
 
-#include <string>
 #include <iosfwd>
+#include <string>
 #include <vector>
 
 namespace mu2e {

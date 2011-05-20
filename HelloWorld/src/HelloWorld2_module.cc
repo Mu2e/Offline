@@ -1,9 +1,9 @@
 //
 //  A second hello world plugin, with a little more detail.
 //
-//  $Id: HelloWorld2_module.cc,v 1.2 2011/05/17 22:22:46 wb Exp $
+//  $Id: HelloWorld2_module.cc,v 1.3 2011/05/20 20:18:23 wb Exp $
 //  $Author: wb $
-//  $Date: 2011/05/17 22:22:46 $
+//  $Date: 2011/05/20 20:18:23 $
 //
 //  Original author Rob Kutschke
 //
@@ -14,9 +14,9 @@
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Persistency/Common/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
 
 using namespace std;
 
