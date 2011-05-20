@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.23 2011/05/19 04:51:48 kutschke Exp $
+# $Id: setup.sh,v 1.24 2011/05/20 15:09:45 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/19 04:51:48 $
+# $Date: 2011/05/20 15:09:45 $
 #
 # Original author Rob Kutschke
 #
@@ -38,7 +38,8 @@ export FW_RELEASE_BASE=$MU2E_BASE_RELEASE
 export FW_SEARCH_PATH=$FW_RELEASE_BASE/:$FW_DATA_PATH/
 
 # Setup the framework and its dependent products
-setup art v0_06_03 -qa2:debug
+#setup art v0_06_03 -qa2:debug
+setup art v0_07_01 -qa2:debug
 
 # Geant4 and its cross-section files.
 setup geant4 v4_9_4_p01 -qgcc45
