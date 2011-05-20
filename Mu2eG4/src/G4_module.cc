@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.8 2011/05/20 20:01:33 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 20:01:33 $
+// $Id: G4_module.cc,v 1.9 2011/05/20 21:27:34 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/20 21:27:34 $
 //
 // Original author Rob Kutschke
 //
@@ -51,8 +51,6 @@
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/addStepPointMCs.hh"
-#include "Mu2eG4/inc/copyStepPointG4toMC.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "Mu2eG4/inc/DetectorConstruction.hh"
@@ -275,7 +273,7 @@ namespace mu2e {
       ConfigFileLookupPolicy visPath;
 
       G4String command("/control/execute ");
-      command += (_visMacro);
+      command += visPath(_visMacro);
 
       _UI->ApplyCommand( command );
 
