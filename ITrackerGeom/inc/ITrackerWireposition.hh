@@ -17,8 +17,8 @@ class ITrackerWireposition {
     ITrackerWireposition(Bool_t newFile = kFALSE, const char *WireDataFile = "DCHWireData.root");
     virtual ~ITrackerWireposition()
     {
-      if (fwiredata) {delete fwiredata;}
-       wirefile->Close();
+      delete fwiredata;
+      wirefile->Close();
     }
 
     void FillData();

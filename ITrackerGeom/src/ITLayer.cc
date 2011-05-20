@@ -74,7 +74,7 @@ namespace mu2e {
 //                        << "Error during deleting layer data \n";
 //                }
 
-          //if (_detail) delete _detail;
+          //delete _detail;
           //std::cout<<_id<<std::endl;
 
   }

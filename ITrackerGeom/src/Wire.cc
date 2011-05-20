@@ -42,14 +42,14 @@ Wire::Wire( WireId id,
 
 Wire::~Wire (){
 //        try {
-//                if (*_detail) {delete *_detail; *_detail=NULL;}
+//                delete *_detail; *_detail=NULL;
 //                delete _pos;
 //        } catch (cet::exception e) {
 //            throw cet::exception("GEOM")
 //                << "Error during deleting wire data \n";
 //        }
 
-  if (_pos) delete _pos;
+  delete _pos;
 }
 
 } // namespace mu2e

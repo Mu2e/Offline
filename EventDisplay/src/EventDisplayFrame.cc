@@ -362,7 +362,7 @@ namespace mu2e_eventdisplay
 EventDisplayFrame::~EventDisplayFrame()
 {
   // TODO
-  // if(timer) delete timer;
+  // delete timer;
   // Cleanup();
 }
 
@@ -492,8 +492,8 @@ void EventDisplayFrame::updateHitLegend(bool draw)
 {
   for(int i=0; i<21; i++)
   {
-    if(_legendBox[i]!=NULL) delete _legendBox[i];
-    if(_legendText[i]!=NULL) delete _legendText[i];
+    delete _legendBox[i];
+    delete _legendText[i];
     _legendBox[i]=NULL;
     _legendText[i]=NULL;
   }
@@ -528,8 +528,8 @@ void EventDisplayFrame::updateTrackLegend(bool draw)
 {
   for(int i=0; i<6; i++)
   {
-    if(_legendParticleLine[i]!=NULL) delete _legendParticleLine[i];
-    if(_legendParticleText[i]!=NULL) delete _legendParticleText[i];
+    delete _legendParticleLine[i];
+    delete _legendParticleText[i];
     _legendParticleLine[i]=NULL;
     _legendParticleText[i]=NULL;
   }
@@ -807,7 +807,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
 void EventDisplayFrame::prepareAnimation()
 {
   _timer->Stop();           //needed if an animation is already running
-  if(_clock) {delete _clock; _clock=NULL;}
+  delete _clock; _clock=NULL;
   _mainPad->cd();
   _dataInterface->startComponents();
   _mainPad->Modified();
@@ -886,7 +886,7 @@ void EventDisplayFrame::drawSituation()
 void EventDisplayFrame::drawEverything()
 {
   _mainPad->cd();
-  if(_clock) {delete _clock; _clock=NULL;}
+  delete _clock; _clock=NULL;
   if(TAxis3D::GetPadAxis(_mainPad)==NULL) _mainPad->GetView()->ShowAxis();
   TAxis3D::GetPadAxis(_mainPad)->SetLabelSize(0.025);
   _mainPad->Modified();

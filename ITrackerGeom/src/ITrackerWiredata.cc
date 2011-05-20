@@ -12,7 +12,7 @@ ITrackerWiredata::~ITrackerWiredata(){
         PosMatrix->Delete();
 
         NcelLayer = 0;
-        if (epsilon) delete [] epsilon;
-        if (alfa) delete [] alfa;
-        if (radius_z0) delete [] radius_z0;
+        delete [] epsilon;
+        delete [] alfa;
+        delete [] radius_z0;
 }

@@ -1026,7 +1026,7 @@ void DataInterface::removeAllComponents()
   _tracks.clear();
   _supportstructures.clear();
   _otherstructures.clear();
-  if(_geometrymanager) delete _geometrymanager;
+  delete _geometrymanager;
   _geometrymanager=NULL;
 }
 

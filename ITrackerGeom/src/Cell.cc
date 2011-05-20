@@ -28,8 +28,8 @@ Cell::Cell( CellId id,
 
 Cell::~Cell (){
 //         try {
-//                  if (_detail) delete _detail;
-//                  if (_senseWire) delete _senseWire;
+//                  delete _detail;
+//                  delete _senseWire;
 //         } catch (cet::exception e) {
 //             throw cet::exception("GEOM")
 //                  << "Error during deleting cell data \n";

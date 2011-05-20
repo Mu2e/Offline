@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e detector with the Mu2e G4 world.
 //
-// $Id: DetectorConstruction.cc,v 1.4 2011/05/18 02:27:17 wb Exp $
+// $Id: DetectorConstruction.cc,v 1.5 2011/05/20 21:31:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Date: 2011/05/20 21:31:24 $
 //
 // Original author Rob Kutschke
 //
@@ -52,11 +52,11 @@ namespace mu2e {
     //
     // The exceptions are:
 
-    if ( _magField    != 0 ) delete _magField;
-    if ( _stepLimit   != 0 ) delete _stepLimit;
-    if ( _usualRHS    != 0 ) delete _usualRHS;
-    if ( _exactHelix  != 0 ) delete _exactHelix;
-    if ( _chordFinder != 0 ) delete _chordFinder;
+    delete _magField;
+    delete _stepLimit;
+    delete _usualRHS;
+    delete _exactHelix;
+    delete _chordFinder;
 
   }
 
