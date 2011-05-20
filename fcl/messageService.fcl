@@ -1,9 +1,9 @@
 #
 # Standard configurations for the message service.
 #
-# $Id: messageService.fcl,v 1.1 2011/05/20 18:46:08 mf Exp $
-# $Author: mf $
-# $Date: 2011/05/20 18:46:08 $
+# $Id: messageService.fcl,v 1.2 2011/05/20 20:10:56 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/20 20:10:56 $
 #
 # Usage - in a fcl configuration file:
 #
@@ -68,7 +68,7 @@ mf_interactive :
                                    # (INFO severity is LogInfo or
                                    # LogVerbatim).
   }
-  statistics :  { @local::mf_coutInfoStats }
+  statistics :  @local::mf_coutInfoStats
 }
 
 # debugging -- intended for debugging one or more modules; every message
