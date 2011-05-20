@@ -5,9 +5,9 @@
 // Class to represent one target foil.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: TargetFoil.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Id: TargetFoil.hh,v 1.6 2011/05/20 15:13:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 15:13:24 $
 //
 // Original author Rob Kutschke
 //
@@ -40,7 +40,8 @@ namespace mu2e {
       _t(t),
       _material(m){
     }
-    ~TargetFoil(){};
+
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     int id() const { return _id; }
 
@@ -71,7 +72,7 @@ namespace mu2e {
 
     std::string _material;
 
-};
+  };
 
 }
 #endif /* TargetGeom_TargetFoil_hh */

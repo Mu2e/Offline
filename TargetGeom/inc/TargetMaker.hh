@@ -4,18 +4,16 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.hh,v 1.3 2011/05/18 02:27:19 wb Exp $
+// $Id: TargetMaker.hh,v 1.4 2011/05/20 15:13:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 15:13:24 $
 //
 // Original author Peter Shanahan
 //
 
-#include <vector>
-#include <string>
 #include <memory>
-
-#include "CLHEP/Vector/ThreeVector.h"
+#include <string>
+#include <vector>
 
 namespace mu2e {
 
@@ -28,9 +26,9 @@ public:
 
   TargetMaker( SimpleConfig const& config );
 
-  ~TargetMaker ();
+  // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-  // This is depracted and will go away soon.
+  // This is deprecated and will go away soon.
   // Still needed for root graphics version.
   const Target& getTarget() const { return *_targ;}
 

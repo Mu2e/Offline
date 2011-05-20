@@ -5,9 +5,9 @@
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: Target.hh,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Id: Target.hh,v 1.5 2011/05/20 15:13:24 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 15:13:24 $
 //
 // Original author Rob Kutschke
 //
@@ -19,8 +19,8 @@
 #include <vector>
 
 // Includes from Mu2e
-#include "TargetGeom/inc/TargetFoil.hh"
 #include "GeometryService/inc/Detector.hh"
+#include "TargetGeom/inc/TargetFoil.hh"
 
 namespace mu2e {
 
@@ -33,7 +33,8 @@ namespace mu2e {
 
   public:
     Target();
-    ~Target(){;};
+
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     virtual std::string name() const { return "Target";}
 
@@ -41,11 +42,11 @@ namespace mu2e {
 
     TargetFoil const& foil( unsigned int n ) const { return _foils.at(n); }
 
-    double cylinderRadius() const {return _radius;};
-    double cylinderLength() const {return _zLen;};
-    double cylinderCenter() const {return _z0;};
+    double cylinderRadius() const {return _radius;}
+    double cylinderLength() const {return _zLen;}
+    double cylinderCenter() const {return _z0;}
 
-    std::string const fillMaterial() const {return _fillMaterial;};
+    std::string const fillMaterial() const {return _fillMaterial;}
 
   protected:
 
@@ -60,8 +61,6 @@ namespace mu2e {
 
     std::string _fillMaterial;
 
-
-};
-
+  };
 }
 #endif /* TargetGeom_Target_hh */

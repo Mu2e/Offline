@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.8 2011/05/18 16:22:35 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 16:22:35 $
+// $Id: TargetMaker.cc,v 1.9 2011/05/20 15:13:24 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 15:13:24 $
 //
 // Original author Peter Shanahan
 //
@@ -57,43 +57,43 @@ namespace mu2e {
     // halfThicknesses can be repeated from last element specified
     c.getVectorDouble("target.halfThicknesses",_halfThicknesses);
     unsigned int size=_halfThicknesses.size();
-    for (unsigned int ii=size; ii<_rOut.size(); ii++)
+    for (unsigned int ii=size; ii<_rOut.size(); ++ii)
       _halfThicknesses.push_back(_halfThicknesses[size-1]);
 
     // x variations can be repeated from last element specified
     c.getVectorDouble("target.xVars",_xVars);
     size=_xVars.size();
-    for (unsigned int ii=size; ii<_rOut.size(); ii++)
+    for (unsigned int ii=size; ii<_rOut.size(); ++ii)
       _xVars.push_back(_xVars[size-1]);
 
     // y variations can be repeated from last element specified
     c.getVectorDouble("target.yVars",_yVars);
     size=_yVars.size();
-    for (unsigned int ii=size; ii<_rOut.size(); ii++)
+    for (unsigned int ii=size; ii<_rOut.size(); ++ii)
       _yVars.push_back(_yVars[size-1]);
 
     // z variations can be repeated from last element specified
     c.getVectorDouble("target.zVars",_zVars);
     size=_zVars.size();
-    for (unsigned int ii=size; ii<_rOut.size(); ii++)
+    for (unsigned int ii=size; ii<_rOut.size(); ++ii)
       _zVars.push_back(_zVars[size-1]);
 
     // x cosines can be repeated from last element specified
     c.getVectorDouble("target.xCos",_xCos);
     size=_xCos.size();
-    for (unsigned int ii=size; ii<_rOut.size(); ii++)
+    for (unsigned int ii=size; ii<_rOut.size(); ++ii)
       _xCos.push_back(_xCos[size-1]);
 
     // y cosines can be repeated from last element specified
     c.getVectorDouble("target.yCos",_yCos);
     size=_yCos.size();
-    for (unsigned int ii=size; ii<_rOut.size(); ii++)
+    for (unsigned int ii=size; ii<_rOut.size(); ++ii)
       _yCos.push_back(_yCos[size-1]);
 
     // materials can be repeated from last element specified
     c.getVectorString("target.materials",_materials);
     size=_materials.size();
-    for (unsigned int ii=size; ii<_rOut.size(); ii++)
+    for (unsigned int ii=size; ii<_rOut.size(); ++ii)
       _materials.push_back(_materials[size-1]);
 
     // material of the target enclosing volume
@@ -106,9 +106,6 @@ namespace mu2e {
     BuildIt( );
   }
 
-
-
-  TargetMaker::~TargetMaker (){}
 
   void TargetMaker::BuildIt(){
 
