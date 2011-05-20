@@ -1,32 +1,20 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.6 2011/05/18 20:09:10 wb Exp $
+// $Id: HoughTest_module.cc,v 1.7 2011/05/20 22:39:28 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/20 22:39:28 $
 //
 // Original author R. Bernstein
 //
 
-// C++ includes.
-#include <cmath>
-#include <iostream>
-#include <string>
-
-// Framework includes.
+#include "GeneralUtilities/inc/RootNameTitleHelper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Root includes.
+#include "HitCluster/inc/HitCluster.hh"
+#include "HoughTransform/inc/HoughTransform.hh"
+#include "LTrackerGeom/inc/LTracker.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -39,22 +27,29 @@
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
 #include "TSpectrum3.h"
-
-
-// Mu2e includes.
-#include "GeneralUtilities/inc/RootNameTitleHelper.hh"
-#include "GeneralUtilities/inc/pow.hh"
-#include "HitCluster/inc/HitCluster.hh"
-#include "HoughTransform/inc/HoughTransform.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ToyDP/inc/HoughCircleCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "cetlib/pow.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include <cmath>
+#include <iostream>
+#include <string>
 
-using namespace std;
 using CLHEP::Hep3Vector;
-using namespace mu2e;
+using cet::square;
+
 using namespace mu2e::houghtransform;
+using namespace mu2e;
+using namespace std;
+
 namespace mu2e {
 
   //--------------------------------------------------------------------

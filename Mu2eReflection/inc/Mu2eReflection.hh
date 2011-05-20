@@ -9,8 +9,6 @@
 //
 // Original author R. Bernstein
 
-//
-// G4 includes
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
 #include "G4Step.hh"
@@ -19,13 +17,11 @@
 #include "G4VDiscreteProcess.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
-
-//
-// Mu2e includes
-#include "GeneralUtilities/inc/pow.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "cetlib/pow.h"
 
 namespace mu2e{
+
   class Mu2eReflection : public G4VDiscreteProcess{
   public:
     Mu2eReflection(
@@ -84,11 +80,12 @@ namespace mu2e{
 
     double Distance(const G4ThreeVector a, const G4ThreeVector b)
     {
-      return safeSqrt( square(a.x() - b.x()) + square(a.y() - b.y()) + square(a.z() - b.z()) );
+      return safeSqrt( cet::square(a.x() - b.x()) + cet::square(a.y() - b.y()) + cet::square(a.z() - b.z()) );
     }
 
   };
 
 
 } //end namespace mu2e
+
 #endif /* Mu2eReflection_Mu2eReflection_hh */

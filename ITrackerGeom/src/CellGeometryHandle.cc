@@ -1,14 +1,10 @@
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
 
-#include "GeneralUtilities/inc/pow.hh"
+#include "cetlib/pow.h"
+
+using cet::square;
 
 namespace mu2e {
-
-CellGeometryHandle::CellGeometryHandle() {
-}
-
-CellGeometryHandle::~CellGeometryHandle() {
-}
 
 void CellGeometryHandle::Global2Local(double *global, double *local)
 {

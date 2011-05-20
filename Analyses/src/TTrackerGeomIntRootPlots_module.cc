@@ -1,44 +1,14 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.9 2011/05/20 19:18:44 wb Exp $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.10 2011/05/20 22:39:28 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Date: 2011/05/20 22:39:28 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
 
-
-// C++ includes.
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <sstream>
-#include <string>
-
-// Framework includes.
-#include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/Run.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Persistency/Common/Handle.h"
-#include "fhiclcpp/ParameterSet.h"
-
-#include "GeneralUtilities/inc/pow.hh"
-
 #include "GeometryService/inc/GeomHandle.hh"
-
-#include "TrackerGeom/inc/Sector.hh"
-#include "TrackerGeom/inc/Device.hh"
-
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "TTrackerGeom/inc/Support.hh"
-
-// Mu2e includes.
-//#include "ToyDP/inc/StepPointMCCollection.hh"
-
-// Root includes.
 #include "TApplication.h"
 #include "TArc.h"
 #include "TArrow.h"
@@ -53,6 +23,25 @@
 #include "TString.h"
 #include "TStyle.h"
 #include "TText.h"
+#include "TTrackerGeom/inc/Support.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Device.hh"
+#include "TrackerGeom/inc/Sector.hh"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Core/Run.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Persistency/Common/Handle.h"
+#include "cetlib/pow.h"
+#include "fhiclcpp/ParameterSet.h"
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <string>
+
+using cet::square;
 
 namespace mu2e {
 

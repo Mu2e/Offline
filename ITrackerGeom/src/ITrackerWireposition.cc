@@ -5,25 +5,23 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "GeneralUtilities/inc/pow.hh"
 #include "ITrackerGeom/inc/ITrackerWireposition.hh"
 #include "TError.h"
 #include "TGeoMatrix.h"
 #include "TMath.h"
 #include "TSystem.h"
+#include "cetlib/pow.h"
 #include <iostream>
 #include <sys/stat.h>
 
 using namespace std;
 
+using cet::square;
 
 namespace mu2e {
 //_____________________________________________________________________________
 ITrackerWireposition::ITrackerWireposition(Bool_t newFile, const char *WireDataFile )
 {
-
-
-
 
   //
   // ITrackerWireposition default constructor

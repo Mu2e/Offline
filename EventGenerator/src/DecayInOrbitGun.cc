@@ -1,23 +1,16 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.27 2011/05/18 22:01:46 wb Exp $
+// $Id: DecayInOrbitGun.cc,v 1.28 2011/05/20 22:39:28 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Date: 2011/05/20 22:39:28 $
 //
 // Original author Rob Kutschke
 //
 
-// C++ includes.
-#include <iostream>
-
-// Framework includes
-#include "art/Framework/Core/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Mu2e includes
+#include "cetlib/pow.h"
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Units/PhysicalConstants.h"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
@@ -26,16 +19,12 @@
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
-
-// General Utilities
-#include "GeneralUtilities/inc/pow.hh"
-
-//ROOT includes
 #include "TH1D.h"
-
-// CLHEP includes.
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Units/PhysicalConstants.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include <iostream>
 
 using namespace std;
 
@@ -193,7 +182,7 @@ namespace mu2e {
   // Input energy in MeV
   double DecayInOrbitGun::energySpectrum( double e )
   {
-    return pow<5>(conversionEnergyAluminum - e) ;
+    return cet::pow<5>(conversionEnergyAluminum - e) ;
   }
 
 

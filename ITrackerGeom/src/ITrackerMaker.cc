@@ -1,14 +1,7 @@
-#include <iostream>
-#include <iomanip>
-#include <cmath>
+#include "ITrackerGeom/inc/ITrackerMaker.hh"
 
-// Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Mu2e includes
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
-#include "GeneralUtilities/inc/pow.hh"
 #include "ITrackerGeom/inc/Cell.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle_ExtGeom.hh"
@@ -16,16 +9,22 @@
 #include "ITrackerGeom/inc/CellGeometryHandle_v3.hh"
 #include "ITrackerGeom/inc/CellId.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
-#include "ITrackerGeom/inc/ITrackerMaker.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/for_all.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
+#include "cetlib/pow.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include <cmath>
+#include <iomanip>
+#include <iostream>
 
 #ifndef __CINT__
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepRotationY;
 using CLHEP::HepRotationZ;
+
+using cet::square;
 
 using namespace std;
 

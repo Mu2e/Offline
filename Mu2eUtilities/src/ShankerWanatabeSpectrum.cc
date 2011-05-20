@@ -3,29 +3,28 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.8 2011/05/20 20:01:33 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 20:01:33 $
-//
+// $Id: ShankerWanatabeSpectrum.cc,v 1.9 2011/05/20 22:39:28 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 22:39:28 $
 //
 
-// C++ includes
+#include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
+
+#include "CLHEP/Units/PhysicalConstants.h"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "cetlib/pow.h"
 #include <cmath>
 #include <fstream>
 #include <iostream>
 
-// Mu2e includes
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "GeneralUtilities/inc/pow.hh"
-#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
-
-// CLHEP includes
-#include "CLHEP/Units/PhysicalConstants.h"
-
 using namespace std;
+
+using cet::cube;
+using cet::pow;
+using cet::square;
 
 namespace mu2e {
 

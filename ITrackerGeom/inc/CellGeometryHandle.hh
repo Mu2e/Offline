@@ -15,11 +15,11 @@ class CellGeometryHandle {
         friend class ITrackerMaker;
 
 protected:
-        CellGeometryHandle();
+        CellGeometryHandle() {}
 
 public:
 
-        virtual ~CellGeometryHandle();
+        virtual ~CellGeometryHandle() {}
 
         virtual void  SelectCell(int SupLayer, int CelLayer, int Cell) {}
         virtual void  SelectCellDet(unsigned long det) {

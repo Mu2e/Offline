@@ -5,28 +5,8 @@
  *      Author: tassiell
  */
 
-// C++ includes
-#include <iostream>
-#include <sstream>
-
-#include <boost/regex.hpp>
-
-// Framework includes
-#include "cetlib/exception.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Mu2e includes
-#include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-//#include "GeneralUtilities/inc/pow.hh"
-//#include "Mu2eG4/inc/ITGasLayerSD_ExtWireData.hh"
-//#include "Mu2eG4/inc/ITGasLayerSD_v2.hh"
-//#include "Mu2eG4/inc/ITGasLayerSD_v3.hh"
 
-// G4 includes
 #include "G4Hype.hh"
 #include "G4PVPlacement.hh"
 #include "G4SDManager.hh"
@@ -34,9 +14,24 @@
 #include "G4ThreeVector.hh"
 #include "G4Tubs.hh"
 #include "G4VisAttributes.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eG4/inc/ITGasLayerSD.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "cetlib/exception.h"
+#include "cetlib/pow.h"
 #include "globals.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include <boost/regex.hpp>
+#include <iostream>
+#include <sstream>
+//#include "Mu2eG4/inc/ITGasLayerSD_ExtWireData.hh"
+//#include "Mu2eG4/inc/ITGasLayerSD_v2.hh"
+//#include "Mu2eG4/inc/ITGasLayerSD_v3.hh"
 
 using namespace std;
+
+using cet::pow;
 
 namespace mu2e {
 

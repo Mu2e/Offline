@@ -1,10 +1,10 @@
 //
 //
-//  $Id: ITGasLayerSD.cc,v 1.9 2011/05/20 22:22:22 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/05/20 22:22:22 $
+//  $Id: ITGasLayerSD.cc,v 1.10 2011/05/20 22:39:28 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/20 22:39:28 $
 //
-// 
+//
 
 #include <cstdio>
 

@@ -1,14 +1,14 @@
 #
-# $Id: setup.sh,v 1.25 2011/05/20 22:19:29 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/20 22:19:29 $
+# $Id: setup.sh,v 1.26 2011/05/20 22:39:28 wb Exp $
+# $Author: wb $
+# $Date: 2011/05/20 22:39:28 $
 #
 # Original author Rob Kutschke
 #
 # Setup the environment to build a full release of the Mu2e software.
 # This presumes that you have already established the Mu2e environment
 # for the machine on which you are running.
-# 
+#
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     echo "You should be sourcing this file, not executing it."
@@ -49,7 +49,7 @@ setup g4photon v2_1
 setup g4radiative v3_3
 setup g4abla v3_0
 
-# Other libraries we need. 
+# Other libraries we need.
 setup heppdt v3_04_01 -qgcc45
 
 # The build system.

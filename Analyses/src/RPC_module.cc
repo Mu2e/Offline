@@ -1,40 +1,22 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.8 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: RPC_module.cc,v 1.9 2011/05/20 22:39:28 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 22:39:28 $
 //
 // Original author R. Bernstein
 //
 
-// C++ includes.
-#include <cmath>
-#include <ctime>
-#include <iostream>
-#include <set>
-#include <string>
-#include <utility>
-
-// Framework includes.
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandPoisson.h"
+#include "CLHEP/Random/RandomEngine.h"
+#include "CLHEP/Random/Randomize.h"
+#include "GeneralUtilities/inc/RootNameTitleHelper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
-#include "cetlib/exception.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// CLHEP includes
-#include "CLHEP/Random/RandomEngine.h"
-
-// Root includes.
+#include "Mu2eUtilities/inc/PDGCode.hh"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -47,27 +29,36 @@
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
 #include "TSpectrum3.h"
-
-// Mu2e includes.
-#include "GeneralUtilities/inc/RootNameTitleHelper.hh"
-#include "GeneralUtilities/inc/pow.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
 #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
 #include "ToyDP/inc/SimParticleCollection.hh"
 #include "ToyDP/inc/StepPointMCCollection.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
-
-//CLHEP includes
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGeneral.h"
-#include "CLHEP/Random/RandPoisson.h"
-#include "CLHEP/Random/Randomize.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Handle.h"
+#include "cetlib/exception.h"
+#include "cetlib/pow.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include <cmath>
+#include <ctime>
+#include <iostream>
+#include <set>
+#include <string>
+#include <utility>
 
 
 using namespace std;
 using CLHEP::Hep3Vector;
 using CLHEP::RandPoisson;
+using cet::square;
 using namespace mu2e;
+
 namespace mu2e {
 
   //--------------------------------------------------------------------

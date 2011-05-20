@@ -1,18 +1,21 @@
 //
 // Kinematics of 2 body decay.
 //
-// $Id: TwoBodyKinematics.cc,v 1.3 2011/05/18 20:09:10 wb Exp $
+// $Id: TwoBodyKinematics.cc,v 1.4 2011/05/20 22:39:28 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/20 22:39:28 $
 //
 // Original author Rob Kutschke
 
+#include "GeneralUtilities/inc/TwoBodyKinematics.hh"
+
+#include "cetlib/pow.h"
 #include <cmath>
 #include <sstream>
 #include <stdexcept>
 
-#include "GeneralUtilities/inc/TwoBodyKinematics.hh"
-#include "GeneralUtilities/inc/pow.hh"
+using cet::square;
+using std::sqrt;
 
 TwoBodyKinematics::TwoBodyKinematics( double m0, double m1, double m2):
   m0_(m0),

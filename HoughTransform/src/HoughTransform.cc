@@ -2,15 +2,21 @@
 // code for finding HoughTransform for circles in the L-tracker
 //
 //
-// $Id: HoughTransform.cc,v 1.10 2011/05/18 20:09:10 wb Exp $
+// $Id: HoughTransform.cc,v 1.11 2011/05/20 22:39:28 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/20 22:39:28 $
 //
 // Original author R.Bernstein
 //
+
 #include "HoughTransform/inc/HoughTransform.hh"
-#include "GeneralUtilities/inc/pow.hh"
+
+#include "cetlib/pow.h"
+
+using cet::square;
+
 using namespace std;
+
 namespace mu2e{
   namespace houghtransform{
 

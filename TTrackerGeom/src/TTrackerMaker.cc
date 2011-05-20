@@ -2,26 +2,16 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.30 2011/05/20 19:18:44 wb Exp $
+// $Id: TTrackerMaker.cc,v 1.31 2011/05/20 22:39:28 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Date: 2011/05/20 22:39:28 $
 //
 // Original author Rob Kutschke
 //
 
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-
-
-// Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Mu2e includes
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
-#include "GeneralUtilities/inc/pow.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/for_all.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
@@ -29,6 +19,13 @@
 #include "TTrackerGeom/inc/TTrackerMaker.hh"
 #include "TrackerGeom/inc/Sector.hh"
 #include "TrackerGeom/inc/Straw.hh"
+#include "cetlib/pow.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+
+using cet::square;
 
 using namespace std;
 

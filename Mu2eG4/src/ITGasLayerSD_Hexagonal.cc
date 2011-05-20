@@ -1,14 +1,12 @@
-// C++ includes.
-#include <string>
-
-// Mu2e includes
-#include "GeneralUtilities/inc/pow.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
 
-// ROOT includes
 #include "TMath.h"
+#include "cetlib/pow.h"
+#include <string>
 
 using namespace std;
+
+using cet::square;
 
 namespace mu2e {
 
