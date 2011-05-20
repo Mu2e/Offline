@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.7 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: NuclearCaptureGun.cc,v 1.8 2011/05/20 20:01:33 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 20:01:33 $
 //
 // Original author Gianni Onorato
 //
@@ -28,7 +28,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/NuclearCaptureGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/FileInPath.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
@@ -412,8 +412,8 @@ namespace mu2e {
     //The neutron spectum is taken from MARS simulation
 
     vector<double> neutronSpectrum;
-    mu2e::FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
-    string NeutronFileFIP = spectrumFileName.fullPath();
+    mu2e::ConfigFileLookupPolicy spectrumFileName;
+    string NeutronFileFIP = spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
     fstream infile(NeutronFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
       double en, val;

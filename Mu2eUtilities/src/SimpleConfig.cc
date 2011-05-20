@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.13 2011/05/18 04:37:17 kutschke Exp $
- * $Author: kutschke $
- * $Date: 2011/05/18 04:37:17 $
+ * $Id: SimpleConfig.cc,v 1.14 2011/05/20 20:01:33 greenc Exp $
+ * $Author: greenc $
+ * $Date: 2011/05/20 20:01:33 $
  *
  * Original author Rob Kutschke
  *
@@ -31,9 +31,9 @@
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/TrimInPlace.hh"
 #include "Mu2eUtilities/src/SimpleConfigRecord.hh"
-#include "Mu2eUtilities/inc/FileInPath.hh"
 
 using namespace std;
 
@@ -54,22 +54,10 @@ namespace mu2e {
     _allowReplacement(allowReplacement),
     _messageOnReplacement(messageOnReplacement){
 
-    // FileInPath throws if the file cannot be found in the path.
-    FileInPath fip(filename);
-    _inputfile = fip.fullPath();
+    ConfigFileLookupPolicy configFile;
+    _inputfile = configFile(filename);
     ReadFile();
   }
-
-#if 0
-  SimpleConfig::SimpleConfig( const art::FileInPath& fileInPath,
-                              bool allowReplacement,
-                              bool messageOnReplacement):
-    _inputfile(fileInPath.fullPath()),
-    _allowReplacement(allowReplacement),
-    _messageOnReplacement(messageOnReplacement){
-    ReadFile();
-  }
-#endif
 
   /**
    * Return a vector<string> containing the names of all variables found in
@@ -498,7 +486,7 @@ namespace mu2e {
     if ( !in ) {
 
       // No conf file for this test.
-      throw art::Exception(art::errors::Unknown)
+      throw art::Exception(art::errors::FileOpenError)
         << "SimpleConfig: Cannot open input file: "
         << _inputfile
         << endl;

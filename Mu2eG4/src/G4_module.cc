@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.7 2011/05/18 16:21:55 greenc Exp $
+// $Id: G4_module.cc,v 1.8 2011/05/20 20:01:33 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/18 16:21:55 $
+// $Date: 2011/05/20 20:01:33 $
 //
 // Original author Rob Kutschke
 //
@@ -74,7 +74,7 @@
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/DiagnosticsG4.hh"
-#include "Mu2eUtilities/inc/FileInPath.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 
 // Data products that will be produced by this module.
 #include "ToyDP/inc/StepPointMCCollection.hh"
@@ -272,10 +272,10 @@ namespace mu2e {
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
 
-      FileInPath visPath(_visMacro);
+      ConfigFileLookupPolicy visPath;
 
       G4String command("/control/execute ");
-      command += visPath.fullPath();
+      command += (_visMacro);
 
       _UI->ApplyCommand( command );
 

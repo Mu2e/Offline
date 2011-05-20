@@ -5,9 +5,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.hh,v 1.12 2011/05/17 22:22:46 wb Exp $
- * $Author: wb $
- * $Date: 2011/05/17 22:22:46 $
+ * $Id: SimpleConfig.hh,v 1.13 2011/05/20 20:01:33 greenc Exp $
+ * $Author: greenc $
+ * $Date: 2011/05/20 20:01:33 $
  *
  * Original author Rob Kutschke
  *
@@ -22,8 +22,8 @@
  *     string name = "//This is not a comment";
  * 2) Does not escape new lines within a string properly.
  *
- *@author $Author: wb $
- *@version $Id: SimpleConfig.hh,v 1.12 2011/05/17 22:22:46 wb Exp $
+ *@author $Author: greenc $
+ *@version $Id: SimpleConfig.hh,v 1.13 2011/05/20 20:01:33 greenc Exp $
  *
  * Date $Date%
  *
@@ -63,10 +63,6 @@ namespace mu2e {
      *
      */
     SimpleConfig( const std::string& filename = "runtime.conf",
-                  bool allowReplacement=true,
-                  bool messageOnReplacement=true);
-
-    SimpleConfig( const art::FileInPath& fileInPath,
                   bool allowReplacement=true,
                   bool messageOnReplacement=true);
 

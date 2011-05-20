@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.7 2011/05/19 07:55:53 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/19 07:55:53 $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.8 2011/05/20 20:01:33 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 20:01:33 $
 //
 //
 
@@ -18,7 +18,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeneralUtilities/inc/pow.hh"
-#include "Mu2eUtilities/inc/FileInPath.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
 
@@ -58,9 +58,9 @@ namespace mu2e {
 
   void ShankerWanatabeSpectrum::ReadWanatabeTable() {
 
-    FileInPath filename("ConditionsService/data/wanatabe.tbl");
+    ConfigFileLookupPolicy findConfig;
 
-    fstream intable(filename.fullPath().c_str(),ios::in);
+    fstream intable(findConfig("ConditionsService/data/wanatabe.tbl").c_str(),ios::in);
     if (!(intable.is_open())) {
       throw cet::exception("ProductNotFound")
         << "No Wanatabe spectrum table file found";
