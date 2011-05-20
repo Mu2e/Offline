@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.5 2011/05/18 22:01:46 wb Exp $
+// $Id: HitDisplay_module.cc,v 1.6 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke.
 //
@@ -254,8 +254,8 @@ namespace mu2e {
 
       // Draw the inner and outer arc of the tracker.
       arc->SetLineColor(kBlack);
-      arc->DrawArc(0.,0., envelope.outerRadius);
-      arc->DrawArc(0.,0., envelope.innerRadius);
+      arc->DrawArc(0.,0., envelope.outerRadius());
+      arc->DrawArc(0.,0., envelope.innerRadius());
       arc->SetLineColor(kRed);
       arc->DrawArc( tt.xc(), tt.yc(), tt.rho());
       arc->SetLineColor(kMagenta);
@@ -419,9 +419,9 @@ namespace mu2e {
     }
 
     cout << "TubsParams: "
-         << envelope.innerRadius << " "
-         << envelope.outerRadius << " "
-         << envelope.zHalfLength << " "
+         << envelope.innerRadius() << " "
+         << envelope.outerRadius() << " "
+         << envelope.zHalfLength() << " "
          << endl;
 
   } // end of ::analyze.

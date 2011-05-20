@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructNeutronAbsorber.cc,v 1.6 2011/05/20 19:18:44 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author KLG
 //
@@ -344,11 +344,11 @@ namespace mu2e {
                            NAIHalfLengthZ01);
 
     G4Tubs* NAI1STubs = new G4Tubs(INA1Info.name + "Tubs",
-                                   NAI1Params.innerRadius,
-                                   NAI1Params.outerRadius,
-                                   NAI1Params.zHalfLength,
-                                   NAI1Params.phi0,
-                                   NAI1Params.phiMax);
+                                   NAI1Params.innerRadius(),
+                                   NAI1Params.outerRadius(),
+                                   NAI1Params.zHalfLength(),
+                                   NAI1Params.phi0(),
+                                   NAI1Params.phiMax());
 
     // to be subtracted conical section
     G4Cons* NAI1SCons = new G4Cons(INA1Info.name + "Cons",

@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructPS.cc,v 1.5 2011/05/20 19:18:44 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -57,7 +57,7 @@ namespace mu2e {
     G4Material* psCryoMaterial = materialFinder.get("toyPS.materialName");
 
     // In the Mu2e coordinate system.
-    double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength;
+    double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength();
     G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
 
     bool toyPSVisible        = _config->getBool("toyPS.visible",true);
@@ -153,7 +153,7 @@ namespace mu2e {
     // the opposite of what G4 needed.
     _primaryProtonGunRotation = prodTargetRotation->inverse();
 
-    G4ThreeVector prodTargetFaceLocal(0.,0.,prodTargetParams.zHalfLength);
+    G4ThreeVector prodTargetFaceLocal(0.,0.,prodTargetParams.zHalfLength());
     _primaryProtonGunOrigin = prodTargetPosition + VolumeInfo::getMu2eOriginInWorld() +
       _primaryProtonGunRotation*prodTargetFaceLocal;
 

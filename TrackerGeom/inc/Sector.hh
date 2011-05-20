@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.8 2011/05/18 16:31:04 wb Exp $
+// $Id: Sector.hh,v 1.9 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:31:04 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -15,8 +15,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "TrackerGeom/inc/SectorId.hh"
 #include "TrackerGeom/inc/Layer.hh"
+#include "TrackerGeom/inc/SectorId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #ifndef __CINT__

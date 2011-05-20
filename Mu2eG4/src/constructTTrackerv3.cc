@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.21 2011/05/19 22:23:06 wb Exp $
+// $Id: constructTTrackerv3.cc,v 1.22 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/19 22:23:06 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -83,11 +83,11 @@ namespace mu2e{
     verbosityLevel > 0 &&
       cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
       "   " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.innerRadius << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.outerRadius << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.zHalfLength << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.phi0        << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.phiMax      << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.innerRadius() << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.outerRadius() << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.zHalfLength() << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.phi0()        << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.phiMax()      << ", " <<
       endl;
 
     G4ThreeVector trackerOffset( 0., 0., ttracker.z0()-zOff );
@@ -164,11 +164,11 @@ namespace mu2e{
     verbosityLevel > 0 &&
       cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
       idev << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.innerRadius << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.outerRadius << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.zHalfLength << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.phi0        << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.phiMax      << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.innerRadius() << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.outerRadius() << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.zHalfLength() << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.phi0()        << ", " <<
+      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.phiMax()      << ", " <<
       endl;
 
     // place straws etc... wrt the envelope

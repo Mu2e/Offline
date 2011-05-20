@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: SectorId.hh,v 1.6 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: SectorId.hh,v 1.7 2011/05/20 19:18:44 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,11 @@
 
 namespace mu2e {
 
-  struct SectorId{
+  struct SectorId;
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  const SectorId& s );
+
+  class SectorId{
 
   public:
 
@@ -34,21 +38,17 @@ namespace mu2e {
       _sector(sector){
     }
 
-    ~SectorId  (){
-    }
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-    // Compiler generated copy and assignment constructors
-    // should be OK.
-
-    const int getDeviceId() const {
+    const DeviceId& getDeviceId() const {
       return _did;
     }
 
-    const int getDevice() const {
+    int getDevice() const {
       return _did;
     }
 
-    const int getSector() const {
+    int getSector() const {
       return _sector;
     }
 
@@ -60,16 +60,18 @@ namespace mu2e {
       return !( *this == rhs);
     }
 
+    friend std::ostream& operator<<(std::ostream& ost,
+                                    const SectorId& s ){
+      ost << s._did << " " << s._sector;
+      return ost;
+    }
+
+  private:
+
     DeviceId _did;
     int      _sector;
 
   };
-
-  inline std::ostream& operator<<(std::ostream& ost,
-                                  const SectorId& s ){
-    ost << s._did << " " << s._sector;
-    return ost;
-  }
 
 }  //namespace mu2e
 

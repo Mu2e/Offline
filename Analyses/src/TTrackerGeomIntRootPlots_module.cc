@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.8 2011/05/19 22:23:06 wb Exp $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.9 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/19 22:23:06 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -340,7 +340,7 @@ namespace mu2e {
 
     TubsParams envelopeParams = _ttracker->getTrackerEnvelopeParams();
 
-    //    double xf = int(_drawingOrigin.x()+envelopeParams.innerRadius/10.)*10.;
+    //    double xf = int(_drawingOrigin.x()+envelopeParams.innerRadius()/10.)*10.;
 
     //     std::cout << "xf :" <<
     //       xf << " " << std::endl;
@@ -831,11 +831,11 @@ namespace mu2e {
     size_t const oldw = std::cout.width();
     std::cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
       "   " <<
-      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.innerRadius << ", " <<
-      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.outerRadius << ", " <<
-      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.zHalfLength << ", " <<
-      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.phi0        << ", " <<
-      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.phiMax
+      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.innerRadius() << ", " <<
+      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.outerRadius() << ", " <<
+      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.zHalfLength() << ", " <<
+      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.phi0()        << ", " <<
+      std::fixed << std::setprecision(8) << std::setw(14) << envelopeParams.phiMax()
          << std::setprecision(oldp) << std::setw(oldw) << std::endl;
 
     TArc* arc = new TArc();
@@ -843,9 +843,9 @@ namespace mu2e {
     arc->SetLineColor(kCyan);
 
 
-    double angle = calculateDrawingAngle(_span, envelopeParams.innerRadius);
+    double angle = calculateDrawingAngle(_span, envelopeParams.innerRadius());
     arc->DrawArc(_drawingOrigin.x(),_drawingOrigin.y(),
-                 envelopeParams.innerRadius,0.,angle,"only");
+                 envelopeParams.innerRadius(),0.,angle,"only");
 
     arc->SetLineColor(kGreen);
 
@@ -864,7 +864,7 @@ namespace mu2e {
 
     if (dolabels) {
 
-      drawArrowFromOrigin( 75., envelopeParams.innerRadius, "IER",kFullCircle,kRed);
+      drawArrowFromOrigin( 75., envelopeParams.innerRadius(), "IER",kFullCircle,kRed);
       drawArrowFromOrigin(200., supportParams.innerRadius(),  "ISR",kFullCircle,kRed);
       drawArrowFromOrigin(300., supportParams.outerRadius(),  "OSR",kFullCircle,kRed);
 

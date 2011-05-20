@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.29 2011/05/19 22:23:06 wb Exp $
+// $Id: TTrackerMaker.cc,v 1.30 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/19 22:23:06 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -802,7 +802,7 @@ namespace mu2e {
       }
 
       LayerId lId = i->Id().getLayerId();
-      int layer = lId._layer;
+      int layer = lId.getLayer();
       int nStrawLayer = _tt->getLayer(lId)._nStraws;
 
       //  cout << lId << " has " << nStrawLayer << " straws" << endl;
@@ -810,8 +810,8 @@ namespace mu2e {
 
       // add the "same layer" n-1 neighbours straw (if exist)
 
-      if ( i->Id()._n ) {
-        const StrawId nsId(lId, (i->Id()._n)-1 );
+      if ( i->Id().getStraw() ) {
+        const StrawId nsId(lId, (i->Id().getStraw())-1 );
         i->_nearestById.push_back( nsId );
         // Straw temp = _tt->getStraw( nsId );
         // cout << "Neighbour left straw: " << temp.Id() << '\t' << temp.Index() << endl;
@@ -820,8 +820,8 @@ namespace mu2e {
 
       // add the "same layer" n+1 neighbours straw (if exist)
 
-      if ( i->Id()._n < (nStrawLayer-1) ) {
-        const StrawId nsId(lId, (i->Id()._n)+ 1 );
+      if ( i->Id().getStraw() < (nStrawLayer-1) ) {
+        const StrawId nsId(lId, (i->Id().getStraw())+ 1 );
         i->_nearestById.push_back( nsId );
         // Straw temp = _tt->getStraw( nsId );
         // cout << "Neighbour right straw: " << temp.Id() << '\t' << temp.Index() << endl;
@@ -831,7 +831,7 @@ namespace mu2e {
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
 
       if (_layersPerSector == 2) {
-        const StrawId nsId( i->Id().getSectorId(), (layer+1)%2, (i->Id()._n) );
+        const StrawId nsId( i->Id().getSectorId(), (layer+1)%2, (i->Id().getStraw()) );
 
         // throw exception if the two layer of the same sector have different
         // number of straws
@@ -848,9 +848,9 @@ namespace mu2e {
 
         // add the "opposite layer" n+-1 neighbours straw (if exist)
 
-        if ( i->Id()._n > 0 && i->Id()._n < nStrawLayer-1 ) {
+        if ( i->Id().getStraw() > 0 && i->Id().getStraw() < nStrawLayer-1 ) {
           const StrawId nsId( i->Id().getSectorId(), (layer+1)%2,
-                              (i->Id()._n) + (layer?1:-1));
+                              (i->Id().getStraw()) + (layer?1:-1));
           i->_nearestById.push_back( nsId );
           // Straw temp = _tt->getStraw( nsId );
           // cout << "Neighbour opposite +- 1 straw: " << temp.Id() << '\t' << temp.Index() << endl;

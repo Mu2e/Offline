@@ -1,9 +1,9 @@
 //
 // Free function to create  DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructDS.cc,v 1.6 2011/05/20 19:18:44 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -64,15 +64,15 @@ namespace mu2e {
     // DS1 surrounds ts5.
     // DS2 and DS3 extend to r=0
     TubsParams dsFrontParams( rCryo,
-                              detSolCoilParams.innerRadius,
+                              detSolCoilParams.innerRadius(),
                               dsFrontHalfLength);
 
     TubsParams ds1VacParams( rCryo,
-                             detSolCoilParams.innerRadius,
+                             detSolCoilParams.innerRadius(),
                              ds1HalfLength);
 
     TubsParams ds2VacParams( 0.,
-                             detSolCoilParams.innerRadius,
+                             detSolCoilParams.innerRadius(),
                              ds2HalfLength);
 
     // Compute positions of objects in Mu2e coordinates.
@@ -107,13 +107,13 @@ namespace mu2e {
     double ds3SubtrHalfLength = (-ds3OriginalZ0  - ds3OriginalHalfLength + ds3Z0 + ds3HalfLength)*0.5;
 
     TubsParams ds3VacParams( 0.,
-                             detSolCoilParams.innerRadius,
+                             detSolCoilParams.innerRadius(),
                              ds3HalfLength);
 
     double SPBSOuterRadius   = _config->getBool("hasMBS",false) ?
       _config->getDouble("mbs.SPBSOuterRadius") : 0.;
     TubsParams ds3VacSubtrParams( SPBSOuterRadius,
-                                  detSolCoilParams.innerRadius,
+                                  detSolCoilParams.innerRadius(),
                                   ds3SubtrHalfLength);
 
     G4ThreeVector detSolCoilPosition(-solenoidOffset, 0., dsCoilZ0);
@@ -225,18 +225,18 @@ namespace mu2e {
     ds3VacInfo.name = "ToyDS3Vacuum";
 
     G4Tubs* ds3VacSolid = new G4Tubs(ds3VacInfo.name+"Full",
-                                     ds3VacParams.innerRadius,
-                                     ds3VacParams.outerRadius,
-                                     ds3VacParams.zHalfLength,
-                                     ds3VacParams.phi0,
-                                     ds3VacParams.phiMax);
+                                     ds3VacParams.innerRadius(),
+                                     ds3VacParams.outerRadius(),
+                                     ds3VacParams.zHalfLength(),
+                                     ds3VacParams.phi0(),
+                                     ds3VacParams.phiMax());
 
     G4Tubs* ds3VacSubtrSolid = new G4Tubs(ds3VacInfo.name+"Subtr",
-                                          ds3VacSubtrParams.innerRadius,
-                                          ds3VacSubtrParams.outerRadius,
-                                          ds3VacSubtrParams.zHalfLength,
-                                          ds3VacSubtrParams.phi0,
-                                          ds3VacSubtrParams.phiMax);
+                                          ds3VacSubtrParams.innerRadius(),
+                                          ds3VacSubtrParams.outerRadius(),
+                                          ds3VacSubtrParams.zHalfLength(),
+                                          ds3VacSubtrParams.phi0(),
+                                          ds3VacSubtrParams.phiMax());
 
     ds3VacInfo.solid = new G4SubtractionSolid(ds3VacInfo.name,
                                               ds3VacSolid, ds3VacSubtrSolid,0,ds3SubtrPosition-ds3Position);

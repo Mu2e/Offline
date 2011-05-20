@@ -3,9 +3,9 @@
 //
 // Hold information about one device in a tracker.
 //
-// $Id: Device.hh,v 1.5 2011/05/18 02:27:19 wb Exp $
+// $Id: Device.hh,v 1.6 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -51,9 +51,9 @@ namespace mu2e {
     // Accessors
     const DeviceId Id() const { return _id;}
 
-    const double rotation() const { return _rotation; }
+    double rotation() const { return _rotation; }
 
-    const CLHEP::Hep3Vector origin() const { return _origin; }
+    const CLHEP::Hep3Vector & origin() const { return _origin; }
 
     int nSectors() const{
       return _sectors.size();
@@ -68,7 +68,7 @@ namespace mu2e {
     }
 
     const Sector& getSector ( const SectorId& sid ) const{
-      return _sectors.at(sid._sector);
+      return _sectors.at(sid.getSector());
     }
 
     const Layer& getLayer ( const LayerId& lid ) const{

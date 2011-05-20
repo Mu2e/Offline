@@ -2,9 +2,9 @@
 // Geometry and identifier info about an TTracker.
 //
 //
-// $Id: TTracker.cc,v 1.5 2011/05/19 22:23:06 wb Exp $
+// $Id: TTracker.cc,v 1.6 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/19 22:23:06 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -42,11 +42,11 @@ namespace mu2e {
     double fullLength = _devices.back().origin().z()-_devices.front().origin().z();
 
     // Remember the thickness of the devices.
-    double halfLength = fullLength/2. + deviceEnvelope.zHalfLength;
+    double halfLength = fullLength/2. + deviceEnvelope.zHalfLength();
 
     static double const pad = 0.0001;
-    return TubsParams( deviceEnvelope.innerRadius-pad,
-                       deviceEnvelope.outerRadius+pad,
+    return TubsParams( deviceEnvelope.innerRadius()-pad,
+                       deviceEnvelope.outerRadius()+pad,
                        halfLength+pad);
 
     ;

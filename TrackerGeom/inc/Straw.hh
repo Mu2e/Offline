@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.11 2011/05/18 21:14:30 wb Exp $
+// $Id: Straw.hh,v 1.12 2011/05/20 19:18:45 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Date: 2011/05/20 19:18:45 $
 //
 // Original author Rob Kutschke
 //
@@ -13,9 +13,9 @@
 #include <deque>
 #include <vector>
 
+#include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/StrawId.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
-#include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -86,9 +86,6 @@ namespace mu2e {
     // Formatted string embedding the id of the straw.
     std::string name( std::string const& base ) const;
 
-    // Compiler generated copy and assignment constructors
-    // should be OK.
-
     virtual const CLHEP::Hep3Vector& getMidPoint() const {return _c;}
 
     // Delete one of these
@@ -130,28 +127,13 @@ namespace mu2e {
 
     int hack;
     bool operator==(const Straw other) const {
-      if (_index == other.Index()) {
-        return true;
-      }
-      else{
-        return false;
-      }
+      return _index == other.Index();
     }
     bool operator>(const Straw other) const {
-      if (_index > other.Index()) {
-        return true;
-      }
-      else{
-        return false;
-      }
+      return _index > other.Index();
     }
    bool operator<(const Straw other) const {
-      if (_index < other.Index()) {
-        return true;
-      }
-      else{
-        return false;
-      }
+      return _index < other.Index();
    }
  protected:
 

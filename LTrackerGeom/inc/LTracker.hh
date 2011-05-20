@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.10 2011/05/18 02:27:17 wb Exp $
+// $Id: LTracker.hh,v 1.11 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -72,24 +72,24 @@ namespace mu2e {
 
 
     bool isLegal(const SectorId& sid) const{
-      return (isLegal(sid._did) &&
-              sid._sector >-1   &&
-              std::vector<Sector>::size_type(sid._sector) < getDevice(sid._did).getSectors().size()
+      return (isLegal(sid.getDeviceId()) &&
+              sid.getSector() >-1   &&
+              std::vector<Sector>::size_type(sid.getSector()) < getDevice(sid.getDeviceId()).getSectors().size()
               );
     }
 
     typedef std::vector<Sector>::size_type stypeLayer;
     bool isLegal(const LayerId& lid ) const{
-      return ( isLegal(lid._sid) &&
-               lid._layer > -1   &&
-               std::vector<Layer>::size_type(lid._layer) < getSector(lid._sid).getLayers().size()
+      return ( isLegal(lid.getSectorId()) &&
+               lid.getLayer() > -1   &&
+               std::vector<Layer>::size_type(lid.getLayer()) < getSector(lid.getSectorId()).getLayers().size()
                );
     }
 
     bool isLegal(const StrawId& sid) const{
-      return ( isLegal(sid._lid) &&
-               sid._n > -1       &&
-               std::vector<Straw>::size_type(sid._n) < getLayer(sid._lid).getStraws().size()
+      return ( isLegal(sid.getLayerId()) &&
+               sid.getStraw() > -1       &&
+               std::vector<Straw>::size_type(sid.getStraw()) < getLayer(sid.getLayerId()).getStraws().size()
                );
     }
 

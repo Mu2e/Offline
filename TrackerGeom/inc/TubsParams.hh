@@ -4,50 +4,63 @@
 //
 // The parameters of a TUBS
 //
-// $Id: TubsParams.hh,v 1.4 2011/05/18 02:27:19 wb Exp $
+// $Id: TubsParams.hh,v 1.5 2011/05/20 19:18:45 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Date: 2011/05/20 19:18:45 $
 //
 // Original author Rob Kutschke
 //
 
-#include <ostream>
 #include <cmath>
+#include <ostream>
+#include "cpp0x/array"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 
 namespace mu2e {
 
-  struct TubsParams{
-    double innerRadius;
-    double outerRadius;
-    double zHalfLength;
-    double phi0;
-    double phiMax;
+  class TubsParams{
 
-    TubsParams( double innerRadius_,
-                double outerRadius_,
-                double zHalfLength_,
-                double phi0_   = 0.,
-                double phiMax_ = CLHEP::twopi):
-      innerRadius(innerRadius_),
-      outerRadius(outerRadius_),
-      zHalfLength(zHalfLength_),
-      phi0(phi0_),
-      phiMax(phiMax_){
+  public:
+
+    TubsParams( double innerRadius,
+                double outerRadius,
+                double zHalfLength,
+                double phi0   = 0.,
+                double phiMax = CLHEP::twopi):
+      data_()
+    {
+      data_[0] = innerRadius;
+      data_[1] = outerRadius;
+      data_[2] = zHalfLength;
+      data_[3] = phi0;
+      data_[4] = phiMax;
     }
 
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor.
+
+    double innerRadius()  const { return data_[0]; }
+    double outerRadius()  const { return data_[1]; }
+    double zHalfLength()  const { return data_[2]; }
+    double phi0()         const { return data_[3]; }
+    double phiMax()       const { return data_[4]; }
+
+    double const * data() const { return data_.data(); }
+
+  private:
+
+    std::array<double,5> data_;
 
   };
 
   inline std::ostream& operator<<(std::ostream& ost,
                                   const TubsParams& tp ){
     ost << "("
-        << tp.innerRadius << " "
-        << tp.outerRadius << " "
-        << tp.zHalfLength << " "
-        << tp.phi0        << " "
-        << tp.phiMax      << ")"
+        << tp.innerRadius() << " "
+        << tp.outerRadius() << " "
+        << tp.zHalfLength() << " "
+        << tp.phi0()        << " "
+        << tp.phiMax()      << ")"
         << " )";
     return ost;
   }

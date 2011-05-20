@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.7 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructSteel.cc,v 1.8 2011/05/20 19:18:44 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -11,26 +11,26 @@
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/constructSteel.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/nestBox.hh"
+#include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
 #include "G4Box.hh"
-#include "G4Tubs.hh"
+#include "G4Color.hh"
+#include "G4Material.hh"
 #include "G4SubtractionSolid.hh"
+#include "G4ThreeVector.hh"
+#include "G4Tubs.hh"
 
 
 using namespace std;
@@ -91,18 +91,18 @@ namespace mu2e {
                                   shield.getHalfLengths()[1],
                                   shield.getHalfLengths()[2]);
 
-        //Hole in  shield for TS is centered in the shield
+        //Hole in shield for TS is centered in the shield
 
         TubsParams HoleDims(0.,
                             shield.getHoleRadius(),
                             shield.getHalfLengths()[2]+1.0);//  added for better rendering
 
         G4Tubs* CRSSteelShieldHoleTubs = new G4Tubs(shield.name()+"HoleTubs",
-                                                    HoleDims.innerRadius,
-                                                    HoleDims.outerRadius,
-                                                    HoleDims.zHalfLength,
-                                                    HoleDims.phi0,
-                                                    HoleDims.phiMax);
+                                                    HoleDims.innerRadius(),
+                                                    HoleDims.outerRadius(),
+                                                    HoleDims.zHalfLength(),
+                                                    HoleDims.phi0(),
+                                                    HoleDims.phiMax());
 
         VolumeInfo CRSSteelShieldInfo;
 

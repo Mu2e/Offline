@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: LayerId.hh,v 1.6 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: LayerId.hh,v 1.7 2011/05/20 19:18:44 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -18,8 +18,11 @@
 #include "TrackerGeom/inc/SectorId.hh"
 
 namespace mu2e {
+  class LayerId;
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  const LayerId& l );
 
-  struct LayerId{
+  class LayerId{
 
   public:
 
@@ -43,25 +46,24 @@ namespace mu2e {
       _layer(layer){
     }
 
-    ~LayerId  (){
-    }
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-    const DeviceId getDeviceId () const{
-      return _sid._did;
+    const DeviceId& getDeviceId () const{
+      return _sid.getDeviceId();
     }
-    const SectorId getSectorId () const{
+    const SectorId& getSectorId () const{
       return _sid;
     }
 
-    const int getDevice () const{
-      return _sid._did;
+    int getDevice () const{
+      return _sid.getDevice();
     }
 
-    const int getSector () const{
-      return _sid._sector;
+    int getSector () const{
+      return _sid.getSector();
     }
 
-    const int getLayer() const{
+    int getLayer() const{
       return _layer;
     }
 
@@ -73,20 +75,18 @@ namespace mu2e {
       return !( *this == rhs);
     }
 
+    friend std::ostream& operator<<(std::ostream& ost,
+                                    const LayerId& l ){
+      ost << l._sid << " " << l._layer;
+      return ost;
+    }
 
-    // Compiler generated copy and assignment constructors
-    // should be OK.
+private:
 
     SectorId _sid;
     int      _layer;
 
   };
-
-  inline std::ostream& operator<<(std::ostream& ost,
-                                  const LayerId& l ){
-    ost << l._sid << " " << l._layer;
-    return ost;
-  }
 
 } //namespace mu2e
 

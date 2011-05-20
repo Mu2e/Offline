@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 //
-// $Id: nestTubs.hh,v 1.10 2011/05/18 02:27:17 wb Exp $
+// $Id: nestTubs.hh,v 1.11 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -16,15 +16,15 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
-class G4Material;
-class G4LogicalVolume;
-class G4VPhysicalVolume;
 class G4CSGSolid;
+class G4LogicalVolume;
+class G4Material;
+class G4VPhysicalVolume;
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
 #include "G4Colour.hh"
+#include "G4RotationMatrix.hh"
+#include "G4ThreeVector.hh"
 
 
 namespace mu2e {
@@ -93,7 +93,7 @@ namespace mu2e {
                                bool const doSurfaceCheck
                                ){
     return nestTubs( name,
-                     &params.innerRadius,
+                     params.data(),
                      material,
                      rot,
                      offset,
@@ -142,7 +142,7 @@ namespace mu2e {
                                bool const doSurfaceCheck
                                ){
     return nestTubs( name,
-                     &params.innerRadius,
+                     params.data(),
                      material,
                      rot,
                      offset,

@@ -191,7 +191,7 @@ void DataInterface::fillGeometry()
 //Support Structure
     double innerRadius=ttracker->getSupportParams().innerRadius();
     double outerRadius=ttracker->getSupportParams().outerRadius();
-    double zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength;
+    double zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength();
     findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
     findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
 
@@ -213,9 +213,9 @@ void DataInterface::fillGeometry()
     _supportstructures.push_back(shape);
 
 //Envelope
-    innerRadius=ttracker->getTrackerEnvelopeParams().innerRadius;
-    outerRadius=ttracker->getTrackerEnvelopeParams().outerRadius;
-    zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength;
+    innerRadius=ttracker->getTrackerEnvelopeParams().innerRadius();
+    outerRadius=ttracker->getTrackerEnvelopeParams().outerRadius();
+    zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength();
 
     boost::shared_ptr<ComponentInfo> infoEnvelope(new ComponentInfo());
     sprintf(c,"TTracker Envelope");

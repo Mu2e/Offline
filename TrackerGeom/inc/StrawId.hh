@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: StrawId.hh,v 1.6 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: StrawId.hh,v 1.7 2011/05/20 19:18:45 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 19:18:45 $
 //
 // Original author Rob Kutschke
 //
@@ -16,12 +16,16 @@
 
 namespace mu2e {
 
-struct StrawId{
+  class StrawId;
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  const StrawId& s );
+
+class StrawId{
 
 public:
 
   StrawId():
-    _lid(LayerId()),
+    _lid(),
     _n(-1){
   }
 
@@ -49,37 +53,33 @@ public:
     _n(n){
   }
 
-  ~StrawId  (){
-  }
-
-  // Compiler generated copy c'tor and assignment
-  // operators should be should be OK.
+  // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
   const DeviceId& getDeviceId() const {
-    return _lid._sid._did;
+    return _lid.getDeviceId();
   }
 
   const SectorId& getSectorId() const {
-    return _lid._sid;
+    return _lid.getSectorId();
   }
 
   const LayerId& getLayerId() const {
     return _lid;
   }
 
-  const int getDevice() const{
-    return _lid._sid._did;
+  int getDevice() const{
+    return _lid.getDevice();
   }
 
-  const int getSector() const{
-    return _lid._sid._sector;
+  int getSector() const{
+    return _lid.getSector();
   }
 
-  const int getLayer() const{
-    return _lid._layer;
+  int getLayer() const{
+    return _lid.getLayer();
   }
 
-  const int getStraw() const{
+  int getStraw() const{
     return _n;
   }
 
@@ -91,20 +91,21 @@ public:
     return !( *this == rhs);
   }
 
+  friend std::ostream& operator<<(std::ostream& ost,
+                                  const StrawId& s ){
+    ost << "Straw Id: ("
+        << s.getLayerId() << " "
+        << s._n
+        << " )";
+    return ost;
+  }
+
+private:
 
   LayerId _lid;
   int     _n;
 
 };
-
-inline std::ostream& operator<<(std::ostream& ost,
-                                const StrawId& s ){
-  ost << "Straw Id: ("
-      << s.getLayerId() << " "
-      << s._n
-      << " )";
-  return ost;
-}
 
 }
 #endif /* TrackerGeom_StrawId_hh */

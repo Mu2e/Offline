@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.8 2011/05/19 22:23:06 wb Exp $
+// $Id: TTracker.hh,v 1.9 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/19 22:23:06 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -58,24 +58,24 @@ namespace mu2e {
     };
 
     bool isLegal(const SectorId& sid) const{
-      return (isLegal(sid._did) &&
-              sid._sector >-1   &&
-              std::vector<Sector>::size_type(sid._sector) < getDevice(sid._did).getSectors().size()
+      return (isLegal(sid.getDeviceId()) &&
+              sid.getSector() >-1   &&
+              std::vector<Sector>::size_type(sid.getSector()) < getDevice(sid.getDeviceId()).getSectors().size()
               );
     }
 
     typedef std::vector<Sector>::size_type stypeLayer;
     bool isLegal(const LayerId& lid ) const{
-      return ( isLegal(lid._sid) &&
-               lid._layer > -1   &&
-               std::vector<Layer>::size_type(lid._layer) < getSector(lid._sid).getLayers().size()
+      return ( isLegal(lid.getSectorId()) &&
+               lid.getLayer() > -1   &&
+               std::vector<Layer>::size_type(lid.getLayer()) < getSector(lid.getSectorId()).getLayers().size()
                );
     }
 
     bool isLegal(const StrawId& sid) const{
-      return ( isLegal(sid._lid) &&
-               sid._n > -1       &&
-               std::vector<Straw>::size_type(sid._n) < getLayer(sid._lid).getStraws().size()
+      return ( isLegal(sid.getLayerId()) &&
+               sid.getStraw() > -1       &&
+               std::vector<Straw>::size_type(sid.getStraw()) < getLayer(sid.getLayerId()).getStraws().size()
                );
     }
 

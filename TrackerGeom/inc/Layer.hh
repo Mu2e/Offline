@@ -3,9 +3,9 @@
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.8 2011/05/18 16:31:04 wb Exp $
+// $Id: Layer.hh,v 1.9 2011/05/20 19:18:44 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 16:31:04 $
+// $Date: 2011/05/20 19:18:44 $
 //
 // Original author Rob Kutschke
 //
@@ -59,7 +59,7 @@ namespace mu2e {
     }
 
     const Straw& getStraw( const StrawId& id ) const {
-      return getStraw(id._n);
+      return getStraw(id.getStraw());
     }
 
     const std::vector<const Straw*>& getStraws() const {
