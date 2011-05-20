@@ -4,9 +4,9 @@
 //
 // Representation of CRSSteelShield aka the flux return yoke
 //
-// $Id: CRSSteelShield.hh,v 1.4 2011/05/19 21:36:23 wb Exp $
+// $Id: CRSSteelShield.hh,v 1.5 2011/05/20 20:21:47 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/19 21:36:23 $
+// $Date: 2011/05/20 20:21:47 $
 //
 // Original author KLG
 //
@@ -32,7 +32,7 @@ namespace mu2e {
       _globalOffset(),
       _halfLengths(),
       _holeRadius()
-    {};
+    {}
 
     // accept default d'tor etc...
 

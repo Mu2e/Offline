@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.11 2011/05/18 02:27:17 wb Exp $
+// $Id: SteppingAction.hh,v 1.12 2011/05/20 20:21:47 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Date: 2011/05/20 20:21:47 $
 //
 // Original author Rob Kutschke
 //
@@ -34,7 +34,7 @@ namespace mu2e {
 
   public:
     SteppingAction( const SimpleConfig& config );
-    ~SteppingAction(){};
+    ~SteppingAction(){}
 
     void UserSteppingAction(const G4Step*);
 

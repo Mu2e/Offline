@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for magnetic field types.
 //
-// $Id: BFMapType.hh,v 1.4 2011/05/18 02:27:14 wb Exp $
+// $Id: BFMapType.hh,v 1.5 2011/05/20 20:21:47 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Date: 2011/05/20 20:21:47 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,7 @@ namespace mu2e {
     // The most important c'tor and accessor methods are first.
     explicit BFMapType( enum_type id):
       _id(id)
-    {};
+    {}
 
     // Id code.
     enum_type id() const { return _id;}

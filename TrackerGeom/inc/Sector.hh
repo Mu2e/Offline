@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.9 2011/05/20 19:18:44 wb Exp $
+// $Id: Sector.hh,v 1.10 2011/05/20 20:21:47 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Date: 2011/05/20 20:21:47 $
 //
 // Original author Rob Kutschke
 //
@@ -39,8 +39,8 @@ namespace mu2e {
 
   public:
 
-    Sector():_id(SectorId(-1,-1)){};
-    Sector( const SectorId& id ):_id(id){};
+    Sector():_id(SectorId(-1,-1)){}
+    Sector( const SectorId& id ):_id(id){}
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 

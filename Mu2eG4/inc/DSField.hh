@@ -3,9 +3,9 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: DSField.hh,v 1.6 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: DSField.hh,v 1.7 2011/05/20 20:21:47 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/20 20:21:47 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite Rob Kutschke at version 1.4
@@ -27,7 +27,7 @@ namespace mu2e {
   public:
 
     DSField( std::string name, G4ThreeVector mapOrigin );
-    virtual ~DSField(){};
+    virtual ~DSField(){}
 
     // This is called by G4.
     virtual void GetFieldValue(const G4double Point[4],

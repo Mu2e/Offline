@@ -1,9 +1,9 @@
 #ifndef HoughTransform_HoughTransform_hh
 #define HoughTransform_HoughTransform_hh
 //
-// $Id: HoughTransform.hh,v 1.13 2011/05/18 20:09:10 wb Exp $
+// $Id: HoughTransform.hh,v 1.14 2011/05/20 20:21:47 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Date: 2011/05/20 20:21:47 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.
@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-// CLHEP inlcudes
+// CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
 
@@ -59,9 +59,9 @@ namespace mu2e{
 
       HoughTransform(ClusterList& clusters) :
        goodHoughTracks(false), numberOfHoughTracks(0), _hitClusters(clusters){
-           FindCenters(); };
+           FindCenters(); }
 
-      ~HoughTransform(){};
+      ~HoughTransform(){}
 
       std::string name() const {return "HoughTransform";}
 

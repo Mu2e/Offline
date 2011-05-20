@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.7 2011/05/19 21:36:23 wb Exp $
+// $Id: CosmicRayShield.hh,v 1.8 2011/05/20 20:21:47 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/19 21:36:23 $
+// $Date: 2011/05/20 20:21:47 $
 //
 // Original author KLG
 //
@@ -39,9 +39,9 @@ namespace mu2e {
 
     CosmicRayShield():
       _name("CosmicRayShield")
-    {};
+    {}
 
-    ~CosmicRayShield(){};
+    ~CosmicRayShield(){}
 
     std::string name() const { return _name;};
 
