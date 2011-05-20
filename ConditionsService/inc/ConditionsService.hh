@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.10 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: ConditionsService.hh,v 1.11 2011/05/20 12:23:42 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 12:23:42 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,7 @@ namespace mu2e {
     ConditionsService(const fhicl::ParameterSet&, art::ActivityRegistry&);
     ~ConditionsService();
 
-    void preBeginRun( art::RunID const& id, art::Timestamp const& ts);
+    void preBeginRun(art::Run const &);
 
     // Not sure if we really want this.  It might be abused more than used?
     SimpleConfig const& config() const { return _config;}

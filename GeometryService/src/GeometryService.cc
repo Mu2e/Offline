@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.cc,v 1.17 2011/05/19 04:53:12 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/19 04:53:12 $
+// $Id: GeometryService.cc,v 1.18 2011/05/20 12:23:42 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 12:23:42 $
 //
 // Original author Rob Kutschke
 //
@@ -62,7 +62,7 @@ namespace mu2e {
   }
 
   void
-  GeometryService::preBeginRun(art::RunID const& iID, art::Timestamp const& iTime) {
+  GeometryService::preBeginRun(art::Run const &) {
 
     if(++_run_count > 1) {
       mf::LogWarning("GEOM") << "This test version does not change geometry on run boundaries.";

@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.cc,v 1.11 2011/05/19 04:50:45 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/19 04:50:45 $
+// $Id: ConditionsService.cc,v 1.12 2011/05/20 12:23:42 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 12:23:42 $
 //
 // Original author Rob Kutschke
 //
@@ -52,7 +52,7 @@ namespace mu2e {
   }
 
   void
-  ConditionsService::preBeginRun(art::RunID const& iID, art::Timestamp const& iTime) {
+  ConditionsService::preBeginRun(art::Run const &) {
 
     if(++_run_count > 1) {
       mf::LogWarning("CONDITIONS") << "This test version does not change geometry on run boundaries.";

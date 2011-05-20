@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.8 2011/05/18 22:55:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 22:55:40 $
+// $Id: GeometryService.hh,v 1.9 2011/05/20 12:23:42 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 12:23:42 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@ public:
     GeometryService(const fhicl::ParameterSet&, art::ActivityRegistry&);
     ~GeometryService();
 
-    void preBeginRun( art::RunID const& id, art::Timestamp const& ts);
+    void preBeginRun( art::Run const &run);
 
     SimpleConfig const& config() const { return *_config;}
 
