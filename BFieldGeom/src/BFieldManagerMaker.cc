@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.16 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: BFieldManagerMaker.cc,v 1.17 2011/05/20 15:09:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/20 15:09:13 $
 //
 
 // Includes from C++
@@ -26,6 +26,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Utilities/Exception.h"
 #include "cetlib/exception.h"
 #include "cetlib/search_path.h"
 
@@ -581,7 +582,10 @@ namespace mu2e {
     cet::search_path sp("MU2E_SEARCH_PATH");
     string path;
     if( ! sp.find_file(binFilename, path) )
-      throw "BFieldManagerMaker::readG4BLBinary: find_file failure!";  // TODO: improve exception
+      throw art::Exception(art::errors::FileOpenError)
+	<< "BFieldManagerMaker::readG4BLBinary: find_file failure: \n" 
+	<< binFilename <<  "\n" 
+	<< path << "\n";
 
     // Number of points in each big array.
     int nPoints = bf.nx()*bf.ny()*bf.nz();
