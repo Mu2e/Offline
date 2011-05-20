@@ -1,0 +1,148 @@
+# Run the StoppingTarget00 module.
+#
+# $Id: simParticlesWithHitsExample.fcl,v 1.1 2011/05/20 22:29:46 mf Exp $
+# $Author: mf $
+# $Date: 2011/05/20 22:29:46 $
+#
+# Original author Rob Kutschke
+
+#include "messageService.fcl"
+
+BEGIN_PROLOG
+  diagLevel    : 0
+  maxFullPrint : 5
+END_PROLOG
+
+# Give this process a name.
+process : StrawHitExample
+
+# Read events from a file (made by Mu2eG4 example g4test_03.py)
+source :
+{
+  module_type : EmptySource
+  maxEvents : 50
+}
+
+services :
+{
+  message : @local::mf_debugging
+
+  # Adjust configuration of message logger:
+  # Enable debug printout from the module instance "hitinspect",
+  # and Print unlimited messages with categories ToyHitInfo and GEOM
+  message.debugModules : [hitinspect]
+  message.categories.ToyHitInfo.limit = -1
+  message.categories.GEOM.limit = -1
+    
+  TFileService :
+  {
+    fileName      : "strawHitExample.root"
+    closeFileFase : false
+  }
+
+  RandomNumberGeneratorService : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01.txt"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+    G4Helper : { }
+
+    # Uncomment to enable per module timing
+    # Timing :
+    # {
+    #   useJobReport : true 
+    # }
+
+    # Uncomment to enable memory use profiling
+    # SimpleMemoryCheck :
+    # {
+    #   oncePerEventMode : false 
+    #   showMallocInfo   : ignoreTotal 
+    #   ignoreTotal      : 5 
+    # }
+
+  }
+
+} # close of services block
+
+physics :
+{
+  producers:
+  {
+    # Make some generated tracks and add them to the event.
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/multiDIO.txt"
+      seed          : [7789]
+    }
+    # Run G4 and add its hits to the event.
+    g4run:
+    {
+      module_type   : G4
+      inputfile     : "Mu2eG4/test/multiDIO.txt"
+      seed          : [9877]
+    }
+    # Form StrawHits (SH).
+    makeSH:
+    {
+      module_type   : MakeStrawHit
+      g4ModuleLabel : g4run
+      seed          : [7790]
+      diagLevel     : @local::diagLevel
+      maxFullPrint  : @local::maxFullPrint
+    }
+  }
+
+  analyzers:
+  {
+    # Look at the hits from G4.
+    checkhits:
+    {
+      module_type   : SimParticlesWithHitsExample
+      g4ModuleLabel : g4run
+      hitMakerModuleLabel : makeSH
+      trackerStepPoints   : tracker
+      minEnergyDep        : 0.001
+      minHits             : 5 
+    }
+    # Save state of random numbers to the event.
+    randomsaver:
+    {
+      module_type   : RandomNumberSaver
+    }
+  }
+
+  p1 : [generate, g4run, makeSH]
+  e1 : [stopping, outfile ]
+
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  # Define the output file.
+  outfile : 
+  {
+    module_type    : RootOutput
+    filename       : strawHitExample_data.root
+    outputCommands : ['keep *_*_*_*'
+                   # , 'drop mu2eSimParticles_*_*_*'
+		   # Uncomment the above line to reduce file size.
+                     ]  
+  }
+}
+
+

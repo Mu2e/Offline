@@ -1,0 +1,85 @@
+# Run the StoppingTarget00 module.
+#
+# $Id: stoppingTarget00.fcl,v 1.1 2011/05/20 22:29:46 mf Exp $
+# $Author: mf $
+# $Date: 2011/05/20 22:29:46 $
+#
+# Original author Rob Kutschke
+
+#include "minimalMessageService.fcl"
+
+BEGIN_PROLOG
+  diagLevel    : 0
+  maxFullPrint : 5
+END_PROLOG
+
+# Give this process a name.
+process : StoppingTarget00
+
+# Read events from a file (made by Mu2eG4 example g4test_03.py)
+source :
+{
+  module_type : RootInput
+  fileNames : ["/prj/mu2e/users/kutschke/beamlineData_01.root"]
+  maxEvents : 20000
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService :
+  {
+    fileName      : "stoppingTarget00.root"
+    closeFileFase : false
+  }
+
+  RandomNumberGeneratorService : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/beamline_geom03a_readback.txt"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+  }
+
+  analyzers:
+  {
+    # A first look at muons stopping in stopping targets.
+    stopping:
+    {
+      module_type   : StoppingTarget00
+      g4ModuleLabel : g4run
+      seed          : [7790]
+    }
+  }
+
+  p1 : []
+  e1 : [stopping ]
+
+
+  trigger_paths  : []
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+}
+
+
