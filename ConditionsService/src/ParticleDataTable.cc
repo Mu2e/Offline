@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.cc,v 1.10 2011/05/18 02:27:15 wb Exp $
-//   $Author: wb $
-//   $Date: 2011/05/18 02:27:15 $
+//   $Id: ParticleDataTable.cc,v 1.11 2011/05/20 19:26:39 greenc Exp $
+//   $Author: greenc $
+//   $Date: 2011/05/20 19:26:39 $
 //
 //
 // 1) The Geant4 particle table is a superset of this table.  It includes
@@ -36,10 +36,10 @@
 // Framework include files.
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
-#include "cetlib/search_path.h"
 
 // Mu2e include files
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
@@ -73,16 +73,16 @@ namespace mu2e {
     _pdt("Mu2eParticleData"),
     _unitsChanged(false){
 
-    cet::search_path sp("MU2E_SEARCH_PATH");
+    ConfigFileLookupPolicy findConfig;
 
-    std::string tableFiP(config.getString("particleDataTable.filename",
-                                          "ConditionsService/data/particle.tbl"));
-    if( ! sp.find_file(tableFiP, _tableFilename) )
+    _tableFilename = findConfig(config.getString("particleDataTable.filename",
+                                                 "ConditionsService/data/particle.tbl"));
+  if( _tableFilename.empty() )
       throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
 
-    std::string auxFiP(config.getString("particleDataTable.auxillaryFilename",
-                                        "ConditionsService/data/mass_width_2008.mc"));
-    if( ! sp.find_file(auxFiP, _auxillaryFilename) )
+  _auxillaryFilename = findConfig(config.getString("particleDataTable.auxillaryFilename",
+                                                   "ConditionsService/data/mass_width_2008.mc"));
+  if( _auxillaryFilename.empty() )
       throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
 
     loadTableFromFile();

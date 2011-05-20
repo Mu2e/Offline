@@ -29,16 +29,15 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
-#include "Mu2eUtilities/inc/FileInPath.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace std;
 
-
-static const mu2e::FileInPath StMuFileName("ConditionsService/data/StoppedMuons.txt");
-static const string StMuFileString = StMuFileName.fullPath();
+static mu2e::ConfigFileLookupPolicy findConfig;
+static const string StMuFileString = findConfig("ConditionsService/data/StoppedMuons.txt");
 static const double timeMaxDelay = 3000;
 static const int nBinsForTimeDelayPDF = 150;
 static fstream inMuFile(StMuFileString.c_str(), ios::in);
@@ -240,8 +239,7 @@ namespace mu2e {
   vector<double> FoilParticleGenerator::timePathDelay() {
 
     vector<double> muonTimeDelay;
-    FileInPath muonDelayFileName("ConditionsService/data/timeDelayDist.txt");
-    string MuonFileFIP = muonDelayFileName.fullPath();
+    string MuonFileFIP = findConfig("ConditionsService/data/timeDelayDist.txt");
     fstream infile(MuonFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
       double val;

@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.17 2011/05/20 15:09:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/20 15:09:13 $
+// $Id: BFieldManagerMaker.cc,v 1.18 2011/05/20 19:26:39 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 19:26:39 $
 //
 
 // Includes from C++
@@ -28,7 +28,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Utilities/Exception.h"
 #include "cetlib/exception.h"
-#include "cetlib/search_path.h"
 
 // Includes from Mu2e
 #include "BFieldGeom/inc/BFieldManagerMaker.hh"
@@ -58,11 +57,10 @@ namespace mu2e {
   }
 
   BFieldManagerMaker::BFieldManagerMaker( const SimpleConfig& config ):
-    _config(config){
-
-    // Instantiate an empty BFieldManager.
-    _bfmgr = auto_ptr<BFieldManager>(new BFieldManager() );
-
+    _findConfig(),
+    _config(config),
+    _bfmgr(new BFieldManager())
+  {
 
     _bfmgr->_xOffset =_config.getDouble("mu2e.solenoidOffset");
 
@@ -206,9 +204,8 @@ namespace mu2e {
                                      const std::string& filename ) {
 
     // Open the input file.
-    cet::search_path sp("MU2E_SEARCH_PATH");
-    string path;
-    if( ! sp.find_file(filename, path) )
+    string path(_findConfig(filename));
+    if( path.empty())
       throw "BFieldManagerMaker::loadG4BL: find_file failure!";  // TODO: improve exception
     ifstream fin(path.c_str());
     if ( !fin.is_open() ) {
@@ -323,9 +320,8 @@ namespace mu2e {
                                        BFMap& bfmap ){
 
     // Open the input file.
-    cet::search_path sp("MU2E_SEARCH_PATH");
-    string path;
-    if( ! sp.find_file(filename, path) )
+    string path(_findConfig(filename));
+    if( path.empty())
       throw "BFieldManagerMaker::readGMCMap: find_file failure!";  // TODO: improve exception
     int fd = open( path.c_str(), O_RDONLY );
     if ( !fd ) {
@@ -501,9 +497,8 @@ namespace mu2e {
     */
 
     // Open the input file.
-    cet::search_path sp("MU2E_SEARCH_PATH");
-    string path;
-    if( ! sp.find_file(filename, path) )
+    string path(_findConfig(filename));
+    if(path.empty())
       throw "BFieldManagerMaker::readG4BLMap: find_file failure!";  // TODO: improve exception
     ifstream fin(path.c_str());
     if ( !fin.is_open() )
@@ -579,9 +574,8 @@ namespace mu2e {
     binFilename += ".bin";
 
     // Resolve filename into a full path.
-    cet::search_path sp("MU2E_SEARCH_PATH");
-    string path;
-    if( ! sp.find_file(binFilename, path) )
+    string path(_findConfig(binFilename));
+    if( path.empty() )
       throw art::Exception(art::errors::FileOpenError)
 	<< "BFieldManagerMaker::readG4BLBinary: find_file failure: \n" 
 	<< binFilename <<  "\n" 

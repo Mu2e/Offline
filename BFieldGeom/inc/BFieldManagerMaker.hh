@@ -3,15 +3,17 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.6 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: BFieldManagerMaker.hh,v 1.7 2011/05/20 19:26:39 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 19:26:39 $
 //
 
 // Includes from C++
 #include <memory>
 // Includes from CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
+
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 
 namespace mu2e {
 
@@ -33,6 +35,8 @@ namespace mu2e {
     std::auto_ptr<BFieldManager> getBFieldManager() { return _bfmgr; }
 
   private:
+
+    ConfigFileLookupPolicy _findConfig;
 
     const SimpleConfig& _config;
 

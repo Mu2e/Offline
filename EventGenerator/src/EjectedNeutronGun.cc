@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.9 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: EjectedNeutronGun.cc,v 1.10 2011/05/20 19:26:39 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/20 19:26:39 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -28,7 +28,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/FileInPath.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
@@ -193,8 +193,8 @@ namespace mu2e {
   std::vector<double> EjectedNeutronGun::binnedEnergySpectrum(){
 
     vector<double> neutronSpectrum;;
-    FileInPath spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
-    string NeutronFileFIP = spectrumFileName.fullPath();
+    ConfigFileLookupPolicy spectrumFileName;
+    string NeutronFileFIP = spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
     fstream infile(NeutronFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
       double en, val;
