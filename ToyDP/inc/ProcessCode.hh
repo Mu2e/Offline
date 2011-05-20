@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.7 2011/05/20 20:18:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:24 $
+// $Id: ProcessCode.hh,v 1.8 2011/05/20 22:24:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/20 22:24:33 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@ namespace mu2e {
       PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic,
       StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic,
       XiZeroInelastic,        mu2eLowEKine,            mu2eHallAir,         mu2eMaxSteps,
-      mu2ePrimary,            muMinusConversionAtRest,
+      mu2ePrimary,            muMinusConversionAtRest, hadElastic,          CoulombScat,
       lastEnum
     };
 
@@ -78,7 +78,7 @@ namespace mu2e {
     "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic",        \
     "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic",          \
     "XiZeroInelastic",        "mu2eLowEKine",            "mu2eHallAir",         "mu2eMaxSteps",              \
-    "mu2ePrimary",            "muMinusConversionAtRest"
+    "mu2ePrimary",            "muMinusConversionAtRest", "hadElastic",          "CoulombScat"
 
   public:
 
