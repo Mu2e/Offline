@@ -1,0 +1,112 @@
+      Some Examples of Customizing the MessageFacility in an fcl File
+      ---------------------------------------------------------------
+      
+Example 1: We want INFO level of messages (we will select interactive)
+           but one category of message, namely "chatter" would appear
+	   annoyingly often; we wish to set a limit of zero so as to 
+	   completely throttle all instances of "chatter" messages.
+	   
+#include "fcl/messageService.fcl"
+
+services :
+{
+  # perhaps some configuration unrelated to MessageFacility
+  
+  message : @local::mf_interactive
+  message.destinations.log.categories.chatter.limit : 0
+  
+  # and perhaps more configuration unrelated to MessageFacility
+}
+
+Example 2: We want the functionallity of the batch choice, but prefer that
+           the name of the log file be "myFileName.log" instead of 
+	   warning.log.  We still want the statistics to go to the same 
+	   file as the messages.
+	   
+#include "fcl/messageService.fcl"
+
+services :
+{
+  # perhaps some configuration unrelated to MessageFacility
+  
+  message : @local::mf_batch
+  message.destinations.log.filename : "myFileName.log"
+  message.statistics.stats.filename : "myFileName.log"
+  
+  # and perhaps more configuration unrelated to MessageFacility
+}
+
+Example 3: We want the debugging choice, but only want LogDebug output from
+           two modules, module_A and module_B.
+	   
+#include "fcl/messageService.fcl"
+
+services :
+{
+  # perhaps some configuration unrelated to MessageFacility
+  
+  message : @local::mf_debugging
+  message.debugModules : [ module_A, module_B ]
+  
+  # and perhaps more configuration unrelated to MessageFacility
+}
+
+Example 4: We want the debugging choice, with all the LogDebug output 
+	   **except** those LogDebug messages coming from from module_X.
+	   
+#include "fcl/messageService.fcl"
+
+services :
+{
+  # perhaps some configuration unrelated to MessageFacility
+  
+  message : @local::mf_debugging
+  message.suppressDebug : [ module_X ]
+  
+  # and perhaps more configuration unrelated to MessageFacility
+}
+
+Example 5: We want two separate log files, one with only the LogError level
+	   messages, and one more verbose with LogInfo and above, going
+	   to cout, exactly as if choosing the interactive configuration.  
+	   That is, we just wish to have one additoinal (standard) destination. 
+	   
+#include "fcl/messageService.fcl"
+
+services :
+{
+  # perhaps some configuration unrelated to MessageFacility
+  
+  message : @local::mf_error
+  message.destinations.verboselog: @local::mf_coutInfo
+  
+  # and perhaps more configuration unrelated to MessageFacility
+}
+
+Example 6: We want two separate log files, one with only the LogError level
+	   messages, and one more verbose with LogInfo and above, exactly
+	   as if choosing the interactive configuration.  We would like the
+	   output for the latter to go into info.log rather than to cout.
+	   And we want the message statistics to go only into the more 
+	   verbose file info.log.
+	   
+#include "fcl/messageService.fcl"
+
+services :
+{
+  # perhaps some configuration unrelated to MessageFacility
+  
+  message : @local::mf_error
+  message.log.statistics : { }       # eliminate statistics in log
+  message.destinations.verboselog: @local::mf_coutInfo
+  message.destinations.verboselog.type : file
+  message.destinations.verboselog.filename : "info.log"
+  message.statistics.vervboselog.statistics:
+  {
+    type     : file
+    filename : "info.log"
+  } 
+  
+  # and perhaps more configuration unrelated to MessageFacility
+}
+
