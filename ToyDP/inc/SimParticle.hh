@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.13 2011/05/20 20:18:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:24 $
+// $Id: SimParticle.hh,v 1.14 2011/05/21 22:27:32 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 22:27:32 $
 //
 // Original author Rob Kutschke
 //
@@ -20,14 +20,11 @@
 // 2) The trackId, parentIds and daughterIds are all of the correct type to be
 //    used to find the corresponding information in SimParticleCollection
 //
-// 3) I would like to make the PDG id code of type PDGCode::type.
-//    However I am worried that this might screw up the persistency
-//    mechanism if it resolves to different types on different machines.
-//
 
 #include <vector>
 
 // Mu2e includes
+#include "Mu2eUtilities/inc/PDGCode.hh"
 #include "ToyDP/inc/ProcessCode.hh"
 
 // Includes from external packages.
@@ -45,7 +42,7 @@ namespace mu2e {
 
     SimParticle( key_type                       aid,
                  key_type                       aparentId,
-                 int                            apdgId,
+                 PDGCode::type                  apdgId,
                  int                            agenIndex,
                  const CLHEP::Hep3Vector&       aposition,
                  const CLHEP::HepLorentzVector& amomentum,
@@ -103,7 +100,7 @@ namespace mu2e {
     bool      hasParent() const { return (_parentId != key_type(0)); }
 
     // PDG particle ID code.  See note 3.
-    int pdgId() const {return _pdgId;}
+    PDGCode::type pdgId() const {return _pdgId;}
 
     // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.
@@ -145,7 +142,7 @@ namespace mu2e {
     key_type _parentId;
 
     // PDG particle ID code.  See note 1.
-    int _pdgId;
+    PDGCode::type _pdgId;
 
     // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.

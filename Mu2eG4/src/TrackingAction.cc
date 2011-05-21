@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.24 2011/05/21 19:22:54 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.25 2011/05/21 22:27:32 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 19:22:54 $
+// $Date: 2011/05/21 22:27:32 $
 //
 // Original author Rob Kutschke
 //
@@ -171,7 +171,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
                                                          key_type(parentId),
-                                                         trk->GetDefinition()->GetPDGEncoding(),
+                                                         static_cast<PDGCode::type>(trk->GetDefinition()->GetPDGEncoding()),
                                                          generatorIndex,
                                                          trk->GetPosition()-_mu2eOrigin,
                                                          p4,
