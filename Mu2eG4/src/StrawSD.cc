@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.29 2011/05/20 22:22:22 kutschke Exp $
+// $Id: StrawSD.cc,v 1.30 2011/05/21 19:23:43 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/20 22:22:22 $
+// $Date: 2011/05/21 19:23:43 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -105,15 +106,11 @@ namespace mu2e {
 
   }
 
-
   StrawSD::~StrawSD(){ }
 
   void StrawSD::Initialize(G4HCofThisEvent* HCE){
-
     _currentSize=0;
-
   }
-
 
   G4bool StrawSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
@@ -219,7 +216,8 @@ namespace mu2e {
 
     // We add the hit object to the framework strawHit collection created in produce
 
-    ProcessCode endCode;
+    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    ProcessCode endCode(_processInfo->findAndCount(pname));
 
     _collection->push_back( StepPointMC(aStep->GetTrack()->GetTrackID(),
                                         sdcn,
@@ -440,8 +438,9 @@ namespace mu2e {
 
   }
 
-  void StrawSD::beforeG4Event(StepPointMCCollection& outputHits) {
-    _collection = &outputHits;
+  void StrawSD::beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo& processInfo) {
+    _collection  = &outputHits;
+    _processInfo = &processInfo;
     return;
   } // end of beforeG4Event
 

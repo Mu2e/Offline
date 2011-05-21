@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for Straws.
 //
-// $Id: StrawSD.hh,v 1.10 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: StrawSD.hh,v 1.11 2011/05/21 19:23:43 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 19:23:43 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,7 @@ namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
+  class PhysicsProcessInfo;
 
   class StrawSD : public G4VSensitiveDetector{
 
@@ -35,13 +36,17 @@ namespace mu2e {
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
 
-    void beforeG4Event(StepPointMCCollection& outputHits);
+    void beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo & processInfo );
 
   private:
 
     G4ThreeVector GetTrackerOrigin(const G4TouchableHandle & touchableHandle);
 
+    // Non-owning pointer to the  collection into which hits will be added.
     StepPointMCCollection* _collection;
+
+    // Non-ownning pointer and object that returns code describing physics processes.
+    PhysicsProcessInfo* _processInfo;
 
     int _nStrawsPerDevice;
     int _nStrawsPerSector;
