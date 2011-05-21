@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.26 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: classes.h,v 1.27 2011/05/21 22:05:12 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 22:05:12 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,6 @@
 #include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
 #include "ToyDP/inc/CaloHitCollection.hh"
 #include "ToyDP/inc/CaloHitMCTruthCollection.hh"
-#include "ToyDP/inc/CrudeStrawHitPData.hh"
 #include "ToyDP/inc/DPIndexVectorCollection.hh"
 #include "ToyDP/inc/G4BeamlineInfo.hh"
 #include "ToyDP/inc/G4BeamlineInfoCollection.hh"
@@ -53,12 +52,10 @@ template class std::pair<MapVectorKey,mu2e::SimParticle>;
 template class std::map<MapVectorKey,mu2e::SimParticle>;
 template class std::pair<MapVectorKey,mu2e::PointTrajectory>;
 template class std::map<MapVectorKey,mu2e::PointTrajectory>;
-template class std::vector<uint32_t>;
 
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
 template class art::Wrapper<mu2e::PhysicalVolumeInfoCollection>;
-template class art::Wrapper<mu2e::CrudeStrawHitPData>;
 template class art::Wrapper<mu2e::SimParticleCollection>;
 template class art::Wrapper<mu2e::HoughCircleCollection>;
 template class art::Wrapper<mu2e::StrawHitCollection>;
