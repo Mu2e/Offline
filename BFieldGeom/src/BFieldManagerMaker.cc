@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.19 2011/05/20 22:39:28 wb Exp $
+// $Id: BFieldManagerMaker.cc,v 1.20 2011/05/21 03:42:22 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/20 22:39:28 $
+// $Date: 2011/05/21 03:42:22 $
 //
 
 // Includes from C++
@@ -577,9 +577,9 @@ namespace mu2e {
     string path(_findConfig(binFilename));
     if( path.empty() )
       throw art::Exception(art::errors::FileOpenError)
-	<< "BFieldManagerMaker::readG4BLBinary: find_file failure: \n"
-	<< binFilename <<  "\n"
-	<< path << "\n";
+        << "BFieldManagerMaker::readG4BLBinary: find_file failure: \n"
+        << binFilename <<  "\n"
+        << path << "\n";
 
     // Number of points in each big array.
     int nPoints = bf.nx()*bf.ny()*bf.nz();

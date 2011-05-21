@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.16 2011/05/20 22:21:07 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/20 22:21:07 $
+// $Id: StepPointMC.hh,v 1.17 2011/05/21 03:42:22 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/21 03:42:22 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@ namespace mu2e {
                  CLHEP::Hep3Vector const& position,
                  CLHEP::Hep3Vector const& momentum,
                  double                   stepLength,
-		 ProcessCode              endProcessCode
+                 ProcessCode              endProcessCode
                  ):
       _trackId(MapVectorKey(trackId)),
       _volumeId(volumeId),

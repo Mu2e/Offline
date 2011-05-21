@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors
 //
-// $Id: CaloCrystalSD.cc,v 1.12 2011/05/20 22:22:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/20 22:22:22 $
+// $Id: CaloCrystalSD.cc,v 1.13 2011/05/21 03:42:22 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/21 03:42:22 $
 //
 // Original author Ivan Logashenko
 //
@@ -70,7 +70,7 @@ namespace mu2e {
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
         mf::LogWarning("G4") << "Maximum number of particles reached in CaloCrystalSD: "
-			     << _currentSize << endl;
+                             << _currentSize << endl;
       }
       return false;
     }
@@ -119,10 +119,10 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
       mf::LogWarning("G4") << "Total of " << _currentSize
-			   << " calorimeter hits were generated in the event."
-			   << endl
-			   << "Only " << _sizeLimit << " are saved in output collection."
-			   << endl;
+                           << " calorimeter hits were generated in the event."
+                           << endl
+                           << "Only " << _sizeLimit << " are saved in output collection."
+                           << endl;
     }
 
     if (verboseLevel>0) {
