@@ -1,8 +1,11 @@
 #include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
 #include "TMath.h"
 #include "cetlib/pow.h"
 #include <string>
+
+#include "G4VProcess.hh"
 
 using namespace std;
 
@@ -175,8 +178,12 @@ namespace mu2e {
    //                newHit->Print();
    //                //newHit->Draw();
 
-                  // We add the hit object to the framework itrackerHit collection created in produce
+                 // Which process caused this step to end?
+                 G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+                 ProcessCode endCode(_processInfo->findAndCount(pname));
 
+                 // Add the hit to the framework collection.
+                 // The point's coordinates are saved in the mu2e coordinate system.
                   _collection->push_back( StepPointMC(aStep->GetTrack()->GetTrackID(),
                                                       det,
                                                       idep,/*edep,*/
@@ -186,7 +193,7 @@ namespace mu2e {
                                                       prePosTracker,
                                                       preMomWorld,
                                                       step,
-                                                      ProcessCode()
+                                                      endCode
                                                       ));
 
                   // Some debugging tests.

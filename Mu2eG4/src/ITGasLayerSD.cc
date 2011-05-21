@@ -1,8 +1,8 @@
 //
 //
-//  $Id: ITGasLayerSD.cc,v 1.10 2011/05/20 22:39:28 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/20 22:39:28 $
+//  $Id: ITGasLayerSD.cc,v 1.11 2011/05/21 21:20:56 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2011/05/21 21:20:56 $
 //
 //
 
@@ -15,9 +15,8 @@
 // Mu2e includes
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
-//#include "GeometryService/inc/GeometryService.hh"
-//#include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -37,6 +36,7 @@ namespace mu2e {
   ITGasLayerSD::ITGasLayerSD(G4String name, const SimpleConfig& config) :
                   G4VSensitiveDetector(name),
                   _collection(0),
+                  _processInfo(0),
                   _debugList(0),
                   _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
                   _currentSize(0)
@@ -174,8 +174,9 @@ namespace mu2e {
 //
 //  }
 
-  void ITGasLayerSD::beforeG4Event(StepPointMCCollection& outputHits) {
-    _collection = &outputHits;
+  void ITGasLayerSD::beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo& processInfo) {
+    _collection  = &outputHits;
+    _processInfo = &processInfo;
     return;
   } // end of beforeG4Event
 

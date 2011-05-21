@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.11 2011/05/20 22:22:22 kutschke Exp $
+// $Id: CaloReadoutSD.cc,v 1.12 2011/05/21 21:20:56 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/20 22:22:22 $
+// $Date: 2011/05/21 21:20:56 $
 //
 // Original author Ivan Logashenko
 //
@@ -17,6 +17,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -37,6 +38,7 @@ namespace mu2e {
   CaloReadoutSD::CaloReadoutSD(G4String name, const SimpleConfig& config)
     : G4VSensitiveDetector(name),
       _collection(0),
+      _processInfo(0),
       _nro(0),
       _minE(0.0),
       _debugList(0),
@@ -97,9 +99,12 @@ namespace mu2e {
     // had to be calculated this way:
     // int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(1)*_nro;
 
-    // The points coordinates are saved in the mu2e world
+    // Which process caused this step to end?
+    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    ProcessCode endCode(_processInfo->findAndCount(pname));
 
-    // we add the hit to the framework collection
+    // Add the hit to the framework collection.
+    // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
       push_back(StepPointMC(aStep->GetTrack()->GetTrackID(),
                             idro,
@@ -110,7 +115,7 @@ namespace mu2e {
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPreStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
-                            ProcessCode()
+                            endCode
                             ));
 
     return true;
@@ -138,8 +143,9 @@ namespace mu2e {
   }
 
 
-  void CaloReadoutSD::beforeG4Event(StepPointMCCollection& outputHits) {
-    _collection = &outputHits;
+  void CaloReadoutSD::beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo& processInfo) {
+    _collection  = &outputHits;
+    _processInfo = &processInfo;
     return;
   } // end of beforeG4Event
 

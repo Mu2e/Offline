@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for
 //
-// $Id: CRSScintillatorBarSD.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: CRSScintillatorBarSD.hh,v 1.4 2011/05/21 21:20:56 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 21:20:56 $
 //
 // Original author KLG
 //
@@ -24,6 +24,7 @@ namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
+  class PhysicsProcessInfo;
 
   class CRSScintillatorBarSD : public G4VSensitiveDetector{
 
@@ -35,7 +36,7 @@ namespace mu2e {
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
 
-    void beforeG4Event(StepPointMCCollection& outputHits);
+    void beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo & processInfo );
 
     static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
       _mu2eOrigin = origin;
@@ -43,7 +44,11 @@ namespace mu2e {
 
   private:
 
+    // Non-owning pointer to the  collection into which hits will be added.
     StepPointMCCollection* _collection;
+
+    // Non-ownning pointer and object that returns code describing physics processes.
+    PhysicsProcessInfo* _processInfo;
 
     // Mu2e point of origin
     static G4ThreeVector _mu2eOrigin;

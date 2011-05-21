@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors
 //
-// $Id: VirtualDetectorSD.cc,v 1.13 2011/05/20 22:22:22 kutschke Exp $
+// $Id: VirtualDetectorSD.cc,v 1.14 2011/05/21 21:20:56 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/20 22:22:22 $
+// $Date: 2011/05/21 21:20:56 $
 //
 // Original author Ivan Logashenko
 //
@@ -16,6 +16,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // G4 includes
@@ -34,6 +35,7 @@ namespace mu2e {
   VirtualDetectorSD::VirtualDetectorSD(G4String name, const SimpleConfig& config):
     G4VSensitiveDetector(name),
     _collection(0),
+    _processInfo(0),
     _debugList(0),
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0)
@@ -77,9 +79,12 @@ namespace mu2e {
     //G4int trackId = aStep->GetTrack()->GetTrackID();
     //G4int copyNo = touchableHandle->GetCopyNumber();
 
-    // The points coordinates are saved in the mu2e world
+    // Which process caused this step to end?
+    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    ProcessCode endCode(_processInfo->findAndCount(pname));
 
-    // we add the hit to the framework collection
+    // Add the hit to the framework collection.
+    // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
       push_back(StepPointMC(aStep->GetTrack()->GetTrackID(),
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetCopyNo(),
@@ -90,7 +95,7 @@ namespace mu2e {
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPreStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
-                            ProcessCode()
+                            endCode
                             ));
 
     return true;
@@ -123,8 +128,9 @@ namespace mu2e {
   }
 
 
-  void VirtualDetectorSD::beforeG4Event(StepPointMCCollection& outputHits) {
-    _collection = &outputHits;
+  void VirtualDetectorSD::beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo& processInfo) {
+    _collection  = &outputHits;
+    _processInfo = &processInfo;
     return;
   } // end of beforeG4Event
 

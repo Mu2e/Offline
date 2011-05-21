@@ -20,6 +20,7 @@ namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
+  class PhysicsProcessInfo;
 
   class StoppingTargetSD : public G4VSensitiveDetector{
 
@@ -31,7 +32,7 @@ namespace mu2e {
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
 
-    void beforeG4Event(StepPointMCCollection& outputHits);
+    void beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo & processInfo );
 
     static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
       _mu2eOrigin = origin;
@@ -39,7 +40,11 @@ namespace mu2e {
 
   private:
 
+    // Non-owning pointer to the  collection into which hits will be added.
     StepPointMCCollection* _collection;
+
+    // Non-ownning pointer and object that returns code describing physics processes.
+    PhysicsProcessInfo* _processInfo;
 
     // Mu2e point of origin
     static G4ThreeVector _mu2eOrigin;

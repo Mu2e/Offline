@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.12 2011/05/21 20:03:16 kutschke Exp $
+// $Id: G4_module.cc,v 1.13 2011/05/21 21:20:56 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 20:03:16 $
+// $Date: 2011/05/21 21:20:56 $
 //
 // Original author Rob Kutschke
 //
@@ -342,7 +342,7 @@ namespace mu2e {
     if ( _config->getBool("hasITracker",false) ) {
             static_cast<ITGasLayerSD*>
             (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
-            beforeG4Event(*outputHits);
+            beforeG4Event(*outputHits, _processInfo);
 
     }else {
             static_cast<StrawSD*>
@@ -352,23 +352,23 @@ namespace mu2e {
 
     static_cast<VirtualDetectorSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()))->
-      beforeG4Event(*vdHits);
+      beforeG4Event(*vdHits, _processInfo);
 
     static_cast<StoppingTargetSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::StoppingTarget()))->
-      beforeG4Event(*stHits);
+      beforeG4Event(*stHits, _processInfo);
 
     static_cast<CRSScintillatorBarSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()))->
-      beforeG4Event(*sbHits);
+      beforeG4Event(*sbHits, _processInfo);
 
     static_cast<CaloCrystalSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
-      beforeG4Event(*caloHits);
+      beforeG4Event(*caloHits, _processInfo);
 
     static_cast<CaloReadoutSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()))->
-      beforeG4Event(*caloROHits);
+      beforeG4Event(*caloROHits, _processInfo);
 
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );

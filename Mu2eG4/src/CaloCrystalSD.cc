@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors
 //
-// $Id: CaloCrystalSD.cc,v 1.13 2011/05/21 03:42:22 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/21 03:42:22 $
+// $Id: CaloCrystalSD.cc,v 1.14 2011/05/21 21:20:56 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 21:20:56 $
 //
 // Original author Ivan Logashenko
 //
@@ -16,6 +16,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // G4 includes
@@ -34,6 +35,7 @@ namespace mu2e {
   CaloCrystalSD::CaloCrystalSD(G4String name, const SimpleConfig& config) :
     G4VSensitiveDetector(name),
     _collection(0),
+    _processInfo(0),
     _debugList(0),
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0)
@@ -96,7 +98,12 @@ namespace mu2e {
     // G4ThreeVector posWorld = aStep->GetPreStepPoint()->GetPosition();
     // G4ThreeVector posLocal = toLocal.TransformPoint(posWorld);
 
-    // we add the hit to the framework collection
+    // Which process caused this step to end?
+    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    ProcessCode endCode(_processInfo->findAndCount(pname));
+
+    // Add the hit to the framework collection.
+    // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
       push_back(StepPointMC(aStep->GetTrack()->GetTrackID(),
                             copyNo,
@@ -107,7 +114,7 @@ namespace mu2e {
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPreStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
-                            ProcessCode()
+                            endCode
                             ));
 
     return true;
@@ -135,8 +142,9 @@ namespace mu2e {
   }
 
 
-  void CaloCrystalSD::beforeG4Event(StepPointMCCollection& outputHits) {
-    _collection = &outputHits;
+  void CaloCrystalSD::beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo& processInfo) {
+    _collection  = &outputHits;
+    _processInfo = &processInfo;
     return;
   } // end of beforeG4Event
 

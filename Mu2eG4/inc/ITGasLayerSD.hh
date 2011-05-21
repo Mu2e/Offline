@@ -33,6 +33,7 @@ namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
+  class PhysicsProcessInfo;
 
   class ITGasLayerSD : public G4VSensitiveDetector{
 
@@ -45,20 +46,24 @@ namespace mu2e {
 //    G4bool ProcessHits(G4Step*, G4TouchableHistory*) { return false; }
     void EndOfEvent(G4HCofThisEvent*);
 
-    void beforeG4Event(StepPointMCCollection& outputHits);
+    void beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo & processInfo );
 
     static void setMu2eDetCenterInWorld(const G4ThreeVector &origin) {
             _mu2eDetCenter = origin;
     }
 
   protected:
-//    StepPointG4Collection* _collection;
+
     int _superlayer;
     int _ring;
     int _nwires;
     double _Dphi;
 
+    // Non-owning pointer to the  collection into which hits will be added.
     StepPointMCCollection* _collection;
+
+    // Non-ownning pointer and object that returns code describing physics processes.
+    PhysicsProcessInfo* _processInfo;
 
     // List of events for which to enable debug printout.
     EventNumberList _debugList;

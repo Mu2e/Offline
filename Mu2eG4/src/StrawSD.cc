@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.30 2011/05/21 19:23:43 kutschke Exp $
+// $Id: StrawSD.cc,v 1.31 2011/05/21 21:20:56 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 19:23:43 $
+// $Date: 2011/05/21 21:20:56 $
 //
 // Original author Rob Kutschke
 //
@@ -47,6 +47,7 @@ namespace mu2e {
   StrawSD::StrawSD(G4String name, const SimpleConfig& config ):
     G4VSensitiveDetector(name),
     _collection(0),
+    _processInfo(0),
     _nStrawsPerDevice(0),
     _nStrawsPerSector(0),
     _TrackerVersion(0),
