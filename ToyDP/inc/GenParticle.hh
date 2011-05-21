@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: GenParticle.hh,v 1.2 2011/05/20 20:18:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:24 $
+// $Id: GenParticle.hh,v 1.3 2011/05/21 22:26:56 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 22:26:56 $
 //
 // Original author Rob Kutschke
 //
@@ -36,10 +36,10 @@ namespace mu2e {
     GenParticle(){}
 
     GenParticle( PDGCode::type pdgId,
-                    GenId generatorId,
-                    CLHEP::Hep3Vector const&       position,
-                    CLHEP::HepLorentzVector const& momentum,
-                    double time):
+                 GenId generatorId,
+                 CLHEP::Hep3Vector const&       position,
+                 CLHEP::HepLorentzVector const& momentum,
+                 double time):
       _pdgId(pdgId),
       _generatorId(generatorId),
       _position(position),
