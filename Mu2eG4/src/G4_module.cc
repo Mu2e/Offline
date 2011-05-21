@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.10 2011/05/20 21:31:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 21:31:24 $
+// $Id: G4_module.cc,v 1.11 2011/05/21 19:22:26 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 19:22:26 $
 //
 // Original author Rob Kutschke
 //
@@ -61,6 +61,7 @@
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
@@ -117,6 +118,9 @@ namespace mu2e {
       _rmvlevel(pSet.get<int>("rmvlevel",0)),
       _visMacro(pSet.get<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
+      _physVolHelper(),
+      _processInfo(),
+      _printPhysicsProcessSummary(false),
       _trackerOutputName("tracker"),
       _vdOutputName("virtualdetector"),
       _stOutputName("stoppingtarget"),
@@ -180,6 +184,10 @@ namespace mu2e {
 
     // Helps with indexology related to persisting info about G4 volumes.
     PhysicalVolumeHelper _physVolHelper;
+
+    // Helps with recording information about physics processes.
+    PhysicsProcessInfo _processInfo;
+    bool _printPhysicsProcessSummary;
 
     // Names of output collections
     const std::string _trackerOutputName;
@@ -284,6 +292,7 @@ namespace mu2e {
 
     // Helps with indexology related to persisting G4 volume information.
     _physVolHelper.beginRun();
+    _processInfo.beginRun();
 
     // Add info about the G4 volumes to the run-data.
     // The framework rules requires we make a copy and add the copy.
@@ -293,7 +302,7 @@ namespace mu2e {
 
     // Some of the user actions have beginRun methods.
     _genAction->setWorld(world);
-    _trackingAction->beginRun( _physVolHelper, _mu2eOrigin );
+    _trackingAction->beginRun( _physVolHelper, _processInfo, _mu2eOrigin );
     _steppingAction->beginRun( );
     _stackingAction->beginRun( world->getDirtG4Ymin(), world->getDirtG4Ymax() );
 
@@ -326,6 +335,10 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const* _config = &(geom->config());
 
+    // Get some run-time configuration information.
+    _printPhysicsProcessSummary  = _config->getBool("g4.printPhysicsProcessSummary",false);
+    
+
     if ( _config->getBool("hasITracker",false) ) {
             static_cast<ITGasLayerSD*>
             (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
@@ -334,7 +347,7 @@ namespace mu2e {
     }else {
             static_cast<StrawSD*>
             (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
-            beforeG4Event(*outputHits);
+             beforeG4Event(*outputHits, _processInfo);
     }
 
     static_cast<VirtualDetectorSD*>
@@ -454,6 +467,10 @@ namespace mu2e {
     _runManager->BeamOnEndRun();
     _physVolHelper.endRun();
     _trackingAction->endRun();
+
+    if ( _printPhysicsProcessSummary ){
+      _processInfo.endRun();
+    }
 
     delete _visManager;
   }
