@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.13 2011/05/21 21:20:56 kutschke Exp $
+// $Id: G4_module.cc,v 1.14 2011/05/21 21:23:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 21:20:56 $
+// $Date: 2011/05/21 21:23:11 $
 //
 // Original author Rob Kutschke
 //
@@ -442,7 +442,7 @@ namespace mu2e {
             << "Early end of event loop requested inside G4, \n";
         } else if ( c == 'v' ){
           G4int argc=1;
-	  // Cast away const-ness; required by the G4 interface ...
+          // Cast away const-ness; required by the G4 interface ...
           char* dummy = (char *)"dummy";
           char** argv = &dummy;
           G4UIExecutive* UIE = new G4UIExecutive(argc, argv);
