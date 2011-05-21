@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.17 2011/05/21 03:42:22 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/21 03:42:22 $
+// $Id: StepPointMC.hh,v 1.18 2011/05/21 19:21:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 19:21:53 $
 //
 // Original author Rob Kutschke
 //
@@ -88,6 +88,7 @@ namespace mu2e {
     double                   time()             const { return _time;      }
     double                   properTime()       const { return _proper;      }
     double                   stepLength()       const { return _stepLength;}
+    ProcessCode              endProcessCode()   const { return _endProcessCode;}
 
     // Kept for backwards compatibility.
     double eDep()     const { return _totalEnergyDeposit;    }
