@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.18 2011/05/20 22:26:19 kutschke Exp $
+# $Id: SConscript,v 1.19 2011/05/21 22:51:36 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/20 22:26:19 $
+# $Date: 2011/05/21 22:51:36 $
 #
 # Original author Rob Kutschke.
 #
@@ -14,7 +14,6 @@ Import('env')
 #    lib/libMu2eG4.so.  Why?
 # 2) Construct G4GRANULARLIBS using shell() on the g4 command that makes
 #    the granular lib string.
-# 3) Make an enviornment variable for the system flavor: Linux-g++.
 #
 
 g4inc    = os.environ['G4INCLUDE']
@@ -91,8 +90,7 @@ G4GRANULARLIBS = [
            'G4partman',                           'G4geometrymng',
            'G4materials',                         'G4graphics_reps',
            'G4intercoms',                         'G4globman'
-# new geant 9.3 granular libs:
-          ,'G4emadjoint',
+          ,'G4emadjoint',                         'G4partadj', 
            'G4gl2ps',
            'G4GMocren',
            'G4hadronic_crosec_ci',
