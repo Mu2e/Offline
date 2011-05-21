@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_module.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: ReadBack0_module.cc,v 1.1 2011/05/21 22:53:44 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 22:53:44 $
 //
 // Original author Rob Kutschke
 //

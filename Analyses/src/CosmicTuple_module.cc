@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.3 2011/05/20 17:44:58 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 17:44:58 $
+// $Id: CosmicTuple_module.cc,v 1.1 2011/05/21 22:53:44 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 22:53:44 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //

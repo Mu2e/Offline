@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.5 2011/05/19 23:51:50 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/05/19 23:51:50 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.1 2011/05/21 22:53:44 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2011/05/21 22:53:44 $
 //
 // Original author Ivan Logashenko
 //
