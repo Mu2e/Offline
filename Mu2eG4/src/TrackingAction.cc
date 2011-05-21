@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.23 2011/05/18 16:11:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 16:11:17 $
+// $Id: TrackingAction.cc,v 1.24 2011/05/21 19:22:54 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 19:22:54 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@ namespace mu2e {
     _currentSize(0),
     _overflowSimParticles(false),
     _steppingAction(steppingAction),
-    _printPhysicsProcessSummary(config.getBool("g4.printPhysicsProcessSummary",false)){
+    _processInfo(0){
 
     string name("g4.trackingActionEventList");
     if ( config.hasName(name) ){
@@ -72,20 +72,17 @@ namespace mu2e {
   TrackingAction::~TrackingAction(){
   }
 
-  // Receive persistent volume information and save it for the duration of the run.
+  // Receive information that has a lifetime of a run.
   void TrackingAction::beginRun( const PhysicalVolumeHelper& physVolHelper,
+                                 PhysicsProcessInfo& processInfo,
                                  CLHEP::Hep3Vector const& mu2eOrigin ){
     _physVolHelper = &physVolHelper;
+    _processInfo   = &processInfo;
     _mu2eOrigin    =  mu2eOrigin;
-    _processInfo.beginRun();
   }
 
   void TrackingAction::endRun(){
-    if ( _printPhysicsProcessSummary ){
-      _processInfo.endRun();
-    }
   }
-
 
   void TrackingAction::PreUserTrackingAction(const G4Track* trk){
 
@@ -217,7 +214,7 @@ namespace mu2e {
 
     // Reason why tracking stopped, decay, range out, etc.
     G4String pname  = findStoppingProcess(trk);
-    ProcessCode stoppingCode(_processInfo.findAndCount(pname));
+    ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,

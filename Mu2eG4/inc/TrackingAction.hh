@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.14 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: TrackingAction.hh,v 1.15 2011/05/21 19:22:54 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 19:22:54 $
 //
 // Original author Rob Kutschke
 //
@@ -61,6 +61,7 @@ namespace mu2e {
 
     // Receive persistent volume information and save it for the duration of the run.
     void beginRun( const PhysicalVolumeHelper& physVolHelper,
+                   PhysicsProcessInfo& processInfo,
                    CLHEP::Hep3Vector const& mu2eOrigin );
 
     // Clean up at end of run.
@@ -82,11 +83,14 @@ namespace mu2e {
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugList;
 
-    // Utility to translate between transient and persistent representations.
+    // Non-owing pointer to the utility that translates between transient and persistent 
+    // representations of info about volumes.
     const PhysicalVolumeHelper* _physVolHelper;
 
+    // Origin of Mu2e Coordinate system in the G4 world system.
     CLHEP::Hep3Vector _mu2eOrigin;
 
+    // Event timer.
     art::CPUTimer _timer;
 
     // Information about SimParticles is collected in this map
@@ -101,14 +105,12 @@ namespace mu2e {
     int _currentSize;
     bool _overflowSimParticles;
 
-    // Non-owning pointer to stepping action.
+    // Non-owning pointer to stepping action; lifetime of pointee is one run.
     SteppingAction * _steppingAction;
 
-    // Non-owning pointer to the information about physical processes.
-    PhysicsProcessInfo  _processInfo;
-
-    // Do we print the summary of the process information at the end of the job.
-    bool _printPhysicsProcessSummary;
+    // Non-owning pointer to the information about physical processes;
+    // lifetime of pointee is one run.
+    PhysicsProcessInfo *  _processInfo;
 
     // Control the saving of trajectories.
     // The first method does the big picture bookkeeping.
