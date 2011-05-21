@@ -1,9 +1,9 @@
 //
 // Free function to be used by the nest... functions
 //
-// $Id: finishNesting.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: finishNesting.cc,v 1.6 2011/05/21 20:04:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/21 20:04:15 $
 //
 // Original author KLG based on nest... functions
 //
@@ -117,17 +117,15 @@ namespace mu2e {
 
     info.logical  = new G4LogicalVolume( info.solid, material, info.name);
 
-    info.physical  =  placePV ?
-      info.physical = new G4PVPlacement( rot,
-                                         offset,
-                                         info.logical,
-                                         info.name,
-                                         parent,
-                                         0,
-                                         copyNo,
-                                         doSurfaceCheck)
-      :
-      0;
+    info.physical  =  placePV ? new G4PVPlacement( rot,
+                                                   offset,
+                                                   info.logical,
+                                                   info.name,
+                                                   parent,
+                                                   0,
+                                                   copyNo,
+                                                   doSurfaceCheck)
+                              : 0;
 
     // uncomment for a more thorrow overlap check
     // doSurfaceCheck && info.physical!=0 && info.physical->CheckOverlaps(100000,0.0,false);
