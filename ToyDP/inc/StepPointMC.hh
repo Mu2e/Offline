@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.18 2011/05/21 19:21:53 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.19 2011/05/21 21:20:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 19:21:53 $
+// $Date: 2011/05/21 21:20:04 $
 //
 // Original author Rob Kutschke
 //
@@ -83,6 +83,7 @@ namespace mu2e {
     VolumeId_type            volumeId()         const { return _volumeId;  }
     double                   totalEDep()        const { return _totalEnergyDeposit; }
     double                   nonIonizingEDep()  const { return _nonIonizingEnergyDeposit; }
+    double                   ionizingEdep()     const { return _totalEnergyDeposit-_nonIonizingEnergyDeposit; }
     CLHEP::Hep3Vector const& position()         const { return _position;  }
     CLHEP::Hep3Vector const& momentum()         const { return _momentum;  }
     double                   time()             const { return _time;      }
