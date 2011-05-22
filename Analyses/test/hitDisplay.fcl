@@ -1,0 +1,89 @@
+#
+# $Id: hitDisplay.fcl,v 1.1 2011/05/22 20:23:06 mf Exp $
+# $Author: mf $
+# $Date: 2011/05/22 20:23:06 $
+#
+# Original author Rob Kutschke
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/diagnostics.fcl"
+#include "fcl/standardProducers.fcl"
+
+# Give this process a name.
+process_name : HitDisplay
+
+# Read events from a file (made by example 3)
+source :
+{
+  module_type : RootInput
+  fileNames : ["data_03.root"]
+  maxEvents : 5
+}
+
+services :
+{
+  message : @local::mf_debugging
+
+  # Adjust configuration of message logger:
+  # Load the standard message logger configuration:
+  # Threshold=Info (from using mf_interactive). 
+  # Limit of 5 per category; then exponential backoff.
+  message.destinations.log.default.limit : 5
+    
+    
+  TFileService :
+  {
+    fileName      : "hitDisplay.root"
+    closeFileFase : false
+  }
+
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01.txt"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+  }
+
+} # close of services block
+
+physics :
+{
+  producers:
+  {
+  }
+
+  analyzers:
+  {
+    # Look at the hits from G4.
+    hitDisplay:
+    {
+      module_type          : HitDisplay
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      hitMakerModuleLabel  : makeSH
+      trackerStepPoints    : tracker
+      minEnergyDep         : 0.0001
+      minHits              : 5
+      doDisplay            : true
+    }
+  }
+
+  p1 : []
+  e1 : [hitDisplay]
+
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+
+

@@ -1,0 +1,171 @@
+# Configuration file for BkgRatesCounter
+#  - Generate events including of background processes.
+#  - Run these through G4.
+#  - No event display.
+#  - Form StrawHits from StepPointMC objects
+#  - Write event data to an output file
+#  - Save state of random numbers to the event-data output file
+#
+# $Id: BkgRatesCounter.fcl,v 1.1 2011/05/22 20:23:06 mf Exp $
+# $Author: mf $
+# $Date: 2011/05/22 20:23:06 $
+#
+# Original author Gianni Onorato.
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/diagnostics.fcl"
+#include "fcl/standardProducers.fcl"
+
+# Give this process a name.
+process_name : BkgRatesCounter
+
+# Start each new event with an empty event.
+source :
+{
+  module_type : EmptySource
+  maxEvents : 500
+}
+
+services :
+{
+  message : @local::mf_debugging
+
+  # Adjust configuration of message logger:
+  # Load the standard message logger configuration:
+  # Threshold=Info (from using mf_interactive). 
+  # Limit of 5 per category; then exponential backoff.
+  message.destinations.log.default.limit : 5
+   
+  TFileService :
+  {
+    fileName      : "BkgRates.root"
+    closeFileFase : false
+  }
+
+  RandomNumberGeneratorService : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01.txt"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+    G4Helper : { }
+
+    # Uncomment to enable per module timing
+    # Timing :
+    # {
+    #   useJobReport : true 
+    # }
+
+    # Uncomment to enable memory use profiling
+    # SimpleMemoryCheck :
+    # {
+    #   oncePerEventMode : false 
+    #   showMallocInfo   : ignoreTotal 
+    #   ignoreTotal      : 5 
+    # }
+
+    # Uncomment to enable trace printout to show what the framework calls when.
+    # Tracer : { } 
+  }
+
+} # close of services block
+
+physics :
+{
+  producers:
+  {
+    # Save state of random numbers to the event.
+    randomsaver:
+    {
+      module_type   : RandomNumberSaver
+    }
+    # Make some generated tracks and add them to the event.
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Analyses/test/genconfig_Bkg.txt"
+      seed          : [7789]
+    }
+    # Run G4 and add its hits to the event.
+    g4run:
+    {
+      module_type   : G4
+      seed          : [9877]
+    }
+    # Form StrawHits (SH).
+    makeTH:@local::makeSH
+      # For ITracker, replace with MakeDriftCellHit, which is not one of 
+      # the standard producers.
+ 
+    # Form CaloCrystalHits 
+    CaloCrystalHitsMaker: @local::CaloCrystalHitsMaker
+    CaloCrystalHitsMaker.maxFullPrint: 201
+
+    # Form CaloROHits 
+    CaloROHitsMaker: @local::CaloROHitsMaker
+    CaloROHitsMaker.maxFullPrint: 201
+
+    # Filter module. Do not write events with no Tracker or calo hits
+    filterEmpty :
+    {
+      module_type      : FilterEmptyEvents
+      makerModuleLabel : makeTH
+      keepTrackOrCalo  : 0
+    }
+  }
+
+  analyzers:
+  {
+   # Look at the hits from G4.
+    CountRates:
+    {
+      module_type         : BkgRates
+      # diagLevel         : 0
+      makerModuleLabel    : makeTH
+      maxFullPrint        : 50
+      skipStoppedParticle : false
+      # g4ModuleLabel     : g4run
+      # minimumEnergy     : 0.001
+    }
+  }
+
+  p1 : [ randomsaver
+       , generate
+       , g4run
+       , makeTH
+       , CaloROHitsMaker
+       , CaloCrystalHitsMaker
+       # , filterEmpty
+       ]
+  e1 : [CountRates, outfile ]
+
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  # Define the output file.
+  outfile : 
+  {
+    module_type    : RootOutput
+    filename       : "data_bkg.root"
+    outputCommands : ['keep *_*_*_*'
+                   # , 'drop mu2ePointTrajectoryMapVector_*_*_*'
+                   # , 'drop mu2eSimParticles_*_*_*'
+		   # Uncomment the above line to reduce file size.
+                     ]  
+  }
+}
+
+

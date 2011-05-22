@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClusters.fcl,v 1.5 2011/05/22 17:55:25 mf Exp $
+# $Id: makeDPIStrawClusters.fcl,v 1.6 2011/05/22 20:23:06 mf Exp $
 # $Author: mf $
-# $Date: 2011/05/22 17:55:25 $
+# $Date: 2011/05/22 20:23:06 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/diagnostics.fcl"
@@ -26,7 +26,7 @@ services :
   TFileService :
   {
     fileName      : "makeDPIStrawClusters.root"
-    closeFileFase : false
+    closeFileFast : false
   }
 
   RandomNumberGenerator : { }
@@ -51,6 +51,12 @@ physics :
 {
   producers:
   {
+    # Save state of random numbers to the event.
+    randomsaver:
+    {
+      module_type   : RandomNumberSaver
+    }
+
     # Form StrawHits (SH).
     makeSH: @local::makeSH
 
@@ -89,7 +95,7 @@ physics :
 
   }
 
-  p1 : [makeSH , makeSC ]
+  p1 : [randomsaver, makeSH , makeSC ]
   e1 : [testSH , testSC ]
 
 

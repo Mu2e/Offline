@@ -1,33 +1,37 @@
-# Configuration file for making StrawHits.
+# Configuration file for looking at the straws in the geometry
 #
-# $Id: makeDPIStrawClustersAndTau.fcl,v 1.6 2011/05/22 20:23:06 mf Exp $
+# $Id: GrokGeometry.fcl,v 1.1 2011/05/22 20:23:06 mf Exp $
 # $Author: mf $
 # $Date: 2011/05/22 20:23:06 $
-
+#
+# Written by Mark Fischler starting from 
+# makeDPIStrawClusters by authors Rob Kutschke and Hans Wenzel
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/diagnostics.fcl"
 #include "fcl/standardProducers.fcl"
 
-
 # Give this job a name.
-process_name : HitTest01
+process_name : StrawDescriptionsTest
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
 source :
 {
   module_type : RootInput
-  fileNames : ["/grid/data/mf/data_03-500.root"]
-  maxEvents : -1
+  fileNames : ["data_03.root"]
+  maxEvents : 1
 }
 
 services :
 {
   message : @local::default_message
-
+  # Adjust configuration of message logger:
+  # Limit of 5 per category; then exponential backoff.
+  message.destinations.log.default.limit : 5
+   
   TFileService :
   {
-    fileName      : "makeDPISCsBetaTauTheta.root"
+    fileName      : "grokGeometry.root"
     closeFileFast : false
   }
 
@@ -53,12 +57,6 @@ physics :
 {
   producers:
   {
-    # Save state of random numbers to the event.
-    randomsaver:
-    {
-      module_type   : RandomNumberSaver
-    }
-
     # Form StrawHits (SH).
     makeSH: @local::makeSH
 
@@ -84,10 +82,10 @@ physics :
       maxFullPrint     : @local::maxFullPrint
     }
 
-    # Check the StrawClusters, and capture plots of tau, beta and tan theta
+    # Check the StrawClusters
     testSC:
     {
-      module_type        : BetaTauPitch
+      module_type        : ReadDPIStrawCluster
       g4ModuleLabel      : g4run
       makerModuleLabel   : makeSH
       clmakerModuleLabel : makeSC
@@ -97,7 +95,7 @@ physics :
 
   }
 
-  p1 : [randomsaver, makeSH , makeSC ]
+  p1 : [makeSH , makeSC ]
   e1 : [testSH , testSC ]
 
 

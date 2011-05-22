@@ -1,0 +1,151 @@
+# Configuration file for G4Test03-500
+#  - Generate 5000 (not 500) events including one conversion electron plus
+#    some number of background processes.
+#  - Run these through G4.
+#  - No event display.
+#  - Form StrawHits from StepPointMC objects
+#  - Write event data to an output file
+#  - Save state of random numbers to the event-data output file
+#
+# $Id: g4test_03-5000.fcl,v 1.1 2011/05/22 20:23:06 mf Exp $
+# $Author: mf $
+# $Date: 2011/05/22 20:23:06 $
+#
+# Original author Rob Kutschke
+
+#include "fcl/messageService.fcl"
+#include "fcl/diagnostics.fcl"
+#include "fcl/standardProducers.fcl"
+
+# Give this job a name.
+process_name : "G4Test03-500"
+
+# Start each new event with an empty event.
+source :
+{
+  module_type : EmptySource
+  maxEvents : 5000
+}
+
+services :
+{
+  message : @local::mf_batch
+   
+  TFileService :
+  {
+    fileName      : "g4test_03-500.root"
+    closeFileFast : false
+  }
+
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01.txt"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+    G4Helper : { }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+    # Save state of random numbers to the event.
+    randomsaver:
+    {
+      module_type   : RandomNumberSaver
+    }
+
+    # Make some generated tracks and add them to the event.
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/multiDIO.txt"
+      seed          : [7789]
+    }
+    # Run G4 and add its hits to the event.
+    g4run:
+    {
+      module_type   : G4
+      seed          : [9877]
+    }
+    # Form StrawHits (SH).
+    makeSH: @local::makeSH
+
+    # Form CaloROHits (APD hits)
+    CaloROHitsMaker: @local::CaloROHitsMaker
+    CaloROHitsMaker.maxFullPrint: 201
+
+    # Form CaloCrystalHits (reconstruct crystals from APDs)
+    CaloCrystalHitsMaker: @local::CaloCrystalHitsMaker
+    CaloCrystalHitsMaker.maxFullPrint: 201
+    
+ }
+
+  analyzers:
+  {
+    # Look at the hits from G4.
+    checkhits:
+    {
+      module_type          : ReadBack
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      minimumEnergy        : 0.001
+      diagLevel            : @local::diagLevel
+      maxFullPrint         : 201
+    }
+
+    # Check the StrawClusters
+    testSC:
+    {
+      module_type        : ReadDPIStrawCluster
+      g4ModuleLabel      : g4run
+      makerModuleLabel   : makeSH
+      clmakerModuleLabel : makeSC
+      diagLevel          : @local::diagLevel
+      maxFullPrint       : @local::maxFullPrint
+    }
+
+  }
+
+  p1 : [ randomsaver
+       , generate
+       , g4run
+       , makeSH 
+       , CaloReadoutHitsMaker
+       , CaloCrystalHitsMaker ]
+  e1 : [checkhits , outfile ]
+
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  # Define the output file.
+  outfile : 
+  {
+    module_type    : RootOutput
+    filename       : "data_03-500.root"
+    outputCommands : [ 'keep *_*_*_*'
+                     , 'drop mu2ePointTrajectoryMapVector_*_*_*'
+		   # , 'drop mu2eSimParticles_*_*_*'
+		   # Uncomment the above line to reduce file size.
+                     ]  
+  }
+}
+
+

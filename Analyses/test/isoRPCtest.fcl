@@ -2,7 +2,7 @@
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: RPCtest.fcl,v 1.3 2011/05/22 20:23:06 mf Exp $
+# $Id: isoRPCtest.fcl,v 1.1 2011/05/22 20:23:06 mf Exp $
 # $Author: mf $
 # $Date: 2011/05/22 20:23:06 $
 #
@@ -27,7 +27,7 @@ source :
 
 services :
 {
-  message : @local::mf_interactive
+  message : @local::mf_debugging
 
   # Adjust configuration of message logger:
   # Load the standard message logger configuration:
@@ -37,7 +37,7 @@ services :
     
   TFileService :
   {
-    fileName      : "radiativePiTest.root"
+    fileName      : "randomsaver"
     closeFileFase : false
   }
 

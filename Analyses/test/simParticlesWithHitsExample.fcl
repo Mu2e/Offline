@@ -1,8 +1,8 @@
 #
 #
-# $Id: simParticlesWithHitsExample.fcl,v 1.2 2011/05/22 17:55:25 mf Exp $
+# $Id: simParticlesWithHitsExample.fcl,v 1.3 2011/05/22 20:23:06 mf Exp $
 # $Author: mf $
-# $Date: 2011/05/22 17:55:25 $
+# $Date: 2011/05/22 20:23:06 $
 #
 # Original author Rob Kutschke
 
@@ -28,8 +28,8 @@ services :
   # Enable debug printout from the module instance "hitinspect",
   # and Print unlimited messages with categories ToyHitInfo and GEOM
   message.debugModules : [hitinspect]
-  message.categories.ToyHitInfo.limit = -1
-  message.categories.GEOM.limit = -1
+  message.categories.ToyHitInfo.limit : -1
+  message.categories.GEOM.limit       : -1
     
   TFileService :
   {
@@ -75,6 +75,12 @@ physics :
 {
   producers:
   {
+    # Save state of random numbers to the event.
+    randomsaver:
+    {
+      module_type   : RandomNumberSaver
+    }
+
     # Make some generated tracks and add them to the event.
     generate:
     {
@@ -86,17 +92,10 @@ physics :
     g4run:
     {
       module_type   : G4
-      inputfile     : "Mu2eG4/test/multiDIO.txt"
       seed          : [9877]
     }
     # Form StrawHits (SH).
     makeSH:@local::makeSH
-
-    # Save state of random numbers to the event.
-    randomsaver:
-    {
-      module_type   : RandomNumberSaver
-    }
   }
 
   analyzers:
@@ -128,7 +127,7 @@ outputs:
   outfile : 
   {
     module_type    : RootOutput
-    filename       : strawHitExample_data.root
+    filename       : "strawHitExample_data.root"
     outputCommands : ['keep *_*_*_*'
                    # , 'drop mu2eSimParticles_*_*_*'
 		   # Uncomment the above line to reduce file size.

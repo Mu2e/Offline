@@ -1,8 +1,8 @@
-# Configuration file for Radiative Pi Capture
+# Configuration file for Conversion Electrons
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: RPCtest.fcl,v 1.3 2011/05/22 20:23:06 mf Exp $
+# $Id: ConversionEnergyLoss.fcl,v 1.1 2011/05/22 20:23:06 mf Exp $
 # $Author: mf $
 # $Date: 2011/05/22 20:23:06 $
 #
@@ -13,15 +13,15 @@
 #include "fcl/standardProducers.fcl"
 
 # Give this process a name.
-process_name : RadiativePiTest
+process_name : ConversionEnergyLoss
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
 source :
 {
   module_type : EmptySource
-  maxEvents   : 10000000
+  # maxEvents : 10000000
   # maxEvents :  1000000
-  # maxEvents :   100000
+    maxEvents :   100000
   # maxEvents :        1
 }
 
@@ -30,14 +30,16 @@ services :
   message : @local::mf_interactive
 
   # Adjust configuration of message logger:
-  # Load the standard message logger configuration:
-  # Threshold=Info (from using mf_interactive). 
-  # Limit of 5 per category; then exponential backoff.
-  message.destinations.log.default.limit : 5
-    
+  # Enable debug printout from the module instance "hitinspect",
+  # and Print unlimited messages with categories ToyHitInfo, GEOM, g4run
+  message.debugModules : [hitinspect]
+  message.categories.ToyHitInfo.limit : -1
+  message.categories.GEOM.limit       : -1
+  message.categories.g4run.limit      : -1
+        
   TFileService :
   {
-    fileName      : "radiativePiTest.root"
+    fileName      : "conversionEnergyLoss.root"
     closeFileFase : false
   }
 
@@ -65,9 +67,8 @@ physics :
     # Make some generated tracks and add them to the event.
     generate:
     {
-      module_type   : EventGenerator
-      inputfile     : "Analyses/test/RPCconfig.txt"
-      seed          : [7789]
+      module_type        : EventGenerator
+      inputfile          : "Analyses/test/ConversionEnergyLossconfig.txt"
     }
     # Run G4 and add its hits to the event.
     g4run:
@@ -91,10 +92,10 @@ physics :
     # Look at the hits from G4.
     checkhits:
     {
-      module_type   : RPC
+      module_type   : CEL
       g4ModuleLabel : g4run
       minimumEnergy : 0.001
-      maxFullPrint  : @local::maxFullPrint
+      maxFullPrint  : 5
     }
   }
 
