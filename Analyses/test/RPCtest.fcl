@@ -2,21 +2,20 @@
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: RPCtest.fcl,v 1.1 2011/05/20 22:29:46 mf Exp $
+# $Id: RPCtest.fcl,v 1.2 2011/05/22 17:55:25 mf Exp $
 # $Author: mf $
-# $Date: 2011/05/20 22:29:46 $
+# $Date: 2011/05/22 17:55:25 $
 #
 # Original author Rob Kutschke
 
 #include "messageService.fcl"
 
-BEGIN_PROLOG
-  diagLevel    : 0
-  maxFullPrint : 5
-END_PROLOG
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/diagnostics.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this process a name.
-process : RadiativePiTest
+process_name : RadiativePiTest
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
 source :
@@ -46,7 +45,7 @@ services :
     closeFileFase : false
   }
 
-  RandomNumberGeneratorService : { }
+  RandomNumberGenerator : { }
 
   user :
   {
@@ -84,6 +83,11 @@ physics :
       particlesSizeLimit   : 10000                   # SimParticle
       seed                 : [9877]
     }
+    # Save state of random numbers to the event.
+    randomsaver:
+    {
+      module_type   : RandomNumberSaver
+    }
   }
 
   analyzers:
@@ -96,14 +100,9 @@ physics :
       minimumEnergy : 0.001
       maxFullPrint  : @local::maxFullPrint
     }
-    # Save state of random numbers to the event.
-    randomsaver:
-    {
-      module_type   : RandomNumberSaver
-    }
   }
 
-  p1 : [generate, g4run]
+  p1 : [generate, g4run, randomsaver]
   e1 : [checkhitso]
 
 

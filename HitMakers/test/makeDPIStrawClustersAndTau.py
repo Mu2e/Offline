@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits and extracting beta, tau, and tan theta
 #
-# $Id: makeDPIStrawClustersAndTau.py,v 1.2 2011/05/18 02:27:16 wb Exp $
-# $Author: wb $
-# $Date: 2011/05/18 02:27:16 $
+# $Id: makeDPIStrawClustersAndTau.py,v 1.3 2011/05/22 17:55:25 mf Exp $
+# $Author: mf $
+# $Date: 2011/05/22 17:55:25 $
 #
 # From makeDPIStrawClusters by authors Rob Kutschke and Hans Wenzel
 #
@@ -42,7 +42,7 @@ process.GeometryService = mu2e.Service("GeometryService",
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
 process.source = mu2e.Source("PoolSource",
-   fileNames = mu2e.untracked.vstring("data_03-500.root")
+   fileNames = mu2e.untracked.vstring("/grid/data/mf/data_03-500.root")
 )
 process.ConditionsService = mu2e.Service("ConditionsService",
       conditionsfile=mu2e.untracked.string("Mu2eG4/test/conditions_01.txt")

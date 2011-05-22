@@ -1,23 +1,17 @@
 # Configuration file for reading back StrawHits from a file.
 #
-# $Id: read.fcl,v 1.1 2011/05/18 16:17:57 mf Exp $
+# $Id: read.fcl,v 1.2 2011/05/22 17:55:25 mf Exp $
 # $Author: mf $
-# $Date: 2011/05/18 16:17:57 $
+# $Date: 2011/05/22 17:55:25 $
 #
 # Original author Rob Kutschke
 #
 
-#include "minimalMessageService.fcl"
 
-BEGIN_PROLOG
-
-  diagLevel    : 0
-  maxFullPrint : 5
-
-END_PROLOG
+#include "fcl/minimalMessageService.fcl"
 
 # Give this job a name.  
-process : ReadTest01
+process_name : ReadTest01
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
 source : 
@@ -37,7 +31,7 @@ services :
     closeFileFast : false
   }
 
-  RandomNumberGeneratorService : { }
+  RandomNumberGenerator : { }
 
   user :
   {

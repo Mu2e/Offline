@@ -1,22 +1,19 @@
-# Run the StoppingTarget00 module.
 #
-# $Id: simParticlesWithHitsExample.fcl,v 1.1 2011/05/20 22:29:46 mf Exp $
+#
+# $Id: simParticlesWithHitsExample.fcl,v 1.2 2011/05/22 17:55:25 mf Exp $
 # $Author: mf $
-# $Date: 2011/05/20 22:29:46 $
+# $Date: 2011/05/22 17:55:25 $
 #
 # Original author Rob Kutschke
 
-#include "messageService.fcl"
-
-BEGIN_PROLOG
-  diagLevel    : 0
-  maxFullPrint : 5
-END_PROLOG
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/diagnostics.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this process a name.
-process : StrawHitExample
+process_name : StrawHitExample
 
-# Read events from a file (made by Mu2eG4 example g4test_03.py)
+# Start each new event with an empty event.
 source :
 {
   module_type : EmptySource
@@ -93,13 +90,12 @@ physics :
       seed          : [9877]
     }
     # Form StrawHits (SH).
-    makeSH:
+    makeSH:@local::makeSH
+
+    # Save state of random numbers to the event.
+    randomsaver:
     {
-      module_type   : MakeStrawHit
-      g4ModuleLabel : g4run
-      seed          : [7790]
-      diagLevel     : @local::diagLevel
-      maxFullPrint  : @local::maxFullPrint
+      module_type   : RandomNumberSaver
     }
   }
 
@@ -115,15 +111,10 @@ physics :
       minEnergyDep        : 0.001
       minHits             : 5 
     }
-    # Save state of random numbers to the event.
-    randomsaver:
-    {
-      module_type   : RandomNumberSaver
-    }
   }
 
-  p1 : [generate, g4run, makeSH]
-  e1 : [stopping, outfile ]
+  p1 : [generate, g4run, makeSH, randomsaver]
+  e1 : [checkhits, outfile ]
 
 
   trigger_paths  : [p1]
