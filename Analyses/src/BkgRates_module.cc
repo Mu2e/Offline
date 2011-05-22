@@ -544,7 +544,7 @@ namespace mu2e {
       }
       if (ngen > 0) {
         GenParticle const& gen = genParticles->at(0);
-        tntpArray[idx++] = gen.generatorId().Id();
+        tntpArray[idx++] = gen.generatorId().id();
         tntpArray[idx++] = gen.momentum().vect().mag();
         tntpArray[idx++] = gen.momentum().e();
         tntpArray[idx++] = gen.position().x();
@@ -807,7 +807,7 @@ namespace mu2e {
       }
       if (ngen > 0) {
         GenParticle const& gen = genParticles->at(0);
-        tntpArray[idx++] = gen.generatorId().Id();
+        tntpArray[idx++] = gen.generatorId().id();
         tntpArray[idx++] = gen.momentum().vect().mag();
         tntpArray[idx++] = gen.momentum().e();
         tntpArray[idx++] = gen.position().x();
@@ -1077,7 +1077,7 @@ namespace mu2e {
         }
         if (ngen > 0) {
           GenParticle const& gen = genParticles->at(0);
-          cntpArray[idx++] = gen.generatorId().Id();
+          cntpArray[idx++] = gen.generatorId().id();
           cntpArray[idx++] = gen.momentum().vect().mag();
           cntpArray[idx++] = gen.momentum().e();
           cntpArray[idx++] = gen.position().x();

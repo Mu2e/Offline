@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.1 2011/05/21 22:53:44 kutschke Exp $
+// $Id: CosmicTuple_module.cc,v 1.2 2011/05/22 16:43:36 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 22:53:44 $
+// $Date: 2011/05/22 16:43:36 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -344,7 +344,7 @@ namespace mu2e {
       ntT[1]  = sim.id().asInt();
       ntT[2]  = sim.pdgId();
       ntT[3]  = momentum;
-      ntT[4]  = gen_parent.generatorId().Id();
+      ntT[4]  = gen_parent.generatorId().id();
       ntT[5]  = gen_parent.pdgId();
       ntT[6]  = gen_parent.momentum().e();
       ntT[7]  = y.angle(gen_parent.momentum().vect());

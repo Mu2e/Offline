@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.1 2011/05/21 22:53:44 kutschke Exp $
+// $Id: ReadBack_module.cc,v 1.2 2011/05/22 16:43:36 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 22:53:44 $
+// $Date: 2011/05/22 16:43:36 $
 //
 // Original author Rob Kutschke
 //
@@ -757,7 +757,7 @@ namespace mu2e {
       nt[12] = straw.Id().getSector();
       nt[13] = straw.Id().getLayer();
       nt[14] = pdgId;
-      nt[15] = genId.Id();
+      nt[15] = genId.id();
       nt[16] = hit.eDep()/keV;
       nt[17] = mom.mag();
       nt[18] = hit.stepLength();
@@ -992,7 +992,7 @@ namespace mu2e {
       nt[12] = itwp->GetITCell()->Id().getLayer();
       nt[13] = itwp->GetITCell()->Id().getLayerId().getSuperLayer();
       nt[14] = pdgId;
-      nt[15] = genId.Id();
+      nt[15] = genId.id();
       nt[16] = hit.eDep()/keV;
       nt[17] = mom.mag();
       nt[18] = hit.stepLength();
@@ -1271,7 +1271,7 @@ namespace mu2e {
       nt[17] = bar.Id().getModuleNumber();
       nt[18] = bar.Id().getLayerNumber();
       nt[19] = pdgId;
-      nt[20] = genId.Id();
+      nt[20] = genId.id();
       nt[21] = hit.eDep()/keV;
       nt[22] = mom.mag();
       nt[23] = hit.stepLength();

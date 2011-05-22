@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.19 2011/05/20 20:18:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:24 $
+// $Id: GenId.hh,v 1.20 2011/05/22 16:43:36 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 16:43:36 $
 //
 // Original author Rob Kutschke
 //
@@ -59,7 +59,7 @@ namespace mu2e {
       _id(id)
     {}
 
-    enum_type Id() const { return _id;}
+    enum_type id() const { return _id;}
 
     const std::string name() const {
       return std::string( _name[_id] );
@@ -134,7 +134,7 @@ namespace mu2e {
   inline std::ostream& operator<<(std::ostream& ost,
                                   const GenId& id ){
     ost << "( "
-        << id.Id() << ": "
+        << id.id() << ": "
         << id.name()
         << " )";
     return ost;

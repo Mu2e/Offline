@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.6 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: NeutronCRV_module.cc,v 1.7 2011/05/22 16:43:36 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 16:43:36 $
 //
 // Original author Rob Kutschke
 //
@@ -399,7 +399,7 @@ namespace mu2e {
         nt[17] = bar.Id().getModuleNumber();
         nt[18] = bar.Id().getLayerNumber();
         nt[19] = pdgId;
-        nt[20] = genId.Id();
+        nt[20] = genId.id();
         nt[21] = hit.eDep()/keV;
         nt[22] = mom.mag();
         nt[23] = hit.stepLength();
