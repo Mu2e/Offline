@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: Vane.hh,v 1.7 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: Vane.hh,v 1.8 2011/05/22 20:52:07 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:52:07 $
 //
 // Original author R, Bernstein and Rob Kutschke
 //
@@ -35,7 +35,7 @@ namespace mu2e {
       // Compiler generated copy and assignment constructors
       // should be OK.
 
-      int Id() const { return _id;}
+      int id() const { return _id;}
 
       // Get position in the global Mu2e frame
       CLHEP::Hep3Vector const& getOrigin() const { return _origin; }

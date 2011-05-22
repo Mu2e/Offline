@@ -298,7 +298,7 @@ void DataInterface::fillGeometry()
       double x=v.getOrigin().x()+_xOffset;
       double y=v.getOrigin().y();
       double z=v.getOrigin().z()+_zOffset;
-      int    id=v.Id();
+      int    id=v.id();
       double sx=v.getSize().x();
       double sy=v.getSize().y();
       double sz=v.getSize().z();
