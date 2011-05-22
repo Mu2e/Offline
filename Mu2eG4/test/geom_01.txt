@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.83 2011/05/17 22:22:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Id: geom_01.txt,v 1.84 2011/05/22 22:21:10 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 22:21:10 $
 //
 // Original author Rob Kutschke
 //
@@ -161,7 +161,7 @@ vector<double> hall.offset = { -1525., 0., 0. };
 // X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
 // The origin of the detector coordinate system is on the DS axis at the specified z.
 double mu2e.solenoidOffset   =  3904.;   // mm
-double mu2e.detectorSystemZ0 = 10200.;   // mm
+double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 // A toy model of the DS, cyrostats+coils, vacuum
 double toyDS.rIn                = 1000;
@@ -262,7 +262,7 @@ string         target.fillMaterial    = "WAGVacuum";
 
 // All dimensions in mm in the detector coordinate system.
 // (0,0,0) = on axis in the DS at z=12000. mm
-double target.z0             = -6100.0;
+double target.z0             = -6129.0;    // 12000-(13800.00-7929) = -6129.
 double target.deltaZ         =    50.0;
 bool   target.visible        = true;
 bool   target.solid          = false;
@@ -270,10 +270,10 @@ bool   target.solid          = false;
 // all radii must be specified, i.e., nFoils is determined from the size
 // of the radii vector.
 vector<double> target.radii  =
-    { 100.000, 82.168, 81.288, 80.378, 79.438,
-       78.467, 77.463, 76.425, 75.352, 74.241,
-       73.093, 71.904, 70.674, 69.401, 68.082,
-       66.716, 65.300 };
+    {  83.00,  81.89,  80.79,  79.68,  78.58,
+       77.47,  76.36,  75.26,  74.15,  73.04,
+       71.94,  70.83,  69.73,  68.62,  67.51,
+       66.41,  65.30 };
 
 // last material given will be repeated up to number radii.size()
 vector<string> target.materials =
@@ -312,7 +312,7 @@ vector<double> target.yCos  =
 
 // Crystal calorimeter
 
-vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};
+vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};   G4BL: 20729-7929=21800.
 double calorimeter.rInscribed                              = 360.;
 string calorimeter.calorimeterFillMaterial                 = "WAGVacuum";
 
