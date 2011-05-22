@@ -1,9 +1,10 @@
 # Configuration file for running beamline_01
 #
-# $Id: beamline_01.fcl,v 1.5 2011/05/22 16:44:32 kutschke Exp $
+# $Id: beamline_01.fcl,v 1.6 2011/05/22 17:49:10 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/22 16:44:32 $
+# $Date: 2011/05/22 17:49:10 $
 
+#include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
 
