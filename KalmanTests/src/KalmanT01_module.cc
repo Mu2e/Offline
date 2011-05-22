@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_module.cc,v 1.5 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: KalmanT01_module.cc,v 1.6 2011/05/22 20:28:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author Rob Kutschke
 //
@@ -275,7 +275,7 @@ namespace mu2e {
                << i                  <<  " "
                << hit.trackId()      << "   "
                << hit.volumeId()     << " "
-               << straw.Id()         << " | "
+               << straw.id()         << " | "
                << pca.dca()          << " "
                << pos                << " "
                << mom                << " "

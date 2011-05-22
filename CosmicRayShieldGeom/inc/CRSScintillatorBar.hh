@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.6 2011/05/18 20:09:10 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Id: CRSScintillatorBar.hh,v 1.7 2011/05/22 20:28:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -51,8 +51,8 @@ namespace mu2e {
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const CRSScintillatorBarId& Id() const { return _id;}
-    CRSScintillatorBarIndex Index() const { return _index;}
+    const CRSScintillatorBarId& id() const { return _id;}
+    CRSScintillatorBarIndex index() const { return _index;}
 
     // Formatted string embedding the id of the ScintillatorBar.
     std::string name( std::string const & base ) const;
@@ -77,13 +77,13 @@ namespace mu2e {
     //    void fillPointers ( const CosmicRayShield& cosmicRayShield ) const;
 
     bool operator==(const CRSScintillatorBar other) const {
-      return _index == other.Index();
+      return _index == other.index();
     }
     bool operator>(const CRSScintillatorBar other) const {
-      return _index > other.Index();
+      return _index > other.index();
     }
     bool operator<(const CRSScintillatorBar other) const {
-      return _index < other.Index();
+      return _index < other.index();
    }
 
   private:

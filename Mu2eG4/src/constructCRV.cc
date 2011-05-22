@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.6 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructCRV.cc,v 1.7 2011/05/22 20:28:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author KLG
 //
@@ -227,7 +227,7 @@ namespace mu2e {
                                bar.name(scintillatorBarName+"_"),
                                parent.logical,
                                0,
-                               bar.Index().asInt(),
+                               bar.index().asInt(),
                                doSurfaceCheck);
 
           }

@@ -3,9 +3,9 @@
 //
 // Representation of one ScintillatorShield in CosmicRayShield.
 //
-// $Id: CRSScintillatorShield.hh,v 1.3 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorShield.hh,v 1.4 2011/05/22 20:28:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author KLG based on Rob Kutschke's Device
 //
@@ -42,7 +42,7 @@ namespace mu2e {
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     // Accessors
-    const CRSScintillatorShieldId Id() const { return _id;}
+    const CRSScintillatorShieldId id() const { return _id;}
 
     //    const double rotation() const { return _rotation; }
 

@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.3 2011/05/22 19:09:16 kutschke Exp $
+// $Id: ReadBack_module.cc,v 1.4 2011/05/22 20:28:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author Rob Kutschke
 //
@@ -1267,9 +1267,9 @@ namespace mu2e {
       nt[13] = hitLocalN.y();
       nt[14] = hitLocalN.z();
       nt[15] = hit.time();
-      nt[16] = bar.Id().getShieldNumber();
-      nt[17] = bar.Id().getModuleNumber();
-      nt[18] = bar.Id().getLayerNumber();
+      nt[16] = bar.id().getShieldNumber();
+      nt[17] = bar.id().getModuleNumber();
+      nt[18] = bar.id().getLayerNumber();
       nt[19] = pdgId;
       nt[20] = genId.id();
       nt[21] = hit.eDep()/keV;
@@ -1289,7 +1289,7 @@ namespace mu2e {
              << i                  <<  " "
              << hit.trackId()      << "   "
              << hit.volumeId()     << " "
-             << bar.Id()           << " | "
+             << bar.id()           << " | "
              << pos                << " "
              << mid                << " "
              << (mid-pos)          << " | "

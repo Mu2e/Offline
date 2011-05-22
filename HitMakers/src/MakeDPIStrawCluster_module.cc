@@ -1,7 +1,7 @@
 //
-// $Id: MakeDPIStrawCluster_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: MakeDPIStrawCluster_module.cc,v 1.5 2011/05/22 20:28:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author Hans Wenzel
 // This modules create clusters of fired StrawHits in a panel
@@ -117,7 +117,7 @@ namespace mu2e {
          StrawHit hit = hits->at(i);
          StrawIndex si = hit.strawIndex();
          Straw str = tracker.getStraw(si);
-         //      StrawId sid = str.Id();
+         //      StrawId sid = str.id();
          bool used =false;
          for (size_t ii=0;ii<listofptrtoHits->size();ii++)
            {

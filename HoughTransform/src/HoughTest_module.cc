@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.7 2011/05/20 22:39:28 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 22:39:28 $
+// $Id: HoughTest_module.cc,v 1.8 2011/05/22 20:28:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author R. Bernstein
 //
@@ -640,8 +640,8 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
         nt[8]  = mid.z();
         nt[9]  = pca.dca();
         nt[10] = hit.time();
-        nt[11] = straw.Id().getDevice();
-        nt[12] = straw.Id().getSector();
+        nt[11] = straw.id().getDevice();
+        nt[12] = straw.id().getSector();
 
         _ntup->Fill(nt);
         */

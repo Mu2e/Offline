@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: CRSScintillatorModule.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorModule.hh,v 1.5 2011/05/22 20:28:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author KLG somewhat based on Rob Kutschke' Sector
 //
@@ -46,7 +46,7 @@ namespace mu2e {
     // Accept the compiler generated destructor, copy constructor and
     // assignment operators
 
-    const CRSScintillatorModuleId& Id() const { return _id;}
+    const CRSScintillatorModuleId& id() const { return _id;}
 
     const std::vector<CRSScintillatorLayer>& getLayers() const{
       return _layers;

@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Layer in  CosmicRayShield
 //
-// $Id: CRSScintillatorLayer.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorLayer.hh,v 1.5 2011/05/22 20:28:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 20:28:13 $
 //
 // Original author KLG; somewhat based on  Rob Kutschke's Layer
 //
@@ -45,7 +45,7 @@ namespace mu2e {
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    CRSScintillatorLayerId const & Id() const { return _id;}
+    CRSScintillatorLayerId const & id() const { return _id;}
 
     int nBars() const { return _nBars; }
 
@@ -83,7 +83,7 @@ namespace mu2e {
     CRSScintillatorBarId getIdLastBar() const{
 
       return ( _bars.size() != 0 )?
-        _bars.back()->Id():
+        _bars.back()->id():
         CRSScintillatorBarId();
     }
 
