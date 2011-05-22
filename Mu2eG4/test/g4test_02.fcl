@@ -5,9 +5,9 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: g4test_02.fcl,v 1.5 2011/05/19 02:36:09 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/19 02:36:09 $
+# $Id: g4test_02.fcl,v 1.6 2011/05/22 16:44:32 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/22 16:44:32 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
@@ -31,8 +31,6 @@ services :
     fileName : "g4test_02.root"
   }
 
-  RandomNumberGeneratorService : { }
-
   user :
   {
     GeometryService :
@@ -44,6 +42,8 @@ services :
     {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
     }
+ 
+    RandomNumberGenerator: { }
 
     G4Helper : { }
 
@@ -90,7 +90,8 @@ physics :
   }
 
   p1 : [generate , g4run ]
-  e1 : [checkhits]
+  #e1 : [checkhits]
+  e1 : []
 
   trigger_paths  : [p1]
   end_paths      : [e1]

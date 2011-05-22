@@ -8,9 +8,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.5 2011/05/19 02:36:09 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/19 02:36:09 $
+# $Id: g4test_03.fcl,v 1.6 2011/05/22 16:44:32 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/22 16:44:32 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
@@ -34,7 +34,7 @@ services :
     fileName : "g4test_03.root"
   }
 
-  RandomNumberGeneratorService : { }
+  RandomNumberGenerator : { }
 
 # Uncomment to enable memory use profiling
 # SimpleMemoryCheck :
@@ -43,12 +43,21 @@ services :
 #   showMallocInfo   : false
 #   ignoreTotal      : 5
 #)
+# Uncomment to enable per module timing
+#   Timing :
+#   {
+#    useJobReport : true
+#   }
+
+# Uncomment to enable trace printout to show what the framework calls when.
+   Tracer : { }
+
 
   user :
   {
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01"
+      inputFile : "Mu2eG4/test/geom_01.txt"
     }
 
     ConditionsService :
@@ -57,15 +66,6 @@ services :
     }
 
     G4Helper : { }
-
-# Uncomment to enable per module timing
-#   Timing :
-#   {
-#    useJobReport : true
-#   }
-
-# Uncomment to enable trace printout to show what the framework calls when.
-#   Tracer : { }
 
   }
 
@@ -101,8 +101,12 @@ physics :
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 
-  }
+    randomsaver:
+    {
+      module_type          : RandomNumberSaver
+    }
 
+  }
 
   analyzers:
   {
@@ -113,19 +117,17 @@ physics :
       generatorModuleLabel : generate
       g4ModuleLabel        : g4run
       diagLevel            : 0
-      minumumEnergy        : 0.000
+      minimumEnergy        : 0.000
       maxFullPrint         : 201
     }
 
-    randomsaver:
-    {
-      module_type          : RandomSaverNumber
-    }
 
   }
 
-  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCryHitsMaker ]
-  e1 : [randomsaver, checkhits, outfile]
+  #p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
+  p1 : [generate , g4run ]
+  e1 : [ checkhits ]
+  #e1 : [checkhits, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -138,11 +140,11 @@ outputs:
   outfile :
   {
     module_type   :   RootOutput
-    filename      :   "data_03.root"
-    outputCommands:   [ "keep *_*_*_*"
-                        "drop mu2ePointTrajectoryMapVector"
-#                       "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size.
-                      ]
+    fileName      :   "data_03.root"
+#    outputCommands:   [ "keep *_*_*_*",
+#                        "drop mu2ePointTrajectoryMapVector"
+#                       "drop mu2eSimParticles_*_*_*"        # Uncomment this line to reduce file size.
+#                      ]
   }
 
 }
