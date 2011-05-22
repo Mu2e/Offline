@@ -3,6 +3,22 @@ BEGIN_PROLOG
 diagLevel      : 0
 maxFullPrint   : 5 
 
+# Generate Event
+generate:
+{
+  module_type   : EventGenerator
+  inputfile     : "Mu2eG4/test/genconfig_02.txt"
+  seed          : [7789]
+}
+
+# Run geant4 on the generated event.
+g4run :
+{
+  module_type          : G4
+  generatorModuleLabel : generate
+  seed                 : [9877]
+}
+
 # Form StrawHits (SH).
 makeSH :
 {
@@ -33,5 +49,12 @@ CaloCrystalHitsMaker :
   maximumEnergy        : 1000.0
   minimumTimeGap       : 100.0
 }
+
+# Save state of random numbers at the start of each event
+randomsaver:
+{
+  module_type          : RandomNumberSaver
+}
+
 
 END_PROLOG
