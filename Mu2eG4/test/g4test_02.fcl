@@ -5,10 +5,11 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: g4test_02.fcl,v 1.6 2011/05/22 16:44:32 kutschke Exp $
+# $Id: g4test_02.fcl,v 1.7 2011/05/22 17:22:03 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/22 16:44:32 $
+# $Date: 2011/05/22 17:22:03 $
 
+#include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
 

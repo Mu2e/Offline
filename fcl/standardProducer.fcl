@@ -1,8 +1,5 @@
 BEGIN_PROLOG
 
-diagLevel      : 0
-maxFullPrint   : 5 
-
 # Generate Event
 generate:
 {
