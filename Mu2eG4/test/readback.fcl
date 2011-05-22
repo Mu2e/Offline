@@ -2,10 +2,11 @@
 #
 # Readback the output of g4test_03.py; make histograms and printout.
 #
-# $Id: readback.fcl,v 1.3 2011/05/19 02:36:09 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/19 02:36:09 $
+# $Id: readback.fcl,v 1.4 2011/05/22 17:27:40 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/22 17:27:40 $
 
+#include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
 #include "standardProducer.fcl"
 
@@ -16,7 +17,7 @@ process_name : ReadBack01
 source : 
 { 
   module_type : RootInput
-  fileNames   : "data_03.root"
+  fileNames   : [ "data_03.root" ]
   maxEvents : -1
 }
 
@@ -33,7 +34,7 @@ services :
   {
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01"
+      inputFile : "Mu2eG4/test/geom_01.txt"
     }  
 
     ConditionsService :
@@ -59,7 +60,7 @@ physics :
       module_type          : ReadBack
       generatorModuleLabel : generate
       g4ModuleLabel        : g4run
-      minumumEnergy        : 0.001
+      minimumEnergy        : 0.000
       maxFullPrint         : 201
     }
 
