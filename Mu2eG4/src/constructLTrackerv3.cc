@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.20 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructLTrackerv3.cc,v 1.21 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -202,7 +202,7 @@ namespace mu2e{
         // Make a physical volume for this sector.  Same material as the
         // main LTracker volume ( some sort of vacuum ).
 
-        VolumeInfo tmp = ( device.Id() ==  LTracker::vane) ?
+        VolumeInfo tmp = ( device.id() ==  LTracker::vane) ?
           //VolumeInfo tmp = ( true ) ?
           nestBox( name,
                    sector.boxHalfLengths(),
@@ -268,14 +268,14 @@ namespace mu2e{
 
             // note that strawWall.logical has Gas & Wire inside it
 
-            if (device.Id() ==  LTracker::vane) {
+            if (device.id() ==  LTracker::vane) {
               new G4PVPlacement( rotfb,
                                  position,
                                  strawWall.logical,
                                  straw.name( "LTrackerStrawWall_"),
                                  sectorBoxInfo.logical,
                                  0,
-                                 straw.Index().asInt(),
+                                 straw.index().asInt(),
                                  doSurfaceCheck);
             }else{
               new G4PVPlacement( rotft,
@@ -284,7 +284,7 @@ namespace mu2e{
                                  straw.name( "LTrackerStrawWall_"),
                                  sectorBoxInfo.logical,
                                  0,
-                                 straw.Index().asInt(),
+                                 straw.index().asInt(),
                                  doSurfaceCheck);
             }
 

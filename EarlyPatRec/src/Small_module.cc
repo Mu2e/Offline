@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: Small_module.cc,v 1.6 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: Small_module.cc,v 1.7 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author: Mark Fischler
 //
@@ -307,7 +307,7 @@ namespace mu2e {;
                     StrawHitMCInfo const& info = infos.at(associatedHit);
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
-                    sid = str.Id();
+                    sid = str.id();
                     did = sid.getDeviceId();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     // mf study 1
@@ -411,7 +411,7 @@ namespace mu2e {;
         //Double_t deltaT = strawhit.dt();
         totalEnergy=totalEnergy+Energy;
         str = tracker.getStraw(strawhit.strawIndex());
-        sid = str.Id();
+        sid = str.id();
         lid = sid.getLayerId();
         did = sid.getDeviceId();
         secid = sid.getSectorId();

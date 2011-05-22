@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.6 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: HitDisplay_module.cc,v 1.7 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke.
 //
@@ -338,9 +338,9 @@ namespace mu2e {
       }
 
       // Position along wire, from delta t.
-      double v     = trackCal->TimeDiffToDistance( straw.Index(), hit.dt() );
+      double v     = trackCal->TimeDiffToDistance( straw.index(), hit.dt() );
       double vnorm = v/straw.getHalfLength();
-      double sigv = trackCal->TimeDivisionResolution( straw.Index(), vnorm );
+      double sigv = trackCal->TimeDivisionResolution( straw.index(), vnorm );
 
       _hx->Fill(v);
       _hxnorm->Fill(vnorm);

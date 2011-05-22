@@ -316,7 +316,7 @@ namespace mu2e {
     for (size_t i = 0; i< allstraws.size(); ++i) {
     Straw str = allstraws[i];
     cout << "Index " << str.Index()
-    << "\t" << str.Id() << endl;
+    << "\t" << str.id() << endl;
     }
     */
 
@@ -368,7 +368,7 @@ namespace mu2e {
       //Get hit straw
       StrawIndex si = hit.strawIndex();
       Straw str = tracker.getStraw(si);
-      StrawId sid = str.Id();
+      StrawId sid = str.id();
       LayerId lid = sid.getLayerId();
       DeviceId did = sid.getDeviceId();
       SectorId secid = sid.getSectorId();

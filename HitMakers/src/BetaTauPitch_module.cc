@@ -6,9 +6,9 @@
 // Starts from ReadDPIStrawCluster_plugin.cc, adding the quantities of
 // interest to these angles, and gradually eliminating the rest.
 //
-// $Id: BetaTauPitch_module.cc,v 1.7 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: BetaTauPitch_module.cc,v 1.8 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author: Mark Fischler modifying code by Hans Wenzel
 //
@@ -689,7 +689,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     StrawHitMCInfo const& info = infos.at(associatedHit);
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
-                    sid = str.Id();
+                    sid = str.id();
                     DeviceId did = sid.getDeviceId();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     // mf study 1
@@ -844,7 +844,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         //Double_t deltaT = strawhit.dt();
         totalEnergy=totalEnergy+Energy;
         str = tracker.getStraw(strawhit.strawIndex());
-        sid = str.Id();
+        sid = str.id();
         lid = sid.getLayerId();
         did = sid.getDeviceId();
         secid = sid.getSectorId();

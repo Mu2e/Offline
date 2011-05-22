@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.22 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: constructTTrackerv3.cc,v 1.23 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -297,8 +297,8 @@ namespace mu2e{
 
           // look at StrawSD to see how the straw index is reconstructed
 
-          cout << "Debugging straw.Id(), straw.Index() " <<
-            straw.Id() << ", " << straw.Index() << endl;
+          cout << "Debugging straw.id(), straw.index() " <<
+            straw.id() << ", " << straw.index() << endl;
 
         }
 
@@ -325,7 +325,7 @@ namespace mu2e{
                                              rotTub,
                                              mid,
                                              secInfo.logical,
-                                             straw.Index().asInt(),
+                                             straw.index().asInt(),
                                              ttrackerStrawVisible,
                                              wallColor,
                                              ttrackerStrawSolid,
@@ -343,7 +343,7 @@ namespace mu2e{
                                             0,
                                             zeroVector,
                                             strawWallInfo.logical,
-                                            straw.Index().asInt(),
+                                            straw.index().asInt(),
                                             ttrackerStrawVisible,
                                             gasColor,
                                             ttrackerStrawSolid,
@@ -358,7 +358,7 @@ namespace mu2e{
                                              0,
                                              zeroVector,
                                              strawGasInfo.logical,
-                                             straw.Index().asInt(),
+                                             straw.index().asInt(),
                                              ttrackerStrawVisible,
                                              wireColor,
                                              ttrackerStrawSolid,

@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: GrokGeometry_module.cc,v 1.6 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: GrokGeometry_module.cc,v 1.7 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author: Mark Fischler
 //
@@ -65,14 +65,14 @@ namespace mu2e {;
  public:
    PRF_Straw() : index(-1) {}
    PRF_Straw(Straw const& str)
-   : sid        (str.Id())
+   : sid        (str.id())
    , deviceId   (sid.getDeviceId())
    , layer      (sid.getLayerId().getLayer())
    , sector     (sid.getLayerId().getSector())
    , halfLength (str.getHalfLength())
    , midpoint   (str.getMidPoint())
    , direction  (str.getDirection())
-   , index      (str.Index())
+   , index      (str.index())
    { assert(std::abs(direction.z()) < 0.0001); }
 
    bool operator<(const PRF_Straw other) const {
@@ -313,7 +313,7 @@ namespace mu2e {;
                     StrawHitMCInfo const& info = infos.at(associatedHit);
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
-                    sid = str.Id();
+                    sid = str.id();
                     did = sid.getDeviceId();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     // mf study 1
@@ -417,7 +417,7 @@ namespace mu2e {;
         //Double_t deltaT = strawhit.dt();
         totalEnergy=totalEnergy+Energy;
         str = tracker.getStraw(strawhit.strawIndex());
-        sid = str.Id();
+        sid = str.id();
         lid = sid.getLayerId();
         did = sid.getDeviceId();
         secid = sid.getSectorId();

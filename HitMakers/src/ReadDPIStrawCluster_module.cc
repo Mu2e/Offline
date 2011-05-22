@@ -12,9 +12,9 @@
 // For all three cases estimate Pt,Pz of the conversion electron by performing
 // a simple circle/sinus fit.
 //
-// $Id: ReadDPIStrawCluster_module.cc,v 1.6 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: ReadDPIStrawCluster_module.cc,v 1.7 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author: Hans Wenzel
 //
@@ -626,7 +626,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     StrawHitMCInfo const& info = infos.at(jdev);
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
-                    sid = str.Id();
+                    sid = str.id();
                     did = sid.getDeviceId();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     for ( size_t ks=0; ks<steps.size(); ++ks){
@@ -725,7 +725,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         Double_t Energy = strawhit.energyDep();
         totalEnergy=totalEnergy+Energy;
         str = tracker.getStraw(strawhit.strawIndex());
-        sid = str.Id();
+        sid = str.id();
         lid = sid.getLayerId();
         did = sid.getDeviceId();
         secid = sid.getSectorId();

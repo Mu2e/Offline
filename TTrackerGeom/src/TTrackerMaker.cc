@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.31 2011/05/20 22:39:28 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 22:39:28 $
+// $Id: TTrackerMaker.cc,v 1.32 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -134,7 +134,7 @@ namespace mu2e {
   } // end TTrackerMaker::parseConfig
 
   void lptest( const Layer& lay){
-    cout << lay.Id() << " |  "
+    cout << lay.id() << " |  "
          << lay.nStraws()  <<  " |  "
          << lay.getStraws().capacity() << " "
          << endl;
@@ -142,7 +142,7 @@ namespace mu2e {
 
   void devtest( const Device& dev){
     cout << "Device: "
-         << dev.Id() << " "
+         << dev.id() << " "
          << dev.origin() << " "
          << dev.rotation()
          << endl;
@@ -151,7 +151,7 @@ namespace mu2e {
   void positionTest( const Layer& lay){
     const Straw& straw = lay.getStraw( 0 );
     cout << "Layer: "
-         << lay.Id() << " "
+         << lay.id() << " "
          << straw.getMidPoint().z() <<  " "
          << straw.getDirection().z() << " "
          << endl;
@@ -249,13 +249,13 @@ namespace mu2e {
       // are the manifolds sized correctly for the straws?
 
       Layer const & layer = sector.getLayer(ilay);
-      //      cout << "Debugging looking at the layer   : " << layer.Id() << endl;
+      //      cout << "Debugging looking at the layer   : " << layer.id() << endl;
       for (int ns = 0; ns!=layer.nStraws()-1; ++ns) {
         double layerDeltaMag =
           (layer.getStraw(ns+1).getMidPoint() - layer.getStraw(ns).getMidPoint()).mag();
         if ( abs(layerDeltaMag-strawSpacing)> tolerance ) {
           cout << "Layer straw spacing is (mm)   : " << layerDeltaMag
-               << " for layer " << layer.Id() << " straw " << layer.getStraw(ns).Id()  << endl;
+               << " for layer " << layer.id() << " straw " << layer.getStraw(ns).id()  << endl;
           cout << "It should be                  : " << strawSpacing << " diff: "
                << (layerDeltaMag-strawSpacing) << endl;
 
@@ -271,7 +271,7 @@ namespace mu2e {
 
       Layer const & layer0 = sector.getLayer(0);
       Layer const & layer1 = sector.getLayer(1);
-      // cout << "Debugging looking at the layers   : " << layer0.Id() << ", " << layer1.Id() << endl;
+      // cout << "Debugging looking at the layers   : " << layer0.id() << ", " << layer1.id() << endl;
 
       for (int ns = 0; ns!=layer0.nStraws(); ++ns) {
         double xLayerDeltaMag =
@@ -280,7 +280,7 @@ namespace mu2e {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(ns).Id() << ", " << layer1.getStraw(ns).Id()
+               << layer0.getStraw(ns).id() << ", " << layer1.getStraw(ns).id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -299,7 +299,7 @@ namespace mu2e {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(ns).Id() << ", " << layer1.getStraw(ns-1).Id()
+               << layer0.getStraw(ns).id() << ", " << layer1.getStraw(ns-1).id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -410,8 +410,8 @@ namespace mu2e {
 //             index <<  " " << setw(3) <<
 //             allStraws.size() << " "  << setw(3) <<
 //             layer._straws.size() << " | " << setw(5) <<
-//             (allStraws.back()).Id() << ", " << setw(5) <<
-//             (allStraws.back()).Index()
+//             (allStraws.back()).id() << ", " << setw(5) <<
+//             (allStraws.back()).index()
 //           << endl;
 //           }
 
@@ -456,7 +456,7 @@ namespace mu2e {
       CLHEP::Hep3Vector origin(x0,y0,z0);
 
 //       cout << "Manifold device, sector, origin, length[0] :" <<
-//         _tt->getDevice(secId.getDevice()).Id() << ", " <<
+//         _tt->getDevice(secId.getDevice()).id() << ", " <<
 //         secId.getSector() << ", " <<
 //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
 
@@ -517,8 +517,8 @@ namespace mu2e {
   void  TTrackerMaker::computeSectorBoxParams(Sector& sector, Device& dev){
 
     // get sector number
-    int isec = sector.Id().getSector();
-    //    int idev = dev.Id();
+    int isec = sector.id().getSector();
+    //    int idev = dev.id();
     //    cout << "Debugging TTrackerMaker isec,idev: " << isec << ", " << idev << endl;
 
     // we copy precalculated _sectorBoxHalfLengths etc.. into the sector
@@ -793,42 +793,42 @@ namespace mu2e {
          i != allStraws.end(); ++i) {
       // throw exception if more than 2 layers per sector
 
-      if (_tt->getSector(i->Id().getSectorId()).nLayers() > 2 ) {
+      if (_tt->getSector(i->id().getSectorId()).nLayers() > 2 ) {
         throw cet::exception("GEOM")
           << "The code works with no more than 2 layers per sector. \n";
       }
 
-      LayerId lId = i->Id().getLayerId();
+      LayerId lId = i->id().getLayerId();
       int layer = lId.getLayer();
       int nStrawLayer = _tt->getLayer(lId)._nStraws;
 
       //  cout << lId << " has " << nStrawLayer << " straws" << endl;
-      //  cout << "Analyzed straw: " << i->Id() << '\t' << i->Index() << endl;
+      //  cout << "Analyzed straw: " << i->id() << '\t' << i->index() << endl;
 
       // add the "same layer" n-1 neighbours straw (if exist)
 
-      if ( i->Id().getStraw() ) {
-        const StrawId nsId(lId, (i->Id().getStraw())-1 );
+      if ( i->id().getStraw() ) {
+        const StrawId nsId(lId, (i->id().getStraw())-1 );
         i->_nearestById.push_back( nsId );
         // Straw temp = _tt->getStraw( nsId );
-        // cout << "Neighbour left straw: " << temp.Id() << '\t' << temp.Index() << endl;
-        i->_nearestByIndex.push_back( _tt->getStraw(nsId).Index() );
+        // cout << "Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
+        i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "same layer" n+1 neighbours straw (if exist)
 
-      if ( i->Id().getStraw() < (nStrawLayer-1) ) {
-        const StrawId nsId(lId, (i->Id().getStraw())+ 1 );
+      if ( i->id().getStraw() < (nStrawLayer-1) ) {
+        const StrawId nsId(lId, (i->id().getStraw())+ 1 );
         i->_nearestById.push_back( nsId );
         // Straw temp = _tt->getStraw( nsId );
-        // cout << "Neighbour right straw: " << temp.Id() << '\t' << temp.Index() << endl;
-        i->_nearestByIndex.push_back( _tt->getStraw(nsId).Index() );
+        // cout << "Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
+        i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
 
       if (_layersPerSector == 2) {
-        const StrawId nsId( i->Id().getSectorId(), (layer+1)%2, (i->Id().getStraw()) );
+        const StrawId nsId( i->id().getSectorId(), (layer+1)%2, (i->id().getStraw()) );
 
         // throw exception if the two layer of the same sector have different
         // number of straws
@@ -840,18 +840,18 @@ namespace mu2e {
 
         i->_nearestById.push_back( nsId );
         // Straw temp = _tt->getStraw( nsId );
-        // cout << "Neighbour opposite straw: " << temp.Id() << '\t' << temp.Index() << endl;
-        i->_nearestByIndex.push_back( _tt->getStraw( nsId ).Index() );
+        // cout << "Neighbour opposite straw: " << temp.id() << '\t' << temp.index() << endl;
+        i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
 
         // add the "opposite layer" n+-1 neighbours straw (if exist)
 
-        if ( i->Id().getStraw() > 0 && i->Id().getStraw() < nStrawLayer-1 ) {
-          const StrawId nsId( i->Id().getSectorId(), (layer+1)%2,
-                              (i->Id().getStraw()) + (layer?1:-1));
+        if ( i->id().getStraw() > 0 && i->id().getStraw() < nStrawLayer-1 ) {
+          const StrawId nsId( i->id().getSectorId(), (layer+1)%2,
+                              (i->id().getStraw()) + (layer?1:-1));
           i->_nearestById.push_back( nsId );
           // Straw temp = _tt->getStraw( nsId );
-          // cout << "Neighbour opposite +- 1 straw: " << temp.Id() << '\t' << temp.Index() << endl;
-          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).Index() );
+          // cout << "Neighbour opposite +- 1 straw: " << temp.id() << '\t' << temp.index() << endl;
+          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
         }
 
       }

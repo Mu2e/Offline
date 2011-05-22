@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_module.cc,v 1.1 2011/05/21 22:53:44 kutschke Exp $
+// $Id: ReadBack0_module.cc,v 1.2 2011/05/22 19:09:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 22:53:44 $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -182,9 +182,9 @@ namespace mu2e {
       nt[1]  = pos.y();
       nt[2]  = pos.z();
       nt[3]  = hit.time();
-      nt[4]  = straw.Id().getDevice();
-      nt[5]  = straw.Id().getSector();
-      nt[6]  = straw.Id().getLayer();
+      nt[4]  = straw.id().getDevice();
+      nt[5]  = straw.id().getSector();
+      nt[6]  = straw.id().getLayer();
       nt[7]  = hit.eDep()/CLHEP::keV;
 
       _ntup->Fill(nt);

@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.5 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: ReadStrawHit_module.cc,v 1.6 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -169,7 +169,7 @@ namespace mu2e {
       for (size_t i = 0;i<allstraws.size();i++)
         {
           Straw str = allstraws[i];
-          StrawId sid = str.Id();
+          StrawId sid = str.id();
           LayerId lid = sid.getLayerId();
           DeviceId did = sid.getDeviceId();
           SectorId secid = sid.getSectorId();
@@ -269,7 +269,7 @@ namespace mu2e {
       StrawIndex si = hit.strawIndex();
       const  unsigned id = si.asUint();
       Straw str = tracker.getStraw(si);
-      StrawId sid = str.Id();
+      StrawId sid = str.id();
       LayerId lid = sid.getLayerId();
       DeviceId did = sid.getDeviceId();
       SectorId secid = sid.getSectorId();

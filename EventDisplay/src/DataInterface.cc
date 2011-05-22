@@ -172,11 +172,11 @@ void DataInterface::fillGeometry()
       double phi = d.phi();
 //      double r = s.getRadius();
       double l = s.getHalfLength();
-      int idStraw =  s.Id().getStraw();
-      int idLayer =  s.Id().getLayer();
-      int idSector =  s.Id().getSector();
-      int idDevice =  s.Id().getDevice();
-      int index = s.Index().asInt();
+      int idStraw =  s.id().getStraw();
+      int idLayer =  s.id().getLayer();
+      int idSector =  s.id().getSector();
+      int idDevice =  s.id().getDevice();
+      int index = s.index().asInt();
 
       char c[200];
       sprintf(c,"Straw %i  Layer %i  Sector %i  Device %i",idStraw,idLayer,idSector,idDevice);

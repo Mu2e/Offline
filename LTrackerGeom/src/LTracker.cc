@@ -2,9 +2,9 @@
 // Geometry and identifier info about an LTracker.
 //
 //
-// $Id: LTracker.cc,v 1.6 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: LTracker.cc,v 1.7 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -69,7 +69,7 @@ namespace mu2e {
         const StrawId& id = *j;
         const Straw& straw = getStraw(id);
         //      byPtr.push_back( &straw);
-        byIndex.push_back( straw.Index() );
+        byIndex.push_back( straw.index() );
       }
     }
 

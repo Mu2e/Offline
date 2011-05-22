@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.10 2011/05/20 20:21:47 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:21:47 $
+// $Id: Sector.hh,v 1.11 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -44,7 +44,7 @@ namespace mu2e {
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const SectorId& Id() const { return _id;}
+    const SectorId& id() const { return _id;}
 
     const std::vector<Layer>& getLayers() const{
       return _layers;

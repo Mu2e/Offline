@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: MakeStrawCluster_module.cc,v 1.5 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Hans Wenzel
 //
@@ -121,7 +121,7 @@ namespace mu2e {
        StrawHit        const&      hit(hits->at(i));
        StrawIndex si = hit.strawIndex();
        Straw str = tracker.getStraw(si);
-       StrawId sid = str.Id();
+       StrawId sid = str.id();
        // first check if  straw already has been used
        bool used =false;
        for(oClusterIter=listofClusters.begin();oClusterIter!=listofClusters.end(); oClusterIter++)
@@ -149,7 +149,7 @@ namespace mu2e {
                    StrawHit        const&      hit(hits->at(jj));
                    StrawIndex nsi = hit.strawIndex();
                    Straw nstr = tracker.getStraw(nsi);
-                   StrawId nsid = nstr.Id();
+                   StrawId nsid = nstr.id();
                    if (nsid==*ncid)
                      {
                        bool nused =false;
@@ -201,7 +201,7 @@ namespace mu2e {
                               StrawHit        const&      hit(hits->at(jj));
                               StrawIndex nsi = hit.strawIndex();
                               Straw nstr = tracker.getStraw(nsi);
-                              StrawId nsid = nstr.Id();
+                              StrawId nsid = nstr.id();
                               if (nsid==*nncid)
                                 {
                                   bool nused =false;

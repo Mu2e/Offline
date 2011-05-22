@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.12 2011/05/20 19:18:45 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:45 $
+// $Id: Straw.hh,v 1.13 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -69,8 +69,8 @@ namespace mu2e {
     virtual ~Straw(){}
 
 
-    const StrawId& Id() const { return _id;}
-    StrawIndex Index() const { return _index;}
+    const StrawId& id() const { return _id;}
+    StrawIndex index() const { return _index;}
 
     const StrawDetail& getDetail() const { return *_detail;}
 
@@ -127,13 +127,13 @@ namespace mu2e {
 
     int hack;
     bool operator==(const Straw other) const {
-      return _index == other.Index();
+      return _index == other.index();
     }
     bool operator>(const Straw other) const {
-      return _index > other.Index();
+      return _index > other.index();
     }
    bool operator<(const Straw other) const {
-      return _index < other.Index();
+      return _index < other.index();
    }
  protected:
 

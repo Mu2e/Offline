@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.2 2011/05/22 16:43:36 kutschke Exp $
+// $Id: ReadBack_module.cc,v 1.3 2011/05/22 19:09:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 16:43:36 $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -695,7 +695,7 @@ namespace mu2e {
 //              << i                  <<  " "
 //              << hit.trackId()      << "   "
 //              << hit.volumeId()     << " "
-//              << straw.Id()         << " | "
+//              << straw.id()         << " | "
 //              << pca.dca()          << " "
 //              << pos                << " "
 //              << mom                << " "
@@ -753,9 +753,9 @@ namespace mu2e {
       nt[8]  = mid.z();
       nt[9]  = pca.dca();
       nt[10] = hit.time();
-      nt[11] = straw.Id().getDevice();
-      nt[12] = straw.Id().getSector();
-      nt[13] = straw.Id().getLayer();
+      nt[11] = straw.id().getDevice();
+      nt[12] = straw.id().getSector();
+      nt[13] = straw.id().getLayer();
       nt[14] = pdgId;
       nt[15] = genId.id();
       nt[16] = hit.eDep()/keV;
@@ -779,7 +779,7 @@ namespace mu2e {
              << i                  <<  " "
              << hit.trackId()      << "   "
              << hit.volumeId()     << " "
-             << straw.Id()         << " | "
+             << straw.id()         << " | "
              << pca.dca()          << " "
              << pos                << " "
              << mom                << " "

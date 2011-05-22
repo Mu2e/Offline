@@ -3,9 +3,9 @@
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.9 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: Layer.hh,v 1.10 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,7 @@ namespace mu2e {
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const LayerId& Id() const { return _id;}
+    const LayerId& id() const { return _id;}
 
     int nStraws() const { return _straws.size(); }
 
@@ -75,7 +75,7 @@ namespace mu2e {
     StrawId getIdLastStraw() const{
 
       return ( _straws.size() != 0 )?
-        _straws.back()->Id():
+        _straws.back()->id():
         StrawId();
     }
 

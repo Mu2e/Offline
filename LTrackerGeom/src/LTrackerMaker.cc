@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.16 2011/05/19 21:53:36 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/19 21:53:36 $
+// $Id: LTrackerMaker.cc,v 1.17 2011/05/22 19:09:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 19:09:16 $
 //
 // Original author Rob Kutschke
 //
@@ -39,14 +39,14 @@ namespace mu2e {
 
   void strawPrinter( const Straw& s){
     cout << "StrawInfo: "
-         << s.Id()          << " "
+         << s.id()          << " "
          << s.getMidPoint() << " "
          << s.direction()   << " "
          << endl;
   }
 
   void strawPrinter2( const Straw* s, int& i){
-    cout << s->Id() <<  " | "
+    cout << s->id() <<  " | "
          << s->hack << " "
          << ++i << endl;
   }
@@ -56,15 +56,15 @@ namespace mu2e {
   }
 
   void layerPrinter( const Layer& l){
-    cout << "    Layer: " << l.Id() << endl;
+    cout << "    Layer: " << l.id() << endl;
   }
 
   void sectorPrinter( const Sector& s){
-    cout << "  Sector: " << s.Id() << endl;
+    cout << "  Sector: " << s.id() << endl;
   }
 
   void devicePrinter( const Device& d){
-    cout << "  Device: " << d.Id() << endl;
+    cout << "  Device: " << d.id() << endl;
   }
 
 
@@ -569,13 +569,13 @@ namespace mu2e {
       Straw& str = *i;
 
       // Get references to the sector and layer that hold this straw.
-      const SectorId& secid = str.Id().getSectorId();
-      const LayerId& layid  = str.Id().getLayerId();
+      const SectorId& secid = str.id().getSectorId();
+      const LayerId& layid  = str.id().getLayerId();
       const Sector& sector  = _ltt->getSector(secid);
       const Layer& layer    = _ltt->getLayer(layid);
 
-      int jl0 = str.Id().getLayer();
-      int js0 = str.Id().getStraw();
+      int jl0 = str.id().getLayer();
+      int js0 = str.id().getStraw();
 
       // Number of straws in this layer.
       int nstraws = layer.nStraws();
@@ -693,7 +693,7 @@ namespace mu2e {
             j != je; ++j){
         const StrawId& id = *j;
         const Straw& straw = _ltt->getStraw(id);
-        byIndex.push_back( straw.Index() );
+        byIndex.push_back( straw.index() );
       }
     }
 
@@ -728,8 +728,8 @@ namespace mu2e {
         Straw const& strawJ = allStraws[j];
 
         // Skip straws in the same sector.
-        if ( strawJ.Id().getSectorId() ==
-             strawI.Id().getSectorId()    ) continue;
+        if ( strawJ.id().getSectorId() ==
+             strawI.id().getSectorId()    ) continue;
         ++nChecked;
 
         CLHEP::Hep3Vector const& midj = strawJ.getMidPoint();
@@ -764,8 +764,8 @@ namespace mu2e {
 
           if ( bad || printWarnings ){
             log << tag
-                << strawI.Id() << " "
-                << strawJ.Id() << " "
+                << strawI.id() << " "
+                << strawJ.id() << " "
                 << pca.dca()   << " "
                 << pca.s1()    << " "
                 << pca.s2()    << " "
