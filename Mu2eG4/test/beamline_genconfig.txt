@@ -5,9 +5,9 @@
 //  - Single particle gun, configured to shoot muons out of the production target.
 //  - Particles from G4beamline format input file.
 //
-// $Id: beamline_genconfig.txt,v 1.7 2011/02/13 22:33:10 logash Exp $
-// $Author: logash $
-// $Date: 2011/02/13 22:33:10 $
+// $Id: beamline_genconfig.txt,v 1.8 2011/05/22 18:33:19 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 18:33:19 $
 //
 // Original author Rob Kutschke
 
@@ -79,7 +79,7 @@ bool particleGun.doHistograms = true;
 
 bool   fromG4BLFile.targetFrame  = true;
 double fromG4BLFile.mean         = -1;
-string fromG4BLFile.filename     = "/grid/fermiapp/mu2e/DataFiles/ExampleDataFiles/N1HARPSS_Short.txt";
+string fromG4BLFile.filename     = "ExampleDataFiles/N1HARPSS_Short.txt";
 bool   fromG4BLFile.doHistograms = true;
 
 // This tells emacs to view this file in c++ mode.
