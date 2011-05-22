@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.18 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: FromG4BLFile.cc,v 1.19 2011/05/22 18:32:37 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/22 18:32:37 $
 //
 // Original author Rob Kutschke
 //
@@ -53,6 +53,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/FromG4BLFile.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "ToyDP/inc/G4BeamlineInfoCollection.hh"
@@ -90,7 +91,8 @@ namespace mu2e {
     _randPoissonQ( getEngine(), std::abs(_mean) ),
 
     // Open the input file.
-    _inputFile(_inputFileName.c_str()),
+    //_inputFile(_inputFileName.c_str()),
+    _inputFile(),
 
     // Histogram pointers
     _hMultiplicity(0),
@@ -125,6 +127,22 @@ namespace mu2e {
     SimpleConfig const& geomConfig = geom->config();
     _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");
 
+    // Construct the full path to the input file.  Resolve relative paths using the standard search path.
+    string path(_inputFileName);
+    if ( path.substr(0,1) != "/" ){
+      ConfigFileLookupPolicy configFile;
+      path = configFile(_inputFileName);
+    }
+
+    // Open the input file.
+    _inputFile.open(path.c_str());
+
+    //Skip the first nParticlesToSkip of the file;
+    //10000 is a fake number of chars, before reaching the newline character.
+    for (int jid=0; jid < _nPartToSkip; ++jid) {
+      _inputFile.ignore(10000, '\n');
+    }
+
     // Book histograms if enabled.
     if ( !_doHistograms ) return;
 
@@ -145,11 +163,6 @@ namespace mu2e {
     _ntup          = tfdir.make<TNtuple>( "ntup", "G4BL Track ntuple",
                                           "x:y:z:p:cz:phi:pt:t:id:evtId:trkID:ParId:w");
 
-    //Skip the first nParticlesToSkip of the file;
-    //10000 is a fake number of chars, before reaching the newline character.
-    for (int jid=0; jid < _nPartToSkip; ++jid) {
-      _inputFile.ignore(10000, '\n');
-    }
   }
 
   FromG4BLFile::~FromG4BLFile(){
