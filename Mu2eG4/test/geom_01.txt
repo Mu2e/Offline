@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.84 2011/05/22 22:21:10 kutschke Exp $
+// $Id: geom_01.txt,v 1.85 2011/05/23 20:31:51 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 22:21:10 $
+// $Date: 2011/05/23 20:31:51 $
 //
 // Original author Rob Kutschke
 //
@@ -312,7 +312,7 @@ vector<double> target.yCos  =
 
 // Crystal calorimeter
 
-vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};   G4BL: 20729-7929=21800.
+vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};   // G4BL: 20729-7929=12800.
 double calorimeter.rInscribed                              = 360.;
 string calorimeter.calorimeterFillMaterial                 = "WAGVacuum";
 
