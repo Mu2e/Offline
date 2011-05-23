@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.15 2011/05/18 22:26:34 kutschke Exp $
+# $Id: SConstruct,v 1.16 2011/05/23 19:53:37 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/18 22:26:34 $
+# $Date: 2011/05/23 19:53:37 $
 #
 # Original author Rob Kutschke.
 #
@@ -54,13 +54,13 @@ if os.environ.has_key('MU2E_TEST_RELEASE'):
     testrelease_lib      = testrelease+'/lib/'
     testreleaseBaBar_inc = testrelease+'/BaBar/include'
 else:
-    testrelease      = None
-    testrelease_lib  = None
-    testreleaseBaBar_inc = None
+    testrelease      = ''
+    testrelease_lib  = ''
+    testreleaseBaBar_inc = ''
 
 # Define scons-local environment - it will be exported later.
-env = Environment( CPPPATH=[ #testrelease,
-                             #testreleaseBaBar_inc,
+env = Environment( CPPPATH=[ testrelease,
+                             testreleaseBaBar_inc,
                              base,
                              base+'/BaBar/include',
                              art_inc,
@@ -78,7 +78,7 @@ env = Environment( CPPPATH=[ #testrelease,
                              root_inc,
                              scons_dir+'/include',
                            ],
-                   LIBPATH=[ #testrelease_lib,
+                   LIBPATH=[ testrelease_lib,
                              base+'/lib',
                              art_lib,
                              mesfac_lib,
