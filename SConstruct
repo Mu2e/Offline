@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.16 2011/05/23 19:53:37 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/23 19:53:37 $
+# $Id: SConstruct,v 1.17 2011/05/24 18:33:02 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/24 18:33:02 $
 #
 # Original author Rob Kutschke.
 #
@@ -51,16 +51,14 @@ cetlib_lib     = os.environ['CETLIB_LIB']
 # See note 1.
 if os.environ.has_key('MU2E_TEST_RELEASE'):
     testrelease          = os.environ['MU2E_TEST_RELEASE']
-    testrelease_lib      = testrelease+'/lib/'
-    testreleaseBaBar_inc = testrelease+'/BaBar/include'
+    cpppath_frag         = [ testrelease, testrelease + '/BaBar/include' ]
+    libpath_frag         = [ testrelease+'/lib/' ]
 else:
-    testrelease      = ''
-    testrelease_lib  = ''
-    testreleaseBaBar_inc = ''
+    cpppath_frag         = [ ]
+    libpath_frag         = [ ]
 
 # Define scons-local environment - it will be exported later.
-env = Environment( CPPPATH=[ testrelease,
-                             testreleaseBaBar_inc,
+env = Environment( CPPPATH=[ cpppath_frag,
                              base,
                              base+'/BaBar/include',
                              art_inc,
@@ -78,7 +76,7 @@ env = Environment( CPPPATH=[ testrelease,
                              root_inc,
                              scons_dir+'/include',
                            ],
-                   LIBPATH=[ testrelease_lib,
+                   LIBPATH=[ libpath_frag,
                              base+'/lib',
                              art_lib,
                              mesfac_lib,
