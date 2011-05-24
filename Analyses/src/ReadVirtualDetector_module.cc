@@ -1,19 +1,25 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.2 2011/05/24 17:19:03 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/05/24 17:19:03 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.3 2011/05/24 20:03:31 wb Exp $
+//  $Author: wb $
+//  $Date: 2011/05/24 20:03:31 $
 //
 // Original author Ivan Logashenko
 //
 
-// C++ includes.
-#include <cmath>
-#include <iostream>
-#include <string>
-
-// Framework includes.
+#include "CLHEP/Units/SystemOfUnits.h"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "TH1F.h"
+#include "TNtuple.h"
+#include "TTree.h"
+#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -22,24 +28,9 @@
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Mu2e includes.
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
-
-// Root includes.
-#include "TH1F.h"
-#include "TNtuple.h"
-#include "TTree.h"
-
-// Other includes.
-#include "CLHEP/Units/SystemOfUnits.h"
+#include <cmath>
+#include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -326,7 +317,7 @@ namespace mu2e {
         // Parent info
         if( sim.hasParent() ) {
           nt[21] = sim.parentId().asInt();
-          SimParticle const* sim_parent = simParticles->findOrNull(sim.parentId());
+          SimParticle const* sim_parent = simParticles->getOrNull(sim.parentId());
           if( sim_parent ) {
             nt[22] = sim_parent->pdgId();
             CLHEP::Hep3Vector const & pos_parent = sim_parent->startPosition();

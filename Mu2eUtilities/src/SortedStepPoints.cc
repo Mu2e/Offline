@@ -1,18 +1,15 @@
 //
 //
-// $Id: SortedStepPoints.cc,v 1.3 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: SortedStepPoints.cc,v 1.4 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
 
-#include <iostream>
-
-#include "GeneralUtilities/inc/MapVectorKey.hh"
-
 #include "Mu2eUtilities/inc/SortedStepPoints.hh"
 
+#include <iostream>
 //#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 using namespace std;

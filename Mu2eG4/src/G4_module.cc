@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.15 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: G4_module.cc,v 1.16 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
@@ -338,7 +338,6 @@ namespace mu2e {
 
     // Get some run-time configuration information.
     _printPhysicsProcessSummary  = _config->getBool("g4.printPhysicsProcessSummary",false);
-    
 
     if ( _config->getBool("hasITracker",false) ) {
             static_cast<ITGasLayerSD*>

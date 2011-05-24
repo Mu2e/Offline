@@ -1,13 +1,29 @@
-// C++ includes
-#include <cmath>
-#include <deque>
-#include <iostream>
-#include <list>
-#include <map>
-#include <memory>
-#include <string>
-
-// Framework includes.
+#include "Analyses/inc/MCCaloUtilities.hh"
+#include "CLHEP/Units/PhysicalConstants.h"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "ITrackerGeom/inc/Cell.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
+#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
+#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TNtuple.h"
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Straw.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -18,38 +34,13 @@
 #include "art/Persistency/Provenance/Provenance.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Root includes.
-#include "TFile.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TNtuple.h"
-
-// Mu2e includes.
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ITrackerGeom/inc/Cell.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "Analyses/inc/MCCaloUtilities.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-
-// Other external includes
-#include "CLHEP/Units/PhysicalConstants.h"
+#include <cmath>
+#include <deque>
+#include <iostream>
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
 
 using namespace std;
 
@@ -1130,7 +1121,7 @@ namespace mu2e {
 
       SimParticleCollection::key_type trackId = hit.trackId();
 
-      SimParticle const* sim = simParticles->findOrNull(trackId);
+      SimParticle const* sim = simParticles->getOrNull(trackId);
       if( !sim ) continue;
 
       PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());

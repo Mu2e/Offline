@@ -2,9 +2,9 @@
 // Extract trajectories from the G4 internals and add them to the event.
 // Skip trajectories with too few points.
 //
-// $Id: addPointTrajectories.cc,v 1.2 2011/05/18 02:27:18 wb Exp $
+// $Id: addPointTrajectories.cc,v 1.3 2011/05/24 20:03:31 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
@@ -15,18 +15,13 @@
 //    to single phase construction.
 //
 
-// C++ includes
-#include <iostream>
-#include <map>
-
-// Mu2e includes
-#include "Mu2eG4/inc/addPointTrajectories.hh"
-
-// G4 includes
+#include "G4AttDef.hh"
 #include "G4Event.hh"
 #include "G4TrajectoryContainer.hh"
 #include "G4TrajectoryPoint.hh"
-#include "G4AttDef.hh"
+#include "Mu2eG4/inc/addPointTrajectories.hh"
+#include <iostream>
+#include <map>
 
 using namespace std;
 
@@ -36,8 +31,9 @@ namespace mu2e{
                               PointTrajectoryCollection& pointTrajectories,
                               CLHEP::Hep3Vector const&   mu2eOriginInWorld ){
 
-    typedef PointTrajectoryCollection::key_type key_type;
-    typedef PointTrajectoryCollection::map_type  map_type;
+    typedef PointTrajectoryCollection::key_type    key_type;
+    typedef PointTrajectoryCollection::mapped_type mapped_type;
+    typedef std::map<key_type,mapped_type>         map_type;
 
     // Check that there is information to be copied.
     G4TrajectoryContainer const* trajectories  = g4event->GetTrajectoryContainer();
@@ -77,7 +73,7 @@ namespace mu2e{
 
       // Locate this trajectory in the data product.
       // It is OK if we do not find it since we applied cuts above.
-      map_type::iterator iter =  pointTrajectories.find(kid);
+      PointTrajectoryCollection::iterator iter =  pointTrajectories.find(kid);
       if ( iter == pointTrajectories.end() ){
         continue;
       }

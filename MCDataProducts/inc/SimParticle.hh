@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Id: SimParticle.hh,v 1.2 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
@@ -14,28 +14,25 @@
 // 1) Internally G4 numbers tracks 1...N.  An earlier version of TrackingAction
 //    renumbered them 0...(N-1); this was an artifact of the SimParticleCollection
 //    class being a std::vector, which starts at 0. But now SimParticleCollection
-//    is a MapVector, so it is no longer necessary to do the renumbering.
+//    is a cet::map_vector, so it is no longer necessary to do the renumbering.
 //    Therefore the correct test to see if a particle has a parent is
 //
 // 2) The trackId, parentIds and daughterIds are all of the correct type to be
 //    used to find the corresponding information in SimParticleCollection
 //
 
-#include <vector>
-
-// Mu2e includes
-#include "Mu2eUtilities/inc/PDGCode.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-
-// Includes from external packages.
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "MCDataProducts/inc/ProcessCode.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "cetlib/map_vector.h"
+#include <vector>
 
 namespace mu2e {
 
   struct SimParticle {
 
-    typedef MapVectorKey key_type;
+    typedef cet::map_vector_key key_type;
 
     // This c'tor is required for ROOT.
     SimParticle(){}

@@ -8,23 +8,18 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Id: StepPointMC.hh,v 1.2 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
 
-// C++ includes
-#include <ostream>
-
-// Mu2e includes
-#include "GeneralUtilities/inc/MapVectorKey.hh"
-#include "TrackerGeom/inc/StrawIndex.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-
-// CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "MCDataProducts/inc/ProcessCode.hh"
+#include "TrackerGeom/inc/StrawIndex.hh"
+#include "cetlib/map_vector.h"
+#include <ostream>
 
 namespace mu2e {
 
@@ -36,7 +31,7 @@ namespace mu2e {
     typedef unsigned long VolumeId_type;
 
     StepPointMC():
-      _trackId(MapVectorKey()),
+      _trackId(cet::map_vector_key()),
       _volumeId(0),
       _totalEnergyDeposit(0.),
       _nonIonizingEnergyDeposit(0.),
@@ -59,7 +54,7 @@ namespace mu2e {
                  double                   stepLength,
                  ProcessCode              endProcessCode
                  ):
-      _trackId(MapVectorKey(trackId)),
+      _trackId(cet::map_vector_key(trackId)),
       _volumeId(volumeId),
       _totalEnergyDeposit(totalEDep),
       _nonIonizingEnergyDeposit(nonIonizingEDep),
@@ -79,7 +74,7 @@ namespace mu2e {
     void print( std::ostream& ost, bool doEndl = true ) const;
     void print() const { print(std::cout); }
 
-    MapVectorKey             trackId()          const { return _trackId;   }
+    cet::map_vector_key      trackId()          const { return _trackId;   }
     VolumeId_type            volumeId()         const { return _volumeId;  }
     double                   totalEDep()        const { return _totalEnergyDeposit; }
     double                   nonIonizingEDep()  const { return _nonIonizingEnergyDeposit; }
@@ -100,16 +95,16 @@ namespace mu2e {
 
   private:
 
-    MapVectorKey      _trackId;
-    VolumeId_type     _volumeId;
-    double            _totalEnergyDeposit;
-    double            _nonIonizingEnergyDeposit;
-    CLHEP::Hep3Vector _position;
-    CLHEP::Hep3Vector _momentum;
-    double            _time;
-    double            _proper;
-    double            _stepLength;
-    ProcessCode       _endProcessCode;
+    cet::map_vector_key _trackId;
+    VolumeId_type       _volumeId;
+    double              _totalEnergyDeposit;
+    double              _nonIonizingEnergyDeposit;
+    CLHEP::Hep3Vector   _position;
+    CLHEP::Hep3Vector   _momentum;
+    double              _time;
+    double              _proper;
+    double              _stepLength;
+    ProcessCode         _endProcessCode;
 
   };
 

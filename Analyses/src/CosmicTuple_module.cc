@@ -1,14 +1,30 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.3 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: CosmicTuple_module.cc,v 1.4 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
 
-// Framework includes.
+#include "CLHEP/Units/SystemOfUnits.h"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/SimParticleAncestors.hh"
+#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
+#include "TH1F.h"
+#include "TNtuple.h"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -17,30 +33,6 @@
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Mu2e includes.
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimParticleAncestors.hh"
-#include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-
-// Root includes.
-#include "TH1F.h"
-#include "TNtuple.h"
-
-// Other includes.
-#include "CLHEP/Units/SystemOfUnits.h"
-
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -222,7 +214,7 @@ namespace mu2e {
 
       // Immediate parent particle
       SimParticle const* sim_parent = 0;
-      if( sim.hasParent() ) sim_parent = simParticles->findOrNull(sim.parentId());
+      if( sim.hasParent() ) sim_parent = simParticles->getOrNull(sim.parentId());
 
       // Information about StrawHits that belong on this SimParticle.
       vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
@@ -313,9 +305,9 @@ namespace mu2e {
           calEne += rohit.eDep();
           int cid = rohit.volumeId();
           hit_crystals[cid] =1;
-          SimParticle const * csim = simParticles->findOrNull(rohit.trackId());
+          SimParticle const * csim = simParticles->getOrNull(rohit.trackId());
           while ( csim && csim->id() != sim.id() ) {
-            csim = simParticles->findOrNull(csim->parentId());
+            csim = simParticles->getOrNull(csim->parentId());
           }
           if(csim){
             calEind += rohit.eDep();

@@ -1,37 +1,36 @@
-#include "ContentSelector.h"
-#include "Cube.h"
-#include "Cylinder.h"
 #include "DataInterface.h"
-#include "Straw.h"
-#include "Track.h"
-#include "dict_classes/ComponentInfo.h"
-
-#include <TAxis3D.h>
-#include <TGFrame.h>
-#include <TMath.h>
-#include <TView.h>
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "ContentSelector.h"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Cube.h"
+#include "Cylinder.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "HepPID/ParticleName.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "TargetGeom/inc/Target.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Straw.h"
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "TargetGeom/inc/Target.hh"
+#include "Track.h"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/Run.h"
-
+#include "cetlib/map_vector.h"
+#include "dict_classes/ComponentInfo.h"
+#include <TAxis3D.h>
+#include <TGFrame.h>
 #include <TGeoVolume.h>
+#include <TMath.h>
+#include <TView.h>
 
 namespace mu2e_eventdisplay
 {
@@ -810,7 +809,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   for(unsigned int i=0; i<trackCollectionVector.size(); i++)
   {
     const mu2e::SimParticleCollection *simParticles=trackCollectionVector[i];
-    MapVector<mu2e::SimParticle>::const_iterator iter;
+    cet::map_vector<mu2e::SimParticle>::const_iterator iter;
     for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
     {
       const mu2e::SimParticle& particle = iter->second;
@@ -855,7 +854,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
       info->setText(3,c4);
       info->setText(4,"Daughter IDs:");
       std::vector<int> daughterVect;
-      std::vector<MapVectorKey>::const_iterator daughter;
+      std::vector<cet::map_vector_key>::const_iterator daughter;
       for(daughter=particle.daughterIds().begin();
           daughter!=particle.daughterIds().end();
           daughter++)
@@ -881,7 +880,7 @@ void DataInterface::findTrajectory(const ContentSelector *contentSelector,
   if(pointTrajectories!=NULL)
   {
 // loop over all trajectories
-    MapVector<mu2e::PointTrajectory>::const_iterator iter;
+    cet::map_vector<mu2e::PointTrajectory>::const_iterator iter;
     for(iter=pointTrajectories->begin(); iter!=pointTrajectories->end(); iter++)
     {
 // find the trajectory corresponding to this track id
@@ -905,7 +904,7 @@ void DataInterface::findTrajectory(const ContentSelector *contentSelector,
 // loop over all daughter ids
         for(unsigned int i=0; i<daughterVect.size(); i++)
         {
-          MapVector<mu2e::SimParticle>::const_iterator iter;
+          cet::map_vector<mu2e::SimParticle>::const_iterator iter;
           for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
           {
 // find the track which corresponds to each daughter id

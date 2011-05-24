@@ -5,31 +5,22 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.16 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: TrackingAction.hh,v 1.17 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
 
-// C++ includes
-#include <string>
-#include <map>
-
-// Framework includes
-#include "art/Utilities/CPUTimer.h"
-
-// Mu2e includes
-#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
-#include "Mu2eG4/inc/EventNumberList.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-
-// G4 includes.
-#include "G4UserTrackingAction.hh"
-
-// Other includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "G4UserTrackingAction.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Mu2eG4/inc/EventNumberList.hh"
+#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "art/Utilities/CPUTimer.h"
+#include <map>
+#include <string>
 
 namespace mu2e {
 
@@ -77,13 +68,14 @@ namespace mu2e {
 
   private:
 
-    typedef SimParticleCollection::key_type key_type;
-    typedef SimParticleCollection::map_type map_type;
+    typedef SimParticleCollection::key_type    key_type;
+    typedef SimParticleCollection::mapped_type mapped_type;
+    typedef std::map<key_type,mapped_type>     map_type;
 
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugList;
 
-    // Non-owing pointer to the utility that translates between transient and persistent 
+    // Non-owing pointer to the utility that translates between transient and persistent
     // representations of info about volumes.
     const PhysicalVolumeHelper* _physVolHelper;
 

@@ -2,21 +2,17 @@
 #define Mu2eUtilities_SortedStepPoints_hh
 //
 //
-// $Id: SortedStepPoints.hh,v 1.4 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: SortedStepPoints.hh,v 1.5 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
 
-#include <vector>
-
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-
-// CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include <vector>
 
 namespace mu2e {
 
@@ -38,7 +34,6 @@ namespace mu2e {
 
   private:
 
-    //MapVectorKey trackId_;
     SimParticleCollection::key_type trackId_;
 
     std::vector<StepPointMC const*> steps_;

@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.1 2011/05/24 17:16:44 kutschke Exp $     -->
-<!--  $Author: kutschke $ -->
-<!--  $Date: 2011/05/24 17:16:44 $   -->
+<!--  $Id: classes_def.xml,v 1.2 2011/05/24 20:03:31 wb Exp $     -->
+<!--  $Author: wb $ -->
+<!--  $Date: 2011/05/24 20:03:31 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.1 $$Date: 2011/05/24 17:16:44 $"; -->
+<!--  rev="$Revision: 1.2 $$Date: 2011/05/24 20:03:31 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -35,12 +35,12 @@
  <class name="mu2e::CaloCrystalOnlyHit"/>
  <class name="mu2e::CaloCrystalOnlyHitCollection"/>
  <class name="mu2e::SimParticle"/>
- <class name="std::pair<MapVectorKey,mu2e::SimParticle>"/>
- <class name="std::map<MapVectorKey,mu2e::SimParticle>"/>
+ <class name="std::pair<cet::map_vector_key,mu2e::SimParticle>"/>
+ <class name="std::map<cet::map_vector_key,mu2e::SimParticle>"/>
  <class name="mu2e::SimParticleCollection"/>
  <class name="mu2e::PointTrajectory"/>
- <class name="std::pair<MapVectorKey,mu2e::PointTrajectory>"/>
- <class name="std::map<MapVectorKey,mu2e::PointTrajectory>"/>
+ <class name="std::pair<cet::map_vector_key,mu2e::PointTrajectory>"/>
+ <class name="std::map<cet::map_vector_key,mu2e::PointTrajectory>"/>
  <class name="mu2e::PointTrajectoryCollection"/>
  <class name="mu2e::StatusG4"/>
  <class name="art::Wrapper<mu2e::GenParticleCollection>"/>

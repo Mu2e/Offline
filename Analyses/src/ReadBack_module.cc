@@ -1,19 +1,46 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: ReadBack_module.cc,v 1.6 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
 
-// C++ includes.
-#include <iostream>
-#include <string>
-#include <cmath>
-
-// Framework includes.
+#include "CLHEP/Units/SystemOfUnits.h"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "ConditionsService/inc/unknownPDGIdName.hh"
+#include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
+#include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
+#include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "DataProducts/inc/DPIndexVector.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "G4Helper/inc/G4Helper.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
+#include "LTrackerGeom/inc/LTracker.hh"
+#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
+#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "TDirectory.h"
+#include "TGraph.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TNtuple.h"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -22,48 +49,9 @@
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Mu2e includes.
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/unknownPDGIdName.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-#include "DataProducts/inc/DPIndexVector.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StatusG4.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-
-#include "G4Helper/inc/G4Helper.hh"
-
-
-// Root includes.
-#include "TDirectory.h"
-#include "TGraph.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TNtuple.h"
-
-// Other includes.
-#include "CLHEP/Units/SystemOfUnits.h"
+#include <cmath>
+#include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -1092,7 +1080,7 @@ namespace mu2e {
       // Here we require that there is information about the primary
       // particle in the SimParticle collection. It is not neccessary for
       // this example, but it is typical requirement in the real analysis
-      SimParticle const* sim = simParticles->findOrNull(trackId);
+      SimParticle const* sim = simParticles->getOrNull(trackId);
       if( !sim ) continue;
 
       // Get the foil id where the hit occured. If it is the first hit,

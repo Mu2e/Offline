@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.1 2011/05/24 17:16:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:44 $
+// $Id: classes.h,v 1.2 2011/05/24 20:03:31 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "art/Persistency/Common/Wrapper.h"
+#include "cetlib/map_vector.h"
 
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
@@ -42,10 +43,10 @@
 //    and one for the underlying pair type.
 //
 
-template class std::pair<MapVectorKey,mu2e::SimParticle>;
-template class std::map<MapVectorKey,mu2e::SimParticle>;
-template class std::pair<MapVectorKey,mu2e::PointTrajectory>;
-template class std::map<MapVectorKey,mu2e::PointTrajectory>;
+template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
+template class std::map<cet::map_vector_key,mu2e::SimParticle>;
+template class std::pair<cet::map_vector_key,mu2e::PointTrajectory>;
+template class std::map<cet::map_vector_key,mu2e::PointTrajectory>;
 
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
