@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Id: classes.h,v 1.2 2011/05/24 18:28:11 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/24 18:28:11 $
 //
 // Original author Rob Kutschke
 //
@@ -29,5 +29,4 @@ template class art::Wrapper<mu2e::DPIndexVectorCollection>;
 template class std::vector<MapVectorKey>;
 template class std::vector<mu2e::DPIndex>;
 template class std::vector<mu2e::DPIndexVector>;
-template class std::vector<CLHEP::Hep3Vector>;
 
