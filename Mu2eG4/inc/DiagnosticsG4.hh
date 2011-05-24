@@ -4,9 +4,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: DiagnosticsG4.hh,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -15,11 +15,11 @@
 //    module classes, this class is not a module.
 //
 
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
-#include "ToyDP/inc/PointTrajectoryCollection.hh"
-#include "ToyDP/inc/StatusG4.hh"
+#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
 
 // Forward declarations.
 class TH1F;

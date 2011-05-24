@@ -6,9 +6,9 @@
 // Starts from ReadDPIStrawCluster_plugin.cc, adding the quantities of
 // interest to these angles, and gradually eliminating the rest.
 //
-// $Id: BetaTauPitch_module.cc,v 1.8 2011/05/22 19:09:16 kutschke Exp $
+// $Id: BetaTauPitch_module.cc,v 1.9 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author: Mark Fischler modifying code by Hans Wenzel
 //
@@ -54,15 +54,15 @@
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/GenId.hh"
-#include "ToyDP/inc/GenParticle.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/StatusG4.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/GenId.hh"
+#include "MCDataProducts/inc/GenParticle.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;

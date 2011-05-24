@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.5 2011/05/22 19:09:16 kutschke Exp $
+// $Id: MakeStrawCluster_module.cc,v 1.6 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Hans Wenzel
 //
@@ -36,9 +36,9 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawCluster.hh"
-#include "ToyDP/inc/StrawClusterCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawCluster.hh"
+#include "RecoDataProducts/inc/StrawClusterCollection.hh"
 using namespace std;
 
 namespace mu2e {

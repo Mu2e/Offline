@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.14 2011/05/19 19:03:27 kutschke Exp $
+# $Id: SConscript,v 1.15 2011/05/24 17:19:03 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/19 19:03:27 $
+# $Date: 2011/05/24 17:19:03 $
 #
 # Original author Rob Kutschke.
 #
@@ -27,7 +27,7 @@ if cc_and_f:
                       LIBS=[ 'art_Framework_Services_Optional_TFileService_service',
                              'GeometryService_service',
                              'ConditionsService_service',
-                             'ToyDP',
+                             'MCDataProducts',
                              'CLHEP',
                              'art_Framework_Services_Optional_RandomNumberGenerator_service',
                              'art_Framework_Core',
@@ -45,7 +45,7 @@ for cc in plugin_cc:
                                           'art_Framework_Services_Optional_TFileService_service',
                                           'GeometryService_service',
                                           'ConditionsService_service',
-                                          'ToyDP',
+                                          'MCDataProducts',
                                           'CLHEP',
                                           'art_Framework_Services_Optional_RandomNumberGenerator_service',
                                           'art_Framework_Core',

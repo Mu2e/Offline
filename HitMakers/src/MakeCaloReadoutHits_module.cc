@@ -29,12 +29,12 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
-#include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
-#include "ToyDP/inc/DPIndexVector.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
+#include "DataProducts/inc/DPIndexVector.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "Mu2eUtilities/inc/sort_functors.hh"
 
 // Other includes.

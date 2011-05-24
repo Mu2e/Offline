@@ -15,7 +15,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // Mu2e includes.
-#include "ToyDP/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
 using namespace std;
 

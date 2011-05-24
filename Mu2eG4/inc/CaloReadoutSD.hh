@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.hh,v 1.6 2011/05/21 21:20:56 kutschke Exp $
+// $Id: CaloReadoutSD.hh,v 1.7 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 21:20:56 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Ivan Logashenko
 //
@@ -15,7 +15,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"

@@ -5,9 +5,9 @@
 // associated with hit.  This is a building block of the
 // the class SimParticlesWithHits.
 //
-// $Id: SimParticleInfo.hh,v 1.7 2011/05/17 22:22:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/17 22:22:46 $
+// $Id: SimParticleInfo.hh,v 1.8 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke.
 //
@@ -17,7 +17,7 @@
 
 // Mu2e includes.
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace art{
   class Event;

@@ -3,9 +3,9 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: PhysicsProcessInfo.hh,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 #include <map>
 #include <string>
 
-#include "ToyDP/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/ProcessCode.hh"
 
 #include "G4String.hh"
 

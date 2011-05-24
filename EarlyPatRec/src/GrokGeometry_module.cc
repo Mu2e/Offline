@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: GrokGeometry_module.cc,v 1.7 2011/05/22 19:09:16 kutschke Exp $
+// $Id: GrokGeometry_module.cc,v 1.8 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author: Mark Fischler
 //
@@ -43,12 +43,12 @@
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "TrackerGeom/inc/StrawId.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 

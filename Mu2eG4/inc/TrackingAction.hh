@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.15 2011/05/21 19:22:54 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.16 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 19:22:54 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
 // G4 includes.

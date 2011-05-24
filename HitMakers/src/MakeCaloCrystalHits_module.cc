@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.4 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author KLG
 //
@@ -32,8 +32,8 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 
 #include "Mu2eUtilities/inc/sort_functors.hh"
 

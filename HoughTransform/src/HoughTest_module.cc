@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.8 2011/05/22 20:28:13 kutschke Exp $
+// $Id: HoughTest_module.cc,v 1.9 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author R. Bernstein
 //
@@ -27,8 +27,8 @@
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
 #include "TSpectrum3.h"
-#include "ToyDP/inc/HoughCircleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/HoughCircleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"

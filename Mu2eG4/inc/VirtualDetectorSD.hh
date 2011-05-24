@@ -3,16 +3,16 @@
 //
 // Define a sensitive detector for virtual detectors (like G4Beamline)
 //
-// $Id: VirtualDetectorSD.hh,v 1.8 2011/05/21 21:20:56 kutschke Exp $
+// $Id: VirtualDetectorSD.hh,v 1.9 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 21:20:56 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Ivan Logashenko
 //
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"

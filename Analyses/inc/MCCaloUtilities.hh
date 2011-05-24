@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.hh,v 1.2 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: MCCaloUtilities.hh,v 1.3 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Gianni Onorato
 //
@@ -16,7 +16,7 @@
 
 // Mu2e includes
 
-#include "ToyDP/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 
 #include <string>
 

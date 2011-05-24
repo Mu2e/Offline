@@ -1,8 +1,8 @@
 //
 //
-// $Id: SortedStepPoints.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: SortedStepPoints.cc,v 1.3 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@
 
 #include "Mu2eUtilities/inc/SortedStepPoints.hh"
 
-//#include "ToyDP/inc/StepPointMCCollection.hh"
+//#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 using namespace std;
 

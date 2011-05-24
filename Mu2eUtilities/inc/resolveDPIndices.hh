@@ -6,9 +6,9 @@
 // collection of DPIndex's into pointers to the objects
 // that they describe.
 //
-// $Id: resolveDPIndices.hh,v 1.6 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: resolveDPIndices.hh,v 1.7 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@
 #include "art/Framework/Core/Event.h"
 
 // Mu2e includes.
-#include "ToyDP/inc/DPIndex.hh"
+#include "DataProducts/inc/DPIndex.hh"
 
 namespace mu2e {
 

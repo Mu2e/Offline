@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.1 2011/05/21 22:53:44 kutschke Exp $
+//  $Id: ReadVirtualDetector_module.cc,v 1.2 2011/05/24 17:19:03 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2011/05/21 22:53:44 $
+//  $Date: 2011/05/24 17:19:03 $
 //
 // Original author Ivan Logashenko
 //
@@ -26,11 +26,11 @@
 // Mu2e includes.
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "ToyDP/inc/G4BeamlineInfoCollection.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 
 // Root includes.

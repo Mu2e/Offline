@@ -3,16 +3,16 @@
 //
 // Define a sensitive detector for
 //
-// $Id: CRSScintillatorBarSD.hh,v 1.4 2011/05/21 21:20:56 kutschke Exp $
+// $Id: CRSScintillatorBarSD.hh,v 1.5 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 21:20:56 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author KLG
 //
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"

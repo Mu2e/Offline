@@ -2,9 +2,9 @@
 #define HitCluster_HitCluster_hh
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.hh,v 1.9 2011/05/18 20:09:10 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
+// $Id: HitCluster.hh,v 1.10 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 //original author R. Bernstein
 //
@@ -38,7 +38,7 @@
 // Mu2e includes.
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "Mu2eUtilities/inc/sqrtOrThrow.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 
 namespace mu2e{

@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.25 2011/05/21 22:27:32 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.26 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 22:27:32 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -36,8 +36,8 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/ProcessCode.hh"
 
 // G4 includes
 #include "globals.hh"

@@ -3,15 +3,15 @@
 //
 // Dig the trajectories out of the G4 internals and add them to the event.
 //
-// $Id: addPointTrajectories.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: addPointTrajectories.hh,v 1.3 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes
-#include "ToyDP/inc/PointTrajectoryCollection.hh"
+#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

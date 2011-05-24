@@ -8,7 +8,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"

@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.7 2011/05/21 22:51:18 kutschke Exp $
+# $Id: SConscript,v 1.8 2011/05/24 17:19:03 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/21 22:51:18 $
+# $Date: 2011/05/24 17:19:03 $
 #
 # Original author Rob Kutschke.
 #
@@ -25,7 +25,9 @@ if non_plugin_cc:
                              'ConditionsService',
                              'Mu2eUtilities',
                              'GeneralUtilities',
-                             'ToyDP',
+                             'MCDataProducts',
+                             'RecoDataProducts',
+                             'CLHEP',
                              'Spectrum',
                              'MLP',
                              'Gpad',
@@ -44,9 +46,11 @@ for cc in plugin_cc:
                              'art_Framework_Services_Optional_TFileService_service',
                              'GeometryService',
                              'ConditionsService',
+                             'MCDataProducts',
+                             'RecoDataProducts',
+                             'CLHEP',
                              'Mu2eUtilities',
                              'GeneralUtilities',
-                             'ToyDP',
                              'Spectrum',
                              'MLP',
                              'Gpad',

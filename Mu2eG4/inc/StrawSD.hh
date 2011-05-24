@@ -3,16 +3,16 @@
 //
 // Define a sensitive detector for Straws.
 //
-// $Id: StrawSD.hh,v 1.11 2011/05/21 19:23:43 kutschke Exp $
+// $Id: StrawSD.hh,v 1.12 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 19:23:43 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"

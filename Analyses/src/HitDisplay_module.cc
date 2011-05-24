@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.7 2011/05/22 19:09:16 kutschke Exp $
+// $Id: HitDisplay_module.cc,v 1.8 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke.
 //
@@ -30,12 +30,12 @@
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 
 // ROOT includes
 #include "TApplication.h"

@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.15 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: DataInterface.h,v 1.16 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Ralf Ehrlich
 //
@@ -12,7 +12,7 @@
 #define EventDisplay_src_DataInterface_h
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "ToyDP/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "art/Framework/Core/Event.h"
 #include "boost/shared_ptr.hpp"
 #include <TObject.h>

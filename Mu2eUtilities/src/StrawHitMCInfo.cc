@@ -5,9 +5,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle.
 //
-// $Id: StrawHitMCInfo.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: StrawHitMCInfo.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke.
 //
@@ -20,9 +20,9 @@
 // Mu2e includes
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/DPIndexVector.hh"
-#include "ToyDP/inc/StepPointMC.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "DataProducts/inc/DPIndexVector.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
 
 namespace mu2e {
 

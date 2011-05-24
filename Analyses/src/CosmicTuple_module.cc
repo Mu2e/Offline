@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.2 2011/05/22 16:43:36 kutschke Exp $
+// $Id: CosmicTuple_module.cc,v 1.3 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 16:43:36 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -28,10 +28,10 @@
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimParticleAncestors.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/ProcessCode.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 // Root includes.

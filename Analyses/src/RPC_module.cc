@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.9 2011/05/20 22:39:28 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 22:39:28 $
+// $Id: RPC_module.cc,v 1.10 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author R. Bernstein
 //
@@ -29,9 +29,9 @@
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
 #include "TSpectrum3.h"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"

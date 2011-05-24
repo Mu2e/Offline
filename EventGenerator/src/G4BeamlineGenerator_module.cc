@@ -27,9 +27,9 @@
 
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "ToyDP/inc/G4BeamlineInfoCollection.hh"
-#include "ToyDP/inc/GenId.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "MCDataProducts/inc/GenId.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/FromG4BLFile.hh"

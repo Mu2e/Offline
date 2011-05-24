@@ -2,9 +2,9 @@
 // Module to understand how to use the BaBar Kalman filter package.
 // Not for general use.
 //
-// $Id: KalmanT01_module.cc,v 1.6 2011/05/22 20:28:13 kutschke Exp $
+// $Id: KalmanT01_module.cc,v 1.7 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -44,9 +44,9 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/toHepPoint.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // Babar Kalman filter includes
 #include "BField/BFieldFixed.hh"

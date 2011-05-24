@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.14 2011/05/21 21:23:11 kutschke Exp $
+// $Id: G4_module.cc,v 1.15 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/21 21:23:11 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -76,11 +76,11 @@
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 
 // Data products that will be produced by this module.
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/PointTrajectoryCollection.hh"
-#include "ToyDP/inc/StatusG4.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -88,8 +88,8 @@
 // not sure why this needs to be here; if it is above with other
 // Geant4 includes a complier error occurs...
 
-// In file included from ./ToyDP/inc/SimParticle.hh:22,
-//              from ./ToyDP/inc/SimParticleCollection.hh:16,
+// In file included from ./MCDataProducts/inc/SimParticle.hh:22,
+//              from ./MCDataProducts/inc/SimParticleCollection.hh:16,
 //              from ./Mu2eG4/inc/TrackingAction.hh:22,
 //              from Mu2eG4/src/G4_plugin.cc:63:
 //./Mu2eUtilities/inc/PDGCode.hh:222: error: expected identifier before numeric constant
@@ -138,6 +138,7 @@ namespace mu2e {
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,art::InRun>();
       produces<PointTrajectoryCollection>();
+
       produces<StatusG4>();
 
       // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.

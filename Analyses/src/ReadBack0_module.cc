@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_module.cc,v 1.2 2011/05/22 19:09:16 kutschke Exp $
+// $Id: ReadBack0_module.cc,v 1.3 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -22,8 +22,8 @@
 // Mu2e includes.
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 // Root includes.

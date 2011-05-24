@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.10 2011/05/20 20:18:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:24 $
+// $Id: Analyzer.C,v 1.11 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author KLG
 //
@@ -32,10 +32,10 @@
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "LTrackerGeom/inc/LTracker.hh"
 

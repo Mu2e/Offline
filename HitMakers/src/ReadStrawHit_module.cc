@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.6 2011/05/22 19:09:16 kutschke Exp $
+// $Id: ReadStrawHit_module.cc,v 1.7 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -36,10 +36,10 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/resolveTransients.hh"
 

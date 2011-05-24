@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer Module for tuning of HoughCircles
 //
-// $Id: HoughTuner_module.cc,v 1.7 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: HoughTuner_module.cc,v 1.8 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author P. Shanahan
 //
@@ -47,8 +47,8 @@
 #include "HoughTransform/inc/HoughTransform.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "ToyDP/inc/HoughCircleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/HoughCircleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 //CLHEP includes
 #include "CLHEP/Random/RandFlat.h"

@@ -1,17 +1,17 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.5 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: EventDisplay_module.cc,v 1.6 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 
 #include <iostream>
 #include <memory>
 #include <string>
 
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"

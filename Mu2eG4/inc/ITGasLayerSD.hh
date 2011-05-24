@@ -19,7 +19,7 @@
 //#include "CLHEP/Units/PhysicalConstants.h"
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 //#include "GeometryService/inc/GeometryService.hh"
 //#include "GeometryService/inc/GeomHandle.hh"
 

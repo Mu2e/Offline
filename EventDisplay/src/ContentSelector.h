@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.7 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: ContentSelector.h,v 1.8 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,13 +11,13 @@
 #ifndef EventDisplay_src_ContentSelector_h
 #define EventDisplay_src_ContentSelector_h
 
-#include "ToyDP/inc/CaloCrystalHitCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/PointTrajectoryCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/Run.h"
 #include <TGComboBox.h>

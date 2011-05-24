@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.12 2011/05/20 20:21:47 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:21:47 $
+// $Id: SteppingAction.hh,v 1.13 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
-#include "ToyDP/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/ProcessCode.hh"
 
 // G4 includes
 #include "G4UserSteppingAction.hh"

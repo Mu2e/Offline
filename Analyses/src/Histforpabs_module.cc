@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_module.cc,v 1.4 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: Histforpabs_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -25,8 +25,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 // Mu2e includes.
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 
 // Root includes.
 #include "TApplication.h"

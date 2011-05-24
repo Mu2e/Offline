@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.6 2011/05/18 22:01:46 wb Exp $
-  $Author: wb $
-  $Date: 2011/05/18 22:01:46 $
+  $Id: EventGenerator_module.cc,v 1.7 2011/05/24 17:19:03 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/05/24 17:19:03 $
 
   Original author Rob Kutschke
 
@@ -49,8 +49,8 @@
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/requireUniqueKey.hh"
-#include "ToyDP/inc/GenId.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/GenId.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/ConversionGun.hh"

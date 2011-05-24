@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.22 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: PrimaryGeneratorAction.cc,v 1.23 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +39,7 @@
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
 // ROOT includes
 #include "TH1D.h"

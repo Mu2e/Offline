@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.19 2011/05/21 22:51:36 kutschke Exp $
+# $Id: SConscript,v 1.20 2011/05/24 17:19:03 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/21 22:51:36 $
+# $Date: 2011/05/24 17:19:03 $
 #
 # Original author Rob Kutschke.
 #
@@ -120,11 +120,12 @@ if non_plugin_cc:
                              'Mu2eUtilities',
                              'Mu2eReflection',
                              'GeometryService',
-                             'ToyDP',
+                             'MCDataProducts',
                              'ConditionsService_service',
+                             'ConditionsService',
                              'G4Helper_service',
                               G4GRANULARLIBS,
-                              ROOTGEOM,                           
+                              ROOTGEOM,
                              'CLHEP',
                               OPENGL_LIBS
                            ],
@@ -141,10 +142,12 @@ for cc in plugin_cc:
                      LIBS=[ 'art_Framework_Core',
                             'art_Framework_Services_Optional_TFileService_service',
                             libs,
+                            'MCDataProducts',
                             'Mu2eUtilities',
                             'ConditionsService_service',
+                            'ConditionsService',
                             G4GRANULARLIBS,
-                           'CLHEP',
+                            'CLHEP',
                             OPENGL_LIBS,
                             'Tree' 
                           ],

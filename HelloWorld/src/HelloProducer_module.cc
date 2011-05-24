@@ -1,9 +1,9 @@
 //
 //  The first example of a producer.
 //
-//  $Id: HelloProducer_module.cc,v 1.4 2011/05/18 22:01:46 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/18 22:01:46 $
+//  $Id: HelloProducer_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2011/05/24 17:19:03 $
 //
 //  Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "ToyDP/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
 using namespace std;
 

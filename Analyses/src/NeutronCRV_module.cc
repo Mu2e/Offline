@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.8 2011/05/22 20:28:13 kutschke Exp $
+// $Id: NeutronCRV_module.cc,v 1.9 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -44,18 +44,18 @@
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "Analyses/inc/MCCaloUtilities.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "ToyDP/inc/CaloCrystalHitCollection.hh"
-#include "ToyDP/inc/CaloCrystalOnlyHitCollection.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/CaloHitMCTruthCollection.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StatusG4.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 

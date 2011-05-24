@@ -1,7 +1,7 @@
 //
-// $Id: MakeDPIStrawCluster_module.cc,v 1.5 2011/05/22 20:28:13 kutschke Exp $
+// $Id: MakeDPIStrawCluster_module.cc,v 1.6 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Hans Wenzel
 // This modules create clusters of fired StrawHits in a panel
@@ -36,9 +36,9 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/DPIndexVector.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "DataProducts/inc/DPIndexVector.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
 using namespace std;
 

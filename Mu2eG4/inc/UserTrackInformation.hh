@@ -3,15 +3,15 @@
 //
 // Mu2e specific information about one G4 track.
 //
-// $Id: UserTrackInformation.hh,v 1.3 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: UserTrackInformation.hh,v 1.4 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes
-#include "ToyDP/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/ProcessCode.hh"
 
 // Geant4 includes
 #include "G4VUserTrackInformation.hh"

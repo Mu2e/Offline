@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.5 2011/05/19 23:51:50 greenc Exp $
-$Author: greenc $
-$Date: 2011/05/19 23:51:50 $
+$Id: FilterEmptyEvents_module.cc,v 1.6 2011/05/24 17:19:03 kutschke Exp $
+$Author: kutschke $
+$Date: 2011/05/24 17:19:03 $
 
 Original author Giovanni Onorato
 
@@ -34,9 +34,9 @@ Original author Giovanni Onorato
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ToyDP/inc/CaloHitCollection.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 

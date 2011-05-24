@@ -1,9 +1,9 @@
 //
 // header for Analyzer.C
 
-// $Id: Analyzer.h,v 1.8 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: Analyzer.h,v 1.9 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author KLG
 //
@@ -20,10 +20,10 @@
 // avoid "complicated" types in the interface
 // one may want to revisit types relying on boost libraries
 
-/* #include "ToyDP/inc/SimParticleCollection.hh" */
-/* #include "ToyDP/inc/GenParticleCollection.hh" */
-/* #include "ToyDP/inc/StepPointMCCollection.hh" */
-/* #include "ToyDP/inc/PhysicalVolumeInfoCollection.hh" */
+/* #include "MCDataProducts/inc/SimParticleCollection.hh" */
+/* #include "MCDataProducts/inc/GenParticleCollection.hh" */
+/* #include "MCDataProducts/inc/StepPointMCCollection.hh" */
+/* #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh" */
 
 /* #include "art/Persistency/Common/Wrapper.h" */
 /* #include "art/Framework/Core/Event.h" */

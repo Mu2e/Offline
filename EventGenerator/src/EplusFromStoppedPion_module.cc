@@ -5,9 +5,9 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_module.cc,v 1.5 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: EplusFromStoppedPion_module.cc,v 1.6 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke.
 //
@@ -34,7 +34,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeneralUtilities/inc/TwoBodyKinematics.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "ToyDP/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
 // Root includes.
 #include "TH1F.h"

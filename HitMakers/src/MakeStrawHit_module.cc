@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.4 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: MakeStrawHit_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -30,13 +30,13 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StrawHit.hh"
-#include "ToyDP/inc/StrawHitCollection.hh"
-#include "ToyDP/inc/StrawHitMCTruth.hh"
-#include "ToyDP/inc/StrawHitMCTruthCollection.hh"
-#include "ToyDP/inc/DPIndexVector.hh"
-#include "ToyDP/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/StrawHitMCTruth.hh"
+#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "DataProducts/inc/DPIndexVector.hh"
+#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"

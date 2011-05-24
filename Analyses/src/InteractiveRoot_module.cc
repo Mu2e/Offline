@@ -1,9 +1,9 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: InteractiveRoot_module.cc,v 1.4 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // Root includes.
 #include "TApplication.h"

@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.cc,v 1.2 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: MCCaloUtilities.cc,v 1.3 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Gianni Onorato
 //
@@ -21,9 +21,9 @@
 #include "Analyses/inc/MCCaloUtilities.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ToyDP/inc/StatusG4.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
 
 
 using namespace std;

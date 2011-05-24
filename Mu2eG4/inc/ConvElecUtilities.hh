@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.10 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: ConvElecUtilities.hh,v 1.11 2011/05/24 17:19:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Gianni Onorato
 //
@@ -24,10 +24,10 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // Mu2e includes
-#include "ToyDP/inc/GenParticleCollection.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 
 

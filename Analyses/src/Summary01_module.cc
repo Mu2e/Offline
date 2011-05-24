@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: Summary01_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
+// $Id: Summary01_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke.
 //
@@ -24,10 +24,10 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/PDGCode.hh"
-#include "ToyDP/inc/SimParticleCollection.hh"
-#include "ToyDP/inc/StepPointMCCollection.hh"
-#include "ToyDP/inc/PhysicalVolumeInfoCollection.hh"
-#include "ToyDP/inc/StatusG4.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
 
 // ROOT includes
 #include "TH1F.h"
