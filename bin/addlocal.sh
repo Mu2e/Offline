@@ -1,7 +1,7 @@
 #
 # $Id:
-# $Author: wb $
-# $Date: 2011/05/18 02:27:20 $
+# $Author: greenc $
+# $Date: 2011/05/24 18:28:44 $
 #
 # Original author Rob Kutschke
 #
@@ -28,7 +28,7 @@ if [ "${FW_RELEASE_BASE}" = '' ];then
     echo "  You need to:"
     echo "     source /grid/fermiapp/mu2e/Offline/vx_y_z/setup.sh"
     echo "  where vx_y_z is the name of a tagged release."
-    exit
+    return 1
 fi
 
 # Check that we are not stepping on an existing local setup.
@@ -36,7 +36,7 @@ if [ "${FW_BASE}" != '' ];then
     echo "The environment variable FW_BASE is already set."
     echo "So you already have a local environment established."
     echo "If you really want to do this, unset FWBASE and rerun this script."
-    exit
+    return 1
 fi
 
 # Do the real work.
