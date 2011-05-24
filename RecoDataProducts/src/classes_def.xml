@@ -1,0 +1,35 @@
+<!--  -->
+<!--  $Id: classes_def.xml,v 1.1 2011/05/24 17:16:43 kutschke Exp $     -->
+<!--  $Author: kutschke $ -->
+<!--  $Date: 2011/05/24 17:16:43 $   -->
+<!--  -->
+<!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
+<!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
+<!--  or COPYING file. If you do not have such a file, one can be obtained by -->
+<!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
+<!--  $RCSfile: classes_def.xml,v $ -->
+<!--  rev="$Revision: 1.1 $$Date: 2011/05/24 17:16:43 $"; -->
+
+<!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
+<!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
+<!--  for all objects inside of those objects.                                        -->
+
+
+<lcgdict>
+ <class name="mu2e::HoughCircle"/>
+ <class name="mu2e::HoughCircleCollection"/>
+ <class name="mu2e::StrawHit"/>
+ <class name="mu2e::StrawHitCollection"/>
+ <class name="mu2e::StrawCluster"/>
+ <class name="mu2e::StrawClusterCollection"/>
+ <class name="mu2e::CaloHit"/>
+ <class name="mu2e::CaloHitCollection"/>
+ <class name="mu2e::CaloCrystalHit"/>
+ <class name="mu2e::CaloCrystalHitCollection"/>
+
+ <class name="art::Wrapper<mu2e::HoughCircleCollection>"/>
+ <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
+ <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
+</lcgdict>

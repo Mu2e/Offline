@@ -1,0 +1,43 @@
+#
+# $Id: SConscript,v 1.1 2011/05/24 17:16:43 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/24 17:16:43 $
+#
+# Original author Rob Kutschke.
+#
+
+import os.path, re
+Import('env')
+
+# last two components of the path. Ex: /not/this/but/THIS/AND_THIS
+#                                      "AND_THIS" is usually "src"
+dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+ff=os.path.dirname(dd)   # THIS
+env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+                      '#/tmp/src/%s/%s_map.cpp'%(dd,ff)],
+                     ['classes.h','classes_def.xml'])
+
+my_lib=[]  # default if no cc_files
+cc_files = Glob('*.cc',strings=True)
+if cc_files:
+    env.SharedLibrary( '#/lib/%s'%(ff,), cc_files,
+                       # common libs
+                       LIBS=[ 'art_Framework_Core',
+                              'art_Utilities',
+                              'art_Framework_Services_Registry',
+                              'Reflex',
+                              'Core',
+                            ],
+        )
+    my_lib=['%s'%(ff,),'CLHEP']
+
+env.SharedLibrary('#/lib/%s_dict'%(ff,),
+                  '#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+                  LIBS=my_lib)
+env.SharedLibrary('#/lib/%s_map'%(ff,),
+                  '#/tmp/src/%s/%s_map.cpp'%(dd,ff))
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
