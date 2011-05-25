@@ -2,13 +2,13 @@
 #
 # Readback the output of g4test_03.py; make histograms and printout.
 #
-# $Id: readback.fcl,v 1.4 2011/05/22 17:27:40 kutschke Exp $
+# $Id: readback.fcl,v 1.5 2011/05/25 01:23:42 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/22 17:27:40 $
+# $Date: 2011/05/25 01:23:42 $
 
 #include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
-#include "standardProducer.fcl"
+#include "standardProducers.fcl"
 
 # Give this job a name.  
 process_name : ReadBack01
