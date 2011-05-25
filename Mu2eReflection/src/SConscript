@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.8 2011/05/18 19:18:10 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/18 19:18:10 $
+# $Id: SConscript,v 1.9 2011/05/25 23:25:19 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/25 23:25:19 $
 #
 # Original author Rob Kutschke.
 #
@@ -9,18 +9,8 @@
 import os, re
 Import('env')
 
-#
-# 1) When I rm lib/libG4_plugin.so and then scons, it also rebuilds
-#    lib/libMu2eG4.so.  Why?
-# 2) Construct G4GRANULARLIBS using shell() on the g4 command that makes
-#    the granular lib string.
-# 3) Make an enviornment variable for the system flavor: Linux-g++.
-#
-
 g4inc    = os.environ['G4INCLUDE']
 g4libdir = os.environ['G4LIBDIR']
-
-#g4gdml = os.environ['XERCESCROOT']
 
 # Compiler switches needed by the default G4 build.
 G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE', 
@@ -91,10 +81,7 @@ G4GRANULARLIBS = [
            'G4partman',                           'G4geometrymng',
            'G4materials',                         'G4graphics_reps',
            'G4intercoms',                         'G4globman'
-#           ,'G4gdml'
            ]
-
-ROOTGEOM = [ 'Geom' ]
 
 # Link libraries needed to build G4 with OPENGL.
 OPENGL_LIBS = [ 'GLU', 'GL' ]
@@ -112,7 +99,6 @@ if non_plugin_cc:
                       LIBS=[ 'art_Framework_Core',
                              'Mu2eUtilities',
                               G4GRANULARLIBS,
-                              ROOTGEOM,                           
                              'CLHEP',
                               OPENGL_LIBS
                            ],

@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.5 2011/05/18 19:18:10 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/18 19:18:10 $
+# $Id: SConscript,v 1.6 2011/05/25 23:21:54 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/25 23:21:54 $
 #
 # Original author Rob Kutschke.
 #
@@ -24,18 +24,20 @@ env.SharedLibrary('#/lib/EventDisplay_module', cc_files, cc_files2,
                   LIBS=[ 'art_Framework_Core',
                          'art_Utilities',
                          'art_Framework_Services_Registry',
-                         'Mu2eUtilities',
+                         'GeometryService',
+                         'ConditionsService',
                          'TrackerGeom',
                          'LTrackerGeom',
                          'TTrackerGeom',
-                         'ITrackerGeom',
-                         'GeometryService_service',
+                         'Mu2eUtilities',
+                         'MCDataProducts',
+                         'RecoDataProducts',
                          'GeneralUtilities',
-                         'CLHEP',
                          'HepPID',
+                         'CLHEP',
                          'Core',
                          ],
-                  LINKFLAGS=[ll.split(),'-lGeom']
+                  LINKFLAGS=[ll.split(),'-lGeom','-lGeomPainter']
                   )
 
 # This tells emacs to view this file in python mode.
