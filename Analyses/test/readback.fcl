@@ -2,9 +2,9 @@
 #
 # Readback the output of g4test_03.py; make histograms and printout.
 #
-# $Id: readback.fcl,v 1.5 2011/05/25 01:23:42 kutschke Exp $
+# $Id: readback.fcl,v 1.1 2011/05/25 14:58:11 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/25 01:23:42 $
+# $Date: 2011/05/25 14:58:11 $
 
 #include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
