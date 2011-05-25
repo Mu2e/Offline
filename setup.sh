@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.28 2011/05/25 13:54:31 kutschke Exp $
+# $Id: setup.sh,v 1.29 2011/05/25 17:19:28 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/25 13:54:31 $
+# $Date: 2011/05/25 17:19:28 $
 #
 # Original author Rob Kutschke
 #
@@ -28,14 +28,20 @@ if [ "${MU2E_BASE_RELEASE}" != '' ];then
     return 1
 fi
 
+# Should abort here???
+if [ "${MU2E_TEST_RELEASE}" != '' ];then
+    echo "WARNING: A test release has already been setup.  Hope that's OK."
+    echo "The test release is: " ${MU2E_TEST_RELEASE}
+    return 1
+fi
+
 # Define the directory in which this file lives as the root of a release.
 export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && echo \$PWD`
 echo "Base release directory is: " $MU2E_BASE_RELEASE
 
-# These are needed by FileInPath.
-unset  FW_BASE
-export FW_RELEASE_BASE=$MU2E_BASE_RELEASE
-export FW_SEARCH_PATH=$FW_RELEASE_BASE/:$FW_DATA_PATH/
+# Remove any test release environment.  TODO: test this and abort.
+export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
+echo "MU2E_SEACH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Setup the framework and its dependent products
 setup art v0_07_06 -qa2:debug
@@ -60,9 +66,6 @@ export FHICL_FILE_PATH=.:fcl;
 
 # Tell the framework to look in the local area to find modules.
 source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
-
-# For now this must come after setup_mu2e_project - need to refactor the FW_ stuff.  It is no longer used.
-export MU2E_SEARCH_PATH=$FW_SEARCH_PATH
 
 # Build the symlink directories for the BaBar code.
 # Only do so if the BaBar package is checked out locally.

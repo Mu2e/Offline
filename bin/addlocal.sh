@@ -1,7 +1,7 @@
 #
 # $Id:
-# $Author: greenc $
-# $Date: 2011/05/24 18:28:44 $
+# $Author: kutschke $
+# $Date: 2011/05/25 17:19:28 $
 #
 # Original author Rob Kutschke
 #
@@ -22,8 +22,8 @@ if [ "`basename $0 2>/dev/null`" = "localsetup.sh" ];then
 fi
 
 # Check that a base release has already been setup
-if [ "${FW_RELEASE_BASE}" = '' ];then
-    echo "The environment variable FW_RELEASE_BASE is not set."
+if [ "${MU2E_BASE_RELEASE}" = '' ];then
+    echo "The environment variable MU2E_BASE_RELEASE is not set."
     echo "  It appears that you have not setup a base release of the Mu2e Offline software."
     echo "  You need to:"
     echo "     source /grid/fermiapp/mu2e/Offline/vx_y_z/setup.sh"
@@ -32,16 +32,16 @@ if [ "${FW_RELEASE_BASE}" = '' ];then
 fi
 
 # Check that we are not stepping on an existing local setup.
-if [ "${FW_BASE}" != '' ];then
-    echo "The environment variable FW_BASE is already set."
+if [ "${MU2E_BASE}" != '' ];then
+    echo "The environment variable MU2E_BASE is already set."
     echo "So you already have a local environment established."
-    echo "If you really want to do this, unset FWBASE and rerun this script."
+    echo "If you really want to do this, unset MU2E_BASEE and rerun this script."
     return 1
 fi
 
 # Do the real work.
 # Add the local directory to the search path.
 # The / before the : in FW_SEARCH_PATH is significant.
-export FW_BASE=$PWD
-export FW_SEARCH_PATH=$PWD/:$FW_SEARCH_PATH
 export MU2E_TEST_RELEASE=$PWD
+export MU2E_SEARCH_PATH=$PWD/:$MU2E_SEARCH_PATH
+echo "MU2E_SEARCH_PATH:  " $MU2E_SEARCH_PATH
