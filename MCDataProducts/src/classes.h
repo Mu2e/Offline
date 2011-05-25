@@ -1,20 +1,12 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.2 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
+// $Id: classes.h,v 1.3 2011/05/25 01:23:14 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/25 01:23:14 $
 //
 // Original author Rob Kutschke
 //
-// Notes:
-// 1) The system is not able to deal with
-//    art::Wrapper<std::vector<std::string> >;
-//    The problem is somewhere inside root's reflex mechanism
-//    and Philippe Canal says that it is ( as of March 2010) a
-//    known problem.  He also says that they do not have any
-//    plans to fix it soon.  We can always work around it
-//    by putting the string inside another object.
 
 #include <vector>
 
@@ -33,20 +25,11 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 
-//
-// I am not 100% clear what needs to be here.  I do know:
-//
-// 1) There must be a line for every Wrapper that appears
-//    in classes_def.xml
-// 2) For any map that appears in classes_def.xml, there
-//    must be two lines in this file: one for the map
-//    and one for the underlying pair type.
-//
-
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
-template class std::map<cet::map_vector_key,mu2e::SimParticle>;
 template class std::pair<cet::map_vector_key,mu2e::PointTrajectory>;
-template class std::map<cet::map_vector_key,mu2e::PointTrajectory>;
+
+template class std::vector<std::pair<cet::map_vector_key,mu2e::SimParticle> >;
+template class std::vector<std::pair<cet::map_vector_key,mu2e::PointTrajectory> >;
 
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
