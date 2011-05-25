@@ -1,13 +1,13 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClustersAndTau.fcl,v 1.6 2011/05/22 20:23:06 mf Exp $
-# $Author: mf $
-# $Date: 2011/05/22 20:23:06 $
+# $Id: makeDPIStrawClustersAndTau.fcl,v 1.7 2011/05/25 13:39:27 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/25 13:39:27 $
 
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/diagnostics.fcl"
-#include "fcl/standardProducers.fcl"
+#include "minimalMessageService.fcl"
+#include "diagnostics.fcl"
+#include "standardProducers.fcl"
 
 
 # Give this job a name.

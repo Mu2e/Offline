@@ -8,13 +8,13 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.8 2011/05/22 17:22:03 kutschke Exp $
+# $Id: g4test_03.fcl,v 1.9 2011/05/25 13:39:27 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/22 17:22:03 $
+# $Date: 2011/05/25 13:39:27 $
 
 #include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
-#include "standardProducer.fcl"
+#include "standardProducers.fcl"
 
 # Give this job a name.
 process_name : G4Test03
@@ -115,8 +115,8 @@ physics :
   # Random saver is currently broken.
   #p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
   p1 : [generate , g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
-  e1 : [ checkhits, outfile ]
-  #e1 : [checkhits, outfile]
+  #e1 : [ outfile ]
+  e1 : [checkhits, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]

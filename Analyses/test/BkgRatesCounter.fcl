@@ -6,15 +6,15 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.1 2011/05/22 20:23:06 mf Exp $
-# $Author: mf $
-# $Date: 2011/05/22 20:23:06 $
+# $Id: BkgRatesCounter.fcl,v 1.2 2011/05/25 13:38:49 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/25 13:38:49 $
 #
 # Original author Gianni Onorato.
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/diagnostics.fcl"
-#include "fcl/standardProducers.fcl"
+#include "minimalMessageService.fcl"
+#include "diagnostics.fcl"
+#include "standardProducers.fcl"
 
 # Give this process a name.
 process_name : BkgRatesCounter

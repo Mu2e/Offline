@@ -1,15 +1,15 @@
 # Configuration file for looking at the straws in the geometry
 #
-# $Id: GrokGeometry.fcl,v 1.1 2011/05/22 20:23:06 mf Exp $
-# $Author: mf $
-# $Date: 2011/05/22 20:23:06 $
+# $Id: GrokGeometry.fcl,v 1.2 2011/05/25 13:39:27 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/25 13:39:27 $
 #
 # Written by Mark Fischler starting from 
 # makeDPIStrawClusters by authors Rob Kutschke and Hans Wenzel
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/diagnostics.fcl"
-#include "fcl/standardProducers.fcl"
+#include "minimalMessageService.fcl"
+#include "diagnostics.fcl"
+#include "standardProducers.fcl"
 
 # Give this job a name.
 process_name : StrawDescriptionsTest
