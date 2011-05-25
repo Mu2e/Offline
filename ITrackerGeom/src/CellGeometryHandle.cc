@@ -2,7 +2,7 @@
 
 #include "cetlib/pow.h"
 
-using cet::square;
+using cet::sum_of_squares;
 
 namespace mu2e {
 
@@ -105,7 +105,7 @@ double CellGeometryHandle::DistFromWireCenter(double *global)
 {
         tmpGlobal.set(global[0],global[1],global[2]);
         tmpLocal=_invmatrx*tmpGlobal;
-        return sqrt(square(tmpLocal.x())+square(tmpLocal.y()));
+        return sqrt(sum_of_squares(tmpLocal.x(), tmpLocal.y()));
 }
 
 } // namespace mu2e

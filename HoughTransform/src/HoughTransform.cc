@@ -2,9 +2,9 @@
 // code for finding HoughTransform for circles in the L-tracker
 //
 //
-// $Id: HoughTransform.cc,v 1.11 2011/05/20 22:39:28 wb Exp $
+// $Id: HoughTransform.cc,v 1.12 2011/05/25 18:31:42 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/20 22:39:28 $
+// $Date: 2011/05/25 18:31:42 $
 //
 // Original author R.Bernstein
 //
@@ -14,6 +14,7 @@
 #include "cetlib/pow.h"
 
 using cet::square;
+using cet::sum_of_squares;
 
 using namespace std;
 
@@ -289,10 +290,10 @@ namespace mu2e{
       double x3=v3.x();
       double y3=v3.y();
 
-      radius =    (square(x1-x2) + square(y1-y2)) *
-                  (square(x1-x3) + square(y1-y3)) *
-                  (square(x2-x3) + square(y2-y3));
-      radius /=     square (x2*y1 - x3*y1 - x1*y2 + x3*y2 + x1*y3 - x2*y3);
+      radius =    sum_of_squares(x1-x2, y1-y2) *
+                  sum_of_squares(x1-x3, y1-y3) *
+                  sum_of_squares(x2-x3, y2-y3);
+      radius /=  square(x2*y1 - x3*y1 - x1*y2 + x3*y2 + x1*y3 - x2*y3);
       radius = 0.5*sqrtOrThrow(radius,1.0E-06);
 
       //now the x- and y-center; first common term
@@ -307,7 +308,7 @@ namespace mu2e{
       y0 /= denom;
 
       //what's the dca of the circle to the origin?
-      dca = abs(sqrt(x0*x0 + y0*y0)- radius);
+      dca = abs(sqrt(sum_of_squares(x0,y0))- radius);
 
       return true;
     }

@@ -19,6 +19,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "cetlib/pow.h"
+#include <cmath>
 
 namespace mu2e{
 
@@ -80,7 +81,9 @@ namespace mu2e{
 
     double Distance(const G4ThreeVector a, const G4ThreeVector b)
     {
-      return safeSqrt( cet::square(a.x() - b.x()) + cet::square(a.y() - b.y()) + cet::square(a.z() - b.z()) );
+      return std::sqrt( cet::sum_of_squares( a.x() - b.x(),
+                                             a.y() - b.y(),
+                                             a.z() - b.z() ) );
     }
 
   };

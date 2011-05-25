@@ -1,15 +1,14 @@
 #include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
+#include "G4VProcess.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "TMath.h"
 #include "cetlib/pow.h"
 #include <string>
 
-#include "G4VProcess.hh"
-
 using namespace std;
 
-using cet::square;
+using cet::sum_of_squares;
 
 namespace mu2e {
 
@@ -105,7 +104,7 @@ namespace mu2e {
 
                   if ( _debugList.inList() )  std::cout<<"0 wire center "<<xywire[0]<<" "<<xywire[1]<<" "<<xywire[2]<<std::endl;
                   if ( _debugList.inList() )  std::cout<<"hit pos "<<pos[0]<<" "<<pos[1]<<" "<<pos[2]<<std::endl;
-                  if ( _debugList.inList() )  std::cout<<"hit to wire 0 dist "<<sqrt(square(pos[0]-xywire[0])+square(pos[1]-xywire[1])+square(pos[2]-xywire[2]))<<std::endl;
+                  if ( _debugList.inList() )  std::cout<<"hit to wire 0 dist " <<sqrt(sum_of_squares(pos[0]-xywire[0], pos[1]-xywire[1], pos[2]-xywire[2])) <<std::endl;
 
    //                //---------------- test --------------------
    //                //TRandom *rn = new TRandom();

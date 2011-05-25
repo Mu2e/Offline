@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.9 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: HoughTest_module.cc,v 1.10 2011/05/25 18:31:42 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/25 18:31:42 $
 //
 // Original author R. Bernstein
 //
@@ -45,6 +45,7 @@
 
 using CLHEP::Hep3Vector;
 using cet::square;
+using cet::sum_of_squares;
 
 using namespace mu2e::houghtransform;
 using namespace mu2e;
@@ -740,7 +741,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     // if there are enough straws, fill the other histograms
     if (houghCircle.numberOfStraws >=6 )
     {
-       Double_t distance = TMath::Sqrt(square(houghCircle.x0) + square(houghCircle.y0));
+       Double_t distance = TMath::Sqrt(sum_of_squares(houghCircle.x0, houghCircle.y0));
        _histoRadius->Fill(static_cast<Double_t>(houghCircle.radius));
        _histoRadiusDCA->Fill(static_cast<Float_t>(houghCircle.radius),
                   static_cast<Float_t>(houghCircle.dca),

@@ -2,9 +2,9 @@
 // Construct and return an TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.32 2011/05/22 19:09:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Id: TTrackerMaker.cc,v 1.33 2011/05/25 18:31:42 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/25 18:31:42 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,8 @@
 #include <iostream>
 
 using cet::square;
+using cet::diff_of_squares;
+using cet::sum_of_squares;
 
 using namespace std;
 
@@ -488,7 +490,7 @@ namespace mu2e {
       // as this would make the straws shorter than they need to be
       // the wire positioning is not affected by this though
 
-      double yA = sqrt( square(_innerSupportRadius) - square(xA) );
+      double yA = sqrt( diff_of_squares(_innerSupportRadius, xA) );
       double yB = yA + _manifoldYOffset;
       // cout << "Straw Length: " << xA << " " << yB*2.0 << endl;
       _strawHalfLengths.push_back(yB);
@@ -684,11 +686,16 @@ namespace mu2e {
     // we will check if the dev envelope radius acomodates the newly created box
 
     double outerSupportRadiusRequireds =
-      sqrt(square(_envelopeInnerRadius + 2.0*_sectorBoxHalfLengths.at(1))+
-           square(_sectorBoxHalfLengths.at(3)));
+      sqrt( sum_of_squares(_envelopeInnerRadius + 2.0*_sectorBoxHalfLengths.at(1),
+                           _sectorBoxHalfLengths.at(3)
+                           )
+          );
     double outerSupportRadiusRequiredl =
-      max ( outerSupportRadiusRequireds,
-            sqrt(square(_envelopeInnerRadius-pad)+ square(_sectorBoxHalfLengths.at(4))) );
+      max( outerSupportRadiusRequireds,
+           sqrt( sum_of_squares(_envelopeInnerRadius-pad,
+                                _sectorBoxHalfLengths.at(4))
+               )
+         );
 
 //     if (true) {
 //       cout << "Debugging _strawHalfLengths: ";

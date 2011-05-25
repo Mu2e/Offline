@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_module.cc,v 1.10 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: CEL_module.cc,v 1.11 2011/05/25 18:31:42 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/25 18:31:42 $
 //
 // Original author R. Bernstein
 //
@@ -56,7 +56,7 @@
 
 using CLHEP::Hep3Vector;
 using CLHEP::RandPoisson;
-using cet::square;
+using cet::diff_of_squares;
 
 using namespace mu2e;
 using namespace std;
@@ -318,7 +318,7 @@ void CEL::analyze(const art::Event& event ) {
             if (firstHitOnElectronTrack){
               firstHitOnElectronTrack = false;
               momentumAtEntranceToTracker = hit.momentum();
-              //double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
+              //double momentum = sqrt(diff_of_squares(electronMomentum.e(), electronMomentum.invariantMass()));
               //                  cout << "momentum at entrance to tracker = " << momentumAtEntranceToTracker.mag() << endl;
               //cout << "original momentum was           = " << momentum << endl;
               //cout << "track Id                        = " << trackId  << endl;
@@ -346,7 +346,7 @@ void CEL::analyze(const art::Event& event ) {
         //
         // can't demand particle enters tracker if I apply the weight function below.  But I do want to know what
         // the energy loss distribution is for electrons that do hit.  So:
-        double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
+        double momentum = sqrt(diff_of_squares(electronMomentum.e(), electronMomentum.invariantMass()));
         if (!electronAccepted){
           momentumAtEntranceToTracker = electronMomentum.getV();
           //              double zcheck = electronMomentum.getZ();

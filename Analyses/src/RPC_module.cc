@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.10 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: RPC_module.cc,v 1.11 2011/05/25 18:31:42 wb Exp $
+// $Author: wb $
+// $Date: 2011/05/25 18:31:42 $
 //
 // Original author R. Bernstein
 //
@@ -52,12 +52,12 @@
 #include <string>
 #include <utility>
 
-
-using namespace std;
 using CLHEP::Hep3Vector;
 using CLHEP::RandPoisson;
-using cet::square;
+using cet::diff_of_squares;
+
 using namespace mu2e;
+using namespace std;
 
 namespace mu2e {
 
@@ -332,7 +332,7 @@ namespace mu2e {
                 if (firstHitOnElectronTrack){
                   firstHitOnElectronTrack = false;
                   momentumAtEntranceToTracker = hit.momentum();
-                  //double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
+                  //double momentum = sqrt(diff_of_squares(electronMomentum.e(), electronMomentum.invariantMass()));
                   //                  cout << "momentum at entrance to tracker = " << momentumAtEntranceToTracker.mag() << endl;
                   //cout << "original momentum was           = " << momentum << endl;
                   //cout << "track Id                        = " << trackId  << endl;
@@ -362,7 +362,7 @@ namespace mu2e {
             //
             // can't demand particle enters tracker if I apply the weight function below.  But I do want to know what
             // the energy loss distribution is for electrons that do hit.  So:
-            double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
+            double momentum = sqrt(diff_of_squares(electronMomentum.e(), electronMomentum.invariantMass()));
             if (!electronAccepted){
               momentumAtEntranceToTracker = electronMomentum.getV();
               //              double zcheck = electronMomentum.getZ();
@@ -467,7 +467,7 @@ namespace mu2e {
           if (sim.pdgId() == PDGCode::e_plus) {
             CLHEP::HepLorentzVector electronMomentum = sim.startMomentum();
             positronEnergy = electronMomentum.e();
-            double momentum = sqrt(square(electronMomentum.e()) - square(electronMomentum.invariantMass()));
+            double momentum = sqrt(diff_of_squares(electronMomentum.e(), electronMomentum.invariantMass()));
             _piCaptureConvertedPositronMomentum->Fill(momentum);
             if(momentum > elow && momentum < ehigh) _piCaptureConvertedPositronMomentumSignal->Fill(momentum);
             _piCaptureConvertedPositronCosTheta->Fill(electronMomentum.cosTheta() );

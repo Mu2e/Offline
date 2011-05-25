@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.10 2011/05/20 22:39:28 wb Exp $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.11 2011/05/25 18:31:42 wb Exp $
 // $Author: wb $
-// $Date: 2011/05/20 22:39:28 $
+// $Date: 2011/05/25 18:31:42 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -41,7 +41,8 @@
 #include <sstream>
 #include <string>
 
-using cet::square;
+using cet::diff_of_squares;
+using cet::sum_of_squares;
 
 namespace mu2e {
 
@@ -919,13 +920,13 @@ namespace mu2e {
 
     if (dolabels) {
 
-      double radius = sqrt(square(x2)+square(y2));
+      double radius = sqrt(sum_of_squares(x2, y2));
       drawArrowFromOrigin( x2, radius, "PiE", kFullCircle, kRed);
 
       labelPoint( x2, y2, "#alpha",5.,-20.);
 
       drawArrowFromOrigin( x2, x2,     "PiM", kFullCircle, kRed,-50.);
-      radius =  sqrt(square(x3)+square(y3));
+      radius =  sqrt(sum_of_squares(x3, y3));
       drawArrowFromOrigin( x3, radius, "PoE", kFullCircle, kRed);
       drawArrowFromOrigin( x3, x3,     "PoM", kFullCircle, kRed);
     }
@@ -988,7 +989,7 @@ namespace mu2e {
     //    std::cout << "Old Text Size : " << ts << std::endl;
     text->SetTextSize(ts*0.5);
 
-    double yt = sqrt(square(radius)-square(xt));
+    double yt = sqrt(diff_of_squares(radius, xt));
 
     text->DrawText( xt+xshift, yt+yshift, label.c_str());
 

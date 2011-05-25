@@ -16,7 +16,8 @@
 
 using namespace std;
 
-using cet::square;
+using cet::diff_of_squares;
+using cet::sum_of_squares;
 
 namespace mu2e {
 //_____________________________________________________________________________
@@ -165,20 +166,21 @@ Double_t ITrackerWireposition::DistFromWireCenter(Double_t *global){
 
   selectedMat->MasterToLocal(global, templocal);
 
-  return (TMath::Sqrt( square(templocal[0]) + square(templocal[1]) ));
+  return TMath::Sqrt( sum_of_squares(templocal[0], templocal[1]) );
 }
 
 Double_t ITrackerWireposition::DistFromWire(Double_t *global){
 
   selectedMat->MasterToLocal(global, templocal);
 
-  return (TMath::Sqrt( square(templocal[0]) + square(templocal[1]) ) - SenseWireRadius);
+  return TMath::Sqrt( sum_of_squares(templocal[0], templocal[1]) )
+       - SenseWireRadius;
 }
 
 void ITrackerWireposition::WirePosAtEndcap(Float_t *right, Float_t *left){
 
 //  if (fParam->GetEndCapType()==1) {
-//    DCHEndcapZ = TMath::Sqrt( square(fParam->GetMaxEndCapDim()-fParam->GetEndCapWallThickness()) - square(selectedRadius) );
+//    DCHEndcapZ = TMath::Sqrt( diff_of_squares(fParam->GetMaxEndCapDim()-fParam->GetEndCapWallThickness(), selectedRadius) );
 //  }
 
   templocal[0] = 0.;
@@ -201,7 +203,7 @@ void ITrackerWireposition::WirePosAtEndcap(Float_t *right, Float_t *left){
 void ITrackerWireposition::WirePosAtZ(Float_t z, Float_t *pos){
 
 //  if (fParam->GetEndCapType()==1) {
-//    DCHEndcapZ = TMath::Sqrt( square(fParam->GetMaxEndCapDim()-fParam->GetEndCapWallThickness()) - square(selectedRadius) );
+//    DCHEndcapZ = TMath::Sqrt( diff_of_squares(fParam->GetMaxEndCapDim()-fParam->GetEndCapWallThickness(), selectedRadius) );
 //  }
 
   if (TMath::Abs(z)>DCHEndcapZ) {
