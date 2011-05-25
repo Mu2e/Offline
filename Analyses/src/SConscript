@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.8 2011/05/24 17:19:03 kutschke Exp $
+# $Id: SConscript,v 1.9 2011/05/25 01:24:13 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/24 17:19:03 $
+# $Date: 2011/05/25 01:24:13 $
 #
 # Original author Rob Kutschke.
 #
@@ -27,6 +27,7 @@ if non_plugin_cc:
                              'GeneralUtilities',
                              'MCDataProducts',
                              'RecoDataProducts',
+                             'cetlib',
                              'CLHEP',
                              'Spectrum',
                              'MLP',
@@ -49,6 +50,7 @@ for cc in plugin_cc:
                              'MCDataProducts',
                              'RecoDataProducts',
                              'CLHEP',
+                             'cetlib',
                              'Mu2eUtilities',
                              'GeneralUtilities',
                              'Spectrum',
