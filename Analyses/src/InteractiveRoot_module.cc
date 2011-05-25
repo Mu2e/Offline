@@ -1,9 +1,9 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_module.cc,v 1.4 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: InteractiveRoot_module.cc,v 1.5 2011/05/25 17:07:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/25 17:07:59 $
 //
 // Original author Rob Kutschke
 //
@@ -118,7 +118,7 @@ namespace mu2e {
   InteractiveRoot::InteractiveRoot(fhicl::ParameterSet const& pset) :
 
     // Run time parameters
-    _moduleLabel(pset.get<string>("@module_label")),
+    _moduleLabel(pset.get<string>("module_label")),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _nAccumulate(pset.get<int>("nAccumulate",20)),

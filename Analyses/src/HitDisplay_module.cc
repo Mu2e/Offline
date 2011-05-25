@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.8 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: HitDisplay_module.cc,v 1.9 2011/05/25 17:07:59 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/05/25 17:07:59 $
 //
 // Original author Rob Kutschke.
 //
@@ -104,7 +104,7 @@ namespace mu2e {
   };
 
   HitDisplay::HitDisplay(fhicl::ParameterSet const& pset):
-    moduleLabel_(pset.get<string>("@module_label")),
+    moduleLabel_(pset.get<string>("module_label")),
     generatorModuleLabel_(pset.get<std::string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<std::string>("g4ModuleLabel")),
     hitMakerModuleLabel_(pset.get<std::string>("hitMakerModuleLabel")),
