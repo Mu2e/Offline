@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03-5000.fcl,v 1.2 2011/05/25 13:39:27 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:39:27 $
+# $Id: g4test_03-5000.fcl,v 1.3 2011/05/25 20:04:00 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/25 20:04:00 $
 #
 # Original author Rob Kutschke
 
@@ -23,7 +23,7 @@ process_name : "G4Test03-500"
 # Start each new event with an empty event.
 source :
 {
-  module_type : EmptySource
+  module_type : EmptyEvent
   maxEvents : 5000
 }
 

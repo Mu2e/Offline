@@ -2,9 +2,9 @@
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: RPCtest.fcl,v 1.4 2011/05/25 13:39:27 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:39:27 $
+# $Id: RPCtest.fcl,v 1.5 2011/05/25 20:04:00 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/05/25 20:04:00 $
 #
 # Original author Rob Kutschke
 
@@ -18,7 +18,7 @@ process_name : RadiativePiTest
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
 source :
 {
-  module_type : EmptySource
+  module_type : EmptyEvent
   maxEvents   : 10000000
   # maxEvents :  1000000
   # maxEvents :   100000
