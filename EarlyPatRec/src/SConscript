@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.4 2011/05/24 17:19:03 kutschke Exp $
+# $Id: SConscript,v 1.5 2011/05/25 22:56:34 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/24 17:19:03 $
+# $Date: 2011/05/25 22:56:34 $
 #
 # Original author Rob Kutschke.
 #
@@ -20,7 +20,6 @@ if non_plugin_cc:
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'art_Framework_Core',
-                             'Mu2eG4',
                              'GeometryService',
                              'GeneralUtilities',
                              'CDFTrajectory',
@@ -39,7 +38,6 @@ for cc in plugin_cc:
     env.SharedLibrary( libname, cc,
                      LIBS=[ 'art_Framework_Core',
                             libs,
-                            'Mu2eG4',
                             'GeometryService',
                             'CDFTrajectory',
                             'GeneralUtilities',
