@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.20 2011/05/24 17:19:03 kutschke Exp $
+# $Id: SConscript,v 1.21 2011/05/25 23:23:36 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/24 17:19:03 $
+# $Date: 2011/05/25 23:23:36 $
 #
 # Original author Rob Kutschke.
 #
@@ -18,8 +18,6 @@ Import('env')
 
 g4inc    = os.environ['G4INCLUDE']
 g4libdir = os.environ['G4LIBDIR']
-
-#g4gdml = os.environ['XERCESCROOT']
 
 # Compiler switches needed by the default G4 build.
 G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE', 
@@ -96,10 +94,7 @@ G4GRANULARLIBS = [
            'G4hadronic_crosec_ci',
            'G4hadronic_fragm_ci',
            'G4hadronic_proc_ci'
-#          ,'G4gdml'
            ]
-
-ROOTGEOM = [ 'Geom' ]
 
 # Link libraries needed to build G4 with OPENGL.
 OPENGL_LIBS = [ 'GLU', 'GL' ]
@@ -125,7 +120,6 @@ if non_plugin_cc:
                              'ConditionsService',
                              'G4Helper_service',
                               G4GRANULARLIBS,
-                              ROOTGEOM,
                              'CLHEP',
                               OPENGL_LIBS
                            ],
