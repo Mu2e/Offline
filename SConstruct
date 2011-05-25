@@ -1,17 +1,10 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.17 2011/05/24 18:33:02 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/24 18:33:02 $
+# $Id: SConstruct,v 1.18 2011/05/25 14:28:05 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/25 14:28:05 $
 #
 # Original author Rob Kutschke.
-#
-# Notes:
-# 1) When one is not working in a base release, the variables testrelease*
-#    are set to None.  So CPPPATH and LIBPATH will contain some entries
-#    that evaluate to None.  There is some magic inside python that
-#    skips the generation of -I and -L options for these files.  This
-#    would also work had we set the variables to '' rather than to None.
 #
 import os
 import sys
@@ -48,7 +41,6 @@ cetlib_inc     = os.environ['CETLIB_INC']
 cetlib_lib     = os.environ['CETLIB_LIB']
 
 # If we are working in a test release, extract more information from the environment.
-# See note 1.
 if os.environ.has_key('MU2E_TEST_RELEASE'):
     testrelease          = os.environ['MU2E_TEST_RELEASE']
     cpppath_frag         = [ testrelease, testrelease + '/BaBar/include' ]
