@@ -1,11 +1,11 @@
 # Drop all information except the saved random number engine state.
 #
-# $Id: drop.fcl,v 1.3 2011/05/19 02:36:09 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/19 02:36:09 $
+# $Id: drop.fcl,v 1.4 2011/05/25 13:37:45 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/25 13:37:45 $
 
 #include "minimalMessageService.fcl"
-#include "standardProducer.fcl"
+#include "standardProducers.fcl"
 
 # Give this job a name.  
 process_name : Drop01

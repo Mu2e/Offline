@@ -1,12 +1,12 @@
 # Configuration file for running beamline_01
 #
-# $Id: beamline_01.fcl,v 1.6 2011/05/22 17:49:10 kutschke Exp $
+# $Id: beamline_01.fcl,v 1.7 2011/05/25 13:37:45 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/22 17:49:10 $
+# $Date: 2011/05/25 13:37:45 $
 
 #include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
-#include "standardProducer.fcl"
+#include "standardProducers.fcl"
 
 # Give this job a name.
 process_name : Beamline01

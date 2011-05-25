@@ -1,11 +1,11 @@
 # Configuration file for G4Test01
 #
-# $Id: rantest.fcl,v 1.1 2011/05/19 05:14:23 kutschke Exp $
+# $Id: rantest.fcl,v 1.2 2011/05/25 13:37:45 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/19 05:14:23 $
+# $Date: 2011/05/25 13:37:45 $
 
 #include "minimalMessageService.fcl"
-#include "standardProducer.fcl"
+#include "standardProducers.fcl"
 
 # Give this job a name.
 process_name : G4Test01
