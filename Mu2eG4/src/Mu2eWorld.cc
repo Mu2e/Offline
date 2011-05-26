@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.91 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: Mu2eWorld.cc,v 1.92 2011/05/26 22:11:19 genser Exp $
+// $Author: genser $
+// $Date: 2011/05/26 22:11:19 $
 //
 // Original author Rob Kutschke
 //
@@ -215,8 +215,6 @@ namespace mu2e {
 
     constructProtonAbsorber(_config);
 
-    constructVirtualDetectors(_config);
-
     // These are just placeholders for now - and might be misnamed.
     constructCal();
     constructMagnetYoke();
@@ -233,6 +231,8 @@ namespace mu2e {
     if ( _config->getBool("hasMBS",false) ) {
       constructMBS(_config);
     }
+
+    constructVirtualDetectors(_config); // beware of the placement order of this function
 
     mf::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << _mu2eOrigin           << "\n";
