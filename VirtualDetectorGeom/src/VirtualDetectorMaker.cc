@@ -1,6 +1,9 @@
 //
 // Construct and return an VirtualDetector.
 //
+// $Id: VirtualDetectorMaker.cc,v 1.7 2011/05/26 22:09:26 genser Exp $
+// $Author: genser $
+//
 
 #include <iostream>
 #include <iomanip>
@@ -16,6 +19,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 using namespace std;
 using namespace CLHEP;
@@ -95,15 +99,39 @@ namespace mu2e {
     double ds2Z0         = rTorus + 2.*ts5HalfLength + ds2HalfLength;
 
     Hep3Vector ds2Offset(-solenoidOffset,0.,ds2Z0);
-    Hep3Vector targetOffset(0.,0.,(12000+z0-ds2Z0));
+    Hep3Vector targetOffset(0.,0.,(12000.+z0-ds2Z0));
     Hep3Vector shift(0.,0.,zHalf+vdHL);
 
     _vd->addVirtualDetector(  9, "ST_In",  ds2Offset, 0, targetOffset-shift);
     _vd->addVirtualDetector( 10, "ST_Out", ds2Offset, 0, targetOffset+shift);
 
+    if (c.getBool("hasTTracker",false)){
+
+      ostringstream vdName("TT_Mid");
+
+      if(c.getInt("ttracker.numDevices")%2!=0){
+        throw cet::exception("GEOM")
+          << "This virtual detector " << vdName 
+          << " can only be placed if the TTracker has an even number of devices \n";
+      }
+
+      TTracker const & ttracker = *(GeomHandle<TTracker>());
+      Hep3Vector ttrackerOffset(-solenoidOffset,0.,ttracker.z0());
+
+      // VD 11 is placed inside the ttracker mother volume in the middle of the ttracker
+
+      // VD 12 is placed inside the ttracker at the same z position as
+      // VD 11 but from radius 0 to the inner radius of the ttracker
+      // mother volume. However, its mother volume is ToyDS3Vacuum
+      // which has a different offset. We will use the global offset
+      // here (!) as DS is not in the geometry service yet
+
+      _vd->addVirtualDetector( 11, vdName.str(),  ttrackerOffset, 0, Hep3Vector(0.,0.,0.));
+      _vd->addVirtualDetector( 12, "TT_MidInner", ttrackerOffset, 0, Hep3Vector(0.,0.,0.));
+
+    }
   }
 
   VirtualDetectorMaker::~VirtualDetectorMaker (){}
 
 } // namespace mu2e
-
