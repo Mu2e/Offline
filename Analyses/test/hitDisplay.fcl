@@ -1,7 +1,7 @@
 #
-# $Id: hitDisplay.fcl,v 1.2 2011/05/25 13:39:27 kutschke Exp $
+# $Id: hitDisplay.fcl,v 1.3 2011/05/26 00:47:57 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/25 13:39:27 $
+# $Date: 2011/05/26 00:47:57 $
 #
 # Original author Rob Kutschke
 
@@ -73,6 +73,7 @@ physics :
       minEnergyDep         : 0.0001
       minHits              : 5
       doDisplay            : true
+      clickToAdvance       : false
     }
   }
 
