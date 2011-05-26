@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.9 2011/05/25 17:07:59 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/25 17:07:59 $
+// $Id: HitDisplay_module.cc,v 1.10 2011/05/26 00:47:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/05/26 00:47:27 $
 //
 // Original author Rob Kutschke.
 //
@@ -83,7 +83,9 @@ namespace mu2e {
     double minEnergyDep_;
     size_t minHits_;
 
+    // Options to control the display
     bool doDisplay_;
+    bool clickToAdvance_;
 
     auto_ptr<TApplication> application_;
     TDirectory*   directory_;
@@ -112,6 +114,7 @@ namespace mu2e {
     minEnergyDep_(pset.get<double>("minEnergyDep")),
     minHits_(pset.get<unsigned>("minHits")),
     doDisplay_(pset.get<bool>("doDisplay",true)),
+    clickToAdvance_(pset.get<bool>("clickToAdvance",false)),
     application_(0),
     directory_(0),
     canvas_(0),
@@ -409,13 +412,21 @@ namespace mu2e {
       genPointo.Draw("PSAME");
 
 
-
       canvas_->Modified();
       canvas_->Update();
 
-      cerr << "Double click in the Canvas " << moduleLabel_ << " to continue:" ;
-      gPad->WaitPrimitive();
+      
+      if ( clickToAdvance_ ){
+	cerr << "Double click in the Canvas " << moduleLabel_ << " to continue:" ;
+        gPad->WaitPrimitive();
+      }
+      else{
+        char junk;
+        cerr << "Enter any character to continue: ";
+        cin >> junk;
+      }
       cerr << endl;
+
     }
 
     cout << "TubsParams: "
