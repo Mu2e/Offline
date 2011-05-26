@@ -3,6 +3,9 @@
 //
 // Construct and return an VirtualDetector.
 //
+// $Id: VirtualDetectorMaker.hh,v 1.5 2011/05/26 22:03:01 genser Exp $
+// $Author: genser $
+//
 // Original author Peter Shanahan
 //
 

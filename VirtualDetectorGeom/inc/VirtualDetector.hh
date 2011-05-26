@@ -4,6 +4,10 @@
 //
 // Class to represent the virtual detectors
 //
+// $Id: VirtualDetector.hh,v 1.5 2011/05/26 22:02:36 genser Exp $
+// $Author: genser $
+//
+
 #include <map>
 #include <memory>
 #include <string>

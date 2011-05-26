@@ -1,3 +1,8 @@
+//
+// $Id: VirtualDetector.cc,v 1.4 2011/05/26 22:03:17 genser Exp $
+// $Author: genser $
+//
+
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 
 namespace mu2e {
