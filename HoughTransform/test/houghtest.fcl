@@ -1,7 +1,7 @@
 #
-# $Id: houghtest.fcl,v 1.3 2011/05/25 13:37:45 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:37:45 $
+# $Id: houghtest.fcl,v 1.4 2011/05/26 19:21:50 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:50 $
 #
 
 #include "minimalMessageService.fcl"
@@ -70,16 +70,16 @@ physics :
       seed                 : [9877]
     }
 
-  }
-
-  analyzers:
-  {
-
     # Save state of random numbers to the event.
     randomsaver :
     { 
       module_type   : RandomNumberSaver
     }
+
+  }
+
+  analyzers:
+  {
 
     # Look at the hits from G4.
     checkhits :

@@ -1,7 +1,7 @@
 ##
-# $Id: runCosmicGraf.fcl,v 1.4 2011/05/25 13:37:45 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:37:45 $
+# $Id: runCosmicGraf.fcl,v 1.5 2011/05/26 19:21:50 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:50 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -84,7 +84,7 @@ physics :
     {
       module_type          : CosmicTuple
       g4ModuleLabel        : g4run
-      minumumEnergy        : 0.001      
+      minimumEnergy        : 0.001      
     }
 
   }

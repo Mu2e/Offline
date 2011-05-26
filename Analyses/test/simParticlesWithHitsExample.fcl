@@ -1,13 +1,12 @@
 #
 #
-# $Id: simParticlesWithHitsExample.fcl,v 1.5 2011/05/25 20:04:00 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/25 20:04:00 $
+# $Id: simParticlesWithHitsExample.fcl,v 1.6 2011/05/26 19:21:49 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:49 $
 #
 # Original author Rob Kutschke
 
 #include "minimalMessageService.fcl"
-#include "diagnostics.fcl"
 #include "standardProducers.fcl"
 
 # Give this process a name.
@@ -34,7 +33,6 @@ services :
   TFileService :
   {
     fileName      : "strawHitExample.root"
-    closeFileFase : false
   }
 
   RandomNumberGeneratorService : { }
@@ -95,7 +93,7 @@ physics :
       seed          : [9877]
     }
     # Form StrawHits (SH).
-    makeSH:@local::makeSH
+    makeSH: @local::makeSH
   }
 
   analyzers:
@@ -135,4 +133,5 @@ outputs:
   }
 }
 
+physics.producers.makeSH.maxFullPrint : 5
 

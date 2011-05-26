@@ -5,11 +5,10 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: g4test_02.fcl,v 1.8 2011/05/25 13:37:45 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:37:45 $
+# $Id: g4test_02.fcl,v 1.9 2011/05/26 19:21:50 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:50 $
 
-#include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 
@@ -84,7 +83,7 @@ physics :
       module_type          : ReadBack
       generatorModuleLabel : generate
       g4ModuleLabel        : g4run
-      minumumEnergy        : 0.001
+      minimumEnergy        : 0.001
       maxFullPrint         : 5
     }
 

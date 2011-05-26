@@ -22,16 +22,16 @@ makeSH :
   module_type          : MakeStrawHit
   g4ModuleLabel        : g4run
   seed                 : [7790]
-  diagLevel            : @local::diagLevel
-  maxFullPrint         : @local::maxFullPrint
+  diagLevel            : 0
+  maxFullPrint         : 0
 }
 
 # Form CaloHits (APD hits)
 CaloReadoutHitsMaker :
 {
   module_type          : MakeCaloReadoutHits
-  diagLevel            : @local::diagLevel
-  maxFullPrint         : @local::maxFullPrint
+  diagLevel            : 0
+  maxFullPrint         : 0
   g4ModuleLabel        : g4run
 }
 
@@ -39,8 +39,8 @@ CaloReadoutHitsMaker :
 CaloCrystalHitsMaker :
 {
   module_type          : MakeCaloCrystalHits
-  diagLevel            : @local::diagLevel
-  maxFullPrint         : @local::maxFullPrint
+  diagLevel            : 0
+  maxFullPrint         : 0
   g4ModuleLabel        : g4run
   minimumEnergy        : 0.0
   maximumEnergy        : 1000.0

@@ -2,11 +2,10 @@
 # Generate a single conversion electron, run it through G4
 # and draw a picture in the (x,y) view.  Do only one event.
 #
-# $Id: g4test_01.fcl,v 1.7 2011/05/25 13:37:45 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:37:45 $
+# $Id: g4test_01.fcl,v 1.8 2011/05/26 19:21:50 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:50 $
 
-#include "diagnostics.fcl"
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 

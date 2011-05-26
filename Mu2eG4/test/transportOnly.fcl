@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 #
-# $Id: transportOnly.fcl,v 1.4 2011/05/25 13:37:45 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:37:45 $
+# $Id: transportOnly.fcl,v 1.5 2011/05/26 19:21:50 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:50 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -85,6 +85,12 @@ physics :
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 
+    randomsaver:
+    {
+      module_type          : RandomSaverNumber
+    }
+
+
   }
 
 
@@ -96,19 +102,14 @@ physics :
       module_type          : ReadBack
       generatorModuleLabel : generate
       g4ModuleLabel        : g4run
-      minumumEnergy        : 0.000
+      minimumEnergy        : 0.000
       maxFullPrint         : 201
-    }
-
-    randomsaver:
-    {
-      module_type          : RandomSaverNumber
     }
 
   }
 
-  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCryHitsMaker ]
-  e1 : [randomsaver, checkhits, outfile]
+  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCryHitsMaker, randomsaver ]
+  e1 : [checkhits, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -129,3 +130,10 @@ outputs:
 
 }
 
+
+physics.producers.makeSH.diagLevel : 0
+physics.producers.makeSH.maxFullPrint : 5
+physics.producers.CaloReadoutHitsMaker.diagLevel : 0
+physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
+physics.producers.CaloCrystalHitsMaker.diagLevel : 0
+physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201

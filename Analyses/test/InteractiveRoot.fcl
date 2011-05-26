@@ -3,14 +3,13 @@
 # It requires the existence of the input file data_03.root, that was
 # made by g4test_03.py
 #
-# $Id: InteractiveRoot.fcl,v 1.2 2011/05/25 13:39:27 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:39:27 $
+# $Id: InteractiveRoot.fcl,v 1.3 2011/05/26 19:21:49 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:49 $
 #
 # Original author Rob Kutschke
 
 #include "minimalMessageService.fcl"
-#include "diagnostics.fcl"
 #include "standardProducers.fcl"
 
 # Give this process a name.
@@ -38,7 +37,6 @@ services :
   TFileService :
   {
     fileName      : "InteractiveRoot.root"
-    closeFileFase : false
   }
 
   RandomNumberGenerator : { }

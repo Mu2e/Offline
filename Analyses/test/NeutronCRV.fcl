@@ -6,14 +6,13 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: NeutronCRV.fcl,v 1.2 2011/05/25 13:39:27 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:39:27 $
+# $Id: NeutronCRV.fcl,v 1.3 2011/05/26 19:21:49 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:49 $
 #
 # Original author Gianni Onorato.
 
 #include "minimalMessageService.fcl"
-#include "diagnostics.fcl"
 #include "standardProducers.fcl"
 
 # Give this process a name.
@@ -41,7 +40,6 @@ services :
   TFileService :
   {
     fileName      : "NeutronRates.root"
-    closeFileFase : false
   }
 
   RandomNumberGenerator : { }
@@ -101,15 +99,13 @@ physics :
     # Form StrawHits (SH).
     # Note: In original py file, this is named makeTH, not SH
     #       But it is configured exactly as the standard makeSH
-    makeTH:@local::makeSH        
+    makeTH: @local::makeSH        
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker: @local::CaloCrystalHitsMaker
-    CaloCrystalHitsMaker.maxFullPrint: 201
 
     # Form CaloROHits (APD hits)
-    CaloROHitsMaker: @local::CaloROHitsMaker
-    CaloROHitsMaker.maxFullPrint: 201
+    CaloReadoutHitsMaker: @local::CaloReadoutHitsMaker
 
     # Save state of random numbers to the event.
     randomsaver:
@@ -117,6 +113,10 @@ physics :
       module_type   : RandomNumberSaver
     }
 
+  }
+
+  filters:
+  {
     # since looking at CRV, don't want this filter--> 
     # if no tracker or calo hits,still interesting
     #
@@ -135,7 +135,7 @@ physics :
     CountRates:
     {
       module_type   : NeutronCRV
-      diagLevel     : @local::diagLevel
+      diagLevel     : 0
       makerModuleLabel : makeTH
       maxFullPrint  : 50
       g4ModuleLabel : g4run
@@ -150,7 +150,7 @@ physics :
   # p1 : [randomsaver
   #      ,generate
   #      ,makeTH
-  #      ,CaloROHitsMaker
+  #      ,CaloReadoutHitsMaker
   #      ,CaloCrystalHitsMaker
   #      ,filterEmpty
   #      ]
@@ -176,4 +176,9 @@ outputs:
   }
 }
 
-
+physics.producers.makeTH.diagLevel : 0
+physics.producers.makeTH.maxFullPrint : 5
+physics.producers.CaloReadoutHitsMaker.diagLevel : 0
+physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
+physics.producers.CaloCrystalHitsMaker.diagLevel : 0
+physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201

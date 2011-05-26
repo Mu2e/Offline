@@ -1,14 +1,13 @@
 # Configuration file for looking at the straws in the geometry
 #
-# $Id: GrokGeometry.fcl,v 1.2 2011/05/25 13:39:27 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:39:27 $
+# $Id: GrokGeometry.fcl,v 1.3 2011/05/26 19:21:50 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2011/05/26 19:21:50 $
 #
 # Written by Mark Fischler starting from 
 # makeDPIStrawClusters by authors Rob Kutschke and Hans Wenzel
 
 #include "minimalMessageService.fcl"
-#include "diagnostics.fcl"
 #include "standardProducers.fcl"
 
 # Give this job a name.
@@ -65,8 +64,8 @@ physics :
     {
       module_type      : MakeDPIStrawCluster
       makerModuleLabel : makeSH
-      diagLevel        : @local::diagLevel
-      maxFullPrint     : @local::maxFullPrint
+      diagLevel        : 0
+      maxFullPrint     : 5
     }
 
   }
@@ -78,8 +77,8 @@ physics :
     {
       module_type      : ReadStrawHit
       makerModuleLabel : makeSH
-      diagLevel        : @local::diagLevel
-      maxFullPrint     : @local::maxFullPrint
+      diagLevel        : 0
+      maxFullPrint     : 5
     }
 
     # Check the StrawClusters
@@ -89,8 +88,8 @@ physics :
       g4ModuleLabel      : g4run
       makerModuleLabel   : makeSH
       clmakerModuleLabel : makeSC
-      diagLevel          : @local::diagLevel
-      maxFullPrint       : @local::maxFullPrint
+      diagLevel          : 0
+      maxFullPrint       : 5
     }
 
   }
