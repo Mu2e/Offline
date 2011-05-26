@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 #
-# $Id: transportOnly.fcl,v 1.5 2011/05/26 19:21:50 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:50 $
+# $Id: transportOnly.fcl,v 1.6 2011/05/26 22:21:41 genser Exp $
+# $Author: genser $
+# $Date: 2011/05/26 22:21:41 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -27,7 +27,7 @@ services :
     fileName : "transportOnly.root"
   }
 
-  RandomNumberGeneratorService : { }
+  RandomNumberGenerator : { }
 
 # Uncomment to enable memory use profiling
 # SimpleMemoryCheck :
@@ -72,6 +72,7 @@ physics :
     g4run :
     {
       module_type          : G4
+      diagLevel            : 0
       generatorModuleLabel : generate
       seed                 : [9877]
     }
@@ -106,9 +107,13 @@ physics :
       maxFullPrint         : 201
     }
 
+#    randomsaver:@local::randomsaver
+
   }
 
-  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCryHitsMaker, randomsaver ]
+  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
+  # randomsaver is currently broken.
+  # e1 : [randomsaver, checkhits, outfile]
   e1 : [checkhits, outfile]
 
   trigger_paths  : [p1]
@@ -122,7 +127,7 @@ outputs:
   outfile :
   {
     module_type   :   RootOutput
-    filename      :   "data_06.root"
+    fileName      :   "data_06.root"
     outputCommands:   [ "keep *_*_*_*"
 #                       "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size.
                       ]
