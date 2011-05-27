@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.20 2011/05/24 17:19:03 kutschke Exp $
+// $Id: FromG4BLFile.cc,v 1.21 2011/05/27 23:12:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/05/27 23:12:02 $
 //
 // Original author Rob Kutschke
 //
@@ -127,9 +127,10 @@ namespace mu2e {
     SimpleConfig const& geomConfig = geom->config();
     _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");
 
-    // Construct the full path to the input file.  Resolve relative paths using the standard search path.
+    // Construct the full path to the input file.  Accept absolute paths and paths
+    // starting with "." as is; other wise apply the standard search path.
     string path(_inputFileName);
-    if ( path.substr(0,1) != "/" ){
+    if ( path.substr(0,1) != "/" && path.substr(0,1) != "." ){
       ConfigFileLookupPolicy configFile;
       path = configFile(_inputFileName);
     }
