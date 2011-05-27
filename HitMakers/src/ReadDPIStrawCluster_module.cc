@@ -12,9 +12,9 @@
 // For all three cases estimate Pt,Pz of the conversion electron by performing
 // a simple circle/sinus fit.
 //
-// $Id: ReadDPIStrawCluster_module.cc,v 1.8 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: ReadDPIStrawCluster_module.cc,v 1.9 2011/05/27 20:16:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/05/27 20:16:58 $
 //
 // Original author: Hans Wenzel
 //
@@ -25,6 +25,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <cassert>
 
 #include "CLHEP/Vector/TwoVector.h"
 
@@ -573,6 +574,11 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     nt[EVT]  = evt.id().event();
     bool foundcele=false;
     typedef SimParticlesWithHits::map_type map_type;
+
+// Fix for a warning about possible uninitialized use of did (we can see
+// that the uninitialized use path cannot exist, but the compiler cannot):
+    did = -1;
+    
     for ( map_type::const_iterator i=sims.begin();
           i != sims.end(); ++i )                      // loop over simparticles
       {
@@ -744,6 +750,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       //pvec = pvec/totalEnergy;             // mean weighted by energy deposition
       pstraw pstr;
       pstr.lay=lid.getLayer();
+      assert(did != -1);
       pstr.did=did;
       pstr.sec=secid.getSector();
       pstr.hl=hlen;

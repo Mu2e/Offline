@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.6 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: ReadStrawCluster_module.cc,v 1.7 2011/05/27 20:16:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/05/27 20:16:58 $
 //
 // Original author Hans Wenzel
 //
@@ -285,7 +285,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       Straw str;
       StrawId sid;
       LayerId lid;
-      DeviceId did;
+      DeviceId did = -1;
       SectorId secid;
       for(strawIter=cluster.begin();strawIter!=cluster.end(); strawIter++)
         {
@@ -318,6 +318,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       //cout << pvec<<endl;
       pstraw pstr;
       pstr.lay=lid.getLayer();
+      assert(did != -1);
       pstr.did=did;
       pstr.sec=secid.getSector();
       pstr.hl=hlen;
