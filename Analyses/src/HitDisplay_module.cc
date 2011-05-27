@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.10 2011/05/26 00:47:27 kutschke Exp $
+// $Id: HitDisplay_module.cc,v 1.11 2011/05/27 13:17:48 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/26 00:47:27 $
+// $Date: 2011/05/27 13:17:48 $
 //
 // Original author Rob Kutschke.
 //
@@ -319,17 +319,17 @@ namespace mu2e {
       TwoLinePCA pcaMid( posMid, momMid.unit(), mid, w);
 
       /*
-      double dcaMid = pcaMid.dca();
-      cout << "Compare: "
-           << mid.z() << " "
-           << dca << " "
-           << dcaMid << " | "
-           << dca-dcaMid << " | "
-           << mom.unit().dot(w) << " "
-           << momMid.unit().dot(w) << " | "
-           << pos << " "
-           << posMid <<  " "
-           << endl;
+	double dcaMid = pcaMid.dca();
+	cout << "Compare: "
+	<< mid.z() << " "
+	<< dca << " "
+	<< dcaMid << " | "
+	<< dca-dcaMid << " | "
+	<< mom.unit().dot(w) << " "
+	<< momMid.unit().dot(w) << " | "
+	<< pos << " "
+	<< posMid <<  " "
+	<< endl;
       */
 
       if ( isFromConversion ) {
