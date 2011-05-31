@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.11 2011/05/27 13:17:48 kutschke Exp $
+// $Id: HitDisplay_module.cc,v 1.12 2011/05/31 16:03:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/27 13:17:48 $
+// $Date: 2011/05/31 16:03:00 $
 //
 // Original author Rob Kutschke.
 //
@@ -319,17 +319,17 @@ namespace mu2e {
       TwoLinePCA pcaMid( posMid, momMid.unit(), mid, w);
 
       /*
-	double dcaMid = pcaMid.dca();
-	cout << "Compare: "
-	<< mid.z() << " "
-	<< dca << " "
-	<< dcaMid << " | "
-	<< dca-dcaMid << " | "
-	<< mom.unit().dot(w) << " "
-	<< momMid.unit().dot(w) << " | "
-	<< pos << " "
-	<< posMid <<  " "
-	<< endl;
+        double dcaMid = pcaMid.dca();
+        cout << "Compare: "
+        << mid.z() << " "
+        << dca << " "
+        << dcaMid << " | "
+        << dca-dcaMid << " | "
+        << mom.unit().dot(w) << " "
+        << momMid.unit().dot(w) << " | "
+        << pos << " "
+        << posMid <<  " "
+        << endl;
       */
 
       if ( isFromConversion ) {
@@ -417,7 +417,7 @@ namespace mu2e {
 
       
       if ( clickToAdvance_ ){
-	cerr << "Double click in the Canvas " << moduleLabel_ << " to continue:" ;
+        cerr << "Double click in the Canvas " << moduleLabel_ << " to continue:" ;
         gPad->WaitPrimitive();
       }
       else{
