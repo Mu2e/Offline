@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.14 2011/05/27 22:43:57 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/27 22:43:57 $
+# $Id: SConscript,v 1.15 2011/05/31 15:29:31 wenzel Exp $
+# $Author: wenzel $
+# $Date: 2011/05/31 15:29:31 $
 #
 # Original author Rob Kutschke.
 #
@@ -20,14 +20,14 @@ if non_plugin_cc:
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'art_Framework_Core',
+                             'art_Framework_Core_RandomNumberSaver_module',
                              'art_Framework_Services_Optional_TFileService_service',
                              'GeometryService',
-                             'ConditionsService',
-                             'Mu2eUtilities',
-                             'GeneralUtilities',
+                             'ConditionsService_service',
+                             'CDFTrajectory',
                              'MCDataProducts',
                              'RecoDataProducts',
-                             'CDFTrajectory',
+                             'GeneralUtilities',
                              'CLHEP',                             
                              'Minuit'
                            ],
@@ -40,17 +40,17 @@ for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
                      LIBS=[ 'art_Framework_Core',
+                            'art_Framework_Core_RandomNumberSaver_module',
                             'art_Framework_Services_Optional_TFileService_service',
                             libs,
-                             'GeometryService',
-                             'ConditionsService',
-                             'Mu2eUtilities',
-                             'GeneralUtilities',
-                             'MCDataProducts',
-                             'RecoDataProducts',
-                             'CDFTrajectory',
-                             'CLHEP',                             
-                             'Minuit'
+                            'GeometryService',
+                            'ConditionsService_service',
+                            'CDFTrajectory',
+                            'MCDataProducts',
+                            'RecoDataProducts',
+                            'GeneralUtilities',
+                            'CLHEP',
+                            'Minuit'
                           ],
                      )
 
