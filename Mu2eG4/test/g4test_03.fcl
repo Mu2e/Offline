@@ -8,9 +8,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.10 2011/05/26 19:21:50 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:50 $
+# $Id: g4test_03.fcl,v 1.11 2011/05/31 23:02:17 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/05/31 23:02:17 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -50,7 +50,7 @@ services :
 #   }
 
 # Uncomment to enable trace printout to show what the framework calls when.
-   Tracer : { }
+#  scheduler: { wantTracer : true }
 
 
   user :
@@ -114,7 +114,6 @@ physics :
   # Random saver is currently broken.
   #p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
   p1 : [generate , g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
-  #e1 : [ outfile ]
   e1 : [checkhits, outfile]
 
   trigger_paths  : [p1]
@@ -124,15 +123,13 @@ physics :
 
 outputs:
 {
-
   outfile :
   {
     module_type   :   RootOutput
     fileName      :   "data_03.root"
-#    outputCommands:   [ "keep *_*_*_*",
-#                        "drop mu2ePointTrajectoryMapVector"
-#                       "drop mu2eSimParticles_*_*_*"        # Uncomment this line to reduce file size.
-#                      ]
+    outputCommands:   [ "keep *_*_*_*"
+#                        ,"drop mu2e::PointTrajectorymv_*_*_*"
+                      ]
   }
 
 }
