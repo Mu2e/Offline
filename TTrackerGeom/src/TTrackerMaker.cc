@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.34 2011/06/01 16:02:58 mf Exp $
+// $Id: TTrackerMaker.cc,v 1.35 2011/06/01 16:16:12 mf Exp $
 // $Author: mf $
-// $Date: 2011/06/01 16:02:58 $
+// $Date: 2011/06/01 16:16:12 $
 //
 // Original author Rob Kutschke
 //
@@ -930,12 +930,14 @@ namespace mu2e {
         straw->_nextInnerP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
       }      	
 
+#ifdef CHECK_STRAW_NAVIGATION_ASSIGNMENTS_BY_PRINTING
       cout << "Straw " << straw->id() << ":\n"
            << "_nextOuterL: "   << straw->_nextOuterL.asInt() 
            << "  _nextInnerL: " << straw->_nextInnerL.asInt() 
 	   << "\n_nextOuterP: " << straw->_nextOuterP.asInt() 
 	   << "  _nextInnerP: " << straw->_nextInnerP.asInt() << "\n";
-			 
+#endif 	
+		 
       // TODO -- Insert logic to check that the radius of the purported
       // next straw differs by the right amount and sign, in each of these
       // four cases. 
