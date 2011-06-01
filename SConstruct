@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.18 2011/05/25 14:28:05 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 14:28:05 $
+# $Id: SConstruct,v 1.19 2011/06/01 14:55:35 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/06/01 14:55:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -101,10 +101,10 @@ genreflex_flags = '--deep --fail_on_warnings  --capabilities=classes_ids.cc '\
                 + '-DPROJECT_NAME="mu2e" -DPROJECT_VERSION="development"'
 aa="if   t1=`expr ${TARGET} : '\(.*\)_dict.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp;"\
   +"elif t1=`expr ${TARGET} : '\(.*\)_map.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp; fi;"\
-  +"genreflex $SOURCE -s ${SOURCE.srcdir}/classes_def.xml $_CPPINCFLAGS"\
+  +"if genreflex $SOURCE -s ${SOURCE.srcdir}/classes_def.xml $_CPPINCFLAGS"\
   +" -o $$t1 "\
   +genreflex_flags\
-  +" && mv ${TARGET.dir}/classes_ids.cc $$t2"
+  +"; then mv ${TARGET.dir}/classes_ids.cc $$t2; else rm -f $$t1; false; fi"
 
 genreflex = Builder(action=aa)
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
