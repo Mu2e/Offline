@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeClusters.fcl,v 1.6 2011/05/26 19:21:50 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:50 $
+# $Id: makeClusters.fcl,v 1.7 2011/06/01 16:13:21 wenzel Exp $
+# $Author: wenzel $
+# $Date: 2011/06/01 16:13:21 $
 #
 # Original author Rob Kutschke
 #
@@ -38,7 +38,10 @@ services :
     {
       inputFile : "Mu2eG4/test/geom_01.txt"
     }
-
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }  
   }
 
 }
@@ -89,7 +92,7 @@ physics :
 
 
   trigger_paths  : [p1]
-  end_paths      : [e1, outfile]
+  end_paths      : [e1]
 
 }
 
