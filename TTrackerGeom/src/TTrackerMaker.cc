@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.35 2011/06/01 16:16:12 mf Exp $
-// $Author: mf $
-// $Date: 2011/06/01 16:16:12 $
+// $Id: TTrackerMaker.cc,v 1.36 2011/06/01 18:49:12 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/01 18:49:12 $
 //
 // Original author Rob Kutschke
 //
@@ -403,23 +403,23 @@ namespace mu2e {
         layer._indices.push_back(index);
 
 
-//         if ( layId.getDevice() != -1 ){
-//           cout << "Position: " << setw(3) <<
-//             layId << " | " << setw(3) <<
-//             iman << " " << setw(3) <<
-//             istr                << " | " << setw(3) <<
-//             _istraw << " " << fixed << setprecision(2) << setw(8) <<
-//             xstraw << " " << fixed << setprecision(2) << setw(8) <<
-//             2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
-//             mid << " " << fixed << setprecision(2) << setw(8) <<
-//             device.origin() << " | "  << setw(3) <<
-//             index <<  " " << setw(3) <<
-//             allStraws.size() << " "  << setw(3) <<
-//             layer._straws.size() << " | " << setw(5) <<
-//             (allStraws.back()).id() << ", " << setw(5) <<
-//             (allStraws.back()).index()
-//           << endl;
-//           }
+	//         if ( layId.getDevice() != -1 ){
+	//           cout << "Position: " << setw(3) <<
+	//             layId << " | " << setw(3) <<
+	//             iman << " " << setw(3) <<
+	//             istr                << " | " << setw(3) <<
+	//             _istraw << " " << fixed << setprecision(2) << setw(8) <<
+	//             xstraw << " " << fixed << setprecision(2) << setw(8) <<
+	//             2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
+	//             mid << " " << fixed << setprecision(2) << setw(8) <<
+	//             device.origin() << " | "  << setw(3) <<
+	//             index <<  " " << setw(3) <<
+	//             allStraws.size() << " "  << setw(3) <<
+	//             layer._straws.size() << " | " << setw(5) <<
+	//             (allStraws.back()).id() << ", " << setw(5) <<
+	//             (allStraws.back()).index()
+	//           << endl;
+	//           }
 
       }
     }
@@ -461,10 +461,10 @@ namespace mu2e {
 
       CLHEP::Hep3Vector origin(x0,y0,z0);
 
-//       cout << "Manifold device, sector, origin, length[0] :" <<
-//         _tt->getDevice(secId.getDevice()).id() << ", " <<
-//         secId.getSector() << ", " <<
-//         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
+      //       cout << "Manifold device, sector, origin, length[0] :" <<
+      //         _tt->getDevice(secId.getDevice()).id() << ", " <<
+      //         secId.getSector() << ", " <<
+      //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
 
 
       _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
@@ -485,10 +485,10 @@ namespace mu2e {
       double xA =
         _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace;
 
-//    double xA = (_layersPerSector==1) ?
-//      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace :
-//      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace +
-//       _strawOuterRadius;
+      //    double xA = (_layersPerSector==1) ?
+      //      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace :
+      //      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace +
+      //       _strawOuterRadius;
 
       // we ignore the further laying straws in the multi layer case,
       // as this would make the straws shorter than they need to be
@@ -549,21 +549,21 @@ namespace mu2e {
       if (abs(sector._boxOffset[ii])<max0val) sector._boxOffset[ii]=0.0;
     }
 
-//     cout << "Debugging sector box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
-//       isec << ", " <<
-//       by << ", " <<
-//       bz << ", " <<
-//       bxl << ", " <<
-//       bxs << ", " <<
-//       sector._boxRzAngle << ", " <<
-//       sector._boxOffset <<
-//       endl;
+    //     cout << "Debugging sector box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
+    //       isec << ", " <<
+    //       by << ", " <<
+    //       bz << ", " <<
+    //       bxl << ", " <<
+    //       bxs << ", " <<
+    //       sector._boxRzAngle << ", " <<
+    //       sector._boxOffset <<
+    //       endl;
 
-//     cout << "Debugging sector box isec, straw lengths: ";
-//     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-//       cout << i << " " << _strawHalfLengths.at(i);
-//     }
-//     cout << endl;
+    //     cout << "Debugging sector box isec, straw lengths: ";
+    //     for ( int i=0; i<_manifoldsPerEnd; ++i ){
+    //       cout << i << " " << _strawHalfLengths.at(i);
+    //     }
+    //     cout << endl;
 
     return;
 
@@ -590,8 +590,8 @@ namespace mu2e {
     _manifoldZEdgeExcessSpace = _manifoldHalfLengths.at(2) - _strawOuterRadius -
       (_layersPerSector-1)*_layerHalfSpacing;
 
-//     cout << "Debugging,  _manifoldXEdgeExcessSpace, _manifoldZEdgeExcessSpace: " <<
-//       _manifoldXEdgeExcessSpace << ", " << _manifoldZEdgeExcessSpace << endl;
+    //     cout << "Debugging,  _manifoldXEdgeExcessSpace, _manifoldZEdgeExcessSpace: " <<
+    //       _manifoldXEdgeExcessSpace << ", " << _manifoldZEdgeExcessSpace << endl;
 
     if ( _manifoldXEdgeExcessSpace < 0.0 || _manifoldZEdgeExcessSpace < 0.0){
       throw cet::exception("GEOM")
@@ -693,25 +693,25 @@ namespace mu2e {
       sqrt( sum_of_squares(_envelopeInnerRadius + 2.0*_sectorBoxHalfLengths.at(1),
                            _sectorBoxHalfLengths.at(3)
                            )
-          );
+	    );
     double outerSupportRadiusRequiredl =
       max( outerSupportRadiusRequireds,
            sqrt( sum_of_squares(_envelopeInnerRadius-pad,
                                 _sectorBoxHalfLengths.at(4))
-               )
-         );
+		 )
+	   );
 
-//     if (true) {
-//       cout << "Debugging _strawHalfLengths: ";
-//       for (size_t i=0; i!=_manifoldsPerEnd; ++i) {
-//         cout << _strawHalfLengths.at(i)  << ", ";
-//       }
-//       cout << endl;
-//       cout << "Debugging _supportParams.innerRadius   :   " << _tt->_supportParams.innerRadius() << endl;
-//       cout << "Debugging _supportParams.outerRadius   :   " << _tt->_supportParams.outerRadius() << endl;
-//       cout << "Debugging _supportParams.outerRadius rs:   " << outerSupportRadiusRequireds << endl;
-//       cout << "Debugging _supportParams.outerRadius rl:   " << outerSupportRadiusRequiredl << endl;
-//     }
+    //     if (true) {
+    //       cout << "Debugging _strawHalfLengths: ";
+    //       for (size_t i=0; i!=_manifoldsPerEnd; ++i) {
+    //         cout << _strawHalfLengths.at(i)  << ", ";
+    //       }
+    //       cout << endl;
+    //       cout << "Debugging _supportParams.innerRadius   :   " << _tt->_supportParams.innerRadius() << endl;
+    //       cout << "Debugging _supportParams.outerRadius   :   " << _tt->_supportParams.outerRadius() << endl;
+    //       cout << "Debugging _supportParams.outerRadius rs:   " << outerSupportRadiusRequireds << endl;
+    //       cout << "Debugging _supportParams.outerRadius rl:   " << outerSupportRadiusRequiredl << endl;
+    //     }
 
     if (_tt->_supportParams.outerRadius() < outerSupportRadiusRequiredl) {
       cout << " _supportParams.outerRadius         :   " << _tt->_supportParams.outerRadius() << endl;
@@ -857,14 +857,14 @@ namespace mu2e {
         // add the "opposite layer" n+-1 neighbours straw (if exist)
 
         // TODO -- CORRECT A LOGIC ERROR (or check this reasoning is amiss):
-	//
-	// The block below adds straw n +/- 1 in the opposite layer.  But
-	// when n is 0 and layer is 1 (or when n is nStrawLayer-1 and layer
-	// is zero) it is supposed to add straw 1 of layer 0 (or straw
-	// nStrawLayer-2 of layer 1).  The computation is in fact correct, 
-	// but the check will cause the insertioin to be skipped.  Thus
-	// one neighbor of each of two straws in the panel will be omitted.
-	
+        //
+        // The block below adds straw n +/- 1 in the opposite layer.  But
+        // when n is 0 and layer is 1 (or when n is nStrawLayer-1 and layer
+        // is zero) it is supposed to add straw 1 of layer 0 (or straw
+        // nStrawLayer-2 of layer 1).  The computation is in fact correct, 
+        // but the check will cause the insertioin to be skipped.  Thus
+        // one neighbor of each of two straws in the panel will be omitted.
+        
         if ( i->id().getStraw() > 0 && i->id().getStraw() < nStrawLayer-1 ) {
           const StrawId nsId( i->id().getSectorId(), (layer+1)%2,
                               (i->id().getStraw()) + (layer?1:-1));
@@ -912,13 +912,13 @@ namespace mu2e {
       
       int strawNumberWithinLayer = straw->id().getStraw();
       int incrementedStrawNumber = 
-           ( strawNumberWithinLayer + 1 < nStrawLayer ) 
-           ? strawNumberWithinLayer + 1
-           : StrawIndex::NO_STRAW;
+	( strawNumberWithinLayer + 1 < nStrawLayer ) 
+	? strawNumberWithinLayer + 1
+	: StrawIndex::NO_STRAW;
       int decrementedStrawNumber = 
-           ( strawNumberWithinLayer - 1 >=  0) 
-           ? strawNumberWithinLayer - 1
-           : StrawIndex::NO_STRAW;
+	( strawNumberWithinLayer - 1 >=  0) 
+	? strawNumberWithinLayer - 1
+	: StrawIndex::NO_STRAW;
 
       straw->_nextOuterL = ttStrawIndex (layerId, incrementedStrawNumber);
       straw->_nextInnerL = ttStrawIndex (layerId, decrementedStrawNumber);
@@ -928,16 +928,16 @@ namespace mu2e {
       } else {
         straw->_nextOuterP = ttStrawIndex(otherLayerId, incrementedStrawNumber);
         straw->_nextInnerP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
-      }      	
+      }              
 
 #ifdef CHECK_STRAW_NAVIGATION_ASSIGNMENTS_BY_PRINTING
       cout << "Straw " << straw->id() << ":\n"
            << "_nextOuterL: "   << straw->_nextOuterL.asInt() 
            << "  _nextInnerL: " << straw->_nextInnerL.asInt() 
-	   << "\n_nextOuterP: " << straw->_nextOuterP.asInt() 
-	   << "  _nextInnerP: " << straw->_nextInnerP.asInt() << "\n";
-#endif 	
-		 
+           << "\n_nextOuterP: " << straw->_nextOuterP.asInt() 
+           << "  _nextInnerP: " << straw->_nextInnerP.asInt() << "\n";
+#endif         
+                 
       // TODO -- Insert logic to check that the radius of the purported
       // next straw differs by the right amount and sign, in each of these
       // four cases. 
