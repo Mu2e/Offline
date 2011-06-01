@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.7 2011/05/27 20:16:58 mf Exp $
-// $Author: mf $
-// $Date: 2011/05/27 20:16:58 $
+// $Id: ReadStrawCluster_module.cc,v 1.8 2011/06/01 21:15:26 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2011/06/01 21:15:26 $
 //
 // Original author Hans Wenzel
 //
@@ -248,151 +248,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
   void ReadStrawCluster::analyze(art::Event const& evt) {
     if ( _diagLevel > 2 ) cout << "ReadStrawCluster: analyze() begin"<<endl;
     static int ncalls(0);
-    ++ncalls;
-
-    // Geometry info for the TTracker.
-    // Get a reference to one of the T trackers.
-    // Throw exception if not successful.
-    const Tracker& tracker = getTrackerOrThrow();
-    multimap<int,pstraw> mpstraws;
-    mpstraws.clear();
-    vector<double> X;
-    vector<double> Y;
-    vector<double> R;
-    vector<double> Z;
-    X.clear();
-    Y.clear();
-    R.clear();
-    Z.clear();
-    // Get the persistent data about the StrawClusters.
-    //
-    art::Handle<StrawClusterCollection> pclusterdataHandle;
-    evt.getByLabel(_clmakerModuleLabel,pclusterdataHandle);
-    StrawClusterCollection const* clusters = pclusterdataHandle.product();
-    cout << " Nr of Clusters: " << clusters->size()<<endl;
-    _hNClusters->Fill(clusters->size());
-    StrawCluster::const_iterator strawIter;
-    CLHEP::Hep3Vector dvec;
-    for ( size_t i=0; i<clusters->size(); ++i ) {
-
-      // Access data
-      StrawCluster        const&      cluster(clusters->at(i));
-      _hNStraws->Fill(cluster.size());
-      //cout << "Length of Cluster:  " << cluster.size()<<endl;
-      CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
-      double hlen=9999999.;
-      StrawId nsid;
-      Straw str;
-      StrawId sid;
-      LayerId lid;
-      DeviceId did = -1;
-      SectorId secid;
-      for(strawIter=cluster.begin();strawIter!=cluster.end(); strawIter++)
-        {
-          nsid=*strawIter;
-          str = tracker.getStraw(nsid);
-          sid = str.id();
-          lid = sid.getLayerId();
-          did = sid.getDeviceId();
-          secid = sid.getSectorId();
-          const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-          const CLHEP::Hep3Vector dirvec = str.getDirection();
-          dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
-          pvec = pvec + mpvec;
-          if (str.getHalfLength()<hlen)
-            {
-              hlen=str.getHalfLength();
-            }
-          /* cout
-               << " Layer:  " << lid.getLayer()
-               << " DID:    " << did
-               << " Sector: " << secid.getSector()
-               << " hlen:   " << str.getHalfLength()
-               << " mp:     "<< mpvec
-               << " dir:    "<< dvec
-               << endl;
-          */
-        }
-      double a = 1./double(cluster.size());
-      pvec = pvec*a;
-      //cout << pvec<<endl;
-      pstraw pstr;
-      pstr.lay=lid.getLayer();
-      assert(did != -1);
-      pstr.did=did;
-      pstr.sec=secid.getSector();
-      pstr.hl=hlen;
-      pstr.mpx=pvec.getX();
-      pstr.mpy=pvec.getY();
-      pstr.mpz=pvec.getZ();
-      pstr.dirx=dvec.getX();
-      pstr.diry=dvec.getY();
-      pstr.dirz=dvec.getZ();
-      mpstraws.insert(pair<int,pstraw>(did,pstr));
-      //pstr.Print();
-    }
-    cout << " size of pseudo straw map: " <<mpstraws.size()<<endl;
-
-    Int_t nint = 0;
-    for (int i = 0;i<36;i++)
-      {
-        if (mpstraws.count(i)>1)
-          {
-            pair<multimap<int,pstraw>::iterator, multimap<int,pstraw>::iterator> ppp1;
-            ppp1 = mpstraws.equal_range(i);
-            multimap<int,pstraw>::iterator first1 = ppp1.first;
-            multimap<int,pstraw>::iterator first2 = ppp1.first;
-            multimap<int,pstraw>::iterator last1 = ppp1.second;
-            last1--;
-            multimap<int,pstraw>::iterator last2 = ppp1.second;
-            for (;first1 != last1;++first1)
-              {
-                first2=first1;
-                first2++;
-                for (;first2 != last2;++first2)
-                  {
-                  pstraw junk  = (*first1).second;
-                  pstraw pjunk = (*first2).second;
-                  const Vector p0= Vector(junk.mpx-junk.hl*junk.dirx,junk.mpy-junk.hl*junk.diry);
-                  const Vector p1= Vector(junk.mpx+junk.hl*junk.dirx,junk.mpy+junk.hl*junk.diry);
-                  const Vector p2= Vector(pjunk.mpx-pjunk.hl*pjunk.dirx,pjunk.mpy-pjunk.hl*pjunk.diry);
-                  const Vector p3= Vector(pjunk.mpx+pjunk.hl*pjunk.dirx,pjunk.mpy+pjunk.hl*pjunk.diry);
-                  LineSegment linesegment0(p0, p1);
-                  LineSegment linesegment1(p2, p3);
-                  Vector intersection;
-                  switch(linesegment0.Intersect(linesegment1, intersection))
-                    {
-                    case LineSegment::PARALLEL:
-                      //std::cout << "The lines are parallel\n\n";
-                      break;
-                    case LineSegment::COINCIDENT:
-                      //std::cout << "The lines are coincident\n\n";
-                      break;
-                    case LineSegment::NOT_INTERSECTING:
-                      //std::cout << "The lines do not intersect\n\n";
-                      break;
-                    case LineSegment::INTERSECTING:
-                      //std::cout << "The lines intersect at (" << intersection.x_ << ", " << intersection.y_ << ")\n\n";
-                      X.push_back(intersection.x_);
-                      Y.push_back(intersection.y_);
-                      Z.push_back(0.5*(junk.mpz+pjunk.mpz));
-                      R.push_back(sqrt(intersection.x_*intersection.x_ + intersection.y_+intersection.y_));
-                      nint ++;
-                      //cout<<nint<<endl;
-                      break;
-                    }  // end switch
-                } // end for first2
-            }// end for first1
-        }// end count >1
-      //cout<<nint<<endl;
-          // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
-          //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
-
-      }   ///endloop over all devices
-    cout<<nint<<endl;
-    _hNInter->Fill(X.size());
-    FitCircle(X, Y);
-
+    ++ncalls;  
   } // end of ::analyze.
   void ReadStrawCluster::FitCircle(    vector<double> X,vector<double> Y)
   {
