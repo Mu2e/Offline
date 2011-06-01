@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makehits.fcl,v 1.5 2011/05/31 15:22:30 wenzel Exp $
+# $Id: makehits.fcl,v 1.6 2011/06/01 21:06:19 wenzel Exp $
 # $Author: wenzel $
-# $Date: 2011/05/31 15:22:30 $
+# $Date: 2011/06/01 21:06:19 $
 #
 # Original author Rob Kutschke
 #
@@ -42,7 +42,6 @@ services :
     {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
     }  
-
   }
 
 }

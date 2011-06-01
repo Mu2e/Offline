@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeClusters.fcl,v 1.7 2011/06/01 16:13:21 wenzel Exp $
+# $Id: makeClusters.fcl,v 1.8 2011/06/01 21:06:19 wenzel Exp $
 # $Author: wenzel $
-# $Date: 2011/06/01 16:13:21 $
+# $Date: 2011/06/01 21:06:19 $
 #
 # Original author Rob Kutschke
 #
@@ -88,7 +88,7 @@ physics :
   }
 
   p1 : [makeSH , makeSC ]
-  e1 : [testSH , testSC ]
+  e1 : [testSH , testSC, outfile]
 
 
   trigger_paths  : [p1]
@@ -102,8 +102,8 @@ outputs:
  outfile :
  {
    module_type   :   RootOutput
-   filename	 :   "hits_03.root"
-   fastCloning   :   false
+   fileName	 :   "clusters_03.root"
+#   fastCloning   :   false
  }
 
 }
