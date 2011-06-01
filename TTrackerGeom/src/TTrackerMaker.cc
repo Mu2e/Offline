@@ -1,14 +1,17 @@
 //
-// Construct and return an TTracker.
+// Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.33 2011/05/25 18:31:42 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/25 18:31:42 $
+// $Id: TTrackerMaker.cc,v 1.34 2011/06/01 16:02:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/06/01 16:02:58 $
 //
 // Original author Rob Kutschke
 //
-
+// Significant change mf 5/30/11:  
+//    Insertion into the Straw objects data useful for early (hit/miss
+//    based) pattern recognition.  See identifyDirectionalNeighborStraws().
+  
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
@@ -196,6 +199,7 @@ namespace mu2e {
     _tt->fillPointers();
 
     identifyNeighbourStraws();
+    identifyDirectionalNeighbourStraws();
 
     //_tt->forAllLayers( lptest);
     //_tt->forAllDevices( devtest);
@@ -852,6 +856,15 @@ namespace mu2e {
 
         // add the "opposite layer" n+-1 neighbours straw (if exist)
 
+        // TODO -- CORRECT A LOGIC ERROR (or check this reasoning is amiss):
+	//
+	// The block below adds straw n +/- 1 in the opposite layer.  But
+	// when n is 0 and layer is 1 (or when n is nStrawLayer-1 and layer
+	// is zero) it is supposed to add straw 1 of layer 0 (or straw
+	// nStrawLayer-2 of layer 1).  The computation is in fact correct, 
+	// but the check will cause the insertioin to be skipped.  Thus
+	// one neighbor of each of two straws in the panel will be omitted.
+	
         if ( i->id().getStraw() > 0 && i->id().getStraw() < nStrawLayer-1 ) {
           const StrawId nsId( i->id().getSectorId(), (layer+1)%2,
                               (i->id().getStraw()) + (layer?1:-1));
@@ -863,7 +876,82 @@ namespace mu2e {
 
       }
     }
-  }
+  } // identifyNeighborStraws
 
+  // Identify the neighbour straws in inner/outer same-layer or zig-zag order
+  void TTrackerMaker::identifyDirectionalNeighbourStraws() {
 
+    // TODO:  The following algorithm relies on a few more geometry assumptions
+    //        than would strictly be necessary.  For example, it relies on
+    //        the layer labelling such that leayer 0 lies half a straw to the
+    //        inner side of layer 1, in each panel.  Some of these assumptions
+    //        can be lifted, and others at least checked, so that if the 
+    //        geometry changes, the code will still produce the right results,
+    //        or will at least throw to indicate a serious problem.
+    
+    deque<Straw>& allStraws = _tt->_allStraws;
+
+    for (deque<Straw>::iterator straw = allStraws.begin();
+         straw != allStraws.end(); ++straw) {
+
+      // throw exception if more than 2 layers in the sector of this straw
+      if (_tt->getSector(straw->id().getSectorId()).nLayers() != 2 ) {
+        throw cet::exception("GEOM")
+          << "The code expects exactly 2 layers per sector. \n";
+      }
+
+      LayerId layerId = straw->id().getLayerId();
+      int layerNumber = layerId.getLayer();
+      bool layerStaggeredToInside = (layerNumber == 0); 
+      // In all cases, layer 0 is staggered to the inside, 
+      // layer 1 is staggered to the outside.  We will now check this:
+      // TODO -- Do the check
+      LayerId otherLayerId ( layerId.getSectorId(), 1-layerNumber );
+
+      int nStrawLayer = _tt->getLayer(layerId)._nStraws;
+      
+      int strawNumberWithinLayer = straw->id().getStraw();
+      int incrementedStrawNumber = 
+           ( strawNumberWithinLayer + 1 < nStrawLayer ) 
+           ? strawNumberWithinLayer + 1
+           : StrawIndex::NO_STRAW;
+      int decrementedStrawNumber = 
+           ( strawNumberWithinLayer - 1 >=  0) 
+           ? strawNumberWithinLayer - 1
+           : StrawIndex::NO_STRAW;
+
+      straw->_nextOuterL = ttStrawIndex (layerId, incrementedStrawNumber);
+      straw->_nextInnerL = ttStrawIndex (layerId, decrementedStrawNumber);
+      if (layerStaggeredToInside) {
+        straw->_nextOuterP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
+        straw->_nextInnerP = ttStrawIndex(otherLayerId, decrementedStrawNumber);
+      } else {
+        straw->_nextOuterP = ttStrawIndex(otherLayerId, incrementedStrawNumber);
+        straw->_nextInnerP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
+      }      	
+
+      cout << "Straw " << straw->id() << ":\n"
+           << "_nextOuterL: "   << straw->_nextOuterL.asInt() 
+           << "  _nextInnerL: " << straw->_nextInnerL.asInt() 
+	   << "\n_nextOuterP: " << straw->_nextOuterP.asInt() 
+	   << "  _nextInnerP: " << straw->_nextInnerP.asInt() << "\n";
+			 
+      // TODO -- Insert logic to check that the radius of the purported
+      // next straw differs by the right amount and sign, in each of these
+      // four cases. 
+
+    } // end of loop over all straws 
+
+  } // identifyDirectionalNeighbourStraws
+
+  StrawIndex TTrackerMaker::ttStrawIndex(LayerId const & layerId, int snum)
+  {
+    if ( snum == StrawIndex::NO_STRAW ) {
+      return  StrawIndex(StrawIndex::NO_STRAW);
+    }
+    StrawId sid ( layerId, snum );
+    return _tt->getStraw(sid).index();
+  } //; ttStrawIndex  
+  
+   
 } // namespace mu2e

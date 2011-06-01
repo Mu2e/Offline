@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.13 2011/05/22 19:09:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Id: Straw.hh,v 1.14 2011/06/01 16:02:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/06/01 16:02:58 $
 //
 // Original author Rob Kutschke
 //
@@ -64,8 +64,8 @@ namespace mu2e {
 
     // Accept the compiler copy constructor and assignment operators
 
-    // I don't think that this class should have virtual functions but since it does it
-    // must have a virtual destructor.
+    // I don't think that this class should have virtual functions but 
+    // since it does, it must have a virtual destructor.
     virtual ~Straw(){}
 
 
@@ -74,15 +74,37 @@ namespace mu2e {
 
     const StrawDetail& getDetail() const { return *_detail;}
 
+    // Navigation, normally within a panel:
+
     // Return true if the argument is one of the nearest neighbours of this straw.
     bool isNearestNeighbour( StrawIndex idx ) const;
 
+    // The following routnies will return the nearest neighbors (or the
+    // single nearest neighbor if this straw is at the end of its layer):
     const std::vector<StrawIndex>& nearestNeighboursByIndex() const{
       return _nearestByIndex;
     }
     const std::vector<StrawId>& nearestNeighboursById() const{
       return _nearestById;
     }
+    
+    
+    // The following routines deal with straws in this straw's layer
+    // as well as the other layer in the same panel.  They return 
+    // the enum NO_STRAW when the appropriate requested straw does not exist.
+    StrawIndex nextOuterSameLayer() const {
+      return  _nextOuterL;
+    }
+    StrawIndex nextInnerSameLayer() const {
+      return  _nextInnerL;
+    }
+    StrawIndex nextOuterInPanel() const {
+      return _nextOuterP;  // This will always be in the opposite layer
+    }
+    StrawIndex nextInnerInPanel() const {
+      return _nextInnerP;
+    }
+
     // Formatted string embedding the id of the straw.
     std::string name( std::string const& base ) const;
 
@@ -159,6 +181,10 @@ namespace mu2e {
     std::vector<StrawId>    _nearestById;
     std::vector<StrawIndex> _nearestByIndex;
 
+    StrawIndex _nextOuterL;
+    StrawIndex _nextInnerL;
+    StrawIndex _nextOuterP;
+    StrawIndex _nextInnerP;
   };
 
 }  //namespace mu2e

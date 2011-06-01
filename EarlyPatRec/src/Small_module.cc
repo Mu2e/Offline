@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: Small_module.cc,v 1.8 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: Small_module.cc,v 1.9 2011/06/01 16:02:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/06/01 16:02:58 $
 //
 // Original author: Mark Fischler
 //
@@ -17,6 +17,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <cassert>
 
 #include "CLHEP/Vector/TwoVector.h"
 
@@ -274,6 +275,7 @@ namespace mu2e {;
         SimParticleInfo const& simInfo = i->second;
         // Information about StrawHits that belong on this SimParticle.
         vector<StrawHitMCInfo> const& infos = simInfo.strawHitInfos();
+        did = -1;
         if (simInfo.simParticle().generatorIndex()>=0)
           {
             const GenParticle genpar  =genParticles->at(simInfo.simParticle().generatorIndex());
@@ -430,6 +432,7 @@ namespace mu2e {;
       //pvec = pvec/totalEnergy;             // mean weighted by energy deposition
       pstraw pstr;
       pstr.lay=lid.getLayer();
+      assert (did != -1);
       pstr.did=did;
       pstr.sec=secid.getSector();
       pstr.hl=hlen;

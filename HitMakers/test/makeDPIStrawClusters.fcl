@@ -1,8 +1,8 @@
 # Configuration file for making StrawHits.
 #
-# $Id: makeDPIStrawClusters.fcl,v 1.8 2011/05/26 19:21:50 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:50 $
+# $Id: makeDPIStrawClusters.fcl,v 1.9 2011/06/01 16:02:58 mf Exp $
+# $Author: mf $
+# $Date: 2011/06/01 16:02:58 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -50,10 +50,10 @@ physics :
   producers:
   {
     # Save state of random numbers to the event.
-    randomsaver:
-    {
-      module_type   : RandomNumberSaver
-    }
+#    randomsaver:
+#    {
+#      module_type   : RandomNumberSaver
+#    }
 
     # Form StrawHits (SH).
     makeSH: @local::makeSH
@@ -93,7 +93,7 @@ physics :
 
   }
 
-  p1 : [randomsaver, makeSH , makeSC ]
+  p1 : [makeSH , makeSC ]
   e1 : [testSH , testSC ]
 
 

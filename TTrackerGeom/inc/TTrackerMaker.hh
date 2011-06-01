@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.14 2011/05/19 22:23:06 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/19 22:23:06 $
+// $Id: TTrackerMaker.hh,v 1.15 2011/06/01 16:02:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/06/01 16:02:58 $
 //
 // Original author Rob Kutschke
 //
@@ -57,6 +57,8 @@ private:
   void computeManifoldEdgeExcessSpace();
 
   void identifyNeighbourStraws();
+  void identifyDirectionalNeighbourStraws();
+  StrawIndex ttStrawIndex (LayerId const &layerId, int snum);
 
   // Do the work of constructing it.
   void buildIt();

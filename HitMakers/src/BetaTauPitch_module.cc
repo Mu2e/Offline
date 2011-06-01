@@ -6,9 +6,9 @@
 // Starts from ReadDPIStrawCluster_plugin.cc, adding the quantities of
 // interest to these angles, and gradually eliminating the rest.
 //
-// $Id: BetaTauPitch_module.cc,v 1.9 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: BetaTauPitch_module.cc,v 1.10 2011/06/01 16:02:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/06/01 16:02:58 $
 //
 // Original author: Mark Fischler modifying code by Hans Wenzel
 //
@@ -67,7 +67,7 @@
 
 using namespace std;
 
-namespace mu2e {;
+namespace mu2e {
   enum PrintLevel { quiet  =-1,
                     normal = 0,
                     verbose= 1};

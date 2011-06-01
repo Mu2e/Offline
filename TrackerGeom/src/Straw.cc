@@ -1,9 +1,9 @@
 //
 // Hold information about one Straw.
 //
-// $Id: Straw.cc,v 1.4 2011/05/18 02:27:20 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:20 $
+// $Id: Straw.cc,v 1.5 2011/06/01 16:02:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/06/01 16:02:58 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,12 @@ namespace mu2e {
     _c(CLHEP::Hep3Vector(0.,0.,0.)),
     _detail(0),
     _detailIndex(0),
-    _w(CLHEP::Hep3Vector(0.,0.,1.)){
+    _w(CLHEP::Hep3Vector(0.,0.,1.)),
+    _nextOuterL(StrawIndex::NO_STRAW),
+    _nextInnerL(StrawIndex::NO_STRAW),
+    _nextOuterP(StrawIndex::NO_STRAW),
+    _nextInnerP(StrawIndex::NO_STRAW)
+  {
   }
 
   Straw::Straw( const StrawId& id,
@@ -40,7 +45,12 @@ namespace mu2e {
     _index(index),
     _c(c),
     _detail(detail),
-    _detailIndex(detailIndex){
+    _detailIndex(detailIndex),
+    _nextOuterL(StrawIndex::NO_STRAW),
+    _nextInnerL(StrawIndex::NO_STRAW),
+    _nextOuterP(StrawIndex::NO_STRAW),
+    _nextInnerP(StrawIndex::NO_STRAW)
+  {
     _w = CLHEP::Hep3Vector(wtx,wty,1.).unit();
   }
 
@@ -56,7 +66,12 @@ namespace mu2e {
     _c(c),
     _detail(detail),
     _detailIndex(detailIndex),
-    _w(w.unit()){
+    _w(w.unit()),
+    _nextOuterL(StrawIndex::NO_STRAW),
+    _nextInnerL(StrawIndex::NO_STRAW),
+    _nextOuterP(StrawIndex::NO_STRAW),
+    _nextInnerP(StrawIndex::NO_STRAW)
+  {
   }
 
   void Straw::fillPointers ( const Tracker& tracker ) const{

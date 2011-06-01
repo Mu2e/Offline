@@ -7,9 +7,9 @@
 // of straws in the system.  This works for both the LTracker
 // and the TTracker.
 //
-// $Id: StrawIndex.hh,v 1.8 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: StrawIndex.hh,v 1.9 2011/06/01 16:02:58 mf Exp $
+// $Author: mf $
+// $Date: 2011/06/01 16:02:58 $
 //
 // Original author Rob Kutschke
 //
@@ -23,6 +23,9 @@
 // to plan, only the code that creates the LTracker will need
 // to set one from an integer.
 //
+// Added functionallity allowing this class to be used effeciently
+// when traversing collectoins of straws in a panel -- the NO_STRAW
+// indicator.
 
 #include <ostream>
 
@@ -30,6 +33,9 @@ namespace mu2e {
 
 
   class StrawIndex{
+
+  public: 
+    enum NoStraw {NO_STRAW = -999999};
 
   public:
 
