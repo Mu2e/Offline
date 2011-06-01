@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.8 2011/06/01 21:15:26 wenzel Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.9 2011/06/01 21:40:17 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/06/01 21:15:26 $
+// $Date: 2011/06/01 21:40:17 $
 //
 // Original author Hans Wenzel
 //
@@ -246,8 +246,14 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
   }
 
   void ReadStrawCluster::analyze(art::Event const& evt) {
+    cout << "ReadStrawCluster: analyze() begin"<<endl;
     if ( _diagLevel > 2 ) cout << "ReadStrawCluster: analyze() begin"<<endl;
     static int ncalls(0);
+
+    art::Handle<StrawClusterCollection> pdataHandle;
+    evt.getByLabel(_clmakerModuleLabel,pdataHandle);
+    StrawClusterCollection const* clusters = pdataHandle.product();
+    cout << "Nr of clusters:   " << clusters->size()<<endl;
     ++ncalls;  
   } // end of ::analyze.
   void ReadStrawCluster::FitCircle(    vector<double> X,vector<double> Y)
