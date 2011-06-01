@@ -3,9 +3,9 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawCluster.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Id: StrawCluster.hh,v 1.2 2011/06/01 21:12:23 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2011/06/01 21:12:23 $
 //
 // Original author Hans Wenzel
 //
@@ -14,11 +14,29 @@
 #include <vector>
 
 // Mu2e includes
-#include "TrackerGeom/inc/StrawId.hh"
+#include "DataProducts/inc/DPIndex.hh"
+
+namespace art {
+  class ProductID;
+}
 
 namespace mu2e {
+  class StrawCluster{
 
-      typedef std::vector<mu2e::StrawId> StrawCluster;
+  public:
+
+    StrawCluster() {}
+
+    StrawCluster(std::vector<DPIndex> & hitIndices);
+
+    // Accessors
+    std::vector<DPIndex> const & StrawHitIndices() const { return _StrawHitIndices; }
+
+    //    StrawCluster& add(art::ProductID const & CollId, CaloHit const & hit);
+  private:
+
+    std::vector<DPIndex> _StrawHitIndices;
+  };
 } // namespace mu2e
 
 #endif /* RecoDataProducts_StrawCluster_hh */
