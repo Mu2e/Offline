@@ -5,13 +5,15 @@
 // A persistable index into another data product.
 //
 //
-// $Id: DPIndex.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Id: DPIndex.hh,v 1.2 2011/06/01 14:55:55 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/06/01 14:55:55 $
 //
 
 // Framework includes.
 #include "art/Persistency/Provenance/ProductID.h"
+
+#include <ostream>
 
 namespace mu2e {
   struct DPIndex{
