@@ -1,9 +1,9 @@
 //
 // Test of Ptr to GenParticles and SimParticles.
 //
-// $Id: PtrTest0_module.cc,v 1.2 2011/06/01 22:20:42 kutschke Exp $
+// $Id: PtrTest0_module.cc,v 1.3 2011/06/01 23:39:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/01 22:20:42 $
+// $Date: 2011/06/01 23:39:08 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +39,6 @@ namespace mu2e {
   };
 
   PtrTest0::PtrTest0(fhicl::ParameterSet const& pset){}
-
 
   void PtrTest0::analyze(const art::Event& event) {
     
@@ -78,7 +77,7 @@ namespace mu2e {
     }
 
     // Fill a vector of Ptr into a collection that, under the covers, is a cet::map_vector<T>.
-    vector<art::Ptr<SimParticleCollection::value_type> > simPtrs;
+    vector<art::Ptr<SimParticle> > simPtrs;
     for ( SimParticleCollection::const_iterator i = sims.begin();
           i != sims.end(); ++i ){
 
@@ -93,13 +92,14 @@ namespace mu2e {
              << sim.startGlobalTime() << " "
              << endl;
         
-        simPtrs.push_back( art::Ptr<SimParticleCollection::value_type>(simsHandle,key.asInt()) );
+        simPtrs.push_back( art::Ptr<SimParticle>(simsHandle,key.asInt()) );
+
       }
     } // end loop filling the Ptr to SimParticles
 
     // Read back the Ptrs.
     for ( size_t i=0; i< simPtrs.size(); ++i ){
-      SimParticle const& sim = simPtrs.at(i)->second;
+      SimParticle const& sim = *simPtrs.at(i);
       cout << "Sim from Ptr: " 
            << i << " "
            << sim.id().asInt()     << " " 
