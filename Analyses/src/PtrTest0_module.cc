@@ -1,9 +1,9 @@
 //
 // Test of Ptr to GenParticles and SimParticles.
 //
-// $Id: PtrTest0_module.cc,v 1.1 2011/06/01 22:09:15 kutschke Exp $
+// $Id: PtrTest0_module.cc,v 1.2 2011/06/01 22:20:42 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/01 22:09:15 $
+// $Date: 2011/06/01 22:20:42 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,6 @@
 #include "art/Persistency/Common/Ptr.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/PtrTest.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
