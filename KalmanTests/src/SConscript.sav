@@ -1,7 +1,7 @@
 #
-# $Id: SConscript.sav,v 1.6 2011/06/02 00:00:05 mu2ecvs Exp $
-# $Author: mu2ecvs $
-# $Date: 2011/06/02 00:00:05 $
+# $Id: SConscript.sav,v 1.7 2011/06/02 23:13:21 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/06/02 23:13:21 $
 #
 # Original author Rob Kutschke.
 #
@@ -9,32 +9,22 @@
 import os, re
 Import('env')
 
-g4inc   = os.environ['G4INCLUDE']
-g4lib   = os.environ['G4LIB']
+# This comes from: root-config --cflags --glibs
+# Then guess at the correct location of Spectrum and MLP.
+#rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+#             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
 
-dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
-ff=os.path.dirname(dd)   # THIS
-env.DictionarySource(['#/tmp/src/%s/%s_dict_plugin.cpp'%(dd,ff),
-                      '#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff)],
-                     ['classes.h','classes_def.xml'])
+rootlibs = [ ]
 
-my_lib=['%s'%(ff,)]
+babarlibs = [ 'BaBar_KalmanTrack', 'BaBar_DetectorModel',  'BaBar_TrkBase',    'BaBar_BField',
+              'BaBar_TrajGeom',    'BaBar_BbrGeom',        'BaBar_difAlgebra', 'BaBar_ProbTools',
+              'BaBar_BaBar',       'BaBar_CLHEP',          'BaBar_DchData',     'BaBar_DchGeom',
+              'BaBar_DchGeomBase', 'BaBar_DchCalib',       'BaBar_MatEnv' ]
 
-env.SharedLibrary('#/lib/%s_dict_plugin'%(ff,),
-'#/tmp/src/%s/%s_dict_plugin.cpp'%(dd,ff),
-LIBS=my_lib)
-env.SharedLibrary('#/lib/%s_map_plugin'%(ff,),
-'#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff))
 
-plugin_cc = Glob('*_plugin.cc', strings=True)
+plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
 non_plugin_cc = Glob('*.cc', strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
-
-ffroot = os.popen('root-config --version'); llroot = ffroot.readline(); ffroot.close()
-root_version = llroot[0:7]
-root_version=root_version.replace('.','')
-root_version=root_version.replace('/','')
-    
 
 if non_plugin_cc:
     # From: /path1/path2/path3/Name/src extract the string Name field.
@@ -42,34 +32,18 @@ if non_plugin_cc:
     local_lib_name=os.path.dirname(dd)
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'FWCoreFramework',
+                      LIBS=[ 'art_Framework_Core',
+                             'art_Framework_Services_Optional_TFileService_service',
+                              babarlibs,
                              'GeometryService',
                              'ConditionsService',
                              'Mu2eUtilities',
                              'GeneralUtilities',
-                             'ToyDP',
-                             'Spectrum',
-                             'MLP','TreePlayer',
-                             'Gpad',
-                             'Graf',
-                             'BaBar_KalmanTrack',
-                             'BaBar_DetectorModel',
-                             'BaBar_TrkBase',
-                             'BaBar_BField',
-                             'BaBar_TrajGeom',
-                             'BaBar_BbrGeom',
-                             'BaBar_difAlgebra',
-                             'BaBar_ProbTools',
-                             'BaBar_BaBar',
-                             'BaBar_CLHEP',
-                             'BaBar_DchData',
-                             'BaBar_DchGeom',
-                             'BaBar_DchGeomBase',
-                             'BaBar_DchCalib',
-                             'BaBar_MatEnv',
-                             'Mu2eG4'
+                             'MCDataProducts',
+                             'RecoDataProducts',
+                             'CLHEP',
+                             rootlibs
                              ],
-                      parse_flags=[ '-L'+g4lib, '-I'+g4inc]
                       )
     libs=[ local_lib_name ]
 else:
@@ -79,59 +53,18 @@ for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
                        LIBS=[ libs,
-                             'FWCoreFramework',
+                             'art_Framework_Core',
+                             'art_Framework_Services_Optional_TFileService_service',
+                              babarlibs,
                              'GeometryService',
                              'ConditionsService',
                              'Mu2eUtilities',
                              'GeneralUtilities',
-                             'ToyDP',
-                             'Spectrum',
-                             'MLP',
-                             'Gpad',
-                              'Graf',
-                              'BaBar_KalmanTrack',
-                              'BaBar_DetectorModel',
-                              'BaBar_TrkBase',
-                              'BaBar_BField',
-                              'BaBar_TrajGeom',
-                              'BaBar_BbrGeom',
-                              'BaBar_difAlgebra',
-                              'BaBar_ProbTools',
-                              'BaBar_BaBar',
-                              'BaBar_CLHEP',
-                              'BaBar_DchData',
-                              'BaBar_DchGeom',
-                              'BaBar_DchGeomBase',
-                              'BaBar_DchCalib',
-                              'BaBar_MatEnv'
-                              ]
-                               )
-
-
-my_lib=['%s'%(ff,)]
-
-#env.SharedLibrary(LIBS=my_lib)
-#env.SharedLibrary('#/lib/%s_map_plugin'%(ff,),
-#                  '#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff))
-#
-
-if os.environ.has_key('VGM_INSTALL'):
-    vgmpath = os.environ['VGM_INSTALL']
-
-    env.SharedLibrary( '#/lib/GeomExport_plugin', 'GeomExport_plugin.cc',
-                       LIBS=[ 'FWCoreFramework',
-                              libs,
-                              'Mu2eUtilities',
-                              'ConditionsService_plugin',
-                              'CLHEP',
-                              'Tree' ,
-                              'BaseVGM','Geant4GM','RootGM','ClhepVGM'
-                              ],
-                       parse_flags=[ '-L'+g4lib, '-I'+g4inc, '-I'+vgmpath+'/include', '-L'+vgmpath+'/lib' ]
-                       )
-
-
-
+                             'MCDataProducts',
+                             'RecoDataProducts',
+                             'CLHEP',
+                              rootlibs
+                              ], )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
