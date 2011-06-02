@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.10 2011/06/02 16:53:35 wenzel Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.11 2011/06/02 22:51:55 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/06/02 16:53:35 $
+// $Date: 2011/06/02 22:51:55 $
 //
 // Original author Hans Wenzel
 //
@@ -259,13 +259,20 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       {
 	StrawCluster const& scluster = clusters->at(cluster);	
 	std::vector<DPIndex> const & indices = scluster.StrawHitIndices();
-	cout<<"Length of Cluster:  " << indices.size() << endl;
+	cout<<"Length of Cluster:  " << indices.size()
+	    <<"  Energy:  "<<scluster.Energy(evt) 
+	    <<" average T:  "<<scluster.averageT(evt)
+	    <<" average dT: "<<scluster.averagedT(evt)
+	    <<" half length:  "<<scluster.Halflength(evt)
+	    << endl;
+        //CLHEP::Hep3Vector  pvec = scluster.X(evt);
+	cout<<"Position of Cluster:  " << scluster.X(evt) << endl;
+	cout<<"Direction of Cluster:  " << scluster.dirX(evt) << endl;
 	for (size_t index =0;index<indices.size();++index)
 	  {
 	    DPIndex const& junkie = indices[index];
 	    StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-	    Double_t Energy = strawhit.energyDep();
-	    cout<<"Cluster Nr : " << cluster<<" Index:  " << index<< "     Energy:  " << Energy<<endl;
+	    cout<<"Cluster Nr : " << cluster<<" Index:  " << index<<endl;
 	  }
 
       }
