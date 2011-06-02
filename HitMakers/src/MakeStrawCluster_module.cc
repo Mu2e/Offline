@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.9 2011/06/02 22:55:40 wenzel Exp $
+// $Id: MakeStrawCluster_module.cc,v 1.10 2011/06/02 23:07:58 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/06/02 22:55:40 $
+// $Date: 2011/06/02 23:07:58 $
 //
 // Original author Hans Wenzel
 //
@@ -89,7 +89,7 @@ namespace mu2e {
 
     art::ServiceHandle<art::TFileService> tfs;
   }
-   void MakeStrawCluster::produce(art::Event const & evt)
+   void MakeStrawCluster::produce(art::Event  & evt)
    {
      if ( _diagLevel > 0 ) cout << "MakeStrawCluster: produce() begin" << endl;
      static int ncalls(0);
