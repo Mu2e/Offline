@@ -1,25 +1,57 @@
 #
-# $Id: SConscript.sav,v 1.5 2011/05/24 17:19:03 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/24 17:19:03 $
+# $Id: SConscript.sav,v 1.6 2011/06/02 00:00:05 mu2ecvs Exp $
+# $Author: mu2ecvs $
+# $Date: 2011/06/02 00:00:05 $
 #
 # Original author Rob Kutschke.
 #
 
 import os, re
-home = os.environ['FW_HOME']
 Import('env')
 
-plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+g4inc   = os.environ['G4INCLUDE']
+g4lib   = os.environ['G4LIB']
+
+dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+ff=os.path.dirname(dd)   # THIS
+env.DictionarySource(['#/tmp/src/%s/%s_dict_plugin.cpp'%(dd,ff),
+                      '#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff)],
+                     ['classes.h','classes_def.xml'])
+
+my_lib=['%s'%(ff,)]
+
+env.SharedLibrary('#/lib/%s_dict_plugin'%(ff,),
+'#/tmp/src/%s/%s_dict_plugin.cpp'%(dd,ff),
+LIBS=my_lib)
+env.SharedLibrary('#/lib/%s_map_plugin'%(ff,),
+'#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff))
+
+plugin_cc = Glob('*_plugin.cc', strings=True)
 non_plugin_cc = Glob('*.cc', strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+ffroot = os.popen('root-config --version'); llroot = ffroot.readline(); ffroot.close()
+root_version = llroot[0:7]
+root_version=root_version.replace('.','')
+root_version=root_version.replace('/','')
+    
 
 if non_plugin_cc:
     # From: /path1/path2/path3/Name/src extract the string Name field.
     dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
     local_lib_name=os.path.dirname(dd)
+
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'art_Framework_Core',
+                      LIBS=[ 'FWCoreFramework',
+                             'GeometryService',
+                             'ConditionsService',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'ToyDP',
+                             'Spectrum',
+                             'MLP','TreePlayer',
+                             'Gpad',
+                             'Graf',
                              'BaBar_KalmanTrack',
                              'BaBar_DetectorModel',
                              'BaBar_TrkBase',
@@ -30,30 +62,76 @@ if non_plugin_cc:
                              'BaBar_ProbTools',
                              'BaBar_BaBar',
                              'BaBar_CLHEP',
-                             'MCDataProducts',
-                             'RecoDataProducts',
-                             'GeneralUtilities',
-                             'CLHEP',
-                             'GeometryService',
-                             'CLHEP',
-                           ],
+                             'BaBar_DchData',
+                             'BaBar_DchGeom',
+                             'BaBar_DchGeomBase',
+                             'BaBar_DchCalib',
+                             'BaBar_MatEnv',
+                             'Mu2eG4'
+                             ],
+                      parse_flags=[ '-L'+g4lib, '-I'+g4inc]
                       )
     libs=[ local_lib_name ]
 else:
-    libs=[]
+    libs=['GeneralUtilities']
 
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
-                     LIBS=[ 'art_Framework_Core',
-                            libs,
-                            'GeometryService',
-                            'MCDataProducts',
-                            'RecoDataProducts',
-                            'GeneralUtilities',
-                            'CLHEP',
-                          ],
-                     )
+                       LIBS=[ libs,
+                             'FWCoreFramework',
+                             'GeometryService',
+                             'ConditionsService',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'ToyDP',
+                             'Spectrum',
+                             'MLP',
+                             'Gpad',
+                              'Graf',
+                              'BaBar_KalmanTrack',
+                              'BaBar_DetectorModel',
+                              'BaBar_TrkBase',
+                              'BaBar_BField',
+                              'BaBar_TrajGeom',
+                              'BaBar_BbrGeom',
+                              'BaBar_difAlgebra',
+                              'BaBar_ProbTools',
+                              'BaBar_BaBar',
+                              'BaBar_CLHEP',
+                              'BaBar_DchData',
+                              'BaBar_DchGeom',
+                              'BaBar_DchGeomBase',
+                              'BaBar_DchCalib',
+                              'BaBar_MatEnv'
+                              ]
+                               )
+
+
+my_lib=['%s'%(ff,)]
+
+#env.SharedLibrary(LIBS=my_lib)
+#env.SharedLibrary('#/lib/%s_map_plugin'%(ff,),
+#                  '#/tmp/src/%s/%s_map_plugin.cpp'%(dd,ff))
+#
+
+if os.environ.has_key('VGM_INSTALL'):
+    vgmpath = os.environ['VGM_INSTALL']
+
+    env.SharedLibrary( '#/lib/GeomExport_plugin', 'GeomExport_plugin.cc',
+                       LIBS=[ 'FWCoreFramework',
+                              libs,
+                              'Mu2eUtilities',
+                              'ConditionsService_plugin',
+                              'CLHEP',
+                              'Tree' ,
+                              'BaseVGM','Geant4GM','RootGM','ClhepVGM'
+                              ],
+                       parse_flags=[ '-L'+g4lib, '-I'+g4inc, '-I'+vgmpath+'/include', '-L'+vgmpath+'/lib' ]
+                       )
+
+
+
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

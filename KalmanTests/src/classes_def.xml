@@ -1,0 +1,17 @@
+<!--  -->
+<!--  $Author: mu2ecvs $ -->
+<!--  $Date: 2011/06/02 00:00:05 $   -->
+<!--  -->
+
+<lcgdict>
+ <class name="CLHEP::HepVector"/>
+ <class name="CLHEP::Hep3Vector"/>
+ <class name="CLHEP::HepGenMatrix"/>
+ <class name="CLHEP::HepMatrix"/>
+ <class name="CLHEP::HepSymMatrix"/>
+ <class name="TrkExchangePar"/>
+ <class name="edm::Wrapper<CLHEP::HepVector>"/>
+<!-- <class name="edm::Wrapper<CLHEP::Hep3Vector>"/> -->
+ <class name="edm::Wrapper<CLHEP::HepMatrix>"/>
+<!-- <class name="edm::Wrapper<TrkExchangePar>"/> -->
+</lcgdict>
