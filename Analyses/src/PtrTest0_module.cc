@@ -1,9 +1,9 @@
 //
 // Test of Ptr to GenParticles and SimParticles.
 //
-// $Id: PtrTest0_module.cc,v 1.3 2011/06/01 23:39:08 kutschke Exp $
+// $Id: PtrTest0_module.cc,v 1.4 2011/06/02 15:41:19 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/01 23:39:08 $
+// $Date: 2011/06/02 15:41:19 $
 //
 // Original author Rob Kutschke
 //
@@ -41,14 +41,17 @@ namespace mu2e {
   PtrTest0::PtrTest0(fhicl::ParameterSet const& pset){}
 
   void PtrTest0::analyze(const art::Event& event) {
-    
+
+
     art::Handle<GenParticleCollection> gensHandle;
     event.getByLabel("generate",gensHandle);
     GenParticleCollection const& gens = *gensHandle;
 
+    /*
     art::Handle<SimParticleCollection> simsHandle;
     event.getByLabel("g4run",simsHandle);
     SimParticleCollection const& sims = *simsHandle;
+    */
 
     // Fill a vector of Ptr into a collection that, under the covers, is a std::vector<T>.
     vector<art::Ptr<GenParticle> > genPtrs;
@@ -75,6 +78,8 @@ namespace mu2e {
            << gen.time()
            << endl;
     }
+
+    /*
 
     // Fill a vector of Ptr into a collection that, under the covers, is a cet::map_vector<T>.
     vector<art::Ptr<SimParticle> > simPtrs;
@@ -108,7 +113,9 @@ namespace mu2e {
            << endl;
     }
 
+    */
   } // end PtrTest0::analyze
+
 
 
 }  // end namespace mu2e
