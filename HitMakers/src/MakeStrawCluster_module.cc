@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.7 2011/06/01 21:11:24 wenzel Exp $
+// $Id: MakeStrawCluster_module.cc,v 1.8 2011/06/02 16:53:35 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/06/01 21:11:24 $
+// $Date: 2011/06/02 16:53:35 $
 //
 // Original author Hans Wenzel
 //
@@ -122,6 +122,106 @@ namespace mu2e {
      if( !haveStrawHits) return;
      art::ProductID const& id(pdataHandle.id());
      StrawHitCollection const* hits = pdataHandle.product();
+     for ( size_t i=0; i<hits->size(); ++i )
+       {
+	 // Access data
+	 StrawHit hit = hits->at(i); 
+	 StrawIndex si = hit.strawIndex();
+	 Straw str = tracker.getStraw(si);	 
+	 cout << " Hit Energy Deposition: "<< hit.energyDep()
+	      << " Hit time:    "<< hit.time()<<endl;
+	 //	 StrawId sid = str.Id();
+	 bool used =false;
+	 for (size_t ii=0;ii<listofClusters.size();ii++)
+	   { 	
+	     StrawCluster scluster =listofClusters.at(ii) ;	
+	     std::vector<DPIndex> const &  tmpptrtoHits = scluster.StrawHitIndices();
+	     for (size_t jj=0;jj<tmpptrtoHits.size();jj++)
+	       {
+		 DPIndex const& junkie = tmpptrtoHits[jj];
+		 StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+		 if (strawhit==hit)
+		 {		
+		   used = true;
+		   break;		   		 }
+	       }
+	   }
+	 if ( !used )
+	   {
+	     ptrtoHits.push_back(DPIndex(id,i));
+	     const std::vector<StrawIndex> nearindex= str.nearestNeighboursByIndex();
+	     vector<StrawIndex>::const_iterator ncid;
+	     for(ncid=nearindex.begin(); ncid!=nearindex.end(); ncid++)
+	       {
+		 for ( size_t jj=0; jj<hits->size(); jj++ ) 
+		   {
+		     StrawHit nhit = hits->at(jj);
+		     StrawIndex nsi = nhit.strawIndex();	    
+		     if (nsi==*ncid) ptrtoHits.push_back(DPIndex(id,jj));
+		   } // end loop over all hits 
+	       } // end loop over neighbors 
+	     bool added=false; 
+	     if (ptrtoHits.size()>1) added = true;
+	     while (added)
+	       {	
+		 added = false;
+		 for(size_t kk=0;kk<ptrtoHits.size(); kk++)
+		   {
+		     DPIndex const& junkie = ptrtoHits[kk];
+		     StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+		     Straw straw = tracker.getStraw(strawhit.strawIndex());		      
+		     const std::vector<StrawIndex> nnearindex= straw.nearestNeighboursByIndex();
+		     vector<StrawIndex>::const_iterator nncid;
+		     for(nncid=nnearindex.begin(); nncid!=nnearindex.end(); nncid++)
+		       {
+			 //
+			 // first check if not already part of the cluster
+			 bool usedincl=false;
+			 for (size_t jjj=0;jjj<ptrtoHits.size();jjj++)
+			   {
+			     DPIndex const& junkie = ptrtoHits[jjj];
+			     StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+			     if (strawhit.strawIndex()==*nncid)
+			       {
+				 usedincl=true;
+				 break;
+			       }
+			   }
+			 if (!usedincl)
+			   {
+			     for ( size_t jj=0; jj<hits->size(); jj++ ) 
+			       {
+				 StrawHit const& nhit = hits->at(jj);
+				 StrawIndex nsi = nhit.strawIndex();	    
+				 if (nsi==*nncid)
+				   {
+				     ptrtoHits.push_back(DPIndex(id,jj));
+				     added = true;
+				   }
+			       } // end loop over all straws that fired
+			   }  // end used in cluster     
+		       }// end loop over neighbors
+		   } // end loop over straws in cluster
+	       } // end while added
+	     if (ptrtoHits.size()>0) 
+	       {
+		 Cluster = StrawCluster(ptrtoHits);
+		 listofClusterspointer->push_back(Cluster);
+		 //listofptrtoHits->push_back(ptrtoHits);
+	       }
+	     ptrtoHits.clear();
+
+	   }// end if not used 
+       } // end loop over all strawHits
+
+     evt.put(listofClusterspointer);
+
+
+
+
+
+
+     /*
 
      cout << "Number of StrawHits in Event:  "<< hits->size()<<endl;
      for ( size_t i=0; i<hits->size(); ++i ) {
@@ -138,7 +238,7 @@ namespace mu2e {
      listofClusterspointer->push_back(Cluster);
     // Add the output hit collection to the event
     evt.put(listofClusterspointer);
-
+     */
     if (_diagLevel>2){
       cout << " Nr of Hits:  "<< hits->size()<<endl;
       //cout << " nr of clusters:  " <<listofClusters.size()<<endl;

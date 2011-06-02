@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.9 2011/06/01 21:40:17 wenzel Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.10 2011/06/02 16:53:35 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/06/01 21:40:17 $
+// $Date: 2011/06/02 16:53:35 $
 //
 // Original author Hans Wenzel
 //
@@ -55,7 +55,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/resolveTransients.hh"
-
+#include "Mu2eUtilities/inc/resolveDPIndices.hh"
 using namespace std;
 
 namespace mu2e {
@@ -254,6 +254,23 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     evt.getByLabel(_clmakerModuleLabel,pdataHandle);
     StrawClusterCollection const* clusters = pdataHandle.product();
     cout << "Nr of clusters:   " << clusters->size()<<endl;
+    
+    for ( size_t cluster=0; cluster<clusters->size(); ++cluster) // Loop over StrawClusters
+      {
+	StrawCluster const& scluster = clusters->at(cluster);	
+	std::vector<DPIndex> const & indices = scluster.StrawHitIndices();
+	cout<<"Length of Cluster:  " << indices.size() << endl;
+	for (size_t index =0;index<indices.size();++index)
+	  {
+	    DPIndex const& junkie = indices[index];
+	    StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+	    Double_t Energy = strawhit.energyDep();
+	    cout<<"Cluster Nr : " << cluster<<" Index:  " << index<< "     Energy:  " << Energy<<endl;
+	  }
+
+      }
+
+
     ++ncalls;  
   } // end of ::analyze.
   void ReadStrawCluster::FitCircle(    vector<double> X,vector<double> Y)
