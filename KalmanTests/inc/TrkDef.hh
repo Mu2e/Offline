@@ -1,16 +1,16 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.1 2011/06/02 00:00:05 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/06/02 00:00:05 $
+// $Id: TrkDef.hh,v 1.2 2011/06/02 23:06:29 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/06/02 23:06:29 $
 //
 // Original author David Brown, LBNL
 //
 #ifndef TrkDef_HH
 #define TrkDef_HH
 // Mu2e
-#include "ToyDP/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 // BaBar
 #include "TrkBase/HelixTraj.hh"
 // CLHEP

@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.1 2011/06/02 00:00:05 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/06/02 00:00:05 $
+// $Id: TrkStrawHit.hh,v 1.2 2011/06/02 23:06:29 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/06/02 23:06:29 $
 //
 // Original author David Brown, LBNL
 //
@@ -16,7 +16,7 @@
 #include "TrkBase/TrkFundHit.hh"
 #include "TrkBase/TrkDetElemId.hh"
 // Mu2e
-#include "ToyDP/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
@@ -56,7 +56,7 @@ namespace mu2e
 //  Simplistic implementation of TrkHitOnTrk interface.  Lie where necessary
     virtual TrkStrawHit* clone(TrkRep* parentRep, const TrkDifTraj* trkTraj = 0) const;
     virtual TrkEnums::TrkViewInfo whatView() const              { return TrkEnums::xyView; }
-    virtual unsigned layerNumber() const                        { return _straw.Id().getLayer(); }
+    virtual unsigned layerNumber() const                        { return _straw.id().getLayer(); }
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
     virtual bool timeResid(double& t, double& error) const      { return false; }
     virtual bool timeAbsolute(double& t, double& error) const   { return false; }
