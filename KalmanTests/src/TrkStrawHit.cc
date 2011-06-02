@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.1 2011/06/02 00:00:05 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/06/02 00:00:05 $
+// $Id: TrkStrawHit.cc,v 1.2 2011/06/02 23:07:08 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/06/02 23:07:08 $
 //
 // Original author David Brown, LBNL
 //
@@ -55,8 +55,8 @@ namespace mu2e
     const CLHEP::Hep3Vector& wiredir = _straw.getDirection();
     double shlen = _straw.getHalfLength();
   // get time division and drift information for this straw hit
-    _tddist = tcal->TimeDiffToDistance(_straw.Index(),_strawhit.dt());
-    _tddist_err = tcal->TimeDivisionResolution(_straw.Index(),0.5*(_tddist)/shlen);
+    _tddist = tcal->TimeDiffToDistance(_straw.index(),_strawhit.dt());
+    _tddist_err = tcal->TimeDivisionResolution(_straw.index(),0.5*(_tddist)/shlen);
   // distance cannot be longer than the straw length: when it is, truncate, or disable, as appropriate
     _wpos = mid + _tddist*wiredir;
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
