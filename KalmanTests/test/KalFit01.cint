@@ -1,0 +1,29 @@
+//
+// Make plots from the TTrees produced by KalFit01.fcl
+// 
+// $Id: KalFit01.cint,v 1.1 2011/06/03 20:30:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/03 20:30:00 $
+//
+//
+{
+
+  gROOT->Reset();
+
+  // Load the script that does the real work.
+  gROOT->ProcessLine(".L KalmanTests/test/KalFit.C");
+
+  // Change some style options
+  gROOT->SetStyle("Plain");
+  gStyle->SetOptStat("emruo");
+
+  // Open the file that contains the TTree
+  TFile* file = new TFile( "KalFit_06.root");
+
+  // Get the TTree from the file
+  TTree* hits;  file->GetObject("KalFit/hitdiag",  hits);
+  
+  // Make the plots.
+  KalFitHit(hits);
+
+}
