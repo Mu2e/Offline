@@ -3,6 +3,33 @@
 
            Release notes for Mu2e Offline software, v1_0_3
 
-  $Id: v1_0_3.txt,v 1.1 2011/06/01 19:01:38 kutschke Exp $
+  $Id: v1_0_3.txt,v 1.2 2011/06/03 20:46:28 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/06/01 19:01:38 $
+  $Date: 2011/06/03 20:46:28 $
+
+4) June 3, 2011 kutschke
+   The code that depends on the BaBar code, currently only KalmanTests, is
+   only built if the BaBar code is present.  SConstruct was modified to test 
+   for the presence of the BaBar code and, if it is absent, to remove 
+   KalmanTest/src/SConscript from the build list.
+
+   KalmanTest/src/SConscript now exists and SConscript.sav is gone
+
+3) June 2, 2011 kutschke
+   Modified KalmanTests package to work with art.
+   Added a cint script to test make plots.
+   SConscript is still disabled.
+
+2) June 2, 2011 dbrown
+   Complete replacement for KalmanTests.  This now runs a development snapshot
+   of how to use the BaBar Kalman filter.  This version works with the old
+   framework: setupmu2e-v1.sh
+
+   SConscript is still renamed to SConscript.sav so that it will not build by default.
+
+1) June 1, 2011 kutschke
+   Add code to test art::Ptr.
+       Analyses/src/PtrTest0_module.cc
+       Analyses/test/ptrTeset0.fcl
+   ( One of the commits included features that only work with art v00_07_09.
+     Had to back these out until that version of art is generally available. )
