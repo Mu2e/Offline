@@ -17,22 +17,18 @@ cd include
 list="BaBar BbrGeom BField CLHEP DetectorModel KalmanTrack MatEnv ProbTools TrajGeom TrkBase difAlgebra"
 for file in ${list}
 do
-  echo "checking ${file}"
   if [ ! -e ${file} ]
      then
      ln -s ../${file}/include ${file}
-     echo "creating ${file}"
   fi
 done
 
 Dchlist="DchCalib DchData DchGeom DchGeomBase"
 for file in ${Dchlist}
 do
-  echo "checking ${file}"
   if [ ! -e ${file} ]
     then
      ln -s ../Dch/${file}/include ${file}
-     echo "creating ${file}"
   fi
 done
 
