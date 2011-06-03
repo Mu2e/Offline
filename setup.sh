@@ -1,13 +1,12 @@
 #
-# $Id: setup.sh,v 1.29 2011/05/25 17:19:28 kutschke Exp $
+# $Id: setup.sh,v 1.30 2011/06/03 20:20:55 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/25 17:19:28 $
+# $Date: 2011/06/03 20:20:55 $
 #
 # Original author Rob Kutschke
 #
-# Setup the environment to build a full release of the Mu2e software.
-# This presumes that you have already established the Mu2e environment
-# for the machine on which you are running.
+# Setup the environment to build or use a full release of the Mu2e software.
+# This checks that you have already established the Mu2e environment.
 #
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
@@ -28,9 +27,10 @@ if [ "${MU2E_BASE_RELEASE}" != '' ];then
     return 1
 fi
 
-# Should abort here???
+# A very ill-defined state.  We have  a test release but no base release!
 if [ "${MU2E_TEST_RELEASE}" != '' ];then
-    echo "WARNING: A test release has already been setup.  Hope that's OK."
+    echo "ERROR: A test release has already been setup but there is no base release."
+    echo "Suggest that you log out, log in and restart from the beginning."
     echo "The test release is: " ${MU2E_TEST_RELEASE}
     return 1
 fi
