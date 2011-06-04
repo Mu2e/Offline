@@ -1,9 +1,9 @@
 //
 // Test of producing one type of transient data product.
 //
-// $Id: MakeTransientProduct00_module.cc,v 1.1 2011/06/04 18:00:36 kutschke Exp $
+// $Id: MakeTransientProduct00_module.cc,v 1.2 2011/06/04 20:37:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/04 18:00:36 $
+// $Date: 2011/06/04 20:37:27 $
 //
 // Original author Rob Kutschke
 //
@@ -15,6 +15,11 @@
 // Mu2e includes.
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Sandbox/inc/TransientProduct00Collection.hh"
+#include "Sandbox/inc/TracerProduct.hh"
+
+//#include <boost/smart_ptr/scoped_ptr.hpp>
+
+#include <memory>
 
 using namespace std;
 
@@ -50,6 +55,17 @@ namespace mu2e {
     }
 
     event.put(prod);
+
+    TracerProduct q;
+    TracerProduct r(123);
+    TracerProduct t(r);
+    q=r;
+    boost::scoped_ptr<TracerProduct> pp(new TracerProduct(789));
+
+    auto_ptr<TracerProduct> qq(new TracerProduct(-987));
+
+    // Apparently I cannot make an auto_ptr to a scoped_ptr.???
+    //auto_ptr<boost::scoped_ptr<TracerProduct>  > rr( new boost::scoped_ptr<TracerProduct>(TracerProduct(999)));
 
   } // end MakeTransientProduct00::analyze
 
