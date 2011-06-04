@@ -1,0 +1,47 @@
+# 
+# Test of transient data products
+#
+# $Id: transientProductTest01.fcl,v 1.1 2011/06/04 18:00:36 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/06/04 18:00:36 $
+#
+# Original author Rob Kutschke
+#
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.  
+process_name : transientProductTest01
+
+# Read events from file made by transientTest00.fcl
+source : 
+{ 
+  module_type : RootInput
+  fileNames : [ "transientTest00.root"]
+  maxEvents : 2
+}
+
+services :
+{
+  message : @local::default_message
+  user : { }
+}
+
+physics :
+{
+  producers: {}
+
+  analyzers: 
+  {
+   readTransient :{ module_type : ReadTransientProduct00 }
+  }
+
+  p1 : [ ]
+  e1 : [ readTransient ]
+
+  trigger_paths  : [ p1 ]
+  end_paths      : [ e1 ]
+
+}
+
+

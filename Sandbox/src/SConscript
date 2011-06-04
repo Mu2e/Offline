@@ -1,0 +1,58 @@
+#
+# $Id: SConscript,v 1.1 2011/06/04 18:00:36 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/06/04 18:00:36 $
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+Import('env')
+
+plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+non_plugin_cc = Glob('*.cc', strings=True)
+for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+if non_plugin_cc:
+    # From: /path1/path2/path3/Name/src extract the string Name field.
+    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+    local_lib_name=os.path.dirname(dd)
+
+    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
+                      LIBS=[ 'art_Framework_Core',
+                             'RecoDataProducts',
+                             'GeneralUtilities',
+                           ],
+                      )
+    libs=[ local_lib_name ]
+else:
+    libs=[]
+
+for cc in plugin_cc:
+    libname='#/lib/'+cc[:cc.find('.cc')]
+    env.SharedLibrary( libname, cc,
+                     LIBS=[ 'art_Framework_Core',
+                            libs,
+                            'RecoDataProducts',
+                            'GeneralUtilities',
+                          ],
+                     )
+    
+# Build map and dictionary files
+# last two components of the path. Ex: /not/this/but/THIS/AND_THIS
+#                                      "AND_THIS" is usually "src"
+dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+ff=os.path.dirname(dd)   # THIS
+env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+                      '#/tmp/src/%s/%s_map.cpp'%(dd,ff)],
+                     ['classes.h','classes_def.xml'])
+env.SharedLibrary('#/lib/%s_dict'%(ff,),
+                  '#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+                  LIBS=libs)
+env.SharedLibrary('#/lib/%s_map'%(ff,),
+                  '#/tmp/src/%s/%s_map.cpp'%(dd,ff))
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

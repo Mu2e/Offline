@@ -1,0 +1,63 @@
+# 
+# Test of transient data products
+#
+# $Id: transientProductTest00.fcl,v 1.1 2011/06/04 18:00:36 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/06/04 18:00:36 $
+#
+# Original author Rob Kutschke
+#
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.  
+process_name : transientProductTest00
+
+# Read events from a file (made by Mu2eG4 example g4test_03.py)
+source : 
+{ 
+  module_type : RootInput 
+  fileNames : ["data_03.root"]        
+  maxEvents : 10
+}
+
+services : 
+{
+  message : @local::default_message 
+  user : { }
+}
+
+physics :
+{
+  producers:
+  {
+    # Form StrawHits (SH).
+    transientTest  :{ module_type : MakeTransientProduct00 }
+  }
+
+  analyzers: 
+  {
+   readTransient :{ module_type : ReadTransientProduct00 }
+  }
+
+  p1 : [ transientTest ]
+  e1 : [ readTransient, outfile ]
+
+
+  trigger_paths  : [ p1 ]
+  end_paths      : [ e1 ]
+
+}
+
+outputs:
+{
+
+ outfile :
+ {
+   module_type   :   RootOutput
+   fileName	 :   "transientTest00.root"
+ }
+
+}
+
+
