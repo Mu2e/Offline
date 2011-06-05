@@ -5,9 +5,9 @@
 // Each object has a "value" as a mock up of its data package plus
 // a unique serial number.
 //
-// $Id: TracerProduct.hh,v 1.2 2011/06/05 16:13:46 kutschke Exp $
+// $Id: TracerProduct.hh,v 1.3 2011/06/05 17:28:52 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 16:13:46 $
+// $Date: 2011/06/05 17:28:52 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@ namespace mu2e {
 
     TracerProduct();
     explicit TracerProduct( int aval );
-    explicit TracerProduct( TracerProduct const& );
+    TracerProduct( TracerProduct const& );
     ~TracerProduct();
     
     TracerProduct& operator=( TracerProduct const& );
