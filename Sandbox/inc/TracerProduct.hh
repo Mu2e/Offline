@@ -5,9 +5,9 @@
 // Each object has a "value" as a mock up of its data package plus
 // a unique serial number.
 //
-// $Id: TracerProduct.hh,v 1.3 2011/06/05 17:28:52 kutschke Exp $
+// $Id: TracerProduct.hh,v 1.4 2011/06/05 18:54:43 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 17:28:52 $
+// $Date: 2011/06/05 18:54:43 $
 //
 // Original author Rob Kutschke
 //
@@ -27,6 +27,8 @@ namespace mu2e {
     
     TracerProduct& operator=( TracerProduct const& );
     bool operator<( const TracerProduct& p );
+
+    void swap( TracerProduct& );
 
     int val()    const { return val_; }
     int serial() const { return serial_; }

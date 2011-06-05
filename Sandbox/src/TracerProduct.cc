@@ -1,9 +1,9 @@
 //
 // A test class that makes printout whenever its methods are called.
 //
-// $Id: TracerProduct.cc,v 1.2 2011/06/05 16:13:46 kutschke Exp $
+// $Id: TracerProduct.cc,v 1.3 2011/06/05 18:54:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 16:13:46 $
+// $Date: 2011/06/05 18:54:53 $
 //
 // Original author Rob Kutschke
 //
@@ -29,10 +29,11 @@ namespace mu2e {
   }
 
   TracerProduct::TracerProduct( TracerProduct const& rhs):
-    val_(rhs.val_),
+    val_(-1),
     serial_(count()){
     mf::LogVerbatim("Tracing") << "TracerProduct copy c'tor: to: " 
                                << *this  << " from: " << rhs;
+    val_=rhs.val_;
   }
 
   TracerProduct::~TracerProduct(){
@@ -45,6 +46,14 @@ namespace mu2e {
     val_ = rhs.val_;
     return *this;
   }
+
+  void TracerProduct::swap( TracerProduct& rhs ){
+    mf::LogVerbatim("Tracing") << "TracerProduct: swap : lhs: "
+                               << *this << " rhs: " << rhs;
+    std::swap(this->serial_, rhs.serial_ );
+    std::swap(this->val_, rhs.val_ );
+  }
+
 
   bool TracerProduct::operator<( TracerProduct const&  rhs ){
     mf::LogVerbatim("Tracing")  << "TracerProduct: operator< : lhs"
