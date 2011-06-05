@@ -1,0 +1,59 @@
+# 
+# Add the tracer product to the event.
+#
+# $Id: vectorTracerProductTest00.fcl,v 1.1 2011/06/05 17:30:43 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/06/05 17:30:43 $
+#
+# Original author Rob Kutschke
+#
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.  
+process_name : vectorTracerProduct00
+
+source : {   
+  module_type : EmptyEvent
+  maxEvents : 5
+}
+
+services : 
+{
+#  This must be commented out or some of the messages from the 
+#  TracerProduct d'tor are lost!
+#  message : @local::default_message 
+  user : { }
+}
+
+physics :
+{
+  producers:
+  {
+    # Form StrawHits (SH).
+    tracerTest  :{ module_type : MakeVectorTracerProduct00 }
+  }
+
+  analyzers: 
+  {
+   readTracer :{ module_type : ReadVectorTracerProduct00 }
+  }
+
+  p1 : [ tracerTest ]
+  e1 : [ readTracer, outfile ]
+
+  trigger_paths  : [ p1 ]
+  end_paths      : [ e1 ]
+
+}
+
+outputs:
+{
+
+ outfile :
+ {
+   module_type   :   RootOutput
+   fileName	 :   "vectorTracerTest00.root"
+ }
+
+}
