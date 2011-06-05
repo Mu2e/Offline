@@ -4,18 +4,16 @@
 // A test data class that contains a bare pointer.
 // Used for tests of making transient-only data products.
 //
-// $Id: TransientProduct00.hh,v 1.1 2011/06/04 18:00:36 kutschke Exp $
+// $Id: TransientProduct00.hh,v 1.2 2011/06/05 23:00:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/04 18:00:36 $
+// $Date: 2011/06/05 23:00:44 $
 //
 // Original author Rob Kutschke
 //
 
-#include "RecoDataProducts/inc/StrawHit.hh"
-
 namespace mu2e {
 
-  //  class StrawHit;
+  class StrawHit;
 
   class TransientProduct00{
 
