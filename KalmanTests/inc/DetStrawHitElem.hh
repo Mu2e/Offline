@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------
 // Name:
 //   DetStrawHitElem: Dummy class to represent a straw element.
-//	Copyright (C) 2008	Lawrence Berkeley Laboratory
+//        Copyright (C) 2008    Lawrence Berkeley Laboratory
 // Author List:
 //      Dave Brown 27 May 2011
 //------------------------------------------------------------------------
