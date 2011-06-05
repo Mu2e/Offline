@@ -1,9 +1,9 @@
 //
 // Plugin to readback the transient data product.
 //
-// $Id: ReadTransientProduct00_module.cc,v 1.1 2011/06/04 18:00:36 kutschke Exp $
+// $Id: ReadTransientProduct00_module.cc,v 1.2 2011/06/05 17:43:56 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/04 18:00:36 $
+// $Date: 2011/06/05 17:43:56 $
 //
 // Original author Rob Kutschke.
 //
@@ -56,9 +56,9 @@ namespace mu2e {
 
     if ( prod.size() != hits.size() ) {
       cout << "Error: Read sizes are: " 
-	   << prod.size()  << " "
-	   << hits.size()  << " "
-	   << endl;
+           << prod.size()  << " "
+           << hits.size()  << " "
+           << endl;
     }
 
     if ( hits.size() != prod.size() ) return;
@@ -69,13 +69,13 @@ namespace mu2e {
       StrawHit const& s1 = prod.at(i).hit();
       //if ( s0.strawIndex() != s1.strawIndex() ) {
       if ( &s0 != &s1 ) {
-	++nbad;
-	cout << "Event: " 
-	     << event.id()
-	     << " Straw: " 
-	     << s0.strawIndex() << " "
-	     << s1.strawIndex() << " "
-	     << endl;
+        ++nbad;
+        cout << "Event: " 
+             << event.id()
+             << " Straw: " 
+             << s0.strawIndex() << " "
+             << s1.strawIndex() << " "
+             << endl;
       }
       
     }
