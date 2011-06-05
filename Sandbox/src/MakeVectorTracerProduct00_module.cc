@@ -1,9 +1,9 @@
 //
 // Add a std::vector<TracerProduct> to the event and watch what happens.
 //
-// $Id: MakeVectorTracerProduct00_module.cc,v 1.1 2011/06/05 17:30:43 kutschke Exp $
+// $Id: MakeVectorTracerProduct00_module.cc,v 1.2 2011/06/05 18:55:34 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 17:30:43 $
+// $Date: 2011/06/05 18:55:34 $
 //
 // Original author Rob Kutschke
 //
@@ -26,11 +26,11 @@ using namespace std;
 
 namespace mu2e {
 
-  class MakeTracerProduct00 : public art::EDProducer {
+  class MakeVectorTracerProduct00 : public art::EDProducer {
   public:
 
-    explicit MakeTracerProduct00(fhicl::ParameterSet const& pset);
-    virtual ~MakeTracerProduct00() { }
+    explicit MakeVectorTracerProduct00(fhicl::ParameterSet const& pset);
+    virtual ~MakeVectorTracerProduct00() { }
 
     void produce( art::Event& e);
 
@@ -38,12 +38,13 @@ namespace mu2e {
 
   };
 
-  MakeTracerProduct00::MakeTracerProduct00(fhicl::ParameterSet const& pset){
+  MakeVectorTracerProduct00::MakeVectorTracerProduct00(fhicl::ParameterSet const& pset){
     produces<std::vector<TracerProduct> >();
   }
 
-  void MakeTracerProduct00::produce(art::Event& event) {
+  void MakeVectorTracerProduct00::produce(art::Event& event) {
 
+    mf::LogVerbatim("Tracing") << "Start produce: ";
     auto_ptr<std::vector<TracerProduct> > prod(new std::vector<TracerProduct>() );
     prod->reserve(2);
     prod->push_back( TracerProduct( 100*event.id().event() + 1) );
@@ -53,9 +54,9 @@ namespace mu2e {
     event.put(prod);
     mf::LogVerbatim("Tracing") << "After put: " << endl;
 
-  } // end MakeTracerProduct00::analyze
+  } // end MakeVectorTracerProduct00::analyze
 
 }  // end namespace mu2e
 
-using mu2e::MakeTracerProduct00;
-DEFINE_ART_MODULE(MakeTracerProduct00);
+using mu2e::MakeVectorTracerProduct00;
+DEFINE_ART_MODULE(MakeVectorTracerProduct00);
