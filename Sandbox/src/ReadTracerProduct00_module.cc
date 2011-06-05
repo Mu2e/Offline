@@ -1,15 +1,14 @@
 //
-// Plugin to readback the trancer data product.
+// Plugin to readback the TracerProduct.
 //
-// $Id: ReadTracerProduct00_module.cc,v 1.1 2011/06/05 16:41:14 kutschke Exp $
+// $Id: ReadTracerProduct00_module.cc,v 1.2 2011/06/05 17:29:50 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 16:41:14 $
+// $Date: 2011/06/05 17:29:50 $
 //
 // Original author Rob Kutschke.
 //
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Sandbox/inc/TracerProduct.hh"
 
 // Framework includes.
@@ -48,7 +47,7 @@ namespace mu2e {
     event.getByLabel("tracerTest",tpHandle);
 
     if ( !tpHandle.isValid() ){
-      cout << "Cannot find TracerProduct00Collection in the event." << endl;
+      cout << "Cannot find TracerProduct in the event." << endl;
     }
     TracerProduct const& prod = *tpHandle;
 

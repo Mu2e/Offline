@@ -1,9 +1,9 @@
 //
-// Test of producing another type of transient data product.
+// Add a TracerProduct to the event and watch what happens.
 //
-// $Id: MakeTracerProduct00_module.cc,v 1.1 2011/06/05 16:41:14 kutschke Exp $
+// $Id: MakeTracerProduct00_module.cc,v 1.2 2011/06/05 17:29:50 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 16:41:14 $
+// $Date: 2011/06/05 17:29:50 $
 //
 // Original author Rob Kutschke
 //
@@ -12,12 +12,13 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-// Other includes
+// Other infrastructure includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "Sandbox/inc/TracerProduct.hh"
 
+// C++ includes
 #include <memory>
 
 using namespace std;
@@ -47,19 +48,6 @@ namespace mu2e {
     mf::LogVerbatim("Tracing") << "Before put: " << endl;
     event.put(prod);
     mf::LogVerbatim("Tracing") << "After put: " << endl;
-
-    /*
-    TracerProduct q;
-    TracerProduct r(123);
-    TracerProduct t(r);
-    q=r;
-    boost::scoped_ptr<TracerProduct> pp(new TracerProduct(789));
-
-    auto_ptr<TracerProduct> qq(new TracerProduct(-987));
-    */
-
-    // Apparently I cannot make an auto_ptr to a scoped_ptr.???
-    //auto_ptr<boost::scoped_ptr<TracerProduct>  > rr( new boost::scoped_ptr<TracerProduct>(TracerProduct(999)));
 
   } // end MakeTracerProduct00::analyze
 
