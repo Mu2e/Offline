@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.1 2011/06/04 18:00:36 kutschke Exp $     -->
+<!--  $Id: classes_def.xml,v 1.2 2011/06/05 16:40:11 kutschke Exp $     -->
 <!--  $Author: kutschke $ -->
-<!--  $Date: 2011/06/04 18:00:36 $   -->
+<!--  $Date: 2011/06/05 16:40:11 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.1 $$Date: 2011/06/04 18:00:36 $"; -->
+<!--  rev="$Revision: 1.2 $$Date: 2011/06/05 16:40:11 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -16,7 +16,9 @@
 
 
 <lcgdict>
- <class name="mu2e::TransientProduct00"/>
  <class name="mu2e::TransientProduct00Collection" persistent="false"/>
  <class name="art::Wrapper<mu2e::TransientProduct00Collection>"/>
+
+ <class name="mu2e::TracerProduct"/>
+ <class name="art::Wrapper<mu2e::TracerProduct>"/>
 </lcgdict>

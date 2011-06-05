@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.1 2011/06/04 18:00:36 kutschke Exp $
+// $Id: classes.h,v 1.2 2011/06/05 16:40:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/04 18:00:36 $
+// $Date: 2011/06/05 16:40:11 $
 //
 // Original author Rob Kutschke
 //
@@ -13,5 +13,7 @@
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "Sandbox/inc/TransientProduct00Collection.hh"
+#include "Sandbox/inc/TracerProduct.hh"
 
 template class art::Wrapper<mu2e::TransientProduct00Collection>;
+template class art::Wrapper<mu2e::TracerProduct>;
