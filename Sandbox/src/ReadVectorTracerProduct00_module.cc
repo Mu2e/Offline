@@ -1,9 +1,9 @@
 //
 // Plugin to readback the std::vector<TracerProduct>.
 //
-// $Id: ReadVectorTracerProduct00_module.cc,v 1.1 2011/06/05 17:30:43 kutschke Exp $
+// $Id: ReadVectorTracerProduct00_module.cc,v 1.2 2011/06/05 18:58:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 17:30:43 $
+// $Date: 2011/06/05 18:58:44 $
 //
 // Original author Rob Kutschke.
 //
@@ -30,10 +30,10 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   //
-  class ReadTracerProduct00 : public art::EDAnalyzer {
+  class ReadVectorTracerProduct00 : public art::EDAnalyzer {
   public:
-    explicit ReadTracerProduct00(fhicl::ParameterSet const& pset){}
-    virtual ~ReadTracerProduct00() { }
+    explicit ReadVectorTracerProduct00(fhicl::ParameterSet const& pset){}
+    virtual ~ReadVectorTracerProduct00() { }
 
     void analyze( art::Event const& e);
 
@@ -42,7 +42,7 @@ namespace mu2e {
   };
 
   void
-  ReadTracerProduct00::analyze(art::Event const& event) {
+  ReadVectorTracerProduct00::analyze(art::Event const& event) {
 
     art::Handle<std::vector<TracerProduct> > tpHandle;
     event.getByLabel("tracerTest",tpHandle);
@@ -53,12 +53,12 @@ namespace mu2e {
     std::vector<TracerProduct> const& prod = *tpHandle;
 
     for ( size_t i=0; i<prod.size(); ++i){
-      mf::LogVerbatim("Tracing") << "      ReadTracerProduct00:analyze: " << prod.at(i);
+      mf::LogVerbatim("Tracing") << "      ReadVectorTracerProduct00:analyze: " << prod.at(i);
     }
 
   } // end of ::analyze.
 
 }
 
-using mu2e::ReadTracerProduct00;
-DEFINE_ART_MODULE(ReadTracerProduct00);
+using mu2e::ReadVectorTracerProduct00;
+DEFINE_ART_MODULE(ReadVectorTracerProduct00);
