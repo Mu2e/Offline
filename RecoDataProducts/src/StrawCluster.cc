@@ -1,9 +1,9 @@
 //
 // StrawCluster 
 //
-// $Id: StrawCluster.cc,v 1.2 2011/06/02 22:50:54 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/06/02 22:50:54 $
+// $Id: StrawCluster.cc,v 1.3 2011/06/05 17:42:54 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/05 17:42:54 $
 //
 
 // C++ includes
@@ -32,11 +32,11 @@ namespace mu2e {
     CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
     for (size_t index =0;index<_StrawHitIndices.size();++index)
       {
-	DPIndex const& junkie = _StrawHitIndices[index];
-	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
-	Straw str = tracker.getStraw(strawhit.strawIndex());
-	const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
-	pvec = pvec + mpvec;
+        DPIndex const& junkie = _StrawHitIndices[index];
+        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
+        Straw str = tracker.getStraw(strawhit.strawIndex());
+        const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+        pvec = pvec + mpvec;
       }
     return pvec;
   }
@@ -47,13 +47,13 @@ namespace mu2e {
     const Tracker& tracker = getTrackerOrThrow();    
     for (size_t index =0;index<_StrawHitIndices.size();++index)
       {
-	DPIndex const& junkie = _StrawHitIndices[index];
-	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
-	Straw str = tracker.getStraw(strawhit.strawIndex());
-	if (str.getHalfLength()>hlen)
-	  {
-	    hlen=str.getHalfLength();
-	  }
+        DPIndex const& junkie = _StrawHitIndices[index];
+        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
+        Straw str = tracker.getStraw(strawhit.strawIndex());
+        if (str.getHalfLength()>hlen)
+          {
+            hlen=str.getHalfLength();
+          }
       }
     return hlen;
   }
@@ -63,9 +63,9 @@ namespace mu2e {
     double e =0.0;
     for (size_t index =0;index<_StrawHitIndices.size();++index)
       {
-	DPIndex const& junkie = _StrawHitIndices[index];
-	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
-	e = e+strawhit.energyDep();
+        DPIndex const& junkie = _StrawHitIndices[index];
+        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
+        e = e+strawhit.energyDep();
       }
     return e;
   }
@@ -74,9 +74,9 @@ namespace mu2e {
     double T =0.0;
     for (size_t index =0;index<_StrawHitIndices.size();++index)
       {
-	DPIndex const& junkie = _StrawHitIndices[index];
-	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
-	T = T+strawhit.time();
+        DPIndex const& junkie = _StrawHitIndices[index];
+        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
+        T = T+strawhit.time();
       }
     T=T/double(_StrawHitIndices.size());
     return T;
@@ -86,9 +86,9 @@ namespace mu2e {
     double dT =0.0;
     for (size_t index =0;index<_StrawHitIndices.size();++index)
       {
-	DPIndex const& junkie = _StrawHitIndices[index];
-	StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
-	dT = dT+strawhit.dt();
+        DPIndex const& junkie = _StrawHitIndices[index];
+        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(event,junkie);
+        dT = dT+strawhit.dt();
       }
     dT=dT/double(_StrawHitIndices.size());
     return dT;
@@ -134,10 +134,10 @@ namespace mu2e {
     double hlen  = Halflength(event);
     const CLHEP::Hep2Vector p0 =      
       CLHEP::Hep2Vector(position.getX()-hlen*direction.getX(),
-			position.getY()-hlen*direction.getY());
+                        position.getY()-hlen*direction.getY());
     const CLHEP::Hep2Vector p1 = 
       CLHEP::Hep2Vector(position.getX()+hlen*direction.getX(),
-			position.getY()+hlen*direction.getY());
+                        position.getY()+hlen*direction.getY());
     LineSegmentPCA linesegment(p0, p1);
     return linesegment;
   }
