@@ -3,14 +3,34 @@
 
            Release notes for Mu2e Offline software, v1_0_3
 
-  $Id: v1_0_3.txt,v 1.3 2011/06/04 18:02:07 kutschke Exp $
+  $Id: v1_0_3.txt,v 1.4 2011/06/05 17:39:31 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/06/04 18:02:07 $
+  $Date: 2011/06/05 17:39:31 $
+
+6) June 5, 2011 kutschke
+   Add code to trace the sequence of operations when data products are added to the
+   event or read from the event.
+     Sandbox/inc/TracerProduct.hh
+     Sandbox/src/TracerProduct.cc
+     Sandbox/src/MakeTracerProduct00_module.cc
+     Sandbox/src/MakeVectorTracerProduct00_module.cc
+     Sandbox/src/ReadTracerProduct00_module.cc
+     Sandbox/src/ReadVectorTracerProduct00_module.cc
+     Sandbox/src/classes_def.xml
+     Sandbox/src/classes.h
 
 5) June 4, 2011 kutschke
    Make a Sandbox directory that I can use to play with new ideas.
-   The first things added are code to test making a transient only data product
-   that contains bare pointers.
+   The first thing added is code to test making a transient only data product
+   that contains bare pointers to other objects in the event.
+     Sandbox/inc/TransientProduct00Collection.hh
+     Sandbox/inc/TransientProduct00.hh
+     Sandbox/src/MakeTransientProduct00_module.cc
+     Sandbox/src/ReadTransientProduct00_module.cc
+     Sandbox/test/transientProductTest00.fcl
+     Sandbox/test/transientProductTest01.fcl
+     Sandbox/src/classes_def.xml
+     Sandbox/src/classes.h
 
 4) June 3, 2011 kutschke
    The code that depends on the BaBar code, currently only KalmanTests, is
