@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit01.fcl,v 1.1 2011/06/02 23:09:17 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/06/02 23:09:17 $
+# $Id: KalFit01.fcl,v 1.2 2011/06/06 23:51:47 mu2ecvs Exp $
+# $Author: mu2ecvs $
+# $Date: 2011/06/06 23:51:47 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -14,14 +14,14 @@ process_name : KalFit01
 source :
 {
   module_type : EmptyEvent
-  maxEvents : 10000
+  maxEvents : 1000
 }
 
 services :
 {
   message : @local::default_message
 
-  TFileService : { fileName : "KalFit_06.root" }
+  TFileService : { fileName : "KalFit01.root" }
 
   RandomNumberGenerator : { }
 
