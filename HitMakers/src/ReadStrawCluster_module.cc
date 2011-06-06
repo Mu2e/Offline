@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.12 2011/06/06 21:07:35 kutschke Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.13 2011/06/06 23:05:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/06 21:07:35 $
+// $Date: 2011/06/06 23:05:39 $
 //
 // Original author Hans Wenzel
 //
@@ -259,14 +259,14 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	StrawCluster const& scluster = clusters->at(cluster);	
 	std::vector<DPIndex> const & indices = scluster.StrawHitIndices();
 	cout<<"Length of Cluster:  " << indices.size()
-	    <<"  Energy:  "<<scluster.Energy(evt) 
-	    <<" average T:  "<<scluster.averageT(evt)
-	    <<" average dT: "<<scluster.averagedT(evt)
-	    <<" half length:  "<<scluster.Halflength(evt)
+	  //	    <<"  Energy:  "<<scluster.Energy(evt) 
+	  //  <<" average T:  "<<scluster.averageT(evt)
+	  //   <<" average dT: "<<scluster.averagedT(evt)
+	  //  <<" half length:  "<<scluster.Halflength(evt)
 	    << endl;
         //CLHEP::Hep3Vector  pvec = scluster.X(evt);
-	cout<<"Position of Cluster:  " << scluster.X(evt) << endl;
-	cout<<"Direction of Cluster:  " << scluster.dirX(evt) << endl;
+	//cout<<"Position of Cluster:  " << scluster.X(evt) << endl;
+	//cout<<"Direction of Cluster:  " << scluster.dirX(evt) << endl;
 	for (size_t index =0;index<indices.size();++index)
 	  {
 	    DPIndex const& junkie = indices[index];
