@@ -3,34 +3,17 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawCluster.hh,v 1.4 2011/06/06 21:07:35 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/06 21:07:35 $
+// $Id: StrawCluster.hh,v 1.5 2011/06/06 22:51:25 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2011/06/06 22:51:25 $
 //
 // Original author Hans Wenzel
 //
 
 // C++ includes
 #include <vector>
-
-
-
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/Event.h"
-// Mu2e includes.
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
-// CLHEP includes
-#include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/TwoVector.h"
+// Mu2e includes:
+#include "DataProducts/inc/DPIndex.hh"
 namespace art {
   class ProductID;
 }
@@ -42,19 +25,14 @@ namespace mu2e {
 
     StrawCluster() {}
 
-    StrawCluster(std::vector<DPIndex> & hitIndices);
+    StrawCluster(std::vector<DPIndex> & hitIndices)  {   // Geometry info for the TTracker.
+    // Get a reference to one of the T trackers.
+    // Throw exception if not successful.
+    _StrawHitIndices=hitIndices;
+  };
 
     // Accessors
     std::vector<DPIndex> const & StrawHitIndices() const { return _StrawHitIndices; }
-    CLHEP::Hep3Vector X(art::Event const& event) const;
-    double Energy(art::Event const& event) const;
-    double Halflength(art::Event const& event) const;
-    double averageT(art::Event const& event) const;
-    double averagedT(art::Event const & event) const;
-    DeviceId did(art::Event const & event) const;
-    SectorId secid(art::Event const & event) const;
-    CLHEP::Hep3Vector dirX(art::Event const& event) const; 
-    LineSegmentPCA linesegment(art::Event const& event) const;
     //    StrawCluster& add(art::ProductID const & CollId, CaloHit const & hit);
   private:
     //   const Tracker& tracker;
