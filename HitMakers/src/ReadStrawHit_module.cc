@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.7 2011/05/24 17:19:03 kutschke Exp $
+// $Id: ReadStrawHit_module.cc,v 1.8 2011/06/06 21:07:35 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/06 21:07:35 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -41,7 +41,6 @@
 #include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/resolveTransients.hh"
 
 using namespace std;
 

@@ -3,9 +3,9 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawCluster.hh,v 1.3 2011/06/02 22:50:54 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/06/02 22:50:54 $
+// $Id: StrawCluster.hh,v 1.4 2011/06/06 21:07:35 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/06 21:07:35 $
 //
 // Original author Hans Wenzel
 //
@@ -26,7 +26,6 @@
 #include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/resolveTransients.hh"
 #include "Mu2eUtilities/inc/resolveDPIndices.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 // CLHEP includes
