@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.8 2011/06/06 21:07:35 kutschke Exp $
+// $Id: ReadStrawHit_module.cc,v 1.9 2011/06/07 21:37:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/06 21:07:35 $
+// $Date: 2011/06/07 21:37:59 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -38,8 +38,9 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using namespace std;
@@ -132,9 +133,9 @@ namespace mu2e {
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
     _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple",
-                      "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
-   _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple",
-                      "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
+					 "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
+    _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple",
+					    "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
   }
 
   void
@@ -164,7 +165,6 @@ namespace mu2e {
     if (ncalls==1){
       const std::deque<Straw>& allstraws = tracker.getAllStraws();
       float detnt[11];
-      cout<<"Number of straws:  "<< allstraws.size()<<endl;
       for (size_t i = 0;i<allstraws.size();i++)
         {
           Straw str = allstraws[i];
@@ -178,7 +178,7 @@ namespace mu2e {
           const CLHEP::Hep3Vector vec3j = str.getMidPoint();
           const CLHEP::Hep3Vector vec3j1 = str.getDirection();
           /*
-          cout << i <<
+	    cout << i <<
             ","<<lid.getLayer()<<
             ","<<did <<
             ","<<secid.getSector()<<
@@ -208,40 +208,30 @@ namespace mu2e {
     }
     art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
-    StrawHitCollection const* hits = pdataHandle.product();
+    StrawHitCollection const& hits = *pdataHandle;
 
     // Get the persistent data about the StrawHitsMCTruth.
-
     art::Handle<StrawHitMCTruthCollection> truthHandle;
     evt.getByLabel(_makerModuleLabel,truthHandle);
-    StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
+    StrawHitMCTruthCollection const& hits_truth = *truthHandle;
 
     // Get the persistent data about pointers to StepPointMCs
-
-    art::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
-    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
-
-    // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in DPIndexVectorCollection, rather than
-    // use producer name directly ("g4run").
-
-    art::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel("g4run",_trackerStepPoints,mchitsHandle);
-    StepPointMCCollection const* mchits = mchitsHandle.product();
+    PtrStepPointMCVectorCollection const& hits_mcptr = *mcptrHandle;
 
     // Fill histograms
 
-    _hNHits->Fill(hits->size());
+    _hNHits->Fill(hits.size());
 
     std::map<StrawIndex,int> nhperwire;
 
-    for ( size_t i=0; i<hits->size(); ++i ) {
+    for ( size_t i=0; i<hits.size(); ++i ) {
 
       // Access data
-      StrawHit        const&      hit(hits->at(i));
-      StrawHitMCTruth const&    truth(hits_truth->at(i));
-      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+      StrawHit             const& hit(hits.at(i));
+      StrawHitMCTruth      const& truth(hits_truth.at(i));
+      PtrStepPointMCVector const& mcptr(hits_mcptr.at(i));
 
       // Fill per-event histograms
       if( i==0 ) {
@@ -261,7 +251,7 @@ namespace mu2e {
       // Use data from G4 hits
       _hNG4Steps->Fill(mcptr.size());
       for( size_t j=0; j<mcptr.size(); ++j ) {
-        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+        StepPointMC const& mchit = *mcptr.at(j);
         _hG4StepLength->Fill(mchit.stepLength());
         _hG4StepEdep->Fill(mchit.eDep()*1000.0);
       }
@@ -297,6 +287,22 @@ namespace mu2e {
       _ntup->Fill(nt);
       // Calculate number of hits per wire
       ++nhperwire[hit.strawIndex()];
+
+      if ( int(evt.id().event()) < _maxFullPrint ){
+        cout << "StrawHit: " 
+             << evt.id().event()      << " " 
+             << sid                   << " "
+             << hit.time()            << " " 
+             << hit.dt()              << " " 
+             << hit.energyDep()       << " "
+             << truth.driftTime()     << " "
+             << truth.driftDistance() << " |";
+        for( size_t j=0; j<mcptr.size(); ++j ) {
+          StepPointMC const& mchit = *mcptr.at(j);
+          cout << " " << mchit.ionizingEdep();
+        }
+        cout << endl;
+      }
 
     }
 

@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.6 2011/06/07 21:37:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/07 21:37:59 $
 //
 // Original author KLG
 //
@@ -185,10 +185,6 @@ namespace mu2e {
     // hits should be organized by crystal
     // should they be also separated by time?
 
-    // Product Id of the input points.
-    art::ProductID const& caloHitCollId(caloHits.id());
-    //mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
-
     // Instatiate caloHitsSorted from caloHits which is const,
     //  we may do it with pointers to hits later instead
     CaloHitCollection caloHitsSorted(*caloHits);
@@ -222,9 +218,9 @@ namespace mu2e {
     CaloCrystalHitCollection::value_type caloCrystalHit;
 
     if ( hit0.energyDep()>= _minimumEnergy && hit0.energyDep() < _maximumEnergy ) {
-      caloCrystalHit.assign(cal.getCrystalByRO(hit0.id()),caloHitCollId,hit0);
+      caloCrystalHit.assign(cal.getCrystalByRO(hit0.id()), hit0, art::Ptr<CaloHit>(caloHits,hit0.id()));
     } else {
-      caloCrystalHit.assignEnergyToTot(cal.getCrystalByRO(hit0.id()),caloHitCollId,hit0);
+      caloCrystalHit.assignEnergyToTot(cal.getCrystalByRO(hit0.id()),hit0);
     }
 
     _diagLevel > 0 && cout << __func__ << ": As in CaloCrystalHit: "
@@ -256,11 +252,11 @@ namespace mu2e {
 
         if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
 
-          caloCrystalHit.add(caloHitCollId, hit);
+          caloCrystalHit.add( hit, art::Ptr<CaloHit>(caloHits,hit.id()));
 
         } else {
 
-          caloCrystalHit.addEnergyToTot(caloHitCollId, hit);
+          caloCrystalHit.addEnergyToTot( hit);
 
         }
 
@@ -280,11 +276,11 @@ namespace mu2e {
 
         if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
 
-          caloCrystalHit.assign(cid, caloHitCollId, hit);
+          caloCrystalHit.assign(cid, hit, art::Ptr<CaloHit>(caloHits,hit.id()));
 
         } else {
 
-          caloCrystalHit.assignEnergyToTot(cid, caloHitCollId, hit);
+          caloCrystalHit.assignEnergyToTot( cid, hit);
 
         }
         _diagLevel > 0 && cout << __func__ << ": Created new hit:   " << caloCrystalHit << endl;
@@ -295,9 +291,9 @@ namespace mu2e {
 
     if (_diagLevel > 1) {
       cout << __func__ << ": roIds of last old hit:";
-      cout << " size: " << caloCrystalHit.roIds().size();
-      for( size_t i=0; i<caloCrystalHit.roIds().size(); ++i) {
-        cout  << " " << i << ": " << caloCrystalHit.roIds()[i];
+      cout << " size: " << caloCrystalHit.readouts().size();
+      for( size_t i=0; i<caloCrystalHit.readouts().size(); ++i) {
+        cout  << " " << i << ": " << caloCrystalHit.readouts()[i];
       }
       cout << endl;
     }

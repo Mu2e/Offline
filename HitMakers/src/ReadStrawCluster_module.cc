@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.13 2011/06/06 23:05:39 kutschke Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.14 2011/06/07 21:37:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/06 23:05:39 $
+// $Date: 2011/06/07 21:37:59 $
 //
 // Original author Hans Wenzel
 //
@@ -51,10 +51,8 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
 using namespace std;
 
 namespace mu2e {
@@ -257,8 +255,8 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     for ( size_t cluster=0; cluster<clusters->size(); ++cluster) // Loop over StrawClusters
       {
 	StrawCluster const& scluster = clusters->at(cluster);	
-	std::vector<DPIndex> const & indices = scluster.StrawHitIndices();
-	cout<<"Length of Cluster:  " << indices.size()
+	StrawHitPtrVector const & strawHits = scluster.strawHits();
+	cout<<"Length of Cluster:  " << strawHits.size()
 	  //	    <<"  Energy:  "<<scluster.Energy(evt) 
 	  //  <<" average T:  "<<scluster.averageT(evt)
 	  //   <<" average dT: "<<scluster.averagedT(evt)
@@ -267,11 +265,13 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         //CLHEP::Hep3Vector  pvec = scluster.X(evt);
 	//cout<<"Position of Cluster:  " << scluster.X(evt) << endl;
 	//cout<<"Direction of Cluster:  " << scluster.dirX(evt) << endl;
-	for (size_t index =0;index<indices.size();++index)
+	for (size_t index =0;index<strawHits.size();++index)
 	  {
-	    DPIndex const& junkie = indices[index];
-	    StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
-	    cout<<"Cluster Nr : " << cluster<<" Index:  " << index<<endl;
+	    StrawHit const& strawHit = *strawHits[index];
+	    cout << "Cluster Nr : " << cluster 
+		 << " Index:  "     << strawHits[index].key()
+		 << " Hit info: "   << strawHit 
+		 << endl;
 	  }
 
       }

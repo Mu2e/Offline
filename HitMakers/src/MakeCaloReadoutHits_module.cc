@@ -33,15 +33,13 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
-#include "DataProducts/inc/DPIndexVector.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Mu2eUtilities/inc/sort_functors.hh"
 
 // Other includes.
 #include "CLHEP/Vector/ThreeVector.h"
 
 using namespace std;
-using art::Event;
 
 namespace mu2e {
 
@@ -85,8 +83,8 @@ namespace mu2e {
       produces<CaloHitCollection>();
       produces<CaloHitMCTruthCollection>();
       produces<CaloCrystalOnlyHitCollection>();
-      produces<DPIndexVectorCollection>("CaloHitMCCrystalPtr");
-      produces<DPIndexVectorCollection>("CaloHitMCReadoutPtr");
+      produces<PtrStepPointMCVectorCollection>("CaloHitMCCrystalPtr");
+      produces<PtrStepPointMCVectorCollection>("CaloHitMCReadoutPtr");
 
     }
     virtual ~MakeCaloReadoutHits() { }
@@ -118,8 +116,8 @@ namespace mu2e {
                               CaloHitCollection &,
                               CaloHitMCTruthCollection&,
                               CaloCrystalOnlyHitCollection&,
-                              DPIndexVectorCollection&,
-                              DPIndexVectorCollection&);
+                              PtrStepPointMCVectorCollection&,
+                              PtrStepPointMCVectorCollection& );
 
   };
 
@@ -140,11 +138,11 @@ namespace mu2e {
     if( ! geom->hasElement<Calorimeter>() ) return;
 
     // A container to hold the output hits.
-    auto_ptr<CaloHitCollection>               caloHits(new CaloHitCollection);
-    auto_ptr<CaloHitMCTruthCollection>        caloMCHits(new CaloHitMCTruthCollection);
-    auto_ptr<CaloCrystalOnlyHitCollection> caloCrystalMCHits(new CaloCrystalOnlyHitCollection);
-    auto_ptr<DPIndexVectorCollection>         caloMCptrHits(new DPIndexVectorCollection);
-    auto_ptr<DPIndexVectorCollection>         caloMCroptrHits(new DPIndexVectorCollection);
+    auto_ptr<CaloHitCollection>               caloHits         (new CaloHitCollection);
+    auto_ptr<CaloHitMCTruthCollection>        caloMCHits       (new CaloHitMCTruthCollection);
+    auto_ptr<CaloCrystalOnlyHitCollection>    caloCrystalMCHits(new CaloCrystalOnlyHitCollection);
+    auto_ptr<PtrStepPointMCVectorCollection>  caloMCptrHits    (new PtrStepPointMCVectorCollection);
+    auto_ptr<PtrStepPointMCVectorCollection>  caloMCroptrHits  (new PtrStepPointMCVectorCollection);
 
     // Ask the event to give us a handle to the requested hits.
 
@@ -187,12 +185,8 @@ namespace mu2e {
                                       CaloHitCollection &caloHits,
                                       CaloHitMCTruthCollection& caloHitsMCTruth,
                                       CaloCrystalOnlyHitCollection& caloCrystalHitsMCTruth,
-                                      DPIndexVectorCollection& caloHitsMCCrystalPtr,
-                                      DPIndexVectorCollection& caloHitsMCReadoutPtr ) {
-
-    // Product Id of the input points.
-    art::ProductID const& crystal_id(steps.id());
-    art::ProductID const& readout_id(rosteps.id());
+                                      PtrStepPointMCVectorCollection& caloHitsMCCrystalPtr,
+                                      PtrStepPointMCVectorCollection& caloHitsMCReadoutPtr ) {
 
     // Get calorimeter geometry description
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
@@ -289,12 +283,13 @@ namespace mu2e {
       double h_edep    = ro_hits[0]._edep;
       double h_edepc   = ro_hits[0]._edep_corr;
       int    h_charged = ro_hits[0]._charged;
-      DPIndexVector mcptr_crystal;
-      DPIndexVector mcptr_readout;
+      PtrStepPointMCVector mcptr_crystal;
+      PtrStepPointMCVector mcptr_readout;
+
       if( ro_hits[0]._charged==0 ) {
-        mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[0]._hit_id));
+        mcptr_crystal.push_back( art::Ptr<StepPointMC>( steps, ro_hits[0]._hit_id));
       } else {
-        mcptr_readout.push_back(DPIndex(readout_id,ro_hits[0]._hit_id));
+        mcptr_readout.push_back( art::Ptr<StepPointMC>( rosteps, ro_hits[0]._hit_id));
       }
 
       for( size_t i=1; i<ro_hits.size(); ++i ) {
@@ -308,9 +303,9 @@ namespace mu2e {
           mcptr_crystal.clear();
           mcptr_readout.clear();
           if( ro_hits[i]._charged==0 ) {
-            mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[i]._hit_id));
+            mcptr_crystal.push_back( art::Ptr<StepPointMC>( steps,ro_hits[i]._hit_id));
           } else {
-            mcptr_readout.push_back(DPIndex(readout_id,ro_hits[i]._hit_id));
+            mcptr_readout.push_back( art::Ptr<StepPointMC>( rosteps, ro_hits[i]._hit_id));
           }
           h_time    = ro_hits[i]._time;
           h_edep    = ro_hits[i]._edep;
@@ -322,9 +317,9 @@ namespace mu2e {
           h_edepc += ro_hits[i]._edep_corr;
           if( ro_hits[i]._charged>0 ) h_charged = 1; // this does not count the charge...
           if( ro_hits[i]._charged==0 ) {
-            mcptr_crystal.push_back(DPIndex(crystal_id,ro_hits[i]._hit_id));
+            mcptr_crystal.push_back( art::Ptr<StepPointMC>(steps,ro_hits[i]._hit_id));
           } else {
-            mcptr_readout.push_back(DPIndex(readout_id,ro_hits[i]._hit_id));
+            mcptr_readout.push_back( art::Ptr<StepPointMC>( rosteps,ro_hits[i]._hit_id));
           }
         }
       }

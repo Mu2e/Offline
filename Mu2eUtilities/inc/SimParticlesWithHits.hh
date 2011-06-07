@@ -11,9 +11,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.hh,v 1.8 2011/05/24 17:19:03 kutschke Exp $
+// $Id: SimParticlesWithHits.hh,v 1.9 2011/06/07 21:41:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/07 21:41:08 $
 //
 // Original author Rob Kutschke.
 //
@@ -24,7 +24,7 @@
 
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimParticleInfo.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -84,10 +84,8 @@ namespace mu2e {
     // List of hits on each generated track.
     std::map<key_type,SimParticleInfo> _hitsPerTrack;
 
-    // Pointers to some collections within the event; needed
-    // by both the c'tor and selfTest().
-    DPIndexVectorCollection   const* _hits_mcptr;
-    StepPointMCCollection     const* _stepPointsMC;
+    // Pointer to a collection within the event; needed by both the c'tor and selfTest().
+    PtrStepPointMCVectorCollection const* _hits_mcptr;
 
     // Check that the object was built correctly.
     void selfTest();

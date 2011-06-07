@@ -7,9 +7,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle.
 //
-// $Id: StrawHitMCInfo.hh,v 1.7 2011/05/24 17:19:03 kutschke Exp $
+// $Id: StrawHitMCInfo.hh,v 1.8 2011/06/07 21:41:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/07 21:41:08 $
 //
 // Original author Rob Kutschke.
 //
@@ -23,7 +23,7 @@
 #include <limits>
 
 // Mu2e includes.
-#include "DataProducts/inc/DPIndexVector.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
 // Forward declarations.
@@ -46,13 +46,13 @@ namespace mu2e {
 
     // No default c'tor by design.
 
-    StrawHitMCInfo( art::Event      const& event,
-                    key_type               trackId,
-                    size_t                 index,
-                    StrawHit        const& strawHit,
-                    StrawHitMCTruth const& strawHitMCTruth,
-                    DPIndexVector   const& strawHitMCPtr,
-                    int                    nSimParticles ):
+    StrawHitMCInfo( art::Event           const& event,
+                    key_type                    trackId,
+                    size_t                      index,
+                    StrawHit             const& strawHit,
+                    StrawHitMCTruth      const& strawHitMCTruth,
+                    PtrStepPointMCVector const& strawHitMCPtr,
+                    int                         nSimParticles ):
       _index(index),
       _hit(&strawHit),
       _truth(&strawHitMCTruth),
@@ -65,12 +65,12 @@ namespace mu2e {
     // Compiler generated code is Ok for:
     //  d'tor, copy c'tor assignment operator.
 
-    size_t                 index()          const { return  _index;   }
-    StrawHit        const& hit()            const { return *_hit;}
-    StrawHitMCTruth const& truth()          const { return *_truth;}
-    DPIndexVector   const& stepsByDPIndex() const { return *_mcPtr;}
-    bool                   isShared()       const { return  _nSimParticles>1;}
-    double                 time()           const { return  _time; }
+    size_t                      index()      const { return  _index;   }
+    StrawHit             const& hit()        const { return *_hit;}
+    StrawHitMCTruth      const& truth()      const { return *_truth;}
+    PtrStepPointMCVector const& stepsByPrr() const { return *_mcPtr;}
+    bool                        isShared()   const { return  _nSimParticles>1;}
+    double                      time()       const { return  _time; }
 
     std::vector<StepPointMC const *> const& steps() const {
       return  _stepPointMCs;
@@ -87,13 +87,13 @@ namespace mu2e {
   private:
 
     // Index into:
-    // StrawHitCollection, StrawHitMCTruthCollection, DPIndexVectorCollection
+    // StrawHitCollection, StrawHitMCTruthCollection, PtrStepPointMCVectorCollection.
     size_t _index;
 
-    // Non-owning pointers to the StrawHit, StrawHitMCTruth and DPIndexVector.
-    StrawHit        const* _hit;
-    StrawHitMCTruth const* _truth;
-    DPIndexVector   const* _mcPtr;
+    // Non-owning pointers to the StrawHit, StrawHitMCTruth and PtrStepPointMCVector.
+    StrawHit             const* _hit;
+    StrawHitMCTruth      const* _truth;
+    PtrStepPointMCVector const* _mcPtr;
 
     // Non-owning pointers to all StepPointMCs that contributed to this track.
     std::vector<StepPointMC const *> _stepPointMCs;

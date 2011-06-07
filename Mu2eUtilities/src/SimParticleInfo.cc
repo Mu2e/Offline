@@ -5,9 +5,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle.
 //
-// $Id: SimParticleInfo.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Id: SimParticleInfo.cc,v 1.6 2011/06/07 21:41:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/07 21:41:08 $
 //
 // See the notes in the header file for the meaning of the member datum _time.
 //
@@ -19,8 +19,6 @@
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimParticleInfo.hh"
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "DataProducts/inc/DPIndexVector.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 

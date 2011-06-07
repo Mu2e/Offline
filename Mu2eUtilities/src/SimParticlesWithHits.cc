@@ -9,9 +9,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.cc,v 1.5 2011/05/18 17:02:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 17:02:14 $
+// $Id: SimParticlesWithHits.cc,v 1.6 2011/06/07 21:41:08 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 21:41:08 $
 //
 // Original author Rob Kutschke.
 //
@@ -26,7 +26,6 @@
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
 
 using namespace std;
 
@@ -39,8 +38,7 @@ namespace mu2e{
                                               double minEnergyDep,
                                               size_t minHits ):
     _hitsPerTrack(),
-    _hits_mcptr(0),
-    _stepPointsMC(0){
+    _hits_mcptr(0){
 
     // Get information from the event.
     art::Handle<StrawHitCollection> pdataHandle;
@@ -51,13 +49,9 @@ namespace mu2e{
     evt.getByLabel(_hitMakerModuleLabel,truthHandle);
     StrawHitMCTruthCollection const& hits_truth = *truthHandle;
 
-    art::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     evt.getByLabel(_hitMakerModuleLabel,"StrawHitMCPtr",mcptrHandle);
     _hits_mcptr = mcptrHandle.product();
-
-    art::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,mchitsHandle);
-    _stepPointsMC = mchitsHandle.product();
 
     art::Handle<SimParticleCollection> simsHandle;
     evt.getByLabel(_g4ModuleLabel,simsHandle);
@@ -69,7 +63,7 @@ namespace mu2e{
       // Data and MC truth for this hit.
       StrawHit        const&   hit(hits.at(ihit));
       StrawHitMCTruth const& truth(hits_truth.at(ihit));
-      DPIndexVector   const& mcptr(_hits_mcptr->at(ihit));
+      PtrStepPointMCVector const& mcptr(_hits_mcptr->at(ihit));
 
       // Skip hits with too little energy deposited in the straw.
       if ( hit.energyDep() < minEnergyDep ){
@@ -79,7 +73,7 @@ namespace mu2e{
       // Find all simulated tracks that contribute to this hit.
       set<key_type> contributingTracks;
       for ( size_t istep = 0; istep<mcptr.size(); ++istep){
-        StepPointMC const& step = *resolveDPIndex<StepPointMCCollection>( evt, mcptr.at(istep) );
+        StepPointMC const& step = *mcptr.at(istep);
         contributingTracks.insert(step.trackId());
       }
 
@@ -149,10 +143,10 @@ namespace mu2e{
       vector<StrawHitMCInfo> const& v = i->second.strawHitInfos();
       for ( size_t j=0; j<v.size(); ++j ){
         StrawHitMCInfo const& info = v[j];
-        DPIndexVector const& mcptr(_hits_mcptr->at(info.index()));
+        PtrStepPointMCVector const& mcptr(_hits_mcptr->at(info.index()));
         bool ok = false;
         for ( size_t k=0; k<mcptr.size(); ++k ){
-          StepPointMC const& step = _stepPointsMC->at(mcptr.at(k).index);
+          StepPointMC const& step = *mcptr.at(k);
           if ( step.trackId() == simId ){
             ok = true;
           }

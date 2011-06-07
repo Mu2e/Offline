@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Id: MakeStrawHit_module.cc,v 1.6 2011/06/07 21:37:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/07 21:37:59 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -35,8 +35,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "DataProducts/inc/DPIndexVector.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -100,7 +99,7 @@ namespace mu2e {
       // Tell the framework what we make.
       produces<StrawHitCollection>();
       produces<StrawHitMCTruthCollection>();
-      produces<DPIndexVectorCollection>("StrawHitMCPtr");
+      produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
 
     }
     virtual ~MakeStrawHit() { }
@@ -156,16 +155,13 @@ namespace mu2e {
     const Tracker& tracker = getTrackerOrThrow();
 
     // A container to hold the output hits.
-    auto_ptr<StrawHitCollection>        strawHits(new StrawHitCollection);
-    auto_ptr<StrawHitMCTruthCollection> truthHits(new StrawHitMCTruthCollection);
-    auto_ptr<DPIndexVectorCollection>   mcptrHits(new DPIndexVectorCollection);
+    auto_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
+    auto_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
+    auto_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
 
     // Ask the event to give us a handle to the requested hits.
     art::Handle<StepPointMCCollection> points;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,points);
-
-    // Product Id of the input points.
-    art::ProductID const& id(points.id());
 
     // Calculate T0 for this event
     double t0 = _gaussian.fire(0.,_t0Sigma);
@@ -325,8 +321,8 @@ namespace mu2e {
       double digi_dca    = straw_hits[0]._dca;
       double deltadigitime;
       double distSigma;
-      DPIndexVector mcptr;
-      mcptr.push_back(DPIndex(id,straw_hits[0]._hit_id));
+      PtrStepPointMCVector mcptr;
+      mcptr.push_back( art::Ptr<StepPointMC>( points, straw_hits[0]._hit_id ) );
 
       for( size_t i=1; i<straw_hits.size(); i++ ) {
         if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
@@ -339,7 +335,7 @@ namespace mu2e {
           mcptrHits->push_back(mcptr);
           // ...and create new hit
           mcptr.clear();
-          mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
+          mcptr.push_back( art::Ptr<StepPointMC>(points, straw_hits[i]._hit_id));
           digi_time   = straw_hits[i]._t1;
           digi_t2     = straw_hits[i]._t2;
           digi_edep   = straw_hits[i]._edep;
@@ -350,7 +346,7 @@ namespace mu2e {
           // Append existing hit
           if( digi_t2 > straw_hits[i]._t2 ) digi_t2 = straw_hits[i]._t2;
           digi_edep += straw_hits[i]._edep;
-          mcptr.push_back(DPIndex(id,straw_hits[i]._hit_id));
+          mcptr.push_back( art::Ptr<StepPointMC>(points, straw_hits[i]._hit_id));
         }
       }
 

@@ -5,9 +5,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle.
 //
-// $Id: StrawHitMCInfo.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Id: StrawHitMCInfo.cc,v 1.6 2011/06/07 21:41:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/07 21:41:08 $
 //
 // Original author Rob Kutschke.
 //
@@ -19,9 +19,8 @@
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "DataProducts/inc/DPIndexVector.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 
 namespace mu2e {
@@ -29,9 +28,7 @@ namespace mu2e {
   void StrawHitMCInfo::fillStepPointMCs(art::Event const& event, key_type trackId ){
     for ( size_t i=0; i<_mcPtr->size(); ++i){
 
-      StepPointMC const* step =
-        resolveDPIndex<StepPointMCCollection>(event, _mcPtr->at(i));
-
+      StepPointMC const* step = _mcPtr->at(i).get();
       _stepPointMCs.push_back( step );
 
       if ( step->trackId() == trackId ){

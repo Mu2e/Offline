@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.6 2011/05/24 17:19:03 kutschke Exp $
+// $Id: MakeDriftCellHit_module.cc,v 1.7 2011/06/07 21:37:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/07 21:37:59 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -35,8 +35,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "DataProducts/inc/DPIndexVector.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 
@@ -99,7 +98,7 @@ namespace mu2e {
       // Tell the framework what we make.
       produces<StrawHitCollection>();
       produces<StrawHitMCTruthCollection>();
-      produces<DPIndexVectorCollection>("StrawHitMCPtr");
+      produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
 
     }
     virtual ~MakeDriftCellHit() { }
@@ -158,9 +157,9 @@ namespace mu2e {
     //GeomHandle<ITracker> tracker;
 
     // A container to hold the output hits.
-    auto_ptr<StrawHitCollection>        strawHits(new StrawHitCollection);
-    auto_ptr<StrawHitMCTruthCollection> truthHits(new StrawHitMCTruthCollection);
-    auto_ptr<DPIndexVectorCollection>   mcptrHits(new DPIndexVectorCollection);
+    auto_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
+    auto_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
+    auto_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
 
     // Ask the event to give us a handle to the requested hits.
     art::Handle<StepPointMCCollection> points;
@@ -344,8 +343,10 @@ namespace mu2e {
       double digi_toMid  = dcell_hits[0]._distanceToMid;
       double digi_dca    = dcell_hits[0]._dca;
       double deltadigitime;
-      DPIndexVector mcptr;
-      mcptr.push_back(DPIndex(id,dcell_hits[0]._hit_id));
+
+      PtrStepPointMCVector mcptr;
+      mcptr.push_back( art::Ptr<StepPointMC>( points, dcell_hits[0]._hit_id ) );
+
 
       for( size_t i=1; i<dcell_hits.size(); i++ ) {
         if( (dcell_hits[i]._t1-dcell_hits[i-1]._t1) > _minimumTimeGap ) {
@@ -355,7 +356,7 @@ namespace mu2e {
           mcptrHits->push_back(mcptr);
           // ...and create new hit
           mcptr.clear();
-          mcptr.push_back(DPIndex(id,dcell_hits[i]._hit_id));
+          mcptr.push_back( art::Ptr<StepPointMC>(points, dcell_hits[i]._hit_id));
           digi_time   = dcell_hits[i]._t1;
           //digi_t2     = dcell_hits[i]._t2;
           digi_edep   = dcell_hits[i]._edep;
@@ -366,7 +367,7 @@ namespace mu2e {
           // Append existing hit
           //if( digi_t2 > dcell_hits[i]._t2 ) digi_t2 = dcell_hits[i]._t2;
           digi_edep += dcell_hits[i]._edep;
-          mcptr.push_back(DPIndex(id,dcell_hits[i]._hit_id));
+          mcptr.push_back( art::Ptr<StepPointMC>(points, dcell_hits[i]._hit_id));
         }
       }
       //deltadigitime=(digi_t2-digi_time)+_gaussian.fire(0.,_distSigma/_timetodist);

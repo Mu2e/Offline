@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.10 2011/06/02 23:07:58 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/06/02 23:07:58 $
+// $Id: MakeStrawCluster_module.cc,v 1.11 2011/06/07 21:37:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 21:37:59 $
 //
 // Original author Hans Wenzel
 //
@@ -33,9 +33,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawCluster.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
-#include "DataProducts/inc/DPIndexVector.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
+#include "RecoDataProducts/inc/StrawClusterCollection.hh"
 using namespace std;
 
 namespace mu2e {
@@ -101,9 +99,8 @@ namespace mu2e {
      StrawCluster tmpCluster;
      StrawClusterCollection&  listofClusters = *listofClusterspointer;
 
-     //     DPIndexVector ptrtoHits;
+     StrawHitPtrVector ptrtoHits;
 
-     std::vector<DPIndex> ptrtoHits;
      //     StrawCluster::const_iterator ostrawIter;
      //    StrawClusterCollection::const_iterator oClusterIter;
      //StrawCluster::const_iterator istrawIter;
@@ -120,7 +117,6 @@ namespace mu2e {
      if ( _diagLevel > -1 && !haveStrawHits) cout << __func__ << ": No StrawHits" << endl;
     
      if( !haveStrawHits) return;
-     art::ProductID const& id(pdataHandle.id());
      StrawHitCollection const* hits = pdataHandle.product();
      for ( size_t i=0; i<hits->size(); ++i )
        {
@@ -134,12 +130,11 @@ namespace mu2e {
 	 bool used =false;
 	 for (size_t ii=0;ii<listofClusters.size();ii++)
 	   { 	
-	     StrawCluster scluster =listofClusters.at(ii) ;	
-	     std::vector<DPIndex> const &  tmpptrtoHits = scluster.StrawHitIndices();
+	     StrawCluster const& scluster =listofClusters.at(ii) ;
+	     StrawHitPtrVector const &  tmpptrtoHits = scluster.strawHits();
 	     for (size_t jj=0;jj<tmpptrtoHits.size();jj++)
 	       {
-		 DPIndex const& junkie = tmpptrtoHits[jj];
-		 StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+		 StrawHit const& strawhit = *tmpptrtoHits[jj];
 		 if (strawhit==hit)
 		 {		
 		   used = true;
@@ -148,7 +143,7 @@ namespace mu2e {
 	   }
 	 if ( !used )
 	   {
-	     ptrtoHits.push_back(DPIndex(id,i));
+	     ptrtoHits.push_back( StrawHitPtr(pdataHandle,i));
 	     const std::vector<StrawIndex> nearindex= str.nearestNeighboursByIndex();
 	     vector<StrawIndex>::const_iterator ncid;
 	     for(ncid=nearindex.begin(); ncid!=nearindex.end(); ncid++)
@@ -157,7 +152,7 @@ namespace mu2e {
 		   {
 		     StrawHit nhit = hits->at(jj);
 		     StrawIndex nsi = nhit.strawIndex();	    
-		     if (nsi==*ncid) ptrtoHits.push_back(DPIndex(id,jj));
+		     if (nsi==*ncid) ptrtoHits.push_back( StrawHitPtr(pdataHandle,jj));
 		   } // end loop over all hits 
 	       } // end loop over neighbors 
 	     bool added=false; 
@@ -167,8 +162,7 @@ namespace mu2e {
 		 added = false;
 		 for(size_t kk=0;kk<ptrtoHits.size(); kk++)
 		   {
-		     DPIndex const& junkie = ptrtoHits[kk];
-		     StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+		     StrawHit const& strawhit = *ptrtoHits[kk];
 		     Straw straw = tracker.getStraw(strawhit.strawIndex());		      
 		     const std::vector<StrawIndex> nnearindex= straw.nearestNeighboursByIndex();
 		     vector<StrawIndex>::const_iterator nncid;
@@ -179,8 +173,7 @@ namespace mu2e {
 			 bool usedincl=false;
 			 for (size_t jjj=0;jjj<ptrtoHits.size();jjj++)
 			   {
-			     DPIndex const& junkie = ptrtoHits[jjj];
-			     StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+			     StrawHit const& strawhit = *ptrtoHits[jjj];
 			     if (strawhit.strawIndex()==*nncid)
 			       {
 				 usedincl=true;
@@ -195,7 +188,7 @@ namespace mu2e {
 				 StrawIndex nsi = nhit.strawIndex();	    
 				 if (nsi==*nncid)
 				   {
-				     ptrtoHits.push_back(DPIndex(id,jj));
+				     ptrtoHits.push_back( StrawHitPtr(pdataHandle,jj));
 				     added = true;
 				   }
 			       } // end loop over all straws that fired
@@ -230,7 +223,7 @@ namespace mu2e {
        //StrawIndex si = hit.strawIndex();
        //Straw str = tracker.getStraw(si);
        //StrawId sid = str.id();    
-       ptrtoHits.push_back(DPIndex(id,i));
+       ptrtoHits.push_back( StrawHitPtr(pdataHandle,i));
 
      }// loop over all straws that fired.
      cout << "size of index ptr vector:  " << ptrtoHits.size()<<endl;
