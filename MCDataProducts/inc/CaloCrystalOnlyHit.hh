@@ -1,18 +1,14 @@
 #ifndef MCDataProducts_CaloCrystalOnlyHit_hh
 #define MCDataProducts_CaloCrystalOnlyHit_hh
 
-// $Id: CaloCrystalOnlyHit.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
+// $Id: CaloCrystalOnlyHit.hh,v 1.2 2011/06/07 21:32:21 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Date: 2011/06/07 21:32:21 $
 //
 // Original author KLG
 
 // C++ includes
 #include <iostream>
-#include <vector>
-
-// Mu2e includes
-#include "DataProducts/inc/DPIndex.hh"
 
 namespace art {
   class ProductID;

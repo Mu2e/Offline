@@ -1,20 +1,13 @@
 //
 // Crystal hit info plus possible additional information produced by HitMaker
 //
-// $Id: CaloCrystalOnlyHit.cc,v 1.1 2011/05/24 17:16:44 kutschke Exp $
+// $Id: CaloCrystalOnlyHit.cc,v 1.2 2011/06/07 21:32:21 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:44 $
+// $Date: 2011/06/07 21:32:21 $
 //
-
-// C++ includes
-#include <ostream>
-
-// Framework includes.
-#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "MCDataProducts/inc/CaloCrystalOnlyHit.hh"
-#include "DataProducts/inc/DPIndex.hh"
 
 using namespace std;
 

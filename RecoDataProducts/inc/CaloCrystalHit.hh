@@ -1,9 +1,9 @@
 #ifndef RecoDataProducts_CaloCrystalHit_hh
 #define RecoDataProducts_CaloCrystalHit_hh
 
-// $Id: CaloCrystalHit.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
+// $Id: CaloCrystalHit.hh,v 1.2 2011/06/07 21:32:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Date: 2011/06/07 21:32:22 $
 //
 // Original author KLG
 
@@ -12,19 +12,16 @@
 #include <vector>
 
 // Mu2e includes
-#include "DataProducts/inc/DPIndex.hh"
-
-namespace art {
-  class ProductID;
-}
+#include "RecoDataProducts/inc/CaloHit.hh"
+#include "art/Persistency/Common/Ptr.h"
 
 namespace mu2e {
-
-  class CaloHit;
 
   class CaloCrystalHit{
 
   public:
+
+    typedef art::Ptr<CaloHit> CaloHitPtr;
 
     CaloCrystalHit():
       _crystalId(-1),
@@ -34,16 +31,17 @@ namespace mu2e {
       _numberOfROIdsUsed(0)
     {}
 
-    CaloCrystalHit(int  crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit);
+    CaloCrystalHit(int  crystalId, CaloHit const & hit, CaloHitPtr const& chPtr );
 
     // Accessors
 
-    int              id()                const { return _crystalId; }
-    float            time()              const { return _time;      }
-    float            energyDep()         const { return _energyDep; }
-    float            energyDepTotal()    const { return _energyDepTotal; }
-    int              numberOfROIdsUsed() const { return _numberOfROIdsUsed; }
-    std::vector<DPIndex> const & roIds() const { return _roIds; }
+    int   id()                const { return _crystalId; }
+    float time()              const { return _time;      }
+    float energyDep()         const { return _energyDep; }
+    float energyDepTotal()    const { return _energyDepTotal; }
+    int   numberOfROIdsUsed() const { return _numberOfROIdsUsed; }
+
+    std::vector<CaloHitPtr> const & readouts() const { return _readouts; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
 
@@ -51,15 +49,15 @@ namespace mu2e {
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
     // almost operator += CaloHit
-    CaloCrystalHit& add(art::ProductID const & caloHitCollId, CaloHit const & hit);
+    CaloCrystalHit& add( CaloHit const & hit, CaloHitPtr const& chPtr );
 
-    CaloCrystalHit& addEnergyToTot(art::ProductID const & caloHitCollId, CaloHit const & hit);
+    CaloCrystalHit& addEnergyToTot( CaloHit const & hit);
 
     // almost like one of the constructors, plays a role of a two
     // argument assignment operator
-    void assign(int crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit);
+    void assign(int crystalId, CaloHit const & hit, CaloHitPtr const& chPtr );
 
-    void assignEnergyToTot(int crystalId, art::ProductID const & caloHitCollId, CaloHit const & hit);
+    void assignEnergyToTot(int crystalId, CaloHit const & hit);
 
     void setEnergyDep(double energy);
 
@@ -72,13 +70,21 @@ namespace mu2e {
     float            _energyDep;          // (MeV)
     float            _energyDepTotal;     // (MeV)
     int              _numberOfROIdsUsed;  // roIds used to calculate _energyDep
-    std::vector<DPIndex> _roIds;
+    std::vector<CaloHitPtr> _readouts;
 
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
                                    CaloCrystalHit const& hit){
     hit.print(ost,false);
+    return ost;
+  }
+
+  inline std::ostream& operator<<( std::ostream& ost,
+                                   CaloCrystalHit::CaloHitPtr const& hit){
+    ost << "("
+	<< hit.id() << ","
+	<< hit.key() << ")";
     return ost;
   }
 

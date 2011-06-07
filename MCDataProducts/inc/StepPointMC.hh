@@ -8,17 +8,24 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.2 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
+// $Id: StepPointMC.hh,v 1.3 2011/06/07 21:32:21 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 21:32:21 $
 //
 // Original author Rob Kutschke
 //
 
-#include "CLHEP/Vector/ThreeVector.h"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "TrackerGeom/inc/StrawIndex.hh"
+#include "art/Persistency/Common/Ptr.h"
 #include "cetlib/map_vector.h"
+
+#include "MCDataProducts/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "TrackerGeom/inc/StrawIndex.hh"
+
+#include "art/Persistency/Common/OrphanHandle.h"
+
+#include "CLHEP/Vector/ThreeVector.h"
+
 #include <ostream>
 
 namespace mu2e {
@@ -32,6 +39,7 @@ namespace mu2e {
 
     StepPointMC():
       _trackId(cet::map_vector_key()),
+      _track(),
       _volumeId(0),
       _totalEnergyDeposit(0.),
       _nonIonizingEnergyDeposit(0.),
@@ -55,6 +63,7 @@ namespace mu2e {
                  ProcessCode              endProcessCode
                  ):
       _trackId(cet::map_vector_key(trackId)),
+      _track(),
       _volumeId(volumeId),
       _totalEnergyDeposit(totalEDep),
       _nonIonizingEnergyDeposit(nonIonizingEDep),
@@ -74,17 +83,24 @@ namespace mu2e {
     void print( std::ostream& ost, bool doEndl = true ) const;
     void print() const { print(std::cout); }
 
-    cet::map_vector_key      trackId()          const { return _trackId;   }
-    VolumeId_type            volumeId()         const { return _volumeId;  }
-    double                   totalEDep()        const { return _totalEnergyDeposit; }
-    double                   nonIonizingEDep()  const { return _nonIonizingEnergyDeposit; }
-    double                   ionizingEdep()     const { return _totalEnergyDeposit-_nonIonizingEnergyDeposit; }
-    CLHEP::Hep3Vector const& position()         const { return _position;  }
-    CLHEP::Hep3Vector const& momentum()         const { return _momentum;  }
-    double                   time()             const { return _time;      }
-    double                   properTime()       const { return _proper;      }
-    double                   stepLength()       const { return _stepLength;}
-    ProcessCode              endProcessCode()   const { return _endProcessCode;}
+    // Accesors.
+    cet::map_vector_key          trackId()          const { return _trackId;   }
+    art::Ptr<SimParticle> const& simParticle()      const { return _track;     }
+    VolumeId_type                volumeId()         const { return _volumeId;  }
+    double                       totalEDep()        const { return _totalEnergyDeposit; }
+    double                       nonIonizingEDep()  const { return _nonIonizingEnergyDeposit; }
+    double                       ionizingEdep()     const { return _totalEnergyDeposit-_nonIonizingEnergyDeposit; }
+    CLHEP::Hep3Vector const&     position()         const { return _position;  }
+    CLHEP::Hep3Vector const&     momentum()         const { return _momentum;  }
+    double                       time()             const { return _time;      }
+    double                       properTime()       const { return _proper;      }
+    double                       stepLength()       const { return _stepLength;}
+    ProcessCode                  endProcessCode()   const { return _endProcessCode;}
+
+    // Modifier.
+    void setSimParticlePtr( art::OrphanHandle<SimParticleCollection>& handle ){
+      _track = art::Ptr<SimParticle>(handle,_trackId.asInt());
+    }
 
     // Kept for backwards compatibility.
     double eDep()     const { return _totalEnergyDeposit;    }
@@ -95,16 +111,17 @@ namespace mu2e {
 
   private:
 
-    cet::map_vector_key _trackId;
-    VolumeId_type       _volumeId;
-    double              _totalEnergyDeposit;
-    double              _nonIonizingEnergyDeposit;
-    CLHEP::Hep3Vector   _position;
-    CLHEP::Hep3Vector   _momentum;
-    double              _time;
-    double              _proper;
-    double              _stepLength;
-    ProcessCode         _endProcessCode;
+    cet::map_vector_key   _trackId;
+    art::Ptr<SimParticle> _track;
+    VolumeId_type         _volumeId;
+    double                _totalEnergyDeposit;
+    double                _nonIonizingEnergyDeposit;
+    CLHEP::Hep3Vector     _position;
+    CLHEP::Hep3Vector     _momentum;
+    double                _time;
+    double                _proper;
+    double                _stepLength;
+    ProcessCode           _endProcessCode;
 
   };
 

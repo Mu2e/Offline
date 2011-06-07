@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.2 2011/06/05 23:11:35 mf Exp $
-// $Author: mf $
-// $Date: 2011/06/05 23:11:35 $
+// $Id: classes.h,v 1.3 2011/06/07 21:32:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 21:32:22 $
 //
 // Original author Rob Kutschke
 //
@@ -18,6 +18,12 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/HoughCircleCollection.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"
+
+// Cannot use the typedefs in here - not sure why.
+template class art::Ptr<mu2e::CaloHit>;
+template class std::vector<art::Ptr<mu2e::CaloHit> >;
+template class art::Ptr<mu2e::StrawHit>;
+template class std::vector<art::Ptr<mu2e::StrawHit> >;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
 template class art::Wrapper<mu2e::StrawClusterCollection>;

@@ -3,41 +3,43 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawCluster.hh,v 1.5 2011/06/06 22:51:25 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/06/06 22:51:25 $
+// $Id: StrawCluster.hh,v 1.6 2011/06/07 21:32:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 21:32:22 $
 //
 // Original author Hans Wenzel
 //
 
+// Mu2e includes:
+#include "art/Persistency/Common/Ptr.h"
+
 // C++ includes
 #include <vector>
-// Mu2e includes:
-#include "DataProducts/inc/DPIndex.hh"
-namespace art {
-  class ProductID;
-}
 
 namespace mu2e {
+
+  typedef art::Ptr<StrawHit>       StrawHitPtr;
+  typedef std::vector<StrawHitPtr> StrawHitPtrVector;
+
   class StrawCluster{
 
   public:
 
     StrawCluster() {}
 
-    StrawCluster(std::vector<DPIndex> & hitIndices)  {   // Geometry info for the TTracker.
-    // Get a reference to one of the T trackers.
-    // Throw exception if not successful.
-    _StrawHitIndices=hitIndices;
-  };
+    StrawCluster( StrawHitPtrVector const & astrawHits):
+      strawHits_(astrawHits){}
 
     // Accessors
-    std::vector<DPIndex> const & StrawHitIndices() const { return _StrawHitIndices; }
-    //    StrawCluster& add(art::ProductID const & CollId, CaloHit const & hit);
+    StrawHitPtrVector const & strawHits() const { return strawHits_; }
+    StrawHitPtrVector & strawHits() { return strawHits_; }
+
   private:
+
     //   const Tracker& tracker;
-    std::vector<DPIndex> _StrawHitIndices;
+    StrawHitPtrVector strawHits_;
   };
+
 } // namespace mu2e
 
 #endif /* RecoDataProducts_StrawCluster_hh */
