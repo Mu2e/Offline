@@ -3,9 +3,9 @@
 // Code to produce a vector<SubEvent> from the collection of StrawHits
 // for an event.
 //
-// $Id: SubEventsMaker_module.cc,v 1.1 2011/06/05 23:11:35 mf Exp $
-// $Author: mf $
-// $Date: 2011/06/05 23:11:35 $
+// $Id: SubEventsMaker_module.cc,v 1.2 2011/06/07 22:25:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 22:25:27 $
 //
 // Original author: Mark Fischler
 //
@@ -36,8 +36,6 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"

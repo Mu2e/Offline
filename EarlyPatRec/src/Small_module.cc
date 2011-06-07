@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: Small_module.cc,v 1.9 2011/06/01 16:02:58 mf Exp $
-// $Author: mf $
-// $Date: 2011/06/01 16:02:58 $
+// $Id: Small_module.cc,v 1.10 2011/06/07 22:25:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 22:25:27 $
 //
 // Original author: Mark Fischler
 //
@@ -43,13 +43,9 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
@@ -228,15 +224,10 @@ namespace mu2e {;
     mpstraws.clear();
 
     //
-    // Get the persistent data about pointers to StrawHits
-    //
-    art::Handle<DPIndexVectorCollection> mcptrHandle;
-    evt.getByLabel(_clmakerModuleLabel,"DPIStrawCluster",mcptrHandle);
-    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
-
-    // Ask the event to give us a "handle" to the requested hits.
-    art::Handle<StepPointMCCollection> hits;
-    evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
+    // Get the straw clusters from the event
+    art::Handle<StrawClusterCollection> clustersHandle;
+    evt.getByLabel(_clmakerModuleLabel,clustersHandle);
+    StrawClusterCollection const& clusters = *clustersHandle;
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
@@ -399,15 +390,16 @@ namespace mu2e {;
     Int_t totalHits=0;
     CLHEP::Hep3Vector dvec;
 
-    for ( size_t i=0; i< mcptrHandle->size(); ++i ) { // Apparently a loop over clusters
+    for ( size_t i=0; i< clusters.size(); ++i ) { // Apparently a loop over clusters
       double hlen=9999999.;
-      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+      StrawCluster      const& cluster(clusters.at(i));
+      StrawHitPtrVector const& strawHits(cluster.strawHits());
+
       CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
-      totalHits = totalHits+mcptr.size();
+      totalHits = totalHits+strawHits.size();
       Double_t totalEnergy = 0.0;
-      for( size_t j=0; j<mcptr.size(); j++ ) {  // Loop over straws in the cluster
-        DPIndex const& junkie = mcptr[j];
-        StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+      for( size_t j=0; j<strawHits.size(); j++ ) {  // Loop over straws in the cluster
+        StrawHit const& strawhit = *strawHits[j];
         Double_t Energy = strawhit.energyDep();
         //Double_t Time   = strawhit.time();
         //Double_t deltaT = strawhit.dt();
@@ -427,7 +419,7 @@ namespace mu2e {;
             hlen=str.getHalfLength();
           }
       } // end of loop over straws in the cluster
-      double a = 1./double(mcptr.size());
+      double a = 1./double(strawHits.size());
       pvec = pvec*a;
       //pvec = pvec/totalEnergy;             // mean weighted by energy deposition
       pstraw pstr;
@@ -487,17 +479,18 @@ namespace mu2e {;
 //cout << "[[ 10 ]]\n";
     int nclusters=0;
     double _timetodist=149.8962;
-    for ( size_t i=0; i< mcptrHandle->size(); ++i )// Loop over Clusters
+    for ( size_t i=0; i< clusters.size(); ++i )// Loop over Clusters
       {
-        DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+	StrawCluster      const& cluster(clusters.at(i));
+	StrawHitPtrVector const& strawHits(cluster.strawHits());
+
         CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
         CLHEP::Hep3Vector clusterpos =  CLHEP::Hep3Vector(0.,0.,0.);
-        //totalHits = totalHits+mcptr.size();
+        //totalHits = totalHits+strawHits.size();
         double totalEnergy = 0.0;
-        for( size_t j=0; j<mcptr.size(); j++ ) // Loop over Straws in Cluster
+        for( size_t j=0; j<strawHits.size(); j++ ) // Loop over Straws in Cluster
           {
-            DPIndex const& junkie = mcptr[j];
-            StrawHit const& strawhit = *resolveDPIndex<StrawHitCollection>(evt,junkie);
+            StrawHit const& strawhit = *strawHits[j];
             double Energy = strawhit.energyDep();
             //double Time   = strawhit.time();
             double deltaT = strawhit.dt();
@@ -510,7 +503,7 @@ namespace mu2e {;
             clusterpos=clusterpos+hitpos;
             totalEnergy=totalEnergy+Energy;
           } // end loop over straws in cluster
-        double a = 1./double(mcptr.size());
+        double a = 1./double(strawHits.size());
         clusterpos=clusterpos*a;
         nclusters++;
 

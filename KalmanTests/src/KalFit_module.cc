@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFit_module.cc,v 1.1 2011/06/02 23:04:59 kutschke Exp $
+// $Id: KalFit_module.cc,v 1.2 2011/06/07 22:25:27 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/06/02 23:04:59 $
+// $Date: 2011/06/07 22:25:27 $
 //
 
 // framework
@@ -25,7 +25,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 // tracker
@@ -129,7 +129,7 @@ namespace mu2e
     // cache of event objects
     const StrawHitCollection* _strawhits;
     const StrawHitMCTruthCollection* _mcstrawhits;
-    const DPIndexVectorCollection* _mchitptr;
+    const PtrStepPointMCVectorCollection* _mchitptr;
     const StepPointMCCollection* _mcsteps;
     // helper functions
     bool findData(art::Event& e);
@@ -426,7 +426,7 @@ namespace mu2e
     if(evt.getByLabel("makeSH",truthHandle))
       _mcstrawhits = truthHandle.product();
   // Get the persistent data about pointers to StepPointMCs
-    art::Handle<DPIndexVectorCollection> _mchitptrHandle;
+    art::Handle<PtrStepPointMCVectorCollection> _mchitptrHandle;
     if(evt.getByLabel("makeSH","StrawHitMCPtr",_mchitptrHandle))
       _mchitptr = _mchitptrHandle.product();
   // Get the persistent data about the StepPointMCs
@@ -454,21 +454,21 @@ namespace mu2e
     std::vector<size_t> indices;
     double mct0(0.0);
     for(unsigned istraw=0;istraw<nstraws;istraw++){
-      DPIndexVector const& mcptr(_mchitptr->at(istraw));
+      PtrStepPointMCVector const& mcptr(_mchitptr->at(istraw));
       unsigned nprimary(0);
       for( size_t j=0; j<mcptr.size(); ++j ) {
-        StepPointMC const& mchit = (*_mcsteps)[mcptr[j].index];
+        StepPointMC const& mchit = *mcptr[j];
   // make sure this is the primary particle: not sure if this works with bkgs merged FIXME!!!!
         if( mchit.trackId().asInt() != 1 ) continue;
         nprimary++;
         double z = mchit.position().z();
         if(z > 0 && z < zmax){
           zmax = z;
-          imax = mcptr[j].index;
+          imax = mcptr[j].key();
           mct0 = _mcstrawhits->at(istraw).t0();
         } else if (z < 0 && z > zmin){
           zmin = z;
-          imin = mcptr[j].index;
+          imin = mcptr[j].key();
         }
       }
       if(nprimary > 0)indices.push_back(istraw);
@@ -596,12 +596,12 @@ namespace mu2e
 // straw hit t0 has very strange properties: skip it!
 //    _mchitt0 = mcstrawhit.t0();
     CLHEP::Hep3Vector mcpos;
-    DPIndexVector const& mcptr(_mchitptr->at(istraw));
+    PtrStepPointMCVector const& mcptr(_mchitptr->at(istraw));
     _nmcsteps = mcptr.size();
     double esum(0.0);
     double mct0(0.0);
     for( size_t imc=0; imc< _nmcsteps; ++imc ) {
-      StepPointMC const& mchit = (*_mcsteps)[mcptr[imc].index];
+      StepPointMC const& mchit = *mcptr[imc];
       if( mchit.trackId().asInt() == 1 ){
         double edep = mchit.eDep();
         esum += edep;
@@ -652,10 +652,10 @@ namespace mu2e
       
       // get MC truth at this point
       unsigned istraw = firsthit->index();
-      DPIndexVector const& mcptr(_mchitptr->at(istraw));
+      PtrStepPointMCVector const& mcptr(_mchitptr->at(istraw));
       _mcmom = -100;
       for( size_t j=0; j<mcptr.size(); ++j ) {
-        StepPointMC const& mchit = (*_mcsteps)[mcptr[j].index];
+        StepPointMC const& mchit = *mcptr[j];
         if( mchit.trackId().asInt() == 1 ) {
           CLHEP::Hep3Vector mcmom = mchit.momentum();
           CLHEP::Hep3Vector mcpos = mchit.position();
