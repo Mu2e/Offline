@@ -2,9 +2,9 @@
 #
 # Readback the output of g4test_03.py; make histograms and printout.
 #
-# $Id: readback.fcl,v 1.2 2011/05/26 19:21:49 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:49 $
+# $Id: readback.fcl,v 1.3 2011/06/07 22:22:35 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/06/07 22:22:35 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -56,11 +56,12 @@ physics :
 
     checkhits:
     {
-      module_type          : ReadBack
-      generatorModuleLabel : generate
-      g4ModuleLabel        : g4run
-      minimumEnergy        : 0.000
-      maxFullPrint         : 201
+      module_type            : ReadBack
+      generatorModuleLabel   : generate
+      g4ModuleLabel          : g4run
+      caloReadoutModuleLabel : CaloReadoutHitsMaker
+      minimumEnergy          : 0.000
+      maxFullPrint           : 201
     }
 
   } 
