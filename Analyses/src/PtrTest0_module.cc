@@ -1,9 +1,9 @@
 //
 // Test of Ptr to GenParticles and SimParticles.
 //
-// $Id: PtrTest0_module.cc,v 1.4 2011/06/02 15:41:19 kutschke Exp $
+// $Id: PtrTest0_module.cc,v 1.5 2011/06/07 22:23:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/02 15:41:19 $
+// $Date: 2011/06/07 22:23:41 $
 //
 // Original author Rob Kutschke
 //
@@ -47,11 +47,9 @@ namespace mu2e {
     event.getByLabel("generate",gensHandle);
     GenParticleCollection const& gens = *gensHandle;
 
-    /*
     art::Handle<SimParticleCollection> simsHandle;
     event.getByLabel("g4run",simsHandle);
     SimParticleCollection const& sims = *simsHandle;
-    */
 
     // Fill a vector of Ptr into a collection that, under the covers, is a std::vector<T>.
     vector<art::Ptr<GenParticle> > genPtrs;
@@ -79,8 +77,6 @@ namespace mu2e {
            << endl;
     }
 
-    /*
-
     // Fill a vector of Ptr into a collection that, under the covers, is a cet::map_vector<T>.
     vector<art::Ptr<SimParticle> > simPtrs;
     for ( SimParticleCollection::const_iterator i = sims.begin();
@@ -97,23 +93,29 @@ namespace mu2e {
              << sim.startGlobalTime() << " "
              << endl;
         
-        simPtrs.push_back( art::Ptr<SimParticle>(simsHandle,key.asInt()) );
+        simPtrs.push_back( art::Ptr<SimParticle>() );
+	simPtrs.back() = art::Ptr<SimParticle>(simsHandle,key.asInt());
+
 
       }
     } // end loop filling the Ptr to SimParticles
 
+
     // Read back the Ptrs.
     for ( size_t i=0; i< simPtrs.size(); ++i ){
+
       SimParticle const& sim = *simPtrs.at(i);
+
       cout << "Sim from Ptr: " 
            << i << " "
            << sim.id().asInt()     << " " 
            << sim.generatorIndex() << " " 
            << sim.startGlobalTime() << " "
            << endl;
+
     }
 
-    */
+
   } // end PtrTest0::analyze
 
 

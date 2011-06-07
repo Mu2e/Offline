@@ -1,7 +1,17 @@
+//
+// A module to study background rates in the detector subsystems.
+//
+// $Id: BkgRates_module.cc,v 1.13 2011/06/07 22:23:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 22:23:40 $
+//
+// Original author Gianni Onorato
+//
+
 #include "Analyses/inc/MCCaloUtilities.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -289,17 +299,9 @@ namespace mu2e {
     StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
     // Get the persistent data about pointers to StepPointMCs
-    art::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
-    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
-
-    // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in DPIndexVectorCollection, rather than
-    // use producer name directly (_g4ModuleLabel).
-
-    art::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,mchitsHandle);
-    StepPointMCCollection const* mchits = mchitsHandle.product();
+    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     /*
     //Get and printout all straw (just to check)
@@ -347,9 +349,9 @@ namespace mu2e {
     for (size_t i=0; i<nStrawPerEvent; ++i) {
 
       // Access data
-      StrawHit        const&      hit(hits->at(i));
-      StrawHitMCTruth const&    truth(hits_truth->at(i));
-      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+      StrawHit             const&      hit(hits->at(i));
+      StrawHitMCTruth      const&    truth(hits_truth->at(i));
+      PtrStepPointMCVector const&    mcptr(hits_mcptr->at(i));
 
       double hitEnergy = hit.energyDep();
 
@@ -445,7 +447,7 @@ namespace mu2e {
 
       for (size_t j = 0; j < mcptr.size(); ++j) {
 
-        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+        StepPointMC const& mchit = *mcptr[j];
 
         // The simulated particle that made this hit.
         SimParticleCollection::key_type trackId(mchit.trackId());
@@ -580,17 +582,13 @@ namespace mu2e {
     StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
     // Get the persistent data about pointers to StepPointMCs
-    art::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
-    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
+    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in DPIndexVectorCollection, rather than
+    // should look for product ids in PtrStepPointMCVectorCollection, rather than
     // use producer name directly (_g4ModuleLabel).
-
-    art::Handle<StepPointMCCollection> mchitsHandle;
-    evt.getByLabel(_g4ModuleLabel,_trackerStepPoints,mchitsHandle);
-    StepPointMCCollection const* mchits = mchitsHandle.product();
 
     if (!(hits->size() == hits_truth->size() &&
           hits_mcptr->size() == hits->size() ) ) {
@@ -629,9 +627,9 @@ namespace mu2e {
     for (size_t i=0; i<nStrawPerEvent; ++i) {
 
       // Access data
-      StrawHit        const&      hit(hits->at(i));
-      StrawHitMCTruth const&    truth(hits_truth->at(i));
-      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+      StrawHit             const&  hit(hits->at(i));
+      StrawHitMCTruth      const&  truth(hits_truth->at(i));
+      PtrStepPointMCVector const&  mcptr(hits_mcptr->at(i));
 
       double hitEnergy = hit.energyDep();
 
@@ -708,7 +706,7 @@ namespace mu2e {
 
       for (size_t j = 0; j < mcptr.size(); ++j) {
 
-        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+        StepPointMC const& mchit = *mcptr[j];
 
         // The simulated particle that made this hit.
         SimParticleCollection::key_type trackId(mchit.trackId());
@@ -854,17 +852,16 @@ namespace mu2e {
     art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
 
     // Get the persistent data about pointers to StepPointMCs
-    art::Handle<DPIndexVectorCollection> mcptrHandle;
-    art::Handle<StepPointMCCollection> steps;
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
+    //    art::Handle<StepPointMCCollection> steps;
 
     evt.getByLabel(_caloReadoutModuleLabel,"CaloHitMCCrystalPtr",mcptrHandle);
-    evt.getByLabel(_g4ModuleLabel,"calorimeter",steps);
+    //    evt.getByLabel(_g4ModuleLabel,"calorimeter",steps);
     evt.getByLabel(_caloReadoutModuleLabel, caloHits);
     evt.getByLabel(_caloReadoutModuleLabel, caloMC);
     evt.getByLabel(_caloCrystalModuleLabel, caloCrystalHits);
 
-    DPIndexVectorCollection const* hits_mcptr = mcptrHandle.product();
-    StepPointMCCollection const* mchits = steps.product();
+    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
     if (!( caloHits.isValid() && caloMC.isValid())) {
       return;
     }
@@ -873,7 +870,6 @@ namespace mu2e {
       cout << "NO CaloCrystalHits" << endl;
       return;
     }
-
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
@@ -912,7 +908,7 @@ namespace mu2e {
 
         CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
 
-        DPIndexVector const & ROIds  = hit.roIds();
+	std::vector<art::Ptr<CaloHit> > const & ROIds  = hit.readouts();
 
         if (ROIds.size() < 1) {
           //          cout << " Event n. " << evt.id().event()
@@ -945,7 +941,7 @@ namespace mu2e {
         for (size_t it = 0;
              it < ROIds.size() ; ++it ) {
 
-          size_t CollectionPosition = CHMap[ROIds.at(it).index];
+          size_t CollectionPosition = CHMap[ROIds.at(it).key()];
 
           CaloHit const & thehit = (*caloHits).at(CollectionPosition);
 
@@ -969,17 +965,17 @@ namespace mu2e {
             cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
 
 
-            DPIndexVector const & mcptr(hits_mcptr->at(CollectionPosition));
+            PtrStepPointMCVector const & mcptr(hits_mcptr->at(CollectionPosition));
             size_t nHitsPerCrystal = mcptr.size();
             _hCaloHitMult->Fill(nHitsPerCrystal);
 
             for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
 
-              StepPointMC const& mchit = (*mchits)[mcptr[j2].index];
+              StepPointMC const& mchit = *mcptr[j2];
               // The simulated particle that made this hit.
               SimParticleCollection::key_type trackId(mchit.trackId());
 
-              CaloManager->setTrackAndRO(evt, _g4ModuleLabel, trackId, ROIds.at(it).index );
+              CaloManager->setTrackAndRO(evt, _g4ModuleLabel, trackId, ROIds.at(it).key() );
 
               //cout << "Original Vane: " << CaloManager->localVane()
               //     << "\nStarting Vane: " << CaloManager->startingVane() << endl;

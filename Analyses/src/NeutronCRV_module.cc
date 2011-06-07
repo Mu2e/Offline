@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.9 2011/05/24 17:19:03 kutschke Exp $
+// $Id: NeutronCRV_module.cc,v 1.10 2011/06/07 22:23:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/07 22:23:41 $
 //
 // Original author Rob Kutschke
 //
@@ -48,7 +48,6 @@
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.12 2011/05/31 16:03:00 kutschke Exp $
+// $Id: HitDisplay_module.cc,v 1.13 2011/06/07 22:23:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/31 16:03:00 $
+// $Date: 2011/06/07 22:23:41 $
 //
 // Original author Rob Kutschke.
 //
@@ -27,10 +27,9 @@
 #include "Mu2eUtilities/inc/SortedStepPoints.hh"
 #include "Mu2eUtilities/inc/TrackTool.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/resolveDPIndices.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -196,9 +195,9 @@ namespace mu2e {
       StrawHitMCTruthCollection const& hitsTruth = *hitsTruthHandle;
     */
 
-    art::Handle<DPIndexVectorCollection> mcptrHandle;
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     event.getByLabel(hitMakerModuleLabel_,"StrawHitMCPtr",mcptrHandle);
-    DPIndexVectorCollection const& hits_mcptr = *mcptrHandle;
+    PtrStepPointMCVectorCollection const& hits_mcptr = *mcptrHandle;
 
     art::Handle<StepPointMCCollection> stepsHandle;
     event.getByLabel(g4ModuleLabel_,trackerStepPoints_,stepsHandle);
@@ -278,7 +277,7 @@ namespace mu2e {
       // Data and MC truth for this hit.
       StrawHit        const&   hit(hits.at(ihit));
       //StrawHitMCTruth const& truth(hitsTruth.at(ihit));
-      DPIndexVector   const& mcptr(hits_mcptr.at(ihit));
+      PtrStepPointMCVector  const& mcptr(hits_mcptr.at(ihit));
 
       _hEnergyDep->Fill( hit.energyDep()/CLHEP::keV );
 
@@ -295,7 +294,7 @@ namespace mu2e {
       // Is this hit from a conversion electron?
       bool isFromConversion(false);
       for ( size_t j=0; j<mcptr.size(); ++j ){
-        StepPointMC const& step = *resolveDPIndex<StepPointMCCollection>( event, mcptr.at(j) );
+        StepPointMC const& step = *mcptr.at(j);
         SimParticle const& sim  = sims[step.trackId()];
         if ( sim.fromGenerator() ){
           GenParticle const& gen = gens.at(sim.generatorIndex());

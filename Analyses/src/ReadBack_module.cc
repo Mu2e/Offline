@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.6 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
+// $Id: ReadBack_module.cc,v 1.7 2011/06/07 22:23:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 22:23:41 $
 //
 // Original author Rob Kutschke
 //
@@ -17,8 +17,6 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "DataProducts/inc/DPIndexVector.hh"
-#include "DataProducts/inc/DPIndexVectorCollection.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -32,6 +30,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -182,8 +181,8 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel","CaloReadoutModuleLabel")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalModuleLabel")),
+    _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel","CaloReadoutHitsMaker")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsMaker")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
     _minimumEnergy(pset.get<double>("minimumEnergy")),
@@ -384,21 +383,10 @@ namespace mu2e {
     event.getByLabel(_caloReadoutModuleLabel,caloMC);
 
     // Find pointers to the original G4 steps
-    art::Handle<DPIndexVectorCollection> crystalPtr;
-    art::Handle<DPIndexVectorCollection> readoutPtr;
-
-    // One can use simple approach - find collection directly by label, e.g.:
-    // event.getByLabel("CaloReadoutModuleLabel","CaloHitMCCrystalPtr",crystalPtr);
-    // event.getByLabel("CaloReadoutModuleLabel","CaloHitMCReadoutPtr",readoutPtr);
-    // The following code shows how to find collection only by name, not knowing
-    // the producer module name
-
-    vector<art::Handle<DPIndexVectorCollection> > ptr_coll;
-    event.getManyByType(ptr_coll);
-    for( size_t i=0; i<ptr_coll.size(); ++i ) {
-      if(ptr_coll[i].provenance()->productInstanceName()=="CaloHitMCCrystalPtr") crystalPtr = ptr_coll[i];
-      if(ptr_coll[i].provenance()->productInstanceName()=="CaloHitMCReadoutPtr") readoutPtr = ptr_coll[i];
-    }
+    art::Handle<PtrStepPointMCVectorCollection> crystalPtr;
+    art::Handle<PtrStepPointMCVectorCollection> readoutPtr;
+    event.getByLabel(_caloReadoutModuleLabel,crystalPtr);
+    event.getByLabel(_caloReadoutModuleLabel,readoutPtr);
 
     // Find original G4 steps in the APDs
     art::Handle<StepPointMCCollection> rohits;
@@ -443,7 +431,7 @@ namespace mu2e {
     if( readoutPtr.isValid() && rohits.isValid() ) {
       for ( size_t i=0; i<caloHits->size(); ++i ) {
         // Get vector of pointer to G4 steps in APDs for calorimeter hit #i
-        const DPIndexVector & ptr = readoutPtr->at(i);
+        const PtrStepPointMCVector & ptr = readoutPtr->at(i);
         // Skip calorimeter hits without G4 step in APD (for these hit
         // no charged particle crossed APD)
         if( ptr.size()<=0 ) continue;
@@ -451,7 +439,7 @@ namespace mu2e {
         double esum = 0;
         // Loop over that vector, get each G4 step and accumulate energy deposition
         for( size_t j=0; j<ptr.size(); j++ ) {
-          const StepPointMC & rohit = rohits->at(ptr[j].index);
+          const StepPointMC & rohit = *ptr[j];
           esum += rohit.eDep();
         }
         // Fill histogram
@@ -599,10 +587,6 @@ namespace mu2e {
     art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
 
-    // Get handles to the generated and simulated particles.
-    art::Handle<GenParticleCollection> genParticles;
-    event.getByLabel(_generatorModuleLabel,genParticles);
-
     art::Handle<SimParticleCollection> simParticles;
     event.getByLabel(_g4ModuleLabel,simParticles);
 
@@ -669,7 +653,7 @@ namespace mu2e {
       CLHEP::Hep3Vector point = pos - (mid + s*w);
 
       // The simulated particle that made this hit.
-      SimParticleCollection::key_type trackId(hit.trackId());
+      int trackId = hit.simParticle().key();
 
       // Debug info
 
@@ -680,8 +664,8 @@ namespace mu2e {
 
 //         cerr << "*** Bad hit?: "
 //              << event.id().event() << " "
-//              << i                  <<  " "
-//              << hit.trackId()      << "   "
+//              << i                  << " "
+//              << trackId            << "   "
 //              << hit.volumeId()     << " "
 //              << straw.id()         << " | "
 //              << pca.dca()          << " "
@@ -698,15 +682,15 @@ namespace mu2e {
       GenId genId;
 
       if ( haveSimPart ){
-        SimParticle const& sim = simParticles->at(trackId);
-
+	SimParticle const& sim = *hit.simParticle();
+	
         // PDG Particle Id of the sim particle that made this hit.
         pdgId = sim.pdgId();
 
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
-          GenParticle const& gen = genParticles->at(sim.generatorIndex());
+	  GenParticle const& gen = *sim.genParticle();
           genId = gen.generatorId();
         }
       }
@@ -731,7 +715,7 @@ namespace mu2e {
 
       // Fill the ntuple.
       nt[0]  = event.id().event();
-      nt[1]  = hit.trackId().asInt();
+      nt[1]  = trackId;
       nt[2]  = hit.volumeId();
       nt[3]  = pos.x();
       nt[4]  = pos.y();
@@ -765,7 +749,7 @@ namespace mu2e {
              << " hit: "
              << event.id().event() << " "
              << i                  <<  " "
-             << hit.trackId()      << "   "
+             << trackId      << "   "
              << hit.volumeId()     << " "
              << straw.id()         << " | "
              << pca.dca()          << " "
@@ -806,7 +790,7 @@ namespace mu2e {
             unknownPDGIdName(pdgId);
 
           // Information about generated particle.
-          GenParticle const& gen = genParticles->at(sim.generatorIndex());
+          GenParticle const& gen = *sim.genParticle();
           GenId genId(gen.generatorId());
 
           // Physical volume in which this track started.
@@ -847,10 +831,6 @@ namespace mu2e {
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
-
-    // Get handles to the generated and simulated particles.
-    art::Handle<GenParticleCollection> genParticles;
-    event.getByLabel(_generatorModuleLabel,genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
     event.getByLabel(_g4ModuleLabel,simParticles);
@@ -959,7 +939,7 @@ namespace mu2e {
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
-          GenParticle const& gen = genParticles->at(sim.generatorIndex());
+          GenParticle const& gen = *sim.genParticle();
           genId = gen.generatorId();
         }
       }
@@ -1232,7 +1212,7 @@ namespace mu2e {
           // If this is a generated particle, which generator did it come from?
           // This default constructs to "unknown".
           if ( sim.fromGenerator() ){
-            GenParticle const& gen = genParticles->at(sim.generatorIndex());
+            GenParticle const& gen = *sim.genParticle();
             genId = gen.generatorId();
           }
 
