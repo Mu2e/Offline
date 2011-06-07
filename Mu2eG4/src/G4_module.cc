@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.16 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
+// $Id: G4_module.cc,v 1.17 2011/06/07 21:55:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/07 21:55:17 $
 //
 // Original author Rob Kutschke
 //
@@ -13,6 +13,16 @@
 // 1) According to Sunanda Banerjee, the various SetUserAction methods
 //    take ownership of the object that is passed to it.  So we must
 //    not delete them.
+//
+// 2) Consider having a data product that is a collection type.  At
+//    present there is no properly supported way for one element of the
+//    collection to have an art::Ptr that refers to a different element
+//    within the same collection. The issue is that we need a handle to
+//    the collection before we can make the Ptrs; but we do not have
+//    a handle until after the collection has become readonly.
+//    The interim solution is to cast away constness.  The longer term
+//    solution is to modify the post.insert() feature of data products
+//    so that it can be used for a cet::map_vector<T>.
 //
 
 // C++ includes.
@@ -30,6 +40,7 @@
 // Framework includes
 #include "art/Framework/Core/Event.h"
 #include "art/Persistency/Common/Handle.h"
+#include "art/Persistency/Common/OrphanHandle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -47,6 +58,7 @@
 #include "G4Timer.hh"
 
 // Mu2e includes
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
@@ -63,6 +75,8 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
+#include "Mu2eG4/inc/finalizeStepPointMC.hh"
+#include "Mu2eG4/inc/finalizeSimParticle.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
@@ -324,7 +338,7 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
-     // Some of the user actions have begein event methods. These are not G4 standards.
+    // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent();
     _genAction->setEvent(event);
 
@@ -340,14 +354,14 @@ namespace mu2e {
     _printPhysicsProcessSummary  = _config->getBool("g4.printPhysicsProcessSummary",false);
 
     if ( _config->getBool("hasITracker",false) ) {
-            static_cast<ITGasLayerSD*>
-            (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
-            beforeG4Event(*outputHits, _processInfo);
+      static_cast<ITGasLayerSD*>
+        (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
+        beforeG4Event(*outputHits, _processInfo);
 
     }else {
-            static_cast<StrawSD*>
-            (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
-             beforeG4Event(*outputHits, _processInfo);
+      static_cast<StrawSD*>
+        (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
+        beforeG4Event(*outputHits, _processInfo);
     }
 
     static_cast<VirtualDetectorSD*>
@@ -407,15 +421,33 @@ namespace mu2e {
                           *pointTrajectories,
                           _physVolHelper);
 
+    // Need when building art::Ptrs within SimParticleCollection.
+    art::Handle<GenParticleCollection> gensHandle;
+    event.getByLabel( "generate", gensHandle);
+
     // Add data products to the event.
     event.put(g4stat);
-    event.put(outputHits,_trackerOutputName);
-    event.put(vdHits,_vdOutputName);
-    event.put(stHits,_stOutputName);
-    event.put(sbHits,_sbOutputName);
-    event.put(simParticles);
-    event.put(caloHits,_caloOutputName);
-    event.put(caloROHits,_caloROOutputName);
+    art::OrphanHandle<SimParticleCollection> simsHandle = event.put(simParticles);
+
+    // Dangerous hack; need to cast away const-ness. See note 2.
+    SimParticleCollection& sims = (SimParticleCollection&) *simsHandle;
+    finalizeSimParticle( sims, gensHandle, simsHandle);
+
+    // Set the Ptr<SimParticle data members
+    finalizeStepPointMC( *outputHits, simsHandle);
+    finalizeStepPointMC( *vdHits,     simsHandle);
+    finalizeStepPointMC( *stHits,     simsHandle);
+    finalizeStepPointMC( *sbHits,     simsHandle);
+    finalizeStepPointMC( *caloHits,   simsHandle);
+    finalizeStepPointMC( *caloROHits, simsHandle);
+
+    event.put(outputHits, _trackerOutputName);
+    event.put(vdHits,     _vdOutputName);
+    event.put(stHits,     _stOutputName);
+    event.put(sbHits,     _sbOutputName);
+    event.put(caloHits,   _caloOutputName);
+    event.put(caloROHits, _caloROOutputName);
+
     event.put(pointTrajectories);
 
 
