@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.4 2011/06/07 21:32:21 kutschke Exp $     -->
+<!--  $Id: classes_def.xml,v 1.5 2011/06/07 22:52:22 kutschke Exp $     -->
 <!--  $Author: kutschke $ -->
-<!--  $Date: 2011/06/07 21:32:21 $   -->
+<!--  $Date: 2011/06/07 22:52:22 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.4 $$Date: 2011/06/07 21:32:21 $"; -->
+<!--  rev="$Revision: 1.5 $$Date: 2011/06/07 22:52:22 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -49,9 +49,6 @@
  <class name="std::vector<art::Ptr<mu2e::SimParticle> >"/>
  <class name="mu2e::PtrStepPointMCVector"/>
  <class name="mu2e::PtrStepPointMCVectorCollection"/>
- <class name="art::Ptr<std::pair<cet::map_vector_key,mu2e::SimParticle> >"/>
- <class name="mu2e::PtrTest"/>
- <class name="mu2e::PtrTestCollection"/>
  <class name="art::Wrapper<mu2e::GenParticleCollection>"/>
  <class name="art::Wrapper<mu2e::StepPointMCCollection>"/>
  <class name="art::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>
@@ -62,7 +59,6 @@
  <class name="art::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
  <class name="art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>"/>
  <class name="art::Wrapper<mu2e::PointTrajectoryCollection>"/>
- <class name="art::Wrapper<mu2e::PtrTestCollection>"/>
  <class name="art::Wrapper<mu2e::StatusG4>"/>
  <class name="art::Wrapper<mu2e::PtrStepPointMCVectorCollection>"/>
 </lcgdict>

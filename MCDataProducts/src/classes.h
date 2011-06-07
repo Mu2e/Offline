@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.4 2011/06/07 21:32:21 kutschke Exp $
+// $Id: classes.h,v 1.5 2011/06/07 22:52:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:32:21 $
+// $Date: 2011/06/07 22:52:22 $
 //
 // Original author Rob Kutschke
 //
@@ -30,7 +30,6 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
-#include "MCDataProducts/inc/PtrTest.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -59,5 +58,4 @@ template class art::Wrapper<mu2e::CaloHitMCTruthCollection>;
 template class art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>;
 template class art::Wrapper<mu2e::PointTrajectoryCollection>;
 template class art::Wrapper<mu2e::StatusG4>;
-template class art::Wrapper<mu2e::PtrTestCollection>;
 template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;
