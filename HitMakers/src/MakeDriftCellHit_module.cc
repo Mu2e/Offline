@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.7 2011/06/07 21:37:59 kutschke Exp $
+// $Id: MakeDriftCellHit_module.cc,v 1.8 2011/06/07 23:00:51 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:37:59 $
+// $Date: 2011/06/07 23:00:51 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -164,9 +164,6 @@ namespace mu2e {
     // Ask the event to give us a handle to the requested hits.
     art::Handle<StepPointMCCollection> points;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,points);
-
-    // Product Id of the input points.
-    art::ProductID const& id(points.id());
 
     // Calculate T0 for this event
     double t0 = _gaussian.fire(0.,_t0Sigma);
