@@ -1,9 +1,9 @@
 //
 // Root script to display some of the plots in made by ReadBack_plugin.cc
 // 
-// $Id: g4test_03.cint,v 1.4 2011/05/02 14:29:42 kutschke Exp $
+// $Id: g4test_03.cint,v 1.5 2011/06/07 22:05:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/02 14:29:42 $
+// $Date: 2011/06/07 22:05:18 $
 // 
 // Original author Rob Kutschke
 //
@@ -49,7 +49,7 @@
 
   // Name of the output postscript file.
   // Postscript is the only graphics format for which root supports multi-page output files.
-  TString psfile( basename + ".ps");
+  TString psfile( basename + ".pdf");
 
   // Get pointers to some of the histograms.
   TH1F* hMultiplicity;  file->GetObject("checkhits/hMultiplicity",  hMultiplicity);
