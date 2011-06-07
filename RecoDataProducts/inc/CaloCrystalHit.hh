@@ -1,9 +1,9 @@
 #ifndef RecoDataProducts_CaloCrystalHit_hh
 #define RecoDataProducts_CaloCrystalHit_hh
 
-// $Id: CaloCrystalHit.hh,v 1.2 2011/06/07 21:32:22 kutschke Exp $
+// $Id: CaloCrystalHit.hh,v 1.3 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:32:22 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author KLG
 
@@ -83,8 +83,8 @@ namespace mu2e {
   inline std::ostream& operator<<( std::ostream& ost,
                                    CaloCrystalHit::CaloHitPtr const& hit){
     ost << "("
-	<< hit.id() << ","
-	<< hit.key() << ")";
+        << hit.id() << ","
+        << hit.key() << ")";
     return ost;
   }
 

@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.9 2011/06/07 21:37:59 kutschke Exp $
+// $Id: ReadStrawHit_module.cc,v 1.10 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:37:59 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -133,9 +133,9 @@ namespace mu2e {
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
     _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple",
-					 "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
+                                         "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
     _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple",
-					    "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
+                                            "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
   }
 
   void
@@ -178,7 +178,7 @@ namespace mu2e {
           const CLHEP::Hep3Vector vec3j = str.getMidPoint();
           const CLHEP::Hep3Vector vec3j1 = str.getDirection();
           /*
-	    cout << i <<
+            cout << i <<
             ","<<lid.getLayer()<<
             ","<<did <<
             ","<<secid.getSector()<<

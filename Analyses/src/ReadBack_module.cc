@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.7 2011/06/07 22:23:41 kutschke Exp $
+// $Id: ReadBack_module.cc,v 1.8 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 22:23:41 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Rob Kutschke
 //
@@ -682,15 +682,15 @@ namespace mu2e {
       GenId genId;
 
       if ( haveSimPart ){
-	SimParticle const& sim = *hit.simParticle();
-	
+        SimParticle const& sim = *hit.simParticle();
+
         // PDG Particle Id of the sim particle that made this hit.
         pdgId = sim.pdgId();
 
         // If this is a generated particle, which generator did it come from?
         // This default constructs to "unknown".
         if ( sim.fromGenerator() ){
-	  GenParticle const& gen = *sim.genParticle();
+          GenParticle const& gen = *sim.genParticle();
           genId = gen.generatorId();
         }
       }

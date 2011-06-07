@@ -3,9 +3,9 @@
 //
 // Set the art::Ptr<GenParticle> and art::Ptr<SimParticle> data members of a SimParticleCollection.
 //
-// $Id: finalizeSimParticle.hh,v 1.1 2011/06/07 21:56:50 kutschke Exp $
+// $Id: finalizeSimParticle.hh,v 1.2 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:56:50 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Rob Kutschke
 //
@@ -21,9 +21,9 @@
 namespace mu2e {
 
   void finalizeSimParticle ( SimParticleCollection& v,
-			     art::Handle<GenParticleCollection>& genshandle,
-			     art::OrphanHandle<SimParticleCollection>& simshandle
-			     );
+                             art::Handle<GenParticleCollection>& genshandle,
+                             art::OrphanHandle<SimParticleCollection>& simshandle
+                             );
 
 }
 

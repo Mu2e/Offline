@@ -3,9 +3,9 @@
 // Code to produce a vector<SubEvent> from the collection of StrawHits
 // for an event.
 //
-// $Id: SubEventsMaker_module.cc,v 1.2 2011/06/07 22:25:27 kutschke Exp $
+// $Id: SubEventsMaker_module.cc,v 1.3 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 22:25:27 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author: Mark Fischler
 //
@@ -83,7 +83,7 @@ namespace mu2e {;
     // helper functions
     void fillSubEvents( art::Event& event,
                         TTracker const& tt,
-			SubEventCollection & SubEvents );
+                        SubEventCollection & SubEvents );
     void fillControlFromPset(fhicl::ParameterSet const& pSet);
     
     // helper sub-class
@@ -144,7 +144,7 @@ namespace mu2e {;
     
   void SubEventsMaker::fillSubEvents( art::Event& event,
                                       TTracker const& trk,
-			              SubEventCollection & subEvents )
+                                      SubEventCollection & subEvents )
   {
     art::Handle<StrawHitCollection> pdataHandle;
     event.getByLabel(_makerModuleLabel, pdataHandle);
@@ -160,31 +160,31 @@ namespace mu2e {;
 
     for ( double t1 = _timeStart; 
           t1 + _timeWindow - _timeBinStep <= _timeEnd;
-	  t1 +=  _timeBinStep  )
-    {
-      double t2 = std::min (t1 + _timeWindow, _timeEnd);
-      SubEvent subEvent(t1,t2);
-      separator.timeSlice(t1,t2,subEvent);
-      if ( subEvent.nHits() >= _minSubEventHits )
+          t1 +=  _timeBinStep  )
       {
-        // TODO - this is a temporary diagnostic output
-        // We should perhaps add a diagLevel control over this.
+        double t2 = std::min (t1 + _timeWindow, _timeEnd);
+        SubEvent subEvent(t1,t2);
+        separator.timeSlice(t1,t2,subEvent);
+        if ( subEvent.nHits() >= _minSubEventHits )
+          {
+            // TODO - this is a temporary diagnostic output
+            // We should perhaps add a diagLevel control over this.
 #ifdef DIAGNOSICS_FOR_SEM
-        std::cout << "About to push back a SubEvent with "
-                  << subEvent.nHits() << " hits\n";
+            std::cout << "About to push back a SubEvent with "
+                      << subEvent.nHits() << " hits\n";
 #endif 
-        subEvents.push_back ( subEvent ); 
+            subEvents.push_back ( subEvent ); 
 #ifdef DIAGNOSICS_FOR_SEM
-        std::cout << "pushed back a SubEvent with "
-                  << subEvent.nHits() << " hits\n";
+            std::cout << "pushed back a SubEvent with "
+                      << subEvent.nHits() << " hits\n";
+#endif 
+          } 
+        // TODO -- this is a temproary diagnostic printout
+#ifdef DIAGNOSICS_FOR_SEM_TERSE
+        std::cout << "fillSubEvents: SubEvent in time range (" << t1
+                  << ", " << t2 << ") contains " << subEvent.nHits() << " hits\n";
 #endif 
       } 
-      // TODO -- this is a temproary diagnostic printout
-#ifdef DIAGNOSICS_FOR_SEM_TERSE
-      std::cout << "fillSubEvents: SubEvent in time range (" << t1
-                << ", " << t2 << ") contains " << subEvent.nHits() << " hits\n";
-#endif 
-    } 
     // TODO TWEAK:  Investigate best choices for time windows, or possibly
     //              different algorithms than this simple one for separating 
     //              into windows 
@@ -193,16 +193,16 @@ namespace mu2e {;
 
 
   SubEventsMaker::SubEventSeparator::SubEventSeparator 
-      (TTracker const& trk, StrawHitCollection const & hits)
-      : tt(trk)
-      , h(hits)
-      , t0_star()
+  (TTracker const& trk, StrawHitCollection const & hits)
+    : tt(trk)
+    , h(hits)
+    , t0_star()
   {
     typedef StrawHitCollection::const_iterator SHCci;
     for (SHCci hit = h.begin(); hit != h.end(); ++hit)
-    {
-      t0_star.push_back(rough_t0_star(*hit));
-    }
+      {
+        t0_star.push_back(rough_t0_star(*hit));
+      }
   } // ctor of SubEventSeparator
 
   double
@@ -223,16 +223,16 @@ namespace mu2e {;
               << " with hL = " << strawHalfLength
               << " and Z = "   << strawZ
               << " has t0_star = " << 
-              t - 0.5*delta_t + strawHalfLength/wirePropogationSpeed
-              + strawZ*averageSecTheta/betaC << "\n";
+      t - 0.5*delta_t + strawHalfLength/wirePropogationSpeed
+      + strawZ*averageSecTheta/betaC << "\n";
 #endif 
     return t - 0.5*delta_t + strawHalfLength/wirePropogationSpeed
-           + strawZ*averageSecTheta/betaC;
+      + strawZ*averageSecTheta/betaC;
   } // SubEventSeparator::rough_t0_star
 
   void
   SubEventsMaker::SubEventSeparator::timeSlice 
-             ( double t1, double t2, SubEvent & subEvent) const
+  ( double t1, double t2, SubEvent & subEvent) const
   {
     assert(h.size() == t0_star.size()); // elements of t0_star correspond
                                         // to the hits elements of h
@@ -241,11 +241,11 @@ namespace mu2e {;
     for (SHCci h_it = h.begin();
          h_it != h.end(); 
          ++h_it, ++timeList_it) 
-    {
-      double t = *timeList_it;
-      if ( (t < t1) || (t > t2) ) continue;
-      subEvent.push_back (StrawHitSynopsis(*h_it, t));
-    }
+      {
+        double t = *timeList_it;
+        if ( (t < t1) || (t > t2) ) continue;
+        subEvent.push_back (StrawHitSynopsis(*h_it, t));
+      }
   }  // SubEventSeparator::timeSlice 
    
 } // end of namespace mu2e

@@ -5,9 +5,9 @@
 // access to them and manage their lifetimes.  This class is designed to be
 // a transient only data product.
 //
-// $Id: KalRepCollection.hh,v 1.1 2011/06/06 15:30:40 kutschke Exp $
+// $Id: KalRepCollection.hh,v 1.2 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/06 15:30:40 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Rob Kutschke
 //
@@ -38,9 +38,9 @@ namespace mu2e {
 
     ~KalRepCollection(){
       for( std::vector<KalRep*>::iterator i=tracks_.begin();
-	   i!=tracks_.end(); ++i ){
-	KalRep* t = *i;
-	if ( t ) delete t;
+           i!=tracks_.end(); ++i ){
+        KalRep* t = *i;
+        if ( t ) delete t;
       }
       // tracks_ immediately goes out of scope:
     }

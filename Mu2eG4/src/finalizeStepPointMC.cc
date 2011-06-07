@@ -1,9 +1,9 @@
 //
 // Set the Ptr<SimParticle> data members of a StepPointMCCollection.
 //
-// $Id: finalizeStepPointMC.cc,v 1.1 2011/06/07 21:56:50 kutschke Exp $
+// $Id: finalizeStepPointMC.cc,v 1.2 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:56:50 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Rob Kutschke
 //
@@ -22,10 +22,10 @@ using namespace std;
 namespace mu2e {
 
   void finalizeStepPointMC ( StepPointMCCollection& v,
-			     art::OrphanHandle<SimParticleCollection>& handle
-			     ){
+                             art::OrphanHandle<SimParticleCollection>& handle
+                             ){
     for ( StepPointMCCollection::iterator i=v.begin();
-	  i !=v.end(); ++i ){
+          i !=v.end(); ++i ){
       StepPointMC& step = *i;
       step.setSimParticlePtr( handle );
     }

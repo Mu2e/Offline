@@ -1,9 +1,9 @@
 //
 // Test of Ptr to GenParticles and SimParticles.
 //
-// $Id: PtrTest0_module.cc,v 1.5 2011/06/07 22:23:41 kutschke Exp $
+// $Id: PtrTest0_module.cc,v 1.6 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 22:23:41 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Rob Kutschke
 //
@@ -94,7 +94,7 @@ namespace mu2e {
              << endl;
         
         simPtrs.push_back( art::Ptr<SimParticle>() );
-	simPtrs.back() = art::Ptr<SimParticle>(simsHandle,key.asInt());
+        simPtrs.back() = art::Ptr<SimParticle>(simsHandle,key.asInt());
 
 
       }

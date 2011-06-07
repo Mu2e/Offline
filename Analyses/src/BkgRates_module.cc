@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.13 2011/06/07 22:23:40 kutschke Exp $
+// $Id: BkgRates_module.cc,v 1.14 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 22:23:40 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Gianni Onorato
 //
@@ -908,7 +908,7 @@ namespace mu2e {
 
         CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
 
-	std::vector<art::Ptr<CaloHit> > const & ROIds  = hit.readouts();
+        std::vector<art::Ptr<CaloHit> > const & ROIds  = hit.readouts();
 
         if (ROIds.size() < 1) {
           //          cout << " Event n. " << evt.id().event()

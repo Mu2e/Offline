@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.36 2011/06/01 18:49:12 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.37 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/01 18:49:12 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Rob Kutschke
 //
@@ -403,23 +403,23 @@ namespace mu2e {
         layer._indices.push_back(index);
 
 
-	//         if ( layId.getDevice() != -1 ){
-	//           cout << "Position: " << setw(3) <<
-	//             layId << " | " << setw(3) <<
-	//             iman << " " << setw(3) <<
-	//             istr                << " | " << setw(3) <<
-	//             _istraw << " " << fixed << setprecision(2) << setw(8) <<
-	//             xstraw << " " << fixed << setprecision(2) << setw(8) <<
-	//             2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
-	//             mid << " " << fixed << setprecision(2) << setw(8) <<
-	//             device.origin() << " | "  << setw(3) <<
-	//             index <<  " " << setw(3) <<
-	//             allStraws.size() << " "  << setw(3) <<
-	//             layer._straws.size() << " | " << setw(5) <<
-	//             (allStraws.back()).id() << ", " << setw(5) <<
-	//             (allStraws.back()).index()
-	//           << endl;
-	//           }
+        //         if ( layId.getDevice() != -1 ){
+        //           cout << "Position: " << setw(3) <<
+        //             layId << " | " << setw(3) <<
+        //             iman << " " << setw(3) <<
+        //             istr                << " | " << setw(3) <<
+        //             _istraw << " " << fixed << setprecision(2) << setw(8) <<
+        //             xstraw << " " << fixed << setprecision(2) << setw(8) <<
+        //             2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
+        //             mid << " " << fixed << setprecision(2) << setw(8) <<
+        //             device.origin() << " | "  << setw(3) <<
+        //             index <<  " " << setw(3) <<
+        //             allStraws.size() << " "  << setw(3) <<
+        //             layer._straws.size() << " | " << setw(5) <<
+        //             (allStraws.back()).id() << ", " << setw(5) <<
+        //             (allStraws.back()).index()
+        //           << endl;
+        //           }
 
       }
     }
@@ -693,13 +693,13 @@ namespace mu2e {
       sqrt( sum_of_squares(_envelopeInnerRadius + 2.0*_sectorBoxHalfLengths.at(1),
                            _sectorBoxHalfLengths.at(3)
                            )
-	    );
+            );
     double outerSupportRadiusRequiredl =
       max( outerSupportRadiusRequireds,
            sqrt( sum_of_squares(_envelopeInnerRadius-pad,
                                 _sectorBoxHalfLengths.at(4))
-		 )
-	   );
+                 )
+           );
 
     //     if (true) {
     //       cout << "Debugging _strawHalfLengths: ";
@@ -912,13 +912,13 @@ namespace mu2e {
       
       int strawNumberWithinLayer = straw->id().getStraw();
       int incrementedStrawNumber = 
-	( strawNumberWithinLayer + 1 < nStrawLayer ) 
-	? strawNumberWithinLayer + 1
-	: StrawIndex::NO_STRAW;
+        ( strawNumberWithinLayer + 1 < nStrawLayer ) 
+        ? strawNumberWithinLayer + 1
+        : StrawIndex::NO_STRAW;
       int decrementedStrawNumber = 
-	( strawNumberWithinLayer - 1 >=  0) 
-	? strawNumberWithinLayer - 1
-	: StrawIndex::NO_STRAW;
+        ( strawNumberWithinLayer - 1 >=  0) 
+        ? strawNumberWithinLayer - 1
+        : StrawIndex::NO_STRAW;
 
       straw->_nextOuterL = ttStrawIndex (layerId, incrementedStrawNumber);
       straw->_nextInnerL = ttStrawIndex (layerId, decrementedStrawNumber);

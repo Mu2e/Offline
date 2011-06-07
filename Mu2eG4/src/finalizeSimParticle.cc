@@ -1,9 +1,9 @@
 //
 // Set the art::Ptr<GenParticle> and art::Ptr<SimParticle> data members of a SimParticleCollection.
 //
-// $Id: finalizeSimParticle.cc,v 1.1 2011/06/07 21:56:50 kutschke Exp $
+// $Id: finalizeSimParticle.cc,v 1.2 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:56:50 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Rob Kutschke
 //
@@ -22,12 +22,12 @@ using namespace std;
 namespace mu2e {
 
   void finalizeSimParticle ( SimParticleCollection& v,
-			     art::Handle<GenParticleCollection>& gensHandle,
-			     art::OrphanHandle<SimParticleCollection>& simsHandle
-			     ){
+                             art::Handle<GenParticleCollection>& gensHandle,
+                             art::OrphanHandle<SimParticleCollection>& simsHandle
+                             ){
 
     for ( SimParticleCollection::iterator i=v.begin();
-	  i !=v.end(); ++i ){
+          i !=v.end(); ++i ){
       SimParticle& sim = i->second;
 
       sim.setParentPtr     ( art::Ptr<SimParticle>( simsHandle, sim.getParentId() ) );
@@ -38,8 +38,8 @@ namespace mu2e {
       std::vector<art::Ptr<SimParticle> > dauSim;
       dauSim.reserve( dauIds.size() );
       for ( std::vector<SimParticleCollection::key_type>::const_iterator i=dauIds.begin();
-	    i != dauIds.end(); ++i ){
-	dauSim.push_back( art::Ptr<SimParticle>(simsHandle, i->asInt() ) );
+            i != dauIds.end(); ++i ){
+        dauSim.push_back( art::Ptr<SimParticle>(simsHandle, i->asInt() ) );
       }
 
       sim.setDaughterPtrs( dauSim );

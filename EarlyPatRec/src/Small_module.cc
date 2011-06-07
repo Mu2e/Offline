@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: Small_module.cc,v 1.10 2011/06/07 22:25:27 kutschke Exp $
+// $Id: Small_module.cc,v 1.11 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 22:25:27 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author: Mark Fischler
 //
@@ -481,8 +481,8 @@ namespace mu2e {;
     double _timetodist=149.8962;
     for ( size_t i=0; i< clusters.size(); ++i )// Loop over Clusters
       {
-	StrawCluster      const& cluster(clusters.at(i));
-	StrawHitPtrVector const& strawHits(cluster.strawHits());
+        StrawCluster      const& cluster(clusters.at(i));
+        StrawHitPtrVector const& strawHits(cluster.strawHits());
 
         CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
         CLHEP::Hep3Vector clusterpos =  CLHEP::Hep3Vector(0.,0.,0.);

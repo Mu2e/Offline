@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.14 2011/06/07 21:37:59 kutschke Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.15 2011/06/07 23:01:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:37:59 $
+// $Date: 2011/06/07 23:01:53 $
 //
 // Original author Hans Wenzel
 //
@@ -57,21 +57,21 @@ using namespace std;
 
 namespace mu2e {
   TGraph *gr;
-void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
-   //minimisation function computing the sum of squares of residuals
-   Int_t np = gr->GetN();
-   f = 0;
-   Double_t *x = gr->GetX();
-   Double_t *y = gr->GetY();
-   for (Int_t i=0;i<np;i++) {
+  void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
+    //minimisation function computing the sum of squares of residuals
+    Int_t np = gr->GetN();
+    f = 0;
+    Double_t *x = gr->GetX();
+    Double_t *y = gr->GetY();
+    for (Int_t i=0;i<np;i++) {
       Double_t u = x[i] - par[0];
       Double_t v = y[i] - par[1];
       Double_t dr = par[2] - TMath::Sqrt(u*u+v*v);
       f += dr*dr;
-   }
-}
+    }
+  }
 
- class Vector
+  class Vector
   {
   public:
     float x_, y_;
@@ -128,47 +128,47 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       return NOT_INTERSECTING;
     }
   };
- class pstraw{
-   //
-   // pseudo straw class
-   //
- public:
-   Int_t   lay;
-   Int_t   did;
-   Int_t   sec;
-   Float_t hl;
-   Float_t mpx;
-   Float_t mpy;
-   Float_t mpz;
-   Float_t dirx;
-   Float_t diry;
-   Float_t dirz; // should always be 0
-   /*
-    bool operator>(const pstraw other) const {
+  class pstraw{
+    //
+    // pseudo straw class
+    //
+  public:
+    Int_t   lay;
+    Int_t   did;
+    Int_t   sec;
+    Float_t hl;
+    Float_t mpx;
+    Float_t mpy;
+    Float_t mpz;
+    Float_t dirx;
+    Float_t diry;
+    Float_t dirz; // should always be 0
+    /*
+      bool operator>(const pstraw other) const {
       if (id > other.id) {
-        return true;
+      return true;
       }
       else{
-        return false;
+      return false;
       }
-    }
-   bool operator<(const pstraw other) const {
+      }
+      bool operator<(const pstraw other) const {
       if (id < other.id) {
-        return true;
+      return true;
       }
       else{
-        return false;
+      return false;
       }
-   }
-   bool operator==(const straw other) const {
+      }
+      bool operator==(const straw other) const {
       if (id == other.id) {
-        return true;
+      return true;
       }
       else{
-        return false;
+      return false;
       }
-   }
-   */
+      }
+    */
     void Print()
     {
       cout<< "Straw:  " << endl;
@@ -184,7 +184,7 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       cout<< "diry:   " << diry <<endl;
       cout<< "dirz:   " << dirz <<endl;
     }
- };
+  };
 
   //--------------------------------------------------------------------
   //
@@ -254,25 +254,25 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     
     for ( size_t cluster=0; cluster<clusters->size(); ++cluster) // Loop over StrawClusters
       {
-	StrawCluster const& scluster = clusters->at(cluster);	
-	StrawHitPtrVector const & strawHits = scluster.strawHits();
-	cout<<"Length of Cluster:  " << strawHits.size()
-	  //	    <<"  Energy:  "<<scluster.Energy(evt) 
-	  //  <<" average T:  "<<scluster.averageT(evt)
-	  //   <<" average dT: "<<scluster.averagedT(evt)
-	  //  <<" half length:  "<<scluster.Halflength(evt)
-	    << endl;
+        StrawCluster const& scluster = clusters->at(cluster);        
+        StrawHitPtrVector const & strawHits = scluster.strawHits();
+        cout<<"Length of Cluster:  " << strawHits.size()
+          //            <<"  Energy:  "<<scluster.Energy(evt) 
+          //  <<" average T:  "<<scluster.averageT(evt)
+          //   <<" average dT: "<<scluster.averagedT(evt)
+          //  <<" half length:  "<<scluster.Halflength(evt)
+            << endl;
         //CLHEP::Hep3Vector  pvec = scluster.X(evt);
-	//cout<<"Position of Cluster:  " << scluster.X(evt) << endl;
-	//cout<<"Direction of Cluster:  " << scluster.dirX(evt) << endl;
-	for (size_t index =0;index<strawHits.size();++index)
-	  {
-	    StrawHit const& strawHit = *strawHits[index];
-	    cout << "Cluster Nr : " << cluster 
-		 << " Index:  "     << strawHits[index].key()
-		 << " Hit info: "   << strawHit 
-		 << endl;
-	  }
+        //cout<<"Position of Cluster:  " << scluster.X(evt) << endl;
+        //cout<<"Direction of Cluster:  " << scluster.dirX(evt) << endl;
+        for (size_t index =0;index<strawHits.size();++index)
+          {
+            StrawHit const& strawHit = *strawHits[index];
+            cout << "Cluster Nr : " << cluster 
+                 << " Index:  "     << strawHits[index].key()
+                 << " Hit info: "   << strawHit 
+                 << endl;
+          }
 
       }
 
@@ -323,17 +323,17 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     cout << "x0:   " << fitter->GetParameter(0)
          << " y0:  " << fitter->GetParameter(1)
          << " r:   " << fitter->GetParameter(2)
-    <<endl;
+         <<endl;
     _x0y0->Fill(fitter->GetParameter(0),fitter->GetParameter(1));
     _R_rec->Fill(fitter->GetParameter(2));
     //Draw the circle on top of the points
     //TArc *arc = new TArc(fitter->GetParameter(0),
     //                   fitter->GetParameter(1),fitter->GetParameter(2));
-  //arc->SetLineColor(kRed);
-  //arc->SetLineWidth(4);
-  // arc->Draw();
-  //int age;
-  //cin >> age;
+    //arc->SetLineColor(kRed);
+    //arc->SetLineWidth(4);
+    // arc->Draw();
+    //int age;
+    //cin >> age;
   }
 }
 
