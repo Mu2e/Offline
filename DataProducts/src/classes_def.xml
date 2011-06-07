@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.5 2011/06/01 18:27:42 kutschke Exp $     -->
+<!--  $Id: classes_def.xml,v 1.6 2011/06/07 21:28:24 kutschke Exp $     -->
 <!--  $Author: kutschke $ -->
-<!--  $Date: 2011/06/01 18:27:42 $   -->
+<!--  $Date: 2011/06/07 21:28:24 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.5 $$Date: 2011/06/01 18:27:42 $"; -->
+<!--  rev="$Revision: 1.6 $$Date: 2011/06/07 21:28:24 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -17,16 +17,10 @@
 
 <lcgdict>
  <class name="mu2e::StrawIndex"/>
- <class name="cet::map_vector_key"/>
  <class name="std::vector<cet::map_vector_key>"/>
  <class name="mu2e::PDGCode"/>
- <class name="mu2e::DPIndex"/>
- <class name="std::vector<mu2e::DPIndex>"/>
  <class name="mu2e::LayerId"/>
  <class name="mu2e::SectorId"/>
  <class name="mu2e::DeviceId"/>
  <class name="mu2e::StrawId"/>
- <class name="mu2e::DPIndexVector"/>
- <class name="mu2e::DPIndexVectorCollection"/>
- <class name="art::Wrapper<mu2e::DPIndexVectorCollection>"/>
 </lcgdict>
