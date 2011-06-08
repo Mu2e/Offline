@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.2 2011/06/02 23:06:29 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/06/02 23:06:29 $
+// $Id: TrkDef.hh,v 1.3 2011/06/08 03:23:41 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2011/06/08 03:23:41 $
 //
 // Original author David Brown, LBNL
 //
@@ -19,6 +19,17 @@
 
 namespace mu2e 
 {
+// simple struct to put together t0 and t0 error
+  struct TrkT0 {
+    TrkT0(double t0, double t0err) : _t0(t0),_t0err(t0err){}
+    TrkT0() : _t0(0.0),_t0err(-1.0){}
+    double t0() const { return _t0; }
+    double t0Err() const { return _t0err; }
+    void setT0(double t0, double t0err) { _t0 = t0; _t0err = t0err; }
+    double _t0; // initial estimate of track t0, defined when the track reaches z=0;
+    double _t0err; // initial estimate of t0 error
+  };
+  
   class TrkDef {
   public:
     TrkDef(const StrawHitCollection* strawcollection, const std::vector<size_t>& strawhits,
@@ -35,15 +46,14 @@ namespace mu2e
     const StrawHitCollection* strawHitCollection() const { return _straws; }
     const std::vector<size_t>& strawHitIndices() const { return _indices;}
     const HelixTraj& helix() const { return _h0; }
-    double t0() const { return _t0; }
-    double t0Err() const { return _t0err; }
-    void setT0(double t0, double t0err) { _t0 = t0; _t0err = t0err; }
+    const TrkT0& trkT0() const { return _t0; }
+    void setTrkT0(double t0, double t0err) { _t0.setT0(t0,t0err); }
+    void setTrkT0(const TrkT0& t0) { _t0 = t0; }
   private:
     const StrawHitCollection* _straws; // straw hit collection
     std::vector<size_t> _indices; // indices to straw hits in the collection to use for this track
     HelixTraj _h0; // helix estimate, valid in the region around z=0
-    double _t0; // initial estimate of track t0, defined when the track reaches z=0;
-    double _t0err; // initial estimate of t0 error
+    TrkT0 _t0; // t0 estimate
     // dummy variables
     static HepVector _dpar;
     static HepSymMatrix _dcov;

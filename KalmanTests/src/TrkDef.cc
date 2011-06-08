@@ -1,9 +1,9 @@
 //
 // Track definition object
 //
-// $Id: TrkDef.cc,v 1.1 2011/06/02 00:00:05 mu2ecvs Exp $
+// $Id: TrkDef.cc,v 1.2 2011/06/08 03:23:41 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/02 00:00:05 $
+// $Date: 2011/06/08 03:23:41 $
 //
 // Original author David Brown, LBNL
 //
@@ -18,19 +18,19 @@ namespace mu2e
   
   TrkDef::TrkDef(const StrawHitCollection* strawcollection, const std::vector<size_t>& strawhits,
     const HelixTraj& helix, double t0, double t0err) :
-    _straws(strawcollection), _indices(strawhits),_h0(helix),_t0(t0),_t0err(t0err)
+    _straws(strawcollection), _indices(strawhits),_h0(helix),_t0(t0,t0err)
   {}
     
   TrkDef::TrkDef(const StrawHitCollection* strawcollection, const std::vector<size_t>& strawhits,
     const HepVector& parvec, const HepSymMatrix& covar, double t0, double t0err) :
-    _straws(strawcollection),_indices(strawhits),_h0(parvec,covar),_t0(t0),_t0err(t0err)
+    _straws(strawcollection),_indices(strawhits),_h0(parvec,covar),_t0(t0,t0err)
   {}
   
-  TrkDef::TrkDef() : _straws(0),_h0(_dpar,_dcov),_t0(0),_t0err(-1.0)
+  TrkDef::TrkDef() : _straws(0),_h0(_dpar,_dcov)
   {}
   
   TrkDef::TrkDef(const TrkDef& other ) : _straws(other._straws),_indices(other._indices),
-    _h0(other._h0), _t0(other._t0), _t0err(other._t0err)
+    _h0(other._h0), _t0(other._t0)
   {}
   
   TrkDef&
@@ -40,7 +40,6 @@ namespace mu2e
       _indices = other._indices;
       _h0 = other._h0;
       _t0 = other._t0;
-      _t0err = other._t0err;
     }
     return *this;
   }
