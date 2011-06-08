@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.6 2011/06/07 21:37:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 21:37:59 $
+// $Id: MakeStrawHit_module.cc,v 1.7 2011/06/08 21:43:02 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2011/06/08 21:43:02 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -204,7 +204,6 @@ namespace mu2e {
       CLHEP::Hep3Vector const& w     = straw.getDirection();
       double strawHalfLength         = straw.getHalfLength();
 
-      //        const double signalVelocity = 299.792458; // mm/ns
       const double signalVelocity = trackerCalibrations->SignalVelocity(straw_id);
 
 
