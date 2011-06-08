@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.1 2011/06/08 03:23:41 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.2 2011/06/08 03:53:11 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/08 03:23:41 $
+// $Date: 2011/06/08 03:53:11 $
 //
 
 // the following has to come before other BaBar includes
@@ -223,12 +223,12 @@ namespace mu2e
       double loclen;
       double flt0 = 0.0;
       double dz(10.0);
-      myfit._nt0iter = 0;
-      while(fabs(dz) > 1.0 && myfit._nt0iter < _kalcon->maxIterations() ) {
+      unsigned niter = 0;
+      while(fabs(dz) > 1.0 && niter < _kalcon->maxIterations() ) {
         const HelixTraj* helix = dynamic_cast<const HelixTraj*>(myfit._krep->localTrajectory(flt0,loclen));
         flt0 += helix->zFlight(0.0)-loclen;
         dz = myfit._krep->traj().position(flt0).z();
-        myfit._nt0iter++;
+        niter++;
       }
 // find hits
       std::vector<double> hitst0; // store t0, to allow outlyer removal

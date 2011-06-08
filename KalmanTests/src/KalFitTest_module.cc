@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.1 2011/06/08 03:23:41 mu2ecvs Exp $
+// $Id: KalFitTest_module.cc,v 1.2 2011/06/08 03:53:11 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/08 03:23:41 $
+// $Date: 2011/06/08 03:53:11 $
 //
 
 // framework
@@ -502,12 +502,13 @@ namespace mu2e
           break;
         }
       }
-      
+      CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(myfit._krep->seed()),*_bfield,0.0);
+      _seedmom = seedmom.mag();      
     } else {
+      _fitstatus = -1;
+      _nhits = -1;
       _fitmom = -1.0;
     }
-    CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(myfit._krep->seed()),*_bfield,0.0);
-    _seedmom = seedmom.mag();
     _trkdiag->Fill(); 
   }
 }
