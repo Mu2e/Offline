@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.2 2011/06/08 03:53:11 mu2ecvs Exp $
+// $Id: KalFitTest_module.cc,v 1.3 2011/06/08 23:50:32 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/08 03:53:11 $
+// $Date: 2011/06/08 23:50:32 $
 //
 
 // framework
@@ -359,9 +359,9 @@ namespace mu2e
       if(nprimary > 0)indices.push_back(istraw);
     }
     if(zmin > -1e5 && zmax < 1e5 ){
-// interpolate linearly
-// must correct for straw hit t0; not sure what that means physically????
-      double t0 = tmin + fabs(zmin)*(tmax-tmin)/(zmax-zmin) + mct0;
+// interpolate linearly back to z=0
+// must correct for calorimeter t0 until that's removed
+      double t0 = tmin - zmin*(tmax-tmin)/(zmax-zmin) + mct0;
 // should set t0err according to average, but that's not working.  For now, set to fixed value.
 // set to a negative value, to force t0 finding from data
       double t0err = -5.0;

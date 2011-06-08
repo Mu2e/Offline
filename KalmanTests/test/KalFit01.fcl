@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit01.fcl,v 1.3 2011/06/08 03:23:41 mu2ecvs Exp $
+# $Id: KalFit01.fcl,v 1.4 2011/06/08 23:50:32 mu2ecvs Exp $
 # $Author: mu2ecvs $
-# $Date: 2011/06/08 03:23:41 $
+# $Date: 2011/06/08 23:50:32 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -63,6 +63,7 @@ physics :
             maxiter        : 5
             debugLevel     : 0
             material       : true
+            maxhitchi      : 4
         }
     }
   }

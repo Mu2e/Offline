@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.2 2011/06/02 23:06:29 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/06/02 23:06:29 $
+// $Id: TrkStrawHit.hh,v 1.3 2011/06/08 23:50:32 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2011/06/08 23:50:32 $
 //
 // Original author David Brown, LBNL
 //
@@ -107,9 +107,9 @@ namespace mu2e
     double _rdrift_err;
     double _tddist;
     double _tddist_err;
+    double _vwire;
 // parameters that should come from some service: FIXME!!!
-    static double _vdrift; 
-    static double _vwire;
+    static double _vdrift;
     static double _maxdriftpull;
     static double _rerr; // intrinsic hit error; should come from a calibration object, FIXME!!!
   };
