@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.85 2011/05/23 20:31:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/23 20:31:51 $
+// $Id: geom_01.txt,v 1.86 2011/06/09 19:18:23 genser Exp $
+// $Author: genser $
+// $Date: 2011/06/09 19:18:23 $
 //
 // Original author Rob Kutschke
 //
@@ -227,6 +227,7 @@ string coll5.materialName = "G4_Cu";
 // Virtual detectors
 
 double vd.halfLength     = 0.1; //mm
+int    vd.verbosityLevel = 0;
 bool   vd.visible        = true;
 bool   vd.solid          = false;
 
@@ -262,7 +263,7 @@ string         target.fillMaterial    = "WAGVacuum";
 
 // All dimensions in mm in the detector coordinate system.
 // (0,0,0) = on axis in the DS at z=12000. mm
-double target.z0             = -6129.0;    // 12000-(13800.00-7929) = -6129.
+double target.z0             = -6129.0;    // 12000-(13800.00-7929) = -6129. was -6100
 double target.deltaZ         =    50.0;
 bool   target.visible        = true;
 bool   target.solid          = false;
@@ -438,6 +439,7 @@ double protonabsorber.OutRadius1   =  380.0;
 double protonabsorber.OutRadius0   =  335.2;
 double protonabsorber.halfLength   = 1250.0;
 double protonabsorber.thickness    =    0.5;
+int    protonabsorber.verbosityLevel = 0;
 bool   protonabsorber.visible      = true;
 bool   protonabsorber.solid        = false;
 
