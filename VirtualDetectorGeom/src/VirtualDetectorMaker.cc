@@ -1,7 +1,7 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.cc,v 1.7 2011/05/26 22:09:26 genser Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.8 2011/06/09 19:57:53 genser Exp $
 // $Author: genser $
 //
 
@@ -119,7 +119,6 @@ namespace mu2e {
       Hep3Vector ttrackerOffset(-solenoidOffset,0.,ttracker.z0());
 
       // VD 11 is placed inside the ttracker mother volume in the middle of the ttracker
-
       // VD 12 is placed inside the ttracker at the same z position as
       // VD 11 but from radius 0 to the inner radius of the ttracker
       // mother volume. However, its mother volume is ToyDS3Vacuum
@@ -129,6 +128,32 @@ namespace mu2e {
       _vd->addVirtualDetector( 11, vdName.str(),  ttrackerOffset, 0, Hep3Vector(0.,0.,0.));
       _vd->addVirtualDetector( 12, "TT_MidInner", ttrackerOffset, 0, Hep3Vector(0.,0.,0.));
 
+      vdName.str("TT_FrontHollow");
+
+      Hep3Vector ttrackerFrontVDOffset(-solenoidOffset,
+				       0.,
+				       ttracker.z0()-ttracker.getTrackerEnvelopeParams().zHalfLength()-vdHL);
+
+      // VD 13 is placed outside the ttracker mother volume in front of the ttracker
+      // "outside" of the proton absorber
+      
+      _vd->addVirtualDetector( 13,
+			       vdName.str(),
+			       ttrackerFrontVDOffset,
+			       0,
+			       Hep3Vector(0.,0.,0.));
+
+      // we add another VD detector at the same Z "inside" the proton absorber
+
+      if (c.getBool("hasProtonAbsorber",false)){
+
+	vdName.str("TT_FrontPA");
+	_vd->addVirtualDetector( 14,
+				 vdName.str(),
+				 ttrackerFrontVDOffset, 
+				 0,
+				 Hep3Vector(0.,0.,0.));
+      }
     }
   }
 
