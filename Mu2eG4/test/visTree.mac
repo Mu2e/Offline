@@ -1,0 +1,16 @@
+#
+# Macro file for printing the volume tree
+#
+#
+# $Id: visTree.mac,v 1.1 2011/06/09 19:21:00 genser Exp $
+# $Author: genser $
+# $Date: 2011/06/09 19:21:00 $
+#
+# Original author KLG
+
+/control/verbose 0
+/run/verbose 0
+/vis/ASCIITree/verbose 12
+/vis/drawTree 
+
+# Do NOT issue the /run/beamon command
