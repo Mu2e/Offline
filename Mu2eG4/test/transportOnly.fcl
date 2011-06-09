@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 #
-# $Id: transportOnly.fcl,v 1.6 2011/05/26 22:21:41 genser Exp $
+# $Id: transportOnly.fcl,v 1.7 2011/06/09 19:21:53 genser Exp $
 # $Author: genser $
-# $Date: 2011/05/26 22:21:41 $
+# $Date: 2011/06/09 19:21:53 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -74,6 +74,10 @@ physics :
       module_type          : G4
       diagLevel            : 0
       generatorModuleLabel : generate
+#      visMacro             : "Mu2eG4/test/visxy.mac"
+#      visMacro             : "Mu2eG4/test/visyz.mac"
+#      visMacro             : "Mu2eG4/test/vis45.mac"
+#      visMacro             : "Mu2eG4/test/visTree.mac"
       seed                 : [9877]
     }
 
