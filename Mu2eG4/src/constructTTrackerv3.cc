@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.23 2011/05/22 19:09:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Id: constructTTrackerv3.cc,v 1.24 2011/06/09 19:58:55 genser Exp $
+// $Author: genser $
+// $Date: 2011/06/09 19:58:55 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -45,13 +45,14 @@
 #include "G4String.hh"
 #include "G4ThreeVector.hh"
 #include "G4Trd.hh"
+#include "G4Tubs.hh"
 
 
 using namespace std;
 
 namespace mu2e{
 
-  VolumeInfo constructTTrackerv3( G4LogicalVolume* mother,
+  VolumeInfo constructTTrackerv3( VolumeInfo const& mother,
                                   double zOff,
                                   SimpleConfig const& config ){
 
@@ -75,20 +76,26 @@ namespace mu2e{
     // Make the envelope volume that holds the full tracker.
     TubsParams envelopeParams = ttracker.getTrackerEnvelopeParams();
 
-    int const oldpr = cout.precision();
-    int const oldwdth = cout.width();
-    static int const newpr = 8;
-    static int const newwdth = 14;
+    static int const newPrecision = 8;
+    static int const newWidth = 14;
 
-    verbosityLevel > 0 &&
+    if (verbosityLevel > 0) {
+      int oldPrecision = cout.precision(newPrecision);
+      int oldWidth = cout.width(newWidth);
+      std::ios::fmtflags oldFlags = cout.flags();
+      cout.setf(std::ios::fixed,std::ios::floatfield); 
       cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
-      "   " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.innerRadius() << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.outerRadius() << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.zHalfLength() << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.phi0()        << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << envelopeParams.phiMax()      << ", " <<
-      endl;
+	"   " <<
+	envelopeParams.innerRadius() << ", " <<
+	envelopeParams.outerRadius() << ", " <<
+	envelopeParams.zHalfLength() << ", " <<
+	envelopeParams.phi0()        << ", " <<
+	envelopeParams.phiMax()      << ", " <<
+	endl;
+      cout.setf(oldFlags);
+      cout.precision(oldPrecision);
+      cout.width(oldWidth);
+    }
 
     G4ThreeVector trackerOffset( 0., 0., ttracker.z0()-zOff );
 
@@ -108,6 +115,20 @@ namespace mu2e{
                                       true,
                                       doSurfaceCheck
                                       );
+
+    if ( verbosityLevel > 0) {
+      double zhl         = static_cast<G4Tubs*>(motherInfo.solid)->GetZHalfLength();
+      double motherOffsetInMu2eZ = motherInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
+      int oldPrecision = cout.precision(3);
+      std::ios::fmtflags oldFlags = cout.flags();
+      cout.setf(std::ios::fixed,std::ios::floatfield); 
+      cout << __func__ << " motherOffsetZ           in Mu2e    : " <<
+        motherOffsetInMu2eZ << endl;
+      cout << __func__ << " mother         Z extent in Mu2e    : " <<
+        motherOffsetInMu2eZ - zhl << ", " << motherOffsetInMu2eZ + zhl << endl;
+      cout.setf(oldFlags);
+      cout.precision(oldPrecision);
+    }
 
     TubsParams deviceEnvelopeParams = ttracker.getDeviceEnvelopeParams();
 
@@ -161,15 +182,23 @@ namespace mu2e{
                                        doSurfaceCheck
                                        );
 
-    verbosityLevel > 0 &&
+    if (verbosityLevel > 0 ) {
+      int oldPrecision = cout.precision(newPrecision);
+      int oldWidth = cout.width(newWidth);
+      std::ios::fmtflags oldFlags = cout.flags();
+      cout.setf(std::ios::fixed,std::ios::floatfield); 
       cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
       idev << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.innerRadius() << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.outerRadius() << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.zHalfLength() << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.phi0()        << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << deviceEnvelopeParams.phiMax()      << ", " <<
+      deviceEnvelopeParams.innerRadius() << ", " <<
+      deviceEnvelopeParams.outerRadius() << ", " <<
+      deviceEnvelopeParams.zHalfLength() << ", " <<
+      deviceEnvelopeParams.phi0()        << ", " <<
+      deviceEnvelopeParams.phiMax()      << ", " <<
       endl;
+      cout.setf(oldFlags);
+      cout.precision(oldPrecision);
+      cout.width(oldWidth);
+    }
 
     // place straws etc... wrt the envelope
 
@@ -235,15 +264,23 @@ namespace mu2e{
                   doSurfaceCheck
                   );
 
-    verbosityLevel > 0 &&
+    if (verbosityLevel > 0 ){
+      int oldPrecision = cout.precision(newPrecision);
+      int oldWidth = cout.width(newWidth);
+      std::ios::fmtflags oldFlags = cout.flags();
+      cout.setf(std::ios::fixed,std::ios::floatfield); 
       cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
-      isec << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(4) << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(3) << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(2) << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(2) << ", " <<
-      fixed << setprecision(newpr) << setw(newwdth) << sector.boxHalfLengths().at(1) << ", " <<
-      endl << setprecision(oldpr) << setw(oldwdth);
+	isec << ", " <<
+	sector.boxHalfLengths().at(4) << ", " <<
+	sector.boxHalfLengths().at(3) << ", " <<
+	sector.boxHalfLengths().at(2) << ", " <<
+	sector.boxHalfLengths().at(2) << ", " <<
+	sector.boxHalfLengths().at(1) << ", " <<
+	endl;      
+      cout.setf(oldFlags);
+      cout.precision(oldPrecision);
+      cout.width(oldWidth);
+    }
 
     static double const tRAngle  = M_PI_2;
     static double const tRAngle2 = M_PI;
@@ -313,11 +350,19 @@ namespace mu2e{
 
         G4Colour wireColor = G4Colour::Cyan();
 
-        verbosityLevel > 2 &&
+        if (verbosityLevel > 2) {
+	  int oldPrecision = cout.precision(newPrecision);
+	  int oldWidth = cout.width(newWidth);
+	  std::ios::fmtflags oldFlags = cout.flags();
+	  cout.setf(std::ios::fixed,std::ios::floatfield); 
           cout << "Debugging Straw istr, RYForTrapezoids, midpoint: " <<
-          istr << ", " << RYForTrapezoids << ", " <<
-          fixed << setprecision(newpr) << setw(newwdth) << mid << ", " <<
-          endl << setprecision(oldpr) << setw(oldwdth);
+	    istr << ", " << RYForTrapezoids << ", " <<
+	    mid << ", " <<
+	    endl;
+	  cout.setf(oldFlags);
+	  cout.precision(oldPrecision);
+	  cout.width(oldWidth);
+	}
 
         VolumeInfo strawWallInfo  = nestTubs(straw.name("TTrackerStrawWall_"),
                                              strawWallParams,
