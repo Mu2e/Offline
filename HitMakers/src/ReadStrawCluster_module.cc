@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.15 2011/06/07 23:01:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 23:01:53 $
+// $Id: ReadStrawCluster_module.cc,v 1.16 2011/06/09 21:23:03 wenzel Exp $
+// $Author: wenzel $
+// $Date: 2011/06/09 21:23:03 $
 //
 // Original author Hans Wenzel
 //
@@ -53,138 +53,25 @@
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+#include "Mu2eUtilities/inc/StrawClusterUtilities.hh"
 using namespace std;
 
 namespace mu2e {
   TGraph *gr;
-  void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
-    //minimisation function computing the sum of squares of residuals
-    Int_t np = gr->GetN();
-    f = 0;
-    Double_t *x = gr->GetX();
-    Double_t *y = gr->GetY();
-    for (Int_t i=0;i<np;i++) {
+void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
+   //minimisation function computing the sum of squares of residuals
+   Int_t np = gr->GetN();
+   f = 0;
+   Double_t *x = gr->GetX();
+   Double_t *y = gr->GetY();
+   for (Int_t i=0;i<np;i++) {
       Double_t u = x[i] - par[0];
       Double_t v = y[i] - par[1];
       Double_t dr = par[2] - TMath::Sqrt(u*u+v*v);
       f += dr*dr;
-    }
-  }
-
-  class Vector
-  {
-  public:
-    float x_, y_;
-    Vector(float f = 0.0f)
-      : x_(f), y_(f) {}
-
-    Vector(float x, float y)
-      : x_(x), y_(y) {}
-  };
-
-  class LineSegment
-  {
-  public:
-    Vector begin_;
-    Vector end_;
-
-    LineSegment(const Vector& begin, const Vector& end)
-      : begin_(begin), end_(end) {}
-
-    enum IntersectResult { PARALLEL, COINCIDENT, NOT_INTERSECTING, INTERSECTING };
-
-    IntersectResult Intersect(const LineSegment& other_line, Vector& intersection)
-    {
-      float denom = ((other_line.end_.y_ - other_line.begin_.y_)*(end_.x_ - begin_.x_)) -
-        ((other_line.end_.x_ - other_line.begin_.x_)*(end_.y_ - begin_.y_));
-
-      float nume_a = ((other_line.end_.x_ - other_line.begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
-        ((other_line.end_.y_ - other_line.begin_.y_)*(begin_.x_ - other_line.begin_.x_));
-
-      float nume_b = ((end_.x_ - begin_.x_)*(begin_.y_ - other_line.begin_.y_)) -
-        ((end_.y_ - begin_.y_)*(begin_.x_ - other_line.begin_.x_));
-
-      if(denom == 0.0f)
-        {
-          if(nume_a == 0.0f && nume_b == 0.0f)
-            {
-              return COINCIDENT;
-            }
-          return PARALLEL;
-        }
-
-      float ua = nume_a / denom;
-      float ub = nume_b / denom;
-
-      if(ua >= 0.0f && ua <= 1.0f && ub >= 0.0f && ub <= 1.0f)
-        {
-          // Get the intersection point.
-          intersection.x_ = begin_.x_ + ua*(end_.x_ - begin_.x_);
-          intersection.y_ = begin_.y_ + ua*(end_.y_ - begin_.y_);
-
-          return INTERSECTING;
-        }
-
-      return NOT_INTERSECTING;
-    }
-  };
-  class pstraw{
-    //
-    // pseudo straw class
-    //
-  public:
-    Int_t   lay;
-    Int_t   did;
-    Int_t   sec;
-    Float_t hl;
-    Float_t mpx;
-    Float_t mpy;
-    Float_t mpz;
-    Float_t dirx;
-    Float_t diry;
-    Float_t dirz; // should always be 0
-    /*
-      bool operator>(const pstraw other) const {
-      if (id > other.id) {
-      return true;
-      }
-      else{
-      return false;
-      }
-      }
-      bool operator<(const pstraw other) const {
-      if (id < other.id) {
-      return true;
-      }
-      else{
-      return false;
-      }
-      }
-      bool operator==(const straw other) const {
-      if (id == other.id) {
-      return true;
-      }
-      else{
-      return false;
-      }
-      }
-    */
-    void Print()
-    {
-      cout<< "Straw:  " << endl;
-      cout<< "======  " << endl;
-      cout<< "Layer:  " << lay  <<endl;
-      cout<< "DID:    " << did  <<endl;
-      cout<< "Sector: " << sec  <<endl;
-      cout<< "hl:     " << hl   <<endl;
-      cout<< "mpx:    " << mpx  <<endl;
-      cout<< "mpy:    " << mpy  <<endl;
-      cout<< "mpz:    " << mpz  <<endl;
-      cout<< "dirx:   " << dirx <<endl;
-      cout<< "diry:   " << diry <<endl;
-      cout<< "dirz:   " << dirz <<endl;
-    }
-  };
+   }
+}
 
   //--------------------------------------------------------------------
   //
@@ -246,35 +133,97 @@ namespace mu2e {
     cout << "ReadStrawCluster: analyze() begin"<<endl;
     if ( _diagLevel > 2 ) cout << "ReadStrawCluster: analyze() begin"<<endl;
     static int ncalls(0);
+    StrawClusterUtilities sutils=StrawClusterUtilities() ;
 
+	
+    multimap<int,StrawCluster> mpcluster;
+    mpcluster.clear();
     art::Handle<StrawClusterCollection> pdataHandle;
     evt.getByLabel(_clmakerModuleLabel,pdataHandle);
     StrawClusterCollection const* clusters = pdataHandle.product();
-    cout << "Nr of clusters:   " << clusters->size()<<endl;
-    
+    cout << "Nr of clusters:   " << clusters->size()<<endl;   
     for ( size_t cluster=0; cluster<clusters->size(); ++cluster) // Loop over StrawClusters
       {
-        StrawCluster const& scluster = clusters->at(cluster);        
-        StrawHitPtrVector const & strawHits = scluster.strawHits();
-        cout<<"Length of Cluster:  " << strawHits.size()
-          //            <<"  Energy:  "<<scluster.Energy(evt) 
-          //  <<" average T:  "<<scluster.averageT(evt)
-          //   <<" average dT: "<<scluster.averagedT(evt)
-          //  <<" half length:  "<<scluster.Halflength(evt)
-            << endl;
-        //CLHEP::Hep3Vector  pvec = scluster.X(evt);
-        //cout<<"Position of Cluster:  " << scluster.X(evt) << endl;
-        //cout<<"Direction of Cluster:  " << scluster.dirX(evt) << endl;
-        for (size_t index =0;index<strawHits.size();++index)
-          {
-            StrawHit const& strawHit = *strawHits[index];
-            cout << "Cluster Nr : " << cluster 
-                 << " Index:  "     << strawHits[index].key()
-                 << " Hit info: "   << strawHit 
-                 << endl;
-          }
-
+	StrawCluster const& scluster = clusters->at(cluster);	
+	cout << "averageT:  "<<sutils.averageT(scluster,evt)
+	     <<"  did: "<< sutils.did(scluster,evt)
+	     <<"  Station: "<<sutils.Station(scluster,evt)
+	     <<"  sector: "<< sutils.secid(scluster,evt)
+	     <<" X:  "<<sutils.X(scluster,evt)
+	     <<" dirX:  "<<sutils.dirX(scluster,evt)
+	     <<endl;
+	mpcluster.insert(pair<int,StrawCluster>(sutils.did(scluster,evt),scluster));
       }
+    cout <<"map size: " << mpcluster.size()<<endl;
+
+    Int_t nint = 0;
+    for (int i = 0;i<36;i++)
+      {
+	cout << " did:  "<<i << "  Count:  "<< mpcluster.count(i)<<endl;
+	if (mpcluster.count(i)>1) 
+	  {
+	    pair<multimap<int,StrawCluster>::iterator, multimap<int,StrawCluster>::iterator> ppp1;
+	    ppp1 = mpcluster.equal_range(i);
+	    multimap<int,StrawCluster>::iterator first1 = ppp1.first;
+	    multimap<int,StrawCluster>::iterator first2 = ppp1.first;
+	    multimap<int,StrawCluster>::iterator last1 = ppp1.second;
+	    last1--;
+	    multimap<int,StrawCluster>::iterator last2 = ppp1.second;
+	    for (first1;first1 != last1;++first1)
+	      {
+		first2=first1;
+		first2++;
+		for (first2;first2 != last2;++first2)
+		  {
+		  StrawCluster junk  = (*first1).second;
+		  StrawCluster pjunk = (*first2).second;
+		  LineSegmentPCA linesegment0 = sutils.linesegment(junk,evt);
+		  LineSegmentPCA linesegment1 = sutils.linesegment(pjunk,evt);
+		  CLHEP::Hep2Vector intersection;
+		  switch(linesegment0.Intersect(linesegment1,intersection))
+		    {
+		    case LineSegmentPCA::PARALLEL:
+		      //std::cout << "The lines are parallel\n\n";
+		      break;
+		    case LineSegmentPCA::COINCIDENT:
+		      //std::cout << "The lines are coincident\n\n";
+		      break;
+		    case LineSegmentPCA::NOT_INTERSECTING:
+		      // std::cout << "The lines do not intersect\n\n";
+		      break;
+		    case LineSegmentPCA::INTERSECTING:
+		      std::cout << "The lines intersect at (" << intersection.x() << ", " << intersection.y() << ")\n\n";
+		      //X.push_back(intersection.x_);
+		      //Y.push_back(intersection.y_);
+		      //Z.push_back(0.5*(junk.mpz+pjunk.mpz));
+		      //R.push_back(sqrt(intersection.x_*intersection.x_ + intersection.y_+intersection.y_));
+		      nint ++;
+		      break;
+		    }  // end switch 
+		} // end for first2
+	    }// end for first1
+	}// end count >1
+	  // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
+	  //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
+
+      }   ///endloop over all devices
+    cout<<"nint:  "<<nint<<endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     ++ncalls;  
@@ -323,17 +272,17 @@ namespace mu2e {
     cout << "x0:   " << fitter->GetParameter(0)
          << " y0:  " << fitter->GetParameter(1)
          << " r:   " << fitter->GetParameter(2)
-         <<endl;
+    <<endl;
     _x0y0->Fill(fitter->GetParameter(0),fitter->GetParameter(1));
     _R_rec->Fill(fitter->GetParameter(2));
     //Draw the circle on top of the points
     //TArc *arc = new TArc(fitter->GetParameter(0),
     //                   fitter->GetParameter(1),fitter->GetParameter(2));
-    //arc->SetLineColor(kRed);
-    //arc->SetLineWidth(4);
-    // arc->Draw();
-    //int age;
-    //cin >> age;
+  //arc->SetLineColor(kRed);
+  //arc->SetLineWidth(4);
+  // arc->Draw();
+  //int age;
+  //cin >> age;
   }
 }
 
