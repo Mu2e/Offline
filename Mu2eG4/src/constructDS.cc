@@ -1,9 +1,9 @@
 //
 // Free function to create  DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.6 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: constructDS.cc,v 1.7 2011/06/09 19:56:13 genser Exp $
+// $Author: genser $
+// $Date: 2011/06/09 19:56:13 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -82,7 +82,7 @@ namespace mu2e {
 
     // MBS
 
-    // if MBS is there the vacuum is longer, we we add a minimal
+    // if MBS is there the vacuum is longer; we also add a minimal
     // length even when MBS is not there to have a legal subtraction
     // volume since other components (e.g. neutron absorber) depend on
     // it now
@@ -90,8 +90,10 @@ namespace mu2e {
     double ds3OriginalHalfLength = ds3HalfLength;
     double ds3OriginalZ0         = ds2Z0  + ds2HalfLength  + ds3HalfLength;
 
-    double BSTSHLength = ds3HalfLength + 1.;
-    double BSTSZ       = ds3OriginalZ0 + 1.;
+    double static const addedLength = 1.0;
+
+    double BSTSHLength = ds3HalfLength + addedLength;
+    double BSTSZ       = ds3OriginalZ0 + addedLength;
     if ( _config->getBool("hasMBS",false) ) {
       BSTSHLength = _config->getDouble("mbs.BSTSHLength");
       BSTSZ       = _config->getDouble("mbs.BSTSZ");
@@ -99,7 +101,7 @@ namespace mu2e {
 
     ds3HalfLength = ( -ds2Z0 - ds2HalfLength + BSTSZ + BSTSHLength)*0.5;
 
-    double ds3Z0         = ds2Z0  + ds2HalfLength    + ds3HalfLength;
+    double ds3Z0     = ds2Z0 + ds2HalfLength + ds3HalfLength;
 
     // ds3 is a subtraction solid accommodating the MBS
 
@@ -218,6 +220,15 @@ namespace mu2e {
                                           doSurfaceCheck
                                           );
 
+    if ( verbosityLevel > 0) {
+      double pzhl   = static_cast<G4Tubs*>(ds2VacInfo.solid)->GetZHalfLength();
+      double ds2VacZ = ds2VacInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
+      cout << __func__ << 
+	" ds2Vac Z offset in Mu2e           : " << ds2VacZ << endl;
+      cout << __func__ << 
+	" ds2Vac Z extent in Mu2e           : " << ds2VacZ - pzhl  << ", " <<  ds2VacZ + pzhl  << endl;
+    }
+
     // downstream vacuum part also enclosing the Muon Beam Stop
     // it is a subtraction solid with the "subtraction tub" placed downstream
 
@@ -238,12 +249,54 @@ namespace mu2e {
                                           ds3VacSubtrParams.phi0(),
                                           ds3VacSubtrParams.phiMax());
 
+    G4ThreeVector subtractedVolumeOffset = ds3SubtrPosition-ds3Position;
+
+    if (subtractedVolumeOffset[CLHEP::Hep3Vector::Z]<0.0) {
+      throw cet::exception("GEOM")
+        << "Incorrect ds3 subtraction volume paramaters \n";
+    }
+
     ds3VacInfo.solid = new G4SubtractionSolid(ds3VacInfo.name,
-                                              ds3VacSolid, ds3VacSubtrSolid,0,ds3SubtrPosition-ds3Position);
+                                              ds3VacSolid, ds3VacSubtrSolid,0,subtractedVolumeOffset);
+
+    if ( verbosityLevel > 0) {
+
+      cout << __func__ << 
+	" ds3VacParams.zHalfLength()        : " << ds3VacParams.zHalfLength() << endl;
+      cout << __func__ << 
+	" ds3VacSubtrParams.zHalfLength()   : " << ds3VacSubtrParams.zHalfLength() << endl;
+      cout << __func__ << 
+	" ds3VacSolid->GetZHalfLength()Full : " << ds3VacSolid->GetZHalfLength() << endl;
+      cout << __func__ << 
+	" ds3VacSubtrSolid->GetZHalfLength(): " << ds3VacSubtrSolid->GetZHalfLength() << endl;
+
+      G4Tubs* solid0 = static_cast<G4Tubs*>(ds3VacInfo.solid->GetConstituentSolid(0));
+      // note the intricacy of this call in a case of a shifted solid
+      G4Tubs* solid1 = 
+	static_cast<G4Tubs*>(static_cast<G4DisplacedSolid*>(ds3VacInfo.solid->GetConstituentSolid(1))
+			     ->GetConstituentMovedSolid());
+      cout << __func__ <<
+	" ConstituentSolid(0) name          : " <<
+	solid0->GetName() << endl;
+      cout << __func__ <<
+	" ConstituentSolid(1) name          : " <<
+	solid1->GetName() << endl;
+
+      cout << __func__ <<
+	" ConstituentSolid(0)) zHalfLength  : " <<
+	solid0->GetZHalfLength() << endl;
+      cout << __func__ <<
+	" ConstituentSolid(1)) zHalfLength  : " <<
+	solid1->GetZHalfLength() << endl;
+
+    }
+
+    // we are assuming that the ds3VacSolid is the main volume defining most ds3VacInfo position params
 
     ds3VacInfo.centerInParent = ds3Position-_hallOriginInMu2e;
     ds3VacInfo.centerInWorld  = ds3VacInfo.centerInParent + parent.centerInWorld;
-    // the above should probably be done by finishNesting
+
+    // the above should probably be done by finishNesting, well may be not for the boolean volumes
 
     finishNesting(ds3VacInfo,
                   vacuumMaterial,
