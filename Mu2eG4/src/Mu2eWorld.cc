@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.92 2011/05/26 22:11:19 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.93 2011/06/09 19:58:33 genser Exp $
 // $Author: genser $
-// $Date: 2011/05/26 22:11:19 $
+// $Date: 2011/06/09 19:58:33 $
 //
 // Original author Rob Kutschke
 //
@@ -359,7 +359,7 @@ namespace mu2e {
     } else if ( _config->getBool("hasTTracker",false) ) {
       int ver = _config->getInt("TTrackerVersion",3);
       if ( ver == 3 ){
-        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, z0DSdown, *_config );
       }
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
