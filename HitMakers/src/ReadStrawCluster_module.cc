@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.16 2011/06/09 21:23:03 wenzel Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.17 2011/06/10 20:13:59 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/06/09 21:23:03 $
+// $Date: 2011/06/10 20:13:59 $
 //
 // Original author Hans Wenzel
 //
@@ -136,8 +136,10 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     StrawClusterUtilities sutils=StrawClusterUtilities() ;
 
 	
-    multimap<int,StrawCluster> mpcluster;
-    mpcluster.clear();
+    multimap<int,StrawCluster> clusterbydid;
+    multimap<int,StrawCluster> clusterbystation;
+    clusterbydid.clear();
+    clusterbystation.clear();
     art::Handle<StrawClusterCollection> pdataHandle;
     evt.getByLabel(_clmakerModuleLabel,pdataHandle);
     StrawClusterCollection const* clusters = pdataHandle.product();
@@ -152,28 +154,32 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 	     <<" X:  "<<sutils.X(scluster,evt)
 	     <<" dirX:  "<<sutils.dirX(scluster,evt)
 	     <<endl;
-	mpcluster.insert(pair<int,StrawCluster>(sutils.did(scluster,evt),scluster));
+	clusterbydid.insert(pair<int,StrawCluster>(sutils.did(scluster,evt),scluster));
+	clusterbystation.insert(pair<int,StrawCluster>(sutils.Station(scluster,evt),scluster));
       }
-    cout <<"map size: " << mpcluster.size()<<endl;
-
+    cout <<"did map size: " << clusterbydid.size()<<endl;
+    cout <<"station map size: " << clusterbystation.size()<<endl;
     Int_t nint = 0;
     for (int i = 0;i<36;i++)
       {
-	cout << " did:  "<<i << "  Count:  "<< mpcluster.count(i)<<endl;
-	if (mpcluster.count(i)>1) 
+	cout << " did:  "<<i << "  Count:  "<< clusterbydid.count(i)<<endl;
+	if (clusterbydid.count(i)>1) 
 	  {
 	    pair<multimap<int,StrawCluster>::iterator, multimap<int,StrawCluster>::iterator> ppp1;
-	    ppp1 = mpcluster.equal_range(i);
-	    multimap<int,StrawCluster>::iterator first1 = ppp1.first;
-	    multimap<int,StrawCluster>::iterator first2 = ppp1.first;
+	    ppp1 = clusterbydid.equal_range(i);
+	    //	    multimap<int,StrawCluster>::iterator first1 = ppp1.first;
+	    	    multimap<int,StrawCluster>::iterator first22 = ppp1.first;
 	    multimap<int,StrawCluster>::iterator last1 = ppp1.second;
 	    last1--;
 	    multimap<int,StrawCluster>::iterator last2 = ppp1.second;
-	    for (first1;first1 != last1;++first1)
+	    for (multimap<int,StrawCluster>::iterator first1 = ppp1.first;
+		 first1  != last1; ++first1)
 	      {
-		first2=first1;
-		first2++;
-		for (first2;first2 != last2;++first2)
+		first22=first1;
+		first22++;
+		for (multimap<int,StrawCluster>::iterator first2 = first22;
+		     first2 != last2;
+		     ++first2)
 		  {
 		  StrawCluster junk  = (*first1).second;
 		  StrawCluster pjunk = (*first2).second;
@@ -211,17 +217,61 @@ void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
 
 
+   Int_t sint = 0;
+    for (int i = 0;i<18;i++)
+      {
+	cout << " station:  "<<i << "  Count:  "<< clusterbystation.count(i)<<endl;
+	if (clusterbystation.count(i)>1) 
+	  {
+	    pair<multimap<int,StrawCluster>::iterator, multimap<int,StrawCluster>::iterator> ppp1;
+	    ppp1 = clusterbystation.equal_range(i);
+	    multimap<int,StrawCluster>::iterator first22 = ppp1.first;
+	    multimap<int,StrawCluster>::iterator last1 = ppp1.second;
+	    last1--;
+	    multimap<int,StrawCluster>::iterator last2 = ppp1.second;
+	    for (multimap<int,StrawCluster>::iterator first1 = ppp1.first;
+		 first1 != last1;
+		 ++first1)
+	      {
+		first22=first1;
+		first22++;
+		for (multimap<int,StrawCluster>::iterator first2 = first22;
+		     first2 != last2;
+		     ++first2)
+		  {
+		    StrawCluster junk  = (*first1).second;
+		    StrawCluster pjunk = (*first2).second;
+		    LineSegmentPCA linesegment0 = sutils.linesegment(junk,evt);
+		    LineSegmentPCA linesegment1 = sutils.linesegment(pjunk,evt);
+		    CLHEP::Hep2Vector intersection;
+		    switch(linesegment0.Intersect(linesegment1,intersection))
+		      {
+		      case LineSegmentPCA::PARALLEL:
+			//std::cout << "The lines are parallel\n\n";
+			break;
+		      case LineSegmentPCA::COINCIDENT:
+		      //std::cout << "The lines are coincident\n\n";
+		      break;
+		    case LineSegmentPCA::NOT_INTERSECTING:
+		      // std::cout << "The lines do not intersect\n\n";
+		      break;
+		    case LineSegmentPCA::INTERSECTING:
+		      std::cout << "The lines intersect at (" << intersection.x() << ", " << intersection.y() << ")\n\n";
+		      //X.push_back(intersection.x_);
+		      //Y.push_back(intersection.y_);
+		      //Z.push_back(0.5*(junk.mpz+pjunk.mpz));
+		      //R.push_back(sqrt(intersection.x_*intersection.x_ + intersection.y_+intersection.y_));
+		      sint ++;
+		      break;
+		    }  // end switch 
+		} // end for first2
+	    }// end for first1
+	}// end count >1
+	  // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
+	  //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
 
-
-
-
-
-
-
-
-
-
-
+      }   ///endloop over all devices
+    cout<<"sint:  "<<nint<<endl;
 
 
 
