@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.7 2011/06/09 19:57:20 genser Exp $
+// $Id: constructVirtualDetectors.cc,v 1.8 2011/06/10 17:48:48 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/09 19:57:20 $
+// $Date: 2011/06/10 17:48:48 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -58,6 +58,8 @@ namespace mu2e {
     bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
+    int const nSurfaceCheckPoints = 100000;
+
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
 
@@ -91,7 +93,9 @@ namespace mu2e {
                                 vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
                                 forceAuxEdgeVisible,
                                 placePV,
-                                doSurfaceCheck );
+                                false);
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
       vd.logical->SetSensitiveDetector(vdSD);
     }
 
@@ -107,7 +111,9 @@ namespace mu2e {
                                 vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
                                 forceAuxEdgeVisible,
                                 placePV,
-                                doSurfaceCheck );
+                                false);
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
       vd.logical->SetSensitiveDetector(vdSD);
     }
 
@@ -123,14 +129,16 @@ namespace mu2e {
                                 vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
                                 forceAuxEdgeVisible,
                                 placePV,
-                                doSurfaceCheck );
+                                false);
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
       vd.logical->SetSensitiveDetector(vdSD);
     }
 
     // Virtual Detectors 9-10 are placed inside DS2, just before and after stopping target
 
     // If there is no neutron absorber, virtual detectors 9 and 10 extend to
-    // inner wall of DS2 minus 5 mm. If neutron absorber is define, these
+    // inner wall of DS2 minus 5 mm. If neutron absorber is defined, these
     // detectors extend to neutron absorber minus 5 mm.
 
     double Ravr = _config->getDouble("toyDS.rIn");
@@ -165,10 +173,22 @@ namespace mu2e {
       VolumeInfo vd = nestTubs( name.str(), vdParamsTarget, vacuumMaterial, 0,
                                 vdg->getLocal(vdId),
                                 parent,
-                                vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
+                                vdId,
+                                vdIsVisible, 
+                                G4Color::Red(), vdIsSolid,
                                 forceAuxEdgeVisible,
                                 placePV,
-                                doSurfaceCheck );
+                                false);
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+      if (verbosityLevel >0) {
+        cout << __func__ << " " << name.str() << " Z offset in Mu2e    : " <<
+          zvd << endl;      
+        cout << __func__ << " " << name.str() << " Z extent in Mu2e    : " <<
+          zvd - vdHalfLength << ", " << zvd + vdHalfLength << endl;
+      }
+
       vd.logical->SetSensitiveDetector(vdSD);
     }
 
@@ -202,7 +222,9 @@ namespace mu2e {
                                 vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
                                 forceAuxEdgeVisible,
                                 placePV,
-                                doSurfaceCheck );
+                                false);
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
       vd.logical->SetSensitiveDetector(vdSD);
 
       vdId = 12;
@@ -234,7 +256,9 @@ namespace mu2e {
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
                                   forceAuxEdgeVisible,
                                   placePV,
-                                  doSurfaceCheck );
+                                  false);
+        // vd are very thin, a more thorough check is needed
+        doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
         vd.logical->SetSensitiveDetector(vdSD);
       }
 
@@ -342,8 +366,10 @@ namespace mu2e {
                       vdIsSolid,
                       forceAuxEdgeVisible,
                       placePV,
-                      doSurfaceCheck
-                      );
+                      false);
+        // vd are very thin, a more thorough check is needed
+        doSurfaceCheck && vdHollowInfo.physical->
+          CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
         if ( verbosityLevel > 0) {
 
@@ -410,8 +436,10 @@ namespace mu2e {
                         vdIsSolid,
                         forceAuxEdgeVisible,
                         placePV,
-                        doSurfaceCheck
-                        );
+                        false);
+          // vd are very thin, a more thorough check is needed
+          doSurfaceCheck && vdIntersectionInfo.physical->
+            CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
           if ( verbosityLevel > 0) {
 
@@ -490,7 +518,9 @@ namespace mu2e {
                                      vdIsSolid,
                                      forceAuxEdgeVisible,
                                      placePV,
-                                     doSurfaceCheck);
+                                     false);
+        // vd are very thin, a more thorough check is needed
+        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
         vdInfo.logical->SetSensitiveDetector(vdSD);
 
