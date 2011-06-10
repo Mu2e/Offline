@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.6 2011/06/09 19:56:44 genser Exp $
+// $Id: constructProtonAbsorber.cc,v 1.7 2011/06/10 17:48:24 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/09 19:56:44 $
+// $Date: 2011/06/10 17:48:24 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -67,9 +67,10 @@ namespace mu2e {
     // Add virtual detector before and after target
     double vdHL = 0.;
     art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<VirtualDetector>() ) return;
-    GeomHandle<VirtualDetector> vdg;
-    if( vdg->nDet()>0 ) vdHL = vdg->getHalfLength();
+    if( geom->hasElement<VirtualDetector>() ) {
+      GeomHandle<VirtualDetector> vdg;
+      if( vdg->nDet()>0 ) vdHL = vdg->getHalfLength();
+    }
 
     double z0DSup   = parent1Info.centerInWorld.z()+hallInfo.centerInMu2e().z();
     vector<double> targetRadius;  _config->getVectorDouble("target.radii", targetRadius);
@@ -78,10 +79,12 @@ namespace mu2e {
 
     double foilwid=_config->getDouble("target.deltaZ"); 
 
-    double taglen =(foilwid*numoftf) + 5.0 + vdHL;
+    // we add space for the virtual detector here
+    double taglen =(foilwid*numoftf) + 5.0 + 2.*vdHL; // what/why is 5.0 hardcoded here?
 
     double z0valt =_config->getDouble("target.z0");     
     double tagoff =z0valt - z0DSup + 12000.0;
+
     double targetEnd = tagoff + taglen;
     double ds2HalfLen = _config->getDouble("toyDS2.halfLength");
     double pabs1len = ds2HalfLen - targetEnd;
