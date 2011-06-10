@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit01.fcl,v 1.6 2011/06/10 17:21:14 mu2ecvs Exp $
+# $Id: KalFit01.fcl,v 1.7 2011/06/10 17:35:18 mu2ecvs Exp $
 # $Author: mu2ecvs $
-# $Date: 2011/06/10 17:21:14 $
+# $Date: 2011/06/10 17:35:18 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -14,7 +14,7 @@ process_name : KalFit01
 source :
 {
   module_type : EmptyEvent
-  maxEvents : 1000
+  maxEvents : 1001
 }
 
 services :
