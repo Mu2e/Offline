@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: NeutronCRV.fcl,v 1.3 2011/05/26 19:21:49 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:49 $
+# $Id: NeutronCRV.fcl,v 1.4 2011/06/10 20:14:36 rhbob Exp $
+# $Author: rhbob $
+# $Date: 2011/06/10 20:14:36 $
 #
 # Original author Gianni Onorato.
 
@@ -19,23 +19,19 @@
 process_name : NeutronRatesCounter
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
+
+#  module_type : RootInput
+#  fileNames : ["/prj/mu2e/users/kutschke/beamlineData_01.root"]
+
 source :
 {
-  module_type : RootInput
-  fileNames : ["/prj/mu2e/users/kutschke/beamlineData_01.root"]
-  maxEvents : 1000000
+  module_type : EmptyEvent
+  maxEvents : 100
 }
 
 services :
 {
-  message : @local::mf_debugging
-
-  # Adjust configuration of message logger:
-  # Enable debug printout from the module instance "hitinspect",
-  # and Print unlimited messages with categories ToyHitInfo and GEOM
-  message.debugModules : [hitinspect]
-  message.categories.ToyHitInfo.limit : -1
-  message.categories.GEOM.limit       : -1
+  message : @local::default_message
     
   TFileService :
   {
@@ -48,7 +44,7 @@ services :
   {
     GeometryService :
     {
-      inputFile : "Analyses/test/geomCRV.txt"
+      inputFile : "Mu2eG4/test/geom_cosmic.txt"
     }
 
     ConditionsService :
@@ -99,7 +95,7 @@ physics :
     # Form StrawHits (SH).
     # Note: In original py file, this is named makeTH, not SH
     #       But it is configured exactly as the standard makeSH
-    makeTH: @local::makeSH        
+    makeSH: @local::makeSH        
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker: @local::CaloCrystalHitsMaker
@@ -108,10 +104,8 @@ physics :
     CaloReadoutHitsMaker: @local::CaloReadoutHitsMaker
 
     # Save state of random numbers to the event.
-    randomsaver:
-    {
-      module_type   : RandomNumberSaver
-    }
+    randomsaver : @local::randomsaver
+
 
   }
 
@@ -136,25 +130,16 @@ physics :
     {
       module_type   : NeutronCRV
       diagLevel     : 0
-      makerModuleLabel : makeTH
+      makerModuleLabel : makeSH
       maxFullPrint  : 50
       g4ModuleLabel : g4run
       minimumEnergy   : 0.000
     }
   }
 
-  p1 : [generate, g4run]
+  p1 : [generate, g4run, makeSH]
   e1 : [CountRates, outfile ]
  
-  # Tell the system to execute all paths.
-  # p1 : [randomsaver
-  #      ,generate
-  #      ,makeTH
-  #      ,CaloReadoutHitsMaker
-  #      ,CaloCrystalHitsMaker
-  #      ,filterEmpty
-  #      ]
-  # e1 : [CountRates, filterEmpty, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -167,17 +152,15 @@ outputs:
   outfile : 
   {
     module_type    : RootOutput
-    filename       : "NeutronCRVData.root"
-    outputCommands : [ 'keep *_*_*_*'
-                     , 'drop mu2ePointTrajectoryMapVector_*_*_*'
-		   # , 'drop mu2eSimParticles_*_*_*'
-		   # Uncomment the above line to reduce file size.
+    fileName       : "NeutronCRVData.root"
+    outputCommands : [ "keep *_*_*_*"
+#                     , "drop mu2ePointTrajectorymv_*_*_*"
                      ]  
   }
 }
 
-physics.producers.makeTH.diagLevel : 0
-physics.producers.makeTH.maxFullPrint : 5
+physics.producers.makeSH.diagLevel : 0
+physics.producers.makeSH.maxFullPrint : 5
 physics.producers.CaloReadoutHitsMaker.diagLevel : 0
 physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
 physics.producers.CaloCrystalHitsMaker.diagLevel : 0
