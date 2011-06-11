@@ -1,5 +1,5 @@
-#ifndef Sandbox_BarePointerCollection_hh
-#define Sandbox_BarePointerCollection_hh
+#ifndef Sandbox_OwningPointerCollection_hh
+#define Sandbox_OwningPointerCollection_hh
 //
 // A class template to take ownership of a collection of bare pointers to 
 // objects, to provide access to those objects and to delete them when the
@@ -10,9 +10,9 @@
 //
 // The original use is for TrkRecoTrk.
 //
-// $Id: BarePointerCollection.hh,v 1.1 2011/06/11 01:45:13 kutschke Exp $
+// $Id: OwningPointerCollection.hh,v 1.1 2011/06/11 02:29:21 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/11 01:45:13 $
+// $Date: 2011/06/11 02:29:21 $
 //
 // Original author Rob Kutschke
 //
@@ -29,24 +29,24 @@
 namespace mu2e {
 
   template<typename T>
-  class BarePointerCollection{
+  class OwningPointerCollection{
 
   public:
 
-    BarePointerCollection():v_(){}
+    OwningPointerCollection():v_(){}
 
     // Caller transfers ownership of the pointees to us.
-    explicit BarePointerCollection( std::vector<T*> v ):
+    explicit OwningPointerCollection( std::vector<T*> v ):
       v_(v.begin(), v.end() ){
     }
 
     // Caller transfers ownership of the pointees to us.
-    explicit BarePointerCollection( std::vector<T const*> v ):
+    explicit OwningPointerCollection( std::vector<T const*> v ):
       v_(v){
     }
 
     // We own the pointees so delete them when our destructor is called.
-    ~BarePointerCollection(){
+    ~OwningPointerCollection(){
       for( typename std::vector<T const *>::iterator i=v_.begin();
            i!=v_.end(); ++i ){
         delete *i;
@@ -71,7 +71,7 @@ namespace mu2e {
     */
 
     // Needed for event.put().
-    void swap( BarePointerCollection& rhs){
+    void swap( OwningPointerCollection& rhs){
       std::swap( this->v_, rhs.v_);
     }
 
@@ -87,8 +87,8 @@ namespace mu2e {
   private:
 
     // Not copyable or assignable; this is needed to ensure exactly one delete.
-    BarePointerCollection( BarePointerCollection const& );
-    BarePointerCollection& operator=( BarePointerCollection const& );
+    OwningPointerCollection( OwningPointerCollection const& );
+    OwningPointerCollection& operator=( OwningPointerCollection const& );
 
     // Owning pointers to the objects.
     std::vector<const T*> v_;
@@ -97,4 +97,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif /* Sandbox_BarePointerCollection_hh */
+#endif /* Sandbox_OwningPointerCollection_hh */
