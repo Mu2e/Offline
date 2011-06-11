@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.4 2011/06/11 03:17:48 kutschke Exp $
+// $Id: KalFitTest_module.cc,v 1.5 2011/06/11 03:48:36 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2011/06/11 03:17:48 $
+// $Date: 2011/06/11 03:48:36 $
 //
 
 // framework
@@ -289,7 +289,7 @@ namespace mu2e
           }
         }
       }
-      // add successful fits to the data product; this automatically does a cleanup.
+      // If fit is successful, pass ownership of the track to the event.
       if(myfit._krep != 0 && myfit._krep->fitCurrent()){
         tracks->push_back( myfit.stealTrack() );
       }
