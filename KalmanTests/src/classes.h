@@ -1,16 +1,20 @@
-#include "DataFormats/Common/interface/SortedCollection.h"
-#include "DataFormats/Common/interface/OwnVector.h"
-#include "DataFormats/Common/interface/AssociationVector.h"
-#include "DataFormats/Common/interface/Wrapper.h"
-#include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Matrix/Vector.h"
-#include "CLHEP/Matrix/Matrix.h"
-using namespace CLHEP;
-#include "TrkBase/TrkExchangePar.hh"
+//
+// Build a dictionary.
+//
+// $Id: classes.h,v 1.2 2011/06/11 03:17:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/11 03:17:48 $
+//
+// Original author Rob Kutschke
+//
+
 #include <vector>
-template class edm::Wrapper<CLHEP::HepVector>;
-//template class edm::Wrapper<CLHEP::Hep3Vector>;
-template class edm::Wrapper<CLHEP::HepMatrix>;
 
-//template class edm::Wrapper<TrkExchangePar>;
+#include "art/Persistency/Common/Wrapper.h"
 
+using namespace CLHEP;
+#include "TrkBase/TrkRecoTrk.hh"
+#include "KalmanTests/inc/TrkRecoTrkCollection.hh" 
+
+
+template class art::Wrapper<mu2e::TrkRecoTrkCollection>;

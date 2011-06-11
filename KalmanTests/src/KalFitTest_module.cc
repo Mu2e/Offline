@@ -1,15 +1,14 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.3 2011/06/08 23:50:32 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/06/08 23:50:32 $
+// $Id: KalFitTest_module.cc,v 1.4 2011/06/11 03:17:48 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/06/11 03:17:48 $
 //
 
 // framework
 #include "art/Framework/Core/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-//#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -26,6 +25,9 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+using namespace CLHEP;
+#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+//#include "GeneralUtilities/inc/OwningPointerCollection.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -177,6 +179,7 @@ namespace mu2e
     _strawhitslabel(pset.get<std::string>("strawHitsLabel")),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit"))
   {
+    produces<TrkRecoTrkCollection>();
   }
 
   KalFitTest::~KalFitTest(){}
@@ -249,6 +252,9 @@ namespace mu2e
 
   void KalFitTest::produce(art::Event& event ) 
   {
+
+    auto_ptr<TrkRecoTrkCollection> tracks(new TrkRecoTrkCollection );
+
 // event printout
     int iev=event.id().event();
     if((iev%_printfreq)==0)cout<<"KalFitTest: event="<<iev<<endl;
@@ -283,9 +289,12 @@ namespace mu2e
           }
         }
       }
-// cleanup; the track should be put in the event
-      myfit.deleteTrack();
+      // add successful fits to the data product; this automatically does a cleanup.
+      if(myfit._krep != 0 && myfit._krep->fitCurrent()){
+        tracks->push_back( myfit.stealTrack() );
+      }
     }
+    event.put(tracks); 
   }
   
   void KalFitTest::endJob()
