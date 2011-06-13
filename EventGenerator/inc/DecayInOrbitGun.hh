@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.16 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: DecayInOrbitGun.hh,v 1.17 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 //
 
@@ -101,6 +101,8 @@ namespace mu2e {
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _ht;
+    TH1D* _hmudelay;
+    TH1D* _hpulsedelay;
 
     //Functions used to calculate energy spectrum of the electron
     std::vector<double> binnedEnergySpectrum();

@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.17 2011/05/19 18:37:42 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/19 18:37:42 $
+// $Id: PiCapture.hh,v 1.18 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -78,6 +78,8 @@ namespace mu2e {
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _ht;
+    TH1D* _hmudelay;
+    TH1D* _hpulsedelay;
     TH1D* _hFoilNumber;
 
     // Photon energy spectrum as a continuous function.

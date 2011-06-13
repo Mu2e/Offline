@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.25 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: ConversionGun.cc,v 1.26 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,7 @@ namespace mu2e {
     _phimin(config.getDouble("conversionGun.phimin", 0. )),
     _phimax(config.getDouble("conversionGun.phimax", CLHEP::twopi )),
     _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", false)),
     _tmin(0.),
     _tmax(0.),
     _doHistograms(config.getDouble("conversionGun.doHistograms", true )),
@@ -73,6 +73,8 @@ namespace mu2e {
     _hradius(0),
     _hzPos(0),
     _htime(0),
+    _hmudelay(0),
+    _hpulsedelay(0),
     _hxyPos(0),
     _hrzPos(0){
 
@@ -138,6 +140,8 @@ namespace mu2e {
     _hradius->Fill( genRadius );
     _hzPos->Fill(pos.z());
     _htime->Fill(time);
+    _hmudelay->Fill(_fGenerator->muDelay);
+    _hpulsedelay->Fill(_fGenerator->pulseDelay);
     _hxyPos->Fill( pos.x(), pos.y()   );
     _hrzPos->Fill( pos.z(), genRadius );
 
@@ -172,6 +176,12 @@ namespace mu2e {
     _htime         = tfdir.make<TH1F>( "htime",
                                        "Conversion Electron time at Production;(ns)",
                                        120, 0., 2400. );
+    _hmudelay      = tfdir.make<TH1F>( "hmudelay",
+                                       "Production delay due to muons arriving at ST;(ns)",
+                                       600, 0., 3000. );
+    _hpulsedelay   = tfdir.make<TH1F>( "hpdelay",
+                                       "Production delay due to the proton pulse;(ns)",
+                                       60, 0., 300. );
     _hxyPos        = tfdir.make<TH2F>( "hxyPos",
                                        "Conversion Electron (x,y) at Production;(mm)",
                                        60,  -120., 120., 60, -120., 120. );

@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.22 2011/05/19 18:37:42 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/19 18:37:42 $
+// $Id: PiCapture.cc,v 1.23 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -48,8 +48,8 @@ namespace mu2e {
     _mean(config.getDouble("picapture.mean", -1.)),
     _elow(config.getDouble("picapture.elow", 38.2)),
     _ehi(config.getDouble("picapture.ehi",   emax)),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", false)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _PStoDSDelay(config.getBool("picapture.PStoDSDelay", false)),
+    _pPulseDelay(config.getBool("picapture.pPulseDelay", true)),
     _nbins(config.getInt("picapture.nbins",  1000)),
     _doHistograms(config.getBool("picapture.doHistograms",true)),
 
@@ -66,6 +66,8 @@ namespace mu2e {
     _hcz(0),
     _hphi(0),
     _ht(0),
+    _hmudelay(),
+    _hpulsedelay(),
     _hFoilNumber(0){
 
     // Sanity checks
@@ -95,6 +97,8 @@ namespace mu2e {
       _hcz         = tfdir.make<TH1D>( "hcz",     "PiCap cos(theta)",                 100,    -1.,     1. );
       _hphi        = tfdir.make<TH1D>( "hphi",    "PiCapture azimuth",                100,  -M_PI,   M_PI );
       _ht          = tfdir.make<TH1D>( "ht",     "PiCapture time ",                  210,   -200.,  2000. );
+      _hmudelay    = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hpulsedelay = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );  
       _hFoilNumber = tfdir.make<TH1D>( "hFoilNumber", "Foil Number", 20,0.,20.);
 
     }
@@ -153,6 +157,8 @@ namespace mu2e {
         _hcz->Fill(mom.vect().cosTheta());
         _hphi->Fill(mom.vect().phi());
         _ht->Fill(time);
+	_hmudelay   ->Fill(_fGenerator->muDelay);
+	_hpulsedelay->Fill(_fGenerator->pulseDelay);
       }
 
     } // end loop over photons to generate

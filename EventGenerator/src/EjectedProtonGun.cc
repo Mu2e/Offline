@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.22 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: EjectedProtonGun.cc,v 1.23 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -60,8 +60,8 @@ namespace mu2e {
     _phimax(config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi )),
     _nbins(config.getInt("ejectedProtonGun.nbins",1000)),
     _doHistograms(config.getBool("ejectedProtonGun.doHistograms",true)),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _PStoDSDelay(config.getBool("ejectedProtonGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("ejectedProtonGun.pPulseDelay", false)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
@@ -75,7 +75,10 @@ namespace mu2e {
     _hzPosition(),
     _hcz(),
     _hphi(),
-    _htime(){
+    _htime(),
+    _hmudelay(),
+    _hpulsedelay()  {
+
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
@@ -111,6 +114,8 @@ namespace mu2e {
       _hcz           = tfdir.make<TH1D>( "hcz",           "Proton cos(theta)",                 100,    -1.,     1. );
       _hphi          = tfdir.make<TH1D>( "hphi",          "Proton azimuth",                    100,  -M_PI,  M_PI  );
       _htime         = tfdir.make<TH1D>( "htime",         "Proton time ",                      210,   -200.,  2000. );
+      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
@@ -170,7 +175,8 @@ namespace mu2e {
         _hcz->Fill( mom.cosTheta() );
         _hphi->Fill( mom.phi() );
         _htime->Fill( time );
-
+	_hmudelay   ->Fill(_fGenerator->muDelay);
+	_hpulsedelay->Fill(_fGenerator->pulseDelay);
       }
     } // end of loop on particles
 

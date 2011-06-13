@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.10 2011/05/20 19:26:39 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 19:26:39 $
+// $Id: EjectedNeutronGun.cc,v 1.11 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -61,8 +61,8 @@ namespace mu2e {
     _czmax(config.getDouble("ejectedNeutronGun.czmax",  1.)),
     _phimin(config.getDouble("ejectedNeutronGun.phimin", 0. )),
     _phimax(config.getDouble("ejectedNeutronGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _PStoDSDelay(config.getBool("ejectedNeutronGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("ejectedNeutronGun.pPulseDelay", false)),
     _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
     _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
 
@@ -79,8 +79,9 @@ namespace mu2e {
     _hzPosition(),
     _hcz(),
     _hphi(),
-    _htime(){
-
+    _htime(),
+    _hmudelay(),
+    _hpulsedelay()  {
 
     if (_nbins!=((_ehi-_elow)/0.0005)) {
       throw cet::exception("RANGE")
@@ -122,6 +123,8 @@ namespace mu2e {
       _hcz           = tfdir.make<TH1D>( "hcz",           "Neutron cos(theta)",                 100,    -1.,     1. );
       _hphi          = tfdir.make<TH1D>( "hphi",          "Neutron azimuth",                    100,  -M_PI,  M_PI  );
       _htime         = tfdir.make<TH1D>( "htime",         "Neutron time ",                      210,   -200.,  2000. );
+      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
@@ -181,7 +184,8 @@ namespace mu2e {
         _hcz->Fill( mom.cosTheta() );
         _hphi->Fill( mom.phi() );
         _htime->Fill( time );
-
+	_hmudelay   ->Fill(_fGenerator->muDelay);
+	_hpulsedelay->Fill(_fGenerator->pulseDelay);
       }
     } // end of loop on particles
 

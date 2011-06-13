@@ -6,9 +6,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.hh,v 1.5 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: NuclearCaptureGun.hh,v 1.6 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 // Original author Gianni Onorato
 
@@ -115,7 +115,12 @@ namespace mu2e {
     TH1D* _hProtonTime;
     TH1D* _hNeutronTime;
     TH1D* _hPhotonTime;
-
+    TH1D* _hProtonMudelay;
+    TH1D* _hProtonPulsedelay;
+    TH1D* _hNeutronMudelay;
+    TH1D* _hNeutronPulsedelay;
+    TH1D* _hPhotonMudelay;
+    TH1D* _hPhotonPulsedelay;
 
     //Functions used to calculate the energy spectrum of the proton
     std::vector<double> binnedEnergySpectrumProton();

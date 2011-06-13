@@ -39,7 +39,7 @@ using namespace std;
 static mu2e::ConfigFileLookupPolicy findConfig;
 static const string StMuFileString = findConfig("ConditionsService/data/StoppedMuons.txt");
 static const double timeMaxDelay = 3000;
-static const int nBinsForTimeDelayPDF = 150;
+static const double nBinsForTimeDelayPDF = 150;
 static fstream inMuFile(StMuFileString.c_str(), ios::in);
 
 namespace mu2e {
@@ -73,6 +73,7 @@ namespace mu2e {
     _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils ),
     _randExpoFoils ( engine, &(weightedBinnedFoilsVolume()[0]), _nfoils ),
     _delayTime( engine, &(timePathDelay()[0]), nBinsForTimeDelayPDF ),
+    _pulseTime( engine ),
     _targetFrame( targetFrame ),
     _PTtoSTdelay ( PTtoSTdelay ),
     _pPulseDelay ( pPulseDelay )
@@ -166,10 +167,21 @@ namespace mu2e {
         break;
       }
 
-      if (_PTtoSTdelay) {
-        double deltat = includeTimeDelay();
-        time += deltat;
+      if (_pPulseDelay) {
+	pulseDelay = includePulseDelay();
+	time += pulseDelay;
+      } else {
+	pulseDelay = 0.;
       }
+
+      if (_PTtoSTdelay) {
+        muDelay = includeTimeDelay();
+        time += muDelay;
+      } else {
+	muDelay = 0.;
+      }
+
+
 
     }
     if (_posAlgo==muonFileInputPos) {
@@ -350,6 +362,14 @@ namespace mu2e {
 
     double dt = timeMaxDelay * _delayTime.fire();
     return dt;
+  }
+
+
+  double FoilParticleGenerator::includePulseDelay() {
+
+  double dt = _pulseTime.fire();
+  return dt;
+
   }
 
 

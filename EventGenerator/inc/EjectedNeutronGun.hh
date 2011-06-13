@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.6 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: EjectedNeutronGun.hh,v 1.7 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 //
 
@@ -88,7 +88,8 @@ namespace mu2e {
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _htime;
-
+    TH1D* _hmudelay;
+    TH1D* _hpulsedelay;
 
     //Functions used to calculate the energy spectrum of the neutron
     std::vector<double> binnedEnergySpectrum();

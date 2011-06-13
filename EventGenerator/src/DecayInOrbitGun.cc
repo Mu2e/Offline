@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.28 2011/05/20 22:39:28 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 22:39:28 $
+// $Id: DecayInOrbitGun.cc,v 1.29 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 // Original author Rob Kutschke
 //
@@ -54,8 +54,8 @@ namespace mu2e {
     _czmax(config.getDouble("decayinorbitGun.czmax",  1.0)),
     _phimin(config.getDouble("decayinorbitGun.phimin", 0. )),
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _PStoDSDelay(config.getBool("decayinorbitGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("decayinorbitGun.pPulseDelay", false)),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
     _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
@@ -73,7 +73,9 @@ namespace mu2e {
     _hzPosition(0),
     _hcz(0),
     _hphi(0),
-    _ht()  {
+    _ht(),
+    _hmudelay(),
+    _hpulsedelay()  {
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
@@ -110,6 +112,8 @@ namespace mu2e {
       _hcz           = tfdir.make<TH1D>( "hcz",           "DIO cos(theta)",                 100,    -1.,     1.   );
       _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 210, -200., 2000. );
+      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
@@ -165,12 +169,14 @@ namespace mu2e {
       genParts.push_back( GenParticle( PDGCode::e_minus, GenId::dio1, pos, mom, time));
 
       if( _doHistograms ){
-        _hEElec    ->Fill( e );
-        _hEElecZ   ->Fill( e );
-        _hzPosition->Fill( pos.z() );
-        _hcz       ->Fill( p3.cosTheta() );
-        _hphi      ->Fill( p3.phi() );
-        _ht        ->Fill( time );
+        _hEElec     ->Fill( e );
+        _hEElecZ    ->Fill( e );
+        _hzPosition ->Fill( pos.z() );
+        _hcz        ->Fill( p3.cosTheta() );
+        _hphi       ->Fill( p3.phi() );
+        _ht         ->Fill( time );
+	_hmudelay   ->Fill(_fGenerator->muDelay);
+	_hpulsedelay->Fill(_fGenerator->pulseDelay);
       }
 
     } // End of loop over particles

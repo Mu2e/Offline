@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.8 2011/05/20 20:01:33 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 20:01:33 $
+// $Id: NuclearCaptureGun.cc,v 1.9 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 // Original author Gianni Onorato
 //
@@ -68,8 +68,8 @@ namespace mu2e {
     _czmax(config.getDouble("nuclearCaptureGun.czmax",  1.)),
     _phimin(config.getDouble("nuclearCaptureGun.phimin", 0. )),
     _phimax(config.getDouble("nuclearCaptureGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", true)),
+    _PStoDSDelay(config.getBool("nuclearCaptureGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("nuclearCaptureGun.pPulseDelay", false)),
     _nProtonBins(config.getInt("nuclearCaptureGun.nProtonBins",1000)),
     _nNeutronBins(evaluateNeutronBins()),
     _nPhotonBins(config.getInt("nuclearCaptureGun.nPhotonBins",1000)),
@@ -110,8 +110,13 @@ namespace mu2e {
     _hPhotonPhi(),
     _hProtonTime(),
     _hNeutronTime(),
-    _hPhotonTime(){
-
+    _hPhotonTime(),
+    _hProtonMudelay(),
+    _hProtonPulsedelay(),
+    _hNeutronMudelay(),
+    _hNeutronPulsedelay(),
+    _hPhotonMudelay(),
+    _hPhotonPulsedelay(){
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
@@ -150,6 +155,8 @@ namespace mu2e {
       _hProtonCz           = tfdir.make<TH1D>( "hProtoncz",           "Proton cos(theta)",                 100,    -1.,     1. );
       _hProtonPhi          = tfdir.make<TH1D>( "hProtonphi",          "Proton azimuth",                    100,  -M_PI,  M_PI  );
       _hProtonTime         = tfdir.make<TH1D>( "hProtontime",         "Proton time ",                      210,   -200.,  2000. );
+      _hProtonMudelay      = tfdir.make<TH1D>( "hProtonmudelay",      "Proton delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hProtonPulsedelay   = tfdir.make<TH1D>( "hProtonpulsedelay",   "Proton delay due to the proton pulse;(ns)", 60, 0., 300. );
 
       _hNeutronMultiplicity = tfdir.make<TH1D>( "hNeutronMultiplicity", "Neutron Multiplicity",                20,     0,     20  );
       _hNeutronKE           = tfdir.make<TH1D>( "hNeutronKE",           "Neutron Kinetic Energy",              50, _neutronElow,   _neutronEhi  );
@@ -159,6 +166,8 @@ namespace mu2e {
       _hNeutronCz           = tfdir.make<TH1D>( "hNeutroncz",           "Neutron cos(theta)",                 100,    -1.,     1. );
       _hNeutronPhi          = tfdir.make<TH1D>( "hNeutronphi",          "Neutron azimuth",                    100,  -M_PI,  M_PI  );
       _hNeutronTime         = tfdir.make<TH1D>( "hNeutrontime",         "Neutron time ",                      210,   -200.,  2000. );
+      _hNeutronMudelay      = tfdir.make<TH1D>( "hNeutronmudelay",      "Neutron delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hNeutronPulsedelay   = tfdir.make<TH1D>( "hNeutronpulsedelay",   "Neutron delay due to the proton pulse;(ns)", 60, 0., 300. );
 
       _hPhotonMultiplicity = tfdir.make<TH1D>( "hPhotonMultiplicity", "Photon Multiplicity",                20,     0,     20  );
       _hPhotonKE           = tfdir.make<TH1D>( "hPhotonKE",           "Photon Kinetic Energy",              50, _photonElow,   _photonEhi  );
@@ -168,6 +177,8 @@ namespace mu2e {
       _hPhotonCz           = tfdir.make<TH1D>( "hPhotoncz",           "Photon cos(theta)",                 100,    -1.,     1. );
       _hPhotonPhi          = tfdir.make<TH1D>( "hPhotonphi",          "Photon azimuth",                    100,  -M_PI,  M_PI  );
       _hPhotonTime         = tfdir.make<TH1D>( "hPhotontime",         "Photon time ",                      210,   -200.,  2000. );
+      _hPhotonMudelay      = tfdir.make<TH1D>( "hPhotonmudelay",      "Photon delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hPhotonPulsedelay   = tfdir.make<TH1D>( "hPhotonpulsedelay",   "Photon delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
@@ -244,7 +255,8 @@ namespace mu2e {
           _hProtonCz->Fill( mom.cosTheta() );
           _hProtonPhi->Fill( mom.phi() );
           _hProtonTime->Fill( time );
-
+	  _hProtonMudelay   ->Fill(_fGenerator->muDelay);
+	  _hProtonPulsedelay->Fill(_fGenerator->pulseDelay);
         }
       } // end of loop on protons
 
@@ -274,7 +286,8 @@ namespace mu2e {
           _hNeutronCz->Fill( mom.cosTheta() );
           _hNeutronPhi->Fill( mom.phi() );
           _hNeutronTime->Fill( time );
-
+	  _hNeutronMudelay   ->Fill(_fGenerator->muDelay);
+	  _hNeutronPulsedelay->Fill(_fGenerator->pulseDelay);
         }
       } // end of loop on neutrons
 
@@ -302,7 +315,8 @@ namespace mu2e {
           _hPhotonCz->Fill( mom.cosTheta() );
           _hPhotonPhi->Fill( mom.phi() );
           _hPhotonTime->Fill( time );
-
+	  _hPhotonMudelay   ->Fill(_fGenerator->muDelay);
+	  _hPhotonPulsedelay->Fill(_fGenerator->pulseDelay);
         }
       } // end of loop on photons
     }

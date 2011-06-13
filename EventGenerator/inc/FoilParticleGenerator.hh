@@ -19,6 +19,7 @@
 // Mu2e includes
 #include "Mu2eUtilities/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomLimitedExpo.hh"
+#include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 #include "TargetGeom/inc/Target.hh"
 
 //CLHEP includes
@@ -56,6 +57,8 @@ namespace mu2e {
 
     int iFoil();
 
+    double pulseDelay, muDelay;
+
   private:
 
     CLHEP::Hep3Vector _prodTargetOffset, _prodTargetCenter,
@@ -83,6 +86,7 @@ namespace mu2e {
     CLHEP::RandGeneral  _randFoils;
     CLHEP::RandGeneral  _randExpoFoils;
     CLHEP::RandGeneral  _delayTime;
+    ProtonPulseRandPDF  _pulseTime;
 
     bool _targetFrame;
 
@@ -101,6 +105,7 @@ namespace mu2e {
     int getExpoRndFoil() ;
     int getVolumeAndExpoRndFoil() ;
     double includeTimeDelay();
+    double includePulseDelay();
     CLHEP::Hep3Vector getFlatRndPos(TargetFoil const& theFoil) ;
     double getFlatRndTime() ;
     double getLimitedExpRndTime() ;

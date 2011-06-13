@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.13 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: ConversionGun.hh,v 1.14 2011/06/13 17:06:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/13 17:06:25 $
 //
 
 // C++ includes
@@ -81,6 +81,8 @@ namespace mu2e {
     TH1F* _hradius;
     TH1F* _hzPos;
     TH1F* _htime;
+    TH1F* _hmudelay;
+    TH1F* _hpulsedelay;
     TH2F* _hxyPos;
     TH2F* _hrzPos;
 
