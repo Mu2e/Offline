@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
+// $Id: StoppingTarget00_module.cc,v 1.6 2011/06/13 04:07:54 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/13 04:07:54 $
 //
 // Original author Rob Kutschke.
 //
@@ -27,6 +27,7 @@
 //#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "TargetGeom/inc/Target.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -63,6 +64,7 @@ namespace mu2e {
     TH1F* _hStopFoil;
     TH1F* _hnSimPart;
     TH1F* _hnSimPartZoom;
+    TH1F* _hzInFoil;
     TNtuple* _nt;
 
     map<int,int> _nonMuon;
@@ -83,6 +85,7 @@ namespace mu2e {
     ,_hStopFoil(0)
     ,_hnSimPart(0)
     ,_hnSimPartZoom(0)
+    ,_hzInFoil(0)
     ,_nt(0)
     ,_nonMuon()
     ,_particleCounts()
@@ -97,7 +100,8 @@ namespace mu2e {
     _hStopFoil = tfs->make<TH1F>( "hStopFoil", "Number of Stopping Foil;(mm)", 34, 0., 17. );
     _hnSimPart = tfs->make<TH1F>( "hnSimPart", "Number of SimParticles", 200, 0., 1000. );
     _hnSimPartZoom = tfs->make<TH1F>( "hnSimPartZoom", "Number of SimParticles", 50, 0., 50. );
-
+    _hzInFoil  = tfs->make<TH1F>( "hzInFoil", "z Position Within Foil(units of halfThickness", 
+                                  100, -1., 1. );
     _nt = tfs->make<TNtuple>( "nt", "Muon ntuple",
                                 "cx:cy:cz:cp:cpt:cpz:cke:ct:sx:sy:sz:sp:spt:st:stau:scode:edep:sfoil:nfoils:x9:y9:pt9:pz9:x10:y10:pt10:pz10");
 
@@ -110,7 +114,6 @@ namespace mu2e {
     CLHEP::Hep3Vector tmp = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
 
     _dsOffset.setX(tmp.x());
-    cout << "Offset: " << _dsOffset << endl;
 
     /*
     // Handle to information about G4 physical volumes.
@@ -133,6 +136,8 @@ namespace mu2e {
 
     // Information about the detector coordinate system.
     //GeomHandle<DetectorSystem> det;
+
+    GeomHandle<Target> target;
 
     // Simulated particles.
     art::Handle<SimParticleCollection> simsHandle;
@@ -197,6 +202,7 @@ namespace mu2e {
       ++nFoils;
     }
 
+    /*
     if ( !hitFoils.empty() && nFoils > (int(hitFoils.size())+1) ){
       cout << "Mark: "
            << event.id() << " "
@@ -226,6 +232,7 @@ namespace mu2e {
              << endl;
       }
     }
+    */
 
     struct ntInfo{
       float cx;  // Position, momentum, kinetic energy and time at start
@@ -343,6 +350,22 @@ namespace mu2e {
     xx.nFoils = hitFoils.size();
 
     _nt->Fill( &xx.cx);
+
+    if ( stopFoilId > -1 && mu.stoppingCode() == ProcessCode::muMinusCaptureAtRest ){
+      TargetFoil const& foil = target->foil(stopFoilId);
+
+      double dz = endPos.z() - ( 12000. + foil.center().z());
+      _hzInFoil->Fill( dz/foil.halfThickness() );
+      /*
+      cout << "Test: "
+           << endPos.z() << " "
+           << foil.center().z() <<  " "
+           << dz << " " 
+           << dz/foil.halfThickness()
+           << endl;
+      */
+    }
+                               
 
     // Table of reasons why particles stopped.
     for ( SimParticleCollection::const_iterator i=sims.begin();
