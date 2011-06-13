@@ -1,15 +1,17 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.6 2011/06/13 04:07:54 kutschke Exp $
+// $Id: StoppingTarget00_module.cc,v 1.7 2011/06/13 04:54:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/13 04:07:54 $
+// $Date: 2011/06/13 04:54:02 $
 //
 // Original author Rob Kutschke.
 //
 
 // C++ includes.
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 #include <string>
 
 // Framework includes.
@@ -24,7 +26,6 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
-//#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -57,6 +58,9 @@ namespace mu2e {
     std::string _targetStepPoints;
     std::string _vdStepPoints;
 
+    // Name of file to hold get the points and times that muons stop.
+    std::string _muonPointFile;
+
     // Offset to put coordinates in a special reference frame:
     //  - (x,y) origin on DS axis; z origin at Mu2e origin.
     CLHEP::Hep3Vector _dsOffset;
@@ -81,6 +85,7 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel"))
     ,_targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget"))
     ,_vdStepPoints(pset.get<string>("vdStepPoints","virtualdetector"))
+    ,_muonPointFile(pset.get<string>("muonPointFile",""))
     ,_dsOffset()
     ,_hStopFoil(0)
     ,_hnSimPart(0)
@@ -111,9 +116,9 @@ namespace mu2e {
 
     // Information about the detector coordinate system.
     GeomHandle<DetectorSystem> det;
-    CLHEP::Hep3Vector tmp = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
+    CLHEP::Hep3Vector origin = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
 
-    _dsOffset.setX(tmp.x());
+    _dsOffset.setX(origin.x());
 
     /*
     // Handle to information about G4 physical volumes.
@@ -364,6 +369,15 @@ namespace mu2e {
            << dz/foil.halfThickness()
            << endl;
       */
+      if ( !_muonPointFile.empty() ) {
+        static ofstream fout(_muonPointFile.c_str());
+        fout  << setprecision(8)
+              << endPos.x()+_dsOffset.x() << " "
+              << endPos.y() << " "
+              << endPos.z() << " "
+              << mu.endGlobalTime()
+              << endl;
+      }
     }
                                
 
