@@ -1,9 +1,9 @@
 //
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.1 2011/06/13 17:07:04 onoratog Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.2 2011/06/13 19:01:56 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:07:04 $
+// $Date: 2011/06/13 19:01:56 $
 //
 // Original author Gianni Onorato
 //
@@ -13,10 +13,11 @@
 
 //C++ includes
 #include <cmath>
-
+//#include <utility>
 //CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
 
+using namespace std;
 
 namespace mu2e{
 
@@ -36,6 +37,14 @@ namespace mu2e{
     x03 = 130.0000+0.5300;
     Norm = 60007.17140936479;
     // Calculated with Mathematica from 0 to 260. Above the complete spectrum should be sqrt(CLHEP::twopi)*(A1*sigma1+A2*sigma2+A3*sigma3);
+
+    double xval = 0;
+    double yval = 0;
+    while(xval <= pulseRange) {
+      yval+=TripleGaussian(xval)*binWidth;
+      _intPDF.insert(pair<double,double>(xval,yval));
+      xval += binWidth;
+    }
   }
   
   ProtonPulseRandPDF::~ProtonPulseRandPDF()
@@ -57,13 +66,18 @@ namespace mu2e{
   double ProtonPulseRandPDF::fire() {
 
     double Yflat = _randFlat.fire();
-    double partialint = 0;
-    double toextract = 0;
-    while (partialint < Yflat && toextract <= pulseRange) {
-      partialint += TripleGaussian(toextract)*binWidth;
-      toextract += binWidth;
+    map<double,double>::iterator it = _intPDF.begin();   
+    bool found = false;
+    while (it != _intPDF.end() && !found) {
+      cout << Yflat << '\t' << it->first << '\t' << it->second << endl;
+      found = (Yflat < it->second); 
+      ++it;
+    } 
+    if (it == _intPDF.end()) {
+      return pulseRange;
     }
-    return toextract;
-  }
 
+    return it->first;
+  }
+  
 }
