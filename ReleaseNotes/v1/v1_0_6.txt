@@ -3,6 +3,14 @@
 
            Release notes for Mu2e Offline software, v1_0_6
 
-  $Id: v1_0_6.txt,v 1.1 2011/06/13 05:05:09 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/06/13 05:05:09 $
+  $Id: v1_0_6.txt,v 1.2 2011/06/14 21:08:39 genser Exp $
+  $Author: genser $
+  $Date: 2011/06/14 21:08:39 $
+
+
+1) June 14, 2011 genser 
+
+   Shifted virtual detectors in the middle of the ttracker by their z
+   half lenght so that their upstream surface is in the center plane
+   of the ttracker
+     VirtualDetectorGeom/src/VirtualDetectorMaker.cc
