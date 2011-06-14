@@ -49,7 +49,8 @@ namespace mu2e {
     FoilParticleGenerator( art::RandomNumberGenerator::base_engine_t& engine,
                            double tmin, double tmax, foilGen_enum foilAlgo,
                            posGen_enum  posAlgo, timeGen_enum  timeAlgo,
-                           bool targetFrame = true, bool PTtoSTdelay = true, bool pPulseDelay = true);
+                           bool PTtoSTdelay = true, 
+			   bool pPulseDelay = true, int linesToSkip = 0);
 
     ~FoilParticleGenerator();
 
@@ -61,8 +62,7 @@ namespace mu2e {
 
   private:
 
-    CLHEP::Hep3Vector _prodTargetOffset, _prodTargetCenter,
-      _g4beamlineOrigin,  _g4beamlineExtraOffset;
+    CLHEP::Hep3Vector _DSOffset, _prodTargetCenter;
 
     // time generation range
     double _tmin, _tmax;
@@ -88,11 +88,14 @@ namespace mu2e {
     CLHEP::RandGeneral  _delayTime;
     ProtonPulseRandPDF  _pulseTime;
 
-    bool _targetFrame;
+    bool _DSFrame;
 
     //Include a delay in time due to the PT to ST path
     bool _PTtoSTdelay;
     bool _pPulseDelay;
+
+    //Number of lines to skip in the stopped muon input file
+    int _ntoskip;
 
     //Build a binned representation of foils volume
     std::vector<double> binnedFoilsVolume();
@@ -112,6 +115,8 @@ namespace mu2e {
     void getInfoFromFile(CLHEP::Hep3Vector& pos, double& time);
     double getNegativeExpoRndTime();
     double getMuTimeDecay();
+    void PointToBeginData();
+    void SkipStartingLines();
 
   };
 

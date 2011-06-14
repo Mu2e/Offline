@@ -1,30 +1,33 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.4 2011/05/09 16:33:05 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.5 2011/06/14 22:40:18 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/05/09 16:33:05 $
+// $Date: 2011/06/14 22:40:18 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
 // 
 
 // what processes to do
-bool ejectedProtonGun.do = 0;
-bool ejectedNeutronGun.do = 1;
+bool ejectedProtonGun.do = 1;
+bool ejectedNeutronGun.do = 0;
 bool decayinorbitGun.do = 0;
 bool primaryProtonGun.do = 0;
 bool conversionGun.do = 0;
 
 // Limits on cos(polar angle):
-double conversionGun.czmin = -0.5;
-double conversionGun.czmax =  0.5;
-double decayinorbitGun.czmin = 0.5;
-double decayinorbitGun.czmax = 0.7;
+double decayinorbitGun.czmin = -1;
+double decayinorbitGun.czmax = 1;
 double ejectedProtonGun.czmin = -1.;
 double ejectedProtonGun.czmax = 1.;
 double ejectedNeutronGun.czmin = -1.;
 double ejectedNeutronGun.czmax = 1.;
+
+// number of input lines to skip in the stopped muon file
+int decayinorbitGun.nToSkip = 0;
+int ejectedProtonGun.nToSkip = 0;
+int ejectedNeutronGun.nToSkip = 0;
 
 double primaryProtonGun.czmin = 1;
 double primaryProtonGun.czmax = 1;
@@ -37,16 +40,14 @@ double primaryProtonGun.stdDev = 1; //units are mm
 
 
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
-double decayinorbitGun.elow = 100.;
+double decayinorbitGun.elow = 0.;
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
 double ejectedNeutronGun.elow = 0.0;
 double ejectedNeutronGun.ehi = 0.1;
 
 // Time limits in ns, relative to protons on target.
-double conversionGun.tmin  =  700.;
-double conversionGun.tmax  = 1694.;
-double decayinorbitGun.tmin  =  700.;
+double decayinorbitGun.tmin  =  0.;
 double decayinorbitGun.tmax  = 1694.;
 double ejectedProtonGun.tmin  =  0.;
 double ejectedProtonGun.tmax  = 1694.;
@@ -56,10 +57,9 @@ double primaryProtonGun.tmin  =  700.;
 double primaryProtonGun.tmax  = 1694.;
 
 // Mean multiplicities for the two background generators.
-double cosmictoy.mean =  0.0;
-double picapture.mean =  0.0;
 double ejectedProtonGun.mean = -1;
 double ejectedNeutronGun.mean = -1;
+double decayinorbitGun.mean = -1;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

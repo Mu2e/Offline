@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.29 2011/06/13 17:06:25 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.30 2011/06/14 22:39:57 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/06/14 22:39:57 $
 //
 // Original author Rob Kutschke
 //
@@ -65,6 +65,8 @@ namespace mu2e {
 
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
+    _nToSkip (config.getInt("decayinorbitGun.nToSkip",0)),
+
 
     // Histograms.
     _hMultiplicity(0),
@@ -111,18 +113,18 @@ namespace mu2e {
       _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "DIO z Position (Tracker Coord)", 200, -6600., -5600.   );
       _hcz           = tfdir.make<TH1D>( "hcz",           "DIO cos(theta)",                 100,    -1.,     1.   );
       _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
-      _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 210, -200., 2000. );
-      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 210, -200., 3000. );
+      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
       _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                                                             FoilParticleGenerator::volWeightFoil,
-                                                                             FoilParticleGenerator::flatPos,
-                                                                             FoilParticleGenerator::limitedExpoTime,
-                                                                             false, //dummy value
-                                                                             _PStoDSDelay,
-                                                                             _pPulseDelay));
+                                                                             FoilParticleGenerator::muonFileInputFoil,
+                                                                             FoilParticleGenerator::muonFileInputPos,
+                                                                             FoilParticleGenerator::negExp,                                                           
+									     _PStoDSDelay,
+                                                                             _pPulseDelay,
+									     _nToSkip));
 
     _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow, _ehi, _spectrumResolution, getEngine()));
 

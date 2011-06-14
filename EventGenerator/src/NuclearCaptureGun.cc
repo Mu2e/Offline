@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.9 2011/06/13 17:06:25 onoratog Exp $
+// $Id: NuclearCaptureGun.cc,v 1.10 2011/06/14 22:39:58 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/06/14 22:39:58 $
 //
 // Original author Gianni Onorato
 //
@@ -73,8 +73,8 @@ namespace mu2e {
     _nProtonBins(config.getInt("nuclearCaptureGun.nProtonBins",1000)),
     _nNeutronBins(evaluateNeutronBins()),
     _nPhotonBins(config.getInt("nuclearCaptureGun.nPhotonBins",1000)),
+    _nToSkip (config.getInt("nuclearCaptureGun.nToSkip",0)),
     _doHistograms(config.getBool("nuclearCaptureGun.doHistograms",true)),
-    _targetFrame(config.getBool("nuclearCaptureGun.targetFrame",false)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randPoissonP( getEngine(), std::abs(_protonMean) ),
@@ -154,8 +154,8 @@ namespace mu2e {
       _hProtonzPosition    = tfdir.make<TH1D>( "hProtonzPosition",    "Proton z Position (Tracker Coord)", 200, -6600., -5600. );
       _hProtonCz           = tfdir.make<TH1D>( "hProtoncz",           "Proton cos(theta)",                 100,    -1.,     1. );
       _hProtonPhi          = tfdir.make<TH1D>( "hProtonphi",          "Proton azimuth",                    100,  -M_PI,  M_PI  );
-      _hProtonTime         = tfdir.make<TH1D>( "hProtontime",         "Proton time ",                      210,   -200.,  2000. );
-      _hProtonMudelay      = tfdir.make<TH1D>( "hProtonmudelay",      "Proton delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hProtonTime         = tfdir.make<TH1D>( "hProtontime",         "Proton time ",                      210,   -200.,  3000. );
+      _hProtonMudelay      = tfdir.make<TH1D>( "hProtonmudelay",      "Proton delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
       _hProtonPulsedelay   = tfdir.make<TH1D>( "hProtonpulsedelay",   "Proton delay due to the proton pulse;(ns)", 60, 0., 300. );
 
       _hNeutronMultiplicity = tfdir.make<TH1D>( "hNeutronMultiplicity", "Neutron Multiplicity",                20,     0,     20  );
@@ -165,8 +165,8 @@ namespace mu2e {
       _hNeutronzPosition    = tfdir.make<TH1D>( "hNeutronzPosition",    "Neutron z Position (Tracker Coord)", 200, -6600., -5600. );
       _hNeutronCz           = tfdir.make<TH1D>( "hNeutroncz",           "Neutron cos(theta)",                 100,    -1.,     1. );
       _hNeutronPhi          = tfdir.make<TH1D>( "hNeutronphi",          "Neutron azimuth",                    100,  -M_PI,  M_PI  );
-      _hNeutronTime         = tfdir.make<TH1D>( "hNeutrontime",         "Neutron time ",                      210,   -200.,  2000. );
-      _hNeutronMudelay      = tfdir.make<TH1D>( "hNeutronmudelay",      "Neutron delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hNeutronTime         = tfdir.make<TH1D>( "hNeutrontime",         "Neutron time ",                      210,   -200.,  3000. );
+      _hNeutronMudelay      = tfdir.make<TH1D>( "hNeutronmudelay",      "Neutron delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
       _hNeutronPulsedelay   = tfdir.make<TH1D>( "hNeutronpulsedelay",   "Neutron delay due to the proton pulse;(ns)", 60, 0., 300. );
 
       _hPhotonMultiplicity = tfdir.make<TH1D>( "hPhotonMultiplicity", "Photon Multiplicity",                20,     0,     20  );
@@ -176,8 +176,8 @@ namespace mu2e {
       _hPhotonzPosition    = tfdir.make<TH1D>( "hPhotonzPosition",    "Photon z Position (Tracker Coord)", 200, -6600., -5600. );
       _hPhotonCz           = tfdir.make<TH1D>( "hPhotoncz",           "Photon cos(theta)",                 100,    -1.,     1. );
       _hPhotonPhi          = tfdir.make<TH1D>( "hPhotonphi",          "Photon azimuth",                    100,  -M_PI,  M_PI  );
-      _hPhotonTime         = tfdir.make<TH1D>( "hPhotontime",         "Photon time ",                      210,   -200.,  2000. );
-      _hPhotonMudelay      = tfdir.make<TH1D>( "hPhotonmudelay",      "Photon delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _hPhotonTime         = tfdir.make<TH1D>( "hPhotontime",         "Photon time ",                      210,   -200.,  3000. );
+      _hPhotonMudelay      = tfdir.make<TH1D>( "hPhotonmudelay",      "Photon delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
       _hPhotonPulsedelay   = tfdir.make<TH1D>( "hPhotonpulsedelay",   "Photon delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
@@ -185,9 +185,9 @@ namespace mu2e {
                                                                              FoilParticleGenerator::muonFileInputFoil,
                                                                              FoilParticleGenerator::muonFileInputPos,
                                                                              FoilParticleGenerator::negExp,
-                                                                             _targetFrame,
-                                                                             _PStoDSDelay,
-                                                                             _pPulseDelay));
+									     _PStoDSDelay,
+                                                                             _pPulseDelay,
+									     _nToSkip));
   }
 
   NuclearCaptureGun::~NuclearCaptureGun(){

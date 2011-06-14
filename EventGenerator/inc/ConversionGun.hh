@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.14 2011/06/13 17:06:25 onoratog Exp $
+// $Id: ConversionGun.hh,v 1.15 2011/06/14 22:39:57 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/06/14 22:39:57 $
 //
 
 // C++ includes
@@ -66,6 +66,9 @@ namespace mu2e {
 
     //Utility to generate direction of the momentum, random on the unit sphere.
     RandomUnitSphere _randomUnitSphere;
+
+    int _nToSkip;
+
 
     // Class object to generate position and time of the particle
     std::auto_ptr<FoilParticleGenerator> _fGenerator;

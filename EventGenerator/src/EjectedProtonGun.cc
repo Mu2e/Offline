@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.23 2011/06/13 17:06:25 onoratog Exp $
+// $Id: EjectedProtonGun.cc,v 1.24 2011/06/14 22:39:58 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/06/14 22:39:58 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -60,12 +60,13 @@ namespace mu2e {
     _phimax(config.getDouble("ejectedProtonGun.phimax", CLHEP::twopi )),
     _nbins(config.getInt("ejectedProtonGun.nbins",1000)),
     _doHistograms(config.getBool("ejectedProtonGun.doHistograms",true)),
-    _PStoDSDelay(config.getBool("ejectedProtonGun.PStoDSDelay", true)),
+    _PStoDSDelay(config.getBool("ejectedProtonGun.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("ejectedProtonGun.pPulseDelay", false)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),
+    _nToSkip (config.getInt("ejectedProtonGun.nToSkip",0)),
 
     // Histogram pointers
     _hMultiplicity(),
@@ -113,18 +114,18 @@ namespace mu2e {
       _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Proton z Position (Tracker Coord)", 200, -6600., -5600. );
       _hcz           = tfdir.make<TH1D>( "hcz",           "Proton cos(theta)",                 100,    -1.,     1. );
       _hphi          = tfdir.make<TH1D>( "hphi",          "Proton azimuth",                    100,  -M_PI,  M_PI  );
-      _htime         = tfdir.make<TH1D>( "htime",         "Proton time ",                      210,   -200.,  2000. );
-      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _htime         = tfdir.make<TH1D>( "htime",         "Proton time ",                      210,   -200.,  3000. );
+      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
       _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                                                             FoilParticleGenerator::volWeightFoil,
-                                                                             FoilParticleGenerator::flatPos,
-                                                                             FoilParticleGenerator::limitedExpoTime,
-                                                                             false, //dummy value
-                                                                             _PStoDSDelay,
-                                                                             _pPulseDelay));
+                                                                             FoilParticleGenerator::muonFileInputFoil,
+                                                                             FoilParticleGenerator::muonFileInputPos,
+                                                                             FoilParticleGenerator::negExp,
+									     _PStoDSDelay,
+                                                                             _pPulseDelay,
+									     _nToSkip));
   }
 
   EjectedProtonGun::~EjectedProtonGun(){

@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.11 2011/06/13 17:06:25 onoratog Exp $
+// $Id: EjectedNeutronGun.cc,v 1.12 2011/06/14 22:39:57 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/06/14 22:39:57 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -61,7 +61,7 @@ namespace mu2e {
     _czmax(config.getDouble("ejectedNeutronGun.czmax",  1.)),
     _phimin(config.getDouble("ejectedNeutronGun.phimin", 0. )),
     _phimax(config.getDouble("ejectedNeutronGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("ejectedNeutronGun.PStoDSDelay", true)),
+    _PStoDSDelay(config.getBool("ejectedNeutronGun.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("ejectedNeutronGun.pPulseDelay", false)),
     _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
     _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
@@ -70,6 +70,7 @@ namespace mu2e {
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),
+    _nToSkip (config.getInt("ejectedNeutronGun.nToSkip",0)),
 
     // Histogram pointers
     _hMultiplicity(),
@@ -122,18 +123,18 @@ namespace mu2e {
       _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Neutron z Position (Tracker Coord)", 200, -6600., -5600. );
       _hcz           = tfdir.make<TH1D>( "hcz",           "Neutron cos(theta)",                 100,    -1.,     1. );
       _hphi          = tfdir.make<TH1D>( "hphi",          "Neutron azimuth",                    100,  -M_PI,  M_PI  );
-      _htime         = tfdir.make<TH1D>( "htime",         "Neutron time ",                      210,   -200.,  2000. );
-      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
+      _htime         = tfdir.make<TH1D>( "htime",         "Neutron time ",                      210,   -200.,  3000. );
+      _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
       _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                                                             FoilParticleGenerator::volWeightFoil,
-                                                                             FoilParticleGenerator::flatPos,
-                                                                             FoilParticleGenerator::limitedExpoTime,
-                                                                             false, //dummy value
-                                                                             _PStoDSDelay,
-                                                                             _pPulseDelay));
+									     FoilParticleGenerator::muonFileInputFoil,
+                                                                             FoilParticleGenerator::muonFileInputPos,
+                                                                             FoilParticleGenerator::negExp,          
+									     _PStoDSDelay,
+                                                                             _pPulseDelay,
+									     _nToSkip));
   }
 
   EjectedNeutronGun::~EjectedNeutronGun(){

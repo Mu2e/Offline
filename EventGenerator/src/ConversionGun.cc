@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.26 2011/06/13 17:06:25 onoratog Exp $
+// $Id: ConversionGun.cc,v 1.27 2011/06/14 22:39:57 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/06/14 22:39:57 $
 //
 // Original author Rob Kutschke
 //
@@ -62,6 +62,8 @@ namespace mu2e {
     // Random distribution.
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
 
+    _nToSkip (config.getInt("conversionGun.nToSkip",0)),
+
     // Properly initialized later.
     _mass(0),
 
@@ -97,12 +99,12 @@ namespace mu2e {
     _mass = e_data.mass().value();
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                                                             FoilParticleGenerator::volWeightFoil,
-                                                                             FoilParticleGenerator::flatPos,
-                                                                             FoilParticleGenerator::limitedExpoTime,
-                                                                             false, //dummy value
-                                                                             _PStoDSDelay,
-                                                                             _pPulseDelay));
+                                                                             FoilParticleGenerator::muonFileInputFoil,
+                                                                             FoilParticleGenerator::muonFileInputPos,
+                                                                             FoilParticleGenerator::negExp,           
+									     _PStoDSDelay,
+                                                                             _pPulseDelay,
+									     _nToSkip));
     if ( _doHistograms ) bookHistograms();
   }
 
@@ -175,10 +177,10 @@ namespace mu2e {
                                        bins.nbins(), bins.low(), bins.high() );
     _htime         = tfdir.make<TH1F>( "htime",
                                        "Conversion Electron time at Production;(ns)",
-                                       120, 0., 2400. );
+                                       210, -200., 3000. );
     _hmudelay      = tfdir.make<TH1F>( "hmudelay",
                                        "Production delay due to muons arriving at ST;(ns)",
-                                       600, 0., 3000. );
+                                       300, 0., 2000. );
     _hpulsedelay   = tfdir.make<TH1F>( "hpdelay",
                                        "Production delay due to the proton pulse;(ns)",
                                        60, 0., 300. );

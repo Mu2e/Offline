@@ -6,9 +6,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.hh,v 1.6 2011/06/13 17:06:25 onoratog Exp $
+// $Id: NuclearCaptureGun.hh,v 1.7 2011/06/14 22:39:57 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/06/14 22:39:57 $
 //
 // Original author Gianni Onorato
 
@@ -67,6 +67,8 @@ namespace mu2e {
     int _nNeutronBins; //number of bins for neutrons energy spectrum
     int _nPhotonBins; //number of bins for photon energy spectrum
 
+    int _nToSkip;
+
     // Class object to generate position and time of the particle
     std::auto_ptr<FoilParticleGenerator> _fGenerator;
 
@@ -80,8 +82,6 @@ namespace mu2e {
 
     // Histogram control.
     bool _doHistograms;
-
-    bool _targetFrame;
 
     // end: parameters that can be configured from the config file.
 

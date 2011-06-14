@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.17 2011/06/13 17:06:25 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.18 2011/06/14 22:39:57 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/06/14 22:39:57 $
 //
 //
 
@@ -92,6 +92,8 @@ namespace mu2e {
     CLHEP::RandGeneral _randSimpleEnergy;
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere _randomUnitSphere;
+
+    int _nToSkip;
 
     // Diagnostic histograms.
     TH1D* _hMultiplicity;

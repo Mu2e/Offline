@@ -33,14 +33,17 @@
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "cetlib/trim.h"
 
 using namespace std;
 
 static mu2e::ConfigFileLookupPolicy findConfig;
-static const string StMuFileString = findConfig("ConditionsService/data/StoppedMuons.txt");
+static const string StMuFileString = "/grid/data/mu2e/users/kutschke/StoppedMuons/stoppedMuons_02.txt";
+//static const string StMuFileString = findConfig("ConditionsService/data/StoppedMuons.txt");
 static const double timeMaxDelay = 3000;
 static const double nBinsForTimeDelayPDF = 150;
 static fstream inMuFile(StMuFileString.c_str(), ios::in);
+static bool skipbegin = false;
 
 namespace mu2e {
 
@@ -49,13 +52,11 @@ namespace mu2e {
                                                foilGen_enum foilAlgo,
                                                posGen_enum  posAlgo,
                                                timeGen_enum  timeAlgo,
-                                               bool targetFrame,
                                                bool PTtoSTdelay,
-                                               bool pPulseDelay ):
-    _prodTargetOffset(),
+                                               bool pPulseDelay,
+					       int linesToSkip):
+    _DSOffset(),
     _prodTargetCenter(),
-    _g4beamlineOrigin(),
-    _g4beamlineExtraOffset(CLHEP::Hep3Vector()),
     // time generation range
     _tmin ( tmin ),
     _tmax ( tmax ),
@@ -69,25 +70,19 @@ namespace mu2e {
     _randFlat ( engine ) ,
     _randTime( engine ),
     _muTimeDecay (getMuTimeDecay()),
-    _randNegExpoTime( engine, -_muTimeDecay ),
+    _randNegExpoTime( engine, _muTimeDecay ),
     _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils ),
     _randExpoFoils ( engine, &(weightedBinnedFoilsVolume()[0]), _nfoils ),
     _delayTime( engine, &(timePathDelay()[0]), nBinsForTimeDelayPDF ),
     _pulseTime( engine ),
-    _targetFrame( targetFrame ),
     _PTtoSTdelay ( PTtoSTdelay ),
-    _pPulseDelay ( pPulseDelay )
+    _pPulseDelay ( pPulseDelay ),
+    _ntoskip (linesToSkip)
   {
 
 
-    CLHEP::Hep3Vector offset_default(0.0,0.0,1764.5);
-    _prodTargetOffset = offset_default;
-
-    CLHEP::Hep3Vector g4beamlineOrigin_default(3904.,0.,-7929.);
-    _g4beamlineOrigin = g4beamlineOrigin_default;
-
-    CLHEP::Hep3Vector g4beamlineExtraOffset_default;
-    _g4beamlineExtraOffset = g4beamlineExtraOffset_default;
+    CLHEP::Hep3Vector offset(-3904.,0,12000.);
+    _DSOffset = offset;
 
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& geomConfig = geom->config();
@@ -103,7 +98,11 @@ namespace mu2e {
       throw cet::exception("GEOM")
         << "no stopped muon file is present";
     }
-
+    if (!skipbegin) {
+      PointToBeginData();
+      skipbegin = true;
+    }
+    SkipStartingLines();
   }
 
   FoilParticleGenerator::~FoilParticleGenerator()
@@ -114,10 +113,15 @@ namespace mu2e {
                                                       double& time) {
 
 
+    //    cout << "gen pos and time called " << endl;
+
     // Pick a foil
 
     time = -1000;
-    while (time < _tmin) {
+    while (time < _tmin ) {
+
+      //      cout << "time condition failed: " << time << '\t' << _tmin << endl; 
+      // cout << "pos is :" << pos << endl;
 
       switch (_foilAlgo) {
       case flatFoil:
@@ -147,11 +151,14 @@ namespace mu2e {
         break;
       case muonFileInputPos:
         getInfoFromFile(pos, time);
+	_pPulseDelay = false;
+	_PTtoSTdelay = false;
         break;
       default:
         break;
       }
 
+      double addtime = 0;
 
       //Pick up time
       switch (_timeAlgo) {
@@ -162,40 +169,32 @@ namespace mu2e {
         time = getLimitedExpRndTime();
         break;
       case negExp:
-        time += getNegativeExpoRndTime();
+	addtime = getNegativeExpoRndTime();
+	if (_posAlgo == muonFileInputPos) {
+	  muDelay = addtime;
+	} 
+	//	cout << "adding " << addtime << endl;
+        time += addtime;
+	break;
       default:
         break;
       }
-
       if (_pPulseDelay) {
 	pulseDelay = includePulseDelay();
 	time += pulseDelay;
-      } else {
-	pulseDelay = 0.;
       }
-
+      
       if (_PTtoSTdelay) {
         muDelay = includeTimeDelay();
         time += muDelay;
-      } else {
-	muDelay = 0.;
       }
-
-
-
     }
     if (_posAlgo==muonFileInputPos) {
-      if( _targetFrame ) {
-        pos -= _prodTargetOffset;           // Move to target coordinate system
-        pos += _prodTargetCenter; // Move to Mu2e coordinate system
-      } else{
-        pos += _g4beamlineOrigin;
-        pos += _g4beamlineExtraOffset;
-      }
+        pos -= _DSOffset;           // Move to DS coordinate system
     }
   }
-
-
+  
+  
 
   int FoilParticleGenerator::iFoil() {
     return _ifoil;
@@ -307,33 +306,71 @@ namespace mu2e {
 
   }
 
+
+  //Point the input streaming at the line after "begin data"
+  void FoilParticleGenerator::PointToBeginData() {
+    string line;
+    while (getline(inMuFile, line)) {
+      stringstream s_line;
+      s_line << line;
+      cet::trim_right (line);
+      cet::trim_left (line);
+      //      cout << "In point to begin data I'm reading " << line << endl;
+      if (line=="begin data" || line == "BEGIN DATA" || line == "Begin Data" ||
+	  line == "begin Data" || line == "Begin data") {
+	//	cout << " and I'm ok" << endl;
+	return;
+      }
+    }
+    throw cet::exception("RANGE")
+      << "No begin data found in input file";
+    return;
+  }
+
+  //Skip user-defined number of lines (default is zero)
+  void FoilParticleGenerator::SkipStartingLines() {
+    string line;
+    int counter = 0;
+    while (counter < _ntoskip) {
+      bool readok = getline(inMuFile, line);
+      //      cout << "In skippstartinglines I'm reading " << line << endl;
+      ++counter;
+      if (!readok) {
+      inMuFile.clear();
+      inMuFile.seekg(0, ios::beg);
+      PointToBeginData();   
+      }
+    }
+    //    cout << "And then I'm out of the skipping cycle" << endl;    
+    return;
+  }
+
   //Pick up the position from the input stopped muon file
   void FoilParticleGenerator::getInfoFromFile(CLHEP::Hep3Vector& pos, double& time) {
-
-    //Start reading the input file from the beginning when it reaches the end
-    bool gotthem = false;
+    //    cout << "Method getinfofromfile has been called " << endl;
     string line;
+    bool gotthem = false;
     while (!gotthem) {
+      //Start reading the input file from the beginning when it reaches the end
       while(getline(inMuFile,line)) {
-        stringstream s_line;
-        s_line << line;
-        size_t skip = line.find("\\\\");
-        if (skip != string::npos) continue;
-        if (line == "") continue;
-        double x, y, z, t;
-        s_line >> x >> y >> z >> t;
-        CLHEP::Hep3Vector temppos(x,y,z);
-        pos = temppos;
-        time = t;
-        gotthem = true;
-        return;
+	stringstream s_line;
+	s_line << line;
+	double x, y, z, t;
+	s_line >> x >> y >> z >> t;
+	CLHEP::Hep3Vector temppos(x,y,z);
+	pos = temppos;
+	//cout << "Value of read pos is " << pos << endl;
+	//cout << "Value of read time is " << t << endl;
+	time = t;
+	gotthem = true;
+	return;
       }
       inMuFile.clear();
       inMuFile.seekg(0, ios::beg);
+      PointToBeginData();   
     }
-
+    
     return;
-
   }
 
   //Add a time interval taken from a negative exponential pdf
