@@ -1,7 +1,7 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.cc,v 1.8 2011/06/09 19:57:53 genser Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.9 2011/06/14 21:08:11 genser Exp $
 // $Author: genser $
 //
 
@@ -116,17 +116,18 @@ namespace mu2e {
       }
 
       TTracker const & ttracker = *(GeomHandle<TTracker>());
-      Hep3Vector ttrackerOffset(-solenoidOffset,0.,ttracker.z0());
+      Hep3Vector vdOffset(-solenoidOffset,0.,ttracker.z0()+vdHL);
 
-      // VD 11 is placed inside the ttracker mother volume in the middle of the ttracker
+      // VD 11 is placed inside the ttracker mother volume in the
+      // middle of the ttracker shifted by the half length of vd
       // VD 12 is placed inside the ttracker at the same z position as
       // VD 11 but from radius 0 to the inner radius of the ttracker
       // mother volume. However, its mother volume is ToyDS3Vacuum
       // which has a different offset. We will use the global offset
       // here (!) as DS is not in the geometry service yet
 
-      _vd->addVirtualDetector( 11, vdName.str(),  ttrackerOffset, 0, Hep3Vector(0.,0.,0.));
-      _vd->addVirtualDetector( 12, "TT_MidInner", ttrackerOffset, 0, Hep3Vector(0.,0.,0.));
+      _vd->addVirtualDetector( 11, vdName.str(),  vdOffset, 0, Hep3Vector(0.,0.,0.));
+      _vd->addVirtualDetector( 12, "TT_MidInner", vdOffset, 0, Hep3Vector(0.,0.,0.));
 
       vdName.str("TT_FrontHollow");
 
