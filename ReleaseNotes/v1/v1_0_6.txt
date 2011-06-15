@@ -3,10 +3,26 @@
 
            Release notes for Mu2e Offline software, v1_0_6
 
-  $Id: v1_0_6.txt,v 1.2 2011/06/14 21:08:39 genser Exp $
-  $Author: genser $
-  $Date: 2011/06/14 21:08:39 $
+  $Id: v1_0_6.txt,v 1.3 2011/06/15 21:07:27 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/06/15 21:07:27 $
 
+3) June 15, 2011 kutschke
+   Write the "begin data" tag on the first line of the file."
+     Analyses/src/StoppingTarget00_module.cc
+
+2) June 15, 2011 kutschke
+   The _readouts data member of RecoDataProducts/inc/CaloCrystalHit.hh
+   was not correctly initialized.  It's key contained the Id of the CaloHit,
+   not the position of the CaloHit in the CaloHitCollection; this is fixed.
+     HitMakers/src/MakeCaloCrystalHits_module.cc
+
+   Provide an additional functor to help with the above fix.
+     Mu2eUtilities/inc/sort_functors.hh
+
+   The only code to use this data member had a work around to fix the
+   problem.  The work around is now removed:
+      Analyses/src/BkgRates_module.cc
 
 1) June 14, 2011 genser 
 
