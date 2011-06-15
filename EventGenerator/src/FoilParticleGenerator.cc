@@ -171,7 +171,7 @@ namespace mu2e {
       case negExp:
 	addtime = getNegativeExpoRndTime();
 	if (_posAlgo == muonFileInputPos) {
-	  muDelay = addtime;
+	  muDelay = time;
 	} 
 	//	cout << "adding " << addtime << endl;
         time += addtime;
