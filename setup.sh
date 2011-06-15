@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.31 2011/06/07 21:25:51 kutschke Exp $
+# $Id: setup.sh,v 1.32 2011/06/15 22:42:44 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/06/07 21:25:51 $
+# $Date: 2011/06/15 22:42:44 $
 #
 # Original author Rob Kutschke
 #
@@ -62,7 +62,7 @@ setup heppdt v3_04_01 -qgcc45
 setup scons v1_3_0a -qgcc45
 
 # Search path for fcl files
-export FHICL_FILE_PATH=.:fcl;
+export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
 
 # Tell the framework to look in the local area to find modules.
 source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
