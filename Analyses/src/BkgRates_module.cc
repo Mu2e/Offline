@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.14 2011/06/07 23:01:53 kutschke Exp $
+// $Id: BkgRates_module.cc,v 1.15 2011/06/15 21:06:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 23:01:53 $
+// $Date: 2011/06/15 21:06:18 $
 //
 // Original author Gianni Onorato
 //
@@ -890,15 +890,6 @@ namespace mu2e {
       haveSimPart = !(simParticles->empty() || volumes->empty());
     }
 
-    map<unsigned, size_t> CHMap;
-
-    for (size_t j=0; j<caloHits->size(); ++j) {
-
-      CaloHit const & ahit = (*caloHits).at(j);
-      CHMap.insert(pair<unsigned, size_t>(ahit.id(), j));
-
-    }
-
     if (caloCrystalHits->size()>0) {
       _hCryEvt->Fill(caloCrystalHits->size());
       _hCryEvtZ1->Fill(caloCrystalHits->size());
@@ -941,9 +932,8 @@ namespace mu2e {
         for (size_t it = 0;
              it < ROIds.size() ; ++it ) {
 
-          size_t CollectionPosition = CHMap[ROIds.at(it).key()];
-
-          CaloHit const & thehit = (*caloHits).at(CollectionPosition);
+          size_t collectionPosition = ROIds.at(it).key();
+          CaloHit const & thehit = *ROIds.at(it);
 
           if (!readCryOnce) {
             CLHEP::Hep3Vector cryCenter =  cg->getCrystalOriginByRO(thehit.id());
@@ -965,7 +955,7 @@ namespace mu2e {
             cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
 
 
-            PtrStepPointMCVector const & mcptr(hits_mcptr->at(CollectionPosition));
+            PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
             size_t nHitsPerCrystal = mcptr.size();
             _hCaloHitMult->Fill(nHitsPerCrystal);
 
