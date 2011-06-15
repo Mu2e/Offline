@@ -237,11 +237,11 @@ namespace mu2e {
     }
     double step = 1./_nfoils;
     for (int i=0; i< _nfoils; ++i) {
-      cout << volumes[i] << '\t';
+      //      cout << volumes[i] << '\t';
       double weight = (exp(-(step*i))*(1-(exp(-step))))/step;
-      cout << weight << '\t';
+      //      cout << weight << '\t';
       volumes[i] = volumes[i]*weight;
-      cout << volumes[i] << endl;
+      //      cout << volumes[i] << endl;
     }
     return volumes;
   } //FoilParticleGenerator::weightedBinnedFoilsVolume()
