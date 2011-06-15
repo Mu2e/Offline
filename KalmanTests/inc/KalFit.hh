@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.2 2011/06/08 23:50:32 mu2ecvs Exp $
+// $Id: KalFit.hh,v 1.3 2011/06/15 17:52:47 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/08 23:50:32 $
+// $Date: 2011/06/15 17:52:47 $
 //
 
 // framework
@@ -49,8 +49,7 @@ namespace mu2e
     void setT00(const TrkT0& t0) { _t00 = t0; }
     void removeFailed() { if(_fit.failure())deleteTrack(); }
     void fit() { _fit = _krep->fit(); }
-    void deleteTrack() { _hits.clear(); delete _trk; _trk=0; _krep = 0; }
-    TrkRecoTrk* stealTrack() { TrkRecoTrk* retval = _trk; _trk=0; _krep=0; _hits.clear(); return retval; }
+    void deleteTrack() { delete _trk; _trk=0; _krep = 0; }
   };
   
   class KalFit

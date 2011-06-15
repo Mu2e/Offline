@@ -1,14 +1,15 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.5 2011/06/11 03:48:36 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/06/11 03:48:36 $
+// $Id: KalFitTest_module.cc,v 1.6 2011/06/15 17:52:47 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2011/06/15 17:52:47 $
 //
 
 // framework
 #include "art/Framework/Core/Event.h"
 #include "fhiclcpp/ParameterSet.h"
+//#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "art/Persistency/Common/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -18,6 +19,13 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+
+// conditions
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
+
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -25,9 +33,6 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-using namespace CLHEP;
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
-//#include "GeneralUtilities/inc/OwningPointerCollection.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -94,14 +99,18 @@ namespace mu2e
     // bfield object
     BField* _bfield;
     // configuration parameters
-    int _diag;
+    int _diag,_debug;
     int _printfreq;
+    // event object labels
     std::string _strawhitslabel;
+    std::string _mcstrawhitslabel;
+    std::string _mcptrlabel;
+    std::string _mcstepslabel;
     // cache of event objects
     const StrawHitCollection* _strawhits;
     const StrawHitMCTruthCollection* _mcstrawhits;
     const PtrStepPointMCVectorCollection* _mchitptr;
-    const StepPointMCCollection* _mcsteps;
+    const StepPointMCCollection *_mcsteps, *_mcvdsteps;
     // fitter
     KalFit _kfit;
     // helper functions
@@ -175,11 +184,14 @@ namespace mu2e
   
   KalFitTest::KalFitTest(fhicl::ParameterSet const& pset) : 
     _diag(pset.get<int>("diagLevel",0)),
+    _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",10)),
-    _strawhitslabel(pset.get<std::string>("strawHitsLabel")),
+    _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
+    _mcstrawhitslabel(pset.get<std::string>("MCStrawHitsLabel","makeSH")),
+    _mcptrlabel(pset.get<std::string>("MCPtrLabel","makeSH")),
+    _mcstepslabel(pset.get<std::string>("MCStepsLabel","g4run")),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit"))
   {
-    produces<TrkRecoTrkCollection>();
   }
 
   KalFitTest::~KalFitTest(){}
@@ -252,9 +264,6 @@ namespace mu2e
 
   void KalFitTest::produce(art::Event& event ) 
   {
-
-    auto_ptr<TrkRecoTrkCollection> tracks(new TrkRecoTrkCollection );
-
 // event printout
     int iev=event.id().event();
     if((iev%_printfreq)==0)cout<<"KalFitTest: event="<<iev<<endl;
@@ -289,12 +298,9 @@ namespace mu2e
           }
         }
       }
-      // If fit is successful, pass ownership of the track to the event.
-      if(myfit._krep != 0 && myfit._krep->fitCurrent()){
-        tracks->push_back( myfit.stealTrack() );
-      }
+// cleanup; the track should be put in the event
+      myfit.deleteTrack();
     }
-    event.put(tracks); 
   }
   
   void KalFitTest::endJob()
@@ -315,82 +321,89 @@ namespace mu2e
   bool KalFitTest::findMC(art::Event& evt) {
     _mcstrawhits = 0; _mchitptr = 0; _mcsteps = 0;
     art::Handle<StrawHitMCTruthCollection> truthHandle;
-    if(evt.getByLabel("makeSH",truthHandle))
+    if(evt.getByLabel(_mcstrawhitslabel,truthHandle))
       _mcstrawhits = truthHandle.product();
   // Get the persistent data about pointers to StepPointMCs
     art::Handle<PtrStepPointMCVectorCollection> _mchitptrHandle;
-    if(evt.getByLabel("makeSH","StrawHitMCPtr",_mchitptrHandle))
+    if(evt.getByLabel(_mcptrlabel,"StrawHitMCPtr",_mchitptrHandle))
       _mchitptr = _mchitptrHandle.product();
-  // Get the persistent data about the StepPointMCs
-    art::Handle<StepPointMCCollection> _mcstepsHandle;
-    if(evt.getByLabel("g4run","tracker",_mcstepsHandle))
-      _mcsteps = _mcstepsHandle.product();
-    return _mcstrawhits != 0 && _mchitptr != 0 && _mcsteps != 0;
+  // Get the persistent data about the StepPointMCs, from the tracker and the virtual detectors
+    art::Handle<StepPointMCCollection> mctrackerstepsHandle;
+    if(evt.getByLabel(_mcstepslabel,"tracker",mctrackerstepsHandle))
+      _mcsteps = mctrackerstepsHandle.product();
+    art::Handle<StepPointMCCollection> mcVDstepsHandle;
+    if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
+      _mcvdsteps = mcVDstepsHandle.product();
+      
+    return _mcstrawhits != 0 && _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0;
   }
   
 // define seed helix and t0 using MC truth
   bool KalFitTest::trkFromMC(TrkDef& mytrk) {
 // preset to failure
     bool retval(false);
-// t0 is defined as the time when the particle passes through z=0.  Find the step points
-// closest to this and interpolate.  This should be replaced by referencing the intersection
-// with the null element at z=0, FIXME!!!!!
-    double zmin(-1e6);
-    double zmax(1e6);
-    double tmin,tmax;
     unsigned nstraws = _strawhits->size();
     std::vector<size_t> indices;
-    double mct0(0.0);
+    double calt0(0.0);
+    double t0(0.0);
+    double charge(0.0);
     CLHEP::Hep3Vector pos;
     CLHEP::Hep3Vector mom;
-    for(unsigned istraw=0;istraw<nstraws;istraw++){
-      PtrStepPointMCVector const& mcptr(_mchitptr->at(istraw));
-      unsigned nprimary(0);
-      for( size_t j=0; j<mcptr.size(); ++j ) {
-        StepPointMC const& mchit = *mcptr[j];
-  // make sure this is the primary particle: not sure if this works with bkgs merged FIXME!!!!
-        if( mchit.trackId().asInt() != 1 ) continue;
-        nprimary++;
-        double z = mchit.position().z();
-        if(z > 0 && z < zmax){
-          zmax = z;
-          tmax = mchit.time();
-  // this t0 is a calorimeter artifact introduced in the tracking code, it must be subtracted.
-  // eventually this part of the simulation should be moved to the calorimeter code, FIXME!!!
-          mct0 = _mcstrawhits->at(istraw).t0();
-        } else if (z < 0 && z > zmin){
-          zmin = z;
-          tmin = mchit.time();
-          pos = mchit.position();
-          mom = mchit.momentum();
-        }
+// geometry
+    GeomHandle<VirtualDetector> vdg;
+    GeomHandle<DetectorSystem> det;
+    ConditionsHandle<ParticleDataTable> pdt("ignored");
+// find the z=0 virtual detector step point, and use that to define t0 and the seed momentum
+    for( StepPointMCCollection::const_iterator imcs =_mcvdsteps->begin();imcs!= _mcvdsteps->end();imcs++){
+      if( imcs->trackId().asInt() != 1 ) continue;
+      if(vdg->exist(imcs->volumeId()) && (imcs->volumeId() == 11 || imcs->volumeId() == 12) ){
+        t0 = imcs->time();
+        mom = imcs->momentum();
+        charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
+// need to transform into the tracker coordinate system
+        pos = det->toDetector(imcs->position());
+        if(_debug > 1)std::cout << "found virtual detector id= " << imcs->volumeId()
+          << " name " << vdg->name(imcs->volumeId())
+          << " position = " << pos
+          << " momentum = " << pos
+          << " time = " << t0 << std::endl;
+        break;
       }
-      if(nprimary > 0)indices.push_back(istraw);
     }
-    if(zmin > -1e5 && zmax < 1e5 ){
-// interpolate linearly back to z=0
-// must correct for calorimeter t0 until that's removed
-      double t0 = tmin - zmin*(tmax-tmin)/(zmax-zmin) + mct0;
-// should set t0err according to average, but that's not working.  For now, set to fixed value.
-// set to a negative value, to force t0 finding from data
-      double t0err = -5.0;
+// this t0 is a calorimeter artifact introduced in the tracking code, it must be subtracted.
+// eventually this part of the simulation should be moved to the calorimeter code, FIXME!!!
+    if(nstraws > 0)calt0 = _mcstrawhits->at(0).t0();
+    t0 += calt0;
+// set to a negative value, to force t0 finding from data.  Should be an option, FIXME!!!
+    double t0err = -0.5;
 // require a minimum momentum; should be a parameter, FIXME!!!
-      static double minmom(60.0);
-      if(mom.mag() > minmom){
-        double charge(-1.); // not sure how to get this from MC: FIXME!!!!!
-        HepVector parvec(5,0);
-// Babar interface still uses HepPoint: FIXME!!!!
-        double hflt(0.0);
-        TrkHelixUtils::helixFromMom( parvec, hflt, 
-          HepPoint(pos.x(),pos.y(),pos.z()),
-          mom,charge,*_bfield);
-  // dummy covariance matrix; this should be set according to measured values, FIXME!!!!!
-        HepSymMatrix dummy(5,1); 
-        dummy(1,1)=1.; dummy(2,2)=0.1*0.1;dummy(3,3)=1e-2*1e-2;
-        dummy(4,4)=1.; dummy(5,5)=0.1*0.1;
-        mytrk = TrkDef(_strawhits,indices,parvec,dummy,t0,t0err);
-        retval = true;
+    static double minmom(60.0);
+    if(mom.mag() > minmom){
+// find the indices of the true primary particle straw hits
+      for(unsigned istraw=0;istraw<nstraws;istraw++){
+        PtrStepPointMCVector const& mcptr(_mchitptr->at(istraw));
+        unsigned nprimary(0);
+        for( size_t j=0; j<mcptr.size(); ++j ) {
+          StepPointMC const& mchit = *mcptr[j];
+           // make sure this is the primary particle: not sure if this works with bkgs merged FIXME!!!!
+          if( mchit.trackId().asInt() == 1 )nprimary++;
+        }
+// decide if we want all hits with any primary particle, or pure primary particle.  This should be configuration, FIXME!!!
+//        if(nprimary > 0)indices.push_back(istraw);
+        if(nprimary == mcptr.size())indices.push_back(istraw);
       }
+      HepVector parvec(5,0);
+// Babar interface still uses HepPoint: FIXME!!!!
+      double hflt(0.0);
+      TrkHelixUtils::helixFromMom( parvec, hflt, 
+        HepPoint(pos.x(),pos.y(),pos.z()),
+        mom,charge,*_bfield);
+  // dummy covariance matrix; this should be set according to measured values, FIXME!!!!!
+      HepSymMatrix dummy(5,1); 
+      dummy(1,1)=1.; dummy(2,2)=0.1*0.1;dummy(3,3)=1e-2*1e-2;
+      dummy(4,4)=1.; dummy(5,5)=0.1*0.1;
+      mytrk = TrkDef(_strawhits,indices,parvec,dummy,t0,t0err);
+      retval = true;
     }
     return retval;
   }
