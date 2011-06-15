@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.4 2011/06/15 17:52:47 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.5 2011/06/15 23:08:07 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/15 17:52:47 $
+// $Date: 2011/06/15 23:08:07 $
 //
 
 // the following has to come before other BaBar includes
@@ -15,6 +15,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/TrackerCalibrations.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -106,7 +107,7 @@ namespace mu2e
         TrkStrawHit* trkhit = *ihit;
         hotlist->append(trkhit);
         double fltlen = trkhit->fltLen();
-// note this accounts for the material of both walls
+// note this accounts for the material of both walls.
         double wallpath = trkhit->wallPath();
         double gaspath = trkhit->gasPath();
   // offset the paths to avoid stacking elements
@@ -173,8 +174,9 @@ namespace mu2e
       double tprop = (hflt -flt0)/_vlight;
       double hitt0 = mytrk.trkT0().t0() + tprop;
     // subtract the propagation time and the average wire signal delay when computing hit time
-    // using vlight = vwire, FIXME!!!!!
-      tsum += strawhit.time() - tprop - straw.getHalfLength()/_vlight;
+      ConditionsHandle<TrackerCalibrations> tcal("ignored");
+      double vwire = tcal->SignalVelocity(straw.index());
+      tsum += strawhit.time() - tprop - straw.getHalfLength()/vwire;
     // create the hit object
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fabs(mytrk.trkT0().t0Err()));
       assert(trkhit != 0);
@@ -245,7 +247,7 @@ namespace mu2e
             if(poca.status().success()){
               double doca = fabs(poca.doca());
 // require a minimum doca to avoid ambiguity bias.  mindoca shoudl be a parameter, FIXME!!!
-              static double mindoca(0.4);
+              static double mindoca(0.0);
               if(doca > mindoca){
 // propagation time to this hit from z=0.  This assumes beta=1, FIXME!!!
                 double tflt = (hit->fltLen()-flt0)/_vlight;
@@ -270,6 +272,7 @@ namespace mu2e
         unsigned niter(0);
         while(changed && niter < 10){
           niter++;
+          changed = false;
           unsigned nactive(0);
           double t0sum(0.0);
           double t0sum2(0.0);
@@ -280,16 +283,16 @@ namespace mu2e
               t0sum2 += hitst0[ihit]*hitst0[ihit];
             }
           }
-          t0 = t0sum/nactive;
-          double t02 = t0sum2/nactive;
-          double t0sig = sqrt(max(t02 - t0*t0,0.0));
-// for now, a kludge factor for the t0 error
-          t0err = 1.5*t0sig/sqrt(nactive);
-          changed = false;
-          for(unsigned ihit=0;ihit<hitst0.size();ihit++){
-            bool useit = fabs(hitst0[ihit]-t0) < nsig*t0sig;
-            changed |= useit != used[ihit];
-            used[ihit] = useit;
+          if(nactive>1){
+            t0 = t0sum/nactive;
+            double t02 = t0sum2/nactive;
+            double t0sig = sqrt(max(t02 - t0*t0,0.0));
+            t0err = t0sig/sqrt(nactive-1);
+            for(unsigned ihit=0;ihit<hitst0.size();ihit++){
+              bool useit = fabs(hitst0[ihit]-t0) < nsig*t0sig;
+              changed |= useit != used[ihit];
+              used[ihit] = useit;
+            }
           }
         }
 // reset t0
