@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.7 2011/06/08 21:43:02 mu2ecvs Exp $
+// $Id: MakeStrawHit_module.cc,v 1.8 2011/06/15 17:51:25 mu2ecvs Exp $
 // $Author: mu2ecvs $
-// $Date: 2011/06/08 21:43:02 $
+// $Date: 2011/06/15 17:51:25 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -83,7 +83,7 @@ namespace mu2e {
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-      _t0Sigma(pset.get<double>("t0Sigma",5.0)), // ns
+      _t0Sigma(pset.get<double>("t0Sigma",0.0)), // ns
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
       _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
       _driftVelocity(pset.get<double>("driftVelocity",0.05)),   // mm/ns
