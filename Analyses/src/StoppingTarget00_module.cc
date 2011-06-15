@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.7 2011/06/13 04:54:02 kutschke Exp $
+// $Id: StoppingTarget00_module.cc,v 1.8 2011/06/15 21:04:09 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/13 04:54:02 $
+// $Date: 2011/06/15 21:04:09 $
 //
 // Original author Rob Kutschke.
 //
@@ -371,6 +371,11 @@ namespace mu2e {
       */
       if ( !_muonPointFile.empty() ) {
         static ofstream fout(_muonPointFile.c_str());
+        static bool first(true);
+        if ( first ){
+          fout << "begin data" << endl;
+          first = false;
+        }
         fout  << setprecision(8)
               << endPos.x()+_dsOffset.x() << " "
               << endPos.y() << " "
