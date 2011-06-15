@@ -1,7 +1,7 @@
 #
 # $Id:
 # $Author: kutschke $
-# $Date: 2011/05/25 17:19:28 $
+# $Date: 2011/06/15 22:43:29 $
 #
 # Original author Rob Kutschke
 #
@@ -45,3 +45,5 @@ fi
 export MU2E_TEST_RELEASE=$PWD
 export MU2E_SEARCH_PATH=$PWD/:$MU2E_SEARCH_PATH
 echo "MU2E_SEARCH_PATH:  " $MU2E_SEARCH_PATH
+
+export FHICL_FILE_PATH=${MU2E_TEST_RELEASE}:${MU2E_TEST_RELEASE}/fcl:${FHICL_FILE_PATH}
