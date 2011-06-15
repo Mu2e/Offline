@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.4 2011/06/15 17:52:47 mu2ecvs Exp $
+// $Id: TrkStrawHit.cc,v 1.5 2011/06/15 22:36:09 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/15 17:52:47 $
+// $Date: 2011/06/15 22:36:09 $
 //
 // Original author David Brown, LBNL
 //
@@ -25,8 +25,7 @@ namespace mu2e
   // drift velocity is a parameter of the makeStrawHits module; I have no access to that, so I hardcode
   // this here.  I'm also hard-coding the wire signal propagation velocity.  FIXME!!!!!
   double TrkStrawHit::_vdrift = 0.05; // mm per nanosecond
-  double TrkStrawHit::_vwire = CLHEP::c_light;
-  double TrkStrawHit::_maxdriftpull = 6.0; // disable hits with unphysical drift distance pulls beyond this cut
+  double TrkStrawHit::_maxdriftpull = 4.0; // disable hits with unphysical drift distance pulls beyond this cut
   double TrkStrawHit::_rerr = 0.1; // 100um intrinsic error
 
   TrkDummyHit::TrkDummyHit(TrkEnums::TrkViewInfo v, int id, TrkDetElemId::systemIndex sys)
@@ -56,7 +55,9 @@ namespace mu2e
     double shlen = _straw.getHalfLength();
   // get time division and drift information for this straw hit
     _tddist = tcal->TimeDiffToDistance(_straw.index(),_strawhit.dt());
-    _tddist_err = tcal->TimeDivisionResolution(_straw.index(),0.5*(_tddist)/shlen);
+    _tddist_err = tcal->TimeDivisionResolution(_straw.index(),0.5*(shlen-_tddist)/shlen);
+  // wire signal velocity
+    _vwire = tcal->SignalVelocity(_straw.index());
   // distance cannot be longer than the straw length: when it is, truncate, or disable, as appropriate
     _wpos = mid + _tddist*wiredir;
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
@@ -105,7 +106,7 @@ namespace mu2e
   double
   TrkStrawHit::time() const {
   // note that time is defined in terms of the arrival at one end always
-    return _strawhit.time() - (_straw.getHalfLength()+_tddist)/_vwire;
+    return _strawhit.time() - (_straw.getHalfLength()-_tddist)/_vwire;
   }
   
   void
@@ -121,14 +122,14 @@ namespace mu2e
   // back into the physical range.  Parameters here should be adjustable FIXME!!!
       double dr = _rdrift - _straw.getRadius();
       if( dr < _maxdriftpull*_rdrift_err){
-        _rdrift = _straw.getRadius();
+//        _rdrift = _straw.getRadius();
       } else {
         setUsability(-10);
         setActivity(false);
       }
     } else if (_rdrift < 0.0){
       if( fabs(_rdrift) < _maxdriftpull*_rdrift_err){
-        _rdrift = 0.0;
+//        _rdrift = 0.0;
       } else {
         setUsability(-10);
         setActivity(false);

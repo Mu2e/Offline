@@ -3,7 +3,7 @@ void KalFitHit (TTree* hits ) {
     TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
     TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
     TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
-      100,-0.01,2.51,100,-0.01,2.51);
+      100,-0.3,2.8,100,-0.3,2.8);
     TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
     hits->Project("dres","rdrift-mcrdrift","active");
     hits->Project("dpull","(rdrift-mcrdrift)/rdrifterr","active");
@@ -13,13 +13,13 @@ void KalFitHit (TTree* hits ) {
     dcan->cd(1);
     hits->Draw("rdrift:mcrdrift>>drad","active");
     dcan->cd(2);
-    dres->Draw();
+    dres->Fit("gaus");
     dcan->cd(3);
     dpull->Fit("gaus");
     dcan->cd(4);
     rpull->Fit("gaus");
     
-    TCanvas* tcan = new TCanvas("t0can","t0can",1200,800);
+    TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
     TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-20,20);
     TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
     TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
@@ -31,7 +31,7 @@ void KalFitHit (TTree* hits ) {
     tcan->cd(1);
     hits->Draw("hitt0:mchitt0>>dt0","active");
     tcan->cd(2);
-    t0res->Draw();
+    t0res->Fit("gaus");
     tcan->cd(3);
     t0pull->Fit("gaus");
     
@@ -53,7 +53,7 @@ void KalFitHit (TTree* hits ) {
     tdcan->cd(2);
     hits->Draw("hflt:mcdmid>>pocatd","active");
     tdcan->cd(3);
-    tdres->Draw();
+    tdres->Fit("gaus");
     tdcan->cd(4);
     tdpull->Fit("gaus");
     
@@ -61,7 +61,7 @@ void KalFitHit (TTree* hits ) {
 
 void KalFitTrk (TTree* trks ) {
   
-  TCanvas* tcan = new TCanvas("t0can","t0can",1200,800);
+  TCanvas* tcan = new TCanvas("tt0can","trk_t0can",1200,800);
   TH1F* t00res = new TH1F("t00res","Initial t0 resolution;nsec",100,-20,20);
   TH1F* t0res = new TH1F("t0res","Final t0 resolution;nsec",100,-20,20);
   TH1F* t0pull = new TH1F("t0pull","Track t0 pull",100,-10,10);
@@ -75,9 +75,9 @@ void KalFitTrk (TTree* trks ) {
   tcan->cd(1);
   trks->Draw("t00:mct0>>dt0","fitstatus>0");
   tcan->cd(2);
-  t00res->Draw();
+  t00res->Fit("gaus");
   tcan->cd(3);
-  t0res->Draw();
+  t0res->Fit("gaus");
   tcan->cd(4);
   t0pull->Fit("gaus");
   
