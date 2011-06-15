@@ -4,8 +4,8 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.5 2011/05/26 22:02:36 genser Exp $
-// $Author: genser $
+// $Id: VirtualDetector.hh,v 1.6 2011/06/15 17:52:07 mu2ecvs Exp $
+// $Author: mu2ecvs $
 //
 
 #include <map>
@@ -39,6 +39,8 @@ namespace mu2e {
 
     bool exist(int i) const { return _local.find(i) != _local.end(); }
 
+    // none of the following functions are protected agains illegal values: FIXME!!!
+
     // Get position in the parent frame
     CLHEP::Hep3Vector  const& getLocal(int i) const { return _local.find(i)->second; }
 
@@ -47,7 +49,10 @@ namespace mu2e {
 
     CLHEP::HepRotation *  getRotation(int i) const { return _rotation.find(i)->second; }
 
+    std::string const& name(int i) const { return _name.find(i)->second;}
+
     void addVirtualDetector(int, std::string,CLHEP::Hep3Vector,CLHEP::HepRotation*,CLHEP::Hep3Vector);
+    
 
   protected:
 
