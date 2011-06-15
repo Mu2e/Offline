@@ -1,5 +1,5 @@
-#ifndef Sandbox_OwningPointerCollection_hh
-#define Sandbox_OwningPointerCollection_hh
+#ifndef GeneralUtilities_OwningPointerCollection_hh
+#define GeneralUtilities_OwningPointerCollection_hh
 //
 // A class template to take ownership of a collection of bare pointers to 
 // objects, to provide access to those objects and to delete them when the
@@ -10,9 +10,9 @@
 //
 // The original use is for TrkRecoTrk.
 //
-// $Id: OwningPointerCollection.hh,v 1.1 2011/06/11 02:29:21 kutschke Exp $
+// $Id: OwningPointerCollection.hh,v 1.2 2011/06/15 20:59:55 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/11 02:29:21 $
+// $Date: 2011/06/15 20:59:55 $
 //
 // Original author Rob Kutschke
 //
@@ -97,4 +97,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif /* Sandbox_OwningPointerCollection_hh */
+#endif /* GeneralUtilities_OwningPointerCollection_hh */
