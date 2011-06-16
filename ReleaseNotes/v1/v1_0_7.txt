@@ -1,0 +1,8 @@
+
+ Still under construction
+
+           Release notes for Mu2e Offline software, v1_0_7
+
+  $Id: v1_0_7.txt,v 1.1 2011/06/16 15:28:05 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/06/16 15:28:05 $
