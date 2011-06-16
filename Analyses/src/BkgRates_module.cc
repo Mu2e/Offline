@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.15 2011/06/15 21:06:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/15 21:06:18 $
+// $Id: BkgRates_module.cc,v 1.16 2011/06/16 20:08:45 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/06/16 20:08:45 $
 //
 // Original author Gianni Onorato
 //
@@ -251,7 +251,7 @@ namespace mu2e {
 
       if (geom->hasElement<TTracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t1GenDau:t2trkId:t2pdgId:t2en:t2isGen:t2GenDau:t3trkId:t3pdgId:t3en:t3isGen:t3GenDau:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
       } else if(geom->hasElement<ITracker>()) {
         _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
                                             "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
@@ -438,6 +438,7 @@ namespace mu2e {
       //Vectors of pdgId and GenId of the tracks associated to the strawhit
       vector<int>     PdgIdTracks;
       vector<bool>    IsGenerated;
+      vector<int>     PdgFirstDaughter;
 
       //List of trackId and energy deposition
       PairList TracksEDep;
@@ -472,10 +473,31 @@ namespace mu2e {
             // PDG Particle Id of the sim particle that made this hit.
             PdgIdTracks.push_back(sim.pdgId());
             IsGenerated.push_back(sim.fromGenerator());
-
+	    if (sim.fromGenerator()) {
+	      PdgFirstDaughter.push_back(0);
+	    } else {
+	      bool findEva = false;
+	      SimParticle& baby = const_cast<SimParticle&>(sim);
+	      while (!findEva) {
+		SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
+		if (mommy.fromGenerator() || !baby.hasParent()) {
+		  PdgFirstDaughter.push_back(baby.pdgId());
+		  //		  cout << "Stored info. Event: " << evt.id().event()
+		  //		       <<"\tmommy " << mommy.pdgId() << '\t' << mommy.id()
+		  //		       << "\tbaby " << baby.pdgId() << '\t' << baby.id() << endl;
+		  findEva = true;
+		} else {
+		  //		  cout << "event: " << evt.id().event()
+		  //		       <<"\tmommy " << mommy.pdgId() << '\t' << mommy.id()
+		  //		       << "\tbaby " << baby.pdgId() << '\t' << baby.id() << endl;
+		  baby = mommy;
+		}
+	      }
+	    }
           } else if ( !haveSimPart) {
             PdgIdTracks.push_back(0);
             IsGenerated.push_back(false);
+	    PdgFirstDaughter.push_back(0);
           }
 
           //increment index
@@ -513,6 +535,8 @@ namespace mu2e {
         tntpArray[idx++] = PdgIdTracks[vec_idx];
         tntpArray[idx++] = it->second;
         tntpArray[idx++] = IsGenerated[vec_idx];
+        tntpArray[idx++] = PdgFirstDaughter[vec_idx];
+
         counter++;
       }
 
@@ -522,6 +546,7 @@ namespace mu2e {
       //to the straw hit
 
       for (int add_idx = 0; add_idx < 3 - counter; ++add_idx) {
+        tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;
         tntpArray[idx++] = 0;

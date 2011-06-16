@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.6 2011/06/16 01:55:08 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.7 2011/06/16 20:08:45 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/16 01:55:08 $
+// $Date: 2011/06/16 20:08:45 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
@@ -11,8 +11,8 @@
 
 // what processes to do
 bool ejectedProtonGun.do = 0;
-bool ejectedNeutronGun.do = 1;
-bool decayinorbitGun.do = 0;
+bool ejectedNeutronGun.do = 0;
+bool decayinorbitGun.do = 1;
 bool primaryProtonGun.do = 0;
 bool conversionGun.do = 0;
 
