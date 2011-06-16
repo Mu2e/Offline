@@ -1,9 +1,9 @@
 //
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.2 2011/06/13 19:01:56 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/13 19:01:56 $
+// $Id: ProtonPulseRandPDF.cc,v 1.3 2011/06/16 14:34:31 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/16 14:34:31 $
 //
 // Original author Gianni Onorato
 //
@@ -69,7 +69,7 @@ namespace mu2e{
     map<double,double>::iterator it = _intPDF.begin();   
     bool found = false;
     while (it != _intPDF.end() && !found) {
-      cout << Yflat << '\t' << it->first << '\t' << it->second << endl;
+      //      cout << Yflat << '\t' << it->first << '\t' << it->second << endl;
       found = (Yflat < it->second); 
       ++it;
     } 
