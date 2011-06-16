@@ -38,8 +38,8 @@
 using namespace std;
 
 static mu2e::ConfigFileLookupPolicy findConfig;
-static const string StMuFileString = "/grid/data/mu2e/users/kutschke/StoppedMuons/stoppedMuons_02.txt";
-//static const string StMuFileString = findConfig("ConditionsService/data/StoppedMuons.txt");
+//static const string StMuFileString = "/grid/data/mu2e/users/kutschke/StoppedMuons/stoppedMuons_02.txt";
+static const string StMuFileString = findConfig("ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt");
 static const double timeMaxDelay = 3000;
 static const double nBinsForTimeDelayPDF = 150;
 static fstream inMuFile(StMuFileString.c_str(), ios::in);

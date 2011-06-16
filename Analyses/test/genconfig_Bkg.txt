@@ -1,17 +1,17 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.5 2011/06/14 22:40:18 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.6 2011/06/16 01:55:08 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/14 22:40:18 $
+// $Date: 2011/06/16 01:55:08 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
 // 
 
 // what processes to do
-bool ejectedProtonGun.do = 1;
-bool ejectedNeutronGun.do = 0;
+bool ejectedProtonGun.do = 0;
+bool ejectedNeutronGun.do = 1;
 bool decayinorbitGun.do = 0;
 bool primaryProtonGun.do = 0;
 bool conversionGun.do = 0;
@@ -24,11 +24,6 @@ double ejectedProtonGun.czmax = 1.;
 double ejectedNeutronGun.czmin = -1.;
 double ejectedNeutronGun.czmax = 1.;
 
-// number of input lines to skip in the stopped muon file
-int decayinorbitGun.nToSkip = 0;
-int ejectedProtonGun.nToSkip = 0;
-int ejectedNeutronGun.nToSkip = 0;
-
 double primaryProtonGun.czmin = 1;
 double primaryProtonGun.czmax = 1;
 
@@ -37,6 +32,10 @@ vector<double> beamDisplacementOnTarget = {0.,0.,0.};
 
 // Distribution parameter of Primary Proton Gun beam
 double primaryProtonGun.stdDev = 1; //units are mm
+
+int decayinorbitGun.nToSkip = 200000; 
+int ejectedProtonGun.nToSkip = 323000;
+int ejectedNeutronGun.nToSkip = 380000;
 
 
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
