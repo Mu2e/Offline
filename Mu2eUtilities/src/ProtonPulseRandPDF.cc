@@ -1,9 +1,9 @@
 //
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.4 2011/06/17 21:08:27 onoratog Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.5 2011/06/17 22:30:10 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/17 21:08:27 $
+// $Date: 2011/06/17 22:30:10 $
 //
 // Original author Gianni Onorato
 //
@@ -44,7 +44,6 @@ namespace mu2e{
   int ProtonPulseRandPDF::calculateNBins() {
     
     int nbins = int(_PDFwidth / _PDFstep);
-    cout << "NUMBER OF BINS ***********" << nbins << endl;
     return nbins;
   }
   
@@ -63,7 +62,6 @@ namespace mu2e{
     double invalue;
     while (!(inst.eof())) {
       inst >> invalue;
-      cout << invalue << '\t' << count << endl;
       count++;
       spectrum.push_back(invalue);
     }
