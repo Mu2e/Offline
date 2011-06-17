@@ -37,15 +37,25 @@
 
 using namespace std;
 
-static mu2e::ConfigFileLookupPolicy findConfig;
-//static const string StMuFileString = "/grid/data/mu2e/users/kutschke/StoppedMuons/stoppedMuons_02.txt";
-static const string StMuFileString = findConfig("ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt");
 static const double timeMaxDelay = 3000;
 static const double nBinsForTimeDelayPDF = 150;
-static fstream inMuFile(StMuFileString.c_str(), ios::in);
 static bool skipbegin = false;
 
 namespace mu2e {
+
+  fstream & FoilParticleGenerator::STfile(){
+
+    bool init(true);
+    if ( init ){
+      init = false;
+    }
+
+    static mu2e::ConfigFileLookupPolicy findConfig;
+    static const string StMuFileString = findConfig("ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt");
+    static fstream inMuFile(StMuFileString.c_str(), ios::in);
+    return inMuFile;
+  }
+
 
   FoilParticleGenerator::FoilParticleGenerator(art::RandomNumberGenerator::base_engine_t& engine,
                                                double tmin, double tmax,
@@ -94,7 +104,7 @@ namespace mu2e {
         << "no foils are present";
     }
 
-    if (!inMuFile.is_open()) {
+    if ( !STfile().is_open()) {
       throw cet::exception("GEOM")
         << "no stopped muon file is present";
     }
@@ -250,7 +260,8 @@ namespace mu2e {
   vector<double> FoilParticleGenerator::timePathDelay() {
 
     vector<double> muonTimeDelay;
-    string MuonFileFIP = findConfig("ConditionsService/data/timeDelayDist.txt");
+    ConfigFileLookupPolicy findConfig2;
+    string MuonFileFIP = findConfig2("ConditionsService/data/timeDelayDist.txt");
     fstream infile(MuonFileFIP.c_str(), ios::in);
     if (infile.is_open()) {
       double val;
@@ -310,7 +321,7 @@ namespace mu2e {
   //Point the input streaming at the line after "begin data"
   void FoilParticleGenerator::PointToBeginData() {
     string line;
-    while (getline(inMuFile, line)) {
+    while (getline(STfile(), line)) {
       stringstream s_line;
       s_line << line;
       cet::trim_right (line);
@@ -332,12 +343,12 @@ namespace mu2e {
     string line;
     int counter = 0;
     while (counter < _ntoskip) {
-      bool readok = getline(inMuFile, line);
+      bool readok = getline(STfile(), line);
       //      cout << "In skippstartinglines I'm reading " << line << endl;
       ++counter;
       if (!readok) {
-      inMuFile.clear();
-      inMuFile.seekg(0, ios::beg);
+      STfile().clear();
+      STfile().seekg(0, ios::beg);
       PointToBeginData();   
       }
     }
@@ -352,7 +363,7 @@ namespace mu2e {
     bool gotthem = false;
     while (!gotthem) {
       //Start reading the input file from the beginning when it reaches the end
-      while(getline(inMuFile,line)) {
+      while(getline(STfile(),line)) {
 	stringstream s_line;
 	s_line << line;
 	double x, y, z, t;
@@ -365,8 +376,8 @@ namespace mu2e {
 	gotthem = true;
 	return;
       }
-      inMuFile.clear();
-      inMuFile.seekg(0, ios::beg);
+      STfile().clear();
+      STfile().seekg(0, ios::beg);
       PointToBeginData();   
     }
     

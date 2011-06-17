@@ -12,6 +12,7 @@
 
 
 #include <memory>
+#include <fstream>
 
 // Framework includes
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
@@ -117,6 +118,8 @@ namespace mu2e {
     double getMuTimeDecay();
     void PointToBeginData();
     void SkipStartingLines();
+
+    static std::fstream& STfile();
 
   };
 
