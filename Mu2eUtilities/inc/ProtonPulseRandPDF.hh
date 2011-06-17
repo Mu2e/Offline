@@ -4,18 +4,18 @@
 //  
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.2 2011/06/13 19:01:56 onoratog Exp $
+// $Id: ProtonPulseRandPDF.hh,v 1.3 2011/06/17 21:08:27 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 19:01:56 $
+// $Date: 2011/06/17 21:08:27 $
 //
 // Original author Gianni Onorato
 //
 //
 
-#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include <map>
+#include <vector>
 
 namespace mu2e {
 
@@ -29,18 +29,16 @@ namespace mu2e {
 
     double fire();
 
+    int calculateNBins();
+
   private:
 
-    CLHEP:: RandFlat _randFlat;
+    int _nBinsSpectrum;
+
+    CLHEP:: RandGeneral _randSpectrum;
 
     //PDF description
-    double TripleGaussian(double x);
-
-    //Parameters
-    double binWidth, pulseRange, sigma1, sigma2, sigma3,
-      A1, A2, A3, x01, x02, x03, Norm;
-
-    std::map<double,double> _intPDF;
+    std::vector<double> ProtonPulseSpectrum();
 
 
   };
