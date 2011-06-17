@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.5 2011/06/15 23:08:07 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.6 2011/06/17 21:56:57 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/15 23:08:07 $
+// $Date: 2011/06/17 21:56:57 $
 //
 
 // the following has to come before other BaBar includes
@@ -13,6 +13,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -34,6 +35,7 @@
 #include "BField/BFieldFixed.hh"
 #include "DetectorModel/DetIntersection.hh"
 #include "DetectorModel/DetMaterial.hh"
+#include "BField/BFieldFixed.hh"
 // C++
 #include <iostream>
 #include <fstream>
@@ -46,13 +48,14 @@ using namespace std;
 namespace mu2e 
 {
 // statics
+  unsigned DetStrawHitElem::_ielem(0);
 // convert speed of light in mm/nsec
   const double KalFit::_vlight = CLHEP::c_light;
 // drift velocity should come from a service FIXME!!!  
   const double KalFit::_vdrift = 0.05; // 50 um/nsec
 // Material information, BaBar style
   MatDBInfo* KalFit::_matdbinfo(new MatDBInfo);
-// comparison functor for ordering hits  
+// comparison functor for ordering hits
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
           bool operator()(TrkStrawHit* x, TrkStrawHit* y) { return x->fltLen() < y->fltLen(); }
   };
@@ -121,7 +124,7 @@ namespace mu2e
 // Create BaBar track and Kalman fit
       myfit._trk = new TrkRecoTrk(_kalcon->defaultType(), 0, 0);
       assert(myfit._trk != 0);
-      myfit._trk->setBField(_bfield);
+      myfit._trk->setBField(bField());
 // create Kalman rep
       myfit._krep = new KalRep(mytrk.helix(), hotlist, detinter, myfit._trk, *_kalcon, PdtPid::electron);
       assert(myfit._krep != 0);
@@ -192,7 +195,7 @@ namespace mu2e
       }
       myfit._hits.push_back(trkhit);
     }
-  // if the initial t0error was 0, compute t0 and override
+  // if the initial t0error was < 0, compute t0 and override
     if(mytrk.trkT0().t0Err() < 0.0 && nind > 0){
   // assuming a flat drift time means correcting by half the maximum drift time
       double tmax = myfit._hits[0]->straw().getRadius()/_vdrift;
@@ -344,4 +347,16 @@ namespace mu2e
     }
     return retval;
   }
+
+  const BField*
+  KalFit::bField() {
+    if(_bfield == 0){
+// create a wrapper around the mu2e nominal DS field
+      GeomHandle<BFieldManager> bfMgr;
+      _bfield=new BFieldFixed(bfMgr->getDSUniformValue());
+      assert(_bfield != 0);
+    }
+    return _bfield;
+  }
 }
+

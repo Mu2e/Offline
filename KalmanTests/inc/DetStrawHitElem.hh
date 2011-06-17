@@ -45,7 +45,6 @@ namespace mu2e {
   private:
     static unsigned _ielem;
   };
-  unsigned DetStrawHitElem::_ielem(0);
 }
 
 #endif

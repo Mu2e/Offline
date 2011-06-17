@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.3 2011/06/08 03:23:41 mu2ecvs Exp $
+// $Id: TrkDef.hh,v 1.4 2011/06/17 21:56:57 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/08 03:23:41 $
+// $Date: 2011/06/17 21:56:57 $
 //
 // Original author David Brown, LBNL
 //
@@ -36,6 +36,7 @@ namespace mu2e
       const HelixTraj& helix, double t0, double t0err);
     TrkDef(const StrawHitCollection* strawcollection, const std::vector<size_t>& strawhits,
       const HepVector& parvec, const HepSymMatrix& covar, double t0, double t0err );
+    TrkDef(const StrawHitCollection* strawcollection);
     TrkDef();
     TrkDef(const TrkDef&);
     TrkDef& operator = (const TrkDef&);

@@ -1,10 +1,12 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.3 2011/06/15 17:52:47 mu2ecvs Exp $
+// $Id: KalFit.hh,v 1.4 2011/06/17 21:56:57 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/15 17:52:47 $
+// $Date: 2011/06/17 21:56:57 $
 //
+#ifndef KalFit_HH
+#define KalFit_HH
 
 // framework
 #include "fhiclcpp/ParameterSet.h"
@@ -58,13 +60,13 @@ namespace mu2e
 // parameter set should be passed in on construction
     explicit KalFit(fhicl::ParameterSet const&);
     virtual ~KalFit();
-// set the field: this has to come after services init, so it can't go in the constructor
-    void setField(const BField* bfield) { _bfield = bfield; }
 // main function: given a track definition, create a fit object from it
     void makeTrack(TrkDef const& mytrk,TrkKalFit& myfit);
   private:
+// Fetch the BField.  this function fetches the field if it's not yet initialized
+    const BField* bField();
     KalContext* _kalcon; // BaBar configuration object
-    const BField* _bfield; // magentic field description, BaBar wrapper class
+    BField* _bfield; // magentic field description, BaBar wrapper, OWNED BY THIS CLASS
     DetStrawHitElem _wallelem; // fake element to represent straw hit material
     DetStrawHitElem _gaselem; // fake element to represent straw hit material
     // configuration parameters
@@ -92,3 +94,4 @@ namespace mu2e
 // 
   };
 }
+#endif

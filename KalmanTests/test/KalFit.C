@@ -20,7 +20,7 @@ void KalFitHit (TTree* hits ) {
     rpull->Fit("gaus");
     
     TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
-    TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-20,20);
+    TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-10,10);
     TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
     TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
         100,500,4000,100,500,4000);
@@ -63,7 +63,7 @@ void KalFitTrk (TTree* trks ) {
   
   TCanvas* tcan = new TCanvas("tt0can","trk_t0can",1200,800);
   TH1F* t00res = new TH1F("t00res","Initial t0 resolution;nsec",100,-20,20);
-  TH1F* t0res = new TH1F("t0res","Final t0 resolution;nsec",100,-20,20);
+  TH1F* t0res = new TH1F("t0res","Final t0 resolution;nsec",100,-10,10);
   TH1F* t0pull = new TH1F("t0pull","Track t0 pull",100,-10,10);
   TH2F* dt0 = new TH2F("dt0","Track t0;true t0 (nsec);Initial t0 (nsec)",
     100,500,4000,100,500,4000);
