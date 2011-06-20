@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors
 //
-// $Id: VirtualDetectorSD.cc,v 1.14 2011/05/21 21:20:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/21 21:20:56 $
+// $Id: VirtualDetectorSD.cc,v 1.15 2011/06/20 22:10:47 genser Exp $
+// $Author: genser $
+// $Date: 2011/06/20 22:10:47 $
 //
 // Original author Ivan Logashenko
 //
@@ -97,6 +97,15 @@ namespace mu2e {
                             aStep->GetStepLength(),
                             endCode
                             ));
+
+//     int static const verbosityLevel = 1;
+//     if (verbosityLevel >0) {
+//       cout << __func__ << " Event " << 
+//         G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() <<
+//         " VD " << aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetName() << " " <<
+//         aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetCopyNo() <<
+//         " hit at: " << aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin << endl;
+//     }
 
     return true;
 
