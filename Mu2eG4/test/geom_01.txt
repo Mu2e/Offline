@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.86 2011/06/09 19:18:23 genser Exp $
+// $Id: geom_01.txt,v 1.87 2011/06/20 22:23:02 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/09 19:18:23 $
+// $Date: 2011/06/20 22:23:02 $
 //
 // Original author Rob Kutschke
 //
@@ -58,7 +58,7 @@ double g4.eKineMin      = 0.0;    // Kinetic energy in MeV
 // G4SimpleHeum
 // G4HelixImplicitEuler
 // G4HelixSimpleRunge
-string g4.stepper = "G4SimpleRunge";
+string g4.stepper = "G4ClassicalRK4"
 
 // Enable the Mu2e written version of the decay of muonic atoms.
 bool g4.doMuMinusConversionAtRest = false;
@@ -226,7 +226,7 @@ string coll5.materialName = "G4_Cu";
 
 // Virtual detectors
 
-double vd.halfLength     = 0.1; //mm
+double vd.halfLength     = 0.01; //mm
 int    vd.verbosityLevel = 0;
 bool   vd.visible        = true;
 bool   vd.solid          = false;
