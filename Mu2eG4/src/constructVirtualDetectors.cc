@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.8 2011/06/10 17:48:48 genser Exp $
+// $Id: constructVirtualDetectors.cc,v 1.9 2011/06/20 22:09:13 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/10 17:48:48 $
+// $Date: 2011/06/20 22:09:13 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -345,6 +345,7 @@ namespace mu2e {
         // we will use the global offsets; they are (in Mu2e)
         // vdg->getGlobal(vdId)
         // protonabs2Info.centerInMu2e()
+        // only global offsets can be used for det 13,14
 
         vdHollowInfo.solid = new G4SubtractionSolid(vdHollowInfo.name,
                                                     vdFullSolid, 
