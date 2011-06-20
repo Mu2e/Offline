@@ -1,7 +1,7 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.cc,v 1.9 2011/06/14 21:08:11 genser Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.10 2011/06/20 22:11:33 genser Exp $
 // $Author: genser $
 //
 
@@ -116,7 +116,7 @@ namespace mu2e {
       }
 
       TTracker const & ttracker = *(GeomHandle<TTracker>());
-      Hep3Vector vdOffset(-solenoidOffset,0.,ttracker.z0()+vdHL);
+      Hep3Vector ttOffset(-solenoidOffset,0.,ttracker.z0());
 
       // VD 11 is placed inside the ttracker mother volume in the
       // middle of the ttracker shifted by the half length of vd
@@ -126,23 +126,40 @@ namespace mu2e {
       // which has a different offset. We will use the global offset
       // here (!) as DS is not in the geometry service yet
 
-      _vd->addVirtualDetector( 11, vdName.str(),  vdOffset, 0, Hep3Vector(0.,0.,0.));
-      _vd->addVirtualDetector( 12, "TT_MidInner", vdOffset, 0, Hep3Vector(0.,0.,0.));
+      Hep3Vector vdTTMidOffset(0.,0.,0.);
+
+      _vd->addVirtualDetector( 11, vdName.str(),  ttOffset, 0, vdTTMidOffset);
+      _vd->addVirtualDetector( 12, "TT_MidInner", ttOffset, 0, vdTTMidOffset);
+
+//       int static const verbosityLevel = 1;
+//       if (verbosityLevel >0) {
+//         for ( int vdId=11; vdId<=12; ++vdId) {
+//           cout << __func__ << " VD " << vdId << " offsets L, G " << 
+//             _vd->getLocal(vdId) << ", " << 
+//             _vd->getGlobal(vdId) << endl;
+//         }
+//       }
 
       vdName.str("TT_FrontHollow");
 
-      Hep3Vector ttrackerFrontVDOffset(-solenoidOffset,
-				       0.,
-				       ttracker.z0()-ttracker.getTrackerEnvelopeParams().zHalfLength()-vdHL);
+      Hep3Vector vdTTFrontOffset(0.,
+                                 0.,
+                                 -ttracker.getTrackerEnvelopeParams().zHalfLength()-vdHL);
 
       // VD 13 is placed outside the ttracker mother volume in front of the ttracker
       // "outside" of the proton absorber
       
+
+      // formally VD 13, 14 are placed in ToyDS3Vacuum, but it is a
+      // complicated subtraction volume, so we pretend to place them in
+      // the TTracker and rely on the global offsets in the mu2e
+      // detector frame (note that their local offsets are wrt TTracker)
+
       _vd->addVirtualDetector( 13,
 			       vdName.str(),
-			       ttrackerFrontVDOffset,
+			       ttOffset,
 			       0,
-			       Hep3Vector(0.,0.,0.));
+			       vdTTFrontOffset);
 
       // we add another VD detector at the same Z "inside" the proton absorber
 
@@ -151,9 +168,9 @@ namespace mu2e {
 	vdName.str("TT_FrontPA");
 	_vd->addVirtualDetector( 14,
 				 vdName.str(),
-				 ttrackerFrontVDOffset, 
+				 ttOffset, 
 				 0,
-				 Hep3Vector(0.,0.,0.));
+				 vdTTFrontOffset);
       }
     }
   }
