@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.7 2011/06/16 20:08:45 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.8 2011/06/23 05:54:13 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/16 20:08:45 $
+// $Date: 2011/06/23 05:54:13 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
@@ -17,8 +17,8 @@ bool primaryProtonGun.do = 0;
 bool conversionGun.do = 0;
 
 // Limits on cos(polar angle):
-double decayinorbitGun.czmin = -1;
-double decayinorbitGun.czmax = 1;
+double decayinorbitGun.czmin = -1.;
+double decayinorbitGun.czmax = 1.;
 double ejectedProtonGun.czmin = -1.;
 double ejectedProtonGun.czmax = 1.;
 double ejectedNeutronGun.czmin = -1.;
