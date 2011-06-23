@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.3 2011/05/24 20:03:31 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/24 20:03:31 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.4 2011/06/23 19:19:58 logash Exp $
+//  $Author: logash $
+//  $Date: 2011/06/23 19:19:58 $
 //
 // Original author Ivan Logashenko
 //
@@ -51,7 +51,9 @@ namespace mu2e {
       _maxPrint(pset.get<int>("maxPrint",0)),
       _ntvd(0), _ntpart(0),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
-      _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run"))
+      _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
+      _vd_required(pset.get<int>("requireVD",0)),
+      _stopped_only(pset.get<bool>("saveStopped",false))
  {
 
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
@@ -74,7 +76,7 @@ namespace mu2e {
         cout << endl;
       }
 
-      nt = new float[200];
+      nt = new float[1000];
 
     }
 
@@ -109,6 +111,13 @@ namespace mu2e {
     // List of virtual detectors to be saved
     set<int> vd_save;
 
+    // Virtual detector, which has to be crossed by particle before
+    // it is saved in particles ntuple
+    int _vd_required;
+
+    // Save only stopped particles in the particles ntuple
+    bool _stopped_only;
+
     // Label of the generator.
     std::string _generatorModuleLabel;
 
@@ -139,10 +148,10 @@ namespace mu2e {
                     "parent_id:parent_pdg:"
                     "parent_x:parent_y:parent_z:"
                     "parent_px:parent_py:parent_pz:"
-                    "nvd:isvd[10]:"
-                    "tvd[10]:gtvd[10]:xvd[10]:yvd[10]:zvd[10]:"
-                    "pxvd[10]:pyvd[10]:pzvd[10]:"
-                    "xlvd[10]:ylvd[10]:zlvd[10]"
+                    "nvd:isvd[20]:"
+                    "tvd[20]:gtvd[20]:xvd[20]:yvd[20]:zvd[20]:"
+                    "pxvd[20]:pyvd[20]:pzvd[20]:"
+                    "xlvd[20]:ylvd[20]:zlvd[20]"
                     );
 
   }
@@ -266,7 +275,7 @@ namespace mu2e {
     // Fill tracks ntuple
     if( haveSimPart && pdg_save.size()>0 ) {
 
-      const int nvdet = 10;
+      const int nvdet = 20;
       const int id0 = 29;
 
       // Go through SimParticle container and analyze one particle at a time
@@ -373,6 +382,12 @@ namespace mu2e {
           nt[id0+11*nvdet+id] = lpos.z();
 
         } // end loop over hits.
+
+	// Keep only stopped particles
+	if( _stopped_only && nt[11]<0.5 ) continue;
+
+	// Keep only those particles which went through required VD
+	if( _vd_required>0 && nt[id0+_vd_required]<0.5 ) continue;
 
         _ntpart->Fill();
 
