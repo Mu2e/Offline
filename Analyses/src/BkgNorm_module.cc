@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.1 2011/06/23 05:54:13 onoratog Exp $
+// $Id: BkgNorm_module.cc,v 1.2 2011/06/23 16:37:16 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/23 05:54:13 $
+// $Date: 2011/06/23 16:37:16 $
 //
 // Original author Gianni Onorato
 //
@@ -18,6 +18,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "TFile.h"
@@ -61,12 +62,18 @@ namespace mu2e {
       _nDevices(36),
       _nSectors(6),
       _nLayers(2),
-      _nStrawsPerLay(50)
+      _nStrawsPerLay(50),
+      _nBadG4Status(0),
+      _nOverflow(0),
+      _nKilled(0),
+      _totalcputime(0),
+      _totalrealtime(0)
     {
     }
     virtual ~BkgNorm() {
     }
     virtual void beginJob();
+    virtual void endJob();
 
     void analyze(art::Event const& e );
 
@@ -95,6 +102,10 @@ namespace mu2e {
     TNtuple* _tNtup;
     const int _nDevices, _nSectors, _nLayers, _nStrawsPerLay;
 
+    int _nBadG4Status, _nOverflow, _nKilled;
+    float _totalcputime, _totalrealtime;
+
+
   };
 
 
@@ -106,7 +117,36 @@ namespace mu2e {
     static int ncalls(0);
     ++ncalls;
 
-    art::ServiceHandle<GeometryService> geom;
+    art::Handle<StatusG4> g4StatusHandle;
+    evt.getByLabel( _g4ModuleLabel, g4StatusHandle);
+    StatusG4 const& g4Status = *g4StatusHandle;
+
+    if ( g4Status.status() > 1 ) {
+      ++_nBadG4Status;
+      mf::LogError("G4")
+        << "Aborting BkgNorm::analyze due to G4 status\n"
+        << g4Status;
+      return;
+    }
+
+    if (g4Status.overflowSimParticles()) {
+      ++_nOverflow;
+      mf::LogError("G4")
+        << "Aborting BkgNorm::analyze due to overflow of particles\n"
+        << g4Status;
+      return;
+    }
+
+    if (g4Status.nKilledStepLimit() > 0) {
+      ++_nKilled;
+      mf::LogError("G4")
+        << "Aborting BkgNorm::analyze due to nkilledStepLimit reached\n"
+        << g4Status;
+      return;
+    }
+
+    _totalcputime += g4Status.cpuTime();
+    _totalrealtime += g4Status.realTime();
 
     if (ncalls == 1) {
 
@@ -124,6 +164,24 @@ namespace mu2e {
     doTracker(evt);
     
   } // end of analyze
+
+  void BkgNorm::endJob() {
+    cout << "BkgNorm::endJob Number of events skipped "
+         << "due to G4 completion status: "
+         << _nBadG4Status
+	 << "\nBkgNorm::endJob Number of overflow events "
+         << "due to too many particles in G4: "
+         << _nOverflow
+	 << "\nBkgNorm::endJob Number of events with killed particles "
+         << "due to too many steps in G4: "
+         << _nKilled
+	 << "\nBkgNorm::endJob total CpuTime "
+         << _totalcputime
+	 << "\nBkgNorm::endJob total RealTime "
+         << _totalrealtime
+         << endl;
+  }
+
 
   void BkgNorm::doTracker(art::Event const& evt) {
 
@@ -169,7 +227,6 @@ namespace mu2e {
 
       // Access data
       StrawHit             const&      hit(hits->at(i));
-      StrawHitMCTruth      const&    truth(hits_truth->at(i));
       PtrStepPointMCVector const&    mcptr(hits_mcptr->at(i));
 
       double hitEnergy = hit.energyDep();
@@ -197,9 +254,7 @@ namespace mu2e {
       //time of the hit
       double hitTime = hit.time();
 
-      size_t nHitsPerStraw = mcptr.size();
-
-      float tntpArray[29];
+      float tntpArray[31];
       int idx(0);
       tntpArray[idx++] = evt.id().event();
       tntpArray[idx++] = evt.run();

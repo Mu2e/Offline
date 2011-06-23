@@ -128,7 +128,7 @@ namespace mu2e {
     // Pick a foil
 
     time = -1000;
-    while (time < _tmin ) {
+    while (!(time >= _tmin && time <=_tmax)) {
 
       //      cout << "time condition failed: " << time << '\t' << _tmin << endl; 
       // cout << "pos is :" << pos << endl;
