@@ -1,0 +1,112 @@
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+
+# Give this process a name.
+process_name : BkgTrackRejecter
+
+# Read events from a file (made by example 3)
+source :
+{
+  module_type : RootInput
+  fileNames : ["TTrackerBg_01_data.root"]
+  maxEvents : 100
+}
+
+services :
+{
+  #message : @local::mf_debugging
+
+  # Adjust configuration of message logger:
+  # Load the standard message logger configuration:
+  # Threshold=Info (from using mf_interactive). 
+  # Limit of 5 per category; then exponential backoff.
+  #message.destinations.log.default.limit : 5
+  
+  message : @local::default_message
+    
+    
+  TFileService :
+  {
+    fileName      : "BkgTrackRejecterData.root"
+  }
+
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/geom_01.txt"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+    
+    #G4Helper : { }
+    
+  }
+
+} # close of services block
+
+physics :
+{
+  producers:
+  {
+    # Look at the hits from G4.
+    trckRjctByTime:
+    {
+      module_type          : BkgTrackRejecterByTime
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      makerModuleLabel     : makeSH
+      #trackerStepPoints    : tracker
+      #minEnergyDep         : 0.0001
+      #minHits              : 5
+      #doDisplay            : true
+      #clickToAdvance       : false
+    }
+    
+    trckRjctByGmTplg:
+    {
+      module_type          : BkgTrackRejecterByGeomTplg
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      makerModuleLabel     : makeSH
+      tRejecterModuleLabel : trckRjctByTime
+      #trackerStepPoints    : tracker
+      #minEnergyDep         : 0.0001
+      #minHits              : 5
+      #doDisplay            : true
+      #clickToAdvance       : false
+    }
+  }
+
+  analyzers:
+  {
+  }
+
+  #p1 : []
+  #e1 : [trckRjctByGmTplg]
+  p1 : [trckRjctByTime]
+  e1 : [outfile]
+
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "TTrackerBg_01_data.root"
+    outputCommands:   [ "keep *_*_*_*"
+#                        ,"drop mu2e::PointTrajectorymv_*_*_*"
+                      ]
+  }
+
+}

@@ -1,0 +1,62 @@
+#
+# $Id: SConscript,v 1.1 2011/06/23 21:56:11 tassiell Exp $
+# $Author: tassiell $
+# $Date: 2011/06/23 21:56:11 $
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+Import('env')
+
+# This comes from: root-config --cflags --glibs
+# Then guess at the correct location of Spectrum and MLP.
+rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
+
+plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+non_plugin_cc = Glob('*.cc', strings=True)
+for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+if non_plugin_cc:
+    # From: /path1/path2/path3/Name/src extract the string Name field.
+    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+    local_lib_name=os.path.dirname(dd)
+
+    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
+                      LIBS=[ 'art_Framework_Core',
+                             'art_Framework_Services_Optional_TFileService_service',
+                             'GeometryService',
+                             'ConditionsService',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'MCDataProducts',
+                             'RecoDataProducts',
+                             'CLHEP',
+                             rootlibs
+                             ],
+                      )
+    libs=[ local_lib_name ]
+else:
+    libs=['GeneralUtilities']
+
+for cc in plugin_cc:
+    libname='#/lib/'+cc[:cc.find('.cc')]
+    env.SharedLibrary( libname, cc,
+                       LIBS=[ libs,
+                             'art_Framework_Core',
+                             'art_Framework_Services_Optional_TFileService_service',
+                             'GeometryService',
+                             'ConditionsService',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'MCDataProducts',
+                             'RecoDataProducts',
+                             'CLHEP',
+                              rootlibs
+                              ], )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
