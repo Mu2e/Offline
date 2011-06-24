@@ -1,9 +1,9 @@
 //
 // StrawClusterUtilities 
 //
-// $Id: StrawClusterUtilities.cc,v 1.1 2011/06/09 21:21:52 wenzel Exp $
+// $Id: StrawClusterUtilities.cc,v 1.2 2011/06/24 11:45:09 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/06/09 21:21:52 $
+// $Date: 2011/06/24 11:45:09 $
 //
 
 // C++ includes
@@ -20,7 +20,7 @@ using namespace std;
 namespace mu2e {
 
 
-  CLHEP::Hep3Vector StrawClusterUtilities::X(StrawCluster const & cluster,art::Event const & event) const
+  CLHEP::Hep3Vector StrawClusterUtilities::midX(StrawCluster const & cluster,art::Event const & event) const
   {  
     const Tracker& tracker = getTrackerOrThrow();    
     CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
@@ -36,6 +36,47 @@ namespace mu2e {
       pvec = pvec*a;
     return pvec;
   }
+
+  CLHEP::Hep3Vector StrawClusterUtilities::dirX(StrawCluster const & cluster,art::Event const & event) const
+  {  
+    const Tracker& tracker = getTrackerOrThrow();
+    StrawHitPtrVector const & strawHits = cluster.strawHits();
+    StrawHit const& strawhit = *strawHits[0];
+    Straw str = tracker.getStraw(strawhit.strawIndex());
+    const CLHEP::Hep3Vector dirvec = str.getDirection();
+    return dirvec;
+  }
+
+ CLHEP::Hep3Vector StrawClusterUtilities::dTX(StrawCluster const & cluster,art::Event const & event) const
+  {  
+    const Tracker& tracker = getTrackerOrThrow();    
+    CLHEP::Hep3Vector pvec = CLHEP::Hep3Vector(0.,0.,0.);
+    double averagedt = 0.0;
+    StrawHitPtrVector const & strawHits = cluster.strawHits();
+    for (size_t index =0;index<strawHits.size();++index)
+      {
+	StrawHit const& strawhit = *strawHits[index];
+	Straw str = tracker.getStraw(strawhit.strawIndex());
+	const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
+	averagedt = averagedt+ strawhit.dt();
+	pvec = pvec + mpvec;
+      }
+    
+    double a          = 1./double(strawHits.size());
+    averagedt         = averagedt * a;
+    pvec              = pvec*a;
+    double _timetodist= 149.8962;
+    double disttomid  = averagedt* _timetodist;
+    cout << "disttomid"<<disttomid<<endl;
+    cout << "Halflength: "<<Halflength(cluster,event)<<endl;
+    cout << "pvec: "<<pvec<<endl;
+    cout << "dirX: " <<dirX(cluster,event)<<endl;
+    //    CLHEP::Hep3Vector dirvec = dirX(cluster,event);
+    pvec              = pvec+disttomid*dirX(cluster,event);
+    cout << "pvec: "<<pvec<<endl;
+    return pvec;
+  }
+
 
   double StrawClusterUtilities::Halflength(StrawCluster const & cluster,art::Event const & event) const
   {  
@@ -122,20 +163,12 @@ namespace mu2e {
     return station;
 
   }
-  CLHEP::Hep3Vector StrawClusterUtilities::dirX(StrawCluster const & cluster,art::Event const & event) const
-  {  
-    const Tracker& tracker = getTrackerOrThrow();
-    StrawHitPtrVector const & strawHits = cluster.strawHits();
-    StrawHit const& strawhit = *strawHits[0];
-    Straw str = tracker.getStraw(strawhit.strawIndex());
-    const CLHEP::Hep3Vector dirvec = str.getDirection();
-    return dirvec;
-  }
+
  
   LineSegmentPCA StrawClusterUtilities::linesegment(StrawCluster const & cluster,art::Event const& event) const
   {  
     CLHEP::Hep3Vector direction = dirX(cluster,event);
-    CLHEP::Hep3Vector position  = X(cluster,event);
+    CLHEP::Hep3Vector position  = midX(cluster,event);
     double hlen  = Halflength(cluster,event);
     const CLHEP::Hep2Vector p0 =      
       CLHEP::Hep2Vector(position.getX()-hlen*direction.getX(),
@@ -146,6 +179,24 @@ namespace mu2e {
     LineSegmentPCA linesegment(p0, p1);
     return linesegment;
   }
-  
-
+  multimap<int,StrawCluster> StrawClusterUtilities::clusterbydid(StrawClusterCollection const& clusters,art::Event const& event) const
+  {
+    multimap<int,StrawCluster> clubydid;
+    for ( size_t cluster=0; cluster<clusters.size(); ++cluster) // Loop over StrawClusters
+      {
+	StrawCluster const& scluster = clusters.at(cluster);	
+	clubydid.insert(pair<int,StrawCluster>(did(scluster,event),scluster));
+      }
+    return clubydid;
+  }
+  multimap<int,StrawCluster> StrawClusterUtilities::clusterbystation(StrawClusterCollection const& clusters,art::Event const& event) const 
+  {
+    multimap<int,StrawCluster> clubystation;
+    for ( size_t cluster=0; cluster<clusters.size(); ++cluster) // Loop over StrawClusters
+      {
+	StrawCluster const& scluster = clusters.at(cluster);	
+	clubystation.insert(pair<int,StrawCluster>(Station(scluster,event),scluster));
+      }
+    return clubystation;
+  }
 } // namespace mu2e

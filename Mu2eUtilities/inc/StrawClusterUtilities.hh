@@ -3,15 +3,16 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawClusterUtilities.hh,v 1.1 2011/06/09 21:21:29 wenzel Exp $
+// $Id: StrawClusterUtilities.hh,v 1.2 2011/06/24 11:44:59 wenzel Exp $
 // $Author: wenzel $
-// $Date: 2011/06/09 21:21:29 $
+// $Date: 2011/06/24 11:44:59 $
 //
 // Original author Hans Wenzel
 //
 
 // C++ includes
 #include <vector>
+#include <map>
 // Framework includes:
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/Event.h"
@@ -38,7 +39,9 @@ namespace mu2e {
     StrawClusterUtilities() {}
 
     // Accessors
-    CLHEP::Hep3Vector X(StrawCluster const& cluster,art::Event const& event) const;
+    CLHEP::Hep3Vector midX(StrawCluster const& cluster,art::Event const& event) const;
+    CLHEP::Hep3Vector dirX(StrawCluster const& cluster,art::Event const& event) const; 
+    CLHEP::Hep3Vector dTX(StrawCluster const& cluster,art::Event const& event) const;
     double Energy(StrawCluster const& cluster,art::Event const& event) const;
     double Halflength(StrawCluster const& cluster,art::Event const& event) const;
     double averageT(StrawCluster const& cluster,art::Event const& event) const;
@@ -46,10 +49,10 @@ namespace mu2e {
     DeviceId did(StrawCluster const& cluster,art::Event const & event) const;
     SectorId secid(StrawCluster const& cluster,art::Event const & event) const;
     int Station(StrawCluster const& cluster,art::Event const & event) const;
-    CLHEP::Hep3Vector dirX(StrawCluster const& cluster,art::Event const& event) const; 
+
     LineSegmentPCA linesegment(StrawCluster const& cluster,art::Event const& event) const;
-
-
+    std::multimap<int,StrawCluster> clusterbydid(StrawClusterCollection const& clusters,art::Event const& event) const;
+    std::multimap<int,StrawCluster> clusterbystation(StrawClusterCollection const& clusters,art::Event const& event) const;
   };
 } // namespace mu2e
 
