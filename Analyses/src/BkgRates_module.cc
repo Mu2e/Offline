@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.16 2011/06/16 20:08:45 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.17 2011/06/24 22:22:20 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/16 20:08:45 $
+// $Date: 2011/06/24 22:22:20 $
 //
 // Original author Gianni Onorato
 //
@@ -257,7 +257,7 @@ namespace mu2e {
                                             "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
       }
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
-                                          "evt:run:crTime:crE:crRad:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
+                                          "evt:run:crTime:crE:crRad:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EOutsideAll:EGen:GenHit1x:GenHit1y:GenHit1z:cryFramex:cryFramey:cryFramez:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
       _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
                                           "evt:run:time:x:y:z:isGen:pdgId:trkId:foil");
 
@@ -873,7 +873,6 @@ namespace mu2e {
 
     // Get handles to calorimeter collections
     art::Handle<CaloHitCollection> caloHits;
-    art::Handle<CaloHitMCTruthCollection> caloMC; //unused
     art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
 
     // Get the persistent data about pointers to StepPointMCs
@@ -883,11 +882,10 @@ namespace mu2e {
     evt.getByLabel(_caloReadoutModuleLabel,"CaloHitMCCrystalPtr",mcptrHandle);
     //    evt.getByLabel(_g4ModuleLabel,"calorimeter",steps);
     evt.getByLabel(_caloReadoutModuleLabel, caloHits);
-    evt.getByLabel(_caloReadoutModuleLabel, caloMC);
     evt.getByLabel(_caloCrystalModuleLabel, caloCrystalHits);
 
     PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
-    if (!( caloHits.isValid() && caloMC.isValid())) {
+    if (!( caloHits.isValid())) {
       return;
     }
 
@@ -926,6 +924,8 @@ namespace mu2e {
 
         std::vector<art::Ptr<CaloHit> > const & ROIds  = hit.readouts();
 
+	//	cout << "Event " << evt.id().event() << ". In the caloCrystalHits there are " << ROIds.size() << " RO associated" << endl;
+
         if (ROIds.size() < 1) {
           //          cout << " Event n. " << evt.id().event()
           //   << " \t got crystal hits but not ROhits"
@@ -938,6 +938,7 @@ namespace mu2e {
         double EfromOutside1 = 0.;
         double EfromOutside2 = 0.;
         double EfromOutside3 = 0.;
+        double EfromOutsideAll = 0.;
         double EfromOtherVane = 0.;
         int OutsideTrkPdgId1 = 0;
         int OutsideTrkPdgId2 = 0;
@@ -948,17 +949,28 @@ namespace mu2e {
         if (hit.energyDep() < _minimumEnergy) continue;
 
         bool readCryOnce(false);
-        float cntpArray[29];
+        float cntpArray[36];
         int idx(0);
 
         //List of trackId and energy deposition
         PairList OutsideEDep;
+
+	double firstHitTime = 100000;
+	CLHEP::Hep3Vector firstHitPos(0,0,0);
+
+	CLHEP::Hep3Vector cryFrame(0,0,0);
+
 
         for (size_t it = 0;
              it < ROIds.size() ; ++it ) {
 
           size_t collectionPosition = ROIds.at(it).key();
           CaloHit const & thehit = *ROIds.at(it);
+
+	  //	  cout << "ROID n. " << it << ": informations " << (readCryOnce?"not":"") << " stored.\n"
+	  //       << "Crystal : " << cg->getCrystalByRO(thehit.id())   
+          //     << "\nEnergy: " << hit.energyDep() << endl;
+ 
 
           if (!readCryOnce) {
             CLHEP::Hep3Vector cryCenter =  cg->getCrystalOriginByRO(thehit.id());
@@ -978,50 +990,67 @@ namespace mu2e {
             cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
             cntpArray[idx++] = cryCenter.getY();
             cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
-
-
-            PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
-            size_t nHitsPerCrystal = mcptr.size();
-            _hCaloHitMult->Fill(nHitsPerCrystal);
-
-            for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
-
-              StepPointMC const& mchit = *mcptr[j2];
-              // The simulated particle that made this hit.
-              SimParticleCollection::key_type trackId(mchit.trackId());
-
-              CaloManager->setTrackAndRO(evt, _g4ModuleLabel, trackId, ROIds.at(it).key() );
-
-              //cout << "Original Vane: " << CaloManager->localVane()
-              //     << "\nStarting Vane: " << CaloManager->startingVane() << endl;
-              if (CaloManager->localVane() == CaloManager->startingVane()) {
-                EfromShower += mchit.eDep();
-              }
-              if (CaloManager->localVane() != CaloManager->startingVane() &&
-                  CaloManager->startingVane() != -1) {
-                EfromOtherVane += mchit.eDep();
-              }
-
-              if (CaloManager->fromOutside()) {
-                if (!CaloManager->generated()) {
-                  PairListAdd(OutsideEDep, trackId, mchit.eDep());
-                }
-
-                if (CaloManager->generated()) {
-                  GeneratedEDep +=  mchit.eDep();
-                }
-              }
-            }
-
-            readCryOnce = true;
-
-          }
-        }
-
-        OutsideEDep.sort(SortByEnergy);
+	  	  
+	    
+	    PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
+	    size_t nHitsPerCrystal = mcptr.size();
+	    _hCaloHitMult->Fill(nHitsPerCrystal);
+	    
+	    //	    cout << "In the RO there are " << nHitsPerCrystal << " hits. List index is " << collectionPosition << endl;
+	    
+	    for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
+	      
+	      StepPointMC const& mchit = *mcptr[j2];
+	      // The simulated particle that made this hit.
+	      SimParticleCollection::key_type trackId(mchit.trackId());
+	      
+	      CaloManager->setTrackAndRO(evt, _g4ModuleLabel, trackId, thehit.id() );
+	      
+	      //	      cout << "Original Vane: " << CaloManager->localVane()
+	      //		   << "\nStarting Vane: " << CaloManager->startingVane() << endl;
+	      
+	      if (CaloManager->localVane() == CaloManager->startingVane()) {
+		EfromShower += mchit.eDep();
+		//		cout << "From shower we have " << mchit.eDep() << " and globally " << EfromShower << endl;
+	      }
+	      
+	      if (CaloManager->localVane() != CaloManager->startingVane() &&
+		  CaloManager->startingVane() != -1) {
+		EfromOtherVane += mchit.eDep();
+		//		cout << "From other vane we have " << mchit.eDep() << " and globally " << EfromOtherVane << endl;
+	      }
+	      
+	      if (CaloManager->fromOutside()) {
+		if (!(CaloManager->generated())) {
+		  PairListAdd(OutsideEDep, trackId, mchit.eDep());
+		  EfromOutsideAll += mchit.eDep();
+		  //		  cout << "From outside we have " << mchit.eDep() << " and globally " << EfromOutsideAll << endl;
+		}
+		
+		if (CaloManager->generated()) {
+		  GeneratedEDep +=  mchit.eDep();
+		  if (mchit.time()<firstHitTime) {
+		    firstHitTime = mchit.time();
+		    firstHitPos = mchit.position();
+		    //		    cout << "before " << firstHitPos << endl;
+		    cryFrame = cg->toCrystalFrame(thehit.id(), firstHitPos);
+		    //		    cout << "after " << firstHitPos << endl;
+		  }
+		  //		  cout << "From generated we have " << mchit.eDep() << " and globally " << GeneratedEDep << endl;
+		  //		  cout << "Time of this hit is " << mchit.time() << " and position is " << mchit.position() << endl;
+		}
+	      }
+	    }
+	  }
+	  
+	  readCryOnce = true;
+	  
+	}
+	
+	OutsideEDep.sort(SortByEnergy);
 
         nOutsideTrk = OutsideEDep.size();
-
+	
         if (nOutsideTrk > 3) {
           if (_diagLevel > 0) {
             cout << "More than 3 different tracks from outside the calorimeter contribute to the crystal:"
@@ -1068,7 +1097,15 @@ namespace mu2e {
         cntpArray[idx++] = OutsideTrkPdgId2;
         cntpArray[idx++] = EfromOutside3;
         cntpArray[idx++] = OutsideTrkPdgId3;
+	cntpArray[idx++] = EfromOutsideAll;
         cntpArray[idx++] = GeneratedEDep;
+	//	cout << "The one I store has the following position " << firstHitPos << endl;
+	cntpArray[idx++] = firstHitPos.x();
+	cntpArray[idx++] = firstHitPos.y();
+	cntpArray[idx++] = firstHitPos.z();
+	cntpArray[idx++] = cryFrame.x();
+	cntpArray[idx++] = cryFrame.y();
+	cntpArray[idx++] = cryFrame.z();
 
         size_t ngen = genParticles->size();
         if (ngen>1) {
