@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.4 2011/06/23 21:52:04 tassiell Exp $
+// $Id: classes.h,v 1.5 2011/06/25 23:58:29 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/23 21:52:04 $
+// $Date: 2011/06/25 23:58:29 $
 //
 // Original author Rob Kutschke
 //
@@ -20,12 +20,15 @@
 #include "RecoDataProducts/inc/SubEventCollection.hh"
 #include "RecoDataProducts/inc/VisibleGenElTrackCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
+#include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
 template class std::vector<art::Ptr<mu2e::CaloHit> >;
 template class art::Ptr<mu2e::StrawHit>;
 template class std::vector<art::Ptr<mu2e::StrawHit> >;
+template class art::Ptr<mu2e::TrackerHitTimeCluster>;
+template class std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
 template class art::Wrapper<mu2e::StrawClusterCollection>;
@@ -35,3 +38,4 @@ template class art::Wrapper<mu2e::HoughCircleCollection>;
 template class art::Wrapper<mu2e::SubEventCollection>;
 template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;
 template class art::Wrapper<mu2e::TrackerHitTimeClusterCollection>;
+template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;

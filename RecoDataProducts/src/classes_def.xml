@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.5 2011/06/23 21:52:04 tassiell Exp $     -->
+<!--  $Id: classes_def.xml,v 1.6 2011/06/25 23:58:29 tassiell Exp $     -->
 <!--  $Author: tassiell $ -->
-<!--  $Date: 2011/06/23 21:52:04 $   -->
+<!--  $Date: 2011/06/25 23:58:29 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.5 $$Date: 2011/06/23 21:52:04 $"; -->
+<!--  rev="$Revision: 1.6 $$Date: 2011/06/25 23:58:29 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -32,11 +32,16 @@
  <class name="mu2e::VisibleGenElTrackCollection" persistent="false"/>
  <class name="mu2e::TrackerHitTimeCluster"/>
  <class name="mu2e::TrackerHitTimeClusterCollection"/>
+ <class name="mu2e::SectorStationCluster"/>
+ <class name="mu2e::SctrSttnClusterGroup"/>
+ <class name="mu2e::SctrSttnClusterGroupCollection" persistent="false"/>
 
  <class name="art::Ptr<mu2e::CaloHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
  <class name="art::Ptr<mu2e::StrawHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHit> >"/>
+ <class name="art::Ptr<mu2e::TrackerHitTimeCluster>"/>
+ <class name="std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >"/>
 
  <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
@@ -46,5 +51,6 @@
  <class name="art::Wrapper<mu2e::SubEventCollection>"/>
  <class name="art::Wrapper<mu2e::VisibleGenElTrackCollection>"/>
  <class name="art::Wrapper<mu2e::TrackerHitTimeClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::SctrSttnClusterGroupCollection>"/>
 
 </lcgdict>
