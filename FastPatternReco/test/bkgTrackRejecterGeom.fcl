@@ -9,7 +9,7 @@ source :
 {
   module_type : RootInput
   fileNames : ["data_03.root"]
-  maxEvents : 200
+  maxEvents : -1
 }
 
 services :
@@ -75,8 +75,8 @@ physics :
   {
   }
 
-  p1 : []
-  e1 : [trckRjctByGmTplg]
+  p1 : [trckRjctByGmTplg]
+  e1 : []
 
 
   trigger_paths  : [p1]
