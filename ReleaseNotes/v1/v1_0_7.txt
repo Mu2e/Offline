@@ -3,9 +3,9 @@
 
            Release notes for Mu2e Offline software, v1_0_7
 
-  $Id: v1_0_7.txt,v 1.3 2011/06/23 19:19:58 logash Exp $
-  $Author: logash $
-  $Date: 2011/06/23 19:19:58 $
+  $Id: v1_0_7.txt,v 1.4 2011/06/26 22:53:56 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2011/06/26 22:53:56 $
 
 2) June 23, 2011 logash
 
@@ -17,6 +17,12 @@
       only stopped particles
     - added option requireVD to save in the particles ntuple 
       only those particles, which cross particular virtual detector 
+
+2) June 26, 2011 onoratog
+   FoilParticleGenerator now take into account also particles whose generation time
+   is beyond the 1694 ns of the microbunch. It includes 3 cycles after the nominal one,
+   subtracting the 1964 to the original generation time, in order to simulate
+   the effects of the particles whose primary proton comes from the previous microbunch.
 
 1) June 20, 2011 genser 
 

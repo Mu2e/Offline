@@ -30,6 +30,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -90,6 +91,8 @@ namespace mu2e {
     _ntoskip (linesToSkip)
   {
 
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    _maxtime = accPar->deBuncherPeriod;
 
     CLHEP::Hep3Vector offset(-3904.,0,12000.);
     _DSOffset = offset;
@@ -121,7 +124,6 @@ namespace mu2e {
 
   void FoilParticleGenerator::generatePositionAndTime(CLHEP::Hep3Vector& pos,
                                                       double& time) {
-
 
     //    cout << "gen pos and time called " << endl;
 
@@ -198,6 +200,15 @@ namespace mu2e {
         muDelay = includeTimeDelay();
         time += muDelay;
       }
+
+      int MaxTimeCicleOverlay = 3;
+      int countOverlay = 0;
+
+      while (time > _maxtime && countOverlay<MaxTimeCicleOverlay) {
+	time -= _maxtime;
+	countOverlay++;
+      }
+
     }
     if (_posAlgo==muonFileInputPos) {
         pos -= _DSOffset;           // Move to DS coordinate system

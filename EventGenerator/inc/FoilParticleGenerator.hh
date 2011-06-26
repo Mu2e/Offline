@@ -68,6 +68,8 @@ namespace mu2e {
     // time generation range
     double _tmin, _tmax;
 
+    double _maxtime;
+
     // foil, position and time random algorithm
     foilGen_enum  _foilAlgo;
     posGen_enum   _posAlgo;
