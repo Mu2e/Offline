@@ -1,9 +1,9 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.1 2011/06/23 21:56:11 tassiell Exp $
+// $Id: TTDisplayData_module.cc,v 1.2 2011/06/26 00:01:17 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/23 21:56:11 $
+// $Date: 2011/06/26 00:01:17 $
 //
 // Original author G. Tassielli
 //
@@ -1638,7 +1638,7 @@ namespace mu2e {
 
   }
 
-  void TTDisplayData::fillVotingArray(TH2I *startDist, TH2I *votingArray, int minPitch, int maxPitch){
+  void TTDisplayData::fillVotingArray(TH2I *startDist, TH2I *votingArray, int minPitch, int maxPitch) {
 
           int nXbin = startDist->GetNbinsX();
           int nYbin = startDist->GetNbinsY();
@@ -1646,7 +1646,7 @@ namespace mu2e {
           int *contArr = startDist->GetArray();
           int dataArr[nYbin][nXbin];
           int dataArrRev[nYbin][nXbin];
-          int iY, iX, jXRange, jOutOfRange;
+          int iY, iX, jXRange;//, jOutOfRange;
           int minAvaiPitch, tmpMinPitch, lastFullBin, tmpPitch;
 
           int nVotXbin=votingArray->GetNbinsX();
@@ -1677,7 +1677,7 @@ namespace mu2e {
           //rwavptcclscpl::iterator ptcrwClrwClmap_it;
           avptcclscpl tmp_avPtc_rwClrwCl;
           avptcclscpl::iterator ptcrwClrwCl_it;
-          size_t couplingRwCl;
+//          size_t couplingRwCl;
           rwclclcpl tmp_rwClrwClpair;
 
 
@@ -2007,10 +2007,11 @@ namespace mu2e {
           }
 
           std::vector<Clust>::iterator clstlst_it=clustersList.begin();
-          std::vector<Clust>::iterator tmp_clstlst_it;
+          std::vector<Clust>::iterator tmp_clstlst_it, end_clstlst_it;
           short tmpMaxSect_1, tmpMinSect_1, tmpMaxSect_2, tmpMinSect_2;
-          bool nexClust;
-          while ( clstlst_it!=clustersList.end() ) {
+          bool nexClust, erased;
+          end_clstlst_it=clustersList.end();
+          while ( clstlst_it!=end_clstlst_it ) {
                   nexClust=true;
                   tmp_clstlst_it=clstlst_it;
                   tmp_clstlst_it++;
@@ -2020,26 +2021,41 @@ namespace mu2e {
                           tmpMaxSect_1-=12;
                           tmpMinSect_1-=12;
                   }
-                  for ( ; tmp_clstlst_it!=clustersList.end(); ++tmp_clstlst_it) {
+                  //for ( ; tmp_clstlst_it!=clustersList.end(); ++tmp_clstlst_it) {
+                  end_clstlst_it=clustersList.end();
+                  while ( tmp_clstlst_it!=clustersList.end() ) {
+                          erased=false;
                           tmpMaxSect_2=tmp_clstlst_it->_lastSectorID;
                           tmpMinSect_2=tmp_clstlst_it->_firstSectorID;
                           if ( tmpMaxSect_2>=12 ) {
                                   tmpMaxSect_2-=12;
                                   tmpMinSect_2-=12;
                           }
+                          cout<<"Clust 1 "<<clstlst_it->_firstSectorID<<" - "<<clstlst_it->_lastSectorID<<" rinorm "<<tmpMinSect_1<<" - "<<tmpMaxSect_1<<" - "<<clstlst_it->_minStationID<<" - "<<clstlst_it->_maxStationID<<endl;
+                          cout<<"Clust 2 "<<tmp_clstlst_it->_firstSectorID<<" - "<<tmp_clstlst_it->_lastSectorID<<" rinorm "<<tmpMinSect_2<<" - "<<tmpMaxSect_2<<" - "<<tmp_clstlst_it->_minStationID<<" - "<<tmp_clstlst_it->_maxStationID<<endl;
                           if ( ( tmpMaxSect_1>=tmpMaxSect_2 && tmpMinSect_1<=tmpMinSect_2 ) &&
                                ( clstlst_it->_minStationID<=tmp_clstlst_it->_minStationID && clstlst_it->_maxStationID>=tmp_clstlst_it->_maxStationID ) ) {
                                   clustersList.erase(tmp_clstlst_it);
-                                  break;
+                                  cout<<"Cluster 2 removed"<<endl;
+                                  erased=true;
+                                  //break;
                           }
-                          if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
-                               ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
-                                  clustersList.erase(clstlst_it);
-                                  nexClust=false;
-                                  break;
+                          if (erased) end_clstlst_it=clustersList.end();
+                          else  {
+                                  if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
+                                                  ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
+                                          clustersList.erase(clstlst_it);
+                                          cout<<"Cluster 1 removed"<<endl;
+                                          nexClust=false;
+                                          break;
+                                  }
+                                  ++tmp_clstlst_it;
                           }
                   }
-                  if ( nexClust ) clstlst_it++;
+                  if ( nexClust ) {
+                          clstlst_it++;
+                          end_clstlst_it=clustersList.end();
+                  }
                   //clstlst_it=clustersList.begin();
           }
 
@@ -2066,18 +2082,27 @@ namespace mu2e {
 
           tmpRowId++;
           tmp_rcr_it=rwClst_forRw_rel.find(tmpRowId);
+          bool notFound;
           if (tmp_rcr_it!=rwClst_forRw_rel.end()) {
                   //cout<<"Up) Lokking for row cluster to add in row "<<tmpRowId<<endl;
                   if (!tmp_rcr_it->second.empty()) {
-                          for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+                          //for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+                          rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin();
+                          rwclstvec::iterator end_cr_it=tmp_rcr_it->second.end();
+                          while ( tmp_cr_it!=end_cr_it ) {
+                                  notFound=true;
                                   tmpRwClust=*tmp_cr_it;
                                   if ( (tmpRwClust->_firstStationID-startingRowClust->_lastStationID)<=1 &&
                                                   (startingRowClust->_firstStationID-tmpRwClust->_lastStationID)<=1 ) {
                                           clustersList.back().addRwClust(tmpRowId, tmpRwClust);
                                           tmp_rcr_it->second.erase(tmp_cr_it);
                                           findCluster(tmpRowId,tmpRwClust);
-                                          break;
+                                          //break;
+                                          notFound=false;
                                   }
+                                  if (notFound) ++tmp_cr_it;
+                                  else if (tmp_rcr_it->second.empty()) break;
+                                  end_cr_it=tmp_rcr_it->second.end();
                           }
                   }
           }
@@ -2086,19 +2111,490 @@ namespace mu2e {
           if (tmp_rcr_it!=rwClst_forRw_rel.end()) {
                   //cout<<"Down) Lokking for row cluster to add in row "<<tmpRowId<<endl;
                   if (!tmp_rcr_it->second.empty()) {
-                          for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+                          //for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+                          rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin();
+                          rwclstvec::iterator end_cr_it=tmp_rcr_it->second.end();
+                          while ( tmp_cr_it!=end_cr_it ) {
+                                  notFound=true;
                                   tmpRwClust=*tmp_cr_it;
                                   if ( (tmpRwClust->_firstStationID-startingRowClust->_lastStationID)<=1 &&
                                                   (startingRowClust->_firstStationID-tmpRwClust->_lastStationID)<=1 ) {
                                           clustersList.back().addRwClust(tmpRowId, tmpRwClust);
                                           tmp_rcr_it->second.erase(tmp_cr_it);
                                           findCluster(tmpRowId,tmpRwClust);
-                                          break;
+                                          //break;
+                                          notFound=false;
                                   }
+                                  if (notFound) ++tmp_cr_it;
+                                  else if (tmp_rcr_it->second.empty()) break;
+                                  end_cr_it=tmp_rcr_it->second.end();
                           }
-                  }
+                 }
           }
   }
+
+// backup before last fix on clustering and search
+//  {
+//
+//          int nXbin = startDist->GetNbinsX();
+//          int nYbin = startDist->GetNbinsY();
+//          int lastXbin = nXbin-1;
+//          int *contArr = startDist->GetArray();
+//          int dataArr[nYbin][nXbin];
+//          int dataArrRev[nYbin][nXbin];
+//          int iY, iX, jXRange, jOutOfRange;
+//          int minAvaiPitch, tmpMinPitch, lastFullBin, tmpPitch;
+//
+//          int nVotXbin=votingArray->GetNbinsX();
+//          int iVotX;
+//          TH1I tmpVoting ("tmpVoting","temporany container",nVotXbin,minPitch,maxPitch);
+//          TH1I tmpVotingRev ("tmpVotingRev","temporany container",nVotXbin,minPitch,maxPitch);
+//          int *votArr = tmpVoting.GetArray();
+//          int *votArrRev = tmpVotingRev.GetArray();
+//
+//          ptcsctrrel tmp_ptc_sctr_rel;
+//          ptcbnrel sttn_sectPitch_rel;
+//
+//          goodsttnrel tmp_good_sctr_val;
+//          goodsctrstatnrel good_sttn_sctr_rel;
+//
+//          rwclstvec rowClusts;
+//          rwclstvec::iterator tmp_rwcl_it;
+//
+////          rwclinrwrel rwClst_forRw_rel;
+//          rwClst_forRw_rel.clear();
+//
+//          stbrel rowClst_Column_rel;
+//          size_t nRowClust=-1;
+//
+//          ptcclsbrel tmp_ptc_rowClst__rel;
+//          ptcmaprowclsrel ptcMap_rowCls_rel;
+//          rwavptcclscpl rwMap_avPtc_rwClrwCl;
+//          //rwavptcclscpl::iterator ptcrwClrwClmap_it;
+//          avptcclscpl tmp_avPtc_rwClrwCl;
+//          avptcclscpl::iterator ptcrwClrwCl_it;
+//          size_t couplingRwCl;
+//          rwclclcpl tmp_rwClrwClpair;
+//
+//
+////          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) cout<<contArr[(i+1)*(nXbin+2)+1+j]<<" "; cout<<endl;}
+//
+//          for ( iY=0; iY<nYbin; iY++) {
+//                  memcpy( dataArr[iY], contArr+( ( (nXbin+2)*(iY+1) ) +1 ), nXbin*4);
+//                  std::reverse_copy(dataArr[iY],dataArr[iY]+nXbin,dataArrRev[iY]);
+//
+//                  tmpVoting.Reset();
+//                  tmpVotingRev.Reset();
+//
+//                  minAvaiPitch=minPitch;
+//                  lastFullBin=-1;
+//                  tmp_ptc_sctr_rel.clear();
+//                  tmp_ptc_rowClst__rel.clear();
+//                  tmp_avPtc_rwClrwCl.clear();
+//
+//                  for ( iX=0; iX<nXbin; iX++) {
+//                          if ( dataArr[iY][iX] ) {
+////                                  if ( iX==0 || (iX-lastFullBin)>1 ) {
+////                                          rowClusts.push_back(rowClust( (unsigned short) iX, (unsigned short) dataArr[iY][iX]));
+////                                          nRowClust++;
+////                                          rowClst_Column_rel.insert( stbrel::value_type((unsigned int) iY, nRowClust) );
+////                                  }
+////                                  else rowClusts.back().addHit( (unsigned short) iX, (unsigned short) dataArr[iY][iX]);
+//                                  lastFullBin=iX;
+//                                  for ( jXRange=iX+minAvaiPitch; jXRange<(iX+maxPitch); jXRange++){
+//                                          if ( jXRange>lastXbin ) break;
+////                                          if ( jXRange>=lastXbin ) {
+////                                                  tmpMinPitch=jXRange-iX;
+////                                                  jOutOfRange= (tmpMinPitch>minAvaiPitch) ? tmpMinPitch : minAvaiPitch;
+////                                                  for ( ; jOutOfRange<=maxPitch; jOutOfRange++) votingArray->Fill(jOutOfRange,iY);
+////                                                  break;
+////                                          }
+//                                          if ( dataArr[iY][jXRange] ) {
+//                                                  tmpPitch=jXRange-iX;
+//                                                  votingArray->Fill(tmpPitch,iY);
+//                                                  tmpVoting.Fill(tmpPitch);
+//                                                  tmp_ptc_sctr_rel.insert ( ptcsctrrel::value_type(
+//                                                                  (unsigned short) tmpPitch,
+//                                                                  (unsigned short) iX )
+//                                                  );
+//
+////                                                  tmp_ptc_rowClst__rel.insert(
+////                                                                  ptcclsbrel::value_type(
+////                                                                                  (unsigned short) tmpPitch, std::pair<size_t,unsigned short>(nRowClust,(unsigned short) jXRange)
+////                                                                                  )
+////                                                  );
+//
+//                                          }
+//                                  }
+//                                  //minAvaiPitch=
+//                          }
+//                          else {
+//                                  tmpMinPitch=iX-lastFullBin;
+//                                  if ( tmpMinPitch>minAvaiPitch ) minAvaiPitch=tmpMinPitch;
+//                          }
+//                          if (minAvaiPitch>=maxPitch) break;
+//                  }
+//                  //if (tmp_ptc_rowClst__rel.size()) ptcMap_rowCls_rel.insert( ptcmaprowclsrel::value_type((unsigned short) iY, tmp_ptc_rowClst__rel) );
+//
+//                  //in reverse order
+//                  minAvaiPitch=minPitch;
+//                  lastFullBin=-1;
+//                  for ( iX=0; iX<nXbin; iX++) {
+//                          if ( dataArrRev[iY][iX] ) {
+//                                  lastFullBin=iX;
+//                                  for ( jXRange=iX+minAvaiPitch; jXRange<(iX+maxPitch); jXRange++){
+//                                          if ( jXRange>lastXbin ) break;
+////                                          if ( jXRange>=lastXbin ) {
+////                                                  tmpMinPitch=jXRange-iX;
+////                                                  jOutOfRange= (tmpMinPitch>minAvaiPitch) ? tmpMinPitch : minAvaiPitch;
+////                                                  for ( ; jOutOfRange<=maxPitch; jOutOfRange++) votingArray->Fill(jOutOfRange,iY-nYbin);
+////                                                  break;
+////                                          }
+//                                          if ( dataArrRev[iY][jXRange] ) {
+//                                                  tmpPitch=jXRange-iX;
+//                                                  votingArray->Fill(tmpPitch,iY-nYbin);
+//                                                  tmpVotingRev.Fill(tmpPitch);
+//                                                  tmp_ptc_sctr_rel.insert ( ptcsctrrel::value_type(
+//                                                                  (unsigned short) tmpPitch,
+//                                                                  (unsigned short) lastXbin-iX )
+//                                                  );
+//                                         }
+//                                  }
+//                                  //minAvaiPitch=
+//                          }
+//                          else {
+//                                  tmpMinPitch=iX-lastFullBin;
+//                                  if ( tmpMinPitch>minAvaiPitch ) minAvaiPitch=tmpMinPitch;
+//                          }
+//                          if (minAvaiPitch>=maxPitch) break;
+//                  }
+//
+//                  for ( iVotX=1; iVotX<=nVotXbin; iVotX++) {
+//                          tmpMinPitch=iVotX-1+minPitch;  //is the pitch under check
+//                          //if ( votArr[iVotX] && votArrRev[iVotX] ) cout<<"found"<<endl;
+//                          if ( (votArr[iVotX] && !votArrRev[iVotX]) || (!votArr[iVotX] && votArrRev[iVotX]) ) {
+//                                  ptcsctrrel::iterator ptcst_it=tmp_ptc_sctr_rel.find(tmpMinPitch);
+//                                  while ( ptcst_it != tmp_ptc_sctr_rel.end() ){
+//                                          tmp_ptc_sctr_rel.erase(ptcst_it);
+//                                          ptcst_it=tmp_ptc_sctr_rel.find(tmpMinPitch);
+//                                  }
+//                          }
+////                          if ( votArr[iVotX] && !votArrRev[iVotX] ) {
+////
+////
+////                                  cout<<"\t !!!! I'm removing vote at row "<<iY<<" and pitch "<<tmpMinPitch<<endl;
+////
+////                                  ptcclsbrel::iterator prcc_it=tmp_ptc_rowClst__rel.find(tmpMinPitch);
+////                                  while ( prcc_it != tmp_ptc_rowClst__rel.end() ){
+////                                          tmp_ptc_rowClst__rel.erase(prcc_it);
+////                                          prcc_it=tmp_ptc_rowClst__rel.find(tmpMinPitch);
+////                                  }
+////                          }
+//                  }
+//                  if (tmp_ptc_sctr_rel.size()) {
+//                          sttn_sectPitch_rel.insert( ptcbnrel::value_type((unsigned short) iY, tmp_ptc_sctr_rel) );
+//                          tmp_good_sctr_val.clear();
+//                          for ( ptcsctrrel::iterator ptcst_it=tmp_ptc_sctr_rel.begin(); ptcst_it!=tmp_ptc_sctr_rel.end(); ++ptcst_it ) {
+//                                  if (tmp_good_sctr_val.find(ptcst_it->second)==tmp_good_sctr_val.end()) tmp_good_sctr_val.insert( goodsttnrel::value_type(ptcst_it->second) );
+//                          }
+//
+//                          unsigned short lastElement;
+//                          unsigned short iEl;
+//                          goodsttnrel::iterator ptcst_it=tmp_good_sctr_val.begin();
+//
+//                          lastElement=*ptcst_it;
+//                          rowClusts.push_back( rwClustPtr( new rowClust(lastElement, (unsigned short) dataArr[iY][lastElement]) ) );
+//                          rwClst_forRw_rel.insert( rwclinrwrel::value_type( (unsigned short) iY, rwclstvec(1,rowClusts.back()) ) );
+//                          nRowClust++;
+//                          rowClst_Column_rel.insert( stbrel::value_type((unsigned int) iY, nRowClust) );
+//                          ptcst_it++;
+//                          for ( iEl=1; iEl<(unsigned short)tmp_good_sctr_val.size(); iEl++ ) {
+//                                  //cout<<"Element "<<(*ptcst_it)<<" previous "<<lastElement<<endl;
+//                                  if ( ((*ptcst_it)-lastElement)>1 ) {
+//                                  //        cout<<"New Cluster added"<<endl;
+//                                          rowClusts.push_back( rwClustPtr ( new rowClust( (*ptcst_it), (unsigned short) dataArr[iY][(*ptcst_it)]) ) );
+//                                          rwClst_forRw_rel[(unsigned short) iY].push_back(rowClusts.back());
+//                                          nRowClust++;
+//                                          rowClst_Column_rel.insert( stbrel::value_type((unsigned int) iY, nRowClust) );
+//                                  }
+//                                  else {
+//                                  //        cout<<"hit added to Cluster"<<endl;
+//                                          rowClusts.back()->addHit( (*ptcst_it), (unsigned short) dataArr[iY][(*ptcst_it)]);
+//                                  }
+//                                  lastElement=*ptcst_it;
+//                                  ptcst_it++;
+//                          }
+//
+//                          good_sttn_sctr_rel.insert( goodsctrstatnrel::value_type((unsigned short) iY, tmp_good_sctr_val) );
+//                  }
+////                  if (tmp_ptc_rowClst__rel.size()) {
+////
+////                          ptcMap_rowCls_rel.insert( ptcmaprowclsrel::value_type((unsigned short) iY, tmp_ptc_rowClst__rel) );
+////
+////                          for ( ptcclsbrel::iterator prcc_it=tmp_ptc_rowClst__rel.begin(); prcc_it!=tmp_ptc_rowClst__rel.end(); prcc_it++ ){
+////                                  couplingRwCl = prcc_it->second.first;
+////                                  tmp_rwClrwClpair.first=couplingRwCl;
+////                                  couplingRwCl++;
+////                                  while ( couplingRwCl<rowClusts.size()-1 ){
+////                                          tmpRwClust=&(rowClusts.at(couplingRwCl));
+////                                          if ( prcc_it->second.second>=tmpRwClust->_firstStationID && prcc_it->second.second<=tmpRwClust->_lastStationID ) break;
+////                                          couplingRwCl++;
+////                                  }
+////                                  tmp_rwClrwClpair.second=couplingRwCl;
+////
+////                                  ptcrwClrwCl_it = tmp_avPtc_rwClrwCl.find(tmp_rwClrwClpair);
+////                                  if ( ptcrwClrwCl_it==tmp_avPtc_rwClrwCl.end() )
+////                                          tmp_avPtc_rwClrwCl.insert (
+////                                                  avptcclscpl::value_type(
+////                                                                  tmp_rwClrwClpair, std::vector<unsigned short> ( (size_t) 1, (unsigned short) prcc_it->first )
+////                                                                  )
+////                                          );
+////                                  else {
+////                                          ptcrwClrwCl_it->second.push_back( (unsigned short) prcc_it->first );
+////                                  }
+////
+////                          }
+////
+////                          //tmp_avPtc_rwClrwCl.insert( );
+////                          rwMap_avPtc_rwClrwCl.insert( rwavptcclscpl::value_type( (unsigned short) iY, tmp_avPtc_rwClrwCl ) );
+////                  }
+//
+//          }
+//
+//
+//
+//
+//          //std::vector<Clust> clustersList;
+//          clustersList.clear();
+//          rwClustPtr startingRowClust;
+//
+//          for ( rwclinrwrel::iterator rcr_it=rwClst_forRw_rel.begin(); rcr_it!=rwClst_forRw_rel.end(); ++rcr_it ) {
+////                  cout<<"i-th row "<<rcr_it->first<<endl;
+////                  for ( rwclstvec::iterator cr_it=rcr_it->second.begin();  cr_it!=rcr_it->second.end();  ++cr_it  ) {
+////                          rwClustPtr &irClus = *cr_it;
+////                          cout<<"\t cluster data: "<<irClus->_firstStationID<<" "<<irClus->_lastStationID<<" "<<irClus->_nHit
+////                                          <<" "<<irClus->_mean<<" "<<irClus->_sigma<<endl;
+////
+////                  }
+//                  ///-----------------------------------
+//
+//                  if (rcr_it->second.empty()) continue;
+//                  rwclstvec::iterator cr_it=rcr_it->second.begin();
+//                  while (cr_it!=rcr_it->second.end()){
+//                  //if ( clustersList.empty() ) {
+//                          startingRowClust=*cr_it;
+//                          cout<<"New cluster start at row "<<rcr_it->first<<" with cluster of row bin "<<startingRowClust->_firstStationID<<" "<<startingRowClust->_lastStationID<<endl;
+//                          clustersList.push_back( Clust(  rcr_it->first, startingRowClust ) );
+//                          rcr_it->second.erase(cr_it);
+//                          findCluster(rcr_it->first, startingRowClust);
+//                          if (!rcr_it->second.empty()) cr_it=rcr_it->second.begin();
+//                  }
+//
+////                  //if ( .... )
+////
+//
+//
+//
+////                  stbrel::iterator rcr_it=rowClst_Column_rel.find( tmpRowId );
+////                  while( rcr_it!=rowClst_Column_rel.end() ){
+////                          tmpRwClust=&(rowClusts.at(rcr_it->second));
+////                          if ( (tmpRwClust->_firstStationID-startingRowClust->_lastStationID)<=1 &&
+////                               (startingRowClust->_firstStationID-tmpRwClust->_lastStationID)<=1 ){
+////
+////                          }
+////                          rcr_it=rowClst_Column_rel.find( tmpRowId );
+////                  }
+////                  rowClst_Column_rel
+////
+////                  tmpRwClust=&(rowClusts.at());
+//
+//          }
+//
+//
+//
+//
+//          for ( stbrel::iterator rcc_it=rowClst_Column_rel.begin(); rcc_it!=rowClst_Column_rel.end(); ++rcc_it ) {
+//                  cout<<"i-th row "<<rcc_it->first<<" j-th clusters "<<rcc_it->second<<endl;
+//                  rwClustPtr &irClus = rowClusts.at(rcc_it->second);
+//                  cout<<"\t cluster data: "<<irClus->_firstStationID<<" "<<irClus->_lastStationID<<" "<<irClus->_nHit
+//                                  <<" "<<irClus->_mean<<" "<<irClus->_sigma<<endl;
+//          }
+//          for ( ptcmaprowclsrel::const_iterator pmrcc_it=ptcMap_rowCls_rel.begin(); pmrcc_it!=ptcMap_rowCls_rel.end(); ++pmrcc_it ) {
+//                  cout<<"i-th row "<<pmrcc_it->first<<endl;
+//                  for ( ptcclsbrel::const_iterator prcc_it=pmrcc_it->second.begin(); prcc_it!=pmrcc_it->second.end(); ++prcc_it ) {
+//                          cout<<"\t pitch: "<<prcc_it->first<<" rowClust "<<prcc_it->second.first<<" from bin "<<prcc_it->second.second<<endl;
+//                  }
+//
+//                  cout<<"Row Clust pairs"<<endl;
+//                  rwavptcclscpl::iterator ptcrwClrwClmap_it = rwMap_avPtc_rwClrwCl.find(pmrcc_it->first);
+//                  for ( ptcrwClrwCl_it=ptcrwClrwClmap_it->second.begin(); ptcrwClrwCl_it!=ptcrwClrwClmap_it->second.end(); ++ptcrwClrwCl_it ){
+//                          cout<<"\t row Clusters pair "<<ptcrwClrwCl_it->first.first<<" - "<<ptcrwClrwCl_it->first.second<<endl;
+//                          cout<<"\t\t available pitches: ";
+//                          for ( std::vector<unsigned short>::iterator ptcList=ptcrwClrwCl_it->second.begin(); ptcList!=ptcrwClrwCl_it->second.end(); ++ptcList ){
+//                                  cout<<*ptcList<<" ";
+//                          }
+//                          cout<<endl;
+//
+//                  }
+//
+//          }
+//
+//
+//          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) cout<<dataArr[i][j]<<" "; cout<<endl;}
+////          cout<<"reverse"<<endl;
+////          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) cout<<dataArrRev[i][j]<<" "; cout<<endl;}
+//          for ( ptcbnrel::iterator sttnptc_it=sttn_sectPitch_rel.begin(); sttnptc_it!=sttn_sectPitch_rel.end(); ++sttnptc_it ){
+//                  cout<<"Row "<<sttnptc_it->first<<" : ";
+//                  for ( ptcsctrrel::iterator ptcst_it=sttnptc_it->second.begin(); ptcst_it!=sttnptc_it->second.end(); ++ptcst_it ) {
+//                          cout<<ptcst_it->second<<" ";
+//                  }
+//                  cout<<endl;
+//          }
+//          cout<<"--- without station repetitions ---"<<endl;
+//          for ( goodsctrstatnrel::iterator sttnptc_it=good_sttn_sctr_rel.begin(); sttnptc_it!=good_sttn_sctr_rel.end(); ++sttnptc_it ){
+//                  cout<<"Row "<<sttnptc_it->first<<" : ";
+//                  for ( goodsttnrel::iterator ptcst_it=sttnptc_it->second.begin(); ptcst_it!=sttnptc_it->second.end(); ++ptcst_it ) {
+//                          cout<<*ptcst_it<<" ";
+//                  }
+//                  cout<<endl;
+//          }
+//
+//
+//
+//
+//
+////          for ( rwavptcclscpl::iterator ptcrwClrwClmap_it=rwMap_avPtc_rwClrwCl.begin(); ptcrwClrwClmap_it!=rwMap_avPtc_rwClrwCl.end(); ++ptcrwClrwClmap_it ) {
+////                  for ( ptcrwClrwCl_it=ptcrwClrwClmap_it->second.begin(); ptcrwClrwCl_it!=ptcrwClrwClmap_it->second.end(); ++ptcrwClrwCl_it ) {
+////                          if ( clustersList.empty() ) {
+////                                  assgnRwClus.push_back(ptcrwClrwCl_it->first.first);
+////                                  startingRowClust=&(rowClusts.at(ptcrwClrwCl_it->first.first));
+////                                  clustersList.push_back( Clust(  ptcrwClrwClmap_it->
+////                                                  first, startingRowClust ) );
+////                          }
+////                          //if ( .... )
+////
+////                          tmpRowId=ptcrwClrwCl_it->first.first;
+////                          tmpRowId++;
+////                          stbrel::iterator rcc_it=rowClst_Column_rel.find( tmpRowId );
+////                          while( rcc_it!=rowClst_Column_rel.end() ){
+////                                  tmpRwClust=&(rowClusts.at(rcc_it->second));
+////                                  if ( (tmpRwClust->_firstStationID-startingRowClust->_lastStationID)<=1 &&
+////                                       (startingRowClust->_firstStationID-tmpRwClust->_lastStationID)<=1 ){
+////
+////                                  }
+////                                  rcc_it=rowClst_Column_rel.find( tmpRowId );
+////                          }
+////                          rowClst_Column_rel
+////
+////                          tmpRwClust=&(rowClusts.at());
+////
+////                  }
+////          }
+//
+//
+//          int iCl=0;
+//          for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
+//                 cout<<"Cluster "<< iCl<<endl;
+//                 for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
+//                         cout<<"\t row "<<rwclincl_it->first<<" rwclst bin "<<rwclincl_it->second->_firstStationID<<" "<<rwclincl_it->second->_lastStationID<<endl;
+//
+//                 }
+//                 iCl++;
+//          }
+//
+//          std::vector<Clust>::iterator clstlst_it=clustersList.begin();
+//          std::vector<Clust>::iterator tmp_clstlst_it;
+//          short tmpMaxSect_1, tmpMinSect_1, tmpMaxSect_2, tmpMinSect_2;
+//          bool nexClust;
+//          while ( clstlst_it!=clustersList.end() ) {
+//                  nexClust=true;
+//                  tmp_clstlst_it=clstlst_it;
+//                  tmp_clstlst_it++;
+//                  tmpMaxSect_1=clstlst_it->_lastSectorID;
+//                  tmpMinSect_1=clstlst_it->_firstSectorID;
+//                  if ( tmpMaxSect_1>=12 ) {
+//                          tmpMaxSect_1-=12;
+//                          tmpMinSect_1-=12;
+//                  }
+//                  for ( ; tmp_clstlst_it!=clustersList.end(); ++tmp_clstlst_it) {
+//                          tmpMaxSect_2=tmp_clstlst_it->_lastSectorID;
+//                          tmpMinSect_2=tmp_clstlst_it->_firstSectorID;
+//                          if ( tmpMaxSect_2>=12 ) {
+//                                  tmpMaxSect_2-=12;
+//                                  tmpMinSect_2-=12;
+//                          }
+//                          if ( ( tmpMaxSect_1>=tmpMaxSect_2 && tmpMinSect_1<=tmpMinSect_2 ) &&
+//                               ( clstlst_it->_minStationID<=tmp_clstlst_it->_minStationID && clstlst_it->_maxStationID>=tmp_clstlst_it->_maxStationID ) ) {
+//                                  clustersList.erase(tmp_clstlst_it);
+//                                  break;
+//                          }
+//                          if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
+//                               ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
+//                                  clustersList.erase(clstlst_it);
+//                                  nexClust=false;
+//                                  break;
+//                          }
+//                  }
+//                  if ( nexClust ) clstlst_it++;
+//                  //clstlst_it=clustersList.begin();
+//          }
+//
+//          cout<<"------------ double cluster removed ------------"<<endl;
+//          iCl=0;
+//          for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
+//                 cout<<"Cluster "<< iCl <<" Station mean "<<clstlst_it->_mean_Sttn<<" sigma "<<clstlst_it->_sigma_Sttn<<
+//                                 " Sector mean "<<clstlst_it->_mean_Sctr<<" sigma "<<clstlst_it->_sigma_Sctr<<endl;
+//                 cout<<"Cluster m "<<clstlst_it->_m<<" q "<<clstlst_it->_q<<" errm "<<clstlst_it->_errm<<" errq "<<clstlst_it->_errq<<endl;
+//                 for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
+//                         cout<<"\t row "<<rwclincl_it->first<<" rwclst bin "<<rwclincl_it->second->_firstStationID<<" "<<rwclincl_it->second->_lastStationID<<
+//                                         " mean "<<rwclincl_it->second->_mean<<" sigma "<<rwclincl_it->second->_sigma<<endl;
+//                 }
+//                 iCl++;
+//          }
+//
+//
+//  }
+//
+//  void TTDisplayData::findCluster(unsigned short tmpRowId, rwClustPtr &startingRowClust){
+//
+//          rwClustPtr tmpRwClust;
+//          rwclinrwrel::iterator tmp_rcr_it;
+//
+//          tmpRowId++;
+//          tmp_rcr_it=rwClst_forRw_rel.find(tmpRowId);
+//          if (tmp_rcr_it!=rwClst_forRw_rel.end()) {
+//                  //cout<<"Up) Lokking for row cluster to add in row "<<tmpRowId<<endl;
+//                  if (!tmp_rcr_it->second.empty()) {
+//                          for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+//                                  tmpRwClust=*tmp_cr_it;
+//                                  if ( (tmpRwClust->_firstStationID-startingRowClust->_lastStationID)<=1 &&
+//                                                  (startingRowClust->_firstStationID-tmpRwClust->_lastStationID)<=1 ) {
+//                                          clustersList.back().addRwClust(tmpRowId, tmpRwClust);
+//                                          tmp_rcr_it->second.erase(tmp_cr_it);
+//                                          findCluster(tmpRowId,tmpRwClust);
+//                                          break;
+//                                  }
+//                          }
+//                  }
+//          }
+//          tmpRowId--; tmpRowId--;
+//          tmp_rcr_it=rwClst_forRw_rel.find(tmpRowId);
+//          if (tmp_rcr_it!=rwClst_forRw_rel.end()) {
+//                  //cout<<"Down) Lokking for row cluster to add in row "<<tmpRowId<<endl;
+//                  if (!tmp_rcr_it->second.empty()) {
+//                          for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+//                                  tmpRwClust=*tmp_cr_it;
+//                                  if ( (tmpRwClust->_firstStationID-startingRowClust->_lastStationID)<=1 &&
+//                                                  (startingRowClust->_firstStationID-tmpRwClust->_lastStationID)<=1 ) {
+//                                          clustersList.back().addRwClust(tmpRowId, tmpRwClust);
+//                                          tmp_rcr_it->second.erase(tmp_cr_it);
+//                                          findCluster(tmpRowId,tmpRwClust);
+//                                          break;
+//                                  }
+//                          }
+//                  }
+//          }
+//  }
 
 
 }  // end namespace mu2e

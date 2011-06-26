@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.1 2011/06/23 21:56:11 tassiell Exp $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.2 2011/06/26 00:01:17 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/23 21:56:11 $
+// $Date: 2011/06/26 00:01:17 $
 //
 // Original author G. Tassielli
 //
@@ -21,8 +21,8 @@
 #include <boost/shared_ptr.hpp>
 
 // Framework includes.
-//#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/EDProducer.h"
+//#include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/TFileDirectory.h"
@@ -56,6 +56,10 @@
 //#include "FastPatternReco/inc/GenTrackData.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
+#include "RecoDataProducts/inc/SectorStationCluster.hh"
+#include "RecoDataProducts/inc/SctrSttnClusterGroup.hh"
+//#include "RecoDataProducts/inc/SectorStationClusterCollection.hh"
+#include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
 
 // Root includes.
 #include "TApplication.h"
@@ -96,6 +100,8 @@ typedef std::multimap<unsigned short, avptcclscpl , less<unsigned short> > rwavp
 namespace mu2e {
 
 typedef art::Ptr<StrawHit> StrawHitPtr;
+typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stMaprel;
+typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
 //  class Straw;
 
@@ -184,13 +190,13 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
                   _mean_Sttn(0.00000),
                   _MS_Sttn(0.00000),
                   _sigma_Sttn(0.00000),
+                  _mean_Sctr(0.00000),
+                  _MS_Sctr(0.00000),
+                  _sigma_Sctr(0.00000),
                   _m(0.00000),
                   _q(0.00000),
                   _errm(0.00000),
                   _errq(0.00000),
-                  _mean_Sctr(0.00000),
-                  _MS_Sctr(0.00000),
-                  _sigma_Sctr(0.00000),
                   tmpMeanX(0.00000),
                   tmpMSX(0.00000),
                   tmpDataY(0.00000),
@@ -247,6 +253,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
                   else {
                           _m=std::numeric_limits<float>::infinity();
                           _q=(float)_maxStationID + 0.50000;
+                          _sigma_Sttn=0.288675135;   // 1/sqrt(12)
                   }
 
                   tmpDataY=(float)iRow + 0.50000;
@@ -301,14 +308,14 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
   };
 
 
-//  class BkgTrackRejecterByGeomTplg : public art::EDProducer {
-  class BkgTrackRejecterByGeomTplg : public art::EDAnalyzer {
+  class BkgTrackRejecterByGeomTplg : public art::EDProducer {
+//  class BkgTrackRejecterByGeomTplg : public art::EDAnalyzer {
 
   public:
 
     explicit BkgTrackRejecterByGeomTplg(fhicl::ParameterSet const& pset);
     virtual ~BkgTrackRejecterByGeomTplg() {
-            _peakFinder->Delete();
+//            _peakFinder->Delete();
 //            _fg->Delete();
 //            if (_peakFinder!=0x0)        delete _peakFinder;
 //            if (_fg!=0x0)                delete _fg;
@@ -326,11 +333,11 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
     }
 
     virtual void beginJob();
-    void endJob();
+    //void endJob();
 
     // This is called for each event.
-    //void produce(art::Event & e);
-    void analyze(art::Event const& e);
+    void produce(art::Event & e);
+    //void analyze(art::Event const& e);
 
   private:
 
@@ -378,7 +385,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
     TCanvas*      _fakeCanvas;
 
-    TSpectrum *   _peakFinder;
+//    TSpectrum *   _peakFinder;
 
     int   ntimeBin;
     float maxTimeHist; //ns
@@ -388,7 +395,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
             return (unsigned int) (device%2)+2*sector;
     }
 
-    void fillVotingArray(TH2I *startDist, TH2I *votingArray, int minPitch=3, int maxPitch=11);
+    void SctrSttnMapAnalyze(TH2I *startDist, TH2I *votingArray, int minPitch=3, int maxPitch=11);
     rwclinrwrel rwClst_forRw_rel;
     std::vector<Clust> clustersList;
     void findCluster(unsigned short tmpRowId, rwClustPtr &startingRowClust);
@@ -431,7 +438,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
     _fakeCanvas(0),
 
-    _peakFinder(0),
+//    _peakFinder(0),
     ntimeBin(0),
     maxTimeHist(2500.0),
     timeBinDim(10.0),
@@ -443,7 +450,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
           cout<<"Constructed"<<endl;
 
       // Tell the framework what we make.
-      //produces<TrackerHitTimeClusterCollection>();
+      produces<SctrSttnClusterGroupCollection>();
 
  }
 
@@ -485,15 +492,15 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
     }
 
-    _peakFinder = new TSpectrum(20);
+    //_peakFinder = new TSpectrum(20);
 
     // See note 3.
 //    _directory = gDirectory;
 
   }
 
-//  void BkgTrackRejecterByGeomTplg::produce(art::Event & event ) {
-  void BkgTrackRejecterByGeomTplg::analyze(art::Event const& event ) {
+  void BkgTrackRejecterByGeomTplg::produce(art::Event & event ) {
+//  void BkgTrackRejecterByGeomTplg::analyze(art::Event const& event ) {
 
 /*
     // Ask the event to give us a "handle" to the requested hits.
@@ -520,37 +527,50 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
     //--------------------------------------------
 
 
-    _peakFinder->Clear();
+    //_peakFinder->Clear();
     //_peaksCanvases->Clear();
     typedef boost::shared_ptr<TArrow> clssegdr;
     std::vector< std::vector< clssegdr > > clstSegments;
     TF1 clustSegline("clustSegline","pol1", 0.0, 20.0);
 
-//    auto_ptr<TrackerHitTimeClusterCollection> thcc(new TrackerHitTimeClusterCollection);
+    //auto_ptr<SectorStationClusterCollection> sscc(new SectorStationClusterCollection);
+    auto_ptr<SctrSttnClusterGroupCollection> sscc(new SctrSttnClusterGroupCollection);
 
 
     const Tracker& tracker = getTrackerOrThrow();
     const TTracker &ttr = static_cast<const TTracker&>( tracker );
     const std::vector<Device> ttrdev = ttr.getDevices();
 
-    stbrel ssmap_Bin_Straw_rel;  //relation between straw and the AbsSector (Rotation) vs Station mao
+    stMaprel ssmap_Bin_Straw_rel;           //relation between straw and the AbsSector (Rotation) vs Station map
+    stMaprel::iterator ssmpbnstrw_rel_it;   //iterator for relation between straw and the AbsSector (Rotation) vs Station map
     int tmpiGeomBin;
 
     art::Handle<StrawHitCollection> pdataHandle;
     event.getByLabel(_makerModuleLabel,pdataHandle);
-    StrawHitCollection const* hits = pdataHandle.product();
+    //StrawHitCollection const* hits = pdataHandle.product();
 
     art::Handle<TrackerHitTimeClusterCollection> tclustHandle;
     event.getByLabel(_timeRejecterModuleLabel,tclustHandle);
     TrackerHitTimeClusterCollection const* tclusts = tclustHandle.product();
 
     size_t nTimeClusPerEvent = tclusts->size();
+    cout<<"----------------------------------------------------------------------------------"<<endl;
     cout<<"event "<<event.id().event()<<" N peak found "<<nTimeClusPerEvent<<endl;
-    int i1peak;
+    cout<<"----------------------------------------------------------------------------------"<<endl;
+   int i1peak;
 
     StrawId sid;
     int stn, layern, devicen, sectorn, stationn;
     unsigned int absSect, devStId;
+    unsigned int ihit;
+    bool storeClustersFortPeak;
+
+    int nMapXBin;
+    bool storeClusterHit, skip, recheckprevious;
+    unsigned int icl;
+    std::vector<unsigned int> storedClutID;
+    float clSctrDist, errClSctrDist;
+    float meanPitch, errPitch, invSigma2Pitch;
 
     TH2I *tmpStClustDist    = new TH2I("tmpStClustDist","tmp Smoothing of Device vs Straw multiplicity Distribution",36,0,36,1000,-200,800);
     TH2I *tmpSecClustDist   = new TH2I("tmpSecClustDist","tmp Smoothing of Device vs Sector multiplicity Distribution",36,0,36,20,-4,16);
@@ -584,10 +604,14 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
         ihPkSecVsStationDist2WG = ((TH2I *) _hPkSecVsStationDist2WGood->At(ipeak));
         ihPkAccArrSecStation    = ((TH2I *) _hPkAccArrSecStation->At(ipeak));
 
+        nMapXBin = ihPkSecVsStationDist2W->GetNbinsX();
+
         tmpStClustDist->Reset();
         tmpSecClustDist->Reset();
 
 
+        ssmap_Bin_Straw_rel.clear();
+        ihit=0;
         for (std::vector<StrawHitPtr>::const_iterator iTCHit=tclust._selectedTrackerHits.begin(); iTCHit!=tclust._selectedTrackerHits.end(); ++iTCHit){
                 // Access data
 //                cout<<"\t\t iHit in peak at "<<*iTCHit<<endl;
@@ -622,9 +646,15 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 //                ihPkStDist2W->Fill(devicen,devStId);
 
                 stationn=devicen/2;
-                ihPkSecVsStationDist2W->Fill(stationn,absSect);
+                tmpiGeomBin = ihPkSecVsStationDist2W->Fill(stationn,absSect);
+                ssmap_Bin_Straw_rel.insert( stMaprel::value_type((unsigned int) tmpiGeomBin, *iTCHit/*StrawHitPtr( pdataHandle, ihit)*/ ) );
                 //if (absSect>=8 && absSect<=11)  ihPkSecVsStationDist2W->Fill(stationn,absSect-12);
-                if (absSect>=0 && absSect<=3)   ihPkSecVsStationDist2W->Fill(stationn,absSect+12);
+                if (absSect>=0 && absSect<=3)   {
+                        tmpiGeomBin = ihPkSecVsStationDist2W->Fill(stationn,absSect+12);
+                        ssmap_Bin_Straw_rel.insert( stMaprel::value_type((unsigned int) tmpiGeomBin, *iTCHit/*ihit*/) );
+                }
+
+                ihit++;
 
 /*
                 int nYbingroup=250;//5*50
@@ -701,7 +731,108 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
         }
 
         cout<<"------- start research ------"<<endl;
-        fillVotingArray(ihPkSecVsStationDist2W, ihPkAccArrSecStation);
+        SctrSttnMapAnalyze(ihPkSecVsStationDist2W, ihPkAccArrSecStation);
+        storeClustersFortPeak=true;
+        icl=0;
+        storedClutID.clear();
+        std::vector<Clust>::iterator clstlst_it=clustersList.begin();
+        //for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
+        while ( icl<clustersList.size() ) {
+                skip=false;
+                recheckprevious=false;
+                for ( std::vector<unsigned int>::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ) if (*sCID_it==icl) {skip=true; break;}
+                if ( skip ) {
+                        icl++;
+                        ++clstlst_it;
+                        continue;
+                }
+                storeClusterHit=false;
+                if ( clstlst_it->_m>0.00000 || (clstlst_it->_m==0.00000 && (clstlst_it->_lastSectorID-clstlst_it->_firstSectorID)>0 ) ) {
+                        storedClutID.push_back(icl);
+                        storeClusterHit=true;
+                        if (storeClustersFortPeak) {
+                                //sscc->push_back(SectorStationCluster());
+                                sscc->push_back(SctrSttnClusterGroup());
+                                cout<<"Before "<<endl;
+                                sscc->back()._relatedTimeCluster = TrackerHitTimeClusterPtr( tclustHandle, ipeak );
+                                cout<<"After "<<endl;
+                                storeClustersFortPeak=false;
+                        }
+                        recheckprevious=true;
+                }
+                else if ( clstlst_it->_nHit>1 ) {
+                        for ( std::vector<unsigned int>::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ){
+                                clSctrDist= clstlst_it->_mean_Sctr - clustersList[*sCID_it]._mean_Sctr;
+                                //                - ((clstlst_it->_lastSectorID>11) ? 12 : 0);
+                                //clSctrDist-=(clustersList[*sCID_it]._mean_Sctr - ((clustersList[*sCID_it]._lastSectorID>11) ? 12 : 0) );
+                                errClSctrDist=sqrt( pow(clstlst_it->_sigma_Sctr,2) + pow(clustersList[*sCID_it]._sigma_Sctr,2) );
+                                if ( clSctrDist>=-errClSctrDist && clSctrDist<=errClSctrDist ) {
+                                        storeClusterHit=true;
+                                        storedClutID.push_back(icl);
+                                        break;
+                                }
+                                else if ( (clstlst_it->_lastSectorID>11) && ( (clSctrDist-12.00000)>=-errClSctrDist && (clSctrDist-12.00000)<=errClSctrDist )){
+                                        storeClusterHit=true;
+                                        storedClutID.push_back(icl);
+                                        break;
+                                }
+                                else if ( (clustersList[*sCID_it]._lastSectorID>11) && ( (clSctrDist+12.00000)>=-errClSctrDist && (clSctrDist+12.00000)<=errClSctrDist )){
+                                        storeClusterHit=true;
+                                        storedClutID.push_back(icl);
+                                        break;
+                                }
+                        }
+                }
+                //cout<<"----------------------- 0 -----------------------"<<endl;
+                if (storeClusterHit){
+                        //cout<<"Cluster "<<icl<<" with hit "<<clstlst_it->_nHit<<endl;
+                        sscc->back()._selectedClusters.push_back(
+                                        SectorStationCluster(clstlst_it->_mean_Sttn, clstlst_it->_sigma_Sttn, clstlst_it->_mean_Sctr, clstlst_it->_sigma_Sctr,
+                                                        clstlst_it->_m, clstlst_it->_q, clstlst_it->_errm, clstlst_it->_errq,
+                                                        clstlst_it->_firstSectorID, clstlst_it->_lastSectorID, clstlst_it->_minStationID, clstlst_it->_maxStationID)
+                                        );
+                        for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
+                                //cout<<"i row "<<rwclincl_it->first<<" station "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<endl;
+                                ssmap_Bin_Straw_rel.begin();
+                                tmpiGeomBin= ( ( (nMapXBin+2)*(rwclincl_it->first+1) ) +1 ) +  rwclincl_it->second->_firstStationID;
+                                ssmpbnstrw_rel_it=ssmap_Bin_Straw_rel.find(tmpiGeomBin);
+                                while ( ssmpbnstrw_rel_it->first<= (( ( (nMapXBin+2)*(rwclincl_it->first+1) ) +1 ) +  rwclincl_it->second->_lastStationID) ) {
+                                        //cout<<"I'm storing bin i-th "<<ssmpbnstrw_rel_it->first<<endl;
+                                        sscc->back()._selectedClusters.back()._selectedTrackerHits.push_back( ssmpbnstrw_rel_it->second );
+                                        ++ssmpbnstrw_rel_it;
+                                        if ( ssmpbnstrw_rel_it==ssmap_Bin_Straw_rel.end() ) break;
+                                }
+                        }
+                }
+                if (recheckprevious){
+                        icl=0;
+                        clstlst_it=clustersList.begin();
+                }else {
+                  icl++;
+                  ++clstlst_it;
+                }
+         }
+
+        //cout<<"----------------------- 1 -----------------------"<<endl;
+
+        if (!storedClutID.empty()) {
+                meanPitch=0.00000;
+                errPitch=0.00000;
+                for ( std::vector<unsigned int>::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ){
+                        cout<<"!!!!!!!!!!!!!!! Cluster saved at: min station "<<clustersList[*sCID_it]._minStationID<<" max station "<<clustersList[*sCID_it]._maxStationID<<" first sect "
+                                        <<clustersList[*sCID_it]._firstSectorID<<" last sect "<<clustersList[*sCID_it]._lastSectorID<<endl;
+                        invSigma2Pitch=1.00000/pow(clustersList[*sCID_it]._sigma_Sttn,2);
+                        meanPitch+=invSigma2Pitch*clustersList[*sCID_it]._mean_Sttn;
+                        errPitch+=invSigma2Pitch;
+                }
+                errPitch=1.00000/errPitch;
+                meanPitch*=errPitch;
+                errPitch=sqrt(errPitch);
+                sscc->back()._meanPitch=meanPitch;
+                sscc->back()._sigmaPitch=errPitch;
+        }
+
+        //cout<<"----------------------- 2 -----------------------"<<endl;
 
         if (_doDisplay) {
                 _peaksCanvHistos->AddAtAndExpand(new TCanvas(Form("canvasForHistos_%d-th_peak",i1peak),Form("Histograms of the peak at %f ns",tclust._meanTime),1290,860),ipeak);
@@ -756,7 +887,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
                 ihPkSecVsStationDist2W->Draw("col z");
 
                 clstSegments.push_back( std::vector< clssegdr >() );
-                int icl=0;
+                icl=0;
                 for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
                         if ( clstlst_it->_m!=std::numeric_limits<float>::infinity() ) {
                                 clustSegline.SetParameter(0,clstlst_it->_q);
@@ -801,6 +932,8 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
     }
 
+    event.put(sscc);
+
     if (_doDisplay) {
             cerr << "Double click in the canvas_Fake to continue:" ;
             _fakeCanvas->cd();
@@ -831,21 +964,21 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
   } // end produce
 
-  void BkgTrackRejecterByGeomTplg::endJob(){
-//
-//    // cd() to correct root directory. See note 3.
-//    TDirectory* save = gDirectory;
-//    _directory->cd();
-//
-//    // Write canvas.  See note 4.
-////    _canvas->Write();
-//
-//    // cd() back to where we were.  See note 3.
-//    save->cd();
-//
-  }
+//  void BkgTrackRejecterByGeomTplg::endJob(){
+////
+////    // cd() to correct root directory. See note 3.
+////    TDirectory* save = gDirectory;
+////    _directory->cd();
+////
+////    // Write canvas.  See note 4.
+//////    _canvas->Write();
+////
+////    // cd() back to where we were.  See note 3.
+////    save->cd();
+////
+//  }
 
-  void BkgTrackRejecterByGeomTplg::fillVotingArray(TH2I *startDist, TH2I *votingArray, int minPitch, int maxPitch){
+  void BkgTrackRejecterByGeomTplg::SctrSttnMapAnalyze(TH2I *startDist, TH2I *votingArray, int minPitch, int maxPitch){
 
           int nXbin = startDist->GetNbinsX();
           int nYbin = startDist->GetNbinsY();
@@ -853,7 +986,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
           int *contArr = startDist->GetArray();
           int dataArr[nYbin][nXbin];
           int dataArrRev[nYbin][nXbin];
-          int iY, iX, jXRange, jOutOfRange;
+          int iY, iX, jXRange;//, jOutOfRange;
           int minAvaiPitch, tmpMinPitch, lastFullBin, tmpPitch;
 
           int nVotXbin=votingArray->GetNbinsX();
@@ -884,7 +1017,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
           //rwavptcclscpl::iterator ptcrwClrwClmap_it;
           avptcclscpl tmp_avPtc_rwClrwCl;
           avptcclscpl::iterator ptcrwClrwCl_it;
-          size_t couplingRwCl;
+//          size_t couplingRwCl;
           rwclclcpl tmp_rwClrwClpair;
 
 
@@ -1214,10 +1347,11 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
           }
 
           std::vector<Clust>::iterator clstlst_it=clustersList.begin();
-          std::vector<Clust>::iterator tmp_clstlst_it;
+          std::vector<Clust>::iterator tmp_clstlst_it, end_clstlst_it;
           short tmpMaxSect_1, tmpMinSect_1, tmpMaxSect_2, tmpMinSect_2;
-          bool nexClust;
-          while ( clstlst_it!=clustersList.end() ) {
+          bool nexClust, erased;
+          end_clstlst_it=clustersList.end();
+          while ( clstlst_it!=end_clstlst_it ) {
                   nexClust=true;
                   tmp_clstlst_it=clstlst_it;
                   tmp_clstlst_it++;
@@ -1227,26 +1361,41 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
                           tmpMaxSect_1-=12;
                           tmpMinSect_1-=12;
                   }
-                  for ( ; tmp_clstlst_it!=clustersList.end(); ++tmp_clstlst_it) {
+                  //for ( ; tmp_clstlst_it!=clustersList.end(); ++tmp_clstlst_it) {
+                  end_clstlst_it=clustersList.end();
+                  while ( tmp_clstlst_it!=clustersList.end() ) {
+                          erased=false;
                           tmpMaxSect_2=tmp_clstlst_it->_lastSectorID;
                           tmpMinSect_2=tmp_clstlst_it->_firstSectorID;
                           if ( tmpMaxSect_2>=12 ) {
                                   tmpMaxSect_2-=12;
                                   tmpMinSect_2-=12;
                           }
+                          cout<<"Clust 1 "<<clstlst_it->_firstSectorID<<" - "<<clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_1<<" - "<<tmpMaxSect_1<<" - "<<clstlst_it->_minStationID<<" - "<<clstlst_it->_maxStationID<<endl;
+                          cout<<"Clust 2 "<<tmp_clstlst_it->_firstSectorID<<" - "<<tmp_clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_2<<" - "<<tmpMaxSect_2<<" - "<<tmp_clstlst_it->_minStationID<<" - "<<tmp_clstlst_it->_maxStationID<<endl;
                           if ( ( tmpMaxSect_1>=tmpMaxSect_2 && tmpMinSect_1<=tmpMinSect_2 ) &&
                                ( clstlst_it->_minStationID<=tmp_clstlst_it->_minStationID && clstlst_it->_maxStationID>=tmp_clstlst_it->_maxStationID ) ) {
                                   clustersList.erase(tmp_clstlst_it);
-                                  break;
+                                  cout<<"Cluster 2 removed"<<endl;
+                                  erased=true;
+                                  //break;
                           }
-                          if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
-                               ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
-                                  clustersList.erase(clstlst_it);
-                                  nexClust=false;
-                                  break;
+                          if (erased) end_clstlst_it=clustersList.end();
+                          else  {
+                                  if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
+                                                  ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
+                                          clustersList.erase(clstlst_it);
+                                          cout<<"Cluster 1 removed"<<endl;
+                                          nexClust=false;
+                                          break;
+                                  }
+                                  ++tmp_clstlst_it;
                           }
                   }
-                  if ( nexClust ) clstlst_it++;
+                  if ( nexClust ) {
+                          clstlst_it++;
+                          end_clstlst_it=clustersList.end();
+                  }
                   //clstlst_it=clustersList.begin();
           }
 
@@ -1273,18 +1422,27 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
           tmpRowId++;
           tmp_rcr_it=rwClst_forRw_rel.find(tmpRowId);
+          bool notFound;
           if (tmp_rcr_it!=rwClst_forRw_rel.end()) {
                   //cout<<"Up) Lokking for row cluster to add in row "<<tmpRowId<<endl;
                   if (!tmp_rcr_it->second.empty()) {
-                          for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+                          //for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+                          rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin();
+                          rwclstvec::iterator end_cr_it=tmp_rcr_it->second.end();
+                          while ( tmp_cr_it!=end_cr_it ) {
+                                  notFound=true;
                                   tmpRwClust=*tmp_cr_it;
                                   if ( (tmpRwClust->_firstStationID-startingRowClust->_lastStationID)<=1 &&
                                                   (startingRowClust->_firstStationID-tmpRwClust->_lastStationID)<=1 ) {
                                           clustersList.back().addRwClust(tmpRowId, tmpRwClust);
                                           tmp_rcr_it->second.erase(tmp_cr_it);
                                           findCluster(tmpRowId,tmpRwClust);
-                                          break;
+                                          //break;
+                                          notFound=false;
                                   }
+                                  if (notFound) ++tmp_cr_it;
+                                  else if (tmp_rcr_it->second.empty()) break;
+                                  end_cr_it=tmp_rcr_it->second.end();
                           }
                   }
           }
@@ -1293,17 +1451,25 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
           if (tmp_rcr_it!=rwClst_forRw_rel.end()) {
                   //cout<<"Down) Lokking for row cluster to add in row "<<tmpRowId<<endl;
                   if (!tmp_rcr_it->second.empty()) {
-                          for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+                          //for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
+                          rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin();
+                          rwclstvec::iterator end_cr_it=tmp_rcr_it->second.end();
+                          while ( tmp_cr_it!=end_cr_it ) {
+                                  notFound=true;
                                   tmpRwClust=*tmp_cr_it;
                                   if ( (tmpRwClust->_firstStationID-startingRowClust->_lastStationID)<=1 &&
                                                   (startingRowClust->_firstStationID-tmpRwClust->_lastStationID)<=1 ) {
                                           clustersList.back().addRwClust(tmpRowId, tmpRwClust);
                                           tmp_rcr_it->second.erase(tmp_cr_it);
                                           findCluster(tmpRowId,tmpRwClust);
-                                          break;
+                                          //break;
+                                          notFound=false;
                                   }
+                                  if (notFound) ++tmp_cr_it;
+                                  else if (tmp_rcr_it->second.empty()) break;
+                                  end_cr_it=tmp_rcr_it->second.end();
                           }
-                  }
+                 }
           }
   }
 
