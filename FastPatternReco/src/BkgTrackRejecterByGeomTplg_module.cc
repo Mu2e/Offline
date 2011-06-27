@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.2 2011/06/26 00:01:17 tassiell Exp $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.3 2011/06/27 00:41:50 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/26 00:01:17 $
+// $Date: 2011/06/27 00:41:50 $
 //
 // Original author G. Tassielli
 //
@@ -227,6 +227,9 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                   if (_maxStationID!=_minStationID) {
                           _sigma_Sttn = sqrt(_MS_Sttn-pow(_mean_Sttn,2));
 //                          _q=tmpDataY;
+                  }
+                  else {
+                          _sigma_Sttn=0.288675135;   // 1/sqrt(12)
                   }
 //                  else {
 //                          _m=std::numeric_limits<float>::infinity();
@@ -557,20 +560,27 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     cout<<"----------------------------------------------------------------------------------"<<endl;
     cout<<"event "<<event.id().event()<<" N peak found "<<nTimeClusPerEvent<<endl;
     cout<<"----------------------------------------------------------------------------------"<<endl;
-   int i1peak;
+    int i1peak;
 
     StrawId sid;
     int stn, layern, devicen, sectorn, stationn;
     unsigned int absSect, devStId;
     unsigned int ihit;
-    bool storeClustersFortPeak;
+    bool storeNewClstrsGrpFortPeak;
 
     int nMapXBin;
-    bool storeClusterHit, skip, recheckprevious;
+    bool storeClusterHit, skip, recheckprevious, addingBadCluster;
     unsigned int icl;
-    std::vector<unsigned int> storedClutID;
+    int iclgr, groupStoredInEv;
+    typedef std::multimap< int, unsigned int, less<int>  > clugrouprel;
+    clugrouprel storedClutID;
+    clugrouprel::iterator lastsCID_it;
+
     float clSctrDist, errClSctrDist;
     float meanPitch, errPitch, invSigma2Pitch;
+    float tmpPitch, tmpPitchSigma2, tmpInvNloop;
+
+    SctrSttnClusterGroupCollection::iterator sscc_it;
 
     TH2I *tmpStClustDist    = new TH2I("tmpStClustDist","tmp Smoothing of Device vs Straw multiplicity Distribution",36,0,36,1000,-200,800);
     TH2I *tmpSecClustDist   = new TH2I("tmpSecClustDist","tmp Smoothing of Device vs Sector multiplicity Distribution",36,0,36,20,-4,16);
@@ -732,15 +742,17 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
         cout<<"------- start research ------"<<endl;
         SctrSttnMapAnalyze(ihPkSecVsStationDist2W, ihPkAccArrSecStation);
-        storeClustersFortPeak=true;
+        storeNewClstrsGrpFortPeak=false;
         icl=0;
+        iclgr=-1;
+        groupStoredInEv=sscc->size();
         storedClutID.clear();
         std::vector<Clust>::iterator clstlst_it=clustersList.begin();
         //for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
         while ( icl<clustersList.size() ) {
                 skip=false;
                 recheckprevious=false;
-                for ( std::vector<unsigned int>::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ) if (*sCID_it==icl) {skip=true; break;}
+                for ( clugrouprel::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ) if (sCID_it->second==icl) {skip=true; break;}
                 if ( skip ) {
                         icl++;
                         ++clstlst_it;
@@ -748,37 +760,72 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                 }
                 storeClusterHit=false;
                 if ( clstlst_it->_m>0.00000 || (clstlst_it->_m==0.00000 && (clstlst_it->_lastSectorID-clstlst_it->_firstSectorID)>0 ) ) {
-                        storedClutID.push_back(icl);
-                        storeClusterHit=true;
-                        if (storeClustersFortPeak) {
-                                //sscc->push_back(SectorStationCluster());
-                                sscc->push_back(SctrSttnClusterGroup());
-                                cout<<"Before "<<endl;
-                                sscc->back()._relatedTimeCluster = TrackerHitTimeClusterPtr( tclustHandle, ipeak );
-                                cout<<"After "<<endl;
-                                storeClustersFortPeak=false;
-                        }
-                        recheckprevious=true;
-                }
-                else if ( clstlst_it->_nHit>1 ) {
-                        for ( std::vector<unsigned int>::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ){
-                                clSctrDist= clstlst_it->_mean_Sctr - clustersList[*sCID_it]._mean_Sctr;
+                        storeNewClstrsGrpFortPeak=true;
+                        addingBadCluster=false;
+                        //for ( sscc_it=sscc->begin(); sscc_it!=sscc->end(); ++sscc_it ) {
+
+                        //cout<<" ---- storedClutID size "<<storedClutID.size()<<endl;
+                        for ( clugrouprel::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ) {
+                                clSctrDist=clstlst_it->_mean_Sctr - clustersList[sCID_it->second]._mean_Sctr;
                                 //                - ((clstlst_it->_lastSectorID>11) ? 12 : 0);
-                                //clSctrDist-=(clustersList[*sCID_it]._mean_Sctr - ((clustersList[*sCID_it]._lastSectorID>11) ? 12 : 0) );
-                                errClSctrDist=sqrt( pow(clstlst_it->_sigma_Sctr,2) + pow(clustersList[*sCID_it]._sigma_Sctr,2) );
+                                //clSctrDist-=(clustersList[sCID_it->second]._mean_Sctr - ((clustersList[sCID_it->second]._lastSectorID>11) ? 12 : 0) );
+                                errClSctrDist=sqrt( pow(clstlst_it->_sigma_Sctr,2) + pow(clustersList[sCID_it->second]._sigma_Sctr,2) );
                                 if ( clSctrDist>=-errClSctrDist && clSctrDist<=errClSctrDist ) {
                                         storeClusterHit=true;
-                                        storedClutID.push_back(icl);
+                                        storeNewClstrsGrpFortPeak=false;
+                                        lastsCID_it=storedClutID.insert( clugrouprel::value_type(sCID_it->first,icl) );
                                         break;
                                 }
                                 else if ( (clstlst_it->_lastSectorID>11) && ( (clSctrDist-12.00000)>=-errClSctrDist && (clSctrDist-12.00000)<=errClSctrDist )){
                                         storeClusterHit=true;
-                                        storedClutID.push_back(icl);
+                                        storeNewClstrsGrpFortPeak=false;
+                                        lastsCID_it=storedClutID.insert( clugrouprel::value_type(sCID_it->first,icl) );
                                         break;
                                 }
-                                else if ( (clustersList[*sCID_it]._lastSectorID>11) && ( (clSctrDist+12.00000)>=-errClSctrDist && (clSctrDist+12.00000)<=errClSctrDist )){
+                                else if ( (clustersList[sCID_it->second]._lastSectorID>11) && ( (clSctrDist+12.00000)>=-errClSctrDist && (clSctrDist+12.00000)<=errClSctrDist )){
                                         storeClusterHit=true;
-                                        storedClutID.push_back(icl);
+                                        storeNewClstrsGrpFortPeak=false;
+                                        lastsCID_it=storedClutID.insert( clugrouprel::value_type(sCID_it->first,icl) );
+                                        break;
+                                }
+
+                        }
+                        if (storeNewClstrsGrpFortPeak) {
+                                storeClusterHit=true;
+                                ++iclgr;
+                                lastsCID_it=storedClutID.insert( clugrouprel::value_type(groupStoredInEv+iclgr,icl) );
+                                //sscc->push_back(SectorStationCluster());
+                                sscc->push_back(SctrSttnClusterGroup());
+                                //cout<<"Before "<<endl;
+                                sscc->back()._relatedTimeCluster = TrackerHitTimeClusterPtr( tclustHandle, ipeak );
+                                if ( clstlst_it->_m==0.00000 || clstlst_it->_m==std::numeric_limits<float>::infinity() ) addingBadCluster=true;
+                                //cout<<"After "<<endl;
+                                //storeNewClstrsGrpFortPeak=false;
+                                recheckprevious=true;
+                        }
+                }
+                else if ( clstlst_it->_nHit>1 ) {
+                        for ( clugrouprel::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ){
+                                clSctrDist=clstlst_it->_mean_Sctr - clustersList[sCID_it->second]._mean_Sctr;
+                                //                - ((clstlst_it->_lastSectorID>11) ? 12 : 0);
+                                //clSctrDist-=(clustersList[sCID_it->second]._mean_Sctr - ((clustersList[sCID_it->second]._lastSectorID>11) ? 12 : 0) );
+                                errClSctrDist=sqrt( pow(clstlst_it->_sigma_Sctr,2) + pow(clustersList[sCID_it->second]._sigma_Sctr,2) );
+                                if ( clSctrDist>=-errClSctrDist && clSctrDist<=errClSctrDist ) {
+                                        storeClusterHit=true;
+                                        addingBadCluster=true;
+                                        lastsCID_it=storedClutID.insert( clugrouprel::value_type(sCID_it->first,icl) );
+                                        break;
+                                }
+                                else if ( (clstlst_it->_lastSectorID>11) && ( (clSctrDist-12.00000)>=-errClSctrDist && (clSctrDist-12.00000)<=errClSctrDist )){
+                                        storeClusterHit=true;
+                                        addingBadCluster=true;
+                                        lastsCID_it=storedClutID.insert( clugrouprel::value_type(sCID_it->first,icl) );
+                                        break;
+                                }
+                                else if ( (clustersList[sCID_it->second]._lastSectorID>11) && ( (clSctrDist+12.00000)>=-errClSctrDist && (clSctrDist+12.00000)<=errClSctrDist )){
+                                        storeClusterHit=true;
+                                        addingBadCluster=true;
+                                        lastsCID_it=storedClutID.insert( clugrouprel::value_type(sCID_it->first,icl) );
                                         break;
                                 }
                         }
@@ -786,11 +833,17 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                 //cout<<"----------------------- 0 -----------------------"<<endl;
                 if (storeClusterHit){
                         //cout<<"Cluster "<<icl<<" with hit "<<clstlst_it->_nHit<<endl;
-                        sscc->back()._selectedClusters.push_back(
+                        SctrSttnClusterGroup &clugrp = sscc->at(lastsCID_it->first);
+                        clugrp._selectedClusters.push_back(
                                         SectorStationCluster(clstlst_it->_mean_Sttn, clstlst_it->_sigma_Sttn, clstlst_it->_mean_Sctr, clstlst_it->_sigma_Sctr,
                                                         clstlst_it->_m, clstlst_it->_q, clstlst_it->_errm, clstlst_it->_errq,
                                                         clstlst_it->_firstSectorID, clstlst_it->_lastSectorID, clstlst_it->_minStationID, clstlst_it->_maxStationID)
                                         );
+                        if ( addingBadCluster ) {
+                                if ( clugrp._coupling==SctrSttnClusterGroup::good ) clugrp._coupling=SctrSttnClusterGroup::mixed;
+                                else if ( clugrp._coupling==SctrSttnClusterGroup::mixed ) clugrp._coupling=SctrSttnClusterGroup::bad;
+                        }
+                        else if ( clugrp._coupling==SctrSttnClusterGroup::mixed ) clugrp._coupling=SctrSttnClusterGroup::good;
                         for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
                                 //cout<<"i row "<<rwclincl_it->first<<" station "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<endl;
                                 ssmap_Bin_Straw_rel.begin();
@@ -798,11 +851,13 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                 ssmpbnstrw_rel_it=ssmap_Bin_Straw_rel.find(tmpiGeomBin);
                                 while ( ssmpbnstrw_rel_it->first<= (( ( (nMapXBin+2)*(rwclincl_it->first+1) ) +1 ) +  rwclincl_it->second->_lastStationID) ) {
                                         //cout<<"I'm storing bin i-th "<<ssmpbnstrw_rel_it->first<<endl;
-                                        sscc->back()._selectedClusters.back()._selectedTrackerHits.push_back( ssmpbnstrw_rel_it->second );
+                                        clugrp._selectedClusters.back()._selectedTrackerHits.push_back( ssmpbnstrw_rel_it->second );
                                         ++ssmpbnstrw_rel_it;
                                         if ( ssmpbnstrw_rel_it==ssmap_Bin_Straw_rel.end() ) break;
                                 }
                         }
+
+                        //cout<<"A) in Time Peak Cluster Group: "<<lastsCID_it->first<<" - "<<clugrp<<endl;
                 }
                 if (recheckprevious){
                         icl=0;
@@ -816,20 +871,56 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
         //cout<<"----------------------- 1 -----------------------"<<endl;
 
         if (!storedClutID.empty()) {
-                meanPitch=0.00000;
-                errPitch=0.00000;
-                for ( std::vector<unsigned int>::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ){
-                        cout<<"!!!!!!!!!!!!!!! Cluster saved at: min station "<<clustersList[*sCID_it]._minStationID<<" max station "<<clustersList[*sCID_it]._maxStationID<<" first sect "
-                                        <<clustersList[*sCID_it]._firstSectorID<<" last sect "<<clustersList[*sCID_it]._lastSectorID<<endl;
-                        invSigma2Pitch=1.00000/pow(clustersList[*sCID_it]._sigma_Sttn,2);
-                        meanPitch+=invSigma2Pitch*clustersList[*sCID_it]._mean_Sttn;
-                        errPitch+=invSigma2Pitch;
+                std::vector<unsigned int> clinGrp;
+                bool addCl;
+                pair<clugrouprel::iterator,clugrouprel::iterator> sCgID_it;
+                for ( int jclgr=0; jclgr<=iclgr; ++jclgr ) {
+                        clinGrp.clear();
+                        meanPitch=0.00000;
+                        errPitch=0.00000;
+
+                        sCgID_it=storedClutID.equal_range(groupStoredInEv+jclgr);
+                        SctrSttnClusterGroup &clugrp = sscc->at(sCgID_it.first->first);
+                        for ( clugrouprel::iterator sCID_it=sCgID_it.first; sCID_it!=sCgID_it.second; ++sCID_it ) {
+                                addCl=true;
+                                for ( std::vector<unsigned int>::iterator clinGrp_it=clinGrp.begin(); clinGrp_it!=clinGrp.end(); ++clinGrp_it ){
+                                        if ( clustersList[sCID_it->second]._mean_Sttn<clustersList[*clinGrp_it]._mean_Sttn ) {
+                                                clinGrp.insert(clinGrp_it,1,sCID_it->second);
+                                                addCl=false;
+                                                break;
+                                        }
+                                }//store the index of the clusters of a group ordered for cluster position in z plane
+                                if (addCl) clinGrp.push_back(sCID_it->second);
+
+                                cout<<"!!!!!!!!!!!!!!! Cluster saved at: min station "<<clustersList[sCID_it->second]._minStationID<<" max station "<<clustersList[sCID_it->second]._maxStationID<<" first sect "
+                                                <<clustersList[sCID_it->second]._firstSectorID<<" last sect "<<clustersList[sCID_it->second]._lastSectorID<<endl;
+                        }
+                        if ( clinGrp.size()>1 ) {
+                                for ( unsigned int i_cl=0; i_cl<(clinGrp.size()-1); i_cl++ ) {
+                                        for ( unsigned int j_cl=i_cl+1; j_cl<clinGrp.size(); j_cl++ ) {
+                                                tmpInvNloop=1.00000/((float) (j_cl-i_cl));
+                                                tmpPitch=abs(clustersList[clinGrp[i_cl]]._mean_Sttn-clustersList[clinGrp[j_cl]]._mean_Sttn)*tmpInvNloop;
+                                                tmpPitchSigma2= (pow(clustersList[clinGrp[i_cl]]._sigma_Sttn,2) + pow(clustersList[clinGrp[j_cl]]._sigma_Sttn,2)) * pow(tmpInvNloop,2);
+
+                                                invSigma2Pitch=1.00000/tmpPitchSigma2;
+                                                meanPitch+=invSigma2Pitch*tmpPitch;
+                                                errPitch+=invSigma2Pitch;
+                                        }
+                                }
+                                errPitch=1.00000/errPitch;
+                                meanPitch*=errPitch;
+                                errPitch=sqrt(errPitch);
+                                clugrp._meanPitch=meanPitch;
+                                clugrp._sigmaPitch=errPitch;
+                                 }
+                        else {
+                                clugrp._meanPitch=clustersList[clinGrp[0]]._mean_Sttn;
+                                clugrp._sigmaPitch=clustersList[clinGrp[0]]._sigma_Sttn;
+                        }
+                       //}
+                        //cout<<"B) in Time Peak Cluster Group: "<<jclgr<<" - "<<clugrp<<endl;
+
                 }
-                errPitch=1.00000/errPitch;
-                meanPitch*=errPitch;
-                errPitch=sqrt(errPitch);
-                sscc->back()._meanPitch=meanPitch;
-                sscc->back()._sigmaPitch=errPitch;
         }
 
         //cout<<"----------------------- 2 -----------------------"<<endl;
