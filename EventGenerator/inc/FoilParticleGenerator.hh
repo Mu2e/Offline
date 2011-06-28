@@ -59,7 +59,8 @@ namespace mu2e {
 
     int iFoil();
 
-    double pulseDelay, muDelay;
+    double pulseDelay();
+    double muDelay();
 
   private:
 
@@ -99,6 +100,8 @@ namespace mu2e {
 
     //Number of lines to skip in the stopped muon input file
     int _ntoskip;
+
+    double _muDelay, _pulseDelay;
 
     //Build a binned representation of foils volume
     std::vector<double> binnedFoilsVolume();

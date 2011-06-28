@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.30 2011/06/14 22:39:57 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.31 2011/06/28 21:16:39 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/14 22:39:57 $
+// $Date: 2011/06/28 21:16:39 $
 //
 // Original author Rob Kutschke
 //
@@ -177,8 +177,8 @@ namespace mu2e {
         _hcz        ->Fill( p3.cosTheta() );
         _hphi       ->Fill( p3.phi() );
         _ht         ->Fill( time );
-	_hmudelay   ->Fill(_fGenerator->muDelay);
-	_hpulsedelay->Fill(_fGenerator->pulseDelay);
+	_hmudelay   ->Fill(_fGenerator->muDelay());
+	_hpulsedelay->Fill(_fGenerator->pulseDelay());
       }
 
     } // End of loop over particles

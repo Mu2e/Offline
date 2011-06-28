@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.27 2011/06/14 22:39:57 onoratog Exp $
+// $Id: ConversionGun.cc,v 1.28 2011/06/28 21:16:39 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/14 22:39:57 $
+// $Date: 2011/06/28 21:16:39 $
 //
 // Original author Rob Kutschke
 //
@@ -142,8 +142,8 @@ namespace mu2e {
     _hradius->Fill( genRadius );
     _hzPos->Fill(pos.z());
     _htime->Fill(time);
-    _hmudelay->Fill(_fGenerator->muDelay);
-    _hpulsedelay->Fill(_fGenerator->pulseDelay);
+    _hmudelay->Fill(_fGenerator->muDelay());
+    _hpulsedelay->Fill(_fGenerator->pulseDelay());
     _hxyPos->Fill( pos.x(), pos.y()   );
     _hrzPos->Fill( pos.z(), genRadius );
 

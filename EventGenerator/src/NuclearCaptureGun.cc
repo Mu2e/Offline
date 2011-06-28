@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.10 2011/06/14 22:39:58 onoratog Exp $
+// $Id: NuclearCaptureGun.cc,v 1.11 2011/06/28 21:16:39 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/14 22:39:58 $
+// $Date: 2011/06/28 21:16:39 $
 //
 // Original author Gianni Onorato
 //
@@ -255,8 +255,8 @@ namespace mu2e {
           _hProtonCz->Fill( mom.cosTheta() );
           _hProtonPhi->Fill( mom.phi() );
           _hProtonTime->Fill( time );
-	  _hProtonMudelay   ->Fill(_fGenerator->muDelay);
-	  _hProtonPulsedelay->Fill(_fGenerator->pulseDelay);
+	  _hProtonMudelay   ->Fill(_fGenerator->muDelay());
+	  _hProtonPulsedelay->Fill(_fGenerator->pulseDelay());
         }
       } // end of loop on protons
 
@@ -286,8 +286,8 @@ namespace mu2e {
           _hNeutronCz->Fill( mom.cosTheta() );
           _hNeutronPhi->Fill( mom.phi() );
           _hNeutronTime->Fill( time );
-	  _hNeutronMudelay   ->Fill(_fGenerator->muDelay);
-	  _hNeutronPulsedelay->Fill(_fGenerator->pulseDelay);
+	  _hNeutronMudelay   ->Fill(_fGenerator->muDelay());
+	  _hNeutronPulsedelay->Fill(_fGenerator->pulseDelay());
         }
       } // end of loop on neutrons
 
@@ -315,8 +315,8 @@ namespace mu2e {
           _hPhotonCz->Fill( mom.cosTheta() );
           _hPhotonPhi->Fill( mom.phi() );
           _hPhotonTime->Fill( time );
-	  _hPhotonMudelay   ->Fill(_fGenerator->muDelay);
-	  _hPhotonPulsedelay->Fill(_fGenerator->pulseDelay);
+	  _hPhotonMudelay   ->Fill(_fGenerator->muDelay());
+	  _hPhotonPulsedelay->Fill(_fGenerator->pulseDelay());
         }
       } // end of loop on photons
     }

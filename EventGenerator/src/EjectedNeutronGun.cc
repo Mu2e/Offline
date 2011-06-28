@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.12 2011/06/14 22:39:57 onoratog Exp $
+// $Id: EjectedNeutronGun.cc,v 1.13 2011/06/28 21:16:39 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/14 22:39:57 $
+// $Date: 2011/06/28 21:16:39 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -185,8 +185,8 @@ namespace mu2e {
         _hcz->Fill( mom.cosTheta() );
         _hphi->Fill( mom.phi() );
         _htime->Fill( time );
-	_hmudelay   ->Fill(_fGenerator->muDelay);
-	_hpulsedelay->Fill(_fGenerator->pulseDelay);
+	_hmudelay   ->Fill(_fGenerator->muDelay());
+	_hpulsedelay->Fill(_fGenerator->pulseDelay());
       }
     } // end of loop on particles
 

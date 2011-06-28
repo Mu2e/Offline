@@ -88,7 +88,9 @@ namespace mu2e {
     _pulseTime( engine ),
     _PTtoSTdelay ( PTtoSTdelay ),
     _pPulseDelay ( pPulseDelay ),
-    _ntoskip (linesToSkip)
+    _ntoskip (linesToSkip),
+    _muDelay(0),
+    _pulseDelay(0)
   {
 
     ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -183,7 +185,7 @@ namespace mu2e {
       case negExp:
 	addtime = getNegativeExpoRndTime();
 	if (_posAlgo == muonFileInputPos) {
-	  muDelay = time;
+	  _muDelay = time;
 	} 
 	//	cout << "adding " << addtime << endl;
         time += addtime;
@@ -192,13 +194,13 @@ namespace mu2e {
         break;
       }
       if (_pPulseDelay) {
-	pulseDelay = includePulseDelay();
-	time += pulseDelay;
+	_pulseDelay = includePulseDelay();
+	time += _pulseDelay;
       }
       
       if (_PTtoSTdelay) {
-        muDelay = includeTimeDelay();
-        time += muDelay;
+        _muDelay = includeTimeDelay();
+        time += _muDelay;
       }
 
       int MaxTimeCicleOverlay = 3;
@@ -214,7 +216,14 @@ namespace mu2e {
         pos -= _DSOffset;           // Move to DS coordinate system
     }
   }
+
+  double FoilParticleGenerator::muDelay() {
+    return _muDelay;
+  }
   
+  double FoilParticleGenerator::pulseDelay() {
+    return _pulseDelay;
+  }
   
 
   int FoilParticleGenerator::iFoil() {

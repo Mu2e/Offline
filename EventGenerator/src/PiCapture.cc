@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.24 2011/06/14 22:39:58 onoratog Exp $
+// $Id: PiCapture.cc,v 1.25 2011/06/28 21:16:39 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/14 22:39:58 $
+// $Date: 2011/06/28 21:16:39 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -156,8 +156,8 @@ namespace mu2e {
         _hcz->Fill(mom.vect().cosTheta());
         _hphi->Fill(mom.vect().phi());
         _ht->Fill(time);
-	_hmudelay   ->Fill(_fGenerator->muDelay);
-	_hpulsedelay->Fill(_fGenerator->pulseDelay);
+	_hmudelay   ->Fill(_fGenerator->muDelay());
+	_hpulsedelay->Fill(_fGenerator->pulseDelay());
       }
 
     } // end loop over photons to generate
