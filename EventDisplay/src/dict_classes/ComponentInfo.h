@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.6 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: ComponentInfo.h,v 1.7 2011/06/28 20:51:16 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/06/28 20:51:16 $
 //
 // Original author Ralf Ehrlich
 //
@@ -80,9 +80,9 @@ namespace mu2e_eventdisplay
       const char *oldLine = _text[lineNumber]->GetTitle();
       if(oldLine!=NULL)
       {
-        char newLine[strlen(oldLine)+30];
-        sprintf(newLine,"%s, %g%s",oldLine, newNumber, unit);
-        _text[lineNumber]->SetTitle(newLine);
+        std::stringstream newLine;
+        newLine<<oldLine<<", "<<newNumber<<unit;            //TODO add some formating
+        _text[lineNumber]->SetTitle(newLine.str().c_str());
       }
     }
 
@@ -92,9 +92,9 @@ namespace mu2e_eventdisplay
       const char *oldLine = _text[lineNumber]->GetTitle();
       if(oldLine!=NULL)
       {
-        char newLine[strlen(oldLine)+30];
-        sprintf(newLine,"%s, %i%s",oldLine, newNumber, unit);
-        _text[lineNumber]->SetTitle(newLine);
+        std::stringstream newLine;
+        newLine<<oldLine<<", "<<newNumber<<unit;
+        _text[lineNumber]->SetTitle(newLine.str().c_str());
       }
     }
 
