@@ -3,9 +3,41 @@
 
            Release notes for Mu2e Offline software, v1_0_7
 
-  $Id: v1_0_7.txt,v 1.5 2011/06/28 20:56:54 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2011/06/28 20:56:54 $
+  $Id: v1_0_7.txt,v 1.6 2011/06/30 03:09:40 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/06/30 03:09:40 $
+
+7) June 29, 2011 kutschke
+   EventDisplay/src/dict_classes/ComponentInfo.h
+   - The type of cet::map_vector_key will be changed to unsigned from int.
+         - This is the type of trackIds of SimParticles.
+     - The eventdisplay code that printed these trackIds choked because expandLine had an overload for
+       double and one for int but none for unsigned.  The compiler could not decide which overload to use.
+     - We changed the second overload to a template so it now works for both signed and unsigned integral types.
+     - There is now a new issue to be resolved later:
+         If you call explandLine with a float it will take the second overload and bypass the formatting that
+         is clearly planned for the overload that takes a double.
+
+6) June 29, 2011 kutschke
+    EventDisplay/src/EventDisplay_module.cc
+     - This code help the pset object by const&.  Since the creation of art, psets disappear soon after the c'tor is called.
+       So we must hold copies by value.  We should prefer, in the c'tor, to extract information from the pset and cache the
+       extracted information ( again holding by value, not by pointer or ref ).
+     - I believe that this worked correctly pre-art.
+
+5) Notes added by kutschke June 29, 2011
+     June 24, 2011 wenzel
+        - Update to add new functions
+         - Mu2eUtilities/inc/StrawClusterUtilities.hh
+         - Mu2eUtilities/src/StrawClusterUtilities.cc
+         - HitMakers/src/ReadStrawCluster_module.cc
+
+    June 17, 28, 29, 2011 brownd
+       Many updates to KalmanTests.  Mostly refactoring.
+
+    June 23-27, 2011 tassiell
+       New package FastPatternReco plus new RecoDataProducts.
+       These are
 
 4) June 28, 2011 ehrlich
    Replaced char[] with stringstream in EventDisplay/srs/dict_classes/ComponentInfo.h.
@@ -20,7 +52,7 @@
 
    Changed default thickness of pbar absorber to 360 mkm (geom_01.txt)
 
-   Updated ReadVirtualDetector_plugin.cc: 
+   Updated ReadVirtualDetector_plugin.cc:
     - allowed for up to 20 virtual detectors
     - added option saveStopped to save in the particles ntuple 
       only stopped particles
