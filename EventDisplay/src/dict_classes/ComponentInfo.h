@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.7 2011/06/28 20:51:16 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2011/06/28 20:51:16 $
+// $Id: ComponentInfo.h,v 1.8 2011/06/30 02:53:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/30 02:53:24 $
 //
 // Original author Ralf Ehrlich
 //
@@ -86,7 +86,9 @@ namespace mu2e_eventdisplay
       }
     }
 
-    void expandLine(const unsigned int lineNumber, const int newNumber, const char *unit)
+    // This will now work for both signed and unsigned integral types.
+    template <typename ITYPE>
+    void expandLine(const unsigned int lineNumber, const ITYPE newNumber, const char *unit)
     {
       if(lineNumber<0 || lineNumber>=_text.size()) return;  //TODO throw exception
       const char *oldLine = _text[lineNumber]->GetTitle();
