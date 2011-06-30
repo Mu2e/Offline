@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.28 2011/06/28 21:16:39 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/28 21:16:39 $
+// $Id: ConversionGun.cc,v 1.29 2011/06/30 03:13:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/30 03:13:24 $
 //
 // Original author Rob Kutschke
 //
@@ -101,10 +101,10 @@ namespace mu2e {
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
                                                                              FoilParticleGenerator::muonFileInputFoil,
                                                                              FoilParticleGenerator::muonFileInputPos,
-                                                                             FoilParticleGenerator::negExp,           
-									     _PStoDSDelay,
+                                                                             FoilParticleGenerator::negExp,
+                                                                             _PStoDSDelay,
                                                                              _pPulseDelay,
-									     _nToSkip));
+                                                                             _nToSkip));
     if ( _doHistograms ) bookHistograms();
   }
 
