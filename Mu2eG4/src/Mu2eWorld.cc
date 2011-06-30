@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.93 2011/06/09 19:58:33 genser Exp $
-// $Author: genser $
-// $Date: 2011/06/09 19:58:33 $
+// $Id: Mu2eWorld.cc,v 1.94 2011/06/30 20:27:53 logash Exp $
+// $Author: logash $
+// $Date: 2011/06/30 20:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -406,12 +406,24 @@ namespace mu2e {
 
   void Mu2eWorld::constructBFieldAndManagers(){
 
+    // Get some information needed further
+
+    VolumeInfo const & ds2VacuumVacInfo = _helper->locateVolInfo("ToyDS2Vacuum");
+    VolumeInfo const & ds3VacuumVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+    G4LogicalVolume* ds2Vacuum = ds2VacuumVacInfo.logical;
+    G4LogicalVolume* ds3Vacuum = ds3VacuumVacInfo.logical;
+
+    double ds2HL = static_cast<G4Tubs*>(ds2VacuumVacInfo.solid)->GetZHalfLength();
+    G4ThreeVector ds2Z0 = ds2VacuumVacInfo.centerInWorld;
+    G4ThreeVector beamZ0( ds2Z0.x(), ds2Z0.y(), ds2Z0.z()+ds2HL );
+
     // Figure out which magnetic field managers are needed.
     int dsFieldForm    = _config->getInt("detSolFieldForm", dsModelUniform);
 
     // Decide on the G4 Stepper
 
     bool needDSUniform = (dsFieldForm == dsModelSplit || dsFieldForm == dsModelUniform );
+    bool needDSGradient = false;
 
     string stepper = _config->getString("g4.stepper","G4SimpleRunge");
 
@@ -420,6 +432,14 @@ namespace mu2e {
       // Handle to the BField manager.
       GeomHandle<BFieldManager> bfMgr;
       _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue()*CLHEP::tesla, _mu2eOrigin );
+      
+      // Create field manager for the gradient field in DS3
+      if( fabs(bfMgr->getDSGradientValue().z())>0.0001 ) {
+	needDSGradient = true;
+	_dsGradient = FieldMgr::forGradientField( bfMgr->getDSUniformValue().z()*CLHEP::tesla,
+						  bfMgr->getDSGradientValue().z()*CLHEP::tesla/CLHEP::m,
+						  beamZ0 );
+      }
     }
 
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership
@@ -450,14 +470,15 @@ namespace mu2e {
 
     // Define uniform field region in the detector solenoid, if neccessary
 
-    G4LogicalVolume* ds2Vacuum = _helper->locateVolInfo("ToyDS2Vacuum").logical;
-    G4LogicalVolume* ds3Vacuum = _helper->locateVolInfo("ToyDS3Vacuum").logical;
-
     if (dsFieldForm == dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
-      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-    } else if ( dsFieldForm == dsModelSplit ){
-      ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+    }
+    if ( dsFieldForm == dsModelUniform || dsFieldForm == dsModelSplit ){
+      if( needDSGradient ) {
+	ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
+      } else {
+	ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+      }
     }
 
     // Adjust properties of the integrators to control accuracy vs time.
@@ -469,6 +490,11 @@ namespace mu2e {
     if ( _dsUniform.get() != 0 ){
       G4double deltaIntersection = 0.00001*CLHEP::mm;
       _dsUniform->manager()->SetDeltaIntersection(deltaIntersection);
+    }
+
+    if ( _dsGradient.get() != 0 ){
+      G4double deltaIntersection = 0.00001*CLHEP::mm;
+      _dsGradient->manager()->SetDeltaIntersection(deltaIntersection);
     }
 
     _manager->SetDeltaOneStep(deltaOneStep);

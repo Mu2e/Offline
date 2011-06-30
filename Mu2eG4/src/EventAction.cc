@@ -1,9 +1,9 @@
 //
 // G4 begin and end of event actions for Mu2e.
 //
-// $Id: EventAction.cc,v 1.4 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: EventAction.cc,v 1.5 2011/06/30 20:27:53 logash Exp $
+// $Author: logash $
+// $Date: 2011/06/30 20:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,7 @@ EventAction::~EventAction()
 
 
 void EventAction::BeginOfEventAction(const G4Event*) {
-  _stepping->BeginOfEvent();
+  //  _stepping->BeginOfEvent();
 }
 
 

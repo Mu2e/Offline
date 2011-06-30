@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.19 2011/06/30 20:16:14 genser Exp $
-// $Author: genser $
-// $Date: 2011/06/30 20:16:14 $
+// $Id: G4_module.cc,v 1.20 2011/06/30 20:27:53 logash Exp $
+// $Author: logash $
+// $Date: 2011/06/30 20:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -136,6 +136,7 @@ namespace mu2e {
       _printPhysicsProcessSummary(false),
       _trackerOutputName("tracker"),
       _vdOutputName("virtualdetector"),
+      _tvdOutputName("timeVD"),
       _stOutputName("stoppingtarget"),
       _sbOutputName("CRV"),
       _caloOutputName("calorimeter"),
@@ -144,6 +145,7 @@ namespace mu2e {
 
       produces<StepPointMCCollection>(_trackerOutputName);
       produces<StepPointMCCollection>(_vdOutputName);
+      produces<StepPointMCCollection>(_tvdOutputName);
       produces<StepPointMCCollection>(_stOutputName);
       produces<StepPointMCCollection>(_sbOutputName);
       produces<StepPointMCCollection>(_caloOutputName);
@@ -206,6 +208,7 @@ namespace mu2e {
     // Names of output collections
     const std::string _trackerOutputName;
     const std::string      _vdOutputName;
+    const std::string     _tvdOutputName;
     const std::string      _stOutputName;
     const std::string      _sbOutputName;
     const std::string    _caloOutputName;
@@ -320,7 +323,7 @@ namespace mu2e {
     // Some of the user actions have beginRun methods.
     _genAction->setWorld(world);
     _trackingAction->beginRun( _physVolHelper, _processInfo, _mu2eOrigin );
-    _steppingAction->beginRun( );
+    _steppingAction->beginRun( _processInfo, _mu2eOrigin );
     _stackingAction->beginRun( world->getDirtG4Ymin(), world->getDirtG4Ymax() );
 
     _diagnostics.beginRun( run, _physVolHelper );
@@ -338,6 +341,7 @@ namespace mu2e {
     auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
     auto_ptr<StepPointMCCollection>     outputHits(        new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     vdHits(            new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>     tvdHits(           new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     stHits(            new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     sbHits(            new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     caloHits(          new StepPointMCCollection);
@@ -350,6 +354,7 @@ namespace mu2e {
     // Some of the user actions have begein event methods. These are not G4 standards.
     _trackingAction->beginEvent( gensHandle, simPartId, event.productGetter() );
     _genAction->setEvent(event);
+    _steppingAction->BeginOfEvent(*tvdHits,  simPartId, event.productGetter() );
 
     // enable Sensitive Detectors to store the Framework Data Products
 
@@ -431,10 +436,12 @@ namespace mu2e {
                           _physVolHelper);
 
     // Add data products to the event.
+
     event.put(g4stat);
     event.put(simParticles);
     event.put(outputHits, _trackerOutputName);
     event.put(vdHits,     _vdOutputName);
+    event.put(tvdHits,    _tvdOutputName);
     event.put(stHits,     _stOutputName);
     event.put(sbHits,     _sbOutputName);
     event.put(caloHits,   _caloOutputName);

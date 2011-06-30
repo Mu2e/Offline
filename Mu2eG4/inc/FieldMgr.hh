@@ -4,9 +4,9 @@
 // Create a G4FieldManager object. Provide accessors to the field manager
 // and to the parts from which it is made.
 //
-// $Id: FieldMgr.hh,v 1.5 2011/05/18 17:02:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 17:02:14 $
+// $Id: FieldMgr.hh,v 1.6 2011/06/30 20:27:53 logash Exp $
+// $Author: logash $
+// $Date: 2011/06/30 20:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -73,6 +73,12 @@ namespace mu2e {
     // Factory method to construct a manager for a uniform magnetic field.  See Note 8.
     static std::auto_ptr<FieldMgr> forUniformField(const G4ThreeVector& fieldValue,
                                                    const G4ThreeVector& mu2eOrigin,
+                                                   double stepMinimum=1.0e-2*CLHEP::mm);
+
+    // Factory method to construct a manager for a gradient magnetic field.
+    static std::auto_ptr<FieldMgr> forGradientField(double fieldValue,
+						   double gradient,
+						   const G4ThreeVector& fieldOrigin,
                                                    double stepMinimum=1.0e-2*CLHEP::mm);
 
     // Factory method to construct a manager for a magnetic field described by a Mu2e field map

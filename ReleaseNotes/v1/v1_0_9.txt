@@ -3,6 +3,71 @@
 
            Release notes for Mu2e Offline software, v1_0_9
 
-  $Id: v1_0_9.txt,v 1.1 2011/06/30 05:23:52 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/06/30 05:23:52 $
+  $Id: v1_0_9.txt,v 1.2 2011/06/30 20:27:53 logash Exp $
+  $Author: logash $
+  $Date: 2011/06/30 20:27:53 $
+
+1) June 30, 2011 logash
+
+  1. Added posibility to specify gradient field in DS2.
+     The value of gradient is set in the geometry file: 
+       double toyDS.gradient      = 0.0; // Tesla/m
+     It is only applied if detSolFieldForm is 1 or 2.
+
+  2. Added posibility to kill particles if global time 
+     reaches maximum allowed time which is set in the 
+     geometry file:
+       double g4.steppingActionMaxGlobalTime = 0; //ns
+     Particles are killed in SteppingAction.
+
+  3. Extended ProcessCode enum to add code for particles
+     killed by time.
+
+  4. Added "time virtual detector" in SteppingAction: position
+     and momentum of all particles are recorded at global times, 
+     specified in the geometry file:
+       vector<double> g4.steppingActionTimeVD = { 500, 700, 1000 }; //ns
+     This information is stored in yet another StepPointMC collection,
+     named "timeVD".
+
+  5. ReadVirtualDetector_module reads "timeVD" collection and creates 
+     output ntuple, similar to virtual detector ntuple.
+
+  6. Added option to ReadVirtualDetector_module to allow to save in
+     the particles ntuple only those particles, which alive at particular
+     global time (set with module parameter timeCut).
+
+  7. Updated tool Mu2eG4/test/makeGeneratorFile.py to create input file 
+     for generator using data from virtual detectors: 
+       - added ability to read many input files
+       - added ability to generate weight for input files, where 
+         decays were switched off
+       - added more help info
+
+  8. Updated standard geometry file: removed vertical rotation of the 
+     proton target. All recent simulations were done with the target 
+     rotated only horizontally.
+
+  New files:
+
+    Mu2eG4/inc/DSGradientField.hh
+    Mu2eG4/src/DSGradientField.cc
+
+  Updated files:
+
+    Analyses/src/ReadVirtualDetector_module.cc
+    BFieldGeom/inc/BFieldManager.hh
+    BFieldGeom/src/BFieldManagerMaker.cc
+    MCDataProducts/inc/ProcessCode.hh
+    Mu2eG4/inc/FieldMgr.hh
+    Mu2eG4/inc/Mu2eWorld.hh
+    Mu2eG4/inc/SteppingAction.hh
+    Mu2eG4/src/EventAction.cc
+    Mu2eG4/src/FieldMgr.cc
+    Mu2eG4/src/G4_module.cc
+    Mu2eG4/src/Mu2eWorld.cc
+    Mu2eG4/src/SteppingAction.cc
+    Mu2eG4/test/beamline_genconfig.txt
+    Mu2eG4/test/geom_01.txt
+    Mu2eG4/test/makeGeneratorFile.py
+

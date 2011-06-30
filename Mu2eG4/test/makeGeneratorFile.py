@@ -8,7 +8,10 @@ import math
 ######### Parse command line ###########
 
 USAGE = """
-Usage: python makeGeneratorFile.py [options]
+Generate file with particles at particular virtual detector, which can be used
+as input of the event generator.
+
+Usage: python makeGeneratorFile.py [options] [file list]
 Options:
    -i, --input  {name} : input ROOT file
    -o, --output {name} : output data file
@@ -16,16 +19,33 @@ Options:
    -p, --pdg {pdgCode} : PDG code of particles to be extracted
        --pmin {MeV/c}  : minimum momentum to be extracted (default:0)
    -v, --vd {VD_id}    : id of the virtual detector to be saved (default:8)
+   -t, --tau {lifetime}: use this lifetime in (ns) to calculate weight from
+                       : proper time. This is used in the cases, when decays
+                       : are switched off.
    -h, --help          : this message
+
+If -i option is used, only one input file is read. If -i option is not used,
+all input files specified at the end are read.
+
+Examples:
+
+1. Save muons just in front of collimator 3
+
+python makeGeneratorFile.py -i beamline_02.root -o muons_before_coll3.txt -p 13 -v 3
+
+2. Save muons just after collimator 5 (DS entrance), using many input files
+
+python makeGeneratorFile.py -o muons_before_coll3.txt -p 13 -v 8 /mu2e/data/users/logash/out/59919/59919_*/beamline_p.root
+
 """
 if len(sys.argv) < 2:
     print USAGE
     sys.exit(0)
 
 try:
-    opts,args=getopt.getopt(sys.argv[1:],'i:o:p:v:hd',
+    opts,args=getopt.getopt(sys.argv[1:],'i:o:p:v:hdt:',
                             ['help','input=','output=','pdg=','vd=',
-                             'pmin=','debug'])
+                             'pmin=','debug','tau='])
 except getopt.GetoptError:
     print USAGE
     sys.exit(2)
@@ -36,20 +56,26 @@ output_file = None
 pdg = None
 vd = 8
 pmin = 0.0
+tau = None
 
 for o,a in opts:
     if o in ('-h','--help'):
         print USAGE
         sys.exit()
     elif o in ('-i','--input'):
-        input_file=a
+        input_file=[ a ]
     elif o in ('-o','--output'):
         output_file=a
     elif o in ('-p','--pdg'):
         try:
             pdg = int(a)
         except:
-            print "Wrong PDG code"
+            print "Wrong PDG code: ", a
+    elif o in ('-t','--tau'):
+        try:
+            tau = float(a)
+        except:
+            print "Wrong lifetime: ", a
     elif o in ('-v','--vd'):
         try:
             vd = int(a)
@@ -66,6 +92,8 @@ for o,a in opts:
         debug_print = True
 
 all_defined = True
+
+if input_file is None : input_file = args
 
 if input_file is None :
     print "Input file is not defined"
@@ -100,7 +128,8 @@ fout = open(output_file,"w")
 # Open ROOT file
 
 chain = TChain("readvd/ntvd")
-chain.Add(input_file)
+for fname in input_file:
+    chain.Add(fname)
 
 nevents = chain.GetEntries()
 print nevents," events found in ntuples"
@@ -127,11 +156,14 @@ for i in xrange(nevents):
     if( chain.pdg == pdg and chain.sid == vd ) :
         ptot = math.sqrt(chain.px*chain.px+chain.py*chain.py+chain.pz*chain.pz)
         if ptot<pmin : continue
-        str = " %.2f %.2f %.2f %.2f %.2f %.2f %.2f %d %d %d %d %.2f" % (
+        weight = 1.0
+        if not (tau is None) and tau>0:
+            weight = math.exp(-chain.gtime/tau)
+        str = " %.2f %.2f %.2f %.2f %.2f %.2f %.2f %d %d %d %d %g" % (
             chain.x, chain.y, chain.z,
             chain.px, chain.py, chain.pz,
             chain.time,
-            int(chain.pdg), int(chain.evt), int(chain.trk), 0, 1.0)
+            int(chain.pdg), int(chain.evt), int(chain.trk), 0, weight)
         fout.write(str+"\n")
         nwrite+=1
 

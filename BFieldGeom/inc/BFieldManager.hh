@@ -3,9 +3,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.9 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: BFieldManager.hh,v 1.10 2011/06/30 20:27:53 logash Exp $
+// $Author: logash $
+// $Date: 2011/06/30 20:27:53 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -64,6 +64,11 @@ namespace mu2e {
       return _dsUniformValue;
     }
 
+    // The gradient field in the DS is a special case.
+    const CLHEP::Hep3Vector getDSGradientValue() const{
+      return _dsGradientValue;
+    }
+
     // Does this manager have a map with the given key.
     bool hasMapByName( const std::string key ) const{
       return ( _map.find(key) != _map.end() );
@@ -86,6 +91,9 @@ namespace mu2e {
 
     // Special case: uniform field in the DS.
     CLHEP::Hep3Vector _dsUniformValue;
+
+    // Special case: gradient field in the DS
+    CLHEP::Hep3Vector _dsGradientValue;
 
     // Geometric properties of the muon beamline:
     // bend radius of the TS arcs and the offset from the center to DS or PS.

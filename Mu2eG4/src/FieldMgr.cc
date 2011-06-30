@@ -1,9 +1,9 @@
 //
 // Create a G4FieldManager object.
 //
-// $Id: FieldMgr.cc,v 1.1 2010/06/22 16:06:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/06/22 16:06:22 $
+// $Id: FieldMgr.cc,v 1.2 2011/06/30 20:27:53 logash Exp $
+// $Author: logash $
+// $Date: 2011/06/30 20:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/FieldMgr.hh"
+#include "Mu2eG4/inc/DSGradientField.hh"
 
 using namespace std;
 
@@ -30,6 +31,31 @@ namespace mu2e {
     auto_ptr<FieldMgr> mgr(new FieldMgr() );
 
     mgr->_field       = std::auto_ptr<G4MagneticField>        (new G4UniformMagField   ( fieldValue ));
+    mgr->_rhs         = std::auto_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs    ( mgr->field()) );
+    mgr->_integrator  = std::auto_ptr<G4MagIntegratorStepper> (new G4ExactHelixStepper ( mgr->rhs()) );
+    mgr->_chordFinder = std::auto_ptr<G4ChordFinder>          (new G4ChordFinder       ( mgr->field(),
+                                                                                        stepMinimum,
+                                                                                        mgr->integrator()) );
+    mgr->_manager     = std::auto_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
+                                                                                        mgr->chordFinder(),
+                                                                                        true ));
+    return mgr;
+  }
+
+  // Factory method to construct a manager for a gradient magnetic field (in DS3). 
+  std::auto_ptr<FieldMgr> FieldMgr::forGradientField(double fieldValue,
+						     double gradient,
+						     const G4ThreeVector& fieldOrigin,
+						     double stepMinimum ){
+
+    auto_ptr<FieldMgr> mgr(new FieldMgr() );
+
+    mgr->_field = std::auto_ptr<G4MagneticField>(new DSGradientField( "DS3Grad",
+								      fieldOrigin,
+								      gradient,
+								      fieldValue
+								      )
+						 );
     mgr->_rhs         = std::auto_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs    ( mgr->field()) );
     mgr->_integrator  = std::auto_ptr<G4MagIntegratorStepper> (new G4ExactHelixStepper ( mgr->rhs()) );
     mgr->_chordFinder = std::auto_ptr<G4ChordFinder>          (new G4ChordFinder       ( mgr->field(),

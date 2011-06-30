@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.21 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: SteppingAction.cc,v 1.22 2011/06/30 20:27:53 logash Exp $
+// $Author: logash $
+// $Date: 2011/06/30 20:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -43,12 +43,19 @@ namespace mu2e {
     _eKineMin(0.),
     _debugEventList(),
     _debugTrackList(),
-
+    
     // Other parameters.
     _hallAirPhysVol(0),
     _lastPosition(),
     _lastMomentum(),
-    _zref(0.){
+    _zref(0.),
+
+    // Things related to time virtual detector
+    _collection(0),
+    _sizeLimit(config.getInt("g4.steppingActionStepsSizeLimit",0)),
+    _currentSize(0),
+    _simID(0),
+    _productGetter(0) {
 
     // Look up parameter values in the run time configuration.
     _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
@@ -98,6 +105,21 @@ namespace mu2e {
            << _maxSteps << endl;
     }
 
+    // Get maximum global time
+    _maxGlobalTime = config.getDouble("g4.steppingActionMaxGlobalTime", 0.0);
+    if( _maxGlobalTime>0.1 ) {
+      cout << "Limit maximum global time in SteppingAction to "
+           << _maxGlobalTime << " ns" << endl;
+    }
+
+    // Read times for time virtual detector
+    config.getVectorDouble( "g4.steppingActionTimeVD", tvd_time, vector<double>() );
+    if( tvd_time.size()>0 ) {
+      cout << "Time virtual detector is enabled. Particles are recorded at";
+      for( unsigned int i=0; i<tvd_time.size(); ++i ) cout << " " << tvd_time[i];
+      cout << " ns" << endl;
+    }
+
   }
 
   // A helper function to manage the printout.
@@ -117,8 +139,12 @@ namespace mu2e {
              localTime, globalTime);
   }
 
-  void SteppingAction::beginRun(){
-    _hallAirPhysVol  = getPhysicalVolumeOrThrow("HallAir");
+  void SteppingAction::beginRun(PhysicsProcessInfo& processInfo,
+				CLHEP::Hep3Vector const& mu2eOrigin ){
+    _hallAirPhysVol = getPhysicalVolumeOrThrow("HallAir");
+    _currentSize    = 0;
+    _processInfo    = &processInfo;
+    _mu2eOrigin     =  mu2eOrigin;
   }
 
   void SteppingAction::UserSteppingAction(const G4Step* step){
@@ -127,6 +153,17 @@ namespace mu2e {
 
     G4Track* track = step->GetTrack();
 
+    // Pre and post stepping points.
+    G4StepPoint const* prept  = step->GetPreStepPoint();
+    G4StepPoint const* postpt = step->GetPostStepPoint();
+
+    // Save hits in time virtual detector
+    for( unsigned int i=0; i<tvd_time.size(); ++i ) {
+      if( prept->GetGlobalTime()<=tvd_time[i] && postpt->GetGlobalTime()>tvd_time[i] ) {
+	addTimeVDHit(step,i+1);
+      }
+    }
+
     // Have we reached maximum allowed number of steps per track?
     if( _maxSteps>0 && _nSteps>_maxSteps ) {
       cout << "SteppingAction: kill particle pdg="
@@ -134,6 +171,14 @@ namespace mu2e {
            << " due to large number of steps." << endl;
       killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
       ++_nKilledStepLimit;
+    }
+
+    // Have we reached maximum allowed global time?
+    if( _maxGlobalTime>0.1 && track->GetGlobalTime()>_maxGlobalTime ) {
+      cout << "SteppingAction: kill particle pdg="
+           << track->GetDefinition()->GetPDGEncoding()
+           << " because maximum global time is reached." << endl;
+      killTrack( track, ProcessCode::mu2eMaxGlobalTime, fStopAndKill);
     }
 
     if ( _doKillInHallAir &&  killInHallAir(track) ){
@@ -157,10 +202,6 @@ namespace mu2e {
     }
 
     //G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
-
-    // Pre and post stepping points.
-    G4StepPoint const* prept  = step->GetPreStepPoint();
-    G4StepPoint const* postpt = step->GetPostStepPoint();
 
     // Position and momentum at the the pre point.
     G4ThreeVector const& pos = prept->GetPosition();
@@ -202,8 +243,8 @@ namespace mu2e {
     printit ( "Pre: ", id,
               prept->GetPosition(),
               prept->GetMomentum(),
-              track->GetLocalTime(),
-              track->GetGlobalTime()
+              prept->GetLocalTime(),
+              prept->GetGlobalTime()
               );
 
     printit ( "Step:", id,
@@ -216,8 +257,8 @@ namespace mu2e {
     printit ( "Post: ", id,
               postpt->GetPosition(),
               postpt->GetMomentum(),
-              track->GetLocalTime(),
-              track->GetGlobalTime()
+              postpt->GetLocalTime(),
+              postpt->GetGlobalTime()
               );
     fflush(stdout);
 
@@ -285,8 +326,13 @@ namespace mu2e {
     track->SetTrackStatus(status);
   }
 
-  void SteppingAction::BeginOfEvent() {
+  void SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
+				    art::ProductID const& simID,
+				    art::EDProductGetter const* productGetter ) {
     _nKilledStepLimit = 0;
+    _collection  = &outputHits;
+    _simID         = &simID;
+    _productGetter = productGetter;
   }
 
   void SteppingAction::EndOfEvent() {
@@ -297,6 +343,41 @@ namespace mu2e {
   }
 
   void SteppingAction::EndOfTrack() {
+  }
+
+
+  G4bool SteppingAction::addTimeVDHit(const G4Step* aStep, int id){
+
+    _currentSize += 1;
+
+    if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
+      if( (_currentSize - _sizeLimit)==1 ) {
+        mf::LogWarning("G4") << "Maximum number of particles reached in time virtual detector "
+			     << _currentSize << endl;
+      }
+      return false;
+    }
+
+    // Which process caused this step to end?
+    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    ProcessCode endCode(_processInfo->findAndCount(pname));
+
+    // The point's coordinates are saved in the mu2e coordinate system.
+    _collection->
+      push_back(StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _productGetter ),
+                            id,
+                            0,
+                            0,
+                            aStep->GetPreStepPoint()->GetGlobalTime(),
+                            aStep->GetPreStepPoint()->GetProperTime(),
+                            aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                            aStep->GetPreStepPoint()->GetMomentum(),
+                            aStep->GetStepLength(),
+                            endCode
+                            ));
+
+    return true;
+    
   }
 
 } // end namespace mu2e

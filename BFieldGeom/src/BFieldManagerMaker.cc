@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.20 2011/05/21 03:42:22 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/21 03:42:22 $
+// $Id: BFieldManagerMaker.cc,v 1.21 2011/06/30 20:27:53 logash Exp $
+// $Author: logash $
+// $Date: 2011/06/30 20:27:53 $
 //
 
 // Includes from C++
@@ -765,6 +765,11 @@ namespace mu2e {
     double scaleFactor(_config.getDouble("bfield.scaleFactor",1.0));
 
     _bfmgr->_dsUniformValue = CLHEP::Hep3Vector( 0., 0., bz*scaleFactor);
+
+    double grad = _config.getDouble("toyDS.gradient", 0.);
+
+    _bfmgr->_dsGradientValue = CLHEP::Hep3Vector( 0., 0., grad*scaleFactor);
+
   }
 
 } // end namespace mu2e

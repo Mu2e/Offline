@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.89 2011/06/23 19:19:58 logash Exp $
+// $Id: geom_01.txt,v 1.90 2011/06/30 20:27:53 logash Exp $
 // $Author: logash $
-// $Date: 2011/06/23 19:19:58 $
+// $Date: 2011/06/30 20:27:53 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,14 @@ bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(S
 int g4.steppingActionMaxSteps = 10000;
 int g4.stepsSizeLimit = 10000;
 int g4.particlesSizeLimit = 10000;
+
+// If the following number is not zero, G4 will kill all particles alive 
+// at that time.
+double g4.steppingActionMaxGlobalTime = 0; //ns
+
+// The information (location, momentum) of all particles will be 
+// recorded in the output files for particular moments in time
+//vector<double> g4.steppingActionTimeVD = { 500, 700, 1000 }; //ns
 
 // Enable/disable code that kills uninteresting tracks in SteppingAction,
 bool   g4SteppingAction.killInHallAir = false;
@@ -237,12 +245,12 @@ bool   vd.solid          = false;
 vector<double> productionTarget.position = { 3904., 0., -6564.5};
 
 double targetPS_halfLength        =     80.;  // mm.
-double targetPS_rOut              =      3.;  // mm
+double targetPS_rOut              =      3.15;// mm
 double targetPS_positionX         =      0.;  // mm
 double targetPS_positionY         =      0.;  // mm
 double targetPS_positionZ         =   -35.5;  // mm
-double targetPS_rotX              =    -1.8;  // degree. Active rotation. See Mu2e-doc-938.
-double targetPS_rotY              =   12.22;  // degree.
+double targetPS_rotX              =      0.;  // degree. Active rotation.
+double targetPS_rotY              =   13.65;  // degree.
 string targetPS_materialName      = "G4_Au";
 bool   targetPS.visible           = true;
 bool   targetPS.solid             = false;
@@ -416,6 +424,10 @@ int detSolFieldForm = 1;
 
 // Value of the uniform magnetic field with the DS volume.
 double toyDS.bz            = 1.0;
+
+// Gradient of field in DS2 volume. Applied only in the case 
+// of detSolFieldForm=1 or detSolFieldForm=2.
+double toyDS.gradient      = 0.0; // Tesla/m
 
 // This is recommended field map. See geom_mecofield.txt to use the meco field.
 string bfield.format  = "G4BL";
