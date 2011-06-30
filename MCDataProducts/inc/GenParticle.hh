@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: GenParticle.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
+// $Id: GenParticle.hh,v 1.2 2011/06/30 03:13:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Date: 2011/06/30 03:13:59 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,9 @@
 // Includes from external packages.
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
+
+// C++ includes
+#include <ostream>
 
 namespace mu2e {
 
@@ -84,6 +87,18 @@ namespace mu2e {
     double _time;
 
   };
+
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  const GenParticle& genp ){
+    ost << "( "
+        << genp.pdgId() << " "
+        << genp.generatorId() << " "
+        << genp.time() << " "
+        << genp.position() << " "
+        << genp.momentum() << " "
+        << " )";
+    return ost;
+  }
 
 }
 
