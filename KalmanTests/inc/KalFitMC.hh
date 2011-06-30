@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.1 2011/06/17 21:56:57 mu2ecvs Exp $
+// $Id: KalFitMC.hh,v 1.2 2011/06/30 20:46:49 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/17 21:56:57 $
+// $Date: 2011/06/30 20:46:49 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -27,6 +27,8 @@
 // root 
 #include "Rtypes.h"
 #include "TTree.h"
+#include "TClass.h"
+#include <vector>
 
 namespace mu2e 
 {  
@@ -44,6 +46,13 @@ namespace mu2e
     helixpar(const HepVector& pvec) : _d0(pvec[0]),_p0(pvec[1]),_om(pvec[2]),_z0(pvec[3]),_td(pvec[4]) {}
     helixpar(const HepSymMatrix& pcov) : _d0(sqrt(pcov.fast(1,1))),_p0(sqrt(pcov.fast(2,2))),_om(sqrt(pcov.fast(3,3))),
       _z0(sqrt(pcov.fast(4,4))),_td(sqrt(pcov.fast(5,5))) {}
+  };
+
+  struct TrkStrawHitInfo {
+    Int_t _active,_usable;
+    UInt_t _nmc;
+// root macro
+    ClassDef(TrkStrawHitInfo,1)
   };
 
   struct MCEvtData {
@@ -76,12 +85,13 @@ namespace mu2e
 // diagnostic comparison of reconstructed tracks with MC truth
     void trkDiag(MCEvtData const& mcdata, TrkDef const& mytrk, TrkKalFit const& myfit);
     void hitDiag(MCEvtData const& mcdata, const TrkStrawHit* strawhit);
+// allow creating the trees
+    TTree* createTrkDiag();
+    TTree* createHitDiag();
   private:
 // helper functions
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
-      std::vector<MCStepItr>& steps);  
-    void createTrkDiag();
-    void createHitDiag();
+      std::vector<MCStepItr>& steps);
 // config parameters
     double _mintrkmom; // minimum true momentum at z=0 to create a track from
     double _mct0err;
@@ -115,8 +125,7 @@ namespace mu2e
     helixpar _fitpar;
     helixpar _fiterr;
     helixpar _mcpar;
-// stl not supported by ancient versions of root: FIXME!!!!
-//    std::vector<threevec> _shposs;
+    std::vector<TrkStrawHitInfo> _tshinfo;
 
 // hit tuple variables
     TTree *_hitdiag;

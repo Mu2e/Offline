@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.1 2011/06/17 21:56:57 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.2 2011/06/30 20:46:49 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/17 21:56:57 $
+// $Date: 2011/06/30 20:46:49 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -133,7 +133,8 @@ namespace mu2e
           unsigned nprimary(0);
           for( size_t j=0; j<mcptr.size(); ++j ) {
             StepPointMC const& mchit = *mcptr[j];
- // not sure if this works with bkgs merged FIXME!!!!
+ // not sure if this works with bkgs merged FIXME!!!!  we also need to treat energy from daughters different
+ // from energy from completely different particles
             if( mchit.trackId() == trkid )nprimary++;
           }
 // decide if we want all hits with any contribution from this particle, or only pure hits from this particle.
@@ -261,6 +262,21 @@ namespace mu2e
       
       // get MC truth at this point
       GeomHandle<BFieldManager> bfMgr;
+      _tshinfo.clear();
+      // loop over hits.  Order doesn't matter here
+      for(std::vector<TrkStrawHit*>::const_iterator itsh = myfit._hits.begin(); itsh != myfit._hits.end(); itsh++){
+        const TrkStrawHit* tsh = *itsh;
+        if(tsh != 0){
+          TrkStrawHitInfo tshinfo;
+          tshinfo._active = tsh->isActive();
+          tshinfo._usable = tsh->usability();
+          PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(tsh->index()));
+          tshinfo._nmc = mcptr.size();
+          
+          
+          _tshinfo.push_back(tshinfo);
+        }
+      }
       
       unsigned istraw = firsthit->index();
       PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(istraw));
@@ -290,7 +306,7 @@ namespace mu2e
     _trkdiag->Fill(); 
   }
 
-  void
+  TTree*
   KalFitMC::createTrkDiag(){
     art::ServiceHandle<art::TFileService> tfs;
     _trkdiag=tfs->make<TTree>("trkdiag","trk diagnostics");
@@ -316,10 +332,11 @@ namespace mu2e
     _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
     _trkdiag->Branch("fiterr",&_fiterr,"d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
     _trkdiag->Branch("mcpar",&_mcpar,"mcd0/F:mcp0/F:mcom/F:mcz0/F:mctd/F");
-//      _trkdiag->Branch("shposs",&_shposs);
+    _trkdiag->Branch("tshinfo",&_tshinfo);
+    return _trkdiag;
   }
 
-  void
+  TTree*
   KalFitMC::createHitDiag(){
     art::ServiceHandle<art::TFileService> tfs;
     _hitdiag=tfs->make<TTree>("hitdiag","hit diagnostics");      
@@ -346,5 +363,6 @@ namespace mu2e
     _hitdiag->Branch("mcdmid",&_mcdmid,"mcdmid/F");
 
 //      _hitdiag->Branch("shdir","CLHEP::HepVector",&_shdir);
+    return _hitdiag;
   }
 }

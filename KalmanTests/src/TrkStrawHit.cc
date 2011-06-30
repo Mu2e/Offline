@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.5 2011/06/15 22:36:09 mu2ecvs Exp $
+// $Id: TrkStrawHit.cc,v 1.6 2011/06/30 20:46:49 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/15 22:36:09 $
+// $Date: 2011/06/30 20:46:49 $
 //
 // Original author David Brown, LBNL
 //
@@ -62,8 +62,8 @@ namespace mu2e
     _wpos = mid + _tddist*wiredir;
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
     setHitLen(_tddist);
-  // compute drift parameters
-    updateDrift();
+  // compute drift parameters, if the initial t0 error was positive
+    if(_hitt0_err>0.0)updateDrift();
   }
   
   TrkStrawHit::TrkStrawHit(const TrkStrawHit& other, TrkRep* rep) :
