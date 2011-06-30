@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.18 2011/06/30 04:47:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/30 04:47:25 $
+// $Id: G4_module.cc,v 1.19 2011/06/30 20:16:14 genser Exp $
+// $Author: genser $
+// $Date: 2011/06/30 20:16:14 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,7 @@
 #include "G4ParticleTable.hh"
 #include "G4Run.hh"
 #include "G4Timer.hh"
+#include "G4VUserPhysicsList.hh"
 
 // Mu2e includes
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -127,7 +128,7 @@ namespace mu2e {
       _session(0),
       _visManager(0),
       _UI(0),
-      _rmvlevel(pSet.get<int>("rmvlevel",0)),
+      _rmvlevel(pSet.get<int>("diagLevel",0)),
       _visMacro(pSet.get<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
       _physVolHelper(),
@@ -239,7 +240,7 @@ namespace mu2e {
     }
 
     mf::LogInfo logInfo("GEOM");
-    logInfo << "Initializing Geant 4 for run: " << run.id() << endl;
+    logInfo << "Initializing Geant 4 for " << run.id() << " with verbosity " << _rmvlevel << endl;
 
     // Create user actions and register them with G4.
 
@@ -249,7 +250,10 @@ namespace mu2e {
 
     _runManager->SetUserInitialization(allMu2e);
 
-    _runManager->SetUserInitialization(physicsListDecider(config));
+    G4VUserPhysicsList* pL = physicsListDecider(config);
+    pL->SetVerboseLevel(_rmvlevel);
+
+    _runManager->SetUserInitialization(pL);
 
     _genAction = new PrimaryGeneratorAction(_generatorModuleLabel);
     _runManager->SetUserAction(_genAction);
