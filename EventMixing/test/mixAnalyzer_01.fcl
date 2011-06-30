@@ -1,21 +1,21 @@
 # Configuration file for reading back event mixed files.
 #
-# $Id: mixAnalyzer_01.fcl,v 1.1 2011/06/30 04:38:47 kutschke Exp $
+# $Id: mixAnalyzer_01.fcl,v 1.2 2011/06/30 05:36:16 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/06/30 04:38:47 $
+# $Date: 2011/06/30 05:36:16 $
 #
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 
 # Give this job a name.
-process_name : MixAnalyzer07
+process_name : MixAnalyzer01
 
 # Start form an empty source
 source :
 {
   module_type : RootInput
-  fileNames   : [ "mixTest_data_07.root" ]
+  fileNames   : [ "mixTest_data_01.root" ]
   maxEvents : -1
 }
 
@@ -23,7 +23,7 @@ services :
 {
   message : @local::default_message
 
-  TFileService : { fileName : "mixAnalyzer_07.root" }
+  TFileService : { fileName : "mixAnalyzer_01.root" }
 
   RandomNumberGenerator : { }
 
