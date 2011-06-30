@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for calorimetric crystals
 //
-// $Id: CaloCrystalSD.hh,v 1.7 2011/05/24 17:19:03 kutschke Exp $
+// $Id: CaloCrystalSD.hh,v 1.8 2011/06/30 04:54:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/06/30 04:54:08 $
 //
 // Original author Ivan Logashenko
 //
@@ -19,6 +19,10 @@
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"
+
+// Art includes
+#include "art/Persistency/Provenance/ProductID.h"
+#include "art/Persistency/Common/EDProductGetter.h"
 
 class G4Step;
 class G4HCofThisEvent;
@@ -39,7 +43,11 @@ namespace mu2e {
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
 
-    void beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo & processInfo );
+    void beforeG4Event(StepPointMCCollection& outputHits,
+                       PhysicsProcessInfo & processInfo,
+                       art::ProductID const& simID,
+                       art::EDProductGetter const* productGetter );
+
 
     static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
       _mu2eOrigin = origin;
@@ -62,6 +70,11 @@ namespace mu2e {
     // Limit maximum size of the steps collection
     int _sizeLimit;
     int _currentSize;
+
+    // Information about the SimParticleCollection, needed to instantiate art::Ptr.
+    art::ProductID const *      _simID;
+    art::EDProductGetter const* _productGetter;
+
   };
 
 } // namespace mu2e

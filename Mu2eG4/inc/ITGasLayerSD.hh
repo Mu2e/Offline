@@ -26,6 +26,10 @@
 // G4 includes
 #include "G4VSensitiveDetector.hh"
 
+// Art includes
+#include "art/Persistency/Provenance/ProductID.h"
+#include "art/Persistency/Common/EDProductGetter.h"
+
 class G4Step;
 class G4HCofThisEvent;
 
@@ -43,10 +47,13 @@ namespace mu2e {
 
     void Initialize(G4HCofThisEvent*);
     virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*) { return false; }
-//    G4bool ProcessHits(G4Step*, G4TouchableHistory*) { return false; }
     void EndOfEvent(G4HCofThisEvent*);
 
-    void beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo & processInfo );
+    void beforeG4Event(StepPointMCCollection& outputHits,
+                       PhysicsProcessInfo & processInfo,
+                       art::ProductID const& simID,
+                       art::EDProductGetter const* productGetter );
+
 
     static void setMu2eDetCenterInWorld(const G4ThreeVector &origin) {
             _mu2eDetCenter = origin;
@@ -77,6 +84,10 @@ namespace mu2e {
 
     // Mu2e point of origin
     static G4ThreeVector _mu2eDetCenter;
+
+    // Information about the SimParticleCollection, needed to instantiate art::Ptr.
+    art::ProductID const *      _simID;
+    art::EDProductGetter const* _productGetter;
 
   };
 

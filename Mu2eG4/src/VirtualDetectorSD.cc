@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors
 //
-// $Id: VirtualDetectorSD.cc,v 1.15 2011/06/20 22:10:47 genser Exp $
-// $Author: genser $
-// $Date: 2011/06/20 22:10:47 $
+// $Id: VirtualDetectorSD.cc,v 1.16 2011/06/30 04:55:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/30 04:55:13 $
 //
 // Original author Ivan Logashenko
 //
@@ -38,7 +38,9 @@ namespace mu2e {
     _processInfo(0),
     _debugList(0),
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
-    _currentSize(0)
+    _currentSize(0),
+    _simID(0),
+    _productGetter(0)
   {
 
     // Get list of events for which to make debug printout.
@@ -86,7 +88,7 @@ namespace mu2e {
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
-      push_back(StepPointMC(aStep->GetTrack()->GetTrackID(),
+      push_back(StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _productGetter ),
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetCopyNo(),
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),
@@ -137,9 +139,14 @@ namespace mu2e {
   }
 
 
-  void VirtualDetectorSD::beforeG4Event(StepPointMCCollection& outputHits, PhysicsProcessInfo& processInfo) {
-    _collection  = &outputHits;
-    _processInfo = &processInfo;
+  void VirtualDetectorSD::beforeG4Event(StepPointMCCollection& outputHits, 
+                                        PhysicsProcessInfo& processInfo,
+                                        art::ProductID const& simID,
+                                        art::EDProductGetter const* productGetter ){
+    _collection    = &outputHits;
+    _processInfo   = &processInfo;
+    _simID         = &simID;
+    _productGetter = productGetter;
     return;
   } // end of beforeG4Event
 
