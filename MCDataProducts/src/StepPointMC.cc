@@ -6,9 +6,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.cc,v 1.1 2011/05/24 17:16:44 kutschke Exp $
+// $Id: StepPointMC.cc,v 1.2 2011/06/30 04:42:47 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:44 $
+// $Date: 2011/06/30 04:42:47 $
 //
 // Original author Rob Kutschke
 
@@ -21,7 +21,10 @@ namespace mu2e {
 
   void StepPointMC::print( ostream& ost, bool doEndl ) const {
 
-    ost << "  trackId: "                        << _trackId
+    art::ProductID id = ( _track.isNonnull() ) ? _track.id()  : art::ProductID();
+    int key           = ( _track.isNonnull() ) ? _track.key() : -1;
+
+    ost << "  trackId: "                        << "( " << id << "," << key << ")"
         << "  volumeId: "                       << _volumeId
         << "  energy deposit: "                 << _totalEnergyDeposit
         << "  non ionizing energy deposit: "    << _nonIonizingEnergyDeposit

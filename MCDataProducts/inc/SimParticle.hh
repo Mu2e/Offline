@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.3 2011/06/07 21:32:21 kutschke Exp $
+// $Id: SimParticle.hh,v 1.4 2011/06/30 04:42:47 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:32:21 $
+// $Date: 2011/06/30 04:42:47 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,9 @@
 // 2) The trackId, parentIds and daughterIds are all of the correct type to be
 //    used to find the corresponding information in SimParticleCollection
 //
+// 3) The trackId, parentIds and daughterIds are all redundant now that the Ptr
+//    versions are available.  We will get rid of them as soon as we check
+//    backwards compatibility.
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -29,10 +32,10 @@
 #include "Mu2eUtilities/inc/PDGCode.hh"
 
 #include "art/Persistency/Common/Ptr.h"
-#include "art/Persistency/Common/OrphanHandle.h"
 
 #include "cetlib/map_vector.h"
 
+#include <iostream>
 #include <vector>
 
 namespace mu2e {
@@ -45,9 +48,9 @@ namespace mu2e {
     SimParticle(){}
 
     SimParticle( key_type                       aid,
-                 key_type                       aparentId,
+                 art::Ptr<SimParticle> const&   aparentSim,
                  PDGCode::type                  apdgId,
-                 int                            agenIndex,
+                 art::Ptr<GenParticle> const&   agenParticle,
                  const CLHEP::Hep3Vector&       aposition,
                  const CLHEP::HepLorentzVector& amomentum,
                  double                         astartGlobalTime,
@@ -57,11 +60,11 @@ namespace mu2e {
                  ProcessCode                    acreationCode,
                  double                         aweight=1.):
       _id(aid),
-      _parentId(aparentId),
-      _parentSim(),
+      _parentId(0),
+      _parentSim(aparentSim),
       _pdgId(apdgId),
-      _genIndex(agenIndex),
-      _genParticle(),
+      _genIndex(-1),
+      _genParticle(agenParticle),
       _startPosition(aposition),
       _startMomentum(amomentum),
       _startGlobalTime(astartGlobalTime),
@@ -100,29 +103,39 @@ namespace mu2e {
       _stoppingCode    = astoppingCode;
     }
 
-    void addDaughter( key_type id ){
-      _daughterIds.push_back(id);
+    void addDaughter( art::Ptr<SimParticle> const& p ){
+      _daughterSims.push_back(p);
+      _daughterIds.push_back( key_type(p.key()) );
     }
 
-    // Accessors
+    // Some Accessors/Modifier pairs.
+    // The modifiers are needed by the event mixing code.
 
-    // Index of this track.  See notes 1 and 2.
-    key_type id() const {return _id;}
+    // Key of this track within the SimParticleCollection.  See notes 1 and 2.
+    key_type  id() const {return _id;}
+    key_type& id()       { return _id;}
 
-    // Index of the parent of this track.
-    key_type                     parentId()  const { return _parentId;}
-    art::Ptr<SimParticle> const& parent()    const { return _parentSim; }
-    bool                         hasParent() const { return (_parentId != key_type(0)); }
+    // The parent of this track; may be null.
+    art::Ptr<SimParticle> const& parent() const { return _parentSim; }
+    art::Ptr<SimParticle>&       parent()       { return _parentSim; }
 
-    // PDG particle ID code.  See note 3.
+    // The genparticle corresponding to this track; may be null.
+    art::Ptr<GenParticle> const& genParticle() const { return _genParticle;}
+    art::Ptr<GenParticle>&       genParticle()       { return _genParticle;}
+
+    // Most members have only accessors
+
+    // PDG particle ID code.
     PDGCode::type pdgId() const {return _pdgId;}
 
-    // Index into the container of generated tracks;
-    // -1 if there is no corresponding generated track.
-    int                          generatorIndex() const { return _genIndex;}
-    art::Ptr<GenParticle> const& genParticle()    const { return _genParticle;}
-    bool                         fromGenerator()  const { return (_genIndex != -1); }
-    bool                         madeInG4()       const { return (_genIndex == -1); }
+    // Where was this particle created: in the event generator or in G4?
+    bool isSecondary()   const { return _parentSim.isNonnull(); }
+    bool isPrimary()     const { return _genParticle.isNonnull(); }
+
+    // Some synonyms for the previous two accessors.
+    bool hasParent()     const { return _parentSim.isNonnull(); }
+    bool fromGenerator() const { return _genParticle.isNonnull(); }
+    bool madeInG4()      const { return _genParticle.isNull();    }
 
     // Information at the start of the track.
     CLHEP::Hep3Vector const& startPosition()       const { return _startPosition;}
@@ -153,27 +166,35 @@ namespace mu2e {
     bool endDefined() const { return _endDefined;}
 
     // Modifiers;
-    void setDaughterSize() { _daughterSims.reserve( _daughterIds.size()); }
-
-    void setParentPtr     ( art::Ptr<SimParticle> const& ptr) { _parentSim = ptr; }
-    void setGenParticlePtr( art::Ptr<GenParticle> const& ptr) { _genParticle = ptr; }
-
     void setDaughterPtrs  ( std::vector<art::Ptr<SimParticle> > const& ptr){
+      _daughterSims.clear();
       _daughterSims.reserve(ptr.size());
       _daughterSims.insert( _daughterSims.begin(), ptr.begin(), ptr.end() );
+      _daughterIds.clear();
+      _daughterIds.reserve(ptr.size());
+      for ( size_t i=0; i != ptr.size(); ++i){
+	_daughterIds.push_back( key_type( ptr[i].key() ) );
+      }
     }
 
-    // Some utilities used by the modfiers - not available to const objects!
-    int getParentId() { return _parentId.asInt();}
-    int getGenIndex() { return _genIndex;}
-    std::vector<key_type>& getDaughterIds() { return _daughterIds;}
+    // Two older accessors that will soon be removed from the interface.
 
+    // Index of the parent of this track; may be null.
+    key_type                     parentId() const {
+      return ( _parentSim.isNonnull()) ? key_type(_parentSim.key()) : key_type(0);
+    }
+
+    // Index into the container of generated tracks;
+    // -1 if there is no corresponding generated track.
+    int                          generatorIndex() const { 
+      return ( _genParticle.isNonnull()) ? _genParticle.key() : -1;
+    }
 
   private:
     // G4 ID number of this track and of its parent.
     // See notes 1 and 2.
     key_type _id;
-    key_type _parentId;
+    key_type _parentId;                  // Obsolete and not used.  Will be deleted at a convenient time.
     art::Ptr<SimParticle> _parentSim;
 
     // PDG particle ID code.  See note 1.
@@ -181,7 +202,7 @@ namespace mu2e {
 
     // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.
-    int                    _genIndex;
+    int                    _genIndex;      // Obsolete and not used.  Will be deleted at a convenient time.
     art::Ptr<GenParticle>  _genParticle;
 
     // Information at the start of the track.

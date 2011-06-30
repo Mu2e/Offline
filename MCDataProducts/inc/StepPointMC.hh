@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.3 2011/06/07 21:32:21 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.4 2011/06/30 04:42:47 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:32:21 $
+// $Date: 2011/06/30 04:42:47 $
 //
 // Original author Rob Kutschke
 //
@@ -38,7 +38,6 @@ namespace mu2e {
     typedef unsigned long VolumeId_type;
 
     StepPointMC():
-      _trackId(cet::map_vector_key()),
       _track(),
       _volumeId(0),
       _totalEnergyDeposit(0.),
@@ -51,19 +50,18 @@ namespace mu2e {
       _endProcessCode(){
     }
 
-    StepPointMC( unsigned                 trackId,
-                 VolumeId_type            volumeId,
-                 double                   totalEDep,
-                 double                   nonIonizingEDep,
-                 double                   time,
-                 double                   proper,
-                 CLHEP::Hep3Vector const& position,
-                 CLHEP::Hep3Vector const& momentum,
-                 double                   stepLength,
-                 ProcessCode              endProcessCode
+    StepPointMC( art::Ptr<SimParticle> const& atrack,
+                 VolumeId_type                volumeId,
+                 double                       totalEDep,
+                 double                       nonIonizingEDep,
+                 double                       time,
+                 double                       proper,
+                 CLHEP::Hep3Vector const&     position,
+                 CLHEP::Hep3Vector const&     momentum,
+                 double                       stepLength,
+                 ProcessCode                  endProcessCode
                  ):
-      _trackId(cet::map_vector_key(trackId)),
-      _track(),
+      _track(atrack),
       _volumeId(volumeId),
       _totalEnergyDeposit(totalEDep),
       _nonIonizingEnergyDeposit(nonIonizingEDep),
@@ -73,19 +71,23 @@ namespace mu2e {
       _proper(proper),
       _stepLength(stepLength),
       _endProcessCode(endProcessCode){
+
     }
 
-    // Accept compiler generated versions of:
-    //  d'tor
-    //  copy c'tor
-    //  assignment operator
+    // Accept compiler generated versions of: d'tor, copy c'tor, assignment operator
 
     void print( std::ostream& ost, bool doEndl = true ) const;
     void print() const { print(std::cout); }
 
+    // Accesor and modifier; the modifier is needed for event mixing.
+    art::Ptr<SimParticle> const& simParticle() const { return _track; }
+    art::Ptr<SimParticle>&       simParticle()       { return _track; }
+
     // Accesors.
-    cet::map_vector_key          trackId()          const { return _trackId;   }
-    art::Ptr<SimParticle> const& simParticle()      const { return _track;     }
+    cet::map_vector_key trackId() const {
+      return ( _track.isNonnull() ) ? cet::map_vector_key(_track.key()): cet::map_vector_key(0);
+    }
+
     VolumeId_type                volumeId()         const { return _volumeId;  }
     double                       totalEDep()        const { return _totalEnergyDeposit; }
     double                       nonIonizingEDep()  const { return _nonIonizingEnergyDeposit; }
@@ -97,13 +99,8 @@ namespace mu2e {
     double                       stepLength()       const { return _stepLength;}
     ProcessCode                  endProcessCode()   const { return _endProcessCode;}
 
-    // Modifier.
-    void setSimParticlePtr( art::OrphanHandle<SimParticleCollection>& handle ){
-      _track = art::Ptr<SimParticle>(handle,_trackId.asInt());
-    }
-
     // Kept for backwards compatibility.
-    double eDep()     const { return _totalEnergyDeposit;    }
+    double eDep() const { return _totalEnergyDeposit;    }
 
     // Return the volumeId as a StrawIndex.
     // It's the user's job to know if this is a reasonable thing to do.
@@ -130,7 +127,6 @@ namespace mu2e {
     h.print(ost, false);
     return ost;
   }
-
 
 } // namespace mu2e
 
