@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.27 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
+// $Id: TrackingAction.cc,v 1.28 2011/06/30 04:48:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/30 04:48:24 $
 //
 // Original author Rob Kutschke
 //
@@ -27,10 +27,6 @@
 // C++ includes
 #include <iostream>
 
-// Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
-
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
@@ -38,6 +34,12 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
+
+// Framework includes
+#include "art/Persistency/Common/Ptr.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
+
 
 // G4 includes
 #include "globals.hh"
@@ -118,9 +120,14 @@ namespace mu2e {
 
   }
 
-  void TrackingAction::beginEvent(){
-    _currentSize=0;
+  void TrackingAction::beginEvent( art::Handle<GenParticleCollection> const& gensHandle, 
+                                   art::ProductID const& simID, 
+                                   art::EDProductGetter const* productGetter){
+    _currentSize          = 0;
     _overflowSimParticles = false;
+    _gensHandle           = &gensHandle;
+    _simID                = simID;
+    _productGetter        = productGetter;
 
   }
 
@@ -155,6 +162,13 @@ namespace mu2e {
     // The first n particles in the G4 track list are the same as the first n particles
     // from the generator.
     int generatorIndex = ( parentId == 0 ) ? id-1: -1;
+    art::Ptr<GenParticle> genPtr;
+    art::Ptr<SimParticle> parentPtr;
+    if ( parentId == 0 ){
+      genPtr = art::Ptr<GenParticle>(*_gensHandle,generatorIndex);
+    } else{
+      parentPtr = art::Ptr<SimParticle>( _simID, parentId, _productGetter);
+    }
 
     // Find the physics process that created this track.
     ProcessCode creationCode = findCreationCode(trk);
@@ -170,9 +184,9 @@ namespace mu2e {
     // Add this track to the transient data.
     CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
-                                                         key_type(parentId),
+                                                         parentPtr,
                                                          static_cast<PDGCode::type>(trk->GetDefinition()->GetPDGEncoding()),
-                                                         generatorIndex,
+                                                         genPtr,
                                                          trk->GetPosition()-_mu2eOrigin,
                                                          p4,
                                                          trk->GetGlobalTime(),
@@ -192,7 +206,7 @@ namespace mu2e {
           << id
           << "\n";
       }
-      i->second.addDaughter(kid);
+      i->second.addDaughter(art::Ptr<SimParticle>( _simID, id, _productGetter));
     }
   }
 

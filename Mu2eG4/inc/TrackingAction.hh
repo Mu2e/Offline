@@ -5,22 +5,32 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.17 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
+// $Id: TrackingAction.hh,v 1.18 2011/06/30 04:48:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/06/30 04:48:24 $
 //
 // Original author Rob Kutschke
 //
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "G4UserTrackingAction.hh"
+
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
+
+#include "art/Persistency/Common/Handle.h"
+#include "art/Persistency/Provenance/ProductID.h"
 #include "art/Utilities/CPUTimer.h"
+
 #include <map>
 #include <string>
+
+namespace art {
+  class EDProductGetter;
+}
 
 namespace mu2e {
 
@@ -42,7 +52,9 @@ namespace mu2e {
     // All methods after here are Mu2e specific.
 
     // Do all things that need to be done at the beginning/end of an event.
-    void beginEvent();
+    void beginEvent( art::Handle<GenParticleCollection> const& gensHandle, 
+                     art::ProductID const& simID, 
+                     art::EDProductGetter const* productGetter );
     void endEvent( SimParticleCollection& simParticles );
 
     // Record start and end points of each track created by G4.
@@ -103,6 +115,15 @@ namespace mu2e {
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.
     PhysicsProcessInfo *  _processInfo;
+
+    // Handle to the GenParticle collection; needed to make Ptrs into that collection.
+    art::Handle<GenParticleCollection> const * _gensHandle;
+
+    // Product ID of the SimParticleCollection; needed to make PTrs into that collection.
+    art::ProductID _simID;
+
+    // Non-owning pointer to the EDProductGetter inside the event; needed for some Ptr stuff.
+    art::EDProductGetter const * _productGetter;
 
     // Control the saving of trajectories.
     // The first method does the big picture bookkeeping.
