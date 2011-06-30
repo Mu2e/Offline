@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.17 2011/06/07 21:55:17 kutschke Exp $
+// $Id: G4_module.cc,v 1.18 2011/06/30 04:47:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:55:17 $
+// $Date: 2011/06/30 04:47:25 $
 //
 // Original author Rob Kutschke
 //
@@ -75,8 +75,6 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/finalizeStepPointMC.hh"
-#include "Mu2eG4/inc/finalizeSimParticle.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
@@ -328,6 +326,10 @@ namespace mu2e {
   // Create one G4 event and copy its output to the art::event.
   void G4::produce(art::Event& event) {
 
+    // Handle to the generated particles; need when building art::Ptr to a GenParticle.
+    art::Handle<GenParticleCollection> gensHandle;
+    event.getByLabel( "generate", gensHandle);
+
     // Create empty data products.
     auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
     auto_ptr<StepPointMCCollection>     outputHits(        new StepPointMCCollection);
@@ -338,8 +340,11 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
+    // ProductID for SimParticleCollection
+    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
+
     // Some of the user actions have begein event methods. These are not G4 standards.
-    _trackingAction->beginEvent();
+    _trackingAction->beginEvent( gensHandle, simPartId, event.productGetter() );
     _genAction->setEvent(event);
 
     // enable Sensitive Detectors to store the Framework Data Products
@@ -356,33 +361,33 @@ namespace mu2e {
     if ( _config->getBool("hasITracker",false) ) {
       static_cast<ITGasLayerSD*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
-        beforeG4Event(*outputHits, _processInfo);
+        beforeG4Event(*outputHits, _processInfo, simPartId, event.productGetter() );
 
     }else {
       static_cast<StrawSD*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
-        beforeG4Event(*outputHits, _processInfo);
+        beforeG4Event(*outputHits, _processInfo, simPartId, event.productGetter() );
     }
 
     static_cast<VirtualDetectorSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()))->
-      beforeG4Event(*vdHits, _processInfo);
+      beforeG4Event(*vdHits, _processInfo, simPartId, event.productGetter() );
 
     static_cast<StoppingTargetSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::StoppingTarget()))->
-      beforeG4Event(*stHits, _processInfo);
+      beforeG4Event(*stHits, _processInfo, simPartId, event.productGetter() );
 
     static_cast<CRSScintillatorBarSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()))->
-      beforeG4Event(*sbHits, _processInfo);
+      beforeG4Event(*sbHits, _processInfo, simPartId, event.productGetter() );
 
     static_cast<CaloCrystalSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
-      beforeG4Event(*caloHits, _processInfo);
+      beforeG4Event(*caloHits, _processInfo, simPartId, event.productGetter() );
 
     static_cast<CaloReadoutSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()))->
-      beforeG4Event(*caloROHits, _processInfo);
+      beforeG4Event(*caloROHits, _processInfo, simPartId, event.productGetter() );
 
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );
@@ -421,35 +426,16 @@ namespace mu2e {
                           *pointTrajectories,
                           _physVolHelper);
 
-    // Need when building art::Ptrs within SimParticleCollection.
-    art::Handle<GenParticleCollection> gensHandle;
-    event.getByLabel( "generate", gensHandle);
-
     // Add data products to the event.
     event.put(g4stat);
-    art::OrphanHandle<SimParticleCollection> simsHandle = event.put(simParticles);
-
-    // Dangerous hack; need to cast away const-ness. See note 2.
-    SimParticleCollection& sims = (SimParticleCollection&) *simsHandle;
-    finalizeSimParticle( sims, gensHandle, simsHandle);
-
-    // Set the Ptr<SimParticle data members
-    finalizeStepPointMC( *outputHits, simsHandle);
-    finalizeStepPointMC( *vdHits,     simsHandle);
-    finalizeStepPointMC( *stHits,     simsHandle);
-    finalizeStepPointMC( *sbHits,     simsHandle);
-    finalizeStepPointMC( *caloHits,   simsHandle);
-    finalizeStepPointMC( *caloROHits, simsHandle);
-
+    event.put(simParticles);
     event.put(outputHits, _trackerOutputName);
     event.put(vdHits,     _vdOutputName);
     event.put(stHits,     _stOutputName);
     event.put(sbHits,     _sbOutputName);
     event.put(caloHits,   _caloOutputName);
     event.put(caloROHits, _caloROOutputName);
-
     event.put(pointTrajectories);
-
 
     // Pause to see graphics.
     if ( !_visMacro.empty() ){
