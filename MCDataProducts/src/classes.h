@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.5 2011/06/07 22:52:22 kutschke Exp $
+// $Id: classes.h,v 1.6 2011/06/30 04:43:42 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 22:52:22 $
+// $Date: 2011/06/30 04:43:42 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,10 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "MCDataProducts/inc/MixingSummary.hh"
+#include "art/Persistency/Common/RNGsnapshot.h"
 
+// For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
 template class std::pair<cet::map_vector_key,mu2e::PointTrajectory>;
 
@@ -59,3 +62,6 @@ template class art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>;
 template class art::Wrapper<mu2e::PointTrajectoryCollection>;
 template class art::Wrapper<mu2e::StatusG4>;
 template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;
+template class art::Wrapper<mu2e::MixingSummary>;
+template class art::Wrapper<std::vector<art::RNGsnapshot> >;
+
