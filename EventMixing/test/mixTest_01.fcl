@@ -1,0 +1,80 @@
+#
+# Do event mixing.
+#
+# $Id: mixTest_01.fcl,v 1.1 2011/06/30 04:38:47 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2011/06/30 04:38:47 $
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+
+# Give this job a name.
+process_name : MixTest01
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 2
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService : { fileName : "mixTest_01.root" }
+
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService : { inputFile : "Mu2eG4/test/geom_01.txt" }
+
+    ConditionsService : {  conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+
+    G4Helper : { }
+
+  }
+
+}
+
+physics :
+{
+  producers:{}
+
+  filters: {
+    mixer: {
+      module_type     : MixMCEvents
+      mean            : 2.5
+      mixProducerLabel: generate
+      fileNames       : [ "mixProducer_data_01.root" ]
+      readMode        : sequential
+      seed            : [13579]
+    }
+  }
+
+  analyzers:{
+
+    checkMix : { module_type : MixAnalyzer }
+  }
+
+  p1 : [mixer ]
+  e1 : [ checkMix, outfile ]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "mixTest_data_01.root"
+    outputCommands:   [ "keep *_*_*_*"
+#                        ,"drop mu2e::PointTrajectorymv_*_*_*"
+                      ]
+  }
+
+}
