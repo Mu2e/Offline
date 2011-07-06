@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.94 2011/06/30 20:27:53 logash Exp $
+// $Id: Mu2eWorld.cc,v 1.95 2011/07/06 22:45:33 logash Exp $
 // $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Date: 2011/07/06 22:45:33 $
 //
 // Original author Rob Kutschke
 //
@@ -472,12 +472,20 @@ namespace mu2e {
 
     if (dsFieldForm == dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
+      cout << "Use uniform field in DS2" << endl;
     }
     if ( dsFieldForm == dsModelUniform || dsFieldForm == dsModelSplit ){
       if( needDSGradient ) {
 	ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
+	cout << "Use gradient field in DS3" << endl;
       } else {
 	ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+	cout << "Use uniform field in DS3" << endl;
+      }
+      if( _config->getBool("hasMBS",false) ) {
+	VolumeInfo const & MBSMotherInfo = _helper->locateVolInfo("MBSMother");
+	G4LogicalVolume* mbsMother = MBSMotherInfo.logical;
+	mbsMother->SetFieldManager(0,true);
       }
     }
 

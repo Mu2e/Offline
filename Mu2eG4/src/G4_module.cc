@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.20 2011/06/30 20:27:53 logash Exp $
+// $Id: G4_module.cc,v 1.21 2011/07/06 22:45:33 logash Exp $
 // $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Date: 2011/07/06 22:45:33 $
 //
 // Original author Rob Kutschke
 //
@@ -87,6 +87,7 @@
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/DiagnosticsG4.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "Mu2eG4/inc/generateFieldMap.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -129,6 +130,7 @@ namespace mu2e {
       _visManager(0),
       _UI(0),
       _rmvlevel(pSet.get<int>("diagLevel",0)),
+      _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
       _visMacro(pSet.get<std::string>("visMacro","")),
       _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
       _physVolHelper(),
@@ -185,7 +187,7 @@ namespace mu2e {
     G4VisManager *_visManager;
     G4UImanager  *_UI;
     int _rmvlevel;
-
+    int _checkFieldMap;
 
     // Position, in G4 world coord, of (0,0,0) of the mu2e coordinate system.
     CLHEP::Hep3Vector _mu2eOrigin;
@@ -327,6 +329,9 @@ namespace mu2e {
     _stackingAction->beginRun( world->getDirtG4Ymin(), world->getDirtG4Ymax() );
 
     _diagnostics.beginRun( run, _physVolHelper );
+
+    // test field map
+    if( _checkFieldMap>0 ) generateFieldMap(_mu2eOrigin,_checkFieldMap);
 
   }
 

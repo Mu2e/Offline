@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.5 2011/06/30 20:27:53 logash Exp $
+//  $Id: ReadVirtualDetector_module.cc,v 1.6 2011/07/06 22:45:33 logash Exp $
 //  $Author: logash $
-//  $Date: 2011/06/30 20:27:53 $
+//  $Date: 2011/07/06 22:45:33 $
 //
 // Original author Ivan Logashenko
 //
@@ -56,6 +56,7 @@ namespace mu2e {
     Float_t py;
     Float_t pz;
     Float_t p;
+    Int_t code;
 
     Bool_t isstop;
     Float_t tstop;
@@ -63,7 +64,7 @@ namespace mu2e {
     Float_t xstop;
     Float_t ystop;
     Float_t zstop;
-    Int_t code;
+    Int_t codestop;
 
     Int_t g4bl_evt;
     Int_t g4bl_trk;
@@ -209,7 +210,7 @@ namespace mu2e {
 
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
 				 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
-				 "gtime:g4bl_weight:g4bl_time");
+				 "gtime:code:g4bl_weight:g4bl_time");
 
     // Have to use TTree here, because one cannot use more than 100 variables in TNtuple
 
@@ -242,13 +243,14 @@ namespace mu2e {
     _ntpart->Branch("py",         &ntp.py,         "py/F");
     _ntpart->Branch("pz",         &ntp.pz,         "pz/F");
     _ntpart->Branch("p",          &ntp.p,          "p/F");
+    _ntpart->Branch("code",       &ntp.code,       "code/I");
     _ntpart->Branch("isstop",     &ntp.isstop,     "isstop/O");
     _ntpart->Branch("tstop",      &ntp.tstop,      "tstop/F");
     _ntpart->Branch("gtstop",     &ntp.gtstop,     "gtstop/F");
     _ntpart->Branch("xstop",      &ntp.xstop,      "xstop/F");
     _ntpart->Branch("ystop",      &ntp.ystop,      "ystop/F");
     _ntpart->Branch("zstop",      &ntp.zstop,      "zstop/F");
-    _ntpart->Branch("code",       &ntp.code,       "code/I");
+    _ntpart->Branch("codestop",   &ntp.codestop,   "codestop/I");
     _ntpart->Branch("g4bl_evt",   &ntp.g4bl_evt,   "g4bl_evt/I");
     _ntpart->Branch("g4bl_trk",   &ntp.g4bl_trk,   "g4bl_trk/I");
     _ntpart->Branch("g4bl_weight",&ntp.g4bl_weight,"g4bl_weight/F");
@@ -412,11 +414,11 @@ namespace mu2e {
 
     if( haveG4BL ) {
       G4BeamlineInfo const& extra = g4beamlineData->at(0);
-      nt[12] = extra.weight();
-      nt[13] = extra.time();
+      nt[13] = extra.weight();
+      nt[14] = extra.time();
     } else {
-      nt[12] = 0;
       nt[13] = 0;
+      nt[14] = 0;
     }
 
     // Loop over all time VD hits.
@@ -458,6 +460,7 @@ namespace mu2e {
       nt[9]  = mom.y();
       nt[10] = mom.z();
       nt[11] = hit.properTime();
+      nt[12] = hit.endProcessCode();
 
       _nttvd->Fill(nt);
 
@@ -502,6 +505,7 @@ namespace mu2e {
         ntp.py = mom_start.y();
         ntp.pz = mom_start.z();
 	ntp.p = mom_start.mag();
+	ntp.code = sim.creationCode();
 
         // Check id of the volume there particle dies
         if( sim.endDefined() ) {
@@ -516,7 +520,7 @@ namespace mu2e {
           ntp.xstop = pos_end.x();
           ntp.ystop = pos_end.y();
           ntp.zstop = pos_end.z();
-	  ntp.code = sim.stoppingCode();
+	  ntp.codestop = sim.stoppingCode();
         } else {
 	  ntp.isstop = false;
 	  ntp.tstop = 0;
@@ -524,7 +528,7 @@ namespace mu2e {
           ntp.xstop = 0;
           ntp.ystop = 0;
           ntp.zstop = 0;
-	  ntp.code = 0;
+	  ntp.codestop = 0;
 	}
 
         if( haveG4BL ) {

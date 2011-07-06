@@ -1,11 +1,59 @@
 
-  $Id: v1_0_9.txt,v 1.3 2011/06/30 20:37:13 genser Exp $
-  $Author: genser $
-  $Date: 2011/06/30 20:37:13 $
+  $Id: v1_0_9.txt,v 1.4 2011/07/06 22:45:34 logash Exp $
+  $Author: logash $
+  $Date: 2011/07/06 22:45:34 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_0_9
+
+
+3) July 6, 2011 logash
+
+   1. Added option to G4 module to generate ntuple with the field map.
+      This is sometimes useful for debugging. To switch on the ntuple
+      creation, add the following option to G4 module in .fcl file:
+         checkFieldMap : 1
+      By default, this option is set to zero (no ntuple creation).
+
+      The ntuple with the name "ntfield" is created in "g4run" 
+      subdirectory of output ROOT file. The ntuple shows the value of
+      field along the main particle path (main axises of PS, TS and DS).
+      At each point the actual field is shown. 
+
+      The following variables are available in the ntuple:
+         xg,yg,zg - coordinates in G4 frame
+         xl,yl,zl - coordinates in Mu2e frame
+	 nx,ny,nz - vector along the path
+         bx,by,bz - B-field in tesla
+         btot - field magnitude
+         bl - field along the path
+         s - distance along the path from the Mu2e origin
+
+      The typical plot, which shows field magnitude at different z:
+         ntfield->Draw("btot:zl")
+
+   2. Created mother volume for Muon Beam Stop. Even if uniform or 
+      gradient field is used in DS3, mapped field is used in MBS. 
+      This is important to not allow particles from MBS to enter
+      back to DS.
+
+   3. Updated time virtual detector ntuple in ReadVirtualDetector_module:
+      added more variables, switched from using preStepPoint to 
+      postStepPoint.
+
+   Added files:
+
+     Mu2eG4/inc/generateFieldMap.hh
+     Mu2eG4/src/generateFieldMap.cc
+
+   Modified files:
+
+     Analyses/src/ReadVirtualDetector_module.cc
+     Mu2eG4/src/G4_module.cc
+     Mu2eG4/src/Mu2eWorld.cc
+     Mu2eG4/src/SteppingAction.cc
+     Mu2eG4/src/constructMBS.cc
 
 2) June 30, 2011 genser 
 
@@ -24,7 +72,7 @@
 
 1) June 30, 2011 logash
 
-  1. Added posibility to specify gradient field in DS2.
+  1. Added posibility to specify gradient field in DS3.
      The value of gradient is set in the geometry file: 
        double toyDS.gradient      = 0.0; // Tesla/m
      It is only applied if detSolFieldForm is 1 or 2.

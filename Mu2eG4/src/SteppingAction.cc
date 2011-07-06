@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.22 2011/06/30 20:27:53 logash Exp $
+// $Id: SteppingAction.cc,v 1.23 2011/07/06 22:45:34 logash Exp $
 // $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Date: 2011/07/06 22:45:34 $
 //
 // Original author Rob Kutschke
 //
@@ -368,10 +368,10 @@ namespace mu2e {
                             id,
                             0,
                             0,
-                            aStep->GetPreStepPoint()->GetGlobalTime(),
-                            aStep->GetPreStepPoint()->GetProperTime(),
-                            aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
-                            aStep->GetPreStepPoint()->GetMomentum(),
+                            aStep->GetPostStepPoint()->GetGlobalTime(),
+                            aStep->GetPostStepPoint()->GetProperTime(),
+                            aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
+                            aStep->GetPostStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
                             endCode
                             ));
