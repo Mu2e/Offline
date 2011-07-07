@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.95 2011/07/06 22:45:33 logash Exp $
+// $Id: Mu2eWorld.cc,v 1.96 2011/07/07 16:00:40 logash Exp $
 // $Author: logash $
-// $Date: 2011/07/06 22:45:33 $
+// $Date: 2011/07/07 16:00:40 $
 //
 // Original author Rob Kutschke
 //
@@ -434,7 +434,7 @@ namespace mu2e {
       _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue()*CLHEP::tesla, _mu2eOrigin );
       
       // Create field manager for the gradient field in DS3
-      if( fabs(bfMgr->getDSGradientValue().z())>0.0001 ) {
+      if( fabs(bfMgr->getDSGradientValue().z())>1.0e-9 ) {
 	needDSGradient = true;
 	_dsGradient = FieldMgr::forGradientField( bfMgr->getDSUniformValue().z()*CLHEP::tesla,
 						  bfMgr->getDSGradientValue().z()*CLHEP::tesla/CLHEP::m,

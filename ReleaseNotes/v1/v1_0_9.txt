@@ -1,12 +1,16 @@
 
-  $Id: v1_0_9.txt,v 1.4 2011/07/06 22:45:34 logash Exp $
+  $Id: v1_0_9.txt,v 1.5 2011/07/07 16:00:40 logash Exp $
   $Author: logash $
-  $Date: 2011/07/06 22:45:34 $
+  $Date: 2011/07/07 16:00:40 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_0_9
 
+4) July 7, 2011 logash
+
+   Small change in DSGradientField and Mu2eWorld to allow working with
+   small gradients.
 
 3) July 6, 2011 logash
 

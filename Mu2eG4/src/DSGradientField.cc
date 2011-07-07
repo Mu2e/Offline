@@ -33,13 +33,10 @@ namespace mu2e {
   
     double r = (point-_mapOrigin).perp();
     double Br = - _gradient*r/2.0;
-    if( r>0.001 ) {
-      Bfield[0] = (point.x()-_mapOrigin.x())/r*Br;
-      Bfield[1] = (point.y()-_mapOrigin.y())/r*Br;
-    } else {
-      Bfield[0] = 0.0;
-      Bfield[1] = 0.0;
-    }
+
+    //Bfield[0] = (point.x()-_mapOrigin.x())/r*Br;
+    Bfield[0] = -(point.x()-_mapOrigin.x())*_gradient/2.0;
+    Bfield[1] = -(point.y()-_mapOrigin.y())*_gradient/2.0;
 
   }
 
