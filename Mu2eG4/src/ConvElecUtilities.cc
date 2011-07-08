@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.cc,v 1.10 2011/05/19 23:51:50 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/19 23:51:50 $
+// $Id: ConvElecUtilities.cc,v 1.11 2011/07/08 22:14:03 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/07/08 22:14:03 $
 //
 // Original author Gianni Onorato
 //
@@ -24,7 +24,8 @@ namespace mu2e {
                                        string const &trackerStepPoints):
     _generatorModuleLabel( generatorModuleLabel ),
     _g4ModuleLabel( g4ModuleLabel ),
-    _trackerStepPoints( trackerStepPoints )
+    _trackerStepPoints( trackerStepPoints ),
+    _totEDep(0)
   {
     _nconv = 0;
     checkConvElec(event);
@@ -103,7 +104,18 @@ namespace mu2e {
         //        cout << "Hit straw index " << hit.strawIndex()
         //     << " and time " << hit.time()
         //     << "earliest is " << time << endl;
-        _convElecStrawIdx.push_back(hit.strawIndex());
+        vector<StrawIndex>::iterator it = _convElecStrawIdx.begin();
+        bool itexists = false;
+        while (it != _convElecStrawIdx.end()) {
+          if (*it == hit.strawIndex()) {
+            itexists = true;
+          } 
+          ++it;
+        }
+        if (!itexists) {
+          _convElecStrawIdx.push_back(hit.strawIndex());
+        }
+        _totEDep += hit.totalEDep();
       }
     }
   }
@@ -127,6 +139,7 @@ namespace mu2e {
         << "No hit associated to Conversion Electron track.";
     }
   }
+
 
 
 } // end namespace mu2e

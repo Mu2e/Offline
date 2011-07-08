@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.11 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: ConvElecUtilities.hh,v 1.12 2011/07/08 22:14:03 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/07/08 22:14:03 $
 //
 // Original author Gianni Onorato
 //
@@ -71,6 +71,8 @@ namespace mu2e {
       return _convElecHits.size();
     }
 
+
+
     //return a vector of index related to the stepPointMCCollection
     //identifying hits of the conversion electron
     const std::vector<size_t> & convElecHitsIdx() const {
@@ -82,8 +84,14 @@ namespace mu2e {
       return _convElecStrawIdx;
     }
 
-  private:
+    double totEDep() const {
+      return _totEDep;
+    }
 
+    private:
+
+    std::string _generatorModuleLabel, _g4ModuleLabel, _trackerStepPoints;
+    double _totEDep;
     void checkConvElec(const art::Event & event);
     void lookAtHits(const art::Event & event);
     int _nconv;
@@ -92,7 +100,6 @@ namespace mu2e {
     art::Handle<StepPointMCCollection> hits;
     std::vector<size_t> _convElecHits;
     std::vector<StrawIndex> _convElecStrawIdx;
-    std::string _generatorModuleLabel, _g4ModuleLabel, _trackerStepPoints;
     key_type _convTrackId;
     size_t _earliestidx;
     std::auto_ptr<SimParticle> _simParticle;
