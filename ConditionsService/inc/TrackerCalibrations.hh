@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: TrackerCalibrations.hh,v 1.3 2011/07/09 05:03:05 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2011/07/09 05:03:05 $
 //
 // Original author Vadim Rusu
 //
@@ -16,11 +16,12 @@
 // Mu2e includes.
 #include "ConditionsService/inc/ConditionsEntity.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
-
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e
 {
   class SimpleConfig;
+  class StrawHit;
 
 
   struct TrackerCalibrations: public ConditionsEntity{
@@ -36,6 +37,11 @@ namespace mu2e
 
     //this shoule be called by the patt rec
     const double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
+    
+    // information about a hit's position and time.  This uses time difference to compute
+    // the position along the wire
+    void StrawHitInfo(StrawHit const& strawhit,
+      CLHEP::Hep3Vector& pos, double& time,double& tdres, double& timeres) const;
 
   private:
 
