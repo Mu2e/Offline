@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.5 2011/06/15 22:36:09 mu2ecvs Exp $
+// $Id: TrkStrawHit.hh,v 1.6 2011/07/09 05:01:27 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/15 22:36:09 $
+// $Date: 2011/07/09 05:01:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -79,6 +79,7 @@ namespace mu2e
     double timeDiffDist() const { return _tddist; }
     double timeDiffDistErr() const { return _tddist_err; }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
+    const CLHEP::Hep3Vector& wirePositionError() const { return _wpos_err; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
     double hitT0() const { return _hitt0;}
     double hitT0Err() const { return _hitt0_err;}
@@ -100,6 +101,7 @@ namespace mu2e
     TrkDummyHit* _hit;
     TrkLineTraj* _hittraj;
     CLHEP::Hep3Vector _wpos;
+    CLHEP::Hep3Vector _wpos_err;
     double _hitt0, _hitt0_err;
     double _herr;
     int _iamb;
@@ -107,7 +109,8 @@ namespace mu2e
     double _rdrift_err;
     double _tddist;
     double _tddist_err;
-    double _vwire;
+    double _wtime;
+    double _wtime_err;
 // parameters that should come from some service: FIXME!!!
     static double _vdrift;
     static double _maxdriftpull;

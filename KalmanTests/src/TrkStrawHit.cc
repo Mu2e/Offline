@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.6 2011/06/30 20:46:49 mu2ecvs Exp $
+// $Id: TrkStrawHit.cc,v 1.7 2011/07/09 05:01:27 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/30 20:46:49 $
+// $Date: 2011/07/09 05:01:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -50,16 +50,11 @@ namespace mu2e
   {
 // is there an efficiency issue fetching the calibration object for every hit???
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    const CLHEP::Hep3Vector& mid = _straw.getMidPoint();
-    const CLHEP::Hep3Vector& wiredir = _straw.getDirection();
-    double shlen = _straw.getHalfLength();
-  // get time division and drift information for this straw hit
+    tcal->StrawHitInfo(strawhit,_wpos,_wtime,_tddist_err,_wtime_err);
+    CLHEP::Hep3Vector const& wiredir = _straw.getDirection();
+  // get time division and drift information for this straw hit relative to the wire center
     _tddist = tcal->TimeDiffToDistance(_straw.index(),_strawhit.dt());
-    _tddist_err = tcal->TimeDivisionResolution(_straw.index(),0.5*(shlen-_tddist)/shlen);
-  // wire signal velocity
-    _vwire = tcal->SignalVelocity(_straw.index());
-  // distance cannot be longer than the straw length: when it is, truncate, or disable, as appropriate
-    _wpos = mid + _tddist*wiredir;
+    CLHEP::Hep3Vector const& mid = _straw.getMidPoint();
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
     setHitLen(_tddist);
   // compute drift parameters, if the initial t0 error was positive
@@ -105,8 +100,7 @@ namespace mu2e
   
   double
   TrkStrawHit::time() const {
-  // note that time is defined in terms of the arrival at one end always
-    return _strawhit.time() - (_straw.getHalfLength()-_tddist)/_vwire;
+    return _wtime;
   }
   
   void
@@ -114,8 +108,9 @@ namespace mu2e
 // assume wire propagation velocity is speed of light: FIXME!!!
     double tdrift = time() - _hitt0;
     _rdrift = tdrift*_vdrift;
-  // radial error is combination of t0 error and intrinsic error.  This doesn't account for correlation between hits
-    double rt0err = _hitt0_err*_vdrift;
+  // radial error is combination of time error and intrinsic error.  This doesn't account for correlation between hits
+    double time_err = sqrt(_hitt0_err*_hitt0_err + _wtime_err*_wtime_err);
+    double rt0err = time_err*_vdrift;
     _rdrift_err = sqrt(rt0err*rt0err + _herr*_herr);
     if(_rdrift > _straw.getRadius()){
   // unphysical condition: decide if this hit should get disabled, or just brought

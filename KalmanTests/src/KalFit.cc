@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.7 2011/06/30 20:46:49 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.8 2011/07/09 05:01:27 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/30 20:46:49 $
+// $Date: 2011/07/09 05:01:27 $
 //
 
 // the following has to come before other BaBar includes
@@ -61,7 +61,7 @@ namespace mu2e
   };
   
 // construct from a parameter set  
-  KalFit::KalFit(fhicl::ParameterSet const& pset) :
+  KalFit::KalFit(fhicl::ParameterSet const& pset) : _bfield(0),
     _wallelem(wall,_matdbinfo),_gaselem(gas,_matdbinfo),
     _debug(pset.get<int>("debugLevel",0)),
     _fieldcorr(pset.get<bool>("fieldCorrections",false)),

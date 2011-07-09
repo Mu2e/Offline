@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.5 2011/06/17 22:27:20 mu2ecvs Exp $
+// $Id: KalFit.hh,v 1.6 2011/07/09 05:01:27 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/17 22:27:20 $
+// $Date: 2011/07/09 05:01:27 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -63,6 +63,7 @@ namespace mu2e
     virtual ~KalFit();
 // main function: given a track definition, create a fit object from it
     void makeTrack(TrkDef const& mytrk,TrkKalFit& myfit);
+    void makeHits(TrkDef const& mytrk,TrkKalFit& myfit);
   private:
 // Fetch the BField.  this function fetches the field if it's not yet initialized
     const BField* bField();
@@ -85,7 +86,6 @@ namespace mu2e
     unsigned _maxweed;
     // helper functions
     bool fitable(TrkDef const& mytrk);
-    void makeHits(TrkDef const& mytrk, TrkKalFit& myfit);
     bool updateT0(TrkKalFit& myfit);
     bool weedHits(TrkKalFit& myfit);
 // general
