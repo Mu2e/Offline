@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.8 2011/06/07 23:00:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 23:00:51 $
+// $Id: MakeDriftCellHit_module.cc,v 1.9 2011/07/11 11:17:14 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2011/07/11 11:17:14 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -83,7 +83,7 @@ namespace mu2e {
       _t0Sigma(pset.get<double>("t0Sigma",5.0)), // ns
       _timetodist(pset.get<double>("timetodist",0.0/*149.8962*/)), // mm/ns
       _distSigma(pset.get<double>("distSigma",0.0/*80.*/)), // mm
-      _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
+      _minimumEnergy(pset.get<double>("minimumEnergy",0.00001)), // MeV
       _minimumLength(pset.get<double>("minimumLength",0.005/*0.01*/)),   // mm
       _driftVelocity(pset.get<double>("driftVelocity",0.035/*0.05*/)),   // mm/ns
       _driftSigma(pset.get<double>("driftSigma",0.2/*0.1*/)),          // mm
