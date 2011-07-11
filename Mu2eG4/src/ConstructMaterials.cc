@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.15 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: ConstructMaterials.cc,v 1.16 2011/07/11 22:53:10 aluca Exp $
+// $Author: aluca $
+// $Date: 2011/07/11 22:53:10 $
 //
 // Original author Rob Kutschke
 //
@@ -428,6 +428,27 @@ namespace mu2e {
       G4Element* C  = getElementOrThrow("C");
       CarbonFiber->AddElement(C, 100.0*perCent );
     }
+    
+    mat = isNeeded(materialsToLoad, "Lyso_01");  /// Alessandra
+    if ( mat.doit ){
+      G4double density;
+      G4int nel;
+      G4Material* Lyso_00 =
+        new G4Material(mat.name, density = 7.4*g/cm3, nel=4);
+      G4Element* Lu  = getElementOrThrow("Lu");
+      G4Element* Si  = getElementOrThrow("Si");
+      G4Element* O  = getElementOrThrow("O");
+      G4Element* Y  = getElementOrThrow("Y");
+      G4Element* Ce  = getElementOrThrow("Ce");
+      Lyso_00->AddElement( Lu, 71.0*perCent );
+      Lyso_00->AddElement( Si, 7.0*perCent );      
+      Lyso_00->AddElement( O, 18.0*perCent );      
+      Lyso_00->AddElement( Y, 4.0*perCent );
+      G4Material* Lyso_01 =
+        new G4Material(mat.name, density = 7.4*g/cm3, nel=2);
+      Lyso_01->AddMaterial( Lyso_00, 99.85*perCent ); 
+      Lyso_01->AddElement( Ce, 0.15*perCent );    
+    }   
 
     mat = isNeeded(materialsToLoad, "PolypropyleneFoam");
     if ( mat.doit ){

@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.90 2011/06/30 20:27:53 logash Exp $
-// $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Id: geom_01.txt,v 1.91 2011/07/11 22:53:10 aluca Exp $
+// $Author: aluca $
+// $Date: 2011/07/11 22:53:10 $
 //
 // Original author Rob Kutschke
 //
@@ -101,7 +101,7 @@ vector<string> g4.materials =
     "G4_Ca",    "G4_Ti",  "G4_Fe", "G4_Cu", "G4_Ta",
     "G4_W",     "G4_Pt",  "G4_Au", "G4_Pb", "G4_WATER",
     "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be", "G4_B",
-    "G4_Li",    "G4_Mo",  "G4_TITANIUM_DIOXIDE"
+    "G4_Li",    "G4_Mo",  "G4_TITANIUM_DIOXIDE", "G4_Lu", "G4_Y", "G4_Ce"
   };
 
 // Load other materials defined specifically for Mu2e.
@@ -111,7 +111,7 @@ vector<string> mu2e.materials =
     "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix",
     "CarbonFiber", "PolypropyleneFoam", "CFoam_480", "CFoam_100",
     "CFoam_080", "Polyethylene092B050d095", "Polyethylene092B300d119",
-    "Polyethylene092Li075d106", "Polyethylene092", "StainlessSteel"
+    "Polyethylene092Li075d106", "Polyethylene092", "StainlessSteel", "Lyso_01"
 };
 
 // Control printout of element and material lists.
@@ -326,12 +326,12 @@ double calorimeter.rInscribed                              = 360.;
 string calorimeter.calorimeterFillMaterial                 = "WAGVacuum";
 
 int    calorimeter.numberOfVanes    =  4;
-int    calorimeter.nCrystalRSlices  =  10;
-int    calorimeter.nCrystalZSlices  =  50;
+int    calorimeter.nCrystalRSlices  =  12;
+int    calorimeter.nCrystalZSlices  =  44;
 
-double calorimeter.crystalHalfLong  = 50.;
+double calorimeter.crystalHalfLong  = 65.;
 double calorimeter.crystalHalfTrans = 15.;
-string calorimeter.crystalMaterial                         = "G4_PbWO4";
+string calorimeter.crystalMaterial                         = "Lyso_01"; //"G4_PbWO4";
 
 string calorimeter.crystalWrapper                          = "Polyethylene092";
 double calorimeter.crystalWrapperHalfThickness             = 0.01 ;
