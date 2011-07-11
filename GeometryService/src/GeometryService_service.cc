@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.5 2011/05/20 22:25:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/20 22:25:22 $
+// $Id: GeometryService_service.cc,v 1.6 2011/07/11 11:20:09 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2011/07/11 11:20:09 $
 //
 // Original author Rob Kutschke
 //
@@ -107,8 +107,8 @@ namespace mu2e {
       LTrackerMaker ltm( *_config );
       addDetector( ltm.getLTrackerPtr() );
     } else if (_config->getBool("hasITracker",false)){
-      //ITrackerMaker itm( *_config );
-      //addDetector( itm.getITrackerPtr() );
+      ITrackerMaker itm( *_config );
+      addDetector( itm.getITrackerPtr() );
     } else if (_config->getBool("hasTTracker",false)){
       TTrackerMaker ttm( *_config );
       addDetector( ttm.getTTrackerPtr() );
