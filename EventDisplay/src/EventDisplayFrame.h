@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.13 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: EventDisplayFrame.h,v 1.14 2011/07/11 23:56:38 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/07/11 23:56:38 $
 //
 // Original author Ralf Ehrlich
 //
@@ -25,13 +25,10 @@ class TGRadioButton;
 class TGTextEntry;
 class TPad;
 class TPolyLine;
+class TGCanvas;
 class TRootEmbeddedCanvas;
 class TText;
 class TTimer;
-
-namespace fhicl {
-  class ParameterSet;
-}
 
 namespace mu2e_eventdisplay
 {
@@ -46,7 +43,7 @@ namespace mu2e_eventdisplay
     EventDisplayFrame& operator=(const EventDisplayFrame &);
 
     public:
-    EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset);
+    EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h);
     virtual        ~EventDisplayFrame();
     void           fillGeometry();
 #ifndef __CINT__   //hide art::Event from ROOTCint
@@ -89,7 +86,8 @@ namespace mu2e_eventdisplay
     int                 _saveAnimCounter;
     std::string         _saveAnimFile;
     //bare pointers needed since ROOT manages these objects
-    TRootEmbeddedCanvas *_mainCanvas, *_infoCanvas;
+    TRootEmbeddedCanvas *_mainCanvas, *_infoEmbeddedCanvas;
+    TGCanvas            *_infoCanvas;
     EventDisplayPad     *_mainPad;
     ContentSelector     *_contentSelector;
     TPad                *_infoPad;

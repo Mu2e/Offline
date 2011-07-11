@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.8 2011/06/30 02:53:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/30 02:53:24 $
+// $Id: ComponentInfo.h,v 1.9 2011/07/11 23:56:38 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/07/11 23:56:38 $
 //
 // Original author Ralf Ehrlich
 //
@@ -12,6 +12,7 @@
 #define EventDisplay_src_dict_classes_ComponentInfo_h
 
 #include <TText.h>
+#include <TPad.h>
 #include <iostream>
 #include <vector>
 #ifndef __CINT__
@@ -42,9 +43,9 @@ namespace mu2e_eventdisplay
       _name=boost::shared_ptr<std::string>(new std::string);
       for(int i=0; i<5; i++)
       {
-        boost::shared_ptr<TText> newLine(new TText(0.02,0.9-0.1*i,NULL));
+        boost::shared_ptr<TText> newLine(new TText(0.0,0.0,NULL));
         newLine->SetTextColor(1);
-        newLine->SetTextSize(0.05);
+        newLine->SetTextSizePixels(60);
         _text.push_back(newLine);
       }
     }
@@ -107,12 +108,40 @@ namespace mu2e_eventdisplay
     }
 
 
-    void showInfo() const
+    void getExpectedSize(unsigned int &width, unsigned int &height) const
     {
+      width=0; height=0;
+      int i=1;
       std::vector<boost::shared_ptr<TText> >::const_iterator iter;
-      for(iter=_text.begin(); iter!=_text.end(); iter++)
+      for(iter=_text.begin(); iter!=_text.end(); iter++, i++)
       {
-        if((*iter)->GetTitle()!=NULL) (*iter)->Draw();
+        if((*iter)->GetTitle()!=NULL) 
+        {
+          if(strlen((*iter)->GetTitle())>0)
+          {
+            unsigned int w,h;
+            (*iter)->GetBoundingBox(w,h);
+            if(w+20>width) width=w+20;
+            height=i*20;
+          }
+        }
+      }
+    }
+
+    void showInfo(const unsigned int width, const unsigned int height) const
+    {
+      int i=1;
+      std::vector<boost::shared_ptr<TText> >::const_iterator iter;
+      for(iter=_text.begin(); iter!=_text.end(); iter++, i++)
+      {
+        if((*iter)->GetTitle()!=NULL) 
+        {
+          double x=20.0/width;
+          double y=1.0-i*20.0/height;
+          (*iter)->SetX(x);
+          (*iter)->SetY(y);
+          (*iter)->Draw();
+        }
       }
     }
 

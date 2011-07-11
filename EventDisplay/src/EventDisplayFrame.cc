@@ -34,9 +34,7 @@
 namespace mu2e_eventdisplay
 {
 
-  EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) :
-    TGMainFrame(p, w, h),
-    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run"))
+EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) : TGMainFrame(p, w, h)
 {
   int x,y;
   unsigned int width,height;
@@ -192,8 +190,15 @@ namespace mu2e_eventdisplay
   }
 
   TGHorizontalFrame *footLine   = new TGHorizontalFrame(this,800,100);
-  _infoCanvas = new TRootEmbeddedCanvas("InfoCanvas",footLine,GetWidth()-600,GetHeight()-450);
-  footLine->AddFrame(_infoCanvas, new TGLayoutHints(kLHintsTop));
+
+//The following lines are a variation of something I found in CaloCellTimeMonitoring.C by Christophe Le Maner.
+//Its purpose is to create a TRootEmbeddedCanvas with scrollbars.
+  _infoCanvas = new TGCanvas(footLine, GetWidth()-600, GetHeight()-700);
+  footLine->AddFrame(_infoCanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,2,2,0,2));
+  TGCompositeFrame *container = new TGCompositeFrame(_infoCanvas->GetViewPort());
+  _infoCanvas->SetContainer(container);
+  _infoEmbeddedCanvas = new TRootEmbeddedCanvas(0, container, 100, 100);//default size - exact size will be set later
+  container->AddFrame(_infoEmbeddedCanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
   TGGroupFrame *zoomangleFrame  = new TGGroupFrame(footLine,"Zoom & Angle");
   TGHorizontalFrame *zoomFrame1 = new TGHorizontalFrame(zoomangleFrame,500,50);
@@ -342,7 +347,7 @@ namespace mu2e_eventdisplay
   _mainPad->SetFillColor(1);
   _mainPad->Draw();
 
-  _infoCanvas->GetCanvas()->cd();
+  _infoEmbeddedCanvas->GetCanvas()->cd();
   _infoPad = new TPad("infoPad","InfoField", 0, 0, 1, 1, 5,1,1);
   _infoPad->SetFillColor(0);
   _infoPad->Draw();
@@ -376,7 +381,7 @@ Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
       _mainCanvas->SetWidth(fWidth-270);
       _mainCanvas->SetHeight(fHeight-170);
       _infoCanvas->SetWidth(fWidth-600);
-      _infoCanvas->SetHeight(fHeight-450);
+      _infoCanvas->SetHeight(fHeight-700);
       Layout();
    }
    return kTRUE;
@@ -900,7 +905,17 @@ void EventDisplayFrame::showInfo(TObject *o)  //ROOT accepts only bare pointers 
 {
   _infoPad->cd();
   _infoPad->Clear();
-  (dynamic_cast<ComponentInfo*>(o))->showInfo();
+  unsigned int w,h;
+  (dynamic_cast<ComponentInfo*>(o))->getExpectedSize(w,h);
+  if(w<_infoCanvas->GetWidth()-20) w=_infoCanvas->GetWidth()-20;
+  if(h<_infoCanvas->GetHeight()-20) h=_infoCanvas->GetHeight()-20;
+  _infoEmbeddedCanvas->SetWidth(w);
+  _infoEmbeddedCanvas->SetHeight(h);
+  _infoCanvas->Layout();
+  _infoPad->cd();
+  _infoPad->Modified();
+  _infoPad->Update();
+  (dynamic_cast<ComponentInfo*>(o))->showInfo(w,h);
   _infoPad->Modified();
   _infoPad->Update();
   _mainPad->cd();
