@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.2 2011/06/30 20:46:49 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.3 2011/07/11 15:12:26 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/30 20:46:49 $
+// $Date: 2011/07/11 15:12:26 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -236,6 +236,7 @@ namespace mu2e
 // final t0 value
     _t0 = myfit._t0.t0();
     _t0err = myfit._t0.t0Err();
+    double loclen(0.0);
     if(myfit._krep != 0 && myfit._krep->fitCurrent()){
       _trkid = myfit._krep->parentTrack()->id();
       _nhits = myfit._krep->hotList()->nHit();
@@ -247,7 +248,6 @@ namespace mu2e
       // get the fit at the first hit
       const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(myfit._krep->firstHit()->kalHit()->hitOnTrack());
       double fltlen=firsthit->fltLen();
-      double loclen;
       const TrkSimpTraj* ltraj = myfit._krep->localTrajectory(fltlen,loclen);
       _fitpar = helixpar(ltraj->parameters()->parameter());
       _fiterr = helixpar(ltraj->parameters()->covariance());
@@ -259,49 +259,49 @@ namespace mu2e
       for(int icor=0;icor<3;icor++)
         momvec[icor] = momdir[icor];
       _fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
-      
-      // get MC truth at this point
-      GeomHandle<BFieldManager> bfMgr;
-      _tshinfo.clear();
-      // loop over hits.  Order doesn't matter here
-      for(std::vector<TrkStrawHit*>::const_iterator itsh = myfit._hits.begin(); itsh != myfit._hits.end(); itsh++){
-        const TrkStrawHit* tsh = *itsh;
-        if(tsh != 0){
-          TrkStrawHitInfo tshinfo;
-          tshinfo._active = tsh->isActive();
-          tshinfo._usable = tsh->usability();
-          PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(tsh->index()));
-          tshinfo._nmc = mcptr.size();
-          
-          
-          _tshinfo.push_back(tshinfo);
-        }
-      }
-      
-      unsigned istraw = firsthit->index();
-      PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(istraw));
-      _mcmom = -100;
-      for( size_t j=0; j<mcptr.size(); ++j ) {
-        StepPointMC const& mchit = *mcptr[j];
-        if( mchit.trackId().asInt() == 1 ) {
-          CLHEP::Hep3Vector mcmom = mchit.momentum();
-          CLHEP::Hep3Vector mcpos = mchit.position();
-          double mclen = loclen;
-          HepVector mcpar(5);
-          TrkHelixUtils::helixFromMom( mcpar, mclen, 
-            HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-            mcmom,-1.,bfMgr->getDSUniformValue().z());
-          _mcmom = mchit.momentum().mag();
-          _mcpar = helixpar(mcpar);
-          break;
-        }
-      }
       CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(myfit._krep->seed()),myfit._trk->bField(),0.0);
-      _seedmom = seedmom.mag();      
+      _seedmom = seedmom.mag();
     } else {
       _fitstatus = -1;
       _nhits = -1;
       _fitmom = -1.0;
+      _seedmom = -1.0;
+    }
+      // get MC truth at this point
+    GeomHandle<BFieldManager> bfMgr;
+    _tshinfo.clear();
+      // loop over hits.  Order doesn't matter here
+    for(std::vector<TrkStrawHit*>::const_iterator itsh = myfit._hits.begin(); itsh != myfit._hits.end(); itsh++){
+      const TrkStrawHit* tsh = *itsh;
+      if(tsh != 0){
+        TrkStrawHitInfo tshinfo;
+        tshinfo._active = tsh->isActive();
+        tshinfo._usable = tsh->usability();
+        PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(tsh->index()));
+        tshinfo._nmc = mcptr.size();
+        _tshinfo.push_back(tshinfo);
+      }
+    }
+// find the mc step at the entrance to the detector
+    std::vector<MCStepItr> steps;
+    GeomHandle<VirtualDetector> vdg;
+    cet::map_vector_key trkid(1); // conversion electron
+    findMCSteps(mcdata._mcvdsteps,trkid,_entvids,steps);
+    if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
+    // take the first point; hopefully this is the entrance!
+      MCStepItr imcs = steps[0];
+      CLHEP::Hep3Vector mcmom = imcs->momentum();
+      CLHEP::Hep3Vector mcpos = imcs->position();
+  // initial length estimate defines convention for flightlength, z0
+      double mclen = loclen;
+      HepVector mcpar(5);
+      TrkHelixUtils::helixFromMom( mcpar, mclen, 
+        HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
+        mcmom,-1.,bfMgr->getDSUniformValue().z());
+      _mcmom = imcs->momentum().mag();
+      _mcpar = helixpar(mcpar);
+    } else {
+      _mcmom = -1;
     }
     _trkdiag->Fill(); 
   }
