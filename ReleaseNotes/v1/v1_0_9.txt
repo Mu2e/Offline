@@ -1,11 +1,14 @@
 
-  $Id: v1_0_9.txt,v 1.6 2011/07/11 22:54:43 aluca Exp $
-  $Author: aluca $
-  $Date: 2011/07/11 22:54:43 $
+  $Id: v1_0_9.txt,v 1.7 2011/07/12 02:06:24 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2011/07/12 02:06:24 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_0_9
+
+6) July 11, 2011 ehrlich
+   Added scroll bars to the info field of the event display.
 
 5) July 11, 2011 aluca
    Changed material of the calorimeter crystals
