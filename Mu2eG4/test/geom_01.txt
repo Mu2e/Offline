@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.91 2011/07/11 22:53:10 aluca Exp $
-// $Author: aluca $
-// $Date: 2011/07/11 22:53:10 $
+// $Id: geom_01.txt,v 1.92 2011/07/12 03:16:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 03:16:03 $
 //
 // Original author Rob Kutschke
 //
@@ -87,22 +87,6 @@ string g4.physicsListName = "QGSP_BERT";
 bool g4.doCosmicKiller = false;
 double g4.cosmicPcut = 0.;
 double g4.yaboveDirtYmin = 0.;
-
-// Tell G4 to load these predefined elements.
-vector<string> g4.elements =
-  { "H",  "He", "C",  "N",  "O",  "F", "Na", "Al", "Si", "Ar",
-    "Ca", "Ti", "Fe", "Cu", "Mo", "Ag", "Ta", "W", "Pt", "Au",
-    "Pb" };
-
-// Tell G4 to load these predefined materials.
-vector<string> g4.materials =
-  { "G4_H",     "G4_He",  "G4_C",  "G4_N",  "G4_O",
-    "G4_F",     "G4_Na",  "G4_Al", "G4_Si", "G4_Ar",
-    "G4_Ca",    "G4_Ti",  "G4_Fe", "G4_Cu", "G4_Ta",
-    "G4_W",     "G4_Pt",  "G4_Au", "G4_Pb", "G4_WATER",
-    "G4_PbWO4", "G4_AIR", "G4_Ag", "G4_Be", "G4_B",
-    "G4_Li",    "G4_Mo",  "G4_TITANIUM_DIOXIDE", "G4_Lu", "G4_Y", "G4_Ce"
-  };
 
 // Load other materials defined specifically for Mu2e.
 vector<string> mu2e.materials =
