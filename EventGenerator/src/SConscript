@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.16 2011/05/27 23:10:50 kutschke Exp $
+# $Id: SConscript,v 1.17 2011/07/12 03:17:03 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/27 23:10:50 $
+# $Date: 2011/07/12 03:17:03 $
 #
 # Original author Rob Kutschke.
 #
@@ -27,6 +27,7 @@ if cc_and_f:
                       LIBS=[ 'art_Framework_Services_Optional_TFileService_service',
                              'GeometryService',
                              'ConditionsService',
+                             'Mu2eUtilities',
                              'MCDataProducts',
                              'CLHEP',
                              'art_Framework_Services_Optional_RandomNumberGenerator_service',
