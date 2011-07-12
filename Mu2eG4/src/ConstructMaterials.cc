@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.17 2011/07/12 02:17:37 kutschke Exp $
+// $Id: ConstructMaterials.cc,v 1.18 2011/07/12 03:15:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/12 02:17:37 $
+// $Date: 2011/07/12 03:15:11 $
 //
 // Original author Rob Kutschke
 //
@@ -63,7 +63,6 @@ namespace mu2e {
     SimpleConfig const& config = geom->config();
 
     // Construct the requested materials.
-    constructG4Materials( config );
     constructMu2eMaterials( config );
 
     // Print element table, if requested.
@@ -78,43 +77,13 @@ namespace mu2e {
       log << *G4Material::GetMaterialTable();
     }
 
-    //cout << "Big test: " << endl;
-    //cout << *::G4Element::GetElementTable();
-  }
-
-  void ConstructMaterials::constructG4Materials( SimpleConfig const& config){
-
-    // Get list of G4 predefined elements we need to load.
-    vector<string> elementsToLoad;
-    if ( config.hasName("g4.elements") ){
-      config.getVectorString("g4.elements",elementsToLoad);
-    }
-
-    // Load the elements.
-    for ( vector<string>::const_iterator i=elementsToLoad.begin();
-          i!=elementsToLoad.end(); ++i ){
-      getElementOrThrow(*i);
-    }
-
-    // Get list of G4 predefined materials we need to load.
-    vector<string> materialsToLoad;
-    if ( config.hasName("g4.materials") ){
-      config.getVectorString("g4.materials",materialsToLoad);
-    }
-
-    // Load the materials.
-    for ( vector<string>::const_iterator i=materialsToLoad.begin();
-          i!=materialsToLoad.end(); ++i ){
-      findMaterialOrThrow(*i);
-    }
-
   }
 
   // Build the requested Mu2e specific materials.
   // Notes:
   // 1) In the methods: G4Material::AddElement( G4Element* elem, ... )
   //    Each element object keeps track of how many time it is used in a material.
-  //    Therefore the first arugment cannot be const*.
+  //    Therefore the first argument cannot be a const pointer.
   void ConstructMaterials::constructMu2eMaterials(SimpleConfig const& config){
 
     // List of requested Mu2e specific materials from the config file.
