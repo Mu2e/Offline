@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.16 2011/07/11 22:53:10 aluca Exp $
-// $Author: aluca $
-// $Date: 2011/07/11 22:53:10 $
+// $Id: ConstructMaterials.cc,v 1.17 2011/07/12 02:17:37 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 02:17:37 $
 //
 // Original author Rob Kutschke
 //
@@ -113,9 +113,8 @@ namespace mu2e {
   // Build the requested Mu2e specific materials.
   // Notes:
   // 1) In the methods: G4Material::AddElement( G4Element* elem, ... )
-  //    elem is actually an intrusive reference counted pointer to an element.
-  //    The element keeps track of how many times it is used - so the first
-  //    arugment cannot be const*.
+  //    Each element object keeps track of how many time it is used in a material.
+  //    Therefore the first arugment cannot be const*.
   void ConstructMaterials::constructMu2eMaterials(SimpleConfig const& config){
 
     // List of requested Mu2e specific materials from the config file.
@@ -303,7 +302,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "MBOverburden");
     if ( mat.doit ){
       //
-      // MiniBoone model of the earthen overburden.  See Mu2e-doc
+      // MiniBoone model of the earthen overburden.  See Mu2e-doc-570.
       //
       G4Material* mbOverburden = new G4Material( mat.name, 2.15*g/cm3, 3);
       G4Element* eO  = getElementOrThrow("O");
@@ -316,7 +315,6 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "ITGasHe_90Isob_10");
     if ( mat.doit ){
-      //He/C4H10-gas-mixture
 
       G4double density, temperature, pressure;
       G4int nel;
@@ -330,9 +328,6 @@ namespace mu2e {
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
                                            kStateGas, temperature= 293.15*kelvin, pressure= 1*atmosphere);
 
-      //      G4Element* He = new G4Element("He"       , "He", z=2.0, a= 4.002602 *g/mole);
-      //      G4Element* C  = new G4Element("Carbonium", "C" , z=6.0, a= 12.0107  *g/mole);
-      //      G4Element* H  = new G4Element("Hydrogen" , "H" , z=1.0, a= 1.00794  *g/mole);
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
       G4Element* H  = getElementOrThrow("H");
@@ -354,7 +349,6 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "ITGasHe_90CF4_10");
     if ( mat.doit ){
-      //He/C4H10-gas-mixture
 
       G4double density, temperature, pressure;
       G4int nel;
@@ -368,9 +362,6 @@ namespace mu2e {
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
                                            kStateGas, temperature= 293.15*kelvin, pressure= 1*atmosphere);
 
-      //      G4Element* He = new G4Element("He"       , "He", z=2.0, a= 4.002602 *g/mole);
-      //      G4Element* C  = new G4Element("Carbonium", "C" , z=6.0, a= 12.0107  *g/mole);
-      //      G4Element* H  = new G4Element("Hydrogen" , "H" , z=1.0, a= 1.00794  *g/mole);
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
       G4Element* F  = getElementOrThrow("F");
@@ -406,9 +397,6 @@ namespace mu2e {
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
                                            kStateGas, temperature= 293.15*kelvin, pressure= 1*atmosphere);
 
-      //      G4Element* He = new G4Element("He"       , "He", z=2.0, a= 4.002602 *g/mole);
-      //      G4Element* C  = new G4Element("Carbonium", "C" , z=6.0, a= 12.0107  *g/mole);
-      //      G4Element* H  = new G4Element("Hydrogen" , "H" , z=1.0, a= 1.00794  *g/mole);
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
       G4Element* H  = getElementOrThrow("H");
@@ -423,7 +411,6 @@ namespace mu2e {
       G4double density;
       G4int nel;
       G4Material* CarbonFiber =
-        //        new G4Material(mat.name, density = 1.605*g/cm3, nel=1);
         new G4Material(mat.name, density = 1.384*g/cm3, nel=1);
       G4Element* C  = getElementOrThrow("C");
       CarbonFiber->AddElement(C, 100.0*perCent );
