@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.5 2011/07/12 04:52:27 kutschke Exp $
+// $Id: SimParticle.hh,v 1.6 2011/07/12 21:05:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Date: 2011/07/12 21:05:00 $
 //
 // Original author Rob Kutschke
 //
@@ -44,8 +44,32 @@ namespace mu2e {
 
     typedef cet::map_vector_key key_type;
 
-    // This c'tor is required for ROOT.
-    SimParticle(){}
+    // A default c'tor is required for ROOT.
+    SimParticle():
+      _id(),
+      _parentId(0),
+      _parentSim(),
+      _pdgId(),
+      _genIndex(-1),
+      _genParticle(),
+      _startPosition(),
+      _startMomentum(),
+      _startGlobalTime(0.),
+      _startProperTime(0.),
+      _startVolumeIndex(0),
+      _startG4Status(),
+      _creationCode(),
+      _endPosition(),
+      _endMomentum(),
+      _endGlobalTime(0.),
+      _endProperTime(0.),
+      _endVolumeIndex(0),
+      _endG4Status(),
+      _stoppingCode(),
+      _daughterSims(),
+      _weight(0.),
+      _endDefined(false){
+    }
 
     SimParticle( key_type                       aid,
                  art::Ptr<SimParticle> const&   aparentSim,
