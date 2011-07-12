@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.11 2011/05/24 17:19:03 kutschke Exp $
+// $Id: FromG4BLFile.hh,v 1.12 2011/07/12 04:52:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 
 // External includes

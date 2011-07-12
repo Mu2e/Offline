@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.12 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: CosmicToy.cc,v 1.13 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,7 @@
 #include "ConditionsService/inc/DAQParams.hh"
 #include "EventGenerator/inc/CosmicToy.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"

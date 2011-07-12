@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.8 2011/06/15 21:04:09 kutschke Exp $
+// $Id: StoppingTarget00_module.cc,v 1.9 2011/07/12 04:52:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/15 21:04:09 $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke.
 //
@@ -21,7 +21,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"

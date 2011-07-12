@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.11 2011/06/28 21:16:39 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/28 21:16:39 $
+// $Id: NuclearCaptureGun.cc,v 1.12 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Gianni Onorato
 //
@@ -29,7 +29,7 @@
 #include "EventGenerator/inc/NuclearCaptureGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"

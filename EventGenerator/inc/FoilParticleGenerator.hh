@@ -18,7 +18,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomLimitedExpo.hh"
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 #include "TargetGeom/inc/Target.hh"

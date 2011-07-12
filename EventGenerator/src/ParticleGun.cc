@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.12 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: ParticleGun.cc,v 1.13 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // Root includes

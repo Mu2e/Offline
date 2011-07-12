@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.25 2011/06/28 21:16:39 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/28 21:16:39 $
+// $Id: EjectedProtonGun.cc,v 1.26 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -28,7 +28,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"

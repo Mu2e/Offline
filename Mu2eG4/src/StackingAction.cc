@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.17 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: StackingAction.cc,v 1.18 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -29,7 +29,7 @@
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "cetlib/exception.h"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 
 // G4 includes
 #include "G4PhysicalVolumeStore.hh"

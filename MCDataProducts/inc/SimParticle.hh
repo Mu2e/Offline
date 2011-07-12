@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.4 2011/06/30 04:42:47 kutschke Exp $
+// $Id: SimParticle.hh,v 1.5 2011/07/12 04:52:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/30 04:42:47 $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -29,7 +29,7 @@
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 

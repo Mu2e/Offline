@@ -3,9 +3,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.8 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: ParticleGun.hh,v 1.9 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // External includes

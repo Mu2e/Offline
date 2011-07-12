@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_module.cc,v 1.11 2011/05/25 18:31:42 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/25 18:31:42 $
+// $Id: CEL_module.cc,v 1.12 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author R. Bernstein
 //
@@ -16,7 +16,7 @@
 #include "GeneralUtilities/inc/RootNameTitleHelper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"

@@ -15,7 +15,7 @@
 
 // Mu2e includes
 #include "Mu2eReflection/inc/Mu2eReflection.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 
 
 using namespace std;

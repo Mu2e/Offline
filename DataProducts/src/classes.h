@@ -1,14 +1,13 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.5 2011/06/07 21:28:24 kutschke Exp $
+// $Id: classes.h,v 1.6 2011/07/12 04:52:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 21:28:24 $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
 
-#include "Mu2eUtilities/inc/PDGCode.hh"
 #include "TrackerGeom/inc/StrawId.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 #include "cetlib/map_vector.h"

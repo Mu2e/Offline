@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.31 2011/06/28 21:16:39 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/28 21:16:39 $
+// $Id: DecayInOrbitGun.cc,v 1.32 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "TH1D.h"

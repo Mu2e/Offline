@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.14 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: PrimaryProtonGun.cc,v 1.15 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/Target.hh"

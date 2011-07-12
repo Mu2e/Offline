@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: GenParticle.hh,v 1.2 2011/06/30 03:13:59 kutschke Exp $
+// $Id: GenParticle.hh,v 1.3 2011/07/12 04:52:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/30 03:13:59 $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@
 //
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/GenId.hh"
 
 // Includes from external packages.

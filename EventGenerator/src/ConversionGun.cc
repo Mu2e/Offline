@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.29 2011/06/30 03:13:24 kutschke Exp $
+// $Id: ConversionGun.cc,v 1.30 2011/07/12 04:52:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/30 03:13:24 $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/zBinningForFoils.hh"
 

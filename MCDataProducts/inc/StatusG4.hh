@@ -3,9 +3,9 @@
 //
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
+// $Id: StatusG4.hh,v 1.2 2011/07/12 04:52:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@
 #include <iosfwd>
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/GenId.hh"
 
 // Includes from external packages.

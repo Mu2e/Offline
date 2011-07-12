@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.25 2011/06/28 21:16:39 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/28 21:16:39 $
+// $Id: PiCapture.cc,v 1.26 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -21,7 +21,7 @@
 // Mu2e includes
 #include "EventGenerator/inc/PiCapture.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // CLHEP includes

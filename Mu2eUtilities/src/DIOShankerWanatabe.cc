@@ -3,9 +3,9 @@
 // data, merged to Shanker's formula near the endpoint. The construction
 // of the spectrum is made by ShankerWanatabeSpectrum class
 //
-// $Id: DIOShankerWanatabe.cc,v 1.9 2011/05/18 16:21:55 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 16:21:55 $
+// $Id: DIOShankerWanatabe.cc,v 1.10 2011/07/12 04:52:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/12 04:52:27 $
 //
 //
 
@@ -19,7 +19,7 @@
 #include "Mu2eUtilities/inc/DIOShankerWanatabe.hh"
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "Mu2eUtilities/inc/PDGCode.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 
 using namespace std;
 
