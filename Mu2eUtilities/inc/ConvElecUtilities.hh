@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.12 2011/07/08 22:14:03 onoratog Exp $
+// $Id: ConvElecUtilities.hh,v 1.1 2011/07/13 01:42:48 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/07/08 22:14:03 $
+// $Date: 2011/07/13 01:42:48 $
 //
 // Original author Gianni Onorato
 //
@@ -27,7 +27,7 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 
 
@@ -47,13 +47,15 @@ namespace mu2e {
     ConvElecUtilities(const art::Event & event,
                       std::string const &generatorModuleLabel,
                       std::string const &g4ModuleLabel,
-                      std::string const &trackerStepPoints);
+                      std::string const &trackerStepPoints,
+                      std::string const &caloROModuleLabel);
 
     ~ConvElecUtilities();
 
   public:
 
     StepPointMC const& firstHit();
+    StepPointMC const& firstCaloHit();
     StrawIndex earliestStrawIndex() const;
     const SimParticle& simConvElec() const;
     const GenParticle& genConvElec();
@@ -70,9 +72,7 @@ namespace mu2e {
     size_t hasStepPointMC() const {
       return _convElecHits.size();
     }
-
-
-
+   
     //return a vector of index related to the stepPointMCCollection
     //identifying hits of the conversion electron
     const std::vector<size_t> & convElecHitsIdx() const {
@@ -88,21 +88,32 @@ namespace mu2e {
       return _totEDep;
     }
 
+    bool gotCaloHit();
+
     private:
 
-    std::string _generatorModuleLabel, _g4ModuleLabel, _trackerStepPoints;
+
+
+    std::string _generatorModuleLabel, _g4ModuleLabel, _trackerStepPoints, 
+      _caloROlabel, _caloCrylabel;
     double _totEDep;
     void checkConvElec(const art::Event & event);
     void lookAtHits(const art::Event & event);
+    void lookAtCalo(const art::Event & event);
     int _nconv;
     art::Handle<SimParticleCollection> _simParticles;
     art::Handle<GenParticleCollection> _genParticles;
     art::Handle<StepPointMCCollection> hits;
+    art::Handle<StepPointMCCollection> calohits;
     std::vector<size_t> _convElecHits;
     std::vector<StrawIndex> _convElecStrawIdx;
     key_type _convTrackId;
-    size_t _earliestidx;
+    size_t _earliestidx, _earliestcry, _earliestvector;
     std::auto_ptr<SimParticle> _simParticle;
+    bool _stepincalo;
+    StepPointMC _earliestSPMC;
+
+    //return a vector of index related to the stepPointMCCollection
 
 
   }; //end of class ConvElecUtilities

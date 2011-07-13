@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.cc,v 1.11 2011/07/08 22:14:03 onoratog Exp $
+// $Id: ConvElecUtilities.cc,v 1.1 2011/07/13 01:42:48 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/07/08 22:14:03 $
+// $Date: 2011/07/13 01:42:48 $
 //
 // Original author Gianni Onorato
 //
@@ -12,7 +12,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/ConvElecUtilities.hh"
+#include "Mu2eUtilities/inc/ConvElecUtilities.hh"
+#include <iostream>
 
 using namespace std;
 
@@ -21,19 +22,24 @@ namespace mu2e {
   ConvElecUtilities::ConvElecUtilities(const art::Event & event,
                                        string const &generatorModuleLabel,
                                        string const &g4ModuleLabel,
-                                       string const &trackerStepPoints):
+                                       string const &trackerStepPoints,
+                                       string const &caloROModuleLabel):
     _generatorModuleLabel( generatorModuleLabel ),
     _g4ModuleLabel( g4ModuleLabel ),
     _trackerStepPoints( trackerStepPoints ),
-    _totEDep(0)
+    _caloROlabel( caloROModuleLabel ),
+    _totEDep(0),
+    _stepincalo(false)
   {
     _nconv = 0;
     checkConvElec(event);
+
     if (_nconv>1) {
       throw cet::exception("RANGE")
         << "More than 1 conversion electron in the event";
     }
     lookAtHits(event);
+    lookAtCalo(event);
   }
 
   ConvElecUtilities::~ConvElecUtilities()
@@ -120,6 +126,60 @@ namespace mu2e {
     }
   }
 
+  void ConvElecUtilities::lookAtCalo(const art::Event & event) {
+
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
+    //    art::Handle<StepPointMCCollection> steps;
+    
+    event.getByLabel(_caloROlabel,"CaloHitMCCrystalPtr",mcptrHandle);
+    PtrStepPointMCVectorCollection const * collMCPTR = mcptrHandle.product();    
+    double time = 10e15; // dummy value
+    _earliestcry = 10000; // dummy value
+    _earliestvector = 10000;
+    for (size_t i1 = 0; i1 < collMCPTR->size(); ++i1) {
+      PtrStepPointMCVector::const_iterator i2 = collMCPTR->at(i1).begin();
+      while (i2 != collMCPTR->at(i1).end()) {
+	//    event.getByLabel(_g4ModuleLabel,"calorimeterRO",calohits);
+	//	cout << "Got hits in the calo and they are " << calohits->size() << endl;
+	//	cout << "Hit n. " << i+1 << ":" << endl;
+	StepPointMC const& hit = **i2;
+	//	cout << "Track Id of this hit is " << hit.trackId() 
+	//	     << " while the conversion electron has track id " << _convTrackId << endl;
+	if ( hit.trackId() == _convTrackId ) {
+	  //	  cout << "Time of this hit is " << hit.time() << endl;
+	  if (hit.time()<time) {
+	    time = hit.time();
+	    _earliestcry = i2->key();
+	    _earliestvector = i1;
+	    _earliestSPMC = const_cast<StepPointMC&>(hit);
+	  }
+	}
+      	++i2;
+      }
+    }
+    if (_earliestcry != 10000) {
+      _stepincalo = true;
+    }
+
+  
+
+  }
+
+  bool ConvElecUtilities::gotCaloHit() {
+    return _stepincalo;
+  }
+
+  StepPointMC const& ConvElecUtilities::firstCaloHit() {
+    if (_stepincalo) {
+      return (const StepPointMC&)_earliestSPMC; 
+    }  else {
+    //      return (*calohits)[_earliestcry];
+      throw cet::exception("RANGE")
+        << "No hit associated to Conversion Electron track in calorimeter.";
+    }
+  }
+  
+  //Return a reference to the easliest hit in the calorimeter
   //Return a reference to the earliest ConvElectron Hit
   StepPointMC const& ConvElecUtilities::firstHit() {
     if (hasStepPointMC()) {
@@ -139,6 +199,7 @@ namespace mu2e {
         << "No hit associated to Conversion Electron track.";
     }
   }
+
 
 
 

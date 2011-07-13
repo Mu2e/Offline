@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: ConvElInfo.fcl,v 1.1 2011/07/08 22:14:03 onoratog Exp $
+# $Id: ConvElInfo.fcl,v 1.2 2011/07/13 01:42:48 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/07/08 22:14:03 $
+# $Date: 2011/07/13 01:42:48 $
 #
 # Original author Gianni Onorato.
 
@@ -22,6 +22,7 @@ process_name : ConvElInfo
 source :
 {
   module_type : RootInput
+  #module_type : EmptyEvent  
   fileNames   : [ "dataKut.root" ]       
   maxEvents : -1
 }
