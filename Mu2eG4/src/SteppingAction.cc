@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.24 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: SteppingAction.cc,v 1.25 2011/07/13 19:25:14 logash Exp $
+// $Author: logash $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,8 @@ namespace mu2e {
     _doKillInHallAir(false),
     _killerVerbose(false),
     _eKineMin(0.),
+    _killLowKineticEnergyPDG(),
+    _eKineMinPDG(),
     _debugEventList(),
     _debugTrackList(),
     
@@ -67,6 +69,15 @@ namespace mu2e {
     // It is also used in StackingAction.
     if ( _doKillLowEKine ){
       _eKineMin = config.getDouble("g4.eKineMin");
+      config.getVectorInt("g4.killLowEKinePDG", _killLowKineticEnergyPDG, vector<int>() );
+      config.getVectorDouble("g4.eKineMinPDG", _eKineMinPDG, vector<double>() );
+      if( _killLowKineticEnergyPDG.size() != _eKineMinPDG.size() ) {
+	throw cet::exception("G4CONTROL")
+	  << "Sizes of g4.killLowEKinePDG and g4.eKineMinPDG do not match: "
+	  << _killLowKineticEnergyPDG.size() <<  " "
+	  << _eKineMinPDG.size() <<  " "
+	  << "\n";
+      }
     }
 
     vector<int> tmp1;
@@ -279,6 +290,15 @@ namespace mu2e {
       }
       return true;
     }
+
+    int pdg(trk->GetDefinition()->GetPDGEncoding());
+    for( size_t i=0; i<_killLowKineticEnergyPDG.size(); ++i ) {
+      if( _killLowKineticEnergyPDG[i] == pdg ) {
+	if( trk->GetKineticEnergy() < _eKineMinPDG[i] ) return true;
+	else return false;
+      }
+    }
+
     return false;
   }
 

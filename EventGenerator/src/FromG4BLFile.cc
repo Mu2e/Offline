@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.22 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: FromG4BLFile.cc,v 1.23 2011/07/13 19:25:14 logash Exp $
+// $Author: logash $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 //
@@ -86,6 +86,7 @@ namespace mu2e {
     _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
     _targetFrame(config.getBool("fromG4BLFile.targetFrame", false)),
     _nPartToSkip(config.getInt("fromG4BLFile.particlesToSkip",0)),
+    _duplicate(config.getBool("fromG4BLFile.duplicateParticles",false)),
 
     // Random number distributions; getEngine() comes from base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
@@ -184,11 +185,10 @@ namespace mu2e {
     // Particle data table.
     ConditionsHandle<ParticleDataTable> pdt("ignored");
 
-    // Ntuple buffer.
-    float nt[_ntup->GetNvar()];
-
     // Read particles from the file until the requested number of particle have been read.
     for ( int j =0; j<n; ++j ){
+
+      if( _duplicate && j>0 ) break;
 
       // Format of one line from the input file is: x y z Px Py Pz t PDGid EventID TrackID ParentID Weight
       double x, y, z, px, py, pz, t,  weight;
@@ -239,7 +239,10 @@ namespace mu2e {
       CLHEP::HepLorentzVector p4(px,py,pz,e);
 
       // Add particle to the output collection.
-      genParts.push_back( GenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );
+      for( int k=0; k<n; ++k ) {
+	genParts.push_back( GenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );
+	if( !_duplicate ) break;
+      }
 
       // Add extra information to the output collection.
       if( extra ) {
@@ -260,6 +263,9 @@ namespace mu2e {
         _hY0->Fill( y );
         _hZ0->Fill( z );
         _hT0->Fill( t );
+
+	// Ntuple buffer.
+	float nt[_ntup->GetNvar()];
 
         nt[0]  = x;
         nt[1]  = y;

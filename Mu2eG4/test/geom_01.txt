@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.92 2011/07/12 03:16:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 03:16:03 $
+// $Id: geom_01.txt,v 1.93 2011/07/13 19:25:14 logash Exp $
+// $Author: logash $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 //
@@ -57,6 +57,13 @@ bool   g4SteppingAction.killerVerbose = false;
 // These are used in both SteppingAction and StackingAction.
 bool   g4.killLowEKine  = false;
 double g4.eKineMin      = 0.0;    // Kinetic energy in MeV
+
+// One can set this limit particle-specific:
+// vector<int>    g4.killLowEKinePDG = {211, -211,   13,  -13,   11,  -11};
+// vector<double> g4.eKineMinPDG     = {9.0,  9.0, 20.0, 20.0, 95.0, 95.0};
+
+// This setting is used for special studies (stored muons)
+// bool g4.killPitchToLowToStore = false;
 
 // current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
 // G4ClassicalRK4

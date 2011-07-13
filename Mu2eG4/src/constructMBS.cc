@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.7 2011/07/06 22:45:34 logash Exp $
+// $Id: constructMBS.cc,v 1.8 2011/07/13 19:25:14 logash Exp $
 // $Author: logash $
-// $Date: 2011/07/06 22:45:34 $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author KLG
 //
@@ -124,15 +124,19 @@ namespace mu2e {
     CLHEP::Hep3Vector BSTSOffset =  BSTSOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();
 
     // Use BSTS as mother volume for MBS
+
+    /*
     TubsParams MBSMotherParams ( 0,
 				  BSTSOuterRadius,
 				  BSTSHLength);
     G4Material* vacuumMaterial     = findMaterialOrThrow(_config->getString("toyDS.insideMaterialName"));
+    */
 
     TubsParams BSTSParams ( BSTSInnerRadius,
                             BSTSOuterRadius,
                             BSTSHLength);
 
+    /*
     VolumeInfo MBSMotherInfo  = nestTubs("MBSMother",
 					 MBSMotherParams,
 					 vacuumMaterial,
@@ -147,13 +151,16 @@ namespace mu2e {
 					 placePV,
 					 doSurfaceCheck
 					 );
+    */
 
     VolumeInfo BSTSInfo  = nestTubs("BSTS",
                                     BSTSParams,
                                     findMaterialOrThrow(BSTSMaterialName),
                                     0,
-                                    G4ThreeVector(0,0,0),
-                                    MBSMotherInfo,
+				    BSTSOffset,
+				    //G4ThreeVector(0,0,0),
+				    detSolDownstreamVacInfo,
+				    //MBSMotherInfo,
                                     0,
                                     MBSisVisible,
                                     G4Colour::Gray(),
@@ -214,7 +221,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector BSTCOffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,BSTCZ);
     // now local offset in mother volume
-    CLHEP::Hep3Vector BSTCOffset =  BSTCOffsetInMu2e - MBSMotherInfo.centerInMu2e();
+    CLHEP::Hep3Vector BSTCOffset =  BSTCOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e(); // - MBSMotherInfo.centerInMu2e(); 
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " BSTCOffsetInMu2e                 : " << BSTCOffsetInMu2e << endl;
@@ -231,7 +238,8 @@ namespace mu2e {
                                     findMaterialOrThrow(BSTCMaterialName),
                                     0,
                                     BSTCOffset,
-                                    MBSMotherInfo,
+                                    //MBSMotherInfo,
+                                    detSolDownstreamVacInfo,
                                     0,
                                     MBSisVisible,
                                     orange,
@@ -254,7 +262,7 @@ namespace mu2e {
     CLHEP::Hep3Vector BSBSOffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,BSBSZ);
 
     // now local offset in mother volume
-    CLHEP::Hep3Vector BSBSOffset =  BSBSOffsetInMu2e - MBSMotherInfo.centerInMu2e();
+    CLHEP::Hep3Vector BSBSOffset =  BSBSOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e(); //-MBSMotherInfo.centerInMu2e();
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " BSBSOffsetInMu2e                 : " << BSBSOffsetInMu2e << endl;
@@ -270,7 +278,8 @@ namespace mu2e {
                                     findMaterialOrThrow(BSBSMaterialName),
                                     0,
                                     BSBSOffset,
-                                    MBSMotherInfo,
+                                    //MBSMotherInfo,
+                                    detSolDownstreamVacInfo,
                                     0,
                                     MBSisVisible,
                                     G4Colour::Yellow(),
@@ -293,7 +302,7 @@ namespace mu2e {
     CLHEP::Hep3Vector CLV2OffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,CLV2Z);
 
     // now local offset in mother volume
-    CLHEP::Hep3Vector CLV2Offset =  CLV2OffsetInMu2e - MBSMotherInfo.centerInMu2e();
+    CLHEP::Hep3Vector CLV2Offset =  CLV2OffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();//- MBSMotherInfo.centerInMu2e(); 
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " CLV2OffsetInMu2e                 : " << CLV2OffsetInMu2e << endl;
@@ -309,7 +318,8 @@ namespace mu2e {
                                     findMaterialOrThrow(CLV2MaterialName),
                                     0,
                                     CLV2Offset,
-                                    MBSMotherInfo,
+                                    detSolDownstreamVacInfo,
+                                    //MBSMotherInfo,
                                     0,
                                     MBSisVisible,
                                     orange,

@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.14 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: StackingAction.hh,v 1.15 2011/07/13 19:25:14 logash Exp $
+// $Author: logash $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,7 @@
 #include "G4UserStackingAction.hh"
 
 class G4VPhysicalVolume;
+class G4FieldManager;
 
 namespace mu2e {
 
@@ -67,6 +68,11 @@ namespace mu2e {
     // See Note 1).
     bool _killLowKineticEnergy;
     double _eKineMin;
+    std::vector<int> _killLowKineticEnergyPDG;
+    std::vector<double> _eKineMinPDG;
+
+    // Special condition for storage studies
+    bool _killPitchToLowToStore;
 
     // Only one of these may be non-empty.
     // List of particles to remove (others will be kept).
@@ -83,6 +89,10 @@ namespace mu2e {
 
     // Check to see if we kill low p tracks in the dirt or other shielding.
     bool cosmicKiller( const G4Track* aTrack);
+
+    // hack
+    double _Bmax;
+    G4FieldManager * _globalFM;
 
   };
 

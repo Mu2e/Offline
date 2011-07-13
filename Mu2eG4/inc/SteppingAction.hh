@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.14 2011/06/30 20:27:53 logash Exp $
+// $Id: SteppingAction.hh,v 1.15 2011/07/13 19:25:14 logash Exp $
 // $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 //
@@ -76,6 +76,8 @@ namespace mu2e {
 
     // Minimum energy cut.
     double _eKineMin;
+    std::vector<int> _killLowKineticEnergyPDG;
+    std::vector<double> _eKineMinPDG;
 
     // Maximum allowed number of steps per event
     int _maxSteps;

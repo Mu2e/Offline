@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.12 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: FromG4BLFile.hh,v 1.13 2011/07/13 19:25:14 logash Exp $
+// $Author: logash $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 //
@@ -81,6 +81,9 @@ namespace mu2e {
     //Number of particles to skip form the input file.
     //Useful to run grid-jobs reading different segments of the same txt file
     int _nPartToSkip;
+
+    // Duplicate the same particle n times, rather then read new particles n times
+    bool _duplicate;
 
     // End: Information from the run time configuration.
 

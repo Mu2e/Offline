@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.96 2011/07/07 16:00:40 logash Exp $
+// $Id: Mu2eWorld.cc,v 1.97 2011/07/13 19:25:14 logash Exp $
 // $Author: logash $
-// $Date: 2011/07/07 16:00:40 $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 //
@@ -482,11 +482,13 @@ namespace mu2e {
 	ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
 	cout << "Use uniform field in DS3" << endl;
       }
+      /*
       if( _config->getBool("hasMBS",false) ) {
 	VolumeInfo const & MBSMotherInfo = _helper->locateVolInfo("MBSMother");
 	G4LogicalVolume* mbsMother = MBSMotherInfo.logical;
 	mbsMother->SetFieldManager(0,true);
       }
+      */
     }
 
     // Adjust properties of the integrators to control accuracy vs time.

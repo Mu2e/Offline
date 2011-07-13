@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.18 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: StackingAction.cc,v 1.19 2011/07/13 19:25:14 logash Exp $
+// $Author: logash $
+// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 //
@@ -38,6 +38,12 @@
 #include "G4Track.hh"
 #include "G4ios.hh"
 
+#include "G4TransportationManager.hh"
+#include "G4LogicalVolume.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4FieldManager.hh"
+#include "G4Field.hh"
+
 using namespace std;
 
 namespace mu2e {
@@ -52,12 +58,17 @@ namespace mu2e {
     _primaryOnly(false),
     _killLowKineticEnergy(false),
     _eKineMin(0.),
+    _killLowKineticEnergyPDG(),
+    _eKineMinPDG(),
+    _killPitchToLowToStore(false),
     _pdgToDrop(),
     _pdgToKeep(),
     _dirtBodyPhysVol(0),
     _dirtCapPhysVol(0),
     _dirtG4Ymin(0),
-    _dirtG4Ymax(0){
+    _dirtG4Ymax(0),
+    _Bmax(0),
+    _globalFM(0) {
 
     // Get control info from run time configuration.
     _doCosmicKiller       = config.getBool  ("g4.doCosmicKiller",   _doCosmicKiller );
@@ -66,6 +77,7 @@ namespace mu2e {
     _yaboveDirtYmin       = config.getDouble("g4.yaboveDirtYmin",   _yaboveDirtYmin );
     _primaryOnly          = config.getBool  ("g4.stackPrimaryOnly", _primaryOnly    );
     _killLowKineticEnergy = config.getBool  ("g4.killLowEKine",     _killLowKineticEnergy );
+    _killPitchToLowToStore= config.getBool  ("g4.killPitchToLowToStore",_killPitchToLowToStore);
 
     config.getVectorInt("g4.stackingActionDropPDG", _pdgToDrop, vector<int>() );
     config.getVectorInt("g4.stackingActionKeepPDG", _pdgToKeep, vector<int>() );
@@ -74,6 +86,15 @@ namespace mu2e {
     // It is also used in SteppingAction.
     if ( _killLowKineticEnergy ){
       _eKineMin = config.getDouble("g4.eKineMin");
+      config.getVectorInt("g4.killLowEKinePDG", _killLowKineticEnergyPDG, vector<int>() );
+      config.getVectorDouble("g4.eKineMinPDG", _eKineMinPDG, vector<double>() );
+      if( _killLowKineticEnergyPDG.size() != _eKineMinPDG.size() ) {
+	throw cet::exception("G4CONTROL")
+	  << "Sizes of g4.killLowEKinePDG and g4.eKineMinPDG do not match: "
+	  << _killLowKineticEnergyPDG.size() <<  " "
+	  << _eKineMinPDG.size() <<  " "
+	  << "\n";
+      }
     }
 
     if ( !_pdgToDrop.empty() && !_pdgToKeep.empty() ){
@@ -110,6 +131,43 @@ namespace mu2e {
     // Find the addresses of some physical volumes of interest.  See note 3.
     _dirtBodyPhysVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtBody");
     _dirtCapPhysVol  = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtCap");
+    
+    if( _killPitchToLowToStore ) {
+
+      // Get the value of maximum (sort-of) field in DS3. It is used later
+      // to calculate if muon can be stored
+
+      double Bfield[10], point[4];
+      G4Navigator *n = (G4TransportationManager::GetTransportationManager())->GetNavigatorForTracking();
+      _globalFM = (G4TransportationManager::GetTransportationManager())->GetFieldManager();
+      
+      // This is a point above MBS somewhere in DS3
+      point[0]=-3904;
+      point[1]=-7150+600;
+      point[2]=-4000+14000;
+      point[3]=0;
+      
+      G4VPhysicalVolume* p1 = n->LocateGlobalPointAndSetup(G4ThreeVector(point[0],point[1],point[2]));
+
+      cout << "StakingAction: get max field in " << p1->GetName() << endl;
+      G4FieldManager *fmv = p1->GetLogicalVolume()->GetFieldManager();
+      if( ! fmv ) fmv=_globalFM;
+    
+      fmv->GetDetectorField()->GetFieldValue(point,Bfield);
+      
+      _Bmax = sqrt(Bfield[0]*Bfield[0]+Bfield[1]*Bfield[1]+Bfield[2]*Bfield[2]);
+      
+      cout << "X=(" 
+	   << point[0]/CLHEP::tesla << ", "
+	   << point[1]/CLHEP::tesla << ", "
+	   << point[2]/CLHEP::tesla << ") "
+	   << "B=(" 
+	   << Bfield[0]/CLHEP::tesla << ", "
+	   << Bfield[1]/CLHEP::tesla << ", "
+	   << Bfield[2]/CLHEP::tesla << ") "
+	   << _Bmax/CLHEP::tesla << endl;
+      
+    }
 
   }
 
@@ -159,6 +217,43 @@ namespace mu2e {
       if ( trk->GetKineticEnergy() < _eKineMin ) {
         return fKill;
       }
+      int pdg(trk->GetDefinition()->GetPDGEncoding());
+      for( size_t i=0; i<_killLowKineticEnergyPDG.size(); ++i ) {
+	if( _killLowKineticEnergyPDG[i] == pdg ) {
+	  if( trk->GetKineticEnergy() < _eKineMinPDG[i] ) return fKill;
+	  else break;
+	}
+      }
+    }
+
+    if ( _killPitchToLowToStore ){
+
+      // Very special test: we check that muon pitch is large enough to store it
+      // in DS. Used only for special studies. 
+      int pdg(trk->GetDefinition()->GetPDGEncoding());
+      if( pdg==-13 || pdg==13 ) { 
+
+	G4FieldManager *fmv = trk->GetVolume()->GetLogicalVolume()->GetFieldManager();
+	if( ! fmv ) fmv=_globalFM;
+	
+	double Bfield[10], point[4];
+
+	point[0]=trk->GetPosition().x();
+	point[1]=trk->GetPosition().y();
+
+	point[2]=trk->GetPosition().z();
+	point[3]=0;
+	  
+	fmv->GetDetectorField()->GetFieldValue(point,Bfield);
+	
+	double B = sqrt(Bfield[0]*Bfield[0]+Bfield[1]*Bfield[1]+Bfield[2]*Bfield[2]);
+	if( fabs(B)>1e-6 && trk->GetMomentum().mag2()>0 ) {
+	  if( B>_Bmax ) return fKill;
+	  if( (trk->GetMomentum().perp2()/trk->GetMomentum().mag2())<(B/_Bmax) ) return fKill;
+	}
+	
+      }
+
     }
 
     return fUrgent;

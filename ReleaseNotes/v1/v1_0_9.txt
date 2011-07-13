@@ -1,11 +1,56 @@
 
-  $Id: v1_0_9.txt,v 1.9 2011/07/12 05:00:29 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/07/12 05:00:29 $
+  $Id: v1_0_9.txt,v 1.10 2011/07/13 19:25:14 logash Exp $
+  $Author: logash $
+  $Date: 2011/07/13 19:25:14 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_0_9
+
+9) July 13, 2001 logash
+
+   Number of changes needed to do stored muons simulation (if field 
+   gradient is applied in DS3).
+
+   1. Added new option to FromG4BLFile generator: 
+       bool   fromG4BLFile.duplicateParticles = false;
+     If it is true, the generator reads one particle from the file 
+     and adds it "fromG4BLFile.mean" times to the event. If it is 
+     false, the generator each time reads new event from the file 
+     (default behaviour). This is useful if one needs to loop many 
+     times over the same input file. 
+
+   2. Added option to set minimum kinetic energy individually for 
+      each kind of particle. For example, the following settings:
+	 bool   g4.killLowEKine  = true;
+	 double g4.eKineMin      = 0.1;    // Kinetic energy in MeV
+	 vector<int>    g4.killLowEKinePDG = {211, -211,   13,  -13,   11,  -11};
+	 vector<double> g4.eKineMinPDG     = {9.0,  9.0, 20.0, 20.0, 95.0, 95.0};
+      any particle with kinetic energy <0.1 MeV is killed, and pions are killed
+      if kinetic energy goes below 9 MeV, muons - 20 MeV, electrons - 95 MeV.
+
+      The kill is implemented in both StackingAction and Stepping Action.
+
+    3. Added new option to kill muons if they cannot be stored in DS:
+         bool g4.killPitchToLowToStore = false;
+
+       This is only used in very special studies. By default it is false.      
+
+    4. Removed mother volume for MBS (see item 3.2 in this document). With the 
+       mother volume there is rare crash of G4, which needs to be investigated.
+
+   Modified files:
+
+     EventGenerator/inc/FromG4BLFile.hh
+     EventGenerator/src/FromG4BLFile.cc
+     Mu2eG4/inc/StackingAction.hh
+     Mu2eG4/inc/SteppingAction.hh
+     Mu2eG4/src/Mu2eWorld.cc
+     Mu2eG4/src/StackingAction.cc
+     Mu2eG4/src/SteppingAction.cc
+     Mu2eG4/src/constructMBS.cc
+     Mu2eG4/test/beamline_genconfig.txt
+     Mu2eG4/test/geom_01.txt
 
 8) July 11, 2011 kutschke
    To break a linkage loop I moved PDGCode.hh from Mu2eUtilities/inc to MCDataProducts/inc.
