@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.1 2011/07/13 01:42:48 onoratog Exp $
+// $Id: ConvElecUtilities.hh,v 1.2 2011/07/13 04:20:58 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/07/13 01:42:48 $
+// $Date: 2011/07/13 04:20:58 $
 //
 // Original author Gianni Onorato
 //
@@ -59,7 +59,6 @@ namespace mu2e {
     StrawIndex earliestStrawIndex() const;
     const SimParticle& simConvElec() const;
     const GenParticle& genConvElec();
-
 
     //Trivial accessors defined here
 

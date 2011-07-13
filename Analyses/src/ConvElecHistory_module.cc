@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: ConvElecHistory_module.cc,v 1.2 2011/07/13 01:42:48 onoratog Exp $
+// $Id: ConvElecHistory_module.cc,v 1.3 2011/07/13 04:20:58 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/07/13 01:42:48 $
+// $Date: 2011/07/13 04:20:58 $
 //
 // Original author Gianni Onorato
 //
@@ -111,14 +111,16 @@ namespace mu2e {
 
     Float_t B_evt, B_run; // --2--
     Float_t B_gentime, B_genx, B_geny, B_genz, B_gene, B_genp, B_gencosth, B_genphi, B_genfoil; // --9--
-    Float_t B_nhit, B_totedep, B_hit1x, B_hit1y, B_hit1z, B_hit1p, B_hit1costh, B_hit1phi, B_hit1time; // --9--
+    Float_t B_totedep, B_hitx[10000], B_hity[10000], B_hitz[10000], B_hitp[10000], B_hitcosth[10000], B_hitphi[10000], B_hittime[10000]; // --8--
+    Int_t B_nhit; // --1--
     // Float_t B_ncrys, B_totcryedep; 
     Float_t B_cry1x, B_cry1y, B_cry1z, B_cry1p, B_cry1costh, B_cry1phi, B_cry1time; // --9--
     Float_t B_deadx, B_deady, B_deadz, B_deadtime, B_deadvol; // --5--
     Float_t B_vdx, B_vdy, B_vdz, B_vdp, B_vdcosth, B_vdphi, B_vdtime; // --7--
-      Int_t   B_ndau; // --1--
+    Int_t   B_ndau, B_isfirst[1000]; // --2--
     Float_t B_daux[1000], B_dauy[1000], B_dauz[1000], B_daup[1000], B_daucosth[1000], B_dauphi[1000], B_dautime[1000], B_daupdgid[1000]; //--8--               
-    
+    Int_t B_nstraw;
+    Float_t B_strawidx[10000], B_strawlay[10000], B_strawdev[10000], B_strawsec[10000], B_strawx[10000], B_strawy[10000], B_strawz[10000];
   };
 
 
@@ -178,15 +180,26 @@ namespace mu2e {
       _tNtup->Branch("gencosth", &B_gencosth, "gencosth/F");
       _tNtup->Branch("genphi", &B_genphi, "genphi/F");
       _tNtup->Branch("genfoil", &B_genfoil, "genfoil/F");
-      _tNtup->Branch("nhit", &B_nhit, "nhit/F");
+      _tNtup->Branch("nhit", &B_nhit, "nhit/I");
       _tNtup->Branch("totedeptr", &B_totedep, "totedeptr/F");
-      _tNtup->Branch("hit1x", &B_hit1x, "hit1x/F");
-      _tNtup->Branch("hit1y", &B_hit1y, "hit1y/F");
-      _tNtup->Branch("hit1z", &B_hit1z, "hit1z/F");
-      _tNtup->Branch("hit1p", &B_hit1p, "hit1p/F");
-      _tNtup->Branch("hit1costh", &B_hit1costh, "hit1costh/F");
-      _tNtup->Branch("hit1phi", &B_hit1phi, "hit1phi/F");
-      _tNtup->Branch("hit1time", &B_hit1time, "hit1time/F");
+      _tNtup->Branch("hitx[nhit]", B_hitx, "hitx[nhit]/F");
+      _tNtup->Branch("hity[nhit]", B_hity, "hity[nhit]/F");
+      _tNtup->Branch("hitz[nhit]", B_hitz, "hitz[nhit]/F");
+      _tNtup->Branch("hitp[nhit]", B_hitp, "hitp[nhit]/F");
+      _tNtup->Branch("hitcosth[nhit]", B_hitcosth, "hitcosth[nhit]/F");
+      _tNtup->Branch("hitphi[nhit]", B_hitphi, "hitphi[nhit]/F");
+      _tNtup->Branch("hittime[nhit]", B_hittime, "hittime[nhit]/F");
+      _tNtup->Branch("isfirst[nhit]", B_isfirst, "isfirst[nhit]/I");
+
+      _tNtup->Branch("nstraw", &B_nstraw, "nstraw/I");
+      _tNtup->Branch("strawx[nstraw]", B_strawx, "strawx[nstraw]/F");
+      _tNtup->Branch("strawy[nstraw]", B_strawy, "strawy[nstraw]/F");
+      _tNtup->Branch("strawz[nstraw]", B_strawz, "strawz[nstraw]/F");
+      _tNtup->Branch("strawidx[nstraw]", B_strawidx, "strawidx[nstraw]/F");
+      _tNtup->Branch("strawlay[nstraw]", B_strawlay, "strawlay[nstraw]/F");
+      _tNtup->Branch("strawdev[nstraw]", B_strawdev, "strawdev[nstraw]/F");
+      _tNtup->Branch("strawsec[nstraw]", B_strawsec, "strawsec[nstraw]/F");
+
       //      _tNtup->Branch("ncrys", &B_ncrys, "ncrys/F");
       //   _tNtup->Branch("totcryedep", &B_totcryedep, "totcryedep/F");
       _tNtup->Branch("cry1x", &B_cry1x, "cry1x/F");
@@ -277,15 +290,61 @@ namespace mu2e {
     B_nhit     = CEUt.hasStepPointMC();
     B_totedep  = CEUt.totEDep();
 
-    StepPointMC const & hit1 = CEUt.firstHit();
 
-    B_hit1x     = hit1.position().x();
-    B_hit1y     = hit1.position().y();
-    B_hit1z     = hit1.position().z();
-    B_hit1p     = hit1.momentum().mag();
-    B_hit1costh = hit1.momentum().cosTheta();
-    B_hit1phi   = hit1.momentum().phi();
-    B_hit1time  = hit1.time();
+    const vector<size_t> & hitsidx = CEUt.convElecHitsIdx();
+
+    art::Handle<StepPointMCCollection> hits;
+    evt.getByLabel(_g4ModuleLabel, _trackerStepPoints, hits);
+
+    size_t firstidx = 10000;
+    double temptime = 100000;
+
+    for (size_t i=0; i<hitsidx.size(); ++i) {
+
+      StepPointMC const& hit = (*hits)[hitsidx[i]];
+      
+      B_hitx[i]     = hit.position().x();
+      B_hity[i]     = hit.position().y();
+      B_hitz[i]     = hit.position().z();
+      B_hitp[i]     = hit.momentum().mag();
+      B_hitcosth[i] = hit.momentum().cosTheta();
+      B_hitphi[i]   = hit.momentum().phi();
+      B_hittime[i]  = hit.time();
+     
+      if (hit.time() < temptime) {
+	temptime = hit.time();
+	firstidx = i;
+      }      
+    }
+
+    for (size_t i=0; i<hitsidx.size(); ++i) {
+      if (i==firstidx) {
+	B_isfirst[i] = 1; 
+      } else {
+	B_isfirst[i] = 0;
+      }
+    }
+
+    const Tracker& tracker = getTrackerOrThrow();
+
+    const vector<StrawIndex> & strawvec = CEUt.convElecStrawIdx();
+    B_nstraw = strawvec.size();
+    if (strawvec.size() > 0) {
+      //      art::Handle<StrawHitCollection> pdataHandle;
+      //  evt.getByLabel(_makerModuleLabel,pdataHandle);
+      //  StrawHitCollection const* sthits = pdataHandle.product();
+      for (size_t i=0; i<strawvec.size(); ++i) {
+	Straw stw = tracker.getStraw(strawvec[i]);
+	B_strawidx[i] = stw.id().getStraw();
+	B_strawlay[i] = stw.id().getLayerId().getLayer();
+	B_strawdev[i] = stw.id().getDeviceId();
+	B_strawsec[i] = stw.id().getSectorId().getSector();
+	const CLHEP::Hep3Vector stMidPoint3 = stw.getMidPoint();
+	B_strawx[i] = stMidPoint3.getX();
+	B_strawy[i] = stMidPoint3.getY();
+	B_strawz[i] = stMidPoint3.getZ();
+      }
+    } 
 
     if (CEUt.gotCaloHit()) {
       StepPointMC const & calo1 = CEUt.firstCaloHit();
