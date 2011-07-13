@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.8 2011/07/09 05:01:27 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.9 2011/07/13 20:44:27 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/09 05:01:27 $
+// $Date: 2011/07/13 20:44:27 $
 //
 
 // the following has to come before other BaBar includes
@@ -74,7 +74,9 @@ namespace mu2e
     _maxhitchi(pset.get<double>("maxhitchi",5.0)),
     _maxiter(pset.get<unsigned>("maxiter",3)),
     _minnstraws(pset.get<unsigned>("minnstraws",20)),
-    _maxweed(pset.get<unsigned>("maxweed",10))
+    _maxweed(pset.get<unsigned>("maxweed",10)),
+    _herr(pset.get<double>("hiterr",0.1)),
+    _ssmear(pset.get<double>("seedsmear",1e6))
   {
       _kalcon = new KalContext;
       _kalcon->setBendSites(_fieldcorr);
@@ -84,7 +86,7 @@ namespace mu2e
       // these are currently fixed, they should be set as parameters and re-optimized FIXME!!!!
       _kalcon->setMaxIntersections(0);
       _kalcon->setMaxDMom(10);
-      _kalcon->setSmearFactor(1e6);
+      _kalcon->setSmearFactor(_ssmear);
       _kalcon->setMinDOF(20,TrkEnums::bothView);
       _kalcon->setMinDOF(20,TrkEnums::xyView);
       _kalcon->setMinDOF(0,TrkEnums::zView);
@@ -181,7 +183,7 @@ namespace mu2e
       double vwire = tcal->SignalVelocity(straw.index());
       tsum += strawhit.time() - tprop - straw.getHalfLength()/vwire;
     // create the hit object
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,mytrk.trkT0().t0Err());
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,mytrk.trkT0().t0Err(),_herr);
       assert(trkhit != 0);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       TrkPoca poca(mytrk.helix(),hflt,*trkhit->hitTraj(),trkhit->hitLen());

@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.6 2011/07/09 05:01:27 mu2ecvs Exp $
+// $Id: TrkStrawHit.hh,v 1.7 2011/07/13 20:44:27 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/09 05:01:27 $
+// $Date: 2011/07/13 20:44:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -51,7 +51,7 @@ namespace mu2e
 
   class TrkStrawHit : public TrkHitOnTrk {
   public:
-    TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,double t0, double t0err);
+    TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,double t0, double t0err, double herr);
     virtual ~TrkStrawHit();
 //  Simplistic implementation of TrkHitOnTrk interface.  Lie where necessary
     virtual TrkStrawHit* clone(TrkRep* parentRep, const TrkDifTraj* trkTraj = 0) const;
@@ -114,7 +114,6 @@ namespace mu2e
 // parameters that should come from some service: FIXME!!!
     static double _vdrift;
     static double _maxdriftpull;
-    static double _rerr; // intrinsic hit error; should come from a calibration object, FIXME!!!
   };
 }
 

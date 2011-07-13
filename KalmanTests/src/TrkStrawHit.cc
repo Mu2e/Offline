@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.7 2011/07/09 05:01:27 mu2ecvs Exp $
+// $Id: TrkStrawHit.cc,v 1.8 2011/07/13 20:44:27 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/09 05:01:27 $
+// $Date: 2011/07/13 20:44:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -26,7 +26,6 @@ namespace mu2e
   // this here.  I'm also hard-coding the wire signal propagation velocity.  FIXME!!!!!
   double TrkStrawHit::_vdrift = 0.05; // mm per nanosecond
   double TrkStrawHit::_maxdriftpull = 4.0; // disable hits with unphysical drift distance pulls beyond this cut
-  double TrkStrawHit::_rerr = 0.1; // 100um intrinsic error
 
   TrkDummyHit::TrkDummyHit(TrkEnums::TrkViewInfo v, int id, TrkDetElemId::systemIndex sys)
       : _view(v), _eid(id,sys)
@@ -38,14 +37,14 @@ namespace mu2e
   TrkDummyHit* TrkDummyHit::clone() const { return new TrkDummyHit(*this);}
   
   
-  TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw, double hitt0, double hitt0_err) :
+  TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw, double hitt0, double hitt0_err,double herr) :
     TrkHitOnTrk(new TrkDummyHit(TrkEnums::xyView,strawhit.strawIndex().asInt(),TrkDetElemId::null),1e-5),
     _strawhit(strawhit),
     _straw(straw),
     _istraw(istraw),
     _hitt0(hitt0),
     _hitt0_err(hitt0_err),
-    _herr(_rerr),
+    _herr(herr),
     _iamb(0)
   {
 // is there an efficiency issue fetching the calibration object for every hit???
