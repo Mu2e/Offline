@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.3 2011/07/11 15:12:26 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.4 2011/07/13 18:20:23 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/11 15:12:26 $
+// $Date: 2011/07/13 18:20:23 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -225,8 +225,6 @@ namespace mu2e
   void
   KalFitMC::trkDiag(MCEvtData const& mcdata,TrkDef const& mytrk, TrkKalFit const& myfit) {
     if(_trkdiag == 0)createTrkDiag();
-// mc t0 value
-    _mct0 = mytrk.trkT0().t0();
 // initial t0 value
     _t00 = myfit._t00.t0();
     _t00err = myfit._t00.t0Err();
@@ -285,17 +283,18 @@ namespace mu2e
 // find the mc step at the entrance to the detector
     std::vector<MCStepItr> steps;
     GeomHandle<VirtualDetector> vdg;
+    GeomHandle<DetectorSystem> det;
     cet::map_vector_key trkid(1); // conversion electron
-    findMCSteps(mcdata._mcvdsteps,trkid,_entvids,steps);
+    findMCSteps(mcdata._mcvdsteps,trkid,_midvids,steps);
     if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
     // take the first point; hopefully this is the entrance!
       MCStepItr imcs = steps[0];
       CLHEP::Hep3Vector mcmom = imcs->momentum();
-      CLHEP::Hep3Vector mcpos = imcs->position();
+      CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
   // initial length estimate defines convention for flightlength, z0
-      double mclen = loclen;
+      double mclen(0.0);
       HepVector mcpar(5);
-      TrkHelixUtils::helixFromMom( mcpar, mclen, 
+      TrkHelixUtils::helixFromMom( mcpar, mclen,
         HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
         mcmom,-1.,bfMgr->getDSUniformValue().z());
       _mcmom = imcs->momentum().mag();
@@ -303,6 +302,16 @@ namespace mu2e
     } else {
       _mcmom = -1;
     }
+// mc t0 value; at midpoint of detector
+    findMCSteps(mcdata._mcvdsteps,trkid,_midvids,steps);
+    if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())&& steps[0]->momentum().mag() > _mintrkmom){
+    // take the first point
+      MCStepItr imcs = steps[0];
+      _mct0 = imcs->time();
+    } else {
+      _mct0 = 0.0;
+    }
+    
     _trkdiag->Fill(); 
   }
 
