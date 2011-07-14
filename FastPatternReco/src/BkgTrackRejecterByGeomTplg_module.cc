@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.3 2011/06/27 00:41:50 tassiell Exp $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.4 2011/07/14 16:38:54 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/27 00:41:50 $
+// $Date: 2011/07/14 16:38:54 $
 //
 // Original author G. Tassielli
 //
@@ -17,6 +17,7 @@
 #include <cstring>
 #include <algorithm>
 #include <limits>
+#include <ctime>
 
 #include <boost/shared_ptr.hpp>
 
@@ -66,6 +67,7 @@
 #include "TCanvas.h"
 //#include "TDirectory.h"
 #include "TMath.h"
+#include "TH1I.h"
 #include "TH1F.h"
 #include "TH2I.h"
 #include "TH2F.h"
@@ -148,6 +150,13 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                   _mean=tmpMean/((float) _nHit);
                   _MS=tmpMS/((float) _nHit);
                   if (_lastStationID!=_firstStationID) _sigma = sqrt(_MS-pow(_mean,2));
+                  else _sigma = 0.288675135;   // 1/sqrt(12)
+          }
+
+          bool operator==( rowClust const& comp) const {
+                  return ( _firstStationID==comp._firstStationID &&
+                                  _lastStationID==comp._lastStationID &&
+                                  _nHit==comp._nHit );
           }
 
   protected:
@@ -159,7 +168,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
   typedef boost::shared_ptr<rowClust> rwClustPtr;
   typedef std::vector< rwClustPtr > rwclstvec;
   typedef std::map<unsigned short, rwclstvec> rwclinrwrel;                                                         //"row Clusters" for each row contained
-  typedef std::multimap<unsigned short, rwClustPtr > rwclincl;                                                   //"row Clusters" for each row contained in Cluster
+  typedef std::multimap<unsigned short, rwClustPtr, less<unsigned short> > rwclincl;                                                   //"row Clusters" for each row contained in Cluster
 
 
   struct Clust{
@@ -241,7 +250,10 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
           }
           void addRwClust( unsigned short iRow, rwClustPtr &iRwclust ) {
+                  //cout<<"\t start adding I row "<<iRow<<" to cluster"<<endl;
+                  //cout<<"\t previous dim of _rClusts "<<_rClusts.size()<<endl;
                   _rClusts.insert( rwclincl::value_type( iRow, iRwclust ) );
+                  //cout<<"\t --------------------- 1 ---------------------"<<endl;
                   _nHit+=iRwclust->_nHit;
                   if ( iRow<_firstSectorID ) _firstSectorID=iRow;
                   if ( iRow>_lastSectorID ) _lastSectorID=iRow;
@@ -274,13 +286,17 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                   _m=(_nHit*tmpMeanXY-tmpMeanX*tmpMeanY)/tmpNsCovX;
                                   _q=(tmpMSX*tmpMeanY-tmpMeanX*tmpMeanXY)/tmpNsCovX;
                                   if (_nHit>2) {
-                                          tmpSigmaY=sqrt( tmpNsCovY/(_nHit*(_nHit-2)) );
+                                          //tmpSigmaY=sqrt( tmpNsCovY/(_nHit*(_nHit-2)) );
+                                          tmpSigmaY=sqrt( ((tmpNsCovY-pow(_m,2)*tmpNsCovX)/(_nHit*_nHit-2)) );
                                           _errm=tmpSigmaY/sqrt( tmpNsCovX/_nHit );
-                                          _errq=tmpSigmaY*sqrt( 1.00000/_nHit+pow(tmpMeanX,2)/(_nHit*tmpNsCovX) );
+                                          //_errq=tmpSigmaY*sqrt( 1.00000/_nHit+pow(tmpMeanX,2)/(_nHit*tmpNsCovX) );
+                                          _errq=tmpSigmaY*tmpMSX/tmpNsCovX;
                                   }
                           }
                   }
+                  //cout<<"\t I row "<<iRow<<" added to cluster"<<endl;
           }
+
           rwclincl _rClusts;
           unsigned int _nHit;
           float _mean_Sttn;
@@ -361,6 +377,12 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     // Label of the module that made the hits.
     std::string _timeRejecterModuleLabel;
 
+    // Use n times sigma for matching the clusters in the Sector plane
+    float _nSigmaForClMatch;
+
+    // Use n times sigma for matching the clusters slope with 0
+    float _nSigmaForClSlope;
+
     // Label of the generator.
     std::string _generatorModuleLabel;
 
@@ -382,6 +404,9 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     TObjArray*    _hPkSecVsStationDist2W;
     TObjArray*    _hPkSecVsStationDist2WGood;
     TObjArray*    _hPkAccArrSecStation;
+
+    TH1I*         _hClockCicles;
+    TH1F*         _hExecTime;
 
 //    TF1*          _fg;
 //    TCanvas*      _cnvForPeakstudy;
@@ -421,7 +446,9 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _makerModuleLabel(pset.get<string>("makerModuleLabel")),
     _timeRejecterModuleLabel(pset.get<string>("tRejecterModuleLabel")),
-   _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+    _nSigmaForClMatch(pset.get<float>("nSigmaForClMatch")),
+    _nSigmaForClSlope(pset.get<float>("nSigmaForClSlope")),
+    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
    /*_nAccumulate(pset.get<int>("nAccumulate",20)),*/
     _doDisplay(pset.get<bool>("doDisplay",false)),
 
@@ -435,6 +462,8 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     _hPkSecVsStationDist2W(0),
     _hPkSecVsStationDist2WGood(0),
     _hPkAccArrSecStation(0),
+    _hClockCicles(0),
+    _hExecTime(0),
 
 //    _fg(0),
 //    _cnvForPeakstudy(0),
@@ -451,11 +480,12 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 //    _directory(0)
   {
           cout<<"Constructed"<<endl;
+          if ( _nSigmaForClMatch<0.0 ) _nSigmaForClMatch*=-1.00000;
+          if ( _nSigmaForClSlope<0.0 ) _nSigmaForClSlope*=-1.00000;
+          // Tell the framework what we make.
+          produces<SctrSttnClusterGroupCollection>();
 
-      // Tell the framework what we make.
-      produces<SctrSttnClusterGroupCollection>();
-
- }
+  }
 
   void BkgTrackRejecterByGeomTplg::beginJob(){
 
@@ -463,6 +493,9 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
     // Get access to the TFile service and save current directory for later use.
     art::ServiceHandle<art::TFileService> tfs;
+    _hClockCicles       = tfs->make<TH1I>( "hClockCicles",   "N clock cicles needed to analyze one Event by BkgTrackRejecterByGeomTplg", 2000, 5000, 15000  );
+    _hExecTime          = tfs->make<TH1F>( "hExecTime",   "Execution time to analyze one Event by BkgTrackRejecterByTime", 1000, 0.0, 1.0  );
+
 
     ntimeBin    = (int) maxTimeHist/timeBinDim;
 
@@ -546,7 +579,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
     stMaprel ssmap_Bin_Straw_rel;           //relation between straw and the AbsSector (Rotation) vs Station map
     stMaprel::iterator ssmpbnstrw_rel_it;   //iterator for relation between straw and the AbsSector (Rotation) vs Station map
-    int tmpiGeomBin;
+    int tmpiGeomBin, tmpiGeomBinRow;
 
     art::Handle<StrawHitCollection> pdataHandle;
     event.getByLabel(_makerModuleLabel,pdataHandle);
@@ -555,6 +588,10 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     art::Handle<TrackerHitTimeClusterCollection> tclustHandle;
     event.getByLabel(_timeRejecterModuleLabel,tclustHandle);
     TrackerHitTimeClusterCollection const* tclusts = tclustHandle.product();
+
+
+    clock_t startClock = clock();
+
 
     size_t nTimeClusPerEvent = tclusts->size();
     cout<<"----------------------------------------------------------------------------------"<<endl;
@@ -576,9 +613,10 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     clugrouprel storedClutID;
     clugrouprel::iterator lastsCID_it;
 
-    float clSctrDist, errClSctrDist;
-    float meanPitch, errPitch, invSigma2Pitch;
-    float tmpPitch, tmpPitchSigma2, tmpInvNloop;
+    float clSctrDist=0.0, errClSctrDist=0.0;
+    float meanPitch=0.0, errPitch=0.0, invSigma2Pitch=0.0;
+    float tmpPitch=0.0, tmpPitchSigma2=0.0, tmpInvNloop=0.0;
+    bool clMcompatibleWith0, hugeCluster;
 
     SctrSttnClusterGroupCollection::iterator sscc_it;
 
@@ -601,7 +639,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
         _hPkSecDist2W->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecDist2W",i1peak),Form("Device vs Sector multiplicity Distribution for the %d-th peak",i1peak),36,0,36,16,0,16),ipeak);
         _hPkSecClustDist2W->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecClustDist2W",i1peak),Form("Smoothing of Device vs Sector multiplicity Distribution for the %d-th peak",i1peak),36,0,36,16,0,16),ipeak);
         _hPkSecVsStationDist2W->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecVsStationDist2W",i1peak),Form("Station vs Sector multiplicity Distribution for the %d-th peak",i1peak),18,0,18,16,0,16),ipeak);
-        _hPkSecVsStationDist2WGood->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecDist2WG",i1peak),Form("Selected Station vs Sector multiplicity Distribution for the %d-th peak",i1peak),18,0,18,16,0,16),ipeak);
+        _hPkSecVsStationDist2WGood->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecDist2WG",i1peak),Form("Selected Station vs Sector multiplicity Distribution for the %d-th peak",i1peak),18,0,18,28,0,28),ipeak);
         _hPkAccArrSecStation->AddAtAndExpand(new TH2I(Form("h%d-Pk_AccArrSecStation",i1peak),Form("Accumulator Array for Station distance vs Sector for the %d-th peak",i1peak),9,3,12,32,-16,16),ipeak);
 
         ihPkStDistTrs      = ((TH2I *) _hPkStDistTrs->At(ipeak));
@@ -759,8 +797,11 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                         continue;
                 }
                 storeClusterHit=false;
-                if ( clstlst_it->_m>0.00000 || (clstlst_it->_m==0.00000 && (clstlst_it->_lastSectorID-clstlst_it->_firstSectorID)>0 ) ) {
-                        storeNewClstrsGrpFortPeak=true;
+                clMcompatibleWith0 = abs(clstlst_it->_m)<_nSigmaForClSlope*clstlst_it->_errm;
+                hugeCluster = ( (clstlst_it->_maxStationID-clstlst_it->_minStationID)>12 && (clstlst_it->_lastSectorID-clstlst_it->_firstSectorID)>2 );
+                if ( clstlst_it->_m>0.00000 || (clMcompatibleWith0/*clstlst_it->_m==0.00000*/ && clstlst_it->_lastSectorID>clstlst_it->_firstSectorID ) || hugeCluster ) {
+                        /*if ( clstlst_it->_m==std::numeric_limits<float>::infinity() && clstlst_it->_lastSectorID==clstlst_it->_firstSectorID ) storeNewClstrsGrpFortPeak=false;
+                        else*/ storeNewClstrsGrpFortPeak=true;
                         addingBadCluster=false;
                         //for ( sscc_it=sscc->begin(); sscc_it!=sscc->end(); ++sscc_it ) {
 
@@ -770,6 +811,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                 //                - ((clstlst_it->_lastSectorID>11) ? 12 : 0);
                                 //clSctrDist-=(clustersList[sCID_it->second]._mean_Sctr - ((clustersList[sCID_it->second]._lastSectorID>11) ? 12 : 0) );
                                 errClSctrDist=sqrt( pow(clstlst_it->_sigma_Sctr,2) + pow(clustersList[sCID_it->second]._sigma_Sctr,2) );
+                                errClSctrDist*=_nSigmaForClMatch;
                                 if ( clSctrDist>=-errClSctrDist && clSctrDist<=errClSctrDist ) {
                                         storeClusterHit=true;
                                         storeNewClstrsGrpFortPeak=false;
@@ -798,7 +840,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                 sscc->push_back(SctrSttnClusterGroup());
                                 //cout<<"Before "<<endl;
                                 sscc->back()._relatedTimeCluster = TrackerHitTimeClusterPtr( tclustHandle, ipeak );
-                                if ( clstlst_it->_m==0.00000 || clstlst_it->_m==std::numeric_limits<float>::infinity() ) addingBadCluster=true;
+                                if ( clMcompatibleWith0/*clstlst_it->_m==0.00000*/ || clstlst_it->_m==std::numeric_limits<float>::infinity() || hugeCluster ) addingBadCluster=true;
                                 //cout<<"After "<<endl;
                                 //storeNewClstrsGrpFortPeak=false;
                                 recheckprevious=true;
@@ -847,9 +889,10 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                         for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
                                 //cout<<"i row "<<rwclincl_it->first<<" station "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<endl;
                                 ssmap_Bin_Straw_rel.begin();
-                                tmpiGeomBin= ( ( (nMapXBin+2)*(rwclincl_it->first+1) ) +1 ) +  rwclincl_it->second->_firstStationID;
+                                tmpiGeomBinRow = ( ( (nMapXBin+2)*(rwclincl_it->first+1-((rwclincl_it->first>15)?12:0)) ) +1 );
+                                tmpiGeomBin= tmpiGeomBinRow +  rwclincl_it->second->_firstStationID;
                                 ssmpbnstrw_rel_it=ssmap_Bin_Straw_rel.find(tmpiGeomBin);
-                                while ( ssmpbnstrw_rel_it->first<= (( ( (nMapXBin+2)*(rwclincl_it->first+1) ) +1 ) +  rwclincl_it->second->_lastStationID) ) {
+                                while ( ssmpbnstrw_rel_it->first<= (tmpiGeomBinRow +  rwclincl_it->second->_lastStationID) ) {
                                         //cout<<"I'm storing bin i-th "<<ssmpbnstrw_rel_it->first<<endl;
                                         clugrp._selectedClusters.back()._selectedTrackerHits.push_back( ssmpbnstrw_rel_it->second );
                                         ++ssmpbnstrw_rel_it;
@@ -993,7 +1036,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                         for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
                                 for ( int ibin=rwclincl_it->second->_firstStationID; ibin<=rwclincl_it->second->_lastStationID; ibin++) {
                                         ihPkSecVsStationDist2WG->SetBinContent(ibin+1,rwclincl_it->first+1,
-                                                        ihPkSecVsStationDist2W->GetBinContent(ibin+1,rwclincl_it->first+1));
+                                                        ihPkSecVsStationDist2W->GetBinContent( ibin+1, rwclincl_it->first+1-((rwclincl_it->first>15) ? 12 : 0) ) );
                                 }
                         }
                         icl++;
@@ -1024,6 +1067,12 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     }
 
     event.put(sscc);
+
+    //for (unsigned long i=0; i<1000000; i++) cout<<"lost time "<<endl;
+    clock_t stopClock = clock();
+    _hClockCicles->Fill((unsigned long)(stopClock-startClock));
+    _hExecTime->Fill( (float)(stopClock-startClock)/((float) CLOCKS_PER_SEC ) );
+    cout<<"-------- N clok to analyze 1 ev by BkgTrackRejecterByGeomTplg "<<stopClock-startClock<<" @ "<<CLOCKS_PER_SEC<<endl;
 
     if (_doDisplay) {
             cerr << "Double click in the canvas_Fake to continue:" ;
@@ -1069,7 +1118,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 ////
 //  }
 
-  void BkgTrackRejecterByGeomTplg::SctrSttnMapAnalyze(TH2I *startDist, TH2I *votingArray, int minPitch, int maxPitch){
+  void BkgTrackRejecterByGeomTplg::SctrSttnMapAnalyze(TH2I *startDist, TH2I *votingArray, int minPitch, int maxPitch) {
 
           int nXbin = startDist->GetNbinsX();
           int nYbin = startDist->GetNbinsY();
@@ -1440,9 +1489,13 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
           std::vector<Clust>::iterator clstlst_it=clustersList.begin();
           std::vector<Clust>::iterator tmp_clstlst_it, end_clstlst_it;
           short tmpMaxSect_1, tmpMinSect_1, tmpMaxSect_2, tmpMinSect_2;
-          bool nexClust, erased;
+          bool nexClust=true, noCl2erased=true;
           end_clstlst_it=clustersList.end();
-          while ( clstlst_it!=end_clstlst_it ) {
+          rwclincl nonMatching_Cl1, nonMatching_Cl2, matching_Cl1_2;
+          bool alreadyChecked=false, Cl1_2_NoMatching=true;
+
+          while ( clstlst_it<end_clstlst_it/*clstlst_it!=end_clstlst_it*/ ) {
+                  if (clustersList.size()<2) break;
                   nexClust=true;
                   tmp_clstlst_it=clstlst_it;
                   tmp_clstlst_it++;
@@ -1453,9 +1506,10 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                           tmpMinSect_1-=12;
                   }
                   //for ( ; tmp_clstlst_it!=clustersList.end(); ++tmp_clstlst_it) {
-                  end_clstlst_it=clustersList.end();
-                  while ( tmp_clstlst_it!=clustersList.end() ) {
-                          erased=false;
+                  //end_clstlst_it=clustersList.end();
+                  while ( tmp_clstlst_it<end_clstlst_it/*!=clustersList.end()*/ ) {
+                          if (clustersList.size()<2) break;
+                          noCl2erased=true;
                           tmpMaxSect_2=tmp_clstlst_it->_lastSectorID;
                           tmpMinSect_2=tmp_clstlst_it->_firstSectorID;
                           if ( tmpMaxSect_2>=12 ) {
@@ -1464,33 +1518,174 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                           }
                           cout<<"Clust 1 "<<clstlst_it->_firstSectorID<<" - "<<clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_1<<" - "<<tmpMaxSect_1<<" - "<<clstlst_it->_minStationID<<" - "<<clstlst_it->_maxStationID<<endl;
                           cout<<"Clust 2 "<<tmp_clstlst_it->_firstSectorID<<" - "<<tmp_clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_2<<" - "<<tmpMaxSect_2<<" - "<<tmp_clstlst_it->_minStationID<<" - "<<tmp_clstlst_it->_maxStationID<<endl;
-                          if ( ( tmpMaxSect_1>=tmpMaxSect_2 && tmpMinSect_1<=tmpMinSect_2 ) &&
-                               ( clstlst_it->_minStationID<=tmp_clstlst_it->_minStationID && clstlst_it->_maxStationID>=tmp_clstlst_it->_maxStationID ) ) {
-                                  clustersList.erase(tmp_clstlst_it);
-                                  cout<<"Cluster 2 removed"<<endl;
-                                  erased=true;
-                                  //break;
-                          }
-                          if (erased) end_clstlst_it=clustersList.end();
-                          else  {
-                                  if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
-                                                  ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
-                                          clustersList.erase(clstlst_it);
-                                          cout<<"Cluster 1 removed"<<endl;
-                                          nexClust=false;
-                                          break;
-                                  }
-                                  ++tmp_clstlst_it;
-                          }
+//                          if ( ( tmpMaxSect_1>=tmpMaxSect_2 && tmpMinSect_1<=tmpMinSect_2 ) &&
+//                               ( clstlst_it->_minStationID<=tmp_clstlst_it->_minStationID && clstlst_it->_maxStationID>=tmp_clstlst_it->_maxStationID ) ) {
+//                                  clustersList.erase(tmp_clstlst_it);
+//                                  cout<<"Cluster 2 removed"<<endl;
+//                                  noCl2erased=false;
+//                                  end_clstlst_it=clustersList.end();
+//                                  //break;
+//                          }
+//                          //if (erased) end_clstlst_it=clustersList.end();
+//                          else  {
+//                                  if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
+//                                                  ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
+//                                          clustersList.erase(clstlst_it);
+//                                          cout<<"Cluster 1 removed"<<endl;
+//                                          nexClust=false;
+//                                          end_clstlst_it=clustersList.end();
+//                                          break;
+//                                  }
+//                                  else {
+                                          //identify and remove cluster that partly match
+                                          cout<<"--- Cl dist "<<abs(clstlst_it->_mean_Sttn-tmp_clstlst_it->_mean_Sttn)<<" err "<<3.0*sqrt(pow(clstlst_it->_sigma_Sttn,2)+pow(tmp_clstlst_it->_sigma_Sttn,2))<<endl;
+                                          if ( abs(clstlst_it->_mean_Sttn-tmp_clstlst_it->_mean_Sttn)<
+                                               3.0*sqrt(pow(clstlst_it->_sigma_Sttn,2)+pow(tmp_clstlst_it->_sigma_Sttn,2)) ) {
+                                                  nonMatching_Cl1.clear();
+                                                  nonMatching_Cl2.clear();
+                                                  matching_Cl1_2.clear();
+                                                  for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
+
+                                                          pair<rwclincl::iterator,rwclincl::iterator> potentMatch = tmp_clstlst_it->_rClusts.equal_range(rwclincl_it->first+12);
+                                                          if (potentMatch.first==tmp_clstlst_it->_rClusts.end()) nonMatching_Cl1.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+                                                          else {
+                                                                  Cl1_2_NoMatching=true;
+                                                                  for ( rwclincl::iterator tmp_rwclincl_it=potentMatch.first; tmp_rwclincl_it!=potentMatch.second; ++tmp_rwclincl_it ) {
+                                                                          if ( (*(rwclincl_it->second))==(*(tmp_rwclincl_it->second))/*tmp_rwclincl_it->second._internal_equiv( tmp_match_it->second)*/ ) {
+                                                                                  matching_Cl1_2.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+                                                                                  Cl1_2_NoMatching=false;
+                                                                                  break;
+                                                                          }
+                                                                          //else nonMatching_Cl2.insert( rwclincl::value_type( tmp_rwclincl_it->first, tmp_rwclincl_it->second ) );
+                                                                  }
+                                                                  if (Cl1_2_NoMatching) nonMatching_Cl1.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+                                                          }
+                                                  }
+                                                  for ( rwclincl::iterator tmp_rwclincl_it=tmp_clstlst_it->_rClusts.begin(); tmp_rwclincl_it!=tmp_clstlst_it->_rClusts.end(); ++tmp_rwclincl_it) {
+                                                          alreadyChecked=false;
+                                                          for ( rwclincl::iterator tmp_match_it=matching_Cl1_2.begin(); tmp_match_it!=matching_Cl1_2.end(); ++tmp_match_it ) {
+                                                                  if ( (*(tmp_rwclincl_it->second))==(*(tmp_match_it->second)) ) {
+                                                                          alreadyChecked=true;
+                                                                          //Cl1_2_NoMatching=false;
+                                                                          break;
+                                                                  }
+                                                          }
+                                                          if (alreadyChecked) continue;
+                                                          else nonMatching_Cl2.insert( rwclincl::value_type( tmp_rwclincl_it->first, tmp_rwclincl_it->second ) );
+
+                                                  }
+
+//                                                  for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
+//                                                          for ( rwclincl::iterator tmp_rwclincl_it=tmp_clstlst_it->_rClusts.begin(); tmp_rwclincl_it!=tmp_clstlst_it->_rClusts.end(); ++tmp_rwclincl_it) {
+//                                                                  Cl1_2_NoMatching=true;
+//                                                                  alreadyChecked=false;
+//                                                                  cout<<"--- rw clust 1 "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<" - "<<rwclincl_it->second->_nHit<<endl;
+//                                                                  cout<<"--- rw clust 2 "<<tmp_rwclincl_it->second->_firstStationID<<" - "<<tmp_rwclincl_it->second->_lastStationID<<" - "<<tmp_rwclincl_it->second->_nHit<<endl;
+//                                                                  cout<<"--- matching? "<<((*(rwclincl_it->second))==(*(tmp_rwclincl_it->second)))<<endl;
+//                                                                  for ( rwclincl::iterator tmp_match_it=matching_Cl1_2.begin(); tmp_match_it!=matching_Cl1_2.end(); ++tmp_match_it ) {
+//                                                                          if ( (*(tmp_rwclincl_it->second))==(*(tmp_match_it->second))/*tmp_rwclincl_it->second._internal_equiv( tmp_match_it->second)*/ ) {
+//                                                                                  alreadyChecked=true;
+//                                                                                  Cl1_2_NoMatching=false;
+//                                                                                  break;
+//                                                                          }
+//                                                                  }
+//                                                                  if (alreadyChecked) continue;
+//                                                                  for ( rwclincl::iterator tmp_match_it=nonMatching_Cl2.begin(); tmp_match_it!=nonMatching_Cl2.end(); ++tmp_match_it ) {
+//                                                                          if ( (*(tmp_rwclincl_it->second))==(*(tmp_match_it->second))/*tmp_rwclincl_it->second._internal_equiv( tmp_match_it->second)*/ ) {
+//                                                                                  alreadyChecked=true;
+//                                                                                  Cl1_2_NoMatching=false;
+//                                                                                  break;
+//                                                                          }
+//                                                                  }
+//                                                                  if (alreadyChecked) continue;
+//
+//                                                                  if ( (*(rwclincl_it->second))==(*(tmp_rwclincl_it->second))/*rwclincl_it->second._internal_equiv( tmp_rwclincl_it->second)*/ ) {
+//                                                                          matching_Cl1_2.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+//                                                                          Cl1_2_NoMatching=false;
+//                                                                          break;
+//                                                                  }
+//                                                                  nonMatching_Cl2.insert( rwclincl::value_type( tmp_rwclincl_it->first, tmp_rwclincl_it->second ) );
+//                                                          }
+//                                                          if (Cl1_2_NoMatching) nonMatching_Cl1.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+//                                                  }
+
+                                                  /*cout<<"--------------------------------------------------------"<<endl;
+                                                  for ( rwclincl::iterator tmp_match_it=matching_Cl1_2.begin(); tmp_match_it!=matching_Cl1_2.end(); ++tmp_match_it ) {
+                                                          cout<<"--- rw clust in Cl1 that matches Cl2: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                  }
+                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                  for ( rwclincl::iterator tmp_match_it=nonMatching_Cl1.begin(); tmp_match_it!=nonMatching_Cl1.end(); ++tmp_match_it ) {
+                                                          cout<<"--- rw clust in Cl1 that doens't match Cl2: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                  }
+                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                  for ( rwclincl::iterator tmp_match_it=nonMatching_Cl2.begin(); tmp_match_it!=nonMatching_Cl2.end(); ++tmp_match_it ) {
+                                                          cout<<"--- rw clust in Cl2 that doens't match Cl1: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                  }
+                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                 */
+                                                  if ( !matching_Cl1_2.empty() ) {
+                                                          if ( !nonMatching_Cl1.empty() && nonMatching_Cl2.empty() ) {
+                                                                  clustersList.erase(tmp_clstlst_it);
+                                                                  cout<<"Cluster 2 removed"<<endl;
+                                                                  noCl2erased=false;
+                                                                  end_clstlst_it=clustersList.end();
+                                                                  //break;
+                                                          }
+                                                          else if ( nonMatching_Cl1.empty() && !nonMatching_Cl2.empty() ) {
+                                                                  clustersList.erase(clstlst_it);
+                                                                  cout<<"Cluster 1 removed"<<endl;
+                                                                  nexClust=false;
+                                                                  end_clstlst_it=clustersList.end();
+                                                                  break;
+                                                          }
+                                                          else {
+                                                                  if ( tmpMinSect_2<0 ) {
+                                                                          cout<<"Cluster 1 removed and Cluster 2 modified"<<endl;
+                                                                          //cout<<"no Matching rw cluster in Cl1 "<<nonMatching_Cl1.size()<<endl;
+                                                                          for ( rwclincl::iterator tmp_match_it=nonMatching_Cl1.begin(); tmp_match_it!=nonMatching_Cl1.end(); ++tmp_match_it ) {
+                                                                                  //cout<<"--- rw clust in Cl1 that doens't match Cl2 "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" - "<<tmp_match_it->second->_nHit<<endl;
+                                                                                  /*if ( (tmp_match_it->first + 12) <16 )*/ tmp_clstlst_it->addRwClust( tmp_match_it->first+12, tmp_match_it->second );
+                                                                                  //cout<<"--- row cl added to Cl 2"<<endl;
+                                                                          }
+                                                                          //cout<<"--- All no matching row cls of Cl 1 added to Cl 2"<<endl;
+                                                                          clustersList.erase(clstlst_it);
+                                                                          nexClust=false;
+                                                                          end_clstlst_it=clustersList.end();
+                                                                          break;
+                                                                  }
+                                                                  else {
+                                                                          cout<<"Cluster 2 removed and Cluster 1 modified"<<endl;
+                                                                          //cout<<"no Matching rw cluster in Cl2 "<<nonMatching_Cl1.size()<<endl;
+                                                                          for ( rwclincl::iterator tmp_match_it=nonMatching_Cl2.begin(); tmp_match_it!=nonMatching_Cl2.end(); ++tmp_match_it ) {
+                                                                                  if ( (tmp_match_it->first - 12) >0 ) clstlst_it->addRwClust( tmp_match_it->first-12, tmp_match_it->second );
+                                                                                  //cout<<"--- row cl added to Cl 1"<<endl;
+                                                                          }
+                                                                          //cout<<"--- All no matching row cls of Cl 2 added to Cl 1"<<endl;
+                                                                          clustersList.erase(tmp_clstlst_it);
+                                                                          noCl2erased=false;
+                                                                          end_clstlst_it=clustersList.end();
+                                                                          //break;
+                                                                  }
+                                                          }
+                                                  }
+                                                  //cout<<"New Clusters group stored n: "<<clustersList.size()<<endl;
+                                                  //if (clustersList.size()<2) break;
+                                          }
+//                                  }//end of fixing the partly match clusters issue
+//
+//                                  //++tmp_clstlst_it;
+//                          }
+                          if (noCl2erased) ++tmp_clstlst_it;
                   }
                   if ( nexClust ) {
                           clstlst_it++;
-                          end_clstlst_it=clustersList.end();
+                          //end_clstlst_it=clustersList.end();
                   }
                   //clstlst_it=clustersList.begin();
-          }
+          }// periodic (in sector) clusters removed
 
           cout<<"------------ double cluster removed ------------"<<endl;
+          cout<<"Cluster List size "<<clustersList.size()<<endl;
           iCl=0;
           for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
                  cout<<"Cluster "<< iCl <<" Station mean "<<clstlst_it->_mean_Sttn<<" sigma "<<clstlst_it->_sigma_Sttn<<
@@ -1534,6 +1729,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                   if (notFound) ++tmp_cr_it;
                                   else if (tmp_rcr_it->second.empty()) break;
                                   end_cr_it=tmp_rcr_it->second.end();
+                                  if (distance(tmp_cr_it,end_cr_it)<0) break;
                           }
                   }
           }
@@ -1559,6 +1755,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                   if (notFound) ++tmp_cr_it;
                                   else if (tmp_rcr_it->second.empty()) break;
                                   end_cr_it=tmp_rcr_it->second.end();
+                                  if (distance(tmp_cr_it,end_cr_it)<0) break;
                           }
                  }
           }

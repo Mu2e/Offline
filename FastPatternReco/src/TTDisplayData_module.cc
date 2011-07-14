@@ -1,9 +1,9 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.2 2011/06/26 00:01:17 tassiell Exp $
+// $Id: TTDisplayData_module.cc,v 1.3 2011/07/14 16:38:54 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/26 00:01:17 $
+// $Date: 2011/07/14 16:38:54 $
 //
 // Original author G. Tassielli
 //
@@ -30,9 +30,12 @@
 #include "art/Persistency/Provenance/Provenance.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 
 #include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Random/RandFlat.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -72,6 +75,8 @@
 #include "TStyle.h"
 #include "TF1.h"
 #include "TSpectrum.h"
+#include "TSpectrumFit.h"
+#include "TPolyMarker.h"
 #include "TLatex.h"
 
 using namespace std;
@@ -135,6 +140,13 @@ namespace mu2e {
                   _mean=tmpMean/((float) _nHit);
                   _MS=tmpMS/((float) _nHit);
                   if (_lastStationID!=_firstStationID) _sigma = sqrt(_MS-pow(_mean,2));
+                  else _sigma = 0.288675135;   // 1/sqrt(12)
+          }
+
+          bool operator==( rowClust const& comp) const {
+                  return ( _firstStationID==comp._firstStationID &&
+                                  _lastStationID==comp._lastStationID &&
+                                  _nHit==comp._nHit );
           }
 
   protected:
@@ -177,13 +189,13 @@ namespace mu2e {
                   _mean_Sttn(0.00000),
                   _MS_Sttn(0.00000),
                   _sigma_Sttn(0.00000),
+                  _mean_Sctr(0.00000),
+                  _MS_Sctr(0.00000),
+                  _sigma_Sctr(0.00000),
                   _m(0.00000),
                   _q(0.00000),
                   _errm(0.00000),
                   _errq(0.00000),
-                  _mean_Sctr(0.00000),
-                  _MS_Sctr(0.00000),
-                  _sigma_Sctr(0.00000),
                   tmpMeanX(0.00000),
                   tmpMSX(0.00000),
                   tmpDataY(0.00000),
@@ -215,6 +227,9 @@ namespace mu2e {
                           _sigma_Sttn = sqrt(_MS_Sttn-pow(_mean_Sttn,2));
 //                          _q=tmpDataY;
                   }
+                  else {
+                          _sigma_Sttn=0.288675135;   // 1/sqrt(12)
+                  }
 //                  else {
 //                          _m=std::numeric_limits<float>::infinity();
 //                          _q=(float)_maxStationID + 0.50000;
@@ -240,6 +255,7 @@ namespace mu2e {
                   else {
                           _m=std::numeric_limits<float>::infinity();
                           _q=(float)_maxStationID + 0.50000;
+                          _sigma_Sttn=0.288675135;   // 1/sqrt(12)
                   }
 
                   tmpDataY=(float)iRow + 0.50000;
@@ -295,13 +311,12 @@ namespace mu2e {
 
 
 
-
   class TTDisplayData : public art::EDAnalyzer {
   public:
 
     explicit TTDisplayData(fhicl::ParameterSet const& pset);
     virtual ~TTDisplayData() {
-            _peakFinder->Delete();
+            //_peakFinder->Delete();
             _fg->Delete();
             //if (_peakFinder)        delete _peakFinder;
             //if (_fg)                delete _fg;
@@ -340,6 +355,14 @@ namespace mu2e {
 
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
+
+    // Use the peak sigma or the time window (drift time + TOF) for the hit selection near the peak.
+    float _sigmaForTimeSel;
+    bool _useSigmaForTimeSel;
+
+    // Use efficincy value to simulate the proton rejection by ADC value
+    float _protonRejecEff;
+    bool  _useProtonRejec;
 
     // Label of the generator.
     std::string _generatorModuleLabel;
@@ -385,16 +408,21 @@ namespace mu2e {
 
     TCanvas*      _fakeCanvas;
 
-    TSpectrum *   _peakFinder;
+    //TSpectrum *   _peakFinder;
 
     int   ntimeBin;
     float maxTimeHist; //ns
     float timeBinDim;  //ns
 
+    // Random number distributions.
+    //auto_ptr<CLHEP::RandFlat>    _randFlat;
+    CLHEP::RandFlat    _randFlat;
+
     void fillVotingArray(TH2I *startDist, TH2I *votingArray, int minPitch=3, int maxPitch=11);
     rwclinrwrel rwClst_forRw_rel;
     std::vector<Clust> clustersList;
     void findCluster(unsigned short tmpRowId, rwClustPtr &startingRowClust);
+    int rndup(float n);
 
     // Some ugly but necessary ROOT related bookkeeping:
 
@@ -413,6 +441,8 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _makerModuleLabel(pset.get<string>("makerModuleLabel")),
+    _sigmaForTimeSel(pset.get<float>("nsigmaForTimeSel")),
+    _protonRejecEff(pset.get<float>("protonRejecEff",-1.0)),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
    /*_nAccumulate(pset.get<int>("nAccumulate",20)),*/
     _driftVelocity(pset.get<double>("driftVelocity",0.05)),   // mm/ns
@@ -449,15 +479,23 @@ namespace mu2e {
 
     _fakeCanvas(0),
 
-    _peakFinder(0),
+    //_peakFinder(0),
     ntimeBin(0),
     maxTimeHist(2500.0),
     timeBinDim(10.0),
+    _randFlat( createEngine( get_seed_value(pset)) ),
 
     // Some ugly but necessary ROOT related bookkeeping.
     _application(0),
     _directory(0){
+          if (_sigmaForTimeSel>0.0) _useSigmaForTimeSel=true;
+          else _useSigmaForTimeSel=false;
 
+          if (_protonRejecEff>0.0) {
+                  _useProtonRejec=true;
+                  if (_protonRejecEff>1.0) _protonRejecEff=1.0;
+          }
+          else _useProtonRejec=false;
  }
 
   void TTDisplayData::beginJob(){
@@ -515,7 +553,7 @@ namespace mu2e {
     gStyle->SetPalette(1);
     gROOT->SetStyle("Plain");
 
-    _peakFinder = new TSpectrum(20);
+    //_peakFinder = new TSpectrum(20);
 
     _fg = new TF1("fg","gaus");
     _cnvForPeakstudy = tfs->make<TCanvas>("cnvForPeakstudy","Peaks studies container");
@@ -598,6 +636,12 @@ namespace mu2e {
     // See note 3.
     _directory = gDirectory;
 
+//    if (_useProtonRejec) {
+//            // Get the engine associated with this module instance.
+//            art::ServiceHandle<art::RandomNumberGenerator> rng;
+//            _randFlat = auto_ptr<CLHEP::RandFlat>  ( new CLHEP::RandFlat( rng->getEngine(""), 0.0, 1.0 ) );
+//    }
+
   }
 
   void TTDisplayData::analyze(art::Event const& event ) {
@@ -640,7 +684,7 @@ namespace mu2e {
 
 //    _hHitClustTime->SetMaximum(200.0);
 
-    _peakFinder->Clear();
+    //_peakFinder->Clear();
     //_peaksCanvases->Clear();
     typedef boost::shared_ptr<TArrow> clssegdr;
     std::vector< std::vector< clssegdr > > clstSegments;
@@ -755,6 +799,9 @@ namespace mu2e {
     int StrawColor = kCyan-6;
     int noiseColor = kYellow+3;
 
+    bool isThereProton=false;
+    bool isElFromTarget=false;
+
     for (size_t i=0; i<nStrawPerEvent; ++i) {
 
       // Access data
@@ -763,7 +810,30 @@ namespace mu2e {
 //      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
       PtrStepPointMCVector const&    mcptr(hits_mcptr->at(i));
 
-      double hitEnergy = hit.energyDep();
+
+      if (_useProtonRejec) {
+              isThereProton=false;
+              isElFromTarget=false;
+              for (size_t j = 0; j < mcptr.size(); ++j) {
+
+                      //        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+                      StepPointMC const& mchit = *mcptr[j];
+
+                      // The simulated particle that made this hit.
+                      SimParticleCollection::key_type trackId(mchit.trackId());
+                      SimParticle const& sim = simParticles->at(trackId);
+                      if ( sim.pdgId()==11 && sim.fromGenerator() ) isElFromTarget=true;
+                      if ( sim.pdgId()==2212 ){
+                              isThereProton=true;
+                              //break;
+                      }
+              }
+              if (isElFromTarget && isThereProton) continue;
+              if (isThereProton) {
+                      if (_randFlat.fire()<_protonRejecEff) continue;
+              }
+      }
+      //double hitEnergy = hit.energyDep();
 
       //Skip the straw if the energy of the hit is smaller than the minimum required
       //if (hitEnergy < _minimumEnergy) continue;
@@ -1123,15 +1193,169 @@ namespace mu2e {
 
     _canvasPl->cd(2);
 
-    float thr = 10.0;
-    int nfound = 0;
+    //---------------------------------------- peak finder -----------------------------
+
+//    float thr = 10.0;
+//    int nfound = 0;
+//    if (_hHitTime->GetEntries()>0){
+//            thr/=_hHitClustTime->GetMaximum();
+//            if (thr>0.0 && thr<1.0) nfound = _peakFinder->Search( _hHitClustTime,2.61,"",thr );
+//    }
+//
+//    _hHitClustTime->Draw();
+//    _hSelHitClustTime->Draw("same");
+
+    float thr = 5.0;
+    int nfound = 0, oldNfound = 0;
+    int ipkfinderIter=1;
+    float oldChiRes=0.0, ChiRes;
+    ChiRes=10000000000.0;
+    float newSigma, sigma=2.61;
+    double sigmaOut=-1.0, errSigmaOut=-1.0;
+    float sigmaFitted=-1.0, oldSigmaFitted=-1.0;
+    float * BaseSource = new float[ntimeBin];
+    float * source = new float[ntimeBin];
+    float * dest = new float[ntimeBin];
+    size_t ntbBytes=ntimeBin*sizeof(float);
+    bool noFittingError=true;
+
+    TH1F *tmpPeakFit = new TH1F("tmpPeakFit", "", ntimeBin, 0.0, maxTimeHist);
+    double *timepeakPos = new double[50];
+    double *timepeakHei = new double[50];
+
     if (_hHitTime->GetEntries()>0){
+            //memcpy(BaseSource,&(_hHitClustTime->GetArray()[1]),ntbBytes);
+            for (int ibin = 0; ibin < ntimeBin; ibin++) BaseSource[ibin]=_hHitClustTime->GetBinContent(ibin + 1);
+
             thr/=_hHitClustTime->GetMaximum();
-            if (thr>0.0 && thr<1.0) nfound = _peakFinder->Search( _hHitClustTime,2.61,"",thr );
+            if (thr>0.0 && thr<1.0) {
+
+                    while (ipkfinderIter<21) {
+                            cout<<"Number of iteration for peak finder "<<ipkfinderIter<<endl;
+                            oldChiRes=ChiRes;
+
+                            memcpy(source,BaseSource,ntbBytes);
+
+                            //cout<<"----------------- source arr -----------------"<<endl;
+                            //for (int isb=0; isb<ntimeBin; isb++) cout<<"i bin "<<isb<<" "<<source[isb]<<endl;
+                            //cout<<"----------------------------------------------"<<endl;
+
+                            newSigma = 0.1*((float)ipkfinderIter)*sigma;
+                            //cout<<"newSigma "<<newSigma<<endl;
+
+                            //_peakFinder->Clear();
+                            //nfound = _peakFinder->Search( _hHitClustTime,newSigma,"",thr );
+                            //nfound = _peakFinder->SearchHighRes(source, dest, ntimeBin, sigma, thr, kFALSE, 10000, kFALSE, 0);
+                            TSpectrum peaksSearcher;
+                            nfound =  peaksSearcher.Search( _hHitClustTime,newSigma,"",thr );
+
+                            if (nfound>0) {
+
+                                    //cout<<"N peaks found "<<nfound<<endl;
+
+                                    bool *FixPos = new bool[nfound];
+                                    bool *FixAmp = new bool[nfound];
+                                    //filling in the initial estimates of the input parameters
+                                    float *PosX = new float[nfound];
+                                    float *PosX1 = new float[nfound];
+                                    float *PosY = new float[nfound];
+                                    //PosX = _peakFinder->GetPositionX();
+                                    //PosX = peaksSearcher.GetPositionX();
+                                    for (int iPF = 0; iPF < nfound; iPF++) {
+                                            PosX[iPF]   = peaksSearcher.GetPositionX()[iPF];
+                                            FixPos[iPF] = false;
+                                            FixAmp[iPF] = false;
+                                            PosX1[iPF]  = PosX[iPF]/timeBinDim;
+                                            PosY[iPF]   = BaseSource[(int)(PosX1[iPF])];
+                                    }
+
+                                    //TSpectrumFit *pfit=new TSpectrumFit(nfound);
+                                    TSpectrumFit pfit(nfound);
+                                    pfit.Clear();
+                                    //TSpectrumFit pfit(nfound);
+                                    //cout<<"Fitting peaks"<<endl;
+                                    pfit.SetFitParameters(0.0, ntimeBin-1, 100, 0.1, pfit.kFitOptimChiCounts, pfit.kFitAlphaHalving, pfit.kFitPower2, pfit.kFitTaylorOrderFirst);
+                                    pfit.SetPeakParameters(sigma, false, PosX1, FixPos, PosY, FixAmp);
+                                    //pfit.FitStiefel(source);
+                                    pfit.FitAwmi(source);
+                                    //cout<<"Peaks fitted"<<endl;
+
+                                    //cout<<"----------------- source arr -----------------"<<endl;
+                                    //for (int isb=0; isb<ntimeBin; isb++) cout<<"i bin "<<isb<<" "<<source[isb]<<endl;
+                                    //cout<<"----------------------------------------------"<<endl;
+                                    ChiRes=abs(1.0-pfit.GetChi());
+                                    if ( ( (std::numeric_limits<float>::has_infinity && ChiRes == std::numeric_limits<float>::infinity()) || ChiRes!=ChiRes ) ) {
+                                            noFittingError=false;
+                                            sigmaFitted=newSigma;
+                                            for (int iPF = 0; iPF < nfound; iPF++) timepeakPos[iPF] = PosX[iPF];
+                                            delete FixPos;
+                                            delete FixAmp;
+                                            delete PosX;
+                                            delete PosX1;
+                                            delete PosY;
+                                            break;
+
+                                    }
+                                    pfit.GetSigma(sigmaOut,errSigmaOut);
+                                    //cout<<"Fitted sigma "<<sigmaOut<<" err "<<errSigmaOut<<endl;
+                                    sigmaFitted=sqrt(pow(sigmaOut,2)+pow(errSigmaOut,2));
+                                    //cout<<"OldChiRes "<<oldChiRes<<" ChiRes "<<ChiRes<<endl;
+                                    if ( ChiRes>oldChiRes ) {
+                                            nfound=oldNfound;
+                                            sigmaFitted=oldSigmaFitted;
+                                            delete FixPos;
+                                            delete FixAmp;
+                                            delete PosX;
+                                            delete PosX1;
+                                            delete PosY;
+                                            break;
+                                    }
+                                    oldNfound=nfound;
+                                    oldSigmaFitted=sigmaFitted;
+                                    for (int itb = 0; itb < ntimeBin; itb++) tmpPeakFit->SetBinContent(itb + 1,source[itb]);
+                                    memcpy(timepeakPos,pfit.GetPositions(),nfound*sizeof(double));
+                                    memcpy(timepeakHei,pfit.GetAmplitudes(),nfound*sizeof(double));
+                                    for (int iPF = 0; iPF < nfound; iPF++) timepeakPos[iPF]*=timeBinDim;
+
+                                    //delete pfit;
+                                    //pfit->Delete();
+                                    delete FixPos;
+                                    delete FixAmp;
+                                    delete PosX;
+                                    delete PosX1;
+                                    delete PosY;
+                                    //peaksearcher->Delete();
+                                    //delete peaksearcher;
+                                    //cout<<"---- Ending of Number of iteration for peak finder "<<ipkfinderIter<<endl;
+                            }
+                            ipkfinderIter++;
+                    }
+            }
     }
 
+    cout<<"End of peak finder "<<ipkfinderIter<<endl;
+
+    delete BaseSource;
+    delete source;
+    delete dest;
+
     _hHitClustTime->Draw();
+    if ( noFittingError ) {
+            TPolyMarker * pm = new TPolyMarker(nfound, timepeakPos, timepeakHei);
+            _hHitClustTime->GetListOfFunctions()->Add(pm);
+            pm->SetMarkerStyle(23);
+            pm->SetMarkerColor(kBlue);
+            pm->SetMarkerSize(1);
+            _hHitClustTime->Draw();
+
+            tmpPeakFit->SetLineColor(kBlue);
+            tmpPeakFit->SetLineStyle(2);
+            tmpPeakFit->SetLineWidth(1);
+            tmpPeakFit->Draw("SAME L");
+    }
     _hSelHitClustTime->Draw("same");
+
+    //---------------------------------------- end peak finder -----------------------------
 
     _fg->SetParameter(1,_hSelHitClustTime->GetMean());
     _fg->SetParameter(2,_hSelHitClustTime->GetRMS());
@@ -1148,8 +1372,8 @@ namespace mu2e {
     TH2I *tmpSecClustDist=0x0;
     TH2I *tmpStClustDist=0x0;
     if (nfound>0){
-            Float_t *timepeakPos=_peakFinder->GetPositionX();
-            Float_t *timepeakHei=_peakFinder->GetPositionY();
+            //Float_t *timepeakPos=_peakFinder->GetPositionX();
+            //Float_t *timepeakHei=_peakFinder->GetPositionY();
             unsigned int *timepeakPosId = new unsigned int[nfound];
             unsigned int frstTimeBinInP, lastTimeBinInP;
             size_t ihit;
@@ -1177,7 +1401,7 @@ namespace mu2e {
                     _hPkSecDist2W->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecDist2W",i1peak),Form("Device vs Sector multiplicity Distribution for the %d-th peak",i1peak),36,0,36,20,-4,16),ipeak);
                     _hPkSecClustDist2W->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecClustDist2W",i1peak),Form("Smoothing of Device vs Sector multiplicity Distribution for the %d-th peak",i1peak),36,0,36,20,-4,16),ipeak);
                     _hPkSecVsStationDist2W->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecDist2W",i1peak),Form("Station vs Sector multiplicity Distribution for the %d-th peak",i1peak),18,0,18,16,0,16),ipeak);
-                    _hPkSecVsStationDist2WGood->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecDist2WG",i1peak),Form("Selected Station vs Sector multiplicity Distribution for the %d-th peak",i1peak),18,0,18,16,0,16),ipeak);
+                    _hPkSecVsStationDist2WGood->AddAtAndExpand(new TH2I(Form("h%d-Pk_SecDist2WG",i1peak),Form("Selected Station vs Sector multiplicity Distribution for the %d-th peak",i1peak),18,0,18,28,0,28),ipeak);
                     _hPkAccArrSecStation->AddAtAndExpand(new TH2I(Form("h%d-Pk_AccArrSecStation",i1peak),Form("Accumulator Array for Station distance vs Sector for the %d-th peak",i1peak),9,3,12,32,-16,16),ipeak);
 
                     TCanvas * iCanv=((TCanvas *) _peaksCanvases->At(ipeak));
@@ -1200,17 +1424,24 @@ namespace mu2e {
                     cout<<"First hit at peak pos "<<timeBin_Straw_rel.find(timepeakPosId[ipeak])->second<<endl;
                     //timeBin_Straw_rel
 
-                    frstTimeBinInP = timepeakPosId[ipeak] - binHalf -1;
-                    lastTimeBinInP = timepeakPosId[ipeak] + binHalf +1;
-                    cout<<"Peak range limits: "<<frstTimeBinInP<<" "<<lastTimeBinInP<<endl;
-                    timeBin_Straw_rel.begin();
-                    stbrel::const_iterator stb_it=timeBin_Straw_rel.find(frstTimeBinInP);
-                    int findFTB=frstTimeBinInP;
-                    while (stb_it==timeBin_Straw_rel.end()) {
-                            stb_it=timeBin_Straw_rel.begin();
-                            ++findFTB;
-                            stb_it=timeBin_Straw_rel.find(findFTB);
+                    if (_useSigmaForTimeSel){
+                            int width=rndup(_sigmaForTimeSel*sigmaFitted);
+                            frstTimeBinInP = timepeakPosId[ipeak] - width;
+                            lastTimeBinInP = timepeakPosId[ipeak] + width;
+                   } else {
+                            frstTimeBinInP = timepeakPosId[ipeak] - binHalf -1;
+                            lastTimeBinInP = timepeakPosId[ipeak] + binHalf +1;
                     }
+                    cout<<"Peak range limits: "<<frstTimeBinInP<<" "<<lastTimeBinInP<<endl;
+//                    timeBin_Straw_rel.begin();
+//                    stbrel::const_iterator stb_it=timeBin_Straw_rel.find(frstTimeBinInP);
+//                    int findFTB=frstTimeBinInP;
+//                    while (stb_it==timeBin_Straw_rel.end()) {
+//                            stb_it=timeBin_Straw_rel.begin();
+//                            ++findFTB;
+//                            stb_it=timeBin_Straw_rel.find(findFTB);
+//                    }
+                    stbrel::const_iterator stb_it=timeBin_Straw_rel.lower_bound(frstTimeBinInP);
 
                     int hitFoundInPeak=0;
                     TH2I *ihPkStDistTrs      = ((TH2I *) _hPkStDistTrs->At(ipeak));
@@ -1268,8 +1499,9 @@ namespace mu2e {
                     iCanvHist->Divide(2,2);
 
                     ssmap_Bin_Straw_rel.clear();
-                    while (stb_it!=timeBin_Straw_rel.end()){
-                            if (stb_it->first>lastTimeBinInP) break;
+//                    while (stb_it!=timeBin_Straw_rel.end()){
+                    while (stb_it!=timeBin_Straw_rel.upper_bound(lastTimeBinInP)){
+                            //if (stb_it->first>lastTimeBinInP) break;
                             ihit=stb_it->second;
                             ++hitFoundInPeak;
 
@@ -1436,9 +1668,7 @@ namespace mu2e {
                    cout<<"------- start research ------"<<endl;
                    fillVotingArray(ihPkSecVsStationDist2W, ihPkAccArrSecStation);
 
-
-
-
+                   cout<<"------- plotting ------"<<endl;
 
                    iCanv->cd(3);
                    ihPkStDistTrs->Draw("col z");
@@ -1470,7 +1700,7 @@ namespace mu2e {
                            for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
                                    for ( int ibin=rwclincl_it->second->_firstStationID; ibin<=rwclincl_it->second->_lastStationID; ibin++) {
                                            ihPkSecVsStationDist2WG->SetBinContent(ibin+1,rwclincl_it->first+1,
-                                                           ihPkSecVsStationDist2W->GetBinContent(ibin+1,rwclincl_it->first+1));
+                                                           ihPkSecVsStationDist2W->GetBinContent( ibin+1, rwclincl_it->first+1-((rwclincl_it->first>15) ? 12 : 0) ) );
                                    }
                            }
                            icl++;
@@ -2009,9 +2239,13 @@ namespace mu2e {
           std::vector<Clust>::iterator clstlst_it=clustersList.begin();
           std::vector<Clust>::iterator tmp_clstlst_it, end_clstlst_it;
           short tmpMaxSect_1, tmpMinSect_1, tmpMaxSect_2, tmpMinSect_2;
-          bool nexClust, erased;
+          bool nexClust=true, noCl2erased=true;
           end_clstlst_it=clustersList.end();
-          while ( clstlst_it!=end_clstlst_it ) {
+          rwclincl nonMatching_Cl1, nonMatching_Cl2, matching_Cl1_2;
+          bool alreadyChecked=false, Cl1_2_NoMatching=true;
+
+          while ( clstlst_it<end_clstlst_it/*clstlst_it!=end_clstlst_it*/ ) {
+                  if (clustersList.size()<2) break;
                   nexClust=true;
                   tmp_clstlst_it=clstlst_it;
                   tmp_clstlst_it++;
@@ -2022,44 +2256,186 @@ namespace mu2e {
                           tmpMinSect_1-=12;
                   }
                   //for ( ; tmp_clstlst_it!=clustersList.end(); ++tmp_clstlst_it) {
-                  end_clstlst_it=clustersList.end();
-                  while ( tmp_clstlst_it!=clustersList.end() ) {
-                          erased=false;
+                  //end_clstlst_it=clustersList.end();
+                  while ( tmp_clstlst_it<end_clstlst_it/*!=clustersList.end()*/ ) {
+                          if (clustersList.size()<2) break;
+                          noCl2erased=true;
                           tmpMaxSect_2=tmp_clstlst_it->_lastSectorID;
                           tmpMinSect_2=tmp_clstlst_it->_firstSectorID;
                           if ( tmpMaxSect_2>=12 ) {
                                   tmpMaxSect_2-=12;
                                   tmpMinSect_2-=12;
                           }
-                          cout<<"Clust 1 "<<clstlst_it->_firstSectorID<<" - "<<clstlst_it->_lastSectorID<<" rinorm "<<tmpMinSect_1<<" - "<<tmpMaxSect_1<<" - "<<clstlst_it->_minStationID<<" - "<<clstlst_it->_maxStationID<<endl;
-                          cout<<"Clust 2 "<<tmp_clstlst_it->_firstSectorID<<" - "<<tmp_clstlst_it->_lastSectorID<<" rinorm "<<tmpMinSect_2<<" - "<<tmpMaxSect_2<<" - "<<tmp_clstlst_it->_minStationID<<" - "<<tmp_clstlst_it->_maxStationID<<endl;
-                          if ( ( tmpMaxSect_1>=tmpMaxSect_2 && tmpMinSect_1<=tmpMinSect_2 ) &&
-                               ( clstlst_it->_minStationID<=tmp_clstlst_it->_minStationID && clstlst_it->_maxStationID>=tmp_clstlst_it->_maxStationID ) ) {
-                                  clustersList.erase(tmp_clstlst_it);
-                                  cout<<"Cluster 2 removed"<<endl;
-                                  erased=true;
-                                  //break;
-                          }
-                          if (erased) end_clstlst_it=clustersList.end();
-                          else  {
-                                  if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
-                                                  ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
-                                          clustersList.erase(clstlst_it);
-                                          cout<<"Cluster 1 removed"<<endl;
-                                          nexClust=false;
-                                          break;
-                                  }
-                                  ++tmp_clstlst_it;
-                          }
+                          cout<<"Clust 1 "<<clstlst_it->_firstSectorID<<" - "<<clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_1<<" - "<<tmpMaxSect_1<<" - "<<clstlst_it->_minStationID<<" - "<<clstlst_it->_maxStationID<<endl;
+                          cout<<"Clust 2 "<<tmp_clstlst_it->_firstSectorID<<" - "<<tmp_clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_2<<" - "<<tmpMaxSect_2<<" - "<<tmp_clstlst_it->_minStationID<<" - "<<tmp_clstlst_it->_maxStationID<<endl;
+//                          if ( ( tmpMaxSect_1>=tmpMaxSect_2 && tmpMinSect_1<=tmpMinSect_2 ) &&
+//                               ( clstlst_it->_minStationID<=tmp_clstlst_it->_minStationID && clstlst_it->_maxStationID>=tmp_clstlst_it->_maxStationID ) ) {
+//                                  clustersList.erase(tmp_clstlst_it);
+//                                  cout<<"Cluster 2 removed"<<endl;
+//                                  noCl2erased=false;
+//                                  end_clstlst_it=clustersList.end();
+//                                  //break;
+//                          }
+//                          //if (erased) end_clstlst_it=clustersList.end();
+//                          else  {
+//                                  if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
+//                                                  ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
+//                                          clustersList.erase(clstlst_it);
+//                                          cout<<"Cluster 1 removed"<<endl;
+//                                          nexClust=false;
+//                                          end_clstlst_it=clustersList.end();
+//                                          break;
+//                                  }
+//                                  else {
+                                          //identify and remove cluster that partly match
+                                          cout<<"--- Cl dist "<<abs(clstlst_it->_mean_Sttn-tmp_clstlst_it->_mean_Sttn)<<" err "<<3.0*sqrt(pow(clstlst_it->_sigma_Sttn,2)+pow(tmp_clstlst_it->_sigma_Sttn,2))<<endl;
+                                          if ( abs(clstlst_it->_mean_Sttn-tmp_clstlst_it->_mean_Sttn)<
+                                               3.0*sqrt(pow(clstlst_it->_sigma_Sttn,2)+pow(tmp_clstlst_it->_sigma_Sttn,2)) ) {
+                                                  nonMatching_Cl1.clear();
+                                                  nonMatching_Cl2.clear();
+                                                  matching_Cl1_2.clear();
+                                                  for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
+
+                                                          pair<rwclincl::iterator,rwclincl::iterator> potentMatch = tmp_clstlst_it->_rClusts.equal_range(rwclincl_it->first+12);
+                                                          if (potentMatch.first==tmp_clstlst_it->_rClusts.end()) nonMatching_Cl1.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+                                                          else {
+                                                                  Cl1_2_NoMatching=true;
+                                                                  for ( rwclincl::iterator tmp_rwclincl_it=potentMatch.first; tmp_rwclincl_it!=potentMatch.second; ++tmp_rwclincl_it ) {
+                                                                          if ( (*(rwclincl_it->second))==(*(tmp_rwclincl_it->second))/*tmp_rwclincl_it->second._internal_equiv( tmp_match_it->second)*/ ) {
+                                                                                  matching_Cl1_2.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+                                                                                  Cl1_2_NoMatching=false;
+                                                                                  break;
+                                                                          }
+                                                                          //else nonMatching_Cl2.insert( rwclincl::value_type( tmp_rwclincl_it->first, tmp_rwclincl_it->second ) );
+                                                                  }
+                                                                  if (Cl1_2_NoMatching) nonMatching_Cl1.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+                                                          }
+                                                  }
+                                                  for ( rwclincl::iterator tmp_rwclincl_it=tmp_clstlst_it->_rClusts.begin(); tmp_rwclincl_it!=tmp_clstlst_it->_rClusts.end(); ++tmp_rwclincl_it) {
+                                                          alreadyChecked=false;
+                                                          for ( rwclincl::iterator tmp_match_it=matching_Cl1_2.begin(); tmp_match_it!=matching_Cl1_2.end(); ++tmp_match_it ) {
+                                                                  if ( (*(tmp_rwclincl_it->second))==(*(tmp_match_it->second)) ) {
+                                                                          alreadyChecked=true;
+                                                                          //Cl1_2_NoMatching=false;
+                                                                          break;
+                                                                  }
+                                                          }
+                                                          if (alreadyChecked) continue;
+                                                          else nonMatching_Cl2.insert( rwclincl::value_type( tmp_rwclincl_it->first, tmp_rwclincl_it->second ) );
+
+                                                  }
+
+//                                                  for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
+//                                                          for ( rwclincl::iterator tmp_rwclincl_it=tmp_clstlst_it->_rClusts.begin(); tmp_rwclincl_it!=tmp_clstlst_it->_rClusts.end(); ++tmp_rwclincl_it) {
+//                                                                  Cl1_2_NoMatching=true;
+//                                                                  alreadyChecked=false;
+//                                                                  cout<<"--- rw clust 1 "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<" - "<<rwclincl_it->second->_nHit<<endl;
+//                                                                  cout<<"--- rw clust 2 "<<tmp_rwclincl_it->second->_firstStationID<<" - "<<tmp_rwclincl_it->second->_lastStationID<<" - "<<tmp_rwclincl_it->second->_nHit<<endl;
+//                                                                  cout<<"--- matching? "<<((*(rwclincl_it->second))==(*(tmp_rwclincl_it->second)))<<endl;
+//                                                                  for ( rwclincl::iterator tmp_match_it=matching_Cl1_2.begin(); tmp_match_it!=matching_Cl1_2.end(); ++tmp_match_it ) {
+//                                                                          if ( (*(tmp_rwclincl_it->second))==(*(tmp_match_it->second))/*tmp_rwclincl_it->second._internal_equiv( tmp_match_it->second)*/ ) {
+//                                                                                  alreadyChecked=true;
+//                                                                                  Cl1_2_NoMatching=false;
+//                                                                                  break;
+//                                                                          }
+//                                                                  }
+//                                                                  if (alreadyChecked) continue;
+//                                                                  for ( rwclincl::iterator tmp_match_it=nonMatching_Cl2.begin(); tmp_match_it!=nonMatching_Cl2.end(); ++tmp_match_it ) {
+//                                                                          if ( (*(tmp_rwclincl_it->second))==(*(tmp_match_it->second))/*tmp_rwclincl_it->second._internal_equiv( tmp_match_it->second)*/ ) {
+//                                                                                  alreadyChecked=true;
+//                                                                                  Cl1_2_NoMatching=false;
+//                                                                                  break;
+//                                                                          }
+//                                                                  }
+//                                                                  if (alreadyChecked) continue;
+//
+//                                                                  if ( (*(rwclincl_it->second))==(*(tmp_rwclincl_it->second))/*rwclincl_it->second._internal_equiv( tmp_rwclincl_it->second)*/ ) {
+//                                                                          matching_Cl1_2.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+//                                                                          Cl1_2_NoMatching=false;
+//                                                                          break;
+//                                                                  }
+//                                                                  nonMatching_Cl2.insert( rwclincl::value_type( tmp_rwclincl_it->first, tmp_rwclincl_it->second ) );
+//                                                          }
+//                                                          if (Cl1_2_NoMatching) nonMatching_Cl1.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
+//                                                  }
+
+                                                  /*cout<<"--------------------------------------------------------"<<endl;
+                                                  for ( rwclincl::iterator tmp_match_it=matching_Cl1_2.begin(); tmp_match_it!=matching_Cl1_2.end(); ++tmp_match_it ) {
+                                                          cout<<"--- rw clust in Cl1 that matches Cl2: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                  }
+                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                  for ( rwclincl::iterator tmp_match_it=nonMatching_Cl1.begin(); tmp_match_it!=nonMatching_Cl1.end(); ++tmp_match_it ) {
+                                                          cout<<"--- rw clust in Cl1 that doens't match Cl2: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                  }
+                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                  for ( rwclincl::iterator tmp_match_it=nonMatching_Cl2.begin(); tmp_match_it!=nonMatching_Cl2.end(); ++tmp_match_it ) {
+                                                          cout<<"--- rw clust in Cl2 that doens't match Cl1: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                  }
+                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                 */
+                                                  if ( !matching_Cl1_2.empty() ) {
+                                                          if ( !nonMatching_Cl1.empty() && nonMatching_Cl2.empty() ) {
+                                                                  clustersList.erase(tmp_clstlst_it);
+                                                                  cout<<"Cluster 2 removed"<<endl;
+                                                                  noCl2erased=false;
+                                                                  end_clstlst_it=clustersList.end();
+                                                                  //break;
+                                                          }
+                                                          else if ( nonMatching_Cl1.empty() && !nonMatching_Cl2.empty() ) {
+                                                                  clustersList.erase(clstlst_it);
+                                                                  cout<<"Cluster 1 removed"<<endl;
+                                                                  nexClust=false;
+                                                                  end_clstlst_it=clustersList.end();
+                                                                  break;
+                                                          }
+                                                         else {
+                                                                  if ( tmpMinSect_2<0 ) {
+                                                                          cout<<"Cluster 1 removed and Cluster 2 modified"<<endl;
+                                                                          //cout<<"no Matching rw cluster in Cl1 "<<nonMatching_Cl1.size()<<endl;
+                                                                          for ( rwclincl::iterator tmp_match_it=nonMatching_Cl1.begin(); tmp_match_it!=nonMatching_Cl1.end(); ++tmp_match_it ) {
+                                                                                  //cout<<"--- rw clust in Cl1 that doens't match Cl2 "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" - "<<tmp_match_it->second->_nHit<<endl;
+                                                                                  /*if ( (tmp_match_it->first + 12) <16 )*/ tmp_clstlst_it->addRwClust( tmp_match_it->first+12, tmp_match_it->second );
+                                                                                  //cout<<"--- row cl added to Cl 2"<<endl;
+                                                                          }
+                                                                          //cout<<"--- All no matching row cls of Cl 1 added to Cl 2"<<endl;
+                                                                          clustersList.erase(clstlst_it);
+                                                                          nexClust=false;
+                                                                          end_clstlst_it=clustersList.end();
+                                                                          break;
+                                                                  }
+                                                                  else {
+                                                                          cout<<"Cluster 2 removed and Cluster 1 modified"<<endl;
+                                                                          //cout<<"no Matching rw cluster in Cl2 "<<nonMatching_Cl1.size()<<endl;
+                                                                          for ( rwclincl::iterator tmp_match_it=nonMatching_Cl2.begin(); tmp_match_it!=nonMatching_Cl2.end(); ++tmp_match_it ) {
+                                                                                  if ( (tmp_match_it->first - 12) >0 ) clstlst_it->addRwClust( tmp_match_it->first-12, tmp_match_it->second );
+                                                                                  //cout<<"--- row cl added to Cl 1"<<endl;
+                                                                          }
+                                                                          //cout<<"--- All no matching row cls of Cl 2 added to Cl 1"<<endl;
+                                                                          clustersList.erase(tmp_clstlst_it);
+                                                                          noCl2erased=false;
+                                                                          end_clstlst_it=clustersList.end();
+                                                                          //break;
+                                                                  }
+                                                          }
+                                                  }
+                                                  //cout<<"New Clusters group stored n: "<<clustersList.size()<<endl;
+                                                  //if (clustersList.size()<2) break;
+                                          }
+//                                  }//end of fixing the partly match clusters issue
+//
+//                                  //++tmp_clstlst_it;
+//                          }
+                          if (noCl2erased) ++tmp_clstlst_it;
                   }
                   if ( nexClust ) {
                           clstlst_it++;
-                          end_clstlst_it=clustersList.end();
+                          //end_clstlst_it=clustersList.end();
                   }
                   //clstlst_it=clustersList.begin();
-          }
+          }// periodic (in sector) clusters removed
 
           cout<<"------------ double cluster removed ------------"<<endl;
+          cout<<"Cluster List size "<<clustersList.size()<<endl;
           iCl=0;
           for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
                  cout<<"Cluster "<< iCl <<" Station mean "<<clstlst_it->_mean_Sttn<<" sigma "<<clstlst_it->_sigma_Sttn<<
@@ -2103,6 +2479,7 @@ namespace mu2e {
                                   if (notFound) ++tmp_cr_it;
                                   else if (tmp_rcr_it->second.empty()) break;
                                   end_cr_it=tmp_rcr_it->second.end();
+                                  if (distance(tmp_cr_it,end_cr_it)<0) break;
                           }
                   }
           }
@@ -2128,9 +2505,29 @@ namespace mu2e {
                                   if (notFound) ++tmp_cr_it;
                                   else if (tmp_rcr_it->second.empty()) break;
                                   end_cr_it=tmp_rcr_it->second.end();
+                                  if (distance(tmp_cr_it,end_cr_it)<0) break;
                           }
                  }
           }
+  }
+
+  int TTDisplayData::rndup(float n)//round up a float type and show one decimal place
+  {
+          float t;
+          t=n-floor(n);
+          if (t>=0.5)
+          {
+                  n*=10.00000;//where n is the multi-decimal float
+                  n=ceil(n);
+                  n/=10.00000;
+          }
+          else
+          {
+                  n*=10.00000;//where n is the multi-decimal float
+                  n=floor(n);
+                  n/=10.00000;
+          }
+          return (int)n;
   }
 
 // backup before last fix on clustering and search

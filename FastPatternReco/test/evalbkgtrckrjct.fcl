@@ -75,7 +75,9 @@ physics :
       g4ModuleLabel         : g4run
       makerModuleLabel      : makeSH
       tRejecterModuleLabel  : trckRjctByTime
-      doDisplay             : true
+      nSigmaForClMatch      : 1.960               #n times sigma used during the matching of the clusters
+      nSigmaForClSlope      : 1.645               #n times sigma used during the matching of the clusters slope to 0
+      doDisplay             : false
       #trackerStepPoints    : tracker
       #minEnergyDep         : 0.0001
       #minHits              : 5
@@ -92,14 +94,14 @@ physics :
       elextractModuleLabel  : extractElData
       tRejecterModuleLabel  : trckRjctByTime
       gRejecterModuleLabel  : trckRjctByGmTplg
-      #generatorModuleLabel : generate
-      #g4ModuleLabel        : g4run
-      #makerModuleLabel     : makeSH
-      #trackerStepPoints    : tracker
-      #minEnergyDep         : 0.0001
-      #minHits              : 5
-      #doDisplay            : true
-      #clickToAdvance       : false
+      #generatorModuleLabel  : generate
+      #g4ModuleLabel         : g4run
+      makerModuleLabel      : makeSH
+      #trackerStepPoints     : tracker
+      #minEnergyDep          : 0.0001
+      #minHits               : 5
+      #doDisplay             : true
+      #clickToAdvance        : false
     }
   }
 

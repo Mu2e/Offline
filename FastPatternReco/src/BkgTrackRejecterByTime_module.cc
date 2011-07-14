@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.1 2011/06/23 21:56:11 tassiell Exp $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.2 2011/07/14 16:38:54 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/23 21:56:11 $
+// $Date: 2011/07/14 16:38:54 $
 //
 // Original author G. Tassielli
 //
@@ -15,6 +15,8 @@
 #include <memory>
 #include <map>
 #include <utility>
+#include <limits>
+#include <ctime>
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
@@ -27,9 +29,12 @@
 #include "art/Persistency/Provenance/Provenance.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-
+// From CLHEP
 #include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Random/RandFlat.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -39,9 +44,10 @@
 #include "TrackerGeom/inc/Straw.hh"
 #include "ITrackerGeom/inc/Cell.hh"
 //#include "DataProducts/inc/DPIndexVectorCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 //#include "MCDataProducts/inc/GenParticleCollection.hh"
 //#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-//#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 //#include "MCDataProducts/inc/StepPointMCCollection.hh"
 //#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -57,6 +63,7 @@
 //#include "TCanvas.h"
 //#include "TDirectory.h"
 #include "TMath.h"
+#include "TH1I.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TClonesArray.h"
@@ -69,6 +76,8 @@
 #include "TStyle.h"
 #include "TF1.h"
 #include "TSpectrum.h"
+#include "TSpectrumFit.h"
+#include "TPolyMarker.h"
 #include "TLatex.h"
 
 using namespace std;
@@ -86,7 +95,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 
     explicit BkgTrackRejecterByTime(fhicl::ParameterSet const& pset);
     virtual ~BkgTrackRejecterByTime() {
-            _peakFinder->Delete();
+            //_peakFinder->Delete();
 //            _fg->Delete();
 //            if (_peakFinder!=0x0)        delete _peakFinder;
 //            if (_fg!=0x0)                delete _fg;
@@ -123,6 +132,17 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
 
+    // Use the peak sigma or the time window (drift time + TOF) for the hit selection near the peak.
+    float _nsigmaForTimeSel;
+    bool  _useSigmaForTimeSel;
+
+    // Use efficincy value to simulate the proton rejection by ADC value
+    float _protonRejecEff;
+    bool  _useProtonRejec;
+    int   _ADCSttnPeriod;
+    int   _factorASP;
+    bool  _useADCSttnPer;
+
     // Label of the generator.
     std::string _generatorModuleLabel;
 
@@ -147,16 +167,25 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     TObjArray*    _hPkSecDist2W;
     TObjArray*    _hPkSecClustDist2W;
 
+    TH1I*         _hClockCicles;
+    TH1F*         _hExecTime;
+
 //    TF1*          _fg;
 //    TCanvas*      _cnvForPeakstudy;
 
 //    TCanvas*      _fakeCanvas;
 
-    TSpectrum *   _peakFinder;
+//    TSpectrum *   _peakFinder;
 
     int   ntimeBin;
     float maxTimeHist; //ns
     float timeBinDim;  //ns
+
+    // Random number distributions.
+    //auto_ptr<CLHEP::RandFlat>    _randFlat;
+    CLHEP::RandFlat    _randFlat;
+
+    int rndup(float n);
 
     // Some ugly but necessary ROOT related bookkeeping:
 
@@ -175,6 +204,9 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _makerModuleLabel(pset.get<string>("makerModuleLabel")),
+    _nsigmaForTimeSel(pset.get<float>("nsigmaForTimeSel")),
+    _protonRejecEff(pset.get<float>("protonRejecEff",-1.0)),
+    _ADCSttnPeriod(pset.get<int>("ADCSttnPeriod",0)),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
    /*_nAccumulate(pset.get<int>("nAccumulate",20)),*/
     _driftVelocity(pset.get<double>("driftVelocity",0.05)),   // mm/ns
@@ -191,26 +223,42 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     _hPkStClustDist2W(0),
     _hPkSecDist2W(0),
     _hPkSecClustDist2W(0),
+    _hClockCicles(0),
+    _hExecTime(0),
 
 //    _fg(0),
 //    _cnvForPeakstudy(0),
 
 //    _fakeCanvas(0),
 
-    _peakFinder(0),
+//    _peakFinder(0),
     ntimeBin(0),
     maxTimeHist(2500.0),
-    timeBinDim(10.0)//,
+    timeBinDim(10.0),
+    _randFlat( createEngine( get_seed_value(pset)) )//,
 
     // Some ugly but necessary ROOT related bookkeeping.
 //    _application(0),
 //    _directory(0)
   {
+          if (_nsigmaForTimeSel>0.0) _useSigmaForTimeSel=true;
+          else _useSigmaForTimeSel=false;
 
-      // Tell the framework what we make.
-      produces<TrackerHitTimeClusterCollection>();
+          if (_protonRejecEff>0.0) {
+                  _useProtonRejec=true;
+                  if (_protonRejecEff>1.0) _protonRejecEff=1.0;
+                  if (_ADCSttnPeriod>0 && _ADCSttnPeriod<18) {
+                          _useADCSttnPer=true;
+                          _factorASP=2*_ADCSttnPeriod;
+                  }
+                  else _useADCSttnPer=false;
+          }
+          else _useProtonRejec=false;
 
- }
+          // Tell the framework what we make.
+          produces<TrackerHitTimeClusterCollection>();
+
+  }
 
   void BkgTrackRejecterByTime::beginJob(){
 
@@ -230,6 +278,9 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     _hHitTime         ->SetXTitle("ns");
     _hHitClustTime    ->SetXTitle("ns");
 
+    _hClockCicles       = tfs->make<TH1I>( "hClockCicles",   "N clock cicles needed to analyze one Event by BkgTrackRejecterByTime", 1000, 200000, 400000  );
+    _hExecTime          = tfs->make<TH1F>( "hExecTime",   "Execution time to analyze one Event by BkgTrackRejecterByTime", 1000, 0.0, 10.0  );
+
 //    // If needed, create the ROOT interactive environment. See note 1.
 //    if ( !gApplication ){
 //      int    tmp_argc(0);
@@ -240,7 +291,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 //    gStyle->SetPalette(1);
 //    gROOT->SetStyle("Plain");
 
-    _peakFinder = new TSpectrum(20);
+//    _peakFinder = new TSpectrum(20);
 
 //    _fg = new TF1("fg","gaus");
 //    _cnvForPeakstudy = tfs->make<TCanvas>("cnvForPeakstudy","Peaks studies container");
@@ -274,6 +325,12 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     // See note 3.
 //    _directory = gDirectory;
 
+//    if (_useProtonRejec) {
+//            // Get the engine associated with this module instance.
+//            art::ServiceHandle<art::RandomNumberGenerator> rng;
+//            _randFlat = auto_ptr<CLHEP::RandFlat>  ( new CLHEP::RandFlat( rng->getEngine() ) );
+//    }
+
   }
 
   void BkgTrackRejecterByTime::produce(art::Event & event ) {
@@ -306,7 +363,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     _hHitTime->Reset();
     _hHitClustTime->Reset();
 
-    _peakFinder->Clear();
+//    _peakFinder->Clear();
 //    _peaksCanvases->Clear();
 
     auto_ptr<TrackerHitTimeClusterCollection> thcc(new TrackerHitTimeClusterCollection);
@@ -325,10 +382,15 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     event.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
-//    // Get the persistent data about the StrawHitsMCTruth.
-//    art::Handle<StrawHitMCTruthCollection> truthHandle;
-//    event.getByLabel(_makerModuleLabel,truthHandle);
-//    StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
+    //    // Get the persistent data about the StrawHitsMCTruth.
+    //    art::Handle<StrawHitMCTruthCollection> truthHandle;
+    //    event.getByLabel(_makerModuleLabel,truthHandle);
+    //    StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
+
+    // Get the persistent data about pointers to StepPointMCs
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
+    event.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
+    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
 
 //    // Get the persistent data about pointers to StepPointMCs
 //    art::Handle<DPIndexVectorCollection> mcptrHandle;
@@ -354,9 +416,14 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 //    // Get handles to the generated and simulated particles.
 //    art::Handle<GenParticleCollection> genParticles;
 //    event.getByLabel(_generatorModuleLabel, genParticles);
-//
-//    art::Handle<SimParticleCollection> simParticles;
-//    event.getByLabel(_g4ModuleLabel, simParticles);
+
+    art::Handle<SimParticleCollection> simParticles;
+    event.getByLabel(_g4ModuleLabel, simParticles);
+
+
+    clock_t startClock = clock();
+    clock_t clocksForProtonRej, starProtRejec, stopProtRejec;
+    clocksForProtonRej=0;
 
     size_t nStrawPerEvent = hits->size();
 
@@ -365,12 +432,54 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 //    bool overlapped = false;
 //    bool isFirst = false;
 
-    for (size_t i=0; i<nStrawPerEvent; ++i) {
+    bool isThereProton=false;
+    bool isElFromTarget=false;
+    bool isStationADCEquipped=false;
 
+    for (size_t i=0; i<nStrawPerEvent; ++i) {
       // Access data
       StrawHit        const&      hit(hits->at(i));
 //      StrawHitMCTruth const&    truth(hits_truth->at(i));
 //      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
+
+      PtrStepPointMCVector const&    mcptr(hits_mcptr->at(i));
+
+      starProtRejec = clock();
+      if (_useProtonRejec) {
+              //StrawIndex si = hit.strawIndex();
+              //const Straw & str = tracker.getStraw(si);
+              if ( _useADCSttnPer ) {
+                      //Get hit straw
+                      StrawIndex si = hit.strawIndex();
+                      const Straw & str = tracker.getStraw(si);
+                      isStationADCEquipped=(((int) str.id().getDevice()/2)%_factorASP)<_ADCSttnPeriod;
+              }
+              if ( !_useADCSttnPer || isStationADCEquipped ) {
+                      //cout<<"ADC on Station "<<((int) str.id().getDevice()/2)<<endl;
+                      isThereProton=false;
+                      isElFromTarget=false;
+                      for (size_t j = 0; j < mcptr.size(); ++j) {
+
+                              //        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+                              StepPointMC const& mchit = *mcptr[j];
+
+                              // The simulated particle that made this hit.
+                              SimParticleCollection::key_type trackId(mchit.trackId());
+                              SimParticle const& sim = simParticles->at(trackId);
+                              if ( sim.pdgId()==11 && sim.fromGenerator() ) isElFromTarget=true;
+                              if ( sim.pdgId()==2212 ){
+                                      isThereProton=true;
+                                      //break;
+                              }
+                      }
+                      if (isElFromTarget && isThereProton) continue;
+                      if (isThereProton) {
+                              if (_randFlat.fire()<_protonRejecEff) continue;
+                      }
+              }
+      }
+      stopProtRejec = clock();
+      clocksForProtonRej+=(stopProtRejec-starProtRejec);
 
       //double hitEnergy = hit.energyDep();
 
@@ -428,15 +537,182 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 
 //    _canvasPl->cd(2);
 
-    float thr = 10.0;
-    int nfound = 0;
-    if (_hHitTime->GetEntries()>0){
-            thr/=_hHitClustTime->GetMaximum();
-            if (thr>0.0 && thr<1.0) nfound = _peakFinder->Search( _hHitClustTime,2.61,"",thr );
-    }
+    //---------------------------------------- peak finder -----------------------------
 
+//    float thr = 10.0;
+//    int nfound = 0;
+//    if (_hHitTime->GetEntries()>0){
+//            thr/=_hHitClustTime->GetMaximum();
+//            if (thr>0.0 && thr<1.0) nfound = _peakFinder->Search( _hHitClustTime,2.61,"",thr );
+//    }
+//
 //    _hHitClustTime->Draw();
 //    _hSelHitClustTime->Draw("same");
+
+    float thr = 5.0;
+    int nfound = 0, oldNfound = 0;
+    int ipkfinderIter=1;
+    float oldChiRes=0.0, ChiRes;
+    ChiRes=10000000000.0;
+    float newSigma, sigma=2.61;
+    double sigmaOut=-1.0, errSigmaOut=-1.0;
+    float sigmaFitted=-1.0, oldSigmaFitted=-1.0;
+    float * BaseSource = new float[ntimeBin];
+    float * source = new float[ntimeBin];
+    float * dest = new float[ntimeBin];
+    size_t ntbBytes=ntimeBin*sizeof(float);
+    bool noFittingError=true;
+
+    TH1F *tmpPeakFit = new TH1F("tmpPeakFit", "", ntimeBin, 0.0, maxTimeHist);
+    double *timepeakPos = new double[50];
+    double *timepeakHei = new double[50];
+
+//    std::vector<float> validPeakPos;
+//    float tmpPeakPos=0.0;
+
+    if (_hHitTime->GetEntries()>0){
+            //memcpy(BaseSource,&(_hHitClustTime->GetArray()[1]),ntbBytes);
+            for (int ibin = 0; ibin < ntimeBin; ibin++) BaseSource[ibin]=_hHitClustTime->GetBinContent(ibin + 1);
+
+            thr/=_hHitClustTime->GetMaximum();
+            if (thr>0.0 && thr<1.0) {
+
+                    while (ipkfinderIter<21) {
+                            cout<<"Number of iteration for peak finder "<<ipkfinderIter<<endl;
+                            oldChiRes=ChiRes;
+
+                            memcpy(source,BaseSource,ntbBytes);
+
+                            //cout<<"----------------- source arr -----------------"<<endl;
+                            //for (int isb=0; isb<ntimeBin; isb++) cout<<"i bin "<<isb<<" "<<source[isb]<<endl;
+                            //cout<<"----------------------------------------------"<<endl;
+
+                            newSigma = 0.1*((float)ipkfinderIter)*sigma;
+                            //cout<<"newSigma "<<newSigma<<endl;
+
+                            //_peakFinder->Clear();
+                            //nfound = _peakFinder->Search( _hHitClustTime,newSigma,"",thr );
+                            //nfound = _peakFinder->SearchHighRes(source, dest, ntimeBin, sigma, thr, kFALSE, 10000, kFALSE, 0);
+                            TSpectrum peaksSearcher;
+                            nfound =  peaksSearcher.Search( _hHitClustTime,newSigma,"",thr );
+
+                            if (nfound>0) {
+
+                                    //                            //check if the peaks are inside the time window
+                                    //                            validPeakPos.clear();
+                                    //                            for (int iPF = 0; iPF < nfound; iPF++) {
+                                    //                                    tmpPeakPos=peaksSearcher.GetPositionX()[iPF];
+                                    //                                    if ( tmpPeakPos>0.0 && tmpPeakPos<maxTimeHist ) validPeakPos.push_back(tmpPeakPos);
+                                    //                            }
+                                    //                            nfound = validPeakPos.size();
+                                    //                            //end checking
+
+                                    //cout<<"N peaks found "<<nfound<<endl;
+
+                                    bool *FixPos = new bool[nfound];
+                                    bool *FixAmp = new bool[nfound];
+                                    //filling in the initial estimates of the input parameters
+                                    float *PosX = new float[nfound];
+                                    float *PosX1 = new float[nfound];
+                                    float *PosY = new float[nfound];
+                                    //PosX = _peakFinder->GetPositionX();
+                                    //PosX = peaksSearcher.GetPositionX();
+                                    for (int iPF = 0; iPF < nfound; iPF++) {
+                                            PosX[iPF]   = peaksSearcher.GetPositionX()[iPF];
+                                            //                                    PosX[iPF]   = validPeakPos[iPF];
+                                            FixPos[iPF] = false;
+                                            FixAmp[iPF] = false;
+                                            PosX1[iPF]  = PosX[iPF]/timeBinDim;
+                                            PosY[iPF]   = BaseSource[(int)(PosX1[iPF])];
+                                    }
+
+                                    //TSpectrumFit *pfit=new TSpectrumFit(nfound);
+                                    TSpectrumFit pfit(nfound);
+                                    pfit.Clear();
+                                    //TSpectrumFit pfit(nfound);
+                                    //cout<<"Fitting peaks"<<endl;
+                                    pfit.SetFitParameters(0.0, ntimeBin-1, 100, 0.1, pfit.kFitOptimChiCounts, pfit.kFitAlphaHalving, pfit.kFitPower2, pfit.kFitTaylorOrderFirst);
+                                    pfit.SetPeakParameters(sigma, false, PosX1, FixPos, PosY, FixAmp);
+                                    //pfit.FitStiefel(source);
+                                    pfit.FitAwmi(source);
+                                    //cout<<"Peaks fitted"<<endl;
+
+                                    //cout<<"----------------- source arr -----------------"<<endl;
+                                    //for (int isb=0; isb<ntimeBin; isb++) cout<<"i bin "<<isb<<" "<<source[isb]<<endl;
+                                    //cout<<"----------------------------------------------"<<endl;
+                                    ChiRes=abs(1.0-pfit.GetChi());
+                                    if ( ( (std::numeric_limits<float>::has_infinity && ChiRes == std::numeric_limits<float>::infinity()) || ChiRes!=ChiRes ) ) {
+                                            noFittingError=false;
+                                            sigmaFitted=newSigma;
+                                            for (int iPF = 0; iPF < nfound; iPF++) timepeakPos[iPF] = PosX[iPF];
+                                            delete FixPos;
+                                            delete FixAmp;
+                                            delete PosX;
+                                            delete PosX1;
+                                            delete PosY;
+                                            break;
+
+                                    }
+                                    pfit.GetSigma(sigmaOut,errSigmaOut);
+                                    //cout<<"Fitted sigma "<<sigmaOut<<" err "<<errSigmaOut<<endl;
+                                    sigmaFitted=sqrt(pow(sigmaOut,2)+pow(errSigmaOut,2));
+                                    //cout<<"OldChiRes "<<oldChiRes<<" ChiRes "<<ChiRes<<endl;
+                                    if ( ChiRes>oldChiRes ) {
+                                            nfound=oldNfound;
+                                            sigmaFitted=oldSigmaFitted;
+                                            delete FixPos;
+                                            delete FixAmp;
+                                            delete PosX;
+                                            delete PosX1;
+                                            delete PosY;
+                                            break;
+                                    }
+                                    oldNfound=nfound;
+                                    oldSigmaFitted=sigmaFitted;
+                                    for (int itb = 0; itb < ntimeBin; itb++) tmpPeakFit->SetBinContent(itb + 1,source[itb]);
+                                    memcpy(timepeakPos,pfit.GetPositions(),nfound*sizeof(double));
+                                    memcpy(timepeakHei,pfit.GetAmplitudes(),nfound*sizeof(double));
+                                    for (int iPF = 0; iPF < nfound; iPF++) timepeakPos[iPF]*=timeBinDim;
+
+                                    //delete pfit;
+                                    //pfit->Delete();
+                                    delete FixPos;
+                                    delete FixAmp;
+                                    delete PosX;
+                                    delete PosX1;
+                                    delete PosY;
+                                    //peaksearcher->Delete();
+                                    //delete peaksearcher;
+                                    //cout<<"---- Ending of Number of iteration for peak finder "<<ipkfinderIter<<endl;
+                            }
+                            ipkfinderIter++;
+                    }
+            }
+    }
+
+    cout<<"End of peak finder "<<ipkfinderIter<<endl;
+
+    delete BaseSource;
+    delete source;
+    delete dest;
+
+//    _hHitClustTime->Draw();
+//    if ( noFittingError ) {
+//            TPolyMarker * pm = new TPolyMarker(nfound, timepeakPos, timepeakHei);
+//            _hHitClustTime->GetListOfFunctions()->Add(pm);
+//            pm->SetMarkerStyle(23);
+//            pm->SetMarkerColor(kBlue);
+//            pm->SetMarkerSize(1);
+//            _hHitClustTime->Draw();
+//
+//            tmpPeakFit->SetLineColor(kBlue);
+//            tmpPeakFit->SetLineStyle(2);
+//            tmpPeakFit->SetLineWidth(1);
+//            tmpPeakFit->Draw("SAME L");
+//    }
+//    _hSelHitClustTime->Draw("same");
+
+    //---------------------------------------- end peak finder -----------------------------
 
 //    _fg->SetParameter(1,_hSelHitClustTime->GetMean());
 //    _fg->SetParameter(2,_hSelHitClustTime->GetRMS());
@@ -451,8 +727,8 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     TH2I *tmpSecClustDist=0x0;
     TH2I *tmpStClustDist=0x0;
     if (nfound>0){
-            Float_t *timepeakPos=_peakFinder->GetPositionX();
-            Float_t *timepeakHei=_peakFinder->GetPositionY();
+            //Float_t *timepeakPos=_peakFinder->GetPositionX();
+            //Float_t *timepeakHei=_peakFinder->GetPositionY();
             unsigned int *timepeakPosId = new unsigned int[nfound];
             unsigned int frstTimeBinInP, lastTimeBinInP;
             size_t ihit;
@@ -492,18 +768,26 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
                     cout<<" n hit found at paek pos "<<timeBin_Straw_rel.count(timepeakPosId[ipeak])<<endl;
                     cout<<"First hit at peak pos "<<timeBin_Straw_rel.find(timepeakPosId[ipeak])->second.key()<<endl;
 
-                    frstTimeBinInP = timepeakPosId[ipeak] - binHalf -1;
-                    lastTimeBinInP = timepeakPosId[ipeak] + binHalf +1;
-                    cout<<"Peak range limits: "<<frstTimeBinInP<<" "<<lastTimeBinInP<<endl;
-                    timeBin_Straw_rel.begin();
-                    stbrel::const_iterator stb_it=timeBin_Straw_rel.find(frstTimeBinInP);
-                    int findFTB=frstTimeBinInP;
-                    while (stb_it==timeBin_Straw_rel.end()) {
-                            stb_it=timeBin_Straw_rel.begin();
-                            ++findFTB;
-                            stb_it=timeBin_Straw_rel.find(findFTB);
+                    if (_useSigmaForTimeSel){
+                            int width=rndup(_nsigmaForTimeSel*sigmaFitted);
+                            frstTimeBinInP = timepeakPosId[ipeak] - width;
+                            lastTimeBinInP = timepeakPosId[ipeak] + width;
+                   } else {
+                            frstTimeBinInP = timepeakPosId[ipeak] - binHalf -1;
+                            lastTimeBinInP = timepeakPosId[ipeak] + binHalf +1;
                     }
-                    thcc->at(ipeak)._minHitTime=_hHitTime->GetBinLowEdge(findFTB);
+                    cout<<"Peak range limits: "<<frstTimeBinInP<<" "<<lastTimeBinInP<<endl;
+
+//                    timeBin_Straw_rel.begin();
+//                    stbrel::const_iterator stb_it=timeBin_Straw_rel.find(frstTimeBinInP);
+//                    int findFTB=frstTimeBinInP;
+//                    while (stb_it==timeBin_Straw_rel.end()) {
+//                            stb_it=timeBin_Straw_rel.begin();
+//                            ++findFTB;
+//                            stb_it=timeBin_Straw_rel.find(findFTB);
+//                    }
+                    stbrel::const_iterator stb_it=timeBin_Straw_rel.lower_bound(frstTimeBinInP);
+                    thcc->at(ipeak)._minHitTime=_hHitTime->GetBinLowEdge(stb_it->first);//findFTB);
                     thcc->at(ipeak)._meanTime=timepeakPos[ipeak];
 
                     int hitFoundInPeak=0;
@@ -539,8 +823,10 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 //                    TCanvas * iCanvHist=((TCanvas *) _peaksCanvHistos->At(ipeak));
 //                    iCanvHist->Divide(2,2);
 
-                    while (stb_it!=timeBin_Straw_rel.end()){
-                            if (stb_it->first>lastTimeBinInP) break;
+//                    while (stb_it!=timeBin_Straw_rel.end()){
+                    while (stb_it!=timeBin_Straw_rel.upper_bound(lastTimeBinInP)){
+                            //if (stb_it->first>lastTimeBinInP) break;
+
                             //ihit=stb_it->second;
                             ++hitFoundInPeak;
 
@@ -688,6 +974,12 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 
     event.put(thcc);
 
+    clock_t stopClock = clock();
+    _hClockCicles->Fill((unsigned long)(stopClock-startClock-clocksForProtonRej));
+    _hExecTime->Fill( (float)(stopClock-startClock-clocksForProtonRej)/((float) CLOCKS_PER_SEC ) );
+    cout<<"-------- N clok to analyze 1 ev by BkgTrackRejecterByTime "<<stopClock-startClock-clocksForProtonRej<<" @ "<<CLOCKS_PER_SEC<<endl;
+
+
 //    _canvasPl->Modified();
 //    _canvasPl->Update();
 //
@@ -721,7 +1013,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 
   } // end produce
 
-//  void BkgTrackRejecter::endJob(){
+//  void BkgTrackRejecterByTime::endJob(){
 //
 //    // cd() to correct root directory. See note 3.
 //    TDirectory* save = gDirectory;
@@ -734,6 +1026,25 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 //    save->cd();
 //
 //  }
+
+  int BkgTrackRejecterByTime::rndup(float n)//round up a float type and show one decimal place
+  {
+          float t;
+          t=n-floor(n);
+          if (t>=0.5)
+          {
+                  n*=10.00000;//where n is the multi-decimal float
+                  n=ceil(n);
+                  n/=10.00000;
+          }
+          else
+          {
+                  n*=10.00000;//where n is the multi-decimal float
+                  n=floor(n);
+                  n/=10.00000;
+          }
+          return (int)n;
+  }
 
 }  // end namespace mu2e
 

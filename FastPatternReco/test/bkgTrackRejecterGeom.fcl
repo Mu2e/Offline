@@ -57,12 +57,14 @@ physics :
     # Look at the hits from G4.
     trckRjctByGmTplg:
     {
-      module_type          : BkgTrackRejecterByGeomTplg
-      generatorModuleLabel : generate
-      g4ModuleLabel        : g4run
-      makerModuleLabel     : makeSH
-      tRejecterModuleLabel : trckRjctByTime
-      doDisplay            : true
+      module_type           : BkgTrackRejecterByGeomTplg
+      generatorModuleLabel  : generate
+      g4ModuleLabel         : g4run
+      makerModuleLabel      : makeSH
+      tRejecterModuleLabel  : trckRjctByTime
+      nSigmaForClMatch      : 1.960               #n times sigma used during the matching of the clusters
+      nSigmaForClSlope      : 1.645               #n times sigma used during the matching of the clusters slope to 0
+      doDisplay             : false
       #trackerStepPoints    : tracker
       #minEnergyDep         : 0.0001
       #minHits              : 5

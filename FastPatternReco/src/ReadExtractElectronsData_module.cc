@@ -1,9 +1,9 @@
 //
 // example of a module to read Data of the Electrons tracks that came from the targets
 //
-// $Id: ReadExtractElectronsData_module.cc,v 1.1 2011/06/23 21:56:11 tassiell Exp $
+// $Id: ReadExtractElectronsData_module.cc,v 1.2 2011/07/14 16:38:54 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/23 21:56:11 $
+// $Date: 2011/07/14 16:38:54 $
 //
 // Original author G. Tassielli
 //
@@ -74,6 +74,7 @@
 #include "TF1.h"
 #include "TSpectrum.h"
 #include "TLatex.h"
+#include "TProfile.h"
 
 using namespace std;
 
@@ -117,6 +118,11 @@ namespace mu2e {
     // Label of the module that made the hits.
     std::string _extractElectronsData;
 
+    TProfile *_hNhitOverlapConvElEv_nh;
+    TProfile *_hNhitOverlapByPConvElEv_nh;
+    TProfile *_hNhitOverlapNoConvElEv_nh;
+    TProfile *_hNhitOverlapByPNoConvElEv_nh;
+
     // End: run time parameters
 
 //    TCanvas*      _fakeCanvas;
@@ -140,6 +146,10 @@ namespace mu2e {
 //    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
 //    _makerModuleLabel(pset.get<string>("makerModuleLabel")),
 //    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+    _hNhitOverlapConvElEv_nh(0),
+    _hNhitOverlapByPConvElEv_nh(0),
+    _hNhitOverlapNoConvElEv_nh(0),
+    _hNhitOverlapByPNoConvElEv_nh(0),
 
 //    _fakeCanvas(0),
 
@@ -165,6 +175,11 @@ namespace mu2e {
 
     gStyle->SetPalette(1);
     gROOT->SetStyle("Plain");
+
+    _hNhitOverlapConvElEv_nh     = tfs->make<TProfile>( "hNhitOverlapConvElEv_nh", "Profile of the number of Hits overlapped by another particle for trackable conv. electrons", 120, 6, 126 );
+    _hNhitOverlapByPConvElEv_nh  = tfs->make<TProfile>( "hNhitOverlapByPConvElEv_nh", "Profile of the number of Hits overlapped by proton for trackable conv. electrons", 120, 6, 126 );
+    _hNhitOverlapNoConvElEv_nh     = tfs->make<TProfile>( "hNhitOverlapNoConvElEv_nh", "Profile of the number of Hits overlapped by another particle for not conv. electrons", 120, 6, 126 );
+    _hNhitOverlapByPNoConvElEv_nh  = tfs->make<TProfile>( "hNhitOverlapByPNoConvElEv_nh", "Profile of the number of Hits overlapped by proton for not conv. electrons", 120, 6, 126 );
 
     //_fakeCanvas = new TCanvas("canvas_Fake","double click for next event",300,100);
 
@@ -195,6 +210,8 @@ namespace mu2e {
     double B=1.0;
     CLHEP::Hep2Vector radDir;
     HepGeom::Point3D<double> CirCenter;
+    int convElHitOvrlppd=0;
+    int convElHitOvrlppdByP=0;
 
     for ( genEltrk_it = genEltrks->begin(); genEltrk_it!= genEltrks->end(); ++genEltrk_it ){
             VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
@@ -216,6 +233,33 @@ namespace mu2e {
             }
             //cout<<"All track data:"<<endl;
             //cout<<iEltrk;
+            if ( iEltrk.isConversionEl() ) {
+                    convElHitOvrlppd=0;
+                    convElHitOvrlppdByP=0;
+                    for ( int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                            GenElHitData& genElhit = iEltrk.getHit(iElHit);
+                            if (genElhit._isOverlapped) {
+                                    convElHitOvrlppd++;
+                                    if (genElhit._isOvrlpByProton) convElHitOvrlppdByP++;
+                            }
+                    }
+                    _hNhitOverlapConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppd);
+                    _hNhitOverlapByPConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppdByP);
+            }
+            else {
+                    convElHitOvrlppd=0;
+                    convElHitOvrlppdByP=0;
+                    for ( int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                            GenElHitData& genElhit = iEltrk.getHit(iElHit);
+                            if (genElhit._isOverlapped) {
+                                    convElHitOvrlppd++;
+                                    if (genElhit._isOvrlpByProton) convElHitOvrlppdByP++;
+                            }
+                    }
+                    _hNhitOverlapNoConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppd);
+                    _hNhitOverlapByPNoConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppdByP);
+            }
+
 
     }
 

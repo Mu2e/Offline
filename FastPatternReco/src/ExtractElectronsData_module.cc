@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.1 2011/06/23 21:56:11 tassiell Exp $
+// $Id: ExtractElectronsData_module.cc,v 1.2 2011/07/14 16:38:54 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/23 21:56:11 $
+// $Date: 2011/07/14 16:38:54 $
 //
 // Original author G. Tassielli
 //
@@ -226,6 +226,7 @@ void ExtractElectronsData::produce(art::Event & event ) {
         double mchittime=0.0;
 
         bool overlapped = false;
+        bool ovrlpByProton = false;
         bool isFirst = false;
         bool addTrack = true;
 
@@ -286,8 +287,9 @@ void ExtractElectronsData::produce(art::Event & event ) {
 //                //      cout<<"Dow Point "<<tmpDownPoint<<endl;
 
 
-                overlapped = false;   // more that one track are crossing the cell/straw in the max drift time
-                isFirst = false;      // is the hit of a track that produces the signal (the first in signal arrival time)?
+                overlapped = false;    // more that one track are crossing the cell/straw in the max drift time
+                ovrlpByProton = false; // in case of overlapping, is there a proton?
+                isFirst = false;       // is the hit of a track that produces the signal (the first in signal arrival time)?
 
                 for (size_t j = 0; j < mcptr.size(); ++j) {
 
@@ -304,7 +306,11 @@ void ExtractElectronsData::produce(art::Event & event ) {
                                         //                        if ( trackId != (*mchits)[mcptr[jj].index].trackId() ) {
                                         if ( trackId != (*(mcptr[jj])).trackId() ) {
                                                 overlapped=true;
-                                                break;
+                                                if ( (simParticles->at((*(mcptr[jj])).trackId())).pdgId()==2212 ) {
+                                                        ovrlpByProton=true;
+                                                        break;
+                                                }
+                                                //break;
                                         }
                                 }
                         }
@@ -317,14 +323,14 @@ void ExtractElectronsData::produce(art::Event & event ) {
                                 genEltrk_it=genEltrk->begin();
                                 for ( ; genEltrk_it!=genEltrk->end(); ++genEltrk_it ){
                                         if ( genEltrk_it->getTrkID()==trackId ) {
-                                                genEltrk_it->addHitData( StrawHitPtr( pdataHandle, i), mchittime,overlapped,isFirst,mchit.position(),mchit.momentum()  );
+                                                genEltrk_it->addHitData( StrawHitPtr( pdataHandle, i), mchittime,overlapped,ovrlpByProton,isFirst,mchit.position(),mchit.momentum()  );
                                                 addTrack=false;
                                                 break;
                                         }
                                 }
                                 if (addTrack) {
                                         genEltrk->push_back( VisibleGenElTrack( trackId, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>( sim.startPosition(), sim.startMomentum() ) ) );
-                                        genEltrk->back().addHitData( StrawHitPtr( pdataHandle, i), mchittime,overlapped,isFirst,mchit.position(),mchit.momentum()  );
+                                        genEltrk->back().addHitData( StrawHitPtr( pdataHandle, i), mchittime,overlapped,ovrlpByProton,isFirst,mchit.position(),mchit.momentum()  );
                                         GenParticle const& genp = genParticles->at(sim.generatorIndex());
                                         if ( genp.generatorId()==GenId::conversionGun ) genEltrk->back().setConversionEl();
                                 }
