@@ -3,9 +3,9 @@
 //
 // all the hits data of the Electrons tracks that came from the targets
 //
-// $Id: GenElHitData.hh,v 1.1 2011/06/23 21:52:04 tassiell Exp $
+// $Id: GenElHitData.hh,v 1.2 2011/07/14 16:41:35 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/23 21:52:04 $
+// $Date: 2011/07/14 16:41:35 $
 //
 // Original author G. Tassielli
 //
@@ -32,6 +32,7 @@ namespace mu2e {
     StrawHitPtr  _iHit;
     double       _mcHitTime;
     bool         _isOverlapped;
+    bool         _isOvrlpByProton;
     bool         _isFirst;
     CLHEP::Hep3Vector _hitPoint;
     CLHEP::Hep3Vector _hitMomentum;
@@ -39,14 +40,16 @@ namespace mu2e {
     GenElHitData():
       _mcHitTime(0.00000),
       _isOverlapped(false),
+      _isOvrlpByProton(false),
       _isFirst(false){
 
     }
 
-    GenElHitData( StrawHitPtr &iHit_, double &mcHitTime_, bool &isOverlapped_, bool &isFirst_, CLHEP::Hep3Vector hitPoint_, CLHEP::Hep3Vector hitMomentum_ ):
+    GenElHitData( StrawHitPtr &iHit_, double &mcHitTime_, bool &isOverlapped_, bool &isOvrlpByProton_, bool &isFirst_, CLHEP::Hep3Vector hitPoint_, CLHEP::Hep3Vector hitMomentum_ ):
             _iHit(iHit_),
             _mcHitTime(mcHitTime_),
             _isOverlapped(isOverlapped_),
+            _isOvrlpByProton(isOvrlpByProton_),
             _isFirst(isFirst_)
     {
             _hitPoint=hitPoint_;
@@ -61,7 +64,7 @@ namespace mu2e {
   inline bool operator==(const GenElHitData& lhs,
                          const GenElHitData& rhs){
       return ( lhs._iHit.key() == rhs._iHit.key() && lhs._mcHitTime == rhs._mcHitTime &&
-               lhs._isOverlapped == rhs._isOverlapped && lhs._isFirst == rhs._isFirst &&
+               lhs._isOverlapped == rhs._isOverlapped && lhs._isOvrlpByProton == rhs._isOvrlpByProton && lhs._isFirst == rhs._isFirst &&
                lhs._hitPoint == rhs._hitPoint && lhs._hitMomentum == rhs._hitMomentum );
   }
 
@@ -84,7 +87,7 @@ namespace mu2e {
                                    GenElHitData const& dpi ){
     ost << "i-th hit in the hit sequence " << dpi._iHit.key()
         << " mc hit time "  << dpi._mcHitTime
-        << " more tracks share the same hit? "<<dpi._isOverlapped
+        << " more tracks share the same hit? "<<dpi._isOverlapped<<" if yes is it a proton? "<<dpi._isOvrlpByProton
         << " this track is producing the measure? "<<dpi._isFirst
         <<std::endl
         << " hit position "<<dpi._hitPoint
