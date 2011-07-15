@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.4 2011/07/13 18:20:23 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.5 2011/07/15 04:44:06 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/13 18:20:23 $
+// $Date: 2011/07/15 04:44:06 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -202,6 +202,9 @@ namespace mu2e
     _nmcsteps = mcptr.size();
     double esum(0.0);
     double mct0(0.0);
+    _pdist = 0.0;
+    _pperp = 0.0;
+    _pmom = 0.0;
     for( size_t imc=0; imc< _nmcsteps; ++imc ) {
       StepPointMC const& mchit = *mcptr[imc];
       if( mchit.trackId().asInt() == 1 ){
@@ -209,11 +212,18 @@ namespace mu2e
         esum += edep;
         mcpos += mchit.position()*edep;
         mct0 += mchit.time()*edep;
+        CLHEP::Hep3Vector dprod = mchit.position()-mchit.simParticle()->startPosition();
+        _pdist += dprod.mag()*edep;
+        _pperp += dprod.perp(strawhit->straw().getDirection())*edep;
+        _pmom = mchit.momentum().mag()*edep;
       }
     }
     if(esum > 0.0){
       mcpos /= esum;
       mct0 /= esum;
+      _pdist /= esum;
+      _pperp /= esum;
+      _pmom /= esum;
     }
 // must correct for straw hit t0; what does that represent physically????
     mct0 += mcstrawhit.t0();
@@ -285,7 +295,7 @@ namespace mu2e
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
     cet::map_vector_key trkid(1); // conversion electron
-    findMCSteps(mcdata._mcvdsteps,trkid,_midvids,steps);
+    findMCSteps(mcdata._mcvdsteps,trkid,_entvids,steps);
     if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
     // take the first point; hopefully this is the entrance!
       MCStepItr imcs = steps[0];
@@ -364,6 +374,9 @@ namespace mu2e
     _hitdiag->Branch("active",&_active,"active/B");
     _hitdiag->Branch("use",&_use,"use/I");
     _hitdiag->Branch("edep",&_edep,"edep/F");
+    _hitdiag->Branch("pdist",&_pdist,"pdist/F");
+    _hitdiag->Branch("pperp",&_pperp,"pperp/F");
+    _hitdiag->Branch("pmom",&_pmom,"pmom/F");
 
     _hitdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/i");
     _hitdiag->Branch("mcpos",&_mcpos,"x/F:y/F:z/F");

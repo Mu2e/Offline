@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.2 2011/06/30 20:46:49 mu2ecvs Exp $
+// $Id: KalFitMC.hh,v 1.3 2011/07/15 04:44:06 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/30 20:46:49 $
+// $Date: 2011/07/15 04:44:06 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -149,6 +149,9 @@ namespace mu2e
     Float_t _mcdmid;
     Float_t _mchitt0;
     Float_t _mcrdrift;
+    Float_t _pdist;
+    Float_t _pperp;
+    Float_t _pmom;
   };
 }
 
