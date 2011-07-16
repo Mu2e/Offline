@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.6 2011/07/13 21:03:52 mu2ecvs Exp $
+// $Id: TrkDef.hh,v 1.7 2011/07/16 19:36:43 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/13 21:03:52 $
+// $Date: 2011/07/16 19:36:43 $
 //
 // Original author David Brown, LBNL
 //
@@ -52,6 +52,7 @@ namespace mu2e
     void setHelix(HelixTraj const& helix) { _h0 = helix; }
     void setTrkT0(double t0, double t0err) { _t0.setT0(t0,t0err); }
     void setTrkT0(const TrkT0& t0) { _t0 = t0; }
+    void setIndices(std::vector<size_t> const& indices ) { _indices = indices; }
   private:
     const StrawHitCollection* _straws; // straw hit collection
     std::vector<size_t> _indices; // indices to straw hits in the collection to use for this track

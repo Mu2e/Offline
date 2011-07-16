@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.9 2011/07/13 20:44:27 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.10 2011/07/16 19:36:44 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/13 20:44:27 $
+// $Date: 2011/07/16 19:36:44 $
 //
 
 // the following has to come before other BaBar includes
@@ -100,6 +100,7 @@ namespace mu2e
   KalFit::~KalFit(){}
 
   void KalFit::makeTrack(TrkDef const& mytrk,TrkKalFit& myfit) {
+    myfit._fit = TrkErrCode(TrkErrCode::fail);
 // test if fitable
     if(fitable(mytrk)){
 // create the hits. This also initializes T0
