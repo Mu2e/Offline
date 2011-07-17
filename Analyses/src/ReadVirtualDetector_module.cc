@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.6 2011/07/06 22:45:33 logash Exp $
-//  $Author: logash $
-//  $Date: 2011/07/06 22:45:33 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.7 2011/07/17 01:21:58 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2011/07/17 01:21:58 $
 //
 // Original author Ivan Logashenko
 //
@@ -115,7 +115,7 @@ namespace mu2e {
       _vd_required(pset.get<int>("requireVD",0)),
       _timeCut(pset.get<double>("timeCut",0.0)),
       _stopped_only(pset.get<bool>("saveStopped",false))
- {
+    {
 
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
@@ -205,30 +205,30 @@ namespace mu2e {
 
     _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple",
                                 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
-				"xl:yl:zl:pxl:pyl:pzl:gtime:"
-				"g4bl_weight:g4bl_time");
+                                "xl:yl:zl:pxl:pyl:pzl:gtime:"
+                                "g4bl_weight:g4bl_time");
 
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
-				 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
-				 "gtime:code:g4bl_weight:g4bl_time");
+                                 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
+                                 "gtime:code:g4bl_weight:g4bl_time");
 
     // Have to use TTree here, because one cannot use more than 100 variables in TNtuple
 
     _ntpart = tfs->make<TTree>("ntpart", "Particles ntuple");
     /*
-    _ntpart->Branch("all",nt,
-                    "evt:trk:pdg:"
-                    "time:gtime:x:y:z:px:py:pz:"
-                    "isstop:tstop:gtstop:xstop:ystop:zstop:"
-                    "g4bl_evt:g4bl_trk:g4bl_weight:g4bl_time:"
-                    "parent_id:parent_pdg:"
-                    "parent_x:parent_y:parent_z:"
-                    "parent_px:parent_py:parent_pz:"
-                    "nvd:isvd[20]:"
-                    "tvd[20]:gtvd[20]:xvd[20]:yvd[20]:zvd[20]:"
-                    "pxvd[20]:pyvd[20]:pzvd[20]:"
-                    "xlvd[20]:ylvd[20]:zlvd[20]"
-                    );
+      _ntpart->Branch("all",nt,
+      "evt:trk:pdg:"
+      "time:gtime:x:y:z:px:py:pz:"
+      "isstop:tstop:gtstop:xstop:ystop:zstop:"
+      "g4bl_evt:g4bl_trk:g4bl_weight:g4bl_time:"
+      "parent_id:parent_pdg:"
+      "parent_x:parent_y:parent_z:"
+      "parent_px:parent_py:parent_pz:"
+      "nvd:isvd[20]:"
+      "tvd[20]:gtvd[20]:xvd[20]:yvd[20]:zvd[20]:"
+      "pxvd[20]:pyvd[20]:pzvd[20]:"
+      "xlvd[20]:ylvd[20]:zlvd[20]"
+      );
     */
 
     _ntpart->Branch("evt",        &ntp.evt,        "evt/I");
@@ -504,32 +504,32 @@ namespace mu2e {
         ntp.px = mom_start.x();
         ntp.py = mom_start.y();
         ntp.pz = mom_start.z();
-	ntp.p = mom_start.mag();
-	ntp.code = sim.creationCode();
+        ntp.p = mom_start.mag();
+        ntp.code = sim.creationCode();
 
         // Check id of the volume there particle dies
         if( sim.endDefined() ) {
           if( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() ) {
-	    ntp.isstop = true;
-	  } else {
-	    ntp.isstop = false;
-	  }
+            ntp.isstop = true;
+          } else {
+            ntp.isstop = false;
+          }
           ntp.tstop = sim.endGlobalTime();
           ntp.gtstop = sim.endProperTime();
           CLHEP::Hep3Vector const & pos_end = sim.endPosition();
           ntp.xstop = pos_end.x();
           ntp.ystop = pos_end.y();
           ntp.zstop = pos_end.z();
-	  ntp.codestop = sim.stoppingCode();
+          ntp.codestop = sim.stoppingCode();
         } else {
-	  ntp.isstop = false;
-	  ntp.tstop = 0;
+          ntp.isstop = false;
+          ntp.tstop = 0;
           ntp.gtstop = 0;
           ntp.xstop = 0;
           ntp.ystop = 0;
           ntp.zstop = 0;
-	  ntp.codestop = 0;
-	}
+          ntp.codestop = 0;
+        }
 
         if( haveG4BL ) {
           G4BeamlineInfo const& extra = g4beamlineData->at(0);
@@ -542,55 +542,55 @@ namespace mu2e {
           ntp.g4bl_trk    = 0;
           ntp.g4bl_weight = 0;
           ntp.g4bl_time   = 0;
-	}
-
-        // Parent info
-	SimParticle const* sim_parent = 0;
-        if( sim.hasParent() ) {
-          ntp.parent_id = sim.parentId().asInt();
-	  sim_parent = simParticles->getOrNull(sim.parentId());
-	} else {
-          ntp.parent_id = -1;
-	}
-	if( sim_parent ) {
-	  ntp.parent_pdg = sim_parent->pdgId();
-	  CLHEP::Hep3Vector const & pos_parent = sim_parent->startPosition();
-	  CLHEP::Hep3Vector const & mom_parent = sim_parent->startMomentum();
-	  ntp.parent_x = pos_parent.x();
-	  ntp.parent_y = pos_parent.y();
-	  ntp.parent_z = pos_parent.z();
-	  ntp.parent_px = mom_parent.x();
-	  ntp.parent_py = mom_parent.y();
-	  ntp.parent_pz = mom_parent.z();
-	  ntp.parent_p = mom_parent.mag();
-        } else {
-	  ntp.parent_pdg = 0;
-	  ntp.parent_x = 0;
-	  ntp.parent_y = 0;
-	  ntp.parent_z = 0;
-	  ntp.parent_px = 0;
-	  ntp.parent_py = 0;
-	  ntp.parent_pz = 0;
-	  ntp.parent_p = 0;
         }
 
-	// Clear up VD data
-	ntp.nvd = nvdet;
+        // Parent info
+        SimParticle const* sim_parent = 0;
+        if( sim.hasParent() ) {
+          ntp.parent_id = sim.parentId().asInt();
+          sim_parent = simParticles->getOrNull(sim.parentId());
+        } else {
+          ntp.parent_id = -1;
+        }
+        if( sim_parent ) {
+          ntp.parent_pdg = sim_parent->pdgId();
+          CLHEP::Hep3Vector const & pos_parent = sim_parent->startPosition();
+          CLHEP::Hep3Vector const & mom_parent = sim_parent->startMomentum();
+          ntp.parent_x = pos_parent.x();
+          ntp.parent_y = pos_parent.y();
+          ntp.parent_z = pos_parent.z();
+          ntp.parent_px = mom_parent.x();
+          ntp.parent_py = mom_parent.y();
+          ntp.parent_pz = mom_parent.z();
+          ntp.parent_p = mom_parent.mag();
+        } else {
+          ntp.parent_pdg = 0;
+          ntp.parent_x = 0;
+          ntp.parent_y = 0;
+          ntp.parent_z = 0;
+          ntp.parent_px = 0;
+          ntp.parent_py = 0;
+          ntp.parent_pz = 0;
+          ntp.parent_p = 0;
+        }
+
+        // Clear up VD data
+        ntp.nvd = nvdet;
         for ( size_t i=0; i<nvdet; ++i ) {
-	  ntp.isvd[i]=false;
-	  ntp.tvd[i]=0;
-	  ntp.gtvd[i]=0;
-	  ntp.xvd[i]=0;
-	  ntp.yvd[i]=0;
-	  ntp.zvd[i]=0;
-	  ntp.pxvd[i]=0;
-	  ntp.pyvd[i]=0;
-	  ntp.pzvd[i]=0;
-	  ntp.pvd[i]=0;
-	  ntp.xlvd[i]=0;
-	  ntp.ylvd[i]=0;
-	  ntp.zlvd[i]=0;
-	}
+          ntp.isvd[i]=false;
+          ntp.tvd[i]=0;
+          ntp.gtvd[i]=0;
+          ntp.xvd[i]=0;
+          ntp.yvd[i]=0;
+          ntp.zvd[i]=0;
+          ntp.pxvd[i]=0;
+          ntp.pyvd[i]=0;
+          ntp.pzvd[i]=0;
+          ntp.pvd[i]=0;
+          ntp.xlvd[i]=0;
+          ntp.ylvd[i]=0;
+          ntp.zlvd[i]=0;
+        }
 
         // Loop over all virtual detectors and fill corresponding data
         for ( size_t i=0; i<hits->size(); ++i ){
@@ -604,7 +604,7 @@ namespace mu2e {
 
           // Get the hit information.
 
-          int id = hit.volumeId();
+          unsigned int id = hit.volumeId();
 
           if( id<=0 || id>nvdet || ntp.isvd[id-1] ) continue;
 
@@ -616,30 +616,30 @@ namespace mu2e {
             lpos *= *(vdg->getRotation(id));
           }
 
-	  ntp.isvd[id-1] = true;
-	  ntp.tvd[id-1]  = hit.time();
-	  ntp.gtvd[id-1] = hit.properTime();
-	  ntp.xvd[id-1]  = pos.x();
-	  ntp.yvd[id-1]  = pos.y();
-	  ntp.zvd[id-1]  = pos.z();
-	  ntp.pxvd[id-1] = mom.x();
-	  ntp.pyvd[id-1] = mom.y();
-	  ntp.pzvd[id-1] = mom.z();
-	  ntp.pvd[id-1]  = mom.mag();
-	  ntp.xlvd[id-1] = lpos.x();
-	  ntp.ylvd[id-1] = lpos.y();
-	  ntp.zlvd[id-1] = lpos.z();
+          ntp.isvd[id-1] = true;
+          ntp.tvd[id-1]  = hit.time();
+          ntp.gtvd[id-1] = hit.properTime();
+          ntp.xvd[id-1]  = pos.x();
+          ntp.yvd[id-1]  = pos.y();
+          ntp.zvd[id-1]  = pos.z();
+          ntp.pxvd[id-1] = mom.x();
+          ntp.pyvd[id-1] = mom.y();
+          ntp.pzvd[id-1] = mom.z();
+          ntp.pvd[id-1]  = mom.mag();
+          ntp.xlvd[id-1] = lpos.x();
+          ntp.ylvd[id-1] = lpos.y();
+          ntp.zlvd[id-1] = lpos.z();
 
         } // end loop over hits.
 
-	// Keep only stopped particles
-	if( _stopped_only && !ntp.isstop ) continue;
+        // Keep only stopped particles
+        if( _stopped_only && !ntp.isstop ) continue;
 
-	// Keep only those particles which went through required VD
-	if( _vd_required>0 && !ntp.isvd[_vd_required-1] ) continue;
+        // Keep only those particles which went through required VD
+        if( _vd_required>0 && !ntp.isvd[_vd_required-1] ) continue;
 
-	// Keep only those particles, which die late enough
-	if( _timeCut>0.1 && ntp.tstop<_timeCut ) continue;
+        // Keep only those particles, which die late enough
+        if( _timeCut>0.1 && ntp.tstop<_timeCut ) continue;
 
         _ntpart->Fill();
 
