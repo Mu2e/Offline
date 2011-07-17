@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.18 2011/06/14 22:39:57 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/14 22:39:57 $
+// $Id: DecayInOrbitGun.hh,v 1.19 2011/07/17 01:40:51 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/17 01:40:51 $
 //
 //
 
@@ -99,6 +99,7 @@ namespace mu2e {
     TH1D* _hMultiplicity;
     TH1D* _hEElec;
     TH1D* _hEElecZ;
+    TH1D* _hradius;
     TH1D* _hzPosition;
     TH1D* _hcz;
     TH1D* _hphi;

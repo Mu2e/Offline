@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.32 2011/07/12 04:52:27 kutschke Exp $
+// $Id: DecayInOrbitGun.cc,v 1.33 2011/07/17 01:40:51 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Date: 2011/07/17 01:40:51 $
 //
 // Original author Rob Kutschke
 //
@@ -72,6 +72,7 @@ namespace mu2e {
     _hMultiplicity(0),
     _hEElec(0),
     _hEElecZ(0),
+    _hradius(0),
     _hzPosition(0),
     _hcz(0),
     _hphi(0),
@@ -109,7 +110,8 @@ namespace mu2e {
       art::TFileDirectory tfdir = tfs->mkdir( "DecayInOrbit" );
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "DIO Multiplicity",               100,     0.,   200.   );
       _hEElec        = tfdir.make<TH1D>( "hEElec",        "DIO Electron Energy",            100,     0.,   105.   );
-      _hEElecZ       = tfdir.make<TH1D>( "hEElecZ",       "DIO Electron Energy (zoom)",     200,  _elow, _ehi     );
+      _hEElecZ       = tfdir.make<TH1D>( "hEElecZ",       "DIO Electron Energy (zoom)",     200, _elow,   _ehi     );
+      _hradius       = tfdir.make<TH1D>( "hradius",       "DIO radius(Tracker Coord)",      150,     0.,   150.   );
       _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "DIO z Position (Tracker Coord)", 200, -6600., -5600.   );
       _hcz           = tfdir.make<TH1D>( "hcz",           "DIO cos(theta)",                 100,    -1.,     1.   );
       _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
@@ -121,10 +123,10 @@ namespace mu2e {
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
                                                                              FoilParticleGenerator::muonFileInputFoil,
                                                                              FoilParticleGenerator::muonFileInputPos,
-                                                                             FoilParticleGenerator::negExp,                                                           
-									     _PStoDSDelay,
+                                                                             FoilParticleGenerator::negExp,
+                                                                             _PStoDSDelay,
                                                                              _pPulseDelay,
-									     _nToSkip));
+                                                                             _nToSkip));
 
     _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow, _ehi, _spectrumResolution, getEngine()));
 
@@ -173,12 +175,13 @@ namespace mu2e {
       if( _doHistograms ){
         _hEElec     ->Fill( e );
         _hEElecZ    ->Fill( e );
+        _hradius    ->Fill( pos.perp() );
         _hzPosition ->Fill( pos.z() );
         _hcz        ->Fill( p3.cosTheta() );
         _hphi       ->Fill( p3.phi() );
         _ht         ->Fill( time );
-	_hmudelay   ->Fill(_fGenerator->muDelay());
-	_hpulsedelay->Fill(_fGenerator->pulseDelay());
+        _hmudelay   ->Fill(_fGenerator->muDelay());
+        _hpulsedelay->Fill(_fGenerator->pulseDelay());
       }
 
     } // End of loop over particles

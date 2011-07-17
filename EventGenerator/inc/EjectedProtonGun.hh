@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.hh,v 1.14 2011/06/14 22:39:57 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/14 22:39:57 $
+// $Id: EjectedProtonGun.hh,v 1.15 2011/07/17 01:40:51 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/17 01:40:51 $
 //
 //
 
@@ -26,6 +26,7 @@
 
 // Forward declarations outside of namespace mu2e
 class TH1D;
+class TH2D;
 namespace art {
   class Run;
 }
@@ -86,12 +87,15 @@ namespace mu2e {
     TH1D* _hKE;
     TH1D* _hKEZoom;
     TH1D* _hMomentumMeV;
+    TH1D* _hradius;
     TH1D* _hzPosition;
     TH1D* _hcz;
     TH1D* _hphi;
     TH1D* _htime;
     TH1D* _hmudelay;
     TH1D* _hpulsedelay;
+    TH2D* _hyx;
+    TH2D* _hrz;
 
     //Functions used to calculate the energy spectrum of the proton
     std::vector<double> binnedEnergySpectrum();
