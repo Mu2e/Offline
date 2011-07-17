@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.21 2011/07/06 22:45:33 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/06 22:45:33 $
+// $Id: G4_module.cc,v 1.22 2011/07/17 01:39:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/17 01:39:33 $
 //
 // Original author Rob Kutschke
 //
@@ -85,7 +85,7 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
-#include "Mu2eG4/inc/DiagnosticsG4.hh"
+#include "Analyses/inc/DiagnosticsG4.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
 
@@ -224,10 +224,6 @@ namespace mu2e {
   void G4::beginJob(){
     _runManager = auto_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
 
-    // If you want job scope histograms.
-    art::ServiceHandle<art::TFileService> tfs;
-    _diagnostics.beginJob();
-
   }
 
   // Initialze G4.
@@ -328,10 +324,12 @@ namespace mu2e {
     _steppingAction->beginRun( _processInfo, _mu2eOrigin );
     _stackingAction->beginRun( world->getDirtG4Ymin(), world->getDirtG4Ymax() );
 
-    _diagnostics.beginRun( run, _physVolHelper );
-
     // test field map
     if( _checkFieldMap>0 ) generateFieldMap(_mu2eOrigin,_checkFieldMap);
+
+    // Book some diagnostic histograms.
+    art::ServiceHandle<art::TFileService> tfs;
+    _diagnostics.book("Outputs");
 
   }
 
@@ -429,19 +427,18 @@ namespace mu2e {
                                             timer->GetRealElapsed() )
                               );
 
-    _diagnostics.analyze( *g4stat,
-                          *simParticles,
-                          *outputHits,
-                          *caloHits,
-                          *caloROHits,
-                          *sbHits,
-                          *stHits,
-                          *vdHits,
-                          *pointTrajectories,
-                          _physVolHelper);
+    _diagnostics.fill( *g4stat,
+		       *simParticles,
+		       *outputHits,
+		       *caloHits,
+		       *caloROHits,
+		       *sbHits,
+		       *stHits,
+		       *vdHits,
+		       *pointTrajectories,
+		       _physVolHelper.persistentInfo() );
 
     // Add data products to the event.
-
     event.put(g4stat);
     event.put(simParticles);
     event.put(outputHits, _trackerOutputName);
@@ -497,8 +494,6 @@ namespace mu2e {
   // Tell G4 that this run is over.
   void G4::endRun(art::Run & run){
 
-    _diagnostics.endRun(run);
-
     _runManager->BeamOnEndRun();
     _physVolHelper.endRun();
     _trackingAction->endRun();
@@ -511,7 +506,6 @@ namespace mu2e {
   }
 
   void G4::endJob(){
-    _diagnostics.endJob();
   }
 
 
