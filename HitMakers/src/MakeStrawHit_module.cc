@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.8 2011/06/15 17:51:25 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2011/06/15 17:51:25 $
+// $Id: MakeStrawHit_module.cc,v 1.9 2011/07/17 20:43:50 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/17 20:43:50 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -17,12 +17,15 @@
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Core/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Core/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Persistency/Common/Handle.h"
+
+// From the art tool-chain
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
@@ -46,16 +49,18 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 using namespace std;
-using art::Event;
+//using art::Event;
 
 namespace mu2e {
 
   // Utility class (structure) to hold calculated drift time for G4 hits
 
   class StepHit {
+    typedef art::Handle<StepPointMCCollection> const* PHandle;
+
   public:
 
-    int _hit_id;
+    art::Ptr<StepPointMC> _ptr;
     double _edep;
     double _dca;
     double _driftTime;
@@ -63,9 +68,9 @@ namespace mu2e {
     double _t1;
     double _t2;
 
-    StepHit(int hit_id, double edep, double dca, double driftT, double toMid, double t1, double t2):
-      _hit_id(hit_id), _edep(edep), _dca(dca), _driftTime(driftT),
-      _distanceToMid(toMid), _t1(t1), _t2(t2) { }
+    StepHit( art::Ptr<StepPointMC> const& ptr, double edep, double dca, double driftT, double toMid, double t1, double t2):
+      _ptr(ptr), _edep(edep), _dca(dca), _driftTime(driftT),
+      _distanceToMid(toMid), _t1(t1), _t2(t2) {}
 
     // This operator is overloaded in order to time-sort the hits
     bool operator <(const StepHit& b) const { return (_t1 < b._t1); }
@@ -76,6 +81,7 @@ namespace mu2e {
   //
   //
   class MakeStrawHit : public art::EDProducer {
+
   public:
     explicit MakeStrawHit(fhicl::ParameterSet const& pset) :
 
@@ -94,7 +100,10 @@ namespace mu2e {
       // Random number distributions
       _gaussian( createEngine( get_seed_value(pset)) ),
 
-      _messageCategory("StrawHitMaker"){
+      _messageCategory("HITS"),
+
+      // Control some information messages.
+      _firstEvent(true){
 
       // Tell the framework what we make.
       produces<StrawHitCollection>();
@@ -110,13 +119,13 @@ namespace mu2e {
 
   private:
 
+    typedef std::map<StrawIndex,std::vector<art::Ptr<StepPointMC> > > StrawHitMap;
+
     // Diagnostics level.
     int _diagLevel;
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
-
-
 
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
@@ -136,11 +145,64 @@ namespace mu2e {
     // A category for the error logger.
     const std::string _messageCategory;
 
+    // Give some informationation messages only on the first event.
+    bool _firstEvent;
+
+    void fillHitMap ( art::Event const& event, StrawHitMap& hitmap );
+
   };
 
   void MakeStrawHit::beginJob(){
-
   }
+
+
+  // Find StepPointMCs in the event and use them to fill the hit map.
+  void MakeStrawHit::fillHitMap ( art::Event const& event, StrawHitMap& hitmap){
+
+    // This selector will select only data products with the given instance name.
+    art::ProductInstanceNameSelector selector("tracker");
+
+    typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
+
+    // Get all of the tracker StepPointMC collections from the event:
+    HandleVector stepsHandles;
+    event.getMany( selector, stepsHandles);
+
+    // Informational message on the first event.
+    if ( _firstEvent ) {
+      mf::LogInfo log(_messageCategory);
+      log << "MakeStrawHit::fillHitMap will uses StepPointMCs from: \n";
+      for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end();
+            i != e; ++i ){
+
+        art::Provenance const& prov(*(i->provenance()));
+        log  << "   " << prov.branchName() << "\n";
+
+      }
+    }
+
+    // Populate hitmap from stepsHandles.
+    for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end();
+          i != e; ++i ){
+
+      art::Handle<StepPointMCCollection> const& handle(*i);
+      StepPointMCCollection const& steps(*handle);
+
+      int index(0);
+      for ( StepPointMCCollection::const_iterator j = steps.begin(), je=steps.end();
+            j != je; ++j, ++index){
+
+        StepPointMC const& step(*j);
+        if( step.totalEDep()<_minimumEnergy ) continue; // Skip steps with very low energy deposition
+        StrawIndex straw_id = step.strawIndex();
+
+        // The main event for this method.
+        hitmap[straw_id].push_back( art::Ptr<StepPointMC>(handle,index) );
+      }
+    }
+
+  }   // end MakeStrawHit::fillHitMap 
+
 
   void
   MakeStrawHit::produce(art::Event& event) {
@@ -154,33 +216,22 @@ namespace mu2e {
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
 
-    // A container to hold the output hits.
+    // Containers to hold the output information.
     auto_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
     auto_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
     auto_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
 
-    // Ask the event to give us a handle to the requested hits.
-    art::Handle<StepPointMCCollection> points;
-    event.getByLabel(_g4ModuleLabel,_trackerStepPoints,points);
-
     // Calculate T0 for this event
     double t0 = _gaussian.fire(0.,_t0Sigma);
 
-    //get handle to the conditions service
-    ConditionsHandle<TrackerCalibrations>         trackerCalibrations("ignored");
+    // Handle to the conditions service
+    ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
 
-    // Organize hits by straws
-
-    typedef std::map<StrawIndex,std::vector<int> > StrawHitMap;
+    // Organize the StepPointMCs by straws.
     StrawHitMap hitmap;
-    for ( size_t i=0; i<points->size(); ++i){
-      StepPointMC const& hit = (*points)[i];
-      if( hit.totalEDep()<_minimumEnergy ) continue; // Skip steps with very low energy deposition
-      StrawIndex straw_id = hit.strawIndex();
-      vector<int> &hits_id = hitmap[straw_id];
-      hits_id.push_back(i);
-    }
+    fillHitMap( event, hitmap );
 
+    // Temporary working space per straw.
     vector<StepHit> straw_hits;
 
     // Loop over all straws and create StrawHits. There can be several
@@ -206,18 +257,19 @@ namespace mu2e {
 
       const double signalVelocity = trackerCalibrations->SignalVelocity(straw_id);
 
+      // The StepPointMCs that are on this straw.
+      vector<art::Ptr<StepPointMC> > const& ihits = istraw->second;
 
-      // Prepare info for hit creation
+      // Prepare working sapce.
       straw_hits.clear();
+      straw_hits.reserve(ihits.size());
 
       // Loop over all hits found for this straw
+      int nn(0);
+      for( vector<art::Ptr<StepPointMC> >::const_iterator i=ihits.begin(), e=ihits.end();
+           i !=e ; ++i, ++nn ){
 
-      vector<int> const& ihits = istraw->second;
-
-      for( size_t i=0; i<ihits.size(); i++ ) {
-
-        int hitRef = ihits[i];
-        StepPointMC const& hit = (*points)[hitRef];
+        StepPointMC const& hit = **i;
         CLHEP::Hep3Vector  const& pos = hit.position();
         CLHEP::Hep3Vector  const& mom = hit.momentum();
         double length  = hit.stepLength();
@@ -225,7 +277,7 @@ namespace mu2e {
         double hitTime = hit.time();
 
         if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-          cout << "MakeStrawHit: Hit #" << i << " : length=" << length
+          cout << "MakeStrawHit: Hit #" << nn << " : length=" << length
                << " energy=" << edep << " time=" << hitTime
                << endl;
         }
@@ -284,7 +336,7 @@ namespace mu2e {
         double hit_t1 = t0 + hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
         double hit_t2 = t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
 
-        straw_hits.push_back(StepHit(hitRef,edep,hit_dca,driftTime,distanceToMiddle,hit_t1,hit_t2));
+        straw_hits.push_back( StepHit( *i,edep,hit_dca,driftTime,distanceToMiddle,hit_t1,hit_t2));
 
       } // loop over hits
 
@@ -296,7 +348,7 @@ namespace mu2e {
 
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
         for( size_t i=0; i<straw_hits.size(); i++ ) {
-          cout << "MakeStrawHit: StepHit #" << straw_hits[i]._hit_id
+          cout << "MakeStrawHit: StepHit # (" << straw_hits[i]._ptr.id() << " " << straw_hits[i]._ptr.key() << ")"
                << " DCA=" << straw_hits[i]._dca
                << " driftT=" << straw_hits[i]._driftTime
                << " distToMid=" << straw_hits[i]._distanceToMid
@@ -321,7 +373,7 @@ namespace mu2e {
       double deltadigitime;
       double distSigma;
       PtrStepPointMCVector mcptr;
-      mcptr.push_back( art::Ptr<StepPointMC>( points, straw_hits[0]._hit_id ) );
+      mcptr.push_back( straw_hits[0]._ptr );
 
       for( size_t i=1; i<straw_hits.size(); i++ ) {
         if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
@@ -334,7 +386,7 @@ namespace mu2e {
           mcptrHits->push_back(mcptr);
           // ...and create new hit
           mcptr.clear();
-          mcptr.push_back( art::Ptr<StepPointMC>(points, straw_hits[i]._hit_id));
+          mcptr.push_back( straw_hits[i]._ptr );
           digi_time   = straw_hits[i]._t1;
           digi_t2     = straw_hits[i]._t2;
           digi_edep   = straw_hits[i]._edep;
@@ -345,7 +397,7 @@ namespace mu2e {
           // Append existing hit
           if( digi_t2 > straw_hits[i]._t2 ) digi_t2 = straw_hits[i]._t2;
           digi_edep += straw_hits[i]._edep;
-          mcptr.push_back( art::Ptr<StepPointMC>(points, straw_hits[i]._hit_id));
+          mcptr.push_back( straw_hits[i]._ptr );
         }
       }
 
@@ -376,9 +428,12 @@ namespace mu2e {
 
     if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() end" << endl;
 
-  } // end of ::analyze.
+    // Done with the first event; disable some messages.
+    _firstEvent = false;
 
-}
+  } // end MakeStrawHit::produce.
+
+} // end namespace mu2e
 
 using mu2e::MakeStrawHit;
 DEFINE_ART_MODULE(MakeStrawHit);
