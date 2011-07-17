@@ -4,14 +4,15 @@
 //
 // Persistable information about a G4 Physical Volume.
 //
-// $Id: PhysicalVolumeInfo.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
+// $Id: PhysicalVolumeInfo.hh,v 1.2 2011/07/17 01:23:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Date: 2011/07/17 01:23:02 $
 //
 // Original author Rob Kutschke
 //
 //
 
+#include <iostream>
 #include <string>
 
 namespace mu2e {
