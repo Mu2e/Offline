@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.15 2011/07/13 19:25:14 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
+// $Id: SteppingAction.hh,v 1.16 2011/07/17 02:12:11 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/07/17 02:12:11 $
 //
 // Original author Rob Kutschke
 //
@@ -46,8 +46,8 @@ namespace mu2e {
     void UserSteppingAction(const G4Step*);
 
     void BeginOfEvent(StepPointMCCollection& outputHits,
-		      art::ProductID const& simID,
-		      art::EDProductGetter const* productGetter );
+                      art::ProductID const& simID,
+                      art::EDProductGetter const* productGetter );
     void EndOfEvent();
 
     void BeginOfTrack();

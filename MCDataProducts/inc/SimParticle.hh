@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.6 2011/07/12 21:05:00 kutschke Exp $
+// $Id: SimParticle.hh,v 1.7 2011/07/17 02:11:12 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/12 21:05:00 $
+// $Date: 2011/07/17 02:11:12 $
 //
 // Original author Rob Kutschke
 //
@@ -197,7 +197,7 @@ namespace mu2e {
       _daughterIds.clear();
       _daughterIds.reserve(ptr.size());
       for ( size_t i=0; i != ptr.size(); ++i){
-	_daughterIds.push_back( key_type( ptr[i].key() ) );
+        _daughterIds.push_back( key_type( ptr[i].key() ) );
       }
     }
 
@@ -210,7 +210,7 @@ namespace mu2e {
 
     // Index into the container of generated tracks;
     // -1 if there is no corresponding generated track.
-    int                          generatorIndex() const { 
+    int                          generatorIndex() const {
       return ( _genParticle.isNonnull()) ? _genParticle.key() : -1;
     }
 

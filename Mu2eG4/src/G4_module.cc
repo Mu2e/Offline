@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.22 2011/07/17 01:39:33 kutschke Exp $
+// $Id: G4_module.cc,v 1.23 2011/07/17 02:13:20 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/17 01:39:33 $
+// $Date: 2011/07/17 02:13:20 $
 //
 // Original author Rob Kutschke
 //
@@ -428,15 +428,15 @@ namespace mu2e {
                               );
 
     _diagnostics.fill( *g4stat,
-		       *simParticles,
-		       *outputHits,
-		       *caloHits,
-		       *caloROHits,
-		       *sbHits,
-		       *stHits,
-		       *vdHits,
-		       *pointTrajectories,
-		       _physVolHelper.persistentInfo() );
+                       *simParticles,
+                       *outputHits,
+                       *caloHits,
+                       *caloROHits,
+                       *sbHits,
+                       *stHits,
+                       *vdHits,
+                       *pointTrajectories,
+                       _physVolHelper.persistentInfo() );
 
     // Add data products to the event.
     event.put(g4stat);

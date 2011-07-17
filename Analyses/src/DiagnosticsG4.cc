@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.1 2011/07/17 01:37:45 kutschke Exp $
+// $Id: DiagnosticsG4.cc,v 1.2 2011/07/17 02:15:36 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/17 01:37:45 $
+// $Date: 2011/07/17 02:15:36 $
 //
 // Original author Rob Kutschke
 //
@@ -98,15 +98,15 @@ namespace mu2e {
   }
 
   void DiagnosticsG4::fill( StatusG4                     const& status,
-			    SimParticleCollection        const& sims,
-			    StepPointMCCollection        const& trkSteps,
-			    StepPointMCCollection        const& calSteps,
-			    StepPointMCCollection        const& calROSteps,
-			    StepPointMCCollection        const& crvSteps,
-			    StepPointMCCollection        const& foilSteps,
-			    StepPointMCCollection        const& vdSteps,
-			    PointTrajectoryCollection    const& trajectories,
-			    PhysicalVolumeInfoCollection const& volInfo ){
+                            SimParticleCollection        const& sims,
+                            StepPointMCCollection        const& trkSteps,
+                            StepPointMCCollection        const& calSteps,
+                            StepPointMCCollection        const& calROSteps,
+                            StepPointMCCollection        const& crvSteps,
+                            StepPointMCCollection        const& foilSteps,
+                            StepPointMCCollection        const& vdSteps,
+                            PointTrajectoryCollection    const& trajectories,
+                            PhysicalVolumeInfoCollection const& volInfo ){
 
     fillStatus(status);
 
