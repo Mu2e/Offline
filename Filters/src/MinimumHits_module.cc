@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.1 2011/07/17 01:42:04 kutschke Exp $
+// $Id: MinimumHits_module.cc,v 1.2 2011/07/17 02:28:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/17 01:42:04 $
+// $Date: 2011/07/17 02:28:23 $
 //
 // Contact person Rob Kutschke.
 //
@@ -15,15 +15,22 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+
+// Root includes
+#include "TH1F.h"
 
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+// C++ includes
 #include <iostream>
 
 using namespace std;
@@ -44,10 +51,14 @@ namespace mu2e {
     // Module label of the g4 module that made the generated particles
     std::string generatorModuleLabel_;
 
-    // Module label of the g4 module that made the StepPointMCCollection.
+    // Module label of the module that made the StepPointMCCollections.
     std::string g4ModuleLabel_;
 
-    // Instance names of the varius StepPointMCCollections.
+    // Module labels of the modules that made the collection of reco hits.
+    std::string strawHitMakerLabel_;
+    std::string crystalHitMakerLabel_;
+
+    // Instance names of the StepPointMCCollections.
     std::string trackerStepPoints_;
     std::string caloStepPoints_;
     std::string caloROStepPoints_;
@@ -55,6 +66,11 @@ namespace mu2e {
     std::string crvStepPoints_;
     std::string vDetStepPoints_;
 
+    // Histogram pointers.
+    TH1F* hNstrawHits_;
+    TH1F* hNcrystalHits_;
+
+    // Tools to fill other histograms.
     DiagnosticsG4              diagnostics_;
     GeneratorSummaryHistograms genSummary_;
 
@@ -63,12 +79,16 @@ namespace mu2e {
   MinimumHits::MinimumHits(fhicl::ParameterSet const& pset):
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
+    strawHitMakerLabel_(pset.get<string>("strawHitMakerLabel")),
+    crystalHitMakerLabel_(pset.get<string>("crystalHitMakerLabel")),
     trackerStepPoints_(pset.get<string>("trackerStepPoints","tracker")),
     caloStepPoints_(pset.get<string>("caloStepPoints","calorimeter")),
     caloROStepPoints_(pset.get<string>("caloROStepPoints","calorimeterRO")),
     foilStepPoints_(pset.get<string>("foilStepPoints","stoppingtarget")),
     crvStepPoints_(pset.get<string>("CRVStepPoints","CRV")),
     vDetStepPoints_(pset.get<string>("vDetStepPoints","virtualdetector")),
+    hNstrawHits_(0),
+    hNcrystalHits_(0),
     diagnostics_(),
     genSummary_(){
   }
@@ -79,6 +99,13 @@ namespace mu2e {
     // limits are set using the GeometryService.
     diagnostics_.book("G4Summary");
     genSummary_.book("GeneratorSummary");
+
+    art::ServiceHandle<art::TFileService> tfs;
+    art::TFileDirectory tfdir = tfs->mkdir( "HitSummary" );
+
+    hNstrawHits_   = tfdir.make<TH1F>( "hNstrawHits",   "Number of Straw Hits",    200, 0., 200.  );
+    hNcrystalHits_ = tfdir.make<TH1F>( "hNcrystalHits", "Number of Crystal Hits",   50, 0.,  50.  );
+
     return true;
   }
 
@@ -139,6 +166,14 @@ namespace mu2e {
     event.getByLabel(g4ModuleLabel_,trajectoriesHandle);
     PointTrajectoryCollection const& trajectories(*trajectoriesHandle);
 
+    art::Handle<StrawHitCollection> strawHitsHandle;
+    event.getByLabel(strawHitMakerLabel_, strawHitsHandle);
+    StrawHitCollection const& strawHits(*strawHitsHandle);
+
+    art::Handle<CaloCrystalHitCollection> crystalHitsHandle;
+    event.getByLabel(crystalHitMakerLabel_, crystalHitsHandle);
+    CaloCrystalHitCollection const& crystalHits(*crystalHitsHandle);
+
     art::Handle<PhysicalVolumeInfoCollection> volsHandle;
     event.getRun().getByLabel(g4ModuleLabel_,volsHandle);
     PhysicalVolumeInfoCollection const& vols(*volsHandle);
@@ -156,6 +191,9 @@ namespace mu2e {
                        vols);
 
     genSummary_.fill( gens );
+
+    hNstrawHits_  ->Fill( strawHits.size() );
+    hNcrystalHits_->Fill( crystalHits.size() );
 
     return true;
 
