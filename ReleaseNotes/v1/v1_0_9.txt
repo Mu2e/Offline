@@ -1,12 +1,33 @@
 
-  $Id: v1_0_9.txt,v 1.12 2011/07/17 02:35:01 kutschke Exp $
+  $Id: v1_0_9.txt,v 1.13 2011/07/17 21:38:40 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/07/17 02:35:01 $
+  $Date: 2011/07/17 21:38:40 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_0_9
 
+
+16) July 17, 2001 kutschke
+    Reorganized:
+      Analyses/inc/GeneratorSummaryHistograms.hh
+      Analyses/src/GeneratorSummaryHistograms.cc
+      Filters/src/MinimumHits_module.cc
+
+15) July 17, 2001 kutschke
+    HitMakers/src/MakeStrawHit_module.cc
+      - Major refactoring at the front-end.
+      - The code now looks for all collections of StepPointMC with the instance name "tracker".
+      - It combines all in the per straw hitmap object.
+
+14) July 17, 2001 kutschke
+    Mu2eG4/src/StrawSD.cc
+      - Do not store a StepPointMC if it has zero energy deposition and it was created by
+        a photon, neutron or anti-neutron.
+      - For the DIO sample this greatly reduces the number of StepPointMCs made without
+        affecting the StrawHits ( the StrawHitMaker throws out steps with very low
+        energy deposit ).
+      - This should produce no signficiant chagne to any result
 
 13) July 16, 2001 kutschke
     New package to hold filter modules.  First module is one to select
