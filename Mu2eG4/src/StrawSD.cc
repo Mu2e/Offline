@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.33 2011/06/30 04:55:13 kutschke Exp $
+// $Id: StrawSD.cc,v 1.34 2011/07/17 20:40:21 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/30 04:55:13 $
+// $Date: 2011/07/17 20:40:21 $
 //
 // Original author Rob Kutschke
 //
@@ -130,8 +130,23 @@ namespace mu2e {
     G4double edep = aStep->GetTotalEnergyDeposit();
     G4double step = aStep->GetStepLength();
 
-    // I am not sure why we get these cases but we do.  Skip them.
-    if ( edep == 0. && step == 0. ) return false;
+    // Skip most points with no energy.
+    if ( edep == 0 ) {
+
+      // I am not sure why we get these cases but we do.  Skip them.
+      if ( step == 0. ) {
+        //G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+        //ProcessCode endCode(_processInfo->findAndCount(pname));
+        //cout << "Weird: " << endCode << endl;
+        return false;
+      }
+
+      // No need to save photons and (anti-)neutrons.
+      int pdgId(aStep->GetTrack()->GetDefinition()->GetPDGEncoding());
+
+      if ( pdgId == PDGCode::gamma ||
+           std::abs(pdgId) == PDGCode::n0 ) return false;
+    }
 
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
