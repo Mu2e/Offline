@@ -1,9 +1,9 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.cc,v 1.1 2011/07/17 01:37:18 kutschke Exp $
+// $Id: GeneratorSummaryHistograms.cc,v 1.2 2011/07/17 21:38:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/17 01:37:18 $
+// $Date: 2011/07/17 21:38:17 $
 //
 // Contact person Rob Kutschke
 //
@@ -21,7 +21,6 @@
 // Root includes
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TNtuple.h"
 
 // C++ includes
 #include <iostream>
@@ -41,8 +40,7 @@ namespace mu2e {
      hz_(0),
      htime_(0),
      hxy_(0),
-     hrz_(0),
-     ntxyz_(0){
+     hrz_(0){
   }
 
   // Book histograms in the root directory for the current module.
@@ -86,16 +84,13 @@ namespace mu2e {
     hrz_             = tfdir.make<TH2F>( "hrzPos",         "Conversion Electron (z,r) at Production;(mm)",
                                          bins2.nbins(), bins2.low(), bins2.high(), 60, 0., 120. );
 
-    ntxyz_ = tfdir.make<TNtuple>( "ntxyz", "Generated Position", "x:y:z");
+  } // end GeneratorSummaryHistograms::book
 
-  }
-
-  void GeneratorSummaryHistograms::fill ( GenParticleCollection const& gens ){
+  void GeneratorSummaryHistograms::fill( GenParticleCollection const& gens ){
 
     hMultiplicity_->Fill( gens.size() );
 
 
-    float nt[ntxyz_->GetNvar()];
     for ( GenParticleCollection::const_iterator i=gens.begin(), e=gens.end();
           i != e; ++i ){
       GenParticle const& gen(*i);
@@ -110,11 +105,14 @@ namespace mu2e {
       // Kinetic energy.
       double ke( p4.e() - p4.m() );
 
+      // Direction cosine.
+      double cz = p.cosTheta();
+
       hgenId_ ->Fill( gen.generatorId().id() );
       hp_     ->Fill( p.mag() );
       hpt_    ->Fill( p.perp() );
       hke_    ->Fill( ke );
-      hcz_    ->Fill( p.cosTheta() );
+      hcz_    ->Fill( cz );
       hphi_   ->Fill( p.phi()  );
       hradius_->Fill( r );
       hz_     ->Fill( z );
@@ -122,12 +120,7 @@ namespace mu2e {
       hxy_    ->Fill( pos.x(), pos.y() );
       hrz_    ->Fill( z, r );
 
-      nt[0] = pos.x();
-      nt[1] = pos.y();
-      nt[2] = pos.z();
-      ntxyz_->Fill(nt);
-
-    }
+    } // end GeneratorSummaryHistograms::fill
   }
 
 } // end namespace mu2e

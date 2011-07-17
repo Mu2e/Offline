@@ -3,9 +3,9 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.hh,v 1.1 2011/07/17 01:37:18 kutschke Exp $
+// $Id: GeneratorSummaryHistograms.hh,v 1.2 2011/07/17 21:38:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/17 01:37:18 $
+// $Date: 2011/07/17 21:38:17 $
 //
 // Contact person Rob Kutschke
 //
@@ -20,7 +20,6 @@
 
 class TH1F;
 class TH2F;
-class TNtuple;
 
 namespace mu2e {
 
@@ -61,8 +60,6 @@ namespace mu2e {
     TH1F* htime_;
     TH2F* hxy_;
     TH2F* hrz_;
-
-    TNtuple* ntxyz_;
 
   }; // end class Diagnostics G4
 

@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.2 2011/07/17 02:28:23 kutschke Exp $
+// $Id: MinimumHits_module.cc,v 1.3 2011/07/17 21:38:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/17 02:28:23 $
+// $Date: 2011/07/17 21:38:17 $
 //
 // Contact person Rob Kutschke.
 //
@@ -26,6 +26,7 @@
 
 // Root includes
 #include "TH1F.h"
+#include "TNtuple.h"
 
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -69,6 +70,10 @@ namespace mu2e {
     // Histogram pointers.
     TH1F* hNstrawHits_;
     TH1F* hNcrystalHits_;
+    TH1F* hEDep_;
+    TH1F* hEDepWide_;
+    TH1F* hEDepStep_;
+    TNtuple* ntup_;
 
     // Tools to fill other histograms.
     DiagnosticsG4              diagnostics_;
@@ -89,6 +94,10 @@ namespace mu2e {
     vDetStepPoints_(pset.get<string>("vDetStepPoints","virtualdetector")),
     hNstrawHits_(0),
     hNcrystalHits_(0),
+    hEDep_(0),
+    hEDepWide_(0),
+    hEDepStep_(0),
+    ntup_(0),
     diagnostics_(),
     genSummary_(){
   }
@@ -103,8 +112,13 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir( "HitSummary" );
 
-    hNstrawHits_   = tfdir.make<TH1F>( "hNstrawHits",   "Number of Straw Hits",    200, 0., 200.  );
-    hNcrystalHits_ = tfdir.make<TH1F>( "hNcrystalHits", "Number of Crystal Hits",   50, 0.,  50.  );
+    hNstrawHits_   = tfdir.make<TH1F>( "hNstrawHits",   "Number of Straw Hits",    200, 1., 201.  );
+    hNcrystalHits_ = tfdir.make<TH1F>( "hNcrystalHits", "Number of Crystal Hits",   50, 1.,  51.  );
+    hEDep_         = tfdir.make<TH1F>( "hEDep",     "Energy deposition, Straw",   100, 0.,  10.  );
+    hEDepWide_     = tfdir.make<TH1F>( "hEDepWide", "Energy deposition, Straw",   100, 0.,  1000. );
+    hEDepStep_     = tfdir.make<TH1F>( "hEDepStep", "Energy deposition, Step",   100, 0.,  20.  );
+
+    ntup_ = tfdir.make<TNtuple>( "ntup", "Event Summary", "x:y:z:r:p:pt:cz:ntrkSteps:nCaloSteps:nstraws:nxstals");
 
     return true;
   }
@@ -137,7 +151,8 @@ namespace mu2e {
     event.getByLabel(g4ModuleLabel_, caloROStepPoints_, caloROStepsHandle);
     StepPointMCCollection const& caloROSteps(*caloROStepsHandle);
 
-    if ( trackerSteps.empty() && caloSteps.empty() && caloROSteps.empty() ){
+    // Anticipate future use that selects on other combinations.
+    if ( trackerSteps.empty() ){
       return false;
     }
 
@@ -194,6 +209,46 @@ namespace mu2e {
 
     hNstrawHits_  ->Fill( strawHits.size() );
     hNcrystalHits_->Fill( crystalHits.size() );
+
+    for ( size_t i=0; i< strawHits.size(); ++i ){
+      StrawHit const& s = strawHits.at(i);
+      hEDep_->Fill( s.energyDep()*1000. );
+      hEDepWide_->Fill( s.energyDep()*1000. );
+    }
+
+    for ( size_t i=0; i< trackerSteps.size(); ++i ){
+      StepPointMC const& s = trackerSteps.at(i);
+      hEDepStep_->Fill( s.eDep()*1000. );
+    }
+
+    // Properties of generated particles, correlated with step point counts.
+    float nt[ntup_->GetNvar()];
+    nt[7]  = trackerSteps.size();
+    nt[8]  = caloSteps.size() + caloROSteps.size();
+    nt[9]  = strawHits.size();
+    nt[10] = crystalHits.size();
+    for ( GenParticleCollection::const_iterator i=gens.begin(), e=gens.end();
+          i != e; ++i ){
+
+      GenParticle const& gen(*i);
+
+      CLHEP::Hep3Vector const&       pos(gen.position());
+      CLHEP::Hep3Vector const&       p(gen.momentum().vect());
+
+      double r(pos.perp());
+      double cz = p.cosTheta();
+
+      nt[0] = pos.x();
+      nt[1] = pos.y();
+      nt[2] = pos.z();
+      nt[3] = r;
+      nt[4] = p.mag();
+      nt[5] = p.perp();
+      nt[6] = cz;
+      ntup_->Fill(nt);
+
+    }
+
 
     return true;
 
