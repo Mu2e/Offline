@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.9 2011/07/11 23:56:38 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2011/07/11 23:56:38 $
+// $Id: ComponentInfo.h,v 1.10 2011/07/18 21:51:04 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/07/18 21:51:04 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,12 +11,15 @@
 #ifndef EventDisplay_src_dict_classes_ComponentInfo_h
 #define EventDisplay_src_dict_classes_ComponentInfo_h
 
+
 #include <TText.h>
 #include <TPad.h>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #ifndef __CINT__
 #include "boost/shared_ptr.hpp"
+#include "cpp0x/type_traits"
 #endif
 
 namespace mu2e_eventdisplay
@@ -75,27 +78,20 @@ namespace mu2e_eventdisplay
       _text[lineNumber]->SetTitle(newText);
     }
 
-    void expandLine(const unsigned int lineNumber, const double newNumber, const char *unit)
+    template <typename NUMERIC_TYPE>
+      // This template will not instantiate for non-arithmetic types (cf SFINAE).
+      // std::enable_if expression below will give return type void if instantiated.
+      typename std::enable_if<std::is_arithmetic<NUMERIC_TYPE>::value>::type 
+      // const on pass-by-value is meaningless in an argument list.
+      expandLine(unsigned int lineNumber, NUMERIC_TYPE newNumber, const char *unit)
     {
       if(lineNumber<0 || lineNumber>=_text.size()) return;  //TODO throw exception
       const char *oldLine = _text[lineNumber]->GetTitle();
       if(oldLine!=NULL)
       {
-        std::stringstream newLine;
-        newLine<<oldLine<<", "<<newNumber<<unit;            //TODO add some formating
-        _text[lineNumber]->SetTitle(newLine.str().c_str());
-      }
-    }
-
-    // This will now work for both signed and unsigned integral types.
-    template <typename ITYPE>
-    void expandLine(const unsigned int lineNumber, const ITYPE newNumber, const char *unit)
-    {
-      if(lineNumber<0 || lineNumber>=_text.size()) return;  //TODO throw exception
-      const char *oldLine = _text[lineNumber]->GetTitle();
-      if(oldLine!=NULL)
-      {
-        std::stringstream newLine;
+        std::ostringstream newLine;
+        // No manipulators is equivalent to %g for floating point types, %i for integral.
+        // Add eg std::setfill('0') and/or std::setw(n) from <iomanip> for padding.
         newLine<<oldLine<<", "<<newNumber<<unit;
         _text[lineNumber]->SetTitle(newLine.str().c_str());
       }
