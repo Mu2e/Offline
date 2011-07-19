@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.8 2011/07/11 23:56:38 ehrlich Exp $
+// $Id: EventDisplay_module.cc,v 1.9 2011/07/19 20:51:41 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/07/11 23:56:38 $
+// $Date: 2011/07/19 20:51:41 $
 //
 
 #include <iostream>
@@ -72,7 +72,7 @@ namespace mu2e
   {
     if(_firstLoop)
     {
-      _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550);
+      _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550, _pset);
       if(!_frame->isClosed()) _frame->fillGeometry();
     }
     if(!_frame->isClosed())

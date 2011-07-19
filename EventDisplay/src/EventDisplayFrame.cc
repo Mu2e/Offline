@@ -34,7 +34,9 @@
 namespace mu2e_eventdisplay
 {
 
-EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h) : TGMainFrame(p, w, h)
+EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) : 
+  TGMainFrame(p, w, h),
+  _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run"))
 {
   int x,y;
   unsigned int width,height;

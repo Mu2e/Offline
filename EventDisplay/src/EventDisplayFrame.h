@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.14 2011/07/11 23:56:38 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.15 2011/07/19 20:51:41 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/07/11 23:56:38 $
+// $Date: 2011/07/19 20:51:41 $
 //
 // Original author Ralf Ehrlich
 //
@@ -30,6 +30,11 @@ class TRootEmbeddedCanvas;
 class TText;
 class TTimer;
 
+namespace fhicl 
+{
+  class ParameterSet;
+}
+
 namespace mu2e_eventdisplay
 {
   class ContentSelector;
@@ -43,7 +48,7 @@ namespace mu2e_eventdisplay
     EventDisplayFrame& operator=(const EventDisplayFrame &);
 
     public:
-    EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h);
+    EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset);
     virtual        ~EventDisplayFrame();
     void           fillGeometry();
 #ifndef __CINT__   //hide art::Event from ROOTCint
