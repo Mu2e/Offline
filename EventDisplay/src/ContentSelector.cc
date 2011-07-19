@@ -146,16 +146,16 @@ void ContentSelector::setSelectedHitsName()
   int i=_hitBox->GetSelected();
   int classtype=i/1000;
   int index=i%1000;
-  art::Provenance *provenance=NULL;
+  art::Provenance const *provenance=NULL;
   switch(classtype)
   {
     case 1 : if(index>=static_cast<int>(_stepPointMCVector.size())) return;
              _hitsAreSelected=true;
-             provenance=const_cast<art::Provenance*>(_stepPointMCVector[index].provenance());
+             provenance=_stepPointMCVector[index].provenance();
              break;
     case 2 : if(index>=static_cast<int>(_strawHitVector.size())) return;
              _hitsAreSelected=true;
-             provenance=const_cast<art::Provenance*>(_strawHitVector[index].provenance());
+             provenance=_strawHitVector[index].provenance();
              break;
     default: return;
   };
