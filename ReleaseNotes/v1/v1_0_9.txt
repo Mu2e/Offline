@@ -1,11 +1,14 @@
 
-  $Id: v1_0_9.txt,v 1.14 2011/07/19 01:38:07 ehrlich Exp $
+  $Id: v1_0_9.txt,v 1.15 2011/07/19 20:53:08 ehrlich Exp $
   $Author: ehrlich $
-  $Date: 2011/07/19 01:38:07 $
+  $Date: 2011/07/19 20:53:08 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_0_9
+
+18) July 19, 2011 ehrlich
+    brought the module label back into EventDisplayFrame
 
 17) July 18, 2011 ehrlich
     EventDisplay/src/ContentSelector.cc
