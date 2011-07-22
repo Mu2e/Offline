@@ -203,14 +203,15 @@ namespace mu2e {
         time += _muDelay;
       }
 
-      int MaxTimeCicleOverlay = 3;
-      int countOverlay = 0;
+      int periods = static_cast<int>(time/_maxtime);
+      time = time - (periods*_maxtime);
 
+      /*
       while (time > _maxtime && countOverlay<MaxTimeCicleOverlay) {
 	time -= _maxtime;
 	countOverlay++;
       }
-
+      */
     }
     if (_posAlgo==muonFileInputPos) {
         pos -= _DSOffset;           // Move to DS coordinate system
