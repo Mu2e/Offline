@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.17 2011/06/24 22:22:20 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.18 2011/07/25 20:51:24 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/24 22:22:20 $
+// $Date: 2011/07/25 20:51:24 $
 //
 // Original author Gianni Onorato
 //
@@ -42,8 +42,10 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Persistency/Common/Handle.h"
 #include "art/Persistency/Provenance/Provenance.h"
+#include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "MCDataProducts/inc/StatusG4.hh"
 #include <cmath>
 #include <deque>
 #include <iostream>
@@ -90,13 +92,19 @@ namespace mu2e {
       _nLayers(2),
       _nStrawsPerLay(50),
       _nVanes(4),
-      _nZCryPerVane(50),
-      _nRCryPerVane(10)
+      _nZCryPerVane(44),
+      _nRCryPerVane(12),
+      _nBadG4Status(0),
+      _nOverflow(0),
+      _nKilled(0),
+      _totalcputime(0),
+      _totalrealtime(0)
     {
     }
     virtual ~BkgRates() {
     }
     virtual void beginJob();
+    virtual void endJob();
 
     void analyze(art::Event const& e );
 
@@ -162,6 +170,9 @@ namespace mu2e {
     std::auto_ptr<MCCaloUtilities> CaloManager;
 
     bool _skipEvent;
+
+    int _nBadG4Status, _nOverflow, _nKilled;
+    float _totalcputime, _totalrealtime;
 
   };
 
@@ -240,6 +251,37 @@ namespace mu2e {
         static int ncalls(0);
     ++ncalls;
 
+    art::Handle<StatusG4> g4StatusHandle;
+    evt.getByLabel( _g4ModuleLabel, g4StatusHandle);
+    StatusG4 const& g4Status = *g4StatusHandle;
+
+    if ( g4Status.status() > 1 ) {
+      ++_nBadG4Status;
+      mf::LogError("G4")
+        << "Aborting BkgNorm::analyze due to G4 status\n"
+        << g4Status;
+      return;
+    }
+
+    if (g4Status.overflowSimParticles()) {
+      ++_nOverflow;
+      mf::LogError("G4")
+        << "Aborting BkgNorm::analyze due to overflow of particles\n"
+        << g4Status;
+      return;
+    }
+
+    if (g4Status.nKilledStepLimit() > 0) {
+      ++_nKilled;
+      mf::LogError("G4")
+        << "Aborting BkgNorm::analyze due to nkilledStepLimit reached\n"
+        << g4Status;
+      return;
+    }
+
+    _totalcputime += g4Status.cpuTime();
+    _totalrealtime += g4Status.realTime();
+
     art::ServiceHandle<GeometryService> geom;
 
     if (ncalls == 1) {
@@ -251,7 +293,7 @@ namespace mu2e {
 
       if (geom->hasElement<TTracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t1GenDau:t2trkId:t2pdgId:t2en:t2isGen:t2GenDau:t3trkId:t3pdgId:t3en:t3isGen:t3GenDau:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1eDep:t1isGen:t1StapFromEva:t1P:t1StartVolume:t2trkId:t2pdgId:t2eDep:t2isGen:t2StapFromEva:t2P:t2StartVolume:t3trkId:t3pdgId:t3eDep:t3isGen:t3StapFromEva:t3P:t3StartVolume:trkId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:dau1PdgId:dau1P:dauStartVolume:driftTime:driftDist" );
       } else if(geom->hasElement<ITracker>()) {
         _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
                                             "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
@@ -279,6 +321,23 @@ namespace mu2e {
 
   } // end of analyze
 
+  void BkgRates::endJob() {
+    cout << "BkgNorm::endJob Number of events skipped "
+         << "due to G4 completion status: "
+         << _nBadG4Status
+	 << "\nBkgNorm::endJob Number of overflow events "
+         << "due to too many particles in G4: "
+         << _nOverflow
+	 << "\nBkgNorm::endJob Number of events with killed particles "
+         << "due to too many steps in G4: "
+         << _nKilled
+	 << "\nBkgNorm::endJob total CpuTime "
+         << _totalcputime
+	 << "\nBkgNorm::endJob total RealTime "
+         << _totalrealtime
+         << endl;
+  }
+    
   void BkgRates::doTracker(art::Event const& evt, bool skip) {
 
     if (skip) return;
@@ -412,22 +471,22 @@ namespace mu2e {
       size_t nHitsPerStraw = mcptr.size();
       _hHitMult->Fill(nHitsPerStraw);
 
-      float tntpArray[38];
+      float tntpArray[56];
       int idx(0);
-      tntpArray[idx++] = evt.id().event();
-      tntpArray[idx++] = evt.run();
-      tntpArray[idx++] = hitTime;
-      tntpArray[idx++] = hit.dt();
-      tntpArray[idx++] = hitEnergy;
-      tntpArray[idx++] = lid.getLayer();
-      tntpArray[idx++] = did;
-      tntpArray[idx++] = secid.getSector();
-      tntpArray[idx++] = sid.getStraw();
-      tntpArray[idx++] = MCHitPoint.getX();
-      tntpArray[idx++] = MCHitPoint.getY();
-      tntpArray[idx++] = v;
-      tntpArray[idx++] = vMC;
-      tntpArray[idx++] = z;
+      tntpArray[idx++] = evt.id().event(); //leaf 1
+      tntpArray[idx++] = evt.run(); //leaf 2
+      tntpArray[idx++] = hitTime; //leaf 3
+      tntpArray[idx++] = hit.dt(); //leaf 4
+      tntpArray[idx++] = hitEnergy; //leaf 5
+      tntpArray[idx++] = lid.getLayer(); //leaf 6
+      tntpArray[idx++] = did; //leaf 7
+      tntpArray[idx++] = secid.getSector(); //leaf 8
+      tntpArray[idx++] = sid.getStraw(); //leaf 9
+      tntpArray[idx++] = MCHitPoint.getX(); //leaf 10
+      tntpArray[idx++] = MCHitPoint.getY(); //leaf 11
+      tntpArray[idx++] = v; //leaf 12
+      tntpArray[idx++] = vMC; //leaf 13
+      tntpArray[idx++] = z; //leaf 14
 
       //Get related G4 hits to identify the track.
 
@@ -438,13 +497,23 @@ namespace mu2e {
       //Vectors of pdgId and GenId of the tracks associated to the strawhit
       vector<int>     PdgIdTracks;
       vector<bool>    IsGenerated;
-      vector<int>     PdgFirstDaughter;
+      vector<int>     StepFromEvaVec;
+      vector<double>  TracksP;
+      vector<int>     TracksStVolumes;
 
       //List of trackId and energy deposition
       PairList TracksEDep;
 
       //common index for vectors
       size_t trackIdx(0);
+
+      SimParticleCollection::key_type firstTrackId = SimParticleCollection::key_type(0); 
+      bool notFirstTrack = true;
+      CLHEP::Hep3Vector const& strDir = str.direction();
+      double strRadius = str.getRadius();
+      SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0); 
+
+
 
       for (size_t j = 0; j < mcptr.size(); ++j) {
 
@@ -461,6 +530,16 @@ namespace mu2e {
         //add an element to the map itself, energy to the list and pdgId and genId to the vectors
         if (it==StrawTracksMap.end()) {
 
+	  if (notFirstTrack) {
+	    CLHEP::Hep3Vector const& StartPos = simParticles->at(trackId).startPosition();
+	    LinePointPCA lppca(stMidPoint3, strDir, StartPos);
+	    double insideDistance = lppca.dca();
+	    if (insideDistance >= strRadius) {
+	      notFirstTrack = true;
+	      firstTrackId = trackId;
+	    }
+	  }
+	  
           //insert track id in the trackId vector
           StrawTracksMap.insert(pair<SimParticleCollection::key_type, size_t>(trackId,trackIdx));
 
@@ -473,23 +552,26 @@ namespace mu2e {
             // PDG Particle Id of the sim particle that made this hit.
             PdgIdTracks.push_back(sim.pdgId());
             IsGenerated.push_back(sim.fromGenerator());
+	    TracksP.push_back(sim.startMomentum().vect().mag());
+	    TracksStVolumes.push_back(sim.startVolumeIndex());
+
+	    int nsfe = 0;
+
 	    if (sim.fromGenerator()) {
-	      PdgFirstDaughter.push_back(0);
+	      StepFromEvaVec.push_back(nsfe);
 	    } else {
 	      bool findEva = false;
 	      SimParticle& baby = const_cast<SimParticle&>(sim);
 	      while (!findEva) {
 		SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
+		nsfe++;
 		if (mommy.fromGenerator() || !baby.hasParent()) {
-		  PdgFirstDaughter.push_back(baby.pdgId());
-		  //		  cout << "Stored info. Event: " << evt.id().event()
-		  //		       <<"\tmommy " << mommy.pdgId() << '\t' << mommy.id()
-		  //		       << "\tbaby " << baby.pdgId() << '\t' << baby.id() << endl;
+		  if (trackId==firstTrackId) {
+		    Dau1Idx = baby.id();
+		  }
+		  StepFromEvaVec.push_back(nsfe);
 		  findEva = true;
 		} else {
-		  //		  cout << "event: " << evt.id().event()
-		  //		       <<"\tmommy " << mommy.pdgId() << '\t' << mommy.id()
-		  //		       << "\tbaby " << baby.pdgId() << '\t' << baby.id() << endl;
 		  baby = mommy;
 		}
 	      }
@@ -497,7 +579,9 @@ namespace mu2e {
           } else if ( !haveSimPart) {
             PdgIdTracks.push_back(0);
             IsGenerated.push_back(false);
-	    PdgFirstDaughter.push_back(0);
+	    StepFromEvaVec.push_back(0);
+	    TracksP.push_back(0);
+	    TracksStVolumes.push_back(0);
           }
 
           //increment index
@@ -522,7 +606,7 @@ namespace mu2e {
         }
       }
 
-      tntpArray[idx++] = nTrkPerStraw;
+      tntpArray[idx++] = nTrkPerStraw; //leaf 15
       int counter = 0;
 
       for (PairList::reverse_iterator it = TracksEDep.rbegin();
@@ -531,27 +615,37 @@ namespace mu2e {
 
         size_t vec_idx = StrawTracksMap[it->first];
 
-        tntpArray[idx++] = it->first.asInt();
-        tntpArray[idx++] = PdgIdTracks[vec_idx];
-        tntpArray[idx++] = it->second;
-        tntpArray[idx++] = IsGenerated[vec_idx];
-        tntpArray[idx++] = PdgFirstDaughter[vec_idx];
-
+        tntpArray[idx++] = it->first.asInt(); //leaf 16 - 23 - 30
+        tntpArray[idx++] = PdgIdTracks[vec_idx];//leaf 17 - 24 - 31
+        tntpArray[idx++] = it->second;//leaf 18 - 25 - 32
+        tntpArray[idx++] = IsGenerated[vec_idx];//leaf 19 - 26 - 33
+        tntpArray[idx++] = StepFromEvaVec[vec_idx];//leaf 20 - 27 - 34
+	tntpArray[idx++] = TracksP[vec_idx];//leaf 21 - 28 - 35
+	tntpArray[idx++] = TracksStVolumes[vec_idx];//leaf 22 - 29 - 36
         counter++;
       }
-
 
       //Fill with 0 the rest of the ntupla leaves
       //if there are less than 3 tracks contributing
       //to the straw hit
 
       for (int add_idx = 0; add_idx < 3 - counter; ++add_idx) {
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;//leaf 16 - 23 - 30 
+        tntpArray[idx++] = 0;//leaf 17 - 24 - 31
+        tntpArray[idx++] = 0;//leaf 18 - 25 - 32
+        tntpArray[idx++] = 0;//leaf 19 - 26 - 33
+        tntpArray[idx++] = 0;//leaf 20 - 27 - 34
+        tntpArray[idx++] = 0;//leaf 21 - 28 - 35
+        tntpArray[idx++] = 0;//leaf 22 - 29 - 36
       }
+
+      size_t vec_idx = StrawTracksMap[firstTrackId];
+      tntpArray[idx++] = firstTrackId.asInt(); //leaf 37
+      tntpArray[idx++] = PdgIdTracks[vec_idx];//leaf 38
+      tntpArray[idx++] = TracksP[vec_idx];//leaf 39
+      tntpArray[idx++] = IsGenerated[vec_idx];//leaf 40
+      tntpArray[idx++] = TracksStVolumes[vec_idx];//leaf 41
+      tntpArray[idx++] = StepFromEvaVec[vec_idx];//leaf 42
 
       size_t ngen = genParticles->size();
       if (ngen>1) {
@@ -560,31 +654,51 @@ namespace mu2e {
              << "\nThis event has more than one genparticle. Only the "
              << "first one will be stored" << endl;
       }
-      if (ngen > 0) {
-        GenParticle const& gen = genParticles->at(0);
-        tntpArray[idx++] = gen.generatorId().id();
-        tntpArray[idx++] = gen.momentum().vect().mag();
-        tntpArray[idx++] = gen.momentum().e();
-        tntpArray[idx++] = gen.position().x();
-        tntpArray[idx++] = gen.position().y();
-        tntpArray[idx++] = gen.position().z();
-        tntpArray[idx++] = gen.momentum().cosTheta();
-        tntpArray[idx++] = gen.momentum().phi();
-        tntpArray[idx++] = gen.time();
-      } else if ( ngen == 0 ) {
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
+
+      SimParticleCollection::key_type idxInSim = SimParticleCollection::key_type(1);
+      SimParticle const& geninSim = simParticles->at(idxInSim);
+      if (!geninSim.fromGenerator()) {
+	cout << "Watch out. First particle is not from generator. What's happening?" << endl;
       }
 
-      tntpArray[idx++] = driftTime;
-      tntpArray[idx++] = driftDistance;
+
+      if (ngen > 0) {
+        GenParticle const& gen = genParticles->at(0);
+        tntpArray[idx++] = gen.generatorId().id();//leaf 43
+        tntpArray[idx++] = gen.momentum().vect().mag();//leaf 44
+        tntpArray[idx++] = gen.momentum().e();//leaf 45
+        tntpArray[idx++] = gen.position().x();//leaf 46
+        tntpArray[idx++] = gen.position().y();//leaf 47
+        tntpArray[idx++] = gen.position().z();//leaf 48
+        tntpArray[idx++] = gen.momentum().cosTheta();//leaf 49
+        tntpArray[idx++] = gen.momentum().phi();//leaf 50
+        tntpArray[idx++] = gen.time();//leaf 51
+      } else if ( ngen == 0 ) {
+        tntpArray[idx++] = 0;//leaf 43
+        tntpArray[idx++] = 0;//leaf 44
+        tntpArray[idx++] = 0;//leaf 45
+        tntpArray[idx++] = 0;//leaf 46
+        tntpArray[idx++] = 0;//leaf 47
+        tntpArray[idx++] = 0;//leaf 48
+        tntpArray[idx++] = 0;//leaf 49
+        tntpArray[idx++] = 0;//leaf 50
+        tntpArray[idx++] = 0;//leaf 51
+      }
+
+
+      if (Dau1Idx != SimParticleCollection::key_type(0)) {
+	SimParticle const& Dau1 = simParticles->at(Dau1Idx);
+	tntpArray[idx++] = Dau1.pdgId();//leaf 52
+	tntpArray[idx++] = Dau1.startMomentum().vect().mag();//leaf 53
+	tntpArray[idx++] = Dau1.startVolumeIndex();//leaf 54      
+      } else {
+	tntpArray[idx++] = 0;//leaf 52
+	tntpArray[idx++] = 0;//leaf 53
+	tntpArray[idx++] = 0;//leaf 54
+      }
+
+      tntpArray[idx++] = driftTime; //leaf 55
+      tntpArray[idx++] = driftDistance; //leaf 56
 
       _tNtup->Fill(tntpArray);
 
@@ -812,6 +926,10 @@ namespace mu2e {
         tntpArray[idx++] = 0;
       }
 
+
+
+
+
       size_t ngen = genParticles->size();
       if (ngen>1) {
         cout << "The plugin is supposed to analyze single background rates,"
@@ -1003,6 +1121,13 @@ namespace mu2e {
 	      StepPointMC const& mchit = *mcptr[j2];
 	      // The simulated particle that made this hit.
 	      SimParticleCollection::key_type trackId(mchit.trackId());
+	      {
+		SimParticle const& sim = simParticles->at(trackId);
+		if (sim.stoppingCode() == ProcessCode::mu2eMaxSteps) {
+		  cout << "Track " << sim.pdgId() << "  dies at "
+		       << sim.endGlobalTime() << endl;
+		}
+	      }
 	      
 	      CaloManager->setTrackAndRO(evt, _g4ModuleLabel, trackId, thehit.id() );
 	      

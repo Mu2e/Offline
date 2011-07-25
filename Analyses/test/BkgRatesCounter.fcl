@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.5 2011/06/14 22:40:18 onoratog Exp $
+# $Id: BkgRatesCounter.fcl,v 1.6 2011/07/25 20:51:24 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/06/14 22:40:18 $
+# $Date: 2011/07/25 20:51:24 $
 #
 # Original author Gianni Onorato.
 
@@ -22,7 +22,7 @@ process_name : BkgRatesCounter
 source :
 {
   module_type : EmptyEvent
-  maxEvents : 2000
+  maxEvents : -1
 }
 
 services :
@@ -33,7 +33,7 @@ services :
   # Load the standard message logger configuration:
   # Threshold=Info (from using mf_interactive). 
   # Limit of 5 per category; then exponential backoff.
-  message.destinations.log.default.limit : 5
+  # message.destinations.log.default.limit : 5
    
   TFileService :
   {
@@ -95,7 +95,7 @@ physics :
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 
-    randomsaver : @local::randomsaver
+#    randomsaver : @local::randomsaver
 
   }
 
@@ -123,6 +123,7 @@ physics :
       # g4ModuleLabel     : g4run
       # minimumEnergy     : 0.000
     }
+
   }
 
   p1 : [ 
@@ -150,8 +151,8 @@ outputs:
     module_type    : RootOutput
     fileName       : "data_bkg.root"
     outputCommands : ['keep *_*_*_*'
-                   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
-                   , 'drop mu2eSimParticles_*_*_*'
+                #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
+                #   , 'drop mu2eSimParticles_*_*_*'
 		   # Uncomment the above line to reduce file size.
                      ]  
   }

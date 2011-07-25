@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.2 2011/06/23 16:37:16 onoratog Exp $
+// $Id: BkgNorm_module.cc,v 1.3 2011/07/25 20:51:24 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/23 16:37:16 $
+// $Date: 2011/07/25 20:51:24 $
 //
 // Original author Gianni Onorato
 //
@@ -149,6 +149,17 @@ namespace mu2e {
     _totalrealtime += g4Status.realTime();
 
     if (ncalls == 1) {
+
+      art::Handle<PhysicalVolumeInfoCollection> volumes;
+      evt.getRun().getByLabel(_g4ModuleLabel, volumes);
+      
+      for (int i=0; i < volumes->size(); ++i) {
+	
+	PhysicalVolumeInfo const& volInfo = volumes->at(i);
+	cout << i << '\t' <<volInfo.name() << volInfo.copyNo() << endl;
+      }
+    
+
 
       art::ServiceHandle<art::TFileService> tfs;
 
