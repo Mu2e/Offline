@@ -1,11 +1,15 @@
 
-  $Id: v1_0_9.txt,v 1.15 2011/07/19 20:53:08 ehrlich Exp $
+  $Id: v1_0_9.txt,v 1.16 2011/07/27 02:26:30 ehrlich Exp $
   $Author: ehrlich $
-  $Date: 2011/07/19 20:53:08 $
+  $Date: 2011/07/27 02:26:30 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_0_9
+
+19) July 26, 2011 ehrlich
+    event display:
+    - preliminary implementation of Kalman tracks and hits
 
 18) July 19, 2011 ehrlich
     brought the module label back into EventDisplayFrame
