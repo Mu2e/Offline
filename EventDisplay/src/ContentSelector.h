@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.8 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: ContentSelector.h,v 1.9 2011/07/27 00:28:48 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/07/27 00:28:48 $
 //
 // Original author Ralf Ehrlich
 //
@@ -25,6 +25,14 @@
 #include <iostream>
 #include <vector>
 
+#ifdef BABARINSTALLED
+using namespace CLHEP;
+//#include "TrkBase/TrkRecoTrk.hh"
+#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#else
+#warning BaBar package is absent. TrkRecoTrk cannot be displayed in the event display.
+#endif
+
 namespace mu2e_eventdisplay
 {
 
@@ -38,7 +46,11 @@ class ContentSelector
   std::vector<art::Handle<mu2e::StrawHitCollection> > _strawHitVector;
   std::vector<art::Handle<mu2e::CaloCrystalHitCollection> > _caloCrystalHitVector;
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
-  std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticlesVector;
+  std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
+#ifdef BABARINSTALLED
+  std::vector<art::Handle<mu2e::TrkRecoTrkCollection> > _trkRecoTrkVector;
+  std::vector<art::Handle<mu2e::TrkRecoTrkCollection> > _hitOnTrackVector; //Hits on Tracks are stored inside of TrkRecoTrk
+#endif
   art::Handle<mu2e::PhysicalVolumeInfoCollection> _physicalVolumes;
   art::Handle<mu2e::PointTrajectoryCollection> _pointTrajectories;
   bool _hasPhysicalVolumes, _hasPointTrajectories;

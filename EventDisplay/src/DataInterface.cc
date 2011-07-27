@@ -32,6 +32,17 @@
 #include <TMath.h>
 #include <TView.h>
 
+#ifdef BABARINSTALLED
+using namespace CLHEP;
+#include "TrkBase/TrkRecoTrk.hh"
+#include "TrkBase/TrkHotList.hh"
+#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/TrkStrawHit.hh"
+#include "KalmanTrack/KalRep.hh"
+#else
+#warning BaBar package is absent. TrkRecoTrk cannot be displayed in the event display.
+#endif
+
 namespace mu2e_eventdisplay
 {
 
@@ -719,6 +730,60 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   }
 
 
+#ifdef BABARINSTALLED
+  const mu2e::TrkRecoTrkCollection *trkRecoTrkHits=contentSelector->getSelectedHitCollection<mu2e::TrkRecoTrkCollection>();
+  if(trkRecoTrkHits!=NULL)
+  {
+    for(unsigned int i=0; i<trkRecoTrkHits->size(); i++)
+    {
+      const TrkRecoTrk &particle = trkRecoTrkHits->at(i);
+      const TrkHotList* hots = particle.hots();
+      if(hots!=NULL)
+      {
+        for(TrkHotList::hot_iterator iter=hots->begin(); iter!=hots->end(); iter++)
+        {
+          const TrkHitOnTrk *hitOnTrack = iter.get();
+          const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
+          if(strawHit)
+          {
+            int    strawindex=strawHit->straw().index().asInt();
+            double time = strawHit->time();   //this is the time the hit "arrived at the straw"
+                                              //take hitT0 for the time when the hit "started at the track"
+            double hitT0 = strawHit->hitT0();
+            double strawtime = strawHit->strawHit().time();
+            std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
+            if(straw!=_straws.end() && !isnan(time))
+            {
+              double previousStartTime=straw->second->getStartTime();
+              if(isnan(previousStartTime))
+              {
+                findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+                straw->second->setStartTime(time);
+                straw->second->start();
+                char c[100];
+                sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
+                straw->second->getComponentInfo()->setText(1,c);
+                sprintf(c,"hitT0(s): %gns",hitT0/CLHEP::ns);
+                straw->second->getComponentInfo()->setText(2,c);
+                sprintf(c,"strawhit time(s): %gns",strawtime/CLHEP::ns);
+                straw->second->getComponentInfo()->setText(3,c);
+                _hits.push_back(straw->second);
+              }
+              else
+              {
+                straw->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
+                straw->second->getComponentInfo()->expandLine(2,hitT0/CLHEP::ns,"ns");
+                straw->second->getComponentInfo()->expandLine(3,strawtime/CLHEP::ns,"ns");
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+#endif
+
+
   const mu2e::CaloCrystalHitCollection *calocrystalhits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>();
   if(calocrystalhits!=NULL)
   {
@@ -805,10 +870,10 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   }
 
   resetBoundaryP(_tracksMinmax);
-  std::vector<const mu2e::SimParticleCollection*> trackCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::SimParticleCollection>();
-  for(unsigned int i=0; i<trackCollectionVector.size(); i++)
+  std::vector<const mu2e::SimParticleCollection*> simParticleCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::SimParticleCollection>();
+  for(unsigned int i=0; i<simParticleCollectionVector.size(); i++)
   {
-    const mu2e::SimParticleCollection *simParticles=trackCollectionVector[i];
+    const mu2e::SimParticleCollection *simParticles=simParticleCollectionVector[i];
     cet::map_vector<mu2e::SimParticle>::const_iterator iter;
     for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
     {
@@ -868,6 +933,68 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
       _tracks.push_back(shape);
     }
   }
+
+#ifdef BABARINSTALLED
+  std::vector<const mu2e::TrkRecoTrkCollection*> trkRecoTrkCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::TrkRecoTrkCollection>();
+  for(unsigned int i=0; i<trkRecoTrkCollectionVector.size(); i++)
+  {
+    const mu2e::TrkRecoTrkCollection *trkRecoTrks=trkRecoTrkCollectionVector[i];
+    for(unsigned int i=0; i<trkRecoTrks->size(); i++)
+    {
+      const TrkRecoTrk &particle = trkRecoTrks->at(i);
+      const TrkRep* trkrep = particle.getRep(particle.defaultType());
+      if(trkrep!=NULL)
+      {
+        int   particleid=0;
+        switch(static_cast<int>(trkrep->particleType()))
+        {
+           case 0 : particleid=11;   break;  //electron
+           case 1 : particleid=13;   break;  //muon
+           case 2 : particleid=211;  break;  //pion
+           case 3 : particleid=321;  break;  //kaon
+           case 4 : particleid=2212; break;  //proton
+        };
+        std::string particlename=HepPID::particleName(particleid);
+        char c0[200], c2[200], c3[200];
+        sprintf(c0,"Kalman Track %i  %s",static_cast<int>(particle.id()),particlename.c_str());
+        boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+        info->setName(c0);
+        info->setText(0,c0);
+        boost::shared_ptr<Track> track(new Track(particleid, _geometrymanager, _topvolume, _mainframe, info));
+        _components.push_back(track);
+        _tracks.push_back(track);
+
+        double fltLMin=trkrep->startValidRange();
+        double fltLMax=trkrep->endValidRange();
+        double fltStep = (fltLMax - fltLMin)/200.0;
+        for(unsigned int i = 0; i <= 200.0; i++) 
+        {		
+          double fltL = fltLMin + i*fltStep;
+          double   t = trkrep->arrivalTime(fltL);
+          HepPoint p = trkrep->position(fltL);
+          findBoundaryT(_tracksTimeMinmax, t);
+          findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
+          track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
+        }
+        double t1=trkrep->trackT0()+trkrep->arrivalTime(fltLMin);
+        double t2=trkrep->trackT0()+trkrep->arrivalTime(fltLMax);
+        track->setStartTime(t1);
+        track->setEndTime(t2);
+        const KalRep* kalrep = dynamic_cast<const KalRep*>(trkrep);
+        if(kalrep!=NULL)
+        {
+          int charge = kalrep->charge();
+          sprintf(c2,"Charge %i",charge);
+          info->setText(1,c2);
+          double p1=trkrep->momentum(fltLMin).mag();
+          double p2=trkrep->momentum(fltLMax).mag();
+          sprintf(c3,"Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV);
+          info->setText(2,c3);
+        }
+      }
+    }
+  }
+#endif
 }
 
 void DataInterface::findTrajectory(const ContentSelector *contentSelector,

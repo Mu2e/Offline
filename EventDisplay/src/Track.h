@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.8 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: Track.h,v 1.9 2011/07/27 00:28:48 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/07/27 00:28:48 $
 //
 // Original author Ralf Ehrlich
 //
@@ -33,6 +33,8 @@ class Track: public VirtualShape
   int _particleId;
 
   public:
+//constructor for tracks with start and end point only 
+//(detailed trajectory can be added later)
   Track(double x1, double y1, double z1, double t1,
         double x2, double y2, double z2, double t2,
         int particleId,
@@ -58,6 +60,19 @@ class Track: public VirtualShape
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     _line->Draw();
     start();
+  }
+
+//constructor for a track without any points
+//trajectory points can be added later
+  Track(int particleId,
+        const TGeoManager *geomanager, TGeoVolume *topvolume,
+        const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info):
+        VirtualShape(geomanager, topvolume, info, false)
+  {
+    _particleId=particleId;
+    _trajectory=false;
+    _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
+    _line->Draw();
   }
 
   void addTrajectoryPoint(double x, double y, double z, double t)

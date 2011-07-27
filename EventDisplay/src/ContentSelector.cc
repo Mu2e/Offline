@@ -73,6 +73,9 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
 //Hit Selection
   createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1000);
   createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2000);
+#ifdef BABARINSTALLED
+  createNewEntries<mu2e::TrkRecoTrkCollection>(_hitOnTrackVector, event, "TrkRecoTrk", newEntries, 3000);
+#endif
   newEntries.push_back(nothingSelected);
 
   if(compareLists(newEntries,_hitBox->GetListBox())==false)
@@ -113,7 +116,10 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.clear();
 
 //Track Selection
-  createNewEntries<mu2e::SimParticleCollection>(_simParticlesVector, event, "SimParticle", newEntries, 1000);
+  createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1000);
+#ifdef BABARINSTALLED
+  createNewEntries<mu2e::TrkRecoTrkCollection>(_trkRecoTrkVector, event, "TrkRecoTrk", newEntries, 2000);
+#endif
 
   if(compareLists(newEntries,_trackBox)==false)
   {
@@ -157,6 +163,12 @@ void ContentSelector::setSelectedHitsName()
              _hitsAreSelected=true;
              provenance=_strawHitVector[index].provenance();
              break;
+#ifdef BABARINSTALLED
+    case 3 : if(index>=static_cast<int>(_hitOnTrackVector.size())) return;
+             _hitsAreSelected=true;
+             provenance=_hitOnTrackVector[index].provenance();
+             break;
+#endif
     default: return;
   };
   _hitsClassName          =provenance->className();
@@ -188,6 +200,11 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
     case 2 : if(typeid(CollectionType)!=typeid(mu2e::StrawHitCollection)) return(NULL);
              if(index>=static_cast<int>(_strawHitVector.size())) return(NULL);
              return(reinterpret_cast<const CollectionType*>(_strawHitVector[index].product()));
+#ifdef BABARINSTALLED
+    case 3 : if(typeid(CollectionType)!=typeid(mu2e::TrkRecoTrkCollection)) return(NULL);
+             if(index>=static_cast<int>(_hitOnTrackVector.size())) return(NULL);
+             return(reinterpret_cast<const CollectionType*>(_hitOnTrackVector[index].product()));
+#endif
 //Note about the use of reinterpret_cast: While it is generally unsafe to use it, in this case it is Ok.
 //the typeid check makes that the program advances to the line with the reinterpret_cast ONLY if the
 //type of the vector element and the CollectionType are identical. The compiler doesn't see this, the compiler
@@ -201,7 +218,9 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 }
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
-
+#ifdef BABARINSTALLED
+template const mu2e::TrkRecoTrkCollection*  ContentSelector::getSelectedHitCollection<mu2e::TrkRecoTrkCollection>() const;
+#endif
 
 template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
@@ -240,13 +259,23 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection()
     switch(classtype)
     {
       case 1 : if(typeid(CollectionType)!=typeid(mu2e::SimParticleCollection)) break;
-               if(index>=static_cast<int>(_simParticlesVector.size())) break;
-               to_return.push_back(reinterpret_cast<const CollectionType*>(_simParticlesVector[index].product()));
+               if(index>=static_cast<int>(_simParticleVector.size())) break;
+               to_return.push_back(reinterpret_cast<const CollectionType*>(_simParticleVector[index].product())); 
+               break;
+#ifdef BABARINSTALLED
+      case 2 : if(typeid(CollectionType)!=typeid(mu2e::TrkRecoTrkCollection)) break;
+               if(index>=static_cast<int>(_trkRecoTrkVector.size())) break;
+               to_return.push_back(reinterpret_cast<const CollectionType*>(_trkRecoTrkVector[index].product()));
+               break;
+#endif
     };
   }
   return(to_return);
 }
 template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>() const;
+#ifdef BABARINSTALLED
+template std::vector<const mu2e::TrkRecoTrkCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkRecoTrkCollection>() const;
+#endif
 
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const
 {

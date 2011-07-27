@@ -1,13 +1,26 @@
 #
-# $Id: SConscript,v 1.7 2011/05/27 22:44:35 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/27 22:44:35 $
+# $Id: SConscript,v 1.8 2011/07/27 00:28:48 ehrlich Exp $
+# $Author: ehrlich $
+# $Date: 2011/07/27 00:28:48 $
 #
 # Original author Rob Kutschke.
 #
 
 import os, re
 Import('env')
+
+if os.path.exists('../../BaBar/BaBar/src/SConscript'):
+   BABARINSTALLED = [ '-DBABARINSTALLED' ]
+#not all of these libraries are required
+   babarlibs = [ 'BaBar_KalmanTrack', 'BaBar_DetectorModel',  'BaBar_TrkBase',    'BaBar_BField',
+              'BaBar_TrajGeom',    'BaBar_BbrGeom',        'BaBar_difAlgebra', 'BaBar_ProbTools',
+              'BaBar_BaBar',       'BaBar_CLHEP',          'BaBar_DchData',     'BaBar_DchGeom',
+              'BaBar_DchGeomBase', 'BaBar_DchCalib',       'BaBar_MatEnv' ]
+else:
+   BABARINSTALLED = [ ]
+   babarlibs = [ ]
+   print 'BaBar package is absent.'
+   print 'Track classes and hit classes which are defined in the BaBar package cannot be displayed in the event display.'
 
 os.system('make -s -f RootDictMakeFile')
 
@@ -24,6 +37,7 @@ env.SharedLibrary('#/lib/EventDisplay_module', cc_files, cc_files2,
                   LIBS=[ 'art_Framework_Core',
                          'art_Utilities',
                          'art_Framework_Services_Registry',
+                         babarlibs,
                          'GeometryService',
                          'ConditionsService',
                          'TrackerGeom',
@@ -37,6 +51,7 @@ env.SharedLibrary('#/lib/EventDisplay_module', cc_files, cc_files2,
                          'CLHEP',
                          'Core',
                          ],
+                  CPPFLAGS= [ BABARINSTALLED ],
                   LINKFLAGS=[ll.split(),'-lGeom','-lGeomPainter', '-lGed']
                   )
 

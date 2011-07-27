@@ -1,0 +1,100 @@
+# Configuration file for KalFit01
+#
+# $Id: KalFitEventDisplay.fcl,v 1.1 2011/07/27 00:28:48 ehrlich Exp $
+# $Author: ehrlich $
+# $Date: 2011/07/27 00:28:48 $
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+
+# Give this job a name.
+process_name : KalFit01
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 100
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService : { fileName : "KalFit01.root" }
+
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService : { inputFile : "Mu2eG4/test/geom_01.txt" }
+
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+
+    G4Helper : { }
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+
+    # Generate the event
+    generate: @local::generate
+
+    # Run G4 and add hits to the event
+    g4run : @local::g4run
+
+    # Form StrawHits (SH).
+    makeSH : @local::makeSH
+
+    # test module for Kalman fit: the 
+    
+    KalFitTest :
+    {
+        module_type    : KalFitTest
+        diagLevel      : 2
+    # Kalman fit configuration
+        KalFit : 
+        {
+            maxiter        : 5
+            debugLevel     : 0
+            material       : true
+        }
+    # MC truth finder, analyzer configuration
+        KalFitMC : 
+        {
+            mcT0Err       : -0.5
+            debugLevel     : 0
+            minNHits       : 20
+            maxNHits       : 100
+        }        
+    }
+  }
+
+  analyzers:
+  {
+
+    eventdisplay:
+    {
+      module_type     : EventDisplay
+      g4ModuleLabel   : "g4run"
+    }
+  }
+
+  p1 : [generate , g4run, makeSH, KalFitTest]
+  e1 : [eventdisplay]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+# Override some of the default values.
+physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
+physics.producers.generate.seed       : [1111]
+physics.producers.g4run.seed          : [3333]
+physics.producers.makeSH.diagLevel    : 0
+physics.producers.makeSH.maxFullPrint : 5
