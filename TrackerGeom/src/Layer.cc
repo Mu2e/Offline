@@ -2,9 +2,9 @@
 // Hold information about one Layer in a tracker.
 //
 //
-// $Id: Layer.cc,v 1.4 2011/05/18 02:27:20 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:20 $
+// $Id: Layer.cc,v 1.5 2011/08/03 18:31:25 mf Exp $
+// $Author: mf $
+// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //
@@ -62,6 +62,8 @@ namespace mu2e {
       _straws.push_back(straw);
       straw->fillPointers(tracker);
     }
+    _straw0Direction = _straws[0]->getDirection();
+    _straw0MidPoint  = _straws[0]->getMidPoint();
   }
 
 } // namespace mu2e

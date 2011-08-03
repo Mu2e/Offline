@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.15 2011/06/01 16:02:58 mf Exp $
+// $Id: TTrackerMaker.hh,v 1.16 2011/08/03 18:31:25 mf Exp $
 // $Author: mf $
-// $Date: 2011/06/01 16:02:58 $
+// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,8 @@
 #include "TrackerGeom/inc/Device.hh"
 #include "TrackerGeom/inc/Layer.hh"
 #include "TrackerGeom/inc/Sector.hh"
+
+#include "TTrackerGeom/inc/Station.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -60,6 +62,12 @@ private:
   void identifyDirectionalNeighbourStraws();
   StrawIndex ttStrawIndex (LayerId const &layerId, int snum);
 
+  void makeStation( StationId stationId );
+  void makePlane  ( const PlaneId &planeId, Station & station );
+  void makeFace   ( const FaceId &faceId, Plane &plane, const Device &device );
+  void makePanel  ( const PanelId &panelId, Face &face, const Sector &sector );
+  void makeZLayer ( const ZLayerId &zlayerId, Panel &panel, const Layer &layer );
+  
   // Do the work of constructing it.
   void buildIt();
 
@@ -124,9 +132,18 @@ private:
   double _manifoldXEdgeExcessSpace;
   double _manifoldZEdgeExcessSpace;
 
-
   // Z Location of the first device.
   double _z0;
+
+  // Parameters used in the Station/Plane/Face/Panel/ZLayer view
+  int    _numStations;                  // Number of Stations.
+  int    _planesPerStation;           
+  int    _facesPerStation;
+  int    _facesPerPlane;
+  int    _panelsPerFace;
+  int    _zLayersPerPanel;
+  int    _strawsPerZLayer;
+  
 
 };
 

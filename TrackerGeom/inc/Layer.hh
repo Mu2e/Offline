@@ -3,9 +3,9 @@
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.10 2011/05/22 19:09:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Id: Layer.hh,v 1.11 2011/08/03 18:31:25 mf Exp $
+// $Author: mf $
+// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //
@@ -66,6 +66,13 @@ namespace mu2e {
       return _straws;
     }
 
+    // Mid-point position of the primary straw, and (collective) straw direction
+    // (The primary straw is the straw used to establish position, with other
+    //  straws being some number of deltas away.  In the TTracker the primary
+    //  straw is the innermost straw.) 
+    CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
+    CLHEP::Hep3Vector straw0Direction() const { return _straw0Direction; }
+
     // Formatted string embedding the id of the layer.
     std::string name( std::string const& base ) const;
 
@@ -118,6 +125,14 @@ namespace mu2e {
     // This is exactly only all wires are in their nominal positions.
     CLHEP::Hep3Vector _orig;
     CLHEP::Hep3Vector _delta;
+
+    // Position (in tracker coordinates) of the midpoint, and direction 
+    // of the primary straw.  Mutable for the same reason as _straws:
+    // These are set by fillPointers.
+    // TODO -- there is clearly a way to design this such that these mutable
+    //         declarations can go away.
+    mutable CLHEP::Hep3Vector _straw0MidPoint;
+    mutable CLHEP::Hep3Vector _straw0Direction;
 
     // Pointers to the straws in this layer.
     // These pointers do not own the straws to which they point.

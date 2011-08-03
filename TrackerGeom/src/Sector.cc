@@ -2,9 +2,9 @@
 // Hold information about one Sector in a tracker.
 //
 //
-// $Id: Sector.cc,v 1.2 2010/04/18 00:31:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:31:56 $
+// $Id: Sector.cc,v 1.3 2011/08/03 18:31:25 mf Exp $
+// $Author: mf $
+// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //
@@ -30,7 +30,10 @@ namespace mu2e {
   void Sector::fillPointers ( const Tracker& tracker ) const {
     for( size_t i=0; i<_layers.size(); ++i ){
       _layers[i].fillPointers(tracker);
+      _straw0MidPoint += _layers[i].straw0MidPoint();
     }
+    _straw0Direction = _layers[0].straw0Direction();
+    _straw0MidPoint  /= _layers.size();
   }
 
 } // end namespace mu2e

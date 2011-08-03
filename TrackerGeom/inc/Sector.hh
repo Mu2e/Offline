@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.11 2011/05/22 19:09:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Id: Sector.hh,v 1.12 2011/08/03 18:31:25 mf Exp $
+// $Author: mf $
+// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //
@@ -65,6 +65,15 @@ namespace mu2e {
     const Straw& getStraw ( const StrawId& sid ) const{
       return _layers.at(sid.getLayer()).getStraw(sid);
     }
+
+    // Mid-point position of the average (over the layers) of the primary 
+    // straws, and (collective) straw direction.
+    // (The primary straw of each layer is the straw used to establish position. 
+    //  In the TTracker the primary straw is the innermost straw.) 
+    // *** In a multi-layer geometry, the straw0MidPoint *** 
+    // ***        need not lie on any actaul straw       ***
+    CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
+    CLHEP::Hep3Vector straw0Direction() const { return _straw0Direction; }
 
     // Formatted string embedding the id of the sector.
     std::string name( std::string const& base ) const;
@@ -146,6 +155,15 @@ namespace mu2e {
     double _boxRzAngle;
     CLHEP::Hep3Vector _boxOffset;
 
+    // Position (in tracker coordinates) of the midpoint, and direction 
+    // of the average of the primary straw.  Mutable because these are set
+    // by fillPointers.
+    // TODO -- there is clearly a way to design this such that these mutable
+    //         declarations can go away.
+    mutable CLHEP::Hep3Vector _straw0MidPoint;
+    mutable CLHEP::Hep3Vector _straw0Direction;
+
+ 
   };
 
 }  //namespace mu2e

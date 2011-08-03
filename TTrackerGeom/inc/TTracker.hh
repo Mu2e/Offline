@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.9 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: TTracker.hh,v 1.10 2011/08/03 18:31:25 mf Exp $
+// $Author: mf $
+// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,7 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/TubsParams.hh"
 
+#include "TTrackerGeom/inc/Station.hh"
 
 namespace mu2e {
 
@@ -108,6 +109,18 @@ namespace mu2e {
       return _allStraws.at(i.asInt());
     }
 
+    int nStations() const{
+      return _stations.size();
+    }
+
+    const std::vector<Station>& getStations() const{
+      return _stations;
+    }
+
+    const Station& getStation ( StationId id) const{
+      return _stations.at(id);
+    }
+
     const std::deque<Straw>& getAllStraws() const {return _allStraws;}
 
     const std::vector<StrawDetail>& getStrawDetails() const{
@@ -182,6 +195,10 @@ namespace mu2e {
 
     // An TTracker is made of two devices, sides and vanes.
     std::vector<Device> _devices;
+
+    // An alternative viewpoint:  
+    // A TTracker is made of a collection of Stations.
+    std::vector<Station> _stations;
 
     // There will be pointers to the objects in this container.
     std::deque<Straw>  _allStraws;

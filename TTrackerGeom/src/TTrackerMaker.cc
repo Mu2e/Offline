@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.37 2011/06/07 23:01:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 23:01:53 $
+// $Id: TTrackerMaker.cc,v 1.38 2011/08/03 18:31:25 mf Exp $
+// $Author: mf $
+// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //
@@ -69,6 +69,16 @@ namespace mu2e {
     _wireRadius           = config.getDouble("ttracker.wireRadius")*CLHEP::mm;
 
     _manifoldYOffset      = config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
+
+    // station
+    // TODO Maybe -- These might eventually want to be config parameter driven
+    _planesPerStation     = 2;                  
+    _panelsPerFace        = 3;                    // hardwired 3 sectors/face
+    _facesPerPlane        = _sectorsPerDevice / _panelsPerFace; 
+    _facesPerStation      = _planesPerStation*_facesPerPlane;
+    _zLayersPerPanel      = _layersPerSector;
+    _strawsPerZLayer      = _manifoldsPerEnd*_strawsPerManifold;
+    
     config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
     for ( size_t i=0; i<_manifoldHalfLengths.size(); ++i ){
       _manifoldHalfLengths.at(i) *= CLHEP::mm;
@@ -201,6 +211,19 @@ namespace mu2e {
     identifyNeighbourStraws();
     identifyDirectionalNeighbourStraws();
 
+   // Stations
+   // Construct the stations and their internals based on devices internals
+   if ( _numDevices%2 != 0 ) {
+         throw cet::exception("GEOM")  << "_numDevices = " << _numDevices
+         << ": Current TTracker geometry assumes even number of devices  \n";
+   }
+   _numStations = _numDevices/2;
+    _tt->_stations.reserve(_numStations);                 
+    // Construct the devices and their internals.
+    for ( int istation=0; istation<_numStations; ++istation ){
+      makeStation( StationId(istation) );
+    }
+
     //_tt->forAllLayers( lptest);
     //_tt->forAllDevices( devtest);
 
@@ -210,6 +233,7 @@ namespace mu2e {
 
   void TTrackerMaker::makeDevice( DeviceId devId ){
 
+//std::cout << "->->-> makeDevice\n";    
     int idev = devId;
 
     double devDeltaZ = chooseDeviceSpacing(idev);
@@ -227,9 +251,11 @@ namespace mu2e {
       makeSector ( SectorId(devId,isec), dev );
     }
 
+//std::cout << "<-<-<- makeDevice\n";    
   }
 
   void TTrackerMaker::makeSector( const SectorId& secId, Device& dev ){
+//std::cout << "->->-> makeSector\n";    
 
     dev._sectors.push_back( Sector(secId) );
     Sector& sector = dev._sectors.back();
@@ -241,7 +267,7 @@ namespace mu2e {
     if ((2.*_manifoldHalfLengths.at(2)+_supportHalfThickness)>_deviceHalfSeparation + tolerance) {
       cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _deviceHalfSeparation " <<
         (2.*_manifoldHalfLengths.at(2)+_supportHalfThickness) << ", " <<_deviceHalfSeparation << endl;
-      throw cet::exception("GEOM")  << "Devices are to close \n";
+      throw cet::exception("GEOM")  << "Devices are too close \n";
     }
 
     makeManifolds( secId );
@@ -297,7 +323,6 @@ namespace mu2e {
         }
       }
 
-
       for (int ns = 1; ns!=layer0.nStraws(); ++ns) {
         double xLayerDeltaMag =
           (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns-1).getMidPoint()).mag();
@@ -320,9 +345,11 @@ namespace mu2e {
     // calculate/make a sector envelope
     computeSectorBoxParams(sector, dev);
 
-  }
+//std::cout << "<-<-<- makeSector\n";    
+  }  // makeSector
 
   void TTrackerMaker::makeLayer ( const LayerId& layId, Sector& sector ){
+//std::cout << "->->-> makeLayer\n";    
 
     // Make an empty layer object.
     sector._layers.push_back( Layer(layId) );
@@ -424,9 +451,11 @@ namespace mu2e {
       }
     }
 
+//std::cout << "<-<-<- makeLayer\n";    
   }
 
   void TTrackerMaker::makeManifolds( const SectorId& secId){
+//std::cout << "->->-> makeManifolds\n";    
 
     if ( _sectorsPerDevice != 4 && _sectorsPerDevice != 6 ) {
       throw cet::exception("GEOM")
@@ -470,7 +499,171 @@ namespace mu2e {
       _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
     }
 
+//std::cout << "<-<-<- makeManifolds\n";    
   }
+
+// ======= Station view makers ============
+
+  void TTrackerMaker::makeStation( StationId stationId ){
+//std::cout << "->->-> makeStation\n";    
+
+    int ist = stationId;
+    int idev1 = 2*ist;
+    int idev2 = idev1 + 1;
+    double stationZ = 0.5 * 
+        ( _tt->_devices.at(idev1).origin().z() + 
+          _tt->_devices.at(idev2).origin().z() );
+    _tt->_stations.push_back(Station(stationId, stationZ));
+    Station & st = _tt->_stations.back();                      
+    st._planes.reserve (_planesPerStation);
+    st._faces.reserve (_facesPerStation);
+
+    for ( int iplane = 0; iplane < _planesPerStation; ++iplane ) {
+      makePlane ( PlaneId ( stationId, iplane ), st );
+    }
+    
+//std::cout << "<-<-<- makeStation\n";    
+  }
+
+  // station view
+  void TTrackerMaker::makePlane( const PlaneId& planeId, Station & station ){
+//std::cout << "->->-> makePlane\n";    
+
+    int idev = 2*planeId.getStation() + planeId.getPlane(); 
+    const Device & device = _tt->_devices.at(idev);
+    double planeZ = device.origin().z();
+    station._planes.push_back(Plane(planeId, planeZ));
+    Plane & plane = station._planes.back();
+    plane._faces.reserve(_facesPerPlane);
+    for ( int iface = 0; iface < _facesPerPlane; ++iface ) {
+      int faceNum = 2*planeId.getPlane() + iface;
+      makeFace ( FaceId ( station.id(), faceNum ), plane, device );
+      station._faces.push_back(&(plane._faces.back()));  // quelle haque
+    }
+    
+//std::cout << "<-<-<- makePlane\n";    
+  }  // makePlane
+
+  // station view
+  void TTrackerMaker::makeFace( const FaceId & faceId, 
+                                      Plane  & plane,
+                                const Device & device ) 
+  {
+//std::cout << "->->-> makeFace " << faceId << "\n";    
+    bool faceZisKnown = false;
+    double faceZ = 0.0;
+    double faceZtolerance = .0001;
+    int faceParity = faceId.getFace()%2;
+    
+    for (int isector = faceParity; isector < _sectorsPerDevice; isector += 2) {
+      const Sector & sector = device.getSector(isector);
+      if (faceZisKnown) {
+        if (abs ( sector.straw0MidPoint().z() - faceZ ) > faceZtolerance ) {
+          throw cet::exception ( "GEOM" ) 
+          << "Inconsistent sector positions within a face for faceId = "
+          << faceId << "\nExpected Z position = " << faceZ 
+          << "  Sector base position Z = " << sector.straw0MidPoint().z()
+          << " in sector " << sector.id() << "\n";
+        }
+      } else {
+        faceZ = sector.straw0MidPoint().z();
+        // TODO -- If this is absolutely correct, I will be surprised.
+        //         We need to look at where this places the faces, and
+        //         that will clue us in to how to do it right. 
+        faceZisKnown = true;
+      }
+    }    
+
+    plane._faces.push_back(Face(faceId, faceZ));
+    Face & f =  plane._faces.back();   
+    f._panels.reserve  (_panelsPerFace);
+    for ( int ipanel = 0; ipanel < _panelsPerFace; ++ipanel ) {
+      makePanel ( PanelId ( faceId, ipanel ), f, 
+                  device.getSector(2*ipanel + faceParity) );
+    }
+    
+//std::cout << "<-<-<- makeFace\n";    
+  }  // makeFace
+
+  // station view
+  void TTrackerMaker::makePanel( const PanelId & panelId, 
+                                       Face  & face,
+                                 const Sector & sector ) 
+  {
+//std::cout << "->->-> makePanel " << panelId << "\n";    
+    double panelZ = face.midZ();
+    face._panels.push_back(Panel(panelId, panelZ));
+    Panel & pnl =  face._panels.back();   
+    pnl._zlayers.reserve  (_zLayersPerPanel);
+    for ( int izlayer = 0; izlayer < _zLayersPerPanel; ++izlayer ) {
+      int faceParity = face.id().getFace()%2;
+      int ilayer = 1 - faceParity + (2*faceParity -1)*izlayer;
+      makeZLayer ( ZLayerId ( panelId, izlayer ), pnl, 
+                                                  sector.getLayer(ilayer) );
+    }
+    // Determine phi (and view) by looking at just one sample straw;
+    // check that the remaining straws are consisdtent direction-wise
+    Straw const * sampleStraw = pnl.getZLayer(0).getStrawptr(0);
+    CLHEP::Hep3Vector dir = sampleStraw->getDirection();
+    const double directionTolerance = .01e-8; 
+    typedef  std::vector<ZLayer>::const_iterator ZLayersIt;
+    ZLayersIt izlend =  pnl.getZLayers().end(); 
+    for ( ZLayersIt izl = pnl.getZLayers().begin(); izl != izlend; ++izl ) 
+    {
+      typedef std::vector<Straw const *>::const_iterator StrawptrsIt;
+      StrawptrsIt isend = izl->getStraws().end();
+      for ( StrawptrsIt is = izl->getStraws().begin(); is != isend; ++is )
+      {
+        CLHEP::Hep3Vector dir2 = (*is)->getDirection();
+        double directionDiscrepancy =
+          (dir.x() - dir2.x())*(dir.x() - dir2.x()) +
+          (dir.y() - dir2.y())*(dir.y() - dir2.y()) +
+          dir2.z()*dir2.z();
+        // Note that a significantly non-zero z component of any direction 
+        // is also clasified as problematic
+        if ( directionDiscrepancy > directionTolerance ) {
+          throw cet::exception("GEOM") 
+            << "makePanel: Straw Direction Discrepancy \n"
+            << "Straw " << sampleStraw->id() << " direction " << dir  << "\n"
+            << "Straw " << (*is)->id()       << " direction " << dir2 << "\n";
+        }
+      }
+    }
+    double phi = dir.phi() - M_PI/2;
+    if (phi < 0) phi += 2*M_PI;  // phi is now in range [0,2 pi)
+    if ( (phi < 0) || (phi >= 2*M_PI) ) {
+       throw cet::exception("GEOM") 
+         << "makePanel: An ill-understood phi - "
+         << dir.phi();
+    }
+    pnl._phi = phi;
+    double phi0 = 0.0;  // TODO -- cope with non-zero station rotation offsets
+    double clockAngle = phi - phi0 + M_PI/36;
+    if (clockAngle < 0)       clockAngle += 2*M_PI; 
+    if (clockAngle > 2*M_PI ) clockAngle -= 2*M_PI; 
+    int hour = static_cast<int> (std::floor(clockAngle/(M_PI/6)));
+    if ( (hour < 0 || hour >= 12) ) {
+       throw cet::exception("GEOM") 
+         << "makePanel: An ill-understood conversion of phi to hour - "
+         << dir.phi() << " --> " << hour;
+    }
+    pnl._view = hour;
+//std::cout << "<-<-<- makePanel\n";    
+  }  // makePanel
+
+  // station view
+  void TTrackerMaker::makeZLayer( const ZLayerId & zlayerId, 
+                                        Panel  & panel,
+                                  const Layer & layer ) 
+  {
+    double layerZ = layer.straw0MidPoint().z();
+    panel._zlayers.push_back(ZLayer(zlayerId, layerZ));
+    ZLayer & zlay =  panel._zlayers.back();   
+    zlay._straws.reserve  (_strawsPerZLayer);
+    zlay._straws = layer.getStraws();
+  }  // makeZLayer
+
+// ======= end of Station view makers ================
 
   // Assumes all devices and all sectors are the same.
   // The straw length depends only on the manifold number.

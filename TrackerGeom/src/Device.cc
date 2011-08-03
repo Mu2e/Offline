@@ -1,9 +1,9 @@
 //
 // Hold information about one Device in a tracker.
 //
-// $Id: Device.cc,v 1.2 2010/04/18 00:31:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/04/18 00:31:56 $
+// $Id: Device.cc,v 1.3 2011/08/03 18:31:25 mf Exp $
+// $Author: mf $
+// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,7 @@ namespace mu2e {
   }
 
   void Device::fillPointers ( const Tracker& tracker ) const{
-    for ( size_t i=0; i>_sectors.size(); ++i ){
+    for ( size_t i=0; i<_sectors.size(); ++i ){
       _sectors[i].fillPointers(tracker);
     }
   }

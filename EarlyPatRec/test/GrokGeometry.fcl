@@ -1,8 +1,8 @@
 # Configuration file for looking at the straws in the geometry
 #
-# $Id: GrokGeometry.fcl,v 1.3 2011/05/26 19:21:50 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:50 $
+# $Id: GrokGeometry.fcl,v 1.4 2011/08/03 18:31:25 mf Exp $
+# $Author: mf $
+# $Date: 2011/08/03 18:31:25 $
 #
 # Written by Mark Fischler starting from 
 # makeDPIStrawClusters by authors Rob Kutschke and Hans Wenzel
@@ -24,9 +24,6 @@ source :
 services :
 {
   message : @local::default_message
-  # Adjust configuration of message logger:
-  # Limit of 5 per category; then exponential backoff.
-  message.destinations.log.default.limit : 5
    
   TFileService :
   {
@@ -52,50 +49,31 @@ services :
 
 }
 
+# Adjust configuration of message logger:
+# Limit of 5 per category; then exponential backoff.
+services.message.destinations.log.default.limit : 5
+
 physics :
 {
   producers:
   {
-    # Form StrawHits (SH).
-    makeSH: @local::makeSH
-
-    # make  the DPIStrawClusters
-    makeSC:
-    {
-      module_type      : MakeDPIStrawCluster
-      makerModuleLabel : makeSH
-      diagLevel        : 0
-      maxFullPrint     : 5
-    }
 
   }
 
   analyzers:
   {
-    # Check the StrawHits
-    testSH:
+    # Understand the geometry at beginRun
+    grok:
     {
-      module_type      : ReadStrawHit
-      makerModuleLabel : makeSH
-      diagLevel        : 0
-      maxFullPrint     : 5
+      module_type      : GrokGeometry
+      g4ModuleLabel    : g4run
     }
 
-    # Check the StrawClusters
-    testSC:
-    {
-      module_type        : ReadDPIStrawCluster
-      g4ModuleLabel      : g4run
-      makerModuleLabel   : makeSH
-      clmakerModuleLabel : makeSC
-      diagLevel          : 0
-      maxFullPrint       : 5
-    }
-
+ 
   }
 
-  p1 : [makeSH , makeSC ]
-  e1 : [testSH , testSC ]
+  p1 : [ ]
+  e1 : [ grok ]
 
 
   trigger_paths  : [p1]
