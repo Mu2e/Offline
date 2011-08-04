@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.93 2011/07/13 19:25:14 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
+// $Id: geom_01.txt,v 1.94 2011/08/04 19:16:19 genser Exp $
+// $Author: genser $
+// $Date: 2011/08/04 19:16:19 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,7 @@ bool hasNeutronAbsorber = true;
 bool hasCalorimeter     = true;
 bool hasBFieldManager   = true;
 bool hasBeamline        = true;
-bool hasVirtualDetector = true;
+bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now
 bool hasCosmicRayShield = true;
 bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(Steel) & NeutronAbsorber
 
@@ -115,10 +115,11 @@ bool g4.forceAuxEdgeVisible = true;
 bool g4.doSurfaceCheck = false;
 
 // Half lengths of the world box, (x,y,z) in mm.
-vector<double> world.halfLengths  = { 20000., 10000., 20000.};
+vector<double> world.halfLengths  = { 20000., 10000., 20000.}; //25000
 string         world.materialName = "G4_AIR";
 bool           world.boxVisible   = true;
 bool           world.boxSolid     = false;
+int            world.verbosityLevel = 0;
 
 
 // Position of the origin of the Mu2e origin system at the
@@ -127,7 +128,7 @@ bool           world.boxSolid     = false;
 //  z: offset from the world origin.
 double world.mu2eOrigin.xoffset =     0.;
 double world.mu2eOrigin.height  =  2550.;
-double world.mu2eOrigin.zoffset = -4000.;
+double world.mu2eOrigin.zoffset = -4000.;// -9000
 
 // Overburden above the detector: 20 ft in proposal.
 // I have arbitrarily split it into a flat part and a dome.
@@ -155,7 +156,7 @@ bool   hall.solid              = false;
 // Offset of the hall from its base position within the world:
 //   - Centered in x and z.
 //   - At the bottom in y.
-vector<double> hall.offset = { -1525., 0., 0. };
+vector<double> hall.offset = { -1525., 0., 0. }; // -5000.
 
 // X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
 // The origin of the detector coordinate system is on the DS axis at the specified z.
