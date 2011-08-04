@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.9 2011/06/20 22:09:13 genser Exp $
+// $Id: constructVirtualDetectors.cc,v 1.10 2011/08/04 18:54:33 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/20 22:09:13 $
+// $Date: 2011/08/04 18:54:33 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -170,6 +170,14 @@ namespace mu2e {
       VolumeInfo const & parent = _helper->locateVolInfo("ToyDS2Vacuum");
       name.str("");
       name << vdBaseName << vdId;
+
+      if (verbosityLevel >0) {
+        cout << __func__ << " " << name.str() << " Z offset in Mu2e    : " <<
+          zvd << endl;      
+        cout << __func__ << " " << name.str() << " Z extent in Mu2e    : " <<
+          zvd - vdHalfLength << ", " << zvd + vdHalfLength << endl;
+      }
+
       VolumeInfo vd = nestTubs( name.str(), vdParamsTarget, vacuumMaterial, 0,
                                 vdg->getLocal(vdId),
                                 parent,
@@ -181,13 +189,6 @@ namespace mu2e {
                                 false);
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-
-      if (verbosityLevel >0) {
-        cout << __func__ << " " << name.str() << " Z offset in Mu2e    : " <<
-          zvd << endl;      
-        cout << __func__ << " " << name.str() << " Z extent in Mu2e    : " <<
-          zvd - vdHalfLength << ", " << zvd + vdHalfLength << endl;
-      }
 
       vd.logical->SetSensitiveDetector(vdSD);
     }
