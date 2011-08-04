@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.97 2011/07/13 19:25:14 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
+// $Id: Mu2eWorld.cc,v 1.98 2011/08/04 18:53:31 genser Exp $
+// $Author: genser $
+// $Date: 2011/08/04 18:53:31 $
 //
 // Original author Rob Kutschke
 //
@@ -163,7 +163,7 @@ namespace mu2e {
   // Construct all of the Mu2e world, hall, detectors, beamline ...
   void Mu2eWorld::constructWorld(){
 
-    int static const diagLevel = 0;
+    int static const diagLevel = _config->getInt("world.verbosityLevel", 0);
 
     // If you play with the order of these calls, you may break things.
     defineMu2eOrigin();
@@ -198,13 +198,14 @@ namespace mu2e {
 
     VolumeInfo hallInfo  = constructHall( dirtInfo,_config );
 
+    // Define the hall origin in Mu2e coordinates.
+    _hallOriginInMu2e = hallInfo.centerInMu2e();
+
     if ( diagLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
       cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
+      cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
-
-    // Define the hall origin in Mu2e coordinates.
-    _hallOriginInMu2e = hallInfo.centerInWorld - _mu2eOrigin;
 
     constructDS(hallInfo,_config);
     constructTS(hallInfo,_config);
@@ -259,7 +260,7 @@ namespace mu2e {
 
   void Mu2eWorld::defineMu2eOrigin(){
 
-    int static const diagLevel = 0;
+    int static const diagLevel = _config->getInt("world.verbosityLevel", 0);
 
     // Dimensions of the world.
     vector<double> worldHLen;
@@ -341,7 +342,7 @@ namespace mu2e {
     VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
     // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
-    double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+    double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
 
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
@@ -377,26 +378,20 @@ namespace mu2e {
     // The target is built inside this volume.
     VolumeInfo const & detSolUpstreamVacInfo   = _helper->locateVolInfo("ToyDS2Vacuum");
 
-    // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
-    // is it better to use here detSolUpstreamVacInfo.centerInMu2e().z() ?
-    double z0DSup   = detSolUpstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
-
-    cout << "_mu2eOrigin.z()=" << _mu2eOrigin.z() << endl;
+    cout << "_mu2eOrigin.z()                        =" << _mu2eOrigin.z() << endl;
     cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
-    cout << "detSolUpstreamVacInfo.centerInMu2e.z()=" << detSolUpstreamVacInfo.centerInMu2e().z() << endl;
-    cout << "_hallOriginInMu2e.z()=" << _hallOriginInMu2e.z() << endl;
+    cout << "detSolUpstreamVacInfo.centerInMu2e().z() =" << detSolUpstreamVacInfo.centerInMu2e().z() << endl;
+    cout << "_hallOriginInMu2e.z()                  =" << _hallOriginInMu2e.z() << endl;
 
     // Buid the stopping target
     VolumeInfo targetInfo = ( _config->getBool("hasTarget",false) ) ?
 
-      constructStoppingTarget( detSolUpstreamVacInfo.logical,
-                                            z0DSup,
-                                            *_config )
+      constructStoppingTarget( detSolUpstreamVacInfo,
+                               *_config )
       :
 
-      constructDummyStoppingTarget( detSolUpstreamVacInfo.logical,
-                                                 z0DSup,
-                                                 *_config );
+      constructDummyStoppingTarget( detSolUpstreamVacInfo,
+                                    *_config );
     return targetInfo;
 
   } // end Mu2eWorld::constructTarget
@@ -613,7 +608,7 @@ namespace mu2e {
 
     VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
-    double z0DSdown = detSolDownstreamVacInfo.centerInWorld.z()+_hallOriginInMu2e.z();
+    double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
 
     constructCalorimeter( detSolDownstreamVacInfo,
                           -z0DSdown,
