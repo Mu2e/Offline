@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.13 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: constructStoppingTarget.cc,v 1.14 2011/08/04 18:52:59 genser Exp $
+// $Author: genser $
+// $Date: 2011/08/04 18:52:59 $
 //
 // Original author Peter Shanahan
 //
@@ -43,8 +43,7 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructStoppingTarget( G4LogicalVolume* mother,
-                                      double zOff,
+  VolumeInfo constructStoppingTarget( VolumeInfo   const& mother,
                                       SimpleConfig const& config ){
 
     std::cout<<"In constructStoppingTarget"<<std::endl;
@@ -70,31 +69,33 @@ namespace mu2e {
     std::cout<<"Looking for material "<<target->fillMaterial()<<std::endl;
     G4Material* fillMaterial = findMaterialOrThrow(target->fillMaterial());
     std::cout<<"Done Looking for material "<<target->fillMaterial()<<std::endl;
-    G4ThreeVector targetOffset(0.,0.,(12000+z0-zOff));
 
-    cout << "Target Offset: z0, zOff, z0-zOff: "
+    G4ThreeVector targetOffset(0.,0.,12000+z0- mother.centerInMu2e().z()); 
+
+    std::cout<<"targetOffset="<<targetOffset<<std::endl;
+    cout << "Target Offset: z0: "
          << z0 << " "
-         << zOff << " "
-         << z0-zOff << " "
          << endl;
-
-
 
     targetInfo.solid  = new G4Tubs( targetInfo.name,
                                     0., rOut, zHalf, 0., 2.*M_PI );
 
     targetInfo.logical = new G4LogicalVolume( targetInfo.solid, fillMaterial, targetInfo.name);
 
-    std::cout<<"targetOffset="<<targetOffset<<std::endl;
-    std::cout<<"mother has "<<mother->GetNoDaughters()<<" daughters"<<std::endl;
-    std::cout<<" they are:"<<std::endl;
-    for (int id=0; id<mother->GetNoDaughters(); id++) cout<<id<<"="<<
-      mother->GetDaughter(id)->GetName()<<" at "<<mother->GetDaughter(id)->GetTranslation()<<std::endl;
+    int nnd = mother.logical->GetNoDaughters();
+    std::cout<<"mother has "<<nnd<<" daughters"<<std::endl;
+    // well the motehr has no daughters yet... but let's leave most of the code here for now
+    if (nnd > 0 ) {
+      std::cout<<" they are:"<<std::endl;
+      for (int id=0; id<nnd; id++) cout<<id<<"="<<
+        mother.logical->GetDaughter(id)->GetName()<<
+        " at "<<mother.logical->GetDaughter(id)->GetTranslation()<<std::endl;
+    }
     targetInfo.physical =  new G4PVPlacement( 0,
                                               targetOffset,
                                               targetInfo.logical,
                                               targetInfo.name,
-                                              mother,
+                                              mother.logical,
                                               0,
                                               0,
                                               config.getBool("g4.doSurfaceCheck",false));
