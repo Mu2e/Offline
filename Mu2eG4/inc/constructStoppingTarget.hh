@@ -3,9 +3,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.hh,v 1.4 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: constructStoppingTarget.hh,v 1.5 2011/08/04 18:52:25 genser Exp $
+// $Author: genser $
+// $Date: 2011/08/04 18:52:25 $
 //
 // Original author Peter Shanahan
 //
@@ -13,14 +13,11 @@
 
 #include "G4Helper/inc/VolumeInfo.hh"
 
-class G4LogicalVolume;
-
 namespace mu2e{
 
   class SimpleConfig;
 
-  VolumeInfo constructStoppingTarget( G4LogicalVolume* mother,
-                                      double zOff,
+  VolumeInfo constructStoppingTarget( VolumeInfo   const& mother,
                                       SimpleConfig const& config );
 
 

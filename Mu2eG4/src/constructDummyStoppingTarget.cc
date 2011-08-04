@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.cc,v 1.5 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructDummyStoppingTarget.cc,v 1.6 2011/08/04 18:52:39 genser Exp $
+// $Author: genser $
+// $Date: 2011/08/04 18:52:39 $
 //
 // Original author Rob Kutschke
 //
@@ -36,8 +36,7 @@ namespace mu2e{
 
   class SimpleConfig;
 
-  VolumeInfo constructDummyStoppingTarget( G4LogicalVolume* mother,
-                                           double zOff,
+  VolumeInfo constructDummyStoppingTarget( VolumeInfo   const& mother,
                                            SimpleConfig const& config ){
 
     // A helper class for parsing the config file.
@@ -55,8 +54,8 @@ namespace mu2e{
     // Parameters of a G4Tubs.
     TubsParams params(rIn, rOut, halfLength );
 
-    // Position of the tracker within its mother volume.
-    G4ThreeVector offset(0.,0.,z0-zOff);
+    // Position of the tracker within its mother volume
+    G4ThreeVector offset(G4ThreeVector(0.,0.,z0) - mother.centerInMu2e());
 
     VolumeInfo info = nestTubs( "StoppingTargetMother",
                                 params,
