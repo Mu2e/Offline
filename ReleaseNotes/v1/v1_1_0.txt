@@ -1,11 +1,30 @@
 
-  $Id: v1_1_0.txt,v 1.2 2011/08/03 16:02:41 mf Exp $
-  $Author: mf $
-  $Date: 2011/08/03 16:02:41 $
+  $Id: v1_1_0.txt,v 1.3 2011/08/04 19:25:55 genser Exp $
+  $Author: genser $
+  $Date: 2011/08/04 19:25:55 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_0
+
+2) August 4, 2011 genser
+
+   Changed offset calculations to (re?)enable movements of the mu2e
+   coordinate system within the G4 world volume in preparation for the
+   world volume extension to accommodate more components
+   Changed the arguments to add more reference frame flexibility; used
+   mu2e reference frame for offset calculations; added diagnostic
+   printout:
+     Mu2eG4/inc/constructDummyStoppingTarget.hh
+     Mu2eG4/inc/constructStoppingTarget.hh
+     Mu2eG4/src/constructDummyStoppingTarget.cc
+     Mu2eG4/src/constructProtonAbsorber.cc
+     Mu2eG4/src/constructStoppingTarget.cc
+     Mu2eG4/src/constructVirtualDetectors.cc
+   As above, plus added verbosity level config file dependence:
+     Mu2eG4/src/Mu2eWorld.cc
+   Added a verbosity argument for G4 world construction; added comments
+     Mu2eG4/test/geom_01.txt
 
 1) August 3, 2011 fischler
 
