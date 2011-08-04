@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.7 2011/06/10 17:48:24 genser Exp $
+// $Id: constructProtonAbsorber.cc,v 1.8 2011/08/04 18:54:10 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/10 17:48:24 $
+// $Date: 2011/08/04 18:54:10 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -51,7 +51,6 @@ namespace mu2e {
 
     VolumeInfo const & parent1Info  = _helper->locateVolInfo("ToyDS2Vacuum");
     VolumeInfo const & parent2Info  = _helper->locateVolInfo("ToyDS3Vacuum");
-    VolumeInfo const & hallInfo = _helper->locateVolInfo("HallAir");
 
     double pabs1rOut0   = _config->getDouble("protonabsorber.OutRadius0");
     double pabs2rOut1   = _config->getDouble("protonabsorber.OutRadius1");
@@ -72,7 +71,10 @@ namespace mu2e {
       if( vdg->nDet()>0 ) vdHL = vdg->getHalfLength();
     }
 
-    double z0DSup   = parent1Info.centerInWorld.z()+hallInfo.centerInMu2e().z();
+    double z0DSup   = parent1Info.centerInMu2e().z();
+
+    // the target info should be gotten from the geometry service... not as done here
+
     vector<double> targetRadius;  _config->getVectorDouble("target.radii", targetRadius);
 
     double numoftf = (targetRadius.size()-1)*0.5;
@@ -82,7 +84,7 @@ namespace mu2e {
     // we add space for the virtual detector here
     double taglen =(foilwid*numoftf) + 5.0 + 2.*vdHL; // what/why is 5.0 hardcoded here?
 
-    double z0valt =_config->getDouble("target.z0");     
+    double z0valt =_config->getDouble("target.z0");
     double tagoff =z0valt - z0DSup + 12000.0;
 
     double targetEnd = tagoff + taglen;
@@ -90,9 +92,21 @@ namespace mu2e {
     double pabs1len = ds2HalfLen - targetEnd;
     G4ThreeVector  pabs1Offset(0.0, 0.0, (pabs1len*0.5) + targetEnd);
 
+    if ( verbosityLevel > 0) {
+      cout << __func__ <<
+        " z0DSup                            : " << z0DSup << endl;
+      cout << __func__ <<
+        " tagoff                            : " << tagoff << endl;
+      cout << __func__ << 
+	" ds2HalfLen                        : " << ds2HalfLen << endl;
+      cout << __func__ << 
+	" pabs1len                          : " << pabs1len << endl;
+    }
+
     double pabs1rOut1 = ((pabs2rOut1 - pabs1rOut0)*(pabs1len/(2.0*pabsZHalfLen))) + pabs1rOut0;
     double pabs1rIn1  = pabs1rOut1 - thick;
 
+    G4Tubs const * parent1solid0 = static_cast<G4Tubs*>(parent1Info.solid);
     G4Tubs const * parent2solid0 = static_cast<G4Tubs*>(parent2Info.solid->GetConstituentSolid(0));
     double ds3HalfLen = _config->getDouble("toyDS3.halfLength");
 
@@ -116,6 +130,15 @@ namespace mu2e {
     // protonabs2 should touch protonabs1 and both of them should touch the ds2/ds3 boundary
     // it looks like the boolean solid center is in the center of ConstituentSolid(0)
     // note that the subtraction solid may be shorter, depending how the subtraction is done
+
+    if ( verbosityLevel > 0) {
+      double theZ  = parent1Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
+      double theHL = parent1solid0->GetZHalfLength();
+      cout << __func__ << " " << parent1Info.name << " Z offset in Mu2e    : " <<
+	theZ << endl;
+      cout << __func__ << " " << parent1Info.name << " Z extent in Mu2e    : " <<
+        theZ - theHL << ", " << theZ + theHL << endl;
+    }
 
     if ( verbosityLevel > 0) {
       double theZ  = parent2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
