@@ -1,9 +1,10 @@
 # Variant of g4test_03 but with transport only.
+# used to make plots used in the ttracker geometry note 1166
 #
-#
-# $Id: transportOnlyAndRoot.fcl,v 1.6 2011/08/04 20:53:07 genser Exp $
+# $Id: transportOnlyAndRoot.fcl,v 1.7 2011/08/05 20:32:20 genser Exp $
 # $Author: genser $
-# $Date: 2011/08/04 20:53:07 $
+# $Date: 2011/08/05 20:32:20 $
+# original author KLG
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
