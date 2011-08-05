@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.11 2011/05/25 18:31:42 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/25 18:31:42 $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.12 2011/08/05 20:35:03 genser Exp $
+// $Author: genser $
+// $Date: 2011/08/05 20:35:03 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -311,7 +311,7 @@ namespace mu2e {
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
 
-    _canvas->Print(canvasName+".pdf","pdf");
+    _canvas->Print(canvasName+".png","png");
 
 
     // xz
@@ -358,7 +358,7 @@ namespace mu2e {
     std::cerr << "Double click on the Canvas to go to the next one" ;
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
-    _canvas->Print(canvasName+".pdf","pdf");
+    _canvas->Print(canvasName+".png","png");
 
 
     // xz detail
@@ -390,7 +390,7 @@ namespace mu2e {
     std::cerr << "Double click on the Canvas to go to the next one" ;
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
-    _canvas->Print(canvasName+".pdf","pdf");
+    _canvas->Print(canvasName+".png","png");
 
     // xz inner/left detail
 
@@ -423,7 +423,7 @@ namespace mu2e {
     std::cerr << "Double click on the Canvas to close it" ;
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
-    _canvas->Print(canvasName+".pdf","pdf");
+    _canvas->Print(canvasName+".png","png");
 
     // xz outer/right detail
 
@@ -456,7 +456,7 @@ namespace mu2e {
     std::cerr << "Double click on the Canvas to close it" ;
     _canvas->WaitPrimitive();
     std::cerr << std::endl;
-    _canvas->Print(canvasName+".pdf","pdf");
+    _canvas->Print(canvasName+".png","png");
 
     gROOT->GetListOfCanvases()->Write();
 
