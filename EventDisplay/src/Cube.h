@@ -1,9 +1,9 @@
 //
 // Class for all cube structures, e.g. vanes, crystals. The structure is displayed via EventDisplayGeoVolumeBox (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cube.h,v 1.7 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: Cube.h,v 1.8 2011/08/07 18:21:06 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/08/07 18:21:06 $
 //
 // Original author Ralf Ehrlich
 //
@@ -79,7 +79,7 @@ class Cube: public VirtualShape
            const TGeoManager *geomanager, TGeoVolume *topvolume,
            const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info,
            bool defaultVisibility):
-           VirtualShape(geomanager, topvolume, info, true)
+           VirtualShape(geomanager, topvolume, mainframe, info, true)
   {
     setStartTime(time);
     setColor(color);

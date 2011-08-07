@@ -1,9 +1,9 @@
 //
 // Container class for all detector straws. Straws are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
 //
-// $Id: Straw.h,v 1.8 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: Straw.h,v 1.9 2011/08/07 18:21:06 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/08/07 18:21:06 $
 //
 // Original author Ralf Ehrlich
 //
@@ -37,7 +37,7 @@ class Straw: public VirtualShape
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info,
         bool defaultVisibility):
-        VirtualShape(geomanager, topvolume, info, true)
+        VirtualShape(geomanager, topvolume, mainframe, info, true)
   {
     setStartTime(t1);
     setDefaultVisibility(defaultVisibility);

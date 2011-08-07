@@ -17,12 +17,25 @@ ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGL
 void ContentSelector::firstLoop()  //This is useful for now, but may be changed later
 {
   TGLBEntry *entry;
-  entry=_hitBox->FindEntry("StrawHit:makeSH:");
+
+  entry=_hitBox->FindEntry("TrkRecoTrk:KalFitTest:");
   if(entry!=NULL) _hitBox->Select(entry->EntryId());
+  else
+  {
+    entry=_hitBox->FindEntry("StrawHit:makeSH:");
+    if(entry!=NULL) _hitBox->Select(entry->EntryId());
+  }
+
   entry=_caloHitBox->FindEntry("CaloHit:CaloReadoutHitsMaker:");
   if(entry!=NULL) _caloHitBox->Select(entry->EntryId());
-  entry=_trackBox->FindEntry("SimParticle:g4run:");
+
+  entry=_trackBox->FindEntry("TrkRecoTrk:KalFitTest:");
   if(entry!=NULL) _trackBox->Select(entry->EntryId());
+  else
+  {
+    entry=_trackBox->FindEntry("SimParticle:g4run:");
+    if(entry!=NULL) _trackBox->Select(entry->EntryId());
+  }
 }
 
 bool ContentSelector::compareLists(const std::vector<entryStruct> &newEntries, const TGListBox *boxContent) const

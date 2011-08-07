@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.9 2011/07/27 00:28:48 ehrlich Exp $
+// $Id: Track.h,v 1.10 2011/08/07 18:21:06 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/07/27 00:28:48 $
+// $Date: 2011/08/07 18:21:06 $
 //
 // Original author Ralf Ehrlich
 //
@@ -40,7 +40,7 @@ class Track: public VirtualShape
         int particleId,
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info):
-        VirtualShape(geomanager, topvolume, info, false)
+        VirtualShape(geomanager, topvolume, mainframe, info, false)
   {
     pt p;
     p.x=x1;
@@ -67,7 +67,7 @@ class Track: public VirtualShape
   Track(int particleId,
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info):
-        VirtualShape(geomanager, topvolume, info, false)
+        VirtualShape(geomanager, topvolume, mainframe, info, false)
   {
     _particleId=particleId;
     _trajectory=false;

@@ -7,6 +7,7 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Cube.h"
 #include "Cylinder.h"
+#include "Sphere.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "HepPID/ParticleName.hh"
@@ -75,7 +76,7 @@ void DataInterface::updateComponents(double time)
   }
   if(_showUnhitStraws)
   {
-    std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;
+    std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;  //iterate over all straws
     for(straw=_straws.begin(); straw!=_straws.end(); straw++)
     {
       straw->second->update(time);
@@ -83,7 +84,7 @@ void DataInterface::updateComponents(double time)
   }
   else
   {
-    std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
+    std::vector<boost::shared_ptr<Straw> >::const_iterator hit; //iterate only over hit straws
     for(hit=_hits.begin(); hit!=_hits.end(); hit++)
     {
       (*hit)->update(time);
@@ -91,26 +92,31 @@ void DataInterface::updateComponents(double time)
   }
   if(_showUnhitCrystals)
   {
-    std::map<int,boost::shared_ptr<Cube> >::const_iterator crystal;
-    for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
+    std::map<int,boost::shared_ptr<Cube> >::const_iterator crystal; //iterate over all crystals
+    for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++) 
     {
       crystal->second->update(time);
     }
   }
   else
   {
-    std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit;
+    std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit; //iterate only over hit crystals
     for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
     {
       (*crystalhit)->update(time);
     }
+  }
+  std::vector<boost::shared_ptr<Sphere> >::const_iterator sphere;
+  for(sphere=_spheres.begin(); sphere!=_spheres.end(); sphere++)
+  {
+    (*sphere)->update(time);
   }
 }
 
 void DataInterface::createGeometryManager()
 {
   _geometrymanager = new TGeoManager("GeoManager", "GeoManager");
-//  _geometrymanager->SetVerboseLevel(0);     //wait till root version 5.22 or so
+  _geometrymanager->SetVerboseLevel(0); 
   _topvolume = _geometrymanager->MakeBox("TopVolume", NULL, 1000, 1000, 1500);
   _geometrymanager->SetTopVolume(_topvolume);
   _geometrymanager->SetTopVisible(false);
@@ -544,6 +550,20 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
     }
     else (*crystalhit)->setColor(whitebackground?1:0);
   }
+  std::vector<boost::shared_ptr<Sphere> >::const_iterator sphere;
+  for(sphere=_spheres.begin(); sphere!=_spheres.end(); sphere++)
+  {
+    double time=(*sphere)->getStartTime();
+    if(hitcolors)
+    {
+      int color=TMath::FloorNint(20.0*(time-_hitsTimeMinmax.mint)/(_hitsTimeMinmax.maxt-_hitsTimeMinmax.mint));
+      if(color>=20) color=19;
+      if(color<=0) color=0;
+      color+=2000;
+      (*sphere)->setColor(color);
+    }
+    else (*sphere)->setColor(whitebackground?1:0);
+  }
 }
 
 void DataInterface::useTrackColors(bool trackcolors, bool whitebackground)
@@ -740,6 +760,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
       const TrkHotList* hots = particle.hots();
       if(hots!=NULL)
       {
+        _numberHits+=hots->nHit();
         for(TrkHotList::hot_iterator iter=hots->begin(); iter!=hots->end(); iter++)
         {
           const TrkHitOnTrk *hitOnTrack = iter.get();
@@ -747,10 +768,12 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
           if(strawHit)
           {
             int    strawindex=strawHit->straw().index().asInt();
-            double time = strawHit->time();   //this is the time the hit "arrived at the straw"
-                                              //take hitT0 for the time when the hit "started at the track"
-            double hitT0 = strawHit->hitT0();
+            double time = strawHit->time(); 
+            double hitT0 = strawHit->hitT0(); //this is the time the hit "arrived at the straw"
+                                              //don't know what the other times are
             double strawtime = strawHit->strawHit().time();
+            double driftRadius = strawHit->driftRadius();
+            const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
             std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
             if(straw!=_straws.end() && !isnan(time))
             {
@@ -760,21 +783,34 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
                 findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
                 straw->second->setStartTime(time);
                 straw->second->start();
-                char c[100];
-                sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
-                straw->second->getComponentInfo()->setText(1,c);
-                sprintf(c,"hitT0(s): %gns",hitT0/CLHEP::ns);
-                straw->second->getComponentInfo()->setText(2,c);
-                sprintf(c,"strawhit time(s): %gns",strawtime/CLHEP::ns);
-                straw->second->getComponentInfo()->setText(3,c);
+                char c1[100], c2[100], c3[100];
+                sprintf(c1,"hitT0(s): %gns",hitT0/CLHEP::ns);
+                sprintf(c2,"hit time(s): %gns",time/CLHEP::ns);
+                sprintf(c3,"strawhit time(s): %gns",strawtime/CLHEP::ns);
+                straw->second->getComponentInfo()->setText(1,c1);
+                straw->second->getComponentInfo()->setText(2,c2);
+                straw->second->getComponentInfo()->setText(3,c3);
                 _hits.push_back(straw->second);
               }
               else
               {
-                straw->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
-                straw->second->getComponentInfo()->expandLine(2,hitT0/CLHEP::ns,"ns");
+                straw->second->getComponentInfo()->expandLine(1,hitT0/CLHEP::ns,"ns");
+                straw->second->getComponentInfo()->expandLine(2,time/CLHEP::ns,"ns");
                 straw->second->getComponentInfo()->expandLine(3,strawtime/CLHEP::ns,"ns");
               }
+
+              char c0[200], c1[200];
+              const boost::shared_ptr<std::string> strawname=straw->second->getComponentInfo()->getName();
+              sprintf(c0,"Drift Radius %gcm  %s",driftRadius/CLHEP::cm,strawname->c_str());
+              sprintf(c1,"Drift Radius %gcm",driftRadius/CLHEP::cm);
+              boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+              info->setName(c0);
+              info->setText(0,strawname->c_str());
+              info->setText(1,c1);
+              boost::shared_ptr<Sphere> sphere(new Sphere(p.x(),p.y(),p.z(), driftRadius, time, 
+                                                          _geometrymanager, _topvolume, _mainframe, info));
+              _components.push_back(sphere);
+              _spheres.push_back(sphere);
             }
           }
         }
@@ -942,6 +978,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
     for(unsigned int i=0; i<trkRecoTrks->size(); i++)
     {
       const TrkRecoTrk &particle = trkRecoTrks->at(i);
+      double t0=particle.trackT0();
       const TrkRep* trkrep = particle.getRep(particle.defaultType());
       if(trkrep!=NULL)
       {
@@ -955,7 +992,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
            case 4 : particleid=2212; break;  //proton
         };
         std::string particlename=HepPID::particleName(particleid);
-        char c0[200], c2[200], c3[200];
+        char c0[200], c2[200], c3[200], c4[200];
         sprintf(c0,"Kalman Track %i  %s",static_cast<int>(particle.id()),particlename.c_str());
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         info->setName(c0);
@@ -964,20 +1001,44 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
         _components.push_back(track);
         _tracks.push_back(track);
 
+        double hitcount=0;
+        double offset=0;
+        const TrkHotList* hots=trkrep->hotList();
+        if(hots!=NULL)
+        {
+          for(TrkHotList::hot_iterator iter=hots->begin(); iter!=hots->end(); iter++)
+          {
+            const TrkHitOnTrk *hitOnTrack = iter.get();
+            const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
+            if(strawHit)
+            {
+              double strawTime   = strawHit->hitT0()/CLHEP::ns;
+              double driftRadius = strawHit->driftRadius()/CLHEP::mm;
+              double trackTime   = (strawTime-driftRadius/29.979)*CLHEP::ns;
+              double weight= strawHit->weight();  
+              double fltLen= strawHit->fltLen();
+              double t     = trkrep->arrivalTime(fltLen);
+              offset+=(trackTime-t)*weight;
+              hitcount+=weight;
+            }
+          }
+        }
+        if(hitcount>0) offset/=hitcount; else offset=0;
+
         double fltLMin=trkrep->startValidRange();
         double fltLMax=trkrep->endValidRange();
-        double fltStep = (fltLMax - fltLMin)/200.0;
-        for(unsigned int i = 0; i <= 200.0; i++) 
+        double fltStep = (fltLMax - fltLMin)/400.0;
+        for(unsigned int i = 0; i <= 400.0; i++) 
         {		
           double fltL = fltLMin + i*fltStep;
-          double   t = trkrep->arrivalTime(fltL);
+          double   t = trkrep->arrivalTime(fltL)+offset;
           HepPoint p = trkrep->position(fltL);
           findBoundaryT(_tracksTimeMinmax, t);
           findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
         }
-        double t1=trkrep->trackT0()+trkrep->arrivalTime(fltLMin);
-        double t2=trkrep->trackT0()+trkrep->arrivalTime(fltLMax);
+        double t1=trkrep->arrivalTime(fltLMin)+offset;
+        double t2=trkrep->arrivalTime(fltLMax)+offset;
         track->setStartTime(t1);
         track->setEndTime(t2);
         const KalRep* kalrep = dynamic_cast<const KalRep*>(trkrep);
@@ -989,7 +1050,9 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
           double p1=trkrep->momentum(fltLMin).mag();
           double p2=trkrep->momentum(fltLMax).mag();
           sprintf(c3,"Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV);
+          sprintf(c4,"T0 %gns",t0/CLHEP::ns);
           info->setText(2,c3);
+          info->setText(3,c4);
         }
       }
     }
@@ -1125,21 +1188,18 @@ void DataInterface::removeNonGeometryComponents()
   std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
   for(hit=_hits.begin(); hit!=_hits.end(); hit++)
   {
-    (*hit)->getComponentInfo()->removeLine(1);
-    (*hit)->getComponentInfo()->removeLine(2);
-    (*hit)->getComponentInfo()->removeLine(3);
+    for(int i=1; i<5; i++) (*hit)->getComponentInfo()->removeLine(i);  //keep first line
   }
   std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit;
   for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
   {
-    (*crystalhit)->getComponentInfo()->removeLine(1);
-    (*crystalhit)->getComponentInfo()->removeLine(2);
-    (*crystalhit)->getComponentInfo()->removeLine(3);
+    for(int i=1; i<5; i++) (*crystalhit)->getComponentInfo()->removeLine(i); //keep first line
   }
 
   _hits.clear();
   _crystalhits.clear();
   _tracks.clear();
+  _spheres.clear();
 }
 
 void DataInterface::removeAllComponents()
@@ -1150,6 +1210,7 @@ void DataInterface::removeAllComponents()
   _hits.clear();
   _crystalhits.clear();
   _tracks.clear();
+  _spheres.clear();
   _supportstructures.clear();
   _otherstructures.clear();
   delete _geometrymanager;
