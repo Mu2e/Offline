@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.18 2011/07/25 20:51:24 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.19 2011/08/08 16:24:11 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/07/25 20:51:24 $
+// $Date: 2011/08/08 16:24:11 $
 //
 // Original author Gianni Onorato
 //
@@ -293,7 +293,7 @@ namespace mu2e {
 
       if (geom->hasElement<TTracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1eDep:t1isGen:t1StapFromEva:t1P:t1StartVolume:t2trkId:t2pdgId:t2eDep:t2isGen:t2StapFromEva:t2P:t2StartVolume:t3trkId:t3pdgId:t3eDep:t3isGen:t3StapFromEva:t3P:t3StartVolume:trkId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:dau1PdgId:dau1P:dauStartVolume:driftTime:driftDist" );
+                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:nTrk:t1trkId:t1pdgId:t1eDep:t1isGen:t1StapFromEva:t1P:t1StartVolume:t2trkId:t2pdgId:t2eDep:t2isGen:t2StapFromEva:t2P:t2StartVolume:t3trkId:t3pdgId:t3eDep:t3isGen:t3StapFromEva:t3P:t3StartVolume:trkId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:trkStoppingCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:dau1PdgId:dau1P:dauStartVolume:driftTime:driftDist" );
       } else if(geom->hasElement<ITracker>()) {
         _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
                                             "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:nTrk:t1trkId:t1pdgId:t1en:t1isGen:t2trkId:t2pdgId:t2en:t2isGen:t3trkId:t3pdgId:t3en:t3isGen:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
@@ -471,7 +471,7 @@ namespace mu2e {
       size_t nHitsPerStraw = mcptr.size();
       _hHitMult->Fill(nHitsPerStraw);
 
-      float tntpArray[56];
+      float tntpArray[57];
       int idx(0);
       tntpArray[idx++] = evt.id().event(); //leaf 1
       tntpArray[idx++] = evt.run(); //leaf 2
@@ -646,6 +646,7 @@ namespace mu2e {
       tntpArray[idx++] = IsGenerated[vec_idx];//leaf 40
       tntpArray[idx++] = TracksStVolumes[vec_idx];//leaf 41
       tntpArray[idx++] = StepFromEvaVec[vec_idx];//leaf 42
+      tntpArray[idx++] = simParticles->at(firstTrackId).stoppingCode().id();//leaf 43
 
       size_t ngen = genParticles->size();
       if (ngen>1) {
@@ -664,17 +665,16 @@ namespace mu2e {
 
       if (ngen > 0) {
         GenParticle const& gen = genParticles->at(0);
-        tntpArray[idx++] = gen.generatorId().id();//leaf 43
-        tntpArray[idx++] = gen.momentum().vect().mag();//leaf 44
-        tntpArray[idx++] = gen.momentum().e();//leaf 45
-        tntpArray[idx++] = gen.position().x();//leaf 46
-        tntpArray[idx++] = gen.position().y();//leaf 47
-        tntpArray[idx++] = gen.position().z();//leaf 48
-        tntpArray[idx++] = gen.momentum().cosTheta();//leaf 49
-        tntpArray[idx++] = gen.momentum().phi();//leaf 50
-        tntpArray[idx++] = gen.time();//leaf 51
+        tntpArray[idx++] = gen.generatorId().id();//leaf 44
+        tntpArray[idx++] = gen.momentum().vect().mag();//leaf 45
+        tntpArray[idx++] = gen.momentum().e();//leaf 46
+        tntpArray[idx++] = gen.position().x();//leaf 47
+        tntpArray[idx++] = gen.position().y();//leaf 48
+        tntpArray[idx++] = gen.position().z();//leaf 49
+        tntpArray[idx++] = gen.momentum().cosTheta();//leaf 50
+        tntpArray[idx++] = gen.momentum().phi();//leaf 51
+        tntpArray[idx++] = gen.time();//leaf 52
       } else if ( ngen == 0 ) {
-        tntpArray[idx++] = 0;//leaf 43
         tntpArray[idx++] = 0;//leaf 44
         tntpArray[idx++] = 0;//leaf 45
         tntpArray[idx++] = 0;//leaf 46
@@ -683,22 +683,23 @@ namespace mu2e {
         tntpArray[idx++] = 0;//leaf 49
         tntpArray[idx++] = 0;//leaf 50
         tntpArray[idx++] = 0;//leaf 51
+        tntpArray[idx++] = 0;//leaf 52
       }
 
 
       if (Dau1Idx != SimParticleCollection::key_type(0)) {
 	SimParticle const& Dau1 = simParticles->at(Dau1Idx);
-	tntpArray[idx++] = Dau1.pdgId();//leaf 52
-	tntpArray[idx++] = Dau1.startMomentum().vect().mag();//leaf 53
-	tntpArray[idx++] = Dau1.startVolumeIndex();//leaf 54      
+	tntpArray[idx++] = Dau1.pdgId();//leaf 53
+	tntpArray[idx++] = Dau1.startMomentum().vect().mag();//leaf 54
+	tntpArray[idx++] = Dau1.startVolumeIndex();//leaf 55      
       } else {
-	tntpArray[idx++] = 0;//leaf 52
 	tntpArray[idx++] = 0;//leaf 53
 	tntpArray[idx++] = 0;//leaf 54
+	tntpArray[idx++] = 0;//leaf 55
       }
 
-      tntpArray[idx++] = driftTime; //leaf 55
-      tntpArray[idx++] = driftDistance; //leaf 56
+      tntpArray[idx++] = driftTime; //leaf 56
+      tntpArray[idx++] = driftDistance; //leaf 57
 
       _tNtup->Fill(tntpArray);
 
