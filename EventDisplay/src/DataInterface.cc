@@ -780,8 +780,8 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
               double previousStartTime=straw->second->getStartTime();
               if(isnan(previousStartTime))
               {
-                findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
-                straw->second->setStartTime(time);
+                findBoundaryT(_hitsTimeMinmax, hitT0);  //is it Ok to exclude all following hits from the time window?
+                straw->second->setStartTime(hitT0);
                 straw->second->start();
                 char c1[100], c2[100], c3[100];
                 sprintf(c1,"hitT0(s): %gns",hitT0/CLHEP::ns);
@@ -807,7 +807,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
               info->setName(c0);
               info->setText(0,strawname->c_str());
               info->setText(1,c1);
-              boost::shared_ptr<Sphere> sphere(new Sphere(p.x(),p.y(),p.z(), driftRadius, time, 
+              boost::shared_ptr<Sphere> sphere(new Sphere(p.x(),p.y(),p.z(), driftRadius, hitT0, 
                                                           _geometrymanager, _topvolume, _mainframe, info));
               _components.push_back(sphere);
               _spheres.push_back(sphere);
