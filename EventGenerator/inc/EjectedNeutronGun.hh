@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.8 2011/06/14 22:39:57 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/14 22:39:57 $
+// $Id: EjectedNeutronGun.hh,v 1.9 2011/08/12 19:33:57 vbiliyar Exp $
+// $Author: vbiliyar $
+// $Date: 2011/08/12 19:33:57 $
 //
 //
 
@@ -47,6 +47,8 @@ namespace mu2e {
 
     // Start: parameters that can be configured from the config file.
 
+    enum SpectrumType { mars , docdb1619 , last_enum };
+    
     double _mean;    // Mean number of neutrons per event
     double _elow;    // Range of neutrons energy.
     double _ehi;     //
@@ -71,6 +73,10 @@ namespace mu2e {
 
     // Histogram control.
     bool _doHistograms;
+    
+    // Function to check that a valid neutron spectrum model is being used
+    SpectrumType checkSpectrumModel(const int i);
+    SpectrumType _spectrumModel;
 
     // end: parameters that can be configured from the config file.
 
@@ -91,6 +97,11 @@ namespace mu2e {
     TH1D* _htime;
     TH1D* _hmudelay;
     TH1D* _hpulsedelay;
+    
+    
+    
+    // Continuous spectrum function
+    double energySpectrum(const double e);
 
     //Functions used to calculate the energy spectrum of the neutron
     std::vector<double> binnedEnergySpectrum();
