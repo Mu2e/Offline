@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.15 2011/08/12 19:33:57 vbiliyar Exp $
-// $Author: vbiliyar $
-// $Date: 2011/08/12 19:33:57 $
+// $Id: EjectedNeutronGun.cc,v 1.16 2011/08/12 22:15:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/12 22:15:18 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -67,7 +67,7 @@ namespace mu2e {
     _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
 
     _spectrumModel(checkSpectrumModel(config.getInt("ejectedNeutronGun.spectrumNumber",0))),
-							 
+    _filetoread (config.getString("ejectedNeutronGun.spectrumFile","ConditionsService/data/neutronSpectrum.txt")),							 
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),    
@@ -86,13 +86,7 @@ namespace mu2e {
     _hmudelay(),
     _hpulsedelay()  {
 
-    if (_nbins!=((_ehi-_elow)/0.0005)) {
-      throw cet::exception("RANGE")
-        << "Number f bins for the energy spectrum must be consistent with the data table binning: "
-        << "0.5 KeV" ;
-    }
-    
-
+   
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
     // data base key.  There is a second argument that I have let take its
@@ -270,27 +264,30 @@ namespace mu2e {
     {
       ConfigFileLookupPolicy spectrumFileName;
       string NeutronFileFIP =
-      spectrumFileName("ConditionsService/data/neutronSpectrum.txt");
+	spectrumFileName(_filetoread);
       fstream infile(NeutronFileFIP.c_str(), ios::in);
+      double supposedBinning = (_ehi - _elow) / _nbins;
       if (infile.is_open()) {
         double en, val;
-        int i=0;
-        while (i!=_nbins) {
-          if (infile.eof()) break;
-          infile >> en >> val;
+	bool read_on = true ;
+	while (read_on) {
+          if (infile.eof()) {
+	    en += supposedBinning;
+	    val = 0;
+	  } else {
+	    infile >> en >> val;
+	  }
           if (en >= _elow && en <= _ehi) {
             neutronSpectrum.push_back(val);
-            i++;
           }
-        }
-      } 
-      else {
-        cout << "No file associated for the ejected neutron spectrum" << endl;
-        for (int i=0; i < _nbins; ++i) {
-          neutronSpectrum.push_back(1);
+	  if (en > _ehi) read_on = false;
         }
       }
-  
+      else {
+	throw cet::exception("RANGE")
+        << "No file associated for the ejected neutron spectrum" << endl;
+      }
+
       return neutronSpectrum;
   
     }

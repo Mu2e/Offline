@@ -6,15 +6,16 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.9 2011/08/12 19:33:57 vbiliyar Exp $
-// $Author: vbiliyar $
-// $Date: 2011/08/12 19:33:57 $
+// $Id: EjectedNeutronGun.hh,v 1.10 2011/08/12 22:15:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/12 22:15:18 $
 //
 //
 
 // C++ includes
 #include <memory>
-
+#include <string>
+ 
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "EventGenerator/inc/GeneratorBase.hh"
@@ -79,6 +80,9 @@ namespace mu2e {
     SpectrumType _spectrumModel;
 
     // end: parameters that can be configured from the config file.
+
+
+    std::string _filetoread;
 
     //Random generators
     CLHEP::RandPoissonQ _randPoissonQ;
