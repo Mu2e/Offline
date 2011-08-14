@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.17 2011/08/07 18:21:06 ehrlich Exp $
+// $Id: DataInterface.h,v 1.18 2011/08/14 06:31:19 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/07 18:21:06 $
+// $Date: 2011/08/14 06:31:19 $
 //
 // Original author Ralf Ehrlich
 //
@@ -109,7 +109,7 @@ class DataInterface
   void makeStrawsVisibleBeforeStart(bool visible);
   void makeCrystalsVisibleBeforeStart(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);
-  void useTrackColors(bool trackcolors, bool whitebackground);
+  void useTrackColors(const ContentSelector *contentSelector, bool trackcolors, bool whitebackground);
   int getNumberHits() {return _numberHits;}
   int getNumberCrystalHits() {return _numberCrystalHits;}
 

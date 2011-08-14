@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.9 2011/07/19 20:51:41 ehrlich Exp $
+// $Id: EventDisplay_module.cc,v 1.10 2011/08/14 06:31:19 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/07/19 20:51:41 $
+// $Date: 2011/08/14 06:31:19 $
 //
 
 #include <iostream>
@@ -24,6 +24,13 @@
 
 #include "EventDisplayFrame.h"
 
+#ifdef BABARINSTALLED
+using namespace CLHEP;
+#include "TrkBase/TrkRecoTrk.hh"
+#include "TrkBase/TrkHotList.hh"
+#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#endif
+
 namespace mu2e
 {
   class EventDisplay : public art::EDAnalyzer
@@ -40,6 +47,11 @@ namespace mu2e
                                                          const std::string &classNameToCheck,
                                                          const mu2e_eventdisplay::EventDisplayFrame *_frame,
                                                          bool &showEvent);
+#ifdef BABARINSTALLED
+    void checkMinimumHitsKalman(const art::Event &event, 
+                                const mu2e_eventdisplay::EventDisplayFrame *_frame, 
+                                bool &showEvent);
+#endif
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
 
@@ -90,6 +102,9 @@ namespace mu2e
         bool showEvent=true;
         checkMinimumHits<mu2e::StepPointMCCollection>(event, "std::vector<mu2e::StepPointMC>", _frame, showEvent);
         checkMinimumHits<mu2e::StrawHitCollection>(event, "std::vector<mu2e::StrawHit>", _frame, showEvent);
+#ifdef BABARINSTALLED
+        checkMinimumHitsKalman(event, _frame, showEvent);
+#endif
         if(showEvent) _frame->setEvent(event,_firstLoop);
       }
     }
@@ -115,6 +130,34 @@ namespace mu2e
       }
     }
   }
+
+#ifdef BABARINSTALLED
+  void EventDisplay::checkMinimumHitsKalman(const art::Event &event,
+                                            const mu2e_eventdisplay::EventDisplayFrame *_frame, bool &showEvent)
+  {
+    std::string className, moduleLabel, productInstanceName;
+    bool hasSelectedHits=_frame->getSelectedHitsName(className, moduleLabel, productInstanceName);
+    if(hasSelectedHits && className.compare("std::vector<mu2e::TrkRecoTrk>")==0)
+    {
+      art::Handle<mu2e::TrkRecoTrkCollection> kalmantrackCollection;
+      if(event.getByLabel(moduleLabel,productInstanceName,kalmantrackCollection))
+      {
+        int numberHits=0;
+        for(unsigned int i=0; i<kalmantrackCollection->size(); i++)
+        {
+          const TrkRecoTrk &particle = kalmantrackCollection->at(i);
+          const TrkHotList* hots = particle.hots();
+          if(hots!=NULL) numberHits+=hots->nHit();
+        }
+        if(numberHits < _frame->getMinimumHits())
+        {
+          std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
+          showEvent=false;
+        }
+      }
+    }
+  }
+#endif
 
   void EventDisplay::endJob()
   {

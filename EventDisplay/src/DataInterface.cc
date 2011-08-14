@@ -7,7 +7,6 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Cube.h"
 #include "Cylinder.h"
-#include "Sphere.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "HepPID/ParticleName.hh"
@@ -19,10 +18,12 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Sphere.h"
 #include "Straw.h"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Track.h"
+#include "TrackColorSelector.h"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/Run.h"
 #include "cetlib/map_vector.h"
@@ -566,30 +567,16 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
   }
 }
 
-void DataInterface::useTrackColors(bool trackcolors, bool whitebackground)
+void DataInterface::useTrackColors(const ContentSelector *contentSelector, bool trackcolors, bool whitebackground)
 {
+  std::vector<ContentSelector::trackInfoStruct> selectedTracks=contentSelector->getSelectedTrackNames();
+  TrackColorSelector colorSelector(&selectedTracks);
   std::vector<boost::shared_ptr<Track> >::const_iterator track;
   for(track=_tracks.begin(); track!=_tracks.end(); track++)
   {
     if(trackcolors)
     {
-      int particleid=(*track)->getParticleId();
-      int color=kGray;
-      switch(particleid)
-      {
-        case   11:
-        case  -11: color=2; break;   //e+,e-
-        case   13:
-        case  -13: color=3; break;   //mu+,mu-
-        case   22: color=4; break;   //gamma
-        case 2112: color=6; break;   //n0
-        case   12:
-        case  -12:
-        case   14:
-        case  -14:
-        case   16:
-        case  -16: color=28; break;   //neutrinos
-      }
+      int color=colorSelector.getColor(*track);
       (*track)->setColor(color);
     }
     else (*track)->setColor(whitebackground?1:0);
@@ -906,7 +893,8 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   }
 
   resetBoundaryP(_tracksMinmax);
-  std::vector<const mu2e::SimParticleCollection*> simParticleCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::SimParticleCollection>();
+  std::vector<ContentSelector::trackInfoStruct> trackInfos;
+  std::vector<const mu2e::SimParticleCollection*> simParticleCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::SimParticleCollection>(trackInfos);
   for(unsigned int i=0; i<simParticleCollectionVector.size(); i++)
   {
     const mu2e::SimParticleCollection *simParticles=simParticleCollectionVector[i];
@@ -917,6 +905,8 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
       int id = particle.id().asInt();
       int parentid = particle.parentId().asInt();
       int particleid=particle.pdgId();
+      int trackclass=trackInfos[i].classID;
+      int trackclassindex=trackInfos[i].index;
       std::string particlename=HepPID::particleName(particle.pdgId());
       unsigned int startVolume=particle.startVolumeIndex();
       unsigned int endVolume  =particle.endVolumeIndex();
@@ -963,7 +953,8 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
         info->expandLine(4,daughter->asInt(),"");
         daughterVect.push_back(daughter->asInt());
       }
-      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, _geometrymanager, _topvolume, _mainframe, info));
+      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, 
+                                               _geometrymanager, _topvolume, _mainframe, info));
       findTrajectory(contentSelector,shape,id, t1,t2, simParticles,daughterVect);
       _components.push_back(shape);
       _tracks.push_back(shape);
@@ -971,18 +962,21 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
   }
 
 #ifdef BABARINSTALLED
-  std::vector<const mu2e::TrkRecoTrkCollection*> trkRecoTrkCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::TrkRecoTrkCollection>();
+  trackInfos.clear();
+  std::vector<const mu2e::TrkRecoTrkCollection*> trkRecoTrkCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::TrkRecoTrkCollection>(trackInfos);
   for(unsigned int i=0; i<trkRecoTrkCollectionVector.size(); i++)
   {
     const mu2e::TrkRecoTrkCollection *trkRecoTrks=trkRecoTrkCollectionVector[i];
-    for(unsigned int i=0; i<trkRecoTrks->size(); i++)
+    for(unsigned int j=0; j<trkRecoTrks->size(); j++)
     {
-      const TrkRecoTrk &particle = trkRecoTrks->at(i);
+      const TrkRecoTrk &particle = trkRecoTrks->at(j);
       double t0=particle.trackT0();
       const TrkRep* trkrep = particle.getRep(particle.defaultType());
       if(trkrep!=NULL)
       {
-        int   particleid=0;
+        int particleid=0;
+        int trackclass=trackInfos[i].classID;
+        int trackclassindex=trackInfos[i].index;
         switch(static_cast<int>(trkrep->particleType()))
         {
            case 0 : particleid=11;   break;  //electron
@@ -997,7 +991,7 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         info->setName(c0);
         info->setText(0,c0);
-        boost::shared_ptr<Track> track(new Track(particleid, _geometrymanager, _topvolume, _mainframe, info));
+        boost::shared_ptr<Track> track(new Track(particleid, trackclass, trackclassindex, _geometrymanager, _topvolume, _mainframe, info));
         _components.push_back(track);
         _tracks.push_back(track);
 
@@ -1028,9 +1022,9 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
         double fltLMin=trkrep->startValidRange();
         double fltLMax=trkrep->endValidRange();
         double fltStep = (fltLMax - fltLMin)/400.0;
-        for(unsigned int i = 0; i <= 400.0; i++) 
+        for(unsigned int step = 0; step <= 400.0; step++) 
         {		
-          double fltL = fltLMin + i*fltStep;
+          double fltL = fltLMin + step*fltStep;
           double   t = trkrep->arrivalTime(fltL)+offset;
           HepPoint p = trkrep->position(fltL);
           findBoundaryT(_tracksTimeMinmax, t);

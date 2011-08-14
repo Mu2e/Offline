@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.10 2011/08/07 18:21:06 ehrlich Exp $
+// $Id: Track.h,v 1.11 2011/08/14 06:31:19 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/07 18:21:06 $
+// $Date: 2011/08/14 06:31:19 $
 //
 // Original author Ralf Ehrlich
 //
@@ -31,13 +31,14 @@ class Track: public VirtualShape
   boost::shared_ptr<EventDisplayPolyLine3D> _line;
   bool _trajectory;
   int _particleId;
+  int _trackClass, _trackClassIndex;
 
   public:
 //constructor for tracks with start and end point only 
 //(detailed trajectory can be added later)
   Track(double x1, double y1, double z1, double t1,
         double x2, double y2, double z2, double t2,
-        int particleId,
+        int particleId, int trackClass, int trackClassIndex, 
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info):
         VirtualShape(geomanager, topvolume, mainframe, info, false)
@@ -56,6 +57,8 @@ class Track: public VirtualShape
     setStartTime(t1);
     setEndTime(t2);
     _particleId=particleId;
+    _trackClass=trackClass;
+    _trackClassIndex=trackClassIndex;
     _trajectory=false;
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     _line->Draw();
@@ -64,12 +67,14 @@ class Track: public VirtualShape
 
 //constructor for a track without any points
 //trajectory points can be added later
-  Track(int particleId,
+  Track(int particleId, int trackClass, int trackClassIndex,
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info):
         VirtualShape(geomanager, topvolume, mainframe, info, false)
   {
     _particleId=particleId;
+    _trackClass=trackClass;
+    _trackClassIndex=trackClassIndex;
     _trajectory=false;
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     _line->Draw();
@@ -97,6 +102,8 @@ class Track: public VirtualShape
   }
 
   int getParticleId() {return _particleId;}
+  int getTrackClass() {return _trackClass;}
+  int getTrackClassIndex() {return _trackClassIndex;}
 
   void toForeground()
   {

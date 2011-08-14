@@ -20,6 +20,7 @@
 #include <TTimer.h>
 #include <TView3D.h>
 
+#include "TrackColorSelector.h"
 #include "ContentSelector.h"
 #include "DataInterface.h"
 #include "EventDisplayFrame.h"
@@ -54,8 +55,9 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
     _legendText[i]=NULL;
     _legendBox[i]=NULL;
   }
-  for(int i=0; i<6; i++)
+  for(int i=0; i<30; i++)
   {
+    _legendParticleGroup[i]=NULL;
     _legendParticleText[i]=NULL;
     _legendParticleLine[i]=NULL;
   }
@@ -450,7 +452,8 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   _dataInterface->fillEvent(_contentSelector);
   _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
                                _backgroundButton->GetState()==kButtonDown);
-  _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
+  _dataInterface->useTrackColors(_contentSelector,
+                                 _trackColorButton->GetState()==kButtonDown,
                                  _backgroundButton->GetState()==kButtonDown);
   updateTimeIntervalFields();
   updateHitLegend(_hitColorButton->GetState()==kButtonDown);
@@ -533,39 +536,21 @@ void EventDisplayFrame::updateHitLegend(bool draw)
 
 void EventDisplayFrame::updateTrackLegend(bool draw)
 {
-  for(int i=0; i<6; i++)
+  for(int i=0; i<30; i++)
   {
+    delete _legendParticleGroup[i];
     delete _legendParticleLine[i];
     delete _legendParticleText[i];
+    _legendParticleGroup[i]=NULL;
     _legendParticleLine[i]=NULL;
     _legendParticleText[i]=NULL;
   }
 
   if(draw)
   {
-    for(int i=0; i<6; i++)
-    {
-      _legendParticleLine[i]=new TPolyLine();
-      _legendParticleLine[i]->SetPoint(0, 0.6,0.45-i*0.05);
-      _legendParticleLine[i]->SetPoint(1, 0.7,0.45-i*0.05);
-      _legendParticleLine[i]->Draw();
-      _legendParticleText[i]=new TText(0.72,0.44-i*0.05,"");
-      _legendParticleText[i]->SetTextColor(kGray);
-      _legendParticleText[i]->SetTextSize(0.025);
-      _legendParticleText[i]->Draw();
-    }
-    _legendParticleLine[0]->SetLineColor(2);
-    _legendParticleLine[1]->SetLineColor(3);
-    _legendParticleLine[2]->SetLineColor(4);
-    _legendParticleLine[3]->SetLineColor(6);
-    _legendParticleLine[4]->SetLineColor(28);
-    _legendParticleLine[5]->SetLineColor(kGray);
-    _legendParticleText[0]->SetTitle("e+, e-");
-    _legendParticleText[1]->SetTitle("mu+, mu-");
-    _legendParticleText[2]->SetTitle("gamma");
-    _legendParticleText[3]->SetTitle("n0");
-    _legendParticleText[4]->SetTitle("neutrinos");
-    _legendParticleText[5]->SetTitle("other particles");
+    std::vector<ContentSelector::trackInfoStruct> selectedTracks=_contentSelector->getSelectedTrackNames();
+    TrackColorSelector colorSelector(&selectedTracks);
+    colorSelector.drawTrackLegend(_legendParticleGroup, _legendParticleText, _legendParticleLine);
   }
 }
 
@@ -626,7 +611,6 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          {
                            _timer->Stop();
                            _timeCurrent=NAN;
-                           _contentSelector->setSelectedHitsName();
                            gApplication->Terminate();
                          }
                          if(param1==1100)
@@ -781,7 +765,8 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1==61)
                          {
                            _mainPad->cd();
-                           _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
+                           _dataInterface->useTrackColors(_contentSelector,
+                                                          _trackColorButton->GetState()==kButtonDown,
                                                           _backgroundButton->GetState()==kButtonDown);
                            updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
                            if(isnan(_timeCurrent)) drawEverything();
@@ -794,7 +779,8 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            else _mainPad->SetFillColor(1);
                            _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
                                                         _backgroundButton->GetState()==kButtonDown);
-                           _dataInterface->useTrackColors(_trackColorButton->GetState()==kButtonDown,
+                           _dataInterface->useTrackColors(_contentSelector,
+                                                          _trackColorButton->GetState()==kButtonDown,
                                                           _backgroundButton->GetState()==kButtonDown);
                            if(isnan(_timeCurrent)) drawEverything();
                            else drawSituation();

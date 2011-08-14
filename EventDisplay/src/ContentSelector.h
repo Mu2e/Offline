@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.9 2011/07/27 00:28:48 ehrlich Exp $
+// $Id: ContentSelector.h,v 1.10 2011/08/14 06:31:19 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/07/27 00:28:48 $
+// $Date: 2011/08/14 06:31:19 $
 //
 // Original author Ralf Ehrlich
 //
@@ -60,35 +60,43 @@ class ContentSelector
   TGListBox   *_trackBox;
   std::string _g4ModuleLabel;
 
-  struct entryStruct
+  public:
+  struct trackInfoStruct
   {
-    int         entryID;
+    int classID, index;
     std::string entryText;
   };
 
-//these are information stored for the minimum hit test
-  bool _hitsAreSelected;
-  std::string _hitsClassName, _hitsModuleLabel, _hitsProductInstanceName;
-
   private:
-  bool compareLists(const std::vector<entryStruct> &newEntries, const TGListBox *boxContent) const;
+  struct entryStruct
+  {
+    int         entryID, classID, vectorPos;
+    std::string entryText;
+    std::string className, moduleLabel, productInstanceName;
+    bool operator==(const entryStruct& rhs) const
+    {
+      return ((this->entryID==rhs.entryID) && (this->entryText==rhs.entryText));
+    }
+  };
+  std::vector<entryStruct> _hitEntries, _caloHitEntries, _trackEntries;
+
   template<class CollectionType> void createNewEntries(std::vector<art::Handle<CollectionType> > &dataVector,
                                                        const art::Event &event, const std::string &className,
-                                                       std::vector<entryStruct> &newEntries, int entryIDStart);
+                                                       std::vector<entryStruct> &newEntries, int classID);
 
   public:
   ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel);
   void firstLoop();
   void setAvailableCollections(const art::Event& event);
 
-  void setSelectedHitsName();
   bool getSelectedHitsName(std::string &className,
                            std::string &moduleLabel,
                            std::string &productInstanceName) const;
+  std::vector<trackInfoStruct> getSelectedTrackNames() const;
 
   template<typename CollectionType> const CollectionType* getSelectedHitCollection() const;
   template<typename CollectionType> const CollectionType* getSelectedCaloHitCollection() const;
-  template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection() const;
+  template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const;
   const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
   const mu2e::PointTrajectoryCollection *getPointTrajectoryCollection() const;
 };

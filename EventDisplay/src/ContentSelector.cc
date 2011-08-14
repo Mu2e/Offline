@@ -10,8 +10,7 @@ ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGL
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
   _trackBox(trackBox),
-  _g4ModuleLabel(g4ModuleLabel),
-  _hitsAreSelected(false)
+  _g4ModuleLabel(g4ModuleLabel)
   {}
 
 void ContentSelector::firstLoop()  //This is useful for now, but may be changed later
@@ -31,46 +30,31 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
 
   entry=_trackBox->FindEntry("TrkRecoTrk:KalFitTest:");
   if(entry!=NULL) _trackBox->Select(entry->EntryId());
-  else
-  {
-    entry=_trackBox->FindEntry("SimParticle:g4run:");
-    if(entry!=NULL) _trackBox->Select(entry->EntryId());
-  }
-}
-
-bool ContentSelector::compareLists(const std::vector<entryStruct> &newEntries, const TGListBox *boxContent) const
-{
-  if(static_cast<int>(newEntries.size())!=boxContent->GetNumberOfEntries()) return(false);
-
-  for(unsigned int i=0; i<newEntries.size(); i++)
-  {
-    int entryID=newEntries[i].entryID;
-    TGTextLBEntry *entryTmp=dynamic_cast<TGTextLBEntry*>(boxContent->GetEntry(entryID));
-    if(entryTmp==NULL) return(false);
-    const char *entry=entryTmp->GetText()->GetString();
-    if(newEntries[i].entryText.compare(entry)!=0) return(false);
-  }
-  return(true);
+  entry=_trackBox->FindEntry("SimParticle:g4run:");
+  if(entry!=NULL) _trackBox->Select(entry->EntryId());
 }
 
 template<class CollectionType>
 void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> > &dataVector,
                                        const art::Event &event, const std::string &className,
-                                       std::vector<entryStruct> &newEntries, int entryIDStart)
+                                       std::vector<entryStruct> &newEntries, int classID)
 {
-  int entryID;
   event.getManyByType(dataVector);
   typedef std::vector<art::Handle<CollectionType> > CollectionVector;
   typedef typename CollectionVector::const_iterator itertype;
   itertype iter;
-  for(iter=dataVector.begin(), entryID=entryIDStart;
-      iter!=dataVector.end();
-      iter++, entryID++)
+  int vectorPos=0;
+  for(iter=dataVector.begin(); iter!=dataVector.end(); iter++, vectorPos++)
   {
     entryStruct e;
-    e.entryID=entryID;
+    e.entryID=newEntries.size();
+    e.classID=classID;
+    e.vectorPos=vectorPos;
     e.entryText=className+":"+iter->provenance()->moduleLabel()
                +":"+iter->provenance()->productInstanceName();
+    e.className=iter->provenance()->className();
+    e.moduleLabel=iter->provenance()->moduleLabel();
+    e.productInstanceName=iter->provenance()->productInstanceName();
     newEntries.push_back(e);
   }
 }
@@ -84,58 +68,62 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   nothingSelected.entryText="Nothing Selected";
 
 //Hit Selection
-  createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1000);
-  createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2000);
-#ifdef BABARINSTALLED
-  createNewEntries<mu2e::TrkRecoTrkCollection>(_hitOnTrackVector, event, "TrkRecoTrk", newEntries, 3000);
-#endif
   newEntries.push_back(nothingSelected);
+  createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1);
+  createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2);
+#ifdef BABARINSTALLED
+  createNewEntries<mu2e::TrkRecoTrkCollection>(_hitOnTrackVector, event, "TrkRecoTrk", newEntries, 3);
+#endif
 
-  if(compareLists(newEntries,_hitBox->GetListBox())==false)
+  if(newEntries!=_hitEntries)
   {
+    _hitEntries.clear();
     TGTextLBEntry *selectedEntryTmp=dynamic_cast<TGTextLBEntry*>(_hitBox->GetSelectedEntry());
     std::string selectedEntry="Nothing Selected";
     if(selectedEntryTmp) selectedEntry=selectedEntryTmp->GetText()->GetString();
     _hitBox->RemoveAll();
     for(unsigned int i=0; i<newEntries.size(); i++)
     {
+      _hitEntries.push_back(newEntries[i]);
       _hitBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
       if(newEntries[i].entryText.compare(selectedEntry)==0) _hitBox->Select(newEntries[i].entryID);
     }
     _hitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
   }
 
-  newEntries.clear();
-
 //Calo Hit Selection
-  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 1000);
-  createNewEntries<mu2e::CaloHitCollection>(_caloHitVector, event, "CaloHit", newEntries, 2000);
+  newEntries.clear();
   newEntries.push_back(nothingSelected);
+  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 1);
+  createNewEntries<mu2e::CaloHitCollection>(_caloHitVector, event, "CaloHit", newEntries, 2);
 
-  if(compareLists(newEntries,_caloHitBox->GetListBox())==false)
+  if(newEntries!=_caloHitEntries)
   {
+    _caloHitEntries.clear();
     TGTextLBEntry *selectedEntryTmp=dynamic_cast<TGTextLBEntry*>(_caloHitBox->GetSelectedEntry());
     std::string selectedEntry="Nothing Selected";
     if(selectedEntryTmp) selectedEntry=selectedEntryTmp->GetText()->GetString();
     _caloHitBox->RemoveAll();
     for(unsigned int i=0; i<newEntries.size(); i++)
     {
+      _caloHitEntries.push_back(newEntries[i]);
       _caloHitBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
       if(newEntries[i].entryText.compare(selectedEntry)==0) _caloHitBox->Select(newEntries[i].entryID);
     }
     _caloHitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
   }
 
-  newEntries.clear();
 
 //Track Selection
-  createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1000);
+  newEntries.clear();
+  createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1);
 #ifdef BABARINSTALLED
-  createNewEntries<mu2e::TrkRecoTrkCollection>(_trkRecoTrkVector, event, "TrkRecoTrk", newEntries, 2000);
+  createNewEntries<mu2e::TrkRecoTrkCollection>(_trkRecoTrkVector, event, "TrkRecoTrk", newEntries, 2);
 #endif
 
-  if(compareLists(newEntries,_trackBox)==false)
+  if(newEntries!=_trackEntries)
   {
+    _trackEntries.clear();
     TList selections;
     _trackBox->GetSelectedEntries(&selections);
     std::vector<std::string> oldSelections;
@@ -147,6 +135,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     _trackBox->RemoveAll();
     for(unsigned int i=0; i<newEntries.size(); i++)
     {
+      _trackEntries.push_back(newEntries[i]);
       _trackBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
       if(find(oldSelections.begin(),oldSelections.end(),newEntries[i].entryText)!=oldSelections.end())
            _trackBox->Select(newEntries[i].entryID);
@@ -159,53 +148,68 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   _hasPointTrajectories=event.getByLabel(_g4ModuleLabel, _pointTrajectories);
 }
 
-void ContentSelector::setSelectedHitsName()
-{
-  _hitsAreSelected=false;
-  int i=_hitBox->GetSelected();
-  int classtype=i/1000;
-  int index=i%1000;
-  art::Provenance const *provenance=NULL;
-  switch(classtype)
-  {
-    case 1 : if(index>=static_cast<int>(_stepPointMCVector.size())) return;
-             _hitsAreSelected=true;
-             provenance=_stepPointMCVector[index].provenance();
-             break;
-    case 2 : if(index>=static_cast<int>(_strawHitVector.size())) return;
-             _hitsAreSelected=true;
-             provenance=_strawHitVector[index].provenance();
-             break;
-#ifdef BABARINSTALLED
-    case 3 : if(index>=static_cast<int>(_hitOnTrackVector.size())) return;
-             _hitsAreSelected=true;
-             provenance=_hitOnTrackVector[index].provenance();
-             break;
-#endif
-    default: return;
-  };
-  _hitsClassName          =provenance->className();
-  _hitsModuleLabel        =provenance->moduleLabel();
-  _hitsProductInstanceName=provenance->productInstanceName();
-}
-
 bool ContentSelector::getSelectedHitsName(std::string &className,
                                           std::string &moduleLabel,
                                           std::string &productInstanceName) const
 {
-  className          =_hitsClassName;
-  moduleLabel        =_hitsModuleLabel;
-  productInstanceName=_hitsProductInstanceName;
-  return(_hitsAreSelected);
+  int i=_hitBox->GetSelected();
+  std::vector<entryStruct>::const_iterator iter;
+  for(iter=_hitEntries.begin(); iter!=_hitEntries.end(); iter++)
+  {
+    if(iter->entryID==i)
+    {
+      className          =iter->className;
+      moduleLabel        =iter->moduleLabel;
+      productInstanceName=iter->productInstanceName;
+      return(true);
+    }
+  }
+  return(false);
+}
+
+std::vector<ContentSelector::trackInfoStruct> ContentSelector::getSelectedTrackNames() const
+{
+  std::vector<trackInfoStruct> to_return;
+  TList selections;
+  _trackBox->GetSelectedEntries(&selections);
+  for(int i=0; i<selections.GetSize(); i++)
+  {
+    TGTextLBEntry *entry=dynamic_cast<TGTextLBEntry*>(selections.At(i));
+    if(entry==NULL) continue;
+    trackInfoStruct t;
+    std::vector<entryStruct>::const_iterator iter;
+    for(iter=_trackEntries.begin(); iter!=_trackEntries.end(); iter++)
+    {
+      if(iter->entryID==entry->EntryId())
+      {
+        t.classID=iter->classID;
+        t.index=iter->vectorPos;
+        t.entryText=iter->entryText;
+        if(t.classID>0) to_return.push_back(t);
+        break;
+      }
+    }
+  }
+  return(to_return);
 }
 
 template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedHitCollection() const
 {
   int i=_hitBox->GetSelected();
-  int classtype=i/1000;
-  int index=i%1000;
-  switch(classtype)
+  int classID=0;
+  int index=0;
+  std::vector<entryStruct>::const_iterator iter;
+  for(iter=_hitEntries.begin(); iter!=_hitEntries.end(); iter++)
+  {
+    if(iter->entryID==i)
+    {
+      classID=iter->classID;
+      index=iter->vectorPos;
+      break;
+    }
+  }
+  switch(classID)
   {
     case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(NULL);
              if(index>=static_cast<int>(_stepPointMCVector.size())) return(NULL);
@@ -239,9 +243,19 @@ template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
 {
   int i=_caloHitBox->GetSelected();
-  int classtype=i/1000;
-  int index=i%1000;
-  switch(classtype)
+  int classID=0;
+  int index=0;
+  std::vector<entryStruct>::const_iterator iter;
+  for(iter=_caloHitEntries.begin(); iter!=_caloHitEntries.end(); iter++)
+  {
+    if(iter->entryID==i)
+    {
+      classID=iter->classID;
+      index=iter->vectorPos;
+      break;
+    }
+  }
+  switch(classID)
   {
     case 1 : if(typeid(CollectionType)!=typeid(mu2e::CaloCrystalHitCollection)) return(NULL);
              if(index>=static_cast<int>(_caloCrystalHitVector.size())) return(NULL);
@@ -256,7 +270,7 @@ template const mu2e::CaloCrystalHitCollection* ContentSelector::getSelectedCaloH
 template const mu2e::CaloHitCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
 
 template<typename CollectionType>
-std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection() const
+std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const
 {
   std::vector<const CollectionType*> to_return;
 
@@ -266,28 +280,42 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection()
   {
     TGTextLBEntry *entry=dynamic_cast<TGTextLBEntry*>(selections.At(i));
     if(entry==NULL) continue;
-    int id=entry->EntryId();
-    int classtype=id/1000;
-    int index=id%1000;
-    switch(classtype)
+    trackInfoStruct t;
+    int classID=0;
+    int index=0;
+    std::vector<entryStruct>::const_iterator iter;
+    for(iter=_trackEntries.begin(); iter!=_trackEntries.end(); iter++)
+    {
+      if(iter->entryID==entry->EntryId())
+      {
+        classID=iter->classID;
+        index=iter->vectorPos;
+        t.classID=classID;
+        t.index=index;
+        break;
+      }
+    }
+    switch(classID)
     {
       case 1 : if(typeid(CollectionType)!=typeid(mu2e::SimParticleCollection)) break;
                if(index>=static_cast<int>(_simParticleVector.size())) break;
                to_return.push_back(reinterpret_cast<const CollectionType*>(_simParticleVector[index].product())); 
+               v.push_back(t);
                break;
 #ifdef BABARINSTALLED
       case 2 : if(typeid(CollectionType)!=typeid(mu2e::TrkRecoTrkCollection)) break;
                if(index>=static_cast<int>(_trkRecoTrkVector.size())) break;
                to_return.push_back(reinterpret_cast<const CollectionType*>(_trkRecoTrkVector[index].product()));
+               v.push_back(t);
                break;
 #endif
     };
   }
   return(to_return);
 }
-template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>() const;
+template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>(std::vector<trackInfoStruct> &v) const;
 #ifdef BABARINSTALLED
-template std::vector<const mu2e::TrkRecoTrkCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkRecoTrkCollection>() const;
+template std::vector<const mu2e::TrkRecoTrkCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkRecoTrkCollection>(std::vector<trackInfoStruct> &v) const;
 #endif
 
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const
