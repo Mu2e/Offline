@@ -1,9 +1,10 @@
 //
-// Dump information about all data products in the file.
+// Dump information about all data products in the file, including
+// event, run and subrun data products.
 //
-// $Id: DataProductDump_module.cc,v 1.3 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: DataProductDump_module.cc,v 1.4 2011/08/16 19:53:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/08/16 19:53:27 $
 //
 // Original author Rob Kutschke
 //
