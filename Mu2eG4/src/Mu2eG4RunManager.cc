@@ -2,9 +2,9 @@
 // Override the G4RunManager class so that the Mu2e framework can drive
 // the event loop.
 //
-// $Id: Mu2eG4RunManager.cc,v 1.6 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: Mu2eG4RunManager.cc,v 1.7 2011/08/22 20:11:23 genser Exp $
+// $Author: genser $
+// $Date: 2011/08/22 20:11:23 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,7 @@
 #include "G4UImanager.hh"
 #include "G4ScoringManager.hh"
 #include "G4Timer.hh"
+#include "G4Run.hh"
 
 using namespace std;
 
@@ -101,6 +102,26 @@ namespace mu2e {
     _systemElapsed += timer->GetSystemElapsed();
     _userElapsed   += timer->GetUserElapsed();
 
+
+    if(verboseLevel>0){
+
+      G4int oldPrecision = G4cout.precision(3);
+      std::ios::fmtflags oldFlags = G4cout.flags();
+      G4cout.setf(std::ios::fixed,std::ios::floatfield); 
+
+      G4cout << "TimeEvent> "
+             << eventNumber << " "
+             << G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID() << " "
+             << timer->GetRealElapsed() << " "
+             << timer->GetUserElapsed() + timer->GetSystemElapsed() << " "
+             << _userElapsed+_systemElapsed
+             << G4endl;
+
+      G4cout.setf(oldFlags);
+      G4cout.precision(oldPrecision);
+
+    }
+
   }
 
   void Mu2eG4RunManager::BeamOnEndEvent(){
@@ -127,6 +148,19 @@ namespace mu2e {
              << "s Real="  << _realElapsed
              << "s Sys="   << _systemElapsed
              << G4endl;
+
+      G4int oldPrecision = G4cout.precision(3);
+      std::ios::fmtflags oldFlags = G4cout.flags();
+      G4cout.setf(std::ios::fixed,std::ios::floatfield); 
+
+      G4cout << "TimeReport> Time report complete in ";
+      G4cout << _realElapsed;
+      G4cout << " seconds"
+             << G4endl;
+
+      G4cout.setf(oldFlags);
+      G4cout.precision(oldPrecision);
+
     }
 
     // From G4RunManager::BeamOn.
