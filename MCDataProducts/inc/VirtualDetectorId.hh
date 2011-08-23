@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.1 2011/08/23 21:48:43 kutschke Exp $
+// $Id: VirtualDetectorId.hh,v 1.2 2011/08/23 22:17:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/08/23 21:48:43 $
+// $Date: 2011/08/23 22:17:18 $
 //
 // Original author Rob Kutschke
 //
@@ -51,7 +51,7 @@ namespace mu2e {
       "Coll1_In",       "Coll1_Out",                               \
       "Coll31_In",      "Coll31_Out",  "Coll32_In", "Coll32_Out",  \
       "Coll5_In",       "Coll5_Out",                               \
-      "ST_In",          "T_Out",                                   \
+      "ST_In",          "ST_Out",                                  \
       "TT_Mid",         "TT_MidInner",                             \
       "TT_FrontHollow", "TT_FrontPA"                               \
 
@@ -67,6 +67,32 @@ namespace mu2e {
     // Member function version of the name function.
     std::string const& name() const {
       return name(_id);
+    }
+
+    // The enum values come in pairs.  Provide tests for membership in a pair.
+    bool isColl1() const {
+      return ( _id == Coll1_In || _id == Coll1_Out );
+    }
+
+    bool isColl3() const {
+      return ( _id == Coll31_In || _id == Coll31_Out  ||
+               _id == Coll32_In || _id == Coll32_Out );
+    }
+
+    bool isColl5() const {
+      return ( _id == Coll5_In || _id == Coll5_Out );
+    }
+
+    bool isStoppingTarget() const {
+      return ( _id == ST_In || _id == ST_Out );
+    }
+
+    bool isTrackerMid() const {
+      return ( _id == TT_Mid || _id == TT_MidInner );
+    }
+
+    bool isTrackerFront() const {
+      return ( _id == TT_FrontHollow || _id == TT_FrontPA );
     }
 
     // ROOT requires a default c'tor.
