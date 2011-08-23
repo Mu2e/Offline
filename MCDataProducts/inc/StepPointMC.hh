@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.4 2011/06/30 04:42:47 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.5 2011/08/23 22:24:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/30 04:42:47 $
+// $Date: 2011/08/23 22:24:07 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,7 @@
 
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 
 #include "art/Persistency/Common/OrphanHandle.h"
@@ -105,6 +106,10 @@ namespace mu2e {
     // Return the volumeId as a StrawIndex.
     // It's the user's job to know if this is a reasonable thing to do.
     StrawIndex strawIndex() const { return StrawIndex(_volumeId); }
+
+    // Return the volumeId as a VirtualDetectorId.
+    // It's the user's job to know if this is a reasonable thing to do.
+    VirtualDetectorId virtualDetectorId() const { return VirtualDetectorId(_volumeId); }
 
   private:
 
