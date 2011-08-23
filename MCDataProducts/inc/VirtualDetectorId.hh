@@ -1,0 +1,153 @@
+#ifndef MCDataProducts_VirtualDetectorId_hh
+#define MCDataProducts_VirtualDetectorId_hh
+//
+// An enum-matched-to-names class for virtual detector Id's.
+//
+// $Id: VirtualDetectorId.hh,v 1.1 2011/08/23 21:48:43 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/08/23 21:48:43 $
+//
+// Original author Rob Kutschke
+//
+// Notes:
+// 1) The enum_type must be in the class to avoid clashes with
+//    similar classes that are modelled on this.  In particular
+//    unknown and lastEnum will clash.
+//
+// 2) I do want both the name() operator and the << operator.
+//    If only <<, then users will need to make temp ostringsteams
+//    if they want to do their own formatting.
+//
+// 3) Root always stores enum types as 32 bit ints, regardless of 
+//    native word length on a machine.
+//
+
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <vector>
+
+namespace mu2e {
+
+  class VirtualDetectorId {
+
+  public:
+
+    // Need to keep the enum and the following MACRO in sync.
+    enum enum_type {
+      unknown,                                                // 0:       If you see this, the object was not properly initialized.
+      Coll1_In,       Coll1_Out,                              // 1,2:     Surround the collimator in TS1
+      Coll31_In,      Coll31_Out, Coll32_In, Coll32_Out,      // 3,4,5,6: Surround the two pieces of the collimator in TS3
+      Coll5_In,       Coll5_Out,                              // 7,8:     Surround the collimator in TS5
+      ST_In,          ST_Out,                                 // 9,10:    Surround the stopping target foils.
+      TT_Mid,         TT_MidInner,                            // 11, 12:  Middle of the tracker
+      TT_FrontHollow, TT_FrontPA,                             // 13, 14:  Front face of the tracker.
+      lastEnum
+    };
+
+    // Keep this in sync with the enum. Used in VirtualDetectorId.cc
+#define VIRTUALDETECTORID_NAMES                                    \
+      "unknown",                                                   \
+      "Coll1_In",       "Coll1_Out",                               \
+      "Coll31_In",      "Coll31_Out",  "Coll32_In", "Coll32_Out",  \
+      "Coll5_In",       "Coll5_Out",                               \
+      "ST_In",          "T_Out",                                   \
+      "TT_Mid",         "TT_MidInner",                             \
+      "TT_FrontHollow", "TT_FrontPA"                               \
+
+  public:
+
+    // The most important c'tor and accessor methods are first.
+    explicit VirtualDetectorId( enum_type id):
+      _id(id)
+    {}
+
+    enum_type id() const { return _id;}
+
+    // Member function version of the name function.
+    std::string const& name() const {
+      return name(_id);
+    }
+
+    // ROOT requires a default c'tor.
+    VirtualDetectorId():
+      _id(unknown){
+    }
+
+    // Need this to interface with legacy code; prefer to remove it if possible.
+    explicit VirtualDetectorId( int id):
+      _id(static_cast<enum_type>(id)){
+      isValidorThrow(_id);
+    }
+
+    virtual ~VirtualDetectorId(){}
+
+    // This operator implements:
+    //   VirtualDetectorId a;
+    //   enum_type b;
+    // a = b;
+    VirtualDetectorId& operator=(VirtualDetectorId::enum_type const& c){
+      _id = c;
+      return *this;
+    }
+
+    // This operator implements:
+    //   VirtualDetectorId a;
+    //   enum_type b = a;
+    operator VirtualDetectorId::enum_type ()const{
+      return _id;
+    }
+
+    // Comparison operators
+    bool operator==(const VirtualDetectorId g) const{
+      return ( _id == g._id );
+    }
+
+    bool operator==(const VirtualDetectorId::enum_type g) const{
+      return ( _id == g );
+    }
+
+    // Static version of the name method.
+    static std::string const& name( enum_type id );
+
+    // Get a vector of all known names.
+    static std::vector<std::string> const& names();
+
+    // Check validity of an Id.  
+    static bool isValid( enum_type id){
+      if ( id <   unknown ) return false;
+      if ( id >= lastEnum ) return false;
+      return true;
+    }
+
+    // Check validity and throw if invalid.
+    static bool isValidorThrow( enum_type id);
+
+    // Print all known values and their names.
+    static void printAll( std::ostream& ost = std::cout);
+
+    // Member function version of static functions.
+    bool isValid() const{
+      return isValid(_id);
+    }
+
+  private:
+
+    // The one and only per-instance member datum.
+    enum_type _id;
+
+  };
+
+  // Shift left (printing) operator.
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  const VirtualDetectorId& id ){
+    ost << "( "
+        << id.id() << ": "
+        << id.name()
+        << " )";
+    return ost;
+  }
+
+}
+
+#endif /* MCDataProducts_VirtualDetectorId_hh */
