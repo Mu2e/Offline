@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.3 2011/07/15 04:44:06 mu2ecvs Exp $
+// $Id: KalFitMC.hh,v 1.4 2011/08/23 06:01:29 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/15 04:44:06 $
+// $Date: 2011/08/23 06:01:29 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -13,6 +13,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -32,6 +33,43 @@
 
 namespace mu2e 
 {  
+ // some convenient typedefs    
+  typedef art::Ptr<SimParticle> SPPtr;
+// structs
+  struct trksum {
+    double _esum;
+    unsigned _count;
+    art::Ptr<SimParticle> _spp;
+    int _pdgid;
+    int _gid,_pid;
+    double _time;
+    CLHEP::Hep3Vector _pos;
+    trksum() : _esum(0.0),_count(0),_pdgid(0),_gid(0),_time(0.0) {}
+    trksum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) : _esum(mchit.eDep()),_count(1),
+    _spp(spp),_pdgid(0),_gid(-1),_pid(-1),
+    _time(mchit.time()),
+    _pos(mchit.position()){
+      if(spp.isNonnull() ){
+	_pdgid = spp->pdgId();
+	_pid = spp->creationCode();
+	if( spp->genParticle().isNonnull())
+	  _gid = spp->genParticle()->generatorId().id();
+      }
+    }
+    bool operator == (const trksum& other) { return _spp == other._spp; }
+    bool operator < (const trksum& other) { return _spp < other._spp; }
+    void append(StepPointMC const& mchit)  {
+      double eold = _esum;
+      _esum += mchit.eDep();
+      _time = _time*eold/_esum + mchit.time()*mchit.eDep()/_esum;
+      _pos = _pos*(eold/_esum) + mchit.position()*(mchit.eDep()/_esum);
+      _count++;
+    }
+// comparison functor for ordering according to energy
+    struct ecomp : public binary_function<trksum,trksum, bool> {
+      bool operator()(trksum const& t1, trksum const& t2) { return t1._esum < t2._esum; }
+    };
+  };  
   // simple structs
   struct threevec {
     Float_t _x,_y,_z;
@@ -50,8 +88,8 @@ namespace mu2e
 
   struct TrkStrawHitInfo {
     Int_t _active,_usable;
-    UInt_t _nmc;
-// root macro
+    UInt_t _mcn, _mcnunique, _mcpdg, _mcgen, _mcproc;
+// root 
     ClassDef(TrkStrawHitInfo,1)
   };
 
@@ -88,6 +126,10 @@ namespace mu2e
 // allow creating the trees
     TTree* createTrkDiag();
     TTree* createHitDiag();
+// General StrawHit MC functions: these should move to more general class, FIXME!!
+    static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
+    static void fillMCSummary(PtrStepPointMCVector const& mcptr,std::vector<trksum>& summary );
+
   private:
 // helper functions
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
@@ -110,7 +152,8 @@ namespace mu2e
     Float_t _t00err;
     Float_t _t0;
     Float_t _t0err;
-    Float_t _mct0;
+    Float_t _mcentt0;
+    Float_t _mcmidt0;
     Int_t _nhits;
     Int_t _ndof;
     UInt_t _niter;
@@ -120,11 +163,13 @@ namespace mu2e
     Float_t _chisq;
     Float_t _fitmom;
     Float_t _fitmomerr;
-    Float_t _mcmom;
+    Float_t _mcentmom;
+    Float_t _mcmidmom;
     Float_t _seedmom;
     helixpar _fitpar;
     helixpar _fiterr;
-    helixpar _mcpar;
+    helixpar _mcentpar;
+    helixpar _mcmidpar;
     std::vector<TrkStrawHitInfo> _tshinfo;
 
 // hit tuple variables

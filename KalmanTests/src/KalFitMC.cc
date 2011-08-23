@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.5 2011/07/15 04:44:06 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.6 2011/08/23 06:01:29 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/15 04:44:06 $
+// $Date: 2011/08/23 06:01:29 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -214,7 +214,7 @@ namespace mu2e
         mct0 += mchit.time()*edep;
         CLHEP::Hep3Vector dprod = mchit.position()-mchit.simParticle()->startPosition();
         _pdist += dprod.mag()*edep;
-        _pperp += dprod.perp(strawhit->straw().getDirection())*edep;
+        _pperp += dprod.perp(Hep3Vector(0.0,0.0,1.0))*edep;
         _pmom = mchit.momentum().mag()*edep;
       }
     }
@@ -286,11 +286,17 @@ namespace mu2e
         tshinfo._active = tsh->isActive();
         tshinfo._usable = tsh->usability();
         PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(tsh->index()));
-        tshinfo._nmc = mcptr.size();
+        tshinfo._mcn = mcptr.size();
+	std::vector<trksum> mcsum;
+	KalFitMC::fillMCSummary(mcptr,mcsum); 
+	tshinfo._mcnunique = mcsum.size();
+	tshinfo._mcpdg = mcsum[0]._pdgid;
+	tshinfo._mcgen = mcsum[0]._gid;
+	tshinfo._mcproc = mcsum[0]._pid;
         _tshinfo.push_back(tshinfo);
       }
     }
-// find the mc step at the entrance to the detector
+// find the mc info at the entrance to the detector
     std::vector<MCStepItr> steps;
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
@@ -303,28 +309,96 @@ namespace mu2e
       CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
   // initial length estimate defines convention for flightlength, z0
       double mclen(0.0);
-      HepVector mcpar(5);
+      HepVector mcpar(5,0);
       TrkHelixUtils::helixFromMom( mcpar, mclen,
         HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
         mcmom,-1.,bfMgr->getDSUniformValue().z());
-      _mcmom = imcs->momentum().mag();
-      _mcpar = helixpar(mcpar);
+      _mcentmom = imcs->momentum().mag();
+      _mcentpar = helixpar(mcpar);
+      _mcentt0 = imcs->time();
     } else {
-      _mcmom = -1;
+      _mcentmom = -1;
+      _mcentt0 = 0.0;
     }
-// mc t0 value; at midpoint of detector
+
+// mc at midpoint of detector
     findMCSteps(mcdata._mcvdsteps,trkid,_midvids,steps);
-    if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())&& steps[0]->momentum().mag() > _mintrkmom){
-    // take the first point
+    if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
+// take the first point; hopefully this is the entrance!
       MCStepItr imcs = steps[0];
-      _mct0 = imcs->time();
+      CLHEP::Hep3Vector mcmom = imcs->momentum();
+      CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
+// initial length estimate defines convention for flightlength, z0
+      double mclen(0.0);
+      HepVector mcpar(5,0);
+      TrkHelixUtils::helixFromMom( mcpar, mclen,
+        HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
+        mcmom,-1.,bfMgr->getDSUniformValue().z());
+      _mcmidmom = imcs->momentum().mag();
+      _mcmidpar = helixpar(mcpar);
+      _mcmidt0 = imcs->time();
     } else {
-      _mct0 = 0.0;
+      _mcmidmom = -1;
+      _mcmidt0 = 0.0;
     }
     
     _trkdiag->Fill(); 
   }
 
+// Summarize an associated set of StepPointMCs from a StrawHit according to their parents.  This assignes
+// daughter contributions to their parents
+  void KalFitMC::fillMCSummary(PtrStepPointMCVector const& mcptr,std::vector<trksum>& summary ){
+// first, create a map from daughters to mothers
+    std::map<SPPtr,SPPtr> mdmap;
+    findRelatives(mcptr,mdmap);
+// Loop over the step points, and fill the summary vector
+    for( size_t imc=0; imc< mcptr.size(); ++imc ) {
+// find the primary parent, and create a pair for this step point's energy deposition
+      art::Ptr<SimParticle> sp = mcptr[imc]->simParticle();
+// find it's parent
+      art::Ptr<SimParticle> spp = mdmap[sp];
+// create the summary
+      trksum tsum(*mcptr[imc],spp);
+// Add this energy to this particle, or create the entry if this is the first time this particle is seen
+      std::vector<trksum>::iterator ifnd = std::find(summary.begin(),summary.end(),tsum);
+      if(ifnd == summary.end())
+        summary.push_back(tsum);
+      else
+        ifnd->append(*mcptr[imc]);
+    }
+// sort this according to deposited energy
+    std::sort(summary.begin(),summary.end(),trksum::ecomp());
+  }
+
+// map daughters onto parents within the context of an associated set of StepPointMCs (like from a StrawHit).
+  void KalFitMC::findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap){
+    // loop over steps
+    for( size_t imc=0; imc< mcptr.size(); ++imc ) {
+      art::Ptr<SimParticle> spp = mcptr[imc]->simParticle();		  
+      if(mdmap.find(spp) == mdmap.end()){
+    // start with self-reference
+        mdmap[spp] = spp;
+      }
+    }
+    // loop over the steps again, trying to map particles to their parents
+    for( size_t imc=0; imc< mcptr.size(); ++imc ) {
+      art::Ptr<SimParticle> spp = mcptr[imc]->simParticle();		  
+      if(mdmap[spp] == spp){
+    // move up through the genealogy till we find the highest-rank parent directly contributing
+    // to this strawhit
+        art::Ptr<SimParticle> sppp = spp->parent();
+        while(sppp){
+          std::map<SPPtr,SPPtr>::iterator ifnd = mdmap.find(sppp);
+          if(ifnd != mdmap.end())
+    // repoint this particle to its highest-level contributing parent
+            mdmap[spp] = sppp;
+    // move on to the parent's parent, as there can be gaps in the direct contribution
+          sppp = sppp->parent();
+        }
+      }
+    }
+  }
+ 
   TTree*
   KalFitMC::createTrkDiag(){
     art::ServiceHandle<art::TFileService> tfs;
@@ -336,7 +410,6 @@ namespace mu2e
     _trkdiag->Branch("t00err",&_t0err,"t00err/F");
     _trkdiag->Branch("t0",&_t0,"t0/F");
     _trkdiag->Branch("t0err",&_t0err,"t0err/F");
-    _trkdiag->Branch("mct0",&_mct0,"mct0/F");
     _trkdiag->Branch("nhits",&_nhits,"nhits/I");
     _trkdiag->Branch("ndof",&_ndof,"ndof/I");
     _trkdiag->Branch("niter",&_niter,"niter/i");
@@ -347,10 +420,16 @@ namespace mu2e
     _trkdiag->Branch("fitmom",&_fitmom,"fitmom/F");
     _trkdiag->Branch("fitmomerr",&_fitmomerr,"fitmomerr/F");
     _trkdiag->Branch("seedmom",&_seedmom,"seedmom/F");
-    _trkdiag->Branch("mcmom",&_mcmom,"mcmom/F");
     _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
     _trkdiag->Branch("fiterr",&_fiterr,"d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
-    _trkdiag->Branch("mcpar",&_mcpar,"mcd0/F:mcp0/F:mcom/F:mcz0/F:mctd/F");
+// mc info at tracker entrance and midplane
+    _trkdiag->Branch("mcentpar",&_mcentpar,"mcentd0/F:mcentp0/F:mcentom/F:mcentz0/F:mcenttd/F");
+    _trkdiag->Branch("mcentt0",&_mcentt0,"mcentt0/F");
+    _trkdiag->Branch("mcentmom",&_mcentmom,"mcentmom/F");
+    _trkdiag->Branch("mcmidpar",&_mcmidpar,"mcmidd0/F:mcmidp0/F:mcmidom/F:mcmidz0/F:mcmidtd/F");
+    _trkdiag->Branch("mcmidt0",&_mcmidt0,"mcmidt0/F");
+    _trkdiag->Branch("mcmidmom",&_mcmidmom,"mcmidmom/F");
+// track hit info    
     _trkdiag->Branch("tshinfo",&_tshinfo);
     return _trkdiag;
   }
