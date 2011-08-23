@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.8 2011/07/13 20:44:27 mu2ecvs Exp $
+// $Id: TrkStrawHit.cc,v 1.9 2011/08/23 22:12:34 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/13 20:44:27 $
+// $Date: 2011/08/23 22:12:34 $
 //
 // Original author David Brown, LBNL
 //
@@ -79,6 +79,8 @@ namespace mu2e
   }
   
   TrkStrawHit::~TrkStrawHit(){
+// I don't understand who's deleting the hit: it isn't always done, so this is a memory
+// leak.  This needs a complete ownership restructuring to fix, FIXME!!!!!
 //    delete _hit;
     delete _hittraj;
 // ugly trick to keep the base class from trying to delete _TrkDummyHit

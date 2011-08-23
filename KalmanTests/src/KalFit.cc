@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.10 2011/07/16 19:36:44 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.11 2011/08/23 22:12:34 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/16 19:36:44 $
+// $Date: 2011/08/23 22:12:34 $
 //
 
 // the following has to come before other BaBar includes
@@ -59,7 +59,17 @@ namespace mu2e
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
           bool operator()(TrkStrawHit* x, TrkStrawHit* y) { return x->fltLen() < y->fltLen(); }
   };
-  
+
+  void TrkKalFit::deleteTrack() {
+    if(_trk != 0 && _krep != 0){
+      _hits.clear(); delete _trk; _trk=0; _krep = 0; 
+    } else {
+// if there's no fit, we need to delete the hits
+      std::for_each(_hits.begin(),_hits.end(),babar::Collection::DeleteObject());
+    }
+  } 
+
+
 // construct from a parameter set  
   KalFit::KalFit(fhicl::ParameterSet const& pset) : _bfield(0),
     _wallelem(wall,_matdbinfo),_gaselem(gas,_matdbinfo),
