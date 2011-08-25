@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.9 2011/07/25 20:51:24 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.10 2011/08/25 20:45:05 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/07/25 20:51:24 $
+// $Date: 2011/08/25 20:45:05 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
@@ -11,8 +11,10 @@
 
 // what processes to do
 bool ejectedProtonGun.do = 0;
-bool decayinorbitGun.do = 1;
+bool decayinorbitGun.do = 0;
 bool primaryProtonGun.do = 0;
+bool ejectedNeutronGun.do = 0;
+bool ejectedPhotonGun.do = 1;
 bool conversionGun.do = 0;
 
 // Limits on cos(polar angle):
@@ -22,6 +24,8 @@ double ejectedProtonGun.czmin = -1.;
 double ejectedProtonGun.czmax = 1.;
 double ejectedNeutronGun.czmin = -1.;
 double ejectedNeutronGun.czmax = 1.;
+double ejectedPhotonGun.czmin = -1.;
+double ejectedPhotonGun.czmax = 1.;
 
 double primaryProtonGun.czmin = 1;
 double primaryProtonGun.czmax = 1;
@@ -35,6 +39,7 @@ double primaryProtonGun.stdDev = 1; //units are mm
 int decayinorbitGun.nToSkip = 200000; 
 int ejectedProtonGun.nToSkip = 323000;
 int ejectedNeutronGun.nToSkip = 380000;
+int ejectedPhotonGun.nToSkip = 100000;
 
 
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
@@ -42,8 +47,10 @@ double decayinorbitGun.elow = 0.;
 double decayinorbitGun.ehi = 50.;
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
-double ejectedNeutronGun.elow = 0.0;
-double ejectedNeutronGun.ehi = 0.1;
+double ejectedNeutronGun.elow = 0.03;
+double ejectedNeutronGun.ehi = 0.15;
+double ejectedPhotonGun.elow = 0.;
+double ejectedPhotonGun.ehi = 7.;
 
 // Time limits in ns, relative to protons on target.
 double decayinorbitGun.tmin  =  0.;
@@ -52,12 +59,15 @@ double ejectedProtonGun.tmin  =  0.;
 double ejectedProtonGun.tmax  = 1694.;
 double ejectedNeutronGun.tmin  =  0.;
 double ejectedNeutronGun.tmax  = 1694.;
+double ejectedPhotonGun.tmin  =  0.;
+double ejectedPhotonGun.tmax  = 1694.;
 double primaryProtonGun.tmin  =  700.;
 double primaryProtonGun.tmax  = 1694.;
 
 // Mean multiplicities for the two background generators.
 double ejectedProtonGun.mean = -1;
 double ejectedNeutronGun.mean = -1;
+double ejectedPhotonGun.mean = -1;
 double decayinorbitGun.mean = -1;
 
 // This tells emacs to view this file in c++ mode.
