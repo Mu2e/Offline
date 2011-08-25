@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Id: GenId.hh,v 1.2 2011/08/25 20:46:47 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/25 20:46:47 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +39,7 @@ namespace mu2e {
       dio2,          dio3,              pionCapture,
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
-      ejectedNeutronGun, nuclearCaptureGun,
+      ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun,
       lastEnum
     };
 
@@ -50,7 +50,7 @@ namespace mu2e {
       "dio2",         "dio3",              "pionCapture",                          \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",                     \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi",\
-      "ejectedNeutronGun", "nuclearCaptureGun"
+      "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun"
 
   public:
 
