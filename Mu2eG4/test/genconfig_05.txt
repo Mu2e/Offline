@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.15 2011/05/17 06:00:47 onoratog Exp $
+// $Id: genconfig_05.txt,v 1.16 2011/08/25 20:48:34 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/05/17 06:00:47 $
+// $Date: 2011/08/25 20:48:34 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -11,6 +11,7 @@
 // what processes to do
 bool ejectedProtonGun.do = 0;
 bool ejectedNeutronGun.do = 0;
+bool ejectedPhotonGun.do = 0;
 bool conversionGun.do = 0;
 bool decayinorbitGun.do = 0;
 bool primaryProtonGun.do = 1;
@@ -25,6 +26,8 @@ double ejectedProtonGun.czmin = -1;
 double ejectedProtonGun.czmax = 1;
 double ejectedNeutronGun.czmin = -1;
 double ejectedNeutronGun.czmax = 1;
+double ejectedPhotonGun.czmin = -1;
+double ejectedPhotonGun.czmax = 1;
 double nuclearCaptureGun.czmin = -1;
 double nuclearCaptureGun.czmax = 1;
 
@@ -47,6 +50,8 @@ double ejectedNeutronGun.ehi = 0.1;
 int ejectedNeutronGun.nbins = 200;
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
+double ejectedPhotonGun.elow = 0.0;
+double ejectedPhotonGun.ehi = 7.;
 double nuclearCaptureGun.protonElow = 0.0;
 double nuclearCaptureGun.protonEhi = 300.;
 double nuclearCaptureGun.neutronElow = 0.0;
@@ -66,6 +71,8 @@ double ejectedNeutronGun.tmin  =  700.;
 double ejectedNeutronGun.tmax  = 1694.;
 double ejectedProtonGun.tmin  =  700.;
 double ejectedProtonGun.tmax  = 1694.;
+double ejectedPhotonGun.tmin  =  700.;
+double ejectedPhotonGun.tmax  = 1694.;
 double primaryProtonGun.tmin  =  700.;
 double primaryProtonGun.tmax  = 1694.;
 double primaryProtonGun.tmin  =  700.;
@@ -76,6 +83,10 @@ double nuclearCaptureGun.tmax  = 1694.;
 // Mean multiplicities for the two background generators.
 double cosmictoy.mean =  0.0;
 double picapture.mean =  0.0;
+
+double ejectedProtonGun.mean = -1;
+double ejectedPhotonGun.mean = -1;
+double ejectedNeutronGun.mean = -1;
 
 double nuclearCaptureGun.mean = -1;
 double nuclearCaptureGun.protonMean = 0.1;
