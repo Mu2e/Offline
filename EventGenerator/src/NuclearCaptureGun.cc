@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.13 2011/08/26 21:32:18 onoratog Exp $
+// $Id: NuclearCaptureGun.cc,v 1.14 2011/08/26 21:40:50 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Date: 2011/08/26 21:40:50 $
 //
 // Original author Gianni Onorato
 //
@@ -73,7 +73,7 @@ namespace mu2e {
     _nProtonBins(config.getInt("nuclearCaptureGun.nProtonBins",1000)),
     _nNeutronBins(evaluateNeutronBins()),
     _nPhotonBins(config.getInt("nuclearCaptureGun.nPhotonBins",1000)),
-    _STfname(config.getString("ejectedProtonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
+    _STfname(config.getString("nuclearCaptureGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("nuclearCaptureGun.nToSkip",0)),
     _doHistograms(config.getBool("nuclearCaptureGun.doHistograms",true)),
     // Initialize random number distributions; getEngine comes from the base class.

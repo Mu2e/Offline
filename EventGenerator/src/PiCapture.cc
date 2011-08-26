@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.27 2011/08/26 21:32:18 onoratog Exp $
+// $Id: PiCapture.cc,v 1.28 2011/08/26 21:40:50 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Date: 2011/08/26 21:40:50 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -58,7 +58,7 @@ namespace mu2e {
     _randomUnitSphere( getEngine() ),
     _spectrum( getEngine(), &(binnedEnergySpectrum()[0]),_nbins),
 
-    _STfname(config.getString("ejectedProtonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
+    _STfname(config.getString("picaptureGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     // Histograms
     _hMultiplicity(0),
     _hEPhot(0),
