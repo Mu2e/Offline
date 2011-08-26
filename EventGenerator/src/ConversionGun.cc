@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.30 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: ConversionGun.cc,v 1.31 2011/08/26 21:32:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Rob Kutschke
 //
@@ -61,7 +61,7 @@ namespace mu2e {
 
     // Random distribution.
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
-
+    _STfname(config.getString("ejectedProtonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("conversionGun.nToSkip",0)),
 
     // Properly initialized later.
@@ -104,6 +104,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _STfname,
                                                                              _nToSkip));
     if ( _doHistograms ) bookHistograms();
   }

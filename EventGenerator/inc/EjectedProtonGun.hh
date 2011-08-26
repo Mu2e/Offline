@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.hh,v 1.15 2011/07/17 01:40:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 01:40:51 $
+// $Id: EjectedProtonGun.hh,v 1.16 2011/08/26 21:32:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/26 21:32:18 $
 //
 //
 
@@ -80,7 +80,7 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
     CLHEP::RandGeneral _shape;
-
+    std::string _STfname;
     int _nToSkip;
 
     TH1D* _hMultiplicity;

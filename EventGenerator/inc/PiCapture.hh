@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.18 2011/06/13 17:06:25 onoratog Exp $
+// $Id: PiCapture.hh,v 1.19 2011/08/26 21:32:18 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/13 17:06:25 $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -69,6 +69,8 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
     CLHEP::RandGeneral  _spectrum;
+
+    std::string _STfname;
 
     // Histograms.
     TH1D* _hMultiplicity;

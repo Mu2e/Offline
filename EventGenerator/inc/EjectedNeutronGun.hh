@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.10 2011/08/12 22:15:18 onoratog Exp $
+// $Id: EjectedNeutronGun.hh,v 1.11 2011/08/26 21:32:18 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/12 22:15:18 $
+// $Date: 2011/08/26 21:32:18 $
 //
 //
 
@@ -88,7 +88,7 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
     CLHEP::RandGeneral _shape;
-
+    std::string _STfname;
     int _nToSkip;
 
     TH1D* _hMultiplicity;

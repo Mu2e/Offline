@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.16 2011/08/12 22:15:18 onoratog Exp $
+// $Id: EjectedNeutronGun.cc,v 1.17 2011/08/26 21:32:18 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/12 22:15:18 $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -44,7 +44,7 @@
 
 using namespace std;
 
-static const double spectrumEndPoint = 0.1;
+static const double spectrumEndPoint = 100.;
 
 namespace mu2e {
 
@@ -72,6 +72,7 @@ namespace mu2e {
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),    
     _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),  
+    _STfname(config.getString("ejectedProtonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("ejectedNeutronGun.nToSkip",0)),
     
      // Histogram pointers
@@ -131,6 +132,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,          
 									     _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _STfname,
 									     _nToSkip));
   }
 

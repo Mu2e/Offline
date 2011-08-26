@@ -50,8 +50,9 @@ namespace mu2e {
     FoilParticleGenerator( art::RandomNumberGenerator::base_engine_t& engine,
                            double tmin, double tmax, foilGen_enum foilAlgo,
                            posGen_enum  posAlgo, timeGen_enum  timeAlgo,
-                           bool PTtoSTdelay = true, 
-			   bool pPulseDelay = true, int linesToSkip = 0);
+                           bool PTtoSTdelay, 
+			   bool pPulseDelay, 
+			   std::string STinfilename, int linesToSkip = 0);
 
     ~FoilParticleGenerator();
 
@@ -97,6 +98,7 @@ namespace mu2e {
     //Include a delay in time due to the PT to ST path
     bool _PTtoSTdelay;
     bool _pPulseDelay;
+    std::string _STinfilename;
 
     //Number of lines to skip in the stopped muon input file
     int _ntoskip;
@@ -124,7 +126,7 @@ namespace mu2e {
     void PointToBeginData();
     void SkipStartingLines();
 
-    static std::fstream& STfile();
+    static std::fstream& STfile(std::string STinfilename);
 
   };
 

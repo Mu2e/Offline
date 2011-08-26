@@ -6,9 +6,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.hh,v 1.7 2011/06/14 22:39:57 onoratog Exp $
+// $Id: NuclearCaptureGun.hh,v 1.8 2011/08/26 21:32:18 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/14 22:39:57 $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Gianni Onorato
 
@@ -67,6 +67,7 @@ namespace mu2e {
     int _nNeutronBins; //number of bins for neutrons energy spectrum
     int _nPhotonBins; //number of bins for photon energy spectrum
 
+    std::string _STfname;
     int _nToSkip;
 
     // Class object to generate position and time of the particle

@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.19 2011/07/17 01:40:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 01:40:51 $
+// $Id: DecayInOrbitGun.hh,v 1.20 2011/08/26 21:32:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/26 21:32:18 $
 //
 //
 
@@ -92,6 +92,8 @@ namespace mu2e {
     CLHEP::RandGeneral _randSimpleEnergy;
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere _randomUnitSphere;
+
+    std::string _STfname;
 
     int _nToSkip;
 

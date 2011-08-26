@@ -5,7 +5,7 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 //
-// $Id: EjectedPhotonGun.hh,v 1.1 2011/08/25 20:44:22 onoratog Exp $
+// $Id: EjectedPhotonGun.hh,v 1.2 2011/08/26 21:32:18 onoratog Exp $
 // $Author: &
 // $Date: &
 //
@@ -76,7 +76,7 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
     CLHEP::RandFlat _flatmomentum;
-
+    std::string _STfname;
     int _nToSkip;
 
     TH1D* _hMultiplicity;

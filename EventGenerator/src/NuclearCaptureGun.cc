@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.12 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: NuclearCaptureGun.cc,v 1.13 2011/08/26 21:32:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Gianni Onorato
 //
@@ -44,7 +44,7 @@
 
 using namespace std;
 
-static const double spectrumEndPointNeutron = 0.1;
+static const double spectrumEndPointNeutron = 100.;
 
 namespace mu2e {
 
@@ -73,6 +73,7 @@ namespace mu2e {
     _nProtonBins(config.getInt("nuclearCaptureGun.nProtonBins",1000)),
     _nNeutronBins(evaluateNeutronBins()),
     _nPhotonBins(config.getInt("nuclearCaptureGun.nPhotonBins",1000)),
+    _STfname(config.getString("ejectedProtonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("nuclearCaptureGun.nToSkip",0)),
     _doHistograms(config.getBool("nuclearCaptureGun.doHistograms",true)),
     // Initialize random number distributions; getEngine comes from the base class.
@@ -187,6 +188,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
 									     _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _STfname,
 									     _nToSkip));
   }
 

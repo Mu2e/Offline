@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.94 2011/08/04 19:16:19 genser Exp $
-// $Author: genser $
-// $Date: 2011/08/04 19:16:19 $
+// $Id: geom_01.txt,v 1.95 2011/08/26 21:32:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Rob Kutschke
 //
@@ -98,7 +98,7 @@ double g4.yaboveDirtYmin = 0.;
 // Load other materials defined specifically for Mu2e.
 vector<string> mu2e.materials =
   { "ShieldingConcrete", "IsoButane", "StrawGas",
-    "Kapton", "Scintillator", "WAGVacuum", "MBOverburden",
+    "Kapton", "Scintillator", "WAGVacuum", "SimVacuum", "MBOverburden",
     "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix",
     "CarbonFiber", "PolypropyleneFoam", "CFoam_480", "CFoam_100",
     "CFoam_080", "Polyethylene092B050d095", "Polyethylene092B300d119",
@@ -174,6 +174,7 @@ double toyDS3.halfLength        = 3400.5.;
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
 string toyDS.insideMaterialName = "WAGVacuum";
+//string toyDS.insideMaterialName = "SimVacuum";
 
 int    toyDS.verbosityLevel     = 0;
 bool   toyDS.visible            = true;
@@ -260,6 +261,7 @@ string dummyStoppingTarget.material   = "WAGVacuum";
 
 // material around the targets
 string         target.fillMaterial    = "WAGVacuum";
+//string         target.fillMaterial    = "SimVacuum";
 
 // All dimensions in mm in the detector coordinate system.
 // (0,0,0) = on axis in the DS at z=12000. mm
@@ -316,6 +318,7 @@ vector<double> target.yCos  =
 vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};   // G4BL: 20729-7929=12800.
 double calorimeter.rInscribed                              = 360.;
 string calorimeter.calorimeterFillMaterial                 = "WAGVacuum";
+//string calorimeter.calorimeterFillMaterial                 = "SimVacuum";
 
 int    calorimeter.numberOfVanes    =  4;
 int    calorimeter.nCrystalRSlices  =  12;
@@ -448,7 +451,8 @@ bool   protonabsorber.visible      = true;
 bool   protonabsorber.solid        = false;
 
 // Neutron Absorber (document draft dated 2010-07-16)
-string neutronabsorber.materialName          = "Polyethylene092B300d119";
+//string neutronabsorber.materialName          = "Polyethylene092B300d119";
+string neutronabsorber.materialName          = "Polyethylene092Li075d106";
 double neutronabsorber.internalOuterRadius   =  940.0;
 double neutronabsorber.internalInnerRadius0  =  460.0;
 double neutronabsorber.internalInnerRadius1  =  710.0;

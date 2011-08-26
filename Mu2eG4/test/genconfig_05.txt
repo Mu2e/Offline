@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.16 2011/08/25 20:48:34 onoratog Exp $
+// $Id: genconfig_05.txt,v 1.17 2011/08/26 21:32:18 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/25 20:48:34 $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -44,7 +44,7 @@ double primaryProtonGun.stdDev = 1; //units are mm
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
 double decayinorbitGun.elow = 100.;
 double ejectedNeutronGun.elow = 0.0;
-double ejectedNeutronGun.ehi = 0.1;
+double ejectedNeutronGun.ehi = 100.;
 // Number of bins must be compatible with the spectrum table (0.5 KeV each bin)
 // that is: (ehi - elow)/0.0005;
 int ejectedNeutronGun.nbins = 200;

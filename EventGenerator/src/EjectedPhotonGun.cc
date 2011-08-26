@@ -4,9 +4,9 @@
 // by an Al nucleus.  
 // protons.
 //
-// $Id: EjectedPhotonGun.cc,v 1.1 2011/08/25 20:44:22 onoratog Exp $
+// $Id: EjectedPhotonGun.cc,v 1.2 2011/08/26 21:32:18 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/25 20:44:22 $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Gianni Onorato
 //
@@ -67,6 +67,7 @@ namespace mu2e {
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _flatmomentum ( getEngine() ),
+    _STfname(config.getString("ejectedProtonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("ejectedPhotonGun.nToSkip",0)),
 
     // Histogram pointers
@@ -133,6 +134,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _STfname,
                                                                              _nToSkip));
   }
 

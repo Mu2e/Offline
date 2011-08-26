@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.33 2011/07/17 01:40:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 01:40:51 $
+// $Id: DecayInOrbitGun.cc,v 1.34 2011/08/26 21:32:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Rob Kutschke
 //
@@ -65,6 +65,7 @@ namespace mu2e {
 
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
+    _STfname(config.getString("ejectedProtonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("decayinorbitGun.nToSkip",0)),
 
 
@@ -126,6 +127,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _STfname,
                                                                              _nToSkip));
 
     _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow, _ehi, _spectrumResolution, getEngine()));

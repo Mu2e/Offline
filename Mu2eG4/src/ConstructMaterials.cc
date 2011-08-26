@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.18 2011/07/12 03:15:11 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 03:15:11 $
+// $Id: ConstructMaterials.cc,v 1.19 2011/08/26 21:32:18 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/08/26 21:32:18 $
 //
 // Original author Rob Kutschke
 //
@@ -266,6 +266,22 @@ namespace mu2e {
       // G4 takes ownership of this object and manages its lifetime.
       new G4Material( mat.name, 1., 1.01 *g/mole,
                       density, kStateGas, temperature, pressure);
+    }
+
+
+    //new added. Check if it is correct
+    mat = isNeeded(materialsToLoad, "SimVacuum");
+    if ( mat.doit ){
+
+      G4double density     = 1.508e-10*g/cm3;
+      G4double pressure    = 133.322e-4*pascal;
+      G4double temperature = 293.15*kelvin;
+
+      G4Material* SimVacuum =
+	new G4Material(mat.name, density, 1, kStateGas, temperature, pressure);
+
+      G4Element* N = getElementOrThrow("N");
+      SimVacuum->AddElement(N, 100.0*perCent);
     }
 
     mat = isNeeded(materialsToLoad, "MBOverburden");

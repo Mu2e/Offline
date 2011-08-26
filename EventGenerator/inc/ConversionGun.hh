@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.15 2011/06/14 22:39:57 onoratog Exp $
+// $Id: ConversionGun.hh,v 1.16 2011/08/26 21:32:18 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/06/14 22:39:57 $
+// $Date: 2011/08/26 21:32:18 $
 //
 
 // C++ includes
@@ -66,7 +66,7 @@ namespace mu2e {
 
     //Utility to generate direction of the momentum, random on the unit sphere.
     RandomUnitSphere _randomUnitSphere;
-
+    std::string _STfname;
     int _nToSkip;
 
 
