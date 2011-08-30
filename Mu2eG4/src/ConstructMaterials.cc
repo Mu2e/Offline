@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.19 2011/08/26 21:32:18 onoratog Exp $
+// $Id: ConstructMaterials.cc,v 1.20 2011/08/30 21:34:48 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Date: 2011/08/30 21:34:48 $
 //
 // Original author Rob Kutschke
 //
@@ -273,15 +273,22 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "SimVacuum");
     if ( mat.doit ){
 
-      G4double density     = 1.508e-10*g/cm3;
+      G4Element* N = getElementOrThrow("N");
+
+      G4double refDensity     = 1.1652e-3*g/cm3;
+      G4double refPress    = 100e3*pascal;
+      G4double refTemp     = 273.15*kelvin;
       G4double pressure    = 133.322e-4*pascal;
-      G4double temperature = 293.15*kelvin;
+      G4double temperature = 300.00*kelvin;
+
+      // G4double density = refDensity*pressure*refTemp/(refPress*temperature);
+      G4double density = 1.41443256301e-9*kg/m3;
 
       G4Material* SimVacuum =
 	new G4Material(mat.name, density, 1, kStateGas, temperature, pressure);
 
-      G4Element* N = getElementOrThrow("N");
-      SimVacuum->AddElement(N, 100.0*perCent);
+      G4int nAtoms;
+      SimVacuum->AddElement(N, nAtoms=2);
     }
 
     mat = isNeeded(materialsToLoad, "MBOverburden");

@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.18 2011/08/26 21:40:50 onoratog Exp $
+// $Id: EjectedNeutronGun.cc,v 1.19 2011/08/30 21:34:48 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:40:50 $
+// $Date: 2011/08/30 21:34:48 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -66,7 +66,7 @@ namespace mu2e {
     _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
     _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
 
-    _spectrumModel(checkSpectrumModel(config.getInt("ejectedNeutronGun.spectrumNumber",0))),
+    _spectrumModel(checkSpectrumModel(config.getInt("ejectedNeutronGun.spectrumNumber",1))),
     _filetoread (config.getString("ejectedNeutronGun.spectrumFile","ConditionsService/data/neutronSpectrum.txt")),							 
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
