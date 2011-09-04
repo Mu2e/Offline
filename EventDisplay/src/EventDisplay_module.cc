@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.10 2011/08/14 06:31:19 ehrlich Exp $
+// $Id: EventDisplay_module.cc,v 1.11 2011/09/04 04:43:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/14 06:31:19 $
+// $Date: 2011/09/04 04:43:34 $
 //
 
 #include <iostream>
@@ -23,6 +23,7 @@
 #include "TGMsgBox.h"
 
 #include "EventDisplayFrame.h"
+#include "RootFileManager.h"
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;
@@ -161,6 +162,7 @@ namespace mu2e
 
   void EventDisplay::endJob()
   {
+    _frame->getRootFileManager()->write();
     if(!_frame->isClosed())
     {
       bool findEvent=false;

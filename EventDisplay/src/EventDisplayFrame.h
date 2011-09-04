@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.16 2011/08/14 06:31:19 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.17 2011/09/04 04:43:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/14 06:31:19 $
+// $Date: 2011/09/04 04:43:34 $
 //
 // Original author Ralf Ehrlich
 //
@@ -39,7 +39,7 @@ namespace mu2e_eventdisplay
 {
   class ContentSelector;
   class DataInterface;
-  class EventDisplayPad;
+  class RootFileManager;
 
   class EventDisplayFrame : public TGMainFrame
   {
@@ -49,20 +49,22 @@ namespace mu2e_eventdisplay
 
     public:
     EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset);
-    virtual        ~EventDisplayFrame();
-    void           fillGeometry();
-#ifndef __CINT__   //hide art::Event from ROOTCint
-    void           setEvent(const art::Event& event, bool firstLoop=false);
+    virtual          ~EventDisplayFrame();
+    void             fillGeometry();
+#ifndef __CINT__     //hide art::Event from ROOTCint
+    void             setEvent(const art::Event& event, bool firstLoop=false);
+    boost::shared_ptr<RootFileManager> getRootFileManager() {return _rootFileManager;}
 #endif
-    bool           isClosed() const;
-    bool           getSelectedHitsName(std::string &className,
-                                       std::string &moduleLabel,
-                                       std::string &productInstanceName) const;
-    int            getMinimumHits() const;
-    int            getEventToFind(bool &findEvent) const;
-    void           showInfo(TObject*);
-    void           fillZoomAngleFields();
-    virtual void   CloseWindow(); //inherited from TGMainFrame
+    bool             isClosed() const;
+    bool             getSelectedHitsName(std::string &className,
+                                         std::string &moduleLabel,
+                                         std::string &productInstanceName) const;
+    int              getMinimumHits() const;
+    int              getEventToFind(bool &findEvent) const;
+    void             showInfo(TObject*);
+    void             keyboardInput();
+    void             fillZoomAngleFields();
+    virtual void     CloseWindow(); //inherited from TGMainFrame
 
     private:
     void fillEvent(bool firstLoop=false);
@@ -82,10 +84,13 @@ namespace mu2e_eventdisplay
                                           //this via TTimer::SetObject)
 
 #ifndef __CINT__    //hide boost from ROOTCint
-    boost::shared_ptr<DataInterface> _dataInterface;
+    boost::shared_ptr<DataInterface>   _dataInterface;
+    boost::shared_ptr<ContentSelector> _contentSelector;
+    boost::shared_ptr<RootFileManager> _rootFileManager;
 #endif
     double              _timeCurrent, _timeStart, _timeStop;
     int                 _minHits, _eventToFind;
+    int                 _eventNumber, _runNumber;
     bool                _isClosed, _findEvent;
     bool                _saveAnim;
     int                 _saveAnimCounter;
@@ -93,10 +98,8 @@ namespace mu2e_eventdisplay
     //bare pointers needed since ROOT manages these objects
     TRootEmbeddedCanvas *_mainCanvas, *_infoEmbeddedCanvas;
     TGCanvas            *_infoCanvas;
-    EventDisplayPad     *_mainPad;
-    ContentSelector     *_contentSelector;
-    TPad                *_infoPad;
-    TText               *_clock;
+    TPad                *_mainPad, *_infoPad;
+    TText               *_clock, *_eventNumberText, *_runNumberText;
     TTimer              *_timer;
     TGCheckButton       *_unhitButton, *_unhitCrystalsButton;
     TGCheckButton       *_supportStructuresButton, *_otherStructuresButton;

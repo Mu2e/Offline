@@ -28,6 +28,7 @@
 #include "art/Framework/Core/Run.h"
 #include "cetlib/map_vector.h"
 #include "dict_classes/ComponentInfo.h"
+#include "dict_classes/EventDisplayViewSetup.h"
 #include <TAxis3D.h>
 #include <TGFrame.h>
 #include <TGeoVolume.h>
@@ -126,24 +127,7 @@ void DataInterface::createGeometryManager()
   _topvolume->SetVisibility(0);
   _topvolume->SetLineColor(0);
   _topvolume->Draw("ogle");
-  int irep=0;
-  gPad->GetView()->SetView(180,65,90,irep);
-  gPad->SetPhi(-90-180);
-  gPad->SetTheta(90-65);
-  gPad->GetView()->ShowAxis();
-  TAxis3D::GetPadAxis(gPad)->SetLabelSize(0.025);
-  TAxis3D::GetPadAxis(gPad)->SetTitleOffset(-0.5);
-  TAxis3D::GetPadAxis(gPad)->SetXTitle("x [mm]");
-  TAxis3D::GetPadAxis(gPad)->SetYTitle("y [mm]");
-  TAxis3D::GetPadAxis(gPad)->SetZTitle("z [mm]");
-  TAxis3D::GetPadAxis(gPad)->GetXaxis()->SetTitleColor(kRed);
-  TAxis3D::GetPadAxis(gPad)->GetYaxis()->SetTitleColor(kGreen);
-  TAxis3D::GetPadAxis(gPad)->GetZaxis()->SetTitleColor(kBlue);
-  TAxis3D::GetPadAxis(gPad)->GetXaxis()->SetTitleSize(0.025);
-  TAxis3D::GetPadAxis(gPad)->GetYaxis()->SetTitleSize(0.025);
-  TAxis3D::GetPadAxis(gPad)->GetZaxis()->SetTitleSize(0.025);
-  gPad->Modified();
-  gPad->Update();
+  EventDisplayViewSetup::setup();
 }
 
 void DataInterface::fillGeometry()
@@ -567,7 +551,7 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
   }
 }
 
-void DataInterface::useTrackColors(const ContentSelector *contentSelector, bool trackcolors, bool whitebackground)
+void DataInterface::useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground)
 {
   std::vector<ContentSelector::trackInfoStruct> selectedTracks=contentSelector->getSelectedTrackNames();
   TrackColorSelector colorSelector(&selectedTracks);
@@ -646,7 +630,7 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
   if(isnan(m.maxz) || z>m.maxz) m.maxz=z;
 }
 
-void DataInterface::fillEvent(const ContentSelector *contentSelector)
+void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector)
 {
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
@@ -1054,8 +1038,8 @@ void DataInterface::fillEvent(const ContentSelector *contentSelector)
 #endif
 }
 
-void DataInterface::findTrajectory(const ContentSelector *contentSelector,
-                                   boost::shared_ptr<Track> track, int id,
+void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,
+                                   boost::shared_ptr<Track> const &track, int id,
                                    double t1, double t2,
                                    const mu2e::SimParticleCollection *simParticles,
                                    const std::vector<int> &daughterVect)

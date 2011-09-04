@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.18 2011/08/14 06:31:19 ehrlich Exp $
+// $Id: DataInterface.h,v 1.19 2011/09/04 04:43:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/14 06:31:19 $
+// $Date: 2011/09/04 04:43:34 $
 //
 // Original author Ralf Ehrlich
 //
@@ -84,8 +84,8 @@ class DataInterface
   void resetBoundaryT(timeminmax &m);
   void resetBoundaryP(spaceminmax &m);
   void toForeground();
-  void findTrajectory(const ContentSelector *contentSelector,
-                      boost::shared_ptr<Track> track, int id,
+  void findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,
+                      boost::shared_ptr<Track> const &track, int id,
                       double t1, double t2,
                       const mu2e::SimParticleCollection *simParticles,
                       const std::vector<int> &daughterVect);
@@ -103,13 +103,13 @@ class DataInterface
   void startComponents();
   void updateComponents(double time);
   void fillGeometry();
-  void fillEvent(const ContentSelector *contentSelector);
+  void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector);
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
   void makeStrawsVisibleBeforeStart(bool visible);
   void makeCrystalsVisibleBeforeStart(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);
-  void useTrackColors(const ContentSelector *contentSelector, bool trackcolors, bool whitebackground);
+  void useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground);
   int getNumberHits() {return _numberHits;}
   int getNumberCrystalHits() {return _numberCrystalHits;}
 

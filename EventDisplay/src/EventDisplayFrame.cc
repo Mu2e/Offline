@@ -9,6 +9,7 @@
 #include <TGIcon.h>
 #include <TGLabel.h>
 #include <TGListBox.h>
+#include "TGMsgBox.h"
 #include <TGTextBuffer.h>
 #include <TGTextEntry.h>
 #include <TPad.h>
@@ -22,10 +23,11 @@
 
 #include "TrackColorSelector.h"
 #include "ContentSelector.h"
+#include "RootFileManager.h"
 #include "DataInterface.h"
 #include "EventDisplayFrame.h"
+#include "dict_classes/EventDisplayViewSetup.h"
 #include "VirtualShape.h"
-#include "dict_classes/EventDisplayPad.h"
 
 #include "TClass.h"
 #include "TClassMenuItem.h"
@@ -47,6 +49,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _timer=new TTimer();
   _timer->SetObject(this);
   _timeCurrent=NAN;
+  _eventNumberText=NULL;
+  _runNumberText=NULL;
   _clock=NULL;
   _isClosed=false;
   _saveAnim=false;
@@ -96,7 +100,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   subFrame->AddFrame(trackLabel, lh1);
   subFrame->AddFrame(trackBox, lh1);
 
-  _contentSelector=new ContentSelector(hitBox, caloHitBox, trackBox, _g4ModuleLabel);
+  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, _g4ModuleLabel));
 
   _unhitButton = new TGCheckButton(subFrame,"Show Unhit Straws",31);
   subFrame->AddFrame(_unhitButton, lh1);
@@ -172,6 +176,15 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   saveButton->Associate(this);
   saveAnimButton->Associate(this);
 
+  TGHorizontalFrame *subFrameSaveRootFile = new TGHorizontalFrame(subFrame,300,15);
+  TGTextButton *setRootFileButton         = new TGTextButton(subFrameSaveRootFile, "Set Root File", 52);
+  TGTextButton *addToRootFileButton       = new TGTextButton(subFrameSaveRootFile, "Add Event to Root File", 53);
+  subFrameSaveRootFile->AddFrame(setRootFileButton, lh1);
+  subFrameSaveRootFile->AddFrame(addToRootFileButton, lh1);
+  subFrame->AddFrame(subFrameSaveRootFile, lh0);
+  setRootFileButton->Associate(this);
+  addToRootFileButton->Associate(this);
+
   _hitColorButton = new TGCheckButton(subFrame,"Use Hit Colors",60);
   _trackColorButton = new TGCheckButton(subFrame,"Use Track Colors",61);
   _backgroundButton = new TGCheckButton(subFrame,"White Background",62);
@@ -188,7 +201,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _eventInfo = new TGLabel*[4];
   for(int i=0; i<4; i++)
   {
-    _eventInfo[i] = new TGLabel(subFrame, "Place Holder for Event Info");
+    _eventInfo[i] = new TGLabel(subFrame, "                      ");
     _eventInfo[i]->SetTextJustify(kTextLeft);
     subFrame->AddFrame(_eventInfo[i], new TGLayoutHints(kLHintsLeft,2,0,2,1));
   }
@@ -346,8 +359,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   MapWindow();
 
   _mainCanvas->GetCanvas()->cd();
-  _mainPad = new EventDisplayPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);
-  _mainPad->setEventDisplayFrame(this);
+  _mainPad = new TPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);
   _mainPad->SetFillColor(1);
   _mainPad->Draw();
 
@@ -366,6 +378,10 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
 
   _mainPad->cd();
   _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this));
+  _rootFileManager = boost::shared_ptr<RootFileManager>(new RootFileManager);
+
+//syntax for Format from http://root.cern.ch/phpBB3/viewtopic.php?t=8700
+  gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",this));
 }
 
 EventDisplayFrame::~EventDisplayFrame()
@@ -373,6 +389,12 @@ EventDisplayFrame::~EventDisplayFrame()
   // TODO
   // delete timer;
   // Cleanup();
+}
+
+void EventDisplayFrame::keyboardInput()
+{
+  EventDisplayViewSetup::input();
+  fillZoomAngleFields();
 }
 
 Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
@@ -431,12 +453,8 @@ void EventDisplayFrame::fillGeometry()
 
 void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
 {
-  char eventInfoText[50];
-  sprintf(eventInfoText,"Event #: %i",event.id().event());
-  _eventInfo[0]->SetText(eventInfoText);
-  sprintf(eventInfoText,"Run #: %i",event.id().run());
-  _eventInfo[1]->SetText(eventInfoText);
-  this->Layout();
+  _eventNumber=event.id().event();
+  _runNumber=event.id().run();
 
   _contentSelector->setAvailableCollections(event);
   if(firstLoop) _contentSelector->firstLoop();
@@ -449,12 +467,34 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
 {
   _findEvent=false;
   _mainPad->cd();
+
+  char eventInfoText[50];
+  sprintf(eventInfoText,"Event #: %i",_eventNumber);
+  if(_eventNumberText==NULL) 
+  {
+    _eventNumberText = new TText(0.6,-0.8,eventInfoText);
+    _eventNumberText->SetTextColor(5);
+    _eventNumberText->SetTextSize(0.025);
+    _eventNumberText->Draw("same");
+  }
+  else _eventNumberText->SetTitle(eventInfoText);
+  sprintf(eventInfoText,"Run #: %i",_runNumber);
+  if(_runNumberText==NULL)
+  {
+    _runNumberText = new TText(0.6,-0.7,eventInfoText);
+    _runNumberText->SetTextColor(5);
+    _runNumberText->SetTextSize(0.025);
+    _runNumberText->Draw("same");
+  }
+  else _runNumberText->SetTitle(eventInfoText);
+
   _dataInterface->fillEvent(_contentSelector);
   _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
                                _backgroundButton->GetState()==kButtonDown);
   _dataInterface->useTrackColors(_contentSelector,
                                  _trackColorButton->GetState()==kButtonDown,
                                  _backgroundButton->GetState()==kButtonDown);
+
   updateTimeIntervalFields();
   updateHitLegend(_hitColorButton->GetState()==kButtonDown);
   updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
@@ -469,11 +509,10 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
     _mainPad->GetView()->AdjustScales();
   }
 
-  char eventInfoText[50];
   sprintf(eventInfoText,"Number of tracker hits: %i",_dataInterface->getNumberHits());
-  _eventInfo[2]->SetText(eventInfoText);
+  _eventInfo[0]->SetText(eventInfoText);
   sprintf(eventInfoText,"Number of calorimeter hits: %i",_dataInterface->getNumberCrystalHits());
-  _eventInfo[3]->SetText(eventInfoText);
+  _eventInfo[1]->SetText(eventInfoText);
   this->Layout();
 
   drawEverything();
@@ -588,6 +627,8 @@ void EventDisplayFrame::CloseWindow()
 
 Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param2)
 {
+  fillZoomAngleFields();
+
   switch (GET_MSG(msg))
   {
     case kC_COMMAND:
@@ -643,6 +684,36 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              _saveAnimFile.assign(f,strlen(f)-4);
                              prepareAnimation();
                            }
+                         }
+                         if(param1==52)
+                         {
+                           if(_rootFileManager->isActive())
+                           {
+                             TGMsgBox *rootFileSet;
+                             rootFileSet = new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Error","Root file has been set already!",kMBIconExclamation,kMBOk);
+                             break;
+                           }
+                           const char *fileType[]={"Root files","*.root",0,0};
+                           TGFileInfo fileInfo;
+                           fileInfo.fFileTypes = fileType;
+                           TGFileDialog *fileDialog;
+                           fileDialog=new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDSave, &fileInfo); //ROOT takes care of deleting this
+                           if(!fileInfo.fFilename) break;
+                           char f[strlen(fileInfo.fFilename)+6];
+                           strcpy(f,fileInfo.fFilename);
+                           if(strcmp(f+strlen(f)-5,".root")!=0) strcat(f,".root");
+                           _rootFileManager->setFile(f);
+                         }
+                         if(param1==53)
+                         {
+                           if(!_rootFileManager->isActive())
+                           {
+                             TGMsgBox *rootFileSet;
+                             rootFileSet = new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Error","Root file has not been set, yet!",kMBIconExclamation,kMBOk);
+                             break;
+                           }
+                           _mainPad->cd();
+                           _rootFileManager->storeEvent();
                          }
                          if(param1==1500)
                          {
@@ -861,8 +932,9 @@ void EventDisplayFrame::drawSituation()
   {
     char timeText[50];
     sprintf(timeText,"%+.4e ns",_timeCurrent);
-    _clock = new TText(0.52,-0.9,timeText);
+    _clock = new TText(0.6,-0.9,timeText);
     _clock->SetTextColor(5);
+    _clock->SetTextSize(0.025);
     _clock->Draw("same");
   }
   else
