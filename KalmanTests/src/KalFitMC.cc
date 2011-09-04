@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.6 2011/08/23 06:01:29 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.7 2011/09/04 15:04:30 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/08/23 06:01:29 $
+// $Date: 2011/09/04 15:04:30 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -65,10 +65,10 @@ namespace mu2e
   
   KalFitMC::KalFitMC(fhicl::ParameterSet const& pset) :
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
-    _mct0err(pset.get<double>("mcT0Err",-5.0)),
+    _mct0err(pset.get<double>("mcT0Err",-0.5)),
     _debug(pset.get<int>("debugLevel",0)),
     _minnhits(pset.get<unsigned>("minNHits",10)),
-    _maxnhits(pset.get<unsigned>("maxNHits",100)),
+    _maxnhits(pset.get<unsigned>("maxNHits",200)),
     _purehits(pset.get<bool>("pureHits",true)),
     _trkdiag(0),_hitdiag(0)
   {

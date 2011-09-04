@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.8 2011/08/23 22:12:34 mu2ecvs Exp $
+// $Id: KalFit.hh,v 1.9 2011/09/04 15:04:30 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/08/23 22:12:34 $
+// $Date: 2011/09/04 15:04:30 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -45,7 +45,7 @@ namespace mu2e
     TrkErrCode _fit; // error code from last fit
     unsigned _nt0iter; // number of times t0 was iterated
     unsigned _nweediter; // number of iterations on hit weeding
-    TrkKalFit() : _trk(0),_krep(0) {}
+    TrkKalFit() : _trk(0),_krep(0), _fit(TrkErrCode::fail) {}
     ~TrkKalFit() { delete _trk;}
     void setT0(const TrkT0& t0) { _t0 = t0; }
     void setT00(const TrkT0& t0) { _t00 = t0; }
@@ -83,6 +83,7 @@ namespace mu2e
     double _maxhitchi;
     unsigned _maxiter;
     unsigned _minnstraws;
+    unsigned _minndof;
     unsigned _maxweed;
     double _herr;
     double _ssmear;

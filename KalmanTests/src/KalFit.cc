@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.11 2011/08/23 22:12:34 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.12 2011/09/04 15:04:30 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/08/23 22:12:34 $
+// $Date: 2011/09/04 15:04:30 $
 //
 
 // the following has to come before other BaBar includes
@@ -84,6 +84,7 @@ namespace mu2e
     _maxhitchi(pset.get<double>("maxhitchi",5.0)),
     _maxiter(pset.get<unsigned>("maxiter",3)),
     _minnstraws(pset.get<unsigned>("minnstraws",20)),
+    _minndof(pset.get<unsigned>("minNDOF",15)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _herr(pset.get<double>("hiterr",0.1)),
     _ssmear(pset.get<double>("seedsmear",1e6))
@@ -97,8 +98,8 @@ namespace mu2e
       _kalcon->setMaxIntersections(0);
       _kalcon->setMaxDMom(10);
       _kalcon->setSmearFactor(_ssmear);
-      _kalcon->setMinDOF(20,TrkEnums::bothView);
-      _kalcon->setMinDOF(20,TrkEnums::xyView);
+      _kalcon->setMinDOF(_minndof,TrkEnums::bothView);
+      _kalcon->setMinDOF(_minndof,TrkEnums::xyView);
       _kalcon->setMinDOF(0,TrkEnums::zView);
       _kalcon->setIntersectionTolerance(100);
       _kalcon->setMaxMomDiff(1.0); // 1 MeV
@@ -134,7 +135,7 @@ namespace mu2e
         detinter.push_back(DetIntersection(&_gaselem,&mytrk.helix(),
           glen,glen-gaspath,glen+gaspath));
       }
-// Create BaBar track and Kalman fit
+// Create BaBar track
       myfit._trk = new TrkRecoTrk(_kalcon->defaultType(), 0, 0);
       assert(myfit._trk != 0);
       myfit._trk->setBField(bField());
