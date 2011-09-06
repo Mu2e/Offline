@@ -1,0 +1,154 @@
+# Configuration file for TrkPatRec01
+#
+# $Id: TrkPatRecTest01.fcl,v 1.1 2011/09/06 23:38:05 mu2ecvs Exp $
+# $Author: mu2ecvs $
+# $Date: 2011/09/06 23:38:05 $
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+
+# Give this job a name.
+process_name : TrkPatRec01
+
+# Start from a background mixed file
+source : 
+{ 
+  module_type : RootInput
+	  fileNames   : [ "/mu2e/data/outstage/kutschke/65162/65162_0000/TTrackerBg_01_0000_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0001/TTrackerBg_01_0001_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0002/TTrackerBg_01_0002_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0003/TTrackerBg_01_0003_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0004/TTrackerBg_01_0004_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0005/TTrackerBg_01_0005_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0006/TTrackerBg_01_0006_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0007/TTrackerBg_01_0007_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0008/TTrackerBg_01_0008_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0009/TTrackerBg_01_0009_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0010/TTrackerBg_01_0010_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0011/TTrackerBg_01_0011_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0012/TTrackerBg_01_0012_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0013/TTrackerBg_01_0013_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0014/TTrackerBg_01_0014_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0015/TTrackerBg_01_0015_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0016/TTrackerBg_01_0016_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0017/TTrackerBg_01_0017_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0018/TTrackerBg_01_0018_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0019/TTrackerBg_01_0019_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0020/TTrackerBg_01_0020_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0021/TTrackerBg_01_0021_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0022/TTrackerBg_01_0022_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0023/TTrackerBg_01_0023_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0024/TTrackerBg_01_0024_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0025/TTrackerBg_01_0025_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0026/TTrackerBg_01_0026_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0027/TTrackerBg_01_0027_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0028/TTrackerBg_01_0028_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0029/TTrackerBg_01_0029_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0030/TTrackerBg_01_0030_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0031/TTrackerBg_01_0031_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0032/TTrackerBg_01_0032_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0033/TTrackerBg_01_0033_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0034/TTrackerBg_01_0034_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0035/TTrackerBg_01_0035_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0036/TTrackerBg_01_0036_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0037/TTrackerBg_01_0037_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0038/TTrackerBg_01_0038_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0039/TTrackerBg_01_0039_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0040/TTrackerBg_01_0040_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0041/TTrackerBg_01_0041_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0042/TTrackerBg_01_0042_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0043/TTrackerBg_01_0043_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0044/TTrackerBg_01_0044_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0045/TTrackerBg_01_0045_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0046/TTrackerBg_01_0046_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0047/TTrackerBg_01_0047_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0048/TTrackerBg_01_0048_data.root",
+		      "/mu2e/data/outstage/kutschke/65162/65162_0049/TTrackerBg_01_0049_data.root" 
+									]
+  maxEvents : -1
+}
+
+
+services :
+{
+  message : @local::default_message
+
+  TFileService : { fileName : "TrkPatRecTest01.root" }
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService : { inputFile : "Mu2eG4/test/geom_01.txt" }
+
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+
+    G4Helper : { }
+  }
+
+}
+
+physics :
+{  
+  analyzers : 
+  {
+     ReadKalFits :
+    {
+      module_type    : ReadKalFits
+      fitterModuleLabel : TrkPatRec
+# MC truth finder, analyzer configuration
+			KalFitMC : 
+			{
+			}
+		}
+  }
+ 
+  producers :
+  {
+   TrkPatRec :
+    {
+        module_type    : TrkPatRec
+        diagLevel      : 0
+        MCHelix         : false
+    # Helix fit configuration
+        HelixFit : 
+        {
+            diagLevel       : 0
+        }
+
+    # Kalman fit configuration for the helix seed fit
+         SeedFit : 
+        {
+            maxiter        : 5
+            debugLevel     : 0
+            material       : false
+            hiterr          : 2.5
+            seedsmear       : 10000
+            weedhits        : true
+            updateT0        : false
+            ambigflip       : true
+        }
+    # Kalman fit configuration for the final track fit
+         KalFit : 
+        {
+            maxiter        : 5
+            debugLevel     : 0
+            material       : true
+            hiterr          : 0.1
+            seedsmear       : 100000
+            weedhits        : true
+        }
+        
+    # MC truth finder, analyzer configuration
+        KalFitMC : 
+        {
+        }        
+    }
+  }
+  p1 :  [TrkPatRec]
+  e1 : [ReadKalFits]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
