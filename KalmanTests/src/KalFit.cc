@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.12 2011/09/04 15:04:30 mu2ecvs Exp $
+// $Id: KalFit.cc,v 1.13 2011/09/06 18:18:51 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/04 15:04:30 $
+// $Date: 2011/09/06 18:18:51 $
 //
 
 // the following has to come before other BaBar includes
@@ -61,10 +61,13 @@ namespace mu2e
   };
 
   void TrkKalFit::deleteTrack() {
+
     if(_trk != 0 && _krep != 0){
       _hits.clear(); delete _trk; _trk=0; _krep = 0; 
+//      std::cout << "deleting fit with track " << std::endl;
     } else {
 // if there's no fit, we need to delete the hits
+//      std::cout << "deleting " << _hits.size() << " hits from fit without track " << std::endl;
       std::for_each(_hits.begin(),_hits.end(),babar::Collection::DeleteObject());
     }
   } 
@@ -108,7 +111,9 @@ namespace mu2e
       _kalcon->setDefaultType(PdtPid::electron); // by default, fit electrons
   }
 
-  KalFit::~KalFit(){}
+  KalFit::~KalFit(){
+    delete _kalcon;
+  }
 
   void KalFit::makeTrack(TrkDef const& mytrk,TrkKalFit& myfit) {
     myfit._fit = TrkErrCode(TrkErrCode::fail);

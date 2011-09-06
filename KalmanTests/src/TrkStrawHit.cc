@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.9 2011/08/23 22:12:34 mu2ecvs Exp $
+// $Id: TrkStrawHit.cc,v 1.10 2011/09/06 18:18:51 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/08/23 22:12:34 $
+// $Date: 2011/09/06 18:18:51 $
 //
 // Original author David Brown, LBNL
 //
@@ -29,11 +29,17 @@ namespace mu2e
 
   TrkDummyHit::TrkDummyHit(TrkEnums::TrkViewInfo v, int id, TrkDetElemId::systemIndex sys)
       : _view(v), _eid(id,sys)
-  {}
+  {
+//    std::cout << "crated DummyHit " << this << std::endl;
+  }
   TrkDummyHit::TrkDummyHit(const TrkDummyHit& other)
       : _view(other._view), _eid(other._eid)
-  {}
-  TrkDummyHit::~TrkDummyHit() {}
+  {
+//    std::cout << "copied DummyHit " << this << std::endl;
+  }
+  TrkDummyHit::~TrkDummyHit() {
+//    std::cout << "deleted DummyHit " << this << std::endl;
+  }
   TrkDummyHit* TrkDummyHit::clone() const { return new TrkDummyHit(*this);}
   
   
@@ -58,6 +64,7 @@ namespace mu2e
     setHitLen(_tddist);
   // compute drift parameters, if the initial t0 error was positive
     if(_hitt0_err>0.0)updateDrift();
+//    std::cout << "creating TrkStrawHit " << this << std::endl;
   }
   
   TrkStrawHit::TrkStrawHit(const TrkStrawHit& other, TrkRep* rep) :
@@ -76,15 +83,17 @@ namespace mu2e
       _tddist(other._tddist),
       _tddist_err(other._tddist_err)
   {
+//    std::cout << "creating TrkStrawHit copy " << this << std::endl;
   }
   
   TrkStrawHit::~TrkStrawHit(){
-// I don't understand who's deleting the hit: it isn't always done, so this is a memory
-// leak.  This needs a complete ownership restructuring to fix, FIXME!!!!!
-//    delete _hit;
+// delete the hit
+//    std::cout << "deleting hit " << _theHit << std::endl;
+    delete _theHit; _theHit=0;
     delete _hittraj;
 // ugly trick to keep the base class from trying to delete _TrkDummyHit
     _parentRep=0;  
+//    std::cout << "deleted TrkStrawHit " << this << std::endl;
   }
 
   TrkStrawHit*

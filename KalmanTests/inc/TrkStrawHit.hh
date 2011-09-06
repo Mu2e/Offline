@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.7 2011/07/13 20:44:27 mu2ecvs Exp $
+// $Id: TrkStrawHit.hh,v 1.8 2011/09/06 18:18:51 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/13 20:44:27 $
+// $Date: 2011/09/06 18:18:51 $
 //
 // Original author David Brown, LBNL
 //
@@ -98,7 +98,6 @@ namespace mu2e
     const StrawHit& _strawhit;
     const Straw& _straw;
     unsigned _istraw;
-    TrkDummyHit* _hit;
     TrkLineTraj* _hittraj;
     CLHEP::Hep3Vector _wpos;
     CLHEP::Hep3Vector _wpos_err;
