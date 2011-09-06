@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.8 2011/06/17 22:27:20 mu2ecvs Exp $
+// $Id: KalFitTest_module.cc,v 1.9 2011/09/06 22:29:29 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/06/17 22:27:20 $
+// $Date: 2011/09/06 22:29:29 $
 //
 
 // framework
@@ -67,18 +67,12 @@ namespace mu2e
     int _printfreq;
     // event object labels
     std::string _strawhitslabel;
-    std::string _mcstrawhitslabel;
-    std::string _mcptrlabel;
-    std::string _mcstepslabel;
-    // cache of event objects
+   // cache of event objects
     const StrawHitCollection* _strawhits;
-    // mc data
-    MCEvtData _mcdata;
     // fitter
     KalFit _kfit;
     // helper functions
     bool findData(art::Event& e);
-    bool findMC(art::Event& e);
     // MC tools
     KalFitMC _kfitmc;
 // 
@@ -89,9 +83,6 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",10)),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
-    _mcstrawhitslabel(pset.get<std::string>("MCStrawHitsLabel","makeSH")),
-    _mcptrlabel(pset.get<std::string>("MCPtrLabel","makeSH")),
-    _mcstepslabel(pset.get<std::string>("MCStepsLabel","g4run")),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit")),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC"))
   {
@@ -116,7 +107,7 @@ namespace mu2e
       return;
     }
 // find mc truth
-    if(!findMC(event)){
+    if(!_kfitmc.findMCData(event)){
       cout<<"MC information missing "<< endl;
       return;
     }
@@ -124,7 +115,7 @@ namespace mu2e
 // must initialize t0, momentum, initial trajectory.  These should come from patrec
 // that doesn't yet exist. For now, take from the MC truth.  There must be a better way to define the primary particle, FIXME!!!!!!
     cet::map_vector_key trkid(1);
-    if(_kfitmc.trkFromMC(_mcdata,trkid,mytrk)){
+    if(_kfitmc.trkFromMC(trkid,mytrk)){
 // use this to create a track
       TrkKalFit myfit;
       _kfit.makeTrack(mytrk,myfit);
@@ -132,11 +123,11 @@ namespace mu2e
       if(myfit._fit.success()){
 //  diagnostics
         if(_diag > 0){
-          _kfitmc.trkDiag(_mcdata,mytrk,myfit);
+          _kfitmc.trkDiag(myfit);
           if(_diag > 1){
             for(std::vector<TrkStrawHit*>::iterator ihit=myfit._hits.begin();ihit!=myfit._hits.end();ihit++){
               TrkStrawHit* trkhit = *ihit;
-              _kfitmc.hitDiag(_mcdata,trkhit);
+              _kfitmc.hitDiag(trkhit);
             }
           }
         }
@@ -164,25 +155,6 @@ namespace mu2e
     return _strawhits != 0;
   }
   
-// find the MC truth objects in the event and set the local cache
-  bool KalFitTest::findMC(art::Event& evt) {
-    _mcdata.clear();
-    art::Handle<StrawHitMCTruthCollection> truthHandle;
-    if(evt.getByLabel(_mcstrawhitslabel,truthHandle))
-      _mcdata._mcstrawhits = truthHandle.product();
-  // Get the persistent data about pointers to StepPointMCs
-    art::Handle<PtrStepPointMCVectorCollection> mchitptrHandle;
-    if(evt.getByLabel(_mcptrlabel,"StrawHitMCPtr",mchitptrHandle))
-      _mcdata._mchitptr = mchitptrHandle.product();
-  // Get the persistent data about the StepPointMCs, from the tracker and the virtual detectors
-    art::Handle<StepPointMCCollection> mctrackerstepsHandle;
-    if(evt.getByLabel(_mcstepslabel,"tracker",mctrackerstepsHandle))
-      _mcdata._mcsteps = mctrackerstepsHandle.product();
-    art::Handle<StepPointMCCollection> mcVDstepsHandle;
-    if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
-      _mcdata._mcvdsteps = mcVDstepsHandle.product();
-    return _mcdata.good();
-  }
 }
 
 using mu2e::KalFitTest;

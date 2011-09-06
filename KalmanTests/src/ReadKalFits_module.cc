@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.1 2011/06/11 03:19:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/11 03:19:08 $
+// $Id: ReadKalFits_module.cc,v 1.2 2011/09/06 22:29:29 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2011/09/06 22:29:29 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,7 @@ using namespace CLHEP;
 #include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
+#include "KalmanTests/inc/KalFitMC.hh"
 
 // C++ includes.
 #include <iostream>
@@ -51,19 +52,25 @@ namespace mu2e {
 
     // Module label of the module that performed the fits.
     std::string _fitterModuleLabel;
-
+  // diagnostic of Kalman fit
+    KalFitMC _kfitmc;
+ 
     // Histograms
     TH1F* _hNTracks;
     TH1F* _hfitCL;
     TH1F* _hChisq;
 
+    TTree* _trkdiag;
+
   };
 
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
+    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC")),
     _hNTracks(0),
     _hfitCL(0),
-    _hChisq(0){
+    _hChisq(0),
+    _trkdiag(0){
   }
 
   void ReadKalFits::beginJob( ){
@@ -71,6 +78,8 @@ namespace mu2e {
     _hNTracks = tfs->make<TH1F>( "hNTracks", "Number of tracks per event.",         10, 0.,   10. );
     _hfitCL   = tfs->make<TH1F>( "hfitCL",   "Confidence Level of the Track fit.",  50, 0.,    1. );
     _hChisq   = tfs->make<TH1F>( "hChisq",   "Chisquared of the Track fit.",       100, 0.,  500. );
+    _trkdiag = _kfitmc.createTrkDiag();
+ 
   }
 
   // For each event, look at tracker hits and calorimeter hits.
@@ -88,6 +97,10 @@ namespace mu2e {
       TrkRecoTrk const& trk = trks[i];
       TrkRep const* trep = trk.getRep(PdtPid::electron);
       if ( !trep ) continue;
+
+      _kfitmc.findMCData(event);
+      _kfitmc.trkDiag(trk);
+ 
 
       // For some quantities you require the concrete representation, not
       // just the base class.

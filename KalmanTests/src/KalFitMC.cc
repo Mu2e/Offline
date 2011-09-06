@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.7 2011/09/04 15:04:30 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.8 2011/09/06 22:29:29 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/04 15:04:30 $
+// $Date: 2011/09/06 22:29:29 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -33,6 +33,7 @@
 #include "KalmanTests/inc/DetStrawHitElem.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "TrkBase/TrkHelixUtils.hh"
+#include "TrkBase/TrkHotList.hh"
 #include "TrkBase/TrkMomCalculator.hh"
 #include "BField/BFieldFixed.hh"
 #include "KalmanTrack/KalHit.hh"
@@ -64,6 +65,9 @@ namespace mu2e
  KalFitMC::~KalFitMC(){}
   
   KalFitMC::KalFitMC(fhicl::ParameterSet const& pset) :
+    _mcstrawhitslabel(pset.get<std::string>("MCStrawHitsLabel","makeSH")),
+    _mcptrlabel(pset.get<std::string>("MCPtrLabel","makeSH")),
+    _mcstepslabel(pset.get<std::string>("MCStepsLabel","g4run")),
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
     _mct0err(pset.get<double>("mcT0Err",-0.5)),
     _debug(pset.get<int>("debugLevel",0)),
@@ -99,7 +103,7 @@ namespace mu2e
 // define seed helix, t0, and hits coming from a given particle using MC truth.  Note that the input
 // trkdef object must reference a valid straw hit collection
   bool
-  KalFitMC::trkFromMC(MCEvtData const& mcdata,cet::map_vector_key const& trkid,TrkDef& mytrk) {
+  KalFitMC::trkFromMC(cet::map_vector_key const& trkid,TrkDef& mytrk) {
 // preset to failure
     bool retval(false);
     ConditionsHandle<ParticleDataTable> pdt("ignored");
@@ -110,7 +114,7 @@ namespace mu2e
       std::vector<size_t> indices;
 // find the mcstep at the middle of the detector
       std::vector<MCStepItr> steps;
-      findMCSteps(mcdata._mcvdsteps,trkid,_midvids,steps);
+      findMCSteps(_mcdata._mcvdsteps,trkid,_midvids,steps);
       if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())&& steps[0]->momentum().mag() > _mintrkmom){
 // take the first point
         MCStepItr imcs = steps[0];
@@ -127,9 +131,9 @@ namespace mu2e
 // find the indices of the true primary particle straw hits
 // this t0 is a calorimeter artifact introduced in the tracking code, it must be subtracted.
 // eventually this part of the simulation should be moved to the calorimeter code, FIXME!!!      
-        t0 += mcdata._mcstrawhits->at(0).t0();
+        t0 += _mcdata._mcstrawhits->at(0).t0();
         for(unsigned istraw=0;istraw<nstraws;istraw++){
-          PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(istraw));
+          PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(istraw));
           unsigned nprimary(0);
           for( size_t j=0; j<mcptr.size(); ++j ) {
             StepPointMC const& mchit = *mcptr[j];
@@ -163,7 +167,7 @@ namespace mu2e
     return retval;
   }
  
-  void KalFitMC::hitDiag(MCEvtData const& mcdata,const TrkStrawHit* strawhit) {
+  void KalFitMC::hitDiag(const TrkStrawHit* strawhit) {
     if(_hitdiag == 0)createHitDiag();
 // straw info
     _edep = strawhit->strawHit().energyDep();
@@ -194,11 +198,11 @@ namespace mu2e
     _use = strawhit->usability();
 // mc information
     unsigned istraw = strawhit->index();
-    StrawHitMCTruth const& mcstrawhit = (mcdata._mcstrawhits->at(istraw));
+    StrawHitMCTruth const& mcstrawhit = (_mcdata._mcstrawhits->at(istraw));
     _mcrdrift = mcstrawhit.driftDistance();
     _mcdmid = mcstrawhit.distanceToMid();
     CLHEP::Hep3Vector mcpos;
-    PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(istraw));
+    PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(istraw));
     _nmcsteps = mcptr.size();
     double esum(0.0);
     double mct0(0.0);
@@ -233,7 +237,7 @@ namespace mu2e
   }
   
   void
-  KalFitMC::trkDiag(MCEvtData const& mcdata,TrkDef const& mytrk, TrkKalFit const& myfit) {
+  KalFitMC::trkDiag(TrkKalFit const& myfit) {
     if(_trkdiag == 0)createTrkDiag();
 // initial t0 value
     _t00 = myfit._t00.t0();
@@ -244,30 +248,68 @@ namespace mu2e
 // final t0 value
     _t0 = myfit._t0.t0();
     _t0err = myfit._t0.t0Err();
-    double loclen(0.0);
-    if(myfit._krep != 0 && myfit._krep->fitCurrent()){
-      _trkid = myfit._krep->parentTrack()->id();
-      _nhits = myfit._krep->hotList()->nHit();
-      _fitstatus = myfit._krep->fitCurrent();
-      _niter = myfit._krep->iterations();
-      _ndof = myfit._krep->nDof();
-      _nactive = myfit._krep->nActive();
-      _chisq = myfit._krep->chisq();
+// kalman fit diagnostics
+    kalDiag(myfit._krep);
+// hits diagnostic
+    hitsDiag(myfit._hits);
+// mc track patermeter info
+    mcTrkInfo();
+// fill tree    
+   _trkdiag->Fill(); 
+  }
+
+  void
+  KalFitMC::trkDiag(TrkRecoTrk const& mytrk) {
+    if(_trkdiag == 0)createTrkDiag();
+// TrkRecoTrk only has primitive t0 information: FIXME!!
+    _t00 = _t0 = mytrk.trackT0();
+    _t00err = _t0err = -1;
+// no information on iterations either!
+    _nt0iter = _nweediter = -1;
+// fetch the KalRep from the track
+    const KalRep* krep = dynamic_cast<const KalRep*>(mytrk.getRep(mytrk.defaultType()));
+    kalDiag(krep);
+// extract the hits from the KalRep and perform diagnstics
+    std::vector<TrkStrawHit*> hits;
+    TrkHotList* hots = const_cast<TrkHotList*>(mytrk.hots());
+    hits.reserve(hots->nHit());
+    for(TrkHotList::nc_hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
+     TrkStrawHit* hit = dynamic_cast<TrkStrawHit*>(ihot.get());
+      if(hit != 0)hits.push_back(hit);
+    }
+    hitsDiag(hits);
+// mc track patermeter info
+    mcTrkInfo();
+// fill tree    
+   _trkdiag->Fill(); 
+  }
+
+  void
+  KalFitMC::kalDiag(const KalRep* krep) {
+    if(krep != 0 && krep->fitCurrent()){
+      _trkid = krep->parentTrack()->id();
+      _nhits = krep->hotList()->nHit();
+      _fitstatus = krep->fitCurrent();
+      _niter = krep->iterations();
+      _ndof = krep->nDof();
+      _nactive = krep->nActive();
+      _chisq = krep->chisq();
       // get the fit at the first hit
-      const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(myfit._krep->firstHit()->kalHit()->hitOnTrack());
-      double fltlen=firsthit->fltLen();
-      const TrkSimpTraj* ltraj = myfit._krep->localTrajectory(fltlen,loclen);
+      const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
+      double fltlen = firsthit->fltLen() - 10;
+      double loclen(0.0);
+      const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
       _fitpar = helixpar(ltraj->parameters()->parameter());
       _fiterr = helixpar(ltraj->parameters()->covariance());
-      CLHEP::Hep3Vector fitmom = myfit._krep->momentum(fltlen);
-      BbrVectorErr momerr = myfit._krep->momentumErr(fltlen);
+      CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
+      BbrVectorErr momerr = krep->momentumErr(fltlen);
       _fitmom = fitmom.mag();
       Hep3Vector momdir = fitmom.unit();
       HepVector momvec(3);
       for(int icor=0;icor<3;icor++)
         momvec[icor] = momdir[icor];
       _fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
-      CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(myfit._krep->seed()),myfit._trk->bField(),0.0);
+      CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->parentTrack()->bField(),0.0);
       _seedmom = seedmom.mag();
     } else {
       _fitstatus = -1;
@@ -275,17 +317,19 @@ namespace mu2e
       _fitmom = -1.0;
       _seedmom = -1.0;
     }
-      // get MC truth at this point
-    GeomHandle<BFieldManager> bfMgr;
+  }
+
+  void
+  KalFitMC::hitsDiag(std::vector<TrkStrawHit*> const& hits) {
     _tshinfo.clear();
       // loop over hits.  Order doesn't matter here
-    for(std::vector<TrkStrawHit*>::const_iterator itsh = myfit._hits.begin(); itsh != myfit._hits.end(); itsh++){
+    for(std::vector<TrkStrawHit*>::const_iterator itsh = hits.begin(); itsh != hits.end(); itsh++){
       const TrkStrawHit* tsh = *itsh;
       if(tsh != 0){
         TrkStrawHitInfo tshinfo;
         tshinfo._active = tsh->isActive();
         tshinfo._usable = tsh->usability();
-        PtrStepPointMCVector const& mcptr(mcdata._mchitptr->at(tsh->index()));
+        PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
         tshinfo._mcn = mcptr.size();
 	std::vector<trksum> mcsum;
 	KalFitMC::fillMCSummary(mcptr,mcsum); 
@@ -296,12 +340,16 @@ namespace mu2e
         _tshinfo.push_back(tshinfo);
       }
     }
+  }
+
+  void KalFitMC::mcTrkInfo() {
+    GeomHandle<BFieldManager> bfMgr;
 // find the mc info at the entrance to the detector
     std::vector<MCStepItr> steps;
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
     cet::map_vector_key trkid(1); // conversion electron
-    findMCSteps(mcdata._mcvdsteps,trkid,_entvids,steps);
+    findMCSteps(_mcdata._mcvdsteps,trkid,_entvids,steps);
     if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
     // take the first point; hopefully this is the entrance!
       MCStepItr imcs = steps[0];
@@ -322,7 +370,7 @@ namespace mu2e
     }
 
 // mc at midpoint of detector
-    findMCSteps(mcdata._mcvdsteps,trkid,_midvids,steps);
+    findMCSteps(_mcdata._mcvdsteps,trkid,_midvids,steps);
     if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
 // take the first point; hopefully this is the entrance!
       MCStepItr imcs = steps[0];
@@ -341,10 +389,8 @@ namespace mu2e
       _mcmidmom = -1;
       _mcmidt0 = 0.0;
     }
-    
-    _trkdiag->Fill(); 
   }
-
+ 
 // Summarize an associated set of StepPointMCs from a StrawHit according to their parents.  This assignes
 // daughter contributions to their parents
   void KalFitMC::fillMCSummary(PtrStepPointMCVector const& mcptr,std::vector<trksum>& summary ){
@@ -466,4 +512,27 @@ namespace mu2e
 //      _hitdiag->Branch("shdir","CLHEP::HepVector",&_shdir);
     return _hitdiag;
   }
+
+// find the MC truth objects in the event and set the local cache
+  bool
+  KalFitMC::findMCData(const art::Event& evt) {
+    _mcdata.clear();
+    art::Handle<StrawHitMCTruthCollection> truthHandle;
+    if(evt.getByLabel(_mcstrawhitslabel,truthHandle))
+      _mcdata._mcstrawhits = truthHandle.product();
+  // Get the persistent data about pointers to StepPointMCs
+    art::Handle<PtrStepPointMCVectorCollection> mchitptrHandle;
+    if(evt.getByLabel(_mcptrlabel,"StrawHitMCPtr",mchitptrHandle))
+      _mcdata._mchitptr = mchitptrHandle.product();
+  // Get the persistent data about the StepPointMCs, from the tracker and the virtual detectors
+    art::Handle<StepPointMCCollection> mctrackerstepsHandle;
+    if(evt.getByLabel(_mcstepslabel,"tracker",mctrackerstepsHandle))
+      _mcdata._mcsteps = mctrackerstepsHandle.product();
+    art::Handle<StepPointMCCollection> mcVDstepsHandle;
+    if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
+      _mcdata._mcvdsteps = mcVDstepsHandle.product();
+    return _mcdata.good();
+  }
+
+
 }

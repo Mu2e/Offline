@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit01.fcl,v 1.13 2011/06/17 21:56:57 mu2ecvs Exp $
+# $Id: KalFit01.fcl,v 1.14 2011/09/06 22:29:29 mu2ecvs Exp $
 # $Author: mu2ecvs $
-# $Date: 2011/06/17 21:56:57 $
+# $Date: 2011/09/06 22:29:29 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -74,10 +74,20 @@ physics :
     }
   }
 
-  analyzers: {}
-
+  analyzers: {
+      ReadKalFits :
+    {
+      module_type    : ReadKalFits
+      fitterModuleLabel : KalFitTest
+# MC truth finder, analyzer configuration
+        KalFitMC : 
+        {
+        }        
+ 
+    }
+  }
   p1 : [generate , g4run, makeSH, KalFitTest ]
-  e1 : []
+  e1 : [ReadKalFits]
 
   trigger_paths  : [p1]
   end_paths      : [e1]

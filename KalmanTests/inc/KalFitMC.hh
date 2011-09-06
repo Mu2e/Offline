@@ -1,13 +1,14 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.4 2011/08/23 06:01:29 mu2ecvs Exp $
+// $Id: KalFitMC.hh,v 1.5 2011/09/06 22:29:29 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/08/23 06:01:29 $
+// $Date: 2011/09/06 22:29:29 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
 
 // data
+#include "art/Framework/Core/Event.h"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -118,19 +119,32 @@ namespace mu2e
   public:
     explicit KalFitMC(fhicl::ParameterSet const&);
     virtual ~KalFitMC();
+// find MC data in the event.  This must be called each event, before the other functions
+    bool findMCData(const art::Event& evt);
 // create a track definition object based on MC true particle
-    bool trkFromMC(MCEvtData const& mcdata, cet::map_vector_key const& trkid, TrkDef& mytrk);
+    bool trkFromMC(cet::map_vector_key const& trkid, TrkDef& mytrk);
 // diagnostic comparison of reconstructed tracks with MC truth
-    void trkDiag(MCEvtData const& mcdata, TrkDef const& mytrk, TrkKalFit const& myfit);
-    void hitDiag(MCEvtData const& mcdata, const TrkStrawHit* strawhit);
+    void trkDiag(TrkKalFit const& myfit);
+    void trkDiag(TrkRecoTrk const& mytrk);
+    void kalDiag(const KalRep* krep);
+    void hitsDiag(std::vector<TrkStrawHit*> const& hits);
+    void mcTrkInfo();
+    void hitDiag(const TrkStrawHit* strawhit);
 // allow creating the trees
     TTree* createTrkDiag();
     TTree* createHitDiag();
 // General StrawHit MC functions: these should move to more general class, FIXME!!
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
     static void fillMCSummary(PtrStepPointMCVector const& mcptr,std::vector<trksum>& summary );
-
+// access to MC data
+    MCEvtData const& mcData() const { return _mcdata; }
   private:
+// cache of event data
+    MCEvtData _mcdata;
+// event data labels
+    std::string _mcstrawhitslabel;
+    std::string _mcptrlabel;
+    std::string _mcstepslabel;
 // helper functions
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
       std::vector<MCStepItr>& steps);
