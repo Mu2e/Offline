@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.22 2011/07/12 20:55:46 kutschke Exp $
+# $Id: SConstruct,v 1.23 2011/09/07 18:56:06 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/07/12 20:55:46 $
+# $Date: 2011/09/07 18:56:06 $
 #
 # Original author Rob Kutschke.
 #
@@ -136,6 +136,7 @@ for root,dirs,files in os.walk('.'):
 # This needs to be maintained by hand.
 if not(os.path.exists('BaBar/BaBar/src/SConscript')):
     ss.remove('KalmanTests/src/SConscript')
+    ss.remove('TrkPatRec/src/SConscript')
     print 'BaBar package is absent. Will not build packages that depend on it.'
 
 # Tell scons to operate on all of the SConscript files found in the previous step.
