@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.17 2011/09/04 04:43:34 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.18 2011/09/08 03:54:45 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/04 04:43:34 $
+// $Date: 2011/09/08 03:54:45 $
 //
 // Original author Ralf Ehrlich
 //
@@ -40,6 +40,7 @@ namespace mu2e_eventdisplay
   class ContentSelector;
   class DataInterface;
   class RootFileManager;
+  class HistDraw;
 
   class EventDisplayFrame : public TGMainFrame
   {
@@ -54,6 +55,7 @@ namespace mu2e_eventdisplay
 #ifndef __CINT__     //hide art::Event from ROOTCint
     void             setEvent(const art::Event& event, bool firstLoop=false);
     boost::shared_ptr<RootFileManager> getRootFileManager() {return _rootFileManager;}
+    std::vector<boost::shared_ptr<HistDraw> > &getHistDrawVector(){return _histDrawVector;}
 #endif
     bool             isClosed() const;
     bool             getSelectedHitsName(std::string &className,
@@ -62,8 +64,10 @@ namespace mu2e_eventdisplay
     int              getMinimumHits() const;
     int              getEventToFind(bool &findEvent) const;
     void             showInfo(TObject*);
+    void             showHist(TObject*);
     void             keyboardInput();
     void             fillZoomAngleFields();
+    void             addHistDraw();
     virtual void     CloseWindow(); //inherited from TGMainFrame
 
     private:
@@ -87,6 +91,7 @@ namespace mu2e_eventdisplay
     boost::shared_ptr<DataInterface>   _dataInterface;
     boost::shared_ptr<ContentSelector> _contentSelector;
     boost::shared_ptr<RootFileManager> _rootFileManager;
+    std::vector<boost::shared_ptr<HistDraw> > _histDrawVector;
 #endif
     double              _timeCurrent, _timeStart, _timeStop;
     int                 _minHits, _eventToFind;
@@ -96,6 +101,8 @@ namespace mu2e_eventdisplay
     int                 _saveAnimCounter;
     std::string         _saveAnimFile;
     //bare pointers needed since ROOT manages these objects
+    TGHorizontalFrame   *_mainFrame, *_footLine;
+    TGVerticalFrame     *_subFrame;
     TRootEmbeddedCanvas *_mainCanvas, *_infoEmbeddedCanvas;
     TGCanvas            *_infoCanvas;
     TPad                *_mainPad, *_infoPad;

@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.10 2011/07/18 21:51:04 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/07/18 21:51:04 $
+// $Id: ComponentInfo.h,v 1.11 2011/09/08 03:54:45 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/09/08 03:54:45 $
 //
 // Original author Ralf Ehrlich
 //
@@ -12,8 +12,11 @@
 #define EventDisplay_src_dict_classes_ComponentInfo_h
 
 
+#include <TStyle.h>
 #include <TText.h>
-#include <TPad.h>
+#include <TAxis.h>
+#include <TH1F.h>
+#include <TGraphErrors.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -33,12 +36,11 @@ namespace mu2e_eventdisplay
     ComponentInfo(const ComponentInfo &);
     ComponentInfo& operator=(const ComponentInfo &);
 
-    private:
+    protected:
 #ifndef __CINT__
-    std::vector<boost::shared_ptr<TText> > _text;
-    boost::shared_ptr<std::string>         _name;
-    //will be expanded later for more advanced info, e.g. histograms, etc.
-    //this will be only a base class, and the specifics will be in inherited classes
+    std::vector<boost::shared_ptr<TText> >    _text;
+    std::vector<boost::shared_ptr<TObject> >  _hist;
+    boost::shared_ptr<std::string>            _name;
 
     public:
     ComponentInfo()
@@ -48,19 +50,8 @@ namespace mu2e_eventdisplay
       {
         boost::shared_ptr<TText> newLine(new TText(0.0,0.0,NULL));
         newLine->SetTextColor(1);
-        newLine->SetTextSizePixels(60);
+        newLine->SetTextSize(0.07);
         _text.push_back(newLine);
-      }
-    }
-
-
-    ComponentInfo(const boost::shared_ptr<ComponentInfo> c)  //no reference, since shared_ptr
-    {
-      _name=c->getName();
-      std::vector<boost::shared_ptr<TText> >::const_iterator iter;
-      for(iter=c->getText().begin(); iter!=c->getText().end(); iter++)
-      {
-        _text.push_back(*iter);
       }
     }
 
@@ -69,6 +60,8 @@ namespace mu2e_eventdisplay
     const boost::shared_ptr<std::string> getName() const {return _name;}
 
     void setName(const char *newName) {_name->assign(newName);}
+
+    std::vector<boost::shared_ptr<TObject> > &getHistVector() {return _hist;}
 
     const std::vector<boost::shared_ptr<TText> > &getText() const {return _text;}
 
@@ -117,8 +110,9 @@ namespace mu2e_eventdisplay
           {
             unsigned int w,h;
             (*iter)->GetBoundingBox(w,h);
-            if(w+20>width) width=w+20;
-            height=i*20;
+            w*=1.5;   //don't know why this is necessary
+            if(w+40>width) width=w+40;
+            height+=h+5;
           }
         }
       }
@@ -137,6 +131,40 @@ namespace mu2e_eventdisplay
           (*iter)->SetX(x);
           (*iter)->SetY(y);
           (*iter)->Draw();
+        }
+      }
+    }
+
+    void showHist(unsigned int i) const
+    {
+      if(i>=0 && i<_hist.size())
+      {
+        gStyle->SetOptTitle(0);
+        TGraph *g = dynamic_cast<TGraph*>(_hist[i].get());
+        if(g)
+        {
+          g->GetXaxis()->SetLabelSize(0.05);
+          g->GetXaxis()->SetTitleSize(0.05);
+          g->GetXaxis()->SetTitleOffset(0.8);
+          g->GetYaxis()->SetLabelSize(0.05);
+          g->GetYaxis()->SetTitleSize(0.05);
+          g->GetYaxis()->SetTitleOffset(0.8);
+          g->Draw("ap");
+        }
+        else
+        {
+          TH1 *h = dynamic_cast<TH1*>(_hist[i].get());
+          if(h)
+          {                                    //TODO may need other settings
+            h->GetXaxis()->SetLabelSize(0.05);
+            h->GetXaxis()->SetTitleSize(0.05);
+            h->GetXaxis()->SetTitleOffset(0.8);
+            h->GetYaxis()->SetLabelSize(0.05);
+            h->GetYaxis()->SetTitleSize(0.05);
+            h->GetYaxis()->SetTitleOffset(0.8);
+            h->Draw("ap");
+          }
+          else _hist[i]->Draw();
         }
       }
     }

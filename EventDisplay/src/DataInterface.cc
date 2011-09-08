@@ -7,6 +7,7 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Cube.h"
 #include "Cylinder.h"
+#include "EventDisplayFrame.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "HepPID/ParticleName.hh"
@@ -18,7 +19,6 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "Sphere.h"
 #include "Straw.h"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -34,6 +34,7 @@
 #include <TGeoVolume.h>
 #include <TMath.h>
 #include <TView.h>
+#include <TGraphErrors.h>
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;
@@ -49,7 +50,7 @@ using namespace CLHEP;
 namespace mu2e_eventdisplay
 {
 
-DataInterface::DataInterface(const TGMainFrame *mainframe):
+DataInterface::DataInterface(EventDisplayFrame *mainframe):
               _geometrymanager(NULL),_topvolume(NULL),_mainframe(mainframe),
               _showUnhitStraws(false), _showUnhitCrystals(false)
 {
@@ -108,10 +109,10 @@ void DataInterface::updateComponents(double time)
       (*crystalhit)->update(time);
     }
   }
-  std::vector<boost::shared_ptr<Sphere> >::const_iterator sphere;
-  for(sphere=_spheres.begin(); sphere!=_spheres.end(); sphere++)
+  std::vector<boost::shared_ptr<Cylinder> >::const_iterator driftradius;
+  for(driftradius=_driftradii.begin(); driftradius!=_driftradii.end(); driftradius++)
   {
-    (*sphere)->update(time);
+    (*driftradius)->update(time);
   }
 }
 
@@ -208,7 +209,7 @@ void DataInterface::fillGeometry()
     sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
     info->setText(3,c);
     boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0,
-                                          zHalfLength,innerRadius,outerRadius,
+                                          zHalfLength,innerRadius,outerRadius, NAN, 
                                           _geometrymanager, _topvolume, _mainframe, info, true));
     _components.push_back(shape);
     _supportstructures.push_back(shape);
@@ -229,7 +230,7 @@ void DataInterface::fillGeometry()
     sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
     infoEnvelope->setText(3,c);
     boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,0, 0,0,0,
-                                                  zHalfLength,innerRadius,outerRadius,
+                                                  zHalfLength,innerRadius,outerRadius, NAN,
                                                   _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
     _components.push_back(shapeEnvelope);
     _supportstructures.push_back(shapeEnvelope);
@@ -251,7 +252,7 @@ void DataInterface::fillGeometry()
     sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
     infoToyDS->setText(3,c);
     boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0,
-                                               zHalfLength,innerRadius,outerRadius,
+                                               zHalfLength,innerRadius,outerRadius, NAN, 
                                                _geometrymanager, _topvolume, _mainframe, infoToyDS, true));
     _components.push_back(shapeToyDS);
     _otherstructures.push_back(shapeToyDS);
@@ -283,7 +284,7 @@ void DataInterface::fillGeometry()
     info->setText(2,c);
     sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
     info->setText(3,c);
-    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,z, 0,0,0, length/2.0,0,radius,
+    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,z, 0,0,0, length/2.0,0,radius, NAN, 
                                           _geometrymanager, _topvolume, _mainframe, info, true));
     _components.push_back(shape);
     _supportstructures.push_back(shape);
@@ -535,19 +536,19 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
     }
     else (*crystalhit)->setColor(whitebackground?1:0);
   }
-  std::vector<boost::shared_ptr<Sphere> >::const_iterator sphere;
-  for(sphere=_spheres.begin(); sphere!=_spheres.end(); sphere++)
+  std::vector<boost::shared_ptr<Cylinder> >::const_iterator driftradius;
+  for(driftradius=_driftradii.begin(); driftradius!=_driftradii.end(); driftradius++)
   {
-    double time=(*sphere)->getStartTime();
+    double time=(*driftradius)->getStartTime();
     if(hitcolors)
     {
       int color=TMath::FloorNint(20.0*(time-_hitsTimeMinmax.mint)/(_hitsTimeMinmax.maxt-_hitsTimeMinmax.mint));
       if(color>=20) color=19;
       if(color<=0) color=0;
       color+=2000;
-      (*sphere)->setColor(color);
+      (*driftradius)->setColor(color);
     }
-    else (*sphere)->setColor(whitebackground?1:0);
+    else (*driftradius)->setColor(whitebackground?1:0);
   }
 }
 
@@ -725,6 +726,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   const mu2e::TrkRecoTrkCollection *trkRecoTrkHits=contentSelector->getSelectedHitCollection<mu2e::TrkRecoTrkCollection>();
   if(trkRecoTrkHits!=NULL)
   {
+    boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
+    residualGraph->SetTitle("Residual Graph");
+
     for(unsigned int i=0; i<trkRecoTrkHits->size(); i++)
     {
       const TrkRecoTrk &particle = trkRecoTrkHits->at(i);
@@ -745,6 +749,17 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             double strawtime = strawHit->strawHit().time();
             double driftRadius = strawHit->driftRadius();
             const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
+            double theta = strawHit->straw().getDirection().theta();
+            double phi = strawHit->straw().getDirection().phi();
+
+            double residual, residualError;
+            if(strawHit->resid(residual, residualError))
+            {
+              int n=residualGraph->GetN();
+              residualGraph->SetPoint(n,p.z(),residual);
+              residualGraph->SetPointError(n,0,residualError);
+            }
+
             std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
             if(straw!=_straws.end() && !isnan(time))
             {
@@ -761,6 +776,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
                 straw->second->getComponentInfo()->setText(1,c1);
                 straw->second->getComponentInfo()->setText(2,c2);
                 straw->second->getComponentInfo()->setText(3,c3);
+                residualGraph->GetXaxis()->SetTitle("z [mm]");
+                residualGraph->GetYaxis()->SetTitle("Residual [??]");
+                straw->second->getComponentInfo()->getHistVector().push_back(boost::dynamic_pointer_cast<TObject>(residualGraph));
                 _hits.push_back(straw->second);
               }
               else
@@ -778,10 +796,13 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
               info->setName(c0);
               info->setText(0,strawname->c_str());
               info->setText(1,c1);
-              boost::shared_ptr<Sphere> sphere(new Sphere(p.x(),p.y(),p.z(), driftRadius, hitT0, 
-                                                          _geometrymanager, _topvolume, _mainframe, info));
-              _components.push_back(sphere);
-              _spheres.push_back(sphere);
+              boost::shared_ptr<Cylinder> driftradius(new Cylinder(p.x(),p.y(),p.z(), 
+                                                          phi+TMath::Pi()/2.0,theta,0,
+                                                          5, //the halflength of 5 has no meaning 
+                                                          0,driftRadius,hitT0, 
+                                                          _geometrymanager, _topvolume, _mainframe, info, false));
+              _components.push_back(driftradius);
+              _driftradii.push_back(driftradius);
             }
           }
         }
@@ -975,15 +996,14 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         info->setName(c0);
         info->setText(0,c0);
-        boost::shared_ptr<Track> track(new Track(particleid, trackclass, trackclassindex, _geometrymanager, _topvolume, _mainframe, info));
-        _components.push_back(track);
-        _tracks.push_back(track);
 
         double hitcount=0;
         double offset=0;
         const TrkHotList* hots=trkrep->hotList();
         if(hots!=NULL)
         {
+          boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
+          residualGraph->SetTitle("Residual Graph");
           for(TrkHotList::hot_iterator iter=hots->begin(); iter!=hots->end(); iter++)
           {
             const TrkHitOnTrk *hitOnTrack = iter.get();
@@ -991,17 +1011,32 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             if(strawHit)
             {
               double strawTime   = strawHit->hitT0()/CLHEP::ns;
-              double driftRadius = strawHit->driftRadius()/CLHEP::mm;
-              double trackTime   = (strawTime-driftRadius/29.979)*CLHEP::ns;
+              double trackTime   = strawTime*CLHEP::ns;  //TODO: add correction for drift time
               double weight= strawHit->weight();  
               double fltLen= strawHit->fltLen();
+              const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
               double t     = trkrep->arrivalTime(fltLen);
               offset+=(trackTime-t)*weight;
               hitcount+=weight;
+
+              double residual, residualError;
+              if(strawHit->resid(residual, residualError))
+              {
+                int n=residualGraph->GetN();
+                residualGraph->SetPoint(n,p.z(),residual);
+                residualGraph->SetPointError(n,0,residualError);
+              }
             }
           }
+          residualGraph->GetXaxis()->SetTitle("z [mm]");
+          residualGraph->GetYaxis()->SetTitle("Residual [??]");
+          info->getHistVector().push_back(boost::dynamic_pointer_cast<TObject>(residualGraph));
         }
         if(hitcount>0) offset/=hitcount; else offset=0;
+
+        boost::shared_ptr<Track> track(new Track(particleid, trackclass, trackclassindex, _geometrymanager, _topvolume, _mainframe, info));
+        _components.push_back(track);
+        _tracks.push_back(track);
 
         double fltLMin=trkrep->startValidRange();
         double fltLMax=trkrep->endValidRange();
@@ -1167,17 +1202,21 @@ void DataInterface::removeNonGeometryComponents()
   for(hit=_hits.begin(); hit!=_hits.end(); hit++)
   {
     for(int i=1; i<5; i++) (*hit)->getComponentInfo()->removeLine(i);  //keep first line
+    (*hit)->getComponentInfo()->getHistVector().clear();
   }
   std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit;
   for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
   {
     for(int i=1; i<5; i++) (*crystalhit)->getComponentInfo()->removeLine(i); //keep first line
+    (*crystalhit)->getComponentInfo()->getHistVector().clear();
   }
 
   _hits.clear();
   _crystalhits.clear();
   _tracks.clear();
-  _spheres.clear();
+  _driftradii.clear();
+
+  _mainframe->getHistDrawVector().clear();
 }
 
 void DataInterface::removeAllComponents()
@@ -1188,11 +1227,13 @@ void DataInterface::removeAllComponents()
   _hits.clear();
   _crystalhits.clear();
   _tracks.clear();
-  _spheres.clear();
+  _driftradii.clear();
   _supportstructures.clear();
   _otherstructures.clear();
   delete _geometrymanager;
   _geometrymanager=NULL;
+
+  _mainframe->getHistDrawVector().clear();
 }
 
 }

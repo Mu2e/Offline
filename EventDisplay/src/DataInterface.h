@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.19 2011/09/04 04:43:34 ehrlich Exp $
+// $Id: DataInterface.h,v 1.20 2011/09/08 03:54:45 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/04 04:43:34 $
+// $Date: 2011/09/08 03:54:45 $
 //
 // Original author Ralf Ehrlich
 //
@@ -30,9 +30,10 @@ class VirtualShape;
 class Track;
 class Straw;
 class Cube;
-class Sphere;
+class Cylinder;
 class ComponentInfo;
 class ContentSelector;
+class EventDisplayFrame;
 
 class DataInterface
 {
@@ -56,7 +57,7 @@ class DataInterface
   art::Event    *_event;
   TGeoManager   *_geometrymanager; //bare pointer needed since ROOT manages this object
   TGeoVolume    *_topvolume;       //bare pointer needed since ROOT manages this object
-  const TObject *_mainframe;       //points to the EventDisplayFrame object
+  EventDisplayFrame  *_mainframe;  //points to the EventDisplayFrame object
                                    //ROOT needs a bare pointer to this object when dealing
                                    //with context menus (the function which gets called
                                    //from the context menu belongs to this object)
@@ -65,7 +66,7 @@ class DataInterface
   std::map<int, boost::shared_ptr<Cube> >       _crystals;
   std::vector<boost::shared_ptr<Straw> >        _hits;
   std::vector<boost::shared_ptr<Cube> >         _crystalhits;
-  std::vector<boost::shared_ptr<Sphere> >       _spheres;
+  std::vector<boost::shared_ptr<Cylinder> >     _driftradii;
   std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;
@@ -97,7 +98,7 @@ class DataInterface
   };
 
   public:
-  DataInterface(const TGMainFrame *mainframe);
+  DataInterface(EventDisplayFrame *mainframe);
   virtual ~DataInterface();
 
   void startComponents();

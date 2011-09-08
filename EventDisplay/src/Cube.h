@@ -1,9 +1,9 @@
 //
 // Class for all cube structures, e.g. vanes, crystals. The structure is displayed via EventDisplayGeoVolumeBox (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cube.h,v 1.8 2011/08/07 18:21:06 ehrlich Exp $
+// $Id: Cube.h,v 1.9 2011/09/08 03:54:44 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/07 18:21:06 $
+// $Date: 2011/09/08 03:54:44 $
 //
 // Original author Ralf Ehrlich
 //
@@ -77,7 +77,7 @@ class Cube: public VirtualShape
            double phi, double theta, double psi,
            double time, int color,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
-           const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info,
+           EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
            bool defaultVisibility):
            VirtualShape(geomanager, topvolume, mainframe, info, true)
   {
@@ -207,24 +207,17 @@ class Cube: public VirtualShape
   void update(double time)
   {
     if(time<getStartTime() || isnan(getStartTime())) return;
+    _volume->SetVisibility(1);
+    _volume->SetLineColor(getColor());
+    _volume->SetFillColor(getColor());
     std::vector<line_struct>::iterator iter;
     for(iter=_lines.begin(); iter!=_lines.end(); iter++)
     {
       line_struct &l=*iter;
       l.line->SetLineColor(getColor());
-      _volume->SetLineColor(getColor());
-      _volume->SetFillColor(getColor());
+      if(_notDrawn) l.line->Draw();
     }
-    if(_notDrawn)
-    {
-      _volume->SetVisibility(1);
-      for(iter=_lines.begin(); iter!=_lines.end(); iter++)
-      {
-        line_struct &l=*iter;
-        l.line->Draw();
-      }
-      _notDrawn=false;
-    }
+    _notDrawn=false;
   }
 };
 

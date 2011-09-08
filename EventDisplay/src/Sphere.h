@@ -1,9 +1,9 @@
 //
 // Class for all non-static (i.e. time-dependent) sphere structures, e.g. drift radii. The structure is displayed via EventDisplayPolyLine3D (inherited from ROOT's TPolyLine3D) lines which allows the user to right-click the structure and get a contect menu.
 //
-// $Id: Sphere.h,v 1.1 2011/08/07 18:21:06 ehrlich Exp $
+// $Id: Sphere.h,v 1.2 2011/09/08 03:54:45 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/07 18:21:06 $
+// $Date: 2011/09/08 03:54:45 $
 //
 // Original author Ralf Ehrlich
 //
@@ -90,7 +90,7 @@ class Sphere: public VirtualShape
 
   Sphere(double x, double y, double z, double radius, double t1,
          const TGeoManager *geomanager, TGeoVolume *topvolume,
-         const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info) : 
+         EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info) : 
          VirtualShape(geomanager, topvolume, mainframe, info, false),
          _x0(x), _y0(y), _z0(z), _r0(radius)
   {

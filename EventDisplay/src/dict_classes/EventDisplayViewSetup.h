@@ -1,9 +1,9 @@
 //
 // Class which sets up the 3D view of the main pad. It also provides functions that can handle user commands for zuum, rotate, etc.
 //
-// $Id: EventDisplayViewSetup.h,v 1.1 2011/09/04 04:43:34 ehrlich Exp $
+// $Id: EventDisplayViewSetup.h,v 1.2 2011/09/08 03:54:45 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/04 04:43:34 $
+// $Date: 2011/09/08 03:54:45 $
 //
 // Original author Ralf Ehrlich
 //
@@ -89,6 +89,8 @@ class EventDisplayViewSetup
     rmin[axis]+=difference;
     rmax[axis]+=difference;
     gPad->GetView()->SetRange(rmin,rmax);
+    gPad->Modified();
+    gPad->Update();
   }
 
   static void changeangles(int angle, bool negativedirection)

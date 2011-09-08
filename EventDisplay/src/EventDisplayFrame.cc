@@ -27,6 +27,8 @@
 #include "DataInterface.h"
 #include "EventDisplayFrame.h"
 #include "dict_classes/EventDisplayViewSetup.h"
+#include "dict_classes/ComponentInfoContainer.h"
+#include "dict_classes/HistDraw.h"
 #include "VirtualShape.h"
 
 #include "TClass.h"
@@ -67,86 +69,87 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   }
 
   //bare pointers needed since ROOT manages the following object
-  TGHorizontalFrame *mainFrame = new TGHorizontalFrame(this,800,400);
-  _mainCanvas = new TRootEmbeddedCanvas("EventDisplayCanvas",mainFrame,GetWidth()-270,GetHeight()-170);
-  TGVerticalFrame *subFrame = new TGVerticalFrame(mainFrame,300,400);
+  _mainFrame = new TGHorizontalFrame(this,GetWidth()-270,GetHeight()*0.7);
+  _mainCanvas = new TRootEmbeddedCanvas("EventDisplayCanvas",_mainFrame,GetWidth()-270,GetHeight()*0.7);
+  _subFrame = new TGVerticalFrame(_mainFrame,270,GetHeight()*0.7);
+  _subFrame->SetMaxHeight(GetHeight()*0.7);
 
-  mainFrame->AddFrame(_mainCanvas, new TGLayoutHints(kLHintsTop));
-  mainFrame->AddFrame(subFrame, new TGLayoutHints(kLHintsTop));
-  AddFrame(mainFrame, new TGLayoutHints(kLHintsTop, 2,2,2,2));
+  _mainFrame->AddFrame(_mainCanvas, new TGLayoutHints(kLHintsTop));
+  _mainFrame->AddFrame(_subFrame, new TGLayoutHints(kLHintsTop));
+  AddFrame(_mainFrame, new TGLayoutHints(kLHintsTop, 2,2,2,2));
 
   TGLayoutHints *lh0 = new TGLayoutHints(kLHintsTop,0,0,0,0);
   TGLayoutHints *lh1 = new TGLayoutHints(kLHintsTop,2,1,2,2);
 
-  TGLabel *hitLabel  = new TGLabel(subFrame, "Tracker Hits");
-  TGComboBox *hitBox = new TGComboBox(subFrame,10);
+  TGLabel *hitLabel  = new TGLabel(_subFrame, "Tracker Hits");
+  TGComboBox *hitBox = new TGComboBox(_subFrame,10);
   hitBox->Associate(this);
   hitBox->Resize(250,20);
-  subFrame->AddFrame(hitLabel, lh1);
-  subFrame->AddFrame(hitBox, lh1);
+  _subFrame->AddFrame(hitLabel, lh1);
+  _subFrame->AddFrame(hitBox, lh1);
 
-  TGLabel *caloHitLabel  = new TGLabel(subFrame, "Calo Hits");
-  TGComboBox *caloHitBox = new TGComboBox(subFrame,11);
+  TGLabel *caloHitLabel  = new TGLabel(_subFrame, "Calo Hits");
+  TGComboBox *caloHitBox = new TGComboBox(_subFrame,11);
   caloHitBox->Associate(this);
   caloHitBox->Resize(250,20);
-  subFrame->AddFrame(caloHitLabel, lh1);
-  subFrame->AddFrame(caloHitBox, lh1);
+  _subFrame->AddFrame(caloHitLabel, lh1);
+  _subFrame->AddFrame(caloHitBox, lh1);
 
-  TGLabel *trackLabel  = new TGLabel(subFrame, "Tracks");
-  TGListBox *trackBox = new TGListBox(subFrame,12);
+  TGLabel *trackLabel  = new TGLabel(_subFrame, "Tracks");
+  TGListBox *trackBox = new TGListBox(_subFrame,12);
   trackBox->Associate(this);
   trackBox->Resize(250,60);
   trackBox->SetMultipleSelections(true);
-  subFrame->AddFrame(trackLabel, lh1);
-  subFrame->AddFrame(trackBox, lh1);
+  _subFrame->AddFrame(trackLabel, lh1);
+  _subFrame->AddFrame(trackBox, lh1);
 
   _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, _g4ModuleLabel));
 
-  _unhitButton = new TGCheckButton(subFrame,"Show Unhit Straws",31);
-  subFrame->AddFrame(_unhitButton, lh1);
+  _unhitButton = new TGCheckButton(_subFrame,"Show Unhit Straws",31);
+  _subFrame->AddFrame(_unhitButton, lh1);
   _unhitButton->Associate(this);
 
-  _unhitCrystalsButton = new TGCheckButton(subFrame,"Show Unhit Crystals",36);
-  subFrame->AddFrame(_unhitCrystalsButton, lh1);
+  _unhitCrystalsButton = new TGCheckButton(_subFrame,"Show Unhit Crystals",36);
+  _subFrame->AddFrame(_unhitCrystalsButton, lh1);
   _unhitCrystalsButton->Associate(this);
 
-  _supportStructuresButton = new TGCheckButton(subFrame,"Show Tracker Supports, Calo Vanes, Target",32);
+  _supportStructuresButton = new TGCheckButton(_subFrame,"Show Tracker Supports, Calo Vanes, Target",32);
   _supportStructuresButton->SetState(kButtonDown);
-  subFrame->AddFrame(_supportStructuresButton, lh1);
+  _subFrame->AddFrame(_supportStructuresButton, lh1);
   _supportStructuresButton->Associate(this);
 
-  _otherStructuresButton = new TGCheckButton(subFrame,"Show Toy DS, CR Steel Shield",37);
+  _otherStructuresButton = new TGCheckButton(_subFrame,"Show Toy DS, CR Steel Shield",37);
   _otherStructuresButton->SetState(kButtonDown);
-  subFrame->AddFrame(_otherStructuresButton, lh1);
+  _subFrame->AddFrame(_otherStructuresButton, lh1);
   _otherStructuresButton->Associate(this);
 
-  _outsideTracksButton = new TGCheckButton(subFrame,"Adjust View to show all Tracks",33);
-  subFrame->AddFrame(_outsideTracksButton, lh1);
+  _outsideTracksButton = new TGCheckButton(_subFrame,"Adjust View to show all Tracks",33);
+  _subFrame->AddFrame(_outsideTracksButton, lh1);
   _outsideTracksButton->Associate(this);
 
-  _calorimeterViewButton = new TGCheckButton(subFrame,"Adjust View to show Calorimeter",34);
+  _calorimeterViewButton = new TGCheckButton(_subFrame,"Adjust View to show Calorimeter",34);
   _calorimeterViewButton->SetState(kButtonDown);
-  subFrame->AddFrame(_calorimeterViewButton, lh1);
+  _subFrame->AddFrame(_calorimeterViewButton, lh1);
   _calorimeterViewButton->Associate(this);
 
-  _targetViewButton = new TGCheckButton(subFrame,"Adjust View to show Target",35);
+  _targetViewButton = new TGCheckButton(_subFrame,"Adjust View to show Target",35);
   _targetViewButton->SetState(kButtonDown);
-  subFrame->AddFrame(_targetViewButton, lh1);
+  _subFrame->AddFrame(_targetViewButton, lh1);
   _targetViewButton->Associate(this);
 
-  TGHorizontalFrame *subFrameAnim = new TGHorizontalFrame(subFrame,300,15);
+  TGHorizontalFrame *subFrameAnim = new TGHorizontalFrame(_subFrame,300,15);
   TGTextButton *animButtonStart   = new TGTextButton(subFrameAnim, "Start Animation", 40);
   TGTextButton *animButtonStop    = new TGTextButton(subFrameAnim, "Stop Animation",41);
   TGTextButton *animButtonReset   = new TGTextButton(subFrameAnim, "Reset",42);
   subFrameAnim->AddFrame(animButtonStart, lh1);
   subFrameAnim->AddFrame(animButtonStop, lh1);
   subFrameAnim->AddFrame(animButtonReset, lh1);
-  subFrame->AddFrame(subFrameAnim, lh0);
+  _subFrame->AddFrame(subFrameAnim, lh0);
   animButtonStart->Associate(this);
   animButtonStop->Associate(this);
   animButtonReset->Associate(this);
 
-  TGHorizontalFrame *subFrameAnimTime = new TGHorizontalFrame(subFrame,300,15);
+  TGHorizontalFrame *subFrameAnimTime = new TGHorizontalFrame(_subFrame,300,15);
   TGLabel *timeIntervalLabel1  = new TGLabel(subFrameAnimTime, "Time Interval from");
   TGLabel *timeIntervalLabel2  = new TGLabel(subFrameAnimTime, "ns to");
   TGLabel *timeIntervalLabel3  = new TGLabel(subFrameAnimTime, "ns");
@@ -157,40 +160,40 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   subFrameAnimTime->AddFrame(timeIntervalLabel2, lh1);
   subFrameAnimTime->AddFrame(_timeIntervalField2, lh1);
   subFrameAnimTime->AddFrame(timeIntervalLabel3, lh1);
-  subFrame->AddFrame(subFrameAnimTime, lh0);
+  _subFrame->AddFrame(subFrameAnimTime, lh0);
   _timeIntervalField1->Associate(this);
   _timeIntervalField2->Associate(this);
   _timeIntervalField1->SetWidth(50);
   _timeIntervalField2->SetWidth(50);
 
-  _repeatAnimationButton = new TGCheckButton(subFrame,"Repeat Animation",43);
-  subFrame->AddFrame(_repeatAnimationButton, lh1);
+  _repeatAnimationButton = new TGCheckButton(_subFrame,"Repeat Animation",43);
+  _subFrame->AddFrame(_repeatAnimationButton, lh1);
   _repeatAnimationButton->Associate(this);
 
-  TGHorizontalFrame *subFrameSave = new TGHorizontalFrame(subFrame,300,15);
+  TGHorizontalFrame *subFrameSave = new TGHorizontalFrame(_subFrame,300,15);
   TGTextButton *saveButton        = new TGTextButton(subFrameSave, "Save", 50);
   TGTextButton *saveAnimButton    = new TGTextButton(subFrameSave, "Save Animation", 51);
   subFrameSave->AddFrame(saveButton, lh1);
   subFrameSave->AddFrame(saveAnimButton, lh1);
-  subFrame->AddFrame(subFrameSave, lh0);
+  _subFrame->AddFrame(subFrameSave, lh0);
   saveButton->Associate(this);
   saveAnimButton->Associate(this);
 
-  TGHorizontalFrame *subFrameSaveRootFile = new TGHorizontalFrame(subFrame,300,15);
+  TGHorizontalFrame *subFrameSaveRootFile = new TGHorizontalFrame(_subFrame,300,15);
   TGTextButton *setRootFileButton         = new TGTextButton(subFrameSaveRootFile, "Set Root File", 52);
   TGTextButton *addToRootFileButton       = new TGTextButton(subFrameSaveRootFile, "Add Event to Root File", 53);
   subFrameSaveRootFile->AddFrame(setRootFileButton, lh1);
   subFrameSaveRootFile->AddFrame(addToRootFileButton, lh1);
-  subFrame->AddFrame(subFrameSaveRootFile, lh0);
+  _subFrame->AddFrame(subFrameSaveRootFile, lh0);
   setRootFileButton->Associate(this);
   addToRootFileButton->Associate(this);
 
-  _hitColorButton = new TGCheckButton(subFrame,"Use Hit Colors",60);
-  _trackColorButton = new TGCheckButton(subFrame,"Use Track Colors",61);
-  _backgroundButton = new TGCheckButton(subFrame,"White Background",62);
-  subFrame->AddFrame(_hitColorButton, lh1);
-  subFrame->AddFrame(_trackColorButton, lh1);
-  subFrame->AddFrame(_backgroundButton, lh1);
+  _hitColorButton = new TGCheckButton(_subFrame,"Use Hit Colors",60);
+  _trackColorButton = new TGCheckButton(_subFrame,"Use Track Colors",61);
+  _backgroundButton = new TGCheckButton(_subFrame,"White Background",62);
+  _subFrame->AddFrame(_hitColorButton, lh1);
+  _subFrame->AddFrame(_trackColorButton, lh1);
+  _subFrame->AddFrame(_backgroundButton, lh1);
   _hitColorButton->Associate(this);
   _trackColorButton->Associate(this);
   _backgroundButton->Associate(this);
@@ -198,26 +201,26 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _trackColorButton->SetState(kButtonDown);
   _backgroundButton->SetState(kButtonUp);
 
-  _eventInfo = new TGLabel*[4];
-  for(int i=0; i<4; i++)
+  _eventInfo = new TGLabel*[2];
+  for(int i=0; i<2; i++)
   {
-    _eventInfo[i] = new TGLabel(subFrame, "                      ");
+    _eventInfo[i] = new TGLabel(_subFrame, "                      ");
     _eventInfo[i]->SetTextJustify(kTextLeft);
-    subFrame->AddFrame(_eventInfo[i], new TGLayoutHints(kLHintsLeft,2,0,2,1));
+    _subFrame->AddFrame(_eventInfo[i], new TGLayoutHints(kLHintsLeft,2,0,2,1));
   }
 
-  TGHorizontalFrame *footLine   = new TGHorizontalFrame(this,800,100);
+  _footLine   = new TGHorizontalFrame(this,GetWidth(),GetHeight()*0.3);
 
 //The following lines are a variation of something I found in CaloCellTimeMonitoring.C by Christophe Le Maner.
 //Its purpose is to create a TRootEmbeddedCanvas with scrollbars.
-  _infoCanvas = new TGCanvas(footLine, GetWidth()-600, GetHeight()-700);
-  footLine->AddFrame(_infoCanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,2,2,0,2));
+  _infoCanvas = new TGCanvas(_footLine, GetWidth()-600, GetHeight()*0.28);
+  _footLine->AddFrame(_infoCanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,2,2,0,2));
   TGCompositeFrame *container = new TGCompositeFrame(_infoCanvas->GetViewPort());
   _infoCanvas->SetContainer(container);
   _infoEmbeddedCanvas = new TRootEmbeddedCanvas(0, container, 100, 100);//default size - exact size will be set later
   container->AddFrame(_infoEmbeddedCanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
-  TGGroupFrame *zoomangleFrame  = new TGGroupFrame(footLine,"Zoom & Angle");
+  TGGroupFrame *zoomangleFrame  = new TGGroupFrame(_footLine,"Zoom & Angle");
   TGHorizontalFrame *zoomFrame1 = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGHorizontalFrame *zoomFrame2 = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGHorizontalFrame *angleFrame = new TGHorizontalFrame(zoomangleFrame,500,50);
@@ -285,7 +288,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   zoomangleFrame->AddFrame(angleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(setAngleButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(perspectiveFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
-  footLine->AddFrame(zoomangleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  _footLine->AddFrame(zoomangleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
 
   _minXField->Associate(this);
   _minYField->Associate(this);
@@ -303,7 +306,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _perspectiveButton->SetState(kButtonDown);
   _parallelButton->SetState(kButtonUp);
 
-  TGVerticalFrame *innerFrame1   = new TGVerticalFrame(footLine,100,400);
+  TGVerticalFrame *innerFrame1   = new TGVerticalFrame(_footLine,100,400);
 
   TGGroupFrame *optionsFrame     = new TGGroupFrame(innerFrame1,"Options");
   TGHorizontalFrame *filterFrame = new TGHorizontalFrame(optionsFrame,500,50);
@@ -351,8 +354,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGIcon *icon = new TGIcon(navigationFrame, logo, 50, 50);
   navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,20,0,0,0));
 
-  footLine->AddFrame(innerFrame1, new TGLayoutHints(kLHintsLeft,0,0,0,0));
-  AddFrame(footLine, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  _footLine->AddFrame(innerFrame1, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  AddFrame(_footLine, new TGLayoutHints(kLHintsLeft,0,0,0,0));
 
   MapSubwindows();
   SetWindowName("Mu2e Event Display");
@@ -404,10 +407,19 @@ Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
    {
       fWidth  = event->fWidth;
       fHeight = event->fHeight;
+
+      _mainFrame->SetWidth(fWidth-270);
+      _mainFrame->SetHeight(fHeight*0.7);
+      _subFrame->SetWidth(270);
+      _subFrame->SetHeight(fHeight*0.7);
+      _footLine->SetWidth(fWidth);
+      _footLine->SetHeight(fHeight*0.3);
+
       _mainCanvas->SetWidth(fWidth-270);
-      _mainCanvas->SetHeight(fHeight-170);
+      _mainCanvas->SetHeight(fHeight*0.7);
       _infoCanvas->SetWidth(fWidth-600);
-      _infoCanvas->SetHeight(fHeight-700);
+      _infoCanvas->SetHeight(fHeight*0.28);
+
       Layout();
    }
    return kTRUE;
@@ -459,6 +471,7 @@ void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
   _contentSelector->setAvailableCollections(event);
   if(firstLoop) _contentSelector->firstLoop();
   fillEvent(firstLoop);
+  fillZoomAngleFields();
 
   gApplication->Run(true);
 }
@@ -627,8 +640,6 @@ void EventDisplayFrame::CloseWindow()
 
 Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param2)
 {
-  fillZoomAngleFields();
-
   switch (GET_MSG(msg))
   {
     case kC_COMMAND:
@@ -963,22 +974,33 @@ void EventDisplayFrame::drawEverything()
 
 void EventDisplayFrame::showInfo(TObject *o)  //ROOT accepts only bare pointers here
 {
+  ComponentInfoContainer *container=dynamic_cast<ComponentInfoContainer*>(o);
+  if(!container) return;
+
   _infoPad->cd();
   _infoPad->Clear();
   unsigned int w,h;
-  (dynamic_cast<ComponentInfo*>(o))->getExpectedSize(w,h);
+  container->getComponentInfo()->getExpectedSize(w,h);
   if(w<_infoCanvas->GetWidth()-20) w=_infoCanvas->GetWidth()-20;
   if(h<_infoCanvas->GetHeight()-20) h=_infoCanvas->GetHeight()-20;
   _infoEmbeddedCanvas->SetWidth(w);
   _infoEmbeddedCanvas->SetHeight(h);
   _infoCanvas->Layout();
   _infoPad->cd();
+  _infoPad->Range(0, 0, 1, 1);
   _infoPad->Modified();
   _infoPad->Update();
-  (dynamic_cast<ComponentInfo*>(o))->showInfo(w,h);
+  container->getComponentInfo()->showInfo(w,h);
   _infoPad->Modified();
   _infoPad->Update();
   _mainPad->cd();
+}
+
+void EventDisplayFrame::addHistDraw()
+{
+  unsigned int i = _histDrawVector.size();
+  boost::shared_ptr<HistDraw> histDraw(new HistDraw(i,_infoPad,_mainPad,_infoEmbeddedCanvas,_infoCanvas));
+  _histDrawVector.push_back(histDraw);
 }
 
 }

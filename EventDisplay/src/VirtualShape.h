@@ -2,9 +2,9 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.9 2011/08/07 18:21:06 ehrlich Exp $
+// $Id: VirtualShape.h,v 1.10 2011/09/08 03:54:45 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/07 18:21:06 $
+// $Date: 2011/09/08 03:54:45 $
 //
 // Original author Ralf Ehrlich
 //
@@ -13,6 +13,7 @@
 #define EventDisplay_src_VirtualShape_h
 
 #include "boost/shared_ptr.hpp"
+#include "EventDisplayFrame.h"
 #include "dict_classes/ComponentInfo.h"
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
@@ -40,13 +41,13 @@ class VirtualShape : public TObject
   protected:
   const TGeoManager *_geomanager;
   TGeoVolume        *_topvolume;
-  TObject const     *_mainframe;
+  EventDisplayFrame *_mainframe;
   boost::shared_ptr<ComponentInfo> _info;
 
   public:
 
   VirtualShape(const TGeoManager *geomanager, TGeoVolume *topvolume,
-               const TObject *mainframe,
+               EventDisplayFrame *mainframe,
                const boost::shared_ptr<ComponentInfo> info, bool isGeometry):
                _startTime(NAN),_endTime(NAN),
                _defaultVisibility(true), _isGeometry(isGeometry), _color(kGray),

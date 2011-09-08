@@ -1,9 +1,9 @@
 //
 // Class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, target. The structure is displayed via EventDisplayGeoVolumeTube (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cylinder.h,v 1.9 2011/08/07 18:21:06 ehrlich Exp $
+// $Id: Cylinder.h,v 1.10 2011/09/08 03:54:44 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/07 18:21:06 $
+// $Date: 2011/09/08 03:54:44 $
 //
 // Original author Ralf Ehrlich
 //
@@ -58,7 +58,7 @@ class Cylinder: public VirtualShape
   bool _notDrawn;
 
   void addline(double x1, double y1, double z1, double x2, double y2, double z2,
-               int layer, int segment, int direction, const TObject *mainframe)
+               int layer, int segment, int direction, EventDisplayFrame *mainframe)
   {
     line_struct newline;
     newline.x1=x1;
@@ -83,13 +83,13 @@ class Cylinder: public VirtualShape
 
   Cylinder(double x, double y, double z,
            double phi, double theta, double psi, double halflength,
-           double innerRadius, double outerRadius,
+           double innerRadius, double outerRadius, double startTime,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
-           const TObject *mainframe, const boost::shared_ptr<ComponentInfo> info,
+           EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
            bool defaultVisibility):
            VirtualShape(geomanager, topvolume, mainframe, info, true)
   {
-    setStartTime(NAN);
+    setStartTime(startTime);
     setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
 
@@ -229,7 +229,19 @@ class Cylinder: public VirtualShape
   }
 
   void update(double time)
-  {//no animation here
+  {
+    if(time<getStartTime() || isnan(getStartTime())) return;
+    _volume->SetVisibility(1);
+    _volume->SetLineColor(getColor());
+    _volume->SetFillColor(getColor());
+    std::map<layersegment_struct,line_struct>::iterator iter;
+    for(iter=_lines.begin(); iter!=_lines.end(); iter++)
+    {
+      line_struct &l=iter->second;
+      l.line->SetLineColor(getColor());
+      if(_notDrawn==true) l.line->Draw();
+    }
+    _notDrawn=false;
   }
 };
 
