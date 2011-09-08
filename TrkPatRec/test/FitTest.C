@@ -173,7 +173,7 @@ void MomRes(TTree* trk) {
   gStyle->SetOptFit(111111);
 // should have pitch angle and generated hit cuts here, FIXME!!!
   TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nchit>=20");
-  TCut tsel = mcsel +TCut("kalfail==0");
+  TCut tsel = mcsel +TCut("kalfail==0&&nhit>=25");
 // selection cuts
   TCut cuts[4];
 
