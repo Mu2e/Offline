@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.1 2011/09/06 23:38:05 mu2ecvs Exp $
+// $Id: TrkPatRec_module.cc,v 1.2 2011/09/08 19:06:05 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/06 23:38:05 $
+// $Date: 2011/09/08 19:06:05 $
 //
 // framework
 #include "art/Framework/Core/Event.h"
@@ -61,8 +61,8 @@ namespace mu2e
   struct TrkTimePeak {
     std::vector<size_t> _trkptrs;
     double _tpeak;
-    double _ymax;
-    TrkTimePeak(double tpeak,double ymax) : _tpeak(tpeak),_ymax(ymax) {}
+    double _peakmax;
+    TrkTimePeak(double tpeak,double ymax) : _tpeak(tpeak),_peakmax(ymax) {}
     bool operator < (TrkTimePeak const& other ) const { return _trkptrs.size() < other._trkptrs.size(); }
   };
 
@@ -153,9 +153,9 @@ namespace mu2e
     Float_t _pdist,_pperp,_pmom;
     Float_t _mctime;
     Int_t _loose, _tight;
-    UInt_t _npeaks;
-    std::vector<Float_t> _tpeak;
-    std::vector<Int_t> _npeak;
+    UInt_t _ntpeak;
+    std::vector<Float_t> _tpeaks;
+    std::vector<Int_t> _ntpeaks;
 // fit tuple variables
     TTree* _fitdiag;
     Int_t _ipeak;
@@ -166,9 +166,9 @@ namespace mu2e
     helixpar _hparerr,_sparerr;
     Int_t _snhits, _snactive, _sniter, _sndof, _snweediter;
     Float_t _schisq, _st00, _st0;
-    UInt_t _nchit ;
-    UInt_t _ntime, _nmc;
-    Float_t _ymax;
+    UInt_t _nchit;
+    UInt_t _npeak, _nmc;
+    Float_t _peakmax, _tpeak;
 // hit filtering tuple variables
     TTree *_sdiag, *_hdiag;
     Float_t _sresid, _hresid;
@@ -472,9 +472,9 @@ namespace mu2e
     _shdiag->Branch("shpos",&_shpos,"x/F:y/F:z/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"time/F");
-    _shdiag->Branch("npeaks",&_npeaks,"npeaks/i");
-    _shdiag->Branch("tpeak",&_tpeak);
-    _shdiag->Branch("npeak",&_npeak);
+    _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/i");
+    _shdiag->Branch("tpeaks",&_tpeaks);
+    _shdiag->Branch("ntpeaks",&_ntpeaks);
     _shdiag->Branch("dmin",&_dmin,"dmin/F");
     _shdiag->Branch("n50",&_n50,"n50/i");
     _shdiag->Branch("n100",&_n100,"n100/i");
@@ -525,7 +525,8 @@ namespace mu2e
     trkdiag->Branch("snactive",&_snactive,"snactive/I");
     trkdiag->Branch("schisq",&_schisq,"schisq/F");
     trkdiag->Branch("nchit",&_nchit,"nchit/i");
-    trkdiag->Branch("ntime",&_ntime,"ntime/i");
+    trkdiag->Branch("npeak",&_npeak,"npeak/i");
+    trkdiag->Branch("tpeak",&_tpeak,"tpeak/F");
     trkdiag->Branch("nmc",&_nmc,"nmc/i");
 // seed filtering tuple
     _sdiag = tfs->make<TTree>("sdiag","seed diagnostics");
@@ -554,12 +555,12 @@ namespace mu2e
       _edep = sh.energyDep();
       _time = sh.time();
       // compare to different time peaks
-      _npeaks = tpeaks.size();
-      _tpeak.clear();
-      _npeak.clear();
+      _ntpeak = tpeaks.size();
+      _tpeaks.clear();
+      _ntpeaks.clear();
       for(unsigned ipeak=0;ipeak<tpeaks.size();++ipeak){
-	_tpeak.push_back(tpeaks[ipeak]._tpeak);
-	_npeak.push_back(tpeaks[ipeak]._trkptrs.size());
+	_tpeaks.push_back(tpeaks[ipeak]._tpeak);
+	_ntpeaks.push_back(tpeaks[ipeak]._trkptrs.size());
       }
       // find proximity for different radii
       double dmin;
@@ -671,8 +672,9 @@ namespace mu2e
     _ipeak = ipeak;
     _nmc = 0;
 // time peak information
-    _ymax = tpeak._ymax;
-    _ntime = tpeak._trkptrs.size();
+    _peakmax = tpeak._peakmax;
+    _tpeak = tpeak._tpeak;
+    _npeak = tpeak._trkptrs.size();
 // fit status 
     _helixfail = helixfit._fit.failure();
     _seedfail = seedfit._fit.failure();
