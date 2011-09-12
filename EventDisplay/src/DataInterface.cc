@@ -790,7 +790,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
               char c0[200], c1[200];
               const boost::shared_ptr<std::string> strawname=straw->second->getComponentInfo()->getName();
-              sprintf(c0,"Drift Radius %gcm  %s",driftRadius/CLHEP::cm,strawname->c_str());
+              sprintf(c0,"Drift Radius for %s",strawname->c_str());
               sprintf(c1,"Drift Radius %gcm",driftRadius/CLHEP::cm);
               boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
               info->setName(c0);

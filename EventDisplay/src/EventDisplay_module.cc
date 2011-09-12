@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.11 2011/09/04 04:43:34 ehrlich Exp $
+// $Id: EventDisplay_module.cc,v 1.12 2011/09/12 23:16:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/04 04:43:34 $
+// $Date: 2011/09/12 23:16:34 $
 //
 
 #include <iostream>
@@ -83,6 +83,8 @@ namespace mu2e
 
   void EventDisplay::analyze(const art::Event& event)
   {
+    TVirtualPad *temp_pad=gPad;
+    TDirectory  *temp_dir=gDirectory;
     if(_firstLoop)
     {
       _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550, _pset);
@@ -109,7 +111,17 @@ namespace mu2e
         if(showEvent) _frame->setEvent(event,_firstLoop);
       }
     }
+
     _firstLoop=false;
+    if(temp_pad) temp_pad->cd();
+    if(temp_dir) temp_dir->cd();
+
+    if(_frame->isClosed()) 
+    {
+      endJob();
+      std::cout<<"QUIT"<<std::endl;
+      throw cet::exception("CONTROL")<<"QUIT\n"; //TODO: there must be a better of doing this, so that not so many lines are printed out, which make it look like as if something bad had happened.
+    }
   }
 
   template<class collectionType>

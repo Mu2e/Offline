@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.20 2011/09/08 03:54:45 ehrlich Exp $
+// $Id: DataInterface.h,v 1.21 2011/09/12 23:16:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/08 03:54:45 $
+// $Date: 2011/09/12 23:16:34 $
 //
 // Original author Ralf Ehrlich
 //
@@ -78,8 +78,8 @@ class DataInterface
   bool              _showUnhitStraws, _showUnhitCrystals;
 
   void createGeometryManager();
-  void removeNonGeometryComponents();
   void removeAllComponents();
+  void removeNonGeometryComponents();
   void findBoundaryT(timeminmax &m, double t);
   void findBoundaryP(spaceminmax &m, double x, double y, double z);
   void resetBoundaryT(timeminmax &m);
