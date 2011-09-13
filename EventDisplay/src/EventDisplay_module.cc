@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.12 2011/09/12 23:16:34 ehrlich Exp $
+// $Id: EventDisplay_module.cc,v 1.13 2011/09/13 05:59:17 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/12 23:16:34 $
+// $Date: 2011/09/13 05:59:17 $
 //
 
 #include <iostream>
@@ -113,8 +113,8 @@ namespace mu2e
     }
 
     _firstLoop=false;
-    if(temp_pad) temp_pad->cd();
-    if(temp_dir) temp_dir->cd();
+    if(temp_pad) temp_pad->cd(); else gPad=NULL;
+    if(temp_dir) temp_dir->cd(); else gDirectory=NULL;
 
     if(_frame->isClosed()) 
     {
