@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.13 2011/09/13 05:59:17 ehrlich Exp $
+// $Id: EventDisplay_module.cc,v 1.14 2011/09/13 06:18:45 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/13 05:59:17 $
+// $Date: 2011/09/13 06:18:45 $
 //
 
 #include <iostream>
@@ -118,9 +118,7 @@ namespace mu2e
 
     if(_frame->isClosed()) 
     {
-      endJob();
-      std::cout<<"QUIT"<<std::endl;
-      throw cet::exception("CONTROL")<<"QUIT\n"; //TODO: there must be a better of doing this, so that not so many lines are printed out, which make it look like as if something bad had happened.
+      throw cet::exception("CONTROL")<<"QUIT\n";
     }
   }
 
