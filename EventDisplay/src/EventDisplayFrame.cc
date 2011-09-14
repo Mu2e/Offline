@@ -43,10 +43,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGMainFrame(p, w, h),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run"))
 {
-  int x,y;
-  unsigned int width,height;
-  gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(),x,y,width,height);
-  MoveResize(20,20,width-30,height-70);
+  Move(20,20);
 
   _timer=new TTimer();
   _timer->SetObject(this);

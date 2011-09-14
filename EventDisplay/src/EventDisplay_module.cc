@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.14 2011/09/13 06:18:45 ehrlich Exp $
+// $Id: EventDisplay_module.cc,v 1.15 2011/09/14 05:16:17 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/13 06:18:45 $
+// $Date: 2011/09/14 05:16:17 $
 //
 
 #include <iostream>
@@ -87,7 +87,12 @@ namespace mu2e
     TDirectory  *temp_dir=gDirectory;
     if(_firstLoop)
     {
-      _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), 800, 550, _pset);
+      int x,y;
+      unsigned int width,height;
+      gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(),x,y,width,height);
+      width-=30;
+      height-=70;
+      _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), width, height, _pset);
       if(!_frame->isClosed()) _frame->fillGeometry();
     }
     if(!_frame->isClosed())
