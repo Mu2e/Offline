@@ -1,9 +1,9 @@
 //
 // Class which sets up the 3D view of the main pad. It also provides functions that can handle user commands for zuum, rotate, etc.
 //
-// $Id: EventDisplayViewSetup.h,v 1.2 2011/09/08 03:54:45 ehrlich Exp $
+// $Id: EventDisplayViewSetup.h,v 1.3 2011/09/15 02:04:58 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/08 03:54:45 $
+// $Date: 2011/09/15 02:04:58 $
 //
 // Original author Ralf Ehrlich
 //
@@ -12,6 +12,7 @@
 #define EventDisplay_src_dict_classes_EventDisplayViewSetup_h
 
 #include <iostream>
+#include <TCanvas.h>
 #include <TPad.h>
 #include <TView3D.h>
 #include <TAxis3D.h>
@@ -25,10 +26,7 @@ class EventDisplayViewSetup
 
   static void setup()
   {
-    int irep=0;
-    gPad->GetView()->SetView(180,60,90,irep);
-    gPad->SetPhi(-90-180);
-    gPad->SetTheta(90-60);
+    resetangle();
     gPad->GetView()->ShowAxis();
     TAxis3D::GetPadAxis(gPad)->SetLabelSize(0.025);
     TAxis3D::GetPadAxis(gPad)->SetTitleOffset(-0.5);
@@ -76,6 +74,52 @@ class EventDisplayViewSetup
                 break;
       default : return;
     };
+  }
+
+  static void resetangle()
+  {
+    int irep=0;
+    gPad->GetView()->SetView(180,60,90,irep);
+    gPad->SetPhi(-90-180);
+    gPad->SetTheta(90-60);
+  }
+
+  static void endview()
+  {
+    unsigned int canvasWidth=gPad->GetCanvas()->GetWw();
+    unsigned int canvasHeight=gPad->GetCanvas()->GetWh();
+    double rmin[3],rmax[3];
+    gPad->GetView()->GetRange(rmin,rmax);
+    double axisratio=(rmax[0]-rmin[0])/(rmax[1]-rmin[1]);
+    double canvasratio=(double)canvasWidth/canvasHeight;
+    if(axisratio<canvasratio)
+    {
+      double zoomfactor=canvasratio/axisratio;
+      double difference=(rmax[0]-rmin[0])*(zoomfactor-1.0)/2.0;
+      rmax[0]+=difference;
+      rmin[0]-=difference;
+    }
+    if(axisratio>canvasratio)
+    {
+      double zoomfactor=axisratio/canvasratio;
+      double difference=(rmax[1]-rmin[1])*(zoomfactor-1.0)/2.0;
+      rmax[1]+=difference;
+      rmin[1]-=difference;
+    }
+    gPad->GetView()->SetRange(rmin,rmax);
+
+    int irep=0;
+    gPad->GetView()->SetView(180,0,90,irep);
+    gPad->SetPhi(-90-180);
+    gPad->SetTheta(90-0);
+  }
+
+  static void sideview()
+  {
+    int irep=0;
+    gPad->GetView()->SetView(180,90,90,irep);
+    gPad->SetPhi(-90-180);
+    gPad->SetTheta(90-90);
   }
 
   private:

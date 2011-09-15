@@ -31,6 +31,8 @@
 #include "dict_classes/HistDraw.h"
 #include "VirtualShape.h"
 
+#include "TGGC.h"
+#include "TGFont.h"
 #include "TClass.h"
 #include "TClassMenuItem.h"
 
@@ -44,6 +46,13 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run"))
 {
   Move(20,20);
+
+  FontStruct_t buttonfont = gClient->GetFontByName("-*-helvetica-medium-r-*-*-8-*-*-*-*-*-iso8859-1");
+  GCValues_t gval;
+  gval.fMask = kGCForeground | kGCFont;
+  gval.fFont = gVirtualX->GetFontHandle(buttonfont);
+  gClient->GetColorByName("black", gval.fForeground);
+  GContext_t buttoncontext = gVirtualX->CreateGC(gClient->GetRoot()->GetId(), &gval);
 
   _timer=new TTimer();
   _timer->SetObject(this);
@@ -120,19 +129,24 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(_otherStructuresButton, lh1);
   _otherStructuresButton->Associate(this);
 
-  _outsideTracksButton = new TGCheckButton(_subFrame,"Adjust View to show all Tracks",33);
-  _subFrame->AddFrame(_outsideTracksButton, lh1);
-  _outsideTracksButton->Associate(this);
-
-  _calorimeterViewButton = new TGCheckButton(_subFrame,"Adjust View to show Calorimeter",34);
-  _calorimeterViewButton->SetState(kButtonDown);
-  _subFrame->AddFrame(_calorimeterViewButton, lh1);
-  _calorimeterViewButton->Associate(this);
-
-  _targetViewButton = new TGCheckButton(_subFrame,"Adjust View to show Target",35);
-  _targetViewButton->SetState(kButtonDown);
-  _subFrame->AddFrame(_targetViewButton, lh1);
-  _targetViewButton->Associate(this);
+  TGHorizontalFrame *subFrameView   = new TGHorizontalFrame(_subFrame,300,15);
+  TGTextButton *endViewButton       = new TGTextButton(subFrameView, "End View", 70, buttoncontext);
+  TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "Side View", 71, buttoncontext);
+  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView, "All Tracks View", 72, buttoncontext);
+  TGTextButton *resetViewButton     = new TGTextButton(subFrameView, "Reset View", 73, buttoncontext);
+  shrinkButton(endViewButton);
+  shrinkButton(sideViewButton);
+  shrinkButton(allTracksViewButton);
+  shrinkButton(resetViewButton);
+  subFrameView->AddFrame(endViewButton, lh1);
+  subFrameView->AddFrame(sideViewButton, lh1);
+  subFrameView->AddFrame(allTracksViewButton, lh1);
+  subFrameView->AddFrame(resetViewButton, lh1);
+  _subFrame->AddFrame(subFrameView, lh0);
+  endViewButton->Associate(this);
+  sideViewButton->Associate(this);
+  allTracksViewButton->Associate(this);
+  resetViewButton->Associate(this);
 
   TGHorizontalFrame *subFrameAnim = new TGHorizontalFrame(_subFrame,300,15);
   TGTextButton *animButtonStart   = new TGTextButton(subFrameAnim, "Start Animation", 40);
@@ -162,6 +176,17 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _timeIntervalField2->Associate(this);
   _timeIntervalField1->SetWidth(50);
   _timeIntervalField2->SetWidth(50);
+
+  TGHorizontalFrame *subFrameTimeWindow = new TGHorizontalFrame(_subFrame,300,15);
+  TGTextButton *allHitsTimeButton       = new TGTextButton(subFrameTimeWindow, "Time Window for all Hits", 80, buttoncontext);
+  TGTextButton *allTracksTimeButton     = new TGTextButton(subFrameTimeWindow, "Time Window for all Tracks", 81, buttoncontext);
+  shrinkButton(allHitsTimeButton);
+  shrinkButton(allTracksTimeButton);
+  subFrameTimeWindow->AddFrame(allHitsTimeButton, lh1);
+  subFrameTimeWindow->AddFrame(allTracksTimeButton, lh1);
+  _subFrame->AddFrame(subFrameTimeWindow, lh0);
+  allHitsTimeButton->Associate(this);
+  allTracksTimeButton->Associate(this);
 
   _repeatAnimationButton = new TGCheckButton(_subFrame,"Repeat Animation",43);
   _subFrame->AddFrame(_repeatAnimationButton, lh1);
@@ -384,6 +409,15 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",this));
 }
 
+void EventDisplayFrame::shrinkButton(TGTextButton *button)
+{
+  double w=(double)(button->GetWidth())*0.8;
+  double h=(double)(button->GetHeight())*0.8;
+  button->SetWidth(w);
+  button->SetHeight(h);
+  button->Layout();
+}
+
 EventDisplayFrame::~EventDisplayFrame()
 {
   // TODO
@@ -453,7 +487,7 @@ void EventDisplayFrame::fillGeometry()
 {
   _mainPad->cd();
   _dataInterface->fillGeometry();
-  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(false, true, false);
+  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, false);
   _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
   _mainPad->GetView()->AdjustScales();
   _mainPad->Modified();
@@ -509,16 +543,6 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   updateHitLegend(_hitColorButton->GetState()==kButtonDown);
   updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
 
-  //set zoom only if "all tracks" option is on, or if it is the first event
-  if(_outsideTracksButton->GetState()==kButtonDown || firstLoop)
-  {
-    DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(_targetViewButton->GetState()==kButtonDown,
-                                                   _calorimeterViewButton->GetState()==kButtonDown,
-                                                   _outsideTracksButton->GetState()==kButtonDown);
-    _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-    _mainPad->GetView()->AdjustScales();
-  }
-
   sprintf(eventInfoText,"Number of tracker hits: %i",_dataInterface->getNumberHits());
   _eventInfo[0]->SetText(eventInfoText);
   sprintf(eventInfoText,"Number of calorimeter hits: %i",_dataInterface->getNumberCrystalHits());
@@ -528,10 +552,10 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   drawEverything();
 }
 
-void EventDisplayFrame::updateTimeIntervalFields()
+void EventDisplayFrame::updateTimeIntervalFields(bool allTracks)
 {
   double mint, maxt;
-  if(_outsideTracksButton->GetState()==kButtonDown)
+  if(allTracks)
   {
     mint=_dataInterface->getTracksTimeBoundary().mint;
     maxt=_dataInterface->getTracksTimeBoundary().maxt;
@@ -674,6 +698,33 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _timeCurrent=NAN;
                            gApplication->Terminate();
                          }
+                         if(param1>=70 && param1<=73)
+                         {
+                           _mainPad->cd();
+                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==72);
+                           _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
+                           if(param1<72)
+                           {
+                             if(param1==70) EventDisplayViewSetup::endview();
+                             else EventDisplayViewSetup::sideview();
+                             _parallelButton->SetState(kButtonDown);
+                             _perspectiveButton->SetState(kButtonUp);
+                             _mainPad->GetView()->SetParallel();
+                           }
+                           if(param1==73)
+                           {
+                             EventDisplayViewSetup::resetangle();
+                             _parallelButton->SetState(kButtonUp);
+                             _perspectiveButton->SetState(kButtonDown);
+                             _mainPad->GetView()->SetPerspective();
+                             _mainPad->GetView()->AdjustScales();
+                           }
+                           _mainPad->Modified();
+                           _mainPad->Update();
+                           fillZoomAngleFields();
+                         }
+                         if(param1==80) updateTimeIntervalFields(false);
+                         if(param1==81) updateTimeIntervalFields(true);
                          if(param1==50 || param1==51)
                          {
                            const char *fileType[]={"Gif files","*.gif",0,0};
@@ -818,19 +869,6 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              _dataInterface->makeCrystalsVisibleBeforeStart(false);
                            }
                            drawEverything();
-                         }
-                         if(param1==33 || param1==34 || param1==35)
-                         {
-                           _mainPad->cd();
-                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(
-                                                 _targetViewButton->GetState()==kButtonDown,
-                                                 _calorimeterViewButton->GetState()==kButtonDown,
-                                                 _outsideTracksButton->GetState()==kButtonDown);
-                           _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-                           _mainPad->GetView()->AdjustScales();
-                           _mainPad->Modified();
-                           _mainPad->Update();
-                           updateTimeIntervalFields();
                          }
                          if(param1==60)
                          {
