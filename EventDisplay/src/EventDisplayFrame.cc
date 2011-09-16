@@ -130,10 +130,10 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _otherStructuresButton->Associate(this);
 
   TGHorizontalFrame *subFrameView   = new TGHorizontalFrame(_subFrame,300,15);
-  TGTextButton *endViewButton       = new TGTextButton(subFrameView, "End View", 70, buttoncontext);
-  TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "Side View", 71, buttoncontext);
-  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView, "All Tracks View", 72, buttoncontext);
-  TGTextButton *resetViewButton     = new TGTextButton(subFrameView, "Reset View", 73, buttoncontext);
+  TGTextButton *endViewButton       = new TGTextButton(subFrameView, "____  End View", 70, buttoncontext);
+  TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "____  Side View", 71, buttoncontext);
+  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView, "______  All Tracks View", 72, buttoncontext);
+  TGTextButton *resetViewButton     = new TGTextButton(subFrameView, "____  Reset View", 73, buttoncontext);
   shrinkButton(endViewButton);
   shrinkButton(sideViewButton);
   shrinkButton(allTracksViewButton);
@@ -178,8 +178,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _timeIntervalField2->SetWidth(50);
 
   TGHorizontalFrame *subFrameTimeWindow = new TGHorizontalFrame(_subFrame,300,15);
-  TGTextButton *allHitsTimeButton       = new TGTextButton(subFrameTimeWindow, "Time Window for all Hits", 80, buttoncontext);
-  TGTextButton *allTracksTimeButton     = new TGTextButton(subFrameTimeWindow, "Time Window for all Tracks", 81, buttoncontext);
+  TGTextButton *allHitsTimeButton       = new TGTextButton(subFrameTimeWindow, "_________  Time Window for all Hits", 80, buttoncontext);
+  TGTextButton *allTracksTimeButton     = new TGTextButton(subFrameTimeWindow, "_________  Time Window for all Tracks", 81, buttoncontext);
   shrinkButton(allHitsTimeButton);
   shrinkButton(allTracksTimeButton);
   subFrameTimeWindow->AddFrame(allHitsTimeButton, lh1);
@@ -411,11 +411,10 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
 
 void EventDisplayFrame::shrinkButton(TGTextButton *button)
 {
-  double w=(double)(button->GetWidth())*0.8;
-  double h=(double)(button->GetHeight())*0.8;
-  button->SetWidth(w);
-  button->SetHeight(h);
-  button->Layout();
+  button->ChangeOptions(button->GetOptions() | kFixedSize);
+  double w=button->GetWidth()*0.6;
+  double h=button->GetHeight();
+  button->Resize(w,h);
 }
 
 EventDisplayFrame::~EventDisplayFrame()
