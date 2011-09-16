@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.19 2011/08/08 16:24:11 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.20 2011/09/16 20:51:58 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/08 16:24:11 $
+// $Date: 2011/09/16 20:51:58 $
 //
 // Original author Gianni Onorato
 //
@@ -974,7 +974,7 @@ namespace mu2e {
 
     if (skip) return;
 
-    const double CrDensity = 8.28; //from G4. It is in g/cm^3
+    const double CrDensity = 7.4; //from G4. It is in g/cm^3
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;

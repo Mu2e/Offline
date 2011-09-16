@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.95 2011/08/26 21:32:18 onoratog Exp $
+// $Id: geom_01.txt,v 1.96 2011/09/16 20:51:58 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Date: 2011/09/16 20:51:58 $
 //
 // Original author Rob Kutschke
 //
@@ -173,8 +173,8 @@ double toyDS2.halfLength        = 2350.;
 double toyDS3.halfLength        = 3400.5.;
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";
-string toyDS.insideMaterialName = "WAGVacuum";
-//string toyDS.insideMaterialName = "SimVacuum";
+//string toyDS.insideMaterialName = "WAGVacuum";
+string toyDS.insideMaterialName = "SimVacuum";
 
 int    toyDS.verbosityLevel     = 0;
 bool   toyDS.visible            = true;
@@ -260,8 +260,8 @@ string dummyStoppingTarget.material   = "WAGVacuum";
 //
 
 // material around the targets
-string         target.fillMaterial    = "WAGVacuum";
-//string         target.fillMaterial    = "SimVacuum";
+//string         target.fillMaterial    = "WAGVacuum";
+string         target.fillMaterial    = "SimVacuum";
 
 // All dimensions in mm in the detector coordinate system.
 // (0,0,0) = on axis in the DS at z=12000. mm
@@ -317,8 +317,8 @@ vector<double> target.yCos  =
 
 vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};   // G4BL: 20729-7929=12800.
 double calorimeter.rInscribed                              = 360.;
-string calorimeter.calorimeterFillMaterial                 = "WAGVacuum";
-//string calorimeter.calorimeterFillMaterial                 = "SimVacuum";
+//string calorimeter.calorimeterFillMaterial                 = "WAGVacuum";
+string calorimeter.calorimeterFillMaterial                 = "SimVacuum";
 
 int    calorimeter.numberOfVanes    =  4;
 int    calorimeter.nCrystalRSlices  =  12;
