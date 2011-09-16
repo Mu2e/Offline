@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.2 2011/09/08 19:06:05 mu2ecvs Exp $
+// $Id: TrkPatRec_module.cc,v 1.3 2011/09/16 15:19:04 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/08 19:06:05 $
+// $Date: 2011/09/16 15:19:04 $
 //
 // framework
 #include "art/Framework/Core/Event.h"
@@ -385,7 +385,7 @@ namespace mu2e
         timespec.Fill(time);
       }
     }
-    unsigned np = tspec.Search(&timespec,1,"new",_peakfrac);
+    unsigned np = tspec.Search(&timespec,1,"new goff",_peakfrac);
     Float_t *xpeaks = tspec.GetPositionX();
     Float_t *ypeaks = tspec.GetPositionY();
 // Loop over peaks, looking only at those with a minimum peak value
@@ -521,7 +521,7 @@ namespace mu2e
     trkdiag->Branch("snhits",&_snhits,"snhits/I");
     trkdiag->Branch("sndof",&_sndof,"sndof/I");
     trkdiag->Branch("sniter",&_sniter,"sniter/i");
-    trkdiag->Branch("snweediter",&_snweediter,"snweediter/i");
+    trkdiag->Branch("snweediter",&_snweediter,"snweediter/I");
     trkdiag->Branch("snactive",&_snactive,"snactive/I");
     trkdiag->Branch("schisq",&_schisq,"schisq/F");
     trkdiag->Branch("nchit",&_nchit,"nchit/i");
@@ -657,7 +657,7 @@ namespace mu2e
       if(conversion)ctsp->Fill(time);
     }
     // find peaks, so they show up on diagnostic plot too
-    static TSpectrum tspec(_maxnpeak);
+    TSpectrum tspec(_maxnpeak);
     tspec.Search(ttsp,1,"new",_peakfrac);
   }
 
