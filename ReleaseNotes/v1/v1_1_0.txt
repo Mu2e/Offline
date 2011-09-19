@@ -1,11 +1,18 @@
 
-  $Id: v1_1_0.txt,v 1.14 2011/09/16 02:13:51 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2011/09/16 02:13:51 $
+  $Id: v1_1_0.txt,v 1.15 2011/09/19 23:56:06 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2011/09/19 23:56:06 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_0
+
+16) September 19, 2011 kutschke
+    Added endJob printout to Filters/src/MinimumHits_module.cc
+
+15) September 18, 2011 kutschke
+    Removed maybe_ref.hh from Mu2eUtilties. Now use the version from cetlib.
+    This triggered changes to a few other include files.
 
 14) September 15, 2011 ehrlich
     EventDisplay
