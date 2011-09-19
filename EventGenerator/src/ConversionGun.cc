@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.32 2011/08/26 21:40:50 onoratog Exp $
+// $Id: ConversionGun.cc,v 1.33 2011/09/19 17:32:44 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:40:50 $
+// $Date: 2011/09/19 17:32:44 $
 //
 // Original author Rob Kutschke
 //
@@ -61,7 +61,7 @@ namespace mu2e {
 
     // Random distribution.
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
-    _STfname(config.getString("conversionGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
+    _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("conversionGun.nToSkip",0)),
 
     // Properly initialized later.

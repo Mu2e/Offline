@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.35 2011/08/26 21:40:50 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.36 2011/09/19 17:32:44 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:40:50 $
+// $Date: 2011/09/19 17:32:44 $
 //
 // Original author Rob Kutschke
 //
@@ -65,7 +65,7 @@ namespace mu2e {
 
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
-    _STfname(config.getString("decayinorbitGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
+    _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("decayinorbitGun.nToSkip",0)),
 
 

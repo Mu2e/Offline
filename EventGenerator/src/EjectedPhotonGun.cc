@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.  
 // //
-// $Id: EjectedPhotonGun.cc,v 1.3 2011/08/26 21:40:50 onoratog Exp $
+// $Id: EjectedPhotonGun.cc,v 1.4 2011/09/19 17:32:44 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:40:50 $
+// $Date: 2011/09/19 17:32:44 $
 //
 // Original author Gianni Onorato
 //
@@ -66,7 +66,7 @@ namespace mu2e {
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _flatmomentum ( getEngine() ),
-    _STfname(config.getString("ejectedPhotonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
+    _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("ejectedPhotonGun.nToSkip",0)),
 
     // Histogram pointers

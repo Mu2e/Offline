@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.28 2011/08/26 21:32:18 onoratog Exp $
+// $Id: EjectedProtonGun.cc,v 1.29 2011/09/19 17:32:44 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Date: 2011/09/19 17:32:44 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -69,7 +69,7 @@ namespace mu2e {
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),
     _nToSkip (config.getInt("ejectedProtonGun.nToSkip",0)),
-    _STfname(config.getString("ejectedProtonGun.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
+    _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     // Histogram pointers
     _hMultiplicity(0),
     _hKE(0),
