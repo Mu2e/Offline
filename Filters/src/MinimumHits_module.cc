@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.3 2011/07/17 21:38:17 kutschke Exp $
+// $Id: MinimumHits_module.cc,v 1.4 2011/09/19 23:53:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/17 21:38:17 $
+// $Date: 2011/09/19 23:53:57 $
 //
 // Contact person Rob Kutschke.
 //
@@ -46,6 +46,7 @@ namespace mu2e {
     bool filter( art::Event& event);
 
     virtual bool beginRun(art::Run &run);
+    virtual void endJob();
 
   private:
 
@@ -79,6 +80,9 @@ namespace mu2e {
     DiagnosticsG4              diagnostics_;
     GeneratorSummaryHistograms genSummary_;
 
+    // Number of events that pass the filter.
+    int nPassed_;
+
   };
 
   MinimumHits::MinimumHits(fhicl::ParameterSet const& pset):
@@ -99,7 +103,8 @@ namespace mu2e {
     hEDepStep_(0),
     ntup_(0),
     diagnostics_(),
-    genSummary_(){
+    genSummary_(),
+    nPassed_(0){
   }
 
   bool MinimumHits::beginRun(art::Run& ){
@@ -249,10 +254,17 @@ namespace mu2e {
 
     }
 
-
+    nPassed_++;
     return true;
 
   } // end of ::analyze.
+
+  void MinimumHits::endJob() {
+    mf::LogInfo("Summary") 
+      << "MinimumHits_module: Number of events passing the filter: " 
+      << nPassed_
+      << "\n";
+  }
 
 }
 
