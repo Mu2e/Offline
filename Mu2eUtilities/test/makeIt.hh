@@ -3,15 +3,15 @@
 //
 // Part of the test suite for the make_ref class template.
 //
-//  $Id: makeIt.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/05/17 15:41:36 $
+//  $Id: makeIt.hh,v 1.3 2011/09/19 15:11:22 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2011/09/19 15:11:22 $
 //
 // Original author Rob Kutschke
 //
 
 #include "TestTools/inc/TestClass.hh"
-#include "Mu2eUtilities/inc/maybe_ref.hh"
+#include "cetlib/maybe_ref.h"
 
 cet::maybe_ref<mu2e::TestClass const> makeItConst( int i, int j);
 cet::maybe_ref<mu2e::TestClass> makeIt( int i, int j);
