@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.19 2011/09/15 02:04:58 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.20 2011/09/20 04:45:59 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/15 02:04:58 $
+// $Date: 2011/09/20 04:45:59 $
 //
 // Original author Ralf Ehrlich
 //
@@ -79,7 +79,7 @@ namespace mu2e_eventdisplay
     void prepareAnimation();
     void drawSituation();
     void drawEverything();
-    void combineAnimFiles();
+    void createAnimFile();
     //the following functions are inherited from TGMainFrame
     virtual Bool_t HandleConfigureNotify(Event_t *event);
     virtual Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
@@ -92,13 +92,14 @@ namespace mu2e_eventdisplay
     boost::shared_ptr<DataInterface>   _dataInterface;
     boost::shared_ptr<ContentSelector> _contentSelector;
     boost::shared_ptr<RootFileManager> _rootFileManager;
+    boost::shared_ptr<RootFileManager> _rootFileManagerAnim;
     std::vector<boost::shared_ptr<HistDraw> > _histDrawVector;
 #endif
     double              _timeCurrent, _timeStart, _timeStop;
     int                 _minHits, _eventToFind;
     int                 _eventNumber, _runNumber;
     bool                _isClosed, _findEvent;
-    bool                _saveAnim;
+    bool                _saveAnim, _saveAnimRoot;
     int                 _saveAnimCounter;
     std::string         _saveAnimFile;
     //bare pointers needed since ROOT manages these objects

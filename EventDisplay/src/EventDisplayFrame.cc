@@ -5,11 +5,9 @@
 #include <TColor.h>
 #include <TGButton.h>
 #include <TGComboBox.h>
-#include <TGFileDialog.h>
 #include <TGIcon.h>
 #include <TGLabel.h>
 #include <TGListBox.h>
-#include "TGMsgBox.h"
 #include <TGTextBuffer.h>
 #include <TGTextEntry.h>
 #include <TPad.h>
@@ -23,6 +21,7 @@
 
 #include "TrackColorSelector.h"
 #include "ContentSelector.h"
+#include "SaveDialogManager.h"
 #include "RootFileManager.h"
 #include "DataInterface.h"
 #include "EventDisplayFrame.h"
@@ -202,8 +201,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   saveAnimButton->Associate(this);
 
   TGHorizontalFrame *subFrameSaveRootFile = new TGHorizontalFrame(_subFrame,300,15);
-  TGTextButton *setRootFileButton         = new TGTextButton(subFrameSaveRootFile, "Set Root File", 52);
-  TGTextButton *addToRootFileButton       = new TGTextButton(subFrameSaveRootFile, "Add Event to Root File", 53);
+  TGTextButton *setRootFileButton         = new TGTextButton(subFrameSaveRootFile, "Set Root Tree File", 52);
+  TGTextButton *addToRootFileButton       = new TGTextButton(subFrameSaveRootFile, "Add Event to Root Tree", 53);
   subFrameSaveRootFile->AddFrame(setRootFileButton, lh1);
   subFrameSaveRootFile->AddFrame(addToRootFileButton, lh1);
   _subFrame->AddFrame(subFrameSaveRootFile, lh0);
@@ -404,6 +403,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _mainPad->cd();
   _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this));
   _rootFileManager = boost::shared_ptr<RootFileManager>(new RootFileManager);
+  _rootFileManagerAnim = boost::shared_ptr<RootFileManager>(new RootFileManager);
 
 //syntax for Format from http://root.cern.ch/phpBB3/viewtopic.php?t=8700
   gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",this));
@@ -671,7 +671,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          {
                            _timer->Stop();
                            _timeCurrent=NAN;
-                           if(_saveAnim) combineAnimFiles();
+                           if(_saveAnim) createAnimFile();
                          }
                          if(param1==42)
                          {
@@ -724,55 +724,29 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==80) updateTimeIntervalFields(false);
                          if(param1==81) updateTimeIntervalFields(true);
-                         if(param1==50 || param1==51)
+                         if(param1==50)
                          {
-                           const char *fileType[]={"Gif files","*.gif",0,0};
-                           TGFileInfo fileInfo;
-                           fileInfo.fFileTypes = fileType;
-                           TGFileDialog *fileDialog;
-                           fileDialog=new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDSave, &fileInfo); //ROOT takes care of deleting this
-                           if(!fileInfo.fFilename) break;
-                           char f[strlen(fileInfo.fFilename)+5];
-                           strcpy(f,fileInfo.fFilename);
-                           if(strcmp(f+strlen(f)-4,".gif")!=0) strcat(f,".gif");
-                           if(param1==50) _mainPad->SaveAs(f);
-                           if(param1==51)
+                           std::string filename;
+                           if(SaveDialogManager::singleImage(filename)) _mainPad->SaveAs(filename.c_str());
+                         }
+                         if(param1==51)
+                         {
+                           std::string filename;
+                           bool isRootFile;
+                           if(SaveDialogManager::animatedImage(filename,isRootFile))
                            {
                              _saveAnim=true;
-                             _saveAnimFile.assign(f,strlen(f)-4);
+                             if(isRootFile) _saveAnimRoot=true; else _saveAnimRoot=false;
+                             _saveAnimFile=filename;
                              prepareAnimation();
                            }
                          }
                          if(param1==52)
                          {
-                           if(_rootFileManager->isActive())
-                           {
-                             TGMsgBox *rootFileSet;
-                             rootFileSet = new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Error","Root file has been set already!",kMBIconExclamation,kMBOk);
-                             break;
-                           }
-                           const char *fileType[]={"Root files","*.root",0,0};
-                           TGFileInfo fileInfo;
-                           fileInfo.fFileTypes = fileType;
-                           TGFileDialog *fileDialog;
-                           fileDialog=new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDSave, &fileInfo); //ROOT takes care of deleting this
-                           if(!fileInfo.fFilename) break;
-                           char f[strlen(fileInfo.fFilename)+6];
-                           strcpy(f,fileInfo.fFilename);
-                           if(strcmp(f+strlen(f)-5,".root")!=0) strcat(f,".root");
-                           _rootFileManager->setFile(f);
+                           std::string filename;
+                           if(SaveDialogManager::rootTree(filename)) _rootFileManager->setFile(filename.c_str());
                          }
-                         if(param1==53)
-                         {
-                           if(!_rootFileManager->isActive())
-                           {
-                             TGMsgBox *rootFileSet;
-                             rootFileSet = new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Error","Root file has not been set, yet!",kMBIconExclamation,kMBOk);
-                             break;
-                           }
-                           _mainPad->cd();
-                           _rootFileManager->storeEvent();
-                         }
+                         if(param1==53) _rootFileManager->storeEvent(_mainPad);
                          if(param1==1500)
                          {
                            double min[3],max[3];
@@ -925,6 +899,8 @@ void EventDisplayFrame::prepareAnimation()
   _timeStop=atof(_timeIntervalField2->GetText());
 
   if(isnan(_timeStart) || isnan(_timeStop) || (_timeStop-_timeStart)<=0.0) return;
+
+  if(_saveAnim && _saveAnimRoot) _rootFileManagerAnim->setFile(_saveAnimFile.c_str());
   double diff=_timeStop-_timeStart;
   _timeStart-=diff*0.01;
   _timeStop+=diff*0.01;
@@ -942,31 +918,39 @@ Bool_t EventDisplayFrame::HandleTimer(TTimer *)
   if(_saveAnim)
   {
     _saveAnimCounter++;
-    if(_saveAnimCounter%3==0) //save only every 3rd gif to make final file smaller
+    if(_saveAnimRoot) _rootFileManagerAnim->storeEvent(_mainPad);
+    else
     {
-      char c[_saveAnimFile.length()+15];
-      sprintf(c,"%s_tmp_%04i.gif",_saveAnimFile.c_str(),_saveAnimCounter);
-      _mainPad->SaveAs(c);
+      if(_saveAnimCounter%3==0) //save only every 3rd gif to make final file smaller
+      {
+        char c[_saveAnimFile.length()+15];
+        sprintf(c,"%s.tmp_%04i.gif",_saveAnimFile.c_str(),_saveAnimCounter);
+        _mainPad->SaveAs(c);
+      }
     }
   }
   if(_timeCurrent>=_timeStop)
   {
     _timer->Stop();
     _timeCurrent=NAN;
-    if(_saveAnim) combineAnimFiles();
+    if(_saveAnim) createAnimFile();
     if(_repeatAnimationButton->GetState()==kButtonDown) prepareAnimation();
   }
   return kTRUE;
 }
 
-void EventDisplayFrame::combineAnimFiles()
+void EventDisplayFrame::createAnimFile()
 {
   _saveAnim=false;
-  char c[2*_saveAnimFile.length()+100];
-  sprintf(c,"convert -delay 50 -loop 0 %s_tmp_*.gif %s.gif",_saveAnimFile.c_str(),_saveAnimFile.c_str());
-  gSystem->Exec(c);
-  sprintf(c,"rm -f %s_tmp_*.gif",_saveAnimFile.c_str());
-  gSystem->Exec(c);
+  if(_saveAnimRoot) _rootFileManagerAnim->write();
+  else
+  {
+    char c[2*_saveAnimFile.length()+100];
+    sprintf(c,"convert -delay 50 -loop 0 %s.tmp_*.gif %s",_saveAnimFile.c_str(),_saveAnimFile.c_str());
+    gSystem->Exec(c);
+    sprintf(c,"rm -f %s.tmp_*.gif",_saveAnimFile.c_str());
+    gSystem->Exec(c);
+  }
 }
 
 void EventDisplayFrame::drawSituation()

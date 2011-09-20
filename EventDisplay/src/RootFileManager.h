@@ -1,9 +1,9 @@
 //
 // Class which manages a root file which stores a TTree with one branch which hold TObjArrays. These TObjArrays hold all TPolyLines, TPolyLine3Ds, and TTexts of each event.
 //
-// $Id: RootFileManager.h,v 1.1 2011/09/04 04:43:34 ehrlich Exp $
+// $Id: RootFileManager.h,v 1.2 2011/09/20 04:45:59 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/04 04:43:34 $
+// $Date: 2011/09/20 04:45:59 $
 //
 // Original author Ralf Ehrlich
 //
@@ -17,6 +17,7 @@
 #include <TPolyLine3D.h>
 #include <TPolyLine.h>
 #include <TBox.h>
+#include <TGMsgBox.h>
 #include <TText.h>
 
 namespace mu2e_eventdisplay
@@ -39,8 +40,9 @@ class RootFileManager
 
   void setFile(const char *c)
   {
-    if(_active) return;
+    if(_active) write();
     _active=true;
+
     TDirectory *tmpDirectory=gDirectory;
     _file=boost::shared_ptr<TFile>(new TFile(c,"RECREATE"));
     _directory=gDirectory;
@@ -54,10 +56,14 @@ class RootFileManager
 
   bool isActive() {return _active;}
 
-  void storeEvent()
+  void storeEvent(TPad *pad)
   {
+    pad->cd();
     if(_active)
     {
+      TDirectory *tmpDirectory=gDirectory;
+      gDirectory=_directory;
+
       _objArray = new TObjArray();
       _objArray->SetOwner();
       TObjLink *lnk = gPad->GetListOfPrimitives()->FirstLink();
@@ -89,6 +95,13 @@ class RootFileManager
       _tree->Fill();
       _objArray->Clear();
       delete _objArray;
+
+      gDirectory=tmpDirectory;
+    }
+    else
+    {
+      TGMsgBox *rootFileSet;
+      rootFileSet = new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Error","Root file has not been set, yet!",kMBIconExclamation,kMBOk);
     }
   }
 
@@ -96,8 +109,10 @@ class RootFileManager
   {
     if(_active)
     {
+      _active=false;
       TDirectory *tmpDirectory=gDirectory;
       gDirectory=_directory;
+      std::cout<<"Writing Root Tree to file "<<_file->GetName()<<std::endl;
       _tree->Write();
       _file->Close();
       gDirectory=tmpDirectory;

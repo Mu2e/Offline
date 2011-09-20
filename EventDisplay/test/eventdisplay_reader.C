@@ -102,6 +102,13 @@ void setup()
   TAxis3D::GetPadAxis(gPad)->GetXaxis()->SetTitleSize(0.025);
   TAxis3D::GetPadAxis(gPad)->GetYaxis()->SetTitleSize(0.025);
   TAxis3D::GetPadAxis(gPad)->GetZaxis()->SetTitleSize(0.025);
+  double rmin[3],rmax[3];
+  gPad->GetView()->GetRange(rmin,rmax);
+  rmin[0]=-800;
+  rmax[0]=800;
+  rmin[1]=-800;
+  rmax[1]=800;
+  gPad->GetView()->SetRange(rmin,rmax);
   gPad->Modified();
   gPad->Update();
   cout<<"If the canvas has the focus, and if the mouse is on top of the canvas,"<<endl; 
@@ -134,7 +141,7 @@ void eventdisplay_reader(char* filename)
     if(!gROOT->GetColor(i+2000)) c = new TColor(i+2000,r,g,b);
   }
 
-  TCanvas *canvas=new TCanvas("Canvas","Mu2e Event",900,800);
+  TCanvas *canvas=new TCanvas("Canvas","Mu2e Event",800,800);
   drawevent(0);
   setup();
 
