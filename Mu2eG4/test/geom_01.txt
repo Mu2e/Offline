@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.97 2011/09/19 17:32:44 onoratog Exp $
+// $Id: geom_01.txt,v 1.98 2011/09/21 15:47:20 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/09/19 17:32:44 $
+// $Date: 2011/09/21 15:47:20 $
 //
 // Original author Rob Kutschke
 //
@@ -448,7 +448,6 @@ bool   protonabsorber.visible      = true;
 bool   protonabsorber.solid        = false;
 
 // Neutron Absorber (document draft dated 2010-07-16)
-//string neutronabsorber.materialName          = "Polyethylene092B300d119";
 string neutronabsorber.materialName          = "Polyethylene092Li075d106";
 double neutronabsorber.internalOuterRadius   =  940.0;
 double neutronabsorber.internalInnerRadius0  =  460.0;
