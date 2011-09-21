@@ -1,11 +1,23 @@
 
-  $Id: v1_1_0.txt,v 1.16 2011/09/20 05:03:36 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2011/09/20 05:03:36 $
+  $Id: v1_1_0.txt,v 1.17 2011/09/21 15:51:51 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2011/09/21 15:51:51 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_0
+
+
+18) September 21, 2011 onoratog
+    Some commented lines erased from geom_01.txt.
+    The stopped muons input file to be read by generators who use FPG now is unique.
+    In the config file the syntax is now:
+    string FoilParticleGenerator.STfilename = "FileName"
+    instead of 
+    string conversionGun.STfilename = "complete path of the file"
+    and 
+    string EjectedProtonGun.STfilename = "complete path of the file"
+    and so on.
 
 17) September 19, 2011 ehrlich
     EventDisplay
