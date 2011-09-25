@@ -1,0 +1,27 @@
+
+process_name : fhiclTest00
+
+physics : {
+
+  analyzers: {
+    hi : { 
+      module_type : HelloWorld 
+      foo :  bar
+    }
+  }
+
+  e1 : [ hi ]
+
+  end_paths      : [ e1 ]
+
+}
+
+
+abc : [ 1, 3, 5, 7  ]
+abc[0] : 9
+abc[5] : 11 
+
+physics.analyzers.hi.foo : 1
+physics.analyzers.hi.foo : 2
+
+a.b.c : 42
