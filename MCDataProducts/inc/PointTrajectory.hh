@@ -5,15 +5,16 @@
 // One can imagine that some day we will have smarter
 // trajectory classes but this is what we have for now.
 //
-// $Id: PointTrajectory.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
+// $Id: PointTrajectory.hh,v 1.2 2011/09/25 17:53:54 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Date: 2011/09/25 17:53:54 $
 //
 // Original author Rob Kutschke
 //
 
-#include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
+#include "cetlib/map_vector.h"
+#include <vector>
 
 namespace mu2e {
 
@@ -34,9 +35,12 @@ namespace mu2e {
     // Accept compiler written d'tor, copy c'tor and assignment operator.
 
     // Accessors
-    int   simId() const { return _simid; }
+    int simId() const { return _simid; }
     size_t size() const { return _points.size(); }
     std::vector<CLHEP::Hep3Vector> const& points() const { return _points;}
+
+    // Modifiers, needed for event mixing.
+    int& simId() { return _simid; }
 
     // The following c'tor and addPoints method form a two-phase c'tor.
     // This is needed in addPointTrajectories to avoid copying the vector
