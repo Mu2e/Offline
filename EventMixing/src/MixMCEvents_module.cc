@@ -2,9 +2,9 @@
 // Read zero or more events from an art event-data file and mix them into the current event.
 // Part of the job is to update art::Ptr objects to point into the mixed collections.
 //
-// $Id: MixMCEvents_module.cc,v 1.2 2011/09/25 18:39:09 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.3 2011/09/26 18:56:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/09/25 18:39:09 $
+// $Date: 2011/09/26 18:56:04 $
 //
 // Contact person Rob Kutschke.
 //
@@ -270,7 +270,6 @@ namespace {
         << "Stepper::next : error navigating mixed collection to find Ptrs.";
     }
 
-
     StepInfo const& info( size_t i) const{
         return info_.at(i);
     }
@@ -292,6 +291,18 @@ namespace {
     }
 
   }; // end class Stepper
+
+  // Sum of the sizes of all input collections.
+  // This is a candidate to be moved to a more general library.
+  template <class T>
+  size_t totalSize( std::vector< T const*> in){
+    size_t sum;
+    for ( typename std::vector<T const*>::const_iterator i=in.begin(), e=in.end();
+          i !=e ; ++i ){
+      sum += (*i)->size();
+    }
+    return sum;
+  }
 
 } // end anonymous namespace
 
@@ -559,16 +570,12 @@ mixPointTrajectories( std::vector< mu2e::PointTrajectoryCollection const *> cons
 
   if  ( hack(in.size()) ) return true;
 
-  // Build the flattened collection in a temporary std::map.
-  // This will be inserted into the output collection in a separate step.
-  // We will need to extend the interface of cet::map_vector in order to build the
-  // the output in place and avoid the extra copies.
+  size_t outSize(totalSize(in));
+  out.reserve(outSize);
 
   typedef mu2e::PointTrajectoryCollection::key_type                             key_type;
   typedef std::vector< mu2e::PointTrajectoryCollection const *>::const_iterator Iter;
-  typedef std::map<key_type,mu2e::PointTrajectory>                              tmp_type;
 
-  tmp_type tmp;
   int inputIndex(-1);
   for ( Iter i=in.begin(), e=in.end(); i !=e; ++i ){
 
@@ -583,29 +590,27 @@ mixPointTrajectories( std::vector< mu2e::PointTrajectoryCollection const *> cons
     
       key_type newKey = key_type(unsigned(t->first.asUint()) + simOffsets_.at(inputIndex));
 
-      std::pair<tmp_type::iterator,bool> ret=
-        tmp.insert(std::pair<key_type,mu2e::PointTrajectory>(newKey,traj));
-
-      // The key previously existed, there is a mistake somewhere.
-      if ( ! ret.second ){
+      // This is redundant (unless I have made a mistake); leave it in for a while.
+      if ( newKey.asInt() <= out.delta() ){
         throw cet::exception("RANGE")
-          << "MixMCEventsDetail::mixPointTrajectories: the key was already in the temporary map: " 
+          << "MixMCEventsDetail::mixPointTrajectories: the key already exists: " 
           << newKey
           << " Input index: " << inputIndex 
-          << " old key: " << key;
+          << " old key: "     << key;
       }
 
-      // Update the simId data member in the transient map.  
-      // This data member will become an art::Ptr<SimParticle> some day.
-      mu2e::PointTrajectory& newtraj = ret.first->second;
+      // Default construct an entry in the output map_vector; hold a reference to it.
+      mu2e::PointTrajectory& newtraj = out[newKey];
+
+      // Copy the input data into the map.
+      newtraj = traj;
+
+      // Update the simId element of the PointTrajectory.
       newtraj.simId() = newKey.asInt();
 
     } // end loop over one input collection
 
   } // end loop over the collection of input collections.
-
-  // Copy the temporary map into the output.
-  out.insert( tmp.begin(), tmp.end());
 
   return true;
 } // end mu2e::MixMCEventsDetail::mixPointTrajectories
