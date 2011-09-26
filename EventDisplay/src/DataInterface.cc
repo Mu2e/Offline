@@ -907,8 +907,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
     {
       const mu2e::SimParticle& particle = iter->second;
+      const cet::map_vector_key& particleKey = iter->first;
       int id = particle.id().asInt();
-      int parentid = particle.parentId().asInt();
+      int parentid = -1;
+      if(particle.hasParent()) parentid = particle.parent()->id().asInt();
       int particleid=particle.pdgId();
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
@@ -949,18 +951,16 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       info->setText(2,c3);
       info->setText(3,c4);
       info->setText(4,"Daughter IDs:");
-      std::vector<int> daughterVect;
       std::vector<cet::map_vector_key>::const_iterator daughter;
       for(daughter=particle.daughterIds().begin();
           daughter!=particle.daughterIds().end();
           daughter++)
       {
         info->expandLine(4,daughter->asInt(),"");
-        daughterVect.push_back(daughter->asInt());
       }
       boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, 
                                                _geometrymanager, _topvolume, _mainframe, info));
-      findTrajectory(contentSelector,shape,id, t1,t2, simParticles,daughterVect);
+      findTrajectory(contentSelector,shape,particleKey, t1,t2, simParticles,particle.daughterIds());
       _components.push_back(shape);
       _tracks.push_back(shape);
     }
@@ -1074,27 +1074,21 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 }
 
 void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,
-                                   boost::shared_ptr<Track> const &track, int id,
+                                   boost::shared_ptr<Track> const &track, const cet::map_vector_key &id,
                                    double t1, double t2,
                                    const mu2e::SimParticleCollection *simParticles,
-                                   const std::vector<int> &daughterVect)
+                                   const std::vector<cet::map_vector_key> &daughterVect)
 {
   const mu2e::PointTrajectoryCollection *pointTrajectories=contentSelector->getPointTrajectoryCollection();
   if(pointTrajectories!=NULL)
   {
-// loop over all trajectories
-    cet::map_vector<mu2e::PointTrajectory>::const_iterator iter;
-    for(iter=pointTrajectories->begin(); iter!=pointTrajectories->end(); iter++)
+    const mu2e::PointTrajectory* trajectory=pointTrajectories->getOrNull(id);
+    if(trajectory)
     {
-// find the trajectory corresponding to this track id
-      const mu2e::PointTrajectory& trajectory = iter->second;
-      int trajectory_id = trajectory.simId();
-      if(id==trajectory_id)
-      {
 // fill a vector with all trajectory points, leave the times as NAN,
 // except the first and last point, which get the times from the track
         std::vector<trajectoryStruct> trajectoryVect;
-        const std::vector<CLHEP::Hep3Vector>& pVect=trajectory.points();
+        const std::vector<CLHEP::Hep3Vector>& pVect=trajectory->points();
         for(unsigned int i=0; i<pVect.size(); i++)
         {
           trajectoryStruct ts;
@@ -1104,23 +1098,22 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
           if(i==(pVect.size()-1)) ts.t=t2;
           trajectoryVect.push_back(ts);
         }
+
+// the next section will disappear once the time information is present in the PointTrajectory class
 // loop over all daughter ids
-        for(unsigned int i=0; i<daughterVect.size(); i++)
+        std::vector<cet::map_vector_key>::const_iterator daughterIter;
+        for(daughterIter=daughterVect.begin(); daughterIter!=daughterVect.end(); daughterIter++)
         {
-          cet::map_vector<mu2e::SimParticle>::const_iterator iter;
-          for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
-          {
 // find the track which corresponds to each daughter id
-            const mu2e::SimParticle& particle = iter->second;
-            int id = particle.id().asInt();
-            if(id==daughterVect[i])
-            {
+          const mu2e::SimParticle *particle=simParticles->getOrNull(*daughterIter);
+          if(particle)
+          {
 // extract the start position and start time of the daughter track
               CLHEP::Hep3Vector v;
-              v.setX(particle.startPosition().x()+_xOffset);
-              v.setY(particle.startPosition().y());
-              v.setZ(particle.startPosition().z()+_zOffset);
-              double newTime=particle.startGlobalTime();
+              v.setX(particle->startPosition().x()+_xOffset);
+              v.setY(particle->startPosition().y());
+              v.setZ(particle->startPosition().z()+_zOffset);
+              double newTime=particle->startGlobalTime();
               if(newTime>t2 || newTime<t1) break;
 // try to find the point in the trajectory vector, which is closest to this starting point
               double mindiff=NAN;
@@ -1141,8 +1134,6 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
                 double oldTime=trajectoryVect[mindiffPoint].t;
                 if(newTime<oldTime || isnan(oldTime)) trajectoryVect[mindiffPoint].t=newTime;
               }
-              break;
-            }
           }
         }
 
@@ -1178,8 +1169,6 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
                                     trajectoryVect[i].v.getZ(),
                                     trajectoryVect[i].t);
         }
-        return;
-      }
     }
   }
 }

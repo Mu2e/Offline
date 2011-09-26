@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.21 2011/09/12 23:16:34 ehrlich Exp $
+// $Id: DataInterface.h,v 1.22 2011/09/26 17:12:35 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/12 23:16:34 $
+// $Date: 2011/09/26 17:12:35 $
 //
 // Original author Ralf Ehrlich
 //
@@ -86,10 +86,10 @@ class DataInterface
   void resetBoundaryP(spaceminmax &m);
   void toForeground();
   void findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,
-                      boost::shared_ptr<Track> const &track, int id,
+                      boost::shared_ptr<Track> const &track, const cet::map_vector_key &id,
                       double t1, double t2,
                       const mu2e::SimParticleCollection *simParticles,
-                      const std::vector<int> &daughterVect);
+                      const std::vector<cet::map_vector_key> &daughterVect);
   struct trajectoryStruct
   {
     CLHEP::Hep3Vector v;

@@ -1,9 +1,9 @@
 //
 // Class which manages the "Save As" dialog boxes by providing the right file types, and checking the extension of the returned file name.
 //
-// $Id: SaveDialogManager.h,v 1.1 2011/09/20 04:45:59 ehrlich Exp $
+// $Id: SaveDialogManager.h,v 1.2 2011/09/26 17:12:35 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/20 04:45:59 $
+// $Date: 2011/09/26 17:12:35 $
 //
 // Original author Ralf Ehrlich
 //
@@ -28,7 +28,9 @@ class SaveDialogManager
                              "EPS files","*.eps",
                              "XPM files","*.xpm",
                              "SVG files","*.svg",
-//                             "XML files","*.xpm",  //requires a streamer for the ComponentInfoContainer
+//                             "XML files","*.xpm",   //requires a streamer for the ComponentInfoContainer
+//                             "C files","*.C",       //opening the files requires loading all mu2e libraries
+//                             "C++ files","*.cxx",   //opening the files requires loading all mu2e libraries
                              0,0};
     bool to_return=dialogBox(f,fileTypes);
     return(to_return);
