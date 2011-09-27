@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.24 2011/09/08 19:06:05 mu2ecvs Exp $
+# $Id: SConstruct,v 1.25 2011/09/27 21:48:31 mu2ecvs Exp $
 # $Author: mu2ecvs $
-# $Date: 2011/09/08 19:06:05 $
+# $Date: 2011/09/27 21:48:31 $
 #
 # Original author Rob Kutschke.
 #
@@ -138,7 +138,16 @@ if not(os.path.exists('BaBar/BaBar/src/SConscript')):
     ss.remove('KalmanTests/src/SConscript')
     ss.remove('TrkPatRec/src/SConscript')
     print 'BaBar package is absent. Will not build packages that depend on it.'
+else:
+#  Remove Dch code for now: not used by any officlal package
+    for root,dirs,files in os.walk('BaBar/Dch'):
+	for file in files:
+	    if file == 'SConscript': ss.remove('%s/%s'%(root[0:],file))
+	    #print '%s/%s'%(root[0:],file)
+	    pass
+	pass
 
+#
 # Tell scons to operate on all of the SConscript files found in the previous step.
 env.SConscript(ss)
 
