@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.9 2011/09/04 15:04:30 mu2ecvs Exp $
+// $Id: KalFit.hh,v 1.10 2011/09/27 21:49:09 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/04 15:04:30 $
+// $Date: 2011/09/27 21:49:09 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -22,11 +22,9 @@
 // KalFit objects
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/DetStrawHitElem.hh"
 #include "KalmanTrack/KalContext.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "BField/BField.hh"
-#include "MatEnv/MatDBInfo.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
@@ -63,14 +61,13 @@ namespace mu2e
     virtual ~KalFit();
 // main function: given a track definition, create a fit object from it
     void makeTrack(TrkDef const& mytrk,TrkKalFit& myfit);
-    void makeHits(TrkDef const& mytrk,TrkKalFit& myfit);
+// add a set of hits to an existing fit
+    void addHits(TrkKalFit& myfit,const StrawHitCollection* straws, std::vector<size_t> indices);
   private:
 // Fetch the BField.  this function fetches the field if it's not yet initialized
     const BField* bField();
     KalContext* _kalcon; // BaBar configuration object
     BField* _bfield; // magentic field description, BaBar wrapper, OWNED BY THIS CLASS
-    DetStrawHitElem _wallelem; // fake element to represent straw hit material
-    DetStrawHitElem _gaselem; // fake element to represent straw hit material
     // configuration parameters
     int _debug;
     bool _fieldcorr;
@@ -82,19 +79,22 @@ namespace mu2e
     double _t0tol;
     double _maxhitchi;
     unsigned _maxiter;
+    double _mingap;
     unsigned _minnstraws;
     unsigned _minndof;
     unsigned _maxweed;
     double _herr;
     double _ssmear;
+    double _t0errfac;
     // helper functions
     bool fitable(TrkDef const& mytrk);
     bool updateT0(TrkKalFit& myfit);
     bool weedHits(TrkKalFit& myfit);
+    void fitTrack(TrkKalFit& myfit);
+    void makeHits(TrkDef const& mytrk,TrkKalFit& myfit);
 // general
     static const double _vlight;
     static const double _vdrift;
-    static MatDBInfo* _matdbinfo;
 // 
   };
 }

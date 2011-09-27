@@ -173,7 +173,7 @@ void MomRes(TTree* trk) {
   gStyle->SetOptFit(111111);
 // should have pitch angle and generated hit cuts here, FIXME!!!
   TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nchit>=20&&abs(st00-mcmidt0)<20");
-  TCut tsel = mcsel +TCut("kalfail==0&&nactive>=25");
+  TCut tsel = mcsel +TCut("kalfail==0");
 // selection cuts
   TCut cuts[4];
 
@@ -191,11 +191,25 @@ void MomRes(TTree* trk) {
   
   TH1F* momres[4];
 // cuts for different tightness of selection
-  TCut cuts[4];
-  cuts[0] = tsel;
-  cuts[1] = tsel+"t0err<2.8&&fitmomerr<0.22&&chisq/ndof<5.0";
-  cuts[2] = tsel+"t0err<1.4&&fitmomerr<0.15&&chisq/ndof<3.0";
-  cuts[3] = tsel+"t0err<1.0&&fitmomerr<0.1&&chisq/ndof<2.0";
+  TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
+  ncuts[0] = "nactive>=20";
+  ncuts[1] = "nactive>=20";
+  ncuts[2] = "nactive>=25";
+  ncuts[3] = "nactive>=30";
+  t0cuts[0] = "";
+  t0cuts[1] = "t0err<1.5";
+  t0cuts[2] = "t0err<1.0";
+  t0cuts[3] = "t0err<0.9";
+  momcuts[0] = "";
+  momcuts[1] = "fitmomerr<0.2";
+  momcuts[2] = "fitmomerr<0.18";
+  momcuts[3] = "fitmomerr<0.15";
+  fitcuts[0] = "";
+  fitcuts[1] = "fitcon>1e-4";
+  fitcuts[2] = "fitcon>1e-3";
+  fitcuts[3] = "fitcon>1e-2";
+
+
 
   const char* labels[4] = {"A","B","C","D"};
 
@@ -205,7 +219,7 @@ void MomRes(TTree* trk) {
     char mname[50];
     snprintf(mname,50,"momres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
-    trk->Project(mname,"fitmom-mcentmom",cuts[ires]);
+    trk->Project(mname,"fitmom-mcentmom",ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires]+tsel);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
     sgau->SetParLimits(5,1.0*momres[ires]->GetRMS(),1.0);
@@ -215,10 +229,19 @@ void MomRes(TTree* trk) {
     momres[ires]->Fit("sgau","L");
 
     double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
-    TPaveText* text = new TPaveText(0.1,0.7,0.4,0.8,"NDC");  
+    TPaveText* text = new TPaveText(0.1,0.4,0.4,0.8,"NDC");  
     char line[40];
-    sprintf(line,"%s   Efficiency = %3.2f",labels[ires],keff);
+    sprintf(line,"%s",ncuts[ires].GetTitle());
     text->AddText(line);
+    sprintf(line,"%s",t0cuts[ires].GetTitle());
+    text->AddText(line);
+    sprintf(line,"%s",momcuts[ires].GetTitle());
+    text->AddText(line);
+    sprintf(line,"%s",fitcuts[ires].GetTitle());
+    text->AddText(line);
+    sprintf(line,"Eff=%3.2f",keff);
+    text->AddText(line);
+ 
     text->Draw();
 
 

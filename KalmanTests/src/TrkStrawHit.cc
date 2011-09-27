@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.10 2011/09/06 18:18:51 mu2ecvs Exp $
+// $Id: TrkStrawHit.cc,v 1.11 2011/09/27 21:49:09 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/06 18:18:51 $
+// $Date: 2011/09/27 21:49:09 $
 //
 // Original author David Brown, LBNL
 //
@@ -25,8 +25,12 @@ namespace mu2e
   // drift velocity is a parameter of the makeStrawHits module; I have no access to that, so I hardcode
   // this here.  I'm also hard-coding the wire signal propagation velocity.  FIXME!!!!!
   double TrkStrawHit::_vdrift = 0.05; // mm per nanosecond
-  double TrkStrawHit::_maxdriftpull = 4.0; // disable hits with unphysical drift distance pulls beyond this cut
-
+  double TrkStrawHit::_maxdriftpull = 10.0; // disable hits with unphysical drift distance pulls beyond this cut
+// Material information, BaBar style
+  MatDBInfo* TrkStrawHit::_matdbinfo(new MatDBInfo);
+  DetStrawHitType TrkStrawHit::_wtype(_matdbinfo,"straw-wall");
+  DetStrawHitType TrkStrawHit::_gtype(_matdbinfo,"straw-gas");
+ 
   TrkDummyHit::TrkDummyHit(TrkEnums::TrkViewInfo v, int id, TrkDetElemId::systemIndex sys)
       : _view(v), _eid(id,sys)
   {
@@ -43,7 +47,8 @@ namespace mu2e
   TrkDummyHit* TrkDummyHit::clone() const { return new TrkDummyHit(*this);}
   
   
-  TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw, double hitt0, double hitt0_err,double herr) :
+  TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw,
+    double hitt0, double hitt0_err,double herr) :
     TrkHitOnTrk(new TrkDummyHit(TrkEnums::xyView,strawhit.strawIndex().asInt(),TrkDetElemId::null),1e-5),
     _strawhit(strawhit),
     _straw(straw),
@@ -51,13 +56,15 @@ namespace mu2e
     _hitt0(hitt0),
     _hitt0_err(hitt0_err),
     _herr(herr),
-    _iamb(0)
+    _iamb(0),
+    _welem(&_wtype,this),
+    _gelem(&_gtype,this)
   {
 // is there an efficiency issue fetching the calibration object for every hit???
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     tcal->StrawHitInfo(strawhit,_wpos,_wtime,_tddist_err,_wtime_err);
     CLHEP::Hep3Vector const& wiredir = _straw.getDirection();
-  // get time division and drift information for this straw hit relative to the wire center
+  // get ime division and drift information for this straw hit relative to the wire center
     _tddist = tcal->TimeDiffToDistance(_straw.index(),_strawhit.dt());
     CLHEP::Hep3Vector const& mid = _straw.getMidPoint();
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
@@ -81,7 +88,9 @@ namespace mu2e
       _rdrift(other._rdrift),
       _rdrift_err(other._rdrift_err),
       _tddist(other._tddist),
-      _tddist_err(other._tddist_err)
+      _tddist_err(other._tddist_err),
+      _welem(&_wtype,this),
+      _gelem(&_gtype,this)
   {
 //    std::cout << "creating TrkStrawHit copy " << this << std::endl;
   }
@@ -158,16 +167,16 @@ namespace mu2e
   TrkStrawHit::updateMeasurement(const TrkDifTraj* traj, bool maintainAmbiguity) {
     TrkErrCode status(TrkErrCode::fail);
 // find POCA to the wire
-    updatePoca(traj, maintainAmbiguity);
+    updatePoca(traj);
     if(_poca != 0 && _poca->status().success()) {
       status = _poca->status();
 // set the ambiguity if it was never set, or if allowed, check both ambiguities and set as necessary
       if(_iamb == 0 || !maintainAmbiguity){
 // reset ambiguity only if the difference is significant.  This avoids frothing during the fit iterations
-        if(_rdrift > _herr ||  _iamb == 0){
+//        if(_rdrift > _herr ||  _iamb == 0){
           int newamb = _poca->doca() > 0 ? 1 : -1;
           setAmbig(newamb);
-        }
+//        }
       }
 // sign drift distance by ambiguity
       double residual = _poca->doca() - _rdrift*_iamb;
@@ -194,21 +203,35 @@ namespace mu2e
 
 // compute the pathlength through one wall of the straw, given the drift distance and straw geometry
   double
-  TrkStrawHit::wallPath() const {
+  TrkStrawHit::wallPath(Hep3Vector const& tdir) const {
     double thick = straw().getThickness();
     double radius = straw().getRadius();
-    double drift = min(radius,driftRadius());
-    double wallpath =  sqrt( (radius+thick+drift)*(radius+thick-drift) ) -
-      sqrt( (radius+drift)*(radius-drift) );
+    double drift = driftRadius();
+    if(drift-radius > 3*driftRadiusErr())
+      drift = radius/2.0;
+    else if(drift>radius)
+      drift = 0.95*radius;
+    double wallpath =  (sqrt( (radius+thick+drift)*(radius+thick-drift) ) -
+      sqrt( (radius+drift)*(radius-drift) ));
+  // scale for the other dimension
+    double cost = tdir.dot(_straw.getDirection());
+    if(fabs(cost)<1.0)wallpath /= sqrt( (1.0-cost)*(1.0+cost) );
     return wallpath;
   }
   
-  // compute the pathlength through one wall of the straw, given the drift distance and straw geometry
+  // compute the pathlength through half the gas , given the drift distance and straw geometry
   double
-  TrkStrawHit::gasPath() const {
+  TrkStrawHit::gasPath(Hep3Vector const& tdir) const {
     double radius = straw().getRadius();
-    double drift = min(radius,driftRadius());
+    double drift = driftRadius();
+    if(drift-radius > 3*driftRadiusErr())
+      drift = radius/2.0;
+    else if(drift>radius)
+      drift = 0.95*radius;
     double gaspath = sqrt( (radius+drift)*(radius-drift) );
+// scale for the other dimension
+    double cost = tdir.dot(_straw.getDirection());
+    if(fabs(cost)<1.0)gaspath /= sqrt( (1.0-cost)*(1.0+cost) );
     return gaspath;
   }
 

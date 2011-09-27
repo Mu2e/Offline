@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkPatRecTest01.fcl,v 1.1 2011/09/06 23:38:05 mu2ecvs Exp $
+# $Id: TrkPatRecTest01.fcl,v 1.2 2011/09/27 21:49:14 mu2ecvs Exp $
 # $Author: mu2ecvs $
-# $Date: 2011/09/06 23:38:05 $
+# $Date: 2011/09/27 21:49:14 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -108,7 +108,6 @@ physics :
     {
         module_type    : TrkPatRec
         diagLevel      : 0
-        MCHelix         : false
     # Helix fit configuration
         HelixFit : 
         {
@@ -118,11 +117,12 @@ physics :
     # Kalman fit configuration for the helix seed fit
          SeedFit : 
         {
-            maxiter        : 5
+            maxiter        : 3
             debugLevel     : 0
             material       : false
-            hiterr          : 2.5
+            hiterr          : 5
             seedsmear       : 10000
+	    maxhitchi	    : 5.0
             weedhits        : true
             updateT0        : false
             ambigflip       : true
@@ -135,6 +135,8 @@ physics :
             material       : true
             hiterr          : 0.1
             seedsmear       : 100000
+	    maxhitchi	    : 3.0
+	    mingap	    : 1.0
             weedhits        : true
         }
         

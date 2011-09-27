@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.3 2011/09/16 15:19:04 mu2ecvs Exp $
+// $Id: TrkPatRec_module.cc,v 1.4 2011/09/27 21:49:14 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/16 15:19:04 $
+// $Date: 2011/09/27 21:49:14 $
 //
 // framework
 #include "art/Framework/Core/Event.h"
@@ -33,6 +33,7 @@
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/TrkHelixFit.hh"
 #include "TrkBase/TrkPoca.hh"
 //CLHEP
@@ -70,20 +71,21 @@ namespace mu2e
   struct TrkHitFlag {
 #define TIGHTBIT 0x1
 #define LOOSEBIT 0x2
+#define VERYLOOSEBIT 0x4
+
     TrkHitFlag() : _iflag(0) {}
+    void setVeryLoose() { _iflag |= VERYLOOSEBIT; }
     void setLoose() { _iflag |= LOOSEBIT; }
     void setTight() { _iflag |= TIGHTBIT; }
-
+    bool veryLoose() const { return (_iflag & VERYLOOSEBIT) != 0; }
     bool loose() const { return (_iflag & LOOSEBIT) != 0; }
     bool tight() const { return (_iflag & TIGHTBIT) != 0; }
-
     unsigned _iflag;
   };
-
   class TrkPatRec : public art::EDProducer
   {
   public:
-    enum fittype { helix=0,seed,kal};
+    enum fitType {helixFit=0,seedFit,kalFit};
     explicit TrkPatRec(fhicl::ParameterSet const&);
     virtual ~TrkPatRec();
     virtual void beginJob();
@@ -94,10 +96,11 @@ namespace mu2e
     // configuration parameters
     int _diag,_debug;
     int _printfreq;
+    bool _addhits;
     // event object labels
     std::string _strawhitslabel;
     // cut variables
-    double _edept, _edepl;
+    double _edept, _edepl, _edepvl;
     double _rmint, _rminl;
     double _rmaxt, _rmaxl;
     double _maxdt;
@@ -115,7 +118,7 @@ namespace mu2e
     // used seed fit t0?
     bool _seedt0;
     // outlier cuts
-    double _maxseeddoca,_maxkaldoca;
+    double _maxseeddoca,_maxhelixdoca,_maxadddoca;
     // cache of event objects
     const StrawHitCollection* _strawhits;
    // Kalman fitters.  Seed fit has a special configuration
@@ -126,11 +129,13 @@ namespace mu2e
     bool findData(const art::Event& e);
     bool tighthit(double edep, double rho);
     bool loosehit(double edep, double rho);
+    bool veryloosehit(double edep, double rho);
     void findProximity(std::vector<CLHEP::Hep3Vector> const& shpos, unsigned ish, double maxdist, unsigned& nprox, double& dmin);
     void findPositions(std::vector<CLHEP::Hep3Vector>& shpos);
     void preselectHits(std::vector<CLHEP::Hep3Vector> const& shpos, std::vector<TrkHitFlag>& tflags);
     void findTimePeaks(std::vector<TrkHitFlag> const& tflags, std::vector<TrkTimePeak>& tpeaks);
-    void filterOutliers(TrkDef& mytrk,fittype ftype);  
+    void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitInfo>& thivec);
+    void findMissingHits(std::vector<TrkHitFlag> const& tflags, TrkKalFit& kalfit, std::vector<size_t>& indices);
     void createDiagnostics();
     void fillStrawDiag(std::vector<CLHEP::Hep3Vector> const& shpos,std::vector<TrkTimePeak>& tpeaks);
     void fillTimeDiag(unsigned iev,std::vector<TrkHitFlag> const& tflags);
@@ -158,7 +163,7 @@ namespace mu2e
     std::vector<Int_t> _ntpeaks;
 // fit tuple variables
     TTree* _fitdiag;
-    Int_t _ipeak;
+    Int_t _nadd,_ipeak;
     Float_t _hcx, _hcy, _hr, _hdfdz, _hfz0;
     Float_t _mccx, _mccy, _mcr, _mcdfdz, _mcfz0;
     Int_t _helixfail,_seedfail,_kalfail;
@@ -170,20 +175,18 @@ namespace mu2e
     UInt_t _npeak, _nmc;
     Float_t _peakmax, _tpeak;
 // hit filtering tuple variables
-    TTree *_sdiag, *_hdiag;
-    Float_t _sresid, _hresid;
-    threevec _spos, _hpos;
-    Int_t _smcpdg,_smcgen,_smcproc;
-    Int_t _hmcpdg,_hmcgen,_hmcproc;
+    std::vector<TrkHitInfo> _sfilt, _hfilt;
   };
 
   TrkPatRec::TrkPatRec(fhicl::ParameterSet const& pset) : 
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
-    _printfreq(pset.get<int>("printFrequency",10)),
+    _printfreq(pset.get<int>("printFrequency",11)),
+    _addhits(pset.get<bool>("addhits",true)),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _edept(pset.get<double>("EDep_tight",0.0045)),
     _edepl(pset.get<double>("EDep_loose",0.005)),
+    _edepvl(pset.get<double>("EDep_veryloose",0.008)),
     _rmint(pset.get<double>("RMin_tight",420.0)),
     _rminl(pset.get<double>("RMin_loose",390.0)),
     _rmaxt(pset.get<double>("RMax_tight",630.0)),
@@ -198,8 +201,9 @@ namespace mu2e
     _peakfrac(pset.get<double>("peakfrac",0.1)),
     _tpeakerr(pset.get<double>("timepeakerr",-8.0)),
     _seedt0(pset.get<bool>("SeedT0",false)),
-    _maxseeddoca(pset.get<double>("MaxSeedDoca",180.0)),
-    _maxkaldoca(pset.get<double>("MaxKalDoca",180.0)),
+    _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
+    _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
+    _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit")),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit")),
     _hfit(pset.get<fhicl::ParameterSet>("HelixFit")),
@@ -272,7 +276,8 @@ namespace mu2e
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 // Filter outliers using this helix
-	filterOutliers(seeddef,seed);
+	_hfilt.clear();
+	filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
 // now, fit the seed helix from the filtered hits
 	_seedfit.makeTrack(seeddef,seedfit);
 	if(seedfit._fit.success()){
@@ -282,10 +287,20 @@ namespace mu2e
 	  const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(seedfit._krep->localTrajectory(midflt,locflt));
 	  kaldef.setHelix(*shelix);
 // filter the outliers
-	  filterOutliers(kaldef,kal);
+	  _sfilt.clear();
+	  filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_sfilt);
 // if requested, use the t0 values from the seed fit.  Otherwise, this is re-computed from the hits
 	  if(_seedt0)kaldef.setTrkT0(seedfit._t0);
+	  kaldef.setTraj(&seedfit._krep->pieceTraj());
 	  _kfit.makeTrack(kaldef,kalfit);
+// if successfull, try to add missing hits
+	  if(kalfit._fit.success() && _addhits ){
+	    std::vector<size_t> misshits;
+	    findMissingHits(hitflags,kalfit,misshits);
+	    if(misshits.size() > 0){
+	      _kfit.addHits(kalfit,_strawhits,misshits);
+	    }
+	  }
         }
       }
 // fill fit diagnostics if requested
@@ -322,7 +337,12 @@ namespace mu2e
     return edep < _edept && rho > _rmint && rho < _rmaxt;
   }
 
-  bool TrkPatRec::loosehit(double edep, double rho){
+  bool TrkPatRec::veryloosehit(double edep, double rho){
+  // very loose cuts for adding hits to an existing track
+    return edep < _edepvl;
+  }
+
+ bool TrkPatRec::loosehit(double edep, double rho){
   // looser cuts for pat. rec.
     return edep < _edepl && rho > _rminl && rho < _rmaxl; 
   }
@@ -366,7 +386,8 @@ namespace mu2e
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _strawhits->at(istr);
       TrkHitFlag flag;
-      if(loosehit(sh.energyDep(),shpos[istr].rho()))flag.setLoose();
+      if(veryloosehit(sh.energyDep(),shpos[istr].rho()))flag.setVeryLoose(); 
+      if(loosehit(sh.energyDep(),shpos[istr].rho()))flag.setLoose(); 
       if(tighthit(sh.energyDep(),shpos[istr].rho()))flag.setTight();
       hitflags.push_back(flag);
     }
@@ -409,32 +430,30 @@ namespace mu2e
   }
 
   void
-  TrkPatRec::filterOutliers(TrkDef& mytrk,fittype ftype){
+  TrkPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitInfo>& thivec){
+//  Trajectory info
+    Hep3Vector tdir;
+    HepPoint tpos;
+    traj.getInfo(0.0,tpos,tdir);
 // tracker and conditions
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
-// set cuts
-    double maxdoca(0.0);
-    if(ftype == seed)
-      maxdoca = _maxseeddoca;
-    else
-      maxdoca = _maxkaldoca;
     const StrawHitCollection* hits = mytrk.strawHitCollection();
     const std::vector<size_t>& indices = mytrk.strawHitIndices();
-    const HelixTraj& helix = mytrk.helix();
     std::vector<size_t> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
       StrawHit const& sh = hits->at(indices[ihit]);
       Straw const& straw = tracker.getStraw(sh.strawIndex());
-      double tddist = tcal->TimeDiffToDistance(straw.index(),sh.dt());
-      CLHEP::Hep3Vector pos = straw.getMidPoint() + tddist*straw.getDirection();
+      CLHEP::Hep3Vector hpos = straw.getMidPoint();
+      CLHEP::Hep3Vector hdir = straw.getDirection();
   // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
-      HepPoint spt(pos.x(),pos.y(),pos.z());
-  // estimate fltlen
-      double fltlen = (pos.z()-helix.z0())/helix.sinDip();
-      TrkPoca ptpoca(helix,fltlen,spt);
+      HepPoint spt(hpos.x(),hpos.y(),hpos.z());
+      TrkLineTraj htraj(spt,hdir,-20,20);
+  // estimate flightlength along track.  This assumes a constant BField!!!
+      double fltlen = (hpos.z()-tpos.z())/tdir.z();
+      TrkPoca hitpoca(traj,fltlen,htraj,0.0);
   // flag hits with small residuals
-      if(ptpoca.doca() < maxdoca){
+      if(fabs(hitpoca.doca()) < maxdoca){
 	goodhits.push_back(indices[ihit]);
       }
   // optional diagnostics
@@ -442,27 +461,56 @@ namespace mu2e
   // summarize the MC truth for this strawhit
 	PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(indices[ihit]));
 	std::vector<trksum> mcsum;
-	KalFitMC::fillMCSummary(mcptr,mcsum); 
-	if(ftype == seed){
-	  _spos =pos;
-	  _sresid = ptpoca.doca();
-	  _smcpdg = mcsum[0]._pdgid;
-	  _smcgen = mcsum[0]._gid;
-	  _smcproc = mcsum[0]._pid;
-	  _sdiag->Fill();
-	} else {
-	  _hpos =pos;
-	  _hresid = ptpoca.doca();
-	  _hmcpdg = mcsum[0]._pdgid;
-	  _hmcgen = mcsum[0]._gid;
-	  _hmcproc = mcsum[0]._pid;
-	  _hdiag->Fill();
-	}
+	KalFitMC::fillMCSummary(mcptr,mcsum);
+	TrkHitInfo thinfo;
+	HepPoint tpos =  traj.position(hitpoca.flt1());
+	thinfo._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
+	thinfo._resid = hitpoca.doca();
+	thinfo._mcpdg = mcsum[0]._pdgid;
+	thinfo._mcgen = mcsum[0]._gid;
+	thinfo._mcproc = mcsum[0]._pid;
+	thivec.push_back(thinfo);
       }
     }
 // update track
     mytrk.setIndices(goodhits);
   }
+
+  void
+  TrkPatRec::findMissingHits(std::vector<TrkHitFlag> const& hitflags,TrkKalFit& kalfit,std::vector<size_t>& misshits) {
+    const Tracker& tracker = getTrackerOrThrow();
+    //  Trajectory info
+    Hep3Vector tdir;
+    HepPoint tpos;
+    kalfit._krep->pieceTraj().getInfo(0.0,tpos,tdir);
+    unsigned nstrs = _strawhits->size();
+    for(unsigned istr=0; istr<nstrs;++istr){
+      if(hitflags[istr].veryLoose()){
+	StrawHit const& sh = _strawhits->at(istr);
+	if(fabs(sh.time()-kalfit._t0.t0()) < _maxdt) {
+      // make sure we haven't already used this hit
+	  std::vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
+	  if(ifnd == kalfit._hits.end()){
+	    // good in-time hit.  Compute DOCA of the wire to the trajectory
+	    Straw const& straw = tracker.getStraw(sh.strawIndex());
+	    CLHEP::Hep3Vector hpos = straw.getMidPoint();
+	    CLHEP::Hep3Vector hdir = straw.getDirection();
+	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
+	    HepPoint spt(hpos.x(),hpos.y(),hpos.z());
+	    TrkLineTraj htraj(spt,hdir,-20,20);
+	    // estimate flightlength along track.  This assumes a constant BField!!!
+	    double fltlen = (hpos.z()-tpos.z())/tdir.z();
+	    TrkPoca hitpoca(kalfit._krep->pieceTraj(),fltlen,htraj,0.0);
+	    // flag hits with small residuals
+	    if(fabs(hitpoca.doca()) < _maxadddoca){
+	      misshits.push_back(istr);
+	    }
+	  }
+	}
+      }
+    }
+  }
+
 
   void
   TrkPatRec::createDiagnostics() {
@@ -498,6 +546,7 @@ namespace mu2e
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
 // extend the KalFitMC track diagnostic tuple
     TTree* trkdiag = _kfitmc.createTrkDiag();
+    trkdiag->Branch("nadd",&_nadd,"nadd/I");
     trkdiag->Branch("ipeak",&_ipeak,"ipeak/I");
     trkdiag->Branch("hcx",&_hcx,"hcx/F");
     trkdiag->Branch("hcy",&_hcy,"hcy/F");
@@ -528,20 +577,8 @@ namespace mu2e
     trkdiag->Branch("npeak",&_npeak,"npeak/i");
     trkdiag->Branch("tpeak",&_tpeak,"tpeak/F");
     trkdiag->Branch("nmc",&_nmc,"nmc/i");
-// seed filtering tuple
-    _sdiag = tfs->make<TTree>("sdiag","seed diagnostics");
-    _sdiag->Branch("resid",&_sresid,"resid/F");
-    _sdiag->Branch("spos",&_spos,"x/F:y/F:z/F");
-    _sdiag->Branch("mcpdg",&_smcpdg,"mcpdg/I");
-    _sdiag->Branch("mcgen",&_smcgen,"mcgen/I");
-    _sdiag->Branch("mcproc",&_smcproc,"mcproc/I");
-// helix filtering tuple
-    _hdiag = tfs->make<TTree>("hdiag","helix diagnostics");
-    _hdiag->Branch("resid",&_hresid,"resid/F");
-    _hdiag->Branch("spos",&_hpos,"x/F:y/F:z/F");
-    _hdiag->Branch("mcpdg",&_hmcpdg,"mcpdg/I");
-    _hdiag->Branch("mcgen",&_hmcgen,"mcgen/I");
-    _hdiag->Branch("mcproc",&_hmcproc,"mcproc/I");
+    trkdiag->Branch("seedfilt",&_sfilt);
+    trkdiag->Branch("helixfilt",&_hfilt);
   }
 
   void
@@ -721,6 +758,11 @@ namespace mu2e
       _mcfz0 = -mctrk.helix().z0()*mctrk.helix().omega()/mctrk.helix().tanDip() + mctrk.helix().phi0() - halfpi;
       int nloop = (int)rint((helixfit._fz0 - _mcfz0)/twopi);
       _mcfz0 += nloop*twopi;
+    }
+// count # of added hits
+    _nadd = 0;
+    for(std::vector<TrkStrawHit*>::const_iterator ish=kalfit._hits.begin();ish!=kalfit._hits.end();++ish){
+      if((*ish)->usability()==3)++_nadd;
     }
 // fill kalman fit info
     _kfitmc.trkDiag(kalfit);

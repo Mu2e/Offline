@@ -1,20 +1,24 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.8 2011/09/06 18:18:51 mu2ecvs Exp $
+// $Id: TrkStrawHit.hh,v 1.9 2011/09/27 21:49:09 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/06 18:18:51 $
+// $Date: 2011/09/27 21:49:09 $
 //
 // Original author David Brown, LBNL
 //
 #ifndef TrkStrawHit_HH
 #define TrkStrawHit_HH
 // BaBar
+#include "KalmanTests/inc/DetStrawGasElem.hh"
+#include "KalmanTests/inc/DetStrawWallElem.hh"
+#include "KalmanTests/inc/DetStrawHitType.hh"
 #include "TrajGeom/TrkLineTraj.hh"
 #include "TrkBase/TrkEnums.hh"
 #include "TrkBase/TrkHitOnTrk.hh"
 #include "TrkBase/TrkFundHit.hh"
 #include "TrkBase/TrkDetElemId.hh"
+#include "MatEnv/MatDBInfo.hh"
 // Mu2e
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -46,12 +50,12 @@ namespace mu2e
     TrkDummyHit(const TrkDummyHit& other);
     TrkEnums::TrkViewInfo _view;
     TrkDetElemId _eid;
-
   };
 
   class TrkStrawHit : public TrkHitOnTrk {
   public:
-    TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,double t0, double t0err, double herr);
+    TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,
+    double t0, double t0err, double herr);
     virtual ~TrkStrawHit();
 //  Simplistic implementation of TrkHitOnTrk interface.  Lie where necessary
     virtual TrkStrawHit* clone(TrkRep* parentRep, const TrkDifTraj* trkTraj = 0) const;
@@ -84,12 +88,18 @@ namespace mu2e
     double hitT0() const { return _hitt0;}
     double hitT0Err() const { return _hitt0_err;}
     void updateT0(double hitt0,double hitt0_err);
-    double wallPath() const; // track pathlength through one wall of the straw
-    double gasPath() const; // track pathlength through 1/2 the gas of the straw
+    double wallPath(Hep3Vector const& tdir) const; // track pathlength through one wall of the straw
+    double gasPath(Hep3Vector const& tdir) const; // track pathlength through 1/2 the gas of the straw
 // intrinsic hit error
     double hitErr() const { return _herr; }
 // allow configuring
     static void setMaxDriftPull(double maxdriftpull) { _maxdriftpull = maxdriftpull; }
+// access to associated detector elements
+    DetStrawGasElem const& gasElem() const { return _gelem; }
+    DetStrawWallElem const& wallElem() const { return _welem; }
+// logical operators to allow searching for StrawHits
+    bool operator == (StrawHit const& sh) const { return _strawhit == sh; }
+    bool operator != (StrawHit const& sh) const { return !operator==(sh); }
   protected:
     TrkStrawHit(const TrkStrawHit& other, TrkRep* rep);
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj, bool maintainAmbiguity);
@@ -110,10 +120,24 @@ namespace mu2e
     double _tddist_err;
     double _wtime;
     double _wtime_err;
+// DetModel stuff
+    static DetStrawHitType _wtype;
+    static DetStrawHitType _gtype;
+    DetStrawWallElem _welem;
+    DetStrawGasElem _gelem;
 // parameters that should come from some service: FIXME!!!
     static double _vdrift;
     static double _maxdriftpull;
+    static MatDBInfo* _matdbinfo;
   };
+// unary functor to select TrkStrawHit from a given hit
+  struct FindTrkStrawHit {
+    FindTrkStrawHit(StrawHit const& strawhit) : _strawhit(strawhit) {}
+    bool operator () (TrkStrawHit* const& tsh ) { return tsh->strawHit() == _strawhit; }
+    StrawHit const& _strawhit;
+  };
+
+  
 }
 
 #endif

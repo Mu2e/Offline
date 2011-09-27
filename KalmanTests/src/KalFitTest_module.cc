@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.9 2011/09/06 22:29:29 mu2ecvs Exp $
+// $Id: KalFitTest_module.cc,v 1.10 2011/09/27 21:49:09 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/06 22:29:29 $
+// $Date: 2011/09/27 21:49:09 $
 //
 
 // framework
@@ -25,7 +25,6 @@
 #include "BaBar/BaBar.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/DetStrawHitElem.hh"
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTests/inc/TrkRecoTrkCollection.hh"

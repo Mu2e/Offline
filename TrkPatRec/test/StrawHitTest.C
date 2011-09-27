@@ -191,7 +191,7 @@ void StrawHitTest (TTree* hits ) {
     ndelta->Draw("same");
     
     TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
-    TCut clean("loose>0&&abs(deltat)<45.0");
+    TCut clean("loose>0&&abs(time-tpeaks[0])<45.0");
     
     TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
     TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
@@ -233,10 +233,10 @@ void StrawHitTest (TTree* hits ) {
     tdelta->SetLineColor(kCyan);
     tp->SetLineColor(kBlue);
     
-    hits->Project("tconv","deltat","mcpdg==11&&mcgen==2&&loose");
-    hits->Project("tdio","deltat","mcpdg==11&&mcgen==6&&loose");
-    hits->Project("tdelta","deltat","mcpdg==11&&mcgen<0&&loose");
-    hits->Project("tp","deltat","mcpdg==2212&&loose");
+    hits->Project("tconv","time-tpeaks[0]","mcpdg==11&&mcgen==2&&loose");
+    hits->Project("tdio","time-tpeaks[0]","mcpdg==11&&mcgen==6&&loose");
+    hits->Project("tdelta","time-tpeaks[0]","mcpdg==11&&mcgen<0&&loose");
+    hits->Project("tp","time-tpeaks[0]","mcpdg==2212&&loose");
     
     TLegend* leg4 = new TLegend(0.65,0.6,0.9,0.95);
     leg4->AddEntry(tconv,"Conv. Electrons","l");

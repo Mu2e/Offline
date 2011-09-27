@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.7 2011/07/16 19:36:43 mu2ecvs Exp $
+// $Id: TrkDef.hh,v 1.8 2011/09/27 21:49:09 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/07/16 19:36:43 $
+// $Date: 2011/09/27 21:49:09 $
 //
 // Original author David Brown, LBNL
 //
@@ -16,6 +16,8 @@
 // CLHEP
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
+
+class TrkDifPieceTraj;
 
 namespace mu2e 
 {
@@ -48,8 +50,10 @@ namespace mu2e
     const StrawHitCollection* strawHitCollection() const { return _straws; }
     const std::vector<size_t>& strawHitIndices() const { return _indices;}
     const HelixTraj& helix() const { return _h0; }
+    const TrkDifPieceTraj* traj() const { return _ptraj; }
     const TrkT0& trkT0() const { return _t0; }
     void setHelix(HelixTraj const& helix) { _h0 = helix; }
+    void setTraj(const TrkDifPieceTraj* ptraj) { _ptraj = ptraj; }
     void setTrkT0(double t0, double t0err) { _t0.setT0(t0,t0err); }
     void setTrkT0(const TrkT0& t0) { _t0 = t0; }
     void setIndices(std::vector<size_t> const& indices ) { _indices = indices; }
@@ -57,6 +61,7 @@ namespace mu2e
     const StrawHitCollection* _straws; // straw hit collection
     std::vector<size_t> _indices; // indices to straw hits in the collection to use for this track
     HelixTraj _h0; // helix estimate, valid in the region around z=0
+    const TrkDifPieceTraj* _ptraj; // optional initial estimate of the trajectory
     TrkT0 _t0; // t0 estimate
     // dummy variables
     static HepVector _dpar;

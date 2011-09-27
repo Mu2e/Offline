@@ -110,7 +110,7 @@ void CDRHits(TTree* hits) {
   leg2->Draw();
   
   TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
-  TCut clean("loose>0&&abs(time-tpeak)<40.0");
+  TCut clean("loose>0&&abs(time-tpeaks[0]s[0])<40.0");
   
   TH1F* tconv = new TH1F("tconv","Hit Time WRT Peak;nsec",101,-80,80);
   TH1F* tdio = new TH1F("tdio","Hit Time WRT Peak;nsec",101,-80,80);
@@ -122,10 +122,10 @@ void CDRHits(TTree* hits) {
   tp->SetLineColor(kBlue);
   tconv->SetStats(0);
 
-  hits->Project("tconv","time-tpeak","mcpdg==11&&mcgen==2&&loose");
-  hits->Project("tdio","time-tpeak","mcpdg==11&&mcgen==6&&loose");
-  hits->Project("tdelta","time-tpeak","mcpdg==11&&mcgen<0&&loose");
-  hits->Project("tp","time-tpeak","mcpdg==2212&&loose");
+  hits->Project("tconv","time-tpeaks[0]","mcpdg==11&&mcgen==2&&loose");
+  hits->Project("tdio","time-tpeaks[0]","mcpdg==11&&mcgen==6&&loose");
+  hits->Project("tdelta","time-tpeaks[0]","mcpdg==11&&mcgen<0&&loose");
+  hits->Project("tp","time-tpeaks[0]","mcpdg==2212&&loose");
     
   TLine* tmin = new TLine(-40,0.0,-40,tconv->GetMaximum());
   tmin->SetLineColor(kBlack);

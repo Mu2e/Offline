@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.5 2011/09/06 22:29:29 mu2ecvs Exp $
+// $Id: KalFitMC.hh,v 1.6 2011/09/27 21:49:09 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/06 22:29:29 $
+// $Date: 2011/09/27 21:49:09 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -89,6 +89,7 @@ namespace mu2e
 
   struct TrkStrawHitInfo {
     Int_t _active,_usable;
+    Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
     UInt_t _mcn, _mcnunique, _mcpdg, _mcgen, _mcproc;
 // root 
     ClassDef(TrkStrawHitInfo,1)
@@ -175,6 +176,7 @@ namespace mu2e
     UInt_t _nweediter;
     Int_t _nactive;
     Float_t _chisq;
+    Float_t _fitcon;
     Float_t _fitmom;
     Float_t _fitmomerr;
     Float_t _mcentmom;

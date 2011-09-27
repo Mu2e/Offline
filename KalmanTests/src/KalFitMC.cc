@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.8 2011/09/06 22:29:29 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.9 2011/09/27 21:49:09 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/06 22:29:29 $
+// $Date: 2011/09/27 21:49:09 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -30,7 +30,6 @@
 #include "BaBar/PdtPid.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/DetStrawHitElem.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "TrkBase/TrkHelixUtils.hh"
 #include "TrkBase/TrkHotList.hh"
@@ -294,6 +293,7 @@ namespace mu2e
       _ndof = krep->nDof();
       _nactive = krep->nActive();
       _chisq = krep->chisq();
+      _fitcon = krep->chisqConsistency().significanceLevel();
       // get the fit at the first hit
       const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
       double fltlen = firsthit->fltLen() - 10;
@@ -329,6 +329,16 @@ namespace mu2e
         TrkStrawHitInfo tshinfo;
         tshinfo._active = tsh->isActive();
         tshinfo._usable = tsh->usability();
+	double resid,residerr;
+	if(tsh->resid(resid,residerr,true)){
+	  tshinfo._resid = resid;
+	  tshinfo._residerr = residerr;
+	} else {
+	  tshinfo._resid = tshinfo._residerr = -1000.;
+	}
+	tshinfo._rdrift = tsh->driftRadius();
+	tshinfo._rdrifterr = tsh->driftRadiusErr();
+	tshinfo._trklen = tsh->fltLen();
         PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
         tshinfo._mcn = mcptr.size();
 	std::vector<trksum> mcsum;
@@ -337,7 +347,7 @@ namespace mu2e
 	tshinfo._mcpdg = mcsum[0]._pdgid;
 	tshinfo._mcgen = mcsum[0]._gid;
 	tshinfo._mcproc = mcsum[0]._pid;
-        _tshinfo.push_back(tshinfo);
+	_tshinfo.push_back(tshinfo);
       }
     }
   }
@@ -463,6 +473,7 @@ namespace mu2e
     _trkdiag->Branch("nweediter",&_nweediter,"nweediter/i");
     _trkdiag->Branch("nactive",&_nactive,"nactive/I");
     _trkdiag->Branch("chisq",&_chisq,"chisq/F");
+    _trkdiag->Branch("fitcon",&_fitcon,"fitcon/F");
     _trkdiag->Branch("fitmom",&_fitmom,"fitmom/F");
     _trkdiag->Branch("fitmomerr",&_fitmomerr,"fitmomerr/F");
     _trkdiag->Branch("seedmom",&_seedmom,"seedmom/F");
