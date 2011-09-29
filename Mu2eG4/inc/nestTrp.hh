@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
 //
-// $Id: nestTrp.hh,v 1.6 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: nestTrp.hh,v 1.7 2011/09/29 22:47:38 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/09/29 22:47:38 $
 //
 // Original author Krzysztof Genser based on Rob Kutschke's nestBox
 //
@@ -29,7 +29,7 @@ namespace mu2e {
   VolumeInfo nestTrp ( std::string const& name,
                        double const halfDim[5],
                        G4Material* material,
-                       G4RotationMatrix* rot,
+                       G4RotationMatrix const* rot,
                        G4ThreeVector const& offset,
                        G4LogicalVolume* parent,
                        int copyNo,
@@ -47,7 +47,7 @@ namespace mu2e {
   inline VolumeInfo nestTrp ( std::string const& name,
                               std::vector<double> const&  halfDim,
                               G4Material* material,
-                              G4RotationMatrix* rot,
+                              G4RotationMatrix const* rot,
                               G4ThreeVector const& offset,
                               G4LogicalVolume* parent,
                               int copyNo,

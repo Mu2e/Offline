@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 //
-// $Id: nestTubs.hh,v 1.11 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: nestTubs.hh,v 1.12 2011/09/29 22:47:38 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/09/29 22:47:38 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@ namespace mu2e {
   VolumeInfo nestTubs ( std::string const& name,
                         double const params[5],
                         G4Material* material,
-                        G4RotationMatrix* rot,
+                        G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,
                         G4LogicalVolume* parent,
                         int copyNo,
@@ -50,7 +50,7 @@ namespace mu2e {
   inline VolumeInfo nestTubs ( std::string const& name,
                                std::vector<double>&  params,
                                G4Material* material,
-                               G4RotationMatrix* rot,
+                               G4RotationMatrix const* rot,
                                G4ThreeVector const & offset,
                                G4LogicalVolume* parent,
                                int copyNo,
@@ -81,7 +81,7 @@ namespace mu2e {
   inline VolumeInfo nestTubs ( std::string const& name,
                                TubsParams const & params,
                                G4Material* material,
-                               G4RotationMatrix* rot,
+                               G4RotationMatrix const* rot,
                                G4ThreeVector const & offset,
                                G4LogicalVolume* parent,
                                int copyNo,
@@ -113,7 +113,7 @@ namespace mu2e {
   VolumeInfo nestTubs ( std::string const& name,
                         double const params[5],
                         G4Material* material,
-                        G4RotationMatrix* rot,
+                        G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,
                         VolumeInfo const & parent,
                         int copyNo,
@@ -130,7 +130,7 @@ namespace mu2e {
   inline VolumeInfo nestTubs ( std::string const& name,
                                TubsParams const & params,
                                G4Material* material,
-                               G4RotationMatrix* rot,
+                               G4RotationMatrix const* rot,
                                G4ThreeVector const & offset,
                                VolumeInfo const & parent,
                                int copyNo,

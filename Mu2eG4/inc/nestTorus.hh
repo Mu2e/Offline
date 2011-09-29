@@ -3,8 +3,8 @@
 //
 // Free function to create and place a new G4Torus inside a logical volume.
 //
-// $Id: nestTorus.hh,v 1.7 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
+// $Id: nestTorus.hh,v 1.8 2011/09/29 22:47:38 gandr Exp $
+// $Author: gandr $
 // $Date: 2010/03/15
 //
 
@@ -28,7 +28,7 @@ namespace mu2e {
   VolumeInfo nestTorus ( std::string const& name,
                          double const halfDim[5],
                          G4Material* material,
-                         G4RotationMatrix* rot,
+                         G4RotationMatrix const* rot,
                          G4ThreeVector const& offset,
                          G4LogicalVolume* parent,
                          int copyNo,
@@ -46,7 +46,7 @@ namespace mu2e {
   inline VolumeInfo nestTorus ( std::string const& name,
                                 std::vector<double>&  halfDim,
                                 G4Material* material,
-                                G4RotationMatrix* rot,
+                                G4RotationMatrix const* rot,
                                 G4ThreeVector& offset,
                                 G4LogicalVolume* parent,
                                 int copyNo,
@@ -79,7 +79,7 @@ namespace mu2e {
   VolumeInfo nestTorus ( std::string const& name,
                          double const halfDim[5],
                          G4Material* material,
-                         G4RotationMatrix* rot,
+                         G4RotationMatrix const* rot,
                          G4ThreeVector const& offset,
                          const VolumeInfo& parent,
                          int copyNo,
@@ -97,7 +97,7 @@ namespace mu2e {
   inline VolumeInfo nestTorus ( std::string const& name,
                                 std::vector<double>&  halfDim,
                                 G4Material* material,
-                                G4RotationMatrix* rot,
+                                G4RotationMatrix const* rot,
                                 G4ThreeVector& offset,
                                 const VolumeInfo& parent,
                                 int copyNo,

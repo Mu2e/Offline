@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4ExtrudedSolid inside a logical volume.
 //
-// $Id: nestExtrudedSolid.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: nestExtrudedSolid.hh,v 1.5 2011/09/29 22:47:38 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/09/29 22:47:38 $
 //
 // Original author Rob Kutschke
 //
@@ -33,7 +33,7 @@ namespace mu2e {
                                 std::vector<double> &x,
                                 std::vector<double> &y,
                                 G4Material* material,
-                                G4RotationMatrix* rot,
+                                G4RotationMatrix const* rot,
                                 const G4ThreeVector& offset,
                                 G4LogicalVolume* parent,
                                 int copyNo,
@@ -52,7 +52,7 @@ namespace mu2e {
                                 std::vector<double> &x,
                                 std::vector<double> &y,
                                 G4Material* material,
-                                G4RotationMatrix* rot,
+                                G4RotationMatrix const* rot,
                                 const G4ThreeVector& offset,
                                 VolumeInfo const & parent,
                                 int copyNo,
