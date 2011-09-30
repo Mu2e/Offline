@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.20 2011/09/16 20:51:58 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.21 2011/09/30 19:59:13 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/09/16 20:51:58 $
+// $Date: 2011/09/30 19:59:13 $
 //
 // Original author Gianni Onorato
 //
@@ -28,8 +28,6 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TFile.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "TNtuple.h"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -72,18 +70,6 @@ namespace mu2e {
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
       _skipStoppedParticle(pset.get<bool>("skipStoppedParticle",false)),
       _nAnalyzed(0),
-      _hHitMult(0),
-      _hStrawEvt(0),
-      _hStrawEvtZ1(0),
-      _hStrawEvtZ2(0),
-      _hRateUZ(0),
-      _hRateU(0),
-      _hRateUT(0),
-      _hRateMaxU(0),
-      _hCaloHitMult(0),
-      _hCryEvt(0),
-      _hCryEvtZ1(0),
-      _hCryEvtZ2(0),
       _tNtup(0),
       _cNtup(0),
       _tgtNtup(0),
@@ -143,29 +129,12 @@ namespace mu2e {
     //number of analyzed events
     int _nAnalyzed;
 
-
-    TH1F* _hHitMult;
-    TH1F* _hStrawEvt;
-    TH1F* _hStrawEvtZ1;
-    TH1F* _hStrawEvtZ2;
-    TH2F* _hRateUZ;
-    TH1F* _hRateU;
-    TH2F* _hRateUT;
-    TH1F* _hRateMaxU;
-    TH1F* _hCaloHitMult;
-    TH1F* _hCryEvt;
-    TH1F* _hCryEvtZ1;
-    TH1F* _hCryEvtZ2;
-
     TNtuple* _tNtup;
     TNtuple* _cNtup;
     TNtuple* _tgtNtup;
 
     const int _nDevices, _nSectors, _nLayers, _nStrawsPerLay;
     const int _nVanes, _nZCryPerVane, _nRCryPerVane;
-
-    vector<TH2F*> _hStrawRates;
-    vector<TH2F*> _hCrystalRates;
 
     std::auto_ptr<MCCaloUtilities> CaloManager;
 
@@ -205,41 +174,6 @@ namespace mu2e {
     CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
 
     art::ServiceHandle<art::TFileService> tfs;
-
-    _hHitMult       = tfs->make<TH1F>( "hHitMult",    "Multiplicity of g4 hit per Straw ",       100,    0.,  100. );
-    _hCaloHitMult   = tfs->make<TH1F>( "hCaloHitMult","Multiplicity of g4 hit per Crystal ",     100,    0.,  100. );
-    _hStrawEvt      = tfs->make<TH1F>( "hStrawEvt",   "Multiplicity of straws per event ",       200,    0., 2000. );
-    _hStrawEvtZ1    = tfs->make<TH1F>( "hStrawEvtZ1", "Multiplicity of straws per event zoom1",  100,    0.,  500. );
-    _hStrawEvtZ2    = tfs->make<TH1F>( "hStrawEvtZ2", "Multiplicity of straws per event zoom2",  100,    0.,  100. );
-    _hRateUZ        = tfs->make<TH2F>( "hRateUZ",     "Straw hit in u and z coordinates",         80,  380.,  690., 40, -1550., 1550.);
-    _hRateU         = tfs->make<TH1F>( "hRateU",      "Straw hit in u coordinate",               100,  380.,  690. );
-    _hRateUT        = tfs->make<TH2F>( "hRateUT",     "Straw hit in u coordinate and time",       80,  380.,  690., 40,   700., 1900.);
-    _hCryEvt        = tfs->make<TH1F>( "hCryEvt",     "Multiplicity of Crystal per event",       200,    0., 2000.);
-    _hCryEvtZ1      = tfs->make<TH1F>( "hCryEvtZ1",   "Multiplicity of Crystal per event zoom1", 100,    0.,  500.);
-    _hCryEvtZ2      = tfs->make<TH1F>( "hCryEvtZ2",   "Multiplicity of Crystal per event zoom2",  50,    0.,   50.);
-
-    for (int i=0; i<_nDevices; ++i) {
-      stringstream name, descr;
-      name << "hRateDev" << i;
-      descr << "Straw rates in device " << i;
-
-      _hStrawRates.push_back(tfs->make<TH2F>(name.str().c_str(),
-                                             descr.str().c_str(),
-                                             _nStrawsPerLay, 0, _nStrawsPerLay,
-                                             _nLayers*_nSectors, 0, _nLayers*_nSectors));
-      _hStrawRates[i]->Sumw2();
-    }
-
-    for (int i=0; i<_nVanes; ++i) {
-      stringstream name, descr;
-      name << "hRateVane" << i;
-      descr << "Crystal rates in vane " << i;
-      _hCrystalRates.push_back(tfs->make<TH2F>(name.str().c_str(),
-                                               descr.str().c_str(),
-                                               _nZCryPerVane, 0, _nZCryPerVane,
-                                               _nRCryPerVane, 0, _nRCryPerVane));
-      _hCrystalRates[i]->Sumw2();
-    }
 
   }
 
@@ -305,18 +239,22 @@ namespace mu2e {
 
     }
 
+
+    _skipStoppedParticle = false;
+
     doStoppingTarget(evt);
 
-    if (geom->hasElement<ITracker>()) {
-      //      cout << "ITracker selected" << endl;
-      doITracker(evt, _skipEvent);
-    }
-    if (geom->hasElement<TTracker>()) {
-      //      cout << "TTracker selected" << endl;
-      doTracker(evt, _skipEvent);
-    }
+    if (!_skipStoppedParticle) {
+      if (geom->hasElement<ITracker>()) {
+	//      cout << "ITracker selected" << endl;
+	doITracker(evt, _skipEvent);
+      }
+      if (geom->hasElement<TTracker>()) {
+	//      cout << "TTracker selected" << endl;
+	doTracker(evt, _skipEvent);
+      }
     doCalorimeter(evt, _skipEvent);
-
+    }
 
 
   } // end of analyze
@@ -400,11 +338,7 @@ namespace mu2e {
     }
 
     size_t nStrawPerEvent = hits->size();
-    if (nStrawPerEvent > 0) {
-      _hStrawEvt->Fill(nStrawPerEvent);
-      _hStrawEvtZ1->Fill(nStrawPerEvent);
-      _hStrawEvtZ2->Fill(nStrawPerEvent);
-    }
+
     for (size_t i=0; i<nStrawPerEvent; ++i) {
 
       // Access data
@@ -430,25 +364,13 @@ namespace mu2e {
       //X, Y and Z coordinate of the straw middle point
 
       const CLHEP::Hep3Vector stMidPoint3 = str.getMidPoint();
-      double xc = stMidPoint3.getX();
-      double yc = stMidPoint3.getY();
       double z = stMidPoint3.getZ();
-
-      //u coordinate (radial from the center)
-      double u = sqrt((xc*xc)+(yc*yc));
 
       //time of the hit
       double hitTime = hit.time();
 
-
       //direction of the straw
       const CLHEP::Hep3Vector stDirection3 = str.getDirection();
-
-      //here the rates
-      _hStrawRates[did]->Fill(sid.getStraw(),2*(secid.getSector())+lid.getLayer());
-      _hRateUZ->Fill(u,z);
-      _hRateU->Fill(u);
-      _hRateUT->Fill(u,hitTime);
 
       // Get MC truth data
       double driftTime = truth.driftTime();
@@ -467,9 +389,6 @@ namespace mu2e {
       if (fabs(v) > str.getHalfLength()) {
         if (_diagLevel > 0) cout << "Position along the wire bigger than halflength" << endl;
       }
-
-      size_t nHitsPerStraw = mcptr.size();
-      _hHitMult->Fill(nHitsPerStraw);
 
       float tntpArray[57];
       int idx(0);
@@ -758,11 +677,6 @@ namespace mu2e {
     }
 
     size_t nStrawPerEvent = hits->size();
-    if (nStrawPerEvent > 0) {
-      _hStrawEvt->Fill(nStrawPerEvent);
-      _hStrawEvtZ1->Fill(nStrawPerEvent);
-      _hStrawEvtZ2->Fill(nStrawPerEvent);
-    }
 
     for (size_t i=0; i<nStrawPerEvent; ++i) {
 
@@ -806,9 +720,6 @@ namespace mu2e {
       double vMC = truth.distanceToMid();
 
       const CLHEP::Hep3Vector MCHitPoint = stMidPoint3 + (vMC/stDirection3.mag())*stDirection3;
-
-      size_t nHitsPerStraw = mcptr.size();
-      _hHitMult->Fill(nHitsPerStraw);
 
       //  cout << "Filling ntupla" << endl;
 
@@ -980,7 +891,6 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
-
     double CrSize = cg->crystalHalfSize();
     double CrLength = cg->crystalHalfLength();
     double CrVolumeCm3 = (CrSize*CrSize*CrLength)/1000; //factor 1000 because they are in mm
@@ -993,7 +903,6 @@ namespace mu2e {
     // Get handles to calorimeter collections
     art::Handle<CaloHitCollection> caloHits;
     art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
-
     // Get the persistent data about pointers to StepPointMCs
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     //    art::Handle<StepPointMCCollection> steps;
@@ -1026,16 +935,12 @@ namespace mu2e {
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
-
     // Other files might have empty collections.
     if ( haveSimPart ){
       haveSimPart = !(simParticles->empty() || volumes->empty());
     }
 
     if (caloCrystalHits->size()>0) {
-      _hCryEvt->Fill(caloCrystalHits->size());
-      _hCryEvtZ1->Fill(caloCrystalHits->size());
-      _hCryEvtZ2->Fill(caloCrystalHits->size());
 
       for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
 
@@ -1094,9 +999,6 @@ namespace mu2e {
           if (!readCryOnce) {
             CLHEP::Hep3Vector cryCenter =  cg->getCrystalOriginByRO(thehit.id());
             int vane = cg->getVaneByRO(thehit.id());
-            int Zcry = cg->getCrystalZByRO(thehit.id());
-            int Rcry = cg->getCrystalRByRO(thehit.id());
-            _hCrystalRates[vane]->Fill(Zcry,Rcry);
             cntpArray[idx++] = evt.id().event();
             cntpArray[idx++] = evt.run();
             cntpArray[idx++] = hit.time();
@@ -1113,7 +1015,6 @@ namespace mu2e {
 	    
 	    PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
 	    size_t nHitsPerCrystal = mcptr.size();
-	    _hCaloHitMult->Fill(nHitsPerCrystal);
 	    
 	    //	    cout << "In the RO there are " << nHitsPerCrystal << " hits. List index is " << collectionPosition << endl;
 	    
@@ -1267,6 +1168,7 @@ namespace mu2e {
         }
       }
     }
+
   } // end of doCalorimeter
 
   void BkgRates::doStoppingTarget(const art::Event& event) {
@@ -1297,6 +1199,9 @@ namespace mu2e {
 
       SimParticle const* sim = simParticles->getOrNull(trackId);
       if( !sim ) continue;
+      if ( sim->fromGenerator() && (sim->pdgId() == 13 || sim->pdgId() == -13)) {
+	_skipStoppedParticle = true;
+      }
 
       PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
 
@@ -1312,7 +1217,6 @@ namespace mu2e {
           tgtntpArray[idx++] = sim->endPosition().y();
           tgtntpArray[idx++] = sim->endPosition().z();
           tgtntpArray[idx++] = sim->fromGenerator();
-          if (sim->fromGenerator()) generatedStopped = true;
           tgtntpArray[idx++] = sim->pdgId();
           tgtntpArray[idx++] = trackId.asInt();
           tgtntpArray[idx++] = volInfo.copyNo();

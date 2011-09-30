@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.6 2011/07/25 20:51:24 onoratog Exp $
+# $Id: BkgRatesCounter.fcl,v 1.7 2011/09/30 19:59:13 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/07/25 20:51:24 $
+# $Date: 2011/09/30 19:59:13 $
 #
 # Original author Gianni Onorato.
 
@@ -124,6 +124,13 @@ physics :
       # minimumEnergy     : 0.000
     }
 
+    eventdisplay:
+    {
+      module_type     : EventDisplay
+      g4ModuleLabel   : "g4run"
+    }
+
+
   }
 
   p1 : [ 
@@ -135,7 +142,7 @@ physics :
        , CaloCrystalHitsMaker
        # , filterEmpty
        ]
-  e1 : [CountRates, outfile ]
+  e1 : [CountRates, eventdisplay, outfile ]
 
 
   trigger_paths  : [p1]
@@ -164,4 +171,5 @@ physics.producers.CaloReadoutHitsMaker.diagLevel : -1
 physics.producers.CaloReadoutHitsMaker.maxFullPrint : 0
 physics.producers.CaloCrystalHitsMaker.diagLevel : -1
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
-physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
+#physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
+physics.producers.generate.inputfile : "Analyses/test/genconfig_FromBeam.txt"
