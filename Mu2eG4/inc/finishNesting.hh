@@ -3,9 +3,9 @@
 //
 // Free function to be used by the nest... functions
 //
-// $Id: finishNesting.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: finishNesting.hh,v 1.5 2011/10/03 19:10:33 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/10/03 19:10:33 $
 //
 // Original author KLG
 //
@@ -26,7 +26,7 @@ namespace mu2e {
 
   void finishNesting(VolumeInfo& info,
                      G4Material* material,
-                     G4RotationMatrix* rot,
+                     G4RotationMatrix const* rot,
                      G4ThreeVector const & offset,
                      G4LogicalVolume* parent,
                      int copyNo,

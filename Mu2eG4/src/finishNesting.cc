@@ -1,9 +1,9 @@
 //
 // Free function to be used by the nest... functions
 //
-// $Id: finishNesting.cc,v 1.6 2011/05/21 20:04:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/21 20:04:15 $
+// $Id: finishNesting.cc,v 1.7 2011/10/03 19:10:33 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/10/03 19:10:33 $
 //
 // Original author KLG based on nest... functions
 //
@@ -33,7 +33,7 @@ namespace mu2e {
 
   void finishNesting(VolumeInfo& info,
                      G4Material* material,
-                     G4RotationMatrix* rot,
+                     G4RotationMatrix const* rot,
                      G4ThreeVector const & offset,
                      G4LogicalVolume* parent,
                      int copyNo,
@@ -117,7 +117,8 @@ namespace mu2e {
 
     info.logical  = new G4LogicalVolume( info.solid, material, info.name);
 
-    info.physical  =  placePV ? new G4PVPlacement( rot,
+    // G4 did not get const-ness correctly, thus the const_cast
+    info.physical  =  placePV ? new G4PVPlacement( const_cast<G4RotationMatrix*>(rot),
                                                    offset,
                                                    info.logical,
                                                    info.name,
