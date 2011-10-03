@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.7 2011/06/15 21:04:47 kutschke Exp $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.8 2011/10/03 21:14:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/15 21:04:47 $
+// $Date: 2011/10/03 21:14:57 $
 //
 // Original author KLG
 //
@@ -286,9 +286,9 @@ namespace mu2e {
         }
         _diagLevel > 0 && cout << __func__ << ": Created new hit:   " << caloCrystalHit << endl;
 
-      }
+      } // end of outer if/else testing on same crystal and small delta time.
 
-    }
+    } // end loop pver caloHitsSorted
 
     if (_diagLevel > 1) {
       cout << __func__ << ": roIds of last old hit:";
