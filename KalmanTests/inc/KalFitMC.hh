@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.6 2011/09/27 21:49:09 mu2ecvs Exp $
+// $Id: KalFitMC.hh,v 1.7 2011/10/04 23:08:17 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/27 21:49:09 $
+// $Date: 2011/10/04 23:08:17 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -14,6 +14,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
@@ -101,12 +102,13 @@ namespace mu2e
       const StepPointMCCollection *mcsteps,
       const StepPointMCCollection *mcvdsteps) : _mcstrawhits(mcstrawhits),_mchitptr(mchitptr),
       _mcsteps(mcsteps),_mcvdsteps(mcvdsteps){}
-    void clear() {_mcstrawhits = 0; _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; }
+    void clear() {_mcstrawhits = 0; _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; _simparts = 0; }
     MCEvtData() {clear();}
     bool good() { return _mcstrawhits != 0 && _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0; }
     const StrawHitMCTruthCollection* _mcstrawhits;
     const PtrStepPointMCVectorCollection* _mchitptr;
     const StepPointMCCollection *_mcsteps, *_mcvdsteps;
+    const SimParticleCollection *_simparts;
   };
   
   typedef StepPointMCCollection::const_iterator MCStepItr;
@@ -146,6 +148,7 @@ namespace mu2e
     std::string _mcstrawhitslabel;
     std::string _mcptrlabel;
     std::string _mcstepslabel;
+    std::string _simpartslabel;
 // helper functions
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
       std::vector<MCStepItr>& steps);
@@ -158,6 +161,8 @@ namespace mu2e
 // vector of detector Ids corresponding to entrance and midplane
     std::vector<int> _midvids;
     std::vector<int> _entvids;
+// tracker ID
+    int _trackerid;
 // trk tuple variables
     TTree *_trkdiag;
     UInt_t _eventid;
@@ -175,6 +180,7 @@ namespace mu2e
     UInt_t _nt0iter;
     UInt_t _nweediter;
     Int_t _nactive;
+    Int_t _ncactive;
     Float_t _chisq;
     Float_t _fitcon;
     Float_t _fitmom;
@@ -186,6 +192,10 @@ namespace mu2e
     helixpar _fiterr;
     helixpar _mcentpar;
     helixpar _mcmidpar;
+    Float_t _bremsesum;
+    Float_t _bremsemax;
+    Float_t _bremsz;
+ 
     std::vector<TrkStrawHitInfo> _tshinfo;
 
 // hit tuple variables

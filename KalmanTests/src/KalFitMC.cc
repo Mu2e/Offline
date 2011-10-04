@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.9 2011/09/27 21:49:09 mu2ecvs Exp $
+// $Id: KalFitMC.cc,v 1.10 2011/10/04 23:08:17 mu2ecvs Exp $
 // $Author: mu2ecvs $ 
-// $Date: 2011/09/27 21:49:09 $
+// $Date: 2011/10/04 23:08:17 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -22,6 +22,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -67,6 +68,7 @@ namespace mu2e
     _mcstrawhitslabel(pset.get<std::string>("MCStrawHitsLabel","makeSH")),
     _mcptrlabel(pset.get<std::string>("MCPtrLabel","makeSH")),
     _mcstepslabel(pset.get<std::string>("MCStepsLabel","g4run")),
+    _simpartslabel(pset.get<std::string>("SimParticleLabel","g4run")),
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
     _mct0err(pset.get<double>("mcT0Err",-0.5)),
     _debug(pset.get<int>("debugLevel",0)),
@@ -322,6 +324,7 @@ namespace mu2e
   void
   KalFitMC::hitsDiag(std::vector<TrkStrawHit*> const& hits) {
     _tshinfo.clear();
+    _ncactive = 0;
       // loop over hits.  Order doesn't matter here
     for(std::vector<TrkStrawHit*>::const_iterator itsh = hits.begin(); itsh != hits.end(); itsh++){
       const TrkStrawHit* tsh = *itsh;
@@ -348,6 +351,8 @@ namespace mu2e
 	tshinfo._mcgen = mcsum[0]._gid;
 	tshinfo._mcproc = mcsum[0]._pid;
 	_tshinfo.push_back(tshinfo);
+// count active conversion hits
+	if(tshinfo._mcgen==2&&tsh->isActive())++_ncactive;
       }
     }
   }
@@ -358,6 +363,9 @@ namespace mu2e
     std::vector<MCStepItr> steps;
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
+// should get these numbers from a service, FIXME!!!!
+    static double _trkminz(-1501.0);
+    static double _trkmaxz(1501.0);
     cet::map_vector_key trkid(1); // conversion electron
     findMCSteps(_mcdata._mcvdsteps,trkid,_entvids,steps);
     if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
@@ -398,6 +406,26 @@ namespace mu2e
     } else {
       _mcmidmom = -1;
       _mcmidt0 = 0.0;
+    }
+// find MC info about brems in the tracker
+    _bremsesum = 0.0;
+    _bremsemax = 0.0;
+    _bremsz = _trkminz;
+    for ( SimParticleCollection::const_iterator isp = _mcdata._simparts->begin();
+	isp != _mcdata._simparts->end(); ++isp ){
+      SimParticle const& sp = isp->second;
+// find photons with parent = the conversion electron created by brems
+      if(sp.parent() != 0 && sp.parent()->id() == trkid && sp.pdgId() == PDGCode::gamma  && sp.creationCode() == ProcessCode::eBrem){
+	CLHEP::Hep3Vector pos = det->toDetector(sp.startPosition());
+	if(pos.z() > _trkminz && pos.z() < _trkmaxz){
+	  double de = sp.startMomentum().e();
+	  if(de > _bremsemax){
+	    _bremsemax = de;
+	    _bremsz = pos.z();
+	  }
+	  _bremsesum += de;
+	}
+      }
     }
   }
  
@@ -472,12 +500,13 @@ namespace mu2e
     _trkdiag->Branch("nt0iter",&_nt0iter,"nt0iter/i");
     _trkdiag->Branch("nweediter",&_nweediter,"nweediter/i");
     _trkdiag->Branch("nactive",&_nactive,"nactive/I");
+    _trkdiag->Branch("ncactive",&_ncactive,"ncactive/I");
     _trkdiag->Branch("chisq",&_chisq,"chisq/F");
     _trkdiag->Branch("fitcon",&_fitcon,"fitcon/F");
     _trkdiag->Branch("fitmom",&_fitmom,"fitmom/F");
     _trkdiag->Branch("fitmomerr",&_fitmomerr,"fitmomerr/F");
     _trkdiag->Branch("seedmom",&_seedmom,"seedmom/F");
-    _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
+   _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
     _trkdiag->Branch("fiterr",&_fiterr,"d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
 // mc info at tracker entrance and midplane
     _trkdiag->Branch("mcentpar",&_mcentpar,"mcentd0/F:mcentp0/F:mcentom/F:mcentz0/F:mcenttd/F");
@@ -486,6 +515,10 @@ namespace mu2e
     _trkdiag->Branch("mcmidpar",&_mcmidpar,"mcmidd0/F:mcmidp0/F:mcmidom/F:mcmidz0/F:mcmidtd/F");
     _trkdiag->Branch("mcmidt0",&_mcmidt0,"mcmidt0/F");
     _trkdiag->Branch("mcmidmom",&_mcmidmom,"mcmidmom/F");
+// info about energy loss in the tracker
+    _trkdiag->Branch("bremsesum",&_bremsesum,"bremsesum/F");
+    _trkdiag->Branch("bremsemax",&_bremsemax,"bremsemax/F");
+    _trkdiag->Branch("bremsz",&_bremsz,"bremsz/F");
 // track hit info    
     _trkdiag->Branch("tshinfo",&_tshinfo);
     return _trkdiag;
@@ -542,6 +575,9 @@ namespace mu2e
     art::Handle<StepPointMCCollection> mcVDstepsHandle;
     if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
       _mcdata._mcvdsteps = mcVDstepsHandle.product();
+    art::Handle<SimParticleCollection> simParticlesHandle;
+    if(evt.getByLabel(_simpartslabel,simParticlesHandle))
+      _mcdata._simparts = simParticlesHandle.product();
     return _mcdata.good();
   }
 
