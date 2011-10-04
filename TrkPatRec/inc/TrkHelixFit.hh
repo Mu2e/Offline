@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.hh,v 1.1 2011/09/06 23:38:05 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/09/06 23:38:05 $
+// $Id: TrkHelixFit.hh,v 1.2 2011/10/04 23:12:11 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2011/10/04 23:12:11 $
 //
 #ifndef TrkHelixFit_HH
 #define TrkHelixFit_HH
@@ -34,9 +34,7 @@ namespace mu2e
     double _radius;
 // Z parameters; dfdz is the slope of phi vs z (=1/(R*tandip)), fz0 is the phi value of the particle where it goes through z=0
     double _dfdz, _fz0;
-// convert to BaBar helix parameters.  Also return an error estimate
-    void helixParams (CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
-  };
+ };
   
 // utility struct
   struct RAD {
@@ -80,6 +78,8 @@ namespace mu2e
     virtual ~TrkHelixFit();
 // main function: given a track definition, find the helix parameters
     bool findHelix(TrkDef const& mytrk,TrkHelix& myfit);
+// convert to BaBar helix parameters.  Also return an error estimate
+    void helixParams (TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
   private:
 // utlity functions
     bool findXY(std::vector<XYZP>& xyzp,TrkHelix& myhel);
@@ -101,6 +101,10 @@ namespace mu2e
     unsigned _maxniter; // maxium # of iterations to global minimum
     double _nsigma; // # of sigma for filtering outlyers
     double _minzsep, _maxzsep; // Z separation of points for tandip estimate
+    bool _target; // include target constraint
+    double _tsig; // sigma of target constraint
+    double _rbias;  // robust fit parameter bias
+    static double _targetz; // z position of target hit
 // 
   };
 }

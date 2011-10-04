@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.1 2011/09/06 23:38:05 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/09/06 23:38:05 $
+// $Id: TrkHelixFit.cc,v 1.2 2011/10/04 23:12:11 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2011/10/04 23:12:11 $
 //
 //
 // the following has to come before other BaBar includes
@@ -24,6 +24,9 @@
 
 namespace mu2e 
 {
+    // this should come from a service, FIXME!!!!
+  double TrkHelixFit::_targetz(-1550.0);
+
 // comparison functor for ordering points
   struct radcomp : public binary_function<RAD, RAD, bool> {
     bool operator()(RAD const& r1, RAD const& r2) { return r1._radius < r2._radius; }
@@ -50,22 +53,19 @@ namespace mu2e
   }
   
   void
-  TrkHelix::helixParams(CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
-// fit biases should be parameters, FIXME!!!
-    const double rbias(-13);
-    const double d0bias(20);
+  TrkHelixFit::helixParams(TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
     static const double pi(M_PI);
     static const double twopi(2*pi);
     static const double halfpi(0.5*pi);
 // should sign omega by the sign of Bz(0), FIXME!!!!!
-    double radius = _radius + rbias;
+    double radius = helix._radius + _rbias;
     pvec = HepVector(5,0);
     pvec[HelixTraj::omegaIndex] = 1.0/radius;
-    pvec[HelixTraj::d0Index] = _center.perp() - radius + d0bias;
+    pvec[HelixTraj::d0Index] = helix._center.perp() - radius;
 // account for the convention difference
-    pvec[HelixTraj::phi0Index] = atan2(-_center.x(),_center.y());
-    pvec[HelixTraj::tanDipIndex] = 1.0/(radius*_dfdz);
-    double dphi = pvec[HelixTraj::phi0Index] - _fz0 + 3*halfpi;
+    pvec[HelixTraj::phi0Index] = atan2(-helix._center.x(),helix._center.y());
+    pvec[HelixTraj::tanDipIndex] = 1.0/(radius*helix._dfdz);
+    double dphi = pvec[HelixTraj::phi0Index] - helix._fz0 + 3*halfpi;
     int nloop = (int)rint(dphi/twopi);
     dphi -= nloop*twopi;
     pvec[HelixTraj::z0Index] = radius*pvec[HelixTraj::tanDipIndex]*dphi;
@@ -91,7 +91,10 @@ namespace mu2e
   _maxniter(pset.get<unsigned>("maxniter",100)),
   _nsigma(pset.get<double>("nsigma",10)),
   _minzsep(pset.get<double>("minzsep",200)),
-  _maxzsep(pset.get<double>("maxzsep",700))
+  _maxzsep(pset.get<double>("maxzsep",700)),
+  _target(pset.get<bool>("targetConstraint",false)),
+  _tsig(pset.get<double>("targetSigma",60.0)),
+  _rbias(pset.get<double>("radialBias",-10.0))
     {}
 
   TrkHelixFit::~TrkHelixFit()
@@ -109,13 +112,12 @@ namespace mu2e
       retval = findXY(xyzp,myhel);
 // extend those into the z direction
       if(retval) retval = findZ(xyzp,myhel);
-// set the success
-      if(retval)
-	myhel._fit = TrkErrCode(TrkErrCode::succeed);
-      else
-	myhel._fit = TrkErrCode(TrkErrCode::fail);
-//      retval = true;
     }
+// set the success
+    if(retval)
+      myhel._fit = TrkErrCode(TrkErrCode::succeed);
+    else
+      myhel._fit = TrkErrCode(TrkErrCode::fail);
     return retval;
   }
   
@@ -149,6 +151,7 @@ namespace mu2e
 //        graph->SetPoint(ixyzp,xyzp[ixyzp]._pos.x()-myhel._center.x(),xyzp[ixyzp]._pos.y()-myhel._center.y());
         g->Fill(xyzp[ixyzp]._pos.x()-myhel._center.x(),xyzp[ixyzp]._pos.y()-myhel._center.y());
       }
+// need 2 TF1 to model circle as root doesn't support parametric functions
       TF1* circ1 = new TF1("circ1","sqrt([0]*[0]-x*x)",-myhel._radius,myhel._radius);
       circ1->SetParameter(0,myhel._radius);
       circ1->SetLineColor(kRed);
@@ -225,10 +228,11 @@ namespace mu2e
   
   bool
   TrkHelixFit::findZ(std::vector<XYZP> const& xyzp,TrkHelix& myhel) {
-  //
+ //
     std::vector<FZP > fz;
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-      if(xyzp[ixyzp]._use){
+// exclude target region z
+      if(xyzp[ixyzp]._use && xyzp[ixyzp]._pos.z() > _targetz ){
         double phi = atan2((xyzp[ixyzp]._pos.y()-myhel._center.y()),(xyzp[ixyzp]._pos.x()-myhel._center.x()));
         fz.push_back(make_pair(phi,xyzp[ixyzp]._pos.z()));
       }
@@ -390,7 +394,11 @@ namespace mu2e
       tcal->StrawHitInfo(sh,wpos,wtime,tdres,wtimeres);
       const Straw& straw = tracker.getStraw(sh.strawIndex());
       xyzp.push_back(XYZP(wpos,straw.getDirection(),tdres,sfac*straw.getRadius()));
-    }    
+    } 
+// if requested, add the target
+    if(_target){
+      xyzp.push_back(XYZP(CLHEP::Hep3Vector(0.0,0.0,_targetz),CLHEP::Hep3Vector(1.0,0.0,0.0),_tsig,_tsig));
+    }
   }
   
   void

@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.4 2011/09/27 21:49:14 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/09/27 21:49:14 $
+// $Id: TrkPatRec_module.cc,v 1.5 2011/10/04 23:12:11 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2011/10/04 23:12:11 $
 //
 // framework
 #include "art/Framework/Core/Event.h"
@@ -257,6 +257,11 @@ namespace mu2e
 // fill diagnostics if requested
     if(_diag > 1)fillTimeDiag(iev,hitflags);
     if(_diag > 0)fillStrawDiag(shpos,tpeaks);
+// dummy objects
+    static TrkHelix dummyhfit;
+    static TrkKalFit dummykfit;
+    static TrkDef dummydef;
+    static TrkTimePeak dummypeak(-1,-1);
 // loop over the accepted time peaks
     for(unsigned ipeak=0;ipeak<tpeaks.size();++ipeak){
 // track fitting objects for this peak
@@ -272,7 +277,7 @@ namespace mu2e
 // convert the result to standard helix parameters, and initialize the seed definition helix
 	HepVector hpar;
 	HepVector hparerr;
-	helixfit.helixParams(hpar,hparerr);
+	_hfit.helixParams(helixfit,hpar,hparerr);
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 // Filter outliers using this helix
@@ -314,6 +319,9 @@ namespace mu2e
 // cleanup the seed fit
       seedfit.deleteTrack();
     }
+// add a dummy entry in case there are no peaks
+    if(_diag > 0 && tpeaks.size() == 0)
+      fillFitDiag(-1,dummypeak,dummydef,dummyhfit,dummydef,dummykfit,dummydef,dummykfit);
 // put the tracks into the event
     event.put(tracks);
   }
@@ -712,6 +720,14 @@ namespace mu2e
     _peakmax = tpeak._peakmax;
     _tpeak = tpeak._tpeak;
     _npeak = tpeak._trkptrs.size();
+    for(std::vector<size_t>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
+      // summarize the MC truth for this strawhit
+      PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(*istr));
+      std::vector<trksum> mcsum;
+      KalFitMC::fillMCSummary(mcptr,mcsum); 
+      if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
+	++_nmc;
+    }
 // fit status 
     _helixfail = helixfit._fit.failure();
     _seedfail = seedfit._fit.failure();
@@ -720,7 +736,7 @@ namespace mu2e
     if(helixfit._fit.success()){
       HepVector hpar;
       HepVector hparerr;
-      helixfit.helixParams(hpar,hparerr);
+      _hfit.helixParams(helixfit,hpar,hparerr);
       _hpar = helixpar(hpar);
       _hparerr = helixpar(hparerr);
       _hcx = helixfit._center.x(); _hcy = helixfit._center.y(); _hr = helixfit._radius;
@@ -746,7 +762,6 @@ namespace mu2e
     // should be chosing the track ID for conversion a better way, FIXME!!!
     cet::map_vector_key itrk(1);
     if(_kfitmc.trkFromMC(itrk,mctrk)){
-      _nmc = 1;
 // find true center, radius
       double rtrue = fabs(1.0/mctrk.helix().omega());
       double rad = 1.0/mctrk.helix().omega() + mctrk.helix().d0();
