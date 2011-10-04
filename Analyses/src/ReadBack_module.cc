@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.8 2011/06/07 23:01:53 kutschke Exp $
+// $Id: ReadBack_module.cc,v 1.9 2011/10/04 15:03:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 23:01:53 $
+// $Date: 2011/10/04 15:03:44 $
 //
 // Original author Rob Kutschke
 //
@@ -385,8 +385,8 @@ namespace mu2e {
     // Find pointers to the original G4 steps
     art::Handle<PtrStepPointMCVectorCollection> crystalPtr;
     art::Handle<PtrStepPointMCVectorCollection> readoutPtr;
-    event.getByLabel(_caloReadoutModuleLabel,crystalPtr);
-    event.getByLabel(_caloReadoutModuleLabel,readoutPtr);
+    event.getByLabel(_caloReadoutModuleLabel,"CaloHitMCCrystalPtr",crystalPtr);
+    event.getByLabel(_caloReadoutModuleLabel,"CaloHitMCReadoutPtr",readoutPtr);
 
     // Find original G4 steps in the APDs
     art::Handle<StepPointMCCollection> rohits;
@@ -457,10 +457,31 @@ namespace mu2e {
     if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<caloMC->size(); ++i ) {
         CaloHitMCTruth const & hit = (*caloMC).at(i);
-        cout << "Readback: " << hit << endl;
+
+        // Ptrs to StepPointMCs in the crystals.
+        PtrStepPointMCVector const& xptr = crystalPtr->at(i);
+
+        // Ptrs to StepPointMCs in the readout devices.
+        PtrStepPointMCVector const& rptr = readoutPtr->at(i);
+
+        cout << "Readback: " << hit << " | " << rptr.size() << " " << xptr.size();
+        if ( !rptr.empty() ){
+          cout << " | ";
+          for ( size_t j=0; j<rptr.size(); ++j ){
+            art::Ptr<StepPointMC> const& p = rptr.at(j);
+            cout << " (" << p.id() << "," << p.key() << ")";
+          }
+        }
+        if ( !xptr.empty() ){
+          cout << " | ";
+          for ( size_t j=0; j<xptr.size(); ++j ){
+            art::Ptr<StepPointMC> const& p = xptr.at(j);
+            cout << " (" << p.id() << "," << p.key() << ")";
+          }
+        }
+        cout << endl;
       }
     }
-
 
     // caloCrystalHits
     art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
@@ -519,11 +540,9 @@ namespace mu2e {
       }
     }
 
-    // templetize it?
-    // caloCrystalOnlyHits
+    // MC truth at the per crystal level.
     art::Handle<CaloCrystalOnlyHitCollection>  caloCrystalOnlyHits;
-
-    event.getByLabel(_caloCrystalModuleLabel,caloCrystalOnlyHits);
+    event.getByLabel(_caloReadoutModuleLabel,caloCrystalOnlyHits);
     if (!caloCrystalOnlyHits.isValid()) {
       _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalOnlyHits" << endl;
       return;
