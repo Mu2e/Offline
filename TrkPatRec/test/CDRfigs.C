@@ -210,10 +210,10 @@ CDRT0 (TTree* trkd) {
   TH1F* t00pull = new TH1F("t00pull","Initial T_{0} pull",100,-20,20);
   TH1F* t0res = new TH1F("t0res","Final T_{0} resolution;nsec",100,-5,5);
   TH1F* t0pull = new TH1F("t0pull","Final T_{0} pull",100,-10,10);
-  trkd->Project("t00res","t00-mcmidt0","ngood>0");
-  trkd->Project("t00pull","(t00-mcmidt0)/t00err","ngood>0");
-  trkd->Project("t0res","t0-mcmidt0","nfit>0");
-  trkd->Project("t0pull","(t0-mcmidt0)/t0err","nfit>0");
+  trkd->Project("t00res","t00-mcmidt0","kalfail==0");
+  trkd->Project("t00pull","(t00-mcmidt0)/t00err","kalfail==0");
+  trkd->Project("t0res","t0-mcmidt0","kalfail==0");
+  trkd->Project("t0pull","(t0-mcmidt0)/t0err","kalfail==0");
 
 
   TCanvas* t0can = new TCanvas("t0can","T_{0} canvas",1200,800);
@@ -229,3 +229,4 @@ CDRT0 (TTree* trkd) {
   t0pull->Fit("gaus");
 
 }
+alias wget="curl -O"

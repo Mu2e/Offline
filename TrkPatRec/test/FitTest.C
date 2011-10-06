@@ -97,7 +97,7 @@ void KalTest (TTree* trk) {
   cx->SetStats(0);
   cy->SetStats(0);
   cr->SetStats(0);
-  TCut helix("helixfail==0");
+  TCut helix("nmc>=20&&helixfail==0");
 
   trk->Project("cxr","hcx-mccx",helix);
   trk->Project("cyr","hcy-mccy",helix);
@@ -156,15 +156,15 @@ void KalTest (TTree* trk) {
   scan->Clear();
   scan->Divide(3,2);
   scan->cd(1);
-  trk->Draw("hd0:mcmidd0>>d0");
+  trk->Draw("hd0:mcmidd0>>d0",helix);
   scan->cd(2);
-  trk->Draw("hp0:mcmidp0>>phi0");
+  trk->Draw("hp0:mcmidp0>>phi0",helix);
   scan->cd(3);
-  trk->Draw("hom:mcmidom>>om");
+  trk->Draw("hom:mcmidom>>om",helix);
   scan->cd(4);
-  trk->Draw("hz0:mcmidz0>>z0");
+  trk->Draw("hz0:mcmidz0>>z0",helix);
   scan->cd(5);
-  trk->Draw("htd:mcmidtd>>td");
+  trk->Draw("htd:mcmidtd>>td",helix);
 }
 
 void MomRes(TTree* trk) {
