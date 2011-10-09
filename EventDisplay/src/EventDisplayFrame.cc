@@ -921,7 +921,7 @@ Bool_t EventDisplayFrame::HandleTimer(TTimer *)
     if(_saveAnimRoot) _rootFileManagerAnim->storeEvent(_mainPad);
     else
     {
-      if(_saveAnimCounter%3==0) //save only every 3rd gif to make final file smaller
+//      if(_saveAnimCounter%3==0) //save only every 3rd gif to make final file smaller
       {
         char c[_saveAnimFile.length()+15];
         sprintf(c,"%s.tmp_%04i.gif",_saveAnimFile.c_str(),_saveAnimCounter);

@@ -1,3 +1,4 @@
+#define USETRAJECTORY
 #include "DataInterface.h"
 
 #include "CLHEP/Vector/LorentzVector.h"
@@ -1079,6 +1080,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
                                    const mu2e::SimParticleCollection *simParticles,
                                    const std::vector<cet::map_vector_key> &daughterVect)
 {
+#ifdef USETRAJECTORY
   const mu2e::PointTrajectoryCollection *pointTrajectories=contentSelector->getPointTrajectoryCollection();
   if(pointTrajectories!=NULL)
   {
@@ -1171,6 +1173,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
         }
     }
   }
+#endif
 }
 
 void DataInterface::removeNonGeometryComponents()
