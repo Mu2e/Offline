@@ -1,9 +1,9 @@
 //
 // performance evaluation of the Bkg rejection modules
 //
-// $Id: EvalBkgTrackRejection_module.cc,v 1.2 2011/07/14 16:38:54 tassiell Exp $
+// $Id: EvalBkgTrackRejection_module.cc,v 1.3 2011/10/11 17:32:37 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/07/14 16:38:54 $
+// $Date: 2011/10/11 17:32:37 $
 //
 // Original author G. Tassielli
 //
@@ -55,8 +55,8 @@
 //#include "FastPatternReco/inc/TTHitPerTrackData.hh"
 //#include "FastPatternReco/inc/GenTrackData.hh"
 //#include "MCDataProducts/inc/GenId.hh"
-#include "RecoDataProducts/inc/VisibleGenElTrack.hh"
-#include "RecoDataProducts/inc/VisibleGenElTrackCollection.hh"
+#include "MCDataProducts/inc/VisibleGenElTrack.hh"
+#include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/SectorStationCluster.hh"
@@ -169,13 +169,13 @@ namespace mu2e {
   EvalBkgTrackRejection::EvalBkgTrackRejection(fhicl::ParameterSet const& pset) :
 
     // Run time parameters
+    _makerModuleLabel(pset.get<string>("makerModuleLabel")),
     _extractElectronsData(pset.get<string>("elextractModuleLabel")),
     _timeRejecterModuleLabel(pset.get<string>("tRejecterModuleLabel")),
     _geomRejecterModuleLabel(pset.get<string>("gRejecterModuleLabel")),
 //    _moduleLabel(pset.get<string>("module_label")),/*@module_label*/
 //    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
 //    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _makerModuleLabel(pset.get<string>("makerModuleLabel")),
 //    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
 
 //    _fakeCanvas(0),
@@ -314,7 +314,7 @@ namespace mu2e {
     std::vector<StrawHitPtr> signElGoodHit;
 
     double ptMeV, rho;
-    double sel_rho;
+    //double sel_rho;
     double B=1.0;
     CLHEP::Hep2Vector radDir;
     HepGeom::Point3D<double> CirCenter;
@@ -354,8 +354,8 @@ namespace mu2e {
                                     sel_ptMeV = sqrt( pow(hdil._hitMomentum[0],2) + pow(hdil._hitMomentum[1],2) );
                                     sel_plMeV = hdil._hitMomentum[2];
                                     _hNtrackableEv->Fill(sel_ptMeV);
-                                    for ( int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
-                                            GenElHitData& genElhit = iEltrk.getHit(iElHit);
+                                    for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                                            GenElHitData& genElhit = iEltrk.getHit((int) iElHit);
                                             if (genElhit._isFirst) signElGoodHit.push_back(genElhit._iHit);
                                     }
                                     convElNHit = signElGoodHit.size();

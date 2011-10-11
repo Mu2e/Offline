@@ -1,9 +1,9 @@
 //
 // example of a module to read Data of the Electrons tracks that came from the targets
 //
-// $Id: ReadExtractElectronsData_module.cc,v 1.2 2011/07/14 16:38:54 tassiell Exp $
+// $Id: ReadExtractElectronsData_module.cc,v 1.3 2011/10/11 17:32:37 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/07/14 16:38:54 $
+// $Date: 2011/10/11 17:32:37 $
 //
 // Original author G. Tassielli
 //
@@ -52,8 +52,8 @@
 //#include "FastPatternReco/inc/TTHitPerTrackData.hh"
 //#include "FastPatternReco/inc/GenTrackData.hh"
 //#include "MCDataProducts/inc/GenId.hh"
-#include "RecoDataProducts/inc/VisibleGenElTrack.hh"
-#include "RecoDataProducts/inc/VisibleGenElTrackCollection.hh"
+#include "MCDataProducts/inc/VisibleGenElTrack.hh"
+#include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 
 // Root includes.
 #include "TApplication.h"
@@ -75,6 +75,7 @@
 #include "TSpectrum.h"
 #include "TLatex.h"
 #include "TProfile.h"
+#include "TTree.h"
 
 using namespace std;
 
@@ -123,6 +124,10 @@ namespace mu2e {
     TProfile *_hNhitOverlapNoConvElEv_nh;
     TProfile *_hNhitOverlapByPNoConvElEv_nh;
 
+    TTree    *_dataConvEl;
+    unsigned int  runID, eventID, convElGoodNHit, convElTotNHit, convElNLoop;
+    float         el_Start_px, el_Start_py, el_Start_pz, el_AtTracker_px, el_AtTracker_py, el_AtTracker_pz;
+    float         convElFHitTime/*, convElStartTime*/;
     // End: run time parameters
 
 //    TCanvas*      _fakeCanvas;
@@ -150,13 +155,16 @@ namespace mu2e {
     _hNhitOverlapByPConvElEv_nh(0),
     _hNhitOverlapNoConvElEv_nh(0),
     _hNhitOverlapByPNoConvElEv_nh(0),
+    _dataConvEl(0),
 
 //    _fakeCanvas(0),
 
     // Some ugly but necessary ROOT related bookkeeping.
     _application(0),
     _directory(0){
-
+          runID=eventID=convElGoodNHit=convElTotNHit=convElNLoop=0;
+          el_Start_px=el_Start_py=el_Start_pz=el_AtTracker_px=el_AtTracker_py=el_AtTracker_pz=0.0;
+          convElFHitTime=/*convElStartTime=*/0.0;
  }
 
   void ReadExtractElectronsData::beginJob(){
@@ -176,10 +184,25 @@ namespace mu2e {
     gStyle->SetPalette(1);
     gROOT->SetStyle("Plain");
 
-    _hNhitOverlapConvElEv_nh     = tfs->make<TProfile>( "hNhitOverlapConvElEv_nh", "Profile of the number of Hits overlapped by another particle for trackable conv. electrons", 120, 6, 126 );
-    _hNhitOverlapByPConvElEv_nh  = tfs->make<TProfile>( "hNhitOverlapByPConvElEv_nh", "Profile of the number of Hits overlapped by proton for trackable conv. electrons", 120, 6, 126 );
+    _hNhitOverlapConvElEv_nh       = tfs->make<TProfile>( "hNhitOverlapConvElEv_nh", "Profile of the number of Hits overlapped by another particle for trackable conv. electrons", 120, 6, 126 );
+    _hNhitOverlapByPConvElEv_nh    = tfs->make<TProfile>( "hNhitOverlapByPConvElEv_nh", "Profile of the number of Hits overlapped by proton for trackable conv. electrons", 120, 6, 126 );
     _hNhitOverlapNoConvElEv_nh     = tfs->make<TProfile>( "hNhitOverlapNoConvElEv_nh", "Profile of the number of Hits overlapped by another particle for not conv. electrons", 120, 6, 126 );
     _hNhitOverlapByPNoConvElEv_nh  = tfs->make<TProfile>( "hNhitOverlapByPNoConvElEv_nh", "Profile of the number of Hits overlapped by proton for not conv. electrons", 120, 6, 126 );
+
+    _dataConvEl                    = tfs->make<TTree>( "dataConvEl", "data for Conversion Electron" );
+    _dataConvEl->Branch("Run",&runID,"runID/i");
+    _dataConvEl->Branch("Event",&eventID,"eventID/i");
+    _dataConvEl->Branch("ConvElGoodNHit",&convElGoodNHit,"convElGoodNHit/i");
+    _dataConvEl->Branch("ConvElTotNHit",&convElTotNHit,"convElTotNHit/i");
+    _dataConvEl->Branch("ConvElNLoop",&convElNLoop,"convElNLoop/i");
+    _dataConvEl->Branch("ConvEl_Start_px",&el_Start_px,"el_Start_px/F");
+    _dataConvEl->Branch("ConvEl_Start_py",&el_Start_py,"el_Start_py/F");
+    _dataConvEl->Branch("ConvEl_Start_pz",&el_Start_pz,"el_Start_pz/F");
+    _dataConvEl->Branch("ConvEl_Tracker_px",&el_AtTracker_px,"el_AtTracker_px/F");
+    _dataConvEl->Branch("ConvEl_Tracker_py",&el_AtTracker_py,"el_AtTracker_py/F");
+    _dataConvEl->Branch("ConvEl_Tracker_pz",&el_AtTracker_pz,"el_AtTracker_pz/F");
+    _dataConvEl->Branch("ConvEl_FrstHit_Time",&convElFHitTime,"convElFHitTime/F");
+    //_dataConvEl->Branch("ConvEl_Start_Time",&convElStartTime,"convElStartTime/F");
 
     //_fakeCanvas = new TCanvas("canvas_Fake","double click for next event",300,100);
 
@@ -206,6 +229,9 @@ namespace mu2e {
 
     std::vector<mu2e::VisibleGenElTrack>::const_iterator genEltrk_it;
 
+    runID=event.run();
+    eventID=event.event();
+
     double ptMeV, rho;
     double B=1.0;
     CLHEP::Hep2Vector radDir;
@@ -217,6 +243,7 @@ namespace mu2e {
             VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
             unsigned short &nloops = iEltrk.getNumOfLoops();
             cout<<"N loops "<<nloops<<endl;
+            convElNLoop=nloops;
             for ( unsigned int ilp=0; ilp<nloops; ilp++ ){
                     GenElHitData& hdil = iEltrk.getithLoopHit(ilp);
                     ptMeV = sqrt( pow(hdil._hitMomentum[0],2) + pow(hdil._hitMomentum[1],2) );
@@ -236,8 +263,21 @@ namespace mu2e {
             if ( iEltrk.isConversionEl() ) {
                     convElHitOvrlppd=0;
                     convElHitOvrlppdByP=0;
-                    for ( int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
-                            GenElHitData& genElhit = iEltrk.getHit(iElHit);
+                    convElTotNHit=iEltrk.getNumOfHit();
+                    convElGoodNHit=0;
+                    el_Start_px=iEltrk.getTrkLrntzVec().px();
+                    el_Start_py=iEltrk.getTrkLrntzVec().py();
+                    el_Start_pz=iEltrk.getTrkLrntzVec().pz();
+                    //convElStartTime=;
+                    GenElHitData& hdil = iEltrk.getHit(0);
+                    el_AtTracker_px=hdil._hitMomentum[0];
+                    el_AtTracker_py=hdil._hitMomentum[1];
+                    el_AtTracker_pz=hdil._hitMomentum[2];
+                    convElFHitTime=hdil._mcHitTime;
+
+                    for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                            GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
+                            if (genElhit._isFirst) convElGoodNHit++;
                             if (genElhit._isOverlapped) {
                                     convElHitOvrlppd++;
                                     if (genElhit._isOvrlpByProton) convElHitOvrlppdByP++;
@@ -245,12 +285,13 @@ namespace mu2e {
                     }
                     _hNhitOverlapConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppd);
                     _hNhitOverlapByPConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppdByP);
+                    _dataConvEl->Fill();
             }
             else {
                     convElHitOvrlppd=0;
                     convElHitOvrlppdByP=0;
-                    for ( int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
-                            GenElHitData& genElhit = iEltrk.getHit(iElHit);
+                    for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                            GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
                             if (genElhit._isOverlapped) {
                                     convElHitOvrlppd++;
                                     if (genElhit._isOvrlpByProton) convElHitOvrlppdByP++;

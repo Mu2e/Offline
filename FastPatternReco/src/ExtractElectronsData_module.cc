@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.2 2011/07/14 16:38:54 tassiell Exp $
+// $Id: ExtractElectronsData_module.cc,v 1.3 2011/10/11 17:32:37 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/07/14 16:38:54 $
+// $Date: 2011/10/11 17:32:37 $
 //
 // Original author G. Tassielli
 //
@@ -55,8 +55,8 @@
 //#include "FastPatternReco/inc/TTHitPerTrackData.hh"
 //#include "FastPatternReco/inc/GenTrackData.hh"
 #include "MCDataProducts/inc/GenId.hh"
-#include "RecoDataProducts/inc/VisibleGenElTrack.hh"
-#include "RecoDataProducts/inc/VisibleGenElTrackCollection.hh"
+#include "MCDataProducts/inc/VisibleGenElTrack.hh"
+#include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 
 // Root includes.
 #include "TApplication.h"
@@ -315,7 +315,7 @@ void ExtractElectronsData::produce(art::Event & event ) {
                                 }
                         }
 
-                        if ( sim.pdgId()==11 && sim.fromGenerator() /*&& sim.startMomentum().rho()>=103.0*/ ){
+                        if ( sim.pdgId()==11 && sim.isPrimary() /*sim.fromGenerator()*/ /*&& sim.startMomentum().rho()>=103.0*/ ){
 
                                 addTrack = true;
                                 mchittime=mchit.time();

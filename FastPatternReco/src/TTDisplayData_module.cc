@@ -1,9 +1,9 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.3 2011/07/14 16:38:54 tassiell Exp $
+// $Id: TTDisplayData_module.cc,v 1.4 2011/10/11 17:32:37 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/07/14 16:38:54 $
+// $Date: 2011/10/11 17:32:37 $
 //
 // Original author G. Tassielli
 //
@@ -822,7 +822,7 @@ namespace mu2e {
                       // The simulated particle that made this hit.
                       SimParticleCollection::key_type trackId(mchit.trackId());
                       SimParticle const& sim = simParticles->at(trackId);
-                      if ( sim.pdgId()==11 && sim.fromGenerator() ) isElFromTarget=true;
+                      if ( sim.pdgId()==11 && sim.isPrimary() /*sim.fromGenerator()*/ ) isElFromTarget=true;
                       if ( sim.pdgId()==2212 ){
                               isThereProton=true;
                               //break;
@@ -861,7 +861,7 @@ namespace mu2e {
       // cout << "Reading MCtruth info" << endl;
 
       // Get MC truth data
-      double driftTime = truth.driftTime();
+      //double driftTime = truth.driftTime();
       double driftDistance = truth.driftDistance();
 
       //Position along the wire using mctruth info
@@ -961,7 +961,7 @@ namespace mu2e {
 
         //cout<<"Hit time :"<<mchit.time()<<" proper "<<mchit.properTime()<<endl;
 
-        if ( sim.pdgId()==11 && sim.fromGenerator() /*&& sim.startMomentum().rho()>=103.0*/ ){
+        if ( sim.pdgId()==11 && sim.isPrimary() /*sim.fromGenerator()*/ /*&& sim.startMomentum().rho()>=103.0*/ ){
           if ( genElectrons.find(trackId)==genElectrons.end() ) {
             genElectrons.insert ( pair<SimParticleCollection::key_type,std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector> > ( trackId, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>( sim.startPosition(), sim.startMomentum() ) ) );
             firstHitOfGenEl.insert ( pair<SimParticleCollection::key_type,std::pair<CLHEP::Hep3Vector,CLHEP::Hep3Vector> > ( trackId, std::pair<CLHEP::Hep3Vector,CLHEP::Hep3Vector>( mchit.position(), mchit.momentum() ) ) );
@@ -994,7 +994,7 @@ namespace mu2e {
         aveZ+=mchit.position().getZ();
       }
       aveZ/= ((float) mcptr.size());
-      float wpos[3];
+//      float wpos[3];
 //      itwp->WirePosAtZ(aveZ, wpos);
 
       aveZ/=CLHEP::cm;
@@ -1043,7 +1043,7 @@ namespace mu2e {
     /*std::map<SimParticleCollection::key_type,std::pair<CLHEP::Hep3Vector,CLHEP::Hep3Vector> >::iterator*/ firstHitOfGenEl_it = firstHitOfGenEl.begin();
 
     //TClonesArray *genElDraws = new TClonesArray("TEllipse");
-    int nGenEl = genElectrons.size();
+    //int nGenEl = genElectrons.size();
     //genElDraws->ExpandCreateFast( nGenEl );
     while ( genEl_it != genElectrons.end() ){
       cout<<"Generated el at "<<genEl_it->second.first<<" of "<<genEl_it->second.second<<endl;
@@ -1144,9 +1144,9 @@ namespace mu2e {
     innerWall.Draw("same");
     outerWall.Draw("same");
     for ( genTracksCrircles_it=genTracksCrircles.begin(); genTracksCrircles_it!=genTracksCrircles.end(); genTracksCrircles_it++ ){
-            for ( unsigned int ilp=0; ilp<genTracksCrircles_it->second->GetEntries(); ilp++ )  ((TEllipse *) genTracksCrircles_it->second->At(ilp))-> Draw("same");
+            for ( /*unsigned*/ int ilp=0; ilp<genTracksCrircles_it->second->GetEntries(); ilp++ )  ((TEllipse *) genTracksCrircles_it->second->At(ilp))-> Draw("same");
     }
-    for (size_t i=0; i<hitDrawsTransPoint->GetEntries(); ++i) ((TMarker *) hitDrawsTransPoint->At(i))->Draw("same");
+    for (/*size_t*/ int i=0; i<hitDrawsTransPoint->GetEntries(); ++i) ((TMarker *) hitDrawsTransPoint->At(i))->Draw("same");
     for (size_t i=0; i<4*nStrawPerEvent; ++i) ((TLine *) hitStrawDrawsTrans->At(i))->Draw("same");
     for (size_t i=0; i<nStrawPerEvent; ++i) ((TLine *) hitDrawsTrans->At(i))->Draw("same");
     _hHitTransverse->Draw("same");
@@ -1154,7 +1154,7 @@ namespace mu2e {
     _canvasTLview->cd(2);
     _hHitLongit->Draw();
     for (int id=0; id<nDevice; id++) ((TBox *) deviceDrawsLong->At(id))->Draw("same");
-    for (size_t i=0; i<hitDrawsLongPoint->GetEntries(); ++i) ((TMarker *) hitDrawsLongPoint->At(i))->Draw("same");
+    for (/*size_t*/ int i=0; i<hitDrawsLongPoint->GetEntries(); ++i) ((TMarker *) hitDrawsLongPoint->At(i))->Draw("same");
     for (size_t i=0; i<nStrawPerEvent; ++i) ((TEllipse *) hitDrawsZ->At(i))->Draw("same");
     _hHitLongit->Draw("same");
 
@@ -1586,10 +1586,10 @@ namespace mu2e {
                             //if (absSect>=8 && absSect<=11)  ihPkSecVsStationDist2W->Fill(devicen/2,absSect-12);
                             if (absSect>=0 && absSect<=3)   ihPkSecVsStationDist2W->Fill(devicen/2,absSect+12);
 
-                            int nYbingroup, YbinHalf, jYbin, nXBin, nYBin;
-                            float Yhit;
-                            int nXbingroup, XbinHalf, jXbin;
-                            float Xhit;
+//                            int nYbingroup, YbinHalf, jYbin, nXBin, nYBin;
+//                            float Yhit;
+//                            int nXbingroup, XbinHalf, jXbin;
+//                            float Xhit;
 
 ////                            nYbingroup=250;//5*50
 ////                            Yhit=0.0;
