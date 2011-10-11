@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.21 2011/09/19 17:32:44 onoratog Exp $
+// $Id: ConstructMaterials.cc,v 1.22 2011/10/11 14:55:22 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/09/19 17:32:44 $
+// $Date: 2011/10/11 14:55:22 $
 //
 // Original author Rob Kutschke
 //
@@ -275,17 +275,16 @@ namespace mu2e {
 
       G4Element* N = getElementOrThrow("N");
 
-      G4double refDensity     = 1.1652e-3*g/cm3;
-      G4double refPress    = 100e3*pascal;
-      G4double refTemp     = 273.15*kelvin;
-      G4double pressure    = 133.322e-4*pascal;
-      G4double temperature = 300.00*kelvin;
+      G4double refDensity  = 1.1652e-3*g/cm3; // Nitrogen pressure at 0 celsius 1 bar
+      G4double refPress    = 100e3*pascal; // 1 bar
+      G4double refTemp     = 273.15*kelvin; // 0 celsius
+      G4double pressure    = 133.322e-4*pascal; // 10e-4 Torr
+      G4double temperature = 300.00*kelvin; // Temperature of the DS
 
-      // G4double density = refDensity*pressure*refTemp/(refPress*temperature);
-      G4double density = 1.41443256301e-9*kg/m3;
-
+      G4double density = refDensity*pressure*refTemp/(refPress*temperature);
+      
       G4Material* DSVacuum =
-	new G4Material(mat.name, density, 1, kStateGas, temperature, pressure);
+	new G4Material(mat.name, density*g/cm3, 1, kStateGas, temperature, pressure);
 
       G4int nAtoms;
       DSVacuum->AddElement(N, nAtoms=2);
