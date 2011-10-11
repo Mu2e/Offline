@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.22 2011/10/11 14:55:22 onoratog Exp $
+// $Id: ConstructMaterials.cc,v 1.23 2011/10/11 20:29:51 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/10/11 14:55:22 $
+// $Date: 2011/10/11 20:29:51 $
 //
 // Original author Rob Kutschke
 //
@@ -284,7 +284,7 @@ namespace mu2e {
       G4double density = refDensity*pressure*refTemp/(refPress*temperature);
       
       G4Material* DSVacuum =
-	new G4Material(mat.name, density*g/cm3, 1, kStateGas, temperature, pressure);
+	new G4Material(mat.name, density, 1, kStateGas, temperature, pressure);
 
       G4int nAtoms;
       DSVacuum->AddElement(N, nAtoms=2);
