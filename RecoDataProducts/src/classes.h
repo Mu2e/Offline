@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.5 2011/06/25 23:58:29 tassiell Exp $
+// $Id: classes.h,v 1.6 2011/10/11 17:26:08 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/06/25 23:58:29 $
+// $Date: 2011/10/11 17:26:08 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,6 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/HoughCircleCollection.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"
-#include "RecoDataProducts/inc/VisibleGenElTrackCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
 
@@ -36,6 +35,5 @@ template class art::Wrapper<mu2e::CaloHitCollection>;
 template class art::Wrapper<mu2e::CaloCrystalHitCollection>;
 template class art::Wrapper<mu2e::HoughCircleCollection>;
 template class art::Wrapper<mu2e::SubEventCollection>;
-template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;
 template class art::Wrapper<mu2e::TrackerHitTimeClusterCollection>;
 template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;
