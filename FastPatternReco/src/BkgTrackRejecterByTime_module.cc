@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.2 2011/07/14 16:38:54 tassiell Exp $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.3 2011/10/11 17:31:06 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/07/14 16:38:54 $
+// $Date: 2011/10/11 17:31:06 $
 //
 // Original author G. Tassielli
 //
@@ -731,14 +731,14 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
             //Float_t *timepeakHei=_peakFinder->GetPositionY();
             unsigned int *timepeakPosId = new unsigned int[nfound];
             unsigned int frstTimeBinInP, lastTimeBinInP;
-            size_t ihit;
+            //size_t ihit;
             std::map <size_t, unsigned int>::iterator stHitTrkMrk_rel_it;
 
             int i1peak;
 
             StrawId sid;
-            int stn, layern, devicen, sectorn;
-            unsigned int absSect, devStId;
+            //int stn, layern, devicen, sectorn;
+            //unsigned int absSect, devStId;
 
             tmpStClustDist    = new TH2I("tmpStClustDist","tmp Smooting of Device vs Straw multiplicity Distribution",36,0,36,1000,-200,800);
             tmpSecClustDist   = new TH2I("tmpSecClustDist","tmp Smooting of Device vs Sector multiplicity Distribution",36,0,36,20,-4,16);
