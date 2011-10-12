@@ -1,9 +1,9 @@
 #
 # Do event mixing.
 #
-# $Id: mixTest_00.fcl,v 1.1 2011/09/25 19:10:03 kutschke Exp $
+# $Id: mixTest_00.fcl,v 1.2 2011/10/12 20:13:38 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/09/25 19:10:03 $
+# $Date: 2011/10/12 20:13:38 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -41,16 +41,27 @@ physics :
 {
   producers:{
     makeSH : @local::makeSH
+    summary : {
+      module_type : SummarizeStatusG4
+      g4ModuleLabel : ""
+    }
   }
 
   filters: {
     mixer: {
-      module_type     : MixMCEvents
-      mean            : 3.5
-      mixProducerLabel: generate
-      fileNames       : [ "/mu2e/data/outstage/kutschke/72784/72784_0000/TTrackerBg_0000_data.root" ]
-      readMode        : sequential
-      seed            : [13579]
+
+      // Parameters for the MixFilter template
+      module_type       : MixMCEvents
+      fileNames           : [ "/mu2e/data/outstage/kutschke/72784/72784_0000/TTrackerBg_0000_data.root" ]
+      readMode            : sequential
+      seed                : [13579]
+
+      // Parametes for the MixDetail class
+      mean                :  3.5
+      genModuleLabel      : generate
+      g4ModuleLabel       : g4run
+      stepInstanceNames   : [ "tracker", "virtualdetector", "timeVD", "stoppingtarget", "CRV", "calorimeter", "calorimeterRO" ]
+      doPointTrajectories : true
     }
   }
 
@@ -58,7 +69,7 @@ physics :
     checkMix : { module_type : MixAnalyzer }
   }
 
-  p1 : [mixer, makeSH ]
+  p1 : [ mixer, summary, makeSH ]
   e1 : [ checkMix, outfile ]
 
   trigger_paths  : [p1]
