@@ -1,10 +1,14 @@
 //
 // Read zero or more events from an art event-data file and mix them into the current event.
 // Part of the job is to update art::Ptr objects to point into the mixed collections.
+// The GenParticles, SimParticles and StatusG4 objects are always read and mixed.
+// There are parameter set variables to control which of the many StepPointMCCollections
+// are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
+// parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.3 2011/09/26 18:56:04 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.4 2011/10/12 20:11:19 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/09/26 18:56:04 $
+// $Date: 2011/10/12 20:11:19 $
 //
 // Contact person Rob Kutschke.
 //
@@ -43,7 +47,7 @@
 //    classses and instantiate the template twice, once with each detail class.  Each instantiation
 //    needs to be in a separate xxx_module.cc file.
 //
-// 3) For documentation, see:
+// 3) For additional documentation, see:
 //      test/Integration/MixAnalyzer_module.cc
 //      art/Framework/Core/PtrRemapper.h
 //      art/Persistency/Common/CollectionUtilities.h
@@ -66,18 +70,35 @@
 //      - mixSimParticles
 //      - mixStepPointMCs, possibly called many times
 //      - mixPointTrajectories
-//      - coming soon: accessing all of the G4status objects. Not 100% sure how this will be done?
+//      - mixStatusG4
 //
 // 6) The mixOp methods return a bool.  If this is true, the output product will be added to the event.
 //    If it is false, the output product will not be added to the event.
 //
+// 7) The art::MixFilter template requires that the arguments of a mixOp methods is:
+//      ( std::vector< T const*> const&, T&, art::PtrRemapper const& )
+//    The second argument is not std::vector<T>&, just T&.  This might cause problems
+//    if T is not a collection type.  The one case in which we encounter this is with the StatusG4
+//    objects but those objects end up in the MixingSUmmary, so there is no real problem.
+//
+// 8) Todo:
+//    When we commit for  v0_7_16:
+//     - remove test for valid art version.
+//
+//    When art v1_0_0 is available
+//     - remove hack and its calls
+//     - add extra argument to the mixOp for StatusG4.
+//     - Get scale factor from the event.
+//
 
 // Mu2e includes
-#include "MCDataProducts/inc/MixingSummary.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/MixingSummary.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/VirtualDetectorId.hh"
 
 // Includes from art
 #include "art/Framework/Core/Event.h"
@@ -87,7 +108,7 @@
 #include "art/Framework/Core/PtrRemapper.h"
 #include "art/Persistency/Common/CollectionUtilities.h"
 #include "art/Utilities/InputTag.h"
-//#include "art/Framework/Core/EngineCreator.h"
+#include "art/Version/GetReleaseVersion.h"
 
 // Includes from the art tool chain.
 #include "cetlib/map_vector.h"
@@ -95,15 +116,16 @@
 
 // Other third party includes
 #include "boost/noncopyable.hpp"
-
 #include "CLHEP/Random/RandPoissonQ.h"
 
-
+// C++ includes
 #include <vector>
 
 using namespace std;
 
 namespace mu2e {
+
+  // Forward declare the classs we will write later in this file.e
   class MixMCEventsDetail;
 
   // This is the module class.
@@ -111,6 +133,7 @@ namespace mu2e {
 
 }
 
+// Now declare the class.
 class mu2e::MixMCEventsDetail : private boost::noncopyable {
 
 public:
@@ -150,6 +173,11 @@ public:
                         mu2e::PointTrajectoryCollection&                             out,
                         art::PtrRemapper const &remap);
 
+  bool
+  mixStatusG4( std::vector< mu2e::StatusG4 const *> const &in,
+               mu2e::StatusG4&                            out,
+               art::PtrRemapper const& );
+
 private:
 
   // Run-time configurable members.
@@ -157,8 +185,16 @@ private:
   // The number of mix-in events to choose on each event.
   double mean_;
 
+  // Module labels of the producer that made the GenParticles and that which
+  std::string genModuleLabel_;
+  std::string g4ModuleLabel_;
+
   // The instance names of the StepPointMCCollections to be mixed in.
-  std::vector<std::string> stepInstanceNames_;
+  // Default is to mix all such collections.
+  std::vector<mu2e::StepInstanceName> stepInstances_;
+
+  // Enable/disable mixing of the PointTrajectoryCollections.
+  bool doPointTrajectories_;
 
   // Non-run-time configurable members.
 
@@ -170,11 +206,11 @@ private:
   size_t actual_;
 
   // The offsets returned from flattening the GenParticle and SimParticle collections.
+  // These are needed in Ptr remapping operations.
   std::vector<size_t> genOffsets_;
   std::vector<size_t> simOffsets_;
 
   // New data products that will be added to the event.
-  std::auto_ptr<art::EventIDSequence> eIDs_;
   std::auto_ptr<mu2e::MixingSummary> summary_;
 
   // Remap all of the art::Ptr objects in one SimParticle.
@@ -183,6 +219,9 @@ private:
                           size_t simOffset,
                           art::PtrRemapper const& remap
                           );
+
+  // Parse the parameter set to learn which StepPointMCCollections to mix.
+  std::vector<mu2e::StepInstanceName> chooseStepInstances( fhicl::ParameterSet const& pset);
 
   // A hack that will be needed until the mixing template is fixed.
   // Skip events if the actual number of mix-in events is different than the
@@ -223,7 +262,7 @@ namespace {
         << id.index     << " : "
         << id.size      << " : "
         << id.low      << " : "
-        << id.high 
+        << id.high
         << " )";
     return ost;
   }
@@ -295,13 +334,34 @@ namespace {
   // Sum of the sizes of all input collections.
   // This is a candidate to be moved to a more general library.
   template <class T>
-  size_t totalSize( std::vector< T const*> in){
+  size_t totalSize( std::vector< T const*> const& in){
     size_t sum;
     for ( typename std::vector<T const*>::const_iterator i=in.begin(), e=in.end();
           i !=e ; ++i ){
       sum += (*i)->size();
     }
     return sum;
+  }
+
+  // Fill output argument with size of each collection from the input argument.
+  template <class T>
+  void getSizes( std::vector< T const*> const& in, std::vector<size_t>& out){
+    out.reserve(in.size());
+    for ( typename std::vector<T const*>::const_iterator i=in.begin(), e=in.end();
+          i !=e ; ++i ){
+      out.push_back((*i)->size());
+    }
+  }
+
+  // Variant of getSizes for use when T is a cet::map_vector; call the delta()
+  // method instead of the size() method.
+  template <class T>
+  void getDeltas( std::vector< T const*> const& in, std::vector<size_t>& out){
+    out.reserve(in.size());
+    for ( typename std::vector<T const*>::const_iterator i=in.begin(), e=in.end();
+          i !=e ; ++i ){
+      out.push_back((*i)->delta());
+    }
   }
 
 } // end anonymous namespace
@@ -311,64 +371,68 @@ mu2e::MixMCEventsDetail::
 MixMCEventsDetail(fhicl::ParameterSet const &pSet,
                   art::MixHelper &helper)
   :
-
   // Run-time configurable parameters
   mean_(pSet.get<double>("mean", 2.)),
-  stepInstanceNames_(),                   //  Still to be made run-time-configurable.
+  genModuleLabel_(pSet.get<string>("genModuleLabel")),
+  g4ModuleLabel_ (pSet.get<string>("g4ModuleLabel")),
+  stepInstances_(chooseStepInstances(pSet)),
+  doPointTrajectories_(pSet.get<bool>("doPointTrajectories",true)),
 
   // Non-run-time configurable
   evtCount_(-1),
-  stepCollectionCount_(0),
+  stepCollectionCount_(-1),
   actual_(0),
   genOffsets_(),
   simOffsets_(),
-  eIDs_(),
   summary_(0){
 
-  // List of StepPointMC collections in the event.
-  stepInstanceNames_.push_back("tracker");
-  stepInstanceNames_.push_back("virtualdetector");
-  stepInstanceNames_.push_back("stoppingtarget");
-  stepInstanceNames_.push_back("CRV");
-  stepInstanceNames_.push_back("calorimeter");
-  stepInstanceNames_.push_back("calorimeterRO");
+  // This happens to work.  It can go away when the hack calls go away.
+  std::string version = art::getReleaseVersion();
+  if ( version == "v0_07_13") {
+    throw cet::exception("RANGE")
+      << "Event mixing requires art version v0_07_16 or higher.\n";
+  }
 
   // Declare new products produced directly by this class.
-  helper.produces<art::EventIDSequence>();
   helper.produces<mu2e::MixingSummary>();
 
   // Register MixOp operations; the callbacks are called in the order they were registered.
   helper.declareMixOp
-    ( art::InputTag("generate",""),
+    ( art::InputTag(genModuleLabel_,""),
       &MixMCEventsDetail::mixGenParticles, *this );
 
   helper.declareMixOp
-    ( art::InputTag("g4run",""),
+    ( art::InputTag(g4ModuleLabel_,""),
       &MixMCEventsDetail::mixSimParticles, *this );
 
   // Declare MixOps for all StepPointMCCollections.
-  for ( std::vector<std::string>::const_iterator i=stepInstanceNames_.begin(),
-          e=stepInstanceNames_.end();  i != e; ++ i ){
+  for ( std::vector<mu2e::StepInstanceName>::const_iterator i=stepInstances_.begin(),
+          e=stepInstances_.end();  i != e; ++ i ){
     helper.declareMixOp
-      ( art::InputTag("g4run",*i),
+      ( art::InputTag(g4ModuleLabel_,i->name()),
         &MixMCEventsDetail::mixStepPointMCs, *this );
   }
 
-  helper.declareMixOp
-    ( art::InputTag("g4run",""),
-      &MixMCEventsDetail::mixPointTrajectories, *this );
+  if ( doPointTrajectories_ ){
+    helper.declareMixOp
+      ( art::InputTag(g4ModuleLabel_,""),
+        &MixMCEventsDetail::mixPointTrajectories, *this );
+  }
 
-  //produces<StatusG4>();
+  // When art v1_0_0 becomes available, add the extra argument so that the mixop must return false.
+  helper.declareMixOp
+    ( art::InputTag(g4ModuleLabel_,""),
+      &MixMCEventsDetail::mixStatusG4, *this );
 
 } // end mu2e::MixMCEventsDetail::MixMCEventsDetail
 
 // If we should skip this event because nSecondaries returned 0, then
-// return true.  This will go away when we fix the bug in the mixing
-// class template.
+// return true; otherwise return false.
+//  This can go away after we require art v0_1_16.
 bool mu2e::MixMCEventsDetail::hack ( size_t n ){
   if ( n != actual_ ){
     cerr << "Skipping mixOp at event: "
-         << evtCount_  << " : " 
+         << evtCount_  << " : "
          << n          << " "
          << actual_
          << endl;
@@ -381,9 +445,8 @@ bool mu2e::MixMCEventsDetail::hack ( size_t n ){
 void
 mu2e::MixMCEventsDetail::
 startEvent() {
-  eIDs_.reset();
-  summary_.reset();
-  stepCollectionCount_ = 0;
+  summary_.reset(new mu2e::MixingSummary());
+  stepCollectionCount_ = -1;
 }
 
 size_t
@@ -396,8 +459,8 @@ nSecondaries() {
 
   int n(0);
   if ( mean_ > 0 ){
-    static CLHEP::RandPoissonQ poisson( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(), std::abs(mean_));
-    n = poisson.fire();
+    static CLHEP::RandPoissonQ poisson( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(), mean_);
+    n = poisson.fire(mean_);
   }else{
     static size_t n0 = (mean_ < 0) ? static_cast<int>(floor(std::abs(mean_))) : 0;
     n = n0;
@@ -411,15 +474,12 @@ nSecondaries() {
 void
 mu2e::MixMCEventsDetail::
 processEventIDs(art::EventIDSequence const &seq) {
-  eIDs_.reset(new art::EventIDSequence(seq));
-  summary_.reset(new mu2e::MixingSummary());
   summary_->eventIDs() = seq;
 }
 
 void
 mu2e::MixMCEventsDetail::
 finalizeEvent(art::Event &e) {
-  e.put(eIDs_);
   e.put(summary_);
 }
 
@@ -432,8 +492,10 @@ mixGenParticles( std::vector< mu2e::GenParticleCollection const *> const& in,
 
   if ( hack(in.size()) ) return true;
 
+  getSizes( in, summary_->genSizes() );
+
   // There are no Ptr's to update; just need to flatten.
-  art::flattenCollections(in, out, genOffsets_);
+  art::flattenCollections(in, out, genOffsets_ );
 
   return true;
 } // end mu2e::MixMCEventsDetail::mixGenParticles
@@ -447,15 +509,17 @@ mixSimParticles( std::vector< mu2e::SimParticleCollection const *> const &in,
   if ( hack(in.size()) ) return true;
   if ( in.empty()      ) return true;
 
+  getDeltas( in, summary_->simDeltas() );
+
   // Flatten the input collections; does not update Ptrs.
-  art::flattenCollections(in, out, simOffsets_);
+  art::flattenCollections(in, out, simOffsets_ );
 
   if ( out.empty() ) return true;
 
   // There are art::Ptrs that need updating...
 
   // Tool to map sections of the output collection back to their input collection.
-  Stepper<mu2e::SimParticle> inputMapper(simOffsets_, out);
+  Stepper<mu2e::SimParticle> inputMapper( simOffsets_, out);
 
   // Information about the first non-empty input container.
   StepInfo info(inputMapper.next());
@@ -466,7 +530,7 @@ mixSimParticles( std::vector< mu2e::SimParticleCollection const *> const &in,
 
     SimParticle& sim = i->second;
 
-    // We have crossed the highwater mark for this input collection; 
+    // We have crossed the highwater mark for this input collection;
     // Get infor for the next non-empty input collection.
     if ( int(i->first.asInt()) >= info.high ){
       info = inputMapper.next();
@@ -523,8 +587,12 @@ mixStepPointMCs( std::vector< mu2e::StepPointMCCollection const *> const &in,
                  mu2e::StepPointMCCollection&                             out,
                  art::PtrRemapper const &remap){
 
+  ++stepCollectionCount_;
+
   if ( hack(in.size()) ) return true;
-  if ( in.empty()      ) return true;
+
+  StepInstanceName instance(stepInstances_.at(stepCollectionCount_));
+  getSizes( in, summary_->stepSizes(instance.id()) );
 
   // Flatten the input collections; does not update Ptrs.
   std::vector<size_t> offsets;
@@ -547,7 +615,7 @@ mixStepPointMCs( std::vector< mu2e::StepPointMCCollection const *> const &in,
 
     StepPointMC& step = *i;
 
-    // We have crossed the highwater mark for this input collection; 
+    // We have crossed the highwater mark for this input collection;
     // Get info for the next non-empty input collection.
     if ( ++m == int(info.high) ){
       info = nn.next();
@@ -570,10 +638,12 @@ mixPointTrajectories( std::vector< mu2e::PointTrajectoryCollection const *> cons
 
   if  ( hack(in.size()) ) return true;
 
+  getDeltas( in, summary_->pointTrajectoryDeltas() );
+
   size_t outSize(totalSize(in));
   out.reserve(outSize);
 
-  typedef mu2e::PointTrajectoryCollection::key_type                             key_type;
+  typedef mu2e::PointTrajectoryCollection::key_type                         key_type;
   typedef std::vector< mu2e::PointTrajectoryCollection const *>::const_iterator Iter;
 
   int inputIndex(-1);
@@ -581,28 +651,28 @@ mixPointTrajectories( std::vector< mu2e::PointTrajectoryCollection const *> cons
 
     mu2e::PointTrajectoryCollection const& trajs(**i);
     ++inputIndex;
-    
+
     for ( mu2e::PointTrajectoryCollection::const_iterator t=trajs.begin(), te=trajs.end();
           t != te; ++t ){
 
       key_type key(t->first);
       mu2e::PointTrajectory const& traj(t->second);
-    
+
       key_type newKey = key_type(unsigned(t->first.asUint()) + simOffsets_.at(inputIndex));
 
       // This is redundant (unless I have made a mistake); leave it in for a while.
       if ( newKey.asInt() <= out.delta() ){
         throw cet::exception("RANGE")
-          << "MixMCEventsDetail::mixPointTrajectories: the key already exists: " 
+          << "MixMCEventsDetail::mixPointTrajectories: the key already exists: "
           << newKey
-          << " Input index: " << inputIndex 
+          << " Input index: " << inputIndex
           << " old key: "     << key;
       }
 
       // Default construct an entry in the output map_vector; hold a reference to it.
       mu2e::PointTrajectory& newtraj = out[newKey];
 
-      // Copy the input data into the map.
+      // Copy the input data into the output map_vector.
       newtraj = traj;
 
       // Update the simId element of the PointTrajectory.
@@ -614,5 +684,83 @@ mixPointTrajectories( std::vector< mu2e::PointTrajectoryCollection const *> cons
 
   return true;
 } // end mu2e::MixMCEventsDetail::mixPointTrajectories
+
+// This does not follow the usual pattern, see note 7.
+bool
+mu2e::MixMCEventsDetail::
+mixStatusG4( std::vector< mu2e::StatusG4 const *> const &in,
+             mu2e::StatusG4&                             dummy,
+             art::PtrRemapper const& ){
+
+  if  ( hack(in.size()) ) return false;
+
+  // Ignore the output argument in the function signtature; instead
+  // copy the input information into two data members of the MixingSummary product.
+  //  - the eventStatus data member contains a copy of the input StatusG4 objects
+  //  - the status data member contains a roll-up of the input StatusG4 objects
+  StatusG4& status(summary_->status());
+  std::vector<mu2e::StatusG4>& out(summary_->eventStatus());
+  out.reserve(in.size());
+
+  typedef std::vector< mu2e::StatusG4 const *>::const_iterator Iter;
+
+  // There are no Ptrs to update, just copy input to output.
+  for ( Iter i=in.begin(), e=in.end(); i !=e; ++i ){
+    out.push_back(**i);
+    status.add(**i);
+  }
+
+  // Do not add the dummy output collection to the event.
+  return false;
+
+} // end mu2e::MixMCEventsDetail::mixStatusG4
+
+// Parse the stepInstances parameter.
+std::vector<mu2e::StepInstanceName>
+mu2e::MixMCEventsDetail::
+chooseStepInstances( fhicl::ParameterSet const& pset){
+
+  // Default return value.
+  std::vector<mu2e::StepInstanceName>  out;
+
+  // Build the default value: all known instance names, excluding "unknown".
+  std::vector<std::string>  defaultNames;
+  for ( size_t i=1; i<StepInstanceName::lastEnum; ++i ){
+    defaultNames.push_back(StepInstanceName(i).name());
+  }
+
+  // Get a list of names from the parameter set; if absent, use the default.
+  std::vector<std::string> names = pset.get<std::vector<std::string> >( "stepInstanceNames", defaultNames);
+
+  // Translate strings to StepInstanceName objects.
+  for ( size_t  i=0; i<names.size(); ++i ){
+    StepInstanceName step(StepInstanceName::findByName( names.at(i), false));
+    if ( step.id() == StepInstanceName::unknown ){
+      throw cet::exception("RANGE")
+        << "MixMCEventsDetail::chooseStepInstances: requested StepPointMCCollection instance name does not exist: "
+        << names.at(i)
+        << "\n";
+    }
+    out.push_back(step);
+  }
+
+  // Always do the work in a well defined order.
+  sort( out.begin(), out.end() );
+
+  // Check for duplicates.
+  int nDuplicate(0);
+  for ( size_t i=1; i<out.size(); ++i){
+    if ( out[i] == out[i-1] ){
+      ++nDuplicate;
+    }
+  }
+  if ( nDuplicate > 0 ) {
+    throw cet::exception("DUPLICATE")
+      << "MixMCEventsDetail::chooseStepInstances: found duplicate StepPointMCCollection instance name(s).\n"
+      << "Please fix the list stepInstanceNames parameter in your .fcl file and rerun\n";
+  }
+
+  return out;
+} // end mu2e::MixMCEventsDetail::chooseStepInstances
 
 DEFINE_ART_MODULE(mu2e::MixMCEvents);
