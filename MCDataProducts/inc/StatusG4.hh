@@ -3,9 +3,9 @@
 //
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.hh,v 1.2 2011/07/12 04:52:27 kutschke Exp $
+// $Id: StatusG4.hh,v 1.3 2011/10/12 20:06:33 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Date: 2011/10/12 20:06:33 $
 //
 // Original author Rob Kutschke
 //
@@ -14,22 +14,18 @@
 //    in this class.  If it has a value of 0 then G4 completed with no signficant error or warning.
 //    If it has a positive value then some issue arose during the run of G4 for this event;
 //    the larger the number the worse the problem.  There are no negative values.
-//    For the intial relase the allowed values are:
+//    An enum has been used to define a large positive number that represents an undefined status;
+//    only default constructed objects should have this status.
+//
+//    At this writing allowed non-zero values are:
 //     1  - one or more tracks were stopped in SteppingAction because they took too many steps.
 //          Usually these are particles trapped in the field.
 //     10 - The SimParticleCollection has overflowed.  So there can be hits that point back to
 //          a Simparticle that is not in the collection.
-
+//
 // C++ includes
 #include <iosfwd>
-
-// Mu2e includes
-#include "MCDataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenId.hh"
-
-// Includes from external packages.
-#include "CLHEP/Vector/LorentzVector.h"
-#include "CLHEP/Vector/ThreeVector.h"
+#include <climits>
 
 namespace mu2e {
 
@@ -37,8 +33,18 @@ namespace mu2e {
 
   public:
 
+    // The undefined value is a large positive number.
+    // Switch to numerical_limits<int>().max() in C++11
+    enum enum_type { ok=0, undefined=INT_MAX };
+
     // This c'tor is required for ROOT.
-    StatusG4(){}
+    StatusG4():
+      _status(undefined),
+      _nG4Tracks(0),
+      _overflowSimParticles(0),
+      _nKilledStepLimit(0),
+      _cpuTime(0),
+      _realTime(0){}
 
     StatusG4( int status,
               int nG4Tracks,
@@ -67,6 +73,10 @@ namespace mu2e {
     float             cpuTime() const { return _cpuTime; }
     float            realTime() const { return _realTime; }
 
+    // Add the contents of another StatusG4 object to this one.
+    // Used by event mixing to form a summary from multiple events.
+    void add( StatusG4 const& );
+
   private:
 
     // Status=0 is all good.  Higher numbers indicate some issue has occured. See note 1.
@@ -93,7 +103,6 @@ namespace mu2e {
     stat.print(ost,false);
     return ost;
   }
-
 
 } // end namespace mu2e
 
