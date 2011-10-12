@@ -1,9 +1,9 @@
 //
 // Read the mixed events.
 //
-// $Id: MixAnalyzer_module.cc,v 1.1 2011/06/30 04:38:47 kutschke Exp $
+// $Id: MixAnalyzer_module.cc,v 1.2 2011/10/12 20:12:09 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/30 04:38:47 $
+// $Date: 2011/10/12 20:12:09 $
 //
 // Contact person Rob Kutschke.
 //
@@ -16,6 +16,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Core/Selector.h"
 
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -31,8 +32,6 @@ namespace mu2e {
 
     void analyze( art::Event const& e);
 
-    void endJob();
-
   private:
 
   };
@@ -40,32 +39,44 @@ namespace mu2e {
   void
   MixAnalyzer::analyze(art::Event const& event) {
 
-    //mf::LogInfo log("Mix");
+    // This selector will select only data products with the given instance name.
+    art::ProductInstanceNameSelector selector("");
 
-    art::Handle<GenParticleCollection> gensHandle;
-    event.getByLabel("mixer",gensHandle);
-    GenParticleCollection const& gens = *gensHandle;
+    typedef std::vector< art::Handle<GenParticleCollection> > gensHandleVector;
 
-    art::Handle<MixingSummary> sumHandle;
-    event.getByLabel("mixer",sumHandle);
-    MixingSummary const& summary = *sumHandle;
+    // Get all of the tracker StepPointMC collections from the event:
+    gensHandleVector gensHandles;
+    event.getMany( selector, gensHandles);
 
-    for ( size_t i=0; i != summary.eventIDs().size(); ++i ){
-      cerr << "Mixed event: " << summary.eventIDs()[i] << endl;
+    cerr << "\nGenerated particles: " << endl;
+    for ( gensHandleVector::const_iterator i=gensHandles.begin(), e=gensHandles.end();
+          i != e; ++i ){
+      art::Provenance const& prov(*(i->provenance()));
+      cerr << "   " << prov.branchName() << endl;
+      GenParticleCollection const& gens(**i);
+      for ( size_t i=0; i!=gens.size(); ++i){
+        cerr << "    "
+             << i  << " "
+             << gens[i]
+             << endl;
+      }
     }
 
-    for ( size_t i=0; i!=gens.size(); ++i){
-      cerr << "Analyze: gen "
-           << i << " "
-           << gens[i]
-           << endl;
+    typedef std::vector< art::Handle<MixingSummary> > sumsHandleVector;
+
+    sumsHandleVector sumsHandles;
+    event.getMany( selector, sumsHandles);
+    cerr << "\nMixing Summary: " << endl;
+    for ( sumsHandleVector::const_iterator i=sumsHandles.begin(), e=sumsHandles.end();
+          i != e; ++i ){
+      art::Provenance const& prov(*(i->provenance()));
+      cerr << "Branchname: " << prov.branchName() << endl;
+      MixingSummary const& summary(**i);
+      cerr << summary << endl;
     }
 
   } // end of ::analyze.
 
-  void MixAnalyzer::endJob(){
-    cerr << "All done with analyzer: " << endl;
-  }
 }
 
 using mu2e::MixAnalyzer;
