@@ -1,9 +1,9 @@
 #
 # Do event mixing.
 #
-# $Id: mixTest_00.fcl,v 1.2 2011/10/12 20:13:38 kutschke Exp $
+# $Id: mixTest_00.fcl,v 1.3 2011/10/13 13:51:04 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/10/12 20:13:38 $
+# $Date: 2011/10/13 13:51:04 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -56,7 +56,7 @@ physics :
       readMode            : sequential
       seed                : [13579]
 
-      // Parametes for the MixDetail class
+      // Parameters for the MixDetail class
       mean                :  3.5
       genModuleLabel      : generate
       g4ModuleLabel       : g4run
