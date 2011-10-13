@@ -5,16 +5,16 @@
 // pointees. The printout does not include indices/keys because these
 // may be changed by mixing.
 //
-// $Id: InspectDataProducts_module.cc,v 1.1 2011/09/25 18:35:40 kutschke Exp $
+// $Id: InspectDataProducts_module.cc,v 1.2 2011/10/13 14:07:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/09/25 18:35:40 $
+// $Date: 2011/10/13 14:07:27 $
 //
 // Original author Rob Kutschke
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/MixingSummary.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
@@ -86,22 +86,8 @@ namespace mu2e {
 
   void InspectDataProducts::analyze(const art::Event& event) {
 
-    // Inquire about the completion status of G4.
-    /*
     art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( "g4run", g4StatusHandle);
-    StatusG4 const& g4Status = *g4StatusHandle;
-
-    // Abort if G4 did not complete correctly.
-    // Use your own judgement about whether to abort or to continue.
-    if ( g4Status.status() > 1 ) {
-      ++_nBadG4Status;
-      mf::LogError("G4")
-        << "Aborting InspectDataProducts::analyze due to G4 status\n"
-        << g4Status;
-      return;
-    }
-    */
 
     art::Handle<GenParticleCollection> gensHandle;
     event.getByLabel(_generatorModuleLabel,gensHandle);
@@ -118,6 +104,9 @@ namespace mu2e {
     art::Handle<PointTrajectoryCollection> trajectoriesHandle;
     event.getByLabel(_mixerModuleLabel,trajectoriesHandle);
     PointTrajectoryCollection const& trajectories(*trajectoriesHandle);
+
+    art::Handle<MixingSummary> mixsumHandle;
+    event.getByLabel(_mixerModuleLabel,mixsumHandle);
 
     cout << "\n New Event: "
          << event.id()   << " | "
@@ -156,7 +145,7 @@ namespace mu2e {
       SimParticle const& sim(i->second);
 
       if ( sim.id() != key ){
-        cout << "Fubar SimParticle key match at event " 
+        cout << "Fubar SimParticle key match at event "
              << event.id() << " : "
              << sim.id()   << " "
              << key        << " "
@@ -164,11 +153,11 @@ namespace mu2e {
       }
 
       cout << "SimParticle: "
-           << sim.pdgId() << " " 
-           << sim.isPrimary() << " "
-           << sim.startPosition() << " " 
-           << sim.creationCode() << " "
-           << sim.stoppingCode()  << " "
+           << sim.pdgId()            << " "
+           << sim.isPrimary()        << " "
+           << sim.startPosition()    << " "
+           << sim.creationCode()     << " "
+           << sim.stoppingCode()     << " "
            << sim.daughters().size() << " ";
       if ( sim.isPrimary() ){
         GenParticle const& gen(*sim.genParticle());
@@ -197,7 +186,7 @@ namespace mu2e {
       PointTrajectory const&              traj(i->second);
 
       if ( traj.simId() != int(key.asInt()) ){
-        cout << "Fubar PointTrajectory key match at event " 
+        cout << "Fubar PointTrajectory key match at event "
              << event.id()   << " : "
              << traj.simId() << " "
              << key          << " "
@@ -214,6 +203,21 @@ namespace mu2e {
         cout << " " << traj.points().at(i).z();
       }
       cout << endl;
+    }
+
+    if ( g4StatusHandle.isValid() ){
+      cout << "StatusG4: " << event.id() << " " << *g4StatusHandle << endl;
+    }
+
+
+    if ( mixsumHandle.isValid() ){
+      MixingSummary const& mixsum(*mixsumHandle);
+
+      std::vector<StatusG4> const& eventStatus(mixsum.eventStatus());
+      art::EventIDSequence const&  eventIDs(mixsum.eventIDs());
+      for ( size_t i=0; i < eventStatus.size(); ++i ){
+        cout << "StatusG4: " << eventIDs.at(i) << " " << eventStatus.at(i) << endl;
+      }
     }
 
   } // end analyze
