@@ -1,9 +1,9 @@
 #
 # Do event mixing.
 #
-# $Id: mixTest_01.fcl,v 1.2 2011/10/13 13:52:01 kutschke Exp $
+# $Id: mixTest_01.fcl,v 1.3 2011/10/13 15:00:24 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/10/13 13:52:01 $
+# $Date: 2011/10/13 15:00:24 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -42,7 +42,7 @@ physics :
 {
   producers:{
     makeSH : @local::makeSH
-    summary : {
+    mixSummary : {
       module_type : SummarizeStatusG4
       g4ModuleLabel : "g4run"
     }
@@ -84,7 +84,7 @@ physics :
     checkMix : { module_type : MixAnalyzer }
   }
 
-  p1 : [dioMixer, protonMixer, summarize, makeSH ]
+  p1 : [dioMixer, protonMixer, mixSummary, makeSH ]
   e1 : [ checkMix, outfile ]
 
   trigger_paths  : [p1]
