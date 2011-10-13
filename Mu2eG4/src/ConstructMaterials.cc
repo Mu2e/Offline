@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.23 2011/10/11 20:29:51 onoratog Exp $
+// $Id: ConstructMaterials.cc,v 1.24 2011/10/13 04:20:09 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/10/11 20:29:51 $
+// $Date: 2011/10/13 04:20:09 $
 //
 // Original author Rob Kutschke
 //
@@ -15,6 +15,7 @@
 
 // C++ includes
 #include <iostream>
+#include <iomanip>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -210,14 +211,39 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "StrawGas");
     if ( mat.doit ) {
-      G4Material* StrawGas =
-        new G4Material(mat.name, 0.0028561*g/cm3, 3); // it is OK not to use kStateGas
-      G4Element* eAr = getElementOrThrow("Ar");
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eF  = getElementOrThrow("F");
-      StrawGas->AddElement( eAr, 1);
-      StrawGas->AddElement( eC,  1);
-      StrawGas->AddElement( eF,  4);
+     
+      G4double density;
+      G4double temperature = 293.15*kelvin;
+      G4double pressure = 1*atmosphere;
+      G4int nel;
+
+      G4double densityAr   = 0.00166 *g/cm3; //from PDG
+      G4double densityCO2  = 0.00184 *g/cm3; //from PDG
+      G4double fractionAr  = 80.0*perCent;
+
+      density = fractionAr*densityAr + (1.0-fractionAr)*densityCO2;
+
+      G4Material *GasMix = new G4Material( mat.name, density, nel=3,
+                                           kStateGas, temperature, pressure);
+
+      G4Element* Ar = getElementOrThrow("Ar");
+      G4Element* C  = getElementOrThrow("C");
+      G4Element* O  = getElementOrThrow("O");
+
+      G4double atomicWeight_Ar =  39.948  *g/mole;
+      G4double atomicWeight_C  = 12.0107    *g/mole;
+      G4double atomicWeight_O  = 15.9994 *g/mole;
+      G4double pwAr = fractionAr*atomicWeight_Ar;
+      G4double pwC  = (1.0-fractionAr) *  1.0*atomicWeight_C;
+      G4double pwO  = (1.0-fractionAr) *  2.0*atomicWeight_O;
+      G4double atomicWeightMix = pwAr + pwC + pwO ;
+
+      pwAr/=atomicWeightMix;
+      pwO/=atomicWeightMix;
+      GasMix->AddElement(Ar, pwAr );
+      GasMix->AddElement(O , pwO  );
+      GasMix->AddElement(C , 1.0-pwAr-pwO  );
+
     }
 
     mat = isNeeded(materialsToLoad, "Kapton");
@@ -273,21 +299,23 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "DSVacuum");
     if ( mat.doit ){
 
-      G4Element* N = getElementOrThrow("N");
+      G4Material* StrawLeak = findMaterialOrThrow("StrawGas");
 
-      G4double refDensity  = 1.1652e-3*g/cm3; // Nitrogen pressure at 0 celsius 1 bar
-      G4double refPress    = 100e3*pascal; // 1 bar
-      G4double refTemp     = 273.15*kelvin; // 0 celsius
-      G4double pressure    = 133.322e-4*pascal; // 10e-4 Torr
       G4double temperature = 300.00*kelvin; // Temperature of the DS
+      G4double pressure    = 133.322e-4*pascal; // 10e-4 Torr
+      G4double refTemp     = StrawLeak->GetTemperature();
+      G4double refPress    = StrawLeak->GetPressure();
 
-      G4double density = refDensity*pressure*refTemp/(refPress*temperature);
-      
+      G4double density = StrawLeak->GetDensity()*pressure*refTemp/(refPress*temperature);
+
       G4Material* DSVacuum =
-	new G4Material(mat.name, density, 1, kStateGas, temperature, pressure);
+	new G4Material(mat.name, density, StrawLeak->GetNumberOfElements(), 
+		       kStateGas, temperature, pressure);
 
-      G4int nAtoms;
-      DSVacuum->AddElement(N, nAtoms=2);
+      for (size_t i = 0 ; i < StrawLeak->GetNumberOfElements(); ++i) {
+	DSVacuum->AddElement(StrawLeak->GetElementVector()->at(i), StrawLeak->GetFractionVector()[i]);
+      }
+
     }
 
     mat = isNeeded(materialsToLoad, "MBOverburden");
