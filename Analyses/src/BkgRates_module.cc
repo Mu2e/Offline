@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.21 2011/09/30 19:59:13 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.22 2011/10/13 04:25:58 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/09/30 19:59:13 $
+// $Date: 2011/10/13 04:25:58 $
 //
 // Original author Gianni Onorato
 //
@@ -1199,11 +1199,14 @@ namespace mu2e {
 
       SimParticle const* sim = simParticles->getOrNull(trackId);
       if( !sim ) continue;
-      if ( sim->fromGenerator() && (sim->pdgId() == 13 || sim->pdgId() == -13)) {
-	_skipStoppedParticle = true;
-      }
 
       PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
+
+      if ( sim->fromGenerator() && (sim->pdgId() == 13 || sim->pdgId() == -13)) {
+	if ( volInfo.name() == "TargetFoil_" ) {
+	_skipStoppedParticle = true;
+	}
+      }
 
       if ( volInfo.name() == "TargetFoil_" ) {
 
