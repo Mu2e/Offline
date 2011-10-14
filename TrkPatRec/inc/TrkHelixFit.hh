@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.hh,v 1.2 2011/10/04 23:12:11 brownd Exp $
+// $Id: TrkHelixFit.hh,v 1.3 2011/10/14 17:09:48 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/10/04 23:12:11 $
+// $Date: 2011/10/14 17:09:48 $
 //
 #ifndef TrkHelixFit_HH
 #define TrkHelixFit_HH
@@ -104,6 +104,7 @@ namespace mu2e
     bool _target; // include target constraint
     double _tsig; // sigma of target constraint
     double _rbias;  // robust fit parameter bias
+    double _sfac; // error factor on straw position perp to wire direction
     static double _targetz; // z position of target hit
 // 
   };

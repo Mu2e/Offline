@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.2 2011/10/04 23:12:11 brownd Exp $
+// $Id: TrkHelixFit.cc,v 1.3 2011/10/14 17:09:48 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/10/04 23:12:11 $
+// $Date: 2011/10/14 17:09:48 $
 //
 //
 // the following has to come before other BaBar includes
@@ -40,16 +40,12 @@ namespace mu2e
   
   void
   XYZP::rinfo(CLHEP::Hep3Vector const& center,RAD& rad) const {
-    Hep3Vector rvec = (_pos - center).perpPart();
-    rad._radius = rvec.perp();
-// compute the angle between the radius and the wire direction to get the radial error
-    Hep3Vector rhat = rvec.unit();
-    double wcos = rhat.dot(_wdir);
-    double scos = rhat.dot(_sdir);
-    rad._rerr = sqrt(pow(wcos*_werr,2) + pow(scos*_serr,2));
-// for now, set this to a constant; descent method can't follow the changes in the real errors.
-// I need a more powerful non-linear optimizer, FIXME!!!
-//    rad._rerr = 2.0;
+// average the 1-sigma radii to account for non-linear errors
+    double rvec = CLHEP::Hep3Vector(_pos - center).perp();
+    double rvec1 = CLHEP::Hep3Vector(_pos +_werr*_wdir - center).perp();
+    double rvec2 = CLHEP::Hep3Vector(_pos -_werr*_wdir - center).perp();
+    rad._radius = 0.5*(rvec1+rvec2);
+    rad._rerr = max(max(fabs(rvec1-rvec),fabs(rvec2-rvec)),_serr);
   }
   
   void
@@ -94,7 +90,8 @@ namespace mu2e
   _maxzsep(pset.get<double>("maxzsep",700)),
   _target(pset.get<bool>("targetConstraint",false)),
   _tsig(pset.get<double>("targetSigma",60.0)),
-  _rbias(pset.get<double>("radialBias",-10.0))
+  _rbias(pset.get<double>("radialBias",-15.0)),
+  _sfac(pset.get<double>("strawSizeFactor",2.0))
     {}
 
   TrkHelixFit::~TrkHelixFit()
@@ -380,12 +377,10 @@ namespace mu2e
 
   void
   TrkHelixFit::fillXYZP(TrkDef const& mytrk, std::vector<XYZP>& xyzp) {
-// convenience factor
-    static const double sfac(2.0/sqrt(12.0));
 // calibration and tracker information
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
-// loop over straw hits, and store their XY projection
+// loop over straw hits, and store their positions
     for(std::vector<size_t>::const_iterator istr=mytrk.strawHitIndices().begin();
     istr != mytrk.strawHitIndices().end(); ++istr){
       StrawHit const& sh = mytrk.strawHitCollection()->at(*istr);
@@ -393,7 +388,7 @@ namespace mu2e
       double wtime,wtimeres,tdres;
       tcal->StrawHitInfo(sh,wpos,wtime,tdres,wtimeres);
       const Straw& straw = tracker.getStraw(sh.strawIndex());
-      xyzp.push_back(XYZP(wpos,straw.getDirection(),tdres,sfac*straw.getRadius()));
+      xyzp.push_back(XYZP(wpos,straw.getDirection(),tdres,_sfac*straw.getRadius()));
     } 
 // if requested, add the target
     if(_target){
@@ -448,7 +443,9 @@ namespace mu2e
     for(unsigned irad=0;irad<radii.size();++irad){
       double wt = useweights ? 1.0/radii[irad]._rerr : 1.0;
       age += wt*fabs(radii[irad]._radius-rmed);
-    }    
+    }
+// normalize
+    age *= radii.size()/wtot;
   }
   
   void
@@ -456,6 +453,7 @@ namespace mu2e
 // initialize sums
     sums.clear();
 // compute the transverse sums
+    double wtot(0.0);
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
       if(xyzp[ixyzp]._use){
 // find radial information for this point
@@ -463,6 +461,7 @@ namespace mu2e
         xyzp[ixyzp].rinfo(center,rad);
         double rerr = useweights ? _rfactor*rad._rerr : 1.0;
         double wt = useweights ? 1.0/rad._rerr : 1.0;
+	wtot += wt;
 // now x,y projections
         double pcos = (xyzp[ixyzp]._pos.x()-center.x())/rad._radius;
         double psin = (xyzp[ixyzp]._pos.y()-center.y())/rad._radius;
@@ -481,8 +480,16 @@ namespace mu2e
           sums._ssi += wt*psin;        
           ++sums._ni;
         }
-      }
+      }  
     }
+// normalize to unit weight
+    unsigned nused = sums._nc + sums._no + sums._ni;
+    sums._scc *= nused/wtot;
+    sums._ssc *= nused/wtot;
+    sums._sco *= nused/wtot;
+    sums._sso *= nused/wtot;
+    sums._sci *= nused/wtot;
+    sums._ssi *= nused/wtot;
   }
   
   void

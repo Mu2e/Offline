@@ -90,7 +90,7 @@ void KalTest (TTree* trk) {
   TCanvas* ccan = new TCanvas("ccan","Circle Fit",1200,800);
   TH2F* cx = new TH2F("cx","Circle X center;MC true (mm);Fit (mm)",50,-400,400,50,-400,400);
   TH2F* cy = new TH2F("cy","Circle Y center;MC true (mm);Fit (mm)",50,-400,400,50,-400,400);
-  TH2F* cr = new TH2F("cr","Circle radius;MC true (mm);Fit (mm)",50,180,310,50,180,310);
+  TH2F* cr = new TH2F("cr","Circle radius;MC true (mm);Fit (mm)",50,180,350,50,180,350);
   TH1F* cxr = new TH1F("cxr","X center resolution;mm",100,-200,200);
   TH1F* cyr = new TH1F("cyr","Y center resolution;mm",100,-200,200);
   TH1F* crr = new TH1F("crr","Radius resolution;mm",100,-200,200);
@@ -172,7 +172,8 @@ void MomRes(TTree* trk) {
   gStyle->SetOptStat(111111);
   gStyle->SetOptFit(111111);
 // should have pitch angle and generated hit cuts here, FIXME!!!
-  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=20");
+//  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=20");
+  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&abs(tpeak-mcmidt0-28)<30");
   TCut tsel = mcsel +TCut("kalfail==0");
 // selection cuts
   TCut cuts[4];
