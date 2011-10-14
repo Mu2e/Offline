@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.33 2011/06/30 04:41:43 kutschke Exp $
+# $Id: setup.sh,v 1.34 2011/10/14 19:22:58 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/06/30 04:41:43 $
+# $Date: 2011/10/14 19:22:58 $
 #
 # Original author Rob Kutschke
 #
@@ -44,10 +44,10 @@ export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
 echo "MU2E_SEACH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Setup the framework and its dependent products
-setup art v0_07_13 -qa2:debug
+setup art v0_07_16 -qa3:debug
 
 # Geant4 and its cross-section files.
-setup geant4 v4_9_4_p01 -qgcc45
+setup geant4 v4_9_4_p02 -qa3
 
 setup g4neutron v3_14
 setup g4emlow v6_19
@@ -59,7 +59,7 @@ setup g4abla v3_0
 setup heppdt v3_04_01 -qgcc45
 
 # The build system.
-setup scons v1_3_0a -qgcc45
+setup scons v1_3_0b -qgcc45
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
