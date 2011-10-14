@@ -1,12 +1,21 @@
 //
 // Extract all StatusG4 objects from the event, compute the overall status and
-// put it into the event.
+// put it into the event.  Status G4 objects can be found in two places:
+//  - as a StatusG4 object that is a top level data product.
+//  - within a MixingSummary object.
 //
-// $Id: SummarizeStatusG4_module.cc,v 1.1 2011/10/12 20:09:27 kutschke Exp $
+// $Id: SummarizeStatusG4_module.cc,v 1.2 2011/10/14 19:04:30 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/10/12 20:09:27 $
+// $Date: 2011/10/14 19:04:30 $
 //
 // Contact person Rob Kutschke
+//
+// Notes:
+// 1) To do:
+//    Can we do better to avoid cross-stitching of the summary.  What happens
+//    if there is more than one bare StatusG4 object?  Can we pick the wrong one?
+//    Is there a loophole that would cause us to double count anything?
+//    Does is make sense to generate a mixing summary object for a simple input file?
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -69,21 +78,22 @@ namespace mu2e {
     // Default construct the output object.
     auto_ptr<StatusG4> summaryStatus( new StatusG4() );
 
+    // Printout on some events.
     auto_ptr<mf::LogInfo> log(0);
     if (  firstEvent || diagLevel_ > 0 ) {
       log = auto_ptr<mf::LogInfo>(new mf::LogInfo("MIXING"));
       (*log) << "Creating Summary of StatusG4 from the following products: \n";
     }
 
-    // Incorporate at the completion status of G4, if present.
+    // Incorporate at most one top level StatusG4 object.
+    // If the name is present, it is an error for the StatusG4 object to be absent
+    // and the handle will throw on dereference.
     if ( g4ModuleLabel_.size() > 0 ){
       art::Handle<StatusG4> g4StatusHandle;
       event.getByLabel( g4ModuleLabel_, g4StatusHandle);
 
       summaryStatus->add(*g4StatusHandle);
-      if ( firstEvent || diagLevel_ > 0 ){
-        if ( log.get() != 0 ) (*log)<< "   " << g4StatusHandle.provenance()->branchName() << "\n";
-      }
+      if ( log.get() != 0 ) (*log)<< "   " << g4StatusHandle.provenance()->branchName() << "\n";
     }
 
     // Get all of the tracker MixingSummary collections from the event:
@@ -91,17 +101,17 @@ namespace mu2e {
 
     typedef std::vector< art::Handle<MixingSummary> > HandleVector;
     HandleVector statHandles;
-
     event.getMany( selector, statHandles);
+
+    // Incorporate each of the summary StatusG4 objects from each MixingSummary.
     for ( HandleVector::const_iterator i=statHandles.begin(), e=statHandles.end();
           i != e; ++i ){
 
       if ( log.get() != 0 ) (*log)<< "   " << i->provenance()->branchName() << "\n";
-      MixingSummary const& sum(**i);
-      summaryStatus->add(sum.status());
+      summaryStatus->add((**i).status());
     }
-    event.put(summaryStatus);
 
+    event.put(summaryStatus);
     firstEvent = false;
 
   } // end produce
