@@ -5,9 +5,9 @@
 // pointees. The printout does not include indices/keys because these
 // may be changed by mixing.
 //
-// $Id: InspectDataProducts_module.cc,v 1.2 2011/10/13 14:07:27 kutschke Exp $
+// $Id: InspectDataProducts_module.cc,v 1.3 2011/10/14 19:03:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/10/13 14:07:27 $
+// $Date: 2011/10/14 19:03:44 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StepInstanceName.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/Event.h"
@@ -68,6 +69,11 @@ namespace mu2e {
 
     int _nBadG4Status;
 
+    //
+    void doStepPointMCInstance ( art::Event const&  event,
+                                 std::string const& moduleLabel,
+                                 std::string const& instanceName );
+
   };
   InspectDataProducts::InspectDataProducts(fhicl::ParameterSet const& pset) :
 
@@ -97,10 +103,6 @@ namespace mu2e {
     event.getByLabel(_mixerModuleLabel,simsHandle);
     SimParticleCollection const& sims(*simsHandle);
 
-    art::Handle<StepPointMCCollection> stepsHandle;
-    event.getByLabel(_mixerModuleLabel,_trackerStepPoints,stepsHandle);
-    StepPointMCCollection const& steps(*stepsHandle);
-
     art::Handle<PointTrajectoryCollection> trajectoriesHandle;
     event.getByLabel(_mixerModuleLabel,trajectoriesHandle);
     PointTrajectoryCollection const& trajectories(*trajectoriesHandle);
@@ -112,31 +114,18 @@ namespace mu2e {
          << event.id()   << " | "
          << gens.size()  << " "
          << sims.size()  << " "
-         << steps.size() << " "
          << endl;
 
-    // Loop over all hits.
-    for ( size_t i=0; i<steps.size(); ++i ){
 
-      const StepPointMC& hit = steps[i];
-
-      SimParticle const& sim = *hit.simParticle();
-      int pdgId = sim.pdgId();
-      GenId genId = ( sim.fromGenerator() ) ? sim.genParticle()->generatorId() : GenId();
-
-      cout << "TrkStepInfo: "
-           << hit.strawIndex()                 << " "
-           << hit.time()                       << " "
-           << hit.ionizingEdep()/CLHEP::keV    << " "
-           << hit.stepLength()                 << " | "
-           << pdgId                            << " "
-           << hit.endProcessCode()             << " "
-           << sim.startGlobalTime()            << " "
-           << sim.startMomentum().vect().mag() << " "
-           << genId
-           << endl;
-
-    } // end loop over hits.
+    // All StepPointMC Collections
+    std::string unknown = StepInstanceName().name();
+    std::vector<std::string> const& stepNames = StepInstanceName::names();
+    for ( std::vector<std::string>::const_iterator i=stepNames.begin(), e=stepNames.end();
+          i != e; ++i ){
+      if ( *i != unknown ) {
+        doStepPointMCInstance( event, _mixerModuleLabel, *i );
+      }
+    }
 
     for ( SimParticleCollection::const_iterator i=sims.begin(), e=sims.end();
           i != e; ++ i){
@@ -221,6 +210,48 @@ namespace mu2e {
     }
 
   } // end analyze
+
+  void InspectDataProducts::doStepPointMCInstance ( art::Event const&  event,
+                                                    std::string const& moduleLabel,
+                                                    std::string const& instanceName ){
+
+    art::Handle<StepPointMCCollection> stepsHandle;
+    event.getByLabel(moduleLabel,instanceName,stepsHandle);
+    if ( !stepsHandle.isValid() ){
+      cout << "No such stepPointMCCollection: "
+           << moduleLabel <<  " "
+           << instanceName << " "
+           << endl;
+      return;
+    }
+
+    StepPointMCCollection const& steps(*stepsHandle);
+    cout << "Size: " << instanceName << " " << steps.size() << endl;
+
+    // Loop over all hits.
+    for ( size_t i=0; i<steps.size(); ++i ){
+
+      const StepPointMC& hit = steps[i];
+
+      SimParticle const& sim = *hit.simParticle();
+      int pdgId = sim.pdgId();
+      GenId genId = ( sim.fromGenerator() ) ? sim.genParticle()->generatorId() : GenId();
+
+      cout << instanceName                     << ": "
+           << hit.strawIndex()                 << " "
+           << hit.time()                       << " "
+           << hit.ionizingEdep()/CLHEP::keV    << " "
+           << hit.stepLength()                 << " | "
+           << pdgId                            << " "
+           << hit.endProcessCode()             << " "
+           << sim.startGlobalTime()            << " "
+           << sim.startMomentum().vect().mag() << " "
+           << genId
+           << endl;
+
+    } // end loop over hits.
+
+  } // end doStepPointMCInstance
 
   void InspectDataProducts::endJob(){
     cout << "InspectDataProducts::endJob Number of events skipped "
