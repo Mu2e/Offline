@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.23 2011/07/17 02:13:20 kutschke Exp $
+// $Id: G4_module.cc,v 1.24 2011/10/14 23:44:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/17 02:13:20 $
+// $Date: 2011/10/14 23:44:41 $
 //
 // Original author Rob Kutschke
 //
@@ -40,7 +40,6 @@
 // Framework includes
 #include "art/Framework/Core/Event.h"
 #include "art/Persistency/Common/Handle.h"
-#include "art/Persistency/Common/OrphanHandle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
