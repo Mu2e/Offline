@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkPatRecTest02.fcl,v 1.1 2011/09/06 23:38:06 mu2ecvs Exp $
-# $Author: mu2ecvs $
-# $Date: 2011/09/06 23:38:06 $
+# $Id: TrkPatRecTest02.fcl,v 1.2 2011/10/17 16:19:24 brownd Exp $
+# $Author: brownd $
+# $Date: 2011/10/17 16:19:24 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -46,83 +46,64 @@ physics :
 
     # Form StrawHits (SH).
     makeSH : @local::makeSH
-
-  }
-    # test module for Kalman fit: the 
-  analyzers : 
-  {
-    TrkPatRecTest :
+    TrkPatRec :
     {
-        module_type    : TrkPatRecTest
-        tbin            : 20
-        diagLevel      : 1
-		RMax_tight			: 630
-		RMax_loose			: 650
-		RMin_tight			: 410
-		RMin_loose			: 390
-		EDep_tight			: 0.0045
-		EDep_loose			: 0.005
-		DtMax				: 45.0
-		MinNHits            : 10
-        MCHelix         : false
+        module_type    : TrkPatRec
+        diagLevel      : 1 
     # Helix fit configuration
         HelixFit : 
         {
-            diagLevel       : 2
-            minNHit         : 10
-            minDelta        : 5000
-            rfactor         : 1.0
-            lambda0         : 1
-            lstep           : 0.2
-            minlambda       : 0.1
-            nsigma          : 10.0
-            minzsep         : 200
-            maxzsep         : 700
+            diagLevel       : 0
         }
 
     # Kalman fit configuration for the helix seed fit
-         SeedFit : 
+        SeedFit : 
         {
-            maxiter        : 5
+            maxiter        : 3
             debugLevel     : 0
             material       : false
-            hiterr          : 2.5
+            hiterr          : 5
             seedsmear       : 10000
+						maxhitchi	    : 5.0
             weedhits        : true
             updateT0        : false
             ambigflip       : true
         }
     # Kalman fit configuration for the final track fit
-         KalFit : 
+        KalFit : 
         {
             maxiter        : 5
             debugLevel     : 0
             material       : true
             hiterr          : 0.1
             seedsmear       : 100000
+						maxhitchi	    : 3.0
+						mingap	    : 1.0
             weedhits        : true
         }
         
     # MC truth finder, analyzer configuration
         KalFitMC : 
         {
-            mcT0Err       : -0.5
-            debugLevel     : 0
-            minNHits       : 15
-            maxNHits       : 500
-        }        
+				}     
     }
+ 
+  }
+    # test module for Kalman fit: the 
+  analyzers : 
+  {
   }
 
 
-  p1 : [generate , g4run, makeSH ]
-  e1 : [TrkPatRecTest ]
+  p1 : [generate , g4run, makeSH, TrkPatRec ]
+  e1 : []
 
   trigger_paths  : [p1]
   end_paths      : [e1]
 
 }
+
 physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
 physics.producers.makeSH.diagLevel    : 0
-physics.producers.makeSH.maxFullPrint : 5
+physics.producers.makeSH.maxFullPrint : 0
 
