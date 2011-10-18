@@ -1,4 +1,15 @@
 void StrawHitTest (TTree* hits ) {
+
+    TCut conv("mcpdg==11&&mcgen==2");
+    TCut dio("mcpdg==11&&mcgen==6");
+    TCut delta("mcpdg==11&&mcgen<0&&mcproc==17");
+    TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
+    TCut compt("mcpdg==11&&mcgen<0&&mcproc==12");
+    TCut proton("mcpdg==2212");
+    TCut bkge("mcpdg==11&&mcgen!=2");
+    TCut bkgo("mcpdg!=11&&mcpdg!=2212");
+ 
+
     TCanvas* scan = new TCanvas("scan","simulation",1200,800);
     TH1F* pdgid = new TH1F("pdgid","PDG Id",100,-200,2300);
     pdgid->SetStats(0);
@@ -24,13 +35,13 @@ void StrawHitTest (TTree* hits ) {
     
     hits->Project("pdgid","mcpdg");
     hits->Project("gide","mcgen","mcpdg==11");
-    hits->Project("gidp","mcgen","mcpdg==2212");
-    hits->Project("pide","mcproc","mcpdg==11&&mcgen<0");
-    hits->Project("pidp","mcproc","mcpdg==2212&&mcgen<0");
-    hits->Project("nuconv","mcnunique","mcpdg==11&&mcgen==2");
-    hits->Project("nudio","mcnunique","mcpdg==11&&mcgen==6");
-    hits->Project("nudel","mcnunique","mcpdg==11&&mcgen<0");
-    hits->Project("nup","mcnunique","mcpdg==2212");
+    hits->Project("gidp","mcgen",proton);
+    hits->Project("pide","mcproc",delta);
+    hits->Project("pidp","mcproc",proton);
+    hits->Project("nuconv","mcnunique",conv);
+    hits->Project("nudio","mcnunique",dio);
+    hits->Project("nudel","mcnunique",delta);
+    hits->Project("nup","mcnunique",proton);
     
     TLegend* leg = new TLegend(0.5,0.5,0.8,0.8);
     leg->AddEntry(gide,"Electrons","l");
@@ -83,14 +94,15 @@ void StrawHitTest (TTree* hits ) {
     TH1F* rdelta = new TH1F("rdelta","StrawHit Radius;mm",100,360,700);
     TH1F* rp = new TH1F("rp","StrawHit Radius;mm",100,360,700);
     rconv->SetLineColor(kRed);
+    rp->SetMinimum(10);
     rdio->SetLineColor(kGreen);
     rdelta->SetLineColor(kCyan);
     rp->SetLineColor(kBlue);
     
-    TH1F* nconv = new TH1F("nconv","N, D<10cm",21,-1.5,19.5);
-    TH1F* ndio = new TH1F("ndio","N, D<10cm",21,-1.5,19.5);
-    TH1F* ndelta = new TH1F("ndelta","N, D<10cm",21,-1.5,19.5);
-    TH1F* np = new TH1F("np","N, D<10cm",21,-1.5,19.5);
+    TH1F* nconv = new TH1F("nconv","N, D<10cm",41,-1.5,39.5);
+    TH1F* ndio = new TH1F("ndio","N, D<10cm",41,-1.5,39.5);
+    TH1F* ndelta = new TH1F("ndelta","N, D<10cm",41,-1.5,39.5);
+    TH1F* np = new TH1F("np","N, D<10cm",41,-1.5,39.5);
     nconv->SetLineColor(kRed);
     ndio->SetLineColor(kGreen);
     ndelta->SetLineColor(kCyan);
@@ -98,25 +110,25 @@ void StrawHitTest (TTree* hits ) {
     TCut ecut("edep<0.0045");
     TCut rmin("sqrt(shpos.x^2+shpos.y^2)>410");
     
-    hits->Project("econv","edep","mcpdg==11&&mcgen==2");
-    hits->Project("edio","edep","mcpdg==11&&mcgen==6");
-    hits->Project("edelta","edep","mcpdg==11&&mcgen<0");
-    hits->Project("ep","edep","mcpdg==2212");
+    hits->Project("econv","edep",conv);
+    hits->Project("edio","edep",bkge);
+    hits->Project("edelta","edep",bkgo);
+    hits->Project("ep","edep",proton);
     
-    hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)","mcgen==2");
-    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)","mcgen==6");
-    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)","mcgen<0");
-    hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)","mcpdg==2212");
+    hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv);
+    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",bkge);
+    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)",bkgo);
+    hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)",proton);
     
-    hits->Project("nconv","n100","mcgen==2");
-    hits->Project("ndio","n100","mcgen==6");
-    hits->Project("ndelta","n100","mcgen<0");
-    hits->Project("np","n100","mcpdg==2212");
+    hits->Project("nconv","n200",conv);
+    hits->Project("ndio","n200",bkge);
+    hits->Project("ndelta","n200",bkgo);
+    hits->Project("np","n200",proton);
 
     TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
     leg2->AddEntry(rconv,"Conv. Electrons","l");
-    leg2->AddEntry(rdio,"DIO Electrons","l");
-    leg2->AddEntry(rdelta,"Delta Electrons","l");
+    leg2->AddEntry(rdio,"Bkg Electrons","l");
+    leg2->AddEntry(rdelta,"Other particle Bkg","l");
     leg2->AddEntry(rp,"Protons","l");
     
     bcan->Clear();
@@ -203,7 +215,7 @@ void StrawHitTest (TTree* hits ) {
     gid->SetLineColor(kBlue);
     gidc->SetLineColor(kRed);
     hits->Project("gid","mcgen",clean);
-    hits->Project("gidc","mcgen","mcpdg==11&&mcgen==2");
+    hits->Project("gidc","mcgen",conv);
     
     hits->Project("rres","sqrt(shpos.y^2+shpos.x^2)-sqrt(mcshpos.y^2+mcshpos.x^2)");
     hits->Project("pres","atan2(shpos.y,shpos.x)-atan2(mcshpos.y,mcshpos.x)");
@@ -233,15 +245,15 @@ void StrawHitTest (TTree* hits ) {
     tdelta->SetLineColor(kCyan);
     tp->SetLineColor(kBlue);
     
-    hits->Project("tconv","time-tpeaks[0]","mcpdg==11&&mcgen==2&&loose");
-    hits->Project("tdio","time-tpeaks[0]","mcpdg==11&&mcgen==6&&loose");
-    hits->Project("tdelta","time-tpeaks[0]","mcpdg==11&&mcgen<0&&loose");
-    hits->Project("tp","time-tpeaks[0]","mcpdg==2212&&loose");
+    hits->Project("tconv","time-tpeaks[0]",conv+"loose");
+    hits->Project("tdio","time-tpeaks[0]",bkge+"loose");
+    hits->Project("tdelta","time-tpeaks[0]",bkgo+"loose");
+    hits->Project("tp","time-tpeaks[0]",proton+"loose");
     
     TLegend* leg4 = new TLegend(0.65,0.6,0.9,0.95);
     leg4->AddEntry(tconv,"Conv. Electrons","l");
-    leg4->AddEntry(tdio,"DIO Electrons","l");
-    leg4->AddEntry(tdelta,"Delta Electrons","l");
+    leg4->AddEntry(tdio,"Bkg Electrons","l");
+    leg4->AddEntry(tdelta,"Other particle bkg","l");
     leg4->AddEntry(tp,"Protons","l");
     
     

@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.5 2011/10/04 23:12:11 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.6 2011/10/18 14:28:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/10/04 23:12:11 $
+// $Date: 2011/10/18 14:28:00 $
 //
 // framework
 #include "art/Framework/Core/Event.h"
@@ -65,6 +65,7 @@ namespace mu2e
     double _peakmax;
     TrkTimePeak(double tpeak,double ymax) : _tpeak(tpeak),_peakmax(ymax) {}
     bool operator < (TrkTimePeak const& other ) const { return _trkptrs.size() < other._trkptrs.size(); }
+    bool operator > (TrkTimePeak const& other ) const { return _trkptrs.size() > other._trkptrs.size(); }
   };
 
 // struct for flagging hits
