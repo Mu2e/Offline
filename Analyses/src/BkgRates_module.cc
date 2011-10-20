@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.22 2011/10/13 04:25:58 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.23 2011/10/20 21:51:49 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/10/13 04:25:58 $
+// $Date: 2011/10/20 21:51:49 $
 //
 // Original author Gianni Onorato
 //
@@ -68,7 +68,6 @@ namespace mu2e {
       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
-      _skipStoppedParticle(pset.get<bool>("skipStoppedParticle",false)),
       _nAnalyzed(0),
       _tNtup(0),
       _cNtup(0),
@@ -124,7 +123,6 @@ namespace mu2e {
     std::string _caloCrystalModuleLabel;
 
     double _minimumEnergy; //minimum energy deposition of hits
-    bool _skipStoppedParticle;
 
     //number of analyzed events
     int _nAnalyzed;
@@ -240,23 +238,18 @@ namespace mu2e {
     }
 
 
-    _skipStoppedParticle = false;
-
     doStoppingTarget(evt);
 
-    if (!_skipStoppedParticle) {
-      if (geom->hasElement<ITracker>()) {
-	//      cout << "ITracker selected" << endl;
-	doITracker(evt, _skipEvent);
-      }
-      if (geom->hasElement<TTracker>()) {
-	//      cout << "TTracker selected" << endl;
-	doTracker(evt, _skipEvent);
-      }
-    doCalorimeter(evt, _skipEvent);
+    if (geom->hasElement<ITracker>()) {
+      //      cout << "ITracker selected" << endl;
+      doITracker(evt, _skipEvent);
     }
-
-
+    if (geom->hasElement<TTracker>()) {
+      //      cout << "TTracker selected" << endl;
+      doTracker(evt, _skipEvent);
+    }
+    doCalorimeter(evt, _skipEvent);
+    
   } // end of analyze
 
   void BkgRates::endJob() {
@@ -1204,7 +1197,7 @@ namespace mu2e {
 
       if ( sim->fromGenerator() && (sim->pdgId() == 13 || sim->pdgId() == -13)) {
 	if ( volInfo.name() == "TargetFoil_" ) {
-	_skipStoppedParticle = true;
+	generatedStopped = true;
 	}
       }
 

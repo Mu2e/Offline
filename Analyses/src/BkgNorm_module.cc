@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.4 2011/10/12 13:40:29 onoratog Exp $
+// $Id: BkgNorm_module.cc,v 1.5 2011/10/20 21:51:49 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/10/12 13:40:29 $
+// $Date: 2011/10/20 21:51:49 $
 //
 // Original author Gianni Onorato
 //
@@ -11,6 +11,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -20,6 +21,8 @@
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "TFile.h"
 #include "TNtuple.h"
@@ -57,8 +60,11 @@ namespace mu2e {
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
+      _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
+      _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
       _tNtup(0),
+      _cNtup(0),
       _nDevices(36),
       _nSectors(6),
       _nLayers(2),
@@ -79,8 +85,9 @@ namespace mu2e {
 
   private:
 
-    void doTracker(art::Event const& evt);
-
+    void doTracker(art::Event const& evt, bool skip);
+    void doCalorimeter(art::Event const& evt, bool skip);
+    void doStoppingTarget(art::Event const& evt);
 
     // Diagnostic level
     int _diagLevel;
@@ -97,14 +104,20 @@ namespace mu2e {
     // Label of the G4 module
     std::string _g4ModuleLabel;
 
+    // Label of the Calorimeter modules;
+    std::string _caloReadoutModuleLabel;
+    std::string _caloCrystalModuleLabel;
+
+
     double _minimumEnergy; //minimum energy deposition of hits
 
-    TNtuple* _tNtup;
+    TNtuple* _tNtup, *_cNtup;
     const int _nDevices, _nSectors, _nLayers, _nStrawsPerLay;
 
     int _nBadG4Status, _nOverflow, _nKilled;
     float _totalcputime, _totalrealtime;
 
+    bool _skipEvent;
 
   };
 
@@ -170,10 +183,14 @@ namespace mu2e {
       // "dau1PdgId:dau1P:dau1StartVolume:"; //First Daughter of generated particle info (3 entries)
 
       _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple", "evt:run:time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume"); 
+      _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume"); 
    }
 
-    doTracker(evt);
-    
+    doStoppingTarget(evt);
+
+    doTracker(evt, _skipEvent);
+    doCalorimeter(evt, _skipEvent);
+
   } // end of analyze
 
   void BkgNorm::endJob() {
@@ -194,7 +211,9 @@ namespace mu2e {
   }
 
 
-  void BkgNorm::doTracker(art::Event const& evt) {
+  void BkgNorm::doTracker(art::Event const& evt, bool skip) {
+
+    if (skip) return;
 
     const Tracker& tracker = getTrackerOrThrow();
 
@@ -344,17 +363,6 @@ namespace mu2e {
 
       SimParticleCollection::key_type idxInSim = SimParticleCollection::key_type(1);
       SimParticle const& geninSim = simParticles->at(idxInSim);
-      /*      bool notFound = true;
-      while (notFound) {
-	if (geninSim.fromGenerator()) {
-	  notFound = false;
-	  break;
-	} else {
-	  idxInSim++;
-	}
-      }
-      */      
-
       GenParticle const& gen = genParticles->at(geninSim.generatorIndex());
       tntpArray[idx++] = gen.pdgId();
       tntpArray[idx++] = gen.generatorId().id();      
@@ -384,6 +392,218 @@ namespace mu2e {
     } //end of Strawhits loop
     
   } // end of doTracker
+
+  void BkgNorm::doCalorimeter(art::Event const& evt, bool skip) {
+
+    if (skip) return;
+
+    art::ServiceHandle<GeometryService> geom;
+    if( ! geom->hasElement<Calorimeter>() ) return;
+    GeomHandle<Calorimeter> cg;
+
+    art::Handle<CaloHitCollection> caloHits;
+    art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
+
+    evt.getByLabel(_caloReadoutModuleLabel,"CaloHitMCCrystalPtr",mcptrHandle);
+    evt.getByLabel(_caloReadoutModuleLabel, caloHits);
+    evt.getByLabel(_caloCrystalModuleLabel, caloCrystalHits);
+
+    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
+    if (!( caloHits.isValid())) {
+      return;
+    }
+
+    if (!caloCrystalHits.isValid()) {
+      cout << "NO CaloCrystalHits" << endl;
+      return;
+    }
+
+    // Get handles to the generated and simulated particles.
+    art::Handle<GenParticleCollection> genParticles;
+    evt.getByLabel(_generatorModuleLabel, genParticles);
+
+    art::Handle<SimParticleCollection> simParticles;
+    evt.getByLabel(_g4ModuleLabel, simParticles);
+
+    // Handle to information about G4 physical volumes.
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
+    evt.getRun().getByLabel(_g4ModuleLabel, volumes);
+
+    // Some files might not have the SimParticle and volume information.
+    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+    // Other files might have empty collections.
+    if ( haveSimPart ){
+      haveSimPart = !(simParticles->empty() || volumes->empty());
+    }
+
+
+    if (caloCrystalHits->size()>0) {
+
+      for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
+
+        CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
+
+        std::vector<art::Ptr<CaloHit> > const & ROIds  = hit.readouts();
+
+        if (hit.energyDep() < _minimumEnergy) continue;
+        if (ROIds.size() < 1) continue;
+
+        bool readCryOnce(false);
+	float cntpArray[25];
+	int idx(0);
+
+	double firstHitTime = 100000;
+	CLHEP::Hep3Vector firstHitPos(0,0,0);
+	CLHEP::Hep3Vector cryFrame(0,0,0);
+	size_t firstTrackIndex = 0;
+	size_t fTCollPos = 0;
+
+        for (size_t it = 0;
+             it < ROIds.size() ; ++it ) {
+
+          size_t collectionPosition = ROIds.at(it).key();
+          CaloHit const & thehit = *ROIds.at(it);
+	  
+          if (!readCryOnce) {
+            CLHEP::Hep3Vector cryCenter =  cg->getCrystalOriginByRO(thehit.id());
+            int vane = cg->getVaneByRO(thehit.id());
+            cntpArray[idx++] = evt.id().event();
+            cntpArray[idx++] = evt.run();
+            cntpArray[idx++] = hit.time();
+            cntpArray[idx++] = hit.energyDep();
+            cntpArray[idx++] = vane;
+            cntpArray[idx++] = cg->getCrystalByRO(thehit.id());
+	    readCryOnce = true;
+	  }
+	  
+	  PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
+	  size_t nHitsPerCrystal = mcptr.size();
+	  
+	  for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
+	    
+	    StepPointMC const& mchit = *mcptr[j2];
+	    if (mchit.time() < firstHitTime) {
+	      firstHitTime = mchit.time();
+	      firstTrackIndex = j2;
+	      fTCollPos = collectionPosition;
+	    }
+	  }
+	}
+	
+	
+	// The simulated particle that made this hit.
+	PtrStepPointMCVector const & mcptr(hits_mcptr->at(fTCollPos));
+	StepPointMC const& mchit = *mcptr[firstTrackIndex];
+	SimParticleCollection::key_type trackId(mchit.trackId());
+	SimParticle const& sim = simParticles->at(trackId);
+	cntpArray[idx++] = sim.pdgId();	  
+	cntpArray[idx++] = sim.startMomentum().vect().mag();
+	cntpArray[idx++] = sim.fromGenerator();
+	cntpArray[idx++] = sim.startVolumeIndex();
+	int nEvolutionSteps = 0;
+	SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0); 
+	if (!sim.fromGenerator()) {
+	bool notEva = true;
+	SimParticle& baby = const_cast<SimParticle&>(sim);
+	while (notEva) {
+	  if (!baby.hasParent()) {
+	    cntpArray[idx++] = nEvolutionSteps;
+	    cntpArray[idx++] = 0;
+	    notEva = false;
+	    break;
+	  }
+	  SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
+	  nEvolutionSteps++;
+	  if (mommy.fromGenerator()) {
+	    cntpArray[idx++] = nEvolutionSteps;
+	    cntpArray[idx++] = 1;
+	    notEva = false;
+	    Dau1Idx = baby.id();
+	    break;
+	  } else {
+	    baby = mommy;
+	  }
+	}
+	} else {
+	  cntpArray[idx++] = nEvolutionSteps;
+	  cntpArray[idx++] = 1;
+	}
+      
+	SimParticleCollection::key_type idxInSim = SimParticleCollection::key_type(1);
+	SimParticle const& geninSim = simParticles->at(idxInSim);
+	GenParticle const& gen = genParticles->at(geninSim.generatorIndex());
+	cntpArray[idx++] = gen.pdgId();
+	cntpArray[idx++] = gen.generatorId().id();      
+	cntpArray[idx++] = gen.momentum().vect().mag();
+	cntpArray[idx++] = gen.momentum().e();
+	cntpArray[idx++] = gen.position().x();
+	cntpArray[idx++] = gen.position().y();
+	cntpArray[idx++] = gen.position().z();
+	cntpArray[idx++] = gen.time();
+	cntpArray[idx++] = gen.momentum().cosTheta();
+	cntpArray[idx++] = gen.momentum().phi();
+	
+	if (Dau1Idx != SimParticleCollection::key_type(0)) {
+	  SimParticle const& Dau1 = simParticles->at(Dau1Idx);
+	  cntpArray[idx++] = Dau1.pdgId();
+	  cntpArray[idx++] = Dau1.startMomentum().vect().mag();
+	  cntpArray[idx++] = Dau1.startVolumeIndex();      
+	} else {
+	  cntpArray[idx++] = 0;
+	  cntpArray[idx++] = 0;
+	  cntpArray[idx++] = 0;
+	}
+
+	_cNtup->Fill(cntpArray);
+	
+      }
+    }
+    
+  }
+
+
+  void BkgNorm::doStoppingTarget(const art::Event& event) {
+
+    bool generatedStopped = false;
+
+    // Find original G4 steps in the stopping target
+    art::Handle<StepPointMCCollection> sthits;
+    event.getByLabel(_g4ModuleLabel,"stoppingtarget",sthits);
+
+    // SimParticles container
+    art::Handle<SimParticleCollection> simParticles;
+    event.getByLabel(_g4ModuleLabel, simParticles);
+    if( !(simParticles.isValid()) || simParticles->empty() ) return;
+
+    art::Handle<PhysicalVolumeInfoCollection> volumes;
+    event.getRun().getByLabel(_g4ModuleLabel, volumes);
+
+    set<SimParticleCollection::key_type> stoppedtracks;
+
+    // Loop over all hits in the stopping target
+    for ( size_t i=0; i<sthits->size(); ++i ){
+
+      // This is G4 hit (step) in the target
+      const StepPointMC& hit = (*sthits)[i];
+
+      SimParticleCollection::key_type trackId = hit.trackId();
+
+      SimParticle const* sim = simParticles->getOrNull(trackId);
+      if( !sim ) continue;
+
+      PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
+
+      if ( sim->fromGenerator() && (sim->pdgId() == 13 || sim->pdgId() == -13)) {
+	if ( volInfo.name() == "TargetFoil_" ) {
+	generatedStopped = true;
+	}
+      }
+    }
+    _skipEvent = generatedStopped;
+  }  // end doStoppingTarget
+
+
   
 }
 

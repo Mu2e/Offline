@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.7 2011/09/30 19:59:13 onoratog Exp $
+# $Id: BkgRatesCounter.fcl,v 1.8 2011/10/20 21:51:49 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/09/30 19:59:13 $
+# $Date: 2011/10/20 21:51:49 $
 #
 # Original author Gianni Onorato.
 
@@ -119,9 +119,16 @@ physics :
       diagLevel           : -1
       makerModuleLabel    : makeSH
       maxFullPrint        : 0
-      skipStoppedParticle : false
       # g4ModuleLabel     : g4run
       # minimumEnergy     : 0.000
+    }
+
+    Norm:
+    {
+    module_type       : BkgNorm
+    diagLevel         : -1
+    makerModuleLabel    : makeSH
+    maxFullPrint        : 0
     }
 
     eventdisplay:
@@ -142,7 +149,7 @@ physics :
        , CaloCrystalHitsMaker
        # , filterEmpty
        ]
-  e1 : [CountRates, eventdisplay, outfile ]
+  e1 : [CountRates, Norm, outfile ]
 
 
   trigger_paths  : [p1]
@@ -171,5 +178,5 @@ physics.producers.CaloReadoutHitsMaker.diagLevel : -1
 physics.producers.CaloReadoutHitsMaker.maxFullPrint : 0
 physics.producers.CaloCrystalHitsMaker.diagLevel : -1
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
-#physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
-physics.producers.generate.inputfile : "Analyses/test/genconfig_FromBeam.txt"
+physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
+#physics.producers.generate.inputfile : "Analyses/test/genconfig_FromBeam.txt"
