@@ -2,9 +2,9 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: PhysicalVolumeHelper.cc,v 1.4 2011/10/22 04:28:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/10/22 04:28:59 $
 //
 // Original author Rob Kutschke
 //
@@ -97,10 +97,10 @@ namespace mu2e {
     G4PhysicalVolumeStore* pstore = G4PhysicalVolumeStore::GetInstance();
     for ( std::vector<G4VPhysicalVolume*>::const_iterator i=pstore->begin(); i!=pstore->end(); ++i){
 
-      // Make sure that this volume is not yet in the map.
+      // Add volume to the map; it's an error if its already there.
       G4VPhysicalVolume* vpv = *i;
-      VolMapType_iterator iter = _volumeMap.find(vpv);
-      if ( iter != _volumeMap.end() ){
+      pair<VolMapType_iterator,bool> ret = _volumeMap.insert( std::make_pair(vpv,_volumeMap.size()) );
+      if ( !ret.second ){
         throw cet::exception("RANGE")
           << "Error building the persistent volume list.  Volume: "
           << vpv->GetName()
@@ -109,8 +109,7 @@ namespace mu2e {
           << " already exisist!\n";
       }
 
-      // Add volume to the map and to the persistent info.
-      _volumeMap.insert( std::make_pair(vpv,_volumeMap.size()) );
+      // Add volume to the persistent info.
       _persistentInfo.push_back( PhysicalVolumeInfo( vpv->GetName(), vpv->GetCopyNo() ));
     }
 
