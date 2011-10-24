@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.13 2011/07/12 04:52:27 kutschke Exp $
+// $Id: ParticleGun.cc,v 1.14 2011/10/24 16:27:11 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Date: 2011/10/24 16:27:11 $
 //
 // Original author Rob Kutschke
 //
@@ -168,13 +168,6 @@ namespace mu2e {
       double time = _tmin + _dt*_randFlat.fire();
 
       genParts.push_back( GenParticle( _pdgId, GenId::particleGun, pos, p4, time));
-
-      cout << "Generated position: "
-           << pos << " "
-           << p4 << " "
-           << p4.vect().mag() << " "
-           << time
-           << endl;
 
       if ( _doHistograms ) {
         _hMomentum->Fill(p);
