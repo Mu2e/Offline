@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.14 2011/10/24 16:27:11 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/10/24 16:27:11 $
+// $Id: ParticleGun.cc,v 1.15 2011/10/24 19:55:57 brownd Exp $
+// $Author: brownd $
+// $Date: 2011/10/24 19:55:57 $
 //
 // Original author Rob Kutschke
 //
@@ -65,6 +65,7 @@ namespace mu2e {
     _tmax(0),
     _point(),
     _halfLength(),
+    _verbose(config.getBool("particleGun.verbose",false)),
     _doHistograms(config.getBool("particleGun.doHistograms", false)),
 
     // Random number distributions; getEngine() comes from base class.
@@ -168,6 +169,13 @@ namespace mu2e {
       double time = _tmin + _dt*_randFlat.fire();
 
       genParts.push_back( GenParticle( _pdgId, GenId::particleGun, pos, p4, time));
+
+      if(_verbose)cout << "Generated position: "
+           << pos << " "
+           << p4 << " "
+           << p4.vect().mag() << " "
+           << time
+           << endl;
 
       if ( _doHistograms ) {
         _hMomentum->Fill(p);

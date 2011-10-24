@@ -3,9 +3,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.9 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: ParticleGun.hh,v 1.10 2011/10/24 19:55:57 brownd Exp $
+// $Author: brownd $
+// $Date: 2011/10/24 19:55:57 $
 //
 // Original author Rob Kutschke
 //
@@ -74,6 +74,8 @@ namespace mu2e {
     CLHEP::Hep3Vector _point;
     CLHEP::Hep3Vector _halfLength;
 
+    // enable output
+    bool _verbose;
     // Enable histograms
     bool _doHistograms;
 
