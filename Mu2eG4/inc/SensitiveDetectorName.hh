@@ -2,9 +2,9 @@
 #define Mu2eG4_SensitiveDetectorName_hh
 // Define names of Sensitive Detectors
 //
-// $Id: SensitiveDetectorName.hh,v 1.6 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: SensitiveDetectorName.hh,v 1.7 2011/10/27 23:38:19 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/10/27 23:38:19 $
 //
 // Original author KLG
 
@@ -34,6 +34,10 @@ namespace mu2e {
 
     static char const * CaloReadout(){
       return "CaloReadout";
+    }
+
+    static char const * ExtMonFNAL(){
+      return "ExtMonFNAL";
     }
 
     static char const * StoppingTarget(){

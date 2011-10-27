@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.99 2011/10/27 23:37:47 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.100 2011/10/27 23:38:19 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/10/27 23:37:47 $
+// $Date: 2011/10/27 23:38:19 $
 //
 // Original author Rob Kutschke
 //
@@ -58,6 +58,7 @@
 #include "Mu2eG4/inc/CRSScintillatorBarSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
+#include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestTorus.hh"
@@ -175,6 +176,7 @@ namespace mu2e {
     StoppingTargetSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
     CaloReadoutSD::setMu2eOriginInWorld( _mu2eOrigin );
+    ExtMonFNAL_SD::setMu2eOriginInWorld( _mu2eOrigin );
     CRSScintillatorBarSD::setMu2eOriginInWorld( _mu2eOrigin );
     if ( _config->getBool("hasITracker",false) ) {
             ITGasLayerSD::setMu2eDetCenterInWorld( _mu2eDetectorOrigin -
@@ -659,6 +661,9 @@ namespace mu2e {
 
     CaloReadoutSD* crSD     = new CaloReadoutSD(    SensitiveDetectorName::CaloReadout(),     *_config);
     SDman->AddNewDetector(crSD);
+
+    ExtMonFNAL_SD* emfSD     = new ExtMonFNAL_SD(    SensitiveDetectorName::ExtMonFNAL(),     *_config);
+    SDman->AddNewDetector(emfSD);
 
     StoppingTargetSD* stSD = new StoppingTargetSD(  SensitiveDetectorName::StoppingTarget(),  *_config);
     SDman->AddNewDetector(stSD);

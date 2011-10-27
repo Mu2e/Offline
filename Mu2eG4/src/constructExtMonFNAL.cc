@@ -17,6 +17,7 @@
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 
@@ -29,6 +30,8 @@ namespace mu2e {
     ExtMonFNAL::ExtMon const & det = *(GeomHandle<ExtMonFNAL::ExtMon>());    
 
     MaterialFinder materialFinder(config);
+    G4VSensitiveDetector* emSD = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL());
     
     VolumeInfo logicalEnclosure = nestBox("ExtMonFNAL",
 					  det.logicalEnclosureHalfDim(), 
@@ -54,6 +57,8 @@ namespace mu2e {
 				  logicalEnclosure,
 				  0,
 				  true, G4Colour::Gray(), true, true, true, true);
+      
+      vplane.logical->SetSensitiveDetector(emSD);
     }
 
     AGDEBUG("end");
