@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.6 2011/07/11 11:20:09 ignatov Exp $
-// $Author: ignatov $
-// $Date: 2011/07/11 11:20:09 $
+// $Id: GeometryService_service.cc,v 1.7 2011/10/27 23:35:55 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/10/27 23:35:55 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,8 @@
 #include "VirtualDetectorGeom/inc/VirtualDetectorMaker.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL_Maker.hh"
 
 using namespace std;
 
@@ -134,6 +136,11 @@ namespace mu2e {
       addDetector( crs.getCosmicRayShieldPtr() );
     }
 
+    if(_config->getBool("hasExtMonFNAL",false)){
+      ExtMonFNAL::ExtMonMaker extmon( *_config );
+      addDetector( extmon.getDetectorPtr() );
+    }
+    
   }
 
   // Check that the configuration is self consistent.

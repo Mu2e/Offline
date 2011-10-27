@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.12 2011/07/11 11:20:09 ignatov Exp $
-# $Author: ignatov $
-# $Date: 2011/07/11 11:20:09 $
+# $Id: SConscript,v 1.13 2011/10/27 23:35:55 gandr Exp $
+# $Author: gandr $
+# $Date: 2011/10/27 23:35:55 $
 #
 # Original author Rob Kutschke.
 #
@@ -28,6 +28,7 @@ env.SharedLibrary(libname, non_plugin_cc,
                'CalorimeterGeom',
                'BFieldGeom',
                'CosmicRayShieldGeom',
+               'ExtinctionMonitorFNAL',
                'art_Framework_Core',
                'art_Framework_Services_Registry',
                'MF_MessageLogger',

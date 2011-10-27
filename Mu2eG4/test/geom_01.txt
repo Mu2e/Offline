@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.98 2011/09/21 15:47:20 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/09/21 15:47:20 $
+// $Id: geom_01.txt,v 1.99 2011/10/27 23:35:55 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/10/27 23:35:55 $
 //
 // Original author Rob Kutschke
 //
@@ -115,7 +115,7 @@ bool g4.forceAuxEdgeVisible = true;
 bool g4.doSurfaceCheck = false;
 
 // Half lengths of the world box, (x,y,z) in mm.
-vector<double> world.halfLengths  = { 20000., 10000., 20000.}; //25000
+vector<double> world.halfLengths  = { 20000., 10000., 25000.}; //25000
 string         world.materialName = "G4_AIR";
 bool           world.boxVisible   = true;
 bool           world.boxSolid     = false;
@@ -128,7 +128,8 @@ int            world.verbosityLevel = 0;
 //  z: offset from the world origin.
 double world.mu2eOrigin.xoffset =     0.;
 double world.mu2eOrigin.height  =  2550.;
-double world.mu2eOrigin.zoffset = -4000.;// -9000
+//double world.mu2eOrigin.zoffset = -4000.;// -9000
+double world.mu2eOrigin.zoffset = +1000.;// -9000
 
 // Overburden above the detector: 20 ft in proposal.
 // I have arbitrarily split it into a flat part and a dome.
@@ -156,7 +157,8 @@ bool   hall.solid              = false;
 // Offset of the hall from its base position within the world:
 //   - Centered in x and z.
 //   - At the bottom in y.
-vector<double> hall.offset = { -1525., 0., 0. }; // -5000.
+//vector<double> hall.offset = { -1525., 0., 0. }; // -5000.
+vector<double> hall.offset = { -1525., 0., 5000. }; // -5000.
 
 // X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
 // The origin of the detector coordinate system is on the DS axis at the specified z.
@@ -246,6 +248,8 @@ double targetPS_rotY              =   13.65;  // degree.
 string targetPS_materialName      = "G4_Au";
 bool   targetPS.visible           = true;
 bool   targetPS.solid             = false;
+
+#include "Mu2eG4/test/extmon_fnal_v01.txt"
 
 // Describe dummy stopping target that is just one big G4TUBS.
 double dummyStoppingTarget.rIn        =     0.;

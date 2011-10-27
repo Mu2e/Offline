@@ -1,0 +1,39 @@
+// Extinction monitor parameters
+
+bool           hasExtMonFNAL = true;
+// Half lengths of the extmon.fnal box, (x,y,z) in mm.
+vector<double> extmon_fnal.logicalEnclosureHalfDim  = { 1000., 1000., 3000.};
+vector<double> extmon_fnal.offsetInParent  = { 0., -2000., -15000.};
+double         extmon_fnal.rotationX       = -20; // degrees
+double         extmon_fnal.rotationY       = 160; // degrees
+
+string         extmon_fnal.logicalEnclosureMaterialName  = "G4_AIR";
+bool           extmon_fnal.boxVisible   = false;
+bool           extmon_fnal.boxSolid     = false;
+int            extmon_fnal.verbosityLevel = 9;
+
+bool           extmon_fnal.logicalEnclosureVisible = true;
+
+// Details of the detector.  All of these vectors should be
+// of the same size: one entry per detector plane.
+// The coordinates are relative to the logical enclosure volume.
+
+vector<double> extmon_fnal.sensor_zoffset = {-2000., -1800., +1800., +2000., +2200. };
+vector<double> extmon_fnal.sensor_xoffset = {0., 0., 0., 0., 0.};
+vector<double> extmon_fnal.sensor_yoffset = {0., 0., 0., 0., 0. };
+
+// vector<double> extmon_fnal.sensor_halfdx = { 20., 20., 30., 30.};
+// vector<double> extmon_fnal.sensor_halfdy = { 19., 19., 19., 19.};
+// vector<double> extmon_fnal.sensor_halfdz = { 0.1, 0.1, 0.1, 0.1};
+// vector<double> extmon_fnal.readout_halfdz = { 0.1, 0.1, 0.1, 0.1};
+
+vector<double> extmon_fnal.sensor_halfdx = { 200., 200., 300., 300., 500.};
+vector<double> extmon_fnal.sensor_halfdy = { 190., 190., 190., 190., 500.};
+vector<double> extmon_fnal.sensor_halfdz = { 10, 10, 10, 10, 50};
+vector<double> extmon_fnal.readout_halfdz = { 0.1, 0.1, 0.1, 0.1, 0.1};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
