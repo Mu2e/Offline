@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.6 2011/10/18 14:28:00 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.7 2011/10/27 16:00:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/10/18 14:28:00 $
+// $Date: 2011/10/27 16:00:57 $
 //
 // framework
 #include "art/Framework/Core/Event.h"
@@ -52,7 +52,7 @@
 #include <fstream>
 #include <string>
 #include <memory>
-
+#include <functional>
 
 using namespace std; 
 
@@ -161,6 +161,7 @@ namespace mu2e
     Int_t _loose, _tight;
     UInt_t _ntpeak;
     std::vector<Float_t> _tpeaks;
+		std::vector<Int_t> _ncpeak;
     std::vector<Int_t> _ntpeaks;
 // fit tuple variables
     TTree* _fitdiag;
@@ -241,8 +242,8 @@ namespace mu2e
 // find mc truth if we're making diagnostics
     if(_diag > 0){
       if(!_kfitmc.findMCData(event)){
-	cout<<"MC information missing "<< endl;
-	return;
+				cout<<"MC information missing "<< endl;
+				return;
       }
     }
 //  find hit positions.  This uses conditions data, so it's not an attribute of the hits 
@@ -435,7 +436,7 @@ namespace mu2e
       }
     }
 // sort the peaks so that the largest comes first
-    std::sort(tpeaks.begin(),tpeaks.end());
+    std::sort(tpeaks.begin(),tpeaks.end(),greater<TrkTimePeak>());
   }
 
   void
@@ -531,6 +532,7 @@ namespace mu2e
     _shdiag->Branch("time",&_time,"time/F");
     _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/i");
     _shdiag->Branch("tpeaks",&_tpeaks);
+		_shdiag->Branch("ncpeak",&_ncpeak);
     _shdiag->Branch("ntpeaks",&_ntpeaks);
     _shdiag->Branch("dmin",&_dmin,"dmin/F");
     _shdiag->Branch("n50",&_n50,"n50/i");
@@ -600,15 +602,7 @@ namespace mu2e
       _shpos = shpos[istr];
       _edep = sh.energyDep();
       _time = sh.time();
-      // compare to different time peaks
-      _ntpeak = tpeaks.size();
-      _tpeaks.clear();
-      _ntpeaks.clear();
-      for(unsigned ipeak=0;ipeak<tpeaks.size();++ipeak){
-	_tpeaks.push_back(tpeaks[ipeak]._tpeak);
-	_ntpeaks.push_back(tpeaks[ipeak]._trkptrs.size());
-      }
-      // find proximity for different radii
+     // find proximity for different radii
       double dmin;
       findProximity(shpos,istr,50.0,_n50,dmin);
       findProximity(shpos,istr,100.0,_n100,dmin);
@@ -625,20 +619,20 @@ namespace mu2e
       _pmom = 0.0;
       _nmcsteps = mcptr.size();
       for( size_t imc=0; imc< _nmcsteps; ++imc ) {
-	StepPointMC const& mchit = *mcptr[imc];
+				StepPointMC const& mchit = *mcptr[imc];
 	// distance from production
-	double edep = mchit.eDep();
-	esum += edep;
-	CLHEP::Hep3Vector dprod = mchit.position()-det->toDetector(mchit.simParticle()->startPosition());
-	_pdist += dprod.mag()*edep;
-	static Hep3Vector zdir(0.0,0.0,1.0);
-	_pperp += dprod.perp(zdir)*edep;
-	_pmom += mchit.momentum().mag()*edep;
+				double edep = mchit.eDep();
+				esum += edep;
+				CLHEP::Hep3Vector dprod = mchit.position()-det->toDetector(mchit.simParticle()->startPosition());
+				_pdist += dprod.mag()*edep;
+				static Hep3Vector zdir(0.0,0.0,1.0);
+				_pperp += dprod.perp(zdir)*edep;
+				_pmom += mchit.momentum().mag()*edep;
       }
       if(esum > 0.0){
-	_pdist /= esum;
-	_pperp /= esum;
-	_pmom /= esum;
+				_pdist /= esum;
+				_pperp /= esum;
+				_pmom /= esum;
       }
       // summarize the MC truth for this strawhit
       std::vector<trksum> mcsum;
@@ -647,7 +641,7 @@ namespace mu2e
       // compute energy sum
       _mcedep = 0.0;
       for(std::vector<trksum>::iterator isum=mcsum.begin(); isum != mcsum.end(); isum++){
-	_mcedep += isum->_esum;
+				_mcedep += isum->_esum;
       }
       // first entry
       _mcemax = mcsum[0]._esum;
@@ -662,7 +656,15 @@ namespace mu2e
       _shdiag->Fill();
       bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
       if(conversion){
-	++_nchit;
+				++_nchit;
+      }
+      // compare to different time peaks
+      _ntpeak = tpeaks.size();
+      _tpeaks.clear();
+      _ntpeaks.clear();
+      for(unsigned ipeak=0;ipeak<tpeaks.size();++ipeak){
+				_tpeaks.push_back(tpeaks[ipeak]._tpeak);
+				_ntpeaks.push_back(tpeaks[ipeak]._trkptrs.size());
       }
     }
   }
@@ -676,9 +678,9 @@ namespace mu2e
     char tsname[100];
     char lsname[100];
     snprintf(rsname,100,"rawtspectrum%i",iev);
-    snprintf(csname,100,"seltspectrum%i",iev);
-    snprintf(tsname,100,"convtspectrum%i",iev);
-    snprintf(lsname,100,"convtspectrum%i",iev);
+    snprintf(csname,100,"convtspectrum%i",iev);
+    snprintf(tsname,100,"tighttspectrum%i",iev);
+    snprintf(lsname,100,"loosetspectrum%i",iev);
     ttsp = tfs->make<TH1F>(tsname,"time spectrum",_nbins,_tmin,_tmax);
     ttsp->SetLineColor(kCyan);
     ltsp = tfs->make<TH1F>(lsname,"time spectrum",_nbins,_tmin,_tmax);
