@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.98 2011/08/04 18:53:31 genser Exp $
-// $Author: genser $
-// $Date: 2011/08/04 18:53:31 $
+// $Id: Mu2eWorld.cc,v 1.99 2011/10/27 23:37:47 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/10/27 23:37:47 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,7 @@
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
+#include "Mu2eG4/inc/constructExtMonFNAL.hh"
 #include "Mu2eG4/inc/constructNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
@@ -78,6 +79,7 @@
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructCalorimeter.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 
 // G4 includes
 #include "G4SDManager.hh"
@@ -164,6 +166,7 @@ namespace mu2e {
   void Mu2eWorld::constructWorld(){
 
     int static const diagLevel = _config->getInt("world.verbosityLevel", 0);
+    art::ServiceHandle<GeometryService> geom;
 
     // If you play with the order of these calls, you may break things.
     defineMu2eOrigin();
@@ -223,6 +226,10 @@ namespace mu2e {
     if ( _config->getBool("hasCosmicRayShield",false) ) {
       constructSteel(hallInfo,_config);
       constructCRV(hallInfo,_config);
+    }
+
+    if(geom->hasElement<mu2e::ExtMonFNAL::ExtMon>()) {
+      constructExtMonFNAL(dirtInfo, *_config);
     }
 
     if ( _config->getBool("hasNeutronAbsorber",false) ) {
