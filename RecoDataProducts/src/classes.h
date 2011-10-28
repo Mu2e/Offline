@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.6 2011/10/11 17:26:08 tassiell Exp $
+// $Id: classes.h,v 1.7 2011/10/28 00:17:18 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/10/11 17:26:08 $
+// $Date: 2011/10/28 00:17:18 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,7 @@
 #include "RecoDataProducts/inc/SubEventCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
+#include "RecoDataProducts/inc/ZRotStrawHitMapCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -37,3 +38,4 @@ template class art::Wrapper<mu2e::HoughCircleCollection>;
 template class art::Wrapper<mu2e::SubEventCollection>;
 template class art::Wrapper<mu2e::TrackerHitTimeClusterCollection>;
 template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;
+template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
