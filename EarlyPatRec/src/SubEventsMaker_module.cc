@@ -3,9 +3,9 @@
 // Code to produce a vector<SubEvent> from the collection of StrawHits
 // for an event.
 //
-// $Id: SubEventsMaker_module.cc,v 1.3 2011/06/07 23:01:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 23:01:53 $
+// $Id: SubEventsMaker_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author: Mark Fischler
 //
@@ -17,13 +17,13 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
-#include "art/Persistency/Provenance/Provenance.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Provenance.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

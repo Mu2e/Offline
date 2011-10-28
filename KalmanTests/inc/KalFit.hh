@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.10 2011/09/27 21:49:09 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/09/27 21:49:09 $
+// $Id: KalFit.hh,v 1.11 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/10/28 18:47:06 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -28,8 +28,6 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
-
-using namespace std; 
 
 namespace mu2e 
 {

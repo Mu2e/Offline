@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.15 2011/10/24 19:55:57 brownd Exp $
-// $Author: brownd $
-// $Date: 2011/10/24 19:55:57 $
+// $Id: ParticleGun.cc,v 1.16 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -11,8 +11,8 @@
 #include <iostream>
 
 // Framework includes
-#include "art/Framework/Core/Run.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

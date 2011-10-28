@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.2 2011/09/06 22:29:29 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2011/09/06 22:29:29 $
+// $Id: ReadKalFits_module.cc,v 1.3 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -12,6 +12,8 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 

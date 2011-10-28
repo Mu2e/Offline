@@ -3,16 +3,16 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.hh,v 1.2 2011/07/17 21:38:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 21:38:17 $
+// $Id: GeneratorSummaryHistograms.hh,v 1.3 2011/10/28 18:47:05 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:05 $
 //
 // Contact person Rob Kutschke
 //
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 
 #include <string>
 

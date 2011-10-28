@@ -1,9 +1,9 @@
 //
 // Test of producing one type of transient data product.
 //
-// $Id: MakeTransientProduct00_module.cc,v 1.3 2011/06/05 16:39:45 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/05 16:39:45 $
+// $Id: MakeTransientProduct00_module.cc,v 1.4 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Rob Kutschke
 //
@@ -11,6 +11,8 @@
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
 
 // Mu2e includes.
 #include "RecoDataProducts/inc/StrawHitCollection.hh"

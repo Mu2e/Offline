@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for stopping target
 //
-//  $Id: StoppingTargetSD.cc,v 1.9 2011/06/30 04:55:39 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/06/30 04:55:39 $
+//  $Id: StoppingTargetSD.cc,v 1.10 2011/10/28 18:47:06 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/10/28 18:47:06 $
 //
 // Original author Ivan Logashenko
 //
@@ -40,7 +40,7 @@ namespace mu2e {
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0),
     _simID(0),
-    _productGetter(0)
+    _event(0)
    {
 
     // Get list of events for which to make debug printout.
@@ -88,7 +88,7 @@ namespace mu2e {
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
-      push_back(StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _productGetter ),
+      push_back(StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetCopyNo(),
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),
@@ -133,11 +133,11 @@ namespace mu2e {
   void StoppingTargetSD::beforeG4Event(StepPointMCCollection& outputHits, 
                                        PhysicsProcessInfo& processInfo,
                                        art::ProductID const& simID,
-                                       art::EDProductGetter const* productGetter ){
+                                       art::Event const & event ){
     _collection    = &outputHits;
     _processInfo   = &processInfo;
     _simID         = &simID;
-    _productGetter = productGetter;
+    _event = &event;
 
     return;
   } // end of beforeG4Event

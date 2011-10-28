@@ -1,9 +1,9 @@
 //
 // Illustrate a bug in the mixing infrastructure:
 //
-// $Id: MixBug01_module.cc,v 1.1 2011/09/24 16:18:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/09/24 16:18:30 $
+// $Id: MixBug01_module.cc,v 1.2 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Contact person Rob Kutschke.
 //
@@ -13,7 +13,7 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 
 // Includes from art
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Modules/MixFilter.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"

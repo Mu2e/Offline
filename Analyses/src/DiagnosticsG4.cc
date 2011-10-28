@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.2 2011/07/17 02:15:36 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 02:15:36 $
+// $Id: DiagnosticsG4.cc,v 1.3 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 //
 
 // Framework includes
-#include "art/Framework/Core/Run.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes

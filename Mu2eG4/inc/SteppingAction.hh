@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.16 2011/07/17 02:12:11 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 02:12:11 $
+// $Id: SteppingAction.hh,v 1.17 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -26,7 +26,7 @@
 
 // Art includes
 #include "art/Persistency/Provenance/ProductID.h"
-#include "art/Persistency/Common/EDProductGetter.h"
+#include "art/Framework/Principal/Event.h"
 
 // Forward declarations outside of mu2e namespace.
 class G4VPhysicalVolume;
@@ -47,7 +47,7 @@ namespace mu2e {
 
     void BeginOfEvent(StepPointMCCollection& outputHits,
                       art::ProductID const& simID,
-                      art::EDProductGetter const* productGetter );
+                      art::Event const &event );
     void EndOfEvent();
 
     void BeginOfTrack();
@@ -118,7 +118,7 @@ namespace mu2e {
 
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
     art::ProductID const *      _simID;
-    art::EDProductGetter const* _productGetter;
+    art::Event const* _event;
 
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.

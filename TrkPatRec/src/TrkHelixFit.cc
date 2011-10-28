@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.3 2011/10/14 17:09:48 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2011/10/14 17:09:48 $
+// $Id: TrkHelixFit.cc,v 1.4 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/10/28 18:47:07 $
 //
 //
 // the following has to come before other BaBar includes
@@ -28,13 +28,13 @@ namespace mu2e
   double TrkHelixFit::_targetz(-1550.0);
 
 // comparison functor for ordering points
-  struct radcomp : public binary_function<RAD, RAD, bool> {
+  struct radcomp : public std::binary_function<RAD, RAD, bool> {
     bool operator()(RAD const& r1, RAD const& r2) { return r1._radius < r2._radius; }
   };
 
   // comparison functor for sorting by z
   typedef std::pair<double,double> FZP;
-  struct zcomp : public binary_function<FZP,FZP,bool> {
+  struct zcomp : public std::binary_function<FZP,FZP,bool> {
     bool operator()(FZP const & p1, FZP const& p2) { return p1.second < p2.second; }
   };
   
@@ -45,7 +45,7 @@ namespace mu2e
     double rvec1 = CLHEP::Hep3Vector(_pos +_werr*_wdir - center).perp();
     double rvec2 = CLHEP::Hep3Vector(_pos -_werr*_wdir - center).perp();
     rad._radius = 0.5*(rvec1+rvec2);
-    rad._rerr = max(max(fabs(rvec1-rvec),fabs(rvec2-rvec)),_serr);
+    rad._rerr = std::max(std::max(fabs(rvec1-rvec),fabs(rvec2-rvec)),_serr);
   }
   
   void
@@ -231,7 +231,7 @@ namespace mu2e
 // exclude target region z
       if(xyzp[ixyzp]._use && xyzp[ixyzp]._pos.z() > _targetz ){
         double phi = atan2((xyzp[ixyzp]._pos.y()-myhel._center.y()),(xyzp[ixyzp]._pos.x()-myhel._center.x()));
-        fz.push_back(make_pair(phi,xyzp[ixyzp]._pos.z()));
+        fz.push_back(std::make_pair(phi,xyzp[ixyzp]._pos.z()));
       }
     }
 // sort these by z
@@ -324,7 +324,7 @@ namespace mu2e
   bool
   TrkHelixFit::initCircle(std::vector<XYZP> const& xyzp,TrkHelix& myhel) {
 // use a subset of hits
-    unsigned istep = max((int)ceil(xyzp.size()/_maxnhit),1);
+    unsigned istep = std::max((int)ceil(xyzp.size()/_maxnhit),1);
 // form all triples, and compute the circle center for unaligned hits.  I can aford to be choosy
     unsigned ntriple(0);
     double cxsum(0.0), cysum(0.0);

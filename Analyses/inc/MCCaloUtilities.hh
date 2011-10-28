@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.hh,v 1.3 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: MCCaloUtilities.hh,v 1.4 2011/10/28 18:47:05 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:05 $
 //
 // Original author Gianni Onorato
 //
@@ -12,7 +12,7 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Utilities/Exception.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 
 // Mu2e includes
 

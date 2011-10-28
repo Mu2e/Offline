@@ -1,8 +1,8 @@
 //
 //
-//  $Id: ITGasLayerSD.cc,v 1.12 2011/06/30 04:55:13 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/06/30 04:55:13 $
+//  $Id: ITGasLayerSD.cc,v 1.13 2011/10/28 18:47:06 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/10/28 18:47:06 $
 //
 //
 
@@ -41,7 +41,7 @@ namespace mu2e {
                   _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
                   _currentSize(0),
                   _simID(0),
-                  _productGetter(0)
+                  _event(0)
 
 
   {
@@ -179,11 +179,11 @@ namespace mu2e {
   void ITGasLayerSD::beforeG4Event(StepPointMCCollection& outputHits,
                                    PhysicsProcessInfo& processInfo,
                                    art::ProductID const& simID,
-                                   art::EDProductGetter const* productGetter ){
+                                   art::Event const & event ){
     _collection  = &outputHits;
     _processInfo = &processInfo;
     _simID         = &simID;
-    _productGetter = productGetter;
+    _event = &event;
 
     return;
   } // end of beforeG4Event

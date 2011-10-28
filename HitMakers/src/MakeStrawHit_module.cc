@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.9 2011/07/17 20:43:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 20:43:50 $
+// $Id: MakeStrawHit_module.cc,v 1.10 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -16,13 +16,13 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/Event.h"
-#include "art/Framework/Core/Selector.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"

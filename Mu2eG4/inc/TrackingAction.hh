@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.18 2011/06/30 04:48:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/30 04:48:24 $
+// $Id: TrackingAction.hh,v 1.19 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -21,16 +21,14 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
 #include "art/Persistency/Provenance/ProductID.h"
 #include "art/Utilities/CPUTimer.h"
 
 #include <map>
 #include <string>
 
-namespace art {
-  class EDProductGetter;
-}
 
 namespace mu2e {
 
@@ -54,7 +52,7 @@ namespace mu2e {
     // Do all things that need to be done at the beginning/end of an event.
     void beginEvent( art::Handle<GenParticleCollection> const& gensHandle, 
                      art::ProductID const& simID, 
-                     art::EDProductGetter const* productGetter );
+                     art::Event const &event );
     void endEvent( SimParticleCollection& simParticles );
 
     // Record start and end points of each track created by G4.
@@ -122,8 +120,8 @@ namespace mu2e {
     // Product ID of the SimParticleCollection; needed to make PTrs into that collection.
     art::ProductID _simID;
 
-    // Non-owning pointer to the EDProductGetter inside the event; needed for some Ptr stuff.
-    art::EDProductGetter const * _productGetter;
+    // Non-owning pointer to the event; needed for some Ptr stuff.
+    art::Event const * _event;
 
     // Control the saving of trajectories.
     // The first method does the big picture bookkeeping.

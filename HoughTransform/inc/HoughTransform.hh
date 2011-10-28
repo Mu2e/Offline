@@ -1,9 +1,9 @@
 #ifndef HoughTransform_HoughTransform_hh
 #define HoughTransform_HoughTransform_hh
 //
-// $Id: HoughTransform.hh,v 1.15 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: HoughTransform.hh,v 1.16 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.
@@ -24,12 +24,12 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

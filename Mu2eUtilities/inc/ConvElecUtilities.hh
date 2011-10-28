@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.2 2011/07/13 04:20:58 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/07/13 04:20:58 $
+// $Id: ConvElecUtilities.hh,v 1.3 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Gianni Onorato
 //
@@ -18,7 +18,7 @@
 #include <vector>
 
 // Framework includes
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

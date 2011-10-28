@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.20 2011/09/20 04:45:59 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2011/09/20 04:45:59 $
+// $Id: EventDisplayFrame.h,v 1.21 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Ralf Ehrlich
 //
@@ -14,7 +14,7 @@
 #include <iostream>
 #include <TGFrame.h>
 #ifndef __CINT__
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #endif
 

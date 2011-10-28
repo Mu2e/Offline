@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.  
 // //
-// $Id: EjectedPhotonGun.cc,v 1.4 2011/09/19 17:32:44 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/09/19 17:32:44 $
+// $Id: EjectedPhotonGun.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Gianni Onorato
 //
@@ -15,8 +15,8 @@
 #include <iostream>
 
 // Framework includes
-#include "art/Framework/Core/Run.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

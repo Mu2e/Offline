@@ -2,9 +2,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 //
-// $Id: PiCapture.cc,v 1.29 2011/09/19 17:32:44 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/09/19 17:32:44 $
+// $Id: PiCapture.cc,v 1.30 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -12,8 +12,8 @@
 #include <iostream>
 
 // Framework includes
-#include "art/Framework/Core/Run.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

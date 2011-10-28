@@ -2,9 +2,9 @@
 // c++ (not cint) Root "script" to make some plots based on a root example
 // and ReadBack.cc
 //
-// $Id: Analyzer.C,v 1.11 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: Analyzer.C,v 1.12 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author KLG
 //
@@ -28,7 +28,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"

@@ -3,9 +3,9 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawClusterUtilities.hh,v 1.2 2011/06/24 11:44:59 wenzel Exp $
-// $Author: wenzel $
-// $Date: 2011/06/24 11:44:59 $
+// $Id: StrawClusterUtilities.hh,v 1.3 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Hans Wenzel
 //
@@ -15,7 +15,7 @@
 #include <map>
 // Framework includes:
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 // Mu2e includes:
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"

@@ -2,9 +2,9 @@
 // Dump information about all data products in the file, including
 // event, run and subrun data products.
 //
-// $Id: DataProductDump_module.cc,v 1.4 2011/08/16 19:53:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/08/16 19:53:27 $
+// $Id: DataProductDump_module.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -17,74 +17,73 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Modules/ProvenanceDumper.h"
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace std;
 
 namespace mu2e {
 
-  class DataProductDump : public art::EDAnalyzer {
-  public:
+  class DataProductDumpDetail;
 
-    explicit DataProductDump(fhicl::ParameterSet const& pset);
-    virtual ~DataProductDump() { }
+  typedef art::ProvenanceDumper<DataProductDumpDetail> DataProductDump;
 
-    typedef std::vector<art::Provenance const*> provs_type;
+}
+
+class mu2e::DataProductDumpDetail {
+public:
+    explicit DataProductDumpDetail(fhicl::ParameterSet const& pset);
+
+    typedef std::vector<art::Provenance> provs_type;
 
     void analyze(const art::Event& e);
-
-    // A utility function to print info about a vector of provenances.
-    void print( provs_type const& provs);
+    void preProcessEvent() { eventProvenances_.clear(); }
+    void processEventProvenance(art::Provenance const & prov) { eventProvenances_.push_back(prov); }
+    void postProcessEvent() { process("Event", eventProvenances_); }
+    void preProcessSubRun() { subRunProvenances_.clear(); }
+    void processSubRunProvenance(art::Provenance const & prov) { subRunProvenances_.push_back(prov); }
+    void postProcessSubRun() { process("SubRun", subRunProvenances_); }
+    void preProcessRun() { runProvenances_.clear(); }
+    void processRunProvenance(art::Provenance const & prov) { runProvenances_.push_back(prov); }
+    void postProcessRun() { process("Run", runProvenances_); }
 
   private:
+    void process(std::string const & label, provs_type const & provs) const;
+    void print(provs_type const & provs) const;
 
+    provs_type eventProvenances_;
+    provs_type subRunProvenances_;
+    provs_type runProvenances_;
   };
 
-  DataProductDump::DataProductDump(fhicl::ParameterSet const& pset){
+mu2e::DataProductDumpDetail::DataProductDumpDetail(fhicl::ParameterSet const& pset)
+    :
+    eventProvenances_(),
+    subRunProvenances_(),
+    runProvenances_()
+  {
   }
 
-  void DataProductDump::analyze(const art::Event& event) {
+void mu2e::DataProductDumpDetail::process(std::string const & label,
+                                          provs_type const &provs) const {
+    std::cout << "Found "
+              << provs.size()
+              << " data products in this "
+              << label
+              << std::endl;
 
-    art::Run const& run(event.getRun());
-    art::SubRun const& lumi(event.getSubRun());
-
-    // Get provenance information for all data products.
-    provs_type evtProvs;
-    provs_type runProvs;
-    provs_type lumiProvs;
-    event.getAllProvenance(evtProvs);
-    run.getAllProvenance(runProvs);
-    lumi.getAllProvenance(lumiProvs);
-
-    // Print a header for this event.
-    cout << "\n\nData producs for: " << event.id() << endl;
-    cout << "Data products in this event:      " << evtProvs.size()  << endl;
-    cout << "Data products in this run:        " << runProvs.size()  << endl;
-    cout << "Data products in this subRun:     " << lumiProvs.size() << endl;
-    cout << endl;
-
-    // Print information about each set of data products.
-    if ( evtProvs.size() > 0 ){
-      cout << "Event data products: " << endl;
-      print (evtProvs);
+    if (provs.size()) {
+      std::cout << "Data products: " << std::endl;
+      print(provs);
     }
-
-    if ( runProvs.size() > 0 ) {
-      cout << "Run data products: " << endl;
-      print (runProvs);
-    }
-
-    if ( lumiProvs.size() > 0 ) {
-      cout << "SubRun data products: " << endl;
-      print (lumiProvs);
-    }
-
-  } // end analyze
+  }
 
   // A utility function used by analyze.
-  void DataProductDump::print( provs_type const& provs){
+void mu2e::DataProductDumpDetail::print( provs_type const& provs) const {
 
     // Column headings
     string head0("Friendly Class Name");
@@ -101,7 +100,7 @@ namespace mu2e {
     // Loop over all products and compute maximum lengths for each column.
     for ( provs_type::const_iterator i=provs.begin();
           i != provs.end(); ++i ){
-      art::Provenance const& prov = **i;
+      art::Provenance const& prov = *i;
 
       string::size_type lclass, lmodule, linstance, lprocess;
       lclass    = prov.friendlyClassName().size();
@@ -125,7 +124,7 @@ namespace mu2e {
     // Printer body of header.
     for ( provs_type::const_iterator i=provs.begin();
           i != provs.end(); ++i ){
-      art::Provenance const& prov = **i;
+      art::Provenance const& prov = *i;
       cout << setw(maxlclass)    << prov.friendlyClassName()   << "  "
            << setw(maxlmodule)   << prov.moduleLabel()         << "  "
            << setw(maxlinstance) << prov.productInstanceName() << "  "
@@ -137,7 +136,4 @@ namespace mu2e {
 
   } // end print
 
-}  // end namespace mu2e
-
-using mu2e::DataProductDump;
-DEFINE_ART_MODULE(DataProductDump);
+DEFINE_ART_MODULE(mu2e::DataProductDump);

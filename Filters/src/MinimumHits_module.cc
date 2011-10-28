@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.4 2011/09/19 23:53:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/09/19 23:53:57 $
+// $Id: MinimumHits_module.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Contact person Rob Kutschke.
 //
@@ -20,7 +20,8 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 

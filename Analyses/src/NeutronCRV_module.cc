@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.10 2011/06/07 22:23:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 22:23:41 $
+// $Id: NeutronCRV_module.cc,v 1.11 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -19,13 +19,14 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
-#include "art/Persistency/Provenance/Provenance.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Provenance.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

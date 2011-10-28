@@ -1,9 +1,9 @@
 //
 // Test of Ptr to GenParticles and SimParticles.
 //
-// $Id: PtrTest0_module.cc,v 1.6 2011/06/07 23:01:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 23:01:53 $
+// $Id: PtrTest0_module.cc,v 1.7 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -15,6 +15,8 @@
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
 #include "art/Persistency/Common/Ptr.h"
 
 // Mu2e includes.

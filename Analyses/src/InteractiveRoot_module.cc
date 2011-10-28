@@ -1,9 +1,9 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_module.cc,v 1.5 2011/05/25 17:07:59 greenc Exp $
+// $Id: InteractiveRoot_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
 // $Author: greenc $
-// $Date: 2011/05/25 17:07:59 $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -50,9 +50,9 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 

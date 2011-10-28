@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.10 2011/05/18 22:01:46 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 22:01:46 $
+// $Id: PrimaryProtonGun.hh,v 1.11 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 //
 // The coordinate system used in this class is:
@@ -29,7 +29,7 @@
 #include "EventGenerator/inc/GeneratorBase.hh"
 
 // Framework Includes
-#include "art/Framework/Core/Run.h"
+#include "art/Framework/Principal/Run.h"
 
 // Forward references outside of namespace mu2e
 class TH1D;

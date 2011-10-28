@@ -1,16 +1,16 @@
 //
 // Plugin to test some features of FHICL.
 //
-// $Id: FHICLTest00_module.cc,v 1.1 2011/09/25 17:51:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/09/25 17:51:18 $
+// $Id: FHICLTest00_module.cc,v 1.2 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Rob Kutschke.
 //
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Other includes

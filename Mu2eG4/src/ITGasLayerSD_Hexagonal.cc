@@ -225,7 +225,7 @@ namespace mu2e {
 
            // Add the hit to the framework collection.
            // The point's coordinates are saved in the mu2e coordinate system.
-            _collection->push_back( StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _productGetter ),
+           _collection->push_back( StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
                                                 det,
                                                 edep,
                                                 aStep->GetNonIonizingEnergyDeposit(),

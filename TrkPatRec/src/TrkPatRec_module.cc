@@ -1,14 +1,14 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.7 2011/10/27 16:00:57 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2011/10/27 16:00:57 $
+// $Id: TrkPatRec_module.cc,v 1.8 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/10/28 18:47:07 $
 //
 // framework
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"

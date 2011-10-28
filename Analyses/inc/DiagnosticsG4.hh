@@ -4,9 +4,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.1 2011/07/17 01:37:45 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 01:37:45 $
+// $Id: DiagnosticsG4.hh,v 1.2 2011/10/28 18:47:05 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:05 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // Art includes
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 
 // Forward declarations.
 class TH1F;

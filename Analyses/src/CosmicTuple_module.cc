@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.5 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: CosmicTuple_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -26,10 +26,11 @@
 #include "TNtuple.h"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

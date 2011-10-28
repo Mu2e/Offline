@@ -1,14 +1,14 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.7 2011/10/04 23:08:17 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/10/04 23:08:17 $
+// $Id: KalFitMC.hh,v 1.8 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/10/28 18:47:06 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
 
 // data
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -68,7 +68,7 @@ namespace mu2e
       _count++;
     }
 // comparison functor for ordering according to energy
-    struct ecomp : public binary_function<trksum,trksum, bool> {
+    struct ecomp : public std::binary_function<trksum,trksum, bool> {
       bool operator()(trksum const& t1, trksum const& t2) { return t1._esum < t2._esum; }
     };
   };  

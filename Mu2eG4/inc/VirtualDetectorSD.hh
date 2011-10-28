@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for virtual detectors (like G4Beamline)
 //
-// $Id: VirtualDetectorSD.hh,v 1.10 2011/06/30 04:55:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/30 04:55:13 $
+// $Id: VirtualDetectorSD.hh,v 1.11 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Ivan Logashenko
 //
@@ -19,7 +19,7 @@
 
 // Art includes
 #include "art/Persistency/Provenance/ProductID.h"
-#include "art/Persistency/Common/EDProductGetter.h"
+#include "art/Framework/Principal/Event.h"
 
 class G4Step;
 class G4HCofThisEvent;
@@ -43,7 +43,7 @@ namespace mu2e {
     void beforeG4Event(StepPointMCCollection& outputHits, 
                        PhysicsProcessInfo & processInfo,
                        art::ProductID const& simID,
-                       art::EDProductGetter const* productGetter );
+                       art::Event const & event );
 
 
     static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
@@ -70,7 +70,7 @@ namespace mu2e {
 
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
     art::ProductID const *      _simID;
-    art::EDProductGetter const* _productGetter;
+    art::Event const* _event;
 
   };
 

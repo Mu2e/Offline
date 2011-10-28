@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.12 2011/08/05 20:35:03 genser Exp $
-// $Author: genser $
-// $Date: 2011/08/05 20:35:03 $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.13 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -28,11 +28,11 @@
 #include "TrackerGeom/inc/Device.hh"
 #include "TrackerGeom/inc/Sector.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/Run.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "cetlib/pow.h"
 #include "fhiclcpp/ParameterSet.h"
 #include <iomanip>

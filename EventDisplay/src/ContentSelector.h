@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.10 2011/08/14 06:31:19 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2011/08/14 06:31:19 $
+// $Id: ContentSelector.h,v 1.11 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Ralf Ehrlich
 //
@@ -18,8 +18,8 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "art/Framework/Core/Event.h"
-#include "art/Framework/Core/Run.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 #include <TGComboBox.h>
 #include <TGListBox.h>
 #include <iostream>

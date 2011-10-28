@@ -5,9 +5,9 @@
 // pointees. The printout does not include indices/keys because these
 // may be changed by mixing.
 //
-// $Id: InspectDataProducts_module.cc,v 1.3 2011/10/14 19:03:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/10/14 19:03:44 $
+// $Id: InspectDataProducts_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -22,9 +22,9 @@
 #include "MCDataProducts/inc/StepInstanceName.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"

@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_module.cc,v 1.12 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: CEL_module.cc,v 1.13 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author R. Bernstein
 //
@@ -34,13 +34,14 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
 #include "cetlib/exception.h"
 #include "cetlib/pow.h"
 #include "fhiclcpp/ParameterSet.h"

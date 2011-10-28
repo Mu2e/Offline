@@ -6,9 +6,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.6 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: PrimaryGeneratorAction.hh,v 1.7 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,7 @@
 #include <string>
 
 // Framework includes
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 
 // G4 includes
 #include "globals.hh"

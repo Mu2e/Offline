@@ -1,9 +1,9 @@
 //
 // identification and track parameter extraction modules
 //
-// $Id: TrackReco_module.cc,v 1.1 2011/10/28 00:21:08 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/10/28 00:21:08 $
+// $Id: TrackReco_module.cc,v 1.2 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author G. Tassielli
 //
@@ -22,13 +22,13 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
-#include "art/Persistency/Provenance/Provenance.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Provenance.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

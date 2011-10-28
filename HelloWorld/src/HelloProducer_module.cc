@@ -1,9 +1,9 @@
 //
 //  The first example of a producer.
 //
-//  $Id: HelloProducer_module.cc,v 1.5 2011/05/24 17:19:03 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/05/24 17:19:03 $
+//  $Id: HelloProducer_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/10/28 18:47:06 $
 //
 //  Original author Rob Kutschke
 //
@@ -14,6 +14,7 @@
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
 
 // Mu2e includes.
 #include "MCDataProducts/inc/GenParticleCollection.hh"

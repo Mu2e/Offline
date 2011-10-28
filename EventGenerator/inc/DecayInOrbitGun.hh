@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.20 2011/08/26 21:32:18 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Id: DecayInOrbitGun.hh,v 1.21 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 //
 
@@ -13,7 +13,7 @@
 #include <memory>
 
 // Framework includes
-#include "art/Framework/Core/Run.h"
+#include "art/Framework/Principal/Run.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"

@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.34 2011/07/17 20:40:21 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 20:40:21 $
+// $Id: StrawSD.cc,v 1.35 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Rob Kutschke
 //
@@ -55,7 +55,7 @@ namespace mu2e {
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0),
     _simID(0),
-    _productGetter(0){
+    _event(0){
 
     // Get list of events for which to make debug printout.
     string key("g4.strawSDEventList");
@@ -237,7 +237,7 @@ namespace mu2e {
     G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
     ProcessCode endCode(_processInfo->findAndCount(pname));
 
-    _collection->push_back( StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _productGetter ),
+    _collection->push_back( StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
                                         sdcn,
                                         edep,
                                         aStep->GetNonIonizingEnergyDeposit(),
@@ -459,11 +459,11 @@ namespace mu2e {
   void StrawSD::beforeG4Event(StepPointMCCollection& outputHits, 
                               PhysicsProcessInfo& processInfo,
                               art::ProductID const& simID, 
-                              art::EDProductGetter const* productGetter ){
+                              art::Event const& event ){
     _collection    = &outputHits;
     _processInfo   = &processInfo;
     _simID         = &simID;
-    _productGetter = productGetter;
+    _event = &event;
     return;
   } // end of beforeG4Event
 

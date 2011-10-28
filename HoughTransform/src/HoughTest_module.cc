@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.10 2011/05/25 18:31:42 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/25 18:31:42 $
+// $Id: HoughTest_module.cc,v 1.11 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author R. Bernstein
 //
@@ -30,12 +30,12 @@
 #include "RecoDataProducts/inc/HoughCircleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "cetlib/pow.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

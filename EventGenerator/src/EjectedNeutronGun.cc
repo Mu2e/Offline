@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.21 2011/09/19 17:32:44 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/09/19 17:32:44 $
+// $Id: EjectedNeutronGun.cc,v 1.22 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -16,8 +16,8 @@
 #include <iostream>
 
 // Framework includes
-#include "art/Framework/Core/Run.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

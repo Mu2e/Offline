@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.29 2011/09/19 17:32:44 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/09/19 17:32:44 $
+// $Id: EjectedProtonGun.cc,v 1.30 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -16,8 +16,8 @@
 #include <iostream>
 
 // Framework includes
-#include "art/Framework/Core/Run.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

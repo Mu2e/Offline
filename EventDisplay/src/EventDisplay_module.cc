@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.15 2011/09/14 05:16:17 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2011/09/14 05:16:17 $
+// $Id: EventDisplay_module.cc,v 1.16 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 
 #include <iostream>
@@ -13,10 +13,10 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "TApplication.h"

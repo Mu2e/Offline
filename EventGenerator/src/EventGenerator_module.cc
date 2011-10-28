@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.8 2011/08/25 20:44:22 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2011/08/25 20:44:22 $
+  $Id: EventGenerator_module.cc,v 1.9 2011/10/28 18:47:06 greenc Exp $
+  $Author: greenc $
+  $Date: 2011/10/28 18:47:06 $
 
   Original author Rob Kutschke
 
@@ -39,10 +39,10 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

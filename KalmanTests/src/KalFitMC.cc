@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.10 2011/10/04 23:08:17 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/10/04 23:08:17 $
+// $Id: KalFitMC.cc,v 1.11 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/10/28 18:47:06 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -16,6 +16,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "art/Framework/Services/Optional/TFileService.h"
 // data
+#include "art/Framework/Principal/Event.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"

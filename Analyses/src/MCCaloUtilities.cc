@@ -1,7 +1,7 @@
 //
-// $Id: MCCaloUtilities.cc,v 1.3 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: MCCaloUtilities.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Gianni Onorato
 //
@@ -13,9 +13,9 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Utilities/Exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
-#include "art/Framework/Core/Event.h"
-#include "art/Framework/Core/Run.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 
 // Mu2e includes
 #include "Analyses/inc/MCCaloUtilities.hh"

@@ -1,9 +1,9 @@
 //
 // Read the mixed events.
 //
-// $Id: MixAnalyzer_module.cc,v 1.2 2011/10/12 20:12:09 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/10/12 20:12:09 $
+// $Id: MixAnalyzer_module.cc,v 1.3 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Contact person Rob Kutschke.
 //
@@ -14,9 +14,9 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/Selector.h"
+#include "art/Framework/Principal/Selector.h"
 
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"

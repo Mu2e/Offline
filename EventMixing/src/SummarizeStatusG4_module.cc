@@ -4,9 +4,9 @@
 //  - as a StatusG4 object that is a top level data product.
 //  - within a MixingSummary object.
 //
-// $Id: SummarizeStatusG4_module.cc,v 1.2 2011/10/14 19:04:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/10/14 19:04:30 $
+// $Id: SummarizeStatusG4_module.cc,v 1.3 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Contact person Rob Kutschke
 //
@@ -23,10 +23,10 @@
 #include "MCDataProducts/inc/MixingSummary.hh"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/Selector.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Selector.h"
+#include "art/Framework/Principal/Handle.h"
 
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"

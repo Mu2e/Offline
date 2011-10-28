@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.24 2011/08/25 20:48:07 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/08/25 20:48:07 $
+// $Id: PrimaryGeneratorAction.cc,v 1.25 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -17,11 +17,11 @@
 #include <stdexcept>
 
 // Framework includes
-#include "art/Framework/Core/Event.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // G4 Includes

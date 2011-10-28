@@ -52,7 +52,7 @@ void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> >
     e.vectorPos=vectorPos;
     e.entryText=className+":"+iter->provenance()->moduleLabel()
                +":"+iter->provenance()->productInstanceName();
-    e.className=iter->provenance()->className();
+    e.className=iter->provenance()->producedClassName();
     e.moduleLabel=iter->provenance()->moduleLabel();
     e.productInstanceName=iter->provenance()->productInstanceName();
     newEntries.push_back(e);

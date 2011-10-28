@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.25 2011/10/27 23:38:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/10/27 23:38:19 $
+// $Id: G4_module.cc,v 1.26 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -38,14 +38,15 @@
 #include <iomanip>
 
 // Framework includes
-#include "art/Framework/Core/Event.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Core/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 
 // Geant4 includes
 #include "G4UImanager.hh"
@@ -359,9 +360,9 @@ namespace mu2e {
     art::ProductID simPartId(getProductID<SimParticleCollection>(event));
 
     // Some of the user actions have begein event methods. These are not G4 standards.
-    _trackingAction->beginEvent( gensHandle, simPartId, event.productGetter() );
+    _trackingAction->beginEvent( gensHandle, simPartId, event );
     _genAction->setEvent(event);
-    _steppingAction->BeginOfEvent(*tvdHits,  simPartId, event.productGetter() );
+    _steppingAction->BeginOfEvent(*tvdHits,  simPartId, event );
 
     // enable Sensitive Detectors to store the Framework Data Products
 
@@ -377,37 +378,37 @@ namespace mu2e {
     if ( _config->getBool("hasITracker",false) ) {
       static_cast<ITGasLayerSD*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
-        beforeG4Event(*outputHits, _processInfo, simPartId, event.productGetter() );
+        beforeG4Event(*outputHits, _processInfo, simPartId, event );
 
     }else {
       static_cast<StrawSD*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
-        beforeG4Event(*outputHits, _processInfo, simPartId, event.productGetter() );
+        beforeG4Event(*outputHits, _processInfo, simPartId, event );
     }
 
     static_cast<VirtualDetectorSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()))->
-      beforeG4Event(*vdHits, _processInfo, simPartId, event.productGetter() );
+      beforeG4Event(*vdHits, _processInfo, simPartId, event );
 
     static_cast<StoppingTargetSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::StoppingTarget()))->
-      beforeG4Event(*stHits, _processInfo, simPartId, event.productGetter() );
+      beforeG4Event(*stHits, _processInfo, simPartId, event );
 
     static_cast<CRSScintillatorBarSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()))->
-      beforeG4Event(*sbHits, _processInfo, simPartId, event.productGetter() );
+      beforeG4Event(*sbHits, _processInfo, simPartId, event );
 
     static_cast<CaloCrystalSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
-      beforeG4Event(*caloHits, _processInfo, simPartId, event.productGetter() );
+      beforeG4Event(*caloHits, _processInfo, simPartId, event );
 
     static_cast<CaloReadoutSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()))->
-      beforeG4Event(*caloROHits, _processInfo, simPartId, event.productGetter() );
+      beforeG4Event(*caloROHits, _processInfo, simPartId, event );
 
     static_cast<ExtMonFNAL_SD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))->
-      beforeG4Event(*extMonFNALHits, _processInfo, simPartId, event.productGetter() );
+      beforeG4Event(*extMonFNALHits, _processInfo, simPartId, event );
 
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );

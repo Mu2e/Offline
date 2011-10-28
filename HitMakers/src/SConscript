@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.15 2011/05/31 15:29:31 wenzel Exp $
-# $Author: wenzel $
-# $Date: 2011/05/31 15:29:31 $
+# $Id: SConscript,v 1.16 2011/10/28 18:47:06 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/10/28 18:47:06 $
 #
 # Original author Rob Kutschke.
 #
@@ -20,7 +20,7 @@ if non_plugin_cc:
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'art_Framework_Core',
-                             'art_Framework_Core_RandomNumberSaver_module',
+                             'art_Framework_Modules_RandomNumberSaver_module',
                              'art_Framework_Services_Optional_TFileService_service',
                              'GeometryService',
                              'ConditionsService_service',
@@ -40,7 +40,7 @@ for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
                      LIBS=[ 'art_Framework_Core',
-                            'art_Framework_Core_RandomNumberSaver_module',
+                            'art_Framework_Modules_RandomNumberSaver_module',
                             'art_Framework_Services_Optional_TFileService_service',
                             libs,
                             'GeometryService',

@@ -16,7 +16,7 @@
 #include "G4Helper/inc/G4Helper.hh"
 
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 
 // G4 includes
 #include "G4TransportationManager.hh"

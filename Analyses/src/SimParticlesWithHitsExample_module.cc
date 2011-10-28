@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: SimParticlesWithHitsExample_module.cc,v 1.4 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: SimParticlesWithHitsExample_module.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke.
 //
@@ -15,6 +15,7 @@
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.

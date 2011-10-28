@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.28 2011/06/30 04:48:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/30 04:48:24 $
+// $Id: TrackingAction.cc,v 1.29 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Rob Kutschke
 //
@@ -122,12 +122,12 @@ namespace mu2e {
 
   void TrackingAction::beginEvent( art::Handle<GenParticleCollection> const& gensHandle, 
                                    art::ProductID const& simID, 
-                                   art::EDProductGetter const* productGetter){
+                                   art::Event const & event){
     _currentSize          = 0;
     _overflowSimParticles = false;
     _gensHandle           = &gensHandle;
     _simID                = simID;
-    _productGetter        = productGetter;
+    _event        = &event;
 
   }
 
@@ -167,7 +167,7 @@ namespace mu2e {
     if ( parentId == 0 ){
       genPtr = art::Ptr<GenParticle>(*_gensHandle,generatorIndex);
     } else{
-      parentPtr = art::Ptr<SimParticle>( _simID, parentId, _productGetter);
+      parentPtr = art::Ptr<SimParticle>( _simID, parentId, _event->productGetter(_simID));
     }
 
     // Find the physics process that created this track.
@@ -206,7 +206,7 @@ namespace mu2e {
           << id
           << "\n";
       }
-      i->second.addDaughter(art::Ptr<SimParticle>( _simID, id, _productGetter));
+      i->second.addDaughter(art::Ptr<SimParticle>( _simID, id, _event->productGetter(_simID)));
     }
   }
 

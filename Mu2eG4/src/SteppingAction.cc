@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.25 2011/07/13 19:25:14 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
+// $Id: SteppingAction.cc,v 1.26 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@ namespace mu2e {
     _sizeLimit(config.getInt("g4.steppingActionStepsSizeLimit",0)),
     _currentSize(0),
     _simID(0),
-    _productGetter(0) {
+    _event(0) {
 
     // Look up parameter values in the run time configuration.
     _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
@@ -348,11 +348,11 @@ namespace mu2e {
 
   void SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
 				    art::ProductID const& simID,
-				    art::EDProductGetter const* productGetter ) {
+				    art::Event const& event ) {
     _nKilledStepLimit = 0;
     _collection  = &outputHits;
     _simID         = &simID;
-    _productGetter = productGetter;
+    _event = &event;
   }
 
   void SteppingAction::EndOfEvent() {
@@ -384,7 +384,7 @@ namespace mu2e {
 
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
-      push_back(StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _productGetter ),
+      push_back(StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
                             id,
                             0,
                             0,

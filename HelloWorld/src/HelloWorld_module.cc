@@ -1,9 +1,9 @@
 //
 //  The HelloWorld plugin; the first example of a module.
 //
-//  $Id: HelloWorld_module.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/18 02:27:16 $
+//  $Id: HelloWorld_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
+//  $Author: greenc $
+//  $Date: 2011/10/28 18:47:06 $
 //
 //  Original author Rob Kutschke
 //
@@ -14,6 +14,7 @@
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
 
 using namespace std;
 

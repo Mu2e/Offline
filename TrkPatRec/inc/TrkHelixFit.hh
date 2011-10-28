@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.hh,v 1.3 2011/10/14 17:09:48 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2011/10/14 17:09:48 $
+// $Id: TrkHelixFit.hh,v 1.4 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $ 
+// $Date: 2011/10/28 18:47:07 $
 //
 #ifndef TrkHelixFit_HH
 #define TrkHelixFit_HH
@@ -22,7 +22,6 @@
 //CLHEP
 //#include "CLHEP/Matrix/Vector.h"
 // C++
-using namespace std;
 namespace mu2e 
 {
 // output struct

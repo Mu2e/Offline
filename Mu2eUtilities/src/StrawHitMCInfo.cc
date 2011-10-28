@@ -5,9 +5,9 @@
 // from two SimParticles, then there will usually be one two StrawHitMCInfo
 // objects, one attached to each SimParticle.
 //
-// $Id: StrawHitMCInfo.cc,v 1.6 2011/06/07 21:41:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 21:41:08 $
+// $Id: StrawHitMCInfo.cc,v 1.7 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Rob Kutschke.
 //
@@ -15,7 +15,7 @@
 //
 
 // Framework includes
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/StrawHitMCInfo.hh"

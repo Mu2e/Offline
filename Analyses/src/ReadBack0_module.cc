@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_module.cc,v 1.3 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: ReadBack0_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:06 $
 //
 // Original author Rob Kutschke
 //
@@ -16,6 +16,8 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 

@@ -1,9 +1,9 @@
 //
 // Add a std::vector<TracerProduct> to the event and watch what happens.
 //
-// $Id: MakeTracerProductCollection_module.cc,v 1.1 2011/06/11 01:49:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/11 01:49:10 $
+// $Id: MakeTracerProductCollection_module.cc,v 1.2 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Rob Kutschke
 //
@@ -11,6 +11,7 @@
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
 
 // Other infrastructure includes
 #include "messagefacility/MessageLogger/MessageLogger.h"

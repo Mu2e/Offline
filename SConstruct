@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.25 2011/09/27 21:48:31 mu2ecvs Exp $
-# $Author: mu2ecvs $
-# $Date: 2011/09/27 21:48:31 $
+# $Id: SConstruct,v 1.26 2011/10/28 18:47:05 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/10/28 18:47:05 $
 #
 # Original author Rob Kutschke.
 #
@@ -96,7 +96,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                  )
 
 # Define the rule for building dictionaries.
-genreflex_flags = '--deep --fail_on_warnings  --capabilities=classes_ids.cc '\
+genreflex_flags = '--deep --fail_on_warnings --iocomments --capabilities=classes_ids.cc '\
                 + '-D_REENTRANT -DGNU_SOURCE -DGNU_GCC '\
                 + '-DPROJECT_NAME="mu2e" -DPROJECT_VERSION="development"'
 aa="if   t1=`expr ${TARGET} : '\(.*\)_dict.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp;"\

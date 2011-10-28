@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.6 2011/05/24 17:19:03 kutschke Exp $
-$Author: kutschke $
-$Date: 2011/05/24 17:19:03 $
+$Id: FilterEmptyEvents_module.cc,v 1.7 2011/10/28 18:47:06 greenc Exp $
+$Author: greenc $
+$Date: 2011/10/28 18:47:06 $
 
 Original author Giovanni Onorato
 
@@ -25,9 +25,9 @@ Original author Giovanni Onorato
 
 // Framework includes
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Persistency/Common/Handle.h"
+#include "art/Framework/Principal/Handle.h"
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
 #include "CalorimeterGeom/inc/Calorimeter.hh"

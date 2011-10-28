@@ -1,9 +1,9 @@
 //
 // Plugin to readback the TracerProductCollection
 //
-// $Id: ReadTracerProductCollection_module.cc,v 1.1 2011/06/11 01:49:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/11 01:49:10 $
+// $Id: ReadTracerProductCollection_module.cc,v 1.2 2011/10/28 18:47:07 greenc Exp $
+// $Author: greenc $
+// $Date: 2011/10/28 18:47:07 $
 //
 // Original author Rob Kutschke.
 //
@@ -14,7 +14,7 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/Event.h"
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Other includes

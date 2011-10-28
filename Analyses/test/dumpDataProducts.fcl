@@ -1,8 +1,8 @@
 # Print information about all data products in a file.
 #
-# $Id: dumpDataProducts.fcl,v 1.2 2011/05/25 13:39:27 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/25 13:39:27 $
+# $Id: dumpDataProducts.fcl,v 1.3 2011/10/28 18:47:06 greenc Exp $
+# $Author: greenc $
+# $Date: 2011/10/28 18:47:06 $
 #
 # Original author Rob Kutschke
 
@@ -36,15 +36,6 @@ physics :
   {
   }
 
-  analyzers:
-  {
-    # Print info about all data products in the file.
-    dump:
-    {
-      module_type   : DataProductDump
-    }
-  }
-
   p1 : []
   e1 : [dump]
 
@@ -54,3 +45,11 @@ physics :
 
 }
 
+  outputs:
+  {
+    # Print info about all data products in the file.
+    dump:
+    {
+      module_type   : DataProductDump
+    }
+  }
