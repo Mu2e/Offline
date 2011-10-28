@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.4 2011/10/12 20:11:19 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.5 2011/10/28 15:18:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/10/12 20:11:19 $
+// $Date: 2011/10/28 15:18:03 $
 //
 // Contact person Rob Kutschke.
 //
@@ -661,7 +661,7 @@ mixPointTrajectories( std::vector< mu2e::PointTrajectoryCollection const *> cons
       key_type newKey = key_type(unsigned(t->first.asUint()) + simOffsets_.at(inputIndex));
 
       // This is redundant (unless I have made a mistake); leave it in for a while.
-      if ( newKey.asInt() <= out.delta() ){
+      if ( newKey.asInt() < out.delta() ){
         throw cet::exception("RANGE")
           << "MixMCEventsDetail::mixPointTrajectories: the key already exists: "
           << newKey
