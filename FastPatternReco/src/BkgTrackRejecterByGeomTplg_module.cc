@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.4 2011/07/14 16:38:54 tassiell Exp $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.5 2011/10/28 00:06:35 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/07/14 16:38:54 $
+// $Date: 2011/10/28 00:06:35 $
 //
 // Original author G. Tassielli
 //
@@ -1081,6 +1081,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
             printEvN->SetTextFont(62);
             printEvN->SetTextSizePixels(180);
             printEvN->Draw();
+	    _fakeCanvas->Update();
             _fakeCanvas->WaitPrimitive();
             cerr << endl;
             delete printEvN;

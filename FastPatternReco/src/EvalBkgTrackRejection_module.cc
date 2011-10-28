@@ -1,9 +1,9 @@
 //
 // performance evaluation of the Bkg rejection modules
 //
-// $Id: EvalBkgTrackRejection_module.cc,v 1.3 2011/10/11 17:32:37 tassiell Exp $
+// $Id: EvalBkgTrackRejection_module.cc,v 1.4 2011/10/28 00:06:34 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/10/11 17:32:37 $
+// $Date: 2011/10/28 00:06:34 $
 //
 // Original author G. Tassielli
 //
@@ -537,6 +537,7 @@ namespace mu2e {
 //    printEvN->SetTextFont(62);
 //    printEvN->SetTextSizePixels(180);
 //    printEvN->Draw();
+//    _fakeCanvas->Update();
 //    _fakeCanvas->WaitPrimitive();
 //    cerr << endl;
 //    delete printEvN;

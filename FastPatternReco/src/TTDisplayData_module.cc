@@ -1,9 +1,9 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.4 2011/10/11 17:32:37 tassiell Exp $
+// $Id: TTDisplayData_module.cc,v 1.5 2011/10/28 00:06:35 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/10/11 17:32:37 $
+// $Date: 2011/10/28 00:06:35 $
 //
 // Original author G. Tassielli
 //
@@ -1801,6 +1801,7 @@ namespace mu2e {
     printEvN->SetTextFont(62);
     printEvN->SetTextSizePixels(180);
     printEvN->Draw();
+    _fakeCanvas->Update();
     _fakeCanvas->WaitPrimitive();
     cerr << endl;
     delete printEvN;
