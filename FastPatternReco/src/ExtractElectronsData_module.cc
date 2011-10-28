@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.3 2011/10/11 17:32:37 tassiell Exp $
+// $Id: ExtractElectronsData_module.cc,v 1.4 2011/10/28 00:19:49 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/10/11 17:32:37 $
+// $Date: 2011/10/28 00:19:49 $
 //
 // Original author G. Tassielli
 //
@@ -230,6 +230,12 @@ void ExtractElectronsData::produce(art::Event & event ) {
         bool isFirst = false;
         bool addTrack = true;
 
+        double ptMeV, rho;
+        //double sel_rho;
+        double B=1.0;
+        CLHEP::Hep2Vector radDir;
+        HepGeom::Point3D<double> CirCenter;
+
         for (size_t i=0; i<nStrawPerEvent; ++i) {
 
                 // Access data
@@ -353,6 +359,31 @@ void ExtractElectronsData::produce(art::Event & event ) {
                 genEltrk_it->sort();
                 genEltrk_it->FindNTurns();
                 cout<<"First hit in tracker of gen el at "<<genEltrk_it->getHit(0)._hitPoint<<" of "<<genEltrk_it->getHit(0)._hitMomentum<<endl;
+                VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
+                unsigned short &nloops = iEltrk.getNumOfLoops();
+                cout<<"N loops "<<nloops<<endl;
+
+                for ( unsigned int ilp=0; ilp<nloops; ilp++ ){
+                        GenElHitData& hdil = iEltrk.getithLoopHit(ilp);
+                        ptMeV = sqrt( pow(hdil._hitMomentum[0],2) + pow(hdil._hitMomentum[1],2) );
+                        rho   = ptMeV/(B*0.3);
+                        double helStep = CLHEP::twopi*rho*hdil._hitMomentum[2]/ptMeV;
+                        cout<<ilp<<" -th loop: p_t "<<ptMeV<<" rho mm "<<rho<<" P mm "<<helStep<<endl;
+                        CirCenter.set(hdil._hitPoint.getX(),hdil._hitPoint.getY(),hdil._hitPoint.getZ());
+                        radDir.setX(hdil._hitMomentum.getX());
+                        radDir.setY(hdil._hitMomentum.getY());
+                        radDir.rotate( ( (hdil._hitMomentum.getZ()>=0.0) ? 90.0 : -90.0 )*CLHEP::degree );
+                        radDir=radDir.unit();
+                        CirCenter=CirCenter+rho*radDir;
+                        double phi0;
+                        //if (radDir.phi()>0) phi0=radDir.phi()-CLHEP::pi;
+                        //else phi0=radDir.phi()+CLHEP::pi;
+                        phi0=atan2( -radDir.y(), -radDir.x() );
+                        cout<<"radDir "<<radDir<<endl;
+                        cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<" phi0 "<< phi0/*/CLHEP::deg*/<<" phi0 at z(-1500) "<< phi0 - CLHEP::twopi*(hdil._hitPoint.getZ()+1500.0)/helStep <<endl;
+
+                }
+
                 ++genEltrk_it;
         }
 
