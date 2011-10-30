@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.24 2011/10/13 04:20:09 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/10/13 04:20:09 $
+// $Id: ConstructMaterials.cc,v 1.25 2011/10/30 04:09:06 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/10/30 04:09:06 $
 //
 // Original author Rob Kutschke
 //
@@ -281,10 +281,7 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "WAGVacuum");
     if ( mat.doit ){
       //
-      // WAG at properties of Vacuum.
-      // May need several different levels of vacuum in different parts
-      // of Mu2e.
-      //
+      // This is the lowest density vacuum allowed by G4.
       G4double density     = universe_mean_density;
       G4double pressure    = 3.e-18*pascal;
       G4double temperature = 2.73*kelvin;
@@ -295,7 +292,8 @@ namespace mu2e {
     }
 
 
-    //new added. Check if it is correct
+    // Presume that the residual gas in the DS will be leakage from the straws,
+    // pumped down to 10^{-4} torr.
     mat = isNeeded(materialsToLoad, "DSVacuum");
     if ( mat.doit ){
 
@@ -309,7 +307,7 @@ namespace mu2e {
       G4double density = StrawLeak->GetDensity()*pressure*refTemp/(refPress*temperature);
 
       G4Material* DSVacuum =
-	new G4Material(mat.name, density, StrawLeak->GetNumberOfElements(), 
+	new G4Material(mat.name, density, StrawLeak->GetNumberOfElements(),
 		       kStateGas, temperature, pressure);
 
       for (size_t i = 0 ; i < StrawLeak->GetNumberOfElements(); ++i) {
