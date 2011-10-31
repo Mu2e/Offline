@@ -1,8 +1,13 @@
 
-  $Id: v1_1_3.txt,v 1.1 2011/10/28 22:37:03 kutschke Exp $
+  $Id: v1_1_3.txt,v 1.2 2011/10/31 23:14:33 kutschke Exp $
   $Author: kutschke $
-  $Date: 2011/10/28 22:37:03 $
+  $Date: 2011/10/31 23:14:33 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_3
+
+1) October 31, 2011 kutschke
+   setup.sh
+     - Moved to art v1_00_02 to get past the error reading back default
+       constructed art::Ptr<T>.
