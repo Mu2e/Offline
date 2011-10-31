@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.24 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: BkgRates_module.cc,v 1.25 2011/10/31 14:46:36 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2011/10/31 14:46:36 $
 //
 // Original author Gianni Onorato
 //
@@ -234,7 +234,7 @@ namespace mu2e {
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
                                           "evt:run:crTime:crE:crRad:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EOutsideAll:EGen:GenHit1x:GenHit1y:GenHit1z:cryFramex:cryFramey:cryFramez:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
       _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
-                                          "evt:run:time:x:y:z:isGen:pdgId:trkId:foil");
+                                          "evt:run:time:x:y:z:isGen:pdgId:trkId:stVol:isStopped");
 
     }
 
@@ -1196,33 +1196,35 @@ namespace mu2e {
 
       PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
 
-      if ( sim->fromGenerator() && (sim->pdgId() == 13 || sim->pdgId() == -13)) {
+      if (!(sim->fromGenerator())) continue;
+
+      if (sim->pdgId() == 13 || sim->pdgId() == -13) {
 	if ( volInfo.name() == "TargetFoil_" ) {
 	generatedStopped = true;
+
 	}
       }
 
-      if ( volInfo.name() == "TargetFoil_" ) {
+      if( stoppedtracks.insert(trackId).second ) {
+	float tgtntpArray[11];
+	int idx(0);
+	tgtntpArray[idx++] = event.id().event();
+	tgtntpArray[idx++] = event.run();
+	tgtntpArray[idx++] = sim->endGlobalTime();
+	tgtntpArray[idx++] = sim->endPosition().x();
+	tgtntpArray[idx++] = sim->endPosition().y();
+	tgtntpArray[idx++] = sim->endPosition().z();
+	tgtntpArray[idx++] = sim->fromGenerator();
+	tgtntpArray[idx++] = sim->pdgId();
+	tgtntpArray[idx++] = trackId.asInt();
+	tgtntpArray[idx++] = sim->endVolumeIndex();
+	tgtntpArray[idx++] = (volInfo.name() == "TargetFoil_");
+	
+	_tgtNtup->Fill(tgtntpArray);
 
-        if( stoppedtracks.insert(trackId).second ) {
-          float tgtntpArray[10];
-          int idx(0);
-          tgtntpArray[idx++] = event.id().event();
-          tgtntpArray[idx++] = event.run();
-          tgtntpArray[idx++] = sim->endGlobalTime();
-          tgtntpArray[idx++] = sim->endPosition().x();
-          tgtntpArray[idx++] = sim->endPosition().y();
-          tgtntpArray[idx++] = sim->endPosition().z();
-          tgtntpArray[idx++] = sim->fromGenerator();
-          tgtntpArray[idx++] = sim->pdgId();
-          tgtntpArray[idx++] = trackId.asInt();
-          tgtntpArray[idx++] = volInfo.copyNo();
-
-          _tgtNtup->Fill(tgtntpArray);
-
-        }
       }
     }
+   
     _skipEvent = generatedStopped;
   }  // end doStoppingTarget
 }

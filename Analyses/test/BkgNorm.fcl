@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgNorm.fcl,v 1.1 2011/06/23 05:54:13 onoratog Exp $
+# $Id: BkgNorm.fcl,v 1.2 2011/10/31 14:46:36 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2011/06/23 05:54:13 $
+# $Date: 2011/10/31 14:46:36 $
 #
 # Original author Gianni Onorato.
 
@@ -103,7 +103,6 @@ physics :
       diagLevel           : -1
       makerModuleLabel    : makeSH
       maxFullPrint        : 0
-      skipStoppedParticle : false
       # g4ModuleLabel     : g4run
       # minimumEnergy     : 0.000
     }
