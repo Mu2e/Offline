@@ -42,10 +42,6 @@ namespace mu2e {
                        art::Event const & event );
 
 
-    static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
-      _mu2eOrigin = origin;
-    }
-
   private:
 
     // Non-owning pointer to the  collection into which hits will be added.
@@ -55,7 +51,7 @@ namespace mu2e {
     PhysicsProcessInfo* _processInfo;
 
     // Mu2e point of origin
-    static G4ThreeVector _mu2eOrigin;
+    G4ThreeVector _mu2eOrigin;
 
     // List of events for which to enable debug printout.
     EventNumberList _debugList;

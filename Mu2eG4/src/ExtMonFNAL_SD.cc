@@ -16,6 +16,8 @@
 #include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/WorldG4.hh"
 
 #define AGDEBUG(stuff) std::cerr<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 
@@ -24,13 +26,11 @@ using namespace std;
 namespace mu2e {
   const int EMFrameToSensorDepth = 1;   // The sensitive volume is the direct daughter of the volume that defines the EMF frame
 
-  // AG: FIXME: not needed
-  G4ThreeVector ExtMonFNAL_SD::_mu2eOrigin;
-
   ExtMonFNAL_SD::ExtMonFNAL_SD(G4String name, const SimpleConfig& config) :
     G4VSensitiveDetector(name),
     _collection(0),
     _processInfo(0),
+    _mu2eOrigin(GeomHandle<WorldG4>()->mu2eOriginInWorld()),
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0),
     _simID(0),

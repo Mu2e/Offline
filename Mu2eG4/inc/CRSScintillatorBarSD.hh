@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for
 //
-// $Id: CRSScintillatorBarSD.hh,v 1.7 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: CRSScintillatorBarSD.hh,v 1.8 2011/11/02 21:30:31 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:30:31 $
 //
 // Original author KLG
 //
@@ -45,10 +45,6 @@ namespace mu2e {
                        art::ProductID const& simID,
                        art::Event const & event );
 
-    static void setMu2eOriginInWorld(const G4ThreeVector &origin) {
-      _mu2eOrigin = origin;
-    }
-
   private:
 
     // Non-owning pointer to the  collection into which hits will be added.
@@ -58,7 +54,7 @@ namespace mu2e {
     PhysicsProcessInfo* _processInfo;
 
     // Mu2e point of origin
-    static G4ThreeVector _mu2eOrigin;
+    G4ThreeVector _mu2eOrigin;
 
     // List of events for which to enable debug printout.
     EventNumberList _debugList;

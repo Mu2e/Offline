@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors
 //
-// $Id: VirtualDetectorSD.cc,v 1.17 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: VirtualDetectorSD.cc,v 1.18 2011/11/02 21:30:32 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:30:32 $
 //
 // Original author Ivan Logashenko
 //
@@ -18,6 +18,8 @@
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/WorldG4.hh"
 
 // G4 includes
 #include "G4RunManager.hh"
@@ -30,12 +32,11 @@ using namespace std;
 
 namespace mu2e {
 
-  G4ThreeVector VirtualDetectorSD::_mu2eOrigin;
-
   VirtualDetectorSD::VirtualDetectorSD(G4String name, const SimpleConfig& config):
     G4VSensitiveDetector(name),
     _collection(0),
     _processInfo(0),
+    _mu2eOrigin(GeomHandle<WorldG4>()->mu2eOriginInWorld()),
     _debugList(0),
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0),

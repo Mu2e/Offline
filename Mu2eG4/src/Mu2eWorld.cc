@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.103 2011/11/02 21:29:53 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.104 2011/11/02 21:30:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:53 $
+// $Date: 2011/11/02 21:30:31 $
 //
 // Original author Rob Kutschke
 //
@@ -170,12 +170,6 @@ namespace mu2e {
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
     VolumeInfo::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
-    VirtualDetectorSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
-    StoppingTargetSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
-    CaloCrystalSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
-    CaloReadoutSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
-    ExtMonFNAL_SD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
-    CRSScintillatorBarSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
     if ( _config->getBool("hasITracker",false) ) {
       ITGasLayerSD::setMu2eDetCenterInWorld( worldGeom->trackerOrigin() -
 					     G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );

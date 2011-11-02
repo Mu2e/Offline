@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.14 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: CaloReadoutSD.cc,v 1.15 2011/11/02 21:30:31 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:30:31 $
 //
 // Original author Ivan Logashenko
 //
@@ -18,8 +18,8 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/WorldG4.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 // G4 includes
@@ -33,12 +33,11 @@ using namespace std;
 
 namespace mu2e {
 
-  G4ThreeVector CaloReadoutSD::_mu2eOrigin;
-
   CaloReadoutSD::CaloReadoutSD(G4String name, const SimpleConfig& config)
     : G4VSensitiveDetector(name),
       _collection(0),
       _processInfo(0),
+      _mu2eOrigin(GeomHandle<WorldG4>()->mu2eOriginInWorld()),
       _nro(0),
       _minE(0.0),
       _debugList(0),
