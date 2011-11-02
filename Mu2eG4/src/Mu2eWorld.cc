@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.100 2011/10/27 23:38:19 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.101 2011/11/02 21:20:57 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/10/27 23:38:19 $
+// $Date: 2011/11/02 21:20:57 $
 //
 // Original author Rob Kutschke
 //
@@ -122,8 +122,8 @@ namespace mu2e {
 
   Mu2eWorld::Mu2eWorld():
     _cosmicReferencePoint(),
-    _mu2eOrigin(),
-    _info(){
+    _mu2eOrigin()
+  {
   }
 
   Mu2eWorld::~Mu2eWorld(){
@@ -149,8 +149,8 @@ namespace mu2e {
 
 
   // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
-  WorldInfo const* Mu2eWorld::construct(){
-
+  G4VPhysicalVolume * Mu2eWorld::construct(){
+    
     _helper = &(*(art::ServiceHandle<G4Helper>()));
 
     // Get access to the master geometry system and its run time config.
@@ -158,14 +158,12 @@ namespace mu2e {
     _config = &(geom->config());
 
     // Construct all of the Mu2e world, hall, detectors, beamline ...
-    constructWorld();
-
-    return &_info;
+    return constructWorld();
   }
-
+  
   // Construct all of the Mu2e world, hall, detectors, beamline ...
-  void Mu2eWorld::constructWorld(){
-
+  G4VPhysicalVolume * Mu2eWorld::constructWorld(){
+    
     int static const diagLevel = _config->getInt("world.verbosityLevel", 0);
     art::ServiceHandle<GeometryService> geom;
 
@@ -186,8 +184,6 @@ namespace mu2e {
     instantiateSensitiveDetectors();
 
     VolumeInfo worldVInfo = constructWorldVolume(_config);
-
-    _info.worldPhys  = worldVInfo.physical;
 
     if ( diagLevel > 0) {
       cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << endl;
@@ -257,6 +253,7 @@ namespace mu2e {
             constructITStepLimiters();
     }
 
+    return worldVInfo.physical;
   }
 
   // Convert to base units for all of the items in the vector.

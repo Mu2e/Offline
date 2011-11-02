@@ -1,9 +1,9 @@
 //
 // The Mu2e version of G4VUserDetectorConstruction.
 //
-// $Id: WorldMaker.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: WorldMaker.cc,v 1.5 2011/11/02 21:20:57 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:20:57 $
 //
 // Original author Rob Kutschke
 //
@@ -57,9 +57,7 @@ namespace mu2e {
 
     _materials->construct();
 
-    _worldInfo = _world ->construct();
-
-    return _worldInfo->worldPhys;
+    return _world ->construct();
   }
 
 

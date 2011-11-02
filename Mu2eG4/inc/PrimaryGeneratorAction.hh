@@ -6,9 +6,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.7 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: PrimaryGeneratorAction.hh,v 1.8 2011/11/02 21:20:57 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:20:57 $
 //
 // Original author Rob Kutschke
 //
@@ -31,7 +31,6 @@ class TH1D;
 namespace mu2e {
 
   class SteppingAction;
-  class WorldInfo;
   class Mu2eWorld;
 
   class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction{

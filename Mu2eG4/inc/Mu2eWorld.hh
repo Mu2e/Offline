@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.35 2011/06/30 20:27:53 logash Exp $
-// $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Id: Mu2eWorld.hh,v 1.36 2011/11/02 21:20:57 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:20:57 $
 //
 // Original author Rob Kutschke
 //
@@ -34,7 +34,6 @@ class G4Mag_UsualEqRhs;
 class G4UserLimits;
 
 // Mu2e includes
-#include "Mu2eG4/inc/WorldInfo.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -59,9 +58,9 @@ namespace mu2e {
     ~Mu2eWorld();
 
     // Construct everything.
-    WorldInfo const* construct();
-
-    WorldInfo const& getWorldInfo() const { return _info; }
+    // The non-const return type is eventually required 
+    // by G4VUserDetectorConstruction::Construct();
+    G4VPhysicalVolume * construct();
 
     G4ThreeVector const& getCosmicReferencePoint() const{
       return _cosmicReferencePoint;
@@ -94,7 +93,7 @@ namespace mu2e {
   private:
 
     // Do all of the work.
-    void constructWorld();
+    G4VPhysicalVolume * constructWorld();
 
     // Break the big task into many smaller ones.
     void defineMu2eOrigin();
@@ -123,9 +122,6 @@ namespace mu2e {
 
     // Top and bottom of the dirt volume (not including the berm); in G4 coordinates
     double _dirtG4Ymax, _dirtG4Ymin;
-
-    // Information about the world that can be passed to others.
-    WorldInfo _info;
 
     // Utility functions.
     void setUnits( std::vector<double>& V, G4double unit );

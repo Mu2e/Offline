@@ -3,9 +3,9 @@
 //
 // The Mu2e version of G4VUserDetectorConstruction.
 //
-// $Id: WorldMaker.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: WorldMaker.hh,v 1.4 2011/11/02 21:20:57 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:20:57 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,6 @@ namespace mu2e {
   // Forward references within the Mu2e namespace.
   class ConstructMaterials;
   class Mu2eWorld;
-  class WorldInfo;
 
   class WorldMaker : public G4VUserDetectorConstruction
   {
@@ -42,13 +41,10 @@ namespace mu2e {
 
     // Accessors.
     Mu2eWorld const* getWorld()     { return _world.get(); }
-    WorldInfo const* getWorldInfo() { return _worldInfo; }
 
   private:
 
     void Clean();
-
-    WorldInfo const* _worldInfo;
 
     std::auto_ptr<ConstructMaterials> _materials;
     std::auto_ptr<Mu2eWorld>          _world;
