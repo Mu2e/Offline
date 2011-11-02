@@ -6,9 +6,9 @@
 // and is useful only for the top few levels of the detector.
 //
 //
-// $Id: VolumeInfo.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
+// $Id: VolumeInfo.hh,v 1.5 2011/11/02 21:30:10 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:30:10 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,8 @@ class G4LogicalVolume;
 class G4VPhysicalVolume;
 
 namespace mu2e {
+
+  class Mu2eWorld;
 
   class VolumeInfo{
 
@@ -57,15 +59,11 @@ namespace mu2e {
 
     CLHEP::Hep3Vector centerInMu2e() const { return centerInWorld-_Mu2eOriginInWorld; }
 
+  private:
+    friend class Mu2eWorld;
     static void setMu2eOriginInWorld( const CLHEP::Hep3Vector& origin ){
       _Mu2eOriginInWorld = origin;
     }
-
-    static CLHEP::Hep3Vector getMu2eOriginInWorld() {
-      return _Mu2eOriginInWorld;
-    }
-
-  private:
 
     static CLHEP::Hep3Vector _Mu2eOriginInWorld;
 

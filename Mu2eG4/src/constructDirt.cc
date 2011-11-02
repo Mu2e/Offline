@@ -1,9 +1,9 @@
 //
 // Free function to create the earthen overburden.
 //
-// $Id: constructDirt.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructDirt.cc,v 1.5 2011/11/02 21:30:10 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:30:10 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -17,7 +17,7 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/WorldG4.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -115,8 +115,9 @@ namespace mu2e {
     GeomHandle<Beamline> beamg;
     double solenoidOffset = beamg->solenoidOffset();
 
+    GeomHandle<WorldG4> worldGeom;
     G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight,
-                                 dsz0+VolumeInfo::getMu2eOriginInWorld().z());
+                                 dsz0+worldGeom->mu2eOriginInWorld().z());
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4RotationMatrix* dirtCapRot = reg.add(G4RotationMatrix());

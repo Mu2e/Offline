@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.7 2011/05/22 20:28:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Id: constructCRV.cc,v 1.8 2011/11/02 21:30:10 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:30:10 $
 //
 // Original author KLG
 //
@@ -68,7 +68,7 @@ namespace mu2e {
     std::map<std::string,CRSScintillatorShield> const & shields =
       CosmicRayShieldGeomHandle->getCRSScintillatorShields();
 
-    CLHEP::Hep3Vector perentCenterInMu2e = parent.centerInWorld - VolumeInfo::getMu2eOriginInWorld();
+    CLHEP::Hep3Vector perentCenterInMu2e = parent.centerInMu2e();
 
     // all materials and dimensions are the same
 
