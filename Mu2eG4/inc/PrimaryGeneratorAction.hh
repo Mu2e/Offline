@@ -6,9 +6,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.8 2011/11/02 21:20:57 gandr Exp $
+// $Id: PrimaryGeneratorAction.hh,v 1.9 2011/11/02 21:29:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:20:57 $
+// $Date: 2011/11/02 21:29:52 $
 //
 // Original author Rob Kutschke
 //
@@ -31,7 +31,6 @@ class TH1D;
 namespace mu2e {
 
   class SteppingAction;
-  class Mu2eWorld;
 
   class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction{
   public:
@@ -45,10 +44,6 @@ namespace mu2e {
 
     // Should change the interface for Primary
     void setEvent( art::Event const& event) {_event = &event;}
-
-    void setWorld( Mu2eWorld const* world ){
-      _world=world;
-    }
 
   private:
 
@@ -65,9 +60,6 @@ namespace mu2e {
 
     // Module label used to find the event generator input.
     std::string _generatorModuleLabel;
-
-    // Non-owing pointer to the detector information.
-    Mu2eWorld const* _world;
 
     TH1D* _totalMultiplicity;
 

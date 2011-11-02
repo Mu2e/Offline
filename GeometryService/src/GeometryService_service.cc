@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.8 2011/11/02 21:29:26 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.9 2011/11/02 21:29:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:26 $
+// $Date: 2011/11/02 21:29:52 $
 //
 // Original author Rob Kutschke
 //
@@ -27,6 +27,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/src/DetectorSystemMaker.hh"
+#include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/WorldG4Maker.hh"
 #include "GeometryService/inc/ProductionTarget.hh"
 #include "GeometryService/inc/ProductionTargetMaker.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -174,6 +176,11 @@ namespace mu2e {
         << "\n";
     }
 
+  }
+
+  void GeometryService::addWorldG4() {
+    WorldG4Maker w(*_config);
+    addDetector(w.getPtr());
   }
 
 } // end namespace mu2e

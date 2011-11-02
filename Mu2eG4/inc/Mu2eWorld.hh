@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.37 2011/11/02 21:29:27 gandr Exp $
+// $Id: Mu2eWorld.hh,v 1.38 2011/11/02 21:29:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:27 $
+// $Date: 2011/11/02 21:29:52 $
 //
 // Original author Rob Kutschke
 //
@@ -62,33 +62,12 @@ namespace mu2e {
     // by G4VUserDetectorConstruction::Construct();
     G4VPhysicalVolume * construct();
 
-    G4ThreeVector const& getCosmicReferencePoint() const{
-      return _cosmicReferencePoint;
-    }
-
-    G4ThreeVector const& getMu2eOrigin() const{
-      return _mu2eOrigin;
-    }
-
-    G4ThreeVector const& getMu2eDetectorOrigin() const{
-      return _mu2eDetectorOrigin;
-    }
-
-    double getDirtG4Ymin() const{
-      return _dirtG4Ymin;
-    }
-
-    double getDirtG4Ymax() const{
-      return _dirtG4Ymax;
-    }
-
   private:
 
     // Do all of the work.
     G4VPhysicalVolume * constructWorld();
 
     // Break the big task into many smaller ones.
-    void defineMu2eOrigin();
     VolumeInfo constructTracker();
     VolumeInfo constructTarget();
     void constructCal();
@@ -98,22 +77,6 @@ namespace mu2e {
     void constructITStepLimiters();
 
     void instantiateSensitiveDetectors();
-
-    // The world coordinates of the center of the cosmic ray reference plane.
-    G4ThreeVector _cosmicReferencePoint;
-
-    // The world coordinates of the origin of the Mu2e coordinate system.
-    G4ThreeVector _mu2eOrigin;
-
-    // World coorindates of the reference point for building the detectors:
-    //  - on axis on the DS with z=12,000. in the Mu2e coordinate system.
-    G4ThreeVector _mu2eDetectorOrigin;
-
-    // Origin of the hall air volume in the Mu2e coordinate system.
-    G4ThreeVector _hallOriginInMu2e;
-
-    // Top and bottom of the dirt volume (not including the berm); in G4 coordinates
-    double _dirtG4Ymax, _dirtG4Ymin;
 
     // Utility functions.
     void setUnits( std::vector<double>& V, G4double unit );

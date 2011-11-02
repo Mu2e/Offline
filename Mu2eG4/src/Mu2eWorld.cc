@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.102 2011/11/02 21:29:27 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.103 2011/11/02 21:29:53 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:27 $
+// $Date: 2011/11/02 21:29:53 $
 //
 // Original author Rob Kutschke
 //
@@ -68,6 +68,7 @@
 #include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/WorldG4.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
@@ -121,8 +122,7 @@ using namespace std;
 namespace mu2e {
 
   Mu2eWorld::Mu2eWorld():
-    _cosmicReferencePoint(),
-    _mu2eOrigin()
+    _helper(0)
   {
   }
 
@@ -168,17 +168,17 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
 
     // If you play with the order of these calls, you may break things.
-    defineMu2eOrigin();
-    VolumeInfo::setMu2eOriginInWorld( _mu2eOrigin );
-    VirtualDetectorSD::setMu2eOriginInWorld( _mu2eOrigin );
-    StoppingTargetSD::setMu2eOriginInWorld( _mu2eOrigin );
-    CaloCrystalSD::setMu2eOriginInWorld( _mu2eOrigin );
-    CaloReadoutSD::setMu2eOriginInWorld( _mu2eOrigin );
-    ExtMonFNAL_SD::setMu2eOriginInWorld( _mu2eOrigin );
-    CRSScintillatorBarSD::setMu2eOriginInWorld( _mu2eOrigin );
+    GeomHandle<WorldG4> worldGeom;
+    VolumeInfo::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
+    VirtualDetectorSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
+    StoppingTargetSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
+    CaloCrystalSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
+    CaloReadoutSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
+    ExtMonFNAL_SD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
+    CRSScintillatorBarSD::setMu2eOriginInWorld( worldGeom->mu2eOriginInWorld() );
     if ( _config->getBool("hasITracker",false) ) {
-            ITGasLayerSD::setMu2eDetCenterInWorld( _mu2eDetectorOrigin -
-                            G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
+      ITGasLayerSD::setMu2eDetCenterInWorld( worldGeom->trackerOrigin() -
+					     G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
     }
 
     instantiateSensitiveDetectors();
@@ -198,9 +198,6 @@ namespace mu2e {
     }
 
     VolumeInfo hallInfo  = constructHall( dirtInfo,_config );
-
-    // Define the hall origin in Mu2e coordinates.
-    _hallOriginInMu2e = hallInfo.centerInMu2e();
 
     if ( diagLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
@@ -241,10 +238,9 @@ namespace mu2e {
     constructVirtualDetectors(_config); // beware of the placement order of this function
 
     mf::LogInfo log("GEOM");
-    log << "Mu2e Origin:          " << _mu2eOrigin           << "\n";
-    log << "Mu2e Detector Origin: " << _mu2eDetectorOrigin   << "\n";
-    log << "Cosmic Ref:           " << _cosmicReferencePoint << "\n";
-    log << "Hall Origin in Mu2e:  " << _hallOriginInMu2e     << "\n";
+    log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
+    log << "Mu2e Detector Origin: " << worldGeom->trackerOrigin()   << "\n";
+    log << "Cosmic Ref:           " << worldGeom->cosmicReferencePoint() << "\n";
 
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();
@@ -263,83 +259,6 @@ namespace mu2e {
       *b *= unit;
     }
   }
-
-  void Mu2eWorld::defineMu2eOrigin(){
-
-    int static const diagLevel = _config->getInt("world.verbosityLevel", 0);
-
-    // Dimensions of the world.
-    vector<double> worldHLen;
-    _config->getVectorDouble("world.halfLengths", worldHLen, 3);
-
-    // Floor thickness.
-    double floorThick = _config->getDouble("hall.floorThick");
-
-    // Top of the floor in G4 world coordinates.
-    double yFloor = -worldHLen[1] + floorThick;
-
-    if ( diagLevel > 0) {
-      cout << __func__ << " yFlor : " <<  yFloor  << endl;
-    }
-
-    // The height above the floor of the y origin of the Mu2e coordinate system.
-    double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
-
-    // Position of the origin of the mu2e coordinate system
-    _mu2eOrigin = G4ThreeVector(
-                                _config->getDouble("world.mu2eOrigin.xoffset")*CLHEP::mm,
-                                yFloor + yOriginHeight,
-                                _config->getDouble("world.mu2eOrigin.zoffset")*CLHEP::mm
-                                );
-
-    if ( diagLevel > 0) {
-      cout << __func__ << " _mu2eOrigin : " <<  _mu2eOrigin  << endl;
-    }
-
-    // Origin used to construct the MECO detector.
-    // Magic number to fix:
-    _mu2eDetectorOrigin = _mu2eOrigin + G4ThreeVector( -3904., 0., 12000.);
-
-    if ( diagLevel > 0) {
-      cout << __func__ << " _mu2eDetectorOrigin : " <<  _mu2eDetectorOrigin  << endl;
-    }
-
-    double ceilingThick     = _config->getDouble("hall.ceilingThick");
-    double overburdenDepth  = _config->getDouble("dirt.overburdenDepth");
-    double capHalfHeight    = _config->getDouble("dirt.capHalfHeight");
-    vector<double> hallInHLen;
-    _config->getVectorDouble("hall.insideHalfLengths",hallInHLen,3);
-
-    // Bottom of the ceiling in G4 world coordinates.
-    double yCeilingInSide = yFloor + 2.*hallInHLen[1];
-
-    // Top of the ceiling in G4 world coordinates.
-    double yCeilingOutside  = yCeilingInSide + ceilingThick;
-
-    // Surface of the earth in G4 world coordinates.
-    double ySurface  = yCeilingOutside + overburdenDepth;
-
-    // Top of the world.
-    double yEverest = ySurface + 2.*capHalfHeight;
-
-    // Build the reference points that others will use.
-    _cosmicReferencePoint = G4ThreeVector( 0., yEverest, 0.);
-
-    _dirtG4Ymax = ySurface;
-    _dirtG4Ymin = yCeilingOutside;
-
-    if ( diagLevel > 0) {
-      cout << __func__ << " yEverest : " <<  yEverest  << endl;
-    }
-
-    // Selfconsistency check.
-    if ( yEverest > 2.*worldHLen[1] ){
-      throw cet::exception("GEOM")
-        << "Top of the world is outside of the world volume! \n";
-    }
-
-  }  // end of Mu2eWorld::defineMu2eOrigin
-
 
   // Choose the selected tracker and build it.
   VolumeInfo Mu2eWorld::constructTracker(){
@@ -380,14 +299,11 @@ namespace mu2e {
   // This should be call constrcutStoppingTarget but the name is already taken.
   VolumeInfo Mu2eWorld::constructTarget(){
 
-
     // The target is built inside this volume.
     VolumeInfo const & detSolUpstreamVacInfo   = _helper->locateVolInfo("ToyDS2Vacuum");
 
-    cout << "_mu2eOrigin.z()                        =" << _mu2eOrigin.z() << endl;
     cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
     cout << "detSolUpstreamVacInfo.centerInMu2e().z() =" << detSolUpstreamVacInfo.centerInMu2e().z() << endl;
-    cout << "_hallOriginInMu2e.z()                  =" << _hallOriginInMu2e.z() << endl;
 
     // Buid the stopping target
     VolumeInfo targetInfo = ( _config->getBool("hasTarget",false) ) ?
@@ -406,6 +322,8 @@ namespace mu2e {
   // the relevant volumes or to the world
 
   void Mu2eWorld::constructBFieldAndManagers(){
+    
+    GeomHandle<WorldG4> worldGeom;
 
     // Get some information needed further
 
@@ -432,7 +350,7 @@ namespace mu2e {
     if ( needDSUniform){
       // Handle to the BField manager.
       GeomHandle<BFieldManager> bfMgr;
-      _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue()*CLHEP::tesla, _mu2eOrigin );
+      _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue()*CLHEP::tesla, worldGeom->mu2eOriginInWorld() );
       
       // Create field manager for the gradient field in DS3
       if( fabs(bfMgr->getDSGradientValue().z())>1.0e-9 ) {
@@ -445,7 +363,7 @@ namespace mu2e {
 
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership
 
-    G4MagneticField * _field = new DSField("", _mu2eOrigin);
+    G4MagneticField * _field = new DSField("", worldGeom->mu2eOriginInWorld());
     G4Mag_UsualEqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
     if ( stepper  == "G4ClassicalRK4" ) {

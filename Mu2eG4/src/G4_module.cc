@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.26 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: G4_module.cc,v 1.27 2011/11/02 21:29:52 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:29:52 $
 //
 // Original author Rob Kutschke
 //
@@ -66,6 +66,8 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/EventAction.hh"
@@ -192,12 +194,6 @@ namespace mu2e {
     int _rmvlevel;
     int _checkFieldMap;
 
-    // Position, in G4 world coord, of (0,0,0) of the mu2e coordinate system.
-    CLHEP::Hep3Vector _mu2eOrigin;
-
-    // Position, in G4 world coord, of (0,0,0) of the detector coordinate system.
-    CLHEP::Hep3Vector _mu2eDetectorOrigin;
-
     // Name of a macro file for visualization.
     string _visMacro;
 
@@ -227,13 +223,14 @@ namespace mu2e {
   // Create an instance of the run manager.
   void G4::beginJob(){
     _runManager = auto_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
-
   }
 
   // Initialze G4.
   void G4::beginRun( art::Run &run){
 
     art::ServiceHandle<GeometryService> geom;
+    geom->addWorldG4();
+
     SimpleConfig const& config = geom->config();
 
     static int ncalls(0);
@@ -287,11 +284,6 @@ namespace mu2e {
     // At this point G4 geometry has been initialized.  So it is safe to initialize
     // objects that depend on G4 geometry.
 
-    // Copy some information about the G4 world to people who need it.
-    Mu2eWorld const* world = allMu2e->getWorld();
-    _mu2eOrigin            = world->getMu2eOrigin();
-    _mu2eDetectorOrigin    = world->getMu2eDetectorOrigin();
-
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
@@ -322,14 +314,15 @@ namespace mu2e {
     auto_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
     run.put(volumes);
 
+    GeomHandle<WorldG4>  worldGeom;
+
     // Some of the user actions have beginRun methods.
-    _genAction->setWorld(world);
-    _trackingAction->beginRun( _physVolHelper, _processInfo, _mu2eOrigin );
-    _steppingAction->beginRun( _processInfo, _mu2eOrigin );
-    _stackingAction->beginRun( world->getDirtG4Ymin(), world->getDirtG4Ymax() );
+    _trackingAction->beginRun( _physVolHelper, _processInfo, worldGeom->mu2eOriginInWorld() );
+    _steppingAction->beginRun( _processInfo, worldGeom->mu2eOriginInWorld() );
+    _stackingAction->beginRun( worldGeom->dirtG4Ymin(), worldGeom->dirtG4Ymax() );
 
     // test field map
-    if( _checkFieldMap>0 ) generateFieldMap(_mu2eOrigin,_checkFieldMap);
+    if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
 
     // Book some diagnostic histograms.
     art::ServiceHandle<art::TFileService> tfs;
@@ -415,7 +408,8 @@ namespace mu2e {
     G4Event const* g4event = _runManager->getCurrentEvent();
 
     // Populate the output data products.
-    addPointTrajectories( g4event, *pointTrajectories, _mu2eDetectorOrigin);
+    GeomHandle<WorldG4>  worldGeom;
+    addPointTrajectories( g4event, *pointTrajectories, worldGeom->trackerOrigin());
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);

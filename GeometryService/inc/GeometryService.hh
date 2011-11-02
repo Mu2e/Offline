@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.9 2011/05/20 12:23:42 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 12:23:42 $
+// $Id: GeometryService.hh,v 1.10 2011/11/02 21:29:52 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:29:52 $
 //
 // Original author Rob Kutschke
 //
@@ -26,10 +26,19 @@
 #include "GeometryService/inc/Detector.hh"
 #include "boost/shared_ptr.hpp"
 
+
+
+// FIXME: Make a backdoor to geom svc to instantiate detector by hand. - call from G4_Module::beginRun.
+// right after geom initialize.
+// 
+
+
+
 namespace mu2e {
 
 // Forward declarations
   class Target;
+  class G4;
 
   class GeometryService {
 public:
@@ -57,7 +66,6 @@ public:
       return !(it==_detectors.end());
 
     }
-
 
 private:
 
@@ -121,6 +129,12 @@ private:
       _detectors[typeid(DET).name()] = ptr;
     }
 
+
+    // Some information that is provided through the GeometryService
+    // should only be used inside GEANT jobs.  The following method is
+    // used by G4 to make this info available.
+    friend class G4;
+    void addWorldG4();
 
   };
 
