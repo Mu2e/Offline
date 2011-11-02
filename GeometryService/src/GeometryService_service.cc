@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.7 2011/10/27 23:35:55 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.8 2011/11/02 21:29:26 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/10/27 23:35:55 $
+// $Date: 2011/11/02 21:29:26 $
 //
 // Original author Rob Kutschke
 //
@@ -27,6 +27,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/src/DetectorSystemMaker.hh"
+#include "GeometryService/inc/ProductionTarget.hh"
+#include "GeometryService/inc/ProductionTargetMaker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/TargetMaker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
@@ -98,6 +100,11 @@ namespace mu2e {
     if(_config->getBool("hasBeamline",false)){
       BeamlineMaker beamlinem( *_config );
       addDetector( beamlinem.getBeamlinePtr() );
+    }
+
+    if(true) {
+      ProductionTargetMaker tm(*_config);
+      addDetector(tm.getDetectorPtr());
     }
 
     if(_config->getBool("hasTarget",false)){

@@ -3,9 +3,9 @@
 //
 // Free function to create  Production Solenoid and Production Target
 //
-// $Id: constructPS.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: constructPS.hh,v 1.4 2011/11/02 21:29:27 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:29:27 $
 //
 // Original author KLG
 //
@@ -19,11 +19,7 @@ namespace mu2e {
   class VolumeInfo;
   class SimpleConfig;
 
-  void constructPS(VolumeInfo   const &       parent,
-                   SimpleConfig const * const _config,
-                   G4ThreeVector&             _primaryProtonGunOrigin,
-                   G4RotationMatrix&          _primaryProtonGunRotation
-                   );
+  void constructPS(const VolumeInfo& parent, const SimpleConfig * const _config);
 
 }
 

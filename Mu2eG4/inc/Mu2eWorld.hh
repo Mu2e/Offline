@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.36 2011/11/02 21:20:57 gandr Exp $
+// $Id: Mu2eWorld.hh,v 1.37 2011/11/02 21:29:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:20:57 $
+// $Date: 2011/11/02 21:29:27 $
 //
 // Original author Rob Kutschke
 //
@@ -74,20 +74,12 @@ namespace mu2e {
       return _mu2eDetectorOrigin;
     }
 
-    G4ThreeVector const& getPrimaryProtonGunOrigin() const{
-      return _primaryProtonGunOrigin;
-    }
-
     double getDirtG4Ymin() const{
       return _dirtG4Ymin;
     }
 
     double getDirtG4Ymax() const{
       return _dirtG4Ymax;
-    }
-
-    G4RotationMatrix const& getPrimaryProtonGunRotation() const{
-      return _primaryProtonGunRotation;
     }
 
   private:
@@ -128,10 +120,6 @@ namespace mu2e {
 
     // Stash a pointer to the config object so that all methods can get at it easily.
     SimpleConfig const* _config;
-
-    // Location in G4 world coordinates of the reference point for the Primary Proton Gun
-    G4ThreeVector _primaryProtonGunOrigin;
-    G4RotationMatrix _primaryProtonGunRotation;
 
     // Models of the DS magnetic field:
     // 0 - whole DS uses the field map.

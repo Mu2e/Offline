@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.5 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: constructPS.cc,v 1.6 2011/11/02 21:29:27 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:29:27 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -17,7 +17,7 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/ProductionTarget.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/constructPS.hh"
@@ -33,12 +33,8 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructPS( const VolumeInfo& parent,
-                    SimpleConfig const * const _config,
-                    G4ThreeVector&  _primaryProtonGunOrigin,
-                    G4RotationMatrix& _primaryProtonGunRotation
-                    ){
-
+  void constructPS(const VolumeInfo& parent, const SimpleConfig * const _config) {
+    
     // Extract information from the config file.
 
     GeomHandle<Beamline> beamg;
@@ -110,33 +106,18 @@ namespace mu2e {
                                         );
 
     // Build the production target.
-    TubsParams prodTargetParams( 0.,
-                                 _config->getDouble("targetPS_rOut"),
-                                 _config->getDouble("targetPS_halfLength"));
+    GeomHandle<ProductionTarget> tgt;
+    TubsParams prodTargetParams( 0., tgt->rOut(), tgt->halfLength());
+
     G4Material* prodTargetMaterial = materialFinder.get("targetPS_materialName");
-
-    // Position in the Mu2e coordinate system.
-    CLHEP::Hep3Vector prodTargetPosition = _config->getHep3Vector("productionTarget.position");
-
-    // Rotation of production target.
-    double targetPS_rotX = _config->getDouble("targetPS_rotX" )*CLHEP::degree;
-    double targetPS_rotY = _config->getDouble("targetPS_rotY" )*CLHEP::degree;
-
-    // G4 takes ownership of this G4RotationMatrix object.
-    // Passive rotation. See Mu2e-doc-938.
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-    G4RotationMatrix* prodTargetRotation = reg.add(G4RotationMatrix());
-    prodTargetRotation->rotateY( -targetPS_rotY);
-    prodTargetRotation->rotateX( -targetPS_rotX);
-
     bool prodTargetVisible = _config->getBool("targetPS.visible",true);
     bool prodTargetSolid   = _config->getBool("targetPS.solid",true);
 
     VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
                                             prodTargetParams,
                                             prodTargetMaterial,
-                                            prodTargetRotation,
-                                            prodTargetPosition-ps1Position,
+                                            &tgt->productionTargetRotation(),
+                                            tgt->position() - ps1Position,
                                             ps1VacInfo,
                                             0,
                                             prodTargetVisible,
@@ -147,15 +128,5 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
-
-    // Set the parameters of the transformation from the PrimaryProtonGun
-    // coordinates to G4 coordinates.  This needs an active sense rotation,
-    // the opposite of what G4 needed.
-    _primaryProtonGunRotation = prodTargetRotation->inverse();
-
-    G4ThreeVector prodTargetFaceLocal(0.,0.,prodTargetParams.zHalfLength());
-    _primaryProtonGunOrigin = prodTargetPosition + VolumeInfo::getMu2eOriginInWorld() +
-      _primaryProtonGunRotation*prodTargetFaceLocal;
-
   } // end Mu2eWorld::constructPS
-  }
+}

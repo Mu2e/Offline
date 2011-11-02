@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.101 2011/11/02 21:20:57 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.102 2011/11/02 21:29:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:20:57 $
+// $Date: 2011/11/02 21:29:27 $
 //
 // Original author Rob Kutschke
 //
@@ -210,7 +210,7 @@ namespace mu2e {
 
     constructDS(hallInfo,_config);
     constructTS(hallInfo,_config);
-    constructPS(hallInfo,_config, _primaryProtonGunOrigin, _primaryProtonGunRotation);// input/output params
+    constructPS(hallInfo,_config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();

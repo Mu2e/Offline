@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.25 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: PrimaryGeneratorAction.cc,v 1.26 2011/11/02 21:29:27 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/02 21:29:27 $
 //
 // Original author Rob Kutschke
 //
@@ -40,6 +40,8 @@
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/ProductionTarget.hh"
 
 // ROOT includes
 #include "TH1D.h"
@@ -87,8 +89,11 @@ namespace mu2e {
     G4ThreeVector const& mu2eOrigin                  = _world->getMu2eOrigin();
     G4ThreeVector const& cosmicReferencePlane        = _world->getCosmicReferencePoint();
     G4ThreeVector const& detectorOrigin              = _world->getMu2eDetectorOrigin();
-    G4ThreeVector const& primaryProtonGunOrigin      = _world->getPrimaryProtonGunOrigin();
-    G4RotationMatrix const& primaryProtonGunRotation = _world->getPrimaryProtonGunRotation();
+
+    GeomHandle<ProductionTarget> protonTarget;
+    G4RotationMatrix const& primaryProtonGunRotation = protonTarget->protonBeamRotation();
+    G4ThreeVector const& primaryProtonGunOrigin      = mu2eOrigin + protonTarget->position()
+      + primaryProtonGunRotation*CLHEP::Hep3Vector(0., 0., protonTarget->halfLength());
 
     // Get generated particles from the event.
     art::Handle<GenParticleCollection> handle;
