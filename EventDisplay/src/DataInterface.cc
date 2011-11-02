@@ -915,6 +915,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int particleid=particle.pdgId();
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
+      std::string particlecollection=trackInfos[i].entryText;
       std::string particlename=HepPID::particleName(particle.pdgId());
       unsigned int startVolume=particle.startVolumeIndex();
       unsigned int endVolume  =particle.endVolumeIndex();
@@ -939,9 +940,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       findBoundaryP(_tracksMinmax, x2, y2, z2);
 
       char c0[200], c1[200],c2[200],c3[200],c4[200];
-      sprintf(c0,"Track %i  %s",id,particlename.c_str());
-      if(parentid!=0) sprintf(c1,"Track %i  %s  Parent %i",id,particlename.c_str(),parentid);
-      else sprintf(c1,"Track %i  %s  generated track",id,particlename.c_str());
+      sprintf(c0,"Track %i  %s  (%s)",id,particlename.c_str(),particlecollection.c_str());
+      if(parentid!=0) sprintf(c1,"Track %i  %s  Parent %i  (%s)",id,particlename.c_str(),parentid,particlecollection.c_str());
+      else sprintf(c1,"Track %i  %s  generated track  (%s)",id,particlename.c_str(),particlecollection.c_str());
       sprintf(c2,"Start Energy %gMeV  End Energy %gMeV",e1/CLHEP::MeV,e2/CLHEP::MeV);
       sprintf(c3,"Created by %s in %s",particle.creationCode().name().c_str(),startVolumeName.c_str());
       sprintf(c4,"Destroyed by %s in %s",particle.stoppingCode().name().c_str(),endVolumeName.c_str());
@@ -983,6 +984,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         int particleid=0;
         int trackclass=trackInfos[i].classID;
         int trackclassindex=trackInfos[i].index;
+        std::string trackcollection=trackInfos[i].entryText;
         switch(static_cast<int>(trkrep->particleType()))
         {
            case 0 : particleid=11;   break;  //electron
@@ -993,7 +995,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         };
         std::string particlename=HepPID::particleName(particleid);
         char c0[200], c2[200], c3[200], c4[200];
-        sprintf(c0,"Kalman Track %i  %s",static_cast<int>(particle.id()),particlename.c_str());
+        sprintf(c0,"Kalman Track %i  %s  (%s)",static_cast<int>(particle.id()),particlename.c_str(),trackcollection.c_str());
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         info->setName(c0);
         info->setText(0,c0);

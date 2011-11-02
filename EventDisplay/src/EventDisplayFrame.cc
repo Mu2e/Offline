@@ -395,9 +395,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   for(int i=0; i<20; i++)
   {
     float r,g,b;
-    TColor *c;
     TColor::HLS2RGB(i*360/20,.5,.5,r,g,b);
-    if(!gROOT->GetColor(i+2000)) c = new TColor(i+2000,r,g,b);
+    if(!gROOT->GetColor(i+2000)) new TColor(i+2000,r,g,b);
   }
 
   _mainPad->cd();

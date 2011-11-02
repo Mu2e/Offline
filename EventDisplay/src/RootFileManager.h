@@ -1,9 +1,9 @@
 //
 // Class which manages a root file which stores a TTree with one branch which hold TObjArrays. These TObjArrays hold all TPolyLines, TPolyLine3Ds, and TTexts of each event.
 //
-// $Id: RootFileManager.h,v 1.2 2011/09/20 04:45:59 ehrlich Exp $
+// $Id: RootFileManager.h,v 1.3 2011/11/02 04:25:21 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/20 04:45:59 $
+// $Date: 2011/11/02 04:25:21 $
 //
 // Original author Ralf Ehrlich
 //
@@ -100,8 +100,7 @@ class RootFileManager
     }
     else
     {
-      TGMsgBox *rootFileSet;
-      rootFileSet = new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Error","Root file has not been set, yet!",kMBIconExclamation,kMBOk);
+      new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Error","Root file has not been set, yet!",kMBIconExclamation,kMBOk);
     }
   }
 

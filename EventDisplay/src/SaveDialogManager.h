@@ -1,9 +1,9 @@
 //
 // Class which manages the "Save As" dialog boxes by providing the right file types, and checking the extension of the returned file name.
 //
-// $Id: SaveDialogManager.h,v 1.2 2011/09/26 17:12:35 ehrlich Exp $
+// $Id: SaveDialogManager.h,v 1.3 2011/11/02 04:25:21 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/26 17:12:35 $
+// $Date: 2011/11/02 04:25:21 $
 //
 // Original author Ralf Ehrlich
 //
@@ -60,8 +60,7 @@ class SaveDialogManager
   {
     TGFileInfo fileInfo;
     fileInfo.fFileTypes = fileTypes;
-    TGFileDialog *fileDialog;
-    fileDialog=new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDSave, &fileInfo); //ROOT takes care of deleting this
+    new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDSave, &fileInfo); //ROOT takes care of deleting this
     if(!fileInfo.fFilename) return(false);
 
     f.assign(fileInfo.fFilename);

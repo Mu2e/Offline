@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.16 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: EventDisplay_module.cc,v 1.17 2011/11/02 04:25:21 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/11/02 04:25:21 $
 //
 
 #include <iostream>
@@ -186,8 +186,7 @@ namespace mu2e
       {
         char msg[300];
         sprintf(msg,"The end of file has been reached, but the event #%i has not been found.",eventToFind);
-        TGMsgBox *eventNotFoundBox;
-        eventNotFoundBox = new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Event Not Found",msg,kMBIconExclamation,kMBOk);
+        new TGMsgBox(gClient->GetRoot(),gClient->GetRoot(),"Event Not Found",msg,kMBIconExclamation,kMBOk);
       }
       _frame->CloseWindow();
     }

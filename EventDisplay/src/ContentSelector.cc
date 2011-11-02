@@ -292,6 +292,7 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
         index=iter->vectorPos;
         t.classID=classID;
         t.index=index;
+        t.entryText=iter->entryText;
         break;
       }
     }
