@@ -6,9 +6,9 @@
 // and is useful only for the top few levels of the detector.
 //
 //
-// $Id: VolumeInfo.hh,v 1.5 2011/11/02 21:30:10 gandr Exp $
+// $Id: VolumeInfo.hh,v 1.6 2011/11/03 16:28:44 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:30:10 $
+// $Date: 2011/11/03 16:28:44 $
 //
 // Original author Rob Kutschke
 //
@@ -57,16 +57,10 @@ namespace mu2e {
     CLHEP::Hep3Vector      centerInParent;
     CLHEP::Hep3Vector      centerInWorld;
 
-    CLHEP::Hep3Vector centerInMu2e() const { return centerInWorld-_Mu2eOriginInWorld; }
+    CLHEP::Hep3Vector centerInMu2e() const { return centerInWorld - mu2eOriginInWorld(); }
 
   private:
-    friend class Mu2eWorld;
-    static void setMu2eOriginInWorld( const CLHEP::Hep3Vector& origin ){
-      _Mu2eOriginInWorld = origin;
-    }
-
-    static CLHEP::Hep3Vector _Mu2eOriginInWorld;
-
+    static const CLHEP::Hep3Vector& mu2eOriginInWorld();
   };
 
 }
