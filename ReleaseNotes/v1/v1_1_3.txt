@@ -1,13 +1,17 @@
 
-  $Id: v1_1_3.txt,v 1.5 2011/11/03 16:28:44 gandr Exp $
-  $Author: gandr $
-  $Date: 2011/11/03 16:28:44 $
+  $Id: v1_1_3.txt,v 1.6 2011/11/03 21:17:10 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2011/11/03 21:17:10 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_3
 
-3) November 3, 2011 gandr
+5) November 3, 2011 ehrlich
+   EventDisplay
+   -added PointTrajectories to SimParticles which were not produced by "g4run" modules
+
+4) November 3, 2011 gandr
 
    - VolumeInfo does not need to depend on Mu2eWorld for initialization.
 
