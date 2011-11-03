@@ -107,6 +107,16 @@ void StrawHitTest (TTree* hits ) {
     ndio->SetLineColor(kGreen);
     ndelta->SetLineColor(kCyan);
     np->SetLineColor(kBlue);
+
+    TH1F* zconv = new TH1F("zconv","Z",100,-1500,1500);
+    TH1F* zdio = new TH1F("zdio","Z",100,-1500,1500);
+    TH1F* zdelta = new TH1F("zdelta","Z",100,-1500,1500);
+    TH1F* zp = new TH1F("zp","Z",100,-1500,1500);
+    zconv->SetLineColor(kRed);
+    zdio->SetLineColor(kGreen);
+    zdelta->SetLineColor(kCyan);
+    zp->SetLineColor(kBlue);
+
     TCut ecut("edep<0.0045");
     TCut rmin("sqrt(shpos.x^2+shpos.y^2)>410");
     
@@ -124,7 +134,12 @@ void StrawHitTest (TTree* hits ) {
     hits->Project("ndio","n200",bkge);
     hits->Project("ndelta","n200",bkgo);
     hits->Project("np","n200",proton);
-
+    
+    hits->Project("zconv","shpos.z",conv);
+    hits->Project("zdio","shpos.z",bkge);
+    hits->Project("zdelta","shpos.z",bkgo);
+    hits->Project("zp","shpos.z",proton);
+ 
     TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
     leg2->AddEntry(rconv,"Conv. Electrons","l");
     leg2->AddEntry(rdio,"Bkg Electrons","l");
@@ -135,17 +150,17 @@ void StrawHitTest (TTree* hits ) {
     bcan->Divide(2,2);
     bcan->cd(1);
     gPad->SetLogy();
-    ep->Draw();
+    edio->Draw();
     econv->Draw("same");
-    edio->Draw("same");
+    ep->Draw("same");
     edelta->Draw("same");
     leg2->Draw();
     
     bcan->cd(2);
-    econv->GetXaxis()->SetRangeUser(-0.005,0.015);
-    econv->Draw();
+    edio->GetXaxis()->SetRangeUser(-0.005,0.015);
+    edio->Draw();
     ep->Draw("same");
-    edio->Draw("same");
+    econv->Draw("same");
     edelta->Draw("same");
     
     TLine* ecut_t = new TLine(0.004,0.0,0.004,econv->GetMaximum());
@@ -167,9 +182,9 @@ void StrawHitTest (TTree* hits ) {
     bcan->cd(3);
     gPad->SetLogy();
     
-    rp->Draw();
+    rdio->Draw();
     rconv->Draw("same");
-    rdio->Draw("same");
+    rp->Draw("same");
     rdelta->Draw("same");
     
     TLine* rmin_t = new TLine(410,0.0,410,rp->GetMaximum());
@@ -197,10 +212,10 @@ void StrawHitTest (TTree* hits ) {
     bcan->cd(4);
     gPad->SetLogy();
     
-    np->Draw();
-    nconv->Draw("same");
-    ndio->Draw("same");
-    ndelta->Draw("same");
+    zdio->Draw();
+    zconv->Draw("same");
+    zp->Draw("same");
+    zdelta->Draw("same");
     
     TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
     TCut clean("loose>0&&abs(time-tpeaks[0])<45.0");

@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.8 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/10/28 18:47:07 $
+// $Id: TrkPatRec_module.cc,v 1.9 2011/11/03 04:01:43 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2011/11/03 04:01:43 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -139,8 +139,8 @@ namespace mu2e
     void findMissingHits(std::vector<TrkHitFlag> const& tflags, TrkKalFit& kalfit, std::vector<size_t>& indices);
     void createDiagnostics();
     void fillStrawDiag(std::vector<CLHEP::Hep3Vector> const& shpos,std::vector<TrkTimePeak>& tpeaks);
-    void fillTimeDiag(unsigned iev,std::vector<TrkHitFlag> const& tflags);
-    void fillFitDiag(unsigned ipeak,TrkTimePeak const& tpeak, TrkDef const& helixdef,TrkHelix const& helixfit,
+    void fillTimeDiag(unsigned iev,std::vector<CLHEP::Hep3Vector> const& shpos,std::vector<TrkHitFlag> const& tflags);
+    void fillFitDiag(int ipeak,TrkTimePeak const& tpeak, TrkDef const& helixdef,TrkHelix const& helixfit,
 	TrkDef const& seeddef, TrkKalFit const& seedfit, TrkDef const& kaldef, TrkKalFit const& kalfit);
 // MC tools
     KalFitMC _kfitmc;
@@ -257,7 +257,7 @@ namespace mu2e
     std::vector<TrkTimePeak> tpeaks;
     findTimePeaks(hitflags,tpeaks);
 // fill diagnostics if requested
-    if(_diag > 1)fillTimeDiag(iev,hitflags);
+    if(_diag > 1)fillTimeDiag(iev,shpos,hitflags);
     if(_diag > 0)fillStrawDiag(shpos,tpeaks);
 // dummy objects
     static TrkHelix dummyhfit;
@@ -670,9 +670,12 @@ namespace mu2e
   }
 
   void
-  TrkPatRec::fillTimeDiag(unsigned iev,std::vector<TrkHitFlag> const& hitflags) {
+  TrkPatRec::fillTimeDiag(unsigned iev,std::vector<CLHEP::Hep3Vector> const& shpos,std::vector<TrkHitFlag> const& hitflags) {
     art::ServiceHandle<art::TFileService> tfs;
     TH1F *ctsp, *rtsp, *ttsp, *ltsp;
+    TH2F *cptsp, *rptsp, *tptsp, *lptsp;
+    TH2F *crtsp, *rrtsp, *trtsp, *lrtsp;
+
     char rsname[100];
     char csname[100];
     char tsname[100];
@@ -681,18 +684,41 @@ namespace mu2e
     snprintf(csname,100,"convtspectrum%i",iev);
     snprintf(tsname,100,"tighttspectrum%i",iev);
     snprintf(lsname,100,"loosetspectrum%i",iev);
-    ttsp = tfs->make<TH1F>(tsname,"time spectrum",_nbins,_tmin,_tmax);
+    ttsp = tfs->make<TH1F>(tsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     ttsp->SetLineColor(kCyan);
-    ltsp = tfs->make<TH1F>(lsname,"time spectrum",_nbins,_tmin,_tmax);
+    ltsp = tfs->make<TH1F>(lsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     ltsp->SetLineColor(kGreen);
-    rtsp = tfs->make<TH1F>(rsname,"time spectrum",_nbins,_tmin,_tmax);
+    rtsp = tfs->make<TH1F>(rsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     rtsp->SetLineColor(kBlue);
-    ctsp = tfs->make<TH1F>(csname,"time spectrum",_nbins,_tmin,_tmax);
+    ctsp = tfs->make<TH1F>(csname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     ctsp->SetLineColor(kRed);
+    
+    snprintf(rsname,100,"rawptspectrum%i",iev);
+    snprintf(csname,100,"convptspectrum%i",iev);
+    snprintf(tsname,100,"tightptspectrum%i",iev);
+    snprintf(lsname,100,"looseptspectrum%i",iev);
+// buffer the range so that we don't loose any peaks
+    double bf(1.1);
+    tptsp = tfs->make<TH2F>(tsname,"time spectrum;nsec",_nbins,_tmin,_tmax,100,-bf*M_PI,bf*M_PI);
+    lptsp = tfs->make<TH2F>(lsname,"time spectrum;nsec",_nbins,_tmin,_tmax,100,-bf*M_PI,bf*M_PI);
+    rptsp = tfs->make<TH2F>(rsname,"time spectrum;nsec",_nbins,_tmin,_tmax,100,-bf*M_PI,bf*M_PI);
+    cptsp = tfs->make<TH2F>(csname,"time spectrum;nsec",_nbins,_tmin,_tmax,100,-bf*M_PI,bf*M_PI);
+ 
+    snprintf(rsname,100,"rawrtspectrum%i",iev);
+    snprintf(csname,100,"convrtspectrum%i",iev);
+    snprintf(tsname,100,"tightrtspectrum%i",iev);
+    snprintf(lsname,100,"loosertspectrum%i",iev);
+    trtsp = tfs->make<TH2F>(tsname,"time spectrum",_nbins,_tmin,_tmax,50,350,750);
+    lrtsp = tfs->make<TH2F>(lsname,"time spectrum",_nbins,_tmin,_tmax,50,350,750);
+    rrtsp = tfs->make<TH2F>(rsname,"time spectrum",_nbins,_tmin,_tmax,50,350,750);
+    crtsp = tfs->make<TH2F>(csname,"time spectrum",_nbins,_tmin,_tmax,50,350,750);
+
     unsigned nstrs = _strawhits->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _strawhits->at(istr);
       double time = sh.time();
+      double rad = shpos[istr].perp();
+      double phi = shpos[istr].phi();
       // summarize the MC truth for this strawhit
       PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(istr));
       std::vector<trksum> mcsum;
@@ -700,9 +726,31 @@ namespace mu2e
       bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
       // fill plots
       rtsp->Fill(time);
-      if(hitflags[istr].tight())ttsp->Fill(time);
-      if(hitflags[istr].loose())ltsp->Fill(time);
-      if(conversion)ctsp->Fill(time);
+      rptsp->Fill(time,phi);
+      rrtsp->Fill(time,rad);
+      if(M_PI-phi<0.1)rptsp->Fill(time,phi-2*M_PI);
+      if(phi+M_PI<0.1)rptsp->Fill(time,phi+2*M_PI);
+      if(hitflags[istr].tight()){
+	ttsp->Fill(time);
+	tptsp->Fill(time,phi);
+	trtsp->Fill(time,rad);
+	if(M_PI-phi<0.1)tptsp->Fill(time,phi-2*M_PI);
+	if(phi+M_PI<0.1)tptsp->Fill(time,phi+2*M_PI);
+      }
+      if(hitflags[istr].loose()){
+	ltsp->Fill(time);
+	lptsp->Fill(time,phi);
+	lrtsp->Fill(time,rad);
+      	if(M_PI-phi<0.1)lptsp->Fill(time,phi-2*M_PI);
+	if(phi+M_PI<0.1)lptsp->Fill(time,phi+2*M_PI);
+      }
+      if(conversion){
+	ctsp->Fill(time);
+	cptsp->Fill(time,phi);
+	crtsp->Fill(time,rad);
+       	if(M_PI-phi<0.1)cptsp->Fill(time,phi-2*M_PI);
+	if(phi+M_PI<0.1)cptsp->Fill(time,phi+2*M_PI);
+      }
     }
     // find peaks, so they show up on diagnostic plot too
     TSpectrum tspec(_maxnpeak);
@@ -710,7 +758,7 @@ namespace mu2e
   }
 
   void
-  TrkPatRec::fillFitDiag(unsigned ipeak,TrkTimePeak const& tpeak, TrkDef const& helixdef,TrkHelix const& helixfit,
+  TrkPatRec::fillFitDiag(int ipeak,TrkTimePeak const& tpeak, TrkDef const& helixdef,TrkHelix const& helixfit,
   TrkDef const& seeddef, TrkKalFit const& seedfit, TrkDef const& kaldef, TrkKalFit const& kalfit) {
 // convenience numbers
     static const double pi(M_PI);
