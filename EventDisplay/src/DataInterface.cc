@@ -4,7 +4,6 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ContentSelector.h"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Cube.h"
 #include "Cylinder.h"
@@ -911,7 +910,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       const cet::map_vector_key& particleKey = iter->first;
       int id = particle.id().asInt();
       int parentid = -1;
-      if(particle.hasParent()) parentid = particle.parent()->id().asInt();
+//      if(particle.hasParent()) parentid = particle.parent()->id().asInt();
       int particleid=particle.pdgId();
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
@@ -962,7 +961,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
       boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, 
                                                _geometrymanager, _topvolume, _mainframe, info));
-      findTrajectory(contentSelector,shape,particleKey, t1,t2, simParticles,particle.daughterIds());
+      findTrajectory(contentSelector,shape,particleKey, t1,t2, simParticles,particle.daughterIds(), trackInfos[i]);
       _components.push_back(shape);
       _tracks.push_back(shape);
     }
@@ -1080,10 +1079,11 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
                                    boost::shared_ptr<Track> const &track, const cet::map_vector_key &id,
                                    double t1, double t2,
                                    const mu2e::SimParticleCollection *simParticles,
-                                   const std::vector<cet::map_vector_key> &daughterVect)
+                                   const std::vector<cet::map_vector_key> &daughterVect,
+                                   const ContentSelector::trackInfoStruct &trackInfo)
 {
 #ifdef USETRAJECTORY
-  const mu2e::PointTrajectoryCollection *pointTrajectories=contentSelector->getPointTrajectoryCollection();
+  const mu2e::PointTrajectoryCollection *pointTrajectories=contentSelector->getPointTrajectoryCollection(trackInfo);
   if(pointTrajectories!=NULL)
   {
     const mu2e::PointTrajectory* trajectory=pointTrajectories->getOrNull(id);

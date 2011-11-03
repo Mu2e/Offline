@@ -6,7 +6,6 @@ namespace mu2e_eventdisplay
 ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel)
   :
   _hasPhysicalVolumes(false),
-  _hasPointTrajectories(false),
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
   _trackBox(trackBox),
@@ -142,10 +141,11 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     }
   }
 
+//PointTrajectories
+  event.getManyByType(_pointTrajectoryVector);
 
 //Other
   _hasPhysicalVolumes=event.getRun().getByLabel(_g4ModuleLabel, _physicalVolumes);
-  _hasPointTrajectories=event.getByLabel(_g4ModuleLabel, _pointTrajectories);
 }
 
 bool ContentSelector::getSelectedHitsName(std::string &className,
@@ -185,6 +185,8 @@ std::vector<ContentSelector::trackInfoStruct> ContentSelector::getSelectedTrackN
         t.classID=iter->classID;
         t.index=iter->vectorPos;
         t.entryText=iter->entryText;
+        t.moduleLabel=iter->moduleLabel;
+        t.productInstanceName=iter->productInstanceName;
         if(t.classID>0) to_return.push_back(t);
         break;
       }
@@ -293,6 +295,8 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
         t.classID=classID;
         t.index=index;
         t.entryText=iter->entryText;
+        t.moduleLabel=iter->moduleLabel;
+        t.productInstanceName=iter->productInstanceName;
         break;
       }
     }
@@ -325,10 +329,17 @@ const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfo
   else return(NULL);
 }
 
-const mu2e::PointTrajectoryCollection* ContentSelector::getPointTrajectoryCollection() const
+const mu2e::PointTrajectoryCollection* ContentSelector::getPointTrajectoryCollection(const trackInfoStruct &t) const
 {
-  if(_hasPointTrajectories) return(_pointTrajectories.product());
-  else return(NULL);
+  typedef std::vector<art::Handle<mu2e::PointTrajectoryCollection> > CollectionVector;
+  typedef typename CollectionVector::const_iterator itertype;
+  itertype iter;
+  for(iter=_pointTrajectoryVector.begin(); iter!=_pointTrajectoryVector.end(); iter++)
+  {
+    if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
+      return(iter->product());
+  }
+  return(NULL);
 }
 
 }

@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: ContentSelector.h,v 1.12 2011/11/03 21:07:40 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2011/11/03 21:07:40 $
 //
 // Original author Ralf Ehrlich
 //
@@ -47,13 +47,13 @@ class ContentSelector
   std::vector<art::Handle<mu2e::CaloCrystalHitCollection> > _caloCrystalHitVector;
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
+  std::vector<art::Handle<mu2e::PointTrajectoryCollection> > _pointTrajectoryVector;
 #ifdef BABARINSTALLED
   std::vector<art::Handle<mu2e::TrkRecoTrkCollection> > _trkRecoTrkVector;
   std::vector<art::Handle<mu2e::TrkRecoTrkCollection> > _hitOnTrackVector; //Hits on Tracks are stored inside of TrkRecoTrk
 #endif
   art::Handle<mu2e::PhysicalVolumeInfoCollection> _physicalVolumes;
-  art::Handle<mu2e::PointTrajectoryCollection> _pointTrajectories;
-  bool _hasPhysicalVolumes, _hasPointTrajectories;
+  bool _hasPhysicalVolumes;
 
   TGComboBox  *_hitBox;
   TGComboBox  *_caloHitBox;
@@ -65,6 +65,7 @@ class ContentSelector
   {
     int classID, index;
     std::string entryText;
+    std::string moduleLabel, productInstanceName;
   };
 
   private:
@@ -98,7 +99,7 @@ class ContentSelector
   template<typename CollectionType> const CollectionType* getSelectedCaloHitCollection() const;
   template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const;
   const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
-  const mu2e::PointTrajectoryCollection *getPointTrajectoryCollection() const;
+  const mu2e::PointTrajectoryCollection *getPointTrajectoryCollection(const trackInfoStruct &t) const;
 };
 
 }
