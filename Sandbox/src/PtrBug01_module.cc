@@ -1,9 +1,9 @@
 //
 // Tests for the bad Ptr bug
 //
-// $Id: PtrBug01_module.cc,v 1.2 2011/11/04 18:55:40 kutschke Exp $
+// $Id: PtrBug01_module.cc,v 1.3 2011/11/04 19:29:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/11/04 18:55:40 $
+// $Date: 2011/11/04 19:29:39 $
 //
 // Original author Rob Kutschke
 //
@@ -17,9 +17,12 @@
 
 // Mu2e includes.
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 
 // C++ includes.
 #include <iostream>
@@ -48,6 +51,7 @@ namespace mu2e {
     void bug01c( art::Event const& event);
     void bug01d( art::Event const& event);
     void bug01e( art::Event const& event);
+    void bug01f( art::Event const& event);
 
 
   };
@@ -59,6 +63,7 @@ namespace mu2e {
     cerr << "   3 - From mapvector into a std::vector" << endl;
     cerr << "   4 - Self reference into the same mapvector, mother" << endl;
     cerr << "   5 - Self reference into the same mapvector, daughters" << endl;
+    cerr << "   6 - From vector<ptr> to vector."  << endl;
     cin >> which_;
   }
 
@@ -84,6 +89,10 @@ namespace mu2e {
 
     case 5:
       bug01e(event);
+      break;
+
+    case 6:
+      bug01f(event);
       break;
 
     default:
@@ -241,6 +250,52 @@ namespace mu2e {
     }
 
   } // end bug01e
+
+  // For an object inside a map_vector, follow a vector<Ptr> to
+  // objects in the same map_vector.
+  void PtrBug01::bug01f(const art::Event& event) {
+
+    art::Handle<StrawHitCollection> strawsHandle;
+    event.getByLabel("makeSH", strawsHandle);
+    StrawHitCollection const& straws(*strawsHandle);
+
+    art::Handle<PtrStepPointMCVectorCollection> stepPtrsHandle;
+    event.getByLabel("makeSH", "StrawHitMCPtr", stepPtrsHandle);
+    PtrStepPointMCVectorCollection const& stepPtrs(*stepPtrsHandle);
+
+    cout << "Straws.size: " << straws.size() << endl;
+    for ( size_t i=0; i<straws.size(); ++i){
+      StrawHit const& straw(straws[i]);
+      PtrStepPointMCVector const& steps(stepPtrs[i]);
+      cout << "Straw: "
+           << straw.strawIndex() << " "
+           << straw.energyDep()*1000.<< " " // keV
+           << steps.size()
+           << endl;
+      double sum(0.);
+      for ( size_t j=0; j<steps.size(); ++j){
+        art::Ptr<StepPointMC> p(steps[j]);
+        cout << "    "
+             << j << " "
+             << p.id() << " "
+             << p.key() << " "
+             << p.productGetter() << " "
+             << endl;
+        cout << "          "
+             << p->trackId()  << " "
+             << p->volumeId() << " "
+             << p->totalEDep()*1000. // keV
+             << endl;
+        sum += p->totalEDep();
+      }
+      cout << "    Sum: "
+           << sum*1000.              << " "
+           << straw.energyDep()*1000.<< " " // keV
+           << ( sum - straw.energyDep())*1000
+           << endl;
+    }
+
+  } // end bug01f
 
 
 }  // end namespace mu2e
