@@ -76,15 +76,6 @@ namespace mu2e {
       std::cout << __func__ << " mu2eOrigin : " <<  _wg4->_mu2eOriginInWorld  << std::endl;
     }
 
-    // Origin used to construct the MECO detector.
-    // Magic number to fix:
-    _wg4->_trackerOrigin = _wg4->_mu2eOriginInWorld + CLHEP::Hep3Vector( -3904., 0., 12000.);
-    
-    if ( diagLevel > 0) {
-      std::cout << __func__ << " mu2eDetectorOrigin : " <<  _wg4->_trackerOrigin  << std::endl;
-    }
-
-
     // Top of the ceiling in G4 world coordinates.
     double yCeilingOutside  = _wg4->_mu2eOriginInWorld[1] + hc[1] 
       + building->hallInsideHalfLengths()[1] + building->hallCeilingThickness();

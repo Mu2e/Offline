@@ -29,10 +29,16 @@ namespace mu2e {
     double cz = c.getDouble("hall.centerInMu2e.z");
     double h =  c.getDouble("mu2e.origin.heightAboveHallFloor");
     _b->_hallCenterInMu2e = CLHEP::Hep3Vector(cx, _b->_hallInsideHalfLenghts[1] - h, cz);
+
+
+    // Origin used to construct the MECO detector.
+    // Magic number to fix:
+    _b->_trackerOriginInMu2e = CLHEP::Hep3Vector( -3904., 0., 12000.);
     
     const int diagLevel = c.getInt("world.verbosityLevel", 0);
     if(diagLevel > 0) {
       std::cout << __func__ << " hallCenterInMu2e = " <<  _b->_hallCenterInMu2e  << std::endl;
+      std::cout << __func__ << " trackerOriginInMu2e : " <<  _b->_trackerOriginInMu2e  << std::endl;
     }
   }
 }

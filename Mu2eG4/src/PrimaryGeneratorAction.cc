@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.27 2011/11/02 21:29:53 gandr Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.28 2011/11/04 20:52:11 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:53 $
+// $Date: 2011/11/04 20:52:11 $
 //
 // Original author Rob Kutschke
 //
@@ -43,6 +43,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/ProductionTarget.hh"
 #include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/Mu2eBuilding.hh"
 
 // ROOT includes
 #include "TH1D.h"
@@ -91,7 +92,7 @@ namespace mu2e {
     // Get the offsets to map from generator world to G4 world.
     G4ThreeVector const& mu2eOrigin                  = worldGeom->mu2eOriginInWorld();
     G4ThreeVector const& cosmicReferencePlane        = worldGeom->cosmicReferencePoint();
-    G4ThreeVector const& detectorOrigin              = worldGeom->trackerOrigin();
+    G4ThreeVector const& detectorOrigin              = GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() +  mu2eOrigin;
 
     GeomHandle<ProductionTarget> protonTarget;
     G4RotationMatrix const& primaryProtonGunRotation = protonTarget->protonBeamRotation();
@@ -172,8 +173,9 @@ namespace mu2e {
     static RandomUnitSphere randomUnitSphere( *CLHEP::HepRandom::getTheEngine(), -0.7, 0.7 );
 
     // All tracks start from the same spot.
-    GeomHandle<WorldG4>  worldGeom;
-    G4ThreeVector const& position = worldGeom->trackerOrigin();
+    GeomHandle<WorldG4>  world;
+    GeomHandle<Mu2eBuilding>  building;
+    G4ThreeVector const& position = building->trackerOriginInMu2e() + world->mu2eOriginInWorld();
 
     // Magnitude of the momentum.
     G4double p0  = 50. + 100.*G4UniformRand();

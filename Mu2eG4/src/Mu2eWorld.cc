@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.105 2011/11/03 16:28:44 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.106 2011/11/04 20:52:11 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/03 16:28:44 $
+// $Date: 2011/11/04 20:52:11 $
 //
 // Original author Rob Kutschke
 //
@@ -69,6 +69,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/Mu2eBuilding.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
@@ -170,8 +171,9 @@ namespace mu2e {
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
     if ( _config->getBool("hasITracker",false) ) {
-      ITGasLayerSD::setMu2eDetCenterInWorld( worldGeom->trackerOrigin() -
-					     G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
+      ITGasLayerSD::setMu2eDetCenterInWorld( 
+					    GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld() 
+					    - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
     }
 
     instantiateSensitiveDetectors();
@@ -232,7 +234,7 @@ namespace mu2e {
 
     mf::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
-    log << "Mu2e Detector Origin: " << worldGeom->trackerOrigin()   << "\n";
+    log << "Mu2e Detector Origin: " << GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld()   << "\n";
     log << "Cosmic Ref:           " << worldGeom->cosmicReferencePoint() << "\n";
 
     // Create magnetic fields and managers only after all volumes have been defined.

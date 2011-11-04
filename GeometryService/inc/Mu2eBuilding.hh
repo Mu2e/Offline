@@ -30,6 +30,8 @@ namespace mu2e {
     double dirtCapBottomRadius() const { return _dirtCapBottomRadius; }
     double dirtCapTopRadius() const { return _dirtCapTopRadius; }
 
+    const CLHEP::Hep3Vector& trackerOriginInMu2e() const { return _trackerOriginInMu2e; }    
+
     // implement Detector's method
     virtual std::string name() const { return "Mu2eBuilding"; }
 
@@ -41,6 +43,7 @@ namespace mu2e {
     Mu2eBuilding() {}
 
     CLHEP::Hep3Vector _hallCenterInMu2e;
+    CLHEP::Hep3Vector _trackerOriginInMu2e;
     std::vector<double> _hallInsideHalfLenghts;
     double _hallFloorThickness;
     double _hallCeilingThickness;

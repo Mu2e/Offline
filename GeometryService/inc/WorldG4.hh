@@ -21,14 +21,11 @@ namespace mu2e {
 
     const std::vector<double>& halfLengths() const { return _halfLengths; }
 
-    // These are in the G4 world reference frame
+    // All the coordinates are in the G4 world reference frame
     const CLHEP::Hep3Vector& mu2eOriginInWorld() const { return _mu2eOriginInWorld; }
+    const CLHEP::Hep3Vector& cosmicReferencePoint() const { return _cosmicReferencePoint; }
     double dirtG4Ymin() const { return _dirtG4Ymin; }
     double dirtG4Ymax() const { return _dirtG4Ymax; }
-
-    // Are these in the mu2e coordinates?
-    const CLHEP::Hep3Vector& trackerOrigin() const { return _trackerOrigin; }
-    const CLHEP::Hep3Vector& cosmicReferencePoint() const { return _cosmicReferencePoint; }
 
     // implement Detector's method
     virtual std::string name() const { return "WorldG4"; }
@@ -42,11 +39,10 @@ namespace mu2e {
 
     std::vector<double> _halfLengths;
     CLHEP::Hep3Vector _mu2eOriginInWorld;
+    CLHEP::Hep3Vector _cosmicReferencePoint;
     double _dirtG4Ymin;
     double _dirtG4Ymax;
 
-    CLHEP::Hep3Vector _trackerOrigin;
-    CLHEP::Hep3Vector _cosmicReferencePoint;
   };
 
 }
