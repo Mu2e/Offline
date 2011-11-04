@@ -8,7 +8,7 @@ void PlotTimeSpectra2D(TDirectory* tdir,unsigned nmax=20, unsigned nps=2){
   TH1F* dummy = new TH1F("dummy","dummy",10,0,1);
   dummy->SetMarkerStyle(23);
   dummy->SetMarkerColor(kRed);
-  dummy->SetMarkerSize(2);
+  dummy->SetMarkerSize(1);
   while(moreplots && nplots < nmax) {
     bool first(true);
     char cname[20];
