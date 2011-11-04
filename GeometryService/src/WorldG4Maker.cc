@@ -1,6 +1,8 @@
 #include "GeometryService/inc/WorldG4Maker.hh"
 
 #include <iostream>
+#include <algorithm>
+#include <iterator>
 
 #include "cetlib/exception.h"
 
@@ -10,6 +12,9 @@
 
 #include "GeometryService/inc/WorldG4.hh"
 
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/Mu2eBuilding.hh"
+
 namespace mu2e {
 
   // The body of the function is modified from Mu2eWorld::defineMu2eOrigin().
@@ -18,29 +23,56 @@ namespace mu2e {
   {
     const int diagLevel = c.getInt("world.verbosityLevel", 0);
 
-    c.getVectorDouble("world.halfLengths", _wg4->_halfLengths, 3);
+    // The WorldG4Maker is special: it's called after all other detector objects 
+    // are available in geometry service, therefore it can access their data.
+    GeomHandle<Mu2eBuilding> building;
+    const CLHEP::Hep3Vector& hc = building->hallCenterInMu2e();
+    
+    const double worldBottomInMu2e = hc[1]
+      - building->hallInsideHalfLengths()[1] - building->hallFloorThickness()
+      - c.getDouble("world.margin.bottom");
 
-    // Floor thickness.
-    _wg4->_hallFloorThickness = c.getDouble("hall.floorThick");
+    const double worldTopInMu2e = hc[1]
+      + building->hallInsideHalfLengths()[1] + building->hallCeilingThickness() 
+      + building->dirtOverburdenDepth()
+      + 2*building->dirtCapHalfHeight()
+      + c.getDouble("world.margin.top");
 
-    // Top of the floor in G4 world coordinates.
-    double yFloor = -_wg4->_halfLengths[1] + _wg4->_hallFloorThickness;
+    const double worldXminInMu2e = hc[0]
+      - building->hallInsideHalfLengths()[0] - building->hallWallThickness()
+      - c.getDouble("world.margin.xmin");
 
-    if ( diagLevel > 0) {
-      std::cout << __func__ << " yFloor : " <<  yFloor  << std::endl;
-    }
+    const double worldXmaxInMu2e = hc[0]
+      + building->hallInsideHalfLengths()[0] + building->hallWallThickness()
+      + c.getDouble("world.margin.xmax");
 
-    // The height above the floor of the y origin of the Mu2e coordinate system.
-    double yOriginHeight = c.getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
+    // FIXME: account for ExtMon 
+    const double worldZminInMu2e = hc[2]
+      - building->hallInsideHalfLengths()[2] - building->hallWallThickness()
+      - c.getDouble("world.margin.zmin");
 
+    const double worldZmaxInMu2e = hc[2]
+      + building->hallInsideHalfLengths()[2] + building->hallWallThickness()
+      + c.getDouble("world.margin.zmax");
+
+    // Dimensions of the world box
+    _wg4->_halfLengths = std::vector<double>(3);
+    _wg4->_halfLengths[0] = (worldXmaxInMu2e - worldXminInMu2e)/2;
+    _wg4->_halfLengths[1] = (worldTopInMu2e - worldBottomInMu2e)/2;
+    _wg4->_halfLengths[2] = (worldZmaxInMu2e - worldZminInMu2e)/2;
+    
     // Position of the origin of the mu2e coordinate system
     _wg4->_mu2eOriginInWorld = CLHEP::Hep3Vector(
-						 c.getDouble("world.mu2eOrigin.xoffset")*CLHEP::mm,
-						 yFloor + yOriginHeight,
-						 c.getDouble("world.mu2eOrigin.zoffset")*CLHEP::mm
+						 -(worldXminInMu2e + worldXmaxInMu2e)/2,
+						 -(worldBottomInMu2e + worldTopInMu2e)/2,
+						 -(worldZminInMu2e + worldZmaxInMu2e)/2
 						 );
 
     if ( diagLevel > 0) {
+      std::cout << __func__ << " world halfLengths = (";
+      std::copy(_wg4->_halfLengths.begin(), _wg4->_halfLengths.end(), std::ostream_iterator<double>(std::cout, ", "));
+      std::cout << ")"<<std::endl;
+
       std::cout << __func__ << " mu2eOrigin : " <<  _wg4->_mu2eOriginInWorld  << std::endl;
     }
 
@@ -52,23 +84,16 @@ namespace mu2e {
       std::cout << __func__ << " mu2eDetectorOrigin : " <<  _wg4->_trackerOrigin  << std::endl;
     }
 
-    _wg4->_hallCeilingThickness = c.getDouble("hall.ceilingThick");
-    _wg4->_dirtOverburdenDepth  = c.getDouble("dirt.overburdenDepth");
-    _wg4->_dirtCapHalfHeight    = c.getDouble("dirt.capHalfHeight");
-
-    c.getVectorDouble("hall.insideHalfLengths",_wg4->_hallInsideHalfLenghts,3);
-
-    // Bottom of the ceiling in G4 world coordinates.
-    double yCeilingInSide = yFloor + 2.*_wg4->_hallInsideHalfLenghts[1];
 
     // Top of the ceiling in G4 world coordinates.
-    double yCeilingOutside  = yCeilingInSide + _wg4->_hallCeilingThickness;
+    double yCeilingOutside  = _wg4->_mu2eOriginInWorld[1] + hc[1] 
+      + building->hallInsideHalfLengths()[1] + building->hallCeilingThickness();
 
     // Surface of the earth in G4 world coordinates.
-    double ySurface  = yCeilingOutside + _wg4->_dirtOverburdenDepth;
+    double ySurface  = yCeilingOutside + building->dirtOverburdenDepth();
 
-    // Top of the world.
-    double yEverest = ySurface + 2.*_wg4->_dirtCapHalfHeight;
+    // Top of the dirt cap.
+    double yEverest = ySurface + 2.*building->dirtCapHalfHeight();
 
     // Build the reference points that others will use.
     _wg4->_cosmicReferencePoint = CLHEP::Hep3Vector(0., yEverest, 0.);

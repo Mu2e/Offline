@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.100 2011/10/28 15:35:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/10/28 15:35:16 $
+// $Id: geom_01.txt,v 1.101 2011/11/04 20:51:52 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/04 20:51:52 $
 //
 // Original author Rob Kutschke
 //
@@ -114,21 +114,19 @@ bool g4.forceAuxEdgeVisible = true;
 // invoke volume overlap check where enabled (draws random numbers)
 bool g4.doSurfaceCheck = false;
 
-// Half lengths of the world box, (x,y,z) in mm.
-vector<double> world.halfLengths  = { 20000., 10000., 25000.};
+// The world volume should enclose the everything.
+// The margins are 
+double world.margin.top = 3398; // above the dirt cap
+double world.margin.bottom = 0; // below the bottom of the hall floor
+double world.margin.xmin = 10400; // outsize of the hall walls
+double world.margin.xmax = 13450; // outsize of the hall walls
+double world.margin.zmin = 13700; // outside the hall wall : FIXME: should be outside ExtMon wall
+double world.margin.zmax =  3700; // outside the hall wall
+
 string         world.materialName = "G4_AIR";
 bool           world.boxVisible   = true;
 bool           world.boxSolid     = false;
 int            world.verbosityLevel = 0;
-
-
-// Position of the origin of the Mu2e origin system at the
-//  x: mid-point between TSu and TSd.
-//  y: given as height above the floor
-//  z: offset from the world origin.
-double world.mu2eOrigin.xoffset =     0.;
-double world.mu2eOrigin.height  =  2550.;
-double world.mu2eOrigin.zoffset =  1000.;
 
 // Overburden above the detector: 20 ft in proposal.
 // I have arbitrarily split it into a flat part and a dome.
@@ -153,10 +151,10 @@ string hall.insideMaterialName = "G4_AIR";
 bool   hall.visible            = true;
 bool   hall.solid              = false;
 
-// Offset of the hall from its base position within the world:
-//   - Centered in x and z.
-//   - At the bottom in y.
-vector<double> hall.offset = { -1525., 0., 5000. };
+// These three numbers define the position of the hall air volume in mu2e coordinates
+double mu2e.origin.heightAboveHallFloor = 2550.;
+double hall.centerInMu2e.x = -1525.;
+double hall.centerInMu2e.z = +4000.;
 
 // X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
 // The origin of the detector coordinate system is on the DS axis at the specified z.

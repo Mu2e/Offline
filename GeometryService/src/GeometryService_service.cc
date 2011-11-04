@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.9 2011/11/02 21:29:52 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.10 2011/11/04 20:51:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:52 $
+// $Date: 2011/11/04 20:51:52 $
 //
 // Original author Rob Kutschke
 //
@@ -29,6 +29,8 @@
 #include "GeometryService/src/DetectorSystemMaker.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/WorldG4Maker.hh"
+#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "GeometryService/inc/Mu2eBuildingMaker.hh"
 #include "GeometryService/inc/ProductionTarget.hh"
 #include "GeometryService/inc/ProductionTargetMaker.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -99,6 +101,12 @@ namespace mu2e {
     addDetector( DetectorSystemMaker( *_config).getDetectorSystemPtr() );
 
     // Make a detector for every component present in the configuration.
+
+    if(true) {
+      Mu2eBuildingMaker b(*_config);
+      addDetector(b.getPtr());
+    }
+
     if(_config->getBool("hasBeamline",false)){
       BeamlineMaker beamlinem( *_config );
       addDetector( beamlinem.getBeamlinePtr() );

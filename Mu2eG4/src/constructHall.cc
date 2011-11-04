@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructHall.cc,v 1.5 2011/11/04 20:51:52 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/04 20:51:52 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -13,7 +13,9 @@
 // Mu2e includes.
 #include "Mu2eG4/inc/constructHall.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/Mu2eBuilding.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 
@@ -25,50 +27,48 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructHall( const VolumeInfo& parent,
+  VolumeInfo constructHall( const VolumeInfo& dirt,
                             SimpleConfig const * const _config
                             ){
 
     // A helper class.
     MaterialFinder materialFinder(*_config);
 
-    // Dimensions of the world.
-    vector<double> worldHLen;
-    _config->getVectorDouble("world.halfLengths", worldHLen, 3);
+    GeomHandle<WorldG4> world;
+    GeomHandle<Mu2eBuilding> building;
 
-    vector<double> hallInHLen;
-    _config->getVectorDouble("hall.insideHalfLengths",hallInHLen,3);
+    const vector<double>& hallInHLen = building->hallInsideHalfLengths();
 
     // Floor thickness.
-    double ceilingThick = _config->getDouble("hall.ceilingThick");
-    double floorThick   = _config->getDouble("hall.floorThick");
-    double wallThick    = _config->getDouble("hall.wallThick");
-
-    // Top of the floor in G4 world coordinates.
-    double yFloor = -worldHLen[1] + floorThick;
-
-    // Position of the center of the hall in the world volume.
-    vector<double> hallPosition;
-    _config->getVectorDouble("hall.offset", hallPosition,3);
-    double hallY0 = yFloor + hallInHLen[1] + hallPosition[1];
-
-    // Materials for the hall walls and the interior of the hall
-    G4Material* wallMaterial = materialFinder.get("hall.wallMaterialName");
-    G4Material* hallMaterial = materialFinder.get("hall.insideMaterialName");
+    const double ceilingThick = building->hallCeilingThickness();
+    const double floorThick   = building->hallFloorThickness();
+    const double wallThick    = building->hallWallThickness();
 
     // Half lengths of the exterior of the concrete for the hall walls.
-    double hallOutHLen[3] ={
+    const double hallOutHLen[3] = {
       hallInHLen[0] + wallThick,
-      hallInHLen[1] + ( ceilingThick + floorThick )/2.,
+      hallInHLen[1] + (ceilingThick + floorThick)/2.,
       hallInHLen[2] + wallThick
     };
 
     // Center of the concrete volume in the coordinate system of the dirt.
-    G4ThreeVector wallOffset =
-      G4ThreeVector(hallPosition[0], hallY0, hallPosition[2]) - parent.centerInParent;
+    const CLHEP::Hep3Vector concretePositionInDirt = 
+      // Position of the center of the air in the world volume.
+      world->mu2eOriginInWorld() + building->hallCenterInMu2e()
+      // Correct for the possible asymmetry in the thickness of the concrete
+      // The X and Z are symmetric by construction
+      + CLHEP::Hep3Vector(0,  -(floorThick - ceilingThick)/2, 0)
+      // This makes it relative to the dirt
+      - dirt.centerInWorld
+      ;
+    
+    // Position of the hall air volume.  The only possible shift is 
+    // due to a non-equal thickness of the floor and the ceiling.
+    const CLHEP::Hep3Vector airPositionInConcrete(0, (floorThick - ceilingThick)/2, 0);
 
-    // Origin of the hall air volume in the system of the hall concrete volume.
-    G4ThreeVector hallOffset( 0., (floorThick-ceilingThick)/2., 0.);
+    // Materials for the hall walls and the interior of the hall
+    G4Material* wallMaterial = materialFinder.get("hall.wallMaterialName");
+    G4Material* hallMaterial = materialFinder.get("hall.insideMaterialName");
 
     bool hallVisible = _config->getBool("hall.visible",true);
     bool hallSolid   = _config->getBool("hall.solid",false);
@@ -82,8 +82,8 @@ namespace mu2e {
                                    hallOutHLen,
                                    wallMaterial,
                                    0,
-                                   wallOffset,
-                                   parent,
+                                   concretePositionInDirt,
+                                   dirt,
                                    0,
                                    hallVisible,
                                    G4Colour::Red(),
@@ -98,7 +98,7 @@ namespace mu2e {
                                    hallInHLen,
                                    hallMaterial,
                                    0,
-                                   hallOffset,
+                                   airPositionInConcrete,
                                    wallInfo,
                                    0,
                                    hallVisible,

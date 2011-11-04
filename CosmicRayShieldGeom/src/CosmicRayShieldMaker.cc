@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.10 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: CosmicRayShieldMaker.cc,v 1.11 2011/11/04 20:51:52 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/04 20:51:52 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -36,6 +36,8 @@
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "GeometryService/inc/WorldG4.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 
 
@@ -964,127 +966,34 @@ namespace mu2e {
 
   void CosmicRayShieldMaker::calculateCRSOffsets(SimpleConfig const & _config) {
 
-    double dsCoilZ0          = _config.getDouble("toyDS.z0");
+    const double dsCoilZ0          = _config.getDouble("toyDS.z0");
 
-    GeomHandle<Beamline> beamg;
-    double solenoidOffset = beamg->solenoidOffset();
-
-    CLHEP::Hep3Vector detSolCoilPosition(solenoidOffset, 0., -dsCoilZ0);
+    CLHEP::Hep3Vector detSolCoilPosition(GeomHandle<Beamline>()->solenoidOffset(), 0., -dsCoilZ0);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " detSolCoilPosition  : " << detSolCoilPosition  << endl;
     }
 
-    // reconstructing the position of the hall air in the world etc...
-
-    vector<double> worldHLen;
-    _config.getVectorDouble("world.halfLengths", worldHLen, 3);
-
-    // Get parameters related to the overall dimensions of the hall and to
-    // the earthen overburden.
-
-    double floorThick           =  _config.getDouble("hall.floorThick");
-    double ceilingThick         =  _config.getDouble("hall.ceilingThick");
-    double overburdenDepth      =  _config.getDouble("dirt.overburdenDepth");
-    vector<double> hallInHLen;
-    _config.getVectorDouble("hall.insideHalfLengths",hallInHLen,3);
-
-    // Top of the floor in G4 world coordinates.
-    double yFloor   = -worldHLen[1] + floorThick;
-
-    // Bottom of the ceiling in G4 world coordinates.
-    double yCeilingInSide = yFloor + 2.*hallInHLen[1];
-
-    // Top of the ceiling in G4 world coordinates.
-    double yCeilingOutside  = yCeilingInSide + ceilingThick;
-
-    // Surface of the earth in G4 world coordinates.
-    double ySurface  = yCeilingOutside + overburdenDepth;
-
-    // Half length and y origin of the dirt box.
-    double yLDirt = ( ySurface + worldHLen[1] )/2.;
-    double y0Dirt = -worldHLen[1] + yLDirt;
-
-    // Center of the dirt box, in the G4 world system.
-    CLHEP::Hep3Vector dirtOffset(0.,y0Dirt,0.);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " dirtOffset          : " << dirtOffset    << endl;
-    }
-
-    // Position of the center of the hall in the world volume.
-    vector<double> hallPosition;
-    _config.getVectorDouble("hall.offset", hallPosition,3);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " hallPosition/Offset : " << CLHEP::Hep3Vector(hallPosition[0],
-                                                                         hallPosition[1],
-                                                                         hallPosition[2])
-           << endl;
-    }
-
-    double hallY0 = yFloor + hallInHLen[1] + hallPosition[1];
-
-    // Center of the concrete volume in the coordinate system of the dirt.
-    // It is a "local" offset
-
-    CLHEP::Hep3Vector wallOffset =
-      CLHEP::Hep3Vector(hallPosition[0], hallY0, hallPosition[2]) - dirtOffset; //
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " wallOffset          : " << wallOffset    << endl;
-    }
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " wallOffsetInWorld   : " << wallOffset + dirtOffset  << endl;
-    }
-
-    // Origin of the hall air volume in the system of the hall concrete volume.
-    CLHEP::Hep3Vector hallAirOffset = CLHEP::Hep3Vector( 0., (floorThick-ceilingThick)/2., 0.);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " hallAirOffset          : " << hallAirOffset << endl;
-    }
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " hallAirOffsetInWorld   : " << hallAirOffset + wallOffset + dirtOffset << endl;
-    }
-
-    // Position of the origin of the mu2e coordinate system
-    CLHEP::Hep3Vector mu2eOrigin = CLHEP::Hep3Vector(
-                                                     _config.getDouble("world.mu2eOrigin.xoffset"),
-                                                     _config.getDouble("world.mu2eOrigin.height") + yFloor,
-                                                     _config.getDouble("world.mu2eOrigin.zoffset")
-                                                     );
-    if ( _diagLevel > 0) {
-      cout << __func__ << " mu2eOrigin          : " << mu2eOrigin    << endl;
-    }
-
-    std::vector<double> CRSSteelShieldOffsetSTDV;
-    _config.getVectorDouble("fluxcrv.HallSteelOffset", CRSSteelShieldOffsetSTDV, 3);
-
-    CLHEP::Hep3Vector CRSSteelShieldOffset(CRSSteelShieldOffsetSTDV[0],
-                                           CRSSteelShieldOffsetSTDV[1],
-                                           CRSSteelShieldOffsetSTDV[2]);
+    CLHEP::Hep3Vector CRSSteelShieldOffset = _config.getHep3Vector("fluxcrv.HallSteelOffset");
 
     if ( _diagLevel > 0) {
       cout << __func__ << " CRSSteelShieldOffset     : " << CRSSteelShieldOffset  << endl;
     }
 
+    GeomHandle<Mu2eBuilding> building;
     // Imagine a box that exactly contains the flux return steel.
     // This is the center of that box, in the coordinate system of the mother volume (the hall air).
-
-    _crs->_localOffset =  - (hallAirOffset + wallOffset + dirtOffset - mu2eOrigin + detSolCoilPosition + CRSSteelShieldOffset);
+    // //_crs->_localOffset =  - (hallAirOffset + wallOffset + dirtOffset - mu2eOrigin + detSolCoilPosition + CRSSteelShieldOffset);
+    _crs->_localOffset =  - (building->hallCenterInMu2e() + detSolCoilPosition + CRSSteelShieldOffset);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " CRSOffset (in hallAir) : " << _crs->_localOffset    << endl;
     }
 
-    _crs->_globalOffset = _crs->_localOffset + hallAirOffset + wallOffset + dirtOffset - mu2eOrigin;
-    // _crs->_globalOffset = _crs->_localOffset + hallAirOffset + wallOffset + dirtOffset;
+    // _crs->_globalOffset = _crs->_localOffset + hallAirOffset + wallOffset + dirtOffset - mu2eOrigin;
+    _crs->_globalOffset = -(detSolCoilPosition + CRSSteelShieldOffset);
 
     // the global offset will be wrt mu2e
-
     if ( _diagLevel > 0) {
       cout << __func__ << " _crs->_globalOffset    : " << _crs->_globalOffset << endl;
     }

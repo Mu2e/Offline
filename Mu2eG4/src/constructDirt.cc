@@ -1,9 +1,9 @@
 //
 // Free function to create the earthen overburden.
 //
-// $Id: constructDirt.cc,v 1.5 2011/11/02 21:30:10 gandr Exp $
+// $Id: constructDirt.cc,v 1.6 2011/11/04 20:51:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:30:10 $
+// $Date: 2011/11/04 20:51:52 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -18,6 +18,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/Mu2eBuilding.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -37,8 +38,8 @@ namespace mu2e {
                             ){
 
     // Dimensions and material of the world.
-    vector<double> worldHLen;
-    _config->getVectorDouble("world.halfLengths", worldHLen, 3);
+    GeomHandle<WorldG4> world;
+    const std::vector<double>& worldHLen = world->halfLengths();
 
     // A helper class.
     MaterialFinder materialFinder(*_config);
@@ -49,30 +50,23 @@ namespace mu2e {
 
     // Get parameters related to the overall dimensions of the hall and to
     // the earthen overburden.
-    double floorThick           = CLHEP::mm * _config->getDouble("hall.floorThick");
-    double ceilingThick         = CLHEP::mm * _config->getDouble("hall.ceilingThick");
-    //double wallThick            = CLHEP::mm * _config->getDouble("hall.wallThick");
-    double overburdenDepth      = CLHEP::mm * _config->getDouble("dirt.overburdenDepth");
-    vector<double> hallInHLen;
-    _config->getVectorDouble("hall.insideHalfLengths",hallInHLen,3);
+    GeomHandle<Mu2eBuilding> building;
+    const vector<double>& hallInHLen = building->hallInsideHalfLengths();
 
     // Derived parameters.
     G4Material* dirtMaterial = materialFinder.get("dirt.overburdenMaterialName");
 
     // Top of the floor in G4 world coordinates.
-    double yFloor   = -worldHLen[1] + floorThick;
-
-    // The height above the floor of the y origin of the Mu2e coordinate system.
-    //    double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
+    double yFloor   = -worldHLen[1] + building->hallFloorThickness();
 
     // Bottom of the ceiling in G4 world coordinates.
     double yCeilingInSide = yFloor + 2.*hallInHLen[1];
 
     // Top of the ceiling in G4 world coordinates.
-    double yCeilingOutside  = yCeilingInSide + ceilingThick;
+    double yCeilingOutside  = yCeilingInSide + building->hallCeilingThickness();
 
     // Surface of the earth in G4 world coordinates.
-    double ySurface  = yCeilingOutside + overburdenDepth;
+    double ySurface  = yCeilingOutside + building->dirtOverburdenDepth();
 
     // Half length and y origin of the dirt box.
     double yLDirt = ( ySurface + worldHLen[1] )/2.;
@@ -106,18 +100,17 @@ namespace mu2e {
                                    );
 
     // Dirt cap is modeled as a paraboloid.
-    double capHalfHeight = _config->getDouble("dirt.capHalfHeight");
-    double capBottomR    = _config->getDouble("dirt.capBottomRadius");
-    double capTopR       = _config->getDouble("dirt.capTopRadius");
+    double capHalfHeight = building->dirtCapHalfHeight();
+    double capBottomR    = building->dirtCapBottomRadius();
+    double capTopR       = building->dirtCapTopRadius();
 
     double dsz0          = _config->getDouble("toyDS.z0");
 
     GeomHandle<Beamline> beamg;
     double solenoidOffset = beamg->solenoidOffset();
 
-    GeomHandle<WorldG4> worldGeom;
     G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight,
-                                 dsz0+worldGeom->mu2eOriginInWorld().z());
+                                 dsz0 + world->mu2eOriginInWorld().z());
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4RotationMatrix* dirtCapRot = reg.add(G4RotationMatrix());

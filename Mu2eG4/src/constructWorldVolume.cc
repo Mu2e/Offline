@@ -1,9 +1,9 @@
 //
 // Free function to create world mother volume
 //
-// $Id: constructWorldVolume.cc,v 1.4 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: constructWorldVolume.cc,v 1.5 2011/11/04 20:51:52 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/04 20:51:52 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -14,7 +14,7 @@
 #include "Mu2eG4/inc/constructWorldVolume.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/WorldG4.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -35,8 +35,6 @@ namespace mu2e {
     MaterialFinder materialFinder(*_config);
 
     // Dimensions and material of the world.
-    vector<double> worldHLen;
-    _config->getVectorDouble("world.halfLengths", worldHLen, 3);
     G4Material* worldMaterial = materialFinder.get("world.materialName");
 
     bool worldBoxVisible = _config->getBool("world.boxVisible",true);
@@ -49,6 +47,7 @@ namespace mu2e {
 
     worldInfo.name    = "World";
 
+    const std::vector<double>& worldHLen = GeomHandle<WorldG4>()->halfLengths();
     worldInfo.solid   = new G4Box( worldInfo.name, worldHLen[0], worldHLen[1], worldHLen[2] );
 
     finishNesting(worldInfo,
