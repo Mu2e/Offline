@@ -1,9 +1,9 @@
 #
 # Illustrate a bug with Ptrs.
 #
-# $Id: ptrBug01.fcl,v 1.1 2011/11/03 02:01:43 kutschke Exp $
+# $Id: ptrBug01.fcl,v 1.2 2011/11/04 18:55:55 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/11/03 02:01:43 $
+# $Date: 2011/11/04 18:55:55 $
 #
 
 #include "minimalMessageService.fcl"
@@ -15,7 +15,7 @@ process_name : PtrBug01
 source :
 {
   module_type : RootInput
-  fileNames   : [ "/mu2e/data/users/kutschke/SignalOnly/signalOnly_data.root" ]
+  fileNames   : [ "/mu2e/data/outstage/kutschke/72784/72784_0000/TTrackerBg_0000_data.root" ]
   maxEvents   : 1
 }
 
