@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.13 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.14 2011/11/05 04:06:03 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/11/05 04:06:03 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -90,7 +90,6 @@ namespace mu2e {
 
     double _span;
 
-    CLHEP::Hep3Vector _mu2eDetectorOrigin;
     CLHEP::Hep3Vector _drawingOrigin;
     SimpleConfig const * _config;
 
@@ -98,8 +97,6 @@ namespace mu2e {
     TDirectory const * _directory;
     char const * _dirname;
     TFile * _file;
-
-    void setMu2eDetectorOrigin();
 
     void drawEnvelopesSupport(bool dolabels);
     void drawSector(bool dolabels);
@@ -138,8 +135,7 @@ namespace mu2e {
     _canvas(0),
     _application(0),
     _span(0),
-    _mu2eDetectorOrigin(0),
-    _drawingOrigin(0),
+    _drawingOrigin(CLHEP::Hep3Vector(0.,0.,0.)),
     _config(0),
     _ttracker(0),
     _directory(0),
@@ -248,16 +244,6 @@ namespace mu2e {
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
 
-    setMu2eDetectorOrigin();
-    // we will not use it
-
-    std::cout << " _mu2eDetectorOrigin : " <<
-      _mu2eDetectorOrigin.x() << " " <<
-      _mu2eDetectorOrigin.y() << " " <<
-      _mu2eDetectorOrigin.z() << " " << std::endl;
-
-    _drawingOrigin = CLHEP::Hep3Vector(0.,0.,0.);
-
     std::cout << "We are in the directory named: " << gDirectory->GetName() << std::endl;
     // We need to make sure we are in the correct directory esp. before we write out the canvases
     _file->cd(_dirname);
@@ -272,13 +258,6 @@ namespace mu2e {
     gDirectory->Append(_canvas);
 
     _span = 850.0; // mm
-
-//     TH1F* frame = _canvas->DrawFrame(
-//                                      _mu2eDetectorOrigin.x(),
-//                                      _mu2eDetectorOrigin.y(),
-//                                      _mu2eDetectorOrigin.x()+_span,
-//                                      _mu2eDetectorOrigin.y()+_span
-//                                      );
 
     TH1F* frame = _canvas->DrawFrame(
                                      _drawingOrigin.x(),
@@ -327,13 +306,6 @@ namespace mu2e {
 
     double _spanx = xspan;
     double _spanz = xspan;
-
-    TubsParams envelopeParams = _ttracker->getTrackerEnvelopeParams();
-
-    //    double xf = int(_drawingOrigin.x()+envelopeParams.innerRadius()/10.)*10.;
-
-    //     std::cout << "xf :" <<
-    //       xf << " " << std::endl;
 
     frame = _canvas->DrawFrame(
                                _drawingOrigin.x()-_spanx,
@@ -1012,46 +984,6 @@ namespace mu2e {
       90.0;
 
     return angle;
-
-  }
-
-  void TTrackerGeomIntRootPlots::setMu2eDetectorOrigin() {
-
-    // Dimensions of the world.
-    std::vector<double> worldHLen;
-    _config->getVectorDouble("world.halfLengths", worldHLen, 3);
-
-    // Floor thickness.
-    double floorThick = _config->getDouble("hall.floorThick");
-
-    // Top of the floor in G4 world coordinates.
-    double yFloor = -worldHLen[1] + floorThick;
-
-    // The height above the floor of the y origin of the Mu2e coordinate system.
-    double yOriginHeight = _config->getDouble("world.mu2eOrigin.height" )*CLHEP::mm;
-
-    // Position of the origin of the mu2e coordinate system
-    CLHEP::Hep3Vector _mu2eOrigin =
-      CLHEP::Hep3Vector(
-                        _config->getDouble("world.mu2eOrigin.xoffset")*CLHEP::mm,
-                        yFloor + yOriginHeight,
-                        _config->getDouble("world.mu2eOrigin.zoffset")*CLHEP::mm
-                        );
-
-    // Origin used to construct the MECO detector.
-    // Magic number to fix:
-
-    _drawingOrigin = _mu2eOrigin + CLHEP::Hep3Vector( -3904., 0., 12000.);
-
-    std::cout << " _mu2eOrigin : " <<
-      _mu2eOrigin.x() << " " <<
-      _mu2eOrigin.y() << " " <<
-      _mu2eOrigin.z() << " " << std::endl;
-
-    std::cout << " _mu2eDetectorOrigin : " <<
-      _mu2eDetectorOrigin.x() << " " <<
-      _mu2eDetectorOrigin.y() << " " <<
-      _mu2eDetectorOrigin.z() << " " << std::endl;
 
   }
 
