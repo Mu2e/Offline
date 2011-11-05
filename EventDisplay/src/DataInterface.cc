@@ -146,15 +146,6 @@ void DataInterface::fillGeometry()
   _xOffset=config.getDouble("mu2e.solenoidOffset");    //between Mu2e and Tracker coordinates
   _zOffset=-config.getDouble("mu2e.detectorSystemZ0"); //between Mu2e and Tracker coordinates
   _zOffsetDS=1800.0;                                   //between DS and Tracker coordinates
-//coordinate transformation between "World" and Mu2e coordinates
-//(taken from CosmicRaysShieldMaker class)
-  std::vector<double> worldHLen;
-  config.getVectorDouble("world.halfLengths", worldHLen, 3);
-  double floorThick =  config.getDouble("hall.floorThick");
-  double yFloor     = -worldHLen[1] + floorThick;
-  CLHEP::Hep3Vector _mu2eOriginInWorld = CLHEP::Hep3Vector(config.getDouble("world.mu2eOrigin.xoffset"),
-                                                           config.getDouble("world.mu2eOrigin.height") + yFloor,
-                                                           config.getDouble("world.mu2eOrigin.zoffset"));
 
   if(geom->hasElement<mu2e::TTracker>())
   {
