@@ -1,6 +1,6 @@
 // Geometry of the hall, dirt, etc.
 // 
-// Andrei Gaponennko, 2011
+// Andrei Gaponenko, 2011
 
 #ifndef MU2EBUILDING_HH
 #define MU2EBUILDING_HH
