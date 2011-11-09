@@ -1,6 +1,6 @@
 // G4 specific geometry info.  Not available in non-geant jobs.
 // 
-// Andrei Gaponennko, 2011
+// Andrei Gaponenko, 2011
 
 #ifndef WORLDG4_HH
 #define WORLDG4_HH

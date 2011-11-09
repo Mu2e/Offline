@@ -1,6 +1,6 @@
 // Geometry of the production target. This also defines the proton beam direction.
 // 
-// Andrei Gaponennko, 2011
+// Andrei Gaponenko, 2011
 
 #ifndef PRODUCTIONTARGET_HH
 #define PRODUCTIONTARGET_HH

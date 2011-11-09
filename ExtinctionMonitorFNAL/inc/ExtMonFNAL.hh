@@ -1,6 +1,6 @@
 // Geometrical info for the extinction monitor
 // 
-// Andrei Gaponennko, 2011
+// Andrei Gaponenko, 2011
 
 #ifndef EXTMONFNAL_HH
 #define EXTMONFNAL_HH
