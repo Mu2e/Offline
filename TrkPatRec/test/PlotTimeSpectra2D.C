@@ -1,4 +1,4 @@
-void PlotTimeSpectra2D(TDirectory* tdir,unsigned nmax=20, unsigned nps=2){
+void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double thresh=0.2,unsigned nmax=20, unsigned nps=2){
   gStyle->SetOptStat(0);
   bool moreplots(true);
   unsigned ican(0);
@@ -36,7 +36,7 @@ void PlotTimeSpectra2D(TDirectory* tdir,unsigned nmax=20, unsigned nps=2){
 //        th->SetLineWidth(2);
 	th->SetMarkerColor(kGreen);
         th->SetMarkerStyle(2);
-	tp2.Search(th,2,"",0.15);
+	tp2.Search(th,sigma,"nobackground",thresh);
 //        th->Draw();
 	rh->SetTitle("Time Spectrum");
         rh->GetXaxis()->SetTitle("nsec");

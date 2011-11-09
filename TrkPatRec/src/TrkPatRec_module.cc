@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.9 2011/11/03 04:01:43 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.10 2011/11/09 14:40:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/11/03 04:01:43 $
+// $Date: 2011/11/09 14:40:51 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -619,20 +619,20 @@ namespace mu2e
       _pmom = 0.0;
       _nmcsteps = mcptr.size();
       for( size_t imc=0; imc< _nmcsteps; ++imc ) {
-				StepPointMC const& mchit = *mcptr[imc];
+	StepPointMC const& mchit = *mcptr[imc];
 	// distance from production
-				double edep = mchit.eDep();
-				esum += edep;
-				CLHEP::Hep3Vector dprod = mchit.position()-det->toDetector(mchit.simParticle()->startPosition());
-				_pdist += dprod.mag()*edep;
-				static Hep3Vector zdir(0.0,0.0,1.0);
-				_pperp += dprod.perp(zdir)*edep;
-				_pmom += mchit.momentum().mag()*edep;
+	double edep = mchit.eDep();
+	esum += edep;
+	CLHEP::Hep3Vector dprod = mchit.position()-det->toDetector(mchit.simParticle()->startPosition());
+	_pdist += dprod.mag()*edep;
+	static Hep3Vector zdir(0.0,0.0,1.0);
+	_pperp += dprod.perp(zdir)*edep;
+	_pmom += mchit.momentum().mag()*edep;
       }
       if(esum > 0.0){
-				_pdist /= esum;
-				_pperp /= esum;
-				_pmom /= esum;
+	_pdist /= esum;
+	_pperp /= esum;
+	_pmom /= esum;
       }
       // summarize the MC truth for this strawhit
       std::vector<trksum> mcsum;
@@ -641,7 +641,7 @@ namespace mu2e
       // compute energy sum
       _mcedep = 0.0;
       for(std::vector<trksum>::iterator isum=mcsum.begin(); isum != mcsum.end(); isum++){
-				_mcedep += isum->_esum;
+	_mcedep += isum->_esum;
       }
       // first entry
       _mcemax = mcsum[0]._esum;
@@ -656,15 +656,15 @@ namespace mu2e
       _shdiag->Fill();
       bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
       if(conversion){
-				++_nchit;
+	++_nchit;
       }
       // compare to different time peaks
       _ntpeak = tpeaks.size();
       _tpeaks.clear();
       _ntpeaks.clear();
       for(unsigned ipeak=0;ipeak<tpeaks.size();++ipeak){
-				_tpeaks.push_back(tpeaks[ipeak]._tpeak);
-				_ntpeaks.push_back(tpeaks[ipeak]._trkptrs.size());
+	_tpeaks.push_back(tpeaks[ipeak]._tpeak);
+	_ntpeaks.push_back(tpeaks[ipeak]._trkptrs.size());
       }
     }
   }
@@ -728,28 +728,29 @@ namespace mu2e
       rtsp->Fill(time);
       rptsp->Fill(time,phi);
       rrtsp->Fill(time,rad);
-      if(M_PI-phi<0.1)rptsp->Fill(time,phi-2*M_PI);
-      if(phi+M_PI<0.1)rptsp->Fill(time,phi+2*M_PI);
+      double dbf = (bf-1.0)*M_PI;
+      if(M_PI-phi<dbf)rptsp->Fill(time,phi-2*M_PI);
+      if(phi+M_PI<dfb)rptsp->Fill(time,phi+2*M_PI);
       if(hitflags[istr].tight()){
 	ttsp->Fill(time);
 	tptsp->Fill(time,phi);
 	trtsp->Fill(time,rad);
-	if(M_PI-phi<0.1)tptsp->Fill(time,phi-2*M_PI);
-	if(phi+M_PI<0.1)tptsp->Fill(time,phi+2*M_PI);
+	if(M_PI-phi<dbf)tptsp->Fill(time,phi-2*M_PI);
+	if(phi+M_PI<dbf)tptsp->Fill(time,phi+2*M_PI);
       }
       if(hitflags[istr].loose()){
 	ltsp->Fill(time);
 	lptsp->Fill(time,phi);
 	lrtsp->Fill(time,rad);
-      	if(M_PI-phi<0.1)lptsp->Fill(time,phi-2*M_PI);
-	if(phi+M_PI<0.1)lptsp->Fill(time,phi+2*M_PI);
+      	if(M_PI-phi<dbf)lptsp->Fill(time,phi-2*M_PI);
+	if(phi+M_PI<dbf)lptsp->Fill(time,phi+2*M_PI);
       }
       if(conversion){
 	ctsp->Fill(time);
 	cptsp->Fill(time,phi);
 	crtsp->Fill(time,rad);
-       	if(M_PI-phi<0.1)cptsp->Fill(time,phi-2*M_PI);
-	if(phi+M_PI<0.1)cptsp->Fill(time,phi+2*M_PI);
+       	if(M_PI-phi<dbf)cptsp->Fill(time,phi-2*M_PI);
+	if(phi+M_PI<dbf)cptsp->Fill(time,phi+2*M_PI);
       }
     }
     // find peaks, so they show up on diagnostic plot too
