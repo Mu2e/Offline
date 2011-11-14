@@ -1,9 +1,9 @@
-//
+
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.11 2011/11/14 16:21:35 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2011/11/14 16:21:35 $
+// $Id: TrkPatRec_module.cc,v 1.12 2011/11/14 18:17:47 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2011/11/14 18:17:47 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -17,13 +17,13 @@
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh" 
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 // BaBar
@@ -41,12 +41,14 @@
 // root 
 #include "TMath.h"
 #include "TFile.h"
-#include "TH2D.h"
+#include "TH1F.h"
+#include "TH2F.h"
 #include "TCanvas.h"
 #include "TApplication.h"
 #include "TGMsgBox.h"
 #include "TTree.h"
 #include "TSpectrum.h"
+#include "TSpectrum2.h"
 // C++
 #include <iostream>
 #include <fstream>
@@ -73,14 +75,16 @@ namespace mu2e
 #define TIGHTBIT 0x1
 #define LOOSEBIT 0x2
 #define VERYLOOSEBIT 0x4
-
+#define DELTABIT 0x8
     TrkHitFlag() : _iflag(0) {}
     void setVeryLoose() { _iflag |= VERYLOOSEBIT; }
     void setLoose() { _iflag |= LOOSEBIT; }
     void setTight() { _iflag |= TIGHTBIT; }
+    void setDelta() { _iflag |= DELTABIT; }
     bool veryLoose() const { return (_iflag & VERYLOOSEBIT) != 0; }
     bool loose() const { return (_iflag & LOOSEBIT) != 0; }
     bool tight() const { return (_iflag & TIGHTBIT) != 0; }
+    bool delta() const { return (_iflag & DELTABIT) != 0; }
     unsigned _iflag;
   };
   class TrkPatRec : public art::EDProducer
@@ -104,10 +108,18 @@ namespace mu2e
     double _edept, _edepl, _edepvl;
     double _rmint, _rminl;
     double _rmaxt, _rmaxl;
-    double _maxdt;
+    double _maxdt, _maxdtmiss;
+  // delta-ray removal parameters
+    bool _filterdeltas;
+    double _max2ddt,_maxdp;
+    unsigned _maxndelta, _npbins;
+    double _2dthresh, _2dsigma;
+    double _fbf,_mindp;
+    double _maxzgap,_maxnsmiss;
+    double _mindrho, _maxdrho;
+    // time spectrum parameters
     unsigned _maxnpeak;
     unsigned _minnhits;
-    // time spectrum parameters
     double _tmin;
     double _tmax;
     double _tbin;
@@ -134,6 +146,7 @@ namespace mu2e
     void findProximity(std::vector<CLHEP::Hep3Vector> const& shpos, unsigned ish, double maxdist, unsigned& nprox, double& dmin);
     void findPositions(std::vector<CLHEP::Hep3Vector>& shpos);
     void preselectHits(std::vector<CLHEP::Hep3Vector> const& shpos, std::vector<TrkHitFlag>& tflags);
+    void filterDeltas(std::vector<CLHEP::Hep3Vector> const& shpos, std::vector<TrkHitFlag>& tflags);
     void findTimePeaks(std::vector<TrkHitFlag> const& tflags, std::vector<TrkTimePeak>& tpeaks);
     void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitInfo>& thivec);
     void findMissingHits(std::vector<TrkHitFlag> const& tflags, TrkKalFit& kalfit, std::vector<size_t>& indices);
@@ -161,10 +174,9 @@ namespace mu2e
     Int_t _loose, _tight;
     UInt_t _ntpeak;
     std::vector<Float_t> _tpeaks;
-		std::vector<Int_t> _ncpeak;
+    std::vector<Int_t> _ncpeak;
     std::vector<Int_t> _ntpeaks;
 // fit tuple variables
-    TTree* _fitdiag;
     Int_t _nadd,_ipeak;
     Float_t _hcx, _hcy, _hr, _hdfdz, _hfz0;
     Float_t _mccx, _mccy, _mcr, _mcdfdz, _mcfz0;
@@ -178,6 +190,15 @@ namespace mu2e
     Float_t _peakmax, _tpeak;
 // hit filtering tuple variables
     std::vector<TrkHitInfo> _sfilt, _hfilt;
+// delta removal diagnostics
+    TTree* _ddiag;
+    Bool_t _isdelta;
+    Float_t _pphi, _pt, _prho;
+    Float_t _zmin, _zmax, _zgap;
+    UInt_t _ns, _smin, _smax, _nsmiss;
+    UInt_t _nsh, _ndpeak, _ndmax; 
+    UInt_t _nconv, _ndelta, _nprot;
+    std::vector<TrkHitInfo> _phits;
   };
 
   TrkPatRec::TrkPatRec(fhicl::ParameterSet const& pset) : 
@@ -194,9 +215,23 @@ namespace mu2e
     _rmaxt(pset.get<double>("RMax_tight",630.0)),
     _rmaxl(pset.get<double>("RMax_loose",650.0)),
     _maxdt(pset.get<double>("DtMax",40.0)),
+    _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
+    _filterdeltas(pset.get<bool>("FilterDeltas",false)),
+    _max2ddt(pset.get<double>("Dt2DMax",40.0)),
+    _maxdp(pset.get<double>("DPhiMax",0.25)),
+    _maxndelta(pset.get<unsigned>("MaxNDeltas",200)),
+    _npbins(pset.get<unsigned>("NPhiBins",60)),
+    _2dthresh(pset.get<double>("TwoDPeakThreshold",2)),
+    _2dsigma(pset.get<double>("TwoDPeakSigma",1.0)),
+    _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
+    _mindp(pset.get<double>("Min2dPeak",5)),
+    _maxzgap(pset.get<double>("MaxZGap",0.0)),
+    _maxnsmiss(pset.get<double>("MaxNMiss",5)),
+    _mindrho(pset.get<double>("MinDrho",410.0)),
+    _maxdrho(pset.get<double>("MaxDrho",650.0)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
-    _tmin(pset.get<double>("tmin",0.0)),
+    _tmin(pset.get<double>("tmin",400.0)),
     _tmax(pset.get<double>("tmax",2000.0)),
     _tbin(pset.get<double>("tbin",20.0)),
     _ymin(pset.get<double>("ymin",5)),
@@ -242,8 +277,8 @@ namespace mu2e
 // find mc truth if we're making diagnostics
     if(_diag > 0){
       if(!_kfitmc.findMCData(event)){
-				cout<<"MC information missing "<< endl;
-				return;
+	cout<<"MC information missing "<< endl;
+	return;
       }
     }
 //  find hit positions.  This uses conditions data, so it's not an attribute of the hits 
@@ -253,6 +288,8 @@ namespace mu2e
     std::vector<TrkHitFlag> hitflags;
     hitflags.reserve(_strawhits->size());
     preselectHits(shpos,hitflags);
+// filter 'delta rays'
+    if(_filterdeltas)filterDeltas(shpos,hitflags); 
 // find the time peaks in the time spectrum of selected hits
     std::vector<TrkTimePeak> tpeaks;
     findTimePeaks(hitflags,tpeaks);
@@ -403,6 +440,139 @@ namespace mu2e
     }
   }
 
+  void
+  TrkPatRec::filterDeltas(std::vector<CLHEP::Hep3Vector> const& shpos, std::vector<TrkHitFlag>& hitflags){
+// tracker, to get StrawID later
+    const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
+    unsigned ndevices = tracker.nDevices();
+// make a 2d plot of phi vs time to isolate the delta rays
+    TSpectrum2 tspec2(_maxndelta);
+    TH2F tpsp("tpsp","phi time spectrum",_nbins,_tmin,_tmax,_npbins,-_fbf*M_PI,_fbf*M_PI);
+    double dbf = (_fbf-1.0)*M_PI;
+    unsigned nstrs = _strawhits->size();
+    for(unsigned istr=0; istr<nstrs;++istr){
+      if(hitflags[istr].veryLoose()){
+	StrawHit const& sh = _strawhits->at(istr);
+	double time = sh.time();
+	double phi = shpos[istr].phi();
+// include buffer around phi to account for wrapping
+	tpsp.Fill(time,phi);
+	if(M_PI-phi<dbf)tpsp.Fill(time,phi-2*M_PI);
+	if(phi+M_PI<dbf)tpsp.Fill(time,phi+2*M_PI);
+      }
+    }
+// search for peaks.  Convert to an absolute threshold instead of a relative threshold
+    tspec2.Search(&tpsp,_2dsigma,"nobackground nomarkov nodraw",_2dthresh/tpsp.GetMaximum());
+    unsigned np = tspec2.GetNPeaks();
+    Float_t *xpeaks = tspec2.GetPositionX();
+    Float_t *ypeaks = tspec2.GetPositionY();
+// Loop over peaks, looking only at those with a minimum peak value.  Integrate a 3X3 array around the peak bin
+    for (unsigned ip=0; ip<np; ip++) {
+      Float_t xp = xpeaks[ip];
+      Float_t yp = ypeaks[ip];
+      Int_t ixbin =  tpsp.GetXaxis()->FindFixBin(xp);
+      Int_t iybin = tpsp.GetYaxis()->FindFixBin(yp);
+      Int_t ixmin = max(ixbin-1,1);
+      Int_t ixmax = min(ixbin+1,(int)_nbins);
+      Int_t iymin = max(iybin-1,1);
+      Int_t iymax = min(iybin+1,(int)_npbins);
+      Double_t npeak = tpsp.Integral(ixmin,ixmax,iymin,iymax);
+      if(npeak >= _mindp){
+// find all the hits near this peak
+	TrkTimePeak tpeak(xp,yp);
+        for(unsigned istr=0; istr<nstrs;++istr){
+	  if(hitflags[istr].veryLoose()){
+	    StrawHit const& sh = _strawhits->at(istr);
+	    double phi = shpos[istr].phi();
+// account for phi wrapping
+	    if(fabs(sh.time()-xp) < _max2ddt){
+	      if(phi - yp > M_PI)phi -= 2*M_PI;
+	      if(yp - phi > M_PI)phi += 2*M_PI;
+	      if(fabs(phi - yp) < _maxdp)tpeak._trkptrs.push_back(istr);
+	    }
+	  }
+	}
+	if(tpeak._trkptrs.size() >= _mindp){
+// compute Z information and staion spacing, and the average radial position of the peak
+	  std::vector<double> hitz;
+	  std::vector<bool> devices(ndevices,false);
+	  double rho(0.0);
+	  for(std::vector<size_t>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
+	    const StrawHit& sh = _strawhits->at(*ip);
+	    unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
+	    hitz.push_back(shpos[*ip].z());
+	    devices[idevice] = true;
+	    rho += shpos[*ip].perp();
+	  }
+	  rho /= tpeak._trkptrs.size();
+	  std::sort(hitz.begin(),hitz.end());
+	  double zmin = hitz.front();
+	  double zmax = hitz.back();
+	  // look for gaps in z
+	  double zgap(0.0);
+	  for(unsigned iz=1;iz<hitz.size();++iz){
+	    if(hitz[iz]-hitz[iz-1] > zgap)zgap = hitz[iz]-hitz[iz-1]; 
+	  }
+	  // count 'missing' devices between first and last
+	  unsigned ismin(0);
+	  unsigned ismax(ndevices-1);
+	  unsigned nsmiss(0);
+	  while(!devices[ismin])++ismin;
+	  while(!devices[ismax])--ismax;
+	  unsigned ns(ismax-ismin+1);
+	  for(unsigned is =ismin;is<ismax;++is){
+	    if(!devices[is])++nsmiss;
+	  }
+// decide if these hits are deltas: if so, flag them
+	  bool isdelta = zgap < _maxzgap || nsmiss <= _maxnsmiss || rho > _maxdrho || rho < _mindrho;
+	  if(isdelta){
+	    for(std::vector<size_t>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
+	      hitflags[*ip].setDelta();  	
+	    }
+	  }
+// diagnostics
+	  if(_diag > 0){
+	    _isdelta = isdelta;
+	    _nsh = tpeak._trkptrs.size();
+	    _ndpeak = npeak;
+	    _ndmax = tpsp.GetBinContent(ixbin,iybin);
+	    _pphi = yp;
+	    _pt = xp;
+	    _prho = rho;
+	    _zmin = zmin;
+	    _zmax = zmax;
+	    _zgap = zgap;
+	    _smin = ismin;
+	    _smax = ismax;
+	    _ns = ns;
+	    _nsmiss = nsmiss;
+	    _nconv = 0;
+	    _nprot = 0;
+	    _ndelta = 0;
+	    _phits.clear();
+	    for(std::vector<size_t>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
+	      const StrawHit& sh = _strawhits->at(*ip);
+	      PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(*ip));
+	      std::vector<trksum> mcsum;
+	      KalFitMC::fillMCSummary(mcptr,mcsum);
+	      TrkHitInfo thinfo;
+	      thinfo._pos = shpos[*ip];
+	      thinfo._resid = sh.time();
+	      thinfo._mcpdg = mcsum[0]._pdgid;
+	      thinfo._mcgen = mcsum[0]._gid;
+	      thinfo._mcproc = mcsum[0]._pid;
+	      _phits.push_back(thinfo);
+	      if(mcsum[0]._gid == 2)++_nconv;
+	      if(mcsum[0]._gid <0)++_ndelta;
+	      if(mcsum[0]._pdgid == 2212)++_nprot;
+	    }
+	    _ddiag->Fill();
+	  }
+	}
+      }
+    }
+  }
+  
   void 
   TrkPatRec::findTimePeaks(std::vector<TrkHitFlag> const& hitflags, std::vector<TrkTimePeak>& tpeaks) {
     TSpectrum tspec(_maxnpeak);
@@ -410,13 +580,13 @@ namespace mu2e
 // loop over straws hits and fill time spectrum plot for tight hits
     unsigned nstrs = _strawhits->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      if(hitflags[istr].tight()){
+      if(hitflags[istr].tight()&&!hitflags[istr].delta()){
 	StrawHit const& sh = _strawhits->at(istr);
 	double time = sh.time();
         timespec.Fill(time);
       }
     }
-    unsigned np = tspec.Search(&timespec,1,"new goff",_peakfrac);
+    unsigned np = tspec.Search(&timespec,1,"new nobackground nomarkov goff",_peakfrac);
     Float_t *xpeaks = tspec.GetPositionX();
     Float_t *ypeaks = tspec.GetPositionY();
 // Loop over peaks, looking only at those with a minimum peak value
@@ -427,7 +597,7 @@ namespace mu2e
       if(yp > _ymin){
 // record hits in time with each peak, and accept them if they have a minimum # of hits
         for(unsigned istr=0; istr<nstrs;++istr){
-	  if(hitflags[istr].loose()){
+	  if(hitflags[istr].tight()&&!hitflags[istr].delta()){
 	    StrawHit const& sh = _strawhits->at(istr);
 	    if(fabs(sh.time()-xp) < _maxdt)tpeak._trkptrs.push_back(istr);
 	  }
@@ -497,7 +667,7 @@ namespace mu2e
     for(unsigned istr=0; istr<nstrs;++istr){
       if(hitflags[istr].veryLoose()){
 	StrawHit const& sh = _strawhits->at(istr);
-	if(fabs(sh.time()-kalfit._t0.t0()) < _maxdt) {
+	if(fabs(sh.time()-kalfit._t0.t0()) < _maxdtmiss) {
       // make sure we haven't already used this hit
 	  std::vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
 	  if(ifnd == kalfit._hits.end()){
@@ -590,6 +760,26 @@ namespace mu2e
     trkdiag->Branch("nmc",&_nmc,"nmc/i");
     trkdiag->Branch("seedfilt",&_sfilt);
     trkdiag->Branch("helixfilt",&_hfilt);
+// delta diagnostics
+    _ddiag=tfs->make<TTree>("ddiag","delta diagnostics");
+    _ddiag->Branch("isdelta",&_isdelta,"isdelta/B");
+    _ddiag->Branch("nsh",&_nsh,"nsh/i");
+    _ddiag->Branch("ndpeak",&_ndpeak,"ndpeak/i");
+    _ddiag->Branch("ndmax",&_ndmax,"ndmax/i");
+    _ddiag->Branch("nconv",&_nconv,"nconv/i");
+    _ddiag->Branch("ndelta",&_ndelta,"ndelta/i");
+    _ddiag->Branch("nprot",&_nprot,"nprot/i");
+    _ddiag->Branch("ns",&_ns,"ns/i");
+    _ddiag->Branch("smin",&_smin,"smin/i");
+    _ddiag->Branch("smax",&_smax,"smax/i");
+    _ddiag->Branch("nsmiss",&_nsmiss,"nsmiss/i");
+    _ddiag->Branch("pphi",&_pphi,"pphi/F");
+    _ddiag->Branch("pt",&_pt,"pt/F");
+    _ddiag->Branch("prho",&_prho,"prho/F");
+    _ddiag->Branch("zmin",&_zmin,"zmin/F");
+    _ddiag->Branch("zmax",&_zmax,"zmax/F");
+    _ddiag->Branch("zgap",&_zgap,"zgap/F");
+    _ddiag->Branch("phits",&_phits);
   }
 
   void
@@ -672,18 +862,20 @@ namespace mu2e
   void
   TrkPatRec::fillTimeDiag(unsigned iev,std::vector<CLHEP::Hep3Vector> const& shpos,std::vector<TrkHitFlag> const& hitflags) {
     art::ServiceHandle<art::TFileService> tfs;
-    TH1F *ctsp, *rtsp, *ttsp, *ltsp;
-    TH2F *cptsp, *rptsp, *tptsp, *lptsp;
+    TH1F *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp;
+    TH2F *cptsp, *rptsp, *tptsp, *lptsp, *tdptsp;
     TH2F *crtsp, *rrtsp, *trtsp, *lrtsp;
 
     char rsname[100];
     char csname[100];
     char tsname[100];
     char lsname[100];
+    char tdsname[100];
     snprintf(rsname,100,"rawtspectrum%i",iev);
     snprintf(csname,100,"convtspectrum%i",iev);
     snprintf(tsname,100,"tighttspectrum%i",iev);
     snprintf(lsname,100,"loosetspectrum%i",iev);
+    snprintf(tdsname,100,"tightnodeltatspectrum%i",iev);
     ttsp = tfs->make<TH1F>(tsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     ttsp->SetLineColor(kCyan);
     ltsp = tfs->make<TH1F>(lsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
@@ -692,17 +884,20 @@ namespace mu2e
     rtsp->SetLineColor(kBlue);
     ctsp = tfs->make<TH1F>(csname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     ctsp->SetLineColor(kRed);
+    tdtsp = tfs->make<TH1F>(tdsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
+    tdtsp->SetLineColor(kOrange);
     
     snprintf(rsname,100,"rawptspectrum%i",iev);
     snprintf(csname,100,"convptspectrum%i",iev);
     snprintf(tsname,100,"tightptspectrum%i",iev);
     snprintf(lsname,100,"looseptspectrum%i",iev);
+    snprintf(tdsname,100,"tightnodeltaptspectrum%i",iev);
 // buffer the range so that we don't loose any peaks
-    double bf(1.1);
-    tptsp = tfs->make<TH2F>(tsname,"time spectrum;nsec",_nbins,_tmin,_tmax,100,-bf*M_PI,bf*M_PI);
-    lptsp = tfs->make<TH2F>(lsname,"time spectrum;nsec",_nbins,_tmin,_tmax,100,-bf*M_PI,bf*M_PI);
-    rptsp = tfs->make<TH2F>(rsname,"time spectrum;nsec",_nbins,_tmin,_tmax,100,-bf*M_PI,bf*M_PI);
-    cptsp = tfs->make<TH2F>(csname,"time spectrum;nsec",_nbins,_tmin,_tmax,100,-bf*M_PI,bf*M_PI);
+    tptsp = tfs->make<TH2F>(tsname,"time spectrum;nsec",_nbins,_tmin,_tmax,_npbins,-_fbf*M_PI,_fbf*M_PI);
+    lptsp = tfs->make<TH2F>(lsname,"time spectrum;nsec",_nbins,_tmin,_tmax,_npbins,-_fbf*M_PI,_fbf*M_PI);
+    rptsp = tfs->make<TH2F>(rsname,"time spectrum;nsec",_nbins,_tmin,_tmax,_npbins,-_fbf*M_PI,_fbf*M_PI);
+    cptsp = tfs->make<TH2F>(csname,"time spectrum;nsec",_nbins,_tmin,_tmax,_npbins,-_fbf*M_PI,_fbf*M_PI);
+    tdptsp = tfs->make<TH2F>(tdsname,"time spectrum;nsec",_nbins,_tmin,_tmax,_npbins,-_fbf*M_PI,_fbf*M_PI);
  
     snprintf(rsname,100,"rawrtspectrum%i",iev);
     snprintf(csname,100,"convrtspectrum%i",iev);
@@ -728,7 +923,7 @@ namespace mu2e
       rtsp->Fill(time);
       rptsp->Fill(time,phi);
       rrtsp->Fill(time,rad);
-      double dbf = (bf-1.0)*M_PI;
+      double dbf = (_fbf-1.0)*M_PI;
       if(M_PI-phi<dbf)rptsp->Fill(time,phi-2*M_PI);
       if(phi+M_PI<dbf)rptsp->Fill(time,phi+2*M_PI);
       if(hitflags[istr].tight()){
@@ -737,6 +932,12 @@ namespace mu2e
 	trtsp->Fill(time,rad);
 	if(M_PI-phi<dbf)tptsp->Fill(time,phi-2*M_PI);
 	if(phi+M_PI<dbf)tptsp->Fill(time,phi+2*M_PI);
+      }
+      if(hitflags[istr].tight()&&!hitflags[istr].delta()){
+	tdtsp->Fill(time);
+	tdptsp->Fill(time,phi);
+	if(M_PI-phi<dbf)tdptsp->Fill(time,phi-2*M_PI);
+	if(phi+M_PI<dbf)tdptsp->Fill(time,phi+2*M_PI);
       }
       if(hitflags[istr].loose()){
 	ltsp->Fill(time);
@@ -755,7 +956,7 @@ namespace mu2e
     }
     // find peaks, so they show up on diagnostic plot too
     TSpectrum tspec(_maxnpeak);
-    tspec.Search(ttsp,1,"new",_peakfrac);
+    tspec.Search(tdtsp,1,"newnobackgroundnomarkovnodraw",_peakfrac);
   }
 
   void
