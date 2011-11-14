@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.10 2011/11/09 14:40:51 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2011/11/09 14:40:51 $
+// $Id: TrkPatRec_module.cc,v 1.11 2011/11/14 16:21:35 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2011/11/14 16:21:35 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -730,7 +730,7 @@ namespace mu2e
       rrtsp->Fill(time,rad);
       double dbf = (bf-1.0)*M_PI;
       if(M_PI-phi<dbf)rptsp->Fill(time,phi-2*M_PI);
-      if(phi+M_PI<dfb)rptsp->Fill(time,phi+2*M_PI);
+      if(phi+M_PI<dbf)rptsp->Fill(time,phi+2*M_PI);
       if(hitflags[istr].tight()){
 	ttsp->Fill(time);
 	tptsp->Fill(time,phi);
