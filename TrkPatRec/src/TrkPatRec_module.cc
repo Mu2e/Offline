@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.14 2011/11/15 17:14:54 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.15 2011/11/15 23:56:40 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/11/15 17:14:54 $
+// $Date: 2011/11/15 23:56:40 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -465,7 +465,9 @@ namespace mu2e
     }
 // search for peaks.  Convert to an absolute threshold instead of a relative threshold
     Double_t bmax = tpsp.GetMaximum();
-    tspec2.Search(&tpsp,_2dsigma,"nobackground nomarkov nodraw",_2dthresh/bmax);
+    double thresh(0.1);
+    if(bmax > _2dthresh)thresh = _2dthresh/bmax;
+    tspec2.Search(&tpsp,_2dsigma,"nobackground nomarkov nodraw",thresh);
     unsigned np = tspec2.GetNPeaks();
     Float_t *xpeaks = tspec2.GetPositionX();
     Float_t *ypeaks = tspec2.GetPositionY();
@@ -480,7 +482,7 @@ namespace mu2e
       Int_t iymin = max(iybin-1,1);
       Int_t iymax = min(iybin+1,(int)_npbins);
       Double_t npeak = tpsp.Integral(ixmin,ixmax,iymin,iymax);
-      Double_t nmax = tpsp.GetBinContent(ixbin,iybin);
+//      Double_t nmax = tpsp.GetBinContent(ixbin,iybin);
       if(npeak >= _mindp){
 // find all the hits near this peak
 	TrkTimePeak tpeak(xp,yp);
@@ -591,7 +593,10 @@ namespace mu2e
         timespec.Fill(time);
       }
     }
-    unsigned np = tspec.Search(&timespec,1,"nobackgroundnomarkovgoff",_1dthresh/timespec.GetMaximum());
+    Double_t mb = timespec.GetMaximum();
+    double thresh(0.1);
+    if(mb > _1dthresh) thresh = _1dthresh/mb;
+    unsigned np = tspec.Search(&timespec,1,"nobackgroundnomarkovgoff",thresh);
     Float_t *xpeaks = tspec.GetPositionX();
     Float_t *ypeaks = tspec.GetPositionY();
 // Loop over peaks, looking only at those with a minimum peak value
@@ -980,7 +985,10 @@ namespace mu2e
     }
     // find peaks, so they show up on diagnostic plot too
     TSpectrum tspec(_maxnpeak);
-    tspec.Search(tdtsp,1,"nobackgroundnomarkovgoff",_1dthresh/tdtsp->GetMaximum());
+    Double_t mb = tdtsp->GetMaximum();
+    double thresh(0.1);
+    if(mb > _1dthresh) thresh = _1dthresh/mb;
+    tspec.Search(tdtsp,1,"nobackgroundnomarkovgoff",thresh);
   }
 
   void
