@@ -1,4 +1,4 @@
-void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double thresh=0.2,unsigned nmax=20, unsigned nps=2){
+void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double minn=5,unsigned nmax=20, unsigned nps=2){
   gStyle->SetOptStat(0);
   bool moreplots(true);
   unsigned ican(0);
@@ -13,7 +13,7 @@ void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double thresh=0.2,unsig
     bool first(true);
     char cname[20];
     snprintf(cname,20,"timecan%i",ican);
-    cans[ican] = new TCanvas(cname,"Straw Hit Times",1000,1000);
+    cans[ican] = new TCanvas(cname,"Straw Hit Times",800,800);
     cans[ican]->Clear();
     cans[ican]->Divide(nps,nps);
     char rname[100];
@@ -23,7 +23,7 @@ void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double thresh=0.2,unsig
       nplots++;
       unsigned jplot = ican*nps*nps+1+iplot;
       snprintf(rname,100,"rawptspectrum%i",jplot);
-      snprintf(sname,100,"tightptspectrum%i",jplot);
+      snprintf(sname,100,"looseptspectrum%i",jplot);
       snprintf(cname,100,"convptspectrum%i",jplot);
       TH2F* rh = tdir->Get(rname);
       TH2F* th = tdir->Get(sname);
@@ -36,11 +36,14 @@ void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double thresh=0.2,unsig
 //        th->SetLineWidth(2);
 	th->SetMarkerColor(kGreen);
         th->SetMarkerStyle(2);
-	tp2.Search(th,sigma,"nobackground",thresh);
-//        th->Draw();
-	rh->SetTitle("Time Spectrum");
-        rh->GetXaxis()->SetTitle("nsec");
-        rh->GetYaxis()->SetTitle("#phi");
+// make an absolute threshold
+	double maxn = th.GetMaximum();
+	double thresh = minn/maxn;
+	tp2.Search(th,sigma,"nobackground nomarkov nodraw",thresh);
+ 	th->SetTitle("Time Spectrum;nsec;#phi");
+        th->Draw();
+//       rh->GetXaxis()->SetTitle("nsec");
+  //      rh->GetYaxis()->SetTitle("#phi");
         rh->Draw("same");
 	ch->SetMarkerColor(kRed);
         ch->SetMarkerStyle(5);
@@ -61,6 +64,8 @@ void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double thresh=0.2,unsig
     }
     char fname[50];
     snprintf(fname,20,"shtime2d%i.png",ican);
+    cans[ican]->Flush();
+    cans[ican]->Update();
     cans[ican]->SaveAs(fname);
     ican++;
   }

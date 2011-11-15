@@ -23,7 +23,7 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, unsigned nps=3){
       nplots++;
       unsigned jplot = ican*nps*nps+1+iplot;
       snprintf(rname,100,"rawtspectrum%i",jplot);
-      snprintf(tname,100,"tighttspectrum%i",jplot);
+      snprintf(tname,100,"tightnodeltatspectrum%i",jplot);
       snprintf(lname,100,"loosetspectrum%i",jplot);
       snprintf(cname,100,"convtspectrum%i",jplot);
       TH1F* rh = tdir->Get(rname);
