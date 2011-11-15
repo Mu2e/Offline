@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/10/28 18:47:06 $
+// $Id: KalFitMC.cc,v 1.12 2011/11/15 12:06:54 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2011/11/15 12:06:54 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -254,8 +254,6 @@ namespace mu2e
     kalDiag(myfit._krep);
 // hits diagnostic
     hitsDiag(myfit._hits);
-// mc track patermeter info
-    mcTrkInfo();
 // fill tree    
    _trkdiag->Fill(); 
   }
@@ -280,8 +278,6 @@ namespace mu2e
       if(hit != 0)hits.push_back(hit);
     }
     hitsDiag(hits);
-// mc track patermeter info
-    mcTrkInfo();
 // fill tree    
    _trkdiag->Fill(); 
   }
@@ -345,8 +341,8 @@ namespace mu2e
 	tshinfo._trklen = tsh->fltLen();
         PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
         tshinfo._mcn = mcptr.size();
-	std::vector<trksum> mcsum;
-	KalFitMC::fillMCSummary(mcptr,mcsum); 
+	std::vector<TrkSum> mcsum;
+	KalFitMC::fillMCHitSum(mcptr,mcsum); 
 	tshinfo._mcnunique = mcsum.size();
 	tshinfo._mcpdg = mcsum[0]._pdgid;
 	tshinfo._mcgen = mcsum[0]._gid;
@@ -429,10 +425,21 @@ namespace mu2e
       }
     }
   }
- 
+
+  void KalFitMC::fillMCHitSummary(){
+    size_t nsh = _mcdata._mchitptr->size();
+    _mchitsums.reserve(nsh);
+    for(size_t ish=0;ish<nsh;++ish){
+      PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(ish));
+      std::vector<TrkSum> mcsum;
+      fillMCHitSum(mcptr,mcsum); 
+      _mchitsums.push_back(mcsum);
+    }
+  }
+
 // Summarize an associated set of StepPointMCs from a StrawHit according to their parents.  This assignes
 // daughter contributions to their parents
-  void KalFitMC::fillMCSummary(PtrStepPointMCVector const& mcptr,std::vector<trksum>& summary ){
+  void KalFitMC::fillMCHitSum(PtrStepPointMCVector const& mcptr,std::vector<TrkSum>& summary ){
 // first, create a map from daughters to mothers
     std::map<SPPtr,SPPtr> mdmap;
     findRelatives(mcptr,mdmap);
@@ -443,16 +450,16 @@ namespace mu2e
 // find it's parent
       art::Ptr<SimParticle> spp = mdmap[sp];
 // create the summary
-      trksum tsum(*mcptr[imc],spp);
+      TrkSum tsum(*mcptr[imc],spp);
 // Add this energy to this particle, or create the entry if this is the first time this particle is seen
-      std::vector<trksum>::iterator ifnd = std::find(summary.begin(),summary.end(),tsum);
+      std::vector<TrkSum>::iterator ifnd = std::find(summary.begin(),summary.end(),tsum);
       if(ifnd == summary.end())
         summary.push_back(tsum);
       else
         ifnd->append(*mcptr[imc]);
     }
 // sort this according to deposited energy
-    std::sort(summary.begin(),summary.end(),trksum::ecomp());
+    std::sort(summary.begin(),summary.end(),TrkSum::ecomp());
   }
 
 // map daughters onto parents within the context of an associated set of StepPointMCs (like from a StrawHit).
@@ -562,6 +569,7 @@ namespace mu2e
   bool
   KalFitMC::findMCData(const art::Event& evt) {
     _mcdata.clear();
+    _mchitsums.clear();
     art::Handle<StrawHitMCTruthCollection> truthHandle;
     if(evt.getByLabel(_mcstrawhitslabel,truthHandle))
       _mcdata._mcstrawhits = truthHandle.product();
@@ -579,8 +587,14 @@ namespace mu2e
     art::Handle<SimParticleCollection> simParticlesHandle;
     if(evt.getByLabel(_simpartslabel,simParticlesHandle))
       _mcdata._simparts = simParticlesHandle.product();
-    return _mcdata.good();
+    if( _mcdata.good()){
+// mc track patermeter info
+      mcTrkInfo();
+// fill hit summary
+      fillMCHitSummary();
+      return true;
+    }
+    return false;
   }
-
 
 }

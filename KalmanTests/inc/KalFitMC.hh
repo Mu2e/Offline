@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.8 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/10/28 18:47:06 $
+// $Id: KalFitMC.hh,v 1.9 2011/11/15 12:06:54 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2011/11/15 12:06:54 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -38,7 +38,7 @@ namespace mu2e
  // some convenient typedefs    
   typedef art::Ptr<SimParticle> SPPtr;
 // structs
-  struct trksum {
+  struct TrkSum {
     double _esum;
     unsigned _count;
     art::Ptr<SimParticle> _spp;
@@ -46,8 +46,8 @@ namespace mu2e
     int _gid,_pid;
     double _time;
     CLHEP::Hep3Vector _pos;
-    trksum() : _esum(0.0),_count(0),_pdgid(0),_gid(0),_time(0.0) {}
-    trksum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) : _esum(mchit.eDep()),_count(1),
+    TrkSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0),_time(0.0) {}
+    TrkSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) : _esum(mchit.eDep()),_count(1),
     _spp(spp),_pdgid(0),_gid(-1),_pid(-1),
     _time(mchit.time()),
     _pos(mchit.position()){
@@ -58,8 +58,8 @@ namespace mu2e
 	  _gid = spp->genParticle()->generatorId().id();
       }
     }
-    bool operator == (const trksum& other) { return _spp == other._spp; }
-    bool operator < (const trksum& other) { return _spp < other._spp; }
+    bool operator == (const TrkSum& other) { return _spp == other._spp; }
+    bool operator < (const TrkSum& other) { return _spp < other._spp; }
     void append(StepPointMC const& mchit)  {
       double eold = _esum;
       _esum += mchit.eDep();
@@ -68,11 +68,12 @@ namespace mu2e
       _count++;
     }
 // comparison functor for ordering according to energy
-    struct ecomp : public std::binary_function<trksum,trksum, bool> {
-      bool operator()(trksum const& t1, trksum const& t2) { return t1._esum < t2._esum; }
+    struct ecomp : public std::binary_function<TrkSum,TrkSum, bool> {
+      bool operator()(TrkSum const& t1, TrkSum const& t2) { return t1._esum < t2._esum; }
     };
-  };  
-  // simple structs
+  };
+  typedef std::vector<TrkSum> MCHitSum;
+ // simple structs
   struct threevec {
     Float_t _x,_y,_z;
     threevec(): _x(0.0),_y(0.0),_z(0.0) {}
@@ -120,6 +121,7 @@ namespace mu2e
   
   class KalFitMC {
   public:
+    enum TRACKERPOS {trackerEnt=0,trackerMid};
     explicit KalFitMC(fhicl::ParameterSet const&);
     virtual ~KalFitMC();
 // find MC data in the event.  This must be called each event, before the other functions
@@ -137,13 +139,19 @@ namespace mu2e
     TTree* createTrkDiag();
     TTree* createHitDiag();
 // General StrawHit MC functions: these should move to more general class, FIXME!!
-    static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
-    static void fillMCSummary(PtrStepPointMCVector const& mcptr,std::vector<trksum>& summary );
+    const MCHitSum& mcHitSummary(size_t ihit) const { return _mchitsums[ihit]; }
 // access to MC data
     MCEvtData const& mcData() const { return _mcdata; }
+// access to event-specific MC truth for conversion electron
+    double MCT0(TRACKERPOS tpos) const { return tpos == trackerEnt ? _mcentt0 : _mcmidt0 ; }
+    double MCMom(TRACKERPOS tpos) const { return tpos == trackerEnt ? _mcentmom : _mcmidmom ; }
+    const helixpar& MCHelix(TRACKERPOS tpos) const { return tpos == trackerEnt ? _mcentpar : _mcmidpar ; }
+    double MCBrems() const { return _bremsesum; }
   private:
 // cache of event data
     MCEvtData _mcdata;
+// cache of hit summary
+   std::vector<MCHitSum> _mchitsums;
 // event data labels
     std::string _mcstrawhitslabel;
     std::string _mcptrlabel;
@@ -152,6 +160,9 @@ namespace mu2e
 // helper functions
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
       std::vector<MCStepItr>& steps);
+    static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
+    static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSum& summary );
+    void fillMCHitSummary();
 // config parameters
     double _mintrkmom; // minimum true momentum at z=0 to create a track from
     double _mct0err;
