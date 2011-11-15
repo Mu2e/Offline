@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.4 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/10/28 18:47:07 $
+// $Id: TrkHelixFit.cc,v 1.5 2011/11/15 20:40:21 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2011/11/15 20:40:21 $
 //
 //
 // the following has to come before other BaBar includes
@@ -57,7 +57,8 @@ namespace mu2e
     double radius = helix._radius + _rbias;
     pvec = HepVector(5,0);
     pvec[HelixTraj::omegaIndex] = 1.0/radius;
-    pvec[HelixTraj::d0Index] = helix._center.perp() - radius;
+// bias is doubled on d0
+    pvec[HelixTraj::d0Index] = helix._center.perp() - helix._radius - 2*_rbias;
 // account for the convention difference
     pvec[HelixTraj::phi0Index] = atan2(-helix._center.x(),helix._center.y());
     pvec[HelixTraj::tanDipIndex] = 1.0/(radius*helix._dfdz);
@@ -90,7 +91,7 @@ namespace mu2e
   _maxzsep(pset.get<double>("maxzsep",700)),
   _target(pset.get<bool>("targetConstraint",false)),
   _tsig(pset.get<double>("targetSigma",60.0)),
-  _rbias(pset.get<double>("radialBias",-15.0)),
+  _rbias(pset.get<double>("radialBias",-25.0)),
   _sfac(pset.get<double>("strawSizeFactor",2.0))
     {}
 
