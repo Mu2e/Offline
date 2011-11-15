@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.12 2011/11/14 18:17:47 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.13 2011/11/15 12:08:02 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/11/14 18:17:47 $
+// $Date: 2011/11/15 12:08:02 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -176,6 +176,7 @@ namespace mu2e
     std::vector<Float_t> _tpeaks;
     std::vector<Int_t> _ncpeak;
     std::vector<Int_t> _ntpeaks;
+    Float_t _shmct0, _shmcmom, _shmctd;
 // fit tuple variables
     Int_t _nadd,_ipeak;
     Float_t _hcx, _hcy, _hr, _hdfdz, _hfz0;
@@ -199,7 +200,8 @@ namespace mu2e
     UInt_t _nsh, _ndpeak, _ndmax; 
     UInt_t _nconv, _ndelta, _nprot;
     std::vector<TrkHitInfo> _phits;
-  };
+    Float_t _dmct0, _dmcmom, _dmctd;
+ };
 
   TrkPatRec::TrkPatRec(fhicl::ParameterSet const& pset) : 
     _diag(pset.get<int>("diagLevel",0)),
@@ -552,9 +554,7 @@ namespace mu2e
 	    _phits.clear();
 	    for(std::vector<size_t>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
 	      const StrawHit& sh = _strawhits->at(*ip);
-	      PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(*ip));
-	      std::vector<trksum> mcsum;
-	      KalFitMC::fillMCSummary(mcptr,mcsum);
+	      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(*ip);
 	      TrkHitInfo thinfo;
 	      thinfo._pos = shpos[*ip];
 	      thinfo._resid = sh.time();
@@ -566,6 +566,9 @@ namespace mu2e
 	      if(mcsum[0]._gid <0)++_ndelta;
 	      if(mcsum[0]._pdgid == 2212)++_nprot;
 	    }
+	    _dmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
+	    _dmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
+	    _dmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
 	    _ddiag->Fill();
 	  }
 	}
@@ -639,9 +642,7 @@ namespace mu2e
   // optional diagnostics
       if(_diag > 0){
   // summarize the MC truth for this strawhit
-	PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(indices[ihit]));
-	std::vector<trksum> mcsum;
-	KalFitMC::fillMCSummary(mcptr,mcsum);
+	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(ihit);
 	TrkHitInfo thinfo;
 	HepPoint tpos =  traj.position(hitpoca.flt1());
 	thinfo._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
@@ -702,7 +703,7 @@ namespace mu2e
     _shdiag->Branch("time",&_time,"time/F");
     _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/i");
     _shdiag->Branch("tpeaks",&_tpeaks);
-		_shdiag->Branch("ncpeak",&_ncpeak);
+    _shdiag->Branch("ncpeak",&_ncpeak);
     _shdiag->Branch("ntpeaks",&_ntpeaks);
     _shdiag->Branch("dmin",&_dmin,"dmin/F");
     _shdiag->Branch("n50",&_n50,"n50/i");
@@ -715,7 +716,7 @@ namespace mu2e
     _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/i");
     _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/i");
     _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/i");
-    _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
+    _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/i");
     _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
     _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
     _shdiag->Branch("mctime",&_mctime,"mctime/F");
@@ -725,6 +726,9 @@ namespace mu2e
     _shdiag->Branch("pdist",&_pdist,"pdist/F");
     _shdiag->Branch("pperp",&_pperp,"pperp/F");
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
+    _shdiag->Branch("mct0",&_shmct0,"mct0/F");
+    _shdiag->Branch("mcmom",&_shmcmom,"mcmom/F");
+    _shdiag->Branch("mctd",&_shmctd,"mctd/F");
 // extend the KalFitMC track diagnostic tuple
     TTree* trkdiag = _kfitmc.createTrkDiag();
     trkdiag->Branch("nadd",&_nadd,"nadd/I");
@@ -780,7 +784,10 @@ namespace mu2e
     _ddiag->Branch("zmax",&_zmax,"zmax/F");
     _ddiag->Branch("zgap",&_zgap,"zgap/F");
     _ddiag->Branch("phits",&_phits);
-  }
+    _ddiag->Branch("mct0",&_dmct0,"mct0/F");
+    _ddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
+    _ddiag->Branch("mctd",&_dmctd,"mctd/F");
+}
 
   void
   TrkPatRec::fillStrawDiag(std::vector<CLHEP::Hep3Vector> const& shpos,std::vector<TrkTimePeak>& tpeaks) {
@@ -825,12 +832,11 @@ namespace mu2e
 	_pmom /= esum;
       }
       // summarize the MC truth for this strawhit
-      std::vector<trksum> mcsum;
-      KalFitMC::fillMCSummary(mcptr,mcsum); 
+      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr); 
       _mcnunique = mcsum.size();
       // compute energy sum
       _mcedep = 0.0;
-      for(std::vector<trksum>::iterator isum=mcsum.begin(); isum != mcsum.end(); isum++){
+      for(std::vector<TrkSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
 	_mcedep += isum->_esum;
       }
       // first entry
@@ -843,6 +849,9 @@ namespace mu2e
       _mcshpos = mcsum[0]._pos;
       _tight = tighthit(sh.energyDep(),shpos[istr].rho());
       _loose = loosehit(sh.energyDep(),shpos[istr].rho());
+      _shmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
+      _shmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
+      _shmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
       _shdiag->Fill();
       bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
       if(conversion){
@@ -915,9 +924,7 @@ namespace mu2e
       double rad = shpos[istr].perp();
       double phi = shpos[istr].phi();
       // summarize the MC truth for this strawhit
-      PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(istr));
-      std::vector<trksum> mcsum;
-      KalFitMC::fillMCSummary(mcptr,mcsum); 
+      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr); 
       bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
       // fill plots
       rtsp->Fill(time);
@@ -975,9 +982,7 @@ namespace mu2e
     _npeak = tpeak._trkptrs.size();
     for(std::vector<size_t>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
       // summarize the MC truth for this strawhit
-      PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(*istr));
-      std::vector<trksum> mcsum;
-      KalFitMC::fillMCSummary(mcptr,mcsum); 
+      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(*istr); 
       if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
 	++_nmc;
     }
