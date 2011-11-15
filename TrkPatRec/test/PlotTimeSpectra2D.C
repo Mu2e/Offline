@@ -33,15 +33,16 @@ void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double minn=5,unsigned 
         th->SetStats(0);
         ch->SetStats(0);
         cans[ican]->cd(iplot+1);
-//        th->SetLineWidth(2);
+        th->SetLineColor(kGreen);
 	th->SetMarkerColor(kGreen);
         th->SetMarkerStyle(2);
 // make an absolute threshold
 	double maxn = th.GetMaximum();
 	double thresh = minn/maxn;
-	tp2.Search(th,sigma,"nobackground nomarkov nodraw",thresh);
- 	th->SetTitle("Time Spectrum;nsec;#phi");
-        th->Draw();
+	tp2.Search(th,sigma,"nobackgroundnomarkovnodraw",thresh);
+// 	th->SetTitle("Time Spectrum;nsec;#phi");
+//        th->Draw("box");
+	th->Draw();
 //       rh->GetXaxis()->SetTitle("nsec");
   //      rh->GetYaxis()->SetTitle("#phi");
         rh->Draw("same");

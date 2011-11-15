@@ -83,11 +83,11 @@ void KalTest (TTree* trk) {
   text->Draw();
 
   }  
-  void HelixTest (TTree* trk) {
+  void CircleTest (TTree* trk) {
     gStyle->SetOptStat(111111);
     gStyle->SetOptFit(111111);
 
-  TCanvas* ccan = new TCanvas("ccan","Circle Fit",1200,800);
+  TCanvas* ccanxy = new TCanvas("ccanxy","Circle Fit",1200,800);
   TH2F* cx = new TH2F("cx","Circle X center;MC true (mm);Fit (mm)",50,-400,400,50,-400,400);
   TH2F* cy = new TH2F("cy","Circle Y center;MC true (mm);Fit (mm)",50,-400,400,50,-400,400);
   TH2F* cr = new TH2F("cr","Circle radius;MC true (mm);Fit (mm)",50,180,350,50,180,350);
@@ -97,27 +97,27 @@ void KalTest (TTree* trk) {
   cx->SetStats(0);
   cy->SetStats(0);
   cr->SetStats(0);
-  TCut helix("nmc>=20&&helixfail==0");
+  TCut helix("nmc>=15&&helixfail==0");
 
   trk->Project("cxr","hcx-mccx",helix);
   trk->Project("cyr","hcy-mccy",helix);
   trk->Project("crr","hr-mcr",helix);
-  ccan->Clear();
-  ccan->Divide(3,2);
-  ccan->cd(1);
+  ccanxy->Clear();
+  ccanxy->Divide(3,2);
+  ccanxy->cd(1);
   trk->Draw("hcx:mccx>>cx",helix);
-  ccan->cd(2);
+  ccanxy->cd(2);
   trk->Draw("hcy:mccy>>cy",helix);
-  ccan->cd(3);
+  ccanxy->cd(3);
   trk->Draw("hr:mcr>>cr",helix);
-  ccan->cd(4);
+  ccanxy->cd(4);
   cxr->Fit("gaus");
-  ccan->cd(5);
+  ccanxy->cd(5);
   cyr->Fit("gaus");
-  ccan->cd(6);
+  ccanxy->cd(6);
   crr->Fit("gaus");
   
-  TCanvas* hcan = new TCanvas("hcan","Helix Fit",1200,800);
+  TCanvas* ccanrz = new TCanvas("ccanrz","RZ parameters",1200,800);
   
   TH2F* dfdz = new TH2F("dfdz","Helix pitch (d#phi/dZ);MC true (radians/mm);helix fit (radians/mm)",50,0.0035,0.0065,50,0.0035,0.0065);
   TH2F* fz0 = new TH2F("fz0","Heliz #phi intercept;MC true (radians); helix fit (radians)",50,-1,12,50,-1,12.);
@@ -128,18 +128,23 @@ void KalTest (TTree* trk) {
   dfdz->SetStats(0);
   fz0->SetStats(0);
   
-  hcan->Clear();
-  hcan->Divide(2,2);
-  hcan->cd(1);
+  ccanrz->Clear();
+  ccanrz->Divide(2,2);
+  ccanrz->cd(1);
   trk->Draw("hdfdz:mcdfdz>>dfdz",helix);
-  hcan->cd(2);
+  ccanrz->cd(2);
   trk->Draw("hfz0:mcfz0>>fz0",helix);
-  hcan->cd(3);
+  ccanrz->cd(3);
   dfdzr->Fit("gaus");
-  hcan->cd(4);
+  ccanrz->cd(4);
   fz0r->Fit("gaus");
-  
-  TCanvas* scan = new TCanvas("scan","Helix Seed",1200,800);
+ } 
+
+  void HelixTest (TTree* trk) {
+    gStyle->SetOptStat(111111);
+    gStyle->SetOptFit(111111);
+
+  TCanvas* hpcan = new TCanvas("hpcan","Helix params",1200,800);
   
   TH2F* d0 = new TH2F("d0","d0;MC true (mm);helix fit (mm)",50,-200,200,50,-200,200);
   TH2F* phi0 = new TH2F("phi0","#phi0;MC true (radians);helix fit (radians)",50,-3.5,3.5,50,-3.5,3.5);
@@ -151,20 +156,52 @@ void KalTest (TTree* trk) {
   om->SetStats(0);
   z0->SetStats(0);
   td->SetStats(0);
+  TCut helix("nmc>=15&&helixfail==0");
+
 
   
-  scan->Clear();
-  scan->Divide(3,2);
-  scan->cd(1);
+  hpcan->Clear();
+  hpcan->Divide(3,2);
+  hpcan->cd(1);
   trk->Draw("hd0:mcmidd0>>d0",helix);
-  scan->cd(2);
+  hpcan->cd(2);
   trk->Draw("hp0:mcmidp0>>phi0",helix);
-  scan->cd(3);
+  hpcan->cd(3);
   trk->Draw("hom:mcmidom>>om",helix);
-  scan->cd(4);
+  hpcan->cd(4);
   trk->Draw("hz0:mcmidz0>>z0",helix);
-  scan->cd(5);
+  hpcan->cd(5);
   trk->Draw("htd:mcmidtd>>td",helix);
+
+  
+  TCanvas* hprcan = new TCanvas("hprcan","Helix parameter Resolution",1200,800);
+  
+  TH1F* d0r = new TH1F("d0r","seed d0 resolution;mm",100,-300,300);
+  TH1F* phi0r = new TH1F("phi0r","seed #phi0 resolution;radians",100,-0.25,0.25);
+  TH1F* omr = new TH1F("omr","seed #omega resolution;1/mm",100,-0.002,0.002);
+  TH1F* z0r = new TH1F("z0r","seed z0 resolution;mm",100,-150,150);
+  TH1F* tdr = new TH1F("tdr","seed tan(#lambda) resolution",100,-0.3,0.3);
+
+  trk->Project("d0r","hd0-mcmidd0",helix);
+  trk->Project("phi0r","hp0-mcmidp0",helix);
+  trk->Project("omr","hom-mcmidom",helix);
+  trk->Project("z0r","hz0-mcmidz0",helix);
+  trk->Project("tdr","htd-mcmidtd",helix);
+  
+  hprcan->Clear();
+  hprcan->Divide(3,2);
+  hprcan->cd(1);
+  d0r->Fit("gaus");
+  hprcan->cd(2);
+  phi0r->Fit("gaus");
+  hprcan->cd(3);
+  omr->Fit("gaus");
+  hprcan->cd(4);
+  z0r->Fit("gaus");
+  hprcan->cd(5);
+  tdr->Fit("gaus");
+ 
+
 }
 
 void MomRes(TTree* trk) {
@@ -172,7 +209,7 @@ void MomRes(TTree* trk) {
   gStyle->SetOptStat(111111);
   gStyle->SetOptFit(111111);
 // should have pitch angle and generated hit cuts here, FIXME!!!
-//  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=20");
+//  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=15");
   TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&abs(tpeak-mcmidt0-28)<30");
   TCut tsel = mcsel +TCut("kalfail==0");
 // selection cuts
@@ -252,33 +289,33 @@ void MomRes(TTree* trk) {
   
 void SeedTest (TTree* trk) {
   
-  TCanvas* srcan = new TCanvas("srcan","Helix Seed Resolution",1200,800);
+  TCanvas* scan = new TCanvas("srcan","Seed parameter Resolution",1200,800);
   
-  TH1F* d0r = new TH1F("d0r","seed d0 resolution;mm",100,-300,300);
-  TH1F* phi0r = new TH1F("phi0r","seed #phi0 resolution;radians",100,-0.25,0.25);
-  TH1F* omr = new TH1F("omr","seed #omega resolution;1/mm",100,-0.002,0.002);
-  TH1F* z0r = new TH1F("z0r","seed z0 resolution;mm",100,-150,150);
-  TH1F* tdr = new TH1F("tdr","seed tan(#lambda) resolution",100,-0.3,0.3);
+  TH1F* d0s = new TH1F("d0s","seed d0 resolution;mm",100,-100,100);
+  TH1F* phi0s = new TH1F("phi0s","seed #phi0 resolution;radians",100,-0.07,0.07);
+  TH1F* oms = new TH1F("oms","seed #omega resolution;1/mm",100,-0.0005,0.0005);
+  TH1F* z0s = new TH1F("z0s","seed z0 resolution;mm",100,-30,30);
+  TH1F* tds = new TH1F("tds","seed tan(#lambda) resolution",100,-0.07,0.07);
+  TCut seed("nmc>=15&&seedfail==0");
 
 
-  trk->Project("d0r","hd0-mcmidd0");
-  trk->Project("phi0r","hp0-mcmidp0");
-  trk->Project("omr","hom-mcmidom");
-  trk->Project("z0r","hz0-mcmidz0");
-  trk->Project("tdr","htd-mcmidtd");
+  trk->Project("d0s","sd0-mcmidd0",seed);
+  trk->Project("phi0s","sp0-mcmidp0",seed);
+  trk->Project("oms","som-mcmidom",seed);
+  trk->Project("z0s","sz0-mcmidz0",seed);
+  trk->Project("tds","std-mcmidtd",seed);
   
-  srcan->Clear();
-  srcan->Divide(3,2);
-  srcan->cd(1);
-  d0r->Fit("gaus");
-  srcan->cd(2);
-  phi0r->Fit("gaus");
-  srcan->cd(3);
-  omr->Fit("gaus");
-  srcan->cd(4);
-  z0r->Fit("gaus");
-  srcan->cd(5);
-  tdr->Fit("gaus");
-  
+  scan->Clear();
+  scan->Divide(3,2);
+  scan->cd(1);
+  d0s->Fit("gaus");
+  scan->cd(2);
+  phi0s->Fit("gaus");
+  scan->cd(3);
+  oms->Fit("gaus");
+  scan->cd(4);
+  z0s->Fit("gaus");
+  scan->cd(5);
+  tds->Fit("gaus");
   
 }

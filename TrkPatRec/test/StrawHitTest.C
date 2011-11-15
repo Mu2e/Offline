@@ -6,9 +6,13 @@ void StrawHitTest (TTree* hits ) {
     TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
     TCut compt("mcpdg==11&&mcgen<0&&mcproc==12");
     TCut proton("mcpdg==2212");
-    TCut bkge("mcpdg==11&&mcgen!=2");
-    TCut bkgo("mcpdg!=11&&mcpdg!=2212");
- 
+    TCut photon("mcpdg==22");
+    TCut neutron("mcpdg==2112");
+    TCut bkge("abs(mcpdg)==11&&mcgen<0");
+    TCut bkgo("abs(mcpdg)!=11&&mcpdg!=2212");
+
+    TCut goodevt("mcmom>100&&mctd<1&&mctd>0.577");
+    TCut goodpeak("abs(tpeak-mct0-25)<30");
 
     TCanvas* scan = new TCanvas("scan","simulation",1200,800);
     TH1F* pdgid = new TH1F("pdgid","PDG Id",100,-200,2300);
@@ -120,25 +124,25 @@ void StrawHitTest (TTree* hits ) {
     TCut ecut("edep<0.0045");
     TCut rmin("sqrt(shpos.x^2+shpos.y^2)>410");
     
-    hits->Project("econv","edep",conv);
-    hits->Project("edio","edep",bkge);
-    hits->Project("edelta","edep",bkgo);
-    hits->Project("ep","edep",proton);
+    hits->Project("econv","edep",conv+goodevt);
+    hits->Project("edio","edep",bkge+goodevt);
+    hits->Project("edelta","edep",bkgo+goodevt);
+    hits->Project("ep","edep",proton+goodevt);
     
-    hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv);
-    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",bkge);
-    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)",bkgo);
-    hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)",proton);
+    hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv+goodevt);
+    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",bkge+goodevt);
+    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)",bkgo+goodevt);
+    hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)",proton+goodevt);
     
-    hits->Project("nconv","n200",conv);
-    hits->Project("ndio","n200",bkge);
-    hits->Project("ndelta","n200",bkgo);
-    hits->Project("np","n200",proton);
+    hits->Project("nconv","n200",conv+goodevt);
+    hits->Project("ndio","n200",bkge+goodevt);
+    hits->Project("ndelta","n200",bkgo+goodevt);
+    hits->Project("np","n200",proton+goodevt);
     
-    hits->Project("zconv","shpos.z",conv);
-    hits->Project("zdio","shpos.z",bkge);
-    hits->Project("zdelta","shpos.z",bkgo);
-    hits->Project("zp","shpos.z",proton);
+    hits->Project("zconv","shpos.z",conv+goodevt);
+    hits->Project("zdio","shpos.z",bkge+goodevt);
+    hits->Project("zdelta","shpos.z",bkgo+goodevt);
+    hits->Project("zp","shpos.z",proton+goodevt);
  
     TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
     leg2->AddEntry(rconv,"Conv. Electrons","l");
@@ -218,13 +222,13 @@ void StrawHitTest (TTree* hits ) {
     zdelta->Draw("same");
     
     TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
-    TCut clean("loose>0&&abs(time-tpeaks[0])<45.0");
+    TCut clean = goodpeak+TCut("tight>0&&delta==0");
     
     TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
     TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
     
-    TH1F* rres = new TH1F("rres","StrawHit Radius resoltion;mm",100,-100,100);
-    TH1F* pres = new TH1F("pres","StrawHit #phi resoltion;mm",100,-0.5,0.5);
+    TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
+    TH1F* pres = new TH1F("pres","StrawHit #phi resolution;mm",100,-0.5,0.5);
     
     
     gid->SetLineColor(kBlue);
@@ -260,15 +264,15 @@ void StrawHitTest (TTree* hits ) {
     tdelta->SetLineColor(kCyan);
     tp->SetLineColor(kBlue);
     
-    hits->Project("tconv","time-tpeaks[0]",conv+"loose");
-    hits->Project("tdio","time-tpeaks[0]",bkge+"loose");
-    hits->Project("tdelta","time-tpeaks[0]",bkgo+"loose");
-    hits->Project("tp","time-tpeaks[0]",proton+"loose");
+    hits->Project("tconv","time-tpeak",conv+goodevt+clean);
+    hits->Project("tdio","time-tpeak",bkge+goodevt+clean);
+    hits->Project("tdelta","time-tpeak",bkgo+goodevt+clean);
+    hits->Project("tp","time-tpeak",proton+goodevt+clean);
     
     TLegend* leg4 = new TLegend(0.65,0.6,0.9,0.95);
     leg4->AddEntry(tconv,"Conv. Electrons","l");
     leg4->AddEntry(tdio,"Bkg Electrons","l");
-    leg4->AddEntry(tdelta,"Other particle bkg","l");
+    leg4->AddEntry(tdelta,"Photons","l");
     leg4->AddEntry(tp,"Protons","l");
     
     
