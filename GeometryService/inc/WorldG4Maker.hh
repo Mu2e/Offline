@@ -10,7 +10,7 @@ namespace mu2e {
   class WorldG4Maker {
     std::auto_ptr<WorldG4> _wg4;
   public:
-    WorldG4Maker(const SimpleConfig& config);
+    explicit WorldG4Maker(const SimpleConfig& config);
     
     // interface to GeometryService
     std::auto_ptr<WorldG4> getPtr() { return _wg4; }

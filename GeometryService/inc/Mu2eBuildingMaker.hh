@@ -10,7 +10,7 @@ namespace mu2e {
   class Mu2eBuildingMaker {
     std::auto_ptr<Mu2eBuilding> _b;
   public:
-    Mu2eBuildingMaker(const SimpleConfig& config);
+    explicit Mu2eBuildingMaker(const SimpleConfig& config);
     
     // interface to GeometryService
     std::auto_ptr<Mu2eBuilding> getPtr() { return _b; }
