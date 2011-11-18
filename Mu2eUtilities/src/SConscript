@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.9 2011/05/24 17:19:03 kutschke Exp $
+# $Id: SConscript,v 1.10 2011/11/18 21:33:47 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/05/24 17:19:03 $
+# $Date: 2011/11/18 21:33:47 $
 #
 # Original author Rob Kutschke.
 #
@@ -25,6 +25,7 @@ if non_plugin_cc:
                              'MCDataProducts',
                              'RecoDataProducts',
                              'CLHEP',
+                             'cetlib',
                              ],
                       )
     libs=[ '#/lib/'+local_lib_name ]
