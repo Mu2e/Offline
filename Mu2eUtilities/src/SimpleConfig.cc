@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.15 2011/05/20 20:18:23 wb Exp $
- * $Author: wb $
- * $Date: 2011/05/20 20:18:23 $
+ * $Id: SimpleConfig.cc,v 1.16 2011/11/18 21:34:00 kutschke Exp $
+ * $Author: kutschke $
+ * $Date: 2011/11/18 21:34:00 $
  *
  * Original author Rob Kutschke
  *
@@ -399,8 +399,6 @@ namespace mu2e {
    */
   void SimpleConfig::print( std::ostream& ost ) const{
 
-    Image_type::const_iterator b = _image.begin();
-    Image_type::const_iterator e = _image.end();
     for ( vector<SimpleConfigRecord>::size_type i=0;
           i<_image.size(); ++i ){
       if ( !_image[i]->isCommentOrBlank() && !_image[i]->isSuperceded() ) {
@@ -419,8 +417,6 @@ namespace mu2e {
    */
   void SimpleConfig::printFullImage( std::ostream& ost ) const{
 
-    Image_type::const_iterator b = _image.begin();
-    Image_type::const_iterator e = _image.end();
     for ( vector<SimpleConfigRecord>::size_type i=0;
           i<_image.size(); ++i ){
       if ( !_image[i]->isCommentOrBlank() ) {
