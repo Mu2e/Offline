@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.36 2011/10/31 23:09:28 kutschke Exp $
+# $Id: setup.sh,v 1.37 2011/11/19 16:57:02 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/10/31 23:09:28 $
+# $Date: 2011/11/19 16:57:02 $
 #
 # Original author Rob Kutschke
 #
@@ -44,10 +44,10 @@ export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
 echo "MU2E_SEACH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Setup the framework and its dependent products
-setup art v1_00_02 -qmu2e:debug
+setup art v1_00_06 -qmu2e:prof
 
 # Geant4 and its cross-section files.
-setup geant4 v4_9_4_p02 -qgcc46:debug
+setup geant4 v4_9_4_p02 -qgcc46:prof
 
 setup g4neutron v3_14
 setup g4emlow v6_19
@@ -56,7 +56,7 @@ setup g4radiative v3_3
 setup g4abla v3_0
 
 # Other libraries we need.
-setup heppdt v3_04_01 -qgcc46:debug
+setup heppdt v3_04_01 -qgcc46:prof
 
 # The build system.
 setup scons v1_3_0b -qgcc46
