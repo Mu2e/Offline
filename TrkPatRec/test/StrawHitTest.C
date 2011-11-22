@@ -1,19 +1,22 @@
-void StrawHitTest (TTree* hits ) {
+#include <algorithm>
+void StrawHitTest (TTree* hits, char* page="bcan" ) {
 
-    TCut conv("mcpdg==11&&mcgen==2");
-    TCut dio("mcpdg==11&&mcgen==6");
-    TCut delta("mcpdg==11&&mcgen<0&&mcproc==17");
-    TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
-    TCut compt("mcpdg==11&&mcgen<0&&mcproc==12");
-    TCut proton("mcpdg==2212");
-    TCut photon("mcpdg==22");
-    TCut neutron("mcpdg==2112");
-    TCut bkge("abs(mcpdg)==11&&mcgen<0");
-    TCut bkgo("abs(mcpdg)!=11&&mcpdg!=2212");
+  TString spage(page);
+  gStyle->SetOptStat(0);
+  TCut conv("mcpdg==11&&mcgen==2");
+  TCut dio("mcpdg==11&&mcgen==6");
+  TCut delta("mcpdg==11&&mcgen<0&&mcproc==17");
+  TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
+  TCut compt("mcpdg==11&&mcgen<0&&mcproc==12");
+  TCut proton("mcpdg==2212");
+  TCut photon("mcpdg==22");
+  TCut neutron("mcpdg==2112");
+  TCut bkge("abs(mcpdg)==11&&mcgen<0");
+  TCut bkgo("abs(mcpdg)!=11&&mcpdg!=2212");
 
-    TCut goodevt("mcmom>100&&mctd<1&&mctd>0.577");
-    TCut goodpeak("abs(tpeak-mct0-25)<30");
-
+  TCut goodevt("mcmom>100&&mctd<1&&mctd>0.577&&time>770&&time<1700");
+  TCut goodpeak("abs(tpeak-mct0-25)<30");
+  if(spage =="scan"){
     TCanvas* scan = new TCanvas("scan","simulation",1200,800);
     TH1F* pdgid = new TH1F("pdgid","PDG Id",100,-200,2300);
     pdgid->SetStats(0);
@@ -25,7 +28,7 @@ void StrawHitTest (TTree* hits ) {
     gidp->SetLineColor(kBlue);
     pide->SetLineColor(kRed);
     pidp->SetLineColor(kBlue);
-    
+
     TH1F* nuconv = new TH1F("nuconv","N unique trkids in StrawHit",6,-0.5,5.5);
     TH1F* nudio = new TH1F("nudio","N unique trkids in StrawHit",6,-0.5,5.5);
     TH1F* nudel = new TH1F("nudel","N unique trkids in StrawHit",6,-0.5,5.5);
@@ -36,7 +39,7 @@ void StrawHitTest (TTree* hits ) {
     nup->SetLineColor(kBlue);
     TH2F* eve = new TH2F("eve","StrawHit Edep vs #Sigma MC Edep;MeV;MeV",100,0,0.3,100,0,0.3);
     eve->SetStats(0);
-    
+
     hits->Project("pdgid","mcpdg");
     hits->Project("gide","mcgen","mcpdg==11");
     hits->Project("gidp","mcgen",proton);
@@ -46,7 +49,7 @@ void StrawHitTest (TTree* hits ) {
     hits->Project("nudio","mcnunique",dio);
     hits->Project("nudel","mcnunique",delta);
     hits->Project("nup","mcnunique",proton);
-    
+
     TLegend* leg = new TLegend(0.5,0.5,0.8,0.8);
     leg->AddEntry(gide,"Electrons","l");
     leg->AddEntry(gidp,"Protons","l");
@@ -56,7 +59,7 @@ void StrawHitTest (TTree* hits ) {
     leg3->AddEntry(nudio,"DIO Electrons","l");
     leg3->AddEntry(nudel,"Delta Electrons","l");
     leg3->AddEntry(nup,"Protons","l");
-    
+
     scan->Clear();
     scan->Divide(2,2);
     scan->cd(1);
@@ -74,137 +77,161 @@ void StrawHitTest (TTree* hits ) {
     nudio->Draw("same");
     nudel->Draw("same");
     leg3->Draw();
-    
+
     scan->cd(4);
     hits->Draw("edep:mcedep>>eve","","",10000);
-    
+
+  } else if(spage == "bcan"){
+
     TCanvas* bcan = new TCanvas("bcan","background",1200,800);
-    
-    TH1F* econv = new TH1F("econv","EDep;MeV",200,-0.01,0.15);
-    TH1F* edio = new TH1F("edio","EDep;MeV",200,-0.01,0.15);
-    TH1F* edelta = new TH1F("edelta","EDep;MeV",200,-0.01,0.15);
-    TH1F* ep = new TH1F("ep","EDep;MeV",200,-0.01,0.15);
+
+    TH1F* econv = new TH1F("econv","StrawHit EDep;MeV",200,-0.01,0.15);
+    TH1F* edio = new TH1F("edio","StrawHit EDep;MeV",200,-0.01,0.15);
+    TH1F* eneut = new TH1F("eneut","StrawHit EDep;MeV",200,-0.01,0.15);
+    TH1F* ephot = new TH1F("ephot","StrawHit EDep;MeV",200,-0.01,0.15);
+    TH1F* edelta = new TH1F("edelta","StrawHit EDep;MeV",200,-0.01,0.15);
+    TH1F* ep = new TH1F("ep","StrawHit EDep;MeV",200,-0.01,0.15);
     econv->SetLineColor(kRed);
     edio->SetLineColor(kGreen);
     edelta->SetLineColor(kCyan);
     ep->SetLineColor(kBlue);
+    eneut->SetLineColor(kYellow);
+    ephot->SetLineColor(kMagenta);
     econv->SetStats(0);
     edio->SetStats(0);
     edelta->SetStats(0);
     ep->SetStats(0);
-    
-    TH1F* rconv = new TH1F("rconv","StrawHit Radius;mm",100,360,700);
-    TH1F* rdio = new TH1F("rdio","StrawHit Radius;mm",100,360,700);
-    TH1F* rdelta = new TH1F("rdelta","StrawHit Radius;mm",100,360,700);
-    TH1F* rp = new TH1F("rp","StrawHit Radius;mm",100,360,700);
+
+    TH1F* rconv = new TH1F("rconv","StrawHit Radius;mm",100,360,750);
+    TH1F* rdio = new TH1F("rdio","StrawHit Radius;mm",100,360,750);
+    TH1F* rneut = new TH1F("rneut","StrawHit Radius;mm",100,360,750);
+    TH1F* rphot = new TH1F("rphot","StrawHit Radius;mm",100,360,750);
+    TH1F* rdelta = new TH1F("rdelta","StrawHit Radius;mm",100,360,750);
+    TH1F* rp = new TH1F("rp","StrawHit Radius;mm",100,360,750);
     rconv->SetLineColor(kRed);
     rp->SetMinimum(10);
     rdio->SetLineColor(kGreen);
     rdelta->SetLineColor(kCyan);
     rp->SetLineColor(kBlue);
-    
-    TH1F* nconv = new TH1F("nconv","N, D<10cm",41,-1.5,39.5);
-    TH1F* ndio = new TH1F("ndio","N, D<10cm",41,-1.5,39.5);
-    TH1F* ndelta = new TH1F("ndelta","N, D<10cm",41,-1.5,39.5);
-    TH1F* np = new TH1F("np","N, D<10cm",41,-1.5,39.5);
-    nconv->SetLineColor(kRed);
-    ndio->SetLineColor(kGreen);
-    ndelta->SetLineColor(kCyan);
-    np->SetLineColor(kBlue);
+    rneut->SetLineColor(kYellow);
+    rphot->SetLineColor(kMagenta);
+    /*   
+	 TH1F* nconv = new TH1F("nconv","N, D<10cm",41,-1.5,39.5);
+	 TH1F* ndio = new TH1F("ndio","N, D<10cm",41,-1.5,39.5);
+	 TH1F* ndelta = new TH1F("ndelta","N, D<10cm",41,-1.5,39.5);
+	 TH1F* np = new TH1F("np","N, D<10cm",41,-1.5,39.5);
+	 nconv->SetLineColor(kRed);
+	 ndio->SetLineColor(kGreen);
+	 ndelta->SetLineColor(kCyan);
+	 np->SetLineColor(kBlue);
 
-    TH1F* zconv = new TH1F("zconv","Z",100,-1500,1500);
-    TH1F* zdio = new TH1F("zdio","Z",100,-1500,1500);
-    TH1F* zdelta = new TH1F("zdelta","Z",100,-1500,1500);
-    TH1F* zp = new TH1F("zp","Z",100,-1500,1500);
-    zconv->SetLineColor(kRed);
-    zdio->SetLineColor(kGreen);
-    zdelta->SetLineColor(kCyan);
-    zp->SetLineColor(kBlue);
-
+	 TH1F* zconv = new TH1F("zconv","Z",100,-1500,1500);
+	 TH1F* zdio = new TH1F("zdio","Z",100,-1500,1500);
+	 TH1F* zdelta = new TH1F("zdelta","Z",100,-1500,1500);
+	 TH1F* zp = new TH1F("zp","Z",100,-1500,1500);
+	 zconv->SetLineColor(kRed);
+	 zdio->SetLineColor(kGreen);
+	 zdelta->SetLineColor(kCyan);
+	 zp->SetLineColor(kBlue);
+     */
     TCut ecut("edep<0.0045");
     TCut rmin("sqrt(shpos.x^2+shpos.y^2)>410");
-    
+
     hits->Project("econv","edep",conv+goodevt);
-    hits->Project("edio","edep",bkge+goodevt);
-    hits->Project("edelta","edep",bkgo+goodevt);
+    hits->Project("edio","edep",dio+goodevt);
+    hits->Project("eneut","edep",neutron+goodevt);
+    hits->Project("ephot","edep",photon+goodevt);
+    hits->Project("edelta","edep",bkge+goodevt);
     hits->Project("ep","edep",proton+goodevt);
-    
+
     hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv+goodevt);
-    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",bkge+goodevt);
-    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)",bkgo+goodevt);
+    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",dio+goodevt);
+    hits->Project("rneut","sqrt(shpos.y^2+shpos.x^2)",neutron+goodevt);
+    hits->Project("rphot","sqrt(shpos.y^2+shpos.x^2)",photon+goodevt);
+    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)",bkge+goodevt);
     hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)",proton+goodevt);
-    
-    hits->Project("nconv","n200",conv+goodevt);
-    hits->Project("ndio","n200",bkge+goodevt);
-    hits->Project("ndelta","n200",bkgo+goodevt);
-    hits->Project("np","n200",proton+goodevt);
-    
-    hits->Project("zconv","shpos.z",conv+goodevt);
-    hits->Project("zdio","shpos.z",bkge+goodevt);
-    hits->Project("zdelta","shpos.z",bkgo+goodevt);
-    hits->Project("zp","shpos.z",proton+goodevt);
- 
-    TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
-    leg2->AddEntry(rconv,"Conv. Electrons","l");
-    leg2->AddEntry(rdio,"Bkg Electrons","l");
-    leg2->AddEntry(rdelta,"Other particle Bkg","l");
-    leg2->AddEntry(rp,"Protons","l");
-    
+    /*    
+	  hits->Project("nconv","n200",conv+goodevt);
+	  hits->Project("ndio","n200",bkge+goodevt);
+	  hits->Project("ndelta","n200",bkgo+goodevt);
+	  hits->Project("np","n200",proton+goodevt);
+
+	  hits->Project("zconv","shpos.z",conv+goodevt);
+	  hits->Project("zdio","shpos.z",bkge+goodevt);
+	  hits->Project("zdelta","shpos.z",bkgo+goodevt);
+	  hits->Project("zp","shpos.z",proton+goodevt);
+     */
+
     bcan->Clear();
-    bcan->Divide(2,2);
+    bcan->Divide(1,2);
     bcan->cd(1);
     gPad->SetLogy();
-    edio->Draw();
-    econv->Draw("same");
+    /*    edio->Draw();
+	  econv->Draw("same");
+	  ep->Draw("same");
+	  edelta->Draw("same");
+	  leg2->Draw();
+
+	  bcan->cd(2);
+     */
+    edelta->GetXaxis()->SetRangeUser(-0.005,0.04);
+    edelta->SetMinimum(econv->GetMaximum()/100.0);
+    edelta->Draw();
     ep->Draw("same");
-    edelta->Draw("same");
-    leg2->Draw();
-    
-    bcan->cd(2);
-    edio->GetXaxis()->SetRangeUser(-0.005,0.015);
-    edio->Draw();
-    ep->Draw("same");
     econv->Draw("same");
-    edelta->Draw("same");
-    
-    TLine* ecut_t = new TLine(0.004,0.0,0.004,econv->GetMaximum());
+    edio->Draw("same");
+    eneut->Draw("same");
+    ephot->Draw("same");
+
+    TLine* ecut_t = new TLine(0.004,0.0,0.004,edelta->GetMaximum());
     ecut_t->SetLineColor(kBlack);
     ecut_t->SetLineStyle(2);
     ecut_t->SetLineWidth(2);
-    TLine* ecut_l = new TLine(0.0055,0.0,0.0055,econv->GetMaximum());
+    TLine* ecut_l = new TLine(0.0055,0.0,0.0055,edelta->GetMaximum());
     ecut_l->SetLineColor(kBlack);
     ecut_l->SetLineStyle(3);
     ecut_l->SetLineWidth(2);
     ecut_t->Draw();
     ecut_l->Draw();
-    
-    TLegend* leg3 = new TLegend(0.55,0.6,0.9,0.9);
+
+    TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
+    leg2->AddEntry(rconv,"Conv. Electrons","l");
+    leg2->AddEntry(rdelta,"Bkg Electrons","l");
+    leg2->AddEntry(rdio,"DIO Electrons","l");
+    leg2->AddEntry(rneut,"Neutrons","l");
+    leg2->AddEntry(rphot,"Photons","l");
+    leg2->AddEntry(rp,"Protons","l");
+    leg2->Draw();
+    TLegend* leg3 = new TLegend(0.55,0.5,0.9,0.6);
     leg3->AddEntry(ecut_t,"Tight cut","l");
     leg3->AddEntry(ecut_l,"Loose cut","l");
     leg3->Draw();
-    
-    bcan->cd(3);
+
+    bcan->cd(2);
     gPad->SetLogy();
-    
-    rdio->Draw();
+
+    rdelta->SetMinimum(rconv->GetMaximum()/100.);
+    rdelta->Draw();
     rconv->Draw("same");
     rp->Draw("same");
-    rdelta->Draw("same");
-    
-    TLine* rmin_t = new TLine(410,0.0,410,rp->GetMaximum());
+    rdio->Draw("same");
+    rneut->Draw("same");
+    rphot->Draw("same");
+
+    TLine* rmin_t = new TLine(410,0.0,410,rdelta->GetMaximum());
     rmin_t->SetLineColor(kBlack);
     rmin_t->SetLineStyle(2);
     rmin_t->SetLineWidth(2);
-    TLine* rmin_l = new TLine(390,0.0,390,rp->GetMaximum());
+    TLine* rmin_l = new TLine(390,0.0,390,rdelta->GetMaximum());
     rmin_l->SetLineColor(kBlack);
     rmin_l->SetLineStyle(3);
     rmin_l->SetLineWidth(2);
-    
-    TLine* rmax_t = new TLine(630,0.0,630,rp->GetMaximum());
+
+    TLine* rmax_t = new TLine(630,0.0,630,rdelta->GetMaximum());
     rmax_t->SetLineColor(kBlack);
     rmax_t->SetLineStyle(2);
     rmax_t->SetLineWidth(2);
-    TLine* rmax_l = new TLine(650,0.0,650,rp->GetMaximum());
+    TLine* rmax_l = new TLine(650,0.0,650,rdelta->GetMaximum());
     rmax_l->SetLineColor(kBlack);
     rmax_l->SetLineStyle(3);
     rmax_l->SetLineWidth(2);
@@ -212,49 +239,56 @@ void StrawHitTest (TTree* hits ) {
     rmin_l->Draw();
     rmax_t->Draw();
     rmax_l->Draw();
-    
-    bcan->cd(4);
-    gPad->SetLogy();
-    
-    zdio->Draw();
-    zconv->Draw("same");
-    zp->Draw("same");
-    zdelta->Draw("same");
-    
+
+    /*    
+	  bcan->cd(4);
+	  gPad->SetLogy();
+
+	  zdio->Draw();
+	  zconv->Draw("same");
+	  zp->Draw("same");
+	  zdelta->Draw("same");
+     */  
+  } else if (spage == "ccan") {
+
     TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
     TCut clean = goodpeak+TCut("tight>0&&delta==0");
-    
-    TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
-    TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
-    
-    TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
+    /*    
+	  TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
+	  TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
+
+	  TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
+     */
     TH1F* pres = new TH1F("pres","StrawHit #phi resolution;mm",100,-0.5,0.5);
-    
-    
-    gid->SetLineColor(kBlue);
-    gidc->SetLineColor(kRed);
-    hits->Project("gid","mcgen",clean);
-    hits->Project("gidc","mcgen",conv);
-    
-    hits->Project("rres","sqrt(shpos.y^2+shpos.x^2)-sqrt(mcshpos.y^2+mcshpos.x^2)");
+    /*    
+
+	  gid->SetLineColor(kBlue);
+	  gidc->SetLineColor(kRed);
+	  hits->Project("gid","mcgen",clean);
+	  hits->Project("gidc","mcgen",conv);
+
+	  hits->Project("rres","sqrt(shpos.y^2+shpos.x^2)-sqrt(mcshpos.y^2+mcshpos.x^2)");
+     */
     hits->Project("pres","atan2(shpos.y,shpos.x)-atan2(mcshpos.y,mcshpos.x)");
 
-    TLegend* leg3 = new TLegend(0.4,0.75,0.7,0.9);
-    leg3->AddEntry(gidc,"Conv. Electron hits","l");
-    leg3->AddEntry(gid,"Selected hits","l");
-
+    /*
+       TLegend* leg3 = new TLegend(0.4,0.75,0.7,0.9);
+       leg3->AddEntry(gidc,"Conv. Electron hits","l");
+       leg3->AddEntry(gid,"Selected hits","l");
+       leg3->Draw();
+     */
     gStyle->SetOptStat(0);
     ccan->Clear();
-    ccan->Divide(2,2);
+    ccan->Divide(1,2);
+    /*    ccan->cd(2);
+	  gidc->Draw();
+	  gid->Draw("same");
+	  ccan->cd(3);
+	  rres->Fit("gaus");
+     */
     ccan->cd(2);
-    gidc->Draw();
-    gid->Draw("same");
-    leg3->Draw();
-    ccan->cd(3);
-    rres->Fit("gaus");
-    ccan->cd(4);
     pres->Fit("gaus");
-    
+
     TH1F* tconv = new TH1F("tconv","time WRT peak;nsec",101,-80,80);
     TH1F* tdio = new TH1F("tdio","time WRT peak;nsec",101,-80,80);
     TH1F* tdelta = new TH1F("tdelta","time WRT peak;nsec",101,-80,80);
@@ -263,19 +297,19 @@ void StrawHitTest (TTree* hits ) {
     tdio->SetLineColor(kGreen);
     tdelta->SetLineColor(kCyan);
     tp->SetLineColor(kBlue);
-    
+
     hits->Project("tconv","time-tpeak",conv+goodevt+clean);
     hits->Project("tdio","time-tpeak",bkge+goodevt+clean);
     hits->Project("tdelta","time-tpeak",bkgo+goodevt+clean);
     hits->Project("tp","time-tpeak",proton+goodevt+clean);
-    
+
     TLegend* leg4 = new TLegend(0.65,0.6,0.9,0.95);
     leg4->AddEntry(tconv,"Conv. Electrons","l");
     leg4->AddEntry(tdio,"Bkg Electrons","l");
     leg4->AddEntry(tdelta,"Photons","l");
     leg4->AddEntry(tp,"Protons","l");
-    
-    
+
+
     TLine* tmin = new TLine(-45,0.0,-45,tconv->GetMaximum());
     tmin->SetLineColor(kBlack);
     tmin->SetLineStyle(2);
@@ -284,7 +318,10 @@ void StrawHitTest (TTree* hits ) {
     tmax->SetLineColor(kBlack);
     tmax->SetLineStyle(2);
     tmax->SetLineWidth(2);
-    
+
+    double maxt = 1.1*std::max(tconv->GetMaximum(),tdio->GetMaximum());
+    tconv->SetMaximum(maxt);
+
     ccan->cd(1);
     tconv->Draw();
     tdio->Draw("same");
@@ -304,5 +341,5 @@ void StrawHitTest (TTree* hits ) {
     cout << "selection efficiency = " << nscon/ncon << endl;
     cout << "selection purity = " << nscon/nsel << endl;
     cout << "bkg fraction deltas = " << nsdelta/nsel << " dio " << nsdio/nsel << " proton " << nsprot/nsel << endl;
-    
+  }
 }

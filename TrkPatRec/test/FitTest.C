@@ -204,6 +204,92 @@ void KalTest (TTree* trk) {
 
 }
 
+void AntiMomRes(TTree* trk) {
+  TCanvas* amcan = new TCanvas("amcan","Momentum",1200,800);
+  gStyle->SetOptStat(111111);
+  gStyle->SetOptFit(111111);
+// should have pitch angle and generated hit cuts here, FIXME!!!
+//  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=15");
+  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&abs(tpeak-mcmidt0-28)<30");
+  TCut tsel = mcsel +TCut("kalfail==0");
+// selection cuts
+  TCut cuts[4];
+
+  TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
+  trk->Project("effnorm","mcentmom",mcsel);
+  
+  TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
+  sgau->SetParName(0,"Norm");
+  sgau->SetParName(1,"Mean");
+  sgau->SetParName(2,"SigH");
+  sgau->SetParName(3,"SigL");
+  sgau->SetParName(4,"TFH");
+  sgau->SetParName(5,"TSigH");
+  sgau->SetParName(6,"TSigL");
+  
+  TH1F* momres[4];
+// cuts for different tightness of selection
+  TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
+  ncuts[0] = "nactive<20";
+  ncuts[1] = "nactive<20";
+  ncuts[2] = "nactive<25";
+  ncuts[3] = "nactive<30";
+  t0cuts[0] = "";
+  t0cuts[1] = "t0err>1.5";
+  t0cuts[2] = "t0err>1.0";
+  t0cuts[3] = "t0err>0.9";
+  momcuts[0] = "";
+  momcuts[1] = "fitmomerr>0.2";
+  momcuts[2] = "fitmomerr>0.18";
+  momcuts[3] = "fitmomerr>0.15";
+  fitcuts[0] = "";
+  fitcuts[1] = "fitcon<1e-4";
+  fitcuts[2] = "fitcon<1e-3";
+  fitcuts[3] = "fitcon<1e-2";
+
+
+
+  const char* labels[4] = {"A","B","C","D"};
+
+  amcan->Clear();
+  amcan->Divide(2,2);
+  for(unsigned ires=0;ires<4;ires++){
+    char mname[50];
+    snprintf(mname,50,"momres%i",ires);
+    momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
+    TCut total = ncuts[ires] || t0cuts[ires] || momcuts[ires] || fitcuts[ires];
+    trk->Project(mname,"fitmom-mcentmom",total+tsel);
+    double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
+    if(integral > 0){
+      sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
+      sgau->SetParLimits(5,1.0*momres[ires]->GetRMS(),1.0);
+      sgau->SetParLimits(6,1.0*momres[ires]->GetRMS(),1.0);
+      sgau->SetParLimits(4,0.0,0.8);
+      amcan->cd(ires+1);
+      momres[ires]->Fit("sgau","L");
+
+      double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
+      TPaveText* text = new TPaveText(0.1,0.4,0.4,0.8,"NDC");  
+      char line[40];
+      sprintf(line,"%s",ncuts[ires].GetTitle());
+      text->AddText(line);
+      sprintf(line,"%s",t0cuts[ires].GetTitle());
+      text->AddText(line);
+      sprintf(line,"%s",momcuts[ires].GetTitle());
+      text->AddText(line);
+      sprintf(line,"%s",fitcuts[ires].GetTitle());
+      text->AddText(line);
+      sprintf(line,"Eff=%3.2f",keff);
+      text->AddText(line);
+
+      text->Draw();
+    }
+    amcan->cd(0);
+  }  
+
+}
+
+
 void MomRes(TTree* trk) {
   TCanvas* mcan = new TCanvas("mcan","Momentum",1200,800);
   gStyle->SetOptStat(111111);
@@ -281,10 +367,8 @@ void MomRes(TTree* trk) {
     text->AddText(line);
  
     text->Draw();
-
-
-  }  
-  
+  } 
+  mcan->cd(0); 
 }
   
 void SeedTest (TTree* trk) {
