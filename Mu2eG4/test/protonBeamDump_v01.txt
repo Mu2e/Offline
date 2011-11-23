@@ -1,0 +1,62 @@
+// Proton beam dump parameters. 
+// See mu2e docdb #948 and #1944
+// 
+// Andrei Gaponenko, 2011
+
+bool           hasProtonBeamDump = true;
+
+string         protonBeamDump.material.core  = "G4_Fe";
+string         protonBeamDump.material.shielding = "ShieldingConcrete";
+string         protonBeamDump.material.air = "G4_AIR";
+
+// Sizes below are given in mm in this order:
+//  {horizontal transverse to beam, vertical, horizontal along beam}
+vector<double> protonBeamDump.coreHalfSize  = { 750., 750., 1000.};
+// Beam entrance.
+vector<double> protonBeamDump.mouthHalfSize = {750., 750., 1000.};
+// Neutron cave
+vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 1000.};
+
+// shielding around the core
+double         protonBeamDump.minCoreShieldingThickness = 1000.;
+
+// Relative position of beam dump core w.r.t. the
+// production target is specified in  docdb-1944.
+// Add the offsets to productionTarget.position
+vector<double> protonBeamDump.coreCenterInMu2e = {667., 528., -19829.};
+double         protonBeamDump.coreRotY = 13.3; // degrees
+
+//----------------------------------------------------------------
+// The extinction monitor filter channel
+
+// the first collimator 
+double         extMonFilter.collimator1.horizontalLength = 4000.;
+// the downstream half of the channel is wider
+vector<double> extMonFilter.collimator1.channelWidth  = {50., 75.};
+vector<double> extMonFilter.collimator1.channelHeigh  = {50., 75.};
+
+// The first collimator channel points at the effective particle
+// source, which is shifted from the production target due to 
+// track bending in the magnetic field.   The transverse to the beam
+// offsets of the source at the prod target position along the beam are
+double         extMonFilter.collimator1.sourceOffsetX = 0.;
+double         extMonFilter.collimator1.sourceOffsetY = 0.;
+// the entrance point on the face of the beam dump enclosure, 
+// transverse to the beam coordinates (horiz, vertical)
+double         extMonFilter.collimator1.entranceOffsetX = 0;
+double         extMonFilter.collimator1.entranceOffsetY = 0;
+
+// The filter magnet room: (horiz tranverse, vertical, along beam)
+// The vertical position of the room is such as to leave the minimal required
+// shielding thickness above the dump core.
+vector<double> extMonFilter.magnetHollowHalfSize = {750., 750., 2100.};
+
+double         extMonFilter.collimator2.horizontalLength = 3000.;
+// the downstream half of the channel is wider
+vector<double> extMonFilter.collimator2.channelWidth  = {50., 75.};
+vector<double> extMonFilter.collimator2.channelHeigh  = {50., 75.};
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

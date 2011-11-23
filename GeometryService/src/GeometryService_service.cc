@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.10 2011/11/04 20:51:52 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.11 2011/11/23 16:40:49 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/04 20:51:52 $
+// $Date: 2011/11/23 16:40:49 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,8 @@
 #include "GeometryService/inc/Mu2eBuildingMaker.hh"
 #include "GeometryService/inc/ProductionTarget.hh"
 #include "GeometryService/inc/ProductionTargetMaker.hh"
+#include "GeometryService/inc/ProtonBeamDump.hh"
+#include "GeometryService/inc/ProtonBeamDumpMaker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/TargetMaker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
@@ -115,6 +117,10 @@ namespace mu2e {
     if(true) {
       ProductionTargetMaker tm(*_config);
       addDetector(tm.getDetectorPtr());
+    }
+
+    if(true) {
+      addDetector(ProtonBeamDumpMaker(*_config).getPtr());
     }
 
     if(_config->getBool("hasTarget",false)){

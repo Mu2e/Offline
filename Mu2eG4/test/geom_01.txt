@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.101 2011/11/04 20:51:52 gandr Exp $
+// $Id: geom_01.txt,v 1.102 2011/11/23 16:40:49 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/04 20:51:52 $
+// $Date: 2011/11/23 16:40:49 $
 //
 // Original author Rob Kutschke
 //
@@ -244,6 +244,8 @@ double targetPS_rotY              =   13.65;  // degree.
 string targetPS_materialName      = "G4_Au";
 bool   targetPS.visible           = true;
 bool   targetPS.solid             = false;
+
+#include "Mu2eG4/test/protonBeamDump_v01.txt"
 
 #include "Mu2eG4/test/extmon_fnal_v01.txt"
 
