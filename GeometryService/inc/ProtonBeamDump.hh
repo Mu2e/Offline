@@ -30,7 +30,7 @@ namespace mu2e {
 
     const std::vector<double>& mouthHalfSize() const { return _mouthHalfSize; }
 
-    const std::vector<double>& magnetHollowHalfSize() const { return _magnetHollowHalfSize; }
+    const std::vector<double>& magnetPitHalfSize() const { return _magnetPitHalfSize; }
 
     double minCoreShieldingThickness() const { return _minCoreShieldingThickness; }
 
@@ -54,6 +54,9 @@ namespace mu2e {
     CLHEP::Hep3Vector const& enclosureCenterInMu2e() const { return _enclosureCenterInMu2e; }
     CLHEP::HepRotation const& enclosureRotationInMu2e() const { return _enclosureRotationInMu2e; }
 
+    CLHEP::Hep3Vector const& coreCenterInEnclosure() const { return _coreCenterInEnclosure; }
+    CLHEP::Hep3Vector const& magnetPitCenterInEnclosure() const { return _magnetPitCenterInEnclosure; }
+
     //----------------------------------------------------------------
   private: 
     friend class ProtonBeamDumpMaker;
@@ -64,7 +67,7 @@ namespace mu2e {
     std::vector<double> _coreHalfSize;
     std::vector<double> _neutronCaveHalfSize;
     std::vector<double> _mouthHalfSize;
-    std::vector<double> _magnetHollowHalfSize;
+    std::vector<double> _magnetPitHalfSize;
     double _minCoreShieldingThickness;
 
     double _collimator1horizLength;
@@ -77,6 +80,9 @@ namespace mu2e {
     std::vector<double> _enclosureHalfSize;
     CLHEP::Hep3Vector _enclosureCenterInMu2e;
     CLHEP::HepRotation _enclosureRotationInMu2e;
+
+    CLHEP::Hep3Vector _coreCenterInEnclosure;
+    CLHEP::Hep3Vector _magnetPitCenterInEnclosure;
   };
 }
 

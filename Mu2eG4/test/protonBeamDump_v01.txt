@@ -15,9 +15,9 @@ bool           protonBeamDump.logicalEnclosureVisible = true;
 //  {horizontal transverse to beam, vertical, horizontal along beam}
 vector<double> protonBeamDump.coreHalfSize  = { 750., 750., 1000.};
 // Beam entrance.
-vector<double> protonBeamDump.mouthHalfSize = {750., 750., 1000.};
+vector<double> protonBeamDump.mouthHalfSize = {750., 750., 500.};
 // Neutron cave
-vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 1000.};
+vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 500.};
 
 // shielding around the core
 double         protonBeamDump.minCoreShieldingThickness = 1000.;
@@ -51,7 +51,7 @@ double         extMonFilter.collimator1.entranceOffsetY = 0;
 // The filter magnet room: (horiz tranverse, vertical, along beam)
 // The vertical position of the room is such as to leave the minimal required
 // shielding thickness above the dump core.
-vector<double> extMonFilter.magnetHollowHalfSize = {750., 750., 2100.};
+vector<double> extMonFilter.magnetPitHalfSize = {750., 750., 2100.};
 
 double         extMonFilter.collimator2.horizontalLength = 3000.;
 // the downstream half of the channel is wider
