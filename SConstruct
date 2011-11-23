@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.27 2011/11/19 17:29:54 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/11/19 17:29:54 $
+# $Id: SConstruct,v 1.28 2011/11/23 15:27:59 gandr Exp $
+# $Author: gandr $
+# $Date: 2011/11/23 15:27:59 $
 #
 # Original author Rob Kutschke.
 #
@@ -30,7 +30,6 @@ libsigcpp_lib = os.environ['LIBSIGCPP_LIB']
 python_dir    = os.environ['PYTHON_DIR']
 root_inc      = os.environ['ROOT_INC']
 root_sys      = os.environ['ROOTSYS']
-scons_dir     = os.environ['SCONS_DIR']
 fhicl_inc     = os.environ['FHICLCPP_INC']
 fhicl_lib     = os.environ['FHICLCPP_LIB']
 cpp0x_inc     = os.environ['CPP0X_INC']
@@ -66,7 +65,6 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              libsigcpp_lib+'/sigc++-2.0/include',
                              python_dir+'/include',
                              root_inc,
-                             scons_dir+'/include',
                            ],
                    LIBPATH=[ libpath_frag,
                              base+'/lib',
@@ -82,7 +80,6 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              libsigcpp_lib,
                              python_dir+'/lib',
                              root_sys+'/lib',
-                             scons_dir+'/lib',
                              '/lib', '/usr/X11R6/lib',
                            ],
                    ENV={
