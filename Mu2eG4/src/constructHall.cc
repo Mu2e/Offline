@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.5 2011/11/04 20:51:52 gandr Exp $
+// $Id: constructHall.cc,v 1.6 2011/11/23 16:42:20 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/04 20:51:52 $
+// $Date: 2011/11/23 16:42:20 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -48,23 +48,28 @@ namespace mu2e {
     const double hallOutHLen[3] = {
       hallInHLen[0] + wallThick,
       hallInHLen[1] + (ceilingThick + floorThick)/2.,
-      hallInHLen[2] + wallThick
+      hallInHLen[2] + wallThick /*the "-z" wall is not a part of hall concrete*/ - 0.5*wallThick
     };
 
     // Center of the concrete volume in the coordinate system of the dirt.
     const CLHEP::Hep3Vector concretePositionInDirt = 
       // Position of the center of the air in the world volume.
       world->mu2eOriginInWorld() + building->hallCenterInMu2e()
-      // Correct for the possible asymmetry in the thickness of the concrete
-      // The X and Z are symmetric by construction
+      // Correct for the possible asymmetry in the thickness of the floor/ceiling concrete
       + CLHEP::Hep3Vector(0,  -(floorThick - ceilingThick)/2, 0)
+      // The wall on the negative Z side will be created by constructProtonBeamDump
+      // and is not a part of the hall concrete.
+      + CLHEP::Hep3Vector(0, 0, 0.5*wallThick)
       // This makes it relative to the dirt
       - dirt.centerInWorld
       ;
     
     // Position of the hall air volume.  The only possible shift is 
     // due to a non-equal thickness of the floor and the ceiling.
-    const CLHEP::Hep3Vector airPositionInConcrete(0, (floorThick - ceilingThick)/2, 0);
+    const CLHEP::Hep3Vector airPositionInConcrete(0, (floorThick - ceilingThick)/2, 
+						  // account for the missign "-z" wall
+						  -0.5*wallThick
+						  );
 
     // Materials for the hall walls and the interior of the hall
     G4Material* wallMaterial = materialFinder.get("hall.wallMaterialName");
