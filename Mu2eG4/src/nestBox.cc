@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 //
-// $Id: nestBox.cc,v 1.7 2011/09/29 22:47:38 gandr Exp $
+// $Id: nestBox.cc,v 1.8 2011/11/23 18:01:15 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/09/29 22:47:38 $
+// $Date: 2011/11/23 18:01:15 $
 //
 // Original author Rob Kutschke
 //
@@ -49,8 +49,6 @@ namespace mu2e {
     info.name    = name;
 
     info.solid   = new G4Box( name, halfDim[0], halfDim[1], halfDim[2] );
-
-    info.logical = new G4LogicalVolume( info.solid, material, name);
 
     finishNesting(info,
                   material,
