@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iterator>
+#include <cmath>
 
 #include "cetlib/exception.h"
 
@@ -14,6 +15,7 @@
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
+#include "GeometryService/inc/ProtonBeamDump.hh"
 
 namespace mu2e {
 
@@ -26,6 +28,7 @@ namespace mu2e {
     // The WorldG4Maker is special: it's called after all other detector objects 
     // are available in geometry service, therefore it can access their data.
     GeomHandle<Mu2eBuilding> building;
+    GeomHandle<ProtonBeamDump> dump;
     const CLHEP::Hep3Vector& hc = building->hallCenterInMu2e();
     
     const double worldBottomInMu2e = hc[1]
@@ -47,8 +50,10 @@ namespace mu2e {
       + c.getDouble("world.margin.xmax");
 
     // FIXME: account for ExtMon 
-    const double worldZminInMu2e = hc[2]
-      - building->hallInsideHalfLengths()[2] - building->hallWallThickness()
+    const double worldZminInMu2e = 
+      dump->enclosureCenterInMu2e()[2] 
+      - dump->enclosureHalfSize()[2]*std::abs(cos(dump->coreRotY()))
+      - dump->enclosureHalfSize()[0]*std::abs(sin(dump->coreRotY()))
       - c.getDouble("world.margin.zmin");
 
     const double worldZmaxInMu2e = hc[2]

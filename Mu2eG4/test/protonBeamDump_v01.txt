@@ -9,6 +9,8 @@ string         protonBeamDump.material.core  = "G4_Fe";
 string         protonBeamDump.material.shielding = "ShieldingConcrete";
 string         protonBeamDump.material.air = "G4_AIR";
 
+bool           protonBeamDump.logicalEnclosureVisible = true;
+
 // Sizes below are given in mm in this order:
 //  {horizontal transverse to beam, vertical, horizontal along beam}
 vector<double> protonBeamDump.coreHalfSize  = { 750., 750., 1000.};

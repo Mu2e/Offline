@@ -51,13 +51,15 @@ namespace mu2e {
     // for the secondaries.
     // Does not include the wedge. 
     const std::vector<double>& enclosureHalfSize() const { return _enclosureHalfSize; }
+    CLHEP::Hep3Vector const& enclosureCenterInMu2e() const { return _enclosureCenterInMu2e; }
+    CLHEP::HepRotation const& enclosureRotationInMu2e() const { return _enclosureRotationInMu2e; }
 
     //----------------------------------------------------------------
   private: 
     friend class ProtonBeamDumpMaker;
 
     // Private ctr: the class should be only obtained via ProtonBeamDumpFNAL::ProtonBeamDumpMaker.
-    ProtonBeamDump() {}
+    ProtonBeamDump() : _enclosureRotationInMu2e(CLHEP::HepRotation::IDENTITY) {}
 
     std::vector<double> _coreHalfSize;
     std::vector<double> _neutronCaveHalfSize;
@@ -70,9 +72,11 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _coreCenterInMu2e;
     double _coreRotY;
-
+    
     // computed stuff
     std::vector<double> _enclosureHalfSize;
+    CLHEP::Hep3Vector _enclosureCenterInMu2e;
+    CLHEP::HepRotation _enclosureRotationInMu2e;
   };
 }
 

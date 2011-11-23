@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.106 2011/11/04 20:52:11 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.107 2011/11/23 16:41:42 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/04 20:52:11 $
+// $Date: 2011/11/23 16:41:42 $
 //
 // Original author Rob Kutschke
 //
@@ -38,6 +38,7 @@
 #include "Mu2eG4/inc/constructWorldVolume.hh"
 #include "Mu2eG4/inc/constructDirt.hh"
 #include "Mu2eG4/inc/constructHall.hh"
+#include "Mu2eG4/inc/constructProtonBeamDump.hh"
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
@@ -199,6 +200,8 @@ namespace mu2e {
       cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
+
+    constructProtonBeamDump(dirtInfo, *_config);
 
     constructDS(hallInfo,_config);
     constructTS(hallInfo,_config);
