@@ -22,6 +22,11 @@ namespace mu2e {
       // implement Detector's method
       virtual std::string name() const { return "ExtMonFNAL"; }
       
+      //
+      const std::vector<double>&  roomHalfSize() const { return m_roomHalfSize; }
+      double roomCenterHeightAboveDumpCore() const { return m_roomCenterHeightAboveDumpCore; }
+      const CLHEP::Hep3Vector&    roomCenterInMu2e() const { return m_roomCenterInMu2e; }
+
       // 
       unsigned nplanes() const { return m_sensor_zoffset.size(); }
       const std::vector<double>& sensor_zoffset() const { return m_sensor_zoffset; }
@@ -37,6 +42,12 @@ namespace mu2e {
       // same info as above cooked for nestBox()
       std::vector<double> sensorHalfSize(unsigned iplane) const;
       CLHEP::Hep3Vector sensorOffsetInParent(unsigned iplane) const;
+
+      // Location of the detector
+      CLHEP::Hep3Vector detectorCenterInRoom() const { return m_detectorCenterInRoom; }
+      CLHEP::HepRotation const& detectorRotationInRoom() const { return m_detectorRotationInRoom; }
+      // the size is computed from sensor pars above
+      const std::vector<double>& detectorHalfSize() const { return m_detectorHalfSize; }
 
       // Coordinate conversion to/from the Mu2e frame
       // The ExtMonFNAL frame is defined in the following way:
@@ -54,21 +65,20 @@ namespace mu2e {
       CLHEP::Hep3Vector mu2eToExtMonPoint( CLHEP::Hep3Vector const& v ) const;
       CLHEP::Hep3Vector mu2eToExtMonMomentum( CLHEP::Hep3Vector const& v ) const;
 
-      // G4 implementation details
-      const std::vector<double>&  logicalEnclosureHalfDim() const { return m_logicalEnclosureHalfDim; }
-      CLHEP::Hep3Vector  const& offsetInParent() const { return m_offsetInParent; }
-      CLHEP::HepRotation const& rotationInParent() const { return m_rotationInParent; }
-
       //----------------------------------------------------------------
     private: 
       friend class ExtMonMaker;
       // Private ctr: the class should be only obtained via ExtMonFNAL::ExtMonMaker.
-      ExtMon(const std::vector<double>& logicalEnclosureHalfDim, 
-	     const CLHEP::Hep3Vector& offsetInParent);
+      ExtMon(const std::vector<double>& roomHalfSize, 
+	     double roomCenterHeightAboveDumpCore);
+      
+      std::vector<double> m_roomHalfSize;
+      double m_roomCenterHeightAboveDumpCore;
+      CLHEP::Hep3Vector m_roomCenterInMu2e;
 
-      std::vector<double> m_logicalEnclosureHalfDim;
-      CLHEP::Hep3Vector m_offsetInParent;
-      CLHEP::HepRotation m_rotationInParent;
+      CLHEP::Hep3Vector m_detectorCenterInRoom;
+      CLHEP::HepRotation m_detectorRotationInRoom;
+      std::vector<double> m_detectorHalfSize;
 
       // Sensor center positions
       std::vector<double> m_sensor_zoffset;

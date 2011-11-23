@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.102 2011/11/23 16:40:49 gandr Exp $
+// $Id: geom_01.txt,v 1.103 2011/11/23 16:43:10 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/23 16:40:49 $
+// $Date: 2011/11/23 16:43:10 $
 //
 // Original author Rob Kutschke
 //
@@ -120,7 +120,7 @@ double world.margin.top = 3398; // above the dirt cap
 double world.margin.bottom = 0; // below the bottom of the hall floor
 double world.margin.xmin = 10400; // outsize of the hall walls
 double world.margin.xmax = 13450; // outsize of the hall walls
-double world.margin.zmin = 13700; // outside the hall wall : FIXME: should be outside ExtMon wall
+double world.margin.zmin = 3000; // outside the ExtMon room
 double world.margin.zmax =  3700; // outside the hall wall
 
 string         world.materialName = "G4_AIR";

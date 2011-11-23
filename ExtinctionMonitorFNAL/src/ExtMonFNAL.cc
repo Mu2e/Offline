@@ -1,3 +1,5 @@
+// Andrei Gaponenko, 2011
+
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 
 namespace mu2e {
@@ -5,11 +7,11 @@ namespace mu2e {
 
     //================================================================
     ExtMon::ExtMon(const std::vector<double>& logicalEnclosureHalfDim, 
-		   const CLHEP::Hep3Vector& offsetInParent) 
+		   double roomCenterHeightAboveDumpCore) 
       
-      : m_logicalEnclosureHalfDim(logicalEnclosureHalfDim)
-      , m_offsetInParent(offsetInParent)
-      , m_rotationInParent(CLHEP::HepRotation::IDENTITY)
+      : m_roomHalfSize(logicalEnclosureHalfDim)
+      , m_roomCenterHeightAboveDumpCore(roomCenterHeightAboveDumpCore)
+      , m_detectorRotationInRoom(CLHEP::HepRotation::IDENTITY)
 
     {}
 

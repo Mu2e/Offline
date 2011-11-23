@@ -16,6 +16,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
 #include "GeometryService/inc/ProtonBeamDump.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 
 namespace mu2e {
 
@@ -29,6 +30,8 @@ namespace mu2e {
     // are available in geometry service, therefore it can access their data.
     GeomHandle<Mu2eBuilding> building;
     GeomHandle<ProtonBeamDump> dump;
+    GeomHandle<ExtMonFNAL::ExtMon> emf;
+
     const CLHEP::Hep3Vector& hc = building->hallCenterInMu2e();
     
     const double worldBottomInMu2e = hc[1]
@@ -49,11 +52,10 @@ namespace mu2e {
       + building->hallInsideHalfLengths()[0] + building->hallWallThickness()
       + c.getDouble("world.margin.xmax");
 
-    // FIXME: account for ExtMon 
-    const double worldZminInMu2e = 
-      dump->enclosureCenterInMu2e()[2] 
-      - dump->enclosureHalfSize()[2]*std::abs(cos(dump->coreRotY()))
-      - dump->enclosureHalfSize()[0]*std::abs(sin(dump->coreRotY()))
+    const double worldZminInMu2e =
+      emf->roomCenterInMu2e()[2]
+      - emf->roomHalfSize()[2]*std::abs(cos(dump->coreRotY()))
+      - emf->roomHalfSize()[0]*std::abs(sin(dump->coreRotY()))
       - c.getDouble("world.margin.zmin");
 
     const double worldZmaxInMu2e = hc[2]
