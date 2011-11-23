@@ -1,9 +1,9 @@
 //
 // Free function to create the earthen overburden.
 //
-// $Id: constructDirt.cc,v 1.6 2011/11/04 20:51:52 gandr Exp $
+// $Id: constructDirt.cc,v 1.7 2011/11/23 16:42:00 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/04 20:51:52 $
+// $Date: 2011/11/23 16:42:00 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -39,49 +39,25 @@ namespace mu2e {
 
     // Dimensions and material of the world.
     GeomHandle<WorldG4> world;
-    const std::vector<double>& worldHLen = world->halfLengths();
-
-    // A helper class.
-    MaterialFinder materialFinder(*_config);
-
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
-    bool const placePV             = true;
-
-    // Get parameters related to the overall dimensions of the hall and to
-    // the earthen overburden.
     GeomHandle<Mu2eBuilding> building;
-    const vector<double>& hallInHLen = building->hallInsideHalfLengths();
+    G4Material* dirtMaterial = MaterialFinder(*_config).get("dirt.overburdenMaterialName");
 
-    // Derived parameters.
-    G4Material* dirtMaterial = materialFinder.get("dirt.overburdenMaterialName");
+    const bool dirtVisible    = _config->getBool("dirt.visible",true);
+    const bool dirtSolid      = _config->getBool("dirt.solid",false);
+    const bool dirtCapVisible = _config->getBool("dirt.capVisible",true);
+    const bool dirtCapSolid   = _config->getBool("dirt.capSolid",false);
+    const bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
+    const bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    const bool placePV             = true;
 
-    // Top of the floor in G4 world coordinates.
-    double yFloor   = -worldHLen[1] + building->hallFloorThickness();
-
-    // Bottom of the ceiling in G4 world coordinates.
-    double yCeilingInSide = yFloor + 2.*hallInHLen[1];
-
-    // Top of the ceiling in G4 world coordinates.
-    double yCeilingOutside  = yCeilingInSide + building->hallCeilingThickness();
-
-    // Surface of the earth in G4 world coordinates.
-    double ySurface  = yCeilingOutside + building->dirtOverburdenDepth();
-
-    // Half length and y origin of the dirt box.
-    double yLDirt = ( ySurface + worldHLen[1] )/2.;
-    double y0Dirt = -worldHLen[1] + yLDirt;
-
-    // Center of the dirt box, in the G4 world system.
-    G4ThreeVector dirtOffset(0.,y0Dirt,0.);
+    // dirt box depth, to the bottom of the world
+    const double dirtTotalDepth = world->halfLengths()[1] + world->dirtG4Ymax();
 
     // Half lengths of the dirt box.
-    double dirtHLen[3] = { worldHLen[0], yLDirt, worldHLen[2] };
+    double dirtHLen[3] = { world->halfLengths()[0], 0.5*dirtTotalDepth, world->halfLengths()[2] };
 
-    bool dirtVisible    = _config->getBool("dirt.visible",true);
-    bool dirtSolid      = _config->getBool("dirt.solid",false);
-    bool dirtCapVisible = _config->getBool("dirt.capVisible",true);
-    bool dirtCapSolid   = _config->getBool("dirt.capSolid",false);
+    // Center of the dirt box, in the G4 world system.
+    G4ThreeVector dirtOffset(0., -world->halfLengths()[1] + 0.5*dirtTotalDepth, 0.);
 
     // Main body of dirt around the hall.
     VolumeInfo dirtInfo = nestBox( "DirtBody",
@@ -109,7 +85,8 @@ namespace mu2e {
     GeomHandle<Beamline> beamg;
     double solenoidOffset = beamg->solenoidOffset();
 
-    G4ThreeVector dirtCapOffset( -solenoidOffset, ySurface+capHalfHeight,
+    G4ThreeVector dirtCapOffset( -solenoidOffset,
+				 -world->halfLengths()[1] + dirtTotalDepth + capHalfHeight,
                                  dsz0 + world->mu2eOriginInWorld().z());
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
