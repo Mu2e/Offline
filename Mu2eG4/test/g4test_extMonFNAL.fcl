@@ -1,0 +1,53 @@
+// Visualize extmon related geometry
+// 
+// Andrei Gaponenko, 2011
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+
+// Give this job a name.
+process_name : testExtMonFNAL
+
+// Start form an empty source
+source : {
+   module_type : EmptyEvent
+   maxEvents : 1
+}
+
+services : {
+   message : @local::default_message
+
+   TFileService : { fileName : "testExtMonFNAL.root" }
+
+   user : {
+
+      GeometryService : { inputFile : "Mu2eG4/test/geom_01_LowDetailGraphics.txt" }
+
+      ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+
+      RandomNumberGenerator : { }
+
+      G4Helper : { }
+  }
+}
+
+physics : {
+   producers : {
+      // Generate Event
+      generate : {
+         module_type   : EventGenerator
+         inputfile     : "Mu2eG4/test/genconfig_extMonFNAL.txt"
+      }
+      
+      // Run G4 and add hits to the event
+      g4run : {
+         module_type          : G4
+         generatorModuleLabel : generate
+         visMacro             : "Mu2eG4/test/vis_extMonFNAL.mac"
+         seed                 : [9877]
+      }
+   }
+
+   p1 : [generate, g4run  ]
+   trigger_paths  : [p1]
+}

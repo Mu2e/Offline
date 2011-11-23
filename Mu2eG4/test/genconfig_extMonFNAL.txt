@@ -1,0 +1,34 @@
+// Which generators to enable.
+bool conversionGun.do           = false;
+bool particleGun.do             = false;
+bool cosmictoy.do               = false;
+bool cosmicDYB.do               = false;
+bool picapture.do               = false;
+bool ejectedProtonGun.do        = false;
+bool ejectedNeutronGun.do       = false;
+bool ejectedPhotonGun.do        = false;
+bool decayinorbitGun.do         = false;
+bool piEplusNuGun.do            = false;
+bool primaryProtonGun.do        = true;
+bool fromG4BLFile.do            = false;
+bool nuclearCaptureGun.do       = false;
+
+// cos(theta)=-1. perfectly aligned impact on production target.
+double primaryProtonGun.czmin = -1;
+double primaryProtonGun.czmax = -1;
+
+// Position of PrimaryProtonGun (local to target)
+vector<double> beamDisplacementOnTarget = {0.,0.,0.};
+
+// Beam spot sigma (in both transverse dimensions); in mm.
+double primaryProtonGun.beamSpotSigma = 0.;   
+
+// Range of times over which protons hit the target; in ns.
+double primaryProtonGun.tmin  =    0.;
+double primaryProtonGun.tmax  =  100.;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
+
