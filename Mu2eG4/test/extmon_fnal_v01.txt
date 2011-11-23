@@ -1,6 +1,6 @@
 // Extinction monitor parameters
 
-bool           hasExtMonFNAL = true;
+bool           hasExtMonFNAL = false;
 // Half lengths of the extmon.fnal box, (x,y,z) in mm.
 vector<double> extmon_fnal.logicalEnclosureHalfDim  = { 1000., 1000., 3000.};
 vector<double> extmon_fnal.offsetInParent  = { 0., -2000., -15000.};
