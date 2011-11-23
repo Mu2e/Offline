@@ -1,11 +1,33 @@
 
-  $Id: v1_1_4.txt,v 1.2 2011/11/19 17:40:04 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/11/19 17:40:04 $
+  $Id: v1_1_4.txt,v 1.3 2011/11/23 16:54:58 gandr Exp $
+  $Author: gandr $
+  $Date: 2011/11/23 16:54:58 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_4
+
+4) November 23, 2011 gandr
+
+   Implement ProtonBeamDump in geometry and G4.  This affects the hall
+   construction (one of the hall walls is now created in
+   constructProtonBeamDump). ExtMonFNAL is updated appropriately.
+
+   The extmon secondaries channel is still to be coded, it will be a
+   part of the ProtonBeamDump.
+
+   The world size has changed to accommodate the new volumes.
+   According to g4test_03 printouts with the transport-only physics
+   list, the output from most generators and corresponding hits have
+   not changed.  The exception is the cosmicToy generator.
+
+3) November 23, 2011 gandr
+
+   Make dirt behave correctly under world size changes.
+
+2) November 23, 2011 gandr
+   
+   SConstruct: don't require SCONS_DIR to be set - it is not useful for the build.
 
 1) November 19, 2011 kutschke
    setup.sh
