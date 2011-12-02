@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.3 2011/07/09 05:03:05 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2011/07/09 05:03:05 $
+// $Id: TrackerCalibrations.cc,v 1.4 2011/12/02 11:52:32 brownd Exp $
+// $Author: brownd $
+// $Date: 2011/12/02 11:52:32 $
 //
 
 // Mu2e include files
@@ -19,15 +19,12 @@ namespace mu2e {
   TrackerCalibrations::TrackerCalibrations( SimpleConfig const& config ){
 
     // Here we should eventually interface to some database
-
-
+    _resopar0 = config.getDouble("TDResolution_0",64.2);
+    _resopar1 = config.getDouble("TDResolution_1",60.7);
   }
 
   const double TrackerCalibrations::TimeDivisionResolution(StrawIndex strawIndex, double znorm) const {
-    double resopar0 = 64.2;
-    double resopar1 = 60.7;
-
-    double reso  = resopar0 + resopar1 * (znorm - 0.5) * (znorm - 0.5); //resolution in mm
+    double reso  = _resopar0 + _resopar1 * (znorm - 0.5) * (znorm - 0.5); //resolution in mm
     return reso;
 
   }

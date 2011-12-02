@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.3 2011/07/09 05:03:05 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2011/07/09 05:03:05 $
+// $Id: TrackerCalibrations.hh,v 1.4 2011/12/02 11:52:32 brownd Exp $
+// $Author: brownd $
+// $Date: 2011/12/02 11:52:32 $
 //
 // Original author Vadim Rusu
 //
@@ -47,6 +47,11 @@ namespace mu2e
 
     // We want to discourage multi-phase construction.
     TrackerCalibrations ();
+
+    // time-division base resolution and length-dependent quadratic term
+    double _resopar0;
+    double _resopar1;
+
 
   };
 
