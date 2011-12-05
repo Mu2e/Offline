@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.19 2011/08/26 21:32:18 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Id: PiCapture.hh,v 1.20 2011/12/05 17:36:35 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2011/12/05 17:36:35 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -52,11 +52,13 @@ namespace mu2e {
     double _mean;         //< mean per event
     double _elow;         //< lower photon energy
     double _ehi;          //< upper photon energy
+    double _probInternalConversion;
+    double _eElect;       // electron energy for internal conversions
+    double _ePosit;       // positron energy for internal conversions
     bool _PStoDSDelay;
     bool _pPulseDelay;
     int    _nbins;        //< number of bins in photon energy pdf
     bool   _doHistograms; // Enable/disable histograms.
-
     // End: parameters from run time configuration/
 
 
@@ -68,7 +70,9 @@ namespace mu2e {
     // Random number distributions
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
+    CLHEP::RandFlat     _randFlat;
     CLHEP::RandGeneral  _spectrum;
+    CLHEP::RandGeneral  _internalFractionalSpectrum;
 
     std::string _STfname;
 
@@ -76,6 +80,9 @@ namespace mu2e {
     TH1D* _hMultiplicity;
     TH1D* _hEPhot;
     TH1D* _hEPhotZ;
+    TH1D* _hEElect;
+    TH1D* _hEElectZ;
+    TH1D* _hInternalFraction;
     TH1D* _hzPos;
     TH1D* _hcz;
     TH1D* _hphi;
@@ -87,8 +94,17 @@ namespace mu2e {
     // Photon energy spectrum as a continuous function.
     double energySpectrum(const double e);
 
+    // Internal conversion fractional spectrum as a continuous function.
+    double internalFractionalSpectrum(const double e);
+
     // Compute a binned representation of the photon energy spectrum.
     std::vector<double> binnedEnergySpectrum();
+
+   // Compute a binned representation of the fractional internal conversion energy spectrum.
+    std::vector<double> internalFractionalBinnedSpectrum();
+
+    // for internal conversions.  
+    double _electMass;
 
   };
 
