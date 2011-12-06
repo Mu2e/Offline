@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.11 2011/11/04 20:51:52 gandr Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.12 2011/12/06 22:53:01 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/04 20:51:52 $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -36,8 +36,6 @@
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
-#include "GeometryService/inc/WorldG4.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 
 
@@ -59,7 +57,6 @@ namespace mu2e {
     calculateCRSOffsets(_config);
 
     if ( _diagLevel > 0) {
-      cout << __func__ << " _crs->_localOffset : " << _crs->_localOffset << endl;
       cout << __func__ << " _crs->_globalOffset: " << _crs->_globalOffset << endl;
     }
 
@@ -206,7 +203,6 @@ namespace mu2e {
     _crs->_scintillatorShields[name] =
       CRSScintillatorShield(ishield,
                             name,
-                            CRSScintillatorShieldOffset + _crs->_localOffset,  // in Hall Air
                             CRSScintillatorShieldRotationAngles,
                             CRSScintillatorShieldOffset + _crs->_globalOffset, // in Mu2e
                             _scintillatorShieldHalfThickness,
@@ -240,7 +236,6 @@ namespace mu2e {
     _crs->_scintillatorShields[name] =
       CRSScintillatorShield(ishield,
                             name,
-                            CRSScintillatorShieldOffset + _crs->_localOffset,
                             CRSScintillatorShieldRotationAngles,
                             CRSScintillatorShieldOffset + _crs->_globalOffset,
                             _scintillatorShieldHalfThickness,
@@ -273,7 +268,6 @@ namespace mu2e {
     _crs->_scintillatorShields[name] =
       CRSScintillatorShield(ishield,
                             name,
-                            CRSScintillatorShieldOffset + _crs->_localOffset,
                             CRSScintillatorShieldRotationAngles,
                             CRSScintillatorShieldOffset + _crs->_globalOffset,
                             _scintillatorShieldHalfThickness,
@@ -307,7 +301,6 @@ namespace mu2e {
     _crs->_scintillatorShields[name] =
       CRSScintillatorShield(ishield,
                             name,
-                            CRSScintillatorShieldOffset + _crs->_localOffset,
                             CRSScintillatorShieldRotationAngles,
                             CRSScintillatorShieldOffset + _crs->_globalOffset,
                             _scintillatorShieldHalfThickness,
@@ -341,7 +334,6 @@ namespace mu2e {
     _crs->_scintillatorShields[name] =
       CRSScintillatorShield(ishield,
                             name,
-                            CRSScintillatorShieldOffset + _crs->_localOffset,
                             CRSScintillatorShieldRotationAngles,
                             CRSScintillatorShieldOffset + _crs->_globalOffset,
                             _scintillatorShieldHalfThickness,
@@ -376,7 +368,6 @@ namespace mu2e {
     _crs->_scintillatorShields[name] =
       CRSScintillatorShield(ishield,
                             name,
-                            CRSScintillatorShieldOffset + _crs->_localOffset,
                             CRSScintillatorShieldRotationAngles,
                             CRSScintillatorShieldOffset + _crs->_globalOffset,
                             _scintillatorShieldHalfThickness,
@@ -390,7 +381,6 @@ namespace mu2e {
 
       if ( _diagLevel > 0) {
         cout << __func__ << " shield._name        : " << (itshield->second)._name << endl;
-        cout << __func__ << " shield._localOffset : " << (itshield->second)._localOffset << endl;
         cout << __func__ << " shield._globalOffset: " << (itshield->second)._globalOffset << endl;
       }
 
@@ -480,11 +470,11 @@ namespace mu2e {
 
       // we need to shift the modules transversly as well
       // we shall assume that the first (0th) one will be touching the steel (%2 below)
-
-      module._localOffset = CLHEP::Hep3Vector( imodule%2 != 0 ?
+      module._globalOffset = CLHEP::Hep3Vector( imodule%2 != 0 ?
                                                _scintillatorModuleCoreHalfThickness :
                                                -_scintillatorModuleCoreHalfThickness,
-                                               0., moduleLocalOffsetL);
+                                               0., moduleLocalOffsetL)
+	+ shield._globalOffset;
 
       module._globalRotationAngles = shield._globalRotationAngles;
 
@@ -524,10 +514,11 @@ namespace mu2e {
 
       module._layers.reserve(_scintillatorLayersPerModule);
 
-      module._localOffset = CLHEP::Hep3Vector( imodule%2 != 0 ?
+      module._globalOffset = CLHEP::Hep3Vector( imodule%2 != 0 ?
                                                _scintillatorModuleCoreHalfThickness :
                                                -_scintillatorModuleCoreHalfThickness,
-                                               0., moduleLocalOffsetL);
+                                               0., moduleLocalOffsetL) 
+	+ shield._globalOffset;
 
       module._globalRotationAngles = shield._globalRotationAngles;
 
@@ -544,9 +535,7 @@ namespace mu2e {
       }
 
       CRSScintillatorModule& module = shield._modules.at(ii);
-      module._globalOffset = shield._globalOffset + module._localOffset;
       if ( _diagLevel > 1) {
-        cout << __func__ << " module._localOffset : " << module._localOffset << endl;
         cout << __func__ << " module._globalOffset: " << module._globalOffset << endl;
       }
       makeLayers(module);
@@ -592,15 +581,16 @@ namespace mu2e {
       // fill in the layer offsets etc...
 
       // we will place innermost layers shifted most to the left
-      layer._localOffset = CLHEP::Hep3Vector(firtstLayerLocalOffsetT + ii*scintillatorLayerShiftT,
-                                             0.,
-                                             firtstLayerLocalOffsetL + ii*_scintillatorLayerShift);
+      layer._globalOffset = CLHEP::Hep3Vector(firtstLayerLocalOffsetT + ii*scintillatorLayerShiftT,
+					      0.,
+					      firtstLayerLocalOffsetL + ii*_scintillatorLayerShift)
+	+ module._globalOffset;
+
       layer._globalRotationAngles = module._globalRotationAngles;
-      layer._globalOffset = module._globalOffset + layer._localOffset;
+
       layer._nBars = module._nBarsPerLayer;
 
       if ( _diagLevel > 2) {
-        cout << __func__ << " layer._localOffset : " << layer._localOffset << endl;
         cout << __func__ << " layer._globalOffset: " << layer._globalOffset << endl;
       }
 
@@ -639,9 +629,9 @@ namespace mu2e {
 
       CRSScintillatorBar& bar = _crs->_allCRSScintillatorBars.back();
 
-      bar._localOffset = CLHEP::Hep3Vector(0.,0.,
-                                           firtstBarLocalOffsetL + ii*(2.*_scintillatorBarHalfLengths[2]+
-                                                                       _scintillatorLayerGap));
+      CLHEP::Hep3Vector barLocalOffset(0.,0.,
+				       firtstBarLocalOffsetL + ii*(2.*_scintillatorBarHalfLengths[2]+
+								   _scintillatorLayerGap));
 
       bar._globalRotationAngles = layer._globalRotationAngles;
 
@@ -650,7 +640,7 @@ namespace mu2e {
 
       // we will now calculate position of the bar wrt the CRS origin and rotate it wrt that origin
 
-      CLHEP::Hep3Vector barCRSOffset = layer._globalOffset + bar._localOffset - _crs->_globalOffset;
+      CLHEP::Hep3Vector barCRSOffset = layer._globalOffset + barLocalOffset - _crs->_globalOffset;
 
       CLHEP::HepRotationX RX(bar._globalRotationAngles[0]);
       CLHEP::HepRotationY RY(bar._globalRotationAngles[1]);
@@ -673,7 +663,6 @@ namespace mu2e {
       if ( _diagLevel > 3) {
         cout << __func__ << " barCRSOffset        : " << barCRSOffset        << endl;
         cout << __func__ << " barCRSOffsetRotated : " << barCRSOffsetRotated << endl;
-        cout << __func__ << " bar._localOffset    : " << bar._localOffset    << endl;
         cout << __func__ << " bar._globalOffset   : " << bar._globalOffset   << endl;
       }
 
@@ -909,7 +898,6 @@ namespace mu2e {
     std::string name = "CRSSteelTopShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
-                     _TopHallSteelOffset + _crs->_localOffset,  // offset in the hall Air
                      0,                                           // HepRotation*
                      _TopHallSteelOffset + _crs->_globalOffset, // global offset in Mu2e
                      CRSSteelShieldTopDims);
@@ -917,7 +905,6 @@ namespace mu2e {
     name = "CRSSteelBottomShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
-                     _BottomHallSteelOffset + _crs->_localOffset,
                      0,
                      _BottomHallSteelOffset + _crs->_globalOffset,
                      CRSSteelShieldTopDims);
@@ -925,7 +912,6 @@ namespace mu2e {
     name = "CRSSteelLeftShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
-                     _LeftHallSteelOffset + _crs->_localOffset,
                      0,
                      _LeftHallSteelOffset + _crs->_globalOffset,
                      CRSSteelShieldSideDims);
@@ -933,7 +919,6 @@ namespace mu2e {
     name = "CRSSteelRightShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
-                     _RightHallSteelOffset + _crs->_localOffset,
                      0,
                      _RightHallSteelOffset + _crs->_globalOffset,
                      CRSSteelShieldSideDims);
@@ -944,7 +929,6 @@ namespace mu2e {
     name = "CRSSteelDownstreamShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
-                     _DownstreamHallSteelOffset + _crs->_localOffset,
                      0,
                      _DownstreamHallSteelOffset + _crs->_globalOffset,
                      CRSSteelShieldUpstreamDims,
@@ -954,7 +938,6 @@ namespace mu2e {
     name = "CRSSteelUpstreamShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
-                     _UpstreamHallSteelOffset + _crs->_localOffset,
                      0,
                      _UpstreamHallSteelOffset + _crs->_globalOffset,
                      CRSSteelShieldUpstreamDims,
@@ -980,17 +963,6 @@ namespace mu2e {
       cout << __func__ << " CRSSteelShieldOffset     : " << CRSSteelShieldOffset  << endl;
     }
 
-    GeomHandle<Mu2eBuilding> building;
-    // Imagine a box that exactly contains the flux return steel.
-    // This is the center of that box, in the coordinate system of the mother volume (the hall air).
-    // //_crs->_localOffset =  - (hallAirOffset + wallOffset + dirtOffset - mu2eOrigin + detSolCoilPosition + CRSSteelShieldOffset);
-    _crs->_localOffset =  - (building->hallCenterInMu2e() + detSolCoilPosition + CRSSteelShieldOffset);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSOffset (in hallAir) : " << _crs->_localOffset    << endl;
-    }
-
-    // _crs->_globalOffset = _crs->_localOffset + hallAirOffset + wallOffset + dirtOffset - mu2eOrigin;
     _crs->_globalOffset = -(detSolCoilPosition + CRSSteelShieldOffset);
 
     // the global offset will be wrt mu2e

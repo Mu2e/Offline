@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.7 2011/05/22 20:28:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Id: CRSScintillatorBar.hh,v 1.8 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -44,7 +44,6 @@ namespace mu2e {
     CRSScintillatorBar(
                        CRSScintillatorBarId    const & id,
                        CRSScintillatorBarIndex const & index,
-                       CLHEP::Hep3Vector       const & localOffset,
                        std::vector<double>     const & globalRotationAngles,
                        CLHEP::Hep3Vector       const & globalOffset
                        );
@@ -56,8 +55,6 @@ namespace mu2e {
 
     // Formatted string embedding the id of the ScintillatorBar.
     std::string name( std::string const & base ) const;
-
-    CLHEP::Hep3Vector const & getLocalOffset() const {return _localOffset;}
 
     std::vector<double> const & getGlobalRotationAngles() const { return _globalRotationAngles;}
 
@@ -93,9 +90,6 @@ namespace mu2e {
 
     // Index into the container of all ScintillatorBars.
     CRSScintillatorBarIndex _index;
-
-    // Mid-point of the ScintillatorBar, a.k.a. localOffset
-    CLHEP::Hep3Vector _localOffset;
 
     std::vector<double> _globalRotationAngles;
     // we may do rotation instead

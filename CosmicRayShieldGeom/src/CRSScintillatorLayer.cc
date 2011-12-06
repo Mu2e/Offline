@@ -2,9 +2,9 @@
 // Representation of one Scintillator Layer in CosmicRayShield
 //
 //
-// $Id: CRSScintillatorLayer.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorLayer.cc,v 1.3 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG based on Rob Kutschke's Layer
 //
@@ -25,7 +25,6 @@ namespace mu2e {
   CRSScintillatorLayer::CRSScintillatorLayer():
     _id(CRSScintillatorLayerId()),
     _nBars(0),
-    _localOffset( CLHEP::Hep3Vector(0.,0.,0.)),
     _globalRotationAngles(std::vector<double>(2)),
     _globalOffset(CLHEP::Hep3Vector(0.,0.,0.))
   {}
@@ -41,13 +40,11 @@ namespace mu2e {
   CRSScintillatorLayer::CRSScintillatorLayer(
                                              CRSScintillatorLayerId const&   id,
                                              int const nBars,
-                                             CLHEP::Hep3Vector const& localOffset, // wrt Shield
                                              std::vector<double> const & globalRotationAngles,
                                              CLHEP::Hep3Vector const& globalOffset // wrt World
                                              ):
     _id(id),
     _nBars(nBars),
-    _localOffset(localOffset),
     _globalRotationAngles(globalRotationAngles),
     _globalOffset(globalOffset)
   {}

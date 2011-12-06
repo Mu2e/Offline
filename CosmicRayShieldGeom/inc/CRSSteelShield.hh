@@ -4,9 +4,9 @@
 //
 // Representation of CRSSteelShield aka the flux return yoke
 //
-// $Id: CRSSteelShield.hh,v 1.5 2011/05/20 20:21:47 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:21:47 $
+// $Id: CRSSteelShield.hh,v 1.6 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG
 //
@@ -27,7 +27,6 @@ namespace mu2e {
 
     CRSSteelShield() :
       _name(),
-      _localOffset(),
       _rotation(),
       _globalOffset(),
       _halfLengths(),
@@ -37,13 +36,11 @@ namespace mu2e {
     // accept default d'tor etc...
 
     CRSSteelShield(std::string const name,
-                               CLHEP::Hep3Vector   localOffset,
                                CLHEP::HepRotation* rotation,
                                CLHEP::Hep3Vector   globalOffset,
                                double const        halfLengths[3],
                                double              holeRadius = 0.):
       _name(name),
-      _localOffset(localOffset),
       _rotation(rotation),
       _globalOffset(globalOffset),
       _holeRadius(holeRadius)
@@ -54,7 +51,6 @@ namespace mu2e {
     };
 
     std::string         const & name() const { return _name;};
-    CLHEP::Hep3Vector   const & getLocalOffset()  const { return _localOffset; };
     CLHEP::Hep3Vector   const & getGlobalOffset() const { return _globalOffset; };
     CLHEP::HepRotation* const  getRotation()     const { return _rotation; };
 
@@ -67,9 +63,6 @@ namespace mu2e {
   private:
 
     std::string _name;
-
-    // position of the center in the parent frame
-    CLHEP::Hep3Vector _localOffset;
 
     // unit vector along the shield=bars direction
     CLHEP::Hep3Vector _uv; // not used for now

@@ -3,9 +3,9 @@
 //
 // Representation of one ScintillatorShield in CosmicRayShield.
 //
-// $Id: CRSScintillatorShield.hh,v 1.4 2011/05/22 20:28:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Id: CRSScintillatorShield.hh,v 1.5 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG based on Rob Kutschke's Device
 //
@@ -33,7 +33,6 @@ namespace mu2e {
     CRSScintillatorShield(
                           CRSScintillatorShieldId const & id,
                           std::string       const & name,
-                          CLHEP::Hep3Vector const & localOffset,  // offset in Hall Air
                           std::vector<double> const & globalRotationAngles,
                           CLHEP::Hep3Vector const & globalOffset, // offset in World
                           double const              halfThickness,
@@ -45,8 +44,6 @@ namespace mu2e {
     const CRSScintillatorShieldId id() const { return _id;}
 
     //    const double rotation() const { return _rotation; }
-
-    CLHEP::Hep3Vector const & getLocalOffset() const { return _localOffset; }
 
     std::vector<double> const & getGlobalRotationAngles() const { return _globalRotationAngles;}
 
@@ -92,9 +89,6 @@ namespace mu2e {
     CRSScintillatorShieldId _id;
 
     std::string _name;
-
-    // position in the parent frame
-    CLHEP::Hep3Vector _localOffset;
 
     std::vector<double> _globalRotationAngles;
 

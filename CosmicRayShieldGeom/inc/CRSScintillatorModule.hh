@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: CRSScintillatorModule.hh,v 1.5 2011/05/22 20:28:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Id: CRSScintillatorModule.hh,v 1.6 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG somewhat based on Rob Kutschke' Sector
 //
@@ -38,7 +38,6 @@ namespace mu2e {
 
     CRSScintillatorModule(CRSScintillatorModuleId const & id,
                           int                     const nBarsPerLayer,
-                          CLHEP::Hep3Vector       const & localOffset,
                           std::vector<double>     const & globalRotationAngles,
                           CLHEP::Hep3Vector       const & globalOffset // offset in Mu2e
                           );
@@ -73,8 +72,6 @@ namespace mu2e {
 
     const std::vector<double>& halfLengths() const { return _halfLengths; }
 
-    CLHEP::Hep3Vector const & getLocalOffset() const {return _localOffset;}
-
     std::vector<double> const & getGlobalRotationAngles() const { return _globalRotationAngles;}
 
     CLHEP::Hep3Vector const & getGlobalOffset() const {return _globalOffset;}
@@ -98,8 +95,6 @@ namespace mu2e {
     int _nBarsPerLayer;
 
     // Properties of the enclosing logical volume (box).
-
-    CLHEP::Hep3Vector _localOffset;
 
     std::vector<double> _globalRotationAngles;
 

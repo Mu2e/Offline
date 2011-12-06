@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.8 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: constructSteel.cc,v 1.9 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -72,7 +72,7 @@ namespace mu2e {
                 shield.getHalfLengths(),
                 CRSSteelShieldMaterial,
                 shield.getRotation(),
-                shield.getLocalOffset(),
+                shield.getGlobalOffset() - parent.centerInMu2e(),
                 parent,
                 0,
                 CRSSteelShieldVisible,
@@ -115,7 +115,7 @@ namespace mu2e {
         finishNesting(CRSSteelShieldInfo,
                       CRSSteelShieldMaterial,
                       shield.getRotation(),
-                      shield.getLocalOffset(),
+                      shield.getGlobalOffset() - parent.centerInMu2e(),
                       parent.logical,
                       0,
                       CRSSteelShieldVisible,

@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.8 2011/11/02 21:30:10 gandr Exp $
+// $Id: constructCRV.cc,v 1.9 2011/12/06 22:53:01 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:30:10 $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG
 //
@@ -146,7 +146,6 @@ namespace mu2e {
       G4RotationMatrix* shieldRotation = reg.add(G4RotationMatrix(RX*RY*RZ));
 
       if ( verbosityLevel > 0 ) {
-        cout << __func__ << " shieldLocalOffset       : " << shield.getLocalOffset() << endl;
         cout << __func__ << " shieldGlobalOffset      : " << shield.getGlobalOffset() << endl;
         cout << __func__ << " shieldAirOffset         : " << shield.getGlobalOffset() - perentCenterInMu2e << endl;
         cout << __func__ << " getGlobalRotationAngles : " <<
@@ -171,7 +170,6 @@ namespace mu2e {
         CRSScintillatorModule const & module = shield.getModule(im);
 
         if ( verbosityLevel > 1 ) {
-          cout << __func__ << " moduleLocalOffset       : " << module.getLocalOffset() << endl;
           cout << __func__ << " moduleGlobalOffset      : " << module.getGlobalOffset() << endl;
           cout << __func__ << " moduleAirOffset         : " << module.getGlobalOffset() - perentCenterInMu2e << endl;
         }
@@ -189,7 +187,6 @@ namespace mu2e {
           CRSScintillatorLayer const & layer = module.getLayer(il);
 
           if ( verbosityLevel > 2 ) {
-            cout << __func__ << " layerLocalOffset        : " << layer.getLocalOffset() << endl;
             cout << __func__ << " layerGlobalOffset       : " << layer.getGlobalOffset() << endl;
             cout << __func__ << " layerAirOffset          : " << layer.getGlobalOffset() - perentCenterInMu2e << endl;
           }
@@ -216,7 +213,6 @@ namespace mu2e {
             // the rotation is the same for each bar in a given shield
 
             if ( verbosityLevel > 3 ) {
-              cout << __func__ << " barLocalOffset       : " <<  bar.getLocalOffset() << endl;
               cout << __func__ << " barGlobalOffset      : " <<  bar.getGlobalOffset() << endl;
               cout << __func__ << " barAirOffset         : " <<  barAirOffset << endl;
             }

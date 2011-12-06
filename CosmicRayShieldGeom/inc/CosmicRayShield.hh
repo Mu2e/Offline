@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.8 2011/05/20 20:21:47 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:21:47 $
+// $Id: CosmicRayShield.hh,v 1.9 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG
 //
@@ -75,16 +75,9 @@ namespace mu2e {
       return _globalOffset;
     }
 
-    CLHEP::Hep3Vector const & getLocalOffset() const {
-      return _localOffset;
-    }
-
   private:
 
     std::string _name;
-
-    // position of the center in the parent frame
-    CLHEP::Hep3Vector _localOffset;
 
     // position of the center in  Mu2e frame
     CLHEP::Hep3Vector _globalOffset;

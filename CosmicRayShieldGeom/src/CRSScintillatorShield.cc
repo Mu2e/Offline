@@ -1,9 +1,9 @@
 //
 // Representation of one ScintillatorShield in CosmicRayShield
 //
-// $Id: CRSScintillatorShield.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorShield.cc,v 1.3 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Device
 //
@@ -21,14 +21,12 @@ namespace mu2e {
   CRSScintillatorShield::CRSScintillatorShield(
                         CRSScintillatorShieldId const & id,
                         std::string             const & name,
-                        CLHEP::Hep3Vector       const & localOffset,
                         std::vector<double>     const & globalRotationAngles,
                         CLHEP::Hep3Vector       const & globalOffset,
                         double                  const   halfThickness,
                         std::vector<int>        const & numberOfModules) :
     _id(id),
     _name(name),
-    _localOffset(localOffset),
     _globalRotationAngles(globalRotationAngles),
     _globalOffset(globalOffset),
     _halfThickness(halfThickness),

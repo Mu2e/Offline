@@ -1,9 +1,9 @@
 //
 // Representation of one CRSScintillatorBar in CosmicRayShield
 //
-// $Id: CRSScintillatorBar.cc,v 1.2 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: CRSScintillatorBar.cc,v 1.3 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG
 //
@@ -17,7 +17,6 @@ namespace mu2e {
   CRSScintillatorBar::CRSScintillatorBar():
     _id(CRSScintillatorBarId()),
     _index(CRSScintillatorBarIndex(0)),
-    _localOffset (CLHEP::Hep3Vector(0.,0.,0.)),
     _globalRotationAngles(std::vector<double>(2)),
     _globalOffset(CLHEP::Hep3Vector(0.,0.,0.))
   {}
@@ -27,7 +26,6 @@ namespace mu2e {
                                          ):
     _id(id),
     _index(index),
-    _localOffset (CLHEP::Hep3Vector(0.,0.,0.)),
     _globalRotationAngles(std::vector<double>(2)),
     _globalOffset(CLHEP::Hep3Vector(0.,0.,0.))
   {}
@@ -36,13 +34,11 @@ namespace mu2e {
   CRSScintillatorBar::CRSScintillatorBar(
                                          CRSScintillatorBarId const& id,
                                          CRSScintillatorBarIndex const& index,
-                                         CLHEP::Hep3Vector const& localOffset,
-                                         std::vector<double> const & globalRotationAngles,
+                                           std::vector<double> const & globalRotationAngles,
                                          CLHEP::Hep3Vector const& globalOffset
                                          ):
     _id(id),
     _index(index),
-    _localOffset(localOffset),
     _globalRotationAngles(globalRotationAngles),
     _globalOffset(globalOffset)
   {

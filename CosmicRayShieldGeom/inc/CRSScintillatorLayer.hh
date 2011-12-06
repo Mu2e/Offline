@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Layer in  CosmicRayShield
 //
-// $Id: CRSScintillatorLayer.hh,v 1.5 2011/05/22 20:28:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 20:28:13 $
+// $Id: CRSScintillatorLayer.hh,v 1.6 2011/12/06 22:53:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/06 22:53:01 $
 //
 // Original author KLG; somewhat based on  Rob Kutschke's Layer
 //
@@ -34,7 +34,6 @@ namespace mu2e {
 
     CRSScintillatorLayer(CRSScintillatorLayerId const & id,
                          int const nBars,
-                         CLHEP::Hep3Vector   const & localOffset, // wrt Shield
                          std::vector<double> const & globalRotationAngles, // should be same as for the shield
                          CLHEP::Hep3Vector   const & globalOffset // wrt Mu2e
                          );
@@ -48,8 +47,6 @@ namespace mu2e {
     CRSScintillatorLayerId const & id() const { return _id;}
 
     int nBars() const { return _nBars; }
-
-    CLHEP::Hep3Vector const & getLocalOffset() const {return _localOffset;}
 
     std::vector<double> const & getGlobalRotationAngles() const {return _globalRotationAngles;}
 
@@ -99,9 +96,6 @@ namespace mu2e {
     // the number of bars in the half module is, yes, half that of the full module
 
     int _nBars;
-
-    // Mid-point of the ScintillatorLayer, a.k.a. localOffset
-    CLHEP::Hep3Vector _localOffset;
 
     std::vector<double> _globalRotationAngles;
 
