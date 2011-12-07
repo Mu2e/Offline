@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.11 2011/11/23 16:40:49 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.12 2011/12/07 00:52:51 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/23 16:40:49 $
+// $Date: 2011/12/07 00:52:51 $
 //
 // Original author Rob Kutschke
 //
@@ -144,16 +144,6 @@ namespace mu2e {
       addDetector( calorm.getCalorimeterPtr() );
     }
 
-    if(_config->getBool("hasBFieldManager",false)){
-      BFieldManagerMaker bfmgr( *_config);
-      addDetector( bfmgr.getBFieldManager() );
-    }
-
-    if(_config->getBool("hasVirtualDetector",false)){
-      VirtualDetectorMaker vdm( *_config );
-      addDetector( vdm.getVirtualDetectorPtr() );
-    }
-
     if(_config->getBool("hasCosmicRayShield",false)){
       CosmicRayShieldMaker crs( *_config );
       addDetector( crs.getCosmicRayShieldPtr() );
@@ -164,6 +154,16 @@ namespace mu2e {
       addDetector( extmon.getDetectorPtr() );
     }
     
+    if(_config->getBool("hasVirtualDetector",false)){
+      VirtualDetectorMaker vdm( *_config );
+      addDetector( vdm.getVirtualDetectorPtr() );
+    }
+
+    if(_config->getBool("hasBFieldManager",false)){
+      BFieldManagerMaker bfmgr( *_config);
+      addDetector( bfmgr.getBFieldManager() );
+    }
+
   }
 
   // Check that the configuration is self consistent.
