@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.3 2011/05/20 17:58:00 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 17:58:00 $
+// $Id: ConditionsService_service.cc,v 1.4 2011/12/07 00:32:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/07 00:32:29 $
 //
 // Original author Rob Kutschke
 //
@@ -56,11 +56,11 @@ namespace mu2e {
   ConditionsService::preBeginRun(art::Run const &) {
 
     if(++_run_count > 1) {
-      mf::LogWarning("CONDITIONS") << "This test version does not change geometry on run boundaries.";
+      mf::LogPrint("CONDITIONS") << "This test version does not change geometry on run boundaries.";
       return;
     }
 
-    mf::LogInfo log("CONDITIONS");
+    mf::LogPrint log("CONDITIONS");
     log << "Conditions input file is: " << _conditionsFile << "\n";
 
     if ( _config.getBool("printConfig",false) ){

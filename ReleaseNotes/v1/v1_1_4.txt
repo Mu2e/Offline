@@ -1,11 +1,16 @@
 
-  $Id: v1_1_4.txt,v 1.4 2011/12/06 22:53:01 gandr Exp $
+  $Id: v1_1_4.txt,v 1.5 2011/12/07 00:32:29 gandr Exp $
   $Author: gandr $
-  $Date: 2011/12/06 22:53:01 $
+  $Date: 2011/12/07 00:32:29 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_4
+
+6) December 12, 2011 gandr
+   
+   Reduce the amount of volatile information (timestamps, object
+   addresses) printed out to make diffing log files easier.
 
 5) December 12, 2011 gandr
 

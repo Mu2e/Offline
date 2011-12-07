@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.cc,v 1.12 2011/07/12 04:52:27 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2011/07/12 04:52:27 $
+//   $Id: ParticleDataTable.cc,v 1.13 2011/12/07 00:32:29 gandr Exp $
+//   $Author: gandr $
+//   $Date: 2011/12/07 00:32:29 $
 //
 //
 // 1) The Geant4 particle table is a superset of this table.  It includes
@@ -150,7 +150,7 @@ namespace mu2e {
     }
 
     if ( units == 0 ){
-      mf::LogWarning("CONDITIONS")
+      mf::LogPrint("CONDITIONS")
         << "Did not recognize the units of masses in the particle data table.\n"
         << "The electron mass appears to be: "
         << eMass
@@ -161,7 +161,7 @@ namespace mu2e {
     if ( units == 2 ){
       _unitsChanged = true;
 
-      mf::LogWarning("CONDITIONS")
+      mf::LogPrint("CONDITIONS")
         << "The HepPDT particle data table has masses in GeV. Changing to MeV.\n"
         << "  ( This leaves the lifetimes in a screwed up state: they are in kilo-seconds."
         << "    This does not affect Geant4 which has its own table of lifetimes. )";

@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.9 2011/12/06 22:53:01 gandr Exp $
+// $Id: constructCRV.cc,v 1.10 2011/12/07 00:32:29 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/06 22:53:01 $
+// $Date: 2011/12/07 00:32:29 $
 //
 // Original author KLG
 //
@@ -152,7 +152,7 @@ namespace mu2e {
           shield.getGlobalRotationAngles()[0] << ", " <<
           shield.getGlobalRotationAngles()[1] << ", " <<
           shield.getGlobalRotationAngles()[2] << ", " << endl;
-        cout << __func__ << " shieldRotation and *    : " << shieldRotation << *shieldRotation << endl;
+        cout << __func__ << " *shieldRotation         : " << *shieldRotation << endl;
       }
 
       // now loop over all bars in the given shield

@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.16 2011/11/18 21:34:00 kutschke Exp $
- * $Author: kutschke $
- * $Date: 2011/11/18 21:34:00 $
+ * $Id: SimpleConfig.cc,v 1.17 2011/12/07 00:32:29 gandr Exp $
+ * $Author: gandr $
+ * $Date: 2011/12/07 00:32:29 $
  *
  * Original author Rob Kutschke
  *
@@ -567,7 +567,7 @@ namespace mu2e {
             _rmap[key] = *b0;
 
             if ( _messageOnReplacement ){
-              mf::LogWarning("CONFIG")
+              mf::LogPrint("CONFIG")
                 << "SimpleConfig replacing parameter in: "
                 << _inputfile << "\n"
                 << "old record: " << *old << "\n"
