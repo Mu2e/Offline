@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.28 2011/11/04 20:52:11 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/04 20:52:11 $
+// $Id: PrimaryGeneratorAction.cc,v 1.29 2011/12/07 21:51:32 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2011/12/07 21:51:32 $
 //
 // Original author Rob Kutschke
 //
@@ -122,7 +122,8 @@ namespace mu2e {
           genpart.generatorId() == GenId::ejectedPhotonGun  ||
           genpart.generatorId() == GenId::pionCapture       ||
           genpart.generatorId() == GenId::piEplusNuGun      ||
-          genpart.generatorId() == GenId::nuclearCaptureGun ){
+          genpart.generatorId() == GenId::nuclearCaptureGun ||
+          genpart.generatorId() == GenId::internalRPC){
         pos += detectorOrigin;
       } else if ( genpart.generatorId() == GenId::cosmicToy ||
                   genpart.generatorId() == GenId::cosmicDYB ||
