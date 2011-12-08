@@ -32,34 +32,36 @@ namespace mu2e {
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNAL::ExtMon> emf;
 
-    const CLHEP::Hep3Vector& hc = building->hallCenterInMu2e();
-    
-    const double worldBottomInMu2e = hc[1]
-      - building->hallInsideHalfLengths()[1] - building->hallFloorThickness()
+    const double worldBottomInMu2e = building->hallInsideYmin()
+      - building->hallFloorThickness()
       - c.getDouble("world.margin.bottom");
 
-    const double worldTopInMu2e = hc[1]
-      + building->hallInsideHalfLengths()[1] + building->hallCeilingThickness() 
+    const double worldTopInMu2e = building->hallInsideYmax()
+      + building->hallCeilingThickness() 
       + building->dirtOverburdenDepth()
       + 2*building->dirtCapHalfHeight()
       + c.getDouble("world.margin.top");
 
-    const double worldXminInMu2e = hc[0]
-      - building->hallInsideHalfLengths()[0] - building->hallWallThickness()
+    const double worldXminInMu2e = building->hallInsideXmin()
+      - building->hallWallThickness()
       - c.getDouble("world.margin.xmin");
 
-    const double worldXmaxInMu2e = hc[0]
-      + building->hallInsideHalfLengths()[0] + building->hallWallThickness()
+    const double worldXmaxInMu2e = building->hallInsideXmax()
+      + building->hallWallThickness()
       + c.getDouble("world.margin.xmax");
-
-    const double worldZminInMu2e =
-      emf->roomCenterInMu2e()[2]
-      - emf->roomHalfSize()[2]*std::abs(cos(dump->coreRotY()))
-      - emf->roomHalfSize()[0]*std::abs(sin(dump->coreRotY()))
+ 
+    _wg4->_hallFormalZminInMu2e = 
+      std::min(building->hallInsideZExtMonUCIWall(),
+	       emf->roomCenterInMu2e()[2]
+	       - emf->roomHalfSize()[2]*std::abs(cos(dump->coreRotY()))
+	       - emf->roomHalfSize()[0]*std::abs(sin(dump->coreRotY()))
+	       );
+    
+    const double worldZminInMu2e = _wg4->_hallFormalZminInMu2e
       - c.getDouble("world.margin.zmin");
 
-    const double worldZmaxInMu2e = hc[2]
-      + building->hallInsideHalfLengths()[2] + building->hallWallThickness()
+    const double worldZmaxInMu2e = building->hallInsideZmax()
+      + building->hallWallThickness()
       + c.getDouble("world.margin.zmax");
 
     // Dimensions of the world box
@@ -84,8 +86,9 @@ namespace mu2e {
     }
 
     // Top of the ceiling in G4 world coordinates.
-    double yCeilingOutside  = _wg4->_mu2eOriginInWorld[1] + hc[1] 
-      + building->hallInsideHalfLengths()[1] + building->hallCeilingThickness();
+    double yCeilingOutside  = _wg4->_mu2eOriginInWorld[1]
+      + building->hallInsideYmax()
+      + building->hallCeilingThickness();
 
     // Surface of the earth in G4 world coordinates.
     double ySurface  = yCeilingOutside + building->dirtOverburdenDepth();

@@ -18,9 +18,19 @@ namespace mu2e {
   class Mu2eBuilding : public Detector {
   public:
 
-    const CLHEP::Hep3Vector& hallCenterInMu2e() const { return _hallCenterInMu2e; }
+    //    const CLHEP::Hep3Vector& hallCenterInMu2e() const { return _hallCenterInMu2e; }
+    //    const std::vector<double>& hallInsideHalfLengths() const { return _hallInsideHalfLenghts; }
 
-    const std::vector<double>& hallInsideHalfLengths() const { return _hallInsideHalfLenghts; }
+    double hallInsideXmin() const { return _hallInsideXmin; }
+    double hallInsideXmax() const { return _hallInsideXmax; }
+
+    double hallInsideYmin() const { return _hallInsideYmin; }
+    double hallInsideYmax() const { return _hallInsideYmax; }
+
+    double hallInsideZmax() const { return _hallInsideZmax; }
+    double hallInsideZBeamDumpWall() const { return _hallInsideZBeamDumpWall; }
+    double hallInsideZExtMonUCIWall() const { return _hallInsideZExtMonUCIWall; }
+
     double hallFloorThickness() const { return _hallFloorThickness; }
     double hallCeilingThickness() const { return _hallCeilingThickness; }
     double hallWallThickness() const { return _hallWallThickness; }
@@ -42,9 +52,16 @@ namespace mu2e {
     // Private ctr: the class should be only obtained via the maker
     Mu2eBuilding() {}
 
-    CLHEP::Hep3Vector _hallCenterInMu2e;
+    double _hallInsideXmin;
+    double _hallInsideXmax;
+    double _hallInsideYmin;
+    double _hallInsideYmax;
+    double _hallInsideZmax;
+    double _hallInsideZBeamDumpWall;
+    double _hallInsideZExtMonUCIWall;
+
     CLHEP::Hep3Vector _trackerOriginInMu2e;
-    std::vector<double> _hallInsideHalfLenghts;
+
     double _hallFloorThickness;
     double _hallCeilingThickness;
     double _hallWallThickness;

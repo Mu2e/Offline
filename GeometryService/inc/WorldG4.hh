@@ -21,6 +21,10 @@ namespace mu2e {
 
     const std::vector<double>& halfLengths() const { return _halfLengths; }
 
+    // The formal boundary of the "HallAir" volume, in Mu2e coordinates.
+    // Set to accommodate ProtonBeamDump and ExtMonFNAL volumes inside.
+    double hallFormalZminInMu2e() const { return _hallFormalZminInMu2e; }
+
     // All the coordinates are in the G4 world reference frame
     const CLHEP::Hep3Vector& mu2eOriginInWorld() const { return _mu2eOriginInWorld; }
     const CLHEP::Hep3Vector& cosmicReferencePoint() const { return _cosmicReferencePoint; }
@@ -42,7 +46,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _cosmicReferencePoint;
     double _dirtG4Ymin;
     double _dirtG4Ymax;
-
+    double _hallFormalZminInMu2e; 
   };
 
 }

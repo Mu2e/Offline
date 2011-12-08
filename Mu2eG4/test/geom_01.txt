@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.103 2011/11/23 16:43:10 gandr Exp $
+// $Id: geom_01.txt,v 1.104 2011/12/08 17:20:58 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/23 16:43:10 $
+// $Date: 2011/12/08 17:20:58 $
 //
 // Original author Rob Kutschke
 //
@@ -140,9 +140,15 @@ bool   dirt.solid           = false;
 bool   dirt.capVisible      = true;
 bool   dirt.capSolid        = false;
 
-// Inside dimensions of the hall.  Order is: (x,y,z) = width, height, length.
-// Thicknesses of the hall walls.
-vector<double> hall.insideHalfLengths = { 7775., 5000., 16000.};
+// Positions of the hall walls
+double hall.insideXmin = -9300;
+double hall.insideXmax = +6250;
+double hall.insideZmax = +20000;
+double hall.insideZBeamDumpWall = -12000;
+double hall.insideZExtMonUCIWall = -17129;
+double hall.insideFullHeight = 10000.;
+
+// Hall wall details
 double hall.floorThick   = 300.;
 double hall.ceilingThick = 300.;
 double hall.wallThick    = 300.;
@@ -153,8 +159,6 @@ bool   hall.solid              = false;
 
 // These three numbers define the position of the hall air volume in mu2e coordinates
 double mu2e.origin.heightAboveHallFloor = 2550.;
-double hall.centerInMu2e.x = -1525.;
-double hall.centerInMu2e.z = +4000.;
 
 // X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
 // The origin of the detector coordinate system is on the DS axis at the specified z.

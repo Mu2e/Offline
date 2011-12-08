@@ -4,7 +4,6 @@
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/ProductionTarget.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
 
 #include <algorithm>
 #include <iterator>

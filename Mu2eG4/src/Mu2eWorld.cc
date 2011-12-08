@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.107 2011/11/23 16:41:42 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.108 2011/12/08 17:20:58 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/23 16:41:42 $
+// $Date: 2011/12/08 17:20:58 $
 //
 // Original author Rob Kutschke
 //
@@ -201,7 +201,7 @@ namespace mu2e {
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
 
-    constructProtonBeamDump(dirtInfo, *_config);
+    constructProtonBeamDump(hallInfo, *_config);
 
     constructDS(hallInfo,_config);
     constructTS(hallInfo,_config);
@@ -222,7 +222,7 @@ namespace mu2e {
     }
 
     if(geom->hasElement<mu2e::ExtMonFNAL::ExtMon>()) {
-      constructExtMonFNAL(dirtInfo, *_config);
+      constructExtMonFNAL(hallInfo, *_config);
     }
 
     if ( _config->getBool("hasNeutronAbsorber",false) ) {
