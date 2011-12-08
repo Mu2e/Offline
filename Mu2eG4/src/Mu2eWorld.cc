@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.108 2011/12/08 17:20:58 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.109 2011/12/08 17:21:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/08 17:20:58 $
+// $Date: 2011/12/08 17:21:09 $
 //
 // Original author Rob Kutschke
 //
@@ -42,7 +42,6 @@
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
-#include "Mu2eG4/inc/constructExtMonFNAL.hh"
 #include "Mu2eG4/inc/constructNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
@@ -219,10 +218,6 @@ namespace mu2e {
     if ( _config->getBool("hasCosmicRayShield",false) ) {
       constructSteel(hallInfo,_config);
       constructCRV(hallInfo,_config);
-    }
-
-    if(geom->hasElement<mu2e::ExtMonFNAL::ExtMon>()) {
-      constructExtMonFNAL(hallInfo, *_config);
     }
 
     if ( _config->getBool("hasNeutronAbsorber",false) ) {

@@ -22,7 +22,10 @@
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 
 namespace mu2e {
-  void constructExtMonFNAL(const VolumeInfo& parent, const SimpleConfig& config) {
+  void constructExtMonFNAL(const VolumeInfo& parent,
+			   const CLHEP::HepRotation &parentRotationInMu2e,
+			   const CLHEP::HepRotation *rotationInParent,
+			   const SimpleConfig& config) {
 
     GeomHandle<ExtMonFNAL::ExtMon> det;
     GeomHandle<ProtonBeamDump> dump;
@@ -34,12 +37,10 @@ namespace mu2e {
     const VolumeInfo room = nestBox("ExtMonFNALRoom",
 				    det->roomHalfSize(), 
 				    materialFinder.get("extmon_fnal.roomMaterialName"),
-				    
-				    // rotated in the same way as the beam dump
-				    &dump->enclosureRotationInMu2e(),
-				    
-				    det->roomCenterInMu2e() - parent.centerInMu2e(),
-				    
+				    rotationInParent,
+
+				    parentRotationInMu2e*(det->roomCenterInMu2e() - parent.centerInMu2e()),
+
 				    parent, 0, config.getBool("extmon_fnal.roomVisible"),
 				    G4Colour::Red(),
 				    false, true, true, true

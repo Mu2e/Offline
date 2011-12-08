@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.104 2011/12/08 17:20:58 gandr Exp $
+// $Id: geom_01.txt,v 1.105 2011/12/08 17:21:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/08 17:20:58 $
+// $Date: 2011/12/08 17:21:09 $
 //
 // Original author Rob Kutschke
 //
@@ -145,7 +145,7 @@ double hall.insideXmin = -9300;
 double hall.insideXmax = +6250;
 double hall.insideZmax = +20000;
 double hall.insideZBeamDumpWall = -12000;
-double hall.insideZExtMonUCIWall = -17129;
+double hall.insideZExtMonUCIWall = -20000; // -17129;
 double hall.insideFullHeight = 10000.;
 
 // Hall wall details

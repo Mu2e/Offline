@@ -1,6 +1,7 @@
 // Andrei Gaponenko, 2011
 
 #include "Mu2eG4/inc/constructProtonBeamDump.hh"
+#include "Mu2eG4/inc/constructExtMonFNAL.hh"
 
 #include <iostream>
 
@@ -9,15 +10,22 @@
 #include "G4Trap.hh"
 #include "G4Orb.hh"
 #include "G4Tubs.hh"
+#include "G4ExtrudedSolid.hh"
+#include "G4TwoVector.hh"
 #include "G4SDManager.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
+#include "cetlib/exception.h"
+
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/ProtonBeamDump.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
+#include "GeometryService/inc/WorldG4.hh"
+
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
@@ -39,15 +47,111 @@ namespace mu2e {
 
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<Mu2eBuilding> building;
+    GeomHandle<WorldG4> world;
  
     MaterialFinder materialFinder(config);
-     
+
+    //----------------------------------------------------------------
+    // Re-fill a part of the formal "HallAir" with dirt.
+    // Use an extruded solid to have a properly angled facet 
+    // at which the beam dump can be placed.
+
+    // compute the facet:
+    const double beamDumpShieldingFaceXmin = dump->enclosureCenterInMu2e()[0]
+      + dump->enclosureHalfSize()[2] * sin(dump->coreRotY())
+      - dump->enclosureHalfSize()[0] * cos(dump->coreRotY())
+      ;
+
+    const double beamDumpShieldingFaceXmax = dump->enclosureCenterInMu2e()[0]
+      + dump->enclosureHalfSize()[2] * sin(dump->coreRotY())
+      + dump->enclosureHalfSize()[0] * cos(dump->coreRotY())
+      ;
+
+    const double beamDumpShieldingFaceZmin = dump->enclosureCenterInMu2e()[2]
+      + dump->enclosureHalfSize()[2] * cos(dump->coreRotY())
+      - dump->enclosureHalfSize()[0] * sin(dump->coreRotY())
+      ;
+    
+    const double beamDumpShieldingFaceZmax = dump->enclosureCenterInMu2e()[2]
+      + dump->enclosureHalfSize()[2] * cos(dump->coreRotY())
+      + dump->enclosureHalfSize()[0] * sin(dump->coreRotY())
+      ;
+
+    const double xEnclosureProjection = dump->enclosureCenterInMu2e()[0]
+      + (building->hallInsideZBeamDumpWall() - dump->enclosureCenterInMu2e()[2]) * tan(dump->coreRotY())
+      - dump->enclosureHalfSize()[0] / cos(dump->coreRotY())
+      ;
+
+    // ExtrudedSolid coordinates:  the solid is created "hanging down"
+    // from the line z=hallInsideZBeamDumpWall() and y=middle of the hall height (inside)
+    // then rotated up around this line.
+
+    // points need to be in the clock-wise order
+    std::vector<G4TwoVector> beamDumpDirtOutiline;
+
+    beamDumpDirtOutiline.push_back(G4TwoVector(xEnclosureProjection, 0));
+
+    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmin(), 0));
+
+    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmin(), 
+					       world->hallFormalZminInMu2e() - building->hallInsideZBeamDumpWall()));
+
+    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmax(),
+					       world->hallFormalZminInMu2e() - building->hallInsideZBeamDumpWall()));
+
+    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmax(),
+					       building->hallInsideZExtMonUCIWall() - building->hallInsideZBeamDumpWall()));
+
+
+    beamDumpDirtOutiline.push_back(G4TwoVector(beamDumpShieldingFaceXmax,
+					       building->hallInsideZExtMonUCIWall() - building->hallInsideZBeamDumpWall()));
+
+    beamDumpDirtOutiline.push_back(G4TwoVector(beamDumpShieldingFaceXmax, beamDumpShieldingFaceZmin - building->hallInsideZBeamDumpWall()));
+
+    if(beamDumpShieldingFaceZmax > building->hallInsideZBeamDumpWall()) {
+      throw cet::exception("GEOM")<<"constructProtonBeamDump(): hallInsideZBeamDumpWall conflicts with the proton dump enclosure\n";
+    }
+
+    // Don't add the last point if it coincides with the first
+    if(beamDumpShieldingFaceZmax < building->hallInsideZBeamDumpWall()) {
+      beamDumpDirtOutiline.push_back(G4TwoVector(beamDumpShieldingFaceXmin, beamDumpShieldingFaceZmax - building->hallInsideZBeamDumpWall()));
+    }
+
+    static CLHEP::HepRotation beamDumpDirtRotation(CLHEP::HepRotation::IDENTITY);
+    beamDumpDirtRotation.rotateX(-90*CLHEP::degree);
+
+    VolumeInfo beamDumpDirt("ProtonBeamDumpDirt",
+			    CLHEP::Hep3Vector(0, 
+					      (building->hallInsideYmin() + building->hallInsideYmax())/2,
+					      building->hallInsideZBeamDumpWall())
+			    - parent.centerInMu2e(),
+			    parent.centerInWorld);
+    
+    beamDumpDirt.solid = new G4ExtrudedSolid(beamDumpDirt.name, beamDumpDirtOutiline, 
+					     (building->hallInsideYmax() - building->hallInsideYmin())/2, 
+					     G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+
+    finishNesting(beamDumpDirt, 
+		  materialFinder.get("dirt.overburdenMaterialName"),
+		  &beamDumpDirtRotation,
+		  beamDumpDirt.centerInParent,
+		  parent.logical,
+		  0, true, G4Colour::Black(), false, true, true, true
+		  );
+
+    //----------------------------------------------------------------
+    CLHEP::Hep3Vector enclosurePositionInDirt( beamDumpDirtRotation * (dump->enclosureCenterInMu2e() - beamDumpDirt.centerInMu2e()));
+
+    static CLHEP::HepRotation rotationInDirt(CLHEP::HepRotation::IDENTITY);
+    rotationInDirt.rotateZ(dump->coreRotY());
+    rotationInDirt.rotateX(+90*CLHEP::degree);
+
     const VolumeInfo logicalEnclosure = nestBox("ProtonBeamDumpShielding",
  						dump->enclosureHalfSize(), 
  						materialFinder.get("protonBeamDump.material.shielding"),
- 						&dump->enclosureRotationInMu2e(), // assume the parent is not rotated
- 						dump->enclosureCenterInMu2e() - parent.centerInMu2e(),
- 						parent, 0, config.getBool("protonBeamDump.logicalEnclosureVisible"),
+						&rotationInDirt,
+ 						enclosurePositionInDirt,
+ 						beamDumpDirt, 0, config.getBool("protonBeamDump.logicalEnclosureVisible"),
  						G4Colour::Grey(), false, true, true, true
  						);
  
@@ -90,7 +194,10 @@ namespace mu2e {
  	    logicalEnclosure, 0, true, 
  	    G4Colour::Cyan(), false, true, true, true
  	    );
- 
+
+    //----------------------------------------------------------------
+
+
 //tmp:     //----------------------------------------------------------------
 //tmp:     // Compute a trapezoid to connect the dump enclosure to the hall air
 //tmp: 
@@ -331,6 +438,11 @@ namespace mu2e {
 //tmp: //test:		    );
 //tmp: //test:    }
 //tmp:  
+
     //----------------------------------------------------------------
+    if(art::ServiceHandle<GeometryService>()->hasElement<mu2e::ExtMonFNAL::ExtMon>()) {
+      constructExtMonFNAL(beamDumpDirt, beamDumpDirtRotation, &rotationInDirt, config);
+    }
+
   }
 }

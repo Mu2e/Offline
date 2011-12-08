@@ -1,18 +1,30 @@
 
-  $Id: v1_1_4.txt,v 1.5 2011/12/07 00:32:29 gandr Exp $
+  $Id: v1_1_4.txt,v 1.6 2011/12/08 17:21:09 gandr Exp $
   $Author: gandr $
-  $Date: 2011/12/07 00:32:29 $
+  $Date: 2011/12/08 17:21:09 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_4
 
-6) December 12, 2011 gandr
+7) December 8, 2011 gandr
+   
+   The physical hall air has a more complicated shape then G4Box.
+   Remove the notion of "hall center" and "half size" from geometry.
+   There is still a formal box of hall air, but this is detail 
+   of the chosen G4 geometry implementation.  Beam dump and ExtMonFNAL
+   are contained within the formal "HallAir" box; the area around
+   them is filled with dirt (not air!)
+
+   The concrete walls of the hall are missing from the new
+   implementation for the moment.
+
+6) December 6, 2011 gandr
    
    Reduce the amount of volatile information (timestamps, object
    addresses) printed out to make diffing log files easier.
 
-5) December 12, 2011 gandr
+5) December 6, 2011 gandr
 
    Don't store local offsets in CosmicRayShieldGeom.  It is sufficient
    to know position in mu2e coordinates and parent.centerInMu2e() to 
