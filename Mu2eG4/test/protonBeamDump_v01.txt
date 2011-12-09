@@ -9,7 +9,18 @@ string         protonBeamDump.material.core  = "G4_Fe";
 string         protonBeamDump.material.shielding = "ShieldingConcrete";
 string         protonBeamDump.material.air = "G4_AIR";
 
+bool           protonBeamDump.dirtVisible = false;
+bool           protonBeamDump.dirtSolid   = false;
 bool           protonBeamDump.logicalEnclosureVisible = true;
+bool           protonBeamDump.logicalEnclosureSolid   = false;
+bool           protonBeamDump.coreVisible = true;
+bool           protonBeamDump.coreSolid   = true;
+bool           protonBeamDump.mouthVisible = true;
+bool           protonBeamDump.mouthSolid   = false;
+bool           protonBeamDump.neutronCaveVisible = true;
+bool           protonBeamDump.neutronCaveSolid   = false;
+bool           protonBeamDump.magnetPitVisible = true;
+bool           protonBeamDump.magnetPitSolid   = false;
 
 // Sizes below are given in mm in this order:
 //  {horizontal transverse to beam, vertical, horizontal along beam}
