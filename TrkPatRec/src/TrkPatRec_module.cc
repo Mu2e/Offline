@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.16 2011/11/18 18:25:25 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.17 2011/12/09 00:33:23 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/11/18 18:25:25 $
+// $Date: 2011/12/09 00:33:23 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -215,22 +215,22 @@ namespace mu2e
     _rminl(pset.get<double>("RMin_loose",390.0)),
     _rmaxt(pset.get<double>("RMax_tight",630.0)),
     _rmaxl(pset.get<double>("RMax_loose",650.0)),
-    _maxdt(pset.get<double>("DtMax",40.0)),
+    _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
-    _filterdeltas(pset.get<bool>("FilterDeltas",false)),
+    _filterdeltas(pset.get<bool>("FilterDeltas",true)),
     _max2ddt(pset.get<double>("Dt2DMax",40.0)),
     _maxdp(pset.get<double>("DPhiMax",0.25)),
     _maxndelta(pset.get<unsigned>("MaxNDeltas",200)),
     _npbins(pset.get<unsigned>("NPhiBins",50)),
     _ntbins(pset.get<unsigned>("NTimeBins",50)),
-    _2dthresh(pset.get<double>("TwoDPeakThreshold",2)),
+    _2dthresh(pset.get<double>("TwoDPeakThreshold",3)),
     _2dsigma(pset.get<double>("TwoDPeakSigma",1.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
-    _mindp(pset.get<double>("Min2dPeak",5)),
+    _mindp(pset.get<double>("Min2dPeak",8)),
     _maxzgap(pset.get<double>("MaxZGap",0.0)),
-    _maxnsmiss(pset.get<double>("MaxNMiss",5)),
+    _maxnsmiss(pset.get<double>("MaxNMiss",4)),
     _mindrho(pset.get<double>("MinDrho",410.0)),
-    _maxdrho(pset.get<double>("MaxDrho",650.0)),
+    _maxdrho(pset.get<double>("MaxDrho",660.0)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
     _tmin(pset.get<double>("tmin",400.0)),
