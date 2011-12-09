@@ -27,6 +27,10 @@ namespace mu2e {
 			   const CLHEP::HepRotation *rotationInParent,
 			   const SimpleConfig& config) {
 
+    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    bool const placePV             = true;
+
     GeomHandle<ExtMonFNAL::ExtMon> det;
     GeomHandle<ProtonBeamDump> dump;
 
@@ -38,12 +42,15 @@ namespace mu2e {
 				    det->roomHalfSize(), 
 				    materialFinder.get("extmon_fnal.roomMaterialName"),
 				    rotationInParent,
-
 				    parentRotationInMu2e*(det->roomCenterInMu2e() - parent.centerInMu2e()),
-
-				    parent, 0, config.getBool("extmon_fnal.roomVisible"),
+				    parent,
+				    0,
+				    config.getBool("extmon_fnal.roomVisible"),
 				    G4Colour::Red(),
-				    false, true, true, true
+				    config.getBool("extmon_fnal.roomSolid"),
+				    forceAuxEdgeVisible,
+				    placePV,
+				    doSurfaceCheck
 				    );
     
     const VolumeInfo detector = nestBox("ExtMonFNALDetector",
@@ -51,9 +58,13 @@ namespace mu2e {
 					materialFinder.get("extmon_fnal.roomMaterialName"),
 					&det->detectorRotationInRoom(),
 					det->detectorCenterInRoom(),
-					room, 0, false/*visible*/,
+					room, 0,
+					config.getBool("extmon_fnal.detectorBoxVisible"),
 					G4Colour::Green(),
-					false, true, true, true
+					config.getBool("extmon_fnal.detectorBoxSolid"),
+					forceAuxEdgeVisible,
+					placePV,
+					doSurfaceCheck
 					);
     
     for(unsigned iplane = 0; iplane < det->nplanes(); ++iplane) {
@@ -67,7 +78,13 @@ namespace mu2e {
 				  det->sensorOffsetInParent(iplane), 
 				  detector,
 				  0,
-				  true, G4Colour::Gray(), true, true, true, true);
+				  config.getBool("extmon_fnal.detectorPlaneVisible"),
+				  G4Colour::Gray(),
+				  config.getBool("extmon_fnal.detectorPlaneSolid"),
+				  forceAuxEdgeVisible,
+				  placePV,
+				  doSurfaceCheck
+				  );
       
       vplane.logical->SetSensitiveDetector(emSD);
     }
