@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.105 2011/12/08 17:21:09 gandr Exp $
+// $Id: geom_01.txt,v 1.106 2011/12/09 01:28:56 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/08 17:21:09 $
+// $Date: 2011/12/09 01:28:56 $
 //
 // Original author Rob Kutschke
 //
@@ -154,8 +154,15 @@ double hall.ceilingThick = 300.;
 double hall.wallThick    = 300.;
 string hall.wallMaterialName = "G4_CONCRETE";
 string hall.insideMaterialName = "G4_AIR";
-bool   hall.visible            = true;
-bool   hall.solid              = false;
+
+bool   hall.formalBoxVisible        = false;
+
+bool   hall.floorVisible            = true;
+bool   hall.floorSolid              = true;
+bool   hall.ceilingVisible          = false;
+bool   hall.ceilingSolid            = false;
+bool   hall.wallsVisible            = true;
+bool   hall.wallsSolid              = false;
 
 // These three numbers define the position of the hall air volume in mu2e coordinates
 double mu2e.origin.heightAboveHallFloor = 2550.;

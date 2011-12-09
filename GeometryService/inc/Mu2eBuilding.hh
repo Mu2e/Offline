@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 #include "GeometryService/inc/Detector.hh"
 
@@ -49,6 +50,13 @@ namespace mu2e {
     virtual std::string name() const { return "Mu2eBuilding"; }
 
     //----------------------------------------------------------------
+    // These coordinates are used in more than one place
+
+    const std::vector<CLHEP::Hep2Vector>& concreteOuterOutline1() const { return _concreteOuterOutline1; }
+    const std::vector<CLHEP::Hep2Vector>& concreteOuterOutline2() const { return _concreteOuterOutline2; }
+    const std::vector<CLHEP::Hep2Vector>& concreteOuterOutline3() const { return _concreteOuterOutline3; }
+
+    //----------------------------------------------------------------
   private: 
     friend class Mu2eBuildingMaker;
 
@@ -77,6 +85,10 @@ namespace mu2e {
     double _dirtCapHalfHeight;
     double _dirtCapBottomRadius;
     double _dirtCapTopRadius;
+
+    std::vector<CLHEP::Hep2Vector> _concreteOuterOutline1;
+    std::vector<CLHEP::Hep2Vector> _concreteOuterOutline2;
+    std::vector<CLHEP::Hep2Vector> _concreteOuterOutline3;
   };
 
 }
