@@ -1,11 +1,15 @@
 
-  $Id: v1_1_4.txt,v 1.6 2011/12/08 17:21:09 gandr Exp $
+  $Id: v1_1_4.txt,v 1.7 2011/12/09 01:29:15 gandr Exp $
   $Author: gandr $
-  $Date: 2011/12/08 17:21:09 $
+  $Date: 2011/12/09 01:29:15 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_4
+
+8) December 8, 2011 gandr
+
+   Create concrete walls around the new hall.
 
 7) December 8, 2011 gandr
    
