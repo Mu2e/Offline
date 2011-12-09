@@ -10,6 +10,10 @@
 
 #include "GeometryService/inc/Mu2eBuilding.hh"
 
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/ProtonBeamDump.hh"
+
+
 namespace mu2e {
 
   Mu2eBuildingMaker::Mu2eBuildingMaker(const SimpleConfig& c) 
@@ -37,7 +41,26 @@ namespace mu2e {
     // Origin used to construct the MECO detector.
     // Magic number to fix:
     _b->_trackerOriginInMu2e = CLHEP::Hep3Vector( -3904., 0., 12000.);
+
+    //----------------
+    //  Computed stuff
+    GeomHandle<ProtonBeamDump> dump;
     
+    _b->_hallInsideXmaxAtBeamDumpWall = dump->enclosureCenterInMu2e()[0]
+      + (_b->_hallInsideZBeamDumpWall - dump->enclosureCenterInMu2e()[2]) * tan(dump->coreRotY())
+      - dump->enclosureHalfSize()[0] / cos(dump->coreRotY())
+      ;
+
+    //----------------
+    //  Check the assumptions used to construct G4 geometry downstream
+    
+    if(dump->shieldingFaceZatXmin() > _b->_hallInsideZBeamDumpWall) {
+      throw cet::exception("GEOM")<<"Mu2eBuildingMaker: hallInsideZBeamDumpWall is too small - conflicts with ProtonBeamDump\n";
+    }
+    if(dump->shieldingFaceZatXmax() <= _b->_hallInsideZExtMonUCIWall) {
+      throw cet::exception("GEOM")<<"Mu2eBuildingMaker: hallInsideZExtMonUCIWall is too large - conflicts with ProtonBeamDump\n";
+    }
+
     const int diagLevel = c.getInt("world.verbosityLevel", 0);
     if(diagLevel > 0) {
       std::cout << __func__ << " trackerOriginInMu2e : " <<  _b->_trackerOriginInMu2e  << std::endl;

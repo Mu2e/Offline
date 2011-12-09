@@ -55,33 +55,7 @@ namespace mu2e {
     // Re-fill a part of the formal "HallAir" with dirt.
     // Use an extruded solid to have a properly angled facet 
     // at which the beam dump can be placed.
-
-    // compute the facet:
-    const double beamDumpShieldingFaceXmin = dump->enclosureCenterInMu2e()[0]
-      + dump->enclosureHalfSize()[2] * sin(dump->coreRotY())
-      - dump->enclosureHalfSize()[0] * cos(dump->coreRotY())
-      ;
-
-    const double beamDumpShieldingFaceXmax = dump->enclosureCenterInMu2e()[0]
-      + dump->enclosureHalfSize()[2] * sin(dump->coreRotY())
-      + dump->enclosureHalfSize()[0] * cos(dump->coreRotY())
-      ;
-
-    const double beamDumpShieldingFaceZmin = dump->enclosureCenterInMu2e()[2]
-      + dump->enclosureHalfSize()[2] * cos(dump->coreRotY())
-      - dump->enclosureHalfSize()[0] * sin(dump->coreRotY())
-      ;
-    
-    const double beamDumpShieldingFaceZmax = dump->enclosureCenterInMu2e()[2]
-      + dump->enclosureHalfSize()[2] * cos(dump->coreRotY())
-      + dump->enclosureHalfSize()[0] * sin(dump->coreRotY())
-      ;
-
-    const double xEnclosureProjection = dump->enclosureCenterInMu2e()[0]
-      + (building->hallInsideZBeamDumpWall() - dump->enclosureCenterInMu2e()[2]) * tan(dump->coreRotY())
-      - dump->enclosureHalfSize()[0] / cos(dump->coreRotY())
-      ;
-
+    // 
     // ExtrudedSolid coordinates:  the solid is created "hanging down"
     // from the line z=hallInsideZBeamDumpWall() and y=middle of the hall height (inside)
     // then rotated up around this line.
@@ -89,7 +63,7 @@ namespace mu2e {
     // points need to be in the clock-wise order
     std::vector<G4TwoVector> beamDumpDirtOutiline;
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(xEnclosureProjection, 0));
+    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmaxAtBeamDumpWall(), 0));
 
     beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmin(), 0));
 
@@ -103,18 +77,18 @@ namespace mu2e {
 					       building->hallInsideZExtMonUCIWall() - building->hallInsideZBeamDumpWall()));
 
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(beamDumpShieldingFaceXmax,
+    beamDumpDirtOutiline.push_back(G4TwoVector(dump->shieldingFaceXmax(),
 					       building->hallInsideZExtMonUCIWall() - building->hallInsideZBeamDumpWall()));
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(beamDumpShieldingFaceXmax, beamDumpShieldingFaceZmin - building->hallInsideZBeamDumpWall()));
+    beamDumpDirtOutiline.push_back(G4TwoVector(dump->shieldingFaceXmax(), dump->shieldingFaceZatXmax() - building->hallInsideZBeamDumpWall()));
 
-    if(beamDumpShieldingFaceZmax > building->hallInsideZBeamDumpWall()) {
+    if(dump->shieldingFaceZatXmin() > building->hallInsideZBeamDumpWall()) {
       throw cet::exception("GEOM")<<"constructProtonBeamDump(): hallInsideZBeamDumpWall conflicts with the proton dump enclosure\n";
     }
 
     // Don't add the last point if it coincides with the first
-    if(beamDumpShieldingFaceZmax < building->hallInsideZBeamDumpWall()) {
-      beamDumpDirtOutiline.push_back(G4TwoVector(beamDumpShieldingFaceXmin, beamDumpShieldingFaceZmax - building->hallInsideZBeamDumpWall()));
+    if(dump->shieldingFaceZatXmin() < building->hallInsideZBeamDumpWall()) {
+      beamDumpDirtOutiline.push_back(G4TwoVector(dump->shieldingFaceXmin(), dump->shieldingFaceZatXmin() - building->hallInsideZBeamDumpWall()));
     }
 
     static CLHEP::HepRotation beamDumpDirtRotation(CLHEP::HepRotation::IDENTITY);

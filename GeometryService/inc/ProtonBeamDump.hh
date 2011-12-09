@@ -57,6 +57,12 @@ namespace mu2e {
     CLHEP::Hep3Vector const& coreCenterInEnclosure() const { return _coreCenterInEnclosure; }
     CLHEP::Hep3Vector const& magnetPitCenterInEnclosure() const { return _magnetPitCenterInEnclosure; }
 
+    double shieldingFaceXmin() const { return _shieldingFaceXmin; }
+    double shieldingFaceXmax() const { return _shieldingFaceXmax; }
+
+    double shieldingFaceZatXmin() const { return _shieldingFaceZatXmin; }
+    double shieldingFaceZatXmax() const { return _shieldingFaceZatXmax; }
+
     //----------------------------------------------------------------
   private: 
     friend class ProtonBeamDumpMaker;
@@ -83,6 +89,11 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _coreCenterInEnclosure;
     CLHEP::Hep3Vector _magnetPitCenterInEnclosure;
+    
+    double _shieldingFaceXmin;
+    double _shieldingFaceXmax;
+    double _shieldingFaceZatXmin;
+    double _shieldingFaceZatXmax;
   };
 }
 

@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.12 2011/12/07 00:52:51 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.13 2011/12/09 01:28:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/07 00:52:51 $
+// $Date: 2011/12/09 01:28:31 $
 //
 // Original author Rob Kutschke
 //
@@ -104,11 +104,6 @@ namespace mu2e {
 
     // Make a detector for every component present in the configuration.
 
-    if(true) {
-      Mu2eBuildingMaker b(*_config);
-      addDetector(b.getPtr());
-    }
-
     if(_config->getBool("hasBeamline",false)){
       BeamlineMaker beamlinem( *_config );
       addDetector( beamlinem.getBeamlinePtr() );
@@ -121,6 +116,11 @@ namespace mu2e {
 
     if(true) {
       addDetector(ProtonBeamDumpMaker(*_config).getPtr());
+    }
+
+    if(true) {
+      Mu2eBuildingMaker b(*_config);
+      addDetector(b.getPtr());
     }
 
     if(_config->getBool("hasTarget",false)){

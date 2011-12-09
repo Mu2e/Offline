@@ -36,7 +36,7 @@ namespace mu2e {
 
     // position
     m_det->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
-    m_det->_coreRotY = c.getDouble("protonBeamDump.coreRotY") * CLHEP::degree;
+    const double coreRotY = m_det->_coreRotY = c.getDouble("protonBeamDump.coreRotY") * CLHEP::degree;
 
     // Compute the overall size
     m_det->_enclosureHalfSize.resize(3);
@@ -53,22 +53,27 @@ namespace mu2e {
     
     m_det->_enclosureHalfSize[2] = std::max(dumpPlusShieldingHalfLength, 0.5*totalFilterLength);
 
+    // shorthand notation
+    const std::vector<double>& enclosureHalfSize = m_det->_enclosureHalfSize;
+
     if(verbose) {
       std::cout<<__func__<<": ProtonBeamDump enclosure half size = ";
-      std::copy(m_det->_enclosureHalfSize.begin(), m_det->_enclosureHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
+      std::copy(enclosureHalfSize.begin(), enclosureHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
       std::cout<<std::endl;
     }
 
     // compute the position of the overall enclosure
-    m_det->_enclosureRotationInMu2e.rotateY(-m_det->_coreRotY);
+    m_det->_enclosureRotationInMu2e.rotateY(-coreRotY);
 
     // The offset of the enclosure center w.r.t. the core, along the dump z
     const double coreOffset = 2*m_det->_mouthHalfSize[2] + 2*m_det->_neutronCaveHalfSize[2]
-      + m_det->_coreHalfSize[2] - m_det->_enclosureHalfSize[2];
+      + m_det->_coreHalfSize[2] - enclosureHalfSize[2];
 
-    m_det->_enclosureCenterInMu2e[0] = m_det->_coreCenterInMu2e[0] + coreOffset*sin(m_det->_coreRotY);
+    m_det->_enclosureCenterInMu2e[0] = m_det->_coreCenterInMu2e[0] + coreOffset*sin(coreRotY);
     m_det->_enclosureCenterInMu2e[1] = m_det->_coreCenterInMu2e[1] + 0.5*m_det->_magnetPitHalfSize[1];
-    m_det->_enclosureCenterInMu2e[2] = m_det->_coreCenterInMu2e[2] + coreOffset*cos(m_det->_coreRotY);
+    m_det->_enclosureCenterInMu2e[2] = m_det->_coreCenterInMu2e[2] + coreOffset*cos(coreRotY);
+
+    const CLHEP::Hep3Vector& enclosureCenterInMu2e = m_det->_enclosureCenterInMu2e;
 
     // core relative to the enclosure
     m_det->_coreCenterInEnclosure[0] = 0;
@@ -77,8 +82,29 @@ namespace mu2e {
 
     // position of the magnet pit
     m_det->_magnetPitCenterInEnclosure[0] = 0.;
-    m_det->_magnetPitCenterInEnclosure[1] = m_det->_enclosureHalfSize[1] - m_det->_magnetPitHalfSize[1];
-    m_det->_magnetPitCenterInEnclosure[2] = m_det->_enclosureHalfSize[2] - m_det->_collimator1horizLength - m_det->_magnetPitHalfSize[2];
+    m_det->_magnetPitCenterInEnclosure[1] = enclosureHalfSize[1] - m_det->_magnetPitHalfSize[1];
+    m_det->_magnetPitCenterInEnclosure[2] = enclosureHalfSize[2] - m_det->_collimator1horizLength - m_det->_magnetPitHalfSize[2];
+
+    // Shielding face coordinates
+    m_det->_shieldingFaceXmin = enclosureCenterInMu2e[0] 
+      + enclosureHalfSize[2] * sin(coreRotY)
+      - enclosureHalfSize[0] * cos(coreRotY)
+      ;
+
+    m_det->_shieldingFaceXmax = enclosureCenterInMu2e[0] 
+      + enclosureHalfSize[2] * sin(coreRotY)
+      + enclosureHalfSize[0] * cos(coreRotY)
+      ;
+
+    m_det->_shieldingFaceZatXmin = enclosureCenterInMu2e[2]
+      + enclosureHalfSize[2] * cos(coreRotY)
+      + enclosureHalfSize[0] * sin(coreRotY)
+      ;
+
+    m_det->_shieldingFaceZatXmax = enclosureCenterInMu2e[2]
+      + enclosureHalfSize[2] * cos(coreRotY)
+      - enclosureHalfSize[0] * sin(coreRotY)
+      ;
 
     if(verbose) {
       std::cout<<__func__<<": coreOffset = "<<coreOffset<<std::endl;

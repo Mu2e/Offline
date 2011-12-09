@@ -28,7 +28,10 @@ namespace mu2e {
     double hallInsideYmax() const { return _hallInsideYmax; }
 
     double hallInsideZmax() const { return _hallInsideZmax; }
+
     double hallInsideZBeamDumpWall() const { return _hallInsideZBeamDumpWall; }
+    double hallInsideXmaxAtBeamDumpWall() const { return _hallInsideXmaxAtBeamDumpWall; }
+
     double hallInsideZExtMonUCIWall() const { return _hallInsideZExtMonUCIWall; }
 
     double hallFloorThickness() const { return _hallFloorThickness; }
@@ -56,8 +59,12 @@ namespace mu2e {
     double _hallInsideXmax;
     double _hallInsideYmin;
     double _hallInsideYmax;
+
     double _hallInsideZmax;
+
     double _hallInsideZBeamDumpWall;
+    double _hallInsideXmaxAtBeamDumpWall;
+
     double _hallInsideZExtMonUCIWall;
 
     CLHEP::Hep3Vector _trackerOriginInMu2e;
