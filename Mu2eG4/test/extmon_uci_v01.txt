@@ -1,6 +1,6 @@
 // Extinction Monitor UCI parameters
 
-bool   hasExtMonUCI = false;
+bool   hasExtMonUCI = true;
 int    extmon_uci.verbosity = 1;
 
 //ExtMonEnvelope;
