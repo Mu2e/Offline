@@ -1,11 +1,24 @@
 
-  $Id: v1_1_4.txt,v 1.8 2011/12/10 00:16:15 youzy Exp $
-  $Author: youzy $
-  $Date: 2011/12/10 00:16:15 $
+  $Id: v1_1_4.txt,v 1.9 2011/12/10 00:31:12 genser Exp $
+  $Author: genser $
+  $Date: 2011/12/10 00:31:12 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_4
+
+10) December 8, 2011 genser
+
+   Added TT_Back a Virtual Detector at the Back (downstream) face of the tracker
+    MCDataProducts/inc/VirtualDetectorId.hh
+    VirtualDetectorGeom/src/VirtualDetector.cc
+   Used VirtualDetectorId enum_type and name instead of hard coded constants in 
+    VirtualDetectorGeom/src/VirtualDetectorMaker.cc
+   Used VirtualDetectorId enum_type; added TT_Back VD; used VD names (not
+   numbers) for geant4 volume names; minimally restructured code of
+    Mu2eG4/src/constructVirtualDetectors.cc
+   Explicitly added geant4 visibility attribute parameters in
+    Mu2eG4/test/protonBeamDump_v01.txt
 
 9) December 9, 2011 youzy
 
