@@ -1,7 +1,7 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.cc,v 1.10 2011/06/20 22:11:33 genser Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.11 2011/12/10 00:16:50 genser Exp $
 // $Author: genser $
 //
 
@@ -20,6 +20,7 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "MCDataProducts/inc/VirtualDetectorId.hh"
 
 using namespace std;
 using namespace CLHEP;
@@ -34,14 +35,15 @@ namespace mu2e {
 
     if( ! c.getBool("hasVirtualDetector",false) ) return;
 
-    double vdHL = c.getDouble("vd.halfLength",0.1*mm);
+    double vdHL = c.getDouble("vd.halfLength",0.01*mm);
     _vd->_halfLength = vdHL;
 
     // Need some data from other subsystems
     GeomHandle<Beamline> bg;
     double solenoidOffset = bg->solenoidOffset();
 
-    // VD 1 and 2 are at the front and back of collimator 1, which is placed inside TS1.
+    // VD Coll1_In and Coll1_Out are at the front and back of
+    // collimator 1, which is placed inside TS1.
 
     //double ts1HL   = bg->getTS().getTS1().getHalfLength();
     double coll1HL = bg->getTS().getColl1().getHalfLength();
@@ -51,10 +53,15 @@ namespace mu2e {
     Hep3Vector coll1pos = bg->getTS().getColl1().getLocal();
     Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
 
-    _vd->addVirtualDetector( 1, "Coll1_In",  ts1pos, ts1rot, coll1pos-deltaZ1);
-    _vd->addVirtualDetector( 2, "Coll1_Out", ts1pos, ts1rot, coll1pos+deltaZ1);
+    _vd->addVirtualDetector( VirtualDetectorId::Coll1_In, 
+			     VirtualDetectorId::name(VirtualDetectorId::Coll1_In),  
+			     ts1pos, ts1rot, coll1pos-deltaZ1);
+    _vd->addVirtualDetector( VirtualDetectorId::Coll1_Out,
+			     VirtualDetectorId::name(VirtualDetectorId::Coll1_Out),
+			     ts1pos, ts1rot, coll1pos+deltaZ1);
 
-    // VD 3-6 are placed around two sections of collimator 3
+    // VD Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed
+    // around two sections of collimator 3
 
     //double ts3HL   = bg->getTS().getTS1().getHalfLength();
     double coll31HL = bg->getTS().getColl31().getHalfLength();
@@ -68,12 +75,21 @@ namespace mu2e {
     Hep3Vector deltaZ31(0,0,coll31HL-vdHL);
     Hep3Vector deltaZ32(0,0,coll32HL-vdHL);
 
-    _vd->addVirtualDetector( 3, "Coll31_In",  ts3pos, ts3rot, coll31pos-deltaZ31);
-    _vd->addVirtualDetector( 4, "Coll31_Out", ts3pos, ts3rot, coll31pos+deltaZ31);
-    _vd->addVirtualDetector( 5, "Coll32_In",  ts3pos, ts3rot, coll32pos-deltaZ32);
-    _vd->addVirtualDetector( 6, "Coll32_Out", ts3pos, ts3rot, coll32pos+deltaZ32);
+    _vd->addVirtualDetector( VirtualDetectorId::Coll31_In,
+			     VirtualDetectorId::name(VirtualDetectorId::Coll31_In),
+			     ts3pos, ts3rot, coll31pos-deltaZ31);
+    _vd->addVirtualDetector( VirtualDetectorId::Coll31_Out,
+			     VirtualDetectorId::name(VirtualDetectorId::Coll31_Out),
+			     ts3pos, ts3rot, coll31pos+deltaZ31);
+    _vd->addVirtualDetector( VirtualDetectorId::Coll32_In,
+			     VirtualDetectorId::name(VirtualDetectorId::Coll32_In),
+			     ts3pos, ts3rot, coll32pos-deltaZ32);
+    _vd->addVirtualDetector( VirtualDetectorId::Coll32_Out,
+			     VirtualDetectorId::name(VirtualDetectorId::Coll32_Out),
+			     ts3pos, ts3rot, coll32pos+deltaZ32);
 
-    // VD 7 and 8 are at the front and back of collimator 5, which is placed inside TS5.
+    // VD Coll5_In, Coll5_Out are at the front and back of collimator
+    // 5, which is placed inside TS5.
 
     //double ts5HL   = bg->getTS().getTS5().getHalfLength();
     double coll5HL = bg->getTS().getColl5().getHalfLength();
@@ -83,10 +99,15 @@ namespace mu2e {
     Hep3Vector coll5pos = bg->getTS().getColl5().getLocal();
     Hep3Vector deltaZ5(0,0,coll5HL-vdHL);
 
-    _vd->addVirtualDetector( 7, "Coll5_In",  ts5pos, ts5rot, coll5pos-deltaZ5);
-    _vd->addVirtualDetector( 8, "Coll5_Out", ts5pos, ts5rot, coll5pos+deltaZ5);
+    _vd->addVirtualDetector( VirtualDetectorId::Coll5_In,
+			     VirtualDetectorId::name(VirtualDetectorId::Coll5_In),
+			     ts5pos, ts5rot, coll5pos-deltaZ5);
+    _vd->addVirtualDetector( VirtualDetectorId::Coll5_Out,
+			     VirtualDetectorId::name(VirtualDetectorId::Coll5_Out),
+			     ts5pos, ts5rot, coll5pos+deltaZ5);
 
-    // VD 9 and 10 are placed inside DS2, just before and after stopping target
+    // VD ST_In, ST_Out are placed inside DS2, just before and after
+    // stopping target
 
     GeomHandle<Target> target;
 
@@ -102,12 +123,16 @@ namespace mu2e {
     Hep3Vector targetOffset(0.,0.,(12000.+z0-ds2Z0));
     Hep3Vector shift(0.,0.,zHalf+vdHL);
 
-    _vd->addVirtualDetector(  9, "ST_In",  ds2Offset, 0, targetOffset-shift);
-    _vd->addVirtualDetector( 10, "ST_Out", ds2Offset, 0, targetOffset+shift);
+    _vd->addVirtualDetector( VirtualDetectorId::ST_In,
+			     VirtualDetectorId::name(VirtualDetectorId::ST_In),
+			     ds2Offset, 0, targetOffset-shift);
+    _vd->addVirtualDetector( VirtualDetectorId::ST_Out,
+			     VirtualDetectorId::name(VirtualDetectorId::ST_Out),
+			     ds2Offset, 0, targetOffset+shift);
 
     if (c.getBool("hasTTracker",false)){
 
-      ostringstream vdName("TT_Mid");
+      ostringstream vdName(VirtualDetectorId::name(VirtualDetectorId::TT_Mid));
 
       if(c.getInt("ttracker.numDevices")%2!=0){
         throw cet::exception("GEOM")
@@ -118,18 +143,23 @@ namespace mu2e {
       TTracker const & ttracker = *(GeomHandle<TTracker>());
       Hep3Vector ttOffset(-solenoidOffset,0.,ttracker.z0());
 
-      // VD 11 is placed inside the ttracker mother volume in the
+      // VD TT_Mid is placed inside the ttracker mother volume in the
       // middle of the ttracker shifted by the half length of vd
-      // VD 12 is placed inside the ttracker at the same z position as
-      // VD 11 but from radius 0 to the inner radius of the ttracker
+      // VD TT_MidInner is placed inside the ttracker at the same z position as
+      // VD TT_Mid but from radius 0 to the inner radius of the ttracker
       // mother volume. However, its mother volume is ToyDS3Vacuum
       // which has a different offset. We will use the global offset
       // here (!) as DS is not in the geometry service yet
 
       Hep3Vector vdTTMidOffset(0.,0.,0.);
 
-      _vd->addVirtualDetector( 11, vdName.str(),  ttOffset, 0, vdTTMidOffset);
-      _vd->addVirtualDetector( 12, "TT_MidInner", ttOffset, 0, vdTTMidOffset);
+      _vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
+			       VirtualDetectorId::name(VirtualDetectorId::TT_Mid),
+			       ttOffset, 0, vdTTMidOffset);
+
+      _vd->addVirtualDetector( VirtualDetectorId::TT_MidInner,
+			       VirtualDetectorId::name(VirtualDetectorId::TT_MidInner),
+			       ttOffset, 0, vdTTMidOffset);
 
 //       int static const verbosityLevel = 1;
 //       if (verbosityLevel >0) {
@@ -140,23 +170,22 @@ namespace mu2e {
 //         }
 //       }
 
-      vdName.str("TT_FrontHollow");
-
       Hep3Vector vdTTFrontOffset(0.,
                                  0.,
                                  -ttracker.getTrackerEnvelopeParams().zHalfLength()-vdHL);
 
-      // VD 13 is placed outside the ttracker mother volume in front of the ttracker
-      // "outside" of the proton absorber
+      // VD TT_FrontHollow is placed outside the ttracker mother
+      // volume in front of the ttracker "outside" of the proton
+      // absorber
       
 
-      // formally VD 13, 14 are placed in ToyDS3Vacuum, but it is a
+      // formally VD TT_FrontHollow, TT_FrontPA are placed in ToyDS3Vacuum, but it is a
       // complicated subtraction volume, so we pretend to place them in
       // the TTracker and rely on the global offsets in the mu2e
       // detector frame (note that their local offsets are wrt TTracker)
 
-      _vd->addVirtualDetector( 13,
-			       vdName.str(),
+      _vd->addVirtualDetector( VirtualDetectorId::TT_FrontHollow,
+			       VirtualDetectorId::name(VirtualDetectorId::TT_FrontHollow),
 			       ttOffset,
 			       0,
 			       vdTTFrontOffset);
@@ -165,13 +194,25 @@ namespace mu2e {
 
       if (c.getBool("hasProtonAbsorber",false)){
 
-	vdName.str("TT_FrontPA");
-	_vd->addVirtualDetector( 14,
-				 vdName.str(),
+	_vd->addVirtualDetector(  VirtualDetectorId::TT_FrontPA,
+				  VirtualDetectorId::name(VirtualDetectorId::TT_FrontPA),
 				 ttOffset, 
 				 0,
 				 vdTTFrontOffset);
       }
+
+      Hep3Vector vdTTBackOffset(0.,
+				0.,
+				ttracker.getTrackerEnvelopeParams().zHalfLength()+vdHL);
+
+      _vd->addVirtualDetector( VirtualDetectorId::TT_Back,
+			       VirtualDetectorId::name(VirtualDetectorId::TT_Back),
+			       ttOffset,
+			       0,
+			       vdTTBackOffset);
+    
+
+
     }
   }
 
