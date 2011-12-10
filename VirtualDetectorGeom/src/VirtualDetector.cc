@@ -1,5 +1,5 @@
 //
-// $Id: VirtualDetector.cc,v 1.4 2011/05/26 22:03:17 genser Exp $
+// $Id: VirtualDetector.cc,v 1.5 2011/12/10 00:16:34 genser Exp $
 // $Author: genser $
 //
 
@@ -7,9 +7,9 @@
 
 namespace mu2e {
 
-  VirtualDetector::VirtualDetector(){
-    _halfLength = 0.1;
-  }
+  VirtualDetector::VirtualDetector():
+    _halfLength(0.01)
+  {}
 
   void VirtualDetector::addVirtualDetector( int id, std::string name,
                                             CLHEP::Hep3Vector posParent,
