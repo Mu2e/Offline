@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.109 2011/12/08 17:21:09 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/08 17:21:09 $
+// $Id: Mu2eWorld.cc,v 1.110 2011/12/10 00:16:15 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/10 00:16:15 $
 //
 // Original author Rob Kutschke
 //
@@ -42,6 +42,7 @@
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
+#include "Mu2eG4/inc/constructExtMonUCI.hh"
 #include "Mu2eG4/inc/constructNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
@@ -83,6 +84,7 @@
 #include "Mu2eG4/inc/constructCalorimeter.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 
 // G4 includes
 #include "G4SDManager.hh"
@@ -226,6 +228,10 @@ namespace mu2e {
 
     if ( _config->getBool("hasMBS",false) ) {
       constructMBS(_config);
+    }
+
+    if ( _config->getBool("hasExtMonUCI",false) ) {
+      constructExtMonUCI(hallInfo, *_config);
     }
 
     constructVirtualDetectors(_config); // beware of the placement order of this function

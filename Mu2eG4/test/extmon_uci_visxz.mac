@@ -1,0 +1,33 @@
+#
+# Macro file for setting up the graphics scene and the verbosity level: "xz" view.
+#
+# $Id: extmon_uci_visxz.mac,v 1.1 2011/12/10 00:16:15 youzy Exp $
+# $Author: youzy $
+# $Date: 2011/12/10 00:16:15 $
+#
+# Original author KLG
+#
+# note the fact that viewpoint direction is the up vector direction,
+# so the behaviour is not quite definable
+
+#
+/control/verbose 0
+/run/verbose 0
+/vis/open OGLIX 1200x800-0+0
+/vis/viewer/set/background white ! ! 0.01
+/vis/viewer/set/viewpointThetaPhi 90 89.9 deg
+#/vis/viewer/panTo 20 -5
+#/vis/viewer/zoom 0.5
+/vis/disable
+/vis/scene/create
+/vis/scene/add/volume world
+#/vis/scene/add/volume ExtMonUCI
+#/vis/scene/add/axes      3904 -6270 -18729 3000 mm
+/vis/scene/add/axes      0 -6270 -21729 3000 mm
+#/vis/scene/add/axes       0 0 0 4000 mm
+/vis/scene/add/trajectories
+/vis/sceneHandler/attach
+/vis/scene/endOfEventAction refresh
+/vis/enable 
+
+# Do NOT issue the /run/beamon command

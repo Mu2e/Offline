@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.28 2011/11/04 20:52:11 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/04 20:52:11 $
+// $Id: G4_module.cc,v 1.29 2011/12/10 00:16:15 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/10 00:16:15 $
 //
 // Original author Rob Kutschke
 //
@@ -148,6 +148,7 @@ namespace mu2e {
       _caloOutputName("calorimeter"),
       _caloROOutputName("calorimeterRO"),
       _extMonFNALOutputName("ExtMonFNAL"),
+      _extMonUCIOutputName("ExtMonUCI"),
       _diagnostics(){
 
       produces<StepPointMCCollection>(_trackerOutputName);
@@ -158,6 +159,7 @@ namespace mu2e {
       produces<StepPointMCCollection>(_caloOutputName);
       produces<StepPointMCCollection>(_caloROOutputName);
       produces<StepPointMCCollection>(_extMonFNALOutputName);
+      produces<StepPointMCCollection>(_extMonUCIOutputName);
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,art::InRun>();
       produces<PointTrajectoryCollection>();
@@ -216,6 +218,7 @@ namespace mu2e {
     const std::string    _caloOutputName;
     const std::string  _caloROOutputName;
     const std::string  _extMonFNALOutputName;
+    const std::string  _extMonUCIOutputName;
 
     DiagnosticsG4 _diagnostics;
 
@@ -348,6 +351,7 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>     caloHits(          new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     extMonFNALHits(    new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>     extMonUCIHits(     new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
     // ProductID for SimParticleCollection
@@ -454,6 +458,7 @@ namespace mu2e {
     event.put(caloHits,   _caloOutputName);
     event.put(caloROHits, _caloROOutputName);
     event.put(extMonFNALHits, _extMonFNALOutputName);
+    event.put(extMonUCIHits,  _extMonUCIOutputName);
     event.put(pointTrajectories);
 
     // Pause to see graphics.

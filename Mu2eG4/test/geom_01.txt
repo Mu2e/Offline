@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.106 2011/12/09 01:28:56 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/09 01:28:56 $
+// $Id: geom_01.txt,v 1.107 2011/12/10 00:16:15 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/10 00:16:15 $
 //
 // Original author Rob Kutschke
 //
@@ -259,6 +259,7 @@ bool   targetPS.solid             = false;
 #include "Mu2eG4/test/protonBeamDump_v01.txt"
 
 #include "Mu2eG4/test/extmon_fnal_v01.txt"
+#include "Mu2eG4/test/extmon_uci_v01.txt"
 
 // Describe dummy stopping target that is just one big G4TUBS.
 double dummyStoppingTarget.rIn        =     0.;
@@ -412,7 +413,7 @@ vector<double> crs.shieldT_Offset  = {   0., 75.,1419.};
 vector<double> crs.shieldB_Offset  = {   0., 75.,1419.};
 vector<double> crs.shieldTS_Offset = {   0.,  0., 0.};
 
-bool   crs.vetoVisible    = true;
+bool   crs.vetoVisible    = false;
 bool   crs.vetoSolid      = false;
 int    crs.verbosityLevel = 0;
 
