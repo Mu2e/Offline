@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.2 2011/08/23 22:17:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/08/23 22:17:18 $
+// $Id: VirtualDetectorId.hh,v 1.3 2011/12/10 00:16:00 genser Exp $
+// $Author: genser $
+// $Date: 2011/12/10 00:16:00 $
 //
 // Original author Rob Kutschke
 //
@@ -42,6 +42,7 @@ namespace mu2e {
       ST_In,          ST_Out,                                 // 9,10:    Surround the stopping target foils.
       TT_Mid,         TT_MidInner,                            // 11, 12:  Middle of the tracker
       TT_FrontHollow, TT_FrontPA,                             // 13, 14:  Front face of the tracker.
+      TT_Back,                                                // 15       Back (downstream) face of the tracker.
       lastEnum
     };
 
@@ -53,7 +54,8 @@ namespace mu2e {
       "Coll5_In",       "Coll5_Out",                               \
       "ST_In",          "ST_Out",                                  \
       "TT_Mid",         "TT_MidInner",                             \
-      "TT_FrontHollow", "TT_FrontPA"                               \
+      "TT_FrontHollow", "TT_FrontPA",                              \
+      "TT_Back"                                                    \
 
   public:
 
@@ -93,6 +95,10 @@ namespace mu2e {
 
     bool isTrackerFront() const {
       return ( _id == TT_FrontHollow || _id == TT_FrontPA );
+    }
+
+    bool isTrackerBack() const {
+      return ( _id == TT_Back );
     }
 
     // ROOT requires a default c'tor.
