@@ -4,13 +4,16 @@
 #define PROTONBEAMDUMPMAKER_HH
 
 #include <memory>
+#include <string>
 
+#include "GeometryService/inc/ProtonBeamDump.hh"
 namespace mu2e { class SimpleConfig; }
-namespace mu2e { class ProtonBeamDump; }
 
 namespace mu2e {
   class ProtonBeamDumpMaker {
     std::auto_ptr<ProtonBeamDump> m_det;
+
+    ProtonBeamDump::CollimatorExtMonFNAL readCollimatorExtMonFNAL(const std::string& name, const SimpleConfig& c);
   public:
     explicit ProtonBeamDumpMaker(const SimpleConfig& config);
     

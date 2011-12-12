@@ -21,6 +21,37 @@ namespace mu2e {
     // implement Detector's method
     virtual std::string name() const { return "ProtonBeamDump"; }
 
+    class CollimatorExtMonFNAL {
+      friend class ProtonBeamDumpMaker;
+
+      std::string _name;
+      double _horizontalLength;
+      std::vector<double> _channelWidth;
+      std::vector<double> _channelHeight;
+      std::vector<double> _alignmentPlugRadius;
+      std::vector<double> _alignmentHoleRClearance;
+      double _radiusTransitiondZ;
+      double _angleH;
+      double _angleV;
+      double _entranceOffsetX;
+      double _entranceOffsetY;
+
+    public:
+      std::string name() const { return _name; }
+      double horizontalLength() const { return _horizontalLength; }
+      const std::vector<double> &channelWidth() const { return _channelWidth; }
+      const std::vector<double> &channelHeight() const { return _channelHeight; }
+      const std::vector<double> &alignmentPlugRadius() const { return _alignmentPlugRadius; }
+      const std::vector<double> &alignmentHoleRClearance() const { return _alignmentHoleRClearance; }
+      double radiusTransitiondZ() const { return _radiusTransitiondZ; }
+      double angleH() const { return _angleH; }
+      double angleV() const { return _angleV; }
+
+      // These are coordinates in the beam dump face plane
+      double entranceOffsetX() const { return _entranceOffsetX; }
+      double entranceOffsetY() const { return _entranceOffsetY; }
+    };
+
     //----
     // Primary inputs: sizes
 
@@ -34,8 +65,8 @@ namespace mu2e {
 
     double minCoreShieldingThickness() const { return _minCoreShieldingThickness; }
 
-    double collimator1horizontalLength() const { return _collimator1horizLength; }
-    double collimator2horizontalLength() const { return _collimator2horizLength; }
+    const CollimatorExtMonFNAL& collimator1() const { return _collimator1; }
+    const CollimatorExtMonFNAL& collimator2() const { return _collimator2; }
 
     //----
     // Primary inputs: placement
@@ -76,8 +107,8 @@ namespace mu2e {
     std::vector<double> _magnetPitHalfSize;
     double _minCoreShieldingThickness;
 
-    double _collimator1horizLength;
-    double _collimator2horizLength;
+    CollimatorExtMonFNAL _collimator1;
+    CollimatorExtMonFNAL _collimator2;
 
     CLHEP::Hep3Vector _coreCenterInMu2e;
     double _coreRotY;

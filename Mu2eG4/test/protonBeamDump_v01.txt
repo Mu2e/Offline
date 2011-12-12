@@ -44,30 +44,64 @@ double         protonBeamDump.coreRotY = 13.3; // degrees
 
 // the first collimator 
 double         extMonFilter.collimator1.horizontalLength = 4000.;
-// the downstream half of the channel is wider
-vector<double> extMonFilter.collimator1.channelWidth  = {50., 75.};
-vector<double> extMonFilter.collimator1.channelHeigh  = {50., 75.};
+// Upstream and downstream halfs may have different transverse sizes.
+// 
+// The air channel {upstream size, downstream size}
+vector<double> extMonFilter.collimator1.channelWidth  = {50., 50.};
+vector<double> extMonFilter.collimator1.channelHeigh  = {50., 70.};
+// the alignment plug:
+vector<double> extMonFilter.collimator1.alignmentPlugRadius = { 100, 177.8  };
+vector<double> extMonFilter.collimator1.alignmentHoleRClearance = { 12.7, 12.7 };
+double extMonFilter.collimator1.radiusTransitiondZ = 0;
 
-// The first collimator channel points at the effective particle
-// source, which is shifted from the production target due to 
-// track bending in the magnetic field.   The transverse to the beam
-// offsets of the source at the prod target position along the beam are
-double         extMonFilter.collimator1.sourceOffsetX = 0.;
-double         extMonFilter.collimator1.sourceOffsetY = 0.;
-// the entrance point on the face of the beam dump enclosure, 
+// The entrance point on the face of the beam dump enclosure, 
 // transverse to the beam coordinates (horiz, vertical)
 double         extMonFilter.collimator1.entranceOffsetX = 0;
-double         extMonFilter.collimator1.entranceOffsetY = 0;
+double         extMonFilter.collimator1.entranceOffsetY = 500;
+// Orientation: angles in horizontal and vertical planes w.r.t dump core
+double         extMonFilter.collimator1.angleH = 0.; //radians
+double         extMonFilter.collimator1.angleV = 0.1655; //radians
 
-// The filter magnet room: (horiz tranverse, vertical, along beam)
-// The vertical position of the room is such as to leave the minimal required
-// shielding thickness above the dump core.
-vector<double> extMonFilter.magnetPitHalfSize = {750., 750., 2100.};
+bool extMonFilter.collimator1.alignmentHole.visible = true;
+bool extMonFilter.collimator1.alignmentHole.solid = false;
+bool extMonFilter.collimator1.alignmentPlug.visible = true;
+bool extMonFilter.collimator1.alignmentPlug.solid = false;
+bool extMonFilter.collimator1.channel.visible = true;
+bool extMonFilter.collimator1.channel.solid = true;
+
+//----------------------------------------------------------------
+// The second collimator
 
 double         extMonFilter.collimator2.horizontalLength = 3000.;
 // the downstream half of the channel is wider
 vector<double> extMonFilter.collimator2.channelWidth  = {50., 75.};
 vector<double> extMonFilter.collimator2.channelHeigh  = {50., 75.};
+// the alignment plug:
+vector<double> extMonFilter.collimator2.alignmentPlugRadius = { 100, 177.8  };
+vector<double> extMonFilter.collimator2.alignmentHoleRClearance = { 12.7, 12.7 };
+double extMonFilter.collimator2.radiusTransitiondZ = 0;
+
+// The entrance point on the face of the beam dump enclosure, 
+// transverse to the beam coordinates (horiz, vertical)
+double         extMonFilter.collimator2.entranceOffsetX = 0;
+double         extMonFilter.collimator2.entranceOffsetY = 1400;
+// Orientation: angles in horizontal and vertical planes w.r.t dump core
+double         extMonFilter.collimator2.angleH = 0.; //radians
+double         extMonFilter.collimator2.angleV = 0.; //radians
+
+bool extMonFilter.collimator2.alignmentHole.visible = true;
+bool extMonFilter.collimator2.alignmentHole.solid = false;
+bool extMonFilter.collimator2.alignmentPlug.visible = true;
+bool extMonFilter.collimator2.alignmentPlug.solid = false;
+bool extMonFilter.collimator2.channel.visible = true;
+bool extMonFilter.collimator2.channel.solid = true;
+
+//----------------------------------------------------------------
+// The filter magnet room: (horiz tranverse, vertical, along beam)
+// The vertical position of the room is such as to leave the minimal required
+// shielding thickness above the dump core.
+vector<double> extMonFilter.magnetPitHalfSize = {750., 750., 2100.};
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

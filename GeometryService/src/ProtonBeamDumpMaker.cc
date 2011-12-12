@@ -19,7 +19,28 @@
 #include "GeometryService/inc/ProtonBeamDump.hh"
 
 namespace mu2e {
-  
+  //================================================================
+  ProtonBeamDump::CollimatorExtMonFNAL 
+  ProtonBeamDumpMaker::readCollimatorExtMonFNAL(const std::string& name, const SimpleConfig& c) {
+
+    ProtonBeamDump::CollimatorExtMonFNAL col;
+    
+    col._name = name;
+    col._horizontalLength = c.getDouble("extMonFilter."+name+".horizontalLength");
+    c.getVectorDouble("extMonFilter."+name+".channelWidth",            col._channelWidth           , 2);
+    c.getVectorDouble("extMonFilter."+name+".channelHeigh",            col._channelHeight          , 2);
+    c.getVectorDouble("extMonFilter."+name+".alignmentPlugRadius",     col._alignmentPlugRadius    , 2);
+    c.getVectorDouble("extMonFilter."+name+".alignmentHoleRClearance", col._alignmentHoleRClearance, 2);
+    col._radiusTransitiondZ = c.getDouble("extMonFilter."+name+".radiusTransitiondZ");
+    col._angleH = c.getDouble("extMonFilter."+name+".angleH");
+    col._angleV = c.getDouble("extMonFilter."+name+".angleV");
+    col._entranceOffsetX = c.getDouble("extMonFilter."+name+".entranceOffsetX");
+    col._entranceOffsetY = c.getDouble("extMonFilter."+name+".entranceOffsetY");
+
+    return col;
+  }
+
+  //================================================================
   ProtonBeamDumpMaker::ProtonBeamDumpMaker(const SimpleConfig& c) 
     : m_det(new ProtonBeamDump())
   {
@@ -31,8 +52,8 @@ namespace mu2e {
     c.getVectorDouble("extMonFilter.magnetPitHalfSize", m_det->_magnetPitHalfSize, 3);
     m_det->_minCoreShieldingThickness = c.getDouble("protonBeamDump.minCoreShieldingThickness");
 
-    m_det->_collimator1horizLength = c.getDouble("extMonFilter.collimator1.horizontalLength");
-    m_det->_collimator2horizLength = c.getDouble("extMonFilter.collimator2.horizontalLength");
+    m_det->_collimator1 = readCollimatorExtMonFNAL("collimator1", c);
+    m_det->_collimator2 = readCollimatorExtMonFNAL("collimator2", c);
 
     // position
     m_det->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
@@ -49,7 +70,7 @@ namespace mu2e {
       m_det->_mouthHalfSize[2] + m_det->_neutronCaveHalfSize[2] + m_det->_coreHalfSize[2] + 0.5*m_det->_minCoreShieldingThickness;
     
     const double totalFilterLength = 
-      m_det->_collimator1horizLength + 2*m_det->_magnetPitHalfSize[2] + m_det->_collimator2horizLength;
+      m_det->_collimator1._horizontalLength + 2*m_det->_magnetPitHalfSize[2] + m_det->_collimator2._horizontalLength;
     
     m_det->_enclosureHalfSize[2] = std::max(dumpPlusShieldingHalfLength, 0.5*totalFilterLength);
 
@@ -83,7 +104,7 @@ namespace mu2e {
     // position of the magnet pit
     m_det->_magnetPitCenterInEnclosure[0] = 0.;
     m_det->_magnetPitCenterInEnclosure[1] = enclosureHalfSize[1] - m_det->_magnetPitHalfSize[1];
-    m_det->_magnetPitCenterInEnclosure[2] = enclosureHalfSize[2] - m_det->_collimator1horizLength - m_det->_magnetPitHalfSize[2];
+    m_det->_magnetPitCenterInEnclosure[2] = enclosureHalfSize[2] - m_det->_collimator1._horizontalLength - m_det->_magnetPitHalfSize[2];
 
     // Shielding face coordinates
     m_det->_shieldingFaceXmin = enclosureCenterInMu2e[0] 

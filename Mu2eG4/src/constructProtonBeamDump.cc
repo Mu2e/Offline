@@ -2,16 +2,21 @@
 
 #include "Mu2eG4/inc/constructProtonBeamDump.hh"
 #include "Mu2eG4/inc/constructExtMonFNAL.hh"
+#include "G4Helper/inc/AntiLeakRegistry.hh"
 
 #include <iostream>
+#include <cmath>
 
 #include "G4Color.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Trap.hh"
 #include "G4Orb.hh"
-#include "G4Tubs.hh"
+#include "G4Box.hh"
+#include "G4Polycone.hh"
 #include "G4ExtrudedSolid.hh"
+#include "G4IntersectionSolid.hh"
 #include "G4TwoVector.hh"
+#include "G4Transform3D.hh"
 #include "G4SDManager.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -39,10 +44,205 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 
-//#define AGDEBUG(stuff) std::cerr<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
-#define AGDEBUG(stuff)
+#define AGDEBUG(stuff) std::cerr<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+//#define AGDEBUG(stuff)
 
 namespace mu2e {
+
+  //================================================================
+  void constructCollimatorExtMonFNAL(const ProtonBeamDump::CollimatorExtMonFNAL& collimator, 
+				     const VolumeInfo& parent,
+				     const CLHEP::Hep3Vector& collimatorCenterInParent,
+				     const SimpleConfig& config
+				     )
+  {
+    GeomHandle<ProtonBeamDump> dump;
+
+    MaterialFinder materialFinder(config);
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool placePV             = true;
+
+
+    // Make sure the solids definining the collimator hole etc are sufficiently long to completely 
+    // exit the concrete on both ends.
+
+    const double boxdz = 0.5*collimator.horizontalLength();
+    const double dr =  *std::max_element(collimator.alignmentPlugRadius().begin(), collimator.alignmentPlugRadius().end());
+    const double cylHalfLength = std::sqrt(std::pow(boxdz, 2) +
+					   std::pow(boxdz * tan(collimator.angleV()) + dr/cos(collimator.angleV()), 2) +
+					   std::pow(boxdz * tan(collimator.angleH()) + dr/cos(collimator.angleH()), 2)
+					   );
+
+    double zPlane[] = {-cylHalfLength, -0.5*collimator.radiusTransitiondZ(), +0.5*collimator.radiusTransitiondZ(), +cylHalfLength };
+    double rzero[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+    
+    G4Box* cutbox = reg.add(new G4Box(collimator.name()+"cutbox", 
+				      dump->enclosureHalfSize()[0], 
+				      dump->enclosureHalfSize()[1], 
+				      0.5*collimator.horizontalLength())
+			    );
+    
+    CLHEP::HepRotation *colrot = reg.add(CLHEP::HepRotation::IDENTITY);
+    colrot->rotateX(-collimator.angleV());
+    colrot->rotateY(-collimator.angleH());
+
+    //----------------------------------------------------------------
+    // Alignment hole
+      
+    double rAlignmentHole[] = {
+      collimator.alignmentPlugRadius()[1] + collimator.alignmentHoleRClearance()[1],
+      collimator.alignmentPlugRadius()[1] + collimator.alignmentHoleRClearance()[1],
+      collimator.alignmentPlugRadius()[0] + collimator.alignmentHoleRClearance()[0],
+      collimator.alignmentPlugRadius()[0] + collimator.alignmentHoleRClearance()[0]
+    };
+
+    G4Polycone *holeCylinder = reg.add(new G4Polycone(collimator.name()+"holecomponent", 0, 2*M_PI,
+						      sizeof(zPlane)/sizeof(zPlane[0]),
+						      zPlane,
+						      rzero,
+						      rAlignmentHole
+						      )
+				       );
+      
+
+    VolumeInfo alignmentHole(collimator.name()+"AlignmentHole",
+			     collimatorCenterInParent,
+			     parent.centerInWorld);
+      
+    alignmentHole.solid = new G4IntersectionSolid(alignmentHole.name,
+						  holeCylinder,
+						  cutbox,
+						  G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0))
+						  );
+
+    finishNesting(alignmentHole, 
+		  materialFinder.get("hall.insideMaterialName"),
+		  colrot,
+		  alignmentHole.centerInParent,
+		  parent.logical,
+		  0, 
+		  config.getBool("extMonFilter."+collimator.name()+".alignmentHole.visible"),
+		  G4Colour::Cyan(),
+		  config.getBool("extMonFilter."+collimator.name()+".alignmentHole.solid"),
+		  forceAuxEdgeVisible,
+		  placePV,
+		  doSurfaceCheck
+		  );
+
+    //----------------------------------------------------------------
+    // Alignment plug
+
+    double rAlignmentPlug[] = {
+      collimator.alignmentPlugRadius()[1],
+      collimator.alignmentPlugRadius()[1],
+      collimator.alignmentPlugRadius()[0],
+      collimator.alignmentPlugRadius()[0]
+    };
+
+    G4Polycone *plugCylinder = reg.add(new G4Polycone(collimator.name()+"plugcomponent", 0, 2*M_PI,
+						      sizeof(zPlane)/sizeof(zPlane[0]),
+						      zPlane,
+						      rzero,
+						      rAlignmentPlug
+						      )
+				       );
+
+    VolumeInfo alignmentPlug(collimator.name()+"AlignmentPlug",
+			     CLHEP::Hep3Vector(0,0,0),
+			     alignmentHole.centerInWorld);
+      
+    alignmentPlug.solid = new G4IntersectionSolid(alignmentPlug.name,
+						  plugCylinder,
+						  cutbox,
+						  G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0))
+						  );
+      
+    finishNesting(alignmentPlug, 
+		  materialFinder.get("protonBeamDump.material.shielding"),
+		  0,
+		  alignmentPlug.centerInParent,
+		  alignmentHole.logical,
+		  0, 
+		  config.getBool("extMonFilter."+collimator.name()+".alignmentPlug.visible"),
+		  G4Colour::Red(),
+		  config.getBool("extMonFilter."+collimator.name()+".alignmentPlug.solid"),
+		  forceAuxEdgeVisible,
+		  placePV,
+		  doSurfaceCheck
+		  );
+
+    //----------------------------------------------------------------
+    // Collimator channel: the upstream half
+    
+    G4Box *upbox = reg.add(new G4Box(collimator.name()+"upbox", 
+				     collimator.channelWidth()[0],
+				     collimator.channelHeight()[0],
+				     0.5*cylHalfLength
+				     )
+			   );
+    
+    VolumeInfo channelUp(collimator.name()+"ChannelUp",CLHEP::Hep3Vector(0,0,0.5*cylHalfLength), alignmentPlug.centerInWorld);
+    
+    channelUp.solid = new G4IntersectionSolid(channelUp.name,
+					      upbox,
+					      cutbox,
+					      G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,-0.5*cylHalfLength))
+					      );
+    
+    finishNesting(channelUp, 
+		  materialFinder.get("hall.insideMaterialName"),
+		  0,
+		  channelUp.centerInParent,
+		  alignmentPlug.logical,
+		  0, 
+		  config.getBool("extMonFilter."+collimator.name()+".channel.visible"),
+		  G4Colour::Blue(),
+		  config.getBool("extMonFilter."+collimator.name()+".channel.solid"),
+		  forceAuxEdgeVisible,
+		  placePV,
+		  doSurfaceCheck
+		  );
+    
+    //----------------------------------------------------------------
+    // Collimator channel: the downstream half
+
+    G4Box *collimatorDownBox = reg.add(new G4Box(collimator.name()+"dnbox", 
+						 collimator.channelWidth()[1],
+						 collimator.channelHeight()[1],
+						 0.5*cylHalfLength)
+				       );
+      
+    VolumeInfo collimatorDown(collimator.name()+"ChannelDn",CLHEP::Hep3Vector(0,0,-0.5*cylHalfLength), alignmentPlug.centerInWorld);
+ 
+    collimatorDown.solid = new G4IntersectionSolid(collimatorDown.name,
+						   collimatorDownBox,
+						   cutbox,
+						   G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0.5*cylHalfLength))
+						   );
+      
+    finishNesting(collimatorDown, 
+		  materialFinder.get("hall.insideMaterialName"),
+		  0,
+		  collimatorDown.centerInParent,
+		  alignmentPlug.logical,
+		  0, 
+		  config.getBool("extMonFilter."+collimator.name()+".channel.visible"),
+		  G4Colour::Blue(),
+		  config.getBool("extMonFilter."+collimator.name()+".channel.solid"),
+		  forceAuxEdgeVisible,
+		  placePV,
+		  doSurfaceCheck
+		  );
+
+  }
+
+    
+  //================================================================
+
   void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config) {
 
     GeomHandle<ProtonBeamDump> dump;
@@ -196,6 +396,35 @@ namespace mu2e {
  	    );
 
     //----------------------------------------------------------------
+    // The first collimator
+
+    const CLHEP::Hep3Vector collimator1centerInShielding(dump->collimator1().entranceOffsetX() 
+							 + 0.5*dump->collimator1().horizontalLength()*tan(dump->collimator1().angleH()),
+							 
+							 dump->collimator1().entranceOffsetY()
+							 + 0.5*dump->collimator1().horizontalLength()*tan(dump->collimator1().angleV()),
+							 
+							 dump->enclosureHalfSize()[2] - 0.5*dump->collimator1().horizontalLength());
+
+    constructCollimatorExtMonFNAL(dump->collimator1(),
+				  logicalEnclosure,
+				  collimator1centerInShielding,
+				  config);
+
+    const CLHEP::Hep3Vector collimator2centerInShielding(dump->collimator2().entranceOffsetX() 
+							 + 0.5*dump->collimator2().horizontalLength()*tan(dump->collimator2().angleH()),
+							 
+							 dump->collimator2().entranceOffsetY()
+							 + 0.5*dump->collimator2().horizontalLength()*tan(dump->collimator2().angleV()),
+							 
+							 -dump->enclosureHalfSize()[2] + 0.5*dump->collimator2().horizontalLength());
+
+    constructCollimatorExtMonFNAL(dump->collimator2(),
+				  logicalEnclosure,
+				  collimator2centerInShielding,
+				  config);
+
+    //----------------------------------------------------------------
     // Create hall walls that are inside the formal hall box
     
     static CLHEP::HepRotation wallRotation(CLHEP::HepRotation::IDENTITY);
@@ -268,4 +497,6 @@ namespace mu2e {
     }
 
   }
+
+
 }
