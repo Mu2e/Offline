@@ -1,4 +1,4 @@
-// Visualize extmon related geometry
+// Simulate protons on target for ExtMonFNAL
 // 
 // Andrei Gaponenko, 2011
 
@@ -6,18 +6,18 @@
 #include "standardProducers.fcl"
 
 // Give this job a name.
-process_name : testExtMonFNAL
+process_name : runExtMonFNAL
 
 // Start form an empty source
 source : {
    module_type : EmptyEvent
-   maxEvents : 1
+   maxEvents : 200
 }
 
 services : {
    message : @local::default_message
 
-   TFileService : { fileName : "testExtMonFNAL.root" }
+   TFileService : { fileName : "runExtMonFNAL.root" }
 
    user : {
 
@@ -43,11 +43,24 @@ physics : {
       g4run : {
          module_type          : G4
          generatorModuleLabel : generate
-         visMacro             : "Mu2eG4/test/vis_extMonFNAL.mac"
          seed                 : [9877]
       }
    }
 
    p1 : [generate, g4run  ]
+   e1 : [ outfile ]
    trigger_paths  : [p1]
+   end_paths      : [e1]
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "data_extMonFNAL.root"
+    outputCommands:   [ "keep *_*_*_*"
+#                        ,"drop mu2e::PointTrajectorymv_*_*_*"
+                      ]
+  }
 }

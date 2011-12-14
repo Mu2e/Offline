@@ -1,0 +1,11 @@
+// Full geometry for running ExtMonFNAL studies.
+
+#include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
+
+// Make sure the face of beam dump shielding is not shadowed
+bool hasExtMonUCI = false;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
