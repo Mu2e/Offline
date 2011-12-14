@@ -1,5 +1,5 @@
 //
-// $Id: VirtualDetector.cc,v 1.6 2011/12/14 00:30:01 gandr Exp $
+// $Id: VirtualDetector.cc,v 1.7 2011/12/14 00:30:16 gandr Exp $
 // $Author: gandr $
 //
 
@@ -13,7 +13,7 @@ namespace mu2e {
 
   void VirtualDetector::addVirtualDetector( int id, const std::string& name,
                                             const CLHEP::Hep3Vector& posParent,
-                                            CLHEP::HepRotation *rotParent,
+                                            const CLHEP::HepRotation *rotParent,
                                             const CLHEP::Hep3Vector& posLocal) {
     _name[id] = name;
     _local[id] = posLocal;

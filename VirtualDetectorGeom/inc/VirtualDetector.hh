@@ -4,7 +4,7 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.7 2011/12/14 00:30:01 gandr Exp $
+// $Id: VirtualDetector.hh,v 1.8 2011/12/14 00:30:16 gandr Exp $
 // $Author: gandr $
 //
 
@@ -47,14 +47,14 @@ namespace mu2e {
     // Get position in the global Mu2e frame
     CLHEP::Hep3Vector  const& getGlobal(int i) const { return _global.find(i)->second; }
 
-    CLHEP::HepRotation *  getRotation(int i) const { return _rotation.find(i)->second; }
+    const CLHEP::HepRotation *  getRotation(int i) const { return _rotation.find(i)->second; }
 
     std::string const& name(int i) const { return _name.find(i)->second;}
 
     void addVirtualDetector(int id,
 			    const std::string& name,
 			    const CLHEP::Hep3Vector& parentCenterInMu2e,
-			    CLHEP::HepRotation* parentRotationInMu2e,
+			    const CLHEP::HepRotation* parentRotationInMu2e,
 			    const CLHEP::Hep3Vector& vdCenterInParent);
 
   protected:
@@ -65,7 +65,7 @@ namespace mu2e {
 
     std::map<int,CLHEP::Hep3Vector> _global;
 
-    std::map<int,CLHEP::HepRotation*> _rotation;
+    std::map<int,const CLHEP::HepRotation*> _rotation;
 
     std::map<int,std::string> _name;
 };
