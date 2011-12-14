@@ -1,11 +1,17 @@
 
-  $Id: v1_1_4.txt,v 1.10 2011/12/12 21:54:05 gandr Exp $
+  $Id: v1_1_4.txt,v 1.11 2011/12/14 19:52:13 gandr Exp $
   $Author: gandr $
-  $Date: 2011/12/12 21:54:05 $
+  $Date: 2011/12/14 19:52:13 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_4
+
+12) December 14, 2011 gandr
+
+    Various VirtualDetector clean ups.
+
+    Implemenent new virtual detectors to tune the ExtMonFNAL selection channel.
 
 11) December 12, 2011 gandr
 

@@ -4,7 +4,7 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.9 2011/12/14 00:30:26 gandr Exp $
+// $Id: VirtualDetector.hh,v 1.10 2011/12/14 19:52:13 gandr Exp $
 // $Author: gandr $
 //
 
@@ -32,7 +32,7 @@ namespace mu2e {
     ~VirtualDetector(){;}
 
     // Implementation of Detector::name()
-    virtual std::string name() const { return "VirtualDetector";}
+    virtual std::string name() const { return _baseName;}
 
     double getHalfLength() const { return _halfLength; }
 
@@ -50,8 +50,8 @@ namespace mu2e {
 
     const CLHEP::HepRotation *  getRotation(int i) const { return _rotation.find(i)->second; }
 
-    // This mapping is provided by VirtualDetectorId.   Retained here for backward compatibility.
-    std::string name(int i) const;
+    // Used to identify Geant volumes
+    static std::string volumeName(int i);
 
     void addVirtualDetector(int id,
 			    const CLHEP::Hep3Vector& parentCenterInMu2e,
@@ -59,6 +59,7 @@ namespace mu2e {
 			    const CLHEP::Hep3Vector& vdCenterInParent);
 
   protected:
+    const std::string _baseName;
 
     double _halfLength;
 

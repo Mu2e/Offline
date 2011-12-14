@@ -1,14 +1,15 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.12 2011/11/15 12:06:54 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2011/11/15 12:06:54 $
+// $Id: KalFitMC.cc,v 1.13 2011/12/14 19:52:13 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2011/12/14 19:52:13 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 // services
@@ -126,7 +127,7 @@ namespace mu2e
 // need to transform into the tracker coordinate system
         CLHEP::Hep3Vector pos = det->toDetector(imcs->position());
         if(_debug > 1)std::cout << "Defining track at virtual detector id= " << imcs->volumeId()
-          << " name " << vdg->name(imcs->volumeId())
+          << " name " << VirtualDetectorId(imcs->volumeId()).name()
           << " position = " << pos
           << " momentum = " << mom
           << " time = " << t0 << std::endl;
