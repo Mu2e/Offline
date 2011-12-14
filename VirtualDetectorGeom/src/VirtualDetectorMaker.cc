@@ -1,8 +1,8 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.cc,v 1.11 2011/12/10 00:16:50 genser Exp $
-// $Author: genser $
+// $Id: VirtualDetectorMaker.cc,v 1.12 2011/12/14 00:30:26 gandr Exp $
+// $Author: gandr $
 //
 
 #include <iostream>
@@ -54,10 +54,8 @@ namespace mu2e {
     Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
 
     _vd->addVirtualDetector( VirtualDetectorId::Coll1_In, 
-			     VirtualDetectorId::name(VirtualDetectorId::Coll1_In),  
 			     ts1pos, ts1rot, coll1pos-deltaZ1);
     _vd->addVirtualDetector( VirtualDetectorId::Coll1_Out,
-			     VirtualDetectorId::name(VirtualDetectorId::Coll1_Out),
 			     ts1pos, ts1rot, coll1pos+deltaZ1);
 
     // VD Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed
@@ -76,16 +74,12 @@ namespace mu2e {
     Hep3Vector deltaZ32(0,0,coll32HL-vdHL);
 
     _vd->addVirtualDetector( VirtualDetectorId::Coll31_In,
-			     VirtualDetectorId::name(VirtualDetectorId::Coll31_In),
 			     ts3pos, ts3rot, coll31pos-deltaZ31);
     _vd->addVirtualDetector( VirtualDetectorId::Coll31_Out,
-			     VirtualDetectorId::name(VirtualDetectorId::Coll31_Out),
 			     ts3pos, ts3rot, coll31pos+deltaZ31);
     _vd->addVirtualDetector( VirtualDetectorId::Coll32_In,
-			     VirtualDetectorId::name(VirtualDetectorId::Coll32_In),
 			     ts3pos, ts3rot, coll32pos-deltaZ32);
     _vd->addVirtualDetector( VirtualDetectorId::Coll32_Out,
-			     VirtualDetectorId::name(VirtualDetectorId::Coll32_Out),
 			     ts3pos, ts3rot, coll32pos+deltaZ32);
 
     // VD Coll5_In, Coll5_Out are at the front and back of collimator
@@ -100,10 +94,8 @@ namespace mu2e {
     Hep3Vector deltaZ5(0,0,coll5HL-vdHL);
 
     _vd->addVirtualDetector( VirtualDetectorId::Coll5_In,
-			     VirtualDetectorId::name(VirtualDetectorId::Coll5_In),
 			     ts5pos, ts5rot, coll5pos-deltaZ5);
     _vd->addVirtualDetector( VirtualDetectorId::Coll5_Out,
-			     VirtualDetectorId::name(VirtualDetectorId::Coll5_Out),
 			     ts5pos, ts5rot, coll5pos+deltaZ5);
 
     // VD ST_In, ST_Out are placed inside DS2, just before and after
@@ -124,10 +116,8 @@ namespace mu2e {
     Hep3Vector shift(0.,0.,zHalf+vdHL);
 
     _vd->addVirtualDetector( VirtualDetectorId::ST_In,
-			     VirtualDetectorId::name(VirtualDetectorId::ST_In),
 			     ds2Offset, 0, targetOffset-shift);
     _vd->addVirtualDetector( VirtualDetectorId::ST_Out,
-			     VirtualDetectorId::name(VirtualDetectorId::ST_Out),
 			     ds2Offset, 0, targetOffset+shift);
 
     if (c.getBool("hasTTracker",false)){
@@ -154,11 +144,9 @@ namespace mu2e {
       Hep3Vector vdTTMidOffset(0.,0.,0.);
 
       _vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
-			       VirtualDetectorId::name(VirtualDetectorId::TT_Mid),
 			       ttOffset, 0, vdTTMidOffset);
 
       _vd->addVirtualDetector( VirtualDetectorId::TT_MidInner,
-			       VirtualDetectorId::name(VirtualDetectorId::TT_MidInner),
 			       ttOffset, 0, vdTTMidOffset);
 
 //       int static const verbosityLevel = 1;
@@ -185,7 +173,6 @@ namespace mu2e {
       // detector frame (note that their local offsets are wrt TTracker)
 
       _vd->addVirtualDetector( VirtualDetectorId::TT_FrontHollow,
-			       VirtualDetectorId::name(VirtualDetectorId::TT_FrontHollow),
 			       ttOffset,
 			       0,
 			       vdTTFrontOffset);
@@ -195,7 +182,6 @@ namespace mu2e {
       if (c.getBool("hasProtonAbsorber",false)){
 
 	_vd->addVirtualDetector(  VirtualDetectorId::TT_FrontPA,
-				  VirtualDetectorId::name(VirtualDetectorId::TT_FrontPA),
 				 ttOffset, 
 				 0,
 				 vdTTFrontOffset);
@@ -206,7 +192,6 @@ namespace mu2e {
 				ttracker.getTrackerEnvelopeParams().zHalfLength()+vdHL);
 
       _vd->addVirtualDetector( VirtualDetectorId::TT_Back,
-			       VirtualDetectorId::name(VirtualDetectorId::TT_Back),
 			       ttOffset,
 			       0,
 			       vdTTBackOffset);
