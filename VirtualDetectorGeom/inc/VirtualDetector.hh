@@ -4,7 +4,7 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.10 2011/12/14 19:52:13 gandr Exp $
+// $Id: VirtualDetector.hh,v 1.11 2011/12/14 22:20:47 gandr Exp $
 // $Author: gandr $
 //
 
@@ -59,7 +59,7 @@ namespace mu2e {
 			    const CLHEP::Hep3Vector& vdCenterInParent);
 
   protected:
-    const std::string _baseName;
+    static const std::string _baseName;
 
     double _halfLength;
 

@@ -1,5 +1,5 @@
 //
-// $Id: VirtualDetector.cc,v 1.9 2011/12/14 19:52:13 gandr Exp $
+// $Id: VirtualDetector.cc,v 1.10 2011/12/14 22:20:47 gandr Exp $
 // $Author: gandr $
 //
 
@@ -12,7 +12,7 @@ namespace mu2e {
     _halfLength(0.01)
   {}
 
-  VirtualDetector::_baseName("VirtualDetector");
+  const std::string VirtualDetector::_baseName("VirtualDetector");
 
   std::string VirtualDetector::volumeName(int i) { return _baseName + "_" + VirtualDetectorId(i).name(); }
 
