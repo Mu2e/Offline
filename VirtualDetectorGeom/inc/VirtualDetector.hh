@@ -4,8 +4,8 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.6 2011/06/15 17:52:07 mu2ecvs Exp $
-// $Author: mu2ecvs $
+// $Id: VirtualDetector.hh,v 1.7 2011/12/14 00:30:01 gandr Exp $
+// $Author: gandr $
 //
 
 #include <map>
@@ -51,8 +51,11 @@ namespace mu2e {
 
     std::string const& name(int i) const { return _name.find(i)->second;}
 
-    void addVirtualDetector(int, std::string,CLHEP::Hep3Vector,CLHEP::HepRotation*,CLHEP::Hep3Vector);
-    
+    void addVirtualDetector(int id,
+			    const std::string& name,
+			    const CLHEP::Hep3Vector& parentCenterInMu2e,
+			    CLHEP::HepRotation* parentRotationInMu2e,
+			    const CLHEP::Hep3Vector& vdCenterInParent);
 
   protected:
 

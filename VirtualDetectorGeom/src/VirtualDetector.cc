@@ -1,6 +1,6 @@
 //
-// $Id: VirtualDetector.cc,v 1.5 2011/12/10 00:16:34 genser Exp $
-// $Author: genser $
+// $Id: VirtualDetector.cc,v 1.6 2011/12/14 00:30:01 gandr Exp $
+// $Author: gandr $
 //
 
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
@@ -11,10 +11,10 @@ namespace mu2e {
     _halfLength(0.01)
   {}
 
-  void VirtualDetector::addVirtualDetector( int id, std::string name,
-                                            CLHEP::Hep3Vector posParent,
+  void VirtualDetector::addVirtualDetector( int id, const std::string& name,
+                                            const CLHEP::Hep3Vector& posParent,
                                             CLHEP::HepRotation *rotParent,
-                                            CLHEP::Hep3Vector posLocal) {
+                                            const CLHEP::Hep3Vector& posLocal) {
     _name[id] = name;
     _local[id] = posLocal;
     if( rotParent==0 ) {
