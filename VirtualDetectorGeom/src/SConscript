@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.5 2011/12/14 00:30:26 gandr Exp $
+# $Id: SConscript,v 1.6 2011/12/14 00:30:40 gandr Exp $
 # $Author: gandr $
-# $Date: 2011/12/14 00:30:26 $
+# $Date: 2011/12/14 00:30:40 $
 #
 # Original author Rob Kutschke.
 #
@@ -22,7 +22,15 @@ if non_plugin_cc:
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'art_Framework_Core',
                              'Mu2eUtilities',
-                             'MCDataProducts'
+                             'BeamlineGeom',
+                             'ExtinctionMonitorFNAL',
+                             'TargetGeom',
+                             'TTrackerGeom',
+                             'MCDataProducts',
+
+                             # FIXME: this introduces a circular dependency.
+                             # 'GeometryService',
+
                              ],
                       )
     libs=[ '#/lib/' + local_lib_name ]

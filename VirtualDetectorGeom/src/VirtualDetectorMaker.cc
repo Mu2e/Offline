@@ -1,7 +1,7 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.cc,v 1.12 2011/12/14 00:30:26 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.13 2011/12/14 00:30:40 gandr Exp $
 // $Author: gandr $
 //
 
@@ -17,7 +17,10 @@
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/ProtonBeamDump.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
@@ -31,11 +34,13 @@ namespace mu2e {
   // from arguments.
   VirtualDetectorMaker::VirtualDetectorMaker(SimpleConfig const& c)
   {
+    art::ServiceHandle<GeometryService> geom;
+
     _vd = auto_ptr<VirtualDetector>(new VirtualDetector());
 
     if( ! c.getBool("hasVirtualDetector",false) ) return;
 
-    double vdHL = c.getDouble("vd.halfLength",0.01*mm);
+    const double vdHL = c.getDouble("vd.halfLength",0.01*mm);
     _vd->_halfLength = vdHL;
 
     // Need some data from other subsystems
@@ -199,6 +204,48 @@ namespace mu2e {
 
 
     }
+
+    // These VDs are related to the beam dump, which is always present
+    GeomHandle<ProtonBeamDump> dump;
+    if(true) {
+      const CLHEP::Hep3Vector vzero(0,0,0);
+      
+      // This detector will be placed on the face of beam dump
+      // shielding.  Computing offsets here is invonvenient since we
+      // don't have VolumeInfo for the parent. Just ignore them.
+      _vd->addVirtualDetector(VirtualDetectorId::EMFC1Entrance,
+			      vzero, 0, vzero
+			      );
+
+      // Detector inside the ExtMonFNAL magnet pit, on the face of the upstream wall
+      _vd->addVirtualDetector(VirtualDetectorId::EMFC1Exit,
+			      dump->magnetPitCenterInEnclosure() + dump->enclosureCenterInMu2e(),
+			      &dump->enclosureRotationInMu2e(),
+			      /*local position in parent*/
+			      CLHEP::Hep3Vector(0, 0, +dump->magnetPitHalfSize()[2] - vdHL)
+			      );
+      
+      // Detector inside the ExtMonFNAL magnet pit, on the face of the downstream wall
+      _vd->addVirtualDetector(VirtualDetectorId::EMFC2Entrance,
+			      dump->magnetPitCenterInEnclosure() + dump->enclosureCenterInMu2e(),
+			      &dump->enclosureRotationInMu2e(),
+			      /*local position in parent*/
+			      CLHEP::Hep3Vector(0, 0, -dump->magnetPitHalfSize()[2] + vdHL)
+			      );
+      
+    }
+
+    if(geom->hasElement<ExtMonFNAL::ExtMon>()) {
+      // Detector inside the ExtMonFNAL detector room, on the face of the upstream wall
+      GeomHandle<ExtMonFNAL::ExtMon> extmon;
+      _vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit,
+			      extmon->roomCenterInMu2e(),
+			      &dump->enclosureRotationInMu2e(),
+			      /*local position in parent*/
+			      CLHEP::Hep3Vector(0, 0, extmon->roomHalfSize()[2] - vdHL)
+			      );
+    }
+
   }
 
   VirtualDetectorMaker::~VirtualDetectorMaker (){}

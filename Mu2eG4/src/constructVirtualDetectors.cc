@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.11 2011/12/10 00:18:30 genser Exp $
-// $Author: genser $
-// $Date: 2011/12/10 00:18:30 $
+// $Id: constructVirtualDetectors.cc,v 1.12 2011/12/14 00:30:40 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/14 00:30:40 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -21,10 +21,14 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "GeometryService/inc/ProtonBeamDump.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -616,6 +620,131 @@ namespace mu2e {
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
 
+    }
+
+    vdId = VirtualDetectorId::EMFC1Entrance;
+    if( vdg->exist(vdId) ) {
+
+      vdName =  vdBaseName + "_" + vdg->name(vdId);
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << vdName  << endl;
+      }
+
+      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+      GeomHandle<ProtonBeamDump> dump;
+
+      std::vector<double> hlen(3);
+      hlen[0] = dump->enclosureHalfSize()[0];
+      hlen[1] = dump->enclosureHalfSize()[1];
+      hlen[2] = vdg->getHalfLength();
+
+      CLHEP::Hep3Vector shieldingFaceCenterInMu2e( (dump->shieldingFaceXmin()+dump->shieldingFaceXmax())/2,
+						   dump->enclosureCenterInMu2e()[1],
+						   (dump->shieldingFaceZatXmin()+dump->shieldingFaceZatXmax())/2
+						   );
+
+      CLHEP::Hep3Vector vdOffset(dump->enclosureRotationInMu2e().inverse() * CLHEP::Hep3Vector(0, 0, hlen[2]));
+      
+
+      if ( verbosityLevel > 0) {
+	std::cout<<"shieldingFaceCenterInMu2e = "<<shieldingFaceCenterInMu2e
+		 <<", parent.centerInMu2e() = "<<parent.centerInMu2e()
+		 <<", vdOffset = "<<vdOffset
+		 <<std::endl;
+      }
+
+      VolumeInfo vdInfo = nestBox(vdName, 
+				  hlen, 
+				  vacuumMaterial, 
+				  &dump->enclosureRotationInMu2e(),
+				  shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
+				  parent,
+				  vdId, 
+				  vdIsVisible,
+				  G4Color::Red(), 
+				  vdIsSolid,
+				  forceAuxEdgeVisible,
+				  placePV,
+				  false);
+
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+
+
+    for(int vdId = VirtualDetectorId::EMFC1Exit; vdId <= VirtualDetectorId::EMFC2Entrance; ++vdId) {
+      if( vdg->exist(vdId) ) {
+	
+	vdName =  vdBaseName + "_" + vdg->name(vdId);
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << vdName  << endl;
+	}
+	
+	VolumeInfo const & parent = _helper->locateVolInfo("ProtonBeamDumpMagnetPit");
+	GeomHandle<ProtonBeamDump> dump;
+	
+	std::vector<double> hlen(3);
+	hlen[0] = dump->magnetPitHalfSize()[0];
+	hlen[1] = dump->magnetPitHalfSize()[1];
+	hlen[2] = vdg->getHalfLength();
+	
+	VolumeInfo vdInfo = nestBox(vdName, 
+				    hlen, 
+				    vacuumMaterial, 
+				    0,
+				    vdg->getLocal(vdId),
+				    parent,
+				    vdId, 
+				    vdIsVisible,
+				    G4Color::Red(), 
+				    vdIsSolid,
+				    forceAuxEdgeVisible,
+				    placePV,
+				    false);
+	
+	// vd are very thin, a more thorough check is needed
+	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	
+	vdInfo.logical->SetSensitiveDetector(vdSD);
+      }
+    }
+
+    vdId = VirtualDetectorId::EMFC2Exit;
+    if( vdg->exist(vdId) ) {
+      
+      vdName =  vdBaseName + "_" + vdg->name(vdId);
+      if ( verbosityLevel > 0) {
+	cout << __func__ << " constructing " << vdName  << endl;
+      }
+	
+      VolumeInfo const & parent = _helper->locateVolInfo("ExtMonFNALRoom");
+      GeomHandle<ExtMonFNAL::ExtMon> extmon;
+	
+      std::vector<double> hlen(3);
+      hlen[0] = extmon->roomHalfSize()[0];
+      hlen[1] = extmon->roomHalfSize()[1];
+      hlen[2] = 50;//vdg->getHalfLength();
+	
+      VolumeInfo vdInfo = nestBox(vdName, 
+				  hlen, 
+				  vacuumMaterial, 
+				  0,
+				  vdg->getLocal(vdId),
+				  parent,
+				  vdId, 
+				  vdIsVisible,
+				  G4Color::Red(), 
+				  vdIsSolid,
+				  forceAuxEdgeVisible,
+				  placePV,
+				  false);
+	
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	
+      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
   }
