@@ -1,11 +1,16 @@
 
-  $Id: v1_1_4.txt,v 1.11 2011/12/14 19:52:13 gandr Exp $
+  $Id: v1_1_4.txt,v 1.12 2011/12/15 16:38:01 gandr Exp $
   $Author: gandr $
-  $Date: 2011/12/14 19:52:13 $
+  $Date: 2011/12/15 16:38:01 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_4
+
+13) December 15, 2011 gandr
+
+    Implement a list of "killer volumes" to control G4 SteppingAction.
+    This generalizes the old "killInHallAir" interface.
 
 12) December 14, 2011 gandr
 
