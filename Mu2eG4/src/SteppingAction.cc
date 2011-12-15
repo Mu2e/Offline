@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.26 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: SteppingAction.cc,v 1.27 2011/12/15 16:33:55 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/15 16:33:55 $
 //
 // Original author Rob Kutschke
 //
@@ -38,7 +38,6 @@ namespace mu2e {
 
     // Default values for parameters that are optional in the run time configuration.
     _doKillLowEKine(false),
-    _doKillInHallAir(false),
     _killerVerbose(false),
     _eKineMin(0.),
     _killLowKineticEnergyPDG(),
@@ -47,7 +46,6 @@ namespace mu2e {
     _debugTrackList(),
     
     // Other parameters.
-    _hallAirPhysVol(0),
     _lastPosition(),
     _lastMomentum(),
     _zref(0.),
@@ -61,9 +59,18 @@ namespace mu2e {
 
     // Look up parameter values in the run time configuration.
     _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
-    _doKillInHallAir = config.getBool("g4SteppingAction.killInHallAir", _doKillInHallAir);
+    config.getVectorString("g4SteppingAction.killInTheseVolumes", _killInTheseVolumes);
     _killerVerbose   = config.getBool("g4SteppingAction.killerVerbose", _killerVerbose);
 
+    // this can be removed after a grace period
+    // make sure the old job options are fixed:
+    if(config.hasName("g4SteppingAction.killInHallAir")) {
+      throw cet::exception("G4CONTROL")
+	<< "The parameter g4SteppingAction.killInHallAir "
+	<< "has been replaced with g4SteppingAction.killInTheseVolumes. "
+	<< "Please fix the geometry configuration file. "
+	<< "\n";
+    }
 
     // If this cut is enabled, the cut value must be supplied in the run time config.
     // It is also used in StackingAction.
@@ -152,10 +159,17 @@ namespace mu2e {
 
   void SteppingAction::beginRun(PhysicsProcessInfo& processInfo,
 				CLHEP::Hep3Vector const& mu2eOrigin ){
-    _hallAirPhysVol = getPhysicalVolumeOrThrow("HallAir");
+
     _currentSize    = 0;
     _processInfo    = &processInfo;
     _mu2eOrigin     =  mu2eOrigin;
+
+    for(unsigned i=0; i<_killInTheseVolumes.size(); ++i) {
+      if ( _killerVerbose ){
+	std::cout<<"Adding G4 killer volume = "<<_killInTheseVolumes[i]<<std::endl;
+      }
+      _killerVolumes.insert(getPhysicalVolumeOrThrow(_killInTheseVolumes[i]));
+    }
   }
 
   void SteppingAction::UserSteppingAction(const G4Step* step){
@@ -192,8 +206,8 @@ namespace mu2e {
       killTrack( track, ProcessCode::mu2eMaxGlobalTime, fStopAndKill);
     }
 
-    if ( _doKillInHallAir &&  killInHallAir(track) ){
-      killTrack( track, ProcessCode::mu2eHallAir, fStopAndKill);
+    if ( killInTheseVolumes(track) ){
+      killTrack( track, ProcessCode::mu2eKillerVolume, fStopAndKill);
     } else if ( _doKillLowEKine && killLowEKine(track) ){
       killTrack( track, ProcessCode::mu2eLowEKine, fStopAndKill);
     } else if ( _maxSteps>0 && killTooManySteps(track) ) {
@@ -303,15 +317,17 @@ namespace mu2e {
   }
 
   // Kill tracks that enter the hall air.
-  bool SteppingAction::killInHallAir( const G4Track* trk ){
+  bool SteppingAction::killInTheseVolumes( const G4Track* trk ){
 
-    // If we are not in the hall air, keep the track.
-    if ( trk->GetVolume() != _hallAirPhysVol ) {
+    KillerVolumesCache::const_iterator p = _killerVolumes.find(trk->GetVolume());
+    if( p == _killerVolumes.end() ) {
       return false;
     }
 
     if ( _killerVerbose ){
-      cout << "Killed track: in Hall Air. " << trk->GetTrackID() << endl;
+      cout << "Killed track " << trk->GetTrackID()
+	   << " in volume " << (*p)->GetName()
+	   << endl;
     }
     return true;
   }

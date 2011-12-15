@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.3 2011/06/30 20:27:53 logash Exp $
-// $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Id: ProcessCode.hh,v 1.4 2011/12/15 16:33:55 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/15 16:33:55 $
 //
 // Original author Rob Kutschke
 //
@@ -56,10 +56,13 @@ namespace mu2e {
       phot,                   PhotonInelastic,         PionMinusInelastic,  PionPlusInelastic,
       PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic,
       StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic,
-      XiZeroInelastic,        mu2eLowEKine,            mu2eHallAir,         mu2eMaxSteps,
+      XiZeroInelastic,        mu2eLowEKine,            mu2eKillerVolume,    mu2eMaxSteps,
       mu2ePrimary,            muMinusConversionAtRest, hadElastic,          CoulombScat,
       nuclearStopping,        mu2eMaxGlobalTime,
-      lastEnum
+      lastEnum,
+      
+      // An alias for backward compatibility
+      mu2eHallAir = mu2eKillerVolume
     };
 
     // Keep this list of names in sync with the enum. Used in ProcessCode.cc
@@ -78,7 +81,7 @@ namespace mu2e {
     "phot",                   "PhotonInelastic",         "PionMinusInelastic",  "PionPlusInelastic",         \
     "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic",        \
     "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic",          \
-    "XiZeroInelastic",        "mu2eLowEKine",            "mu2eHallAir",         "mu2eMaxSteps",              \
+    "XiZeroInelastic",        "mu2eLowEKine",            "mu2eKillerVolume",    "mu2eMaxSteps",              \
     "mu2ePrimary",            "muMinusConversionAtRest", "hadElastic",          "CoulombScat",               \
     "nuclearStopping",        "mu2eMaxGlobalTime"
 

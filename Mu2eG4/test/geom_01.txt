@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.107 2011/12/10 00:16:15 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/10 00:16:15 $
+// $Id: geom_01.txt,v 1.108 2011/12/15 16:33:55 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/15 16:33:55 $
 //
 // Original author Rob Kutschke
 //
@@ -51,7 +51,9 @@ double g4.steppingActionMaxGlobalTime = 0; //ns
 //vector<double> g4.steppingActionTimeVD = { 500, 700, 1000 }; //ns
 
 // Enable/disable code that kills uninteresting tracks in SteppingAction,
-bool   g4SteppingAction.killInHallAir = false;
+// Put a list of G4 volume names where the tracks should be killed,
+// for example { "HallAir" }.
+vector<string> g4SteppingAction.killInTheseVolumes = {};
 bool   g4SteppingAction.killerVerbose = false;
 
 // These are used in both SteppingAction and StackingAction.

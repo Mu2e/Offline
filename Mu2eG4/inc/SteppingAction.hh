@@ -3,13 +3,14 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.17 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: SteppingAction.hh,v 1.18 2011/12/15 16:33:55 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/15 16:33:55 $
 //
 // Original author Rob Kutschke
 //
 #include <vector>
+#include <string>
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
@@ -71,7 +72,8 @@ namespace mu2e {
 
     // Which killers will be enabled?
     bool _doKillLowEKine;
-    bool _doKillInHallAir;
+    // A potentially emtpy list of volumes names where tracks are killed
+    std::vector<std::string> _killInTheseVolumes;
     bool _killerVerbose;
 
     // Minimum energy cut.
@@ -93,8 +95,9 @@ namespace mu2e {
 
     // End: information from the run time configuration.
 
-    // Address of the physical volume object for the hall air.
-    G4VPhysicalVolume* _hallAirPhysVol;
+    // cached pointers to physical volumes on the _killInTheseVolumes list
+    typedef std::set<const G4VPhysicalVolume*> KillerVolumesCache;
+    KillerVolumesCache _killerVolumes;
 
     // Used in the turn around code.
     G4ThreeVector _lastPosition;
@@ -104,7 +107,7 @@ namespace mu2e {
     // Functions to decide whether or not to kill tracks.
     bool killTooManySteps ( const G4Track* );
     bool killLowEKine     ( const G4Track* );
-    bool killInHallAir    ( const G4Track* );
+    bool killInTheseVolumes( const G4Track* );
 
     // A helper function to kill the track and record the reason for killing it.
     void killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status );
