@@ -5,47 +5,65 @@
 // Find minimum, maximum and smallest in magnitude of a set of numbers
 // presented one at a time.
 //
-// $Id: MinMax.hh,v 1.5 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: MinMax.hh,v 1.6 2011/12/16 23:12:30 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/12/16 23:12:30 $
 //
 // Original author Rob Kutschke
 
-#include <cmath>
 #include <limits>
+#include <iostream>
 
 class MinMax{
 
 public:
 
   MinMax():
+    _n(0),
     _min(   std::numeric_limits<double>::max()),
     _max(  -std::numeric_limits<double>::max()),
     _small( std::numeric_limits<double>::max())
   {}
 
   MinMax(double x):
+    _n(1),
     _min(   std::numeric_limits<double>::max()),
     _max(  -std::numeric_limits<double>::max()),
     _small( std::numeric_limits<double>::max()){
-    compare(x);
+    accumulate(x);
   }
 
-  // Compare this x to the previously existing min/max
-  void compare(double x);
+  // Accept compiler written d'tor, copy c'tor and assignment operator.
 
-  // Return limiting values.
-  double min() const {return _min;}
-  double max() const {return _max;}
-  double smallest() const {return _small;}
+  // Update min/max/smallest with this entry.
+  void accumulate(double x);
+
+  // Accessors
+  double n()        const { return _n;}
+  double min()      const { return _min;}
+  double max()      const { return _max;}
+  double smallest() const { return _small;}
+  double delta()    const { return _max-_min; }
 
 private:
 
   // Limiting values of the numbers compared so far.
+  int    _n;
   double _min;
   double _max;
   double _small;
 
 };
+
+inline std::ostream& operator<<(std::ostream& ost,
+                               const MinMax&  mm ){
+  ost << "( "
+      << mm.n()        << " "
+      << mm.min()      << " "
+      << mm.max()      << " "
+      << mm.smallest()
+      << " )";
+  return ost;
+}
 
 #endif /* GeneralUtilities_MinMax_hh */

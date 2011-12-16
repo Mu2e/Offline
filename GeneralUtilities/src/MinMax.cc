@@ -2,9 +2,9 @@
 // Find minimum, maximum and smallest in magnitude of a set of numbers
 // presented one at a time.
 //
-// $Id: MinMax.cc,v 1.1 2010/06/22 16:05:18 kutschke Exp $
+// $Id: MinMax.cc,v 1.2 2011/12/16 23:12:30 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2010/06/22 16:05:18 $
+// $Date: 2011/12/16 23:12:30 $
 //
 // Original author Rob Kutschke
 
@@ -15,7 +15,8 @@
 
 using namespace std;
 
-void MinMax::compare(double x){
+void MinMax::accumulate(double x){
+  ++_n;
   _min   = (x < _min ) ? x : _min;
   _max   = (x > _max ) ? x : _max;
   _small = ( abs(x) < _small ) ? abs(x) : _small;

@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.21 2011/06/30 20:27:53 logash Exp $
-// $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Id: BFieldManagerMaker.cc,v 1.22 2011/12/16 23:12:30 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/12/16 23:12:30 $
 //
 
 // Includes from C++
@@ -400,9 +400,9 @@ namespace mu2e {
       }
 
       // Update min/max information.
-      mmX.compare(r.x);
-      mmY.compare(r.y);
-      mmZ.compare(r.z);
+      mmX.accumulate(r.x);
+      mmY.accumulate(r.y);
+      mmZ.accumulate(r.z);
 
       // Populate the set of all unique grid values.
       X.insert(r.x);
