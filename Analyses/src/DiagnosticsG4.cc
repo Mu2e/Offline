@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.3 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: DiagnosticsG4.cc,v 1.4 2011/12/16 00:25:06 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/16 00:25:06 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,7 @@
 
 // C++ includes
 #include <iomanip>
+#include <cmath>
 
 using namespace std;
 
@@ -35,6 +36,7 @@ namespace mu2e {
   DiagnosticsG4::DiagnosticsG4():
     hStatusValue_(0),
     hNG4Tracks_(0),
+    hNG4TracksLog_(0),
     hNG4Tracks1Sup_(0),
     hNKilledStep_(0),
     hRealTime_(0),
@@ -71,6 +73,7 @@ namespace mu2e {
     // Histogram binning definitions are sensible when the event generator creates a single particle.
     hStatusValue_   = tfdir.make<TH1F>( "hStatusValue",   "Non-Zero Values of the G4 Status",          20,  0.,    20.   );
     hNG4Tracks_     = tfdir.make<TH1F>( "hNG4Tracks",     "Number of Tracks Created by G4",           200,  0.,  2000.   );
+    hNG4TracksLog_  = tfdir.make<TH1F>( "hNG4TracksLog",  "log10(Number of Tracks Created by G4)",    100,  0.,    10.   );
     hNG4Tracks1Sup_ = tfdir.make<TH1F>( "hNG4Tracks1Sup", "Number of Tracks Created by G4, 1 Suppressed",
                                                                                                      200,  1.,   401.   );
     hNKilledStep_   = tfdir.make<TH1F>( "hNKilledStep",   "Number Killed by Step Limit",              100,  0.,   100.   );
@@ -93,6 +96,7 @@ namespace mu2e {
       hStatusValue_->Fill(status.status());
     }
     hNG4Tracks_->Fill(status.nG4Tracks());
+    hNG4TracksLog_->Fill( (status.nG4Tracks() > 0) ? log10(status.nG4Tracks()) : 0 );
     if ( status.nG4Tracks() > 1 ) hNG4Tracks1Sup_->Fill(status.nG4Tracks());
     if ( status.nKilledStepLimit() > 0 ) { hNKilledStep_->Fill(status.nKilledStepLimit()); }
   }

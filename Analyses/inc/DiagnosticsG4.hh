@@ -4,9 +4,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.2 2011/10/28 18:47:05 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:05 $
+// $Id: DiagnosticsG4.hh,v 1.3 2011/12/16 00:25:06 gandr Exp $
+// $Author: gandr $
+// $Date: 2011/12/16 00:25:06 $
 //
 // Original author Rob Kutschke
 //
@@ -75,6 +75,7 @@ namespace mu2e {
     // ROOT owns the pointees; do not delete the pointee.
     TH1F* hStatusValue_;
     TH1F* hNG4Tracks_;
+    TH1F* hNG4TracksLog_;
     TH1F* hNG4Tracks1Sup_;
     TH1F* hNKilledStep_;
     TH1F* hRealTime_;
