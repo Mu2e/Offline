@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.27 2011/12/15 16:33:55 gandr Exp $
+// $Id: SteppingAction.cc,v 1.28 2011/12/16 00:25:19 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/15 16:33:55 $
+// $Date: 2011/12/16 00:25:19 $
 //
 // Original author Rob Kutschke
 //
@@ -165,7 +165,7 @@ namespace mu2e {
     _mu2eOrigin     =  mu2eOrigin;
 
     for(unsigned i=0; i<_killInTheseVolumes.size(); ++i) {
-      if ( _killerVerbose ){
+      if ( true ){
 	std::cout<<"Adding G4 killer volume = "<<_killInTheseVolumes[i]<<std::endl;
       }
       _killerVolumes.insert(getPhysicalVolumeOrThrow(_killInTheseVolumes[i]));
