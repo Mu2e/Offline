@@ -17,7 +17,7 @@ source : {
 services : {
    message : @local::default_message
 
-   TFileService : { fileName : "runExtMonFNAL.root" }
+   TFileService : { fileName : "g4hists_ExtMonFNAL.root" }
 
    user : {
 

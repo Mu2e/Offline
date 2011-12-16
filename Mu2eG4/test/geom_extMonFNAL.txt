@@ -5,9 +5,9 @@
 // Make sure the face of beam dump shielding is not shadowed
 bool hasExtMonUCI = false;
 
-vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance", "HallConcreteExtMonUCIWall", "HallConcreteBeamDumpWall" };
 // bool g4SteppingAction.killerVerbose = true;
-
+vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
+int g4.particlesSizeLimit = 100000;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
