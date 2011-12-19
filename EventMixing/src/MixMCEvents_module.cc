@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: MixMCEvents_module.cc,v 1.7 2011/12/19 17:47:52 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2011/12/19 17:47:52 $
 //
 // Contact person Rob Kutschke.
 //
@@ -335,7 +335,7 @@ namespace {
   // This is a candidate to be moved to a more general library.
   template <class T>
   size_t totalSize( std::vector< T const*> const& in){
-    size_t sum;
+    size_t sum(0);
     for ( typename std::vector<T const*>::const_iterator i=in.begin(), e=in.end();
           i !=e ; ++i ){
       sum += (*i)->size();
