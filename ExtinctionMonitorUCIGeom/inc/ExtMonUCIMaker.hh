@@ -24,6 +24,7 @@ namespace mu2e {
 
     private:
       void MakeCols();
+      void MakeMags();
       void MakeTofs();
 
     };

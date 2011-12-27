@@ -1,11 +1,11 @@
 // Extinction Monitor UCI parameters
 
 bool   hasExtMonUCI = true;
-int    extmon_uci.verbosity = 1;
+int    extmon_uci.verbosity = 0;
 
 //ExtMonEnvelope;
-vector<double> extmon_uci.envelopeParams = {1000.0, 1000.0, 3000.0};
-vector<double> extmon_uci.envelopeOrigin = {3904.0, 880.0, -14129.0};
+vector<double> extmon_uci.envelopeParams = { 555.0, 905.0, 3105.0};
+vector<double> extmon_uci.envelopeOrigin = {3870.0, 900.0, -14679.0};
 string extmon_uci.envelopeMaterialName = "G4_AIR";
 bool   extmon_uci.envelopeVisible      = true;
 bool   extmon_uci.envelopeSolid        = false;
@@ -25,58 +25,62 @@ string extmon_uci.absMaterialName = "G4_Fe";
 bool extmon_uci.abs1Visible = true;
 bool extmon_uci.abs1Solid   = false;
 
-// ExtMonUCI Colimator (position in BL coordinate)
+// ExtMonUCI Collimator
 int extmon_uci.nCols = 4;
-vector<double> extmon_uci.colOuterHalfLengths = {200.0, 200.0, 300.0,
-                                                200.0, 200.0, 600.0,
-                                                200.0, 200.0, 300.0,
-                                                200.0, 200.0, 300.0};
+vector<double> extmon_uci.colOuterHalfLengths = {150.0, 150.0, 300.0,
+                                                 150.0, 150.0, 600.0,
+                                                 150.0, 150.0, 300.0,
+                                                 150.0, 150.0, 300.0};
 vector<double> extmon_uci.colInnerHalfLengths = {10.0, 10.0, 310.0,
-                                                10.0, 10.0, 610.0,
-                                                12.5, 22.5, 310.0,
-                                                15.0, 30.0, 310.0};
+                                                 10.0, 10.0, 610.0,
+                                                 12.5, 22.5, 310.0,
+                                                 15.0, 30.0, 310.0};
 vector<double> extmon_uci.colPosition1 = {
-        3860,          880,       -11329,
-        3856,         1101,       -13129,
-        3853,         1156,       -14429,
-        3889,         1223,       -16029
+        3860,          880,       -11929, 
+        3852,         1082,       -13829, 
+        3847,         1116,       -15129, 
+        3884,         1160,       -16779
 };
 vector<double> extmon_uci.colPosition2 = {
-        3860,          969,       -11929,
-        3853,         1151,       -14329,
-        3851,         1181,       -15029,
-        3936,         1245,       -16629
+        3856,          969,       -12529, 
+      3847.5,         1114,       -15029, 
+        3845,         1132,       -15729, 
+        3930,         1175,       -17379
 };
+
 bool   extmon_uci.colVisible          = true;
 bool   extmon_uci.colSolid            = false;
 string extmon_uci.colMaterialName     = "G4_Cu";
-string extmon_uci.colHoleMaterialName = "WAGVacuum";
+string extmon_uci.colHoleMaterialName = "G4_Air";
 
 // ExtMonUCI Magnet
-vector<double> extmon_uci.magOuterHalfLengths = {1200.0, 1500.0, 580.0,
-                                                1500.0, 1200.0, 400.0};
-vector<double> extmon_uci.magInnerHalfLengths = {25.0, 50.0, 590.0,
-                                                50.0, 25.0, 410.0};
-vector<double> extmon_uci.magPosition1 = {-44.0,  969.0, -4000.0,
-                                         -53.0, 1181.0, -7200.0};
-vector<double> extmon_uci.magPosition2 = {-48.0, 1101.0, -5200.0,
-                                         -15.0, 1223.0, -8000.0};
+int extmon_uci.nMags = 2;
+vector<double> extmon_uci.magOuterHalfLengths = {120.0, 150.0, 600.0,
+                                                 150.0, 120.0, 400.0};
+vector<double> extmon_uci.magInnerHalfLengths = {25.0, 50.0, 610.0,
+                                                 50.0, 25.0, 410.0};
+vector<double> extmon_uci.magPosition1 = {3856.0,  969.0, -12529.0,
+                                          3845.0, 1132.0, -15729.0};
+vector<double> extmon_uci.magPosition2 = {3852.0, 1082.0, -13829.0,
+                                          3884.0, 1160.0, -16779.0};
 
 bool   extmon_uci.magVisible          = true;
 bool   extmon_uci.magSolid            = false;
 string extmon_uci.magMaterialName     = "G4_Fe";
-string extmon_uci.magHoleMaterialName = "WAGVacuum";
+string extmon_uci.magHoleMaterialName = "G4_Air";
 
 // ExtMon Tof, 4 stations
+int extmon_uci.nTofStations = 4;
+int extmon_uci.nTofSegments = 6;
 vector<double> extmon_uci.tofHalfLengths  = {3.0, 30.0, 7.5,
-                                         3.0, 30.0, 7.5,
-                                         3.0, 30.0, 7.5,
-                                         3.0, 30.0, 7.5};
+                                             3.0, 30.0, 7.5,
+                                             3.0, 30.0, 7.5,
+                                             3.0, 30.0, 7.5};
 vector<double> extmon_uci.tofPosition    = {
-     3853.17,      1153.92,       -14379,
-     3850.83,      1183.08,       -15079,
-     3885.08,      1221.17,       -15979,
-     3939.92,      1246.83,       -16679
+     3847.17,      1114.67,       -15079, 
+     3844.83,      1133.33,       -15779, 
+     3880.17,      1158.75,       -16729, 
+     3933.83,      1176.25,       -17429
 };
 bool   extmon_uci.tofVisible         = true;
 bool   extmon_uci.tofSolid           = false;
@@ -103,6 +107,33 @@ vector<double> extmon_uci.killer4Position    = {0.0, 0.0, -655.0};
 bool   extmon_uci.killerVisible         = true;
 bool   extmon_uci.killerSolid           = false;
 string extmon_uci.killerMaterialName    = "WAGVacuum";
+
+// ExtMonUCI Shielding
+int extmon_uci.nShds = 9;
+vector<double> extmon_uci.shdHalfLengths = {550.0, 800.0, 150.0,
+                                            550.0, 800.0, 150.0,
+                                            150.0, 650.0, 2800.0,
+                                            150.0, 650.0, 2800.0,
+                                            550.0, 150.0, 2800.0,
+                                            550.0, 150.0, 1575.0,
+                                            550.0, 150.0,  300.0,
+                                            550.0, 150.0,  425.0,
+                                            550.0, 150.0,  300.0 
+                                           };
+vector<double> extmon_uci.shdPosition = {3870.0, 1000.0, -11729.0,
+                                         3870.0, 1000.0, -17629.0,
+                                         3470.0,  850.0, -14679.0,
+                                         4270.0,  850.0, -14679.0,
+                                         3870.0,  350.0, -14679.0,
+                                         3870.0, 1650.0, -13454.0,
+                                         3870.0, 1650.0, -15429.0,
+                                         3870.0, 1650.0, -16254.0,
+                                         3870.0, 1650.0, -17079.0
+                                        };
+
+bool   extmon_uci.shdVisible          = true;
+bool   extmon_uci.shdSolid            = false;
+string extmon_uci.shdMaterialName     = "ShieldingConcrete";
 
 //
 // This tells emacs to view this file in c++ mode.

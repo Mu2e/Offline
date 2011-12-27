@@ -37,6 +37,41 @@ namespace mu2e {
     }
 
     //================================================================
+    const ExtMonMag* ExtMon::mag(unsigned int iMag) const
+    {
+      if (iMag < _mags.size()) return &_mags[iMag];
+      else
+      {
+        std::cout << "ExtMonUCI::mag " << iMag << " >= " << "mags size " << _mags.size() << std::endl;
+        return 0;
+      }
+    }
+
+    //================================================================
+    const ExtMonTof* ExtMon::tof(unsigned int iTofStation, unsigned int iTofSegment) const
+    {
+      unsigned int iTof = iTofStation * _nTofSegments + iTofSegment;
+      if (iTof < _tofs.size()) return &_tofs[iTof];
+      else
+      {
+        std::cout << "ExtMonUCI::tof " << iTof << " >= " << "tofs size " << _tofs.size() << std::endl;
+        return 0;
+      }
+    }
+
+    //================================================================
+    const ExtMonTof* ExtMon::tof(unsigned int iTof) const
+    {
+      if (iTof < _tofs.size()) return &_tofs[iTof];
+      else
+      {
+        std::cout << "ExtMonUCI::tof " << iTof << " >= " << "tofs size " << _tofs.size() << std::endl;
+        return 0;
+      }
+    }
+
+
+    //================================================================
     CLHEP::Hep3Vector ExtMon::extMonToMu2ePoint( CLHEP::Hep3Vector const& v ) const
     {
       return v + origin();

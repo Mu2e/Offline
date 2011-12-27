@@ -34,6 +34,7 @@ namespace mu2e {
     int const verbosity = config.getInt("extmon_uci.verbosity",0);
 
     const string extmonBaseName = "ExtMonUCI";
+    ostringstream name;
 
     ExtMonUCI::ExtMon const & det = *(GeomHandle<ExtMonUCI::ExtMon>());    
     G4ThreeVector hallOriginInMu2e = parent.centerInMu2e();
@@ -77,10 +78,8 @@ namespace mu2e {
     const int kNCol = det.nCols();
 
     VolumeInfo colInfo[kNCol];
-    VolumeInfo colShieldInfo[kNCol];
     for (int iCol = 0; iCol < kNCol; iCol++)
     {
-      // collimators
       colInfo[iCol].name = det.col(iCol)->name(extmonBaseName);
       if (verbosity >= 2) YZYDEBUG("ExtMonUCI colInfo " << iCol << " name " << colInfo[iCol].name);
 
@@ -89,8 +88,8 @@ namespace mu2e {
 
       if (verbosity >= 2) 
       {
-        YZYDEBUG("colOuterParams " << colOuterParams[0] << "  " << colOuterParams[1] << "  " << colOuterParams[2]);
-        YZYDEBUG("colInnerParams " << colInnerParams[0] << "  " << colInnerParams[1] << "  " << colInnerParams[2]);
+        YZYDEBUG("collimator OuterParams " << colOuterParams[0] << "  " << colOuterParams[1] << "  " << colOuterParams[2]);
+        YZYDEBUG("collimator InnerParams " << colInnerParams[0] << "  " << colInnerParams[1] << "  " << colInnerParams[2]);
       }
 
       G4Box *colOuter = new G4Box(colInfo[iCol].name+"_Outer", colOuterParams[0], colOuterParams[1], colOuterParams[2]);
@@ -120,41 +119,157 @@ namespace mu2e {
                     doSurfaceCheck,
                     nestVerbosity
                    );
+    }
 
-      // shielding material outside of collimator
-      double shieldScale[3] = {3.0, 3.0, 0.9};
-      G4ThreeVector colShieldOuterOrigin = colOriginLocal;
-      G4ThreeVector colShieldInnerOrigin(0.0, 0.0, 0.0);
+    //
+    // Building Magnets
+    //
+    bool magVisible = config.getBool("extmon_uci.magVisible", true);
+    bool magSolid   = config.getBool("extmon_uci.magSolid", false);
+    G4Material* magMaterial = materialFinder.get("extmon_uci.magMaterialName");
 
-      colShieldInfo[iCol].name = det.col(iCol)->name(extmonBaseName)+"_Shield";
-      G4Box *colShieldOuter = new G4Box(colShieldInfo[iCol].name+"Outer", 
-                                        colOuterParams[0]*shieldScale[0],
-                                        colOuterParams[1]*shieldScale[1],
-                                        colOuterParams[2]*shieldScale[2]);
-      G4Box *colShieldInner = new G4Box(colShieldInfo[iCol].name+"Inner",
-                                        colOuterParams[0],
-                                        colOuterParams[1],
-                                        colOuterParams[2]);
-      colShieldInfo[iCol].solid = new G4SubtractionSolid(colShieldInfo[iCol].name,
-                                                         colShieldOuter,
-                                                         colShieldInner, 
-                                                         colRot,
-                                                         colShieldInnerOrigin);
-      finishNesting(colShieldInfo[iCol],
-                    colMaterial,
-                    0,
-                    colShieldOuterOrigin,
+    const int kNMag = det.nMags();
+
+    VolumeInfo magInfo[kNMag];
+    for (int iMag = 0; iMag < kNMag; iMag++)
+    {
+      magInfo[iMag].name = det.mag(iMag)->name(extmonBaseName);
+      if (verbosity >= 2) YZYDEBUG("ExtMonUCI magInfo " << iMag << " name " << magInfo[iMag].name);
+
+      const std::vector<double> magOuterParams = det.mag(iMag)->paramsOuter();
+      const std::vector<double> magInnerParams = det.mag(iMag)->paramsInner();
+
+      if (verbosity >= 2)
+      {
+        YZYDEBUG("magnet OuterParams " << magOuterParams[0] << "  " << magOuterParams[1] << "  " << magOuterParams[2]);
+        YZYDEBUG("magnet InnerParams " << magInnerParams[0] << "  " << magInnerParams[1] << "  " << magInnerParams[2]);
+      }
+
+      G4Box *magOuter = new G4Box(magInfo[iMag].name+"_Outer", magOuterParams[0], magOuterParams[1], magOuterParams[2]);
+      G4Box *magInner = new G4Box(magInfo[iMag].name+"_Inner", magInnerParams[0], magInnerParams[1], magInnerParams[2]);
+      magInfo[iMag].solid = new G4SubtractionSolid(magInfo[iMag].name,
+                                                   magOuter,
+                                                   magInner,
+                                                   0,
+                                                   G4ThreeVector(0, 0, 0));
+
+      G4RotationMatrix *magRot = new G4RotationMatrix();
+      *magRot = det.mag(iMag)->rotation();
+      G4ThreeVector magOriginLocal = det.mag(iMag)->originLocal();
+
+      int nestVerbosity = 0;
+      if (verbosity >= 2) nestVerbosity = 1;
+      finishNesting(magInfo[iMag],
+                    magMaterial,
+                    magRot,
+                    magOriginLocal,
                     envelopeInfo.logical,
                     0,
-                    colVisible,
-                    G4Color::Cyan(),
-                    colSolid,
+                    magVisible,
+                    G4Color::Red(),
+                    magSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck,
                     nestVerbosity
                    );
     }
+
+    //
+    // Building Tofs
+    //
+    bool tofVisible = config.getBool("extmon_uci.tofVisible", true);
+    bool tofSolid   = config.getBool("extmon_uci.tofSolid", false);
+    G4Material* tofMaterial = materialFinder.get("extmon_uci.tofMaterialName");
+
+    const int kNTofStations = det.nTofStations();
+    const int kNTofSegments = det.nTofSegments();
+
+    VolumeInfo tofInfo[kNTofStations*kNTofSegments];
+    for (int iTofSta = 0; iTofSta < kNTofStations; iTofSta++)
+    {
+      for (int iTofSeg = 0; iTofSeg < kNTofSegments; iTofSeg++)
+      {
+        int iTof = det.tof(iTofSta, iTofSeg)->getId();
+        tofInfo[iTof].name = det.tof(iTofSta, iTofSeg)->name(extmonBaseName);
+        if (verbosity >= 2) YZYDEBUG("ExtMonUCI tofInfo " << iTof << " name " << tofInfo[iTof].name);
+
+        const std::vector<double> tofParams = det.tof(iTofSta, iTofSeg)->params();
+
+        if (verbosity >= 2)
+        {
+          YZYDEBUG("tofParams " << tofParams[0] << "  " << tofParams[1] << "  " << tofParams[2]);
+        }
+
+        tofInfo[iTof].solid = new G4Box(tofInfo[iTof].name, tofParams[0], tofParams[1], tofParams[2]);
+  
+        G4RotationMatrix *tofRot = new G4RotationMatrix();
+        *tofRot = det.tof(iTofSta, iTofSeg)->rotation();
+        G4ThreeVector tofOriginLocal = det.tof(iTofSta, iTofSeg)->originLocal();
+
+        int nestVerbosity = 0;
+        if (verbosity >= 2) nestVerbosity = 1;
+        finishNesting(tofInfo[iTof],
+                      tofMaterial,
+                      tofRot,
+                      tofOriginLocal,
+                      envelopeInfo.logical,
+                      0,
+                      tofVisible,
+                      G4Color::Magenta(),
+                      tofSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck,
+                      nestVerbosity
+                     );
+      } // end of iTofSeg
+    } // end of iTofSta
+
+    //
+    // Building Shielding Materials
+    //
+    bool shdVisible = config.getBool("extmon_uci.shdVisible", true);
+    bool shdSolid   = config.getBool("extmon_uci.shdSolid", false);
+    G4Material* shdMaterial = materialFinder.get("extmon_uci.shdMaterialName");
+
+    const int kNShd = config.getInt("extmon_uci.nShds", 0);
+    vector<double> shdHalfLengths;
+    config.getVectorDouble("extmon_uci.shdHalfLengths", shdHalfLengths, 3*kNShd);
+    vector<double> shdPosition;
+    config.getVectorDouble("extmon_uci.shdPosition", shdPosition, 3*kNShd);
+
+    VolumeInfo shdInfo[kNShd];
+    for (int iShd = 0; iShd < kNShd; iShd++)
+    {
+      name.str("");
+      name << extmonBaseName << "Shield" << iShd;
+
+      vector<double> shdParams;
+      for (int iDim = 0; iDim < 3; iDim++) shdParams.push_back(shdHalfLengths[3*iShd+iDim]);
+      G4ThreeVector shdOrigin(shdPosition[3*iShd], shdPosition[3*iShd+1], shdPosition[3*iShd+2]);
+
+      if (verbosity >= 2)
+      {
+        YZYDEBUG("shield Params " << shdParams[0] << "  " << shdParams[1] << "  " << shdParams[2]);
+        YZYDEBUG("shield Origin " << shdOrigin[0] << "  " << shdOrigin[1] << "  " << shdOrigin[2]);
+      }
+
+      shdInfo[iShd] = nestBox( name.str(),
+                               shdParams,
+                               shdMaterial,
+                               0,
+                               shdOrigin - det.origin(),
+                               envelopeInfo,
+                               0,
+                               shdVisible,
+                               G4Colour::Cyan(),
+                               shdSolid,
+                               forceAuxEdgeVisible, placePV, doSurfaceCheck
+                             );
+ 
+    }
+
 
     YZYDEBUG("end");
   }
