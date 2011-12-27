@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.6 2011/11/02 21:29:27 gandr Exp $
+// $Id: constructPS.cc,v 1.7 2011/12/27 15:54:20 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:27 $
+// $Date: 2011/12/27 15:54:20 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -28,6 +28,7 @@
 #include "G4Material.hh"
 #include "G4Color.hh"
 
+#include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;
 
@@ -127,6 +128,33 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
+
+
+    // To compare with g4beamline studies: close the vacuum with a solid disk
+    const double toyEnclosureThickness(_config->getDouble("toyPS.toyEnclosure.Thickness", 0)*CLHEP::mm);
+    if(toyEnclosureThickness > 0) {
+      
+      TubsParams diskParam(0, _config->getDouble("toyPS.rOut"), 0.5*toyEnclosureThickness);
+      CLHEP::Hep3Vector toyEnclosurePosition = psCryoPosition 
+	- CLHEP::Hep3Vector(0, 0, psCryoParams.zHalfLength())
+	- CLHEP::Hep3Vector(0, 0, 0.5*toyEnclosureThickness)
+	;
+
+      nestTubs( "PS1ToyEnclosure",
+		diskParam,
+		materialFinder.get("toyPS.toyEnclosure.materialName"),
+		0,
+		toyEnclosurePosition - _hallOriginInMu2e,
+		parent,
+		0,
+		_config->getBool("toyPS.toyEnclosure.visible", true),
+		G4Colour::Magenta(),
+		_config->getBool("toyPS.toyEnclosure.solid", true),
+		forceAuxEdgeVisible,
+		placePV,
+		doSurfaceCheck
+		);
+    }
 
   } // end Mu2eWorld::constructPS
 }

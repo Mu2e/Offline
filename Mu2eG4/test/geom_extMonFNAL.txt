@@ -5,6 +5,14 @@
 // Make sure the face of beam dump shielding is not shadowed
 bool hasExtMonUCI = false;
 
+// For g4beamline comparison: close the PS vacuum with a thin disk.
+// A non-positive thickness means don't close.
+// 
+// NB: docdb-1944 uses 2.84mm Titanium disk, R=1meter.
+// We'll make it match the outside radius of the cryostat instead.
+double toyPS.toyEnclosure.Thickness = 2.84; // mm
+string toyPS.toyEnclosure.materialName = "G4_Ti";
+
 // bool g4SteppingAction.killerVerbose = true;
 vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
 int g4.particlesSizeLimit = 100000;
