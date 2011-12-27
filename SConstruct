@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.29 2011/12/27 15:54:35 gandr Exp $
+# $Id: SConstruct,v 1.30 2011/12/27 17:06:26 gandr Exp $
 # $Author: gandr $
-# $Date: 2011/12/27 15:54:35 $
+# $Date: 2011/12/27 17:06:26 $
 #
 # Original author Rob Kutschke.
 #
@@ -48,6 +48,14 @@ else:
     libpath_frag         = [ ]
 
 # Define scons-local environment - it will be exported later.
+
+osenv = {}
+for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS' ]:
+    if var in os.environ.keys():
+        osenv[var] = os.environ[var]
+        pass
+    pass
+    
 env = Environment( CPPPATH=[ cpppath_frag,
                              base,
                              base+'/BaBar/include',
@@ -79,13 +87,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              root_sys+'/lib',
                              '/lib', '/usr/X11R6/lib',
                            ],
-                   ENV={
-                         'LD_LIBRARY_PATH': os.environ['LD_LIBRARY_PATH'],
-                         'GCC_FQ_DIR' : os.environ['GCC_FQ_DIR'], # For GCCXML
-                         'PATH' : os.environ['PATH'], 
-                         'PYTHONPATH' : os.environ['PYTHONPATH'],
-                         'ROOTSYS' : os.environ['ROOTSYS']
-                       },
+                   ENV=osenv,
                    FORTRAN = 'gfortran'
                  )
 
