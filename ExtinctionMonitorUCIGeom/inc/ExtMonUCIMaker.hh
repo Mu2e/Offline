@@ -1,3 +1,7 @@
+// $Id: ExtMonUCIMaker.hh,v 1.3 2011/12/28 00:25:05 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/28 00:25:05 $
+
 #ifndef EXTMONUCIMAKER_HH
 #define EXTMONUCIMAKER_HH
 

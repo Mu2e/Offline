@@ -1,12 +1,13 @@
-#ifndef ExtMonUCICol_hh
-#define ExtMonUCICol_hh
 //
 // Hold information about one Collimator in Extinction Monitor.
 //
-// $Id: ExtMonUCICol.hh,v 1.1 2011/12/10 00:16:15 youzy Exp $
+// $Id: ExtMonUCICol.hh,v 1.2 2011/12/28 00:25:05 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/10 00:16:15 $
+// $Date: 2011/12/28 00:25:05 $
 //
+
+#ifndef ExtMonUCICol_hh
+#define ExtMonUCICol_hh
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"

@@ -1,9 +1,12 @@
-#ifndef ExtMonUCITof_hh
-#define ExtMonUCITof_hh
 //
 // Hold information about one Tof (Station/Segment) in Extinction Monitor.
 //
-//
+// $Id: ExtMonUCITof.hh,v 1.2 2011/12/28 00:25:05 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/28 00:25:05 $
+
+#ifndef ExtMonUCITof_hh
+#define ExtMonUCITof_hh
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"

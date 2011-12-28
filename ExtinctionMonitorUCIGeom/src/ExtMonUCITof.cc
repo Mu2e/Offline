@@ -1,7 +1,9 @@
 //
 // Hold information about one Tof (station/segment) in Extinction Monitor.
 //
-//
+// $Id: ExtMonUCITof.cc,v 1.2 2011/12/28 00:25:05 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/28 00:25:05 $
 
 #include <sstream>
 
