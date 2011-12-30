@@ -11,8 +11,7 @@
 #include "G4SDManager.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
-//#include "GeometryService/inc/Mu2eBuilding.hh"
-
+#include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -41,8 +40,10 @@ namespace mu2e {
     G4ThreeVector detOriginLocal = det.origin() - hallOriginInMu2e;
 
     MaterialFinder materialFinder(config);
-//    G4VSensitiveDetector* emSD = G4SDManager::GetSDMpointer()->
-//      FindSensitiveDetector(SensitiveDetectorName::ExtMonUCI());
+    G4VSensitiveDetector* emuSD = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::ExtMonUCITof());
+
+    G4Helper* helper = &(*(art::ServiceHandle<G4Helper>()));
 
     bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
@@ -207,6 +208,8 @@ namespace mu2e {
         *tofRot = det.tof(iTofSta, iTofSeg)->rotation();
         G4ThreeVector tofOriginLocal = det.tof(iTofSta, iTofSeg)->originLocal();
 
+        int tofCopyNo = iTof;
+
         int nestVerbosity = 0;
         if (verbosity >= 2) nestVerbosity = 1;
         finishNesting(tofInfo[iTof],
@@ -214,7 +217,7 @@ namespace mu2e {
                       tofRot,
                       tofOriginLocal,
                       envelopeInfo.logical,
-                      0,
+                      tofCopyNo,
                       tofVisible,
                       G4Color::Magenta(),
                       tofSolid,
@@ -223,6 +226,9 @@ namespace mu2e {
                       doSurfaceCheck,
                       nestVerbosity
                      );
+
+        tofInfo[iTof].logical->SetSensitiveDetector(emuSD);
+
       } // end of iTofSeg
     } // end of iTofSta
 
@@ -267,9 +273,112 @@ namespace mu2e {
                                shdSolid,
                                forceAuxEdgeVisible, placePV, doSurfaceCheck
                              );
- 
-    }
+    } 
 
+    // Shield Hole
+    bool shdHoleVisible = config.getBool("extmon_uci.shdHoleVisible", true);
+    bool shdHoleSolid   = config.getBool("extmon_uci.shdHoleSolid", false);
+    G4Material* shdHoleMaterial = materialFinder.get("extmon_uci.shdHoleMaterialName");
+
+    vector<double> shdHoleHalfLengths;
+    config.getVectorDouble("extmon_uci.shdHoleHalfLengths", shdHoleHalfLengths, 3);
+    vector<double> shdHolePosition;
+    config.getVectorDouble("extmon_uci.shdHolePosition", shdHolePosition, 3);
+
+    VolumeInfo shdHoleInfo;
+    name.str("");
+    name << extmonBaseName << "ShieldHole";
+
+    vector<double> shdHoleParams;
+    shdHoleParams = shdHoleHalfLengths;
+    G4ThreeVector shdHoleOriginLocal(shdHolePosition[0]-shdPosition[0], shdHolePosition[1]-shdPosition[1], shdHolePosition[2]-shdPosition[2] );
+
+    shdHoleInfo = nestBox( name.str(),
+                           shdHoleParams,
+                           shdHoleMaterial,
+                           0,
+                           shdHoleOriginLocal,
+                           shdInfo[0],
+                           0,
+                           shdHoleVisible,
+                           G4Colour::Cyan(),
+                           shdHoleSolid,
+                           forceAuxEdgeVisible, placePV, doSurfaceCheck
+                         );
+
+    //
+    // Building Killer Volume in PS (to kill particles on +Z direction, save time)
+    //
+
+    bool hasKiller = config.getBool("extmon_uci.hasKiller",false);
+    if (hasKiller)
+    {
+      bool killerVisible = config.getBool("extmon_uci.killerVisible", true);
+      bool killerSolid   = config.getBool("extmon_uci.killerSolid",false);
+      G4Material* killerMaterial = materialFinder.get("extmon_uci.killerMaterialName");
+
+      const int kNKiller = config.getInt("extmon_uci.nKiller", 0); 
+
+      vector<int>    killerSwitch;
+      config.getVectorInt("extmon_uci.killerSwitch", killerSwitch, kNKiller);
+      vector<double> killerTubsParams;
+      config.getVectorDouble("extmon_uci.killerTubsParams", killerTubsParams, 3*kNKiller);
+      vector<double> killerPosition;
+      config.getVectorDouble("extmon_uci.killerPosition",   killerPosition,   3*kNKiller);
+
+      VolumeInfo killerInfo[kNKiller];
+      for (int iKiller = 0; iKiller < kNKiller; iKiller++)
+      {
+        name.str("");
+        name << extmonBaseName << "Killer" << iKiller;
+
+        TubsParams killerParams(killerTubsParams[3*iKiller], killerTubsParams[3*iKiller+1], killerTubsParams[3*iKiller+2]);
+        G4ThreeVector killerOrigin(killerPosition[3*iKiller], killerPosition[3*iKiller+1],  killerPosition[3*iKiller+2]);
+
+        if (verbosity >= 2)
+        {
+          YZYDEBUG("killer " << iKiller << " Params " << killerParams);
+          YZYDEBUG("killer " << iKiller << " Origin " << killerOrigin[0] << "  " << killerOrigin[1] << "  " << killerOrigin[2]);
+        } 
+
+        if ( killerSwitch[iKiller] )
+        {
+          if (iKiller == 0)
+          {
+            G4ThreeVector originLocal = killerOrigin - parent.centerInMu2e();
+            killerInfo[iKiller] = nestTubs( name.str(),
+                                          killerParams,
+                                          killerMaterial,
+                                          0,
+                                          originLocal,
+                                          parent,
+                                          0,
+                                          killerVisible,
+                                          G4Colour::Red(),
+                                          killerSolid,
+                                          forceAuxEdgeVisible, placePV, doSurfaceCheck
+                                        );
+          }
+          else if (iKiller >= 1 && iKiller <= 3)
+          {
+            VolumeInfo const & ps1VacuumInfo = helper->locateVolInfo("PS1Vacuum");
+            G4ThreeVector originLocal = killerOrigin - ps1VacuumInfo.centerInMu2e();
+            killerInfo[iKiller] = nestTubs( name.str(),
+                                          killerParams,
+                                          killerMaterial,
+                                          0,
+                                          originLocal,
+                                          ps1VacuumInfo,
+                                          0,
+                                          killerVisible,
+                                          G4Colour::Red(),
+                                          killerSolid,
+                                          forceAuxEdgeVisible, placePV, doSurfaceCheck
+                                        );
+          }
+        }
+      }
+    }
 
     YZYDEBUG("end");
   }

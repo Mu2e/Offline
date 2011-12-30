@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.4 2011/12/16 00:25:06 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/16 00:25:06 $
+// $Id: DiagnosticsG4.cc,v 1.5 2011/12/30 20:31:46 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/30 20:31:46 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@ namespace mu2e {
     hNCRVSteps_(0),
     hNFoilSteps_(0),
     hNVDetSteps_(0),
+    hNExtMonUCITofSteps_(0),
     hNTrajectories_(0),
     hNPhysVolumes_(0){
   }
@@ -87,6 +88,7 @@ namespace mu2e {
     hNCRVSteps_     = tfdir.make<TH1F>( "hNCRVSteps",     "N CRV StepPointMCs",                       200,  1.,   201    );
     hNFoilSteps_    = tfdir.make<TH1F>( "hNFoilSteps",    "N Stopping Target Foil StepPointMCs",      200,  1.,   201    );
     hNVDetSteps_    = tfdir.make<TH1F>( "hNVDetSteps",    "N Virtual Detector StepPointMCs",          200,  1.,   201    );
+    hNExtMonUCITofSteps_ = tfdir.make<TH1F>( "hNExtMonUCITofSteps", "N ExtinctionMonoitorUCI Tof StepPointMCs", 200,  1.,   201    );
     hNTrajectories_ = tfdir.make<TH1F>( "hNTrajectories", "Number of saved trajectories",              50,  1.,    51    );
     hNPhysVolumes_  = tfdir.make<TH1F>( "hNPhysVolumes",  "Number of Physical Volumes",               200,  1., 20001    );
   }
@@ -109,6 +111,7 @@ namespace mu2e {
                             StepPointMCCollection        const& crvSteps,
                             StepPointMCCollection        const& foilSteps,
                             StepPointMCCollection        const& vdSteps,
+                            StepPointMCCollection        const& extMonUCITofSteps,
                             PointTrajectoryCollection    const& trajectories,
                             PhysicalVolumeInfoCollection const& volInfo ){
 
@@ -129,6 +132,7 @@ namespace mu2e {
     hNCRVSteps_     ->Fill(crvSteps.size());
     hNFoilSteps_    ->Fill(foilSteps.size());
     hNVDetSteps_    ->Fill(vdSteps.size());
+    hNExtMonUCITofSteps_->Fill(extMonUCITofSteps.size());
     hNTrajectories_ ->Fill(trajectories.size());
     hNPhysVolumes_  ->Fill(volInfo.size());
 

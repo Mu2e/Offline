@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.29 2011/12/10 00:16:15 youzy Exp $
+// $Id: G4_module.cc,v 1.30 2011/12/30 20:31:46 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/10 00:16:15 $
+// $Date: 2011/12/30 20:31:46 $
 //
 // Original author Rob Kutschke
 //
@@ -87,6 +87,7 @@
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
+#include "Mu2eG4/inc/ExtMonUCITofSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Analyses/inc/DiagnosticsG4.hh"
@@ -148,7 +149,7 @@ namespace mu2e {
       _caloOutputName("calorimeter"),
       _caloROOutputName("calorimeterRO"),
       _extMonFNALOutputName("ExtMonFNAL"),
-      _extMonUCIOutputName("ExtMonUCI"),
+      _extMonUCITofOutputName("ExtMonUCITof"),
       _diagnostics(){
 
       produces<StepPointMCCollection>(_trackerOutputName);
@@ -159,7 +160,7 @@ namespace mu2e {
       produces<StepPointMCCollection>(_caloOutputName);
       produces<StepPointMCCollection>(_caloROOutputName);
       produces<StepPointMCCollection>(_extMonFNALOutputName);
-      produces<StepPointMCCollection>(_extMonUCIOutputName);
+      produces<StepPointMCCollection>(_extMonUCITofOutputName);
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,art::InRun>();
       produces<PointTrajectoryCollection>();
@@ -218,7 +219,7 @@ namespace mu2e {
     const std::string    _caloOutputName;
     const std::string  _caloROOutputName;
     const std::string  _extMonFNALOutputName;
-    const std::string  _extMonUCIOutputName;
+    const std::string  _extMonUCITofOutputName;
 
     DiagnosticsG4 _diagnostics;
 
@@ -351,7 +352,7 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>     caloHits(          new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     extMonFNALHits(    new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     extMonUCIHits(     new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>     extMonUCITofHits(  new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
     // ProductID for SimParticleCollection
@@ -408,6 +409,10 @@ namespace mu2e {
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))->
       beforeG4Event(*extMonFNALHits, _processInfo, simPartId, event );
 
+    static_cast<ExtMonUCITofSD*>
+      (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonUCITof()))->
+      beforeG4Event(*extMonUCITofHits, _processInfo, simPartId, event );
+
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );
     G4Event const* g4event = _runManager->getCurrentEvent();
@@ -444,6 +449,7 @@ namespace mu2e {
                        *sbHits,
                        *stHits,
                        *vdHits,
+                       *extMonUCITofHits,
                        *pointTrajectories,
                        _physVolHelper.persistentInfo() );
 
@@ -458,7 +464,7 @@ namespace mu2e {
     event.put(caloHits,   _caloOutputName);
     event.put(caloROHits, _caloROOutputName);
     event.put(extMonFNALHits, _extMonFNALOutputName);
-    event.put(extMonUCIHits,  _extMonUCIOutputName);
+    event.put(extMonUCITofHits,  _extMonUCITofOutputName);
     event.put(pointTrajectories);
 
     // Pause to see graphics.

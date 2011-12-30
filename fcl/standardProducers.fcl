@@ -47,6 +47,18 @@ CaloCrystalHitsMaker :
   minimumTimeGap       : 100.0
 }
 
+# Form ExtMonUCITofHits (extmonUCI Tof Hits)
+ExtMonUCITofHitsMaker :
+{ 
+  module_type          : MakeExtMonUCITofHits
+  diagLevel            : 0
+  maxFullPrint         : 0
+  g4ModuleLabel        : g4run
+  minimumEnergy        : 0.0
+  maximumEnergy        : 1000.0
+  minimumTimeGap       : 100.0
+}
+
 # Save state of random numbers at the start of each event
 randomsaver:
 {

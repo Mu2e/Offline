@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_extMonUCI.txt,v 1.1 2011/12/10 00:16:15 youzy Exp $
+// $Id: genconfig_extMonUCI.txt,v 1.2 2011/12/30 20:31:46 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/10 00:16:15 $
+// $Date: 2011/12/30 20:31:46 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -71,12 +71,8 @@ double ejectedNeutronGun.tmin  =  700.;
 double ejectedNeutronGun.tmax  = 1694.;
 double ejectedProtonGun.tmin  =  700.;
 double ejectedProtonGun.tmax  = 1694.;
-double ejectedPhotonGun.tmin  =  700.;
-double ejectedPhotonGun.tmax  = 1694.;
-double primaryProtonGun.tmin  =  700.;
-double primaryProtonGun.tmax  = 1694.;
-double primaryProtonGun.tmin  =  700.;
-double primaryProtonGun.tmax  = 1694.;
+double primaryProtonGun.tmin  =    0.;
+double primaryProtonGun.tmax  =    0.;
 double nuclearCaptureGun.tmin  =  0.;
 double nuclearCaptureGun.tmax  = 1694.;
 

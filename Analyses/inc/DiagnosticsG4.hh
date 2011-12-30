@@ -4,9 +4,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.3 2011/12/16 00:25:06 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/16 00:25:06 $
+// $Id: DiagnosticsG4.hh,v 1.4 2011/12/30 20:31:46 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/30 20:31:46 $
 //
 // Original author Rob Kutschke
 //
@@ -63,6 +63,7 @@ namespace mu2e {
                StepPointMCCollection        const& crvSteps,
                StepPointMCCollection        const& foilSteps,
                StepPointMCCollection        const& vdSteps,
+               StepPointMCCollection        const& extMonUCITofSteps,
                PointTrajectoryCollection    const& trajectories,
                PhysicalVolumeInfoCollection const& volInfo);
 
@@ -88,6 +89,7 @@ namespace mu2e {
     TH1F* hNCRVSteps_;
     TH1F* hNFoilSteps_;
     TH1F* hNVDetSteps_;
+    TH1F* hNExtMonUCITofSteps_;
     TH1F* hNTrajectories_;
     TH1F* hNPhysVolumes_;
 

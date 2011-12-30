@@ -1,14 +1,13 @@
-# Configuration file for extinction monitor proton generation
+# Configuration file for extinction monitor proton generation and G4 simualtion
 #
-#  - Generate 200 events including one conversion electron plus
-#    some number of background processes.
+#  - Generate 200 single proton events.
 #  - Run these through G4.
 #  - No event display.
-#  - Form StrawHits from StepPointMC objects
+#  - Form ExtMonUCITofHits from StepPointMC objects
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_protongen_01.fcl,v 1.2 2011/12/30 20:31:46 youzy Exp $
+# $Id: extmon_uci_protongensim_01.fcl,v 1.1 2011/12/30 20:31:46 youzy Exp $
 # $Author: youzy $
 # $Date: 2011/12/30 20:31:46 $
 
@@ -16,13 +15,13 @@
 #include "standardProducers.fcl"
 
 # Give this job a name.
-process_name : ExtMonUCIProtonGen
+process_name : ExtMonUCIProtonGenSim
 
 # Start form an empty source
 source :
 {
   module_type : EmptyEvent
-  maxEvents : 10
+  maxEvents : 100
 }
 
 services :
@@ -92,14 +91,17 @@ physics :
       seed                 : [9877]
     }
 
+    # Form ExtMonUCITofHits
+    ExtMonUCITofHitsMaker : @local::ExtMonUCITofHitsMaker
+
     randomsaver : @local::randomsaver
 
   }
 
   p1 : [generate, g4run,
+        ExtMonUCITofHitsMaker,
         randomsaver ]
-  e1 : []
-#  e1 : [outfile]
+  e1 : [outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -112,8 +114,13 @@ outputs:
   {
     module_type   :   RootOutput
     fileName      :   "data_03.root"
-    outputCommands:   [ "keep *_*_*_*"
-                        ,"drop mu2e::PointTrajectorymv_*_*_*"
+    outputCommands:   [ "keep *_*_*_*",
+                        "keep mu2e::ExtMonUCITofHitMCTruths_*_*_*",
+                        "keep mu2e::ExtMonUCITofHits_*_*_*",
+                        "drop mu2e::StepPointMCs_g4run_timeVD_*",
+                        "drop mu2e::StepPointMCs_g4run_virtualdetector_*",
+                        "drop mu2e::SimParticlemv_*_*_*",
+                        "drop mu2e::PointTrajectorymv_*_*_*"
                       ]
   }
 

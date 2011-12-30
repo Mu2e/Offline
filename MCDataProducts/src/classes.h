@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.7 2011/10/11 17:27:52 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/10/11 17:27:52 $
+// $Id: classes.h,v 1.8 2011/12/30 20:31:46 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/30 20:31:46 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,7 @@
 
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -60,6 +61,7 @@ template class art::Wrapper<mu2e::G4BeamlineInfo>;
 template class art::Wrapper<mu2e::G4BeamlineInfoCollection>;
 template class art::Wrapper<mu2e::CaloHitMCTruthCollection>;
 template class art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>;
+template class art::Wrapper<mu2e::ExtMonUCITofHitMCTruthCollection>;
 template class art::Wrapper<mu2e::PointTrajectoryCollection>;
 template class art::Wrapper<mu2e::StatusG4>;
 template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;

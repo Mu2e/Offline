@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: RPCFilter1_module.cc,v 1.1 2011/12/22 18:30:31 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2011/12/22 18:30:31 $
+// $Id: RPCFilter1_module.cc,v 1.2 2011/12/30 20:31:46 youzy Exp $
+// $Author: youzy $
+// $Date: 2011/12/30 20:31:46 $
 //
 // Contact person Rob Kutschke.
 //
@@ -68,6 +68,7 @@ namespace mu2e {
     std::string foilStepPoints_;
     std::string crvStepPoints_;
     std::string vDetStepPoints_;
+    std::string extMonUCITofStepPoints_;
 
     // Histogram pointers.
     TH1F* hNstrawHits_;
@@ -97,6 +98,7 @@ namespace mu2e {
     foilStepPoints_(pset.get<string>("foilStepPoints","stoppingtarget")),
     crvStepPoints_(pset.get<string>("CRVStepPoints","CRV")),
     vDetStepPoints_(pset.get<string>("vDetStepPoints","virtualdetector")),
+    extMonUCITofStepPoints_(pset.get<string>("extMonUCITofStepPoints","extinctionmonitorTof")),
     hNstrawHits_(0),
     hNcrystalHits_(0),
     hEDep_(0),
@@ -183,6 +185,10 @@ namespace mu2e {
     event.getByLabel(g4ModuleLabel_, vDetStepPoints_, vDetStepsHandle);
     StepPointMCCollection const& vDetSteps(*vDetStepsHandle);
 
+    art::Handle<StepPointMCCollection> extMonUCITofStepsHandle;
+    event.getByLabel(g4ModuleLabel_, extMonUCITofStepPoints_, extMonUCITofStepsHandle);
+    StepPointMCCollection const& extMonUCITofSteps(*extMonUCITofStepsHandle);
+
     art::Handle<PointTrajectoryCollection> trajectoriesHandle;
     event.getByLabel(g4ModuleLabel_,trajectoriesHandle);
     PointTrajectoryCollection const& trajectories(*trajectoriesHandle);
@@ -208,6 +214,7 @@ namespace mu2e {
                        crvSteps,
                        foilSteps,
                        vDetSteps,
+                       extMonUCITofSteps,
                        trajectories,
                        vols);
 

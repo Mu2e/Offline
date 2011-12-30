@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.110 2011/12/10 00:16:15 youzy Exp $
+// $Id: Mu2eWorld.cc,v 1.111 2011/12/30 20:31:46 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/10 00:16:15 $
+// $Date: 2011/12/30 20:31:46 $
 //
 // Original author Rob Kutschke
 //
@@ -60,6 +60,7 @@
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
+#include "Mu2eG4/inc/ExtMonUCITofSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestTorus.hh"
@@ -578,6 +579,9 @@ namespace mu2e {
 
     ExtMonFNAL_SD* emfSD     = new ExtMonFNAL_SD(    SensitiveDetectorName::ExtMonFNAL(),     *_config);
     SDman->AddNewDetector(emfSD);
+
+    ExtMonUCITofSD* emuTofSD     = new ExtMonUCITofSD(    SensitiveDetectorName::ExtMonUCITof(),     *_config);
+    SDman->AddNewDetector(emuTofSD);
 
     StoppingTargetSD* stSD = new StoppingTargetSD(  SensitiveDetectorName::StoppingTarget(),  *_config);
     SDman->AddNewDetector(stSD);
