@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.109 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: geom_01.txt,v 1.110 2011/12/31 05:56:20 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2011/12/31 05:56:20 $
 //
 // Original author Rob Kutschke
 //
@@ -443,9 +443,7 @@ vector<string> bfield.files = {
   "BFieldMaps/Mau5/Mu2e_DSMap.header",
   "BFieldMaps/Mau5/Mu2e_PSMap.header",
   "BFieldMaps/Mau5/Mu2e_TSuMap.header",
-  "BFieldMaps/Mau5/Mu2e_TSdMap.header",
-  "BFieldMaps/Mau5/Mu2e_ExtMonMap1.header",
-  "BFieldMaps/Mau5/Mu2e_ExtMonMap2.header"
+  "BFieldMaps/Mau5/Mu2e_TSdMap.header"
 };
 
 // This scale factor is of limited use.
