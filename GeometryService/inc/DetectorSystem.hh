@@ -4,9 +4,9 @@
 // Transformations between the Mu2e coordinate system and the detector coordinate system.
 // This is a dumb data class that does not know how to build itself.
 //
-// $Id: DetectorSystem.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: DetectorSystem.hh,v 1.4 2012/01/05 16:22:33 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/01/05 16:22:33 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,10 @@ namespace mu2e {
     // Take a 3-vector in the mu2e system; return it in the detector system.
     CLHEP::Hep3Vector toDetector( CLHEP::Hep3Vector const& v ) const{
       return v-_origin;
+    }
+
+    const CLHEP::Hep3Vector &getOrigin() const{
+      return _origin;
     }
 
   private:
