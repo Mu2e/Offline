@@ -2,9 +2,9 @@
 // A really, really, stupid model of cosmic rays.
 // The purpose is to provide an example of the interface.
 //
-// $Id: CosmicToy.cc,v 1.14 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: CosmicToy.cc,v 1.15 2012/01/06 23:28:27 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/01/06 23:28:27 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,7 @@
 #include "ConditionsService/inc/DAQParams.hh"
 #include "EventGenerator/inc/CosmicToy.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/CosmicProductionPlane.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
@@ -125,15 +126,17 @@ namespace mu2e {
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), e);
 
       // Footprint of this toy model is 10m on each side.
-      double halfLength = 5000.;
+      double dx=GeomHandle<CosmicProductionPlane>()->cosmicDx();
+      double dz=GeomHandle<CosmicProductionPlane>()->cosmicDz();
+      double y0=GeomHandle<CosmicProductionPlane>()->cosmicOffsetY();
 
       // Position in a reference plane that is just above the ground.
       // We can worry later about the exact meaning of the height.
       // The G4 interface code ( PrimaryGeneratorAction) will put it
       // at the right height.
-      double x = (1.-2.*_randFlat.fire())*halfLength;
-      double y = 0.;
-      double z = (1.-2.*_randFlat.fire())*halfLength;
+      double x = (1.-2.*_randFlat.fire())*dx;
+      double y = y0;
+      double z = (1.-2.*_randFlat.fire())*dz;
       CLHEP::Hep3Vector pos( x, y, z );
 
       double time = _tmin + _dt*_randFlat.fire();

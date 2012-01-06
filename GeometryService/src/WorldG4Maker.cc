@@ -12,6 +12,8 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 #include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+#include "GeometryService/inc/CosmicProductionPlane.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
@@ -96,8 +98,10 @@ namespace mu2e {
     // Top of the dirt cap.
     double yEverest = ySurface + 2.*building->dirtCapHalfHeight();
 
-    // Build the reference points that others will use.
-    _wg4->_cosmicReferencePoint = CLHEP::Hep3Vector(0., yEverest, 0.);
+    // Build the center for the cosmic ray production (in world coordinates) 
+    // at the xz origin of the detector system and on top of the dirt body (incl. the dirt cap).
+    CLHEP::Hep3Vector const& detectorSystemOriginInWorld = GeomHandle<DetectorSystem>()->getOrigin() + _wg4->_mu2eOriginInWorld;
+    _wg4->_cosmicReferencePoint = CLHEP::Hep3Vector(detectorSystemOriginInWorld.x(), yEverest, detectorSystemOriginInWorld.y());
 
     _wg4->_dirtG4Ymax = ySurface;
     _wg4->_dirtG4Ymin = yCeilingOutside;
@@ -110,6 +114,25 @@ namespace mu2e {
     if ( yEverest > 2.*_wg4->_halfLengths[1] ){
       throw cet::exception("GEOM")
         << "Top of the world is outside of the world volume! \n";
+    }
+
+    // check that the cosmic ray production plane is within the world box
+    GeomHandle<CosmicProductionPlane> cosmic;
+
+    if(_wg4->_cosmicReferencePoint.y()+cosmic->cosmicOffsetY() > 2.*_wg4->_halfLengths[1] ||
+       _wg4->_cosmicReferencePoint.y()+cosmic->cosmicOffsetY() < -2.*_wg4->_halfLengths[1])
+    {
+      throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! \n";
+    }
+    if(_wg4->_cosmicReferencePoint.x()+cosmic->cosmicDx() > 2.*_wg4->_halfLengths[0] ||
+       _wg4->_cosmicReferencePoint.x()-cosmic->cosmicDx() < -2.*_wg4->_halfLengths[0])
+    {
+      throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! \n";
+    }
+    if(_wg4->_cosmicReferencePoint.z()+cosmic->cosmicDz() > 2.*_wg4->_halfLengths[2] ||
+       _wg4->_cosmicReferencePoint.z()-cosmic->cosmicDz() < -2.*_wg4->_halfLengths[2])
+    {
+      throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! \n";
     }
   }
 }

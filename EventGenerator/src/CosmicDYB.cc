@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.19 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: CosmicDYB.cc,v 1.20 2012/01/06 23:28:27 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/01/06 23:28:27 $
 //
 // Original author Yury Kolomensky
 //
@@ -37,6 +37,7 @@
 #include "EventGenerator/inc/CosmicDYB.hh"
 #include "EventGenerator/inc/hrndg2.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/CosmicProductionPlane.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/rm48.hh"
@@ -83,11 +84,6 @@ namespace mu2e {
   , _muCosThMin( config.getDouble("cosmicDYB.muCosThMin",0.00366518) )
   , _muCosThMax( config.getDouble("cosmicDYB.muCosThMax",1.0) )
 
-    // half area to generate events (mm)
-  , _dx( config.getDouble("cosmicDYB.dx",5000) )
-  , _dz( config.getDouble("cosmicDYB.dz",5000) )
-  , _y0( config.getDouble("cosmicDYB.y0",0) )
-
     // Dimensions of the 2d working space for hrndg2.
   , _ne ( config.getInt("cosmicDYB.nBinsE", _default_ne) )
   , _nth( config.getInt("cosmicDYB.nBinsTheta",_default_nth) )
@@ -109,6 +105,14 @@ namespace mu2e {
     // Working space for hrndg2 (working space will be on the heap).
   , _workingSpace( )
   {
+
+    GeomHandle<CosmicProductionPlane>()->parametersDYB(config); //can't be called from GeometryService_service
+                                                                //or from the CosmicProductionPlaneMaker,
+                                                                //since it needs the "config" from the 
+                                                                //configuration file (and not the geometry file)
+    _dx=GeomHandle<CosmicProductionPlane>()->cosmicDx();
+    _dz=GeomHandle<CosmicProductionPlane>()->cosmicDz();
+    _y0=GeomHandle<CosmicProductionPlane>()->cosmicOffsetY();
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {

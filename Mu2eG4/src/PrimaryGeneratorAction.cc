@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.30 2012/01/05 16:24:46 ehrlich Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.31 2012/01/06 23:28:27 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/01/05 16:24:46 $
+// $Date: 2012/01/06 23:28:27 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/ProductionTarget.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
 
 // ROOT includes
@@ -93,7 +92,6 @@ namespace mu2e {
     // Get the offsets to map from generator world to G4 world.
     G4ThreeVector const& mu2eOrigin                  = worldGeom->mu2eOriginInWorld();
     G4ThreeVector const& cosmicReferencePlane        = worldGeom->cosmicReferencePoint();
-    G4ThreeVector const& detectorSystemOrigin        = GeomHandle<DetectorSystem>()->getOrigin() +  mu2eOrigin;
     G4ThreeVector const& trackerOrigin               = GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() +  mu2eOrigin;
 
     GeomHandle<ProductionTarget> protonTarget;
@@ -130,7 +128,7 @@ namespace mu2e {
       } else if ( genpart.generatorId() == GenId::cosmicToy ||
                   genpart.generatorId() == GenId::cosmicDYB ||
                   genpart.generatorId() == GenId::cosmic ){
-        pos += G4ThreeVector(detectorSystemOrigin.x(), cosmicReferencePlane.y(), detectorSystemOrigin.z());
+        pos += cosmicReferencePlane;
       } else if ( genpart.generatorId() == GenId::primaryProtonGun ){
         pos = primaryProtonGunRotation*pos + primaryProtonGunOrigin;
         momentum = primaryProtonGunRotation*momentum;
