@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.1 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.2 2012/01/07 02:27:25 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/01/07 02:27:25 $
 //  
 //  
 
@@ -131,7 +131,7 @@ namespace mu2e {
   void
   MakeExtMonUCITofHits::produce(art::Event& event) {
 
-    if ( _diagLevel > 0 ) cout << "MakeExtMonUCITofHits: produce() begin event " << event.id() << endl;
+    if ( _diagLevel > 2 ) cout << "MakeExtMonUCITofHits: produce() begin event " << event.id() << endl;
 
     GeomHandle<WorldG4> worldGeom;
     _mu2eOrigin = worldGeom->mu2eOriginInWorld();
@@ -434,12 +434,12 @@ namespace mu2e {
         if( _diagLevel >= 3)
         {
           std::cout << " Step  : Id " << first_h.trackId() << " VolumeId " << first_h.volumeId() 
-                    << " position " << first_h.position() - _mu2eOrigin << " momentum " << first_h.momentum()
+                    << " position " << first_h.position() << " momentum " << first_h.momentum()
                     << std::endl;
         }
 
         trackId_int  = first_h.trackId().asInt();
-        position = first_h.position() - _mu2eOrigin;
+        position = first_h.position();
         momentum = first_h.momentum();
 
         art::Ptr<SimParticle> const& simp = first_h.simParticle();
