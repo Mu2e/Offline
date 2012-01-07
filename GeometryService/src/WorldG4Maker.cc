@@ -101,8 +101,7 @@ namespace mu2e {
     // Build the center for the cosmic ray production (in world coordinates) 
     // at the xz origin of the detector system and on top of the dirt body (incl. the dirt cap).
     CLHEP::Hep3Vector const& detectorSystemOriginInWorld = GeomHandle<DetectorSystem>()->getOrigin() + _wg4->_mu2eOriginInWorld;
-    _wg4->_cosmicReferencePoint = CLHEP::Hep3Vector(detectorSystemOriginInWorld.x(), yEverest, detectorSystemOriginInWorld.y());
-
+    _wg4->_cosmicReferencePoint = CLHEP::Hep3Vector(detectorSystemOriginInWorld.x(), yEverest, detectorSystemOriginInWorld.z());
     _wg4->_dirtG4Ymax = ySurface;
     _wg4->_dirtG4Ymin = yCeilingOutside;
 
