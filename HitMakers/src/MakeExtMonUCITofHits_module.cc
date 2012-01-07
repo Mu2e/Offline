@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.2 2012/01/07 02:27:25 mu2ecvs Exp $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.3 2012/01/07 02:44:06 mu2ecvs Exp $
 // $Author: mu2ecvs $
-// $Date: 2012/01/07 02:27:25 $
+// $Date: 2012/01/07 02:44:06 $
 //  
 //  
 
@@ -98,7 +98,6 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _mu2eOrigin;
     SimpleConfig const * _config;
-
 
     // Diagnostics level.
     int _diagLevel;
