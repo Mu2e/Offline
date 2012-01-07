@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_sim_01.fcl,v 1.1 2011/12/30 20:31:46 youzy Exp $
+# $Id: extmon_uci_sim_01.fcl,v 1.2 2012/01/07 02:50:50 youzy Exp $
 # $Author: youzy $
-# $Date: 2011/12/30 20:31:46 $
+# $Date: 2012/01/07 02:50:50 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -131,6 +131,6 @@ physics.producers.CaloReadoutHitsMaker.diagLevel : 0
 physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
 physics.producers.CaloCrystalHitsMaker.diagLevel : 0
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
-physics.producers.ExtMonUCITofHitsMaker.diagLevel : 0
+physics.producers.ExtMonUCITofHitsMaker.diagLevel : 3
 physics.producers.ExtMonUCITofHitsMaker.maxFullPrint : 11
 

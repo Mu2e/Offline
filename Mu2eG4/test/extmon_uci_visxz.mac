@@ -1,9 +1,9 @@
 #
 # Macro file for setting up the graphics scene and the verbosity level: "xz" view.
 #
-# $Id: extmon_uci_visxz.mac,v 1.3 2011/12/30 20:31:46 youzy Exp $
+# $Id: extmon_uci_visxz.mac,v 1.4 2012/01/07 02:50:50 youzy Exp $
 # $Author: youzy $
-# $Date: 2011/12/30 20:31:46 $
+# $Date: 2012/01/07 02:50:50 $
 #
 # Original author KLG
 #
@@ -13,29 +13,28 @@
 #
 /control/verbose 0
 /run/verbose 0
-/vis/open OGLIX 1200x800-0+0
+/vis/open OGLIX 1300x800-0+0
 /vis/viewer/set/background white ! ! 0.01
-#/vis/viewer/set/viewpointThetaPhi 90 89.9 deg
-/vis/viewer/set/viewpointThetaPhi 90 0 deg
+#/vis/viewer/set/viewpointThetaPhi 90 90.1 deg
+/vis/viewer/set/viewpointThetaPhi 90 180 deg
 /vis/disable
 /vis/scene/create
 #draw wold begin
-/vis/viewer/zoom 2
-/vis/scene/add/volume world
-/vis/scene/add/axes      0 -6270 -21729 3000 mm
+#/vis/viewer/zoom 2
+#/vis/scene/add/volume world
+#/vis/scene/add/axes      0 -7150 6439.09 3000 mm
 #draw world end
 #draw extmon_uci begin
-#
 #draw particle generated from PS
-#/vis/viewer/panTo 3 -2
+#/vis/viewer/panTo -3 -2
 #/vis/viewer/zoom 2.5
 #
 #draw extmon_uci only
-#/vis/viewer/panTo 5.4 -4
-#/vis/viewer/zoom 5.0
+/vis/viewer/panTo 0 0 
+/vis/viewer/zoom 1.5
 #
-#/vis/scene/add/volume ExtMonUCI
-#/vis/scene/add/axes       0 0 0 4000 mm
+/vis/scene/add/volume ExtMonUCI
+/vis/scene/add/axes    3870 -6250 -8239.91 1000 mm
 #draw extmon_uci end
 /vis/scene/add/trajectories
 /vis/sceneHandler/attach

@@ -94,15 +94,21 @@ namespace mu2e {
       }
 
       G4Box *colOuter = new G4Box(colInfo[iCol].name+"_Outer", colOuterParams[0], colOuterParams[1], colOuterParams[2]);
-      G4Box *colInner = new G4Box(colInfo[iCol].name+"_Inner", colInnerParams[0], colInnerParams[1], colInnerParams[2]);
+      G4Box *colInner = new G4Box(colInfo[iCol].name+"_Inner", colInnerParams[0], colInnerParams[1], colInnerParams[2]*1.2);
+      // The scale 1.2 is to make sure collimator hole fully cut after rotation
+      G4ThreeVector colHoleOriginLocal = det.col(iCol)->holeOriginLocal();
+      G4RotationMatrix *colHoleRot = new G4RotationMatrix();
+      *colHoleRot = det.col(iCol)->holeRotation();
+      
       colInfo[iCol].solid = new G4SubtractionSolid(colInfo[iCol].name,
                                                    colOuter,
                                                    colInner,
-                                                   0,
-                                                   G4ThreeVector(0, 0, 0));
+                                                   colHoleRot,
+                                                   colHoleOriginLocal);
+
+      G4ThreeVector colOriginLocal = det.col(iCol)->originLocal();
       G4RotationMatrix *colRot = new G4RotationMatrix();
       *colRot = det.col(iCol)->rotation();
-      G4ThreeVector colOriginLocal = det.col(iCol)->originLocal();
 
       int nestVerbosity = 0;
       if (verbosity >= 2) nestVerbosity = 1;
@@ -147,7 +153,8 @@ namespace mu2e {
       }
 
       G4Box *magOuter = new G4Box(magInfo[iMag].name+"_Outer", magOuterParams[0], magOuterParams[1], magOuterParams[2]);
-      G4Box *magInner = new G4Box(magInfo[iMag].name+"_Inner", magInnerParams[0], magInnerParams[1], magInnerParams[2]);
+      G4Box *magInner = new G4Box(magInfo[iMag].name+"_Inner", magInnerParams[0], magInnerParams[1], magInnerParams[2]*1.2);
+      // The scale 1.2 is to make sure magnet hole fully cut after rotation
       magInfo[iMag].solid = new G4SubtractionSolid(magInfo[iMag].name,
                                                    magOuter,
                                                    magInner,

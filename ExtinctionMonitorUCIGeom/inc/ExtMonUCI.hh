@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCI.hh,v 1.2 2011/12/27 21:53:01 youzy Exp $
+// $Id: ExtMonUCI.hh,v 1.3 2012/01/07 02:50:50 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/27 21:53:01 $
+// $Date: 2012/01/07 02:50:50 $
 
 #ifndef EXTMONUCI_HH
 #define EXTMONUCI_HH
@@ -50,6 +50,7 @@ namespace mu2e {
       int nCols() const { return _nCols; }
       const vector<double>& colOuterHalfLengths() const { return _colOuterHalfLengths; }
       const vector<double>& colInnerHalfLengths() const { return _colInnerHalfLengths; }
+      const vector<double>& colPosition()  const { return _colPosition; }
       const vector<double>& colPosition1() const { return _colPosition1; }
       const vector<double>& colPosition2() const { return _colPosition2; }
       const ExtMonCol* col(unsigned int iCol) const; 
@@ -99,6 +100,7 @@ namespace mu2e {
       int _nCols;
       std::vector<double> _colOuterHalfLengths;
       std::vector<double> _colInnerHalfLengths;
+      std::vector<double> _colPosition;
       std::vector<double> _colPosition1;
       std::vector<double> _colPosition2;
       std::vector<ExtMonCol> _cols;

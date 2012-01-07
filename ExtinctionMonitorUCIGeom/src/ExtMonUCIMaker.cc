@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCIMaker.cc,v 1.2 2011/12/27 21:53:01 youzy Exp $
+// $Id: ExtMonUCIMaker.cc,v 1.3 2012/01/07 02:50:50 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/27 21:53:01 $
+// $Date: 2012/01/07 02:50:50 $
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 
@@ -31,6 +31,7 @@ namespace mu2e {
       _det->_nCols = config.getInt("extmon_uci.nCols");
       config.getVectorDouble("extmon_uci.colOuterHalfLengths", _det->_colOuterHalfLengths, _det->_nCols*3);
       config.getVectorDouble("extmon_uci.colInnerHalfLengths", _det->_colInnerHalfLengths, _det->_nCols*3);
+      config.getVectorDouble("extmon_uci.colPosition",  _det->_colPosition, _det->_nCols*3);
       config.getVectorDouble("extmon_uci.colPosition1", _det->_colPosition1, _det->_nCols*3);
       config.getVectorDouble("extmon_uci.colPosition2", _det->_colPosition2, _det->_nCols*3);
 
@@ -62,13 +63,18 @@ namespace mu2e {
 
         col._position1 = CLHEP::Hep3Vector(_det->_colPosition1[3*iCol], _det->_colPosition1[3*iCol+1], _det->_colPosition1[3*iCol+2]);
         col._position2 = CLHEP::Hep3Vector(_det->_colPosition2[3*iCol], _det->_colPosition2[3*iCol+1], _det->_colPosition2[3*iCol+2]);
-        //cout << "pos1 " << col._position1 << endl;
-        //cout << "pos2 " << col._position2 << endl;
+        col._origin    = CLHEP::Hep3Vector(_det->_colPosition[3*iCol],  _det->_colPosition[3*iCol+1],  _det->_colPosition[3*iCol+2]);
+        col._originLocal = _det->mu2eToExtMonPoint(col._origin);
+        //cout << "pos1   " << col._position1 << endl;
+        //cout << "pos2   " << col._position2 << endl;
+        //cout << "origin " << col._origin  << endl;
 
-        col._origin = 0.5*(col._position1 + col._position2);
-        col._originLocal = _det->mu2eToExtMonPoint(col._origin); 
-        //cout << "origin " << col._origin << endl;
-        //cout << "originLocal " << col._originLocal << endl;
+        col._holeOrigin = 0.5*(col._position1 + col._position2);
+        col._holeOriginLocal = col._holeOrigin - col._origin; 
+        //cout << "holeOrigin " << col._holeOrigin << endl;
+        //cout << "holeOriginLocal " << col._holeOriginLocal << endl;
+
+        col._rotation = CLHEP::HepRotation::IDENTITY;
 
         const CLHEP::Hep3Vector interZ(0.0, col._position1.y()-col._position2.y(), col._position1.z()-col._position2.z());
         const CLHEP::Hep3Vector newY = interZ.cross( CLHEP::Hep3Vector(1.0, 0.0, 0.0) ).unit();
@@ -76,10 +82,10 @@ namespace mu2e {
                                                    col._position1.y() - col._position2.y(),
                                                    col._position1.z() - col._position2.z()).unit();
         const CLHEP::Hep3Vector newX = newY.cross(newZ);
-        col._rotation = CLHEP::HepRotation::IDENTITY;
-        col._rotation.rotateAxes( newX, newY, newZ );
-        col._rotation.invert(); 
-        //col._rotation.print(cout);
+        col._holeRotation = CLHEP::HepRotation::IDENTITY;
+        col._holeRotation.rotateAxes( newX, newY, newZ );
+        col._holeRotation.invert(); 
+        //col._holeRotation.print(cout);
 
         for (int iDim = 0; iDim < 3; iDim++)
         {

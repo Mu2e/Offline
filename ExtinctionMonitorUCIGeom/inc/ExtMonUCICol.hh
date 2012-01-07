@@ -1,9 +1,9 @@
 //
 // Hold information about one Collimator in Extinction Monitor.
 //
-// $Id: ExtMonUCICol.hh,v 1.2 2011/12/28 00:25:05 youzy Exp $
+// $Id: ExtMonUCICol.hh,v 1.3 2012/01/07 02:50:50 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/28 00:25:05 $
+// $Date: 2012/01/07 02:50:50 $
 //
 
 #ifndef ExtMonUCICol_hh
@@ -41,6 +41,10 @@ namespace mu2e {
       const CLHEP::Hep3Vector&  originLocal() const { return _originLocal; }
       const CLHEP::HepRotation& rotation()    const { return _rotation; }
 
+      const CLHEP::Hep3Vector&  holeOrigin()      const { return _holeOrigin; }
+      const CLHEP::Hep3Vector&  holeOriginLocal() const { return _holeOriginLocal; }
+      const CLHEP::HepRotation& holeRotation()    const { return _holeRotation; }
+
       const std::vector<double>& paramsOuter() const { return _paramsOuter; }
       const std::vector<double>& paramsInner() const { return _paramsInner; }
 
@@ -54,6 +58,10 @@ namespace mu2e {
       CLHEP::Hep3Vector   _origin;
       CLHEP::Hep3Vector   _originLocal;
       CLHEP::HepRotation  _rotation;
+
+      CLHEP::Hep3Vector   _holeOrigin;
+      CLHEP::Hep3Vector   _holeOriginLocal;
+      CLHEP::HepRotation  _holeRotation;
 
       std::vector<double> _paramsOuter;
       std::vector<double> _paramsInner;
