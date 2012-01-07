@@ -1,28 +1,32 @@
 
-  $Id: v1_1_4.txt,v 1.18 2012/01/07 02:55:21 youzy Exp $
-  $Author: youzy $
-  $Date: 2012/01/07 02:55:21 $
+  $Id: v1_1_4.txt,v 1.19 2012/01/07 20:37:55 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/01/07 20:37:55 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_4
+
+23) January 7, 2011 youzy
+    Filters/src/MinimumHits_module.cc
+      - Fixed instance name of the extinction monitor StepPointMC collection.
 
 22) January 6, 2011 youzy
     Change Extinction Monitor UCI collimator and shielding shapes.
 
 21) January 6, 2011 ehrlich
     Created the CosmicProductionPlane class (and the associated
-    CosmicProductionPlaneMaker) which is put into the map of detector 
-    elements in GeometryService_service, and is accessible via GeomHandle. 
-    This class stores the parameters for the plane in which the cosmic 
-    rays are produced, i.e. the halfwidths of the production plane in x 
-    and z direction, and the offset in y direction with respect to the 
-    "cosmic reference point" (see below). This class sets default values 
-    which can be used for the CosmicToy generator. If the DYB model is 
-    used instead of the toy model, these values are changed according to 
-    the entries in the generator's configuration file. The cosmic ray 
-    generators use these values to produce events. 
-    
+    CosmicProductionPlaneMaker) which is put into the map of detector
+    elements in GeometryService_service, and is accessible via GeomHandle.
+    This class stores the parameters for the plane in which the cosmic
+    rays are produced, i.e. the halfwidths of the production plane in x
+    and z direction, and the offset in y direction with respect to the
+    "cosmic reference point" (see below). This class sets default values
+    which can be used for the CosmicToy generator. If the DYB model is
+    used instead of the toy model, these values are changed according to
+    the entries in the generator's configuration file. The cosmic ray
+    generators use these values to produce events.
+
     The WorldG4Maker calculates the y position of the highest point of the
     detector, i.e. the top of the dirt body + dirt cap. This y coordinate 
     and the xz position of the center of the detector system is used as 
