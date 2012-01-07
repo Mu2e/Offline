@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.11 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: ReadBack_module.cc,v 1.12 2012/01/07 02:25:51 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/01/07 02:25:51 $
 //
 // Original author Rob Kutschke
 //
@@ -348,10 +348,10 @@ namespace mu2e {
 
     // ExtMonUCI Tof ntuple.
     _ntupExtMonUCITof = tfs->make<TNtuple>( "ntupExtMonUCITof", "Extinction Monitor UCI Tof Hits",
-                                   "evt:stId:segId:t:edep:x:y:z");
+                                   "run:evt:stId:segId:t:edep:x:y:z");
     
     _ntupExtMonUCITofMC = tfs->make<TNtuple>( "ntupExtMonUCITofMC", "Extinction Monitor UCI Tof Hits MC Truth",
-                                   "evt:stId:segId:t:edep:trk:pdgId:x:y:z:px:py:pz:vx:vy:vz:vpx:vpy:vpz:vt:primary:otrk:opdgId:ox:oy:oz:opx:opy:opz:ot");
+                                   "run:evt:stId:segId:t:edep:trk:pdgId:x:y:z:px:py:pz:vx:vy:vz:vpx:vpy:vpz:vt:primary:otrk:opdgId:ox:oy:oz:opx:opy:opz:ot");
     
   }
 
@@ -1345,7 +1345,12 @@ namespace mu2e {
     //art::ServiceHandle<GeometryService> geom;
     //if( ! geom->hasElement<Calorimeter>() ) return;
     //GeomHandle<Calorimeter> cg;
-      
+
+    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){    
+      cout << "EVENT " << event.id().run() << " subRunID " << event.id().subRun() << " event " << event.id().event() << endl; 
+      cout << " time " << event.time().value() << endl;
+    }
+
     if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<tofHits->size(); ++i ) {
         ExtMonUCITofHit const & hit = (*tofHits).at(i);
@@ -1362,7 +1367,7 @@ namespace mu2e {
       
       
     // ntuple buffer.
-    float nt[_ntupCRV->GetNvar()];
+    float nt[_ntupExtMonUCITof->GetNvar()];
       
     // Loop over all hits.
     for ( size_t i=0; i<tofHits->size(); ++i ){
@@ -1371,22 +1376,23 @@ namespace mu2e {
       const ExtMonUCITofHit& hit = (*tofHits)[i];
 
       // Fill the ntuple.
-      nt[ 0] = event.id().event();
-      nt[ 1] = hit.stationId();
-      nt[ 2] = hit.segmentId();    
-      nt[ 3] = hit.time();
-      nt[ 4] = hit.energyDep();       
+      nt[ 0] = event.id().run();
+      nt[ 1] = event.id().event();
+      nt[ 2] = hit.stationId();
+      nt[ 3] = hit.segmentId();    
+      nt[ 4] = hit.time();
+      nt[ 5] = hit.energyDep();       
       CLHEP::Hep3Vector const &  mid = extMonUCI->tof(hit.stationId(), hit.segmentId())->origin();
-      nt[ 5] = mid.x();
-      nt[ 6] = mid.y();
-      nt[ 7] = mid.z();
+      nt[ 6] = mid.x();
+      nt[ 7] = mid.y();
+      nt[ 8] = mid.z();
              
       _ntupExtMonUCITof->Fill(nt); 
              
     }        
             
     // ntuple buffer.              
-    float ntmc[_ntupCRV->GetNvar()];
+    float ntmc[_ntupExtMonUCITofMC->GetNvar()];
              
     // Loop over all hits.
     for ( size_t i=0; i<tofMC->size(); ++i ){
@@ -1395,36 +1401,37 @@ namespace mu2e {
       const ExtMonUCITofHitMCTruth& hit = (*tofMC)[i];
   
       // Fill the ntuple.
-      ntmc[ 0] = event.id().event();
-      ntmc[ 1] = hit.stationId();
-      ntmc[ 2] = hit.segmentId();
-      ntmc[ 3] = hit.time();
-      ntmc[ 4] = hit.energyDep();
-      ntmc[ 5] = hit.trackId();
-      ntmc[ 6] = hit.pdgId();
-      ntmc[ 7] = hit.position().x();
-      ntmc[ 8] = hit.position().y();
-      ntmc[ 9] = hit.position().z();
-      ntmc[10] = hit.momentum().x();
-      ntmc[11] = hit.momentum().y();
-      ntmc[12] = hit.momentum().z();
-      ntmc[13] = hit.vertex().x();
-      ntmc[14] = hit.vertex().y();
-      ntmc[15] = hit.vertex().z();
-      ntmc[16] = hit.vertexMomentum().x();
-      ntmc[17] = hit.vertexMomentum().y();
-      ntmc[18] = hit.vertexMomentum().z();
-      ntmc[19] = hit.vertexTime();
-      ntmc[20] = hit.isPrimary();
-      ntmc[21] = hit.orgTrackId();
-      ntmc[22] = hit.orgPdgId();
-      ntmc[23] = hit.orgVertex().x();
-      ntmc[24] = hit.orgVertex().y();
-      ntmc[25] = hit.orgVertex().z();
-      ntmc[26] = hit.orgVertexMomentum().x();
-      ntmc[27] = hit.orgVertexMomentum().y();
-      ntmc[28] = hit.orgVertexMomentum().z();
-      ntmc[29] = hit.orgTime();
+      ntmc[ 0] = event.id().run();
+      ntmc[ 1] = event.id().event();
+      ntmc[ 2] = hit.stationId();
+      ntmc[ 3] = hit.segmentId();
+      ntmc[ 4] = hit.time();
+      ntmc[ 5] = hit.energyDep();
+      ntmc[ 6] = hit.trackId();
+      ntmc[ 7] = hit.pdgId();
+      ntmc[ 8] = hit.position().x();
+      ntmc[ 9] = hit.position().y();
+      ntmc[10] = hit.position().z();
+      ntmc[11] = hit.momentum().x();
+      ntmc[12] = hit.momentum().y();
+      ntmc[13] = hit.momentum().z();
+      ntmc[14] = hit.vertex().x();
+      ntmc[15] = hit.vertex().y();
+      ntmc[16] = hit.vertex().z();
+      ntmc[17] = hit.vertexMomentum().x();
+      ntmc[18] = hit.vertexMomentum().y();
+      ntmc[19] = hit.vertexMomentum().z();
+      ntmc[20] = hit.vertexTime();
+      ntmc[21] = hit.isPrimary();
+      ntmc[22] = hit.orgTrackId();
+      ntmc[23] = hit.orgPdgId();
+      ntmc[24] = hit.orgVertex().x();
+      ntmc[25] = hit.orgVertex().y();
+      ntmc[26] = hit.orgVertex().z();
+      ntmc[27] = hit.orgVertexMomentum().x();
+      ntmc[28] = hit.orgVertexMomentum().y();
+      ntmc[29] = hit.orgVertexMomentum().z();
+      ntmc[30] = hit.orgTime();
 
       _ntupExtMonUCITofMC->Fill(ntmc);
 
