@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.3 2012/01/07 02:44:06 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/01/07 02:44:06 $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.4 2012/01/07 02:48:49 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/01/07 02:48:49 $
 //  
 //  
 
@@ -124,7 +124,6 @@ namespace mu2e {
   };
 
   void MakeExtMonUCITofHits::beginJob(){
-
   }
 
   void
