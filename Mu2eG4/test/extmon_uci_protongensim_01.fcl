@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_protongensim_01.fcl,v 1.1 2011/12/30 20:31:46 youzy Exp $
-# $Author: youzy $
-# $Date: 2011/12/30 20:31:46 $
+# $Id: extmon_uci_protongensim_01.fcl,v 1.2 2012/01/07 02:29:19 mu2ecvs Exp $
+# $Author: mu2ecvs $
+# $Date: 2012/01/07 02:29:19 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -22,6 +22,8 @@ source :
 {
   module_type : EmptyEvent
   maxEvents : 100
+  firstRun  : 33
+  numberEventsInRun : 1000000
 }
 
 services :
@@ -135,3 +137,4 @@ physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
 physics.producers.ExtMonUCITofHitsMaker.diagLevel : 1
 physics.producers.ExtMonUCITofHitsMaker.maxFullPrint : 11
 
+source.firstRun : 978
