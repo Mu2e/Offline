@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.6 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: MinimumHits_module.cc,v 1.7 2012/01/07 20:36:08 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/07 20:36:08 $
 //
 // Contact person Rob Kutschke.
 //
@@ -98,7 +98,7 @@ namespace mu2e {
     foilStepPoints_(pset.get<string>("foilStepPoints","stoppingtarget")),
     crvStepPoints_(pset.get<string>("CRVStepPoints","CRV")),
     vDetStepPoints_(pset.get<string>("vDetStepPoints","virtualdetector")),
-    extMonUCITofStepPoints_(pset.get<string>("extMonUCITofStepPoints","extinctionmonitorTof")),
+    extMonUCITofStepPoints_(pset.get<string>("extMonUCITofStepPoints","ExtMonUCITof")),
     hNstrawHits_(0),
     hNcrystalHits_(0),
     hEDep_(0),
