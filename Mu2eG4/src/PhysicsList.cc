@@ -5,9 +5,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.8 2011/05/18 14:21:44 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/18 14:21:44 $
+// $Id: PhysicsList.cc,v 1.9 2012/01/08 17:56:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/08 17:56:23 $
 //
 // Original author Rob Kutschke
 //
@@ -161,7 +161,6 @@ namespace mu2e{
 
     if (!( _config->getBool("mu2eReflection",false))) {
       // Loop over all defined particle types.
-      //      cout << "defining physics processes" << endl; assert (2==1);
       theParticleIterator->reset();
       while( (*theParticleIterator)() ){
 
