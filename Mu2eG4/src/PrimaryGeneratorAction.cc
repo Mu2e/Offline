@@ -4,16 +4,15 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.31 2012/01/06 23:28:27 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/01/06 23:28:27 $
+// $Id: PrimaryGeneratorAction.cc,v 1.32 2012/01/08 17:51:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/08 17:51:23 $
 //
 // Original author Rob Kutschke
 //
 
 // C++ includes
 #include <iostream>
-//#include <cassert>
 #include <stdexcept>
 
 // Framework includes

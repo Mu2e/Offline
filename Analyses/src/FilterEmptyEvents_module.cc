@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.7 2011/10/28 18:47:06 greenc Exp $
-$Author: greenc $
-$Date: 2011/10/28 18:47:06 $
+$Id: FilterEmptyEvents_module.cc,v 1.8 2012/01/08 17:51:23 kutschke Exp $
+$Author: kutschke $
+$Date: 2012/01/08 17:51:23 $
 
 Original author Giovanni Onorato
 
@@ -18,7 +18,6 @@ Original author Giovanni Onorato
 -----------------------------------------------------------*/
 
 // C++ includes
-#include <cassert>
 #include <iostream>
 #include <stdexcept>
 #include <string>

@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.30 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: G4_module.cc,v 1.31 2012/01/08 17:51:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/08 17:51:23 $
 //
 // Original author Rob Kutschke
 //
@@ -27,7 +27,6 @@
 
 // C++ includes.
 #include <iostream>
-#include <cassert>
 #include <stdexcept>
 #include <string>
 #include <vector>
