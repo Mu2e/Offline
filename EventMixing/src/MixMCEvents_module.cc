@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.7 2011/12/19 17:47:52 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.8 2012/01/08 17:50:19 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/12/19 17:47:52 $
+// $Date: 2012/01/08 17:50:19 $
 //
 // Contact person Rob Kutschke.
 //
@@ -82,11 +82,7 @@
 //    objects but those objects end up in the MixingSUmmary, so there is no real problem.
 //
 // 8) Todo:
-//    When we commit for  v0_7_16:
-//     - remove test for valid art version.
-//
 //    When art v1_0_0 is available
-//     - remove hack and its calls
 //     - add extra argument to the mixOp for StatusG4.
 //     - Get scale factor from the event.
 //
@@ -108,7 +104,6 @@
 #include "art/Framework/Core/PtrRemapper.h"
 #include "art/Persistency/Common/CollectionUtilities.h"
 #include "art/Utilities/InputTag.h"
-#include "art/Version/GetReleaseVersion.h"
 
 // Includes from the art tool chain.
 #include "cetlib/map_vector.h"
@@ -222,11 +217,6 @@ private:
 
   // Parse the parameter set to learn which StepPointMCCollections to mix.
   std::vector<mu2e::StepInstanceName> chooseStepInstances( fhicl::ParameterSet const& pset);
-
-  // A hack that will be needed until the mixing template is fixed.
-  // Skip events if the actual number of mix-in events is different than the
-  // requested number.
-  bool hack( size_t );
 
 };
 
@@ -386,13 +376,6 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   simOffsets_(),
   summary_(0){
 
-  // This happens to work.  It can go away when the hack calls go away.
-  std::string version = art::getReleaseVersion();
-  if ( version == "v0_07_13") {
-    throw cet::exception("RANGE")
-      << "Event mixing requires art version v0_07_16 or higher.\n";
-  }
-
   // Declare new products produced directly by this class.
   helper.produces<mu2e::MixingSummary>();
 
@@ -425,21 +408,6 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
       &MixMCEventsDetail::mixStatusG4, *this );
 
 } // end mu2e::MixMCEventsDetail::MixMCEventsDetail
-
-// If we should skip this event because nSecondaries returned 0, then
-// return true; otherwise return false.
-//  This can go away after we require art v0_1_16.
-bool mu2e::MixMCEventsDetail::hack ( size_t n ){
-  if ( n != actual_ ){
-    cerr << "Skipping mixOp at event: "
-         << evtCount_  << " : "
-         << n          << " "
-         << actual_
-         << endl;
-    return true;
-  }
-  return false;
-}
 
 // Initialize state for each event,
 void
@@ -489,9 +457,6 @@ mixGenParticles( std::vector< mu2e::GenParticleCollection const *> const& in,
                  mu2e::GenParticleCollection&                             out,
                  art::PtrRemapper const & ){
 
-
-  if ( hack(in.size()) ) return true;
-
   getSizes( in, summary_->genSizes() );
 
   // There are no Ptr's to update; just need to flatten.
@@ -506,7 +471,6 @@ mixSimParticles( std::vector< mu2e::SimParticleCollection const *> const &in,
                  mu2e::SimParticleCollection&                             out,
                  art::PtrRemapper const &remap){
 
-  if ( hack(in.size()) ) return true;
   if ( in.empty()      ) return true;
 
   getDeltas( in, summary_->simDeltas() );
@@ -589,8 +553,6 @@ mixStepPointMCs( std::vector< mu2e::StepPointMCCollection const *> const &in,
 
   ++stepCollectionCount_;
 
-  if ( hack(in.size()) ) return true;
-
   StepInstanceName instance(stepInstances_.at(stepCollectionCount_));
   getSizes( in, summary_->stepSizes(instance.id()) );
 
@@ -635,8 +597,6 @@ mu2e::MixMCEventsDetail::
 mixPointTrajectories( std::vector< mu2e::PointTrajectoryCollection const *> const &in,
                       mu2e::PointTrajectoryCollection&                             out,
                       art::PtrRemapper const &remap){
-
-  if  ( hack(in.size()) ) return true;
 
   getDeltas( in, summary_->pointTrajectoryDeltas() );
 
@@ -691,8 +651,6 @@ mu2e::MixMCEventsDetail::
 mixStatusG4( std::vector< mu2e::StatusG4 const *> const &in,
              mu2e::StatusG4&                             dummy,
              art::PtrRemapper const& ){
-
-  if  ( hack(in.size()) ) return false;
 
   // Ignore the output argument in the function signtature; instead
   // copy the input information into two data members of the MixingSummary product.
