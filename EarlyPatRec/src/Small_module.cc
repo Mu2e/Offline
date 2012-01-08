@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: Small_module.cc,v 1.12 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: Small_module.cc,v 1.13 2012/01/08 17:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/08 17:52:03 $
 //
 // Original author: Mark Fischler
 //
@@ -213,7 +213,7 @@ namespace mu2e {;
     vector<double> tanTau_cluster;          // attack angle of path to panel
     vector<double> tanTheta_cluster;        // helix pitch
 
-    double  edep[36] ;
+    //double  edep[36] ;
     int nhitdev[36];
     CLHEP::Hep3Vector  MCPoint[36];
 
@@ -293,7 +293,7 @@ namespace mu2e {;
                 // calculate the average hit position of track at a plane
                 for (int idev = 0; idev < 36 ; idev++) {
                   nhitdev[idev] = 0 ;
-                  edep[idev] = 0.0 ;
+                  //edep[idev] = 0.0 ;
                   MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
                 }
                 for ( size_t associatedHit=0; associatedHit<infos.size(); ++associatedHit) // Loop over associated Hits
