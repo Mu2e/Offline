@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.111 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: Mu2eWorld.cc,v 1.112 2012/01/10 22:28:43 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/01/10 22:28:43 $
 //
 // Original author Rob Kutschke
 //
@@ -117,6 +117,7 @@
 #include "G4SimpleHeum.hh"
 #include "G4HelixImplicitEuler.hh"
 #include "G4HelixSimpleRunge.hh"
+#include "G4GDMLParser.hh"
 
 #include "Mu2eG4/inc/DSField.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
@@ -247,6 +248,13 @@ namespace mu2e {
     constructStepLimiters();
     if ( _config->getBool("hasITracker",false) ) {
             constructITStepLimiters();
+    }
+
+    // Write out mu2e geometry into a gdml file.
+    if ( _config->getBool("writeGDML",false) ) {
+      string gdmlFileName = _config->getString("GDMLFileName","mu2e.gdml");
+      G4GDMLParser parser;
+      parser.Write(gdmlFileName, worldVInfo.logical);
     }
 
     return worldVInfo.physical;

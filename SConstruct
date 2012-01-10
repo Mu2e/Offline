@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.30 2011/12/27 17:06:26 gandr Exp $
-# $Author: gandr $
-# $Date: 2011/12/27 17:06:26 $
+# $Id: SConstruct,v 1.31 2012/01/10 22:28:43 mu2ecvs Exp $
+# $Author: mu2ecvs $
+# $Date: 2012/01/10 22:28:43 $
 #
 # Original author Rob Kutschke.
 #
@@ -37,6 +37,8 @@ mesfac_inc     = os.environ['MESSAGEFACILITY_INC']
 mesfac_lib     = os.environ['MESSAGEFACILITY_LIB']
 cetlib_inc     = os.environ['CETLIB_INC']
 cetlib_lib     = os.environ['CETLIB_LIB']
+xercesc_inc    = os.environ['XERCES_C_INC']
+xercesc_root   = os.environ['XERCESCROOT']
 
 # If we are working in a test release, extract more information from the environment.
 if os.environ.has_key('MU2E_TEST_RELEASE'):
@@ -71,6 +73,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              libsigcpp_inc+'/sigc++-2.0',
                              libsigcpp_lib+'/sigc++-2.0/include',
                              root_inc,
+                             xercesc_inc,
                            ],
                    LIBPATH=[ libpath_frag,
                              base+'/lib',
@@ -86,6 +89,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              libsigcpp_lib,
                              root_sys+'/lib',
                              '/lib', '/usr/X11R6/lib',
+                             xercesc_root+'/lib',
                            ],
                    ENV=osenv,
                    FORTRAN = 'gfortran'

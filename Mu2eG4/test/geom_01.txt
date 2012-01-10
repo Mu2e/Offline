@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.110 2011/12/31 05:56:20 mu2ecvs Exp $
+// $Id: geom_01.txt,v 1.111 2012/01/10 22:28:43 mu2ecvs Exp $
 // $Author: mu2ecvs $
-// $Date: 2011/12/31 05:56:20 $
+// $Date: 2012/01/10 22:28:43 $
 //
 // Original author Rob Kutschke
 //
@@ -21,6 +21,10 @@ bool hasBeamline        = true;
 bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now
 bool hasCosmicRayShield = true;
 bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(Steel) & NeutronAbsorber
+
+// Write mu2e geometry into a GDML file
+bool   writeGDML        = false;
+string GDMLFileName     = "mu2e.gdml";  
 
 // Uncomment exactly one tracker.
 #include "Mu2eG4/test/ttracker_v2.txt"
