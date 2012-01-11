@@ -26,6 +26,17 @@ makeSH :
   maxFullPrint         : 0
 }
 
+
+# Form DCHHits (DcH).
+makeDcH :
+{
+  module_type          : MakeDriftCellHit
+  g4ModuleLabel        : g4run
+  seed                 : [7790]
+  diagLevel            : 0
+  maxFullPrint         : 0
+}
+
 # Form CaloHits (APD hits)
 CaloReadoutHitsMaker :
 {
