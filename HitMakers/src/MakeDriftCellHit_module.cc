@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.10 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: MakeDriftCellHit_module.cc,v 1.11 2012/01/13 11:02:56 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/01/13 11:02:56 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -88,6 +88,10 @@ namespace mu2e {
       _driftVelocity(pset.get<double>("driftVelocity",0.035/*0.05*/)),   // mm/ns
       _driftSigma(pset.get<double>("driftSigma",0.2/*0.1*/)),          // mm
       _minimumTimeGap(pset.get<double>("minimumTimeGap",500.0/*100.0*/)),// ns depends by the cell dimension it will change after
+      _nzHittingZone(pset.get<int>("nzHittingZone",1)),
+      _zZoneLimits(pset.get< vector<double> >("zZoneLimits")),
+      _zZoneActive(pset.get< vector<bool> >("zZoneActive")),
+      _zZoneMinLiveTime(pset.get< vector<double> >("zZoneMinLiveTime")),
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
 
       // Random number distributions
@@ -99,6 +103,9 @@ namespace mu2e {
       produces<StrawHitCollection>();
       produces<StrawHitMCTruthCollection>();
       produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
+
+      if ( _nzHittingZone>1 ) _zHittingZonePresent=true;
+      else _zHittingZonePresent=false;
 
     }
     virtual ~MakeDriftCellHit() { }
@@ -127,6 +134,11 @@ namespace mu2e {
     double _driftVelocity;
     double _driftSigma;
     double _minimumTimeGap;
+    int    _nzHittingZone;
+    bool   _zHittingZonePresent;
+    std::vector<double> _zZoneLimits;
+    std::vector<bool>   _zZoneActive;
+    std::vector<double> _zZoneMinLiveTime;
     string _g4ModuleLabel;  // Name of the module that made these hits.
 
     // Random number distributions
@@ -143,7 +155,7 @@ namespace mu2e {
 
   void
   MakeDriftCellHit::produce(art::Event& event) {
-
+    //cout<<"Event "<<event.event()<<endl;
     if ( _diagLevel > 0 ) cout << "MakeDriftCellHit: produce() begin" << endl;
 
     static int ncalls(0);
@@ -242,6 +254,36 @@ namespace mu2e {
         double length  = hit.stepLength();
         double edep    = hit.totalEDep();
         double hitTime = hit.time();
+
+        bool skip_hit;
+        //cout<<"hit Z "<<pos.getZ()<<" time "<<hitTime<<endl;
+        if (_zHittingZonePresent) {
+                int izZone;
+                izZone=_nzHittingZone-1;
+                if ( pos.getZ()<=_zZoneLimits.at(0) ) {
+                        //cout<<"In zone 1"<<endl;
+                        if ( _zZoneActive.at(0) ) {
+                                if ( hitTime<_zZoneMinLiveTime.at(0) ) { /*cout<<"skipped"<<endl;*/ continue; }
+                        } else { /*cout<<"skipped"<<endl;*/ continue; }
+                } else if ( pos.getZ()>_zZoneLimits.at(izZone-1) ) {
+                        //cout<<"In zone "<<_nzHittingZone<<endl;
+                        if ( _zZoneActive.at(izZone) ) {
+                                if ( hitTime<_zZoneMinLiveTime.at(izZone) ) { /*cout<<"skipped"<<endl;*/ continue; }
+                        } else { /*cout<<"skipped"<<endl;*/ continue; }
+                } else {
+                        skip_hit = false;
+                        for ( izZone=1; izZone<_nzHittingZone-1; izZone++ ) {
+                                if ( pos.getZ()>_zZoneLimits.at(izZone-1) && pos.getZ()<=_zZoneLimits.at(izZone) ) {
+                                        //cout<<"In zone "<<izZone+1<<endl;
+                                        if ( _zZoneActive.at(izZone) ) {
+                                                if ( hitTime<_zZoneMinLiveTime.at(izZone) ) { skip_hit = true; break; }
+                                        } else { skip_hit = true; break; }
+                                }
+                        }
+                        if (skip_hit) { /*cout<<"skipped"<<endl;*/ continue; }
+                }
+
+        }
 
         if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
           cout << "MakeDriftCellHit: Hit #" << i << " : length=" << length
