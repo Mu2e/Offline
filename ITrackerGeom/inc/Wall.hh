@@ -13,6 +13,7 @@ namespace mu2e {
 class Wall{
 
         friend class ITrackerMaker;
+        friend class ITrackerBuilder;
 
 public:
 

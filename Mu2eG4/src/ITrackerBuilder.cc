@@ -174,8 +174,32 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 //                }
 
                 double outerWallInnerRadius;
+                double innerWallOuterRadius;
+                double planeEndCapThikness;
+                bool   reshapeWall=false;
 
                 multimap<Wall::Walltype,boost::shared_ptr<Wall> >::iterator walls_it;
+                for ( walls_it=itracker->getWalls()->begin() ; walls_it != itracker->getWalls()->end(); walls_it++ ) {
+                        boost::shared_ptr<Wall> iwall = walls_it->second;
+                        if (iwall->getType() == Wall::outer) outerWallInnerRadius = iwall->getRmin();
+                        else if (iwall->getType() == Wall::inner) innerWallOuterRadius = iwall->getRmax();
+                        else if (iwall->getType() == Wall::endcap) {
+                                if ( itracker->endcapType() == ITracker::Plane ) {
+                                        reshapeWall=true;
+                                        planeEndCapThikness=2.0*iwall->getDz();
+                                }
+                        }
+                }
+                if (reshapeWall) {
+                        for ( walls_it=itracker->getWalls()->begin() ; walls_it != itracker->getWalls()->end(); walls_it++ ) {
+                                boost::shared_ptr<Wall> iwall = walls_it->second;
+                                if (iwall->getType() == Wall::outer || iwall->getType() == Wall::inner) iwall->_pDz+=planeEndCapThikness;
+                                else if (iwall->getType() == Wall::endcap) {
+                                        iwall->_pRmin=innerWallOuterRadius;
+                                        iwall->_pRmax=outerWallInnerRadius;
+                                }
+                        }
+                }
                 for ( walls_it=itracker->getWalls()->begin() ; walls_it != itracker->getWalls()->end(); walls_it++ ) {
                         VolumeInfo WallInfo;
                         boost::shared_ptr<Wall> iwall = walls_it->second;
@@ -187,7 +211,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         trackerInfo.logical,             // its mother  volume
                                         false,                           // no boolean operations
                                         0);                              // copy number
-                        if (iwall->getType() == Wall::outer) outerWallInnerRadius = iwall->getRmin();
+                        //if (iwall->getType() == Wall::outer) outerWallInnerRadius = iwall->getRmin();
                 }
 
                 for (int iSl = 0; iSl < itracker->nSuperLayers(); iSl++){
@@ -366,29 +390,42 @@ VolumeInfo ITrackerBuilder::buildWall(Wall *wall, ITracker::EnCapType endcapType
                 char tShapeName[50], tVolName[50];
                 double oldRadius = wall->getRmin();
                 double iRadius = oldRadius;
+                double iZpos=-wall->getDz();
+                double iHalfThickness=0.0;
 
                 for (int ishell=0; ishell<nSub; ishell++){
                         sprintf(tShapeName,"%s_sub%i",shapeName,ishell);
                         sprintf(tVolName,"%s_sub%i",volName,ishell);
                         iRadius+=wall->getThicknesses()->at(ishell);
                         G4VSolid *tswall;
-                        if (wall->getType()==Wall::endcap && endcapType == ITracker::Spherical ) {
-                                tswall = new G4Sphere( tShapeName,oldRadius,iRadius,wall->getSPhi(),wall->getDPhi(),wall->getSTheta(),wall->getDTheta() );
+                        if (wall->getType()==Wall::endcap ){
+                                if ( endcapType == ITracker::Spherical ) {
+                                        tswall = new G4Sphere( tShapeName,oldRadius,iRadius,wall->getSPhi(),wall->getDPhi(),wall->getSTheta(),wall->getDTheta() );
+                                        //          cout<<tShapeName<<" "<<oldRadius<<" "<<iRadius<<" "<<length<<" "<<wall->getMaterialsName()->at(ishell)<<endl;
+                                        oldRadius=iRadius;
+                                        iZpos=0.0;
+                                } else if ( endcapType == ITracker::Plane ) {
+                                        iHalfThickness=wall->getThicknesses()->at(ishell)*0.5;
+                                        iZpos+=iHalfThickness;
+                                        tswall = new G4Tubs(tShapeName,wall->getRmin(),wall->getRmax(),iHalfThickness,wall->getSPhi(),wall->getDPhi() );
+                                }
                         } else {
                                 tswall = new G4Tubs(tShapeName,oldRadius,iRadius,wall->getDz(),wall->getSPhi(),wall->getDPhi() );
+                                oldRadius=iRadius;
+                                iZpos=0.0;
                         }
-                        //          cout<<tShapeName<<" "<<oldRadius<<" "<<iRadius<<" "<<length<<" "<<wall->getMaterialsName()->at(ishell)<<endl;
-                        oldRadius=iRadius;
+
 
                         G4LogicalVolume *tlogicwall = new G4LogicalVolume(tswall,findMaterialOrThrow(wall->getMaterialsName()->at(ishell).c_str()),tVolName,0,0,0);
                         G4VPhysicalVolume *tphyswall = new G4PVPlacement(0,
-                                        G4ThreeVector(0,0,0),
+                                        G4ThreeVector(0,0,iZpos),
                                         tlogicwall,       // its logical volume
                                         tVolName,         // its name
                                         wallInfo.logical, // its mother  volume
                                         false,            // no boolean operations
                                         0);               // copy number
                         tphyswall->GetCopyNo(); //just to remove the warning during compiling
+                        iZpos+=iHalfThickness;
                 }
 
         }
