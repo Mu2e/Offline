@@ -4,9 +4,9 @@
 //
 // Compute mean, RMS and some other stats about a set of numbers.
 //
-// $Id: RMS.hh,v 1.1 2011/12/16 23:13:14 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/12/16 23:13:14 $
+// $Id: RMS.hh,v 1.2 2012/01/13 19:19:16 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/01/13 19:19:16 $
 //
 // Contact person Rob Kutschke
 //
@@ -47,11 +47,11 @@ class RMS{
   double errorMean( int npar = 1 ) const;
   double errorRMS ( int npar = 1 ) const;
 
-  // Accumulate one entry.
-  void accumulate ( double x ){
-    ++n_;
-    sum_   += x;
-    sumsq_ += x*x;
+  // Accumulate one or several identical entries
+  void accumulate ( double x, unsigned count = 1 ){
+    n_ += count;
+    sum_   += count * x;
+    sumsq_ += count * x*x;
   }
 
   // Clear all entries.
