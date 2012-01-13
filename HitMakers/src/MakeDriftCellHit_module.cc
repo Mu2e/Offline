@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.11 2012/01/13 11:02:56 tassiell Exp $
+// $Id: MakeDriftCellHit_module.cc,v 1.12 2012/01/13 12:53:21 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/01/13 11:02:56 $
+// $Date: 2012/01/13 12:53:21 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -342,7 +342,7 @@ namespace mu2e {
 
         const double signalVelocity = 299.792458; // mm/ns
 
-        double driftTime = (hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
+        double driftTime = fabs(hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
         double distanceToMiddle = (hit_pca-mid).dot(w);
         double hit_t1 = t0 + hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
         //double hit_t2 = -9999.9;//t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
