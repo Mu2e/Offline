@@ -10,6 +10,7 @@
 #include "EventDisplayFrame.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "HepPID/ParticleName.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
@@ -21,6 +22,10 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Straw.h"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
+#include "ITrackerGeom/inc/SuperLayer.hh"
+#include "ITrackerGeom/inc/Cell.hh"
+#include "ITrackerGeom/inc/CellGeometryHandle.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "Track.h"
 #include "TrackColorSelector.h"
@@ -35,6 +40,8 @@
 #include <TMath.h>
 #include <TView.h>
 #include <TGraphErrors.h>
+
+#include <boost/shared_array.hpp>
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;
@@ -244,6 +251,116 @@ void DataInterface::fillGeometry()
     infoToyDS->setText(3,c);
     boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0,
                                                zHalfLength,innerRadius,outerRadius, NAN, 
+                                               _geometrymanager, _topvolume, _mainframe, infoToyDS, true));
+    _components.push_back(shapeToyDS);
+    _otherstructures.push_back(shapeToyDS);
+  } else if(geom->hasElement<mu2e::ITracker>()) {
+//Cells
+    //mu2e::GeomHandle<mu2e::ITracker> itracker;
+
+    const mu2e::Tracker& tracker = mu2e::getTrackerOrThrow();
+    const mu2e::ITracker &itracker = static_cast<const mu2e::ITracker&>( tracker );
+
+    double zoff = itracker.z0()-config.getDouble("mu2e.detectorSystemZ0");
+
+    mu2e::CellGeometryHandle *itwp = itracker.getCellGeometryHandle();
+
+    const boost::shared_array<mu2e::SuperLayer> sprlr=itracker.getSuperLayersArray();
+    for ( int iS=0; iS<itracker.nSuperLayers(); iS++) {
+            for ( int iL=0; iL<sprlr[iS].nLayers(); iL++ ) {
+                    boost::shared_ptr<mu2e::ITLayer> ilr = sprlr[iS].getLayer(iL);
+                    for ( int iC=0; iC<ilr->nCells(); iC++ ) {
+                            mu2e::Cell *s = ilr->getCell(iC).get();
+
+                            int idLayer =  s->Id().getLayer();
+                            itwp->SelectCell(iS,idLayer,iC);
+
+                            const CLHEP::Hep3Vector& p = itwp->GetWireCenter(); //s->getMidPoint();
+                            const CLHEP::Hep3Vector& d = itwp->GetWireDirection(); //s->getDirection();
+                            double x = p.x();
+                            double y = p.y();
+                            double z = p.z()+zoff;
+                            double theta = d.theta();
+                            double phi = d.phi();
+                            double l = s->getHalfLength();
+                            int index = itwp->computeDet(iS,idLayer,iC); //s->index().asInt();
+
+                            char c[200];
+                            sprintf(c,"Cell %i  Layer %i  SuperLayer %i",iC,idLayer,iS);
+                            boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+                            info->setName(c);
+                            info->setText(0,c);
+                            boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info, false));
+                            _components.push_back(shape);
+                            _straws[index]=shape;
+                    }
+            }
+    }
+/*
+//Support Structure
+    double innerRadius=itracker.getSupportParams().innerRadius();
+    double outerRadius=itracker.getSupportParams().outerRadius();
+    double zHalfLength=itracker.getTrackerEnvelopeParams().zHalfLength();
+    findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
+    findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
+
+    char c[200];
+    boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+    sprintf(c,"TTracker Support Structure");
+    info->setName(c);
+    info->setText(0,c);
+    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
+    info->setText(1,c);
+    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
+    info->setText(2,c);
+    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
+    info->setText(3,c);
+    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0,
+                                          zHalfLength,innerRadius,outerRadius, NAN,
+                                          _geometrymanager, _topvolume, _mainframe, info, true));
+    _components.push_back(shape);
+    _supportstructures.push_back(shape);
+*/
+//Envelope
+    double innerRadius=itracker.r0();//getTrackerEnvelopeParams().innerRadius();
+    double outerRadius=itracker.rOut();//getTrackerEnvelopeParams().outerRadius();
+    double zHalfLength=itracker.maxEndCapDim();
+
+    char c[200];
+    boost::shared_ptr<ComponentInfo> infoEnvelope(new ComponentInfo());
+    sprintf(c,"ITracker Envelope");
+    infoEnvelope->setName(c);
+    infoEnvelope->setText(0,c);
+    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
+    infoEnvelope->setText(1,c);
+    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
+    infoEnvelope->setText(2,c);
+    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %f mm",zoff);
+    infoEnvelope->setText(3,c);
+    boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,zoff, 0,0,0,
+                                                  zHalfLength,innerRadius,outerRadius, NAN,
+                                                  _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
+    _components.push_back(shapeEnvelope);
+    _supportstructures.push_back(shapeEnvelope);
+
+//ToyDS
+    innerRadius=config.getDouble("toyDS.rIn");
+    outerRadius=config.getDouble("toyDS.rOut");
+    zHalfLength=config.getDouble("toyDS.halfLength");
+    double z=config.getDouble("toyDS.z0")+_zOffset;
+
+    boost::shared_ptr<ComponentInfo> infoToyDS(new ComponentInfo());
+    sprintf(c,"Toy DS");
+    infoToyDS->setName(c);
+    infoToyDS->setText(0,c);
+    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
+    infoToyDS->setText(1,c);
+    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
+    infoToyDS->setText(2,c);
+    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
+    infoToyDS->setText(3,c);
+    boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0,
+                                               zHalfLength,innerRadius,outerRadius, NAN,
                                                _geometrymanager, _topvolume, _mainframe, infoToyDS, true));
     _components.push_back(shapeToyDS);
     _otherstructures.push_back(shapeToyDS);

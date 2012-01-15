@@ -21,6 +21,7 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
   else
   {
     entry=_hitBox->FindEntry("StrawHit:makeSH:");
+    if(entry==NULL) entry=_hitBox->FindEntry("StrawHit:makeDcH:");
     if(entry!=NULL) _hitBox->Select(entry->EntryId());
   }
 
