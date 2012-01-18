@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.13 2011/12/14 19:52:13 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2011/12/14 19:52:13 $
+// $Id: KalFitMC.cc,v 1.14 2012/01/18 01:25:16 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/01/18 01:25:16 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -264,7 +264,7 @@ namespace mu2e
     if(_trkdiag == 0)createTrkDiag();
 // TrkRecoTrk only has primitive t0 information: FIXME!!
     _t00 = _t0 = mytrk.trackT0();
-    _t00err = _t0err = -1;
+    _t00err = _t0err = mytrk.trackT0err();
 // no information on iterations either!
     _nt0iter = _nweediter = -1;
 // fetch the KalRep from the track
@@ -409,9 +409,17 @@ namespace mu2e
     _bremsesum = 0.0;
     _bremsemax = 0.0;
     _bremsz = _trkminz;
+    bool parent(false);
     for ( SimParticleCollection::const_iterator isp = _mcdata._simparts->begin();
 	isp != _mcdata._simparts->end(); ++isp ){
       SimParticle const& sp = isp->second;
+// find info of conversion at production
+      if(!parent && sp.id() == trkid){
+	_mcmom = sp.startMomentum().vect().mag();
+	_mccost = sp.startMomentum().vect().cosTheta();
+	_mct0 = sp.startGlobalTime();
+	parent = true;
+      }
 // find photons with parent = the conversion electron created by brems
       if(sp.parent() != 0 && sp.parent()->id() == trkid && sp.pdgId() == PDGCode::gamma  && sp.creationCode() == ProcessCode::eBrem){
 	CLHEP::Hep3Vector pos = det->toDetector(sp.startPosition());
@@ -517,6 +525,10 @@ namespace mu2e
     _trkdiag->Branch("seedmom",&_seedmom,"seedmom/F");
    _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
     _trkdiag->Branch("fiterr",&_fiterr,"d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
+// mc info at production
+    _trkdiag->Branch("mccost",&_mccost,"mccost/F");
+    _trkdiag->Branch("mct0",&_mct0,"mct0/F");
+    _trkdiag->Branch("mcmom",&_mcmom,"mcmom/F");
 // mc info at tracker entrance and midplane
     _trkdiag->Branch("mcentpar",&_mcentpar,"mcentd0/F:mcentp0/F:mcentom/F:mcentz0/F:mcenttd/F");
     _trkdiag->Branch("mcentt0",&_mcentt0,"mcentt0/F");

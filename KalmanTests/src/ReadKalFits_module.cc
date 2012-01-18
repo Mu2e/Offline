@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.3 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: ReadKalFits_module.cc,v 1.4 2012/01/18 01:25:16 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/01/18 01:25:16 $
 //
 // Original author Rob Kutschke
 //
@@ -86,7 +86,9 @@ namespace mu2e {
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadKalFits::analyze(const art::Event& event) {
-
+      
+    _kfitmc.findMCData(event);
+ 
     // Get handle to calorimeter hit collection.
     art::Handle<TrkRecoTrkCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,trksHandle);
@@ -100,8 +102,7 @@ namespace mu2e {
       TrkRep const* trep = trk.getRep(PdtPid::electron);
       if ( !trep ) continue;
 
-      _kfitmc.findMCData(event);
-      _kfitmc.trkDiag(trk);
+     _kfitmc.trkDiag(trk);
  
 
       // For some quantities you require the concrete representation, not
@@ -113,6 +114,11 @@ namespace mu2e {
       _hfitCL->Fill(trep->chisqConsistency().likelihood() );
       _hChisq->Fill(trep->chisqConsistency().chisqValue() );
 
+    }
+// if there are no tracks, enter dummies
+    if(trks.size() == 0){
+      TrkKalFit dummy;
+      _kfitmc.trkDiag(dummy);
     }
   }
 

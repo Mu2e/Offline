@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.14 2011/09/27 21:49:09 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/09/27 21:49:09 $
+// $Id: KalFit.cc,v 1.15 2012/01/18 01:25:16 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/01/18 01:25:16 $
 //
 
 // the following has to come before other BaBar includes
@@ -390,6 +390,7 @@ namespace mu2e
 	}
 // reset t0
         myfit._t0.setT0(t0,t0err);
+	if(myfit._trk != 0)myfit._trk->resetT0(t0,t0err);
 // reset all the hit times
         for(std::vector<TrkStrawHit*>::iterator ihit= myfit._hits.begin();ihit != myfit._hits.end(); ihit++){
           TrkStrawHit* hit = *ihit;

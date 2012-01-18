@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.9 2011/11/15 12:06:54 brownd Exp $
+// $Id: KalFitMC.hh,v 1.10 2012/01/18 01:25:16 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/11/15 12:06:54 $
+// $Date: 2012/01/18 01:25:16 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -183,6 +183,7 @@ namespace mu2e
     Float_t _t00err;
     Float_t _t0;
     Float_t _t0err;
+    Float_t _mct0;
     Float_t _mcentt0;
     Float_t _mcmidt0;
     Int_t _nhits;
@@ -196,6 +197,8 @@ namespace mu2e
     Float_t _fitcon;
     Float_t _fitmom;
     Float_t _fitmomerr;
+    Float_t _mcmom;
+    Float_t _mccost;
     Float_t _mcentmom;
     Float_t _mcmidmom;
     Float_t _seedmom;
