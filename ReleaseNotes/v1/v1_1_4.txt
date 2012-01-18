@@ -1,15 +1,13 @@
 
-  $Id: v1_1_4.txt,v 1.21 2012/01/10 22:28:43 mu2ecvs Exp $
-  $Author: mu2ecvs $
-  $Date: 2012/01/10 22:28:43 $
-
- Still under construction
+  $Id: v1_1_4.txt,v 1.22 2012/01/18 23:06:17 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/01/18 23:06:17 $
 
            Release notes for Mu2e Offline software, v1_1_4
 
 26) January 10, 2012 youzy
     Add a function to write mu2e G4 geometry into a GDML file.
-    The output file can be viewed by a simple macro Mu2eG4/test/mu2e_gdml.C 
+    The output file can be viewed by a simple macro Mu2eG4/test/mu2e_gdml.C
 
 25) January 8, 2012 kutschke
     EventMixing/src/MixMCEvents_module.cc
@@ -42,37 +40,37 @@
     generators use these values to produce events.
 
     The WorldG4Maker calculates the y position of the highest point of the
-    detector, i.e. the top of the dirt body + dirt cap. This y coordinate 
-    and the xz position of the center of the detector system is used as 
-    "cosmic reference point". The cosmic ray generators produce the events 
-    in a plane which is centered at (0,y_offset,0). In 
-    PrimaryGeneratorAction, a coordinate transformation for all generated 
-    cosmic rays is done, which shifts (0,0,0) to the "cosmic reference 
-    point". 
+    detector, i.e. the top of the dirt body + dirt cap. This y coordinate
+    and the xz position of the center of the detector system is used as
+    "cosmic reference point". The cosmic ray generators produce the events
+    in a plane which is centered at (0,y_offset,0). In
+    PrimaryGeneratorAction, a coordinate transformation for all generated
+    cosmic rays is done, which shifts (0,0,0) to the "cosmic reference
+    point".
 
-    The values of the CosmicProductionPlane class and the coordinates of 
-    the cosmic reference point are used in WorldG4Maker to check whether 
-    the production plane is within the world volume. If this is not the 
+    The values of the CosmicProductionPlane class and the coordinates of
+    the cosmic reference point are used in WorldG4Maker to check whether
+    the production plane is within the world volume. If this is not the
     case, it throws an exception.
 
     Modified Files:
-      EventGenerator/src/CosmicDYB.cc 
-      EventGenerator/src/CosmicToy.cc 
-      GeometryService/src/GeometryService_service.cc 
-      GeometryService/src/WorldG4Maker.cc 
-      Mu2eG4/src/PrimaryGeneratorAction.cc 
+      EventGenerator/src/CosmicDYB.cc
+      EventGenerator/src/CosmicToy.cc
+      GeometryService/src/GeometryService_service.cc
+      GeometryService/src/WorldG4Maker.cc
+      Mu2eG4/src/PrimaryGeneratorAction.cc
     Added Files:
-      GeometryService/inc/CosmicProductionPlane.hh 
-      GeometryService/src/CosmicProductionPlane.cc 
-      GeometryService/src/CosmicProductionPlaneMaker.hh 
+      GeometryService/inc/CosmicProductionPlane.hh
+      GeometryService/src/CosmicProductionPlane.cc
+      GeometryService/src/CosmicProductionPlaneMaker.hh
 
     Parts of the changes in (20) are obsolete.
 
 20) January 5, 2012 ehrlich
     -Added a function in GeometryService/inc/DetectorSystem.hh to get
      the origin of the detector system.
-    -Changed Mu2eG4/src/PrimaryGeneratorAction.cc to position the center 
-     of the cosmic ray production at the xz origin of the detector system 
+    -Changed Mu2eG4/src/PrimaryGeneratorAction.cc to position the center
+     of the cosmic ray production at the xz origin of the detector system
      and on top of the dirt body (incl. the dirt cap).
 
 19) December 30, 2011 youzy
@@ -166,16 +164,16 @@
    implementation for the moment.
 
 6) December 6, 2011 gandr
-   
+
    Reduce the amount of volatile information (timestamps, object
    addresses) printed out to make diffing log files easier.
 
 5) December 6, 2011 gandr
 
    Don't store local offsets in CosmicRayShieldGeom.  It is sufficient
-   to know position in mu2e coordinates and parent.centerInMu2e() to 
+   to know position in mu2e coordinates and parent.centerInMu2e() to
    place a volume.  This change decouples CosmicRayShieldGeom from
-   Mu2eBuilding geometry and will let remove the notion of hallCenter 
+   Mu2eBuilding geometry and will let remove the notion of hallCenter
    from the latter.
 
 4) November 23, 2011 gandr
@@ -197,7 +195,7 @@
    Make dirt behave correctly under world size changes.
 
 2) November 23, 2011 gandr
-   
+
    SConstruct: don't require SCONS_DIR to be set - it is not useful for the build.
 
 1) November 19, 2011 kutschke
