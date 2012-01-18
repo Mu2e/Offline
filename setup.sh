@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.37 2011/11/19 16:57:02 kutschke Exp $
+# $Id: setup.sh,v 1.38 2012/01/18 23:08:20 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/11/19 16:57:02 $
+# $Date: 2012/01/18 23:08:20 $
 #
 # Original author Rob Kutschke
 #
@@ -44,7 +44,7 @@ export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
 echo "MU2E_SEACH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Setup the framework and its dependent products
-setup art v1_00_06 -qmu2e:prof
+setup art v1_00_08 -qmu2e:prof
 
 # Geant4 and its cross-section files.
 setup geant4 v4_9_4_p02 -qgcc46:prof
