@@ -126,3 +126,101 @@ void KalFitTrk (TTree* trks ) {
   fcan->cd(4);
   chisq->Draw();
 }
+
+KalFitAcc(TTree* trks) {
+  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
+  TH1F* pcost = new TH1F("pcost","e^{-} cos(#theta) at production",105,-1.02,1.02);
+  TH1F* pcosta = new TH1F("pcosta","e^{-} cos(#theta) at production",105,-1.02,1.02);
+  pcosta->SetLineColor(kBlue);
+
+  TCut hittrk("mcentmom>0.0");
+  TCut pitch("mcenttd/sqrt(1+mcenttd^2)>0.5&&mcenttd/sqrt(1+mcenttd^2)<0.707107");
+  TCut mom("mcentmom>102");
+  TCut reco("fitstatus>0");
+  TCut goodfit("fitcon>1e-2&&nactive>=25");
+
+  trks->Project("pcost","mccost");
+  trks->Project("pcosta","mccost",hittrk);
+//  pcosta->Divide(pcost);
+
+  TH1F* dcost = new TH1F("dcost","e^{-} cos(#theta) at tracker",105,0,1.02);
+  TH1F* dmom = new TH1F("dmom","e^{-} momentum at tracker",100,90,108);
+  TH1F* rmom = new TH1F("rmom","recsonstructed e^{-} momentum",100,90,108);
+  TH1F* fitcon = new TH1F("fitcon","fit consistency",205,-0.01,1.01);
+  TH1F* acc = new TH1F("acc","Acceptance",6,-0.5,5.5);
+  acc->GetXaxis()->SetBinLabel(1,"All");
+  acc->GetXaxis()->SetBinLabel(2,"Reaches Tracker");
+  acc->GetXaxis()->SetBinLabel(3,"Pitch");
+  acc->GetXaxis()->SetBinLabel(4,"Momentum");
+  acc->GetXaxis()->SetBinLabel(5,"Reconstructed");
+  acc->GetXaxis()->SetBinLabel(6,"Fit Quality");
+
+  trks->Project("dcost","mcenttd/sqrt(1+mcenttd^2)",hittrk);
+  trks->Project("dmom","mcentmom",hittrk+pitch);
+  trks->Project("fitcon","fitcon",hittrk+pitch+mom+reco);
+  trks->Project("rmom","fitmom",hittrk+pitch+mom+reco+goodfit);
+//  trks->Project("+fitcon","-0.05",hittrk+pitch+mom+"fitstatus<0");
+
+  trks->Project("acc","0.0");
+  trks->Project("+acc","1.0",hittrk);
+  trks->Project("+acc","2.0",hittrk+pitch);
+  trks->Project("+acc","3.0",hittrk+pitch+mom);
+  trks->Project("+acc","4.0",hittrk+pitch+mom+reco);
+  trks->Project("+acc","5.0",hittrk+pitch+mom+reco+goodfit);
+
+  acan->Clear();
+  acan->Divide(3,2);
+  acan->cd(1);
+  pcost->Draw();
+  pcosta->Draw("same");
+  acan->cd(2);
+  dcost->Draw();
+  TLine* costcut_h = new TLine(0.707107,0.0,0.707107,dcost->GetMaximum());
+  costcut_h->SetLineColor(kBlack);
+  costcut_h->SetLineStyle(2);
+  costcut_h->SetLineWidth(2);
+  TLine* costcut_l = new TLine(0.5,0.0,0.5,dcost->GetMaximum());
+  costcut_l->SetLineColor(kBlack);
+  costcut_l->SetLineStyle(2);
+  costcut_l->SetLineWidth(2);
+  costcut_h->Draw();
+  costcut_l->Draw();
+  acan->cd(3);
+  dmom->Draw();
+  TLine* momcut_l = new TLine(102,0.0,102,dmom->GetMaximum());
+  momcut_l->SetLineColor(kBlack);
+  momcut_l->SetLineStyle(2);
+  momcut_l->SetLineWidth(2);
+  momcut_l->Draw();
+  
+  acan->cd(4);
+  fitcon->Draw();
+  TLine* concut_l = new TLine(1e-2,0.0,1e-2,fitcon->GetMaximum());
+  concut_l->SetLineColor(kBlack);
+  concut_l->SetLineStyle(2);
+  concut_l->SetLineWidth(2);
+  concut_l->Draw();
+ 
+  acan->cd(5);
+  rmom->Draw();
+
+  acan->cd(6);
+  acc->Draw();
+
+  double all = acc->GetBinContent(1);
+  double reach = acc->GetBinContent(2)/all;
+  double gpitch = acc->GetBinContent(3)/all;
+  double gmom = acc->GetBinContent(4)/all;
+  double greco = acc->GetBinContent(5)/all;
+  double good = acc->GetBinContent(6)/all;
+
+
+  cout << "Acceptance: Reach tracker " << reach
+  << " Pitch " << gpitch
+  << " Momentum " << gmom
+  << " Reconstruction " << greco
+  << " Fit Quality " << good << std::endl;
+
+
+
+}
