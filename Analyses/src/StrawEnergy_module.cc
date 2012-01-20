@@ -1,9 +1,9 @@
 //
 //  Study energy desposited in straws 
 //
-// $Id: StrawEnergy_module.cc,v 1.1 2012/01/20 19:18:19 brownd Exp $
+// $Id: StrawEnergy_module.cc,v 1.2 2012/01/20 20:03:26 brownd Exp $
 // $Author: 
-// $Date: 2012/01/20 19:18:19 $
+// $Date: 2012/01/20 20:03:26 $
 //
 // Original author David Brown
 //
@@ -13,10 +13,12 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TTree.h"
 #include "TBranch.h"
@@ -42,8 +44,7 @@ namespace mu2e {
 
   private:
     int _diagLevel;
-    std::string _g4ModuleLabel;
-    std::string _trackerStepPoints;
+    std::string _makerModuleLabel;
     TTree* _estraw;
 // branch variables
     Int_t _device, _sector, _layer, _straw;
@@ -59,8 +60,7 @@ namespace mu2e {
   StrawEnergy::StrawEnergy(fhicl::ParameterSet const& pset) :
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _g4ModuleLabel(pset.get<string>("g4ModuleLabel","g4run")),
-    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker"))
+    _makerModuleLabel(pset.get<string>("makerModuleLabel","makeSH"))
   {
 
   }
@@ -87,18 +87,30 @@ namespace mu2e {
   void StrawEnergy::analyze(const art::Event& event) {
     const Tracker& tracker = getTrackerOrThrow();
 
+    art::Handle<StrawHitCollection> pdataHandle;
+    event.getByLabel(_makerModuleLabel,pdataHandle);
+    StrawHitCollection const* hits = pdataHandle.product();
 
-    art::Handle<StepPointMCCollection> hits;
-    event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
+    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
+    event.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
+    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
+
     // Loop over all hits
     for ( size_t i=0; i<hits->size(); ++i ){
-      const StepPointMC& hit = (*hits)[i];
-      _energy = hit.eDep();
+
+      StrawHit const& hit(hits->at(i));
+      _energy = hit.energyDep();
       _time = hit.time();
-      // Get the hit information.
-      const CLHEP::Hep3Vector& pos = hit.position();
-      // Get the straw information:
-      const Straw&      straw = tracker.getStraw( hit.strawIndex() );
+      // Get the hit poosition information.  This requires MC truth
+      CLHEP::Hep3Vector pos;
+      PtrStepPointMCVector const&    mcptr(hits_mcptr->at(i));
+      for (size_t imc = 0; imc < mcptr.size(); ++imc) {
+        StepPointMC const& mchit = *mcptr[imc];
+	pos += mchit.position()*mchit.eDep();
+      }
+      pos /= hit.energyDep();
+      // Get the straw ation:
+      const Straw& straw = tracker.getStraw( hit.strawIndex() );
       _device = straw.id().getDevice();
       _sector = straw.id().getSector();
       _layer = straw.id().getLayer();
