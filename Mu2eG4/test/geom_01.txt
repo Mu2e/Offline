@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.111 2012/01/10 22:28:43 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/01/10 22:28:43 $
+// $Id: geom_01.txt,v 1.112 2012/01/21 20:47:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/21 20:47:16 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@ bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(S
 
 // Write mu2e geometry into a GDML file
 bool   writeGDML        = false;
-string GDMLFileName     = "mu2e.gdml";  
+string GDMLFileName     = "mu2e.gdml";
 
 // Uncomment exactly one tracker.
 #include "Mu2eG4/test/ttracker_v2.txt"
@@ -46,11 +46,11 @@ int g4.steppingActionMaxSteps = 10000;
 int g4.stepsSizeLimit = 10000;
 int g4.particlesSizeLimit = 10000;
 
-// If the following number is not zero, G4 will kill all particles alive 
+// If the following number is not zero, G4 will kill all particles alive
 // at that time.
 double g4.steppingActionMaxGlobalTime = 0; //ns
 
-// The information (location, momentum) of all particles will be 
+// The information (location, momentum) of all particles will be
 // recorded in the output files for particular moments in time
 //vector<double> g4.steppingActionTimeVD = { 500, 700, 1000 }; //ns
 
@@ -121,7 +121,7 @@ bool g4.forceAuxEdgeVisible = true;
 bool g4.doSurfaceCheck = false;
 
 // The world volume should enclose the everything.
-// The margins are 
+// The margins are
 double world.margin.top = 3398; // above the dirt cap
 double world.margin.bottom = 0; // below the bottom of the hall floor
 double world.margin.xmin = 10400; // outsize of the hall walls
@@ -437,17 +437,17 @@ int detSolFieldForm = 1;
 // Value of the uniform magnetic field with the DS volume.
 double toyDS.bz            = 1.0;
 
-// Gradient of field in DS2 volume. Applied only in the case 
+// Gradient of field in DS2 volume. Applied only in the case
 // of detSolFieldForm=1 or detSolFieldForm=2.
 double toyDS.gradient      = 0.0; // Tesla/m
 
 // This is recommended field map. See geom_mecofield.txt to use the meco field.
 string bfield.format  = "G4BL";
 vector<string> bfield.files = {
-  "BFieldMaps/Mau5/Mu2e_DSMap.header",
-  "BFieldMaps/Mau5/Mu2e_PSMap.header",
-  "BFieldMaps/Mau5/Mu2e_TSuMap.header",
-  "BFieldMaps/Mau5/Mu2e_TSdMap.header"
+  "BFieldMaps/Mau7/Mu2e_DSMap.header",
+  "BFieldMaps/Mau7/Mu2e_PSMap.header",
+  "BFieldMaps/Mau7/Mu2e_TSuMap.header",
+  "BFieldMaps/Mau7/Mu2e_TSdMap.header"
 };
 
 // This scale factor is of limited use.
