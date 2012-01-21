@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.22 2011/12/16 23:12:30 kutschke Exp $
+// $Id: BFieldManagerMaker.cc,v 1.23 2012/01/21 20:46:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/12/16 23:12:30 $
+// $Date: 2012/01/21 20:46:57 $
 //
 
 // Includes from C++
@@ -57,7 +57,7 @@ namespace mu2e {
   }
 
   BFieldManagerMaker::BFieldManagerMaker( const SimpleConfig& config ):
-    _findConfig(),
+    _resolveFullPath(),
     _config(config),
     _bfmgr(new BFieldManager())
   {
@@ -111,6 +111,8 @@ namespace mu2e {
       if ( config.hasName("bfield.files") ){
         config.getVectorString("bfield.files",filesToLoad);
       } else {
+
+        // This form is deprecated.
         vector<string> keysToLoad;
         keysToLoad.push_back("bfield.dsFile");
         keysToLoad.push_back("bfield.psFile");
@@ -127,18 +129,17 @@ namespace mu2e {
         }
       }
 
+      bool writeBinaries = _config.getBool("bfield.writeG4BLBinaries", false);
       for( unsigned int i=0; i<filesToLoad.size(); ++i ) {
         string filename = filesToLoad[i];
         cout << "Read " << filename << endl;
         ostringstream mapkey;
         mapkey << "bfield" << i;
         loadG4BL( mapkey.str(),  filename  );
-        if( _config.getBool("bfield.writeG4BLBinaries", false) ){
+        if( writeBinaries ){
           writeG4BLBinary( i, mapkey.str() );
         }
       }
-
-      //throw cet::exception("GEOM") << "Temporal end." << "\n";
 
     } else {
 
@@ -198,86 +199,152 @@ namespace mu2e {
     //dsmap.print(std::cout);
   }
 
+  // Anonymous namespace to hold some helper functions
+  namespace {
+
+    // Helper function for parseG4BLHeader.
+    void fillGrid ( boost::cmatch const&  matches,
+                    std::vector<double>&  X0,
+                    std::vector<int>&     dim,
+                    std::vector<double>&  dX ){
+
+      for( int i=1; i<=3; i++ ) {
+        double value;
+        istringstream sin(string(matches[i].first, matches[i].second));
+        sin >> value;
+        X0.push_back(value);
+      }
+
+      for( int i=4; i<=6; i++ ) {
+        int value;
+        istringstream sin(string(matches[i].first, matches[i].second));
+        sin >> value;
+        dim.push_back(value);
+      }
+
+      for( int i=7; i<=9; i++ ) {
+        double value;
+        istringstream sin(string(matches[i].first, matches[i].second));
+        sin >> value;
+        dX.push_back(value);
+      }
+
+    } // end fillGrid
+
+    // Another helper function for parseG4BLHeader.
+    void fillOffset( boost::cmatch const&  matches,
+                     CLHEP::Hep3Vector&    offset ){
+
+      for( int i=1; i<=3; i++ ) {
+        double value;
+        istringstream sin(string(matches[i].first, matches[i].second));
+        sin >> value;
+        offset(i-1) = value;
+      }
+
+    } // end fillOffset
+
+    // Helper function for loadG4BL
+    // Parse the header section of a G4BL format .txt or .header file.
+    // First argument is an input argument, the others are output arguments.
+    void parseG4BLHeader( std::string const&   path,
+                          std::vector<double>& X0,
+                          std::vector<int>&    dim,
+                          std::vector<double>& dX,
+                          CLHEP::Hep3Vector&   offset ){
+
+      // The offset parameter is not present in files earlier than Mau7.
+      // The value set here is the correct value for all G4BL format files earlier than Mau7.
+      // For Mau7 and later, the file will contain a structured comment that contains the
+      // correct value.  If the structured comment is present in the file, let it define
+      // value of the offset;  if not, use the default given here.
+      static const CLHEP::Hep3Vector offsetDefault(-3904.0,0.0,7929.0);
+
+      // Open the input file.
+      if( path.empty())
+        throw "BFieldManagerMaker::loadG4BL: find_file failure!";  // TODO: improve exception
+      ifstream fin(path.c_str());
+      if ( !fin.is_open() ) {
+        throw cet::exception("GEOM")
+          << "Could not open file containing the magnetic field data. "
+          << "Filename: "
+          << path
+          << "\n";
+      }
+      boost::iostreams::filtering_istream in;
+      decompressFile(path,in);
+      in.push(fin);
+
+      // Regex to parse the string that contains the grid description
+      boost::regex reGrid("^\\s*grid"
+                          "\\s+X0=([eE\\d\\-\\+\\.]+)\\s+Y0=([eE\\d\\-\\+\\.]+)\\s+Z0=([eE\\d\\-\\+\\.]+)"
+                          "\\s+nX=([eE\\d\\-\\+\\.]+)\\s+nY=([eE\\d\\-\\+\\.]+)\\s+nZ=([eE\\d\\-\\+\\.]+)"
+                          "\\s+dX=([eE\\d\\-\\+\\.]+)\\s+dY=([eE\\d\\-\\+\\.]+)\\s+dZ=([eE\\d\\-\\+\\.]+)"
+                          ".*$");
+
+      // Regex to parse the string that contains the offset.
+      boost::regex reOffset("^\\s*#\\s+Origin\\s+shift\\s+for\\s+Mu2e:"
+                            "\\s+([eE\\d\\-\\+\\.]+)\\s+([eE\\d\\-\\+\\.]+)\\s+([eE\\d\\-\\+\\.]+)"
+                            ".*$");
+
+      // Search for the two lines of interest and, if present, extract their information.
+      string cbuf;
+      boost::cmatch matches;
+      bool gridFound(false);
+      bool offsetFound(false);
+      int nread=100;           // Safety - don't read more than 100 lines
+      while( (!in.eof()) && (--nread>0) ) {
+        getline(in,cbuf);
+        if( boost::regex_match(cbuf.c_str(),matches,reGrid) ) {
+          gridFound = true;
+          fillGrid( matches, X0, dim, dX);
+        }
+        if( boost::regex_match(cbuf.c_str(),matches,reOffset) ) {
+          offsetFound = true;
+          fillOffset( matches, offset );
+        }
+      }
+      in.pop();
+      fin.close();
+
+      // The grid description must be present.
+      if( ! gridFound ) {
+        throw cet::exception("GEOM")
+          << "Could not find param string in magnetic firld map. "
+          << "Filename: " << path
+          << ", found " << matches.size() << " items."
+          << "\n";
+      }
+
+      // The offset description is optional and has a default.
+      if ( !offsetFound ) offset = offsetDefault;
+
+      // Adjust the lower bounds of the grid.
+      X0[0] = X0[0] - offset.x();
+      X0[1] = X0[1] - offset.y();
+      X0[2] = X0[2] - offset.z();
+
+  } // end parseHeader
+
+
+  } // end anonymous namespace
+
   // Parse the config file to learn about one magnetic field map.
   // Create an empty map and call the code to load the map from the file.
   void BFieldManagerMaker::loadG4BL( const std::string& key,
                                      const std::string& filename ) {
 
-    // Open the input file.
-    string path(_findConfig(filename));
-    if( path.empty())
-      throw "BFieldManagerMaker::loadG4BL: find_file failure!";  // TODO: improve exception
-    ifstream fin(path.c_str());
-    if ( !fin.is_open() ) {
-      throw cet::exception("GEOM")
-        << "Could not open file containing the magnetic field data. "
-        << "Filename: "
-        << filename
-        << "\n";
-    }
-    boost::iostreams::filtering_istream in;
-    decompressFile(filename,in);
-    in.push(fin);
+    // Find the file under MU2E_SEARCH_PATH
+    string path(_resolveFullPath(filename));
 
-    // Parse the string with parameters
-    char cbuf[128];
-    boost::regex re("^\\s*grid"
-                    "\\s+X0=([eE\\d\\-\\+\\.]+)\\s+Y0=([eE\\d\\-\\+\\.]+)\\s+Z0=([eE\\d\\-\\+\\.]+)"
-                    "\\s+nX=([eE\\d\\-\\+\\.]+)\\s+nY=([eE\\d\\-\\+\\.]+)\\s+nZ=([eE\\d\\-\\+\\.]+)"
-                    "\\s+dX=([eE\\d\\-\\+\\.]+)\\s+dY=([eE\\d\\-\\+\\.]+)\\s+dZ=([eE\\d\\-\\+\\.]+)"
-                    ".*$");
-    boost::cmatch matches;
-    bool paramFound = false;
-    int nread=100; // Optimization - don't read more than 100 lines
-    while( (!in.eof()) && (--nread>0) ) {
-      in.getline(cbuf,128);
-      if( boost::regex_match(cbuf,matches,re) ) {
-        paramFound = true;
-        break;
-      }
-    }
-    in.pop();
-    fin.close();
-
-    if( ! paramFound ) {
-      throw cet::exception("GEOM")
-        << "Could not find param string in magnetic firld map. "
-        << "Filename: " << filename
-        << ", found " << matches.size() << " items."
-        << "\n";
-    }
-
+    // Extract information from the header.
     vector<double> X0;
-    vector<int> dim;
+    vector<int>    dim;
     vector<double> dX;
+    CLHEP::Hep3Vector G4BL_offset;
+    parseG4BLHeader( path, X0, dim, dX, G4BL_offset );
 
-    for( int i=1; i<=3; i++ ) {
-      double value;
-      istringstream sin(string(matches[i].first, matches[i].second));
-      sin >> value;
-      X0.push_back(value);
-    }
-
-    for( int i=4; i<=6; i++ ) {
-      int value;
-      istringstream sin(string(matches[i].first, matches[i].second));
-      sin >> value;
-      dim.push_back(value);
-    }
-
-    for( int i=7; i<=9; i++ ) {
-      double value;
-      istringstream sin(string(matches[i].first, matches[i].second));
-      sin >> value;
-      dX.push_back(value);
-    }
-
-    // Set the offset
-    CLHEP::Hep3Vector G4BL_offset(-3904.0,0.0,7929.0);
-    X0[0] = X0[0] - G4BL_offset.x();
-    X0[1] = X0[1] - G4BL_offset.y();
-    X0[2] = X0[2] - G4BL_offset.z();
-
+    // Extract information from the run-time configuration.
     double scaleFactor(_config.getDouble("bfield.scaleFactor",1.0));
 
     // Create an empty map.
@@ -293,9 +360,9 @@ namespace mu2e {
                     X0[1],X0[1]+(dim[1]-1)*dX[1],
                     X0[2],X0[2]+(dim[2]-1)*dX[2]);
 
-    // Fill the map.
+    // Fill the map from the disk file.
     if ( filename.find(".header") != string::npos ) {
-      readG4BLBinary( filename, dsmap, G4BL_offset );
+      readG4BLBinary( filename, dsmap );
     } else {
       readG4BLMap( filename, dsmap, G4BL_offset );
     }
@@ -320,7 +387,7 @@ namespace mu2e {
                                        BFMap& bfmap ){
 
     // Open the input file.
-    string path(_findConfig(filename));
+    string path(_resolveFullPath(filename));
     if( path.empty())
       throw "BFieldManagerMaker::readGMCMap: find_file failure!";  // TODO: improve exception
     int fd = open( path.c_str(), O_RDONLY );
@@ -475,29 +542,13 @@ namespace mu2e {
   //
   // Read one magnetic field map file in G4BL (TD) format.
   //
-
   void BFieldManagerMaker::readG4BLMap( const string& filename,
                                         BFMap& bfmap,
                                         CLHEP::Hep3Vector G4BL_offset ){
 
 
-    // Debug print
-    /*
-      ifstream fin1;
-      string fname("/tmp/logash/Mu2e_Rotated_Coils_DSMap.txt.bz2");
-      fin1.open(fname.c_str());
-      boost::iostreams::filtering_istream in;
-      decompressFile(fname,in);
-      in.push(fin1);
-      char cbuf1[128];
-      cout << "Debug file: " << endl;
-      for( int i=0; i<5; i++ ) { in.getline(cbuf1,128); cout << cbuf1 << endl; }
-      in.pop();
-      fin1.close();
-    */
-
     // Open the input file.
-    string path(_findConfig(filename));
+    string path(_resolveFullPath(filename));
     if(path.empty())
       throw "BFieldManagerMaker::readG4BLMap: find_file failure!";  // TODO: improve exception
     ifstream fin(path.c_str());
@@ -560,8 +611,7 @@ namespace mu2e {
   }
 
   void BFieldManagerMaker::readG4BLBinary( const string& headerFilename,
-                                           BFMap& bf,
-                                           CLHEP::Hep3Vector G4BL_offset ){
+                                           BFMap& bf ){
 
     // Form the name of the binary file from the name of the header file.
     string::size_type i = headerFilename.find(".header");
@@ -574,7 +624,7 @@ namespace mu2e {
     binFilename += ".bin";
 
     // Resolve filename into a full path.
-    string path(_findConfig(binFilename));
+    string path(_resolveFullPath(binFilename));
     if( path.empty() )
       throw art::Exception(art::errors::FileOpenError)
         << "BFieldManagerMaker::readG4BLBinary: find_file failure: \n"

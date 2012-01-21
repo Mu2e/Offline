@@ -3,13 +3,14 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.7 2011/05/20 19:26:39 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 19:26:39 $
+// $Id: BFieldManagerMaker.hh,v 1.8 2012/01/21 20:46:57 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/21 20:46:57 $
 //
 
 // Includes from C++
 #include <memory>
+
 // Includes from CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -36,10 +37,13 @@ namespace mu2e {
 
   private:
 
-    ConfigFileLookupPolicy _findConfig;
+    // Helper object to turn filenames into full paths using MU2E_SEARCH_PATH.
+    ConfigFileLookupPolicy _resolveFullPath;
 
+    // The runtime configuration for the geometry subsystem.
     const SimpleConfig& _config;
 
+    // Hold the object while we are creating it. The GeometryService will take ownership.
     std::auto_ptr<BFieldManager> _bfmgr;
 
     // Create a new magnetic field map, get information from config file.
@@ -61,8 +65,7 @@ namespace mu2e {
 
     // Read a G4BL map that was stored using writeG4BLBinary.
     void readG4BLBinary( const std::string& headerFilename,
-                         BFMap& bfmap,
-                         CLHEP::Hep3Vector G4BL_offset );
+                         BFMap& bfmap );
 
     // Write an existing BFMap in binary format.
     void writeG4BLBinary( unsigned int i, std::string const& key );
