@@ -1,11 +1,27 @@
 
-  $Id: v1_1_5.txt,v 1.1 2012/01/18 23:10:07 kutschke Exp $
+  $Id: v1_1_5.txt,v 1.2 2012/01/21 20:50:53 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/01/18 23:10:07 $
+  $Date: 2012/01/21 20:50:53 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_5
+
+2) January 21, 2012 kutschke
+   The Mau7 field maps have been released in:
+     /grid/fermiapp/mu2e/DataFiles/BFieldMaps/Mau7
+   These are written in Mu2e coordinates.  Previous field maps
+   were written in G4beamline coordinates.  We defined a convention
+   to document the coordinate system in the field map header.
+   The convention is implemented in:
+      BFieldGeom/inc/BFieldManagerMaker.hh
+      BFieldGeom/src/BFieldManagerMaker.cc
+   Update to make Mau7 fields the default.
+     Mu2eG4/test/geom_01.txt
+     Mu2eG4/test/geom_writeBF.txt
+
+  For additional details see:
+  /grid/fermiapp/mu2e/DataFiles/BFieldMaps/Mau7/ReadmeFirst.txt
 
 1) January 18, 2012 kutschke
    setup.sh
