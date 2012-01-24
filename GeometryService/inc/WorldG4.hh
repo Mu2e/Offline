@@ -1,5 +1,5 @@
 // G4 specific geometry info.  Not available in non-geant jobs.
-// 
+//
 // Andrei Gaponenko, 2011
 
 #ifndef WORLDG4_HH
@@ -31,11 +31,19 @@ namespace mu2e {
     double dirtG4Ymin() const { return _dirtG4Ymin; }
     double dirtG4Ymax() const { return _dirtG4Ymax; }
 
+    // The argument is a point in Mu2e coordinates.  Return true if this point
+    // is inside the G4 world, false otherwise.
+    bool inWorld( CLHEP::Hep3Vector const& x0 ) const;
+
+    // The argument is a point in Mu2e coordinates.  Throw an exception if this point
+    // is outside the G4 world.
+    void inWorldOrThrow( CLHEP::Hep3Vector const& x0 ) const;
+
     // implement Detector's method
     virtual std::string name() const { return "WorldG4"; }
 
     //----------------------------------------------------------------
-  private: 
+  private:
     friend class WorldG4Maker;
 
     // Private ctr: the class should be only obtained via the maker
@@ -46,7 +54,8 @@ namespace mu2e {
     CLHEP::Hep3Vector _cosmicReferencePoint;
     double _dirtG4Ymin;
     double _dirtG4Ymax;
-    double _hallFormalZminInMu2e; 
+    double _hallFormalZminInMu2e;
+
   };
 
 }

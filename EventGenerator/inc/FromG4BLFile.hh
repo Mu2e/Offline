@@ -3,9 +3,9 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.13 2011/07/13 19:25:14 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
+// $Id: FromG4BLFile.hh,v 1.14 2012/01/24 23:01:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/24 23:01:40 $
 //
 // Original author Rob Kutschke
 //
@@ -77,6 +77,9 @@ namespace mu2e {
 
     // Is target frame used in the file?
     bool _targetFrame;
+
+    // Do we throw or continue when a point is outside of the G4World?
+    bool _throwOnOutOfWorld;
 
     //Number of particles to skip form the input file.
     //Useful to run grid-jobs reading different segments of the same txt file

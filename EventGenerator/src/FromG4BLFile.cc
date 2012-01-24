@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.24 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: FromG4BLFile.cc,v 1.25 2012/01/24 23:01:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/24 23:01:40 $
 //
 // Original author Rob Kutschke
 //
@@ -53,6 +53,8 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/FromG4BLFile.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -65,6 +67,8 @@
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/ThreeVector.h"
+
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 using namespace std;
 
@@ -85,6 +89,7 @@ namespace mu2e {
     _pdgIdToKeep(),
     _doHistograms(config.getBool("fromG4BLFile.doHistograms", false)),
     _targetFrame(config.getBool("fromG4BLFile.targetFrame", false)),
+    _throwOnOutOfWorld(config.getBool("fromG4BLFile.throwOnOutOfWorld", true)),
     _nPartToSkip(config.getInt("fromG4BLFile.particlesToSkip",0)),
     _duplicate(config.getBool("fromG4BLFile.duplicateParticles",false)),
 
@@ -185,8 +190,11 @@ namespace mu2e {
     // Particle data table.
     ConditionsHandle<ParticleDataTable> pdt("ignored");
 
+    GeomHandle<WorldG4> worldG4;
+
     // Read particles from the file until the requested number of particle have been read.
-    for ( int j =0; j<n; ++j ){
+    int j(0);
+    while ( j < n ){
 
       if( _duplicate && j>0 ) break;
 
@@ -195,8 +203,9 @@ namespace mu2e {
       int id, evtid, trkid, parentid;
 
       // Invariant: pdgId of particle just read is not on the list of required pdgIds.
-      bool idWrong(true);
-      while (idWrong){
+      //            and location of the particle is outside of the world volume.
+      bool looking(true);
+      while (looking){
 
         _inputFile >> x >> y >> z >> px >> py >> pz >> t >> id >> evtid >> trkid >> parentid >> weight;
         if ( !_inputFile ){
@@ -204,20 +213,49 @@ namespace mu2e {
             << "FromG4BLFile has reached an unexpected end of file.\n";
         }
 
-        // Allow all pdgId's: so accept the particle just read.
-        if ( _pdgIdToKeep.empty() ) break;
+        // Check if this pdgId is on the allowed list; an empty list means keep everything.
+        if ( !_pdgIdToKeep.empty() ) {
 
-        // Check if this pdgId is on the allowed list.
-        for ( std::vector<int>::const_iterator i=_pdgIdToKeep.begin();
-              i != _pdgIdToKeep.end(); ++i ){
+          bool idOK(false);
+          for ( std::vector<int>::const_iterator i=_pdgIdToKeep.begin();
+                i != _pdgIdToKeep.end(); ++i ){
 
-          // Accept the particle just read.
-          if ( id == *i ) {
-            idWrong = false;
-            break;
+            // Accept the particle just read.
+            if ( id == *i ) {
+              idOK = true;
+              break;
+            }
+          }
+
+          // This particle failed this test, so try the next particle.
+          if ( !idOK ) continue;
+
+        }
+
+        // Check that the space point is inside the G4 world.
+        bool inWorld(false);
+        if ( worldG4->inWorld( CLHEP::Hep3Vector(x,y,z) ) ) {
+          inWorld = true;
+        } else{
+          cout << "Not in the world, skipping: " << _throwOnOutOfWorld << endl;
+          if ( _throwOnOutOfWorld ){
+            throw cet::exception("GEOM")
+              << "FromG4BLFile has read in a point that is outside of the G4 world: "
+              << CLHEP::Hep3Vector(x,y,z)
+              << "\n";
+          }else{
+            mf::LogInfo("GEOM")
+              << "FromG4BLFile:  Skipping particle that is out of the world volume.  Position is "
+              << CLHEP::Hep3Vector(x,y,z)
+              << "\n";
           }
         }
-      }
+
+        // This particle passes all tests so keep it; if not, try the next particle.
+        if ( inWorld ) looking=false;
+
+      } // end loop over input particles.
+      ++j;
 
       // Express pdgId as the correct type.
       PDGCode::type pdgId = static_cast<PDGCode::type>(id);
