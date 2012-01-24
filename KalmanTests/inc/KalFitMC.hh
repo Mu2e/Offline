@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.10 2012/01/18 01:25:16 brownd Exp $
+// $Id: KalFitMC.hh,v 1.11 2012/01/24 20:17:33 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/01/18 01:25:16 $
+// $Date: 2012/01/24 20:17:33 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -147,6 +147,7 @@ namespace mu2e
     double MCMom(TRACKERPOS tpos) const { return tpos == trackerEnt ? _mcentmom : _mcmidmom ; }
     const helixpar& MCHelix(TRACKERPOS tpos) const { return tpos == trackerEnt ? _mcentpar : _mcmidpar ; }
     double MCBrems() const { return _bremsesum; }
+    static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSum& summary );
   private:
 // cache of event data
     MCEvtData _mcdata;
@@ -161,8 +162,7 @@ namespace mu2e
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
       std::vector<MCStepItr>& steps);
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
-    static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSum& summary );
-    void fillMCHitSummary();
+   void fillMCHitSummary();
 // config parameters
     double _mintrkmom; // minimum true momentum at z=0 to create a track from
     double _mct0err;
