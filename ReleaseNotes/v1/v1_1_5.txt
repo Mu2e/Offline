@@ -1,11 +1,28 @@
 
-  $Id: v1_1_5.txt,v 1.2 2012/01/21 20:50:53 kutschke Exp $
+  $Id: v1_1_5.txt,v 1.3 2012/01/24 23:05:58 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/01/21 20:50:53 $
+  $Date: 2012/01/24 23:05:58 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_5
+
+4) January 24, 2012 kutschke
+   Use the results of 3 to check that each point read from the input
+   text file is inside the G4 world.  If the point is outside, there
+   are two options: print and informational message and continue or
+   throw and exception.  The default is to throw the exception.
+     EventGenerator/inc/FromG4BLFile.hh
+     EventGenerator/src/FromG4BLFile.cc
+
+
+3) January 24, 2012 kutschke
+   Add method two methods to check to see if a point, given in
+   Mu2e coordinates, is inside the G4 world volume; one method
+   returns a bool, the other throws an exception if the test fails.
+     GeometryService/inc/WorldG4.hh
+     GeometryService/src/WorldG4.cc
+     GeometryService/src/WorldG4Maker.cc
 
 2) January 21, 2012 kutschke
    The Mau7 field maps have been released in:
