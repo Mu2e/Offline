@@ -1,7 +1,7 @@
 
-  $Id: v1_1_5.txt,v 1.3 2012/01/24 23:05:58 kutschke Exp $
+  $Id: v1_1_5.txt,v 1.4 2012/01/24 23:12:53 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/01/24 23:05:58 $
+  $Date: 2012/01/24 23:12:53 $
 
  Still under construction
 
@@ -12,9 +12,14 @@
    text file is inside the G4 world.  If the point is outside, there
    are two options: print and informational message and continue or
    throw and exception.  The default is to throw the exception.
+   If you want, instead, to skip the offending lines from the inout file,
+   add the following to your generator config file:
+
+     bool fromG4BLFile.throwOnOutOfWorld = false;
+
+   Files changed:
      EventGenerator/inc/FromG4BLFile.hh
      EventGenerator/src/FromG4BLFile.cc
-
 
 3) January 24, 2012 kutschke
    Add method two methods to check to see if a point, given in
