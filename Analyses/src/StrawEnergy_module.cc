@@ -1,9 +1,9 @@
 //
 //  Study energy desposited in straws 
 //
-// $Id: StrawEnergy_module.cc,v 1.2 2012/01/20 20:03:26 brownd Exp $
+// $Id: StrawEnergy_module.cc,v 1.3 2012/01/24 20:17:00 brownd Exp $
 // $Author: 
-// $Date: 2012/01/20 20:03:26 $
+// $Date: 2012/01/24 20:17:00 $
 //
 // Original author David Brown
 //
@@ -20,6 +20,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
+#include "KalmanTests/inc/KalFitMC.hh"
 #include "TTree.h"
 #include "TBranch.h"
 #include <cmath>
@@ -48,6 +49,7 @@ namespace mu2e {
     TTree* _estraw;
 // branch variables
     Int_t _device, _sector, _layer, _straw;
+    UInt_t _mcpdg, _mcgen, _mcproc;
     Float_t _energy;
     Float_t _time;
     Float_t _x;
@@ -74,6 +76,9 @@ namespace mu2e {
     _estraw->Branch("layer",&_layer,"layer/i");
     _estraw->Branch("straw",&_straw,"straw/i");
     _estraw->Branch("energy",&_energy,"energy/f");
+    _estraw->Branch("mcpdg",&_mcpdg,"mcpdg/I");
+    _estraw->Branch("mcgen",&_mcgen,"mcgen/I");
+    _estraw->Branch("mcproc",&_mcproc,"mcproc/I");
     _estraw->Branch("time",&_time,"time/f");
     _estraw->Branch("x",&_x,"x/f");
     _estraw->Branch("rho",&_rho,"rho/f");
@@ -96,19 +101,25 @@ namespace mu2e {
     PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // Loop over all hits
-    for ( size_t i=0; i<hits->size(); ++i ){
+    for ( size_t ihit=0; ihit<hits->size(); ++ihit ){
 
-      StrawHit const& hit(hits->at(i));
+      StrawHit const& hit(hits->at(ihit));
       _energy = hit.energyDep();
       _time = hit.time();
       // Get the hit poosition information.  This requires MC truth
       CLHEP::Hep3Vector pos;
-      PtrStepPointMCVector const&    mcptr(hits_mcptr->at(i));
+      PtrStepPointMCVector const&    mcptr(hits_mcptr->at(ihit));
       for (size_t imc = 0; imc < mcptr.size(); ++imc) {
         StepPointMC const& mchit = *mcptr[imc];
 	pos += mchit.position()*mchit.eDep();
       }
       pos /= hit.energyDep();
+      // compress genealogy
+      MCHitSum mcsum;
+      KalFitMC::fillMCHitSum(mcptr,mcsum);
+      _mcpdg = mcsum[0]._pdgid;
+      _mcgen = mcsum[0]._gid;
+      _mcproc = mcsum[0]._pid;
       // Get the straw ation:
       const Straw& straw = tracker.getStraw( hit.strawIndex() );
       _device = straw.id().getDevice();
