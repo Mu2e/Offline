@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.11 2011/05/20 12:23:42 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/20 12:23:42 $
+// $Id: ConditionsService.hh,v 1.12 2012/01/25 21:24:20 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 21:24:20 $
 //
 // Original author Rob Kutschke
 //
@@ -67,7 +67,7 @@ namespace mu2e {
 
     // For now the key and version arguments are ignored.
     template <class ENTITY>
-    ENTITY* getElement( std::string const& key, std::string const& version)
+    ENTITY* getElement( std::string const& , std::string const& )
     {
       if(_run_count==0)
         throw cet::exception("GEOM")

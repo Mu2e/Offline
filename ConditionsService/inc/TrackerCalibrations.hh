@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.4 2011/12/02 11:52:32 brownd Exp $
-// $Author: brownd $
-// $Date: 2011/12/02 11:52:32 $
+// $Id: TrackerCalibrations.hh,v 1.5 2012/01/25 21:24:20 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 21:24:20 $
 //
 // Original author Vadim Rusu
 //
@@ -32,12 +32,11 @@ namespace mu2e
     // Accept compiler generated:
     // copy c'tor, d'tor and assignment operator.
 
-    const double TimeDivisionResolution(StrawIndex strawIndex, double znorm) const;
-    const double SignalVelocity(StrawIndex strawIndex) const;
+    double TimeDivisionResolution(StrawIndex strawIndex, double znorm) const;
+    double SignalVelocity(StrawIndex strawIndex) const;
 
     //this shoule be called by the patt rec
-    const double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
-    
+    double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
     // information about a hit's position and time.  This uses time difference to compute
     // the position along the wire
     void StrawHitInfo(StrawHit const& strawhit,
@@ -57,8 +56,8 @@ namespace mu2e
 
   // Shift left (printing) operator.
   inline std::ostream& operator<<(std::ostream& ost,
-                                  const TrackerCalibrations& daqpar ){
-    ost << "( "
+                                  const TrackerCalibrations&  ){
+    ost << "( TrackerCalibrations: to be implemnted "
         << " )";
 
     return ost;

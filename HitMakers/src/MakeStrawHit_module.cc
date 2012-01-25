@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.10 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: MakeStrawHit_module.cc,v 1.11 2012/01/25 21:24:20 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 21:24:20 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -436,4 +436,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::MakeStrawHit;
-DEFINE_ART_MODULE(MakeStrawHit);
+DEFINE_ART_MODULE(MakeStrawHit)
