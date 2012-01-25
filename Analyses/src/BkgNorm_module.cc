@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.6 2011/10/28 18:47:05 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:05 $
+// $Id: BkgNorm_module.cc,v 1.7 2012/01/25 20:28:29 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 20:28:29 $
 //
 // Original author Gianni Onorato
 //
@@ -166,13 +166,13 @@ namespace mu2e {
 
       art::Handle<PhysicalVolumeInfoCollection> volumes;
       evt.getRun().getByLabel(_g4ModuleLabel, volumes);
-      
+
       for (size_t i=0; i < volumes->size(); ++i) {
-	
-	PhysicalVolumeInfo const& volInfo = volumes->at(i);
-	cout << i << '\t' <<volInfo.name() << volInfo.copyNo() << endl;
+
+        PhysicalVolumeInfo const& volInfo = volumes->at(i);
+        cout << i << '\t' <<volInfo.name() << volInfo.copyNo() << endl;
       }
-    
+
 
 
       art::ServiceHandle<art::TFileService> tfs;
@@ -183,8 +183,8 @@ namespace mu2e {
       // "genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:"; //Generated particle info (10 entries)
       // "dau1PdgId:dau1P:dau1StartVolume:"; //First Daughter of generated particle info (3 entries)
 
-      _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple", "evt:run:time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume"); 
-      _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume"); 
+      _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple", "evt:run:time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
+      _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
    }
 
     doStoppingTarget(evt);
@@ -198,15 +198,15 @@ namespace mu2e {
     cout << "BkgNorm::endJob Number of events skipped "
          << "due to G4 completion status: "
          << _nBadG4Status
-	 << "\nBkgNorm::endJob Number of overflow events "
+         << "\nBkgNorm::endJob Number of overflow events "
          << "due to too many particles in G4: "
          << _nOverflow
-	 << "\nBkgNorm::endJob Number of events with killed particles "
+         << "\nBkgNorm::endJob Number of events with killed particles "
          << "due to too many steps in G4: "
          << _nKilled
-	 << "\nBkgNorm::endJob total CpuTime "
+         << "\nBkgNorm::endJob total CpuTime "
          << _totalcputime
-	 << "\nBkgNorm::endJob total RealTime "
+         << "\nBkgNorm::endJob total RealTime "
          << _totalrealtime
          << endl;
   }
@@ -309,23 +309,23 @@ namespace mu2e {
       double strRadius = str.getRadius();
 
       while (notFirstTrack && j<mcptr.size()) {
-	if (j==mcptr.size()-1) {
-	  j=0;
-	  break;
-	}
-	StepPointMC const& mchit = *mcptr[j];
-	SimParticle const& sim = simParticles->at(mchit.trackId());
-	CLHEP::Hep3Vector const& StartPos = sim.startPosition();
-	LinePointPCA lppca(stMidPoint3, strDir, StartPos);
-	double insideDistance = lppca.dca();
-	if (insideDistance >= strRadius) {
-	  notFirstTrack = false;
-	  break;
-	} else {
-	  ++j;
-	}
+        if (j==mcptr.size()-1) {
+          j=0;
+          break;
+        }
+        StepPointMC const& mchit = *mcptr[j];
+        SimParticle const& sim = simParticles->at(mchit.trackId());
+        CLHEP::Hep3Vector const& StartPos = sim.startPosition();
+        LinePointPCA lppca(stMidPoint3, strDir, StartPos);
+        double insideDistance = lppca.dca();
+        if (insideDistance >= strRadius) {
+          notFirstTrack = false;
+          break;
+        } else {
+          ++j;
+        }
       }
-      
+
       StepPointMC const& mchit = *mcptr[j];
       SimParticle const& sim = simParticles->at(mchit.trackId());
       tntpArray[idx++] = sim.pdgId();
@@ -333,32 +333,32 @@ namespace mu2e {
       tntpArray[idx++] = sim.fromGenerator();
       tntpArray[idx++] = sim.startVolumeIndex();
       int nEvolutionSteps = 0;
-      SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0); 
+      SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0);
       if (!sim.fromGenerator()) {
-	bool notEva = true;
-	SimParticle& baby = const_cast<SimParticle&>(sim);
-	while (notEva) {
-	  if (!baby.hasParent()) {
-	    tntpArray[idx++] = nEvolutionSteps;
-	    tntpArray[idx++] = 0;
-	    notEva = false;
-	    break;
-	  }
-	  SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
-	  nEvolutionSteps++;
-	  if (mommy.fromGenerator()) {
-	    tntpArray[idx++] = nEvolutionSteps;
-	    tntpArray[idx++] = 1;
-	    notEva = false;
-	    Dau1Idx = baby.id();
-	    break;
-	  } else {
-	    baby = mommy;
-	  }
-	}
+        bool notEva = true;
+        SimParticle& baby = const_cast<SimParticle&>(sim);
+        while (notEva) {
+          if (!baby.hasParent()) {
+            tntpArray[idx++] = nEvolutionSteps;
+            tntpArray[idx++] = 0;
+            notEva = false;
+            break;
+          }
+          SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
+          nEvolutionSteps++;
+          if (mommy.fromGenerator()) {
+            tntpArray[idx++] = nEvolutionSteps;
+            tntpArray[idx++] = 1;
+            notEva = false;
+            Dau1Idx = baby.id();
+            break;
+          } else {
+            baby = mommy;
+          }
+        }
       } else {
-	tntpArray[idx++] = nEvolutionSteps;
-	tntpArray[idx++] = 1;
+        tntpArray[idx++] = nEvolutionSteps;
+        tntpArray[idx++] = 1;
       }
 
 
@@ -366,7 +366,7 @@ namespace mu2e {
       SimParticle const& geninSim = simParticles->at(idxInSim);
       GenParticle const& gen = genParticles->at(geninSim.generatorIndex());
       tntpArray[idx++] = gen.pdgId();
-      tntpArray[idx++] = gen.generatorId().id();      
+      tntpArray[idx++] = gen.generatorId().id();
       tntpArray[idx++] = gen.momentum().vect().mag();
       tntpArray[idx++] = gen.momentum().e();
       tntpArray[idx++] = gen.position().x();
@@ -377,21 +377,21 @@ namespace mu2e {
       tntpArray[idx++] = gen.momentum().phi();
 
       if (Dau1Idx != SimParticleCollection::key_type(0)) {
-	SimParticle const& Dau1 = simParticles->at(Dau1Idx);
-	tntpArray[idx++] = Dau1.pdgId();
-	tntpArray[idx++] = Dau1.startMomentum().vect().mag();
-	tntpArray[idx++] = Dau1.startVolumeIndex();      
+        SimParticle const& Dau1 = simParticles->at(Dau1Idx);
+        tntpArray[idx++] = Dau1.pdgId();
+        tntpArray[idx++] = Dau1.startMomentum().vect().mag();
+        tntpArray[idx++] = Dau1.startVolumeIndex();
       } else {
-	tntpArray[idx++] = 0;
-	tntpArray[idx++] = 0;
-	tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0;
       }
 
       _tNtup->Fill(tntpArray);
 
 
     } //end of Strawhits loop
-    
+
   } // end of doTracker
 
   void BkgNorm::doCalorimeter(art::Event const& evt, bool skip) {
@@ -451,21 +451,21 @@ namespace mu2e {
         if (ROIds.size() < 1) continue;
 
         bool readCryOnce(false);
-	float cntpArray[25];
-	int idx(0);
+        float cntpArray[25];
+        int idx(0);
 
-	double firstHitTime = 100000;
-	CLHEP::Hep3Vector firstHitPos(0,0,0);
-	CLHEP::Hep3Vector cryFrame(0,0,0);
-	size_t firstTrackIndex = 0;
-	size_t fTCollPos = 0;
+        double firstHitTime = 100000;
+        CLHEP::Hep3Vector firstHitPos(0,0,0);
+        CLHEP::Hep3Vector cryFrame(0,0,0);
+        size_t firstTrackIndex = 0;
+        size_t fTCollPos = 0;
 
         for (size_t it = 0;
              it < ROIds.size() ; ++it ) {
 
           size_t collectionPosition = ROIds.at(it).key();
           CaloHit const & thehit = *ROIds.at(it);
-	  
+
           if (!readCryOnce) {
             CLHEP::Hep3Vector cryCenter =  cg->getCrystalOriginByRO(thehit.id());
             int vane = cg->getVaneByRO(thehit.id());
@@ -475,92 +475,92 @@ namespace mu2e {
             cntpArray[idx++] = hit.energyDep();
             cntpArray[idx++] = vane;
             cntpArray[idx++] = cg->getCrystalByRO(thehit.id());
-	    readCryOnce = true;
-	  }
-	  
-	  PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
-	  size_t nHitsPerCrystal = mcptr.size();
-	  
-	  for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
-	    
-	    StepPointMC const& mchit = *mcptr[j2];
-	    if (mchit.time() < firstHitTime) {
-	      firstHitTime = mchit.time();
-	      firstTrackIndex = j2;
-	      fTCollPos = collectionPosition;
-	    }
-	  }
-	}
-	
-	
-	// The simulated particle that made this hit.
-	PtrStepPointMCVector const & mcptr(hits_mcptr->at(fTCollPos));
-	StepPointMC const& mchit = *mcptr[firstTrackIndex];
-	SimParticleCollection::key_type trackId(mchit.trackId());
-	SimParticle const& sim = simParticles->at(trackId);
-	cntpArray[idx++] = sim.pdgId();	  
-	cntpArray[idx++] = sim.startMomentum().vect().mag();
-	cntpArray[idx++] = sim.fromGenerator();
-	cntpArray[idx++] = sim.startVolumeIndex();
-	int nEvolutionSteps = 0;
-	SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0); 
-	if (!sim.fromGenerator()) {
-	bool notEva = true;
-	SimParticle& baby = const_cast<SimParticle&>(sim);
-	while (notEva) {
-	  if (!baby.hasParent()) {
-	    cntpArray[idx++] = nEvolutionSteps;
-	    cntpArray[idx++] = 0;
-	    notEva = false;
-	    break;
-	  }
-	  SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
-	  nEvolutionSteps++;
-	  if (mommy.fromGenerator()) {
-	    cntpArray[idx++] = nEvolutionSteps;
-	    cntpArray[idx++] = 1;
-	    notEva = false;
-	    Dau1Idx = baby.id();
-	    break;
-	  } else {
-	    baby = mommy;
-	  }
-	}
-	} else {
-	  cntpArray[idx++] = nEvolutionSteps;
-	  cntpArray[idx++] = 1;
-	}
-      
-	SimParticleCollection::key_type idxInSim = SimParticleCollection::key_type(1);
-	SimParticle const& geninSim = simParticles->at(idxInSim);
-	GenParticle const& gen = genParticles->at(geninSim.generatorIndex());
-	cntpArray[idx++] = gen.pdgId();
-	cntpArray[idx++] = gen.generatorId().id();      
-	cntpArray[idx++] = gen.momentum().vect().mag();
-	cntpArray[idx++] = gen.momentum().e();
-	cntpArray[idx++] = gen.position().x();
-	cntpArray[idx++] = gen.position().y();
-	cntpArray[idx++] = gen.position().z();
-	cntpArray[idx++] = gen.time();
-	cntpArray[idx++] = gen.momentum().cosTheta();
-	cntpArray[idx++] = gen.momentum().phi();
-	
-	if (Dau1Idx != SimParticleCollection::key_type(0)) {
-	  SimParticle const& Dau1 = simParticles->at(Dau1Idx);
-	  cntpArray[idx++] = Dau1.pdgId();
-	  cntpArray[idx++] = Dau1.startMomentum().vect().mag();
-	  cntpArray[idx++] = Dau1.startVolumeIndex();      
-	} else {
-	  cntpArray[idx++] = 0;
-	  cntpArray[idx++] = 0;
-	  cntpArray[idx++] = 0;
-	}
+            readCryOnce = true;
+          }
 
-	_cNtup->Fill(cntpArray);
-	
+          PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
+          size_t nHitsPerCrystal = mcptr.size();
+
+          for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
+
+            StepPointMC const& mchit = *mcptr[j2];
+            if (mchit.time() < firstHitTime) {
+              firstHitTime = mchit.time();
+              firstTrackIndex = j2;
+              fTCollPos = collectionPosition;
+            }
+          }
+        }
+
+
+        // The simulated particle that made this hit.
+        PtrStepPointMCVector const & mcptr(hits_mcptr->at(fTCollPos));
+        StepPointMC const& mchit = *mcptr[firstTrackIndex];
+        SimParticleCollection::key_type trackId(mchit.trackId());
+        SimParticle const& sim = simParticles->at(trackId);
+        cntpArray[idx++] = sim.pdgId();
+        cntpArray[idx++] = sim.startMomentum().vect().mag();
+        cntpArray[idx++] = sim.fromGenerator();
+        cntpArray[idx++] = sim.startVolumeIndex();
+        int nEvolutionSteps = 0;
+        SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0);
+        if (!sim.fromGenerator()) {
+        bool notEva = true;
+        SimParticle& baby = const_cast<SimParticle&>(sim);
+        while (notEva) {
+          if (!baby.hasParent()) {
+            cntpArray[idx++] = nEvolutionSteps;
+            cntpArray[idx++] = 0;
+            notEva = false;
+            break;
+          }
+          SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
+          nEvolutionSteps++;
+          if (mommy.fromGenerator()) {
+            cntpArray[idx++] = nEvolutionSteps;
+            cntpArray[idx++] = 1;
+            notEva = false;
+            Dau1Idx = baby.id();
+            break;
+          } else {
+            baby = mommy;
+          }
+        }
+        } else {
+          cntpArray[idx++] = nEvolutionSteps;
+          cntpArray[idx++] = 1;
+        }
+
+        SimParticleCollection::key_type idxInSim = SimParticleCollection::key_type(1);
+        SimParticle const& geninSim = simParticles->at(idxInSim);
+        GenParticle const& gen = genParticles->at(geninSim.generatorIndex());
+        cntpArray[idx++] = gen.pdgId();
+        cntpArray[idx++] = gen.generatorId().id();
+        cntpArray[idx++] = gen.momentum().vect().mag();
+        cntpArray[idx++] = gen.momentum().e();
+        cntpArray[idx++] = gen.position().x();
+        cntpArray[idx++] = gen.position().y();
+        cntpArray[idx++] = gen.position().z();
+        cntpArray[idx++] = gen.time();
+        cntpArray[idx++] = gen.momentum().cosTheta();
+        cntpArray[idx++] = gen.momentum().phi();
+
+        if (Dau1Idx != SimParticleCollection::key_type(0)) {
+          SimParticle const& Dau1 = simParticles->at(Dau1Idx);
+          cntpArray[idx++] = Dau1.pdgId();
+          cntpArray[idx++] = Dau1.startMomentum().vect().mag();
+          cntpArray[idx++] = Dau1.startVolumeIndex();
+        } else {
+          cntpArray[idx++] = 0;
+          cntpArray[idx++] = 0;
+          cntpArray[idx++] = 0;
+        }
+
+        _cNtup->Fill(cntpArray);
+
       }
     }
-    
+
   }
 
 
@@ -596,18 +596,15 @@ namespace mu2e {
       PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
 
       if ( sim->fromGenerator() && (sim->pdgId() == 13 || sim->pdgId() == -13)) {
-	if ( volInfo.name() == "TargetFoil_" ) {
-	generatedStopped = true;
-	}
+        if ( volInfo.name() == "TargetFoil_" ) {
+        generatedStopped = true;
+        }
       }
     }
     _skipEvent = generatedStopped;
   }  // end doStoppingTarget
 
-
-  
 }
 
 using mu2e::BkgNorm;
-DEFINE_ART_MODULE(BkgNorm);
-
+DEFINE_ART_MODULE(BkgNorm)
