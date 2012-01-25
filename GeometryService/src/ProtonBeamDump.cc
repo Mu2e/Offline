@@ -1,0 +1,31 @@
+#include "GeometryService/inc/ProtonBeamDump.hh"
+
+#include <cmath>
+
+#include "cetlib/exception.h"
+
+namespace mu2e {
+
+  double ProtonBeamDump::FilterMagnetExtMonFNAL::trackBendHalfAngle(double momentum) const {
+
+    // In the bend plane: the gyroradius (in mm):
+    const double rTrack = 3300. * (momentum/CLHEP::GeV) / (_fieldStrength/CLHEP::tesla);
+    
+//    std::cerr<<"AG: got rTrack = "<<rTrack<<" mm for p = "
+//	     <<(momentum/CLHEP::GeV)<<" GeV and  B = "
+//	     <<(_fieldStrength()/CLHEP::tesla)<<" tesla"<<std::endl;
+
+    // Can't do momenta that are too low.  For simplicity we just
+    // check for the "absolutely impossible" requests here.  The real
+    // momentum constraint is tighter because of other pieces of
+    // geometry.
+
+    if(0.5*_outerHalfSize[2] < rTrack) {
+      return asin(0.5*_outerHalfSize[2]/rTrack);
+    }
+    else {
+      throw cet::exception("GEOM")<<"ProtonBeamDump::FilterMagnetExtMonFNAL::trackBendHalfAngle(): "
+				  <<"requested momentum p="<<momentum/CLHEP::GeV<<" GeV is too low ";
+    }
+  }
+}

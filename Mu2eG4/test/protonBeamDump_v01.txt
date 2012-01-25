@@ -54,15 +54,19 @@ vector<double> extMonFilter.collimator1.alignmentPlugRadius = { 100, 177.8  };
 vector<double> extMonFilter.collimator1.alignmentHoleRClearance = { 12.7, 12.7 };
 double extMonFilter.collimator1.radiusTransitiondZ = 0;
 
-// The entrance point on the face of the beam dump enclosure, 
-// transverse to the beam coordinates (horiz, vertical)
-// The offsets are w.r.t to the core center position
-double         extMonFilter.collimator1.entranceOffsetX = 50;
-double         extMonFilter.collimator1.entranceOffsetY = 1250;
+// The entrance point on the face of the beam dump enclosure,
+// transverse to the beam coordinates (horiz, vertical).  The offsets
+// are w.r.t to the core center position (== the nominal beam entrance
+// point).
+double         extMonFilter.entranceOffsetX = 50;
+double         extMonFilter.entranceOffsetY = 1250;
 
-// Orientation: angles in horizontal and vertical planes w.r.t dump core
-double         extMonFilter.collimator1.angleH = 0.; //radians
-double         extMonFilter.collimator1.angleV = 0.1655; //radians
+// Filter channel orientation: angles in horizontal and vertical
+// planes w.r.t dump core. Note that angleH is the same for all filter
+// elements, while angleV is different.  We specify angleV at the
+// filter entrance.
+double         extMonFilter.angleH = 0.; //radians
+double         extMonFilter.entranceAngleV = 0.1655; //radians
 
 bool extMonFilter.collimator1.alignmentHole.visible = true;
 bool extMonFilter.collimator1.alignmentHole.solid = false;
@@ -82,15 +86,6 @@ vector<double> extMonFilter.collimator2.channelHeigh  = {50., 75.};
 vector<double> extMonFilter.collimator2.alignmentPlugRadius = { 100, 177.8  };
 vector<double> extMonFilter.collimator2.alignmentHoleRClearance = { 12.7, 12.7 };
 double extMonFilter.collimator2.radiusTransitiondZ = 0;
-
-// The entrance point on the face of the magnet room
-// transverse to the beam coordinates (horiz, vertical)
-double         extMonFilter.collimator2.entranceOffsetX = 50;
-// Y: 750 + 1869.6 for no kick in magnet, 750 + 1518.9 for horizontal exit
-double         extMonFilter.collimator2.entranceOffsetY = 2619.6;
-// Orientation: angles in horizontal and vertical planes w.r.t dump core
-double         extMonFilter.collimator2.angleH = 0.; //radians
-double         extMonFilter.collimator2.angleV = 0.1655; // 0.05; //radians
 
 bool extMonFilter.collimator2.alignmentHole.visible = true;
 bool extMonFilter.collimator2.alignmentHole.solid = false;
