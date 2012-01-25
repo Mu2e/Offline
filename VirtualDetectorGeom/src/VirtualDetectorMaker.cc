@@ -1,8 +1,8 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.cc,v 1.13 2011/12/14 00:30:40 gandr Exp $
-// $Author: gandr $
+// $Id: VirtualDetectorMaker.cc,v 1.14 2012/01/25 02:02:00 youzy Exp $
+// $Author: youzy $
 //
 
 #include <iostream>
@@ -21,6 +21,7 @@
 #include "GeometryService/inc/ProtonBeamDump.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
@@ -244,6 +245,18 @@ namespace mu2e {
 			      /*local position in parent*/
 			      CLHEP::Hep3Vector(0, 0, extmon->roomHalfSize()[2] - vdHL)
 			      );
+    }
+
+    if(geom->hasElement<ExtMonUCI::ExtMon>()) {
+      // Detector in front of the ExtMonUCI face shielding
+      GeomHandle<ExtMonUCI::ExtMon> extmon;
+      vector<double> params = extmon->envelopeParams();
+
+      _vd->addVirtualDetector(VirtualDetectorId::EMIEntrance,
+                              extmon->origin(),
+                              0,
+                              CLHEP::Hep3Vector(0, 0, extmon->envelopeParams()[2] - 0.5*vdHL)
+                             );
     }
 
   }

@@ -2,15 +2,15 @@
 #
 # Readback the output of g4test_03.fcl; make histograms and printout.
 #
-# $Id: extmon_uci_readback.fcl,v 1.1 2011/12/30 20:31:46 youzy Exp $
+# $Id: extmon_uci_readback.fcl,v 1.2 2012/01/25 02:02:00 youzy Exp $
 # $Author: youzy $
-# $Date: 2011/12/30 20:31:46 $
+# $Date: 2012/01/25 02:02:00 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 
 # Give this job a name.  
-process_name : ReadBack01
+process_name : ExtMonUCIReadBack01
 
 # Start form an empty source
 source : 
@@ -56,7 +56,8 @@ physics :
 
     checkhits:
     {
-      module_type            : ReadBack
+      module_type            : ReadVirtualDetector 
+#      module_type            : ExtMonUCIReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
       minimumEnergy          : 0.000

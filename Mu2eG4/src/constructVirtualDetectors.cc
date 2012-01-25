@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.13 2011/12/14 19:52:13 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/14 19:52:13 $
+// $Id: constructVirtualDetectors.cc,v 1.14 2012/01/25 02:02:00 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/01/25 02:02:00 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -23,7 +23,9 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
 #include "GeometryService/inc/ProtonBeamDump.hh"
+#include "GeometryService/inc/ProductionTarget.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
@@ -736,6 +738,84 @@ namespace mu2e {
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
+
+    // placing virtual detector on the exit (beam dump direction) of PS
+    vdId = VirtualDetectorId::PS_FrontExit;
+    if (1)
+    {
+      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+
+      GeomHandle<Beamline> beamg;
+      double solenoidOffset = beamg->solenoidOffset();
+      double rTorus         = beamg->getTS().torusRadius();
+      double ts1HalfLength  = beamg->getTS().getTS1().getHalfLength();
+
+      double ps1HalfLengt    = _config->getDouble("toyPS1.vacHalfLength");
+      TubsParams psCryoParams( _config->getDouble("toyPS.rIn"),
+                               _config->getDouble("toyPS.rOut"),
+                               _config->getDouble("toyPS.CryoHalfLength"));
+
+      // In the Mu2e coordinate system.
+      double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength();
+      G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
+
+      G4ThreeVector vdOrigin = psCryoPosition - G4ThreeVector(0.0, 0.0, psCryoParams.zHalfLength() + vdg->getHalfLength());
+      G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+
+      TubsParams vdParams(0., psCryoParams.outerRadius(), vdg->getHalfLength());
+
+      VolumeInfo vdInfo = nestTubs("PS_FrontExit",
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdOrigin - _hallOriginInMu2e,
+                                   parent,
+                                   vdId,
+                                   vdIsVisible,
+                                   G4Color::Red(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                  );
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+
+
+    // placing virtual detector on the entrance of ExtMonUCI
+    vdId = VirtualDetectorId::EMIEntrance;
+    if( vdg->exist(vdId) ) {
+      VolumeInfo const & parent = _helper->locateVolInfo("ExtMonUCI");
+      GeomHandle<ExtMonUCI::ExtMon> extmon;
+
+      std::vector<double> hlen(3);
+      hlen[0] = extmon->envelopeParams()[0];
+      hlen[1] = extmon->envelopeParams()[1];
+      hlen[2] = vdg->getHalfLength();
+
+      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                  hlen,
+                                  vacuumMaterial,
+                                  0,
+                                  vdg->getLocal(vdId),
+                                  parent,
+                                  vdId,
+                                  vdIsVisible,
+                                  G4Color::Red(),
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false
+                                 );
+
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
   }
 
 }

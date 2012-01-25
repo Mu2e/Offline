@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.4 2011/12/14 00:30:40 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/14 00:30:40 $
+// $Id: VirtualDetectorId.hh,v 1.5 2012/01/25 02:02:00 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/01/25 02:02:00 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,9 @@ namespace mu2e {
       TT_Mid,         TT_MidInner,                            // 11, 12:  Middle of the tracker
       TT_FrontHollow, TT_FrontPA,                             // 13, 14:  Front face of the tracker.
       TT_Back,                                                // 15       Back (downstream) face of the tracker.
-      EMFC1Entrance,  EMFC1Exit, EMFC2Entrance,  EMFC2Exit,         // 16-19:   ExtMonFNAL collimator entrance and exit planes
+      EMFC1Entrance,  EMFC1Exit, EMFC2Entrance,  EMFC2Exit,   // 16-19:   ExtMonFNAL collimator entrance and exit planes
+      PS_FrontExit,                                           // 20:      Front exit (to beam dump) on PS
+      EMIEntrance,                                            // 21:      In front of ExtMonUCI fist concreate shielding
       lastEnum
     };
 
@@ -57,7 +59,9 @@ namespace mu2e {
       "TT_Mid",         "TT_MidInner",                             \
       "TT_FrontHollow", "TT_FrontPA",                              \
       "TT_Back",						   \
-      "EMFC1Entrance", "EMFC1Exit", "EMFC2Entrance", "EMFC2Exit"
+      "EMFC1Entrance", "EMFC1Exit", "EMFC2Entrance", "EMFC2Exit",  \
+      "PS_FrontExit",                                              \
+      "EMIEntrance"
 
   public:
 

@@ -28,9 +28,9 @@
 
 namespace mu2e {
   void constructExtMonUCI(const VolumeInfo& parent, const SimpleConfig& config) {
-    YZYDEBUG("start");
 
     int const verbosity = config.getInt("extmon_uci.verbosity",0);
+    if (verbosity >= 2) YZYDEBUG("start");
 
     const string extmonBaseName = "ExtMonUCI";
     ostringstream name;
@@ -66,6 +66,37 @@ namespace mu2e {
                                        parent, 0,
                                        envelopeVisible,
                                        G4Colour::Green(), envelopeSolid,
+                                       forceAuxEdgeVisible, placePV, doSurfaceCheck
+                                     );
+
+    //
+    // Building Platform
+    //
+    bool platformVisible = config.getBool("extmon_uci.platformVisible",false);
+    bool platformSolid   = config.getBool("extmon_uci.platformSolid",false);
+
+    vector<double> platformHalfLengths;
+    config.getVectorDouble("extmon_uci.platformHalfLengths", platformHalfLengths, 3);
+    vector<double> platformPosition;
+    config.getVectorDouble("extmon_uci.platformPosition", platformPosition, 3);
+
+    G4ThreeVector platformOrigin(platformPosition[0], platformPosition[1], platformPosition[2]);
+    G4ThreeVector platformOriginLocal = platformOrigin - hallOriginInMu2e;
+
+    if (verbosity >= 1)
+    {
+      YZYDEBUG("ExtMonUCI platform originLocal " << platformOriginLocal);
+    }
+
+    vector<double> platformParams = platformHalfLengths;
+    VolumeInfo platformInfo = nestBox( "ExtMonUCIPlatform",
+                                       platformParams,
+                                       materialFinder.get("extmon_uci.platformMaterialName"),
+                                       0,
+                                       platformOriginLocal,
+                                       parent, 0,
+                                       platformVisible,
+                                       G4Colour::Grey(), platformSolid,
                                        forceAuxEdgeVisible, placePV, doSurfaceCheck
                                      );
 
@@ -240,6 +271,49 @@ namespace mu2e {
     } // end of iTofSta
 
     //
+    // Building Tables
+    //
+    bool tabVisible = config.getBool("extmon_uci.tabVisible", true);
+    bool tabSolid   = config.getBool("extmon_uci.tabSolid", false);
+    G4Material* tabMaterial = materialFinder.get("extmon_uci.tabMaterialName");
+    
+    const int kNTab = config.getInt("extmon_uci.nTabs", 0);
+    vector<double> tabHalfLengths;
+    config.getVectorDouble("extmon_uci.tabHalfLengths", tabHalfLengths, 3*kNTab);
+    vector<double> tabPosition;
+    config.getVectorDouble("extmon_uci.tabPosition", tabPosition, 3*kNTab);
+    
+    VolumeInfo tabInfo[kNTab];
+    for (int iTab = 0; iTab < kNTab; iTab++)
+    {
+      name.str("");
+      name << extmonBaseName << "Table" << iTab;
+
+      vector<double> tabParams;
+      for (int iDim = 0; iDim < 3; iDim++) tabParams.push_back(tabHalfLengths[3*iTab+iDim]);
+      G4ThreeVector tabOrigin(tabPosition[3*iTab], tabPosition[3*iTab+1], tabPosition[3*iTab+2]);
+
+      if (verbosity >= 2)
+      {
+        YZYDEBUG("table Params " << tabParams[0] << "  " << tabParams[1] << "  " << tabParams[2]);
+        YZYDEBUG("table Origin " << tabOrigin[0] << "  " << tabOrigin[1] << "  " << tabOrigin[2]);
+      }
+
+      tabInfo[iTab] = nestBox( name.str(),
+                               tabParams,
+                               tabMaterial,
+                               0,
+                               tabOrigin - det.origin(),
+                               envelopeInfo,
+                               0,
+                               tabVisible,
+                               G4Colour::Red(),
+                               tabSolid,
+                               forceAuxEdgeVisible, placePV, doSurfaceCheck
+                             );
+    }
+
+    //
     // Building Shielding Materials
     //
     bool shdVisible = config.getBool("extmon_uci.shdVisible", true);
@@ -285,33 +359,55 @@ namespace mu2e {
     // Shield Hole
     bool shdHoleVisible = config.getBool("extmon_uci.shdHoleVisible", true);
     bool shdHoleSolid   = config.getBool("extmon_uci.shdHoleSolid", false);
-    G4Material* shdHoleMaterial = materialFinder.get("extmon_uci.shdHoleMaterialName");
+    G4Material* shdHoleAirMaterial = materialFinder.get("extmon_uci.shdHoleAirMaterialName");
+    G4Material* shdHoleCuMaterial  = materialFinder.get("extmon_uci.shdHoleCuMaterialName");
 
+    const int kNShdHole = config.getInt("extmon_uci.nShdHoles", 0);
     vector<double> shdHoleHalfLengths;
-    config.getVectorDouble("extmon_uci.shdHoleHalfLengths", shdHoleHalfLengths, 3);
+    config.getVectorDouble("extmon_uci.shdHoleHalfLengths", shdHoleHalfLengths, 3*kNShdHole);
     vector<double> shdHolePosition;
-    config.getVectorDouble("extmon_uci.shdHolePosition", shdHolePosition, 3);
+    config.getVectorDouble("extmon_uci.shdHolePosition", shdHolePosition, 3*kNShdHole);
 
-    VolumeInfo shdHoleInfo;
-    name.str("");
-    name << extmonBaseName << "ShieldHole";
+    VolumeInfo shdHoleInfo[kNShdHole];
+    VolumeInfo shdHoleMotherInfo;
+    G4Material* shdHoleMaterial = 0;
+    G4Colour shdHoleColor;
+    for (int iShdHole = 0; iShdHole < kNShdHole; iShdHole++)
+    {
+      name.str("");
+      name << extmonBaseName << "ShieldHole" << iShdHole;
 
-    vector<double> shdHoleParams;
-    shdHoleParams = shdHoleHalfLengths;
-    G4ThreeVector shdHoleOriginLocal(shdHolePosition[0]-shdPosition[0], shdHolePosition[1]-shdPosition[1], shdHolePosition[2]-shdPosition[2] );
+      vector<double> shdHoleParams;
+      for (int iDim = 0; iDim < 3; iDim++) shdHoleParams.push_back(shdHoleHalfLengths[3*iShdHole+iDim]);
+      G4ThreeVector shdHoleOrigin(shdHolePosition[3*iShdHole], shdHolePosition[3*iShdHole+1], shdHolePosition[3*iShdHole+2]);
 
-    shdHoleInfo = nestBox( name.str(),
-                           shdHoleParams,
-                           shdHoleMaterial,
-                           0,
-                           shdHoleOriginLocal,
-                           shdInfo[0],
-                           0,
-                           shdHoleVisible,
-                           G4Colour::Cyan(),
-                           shdHoleSolid,
-                           forceAuxEdgeVisible, placePV, doSurfaceCheck
-                         );
+      if (iShdHole == 0) shdHoleMotherInfo = shdInfo[0];
+      else shdHoleMotherInfo = shdInfo[5];
+
+      if (iShdHole >=0 && iShdHole < 5) 
+      {
+        shdHoleColor = G4Colour::Cyan();
+        shdHoleMaterial = shdHoleAirMaterial;
+      }
+      else if (iShdHole >= 5 && iShdHole < 9)
+      {
+        shdHoleColor = G4Colour::Red();
+        shdHoleMaterial = shdHoleCuMaterial;
+      }
+
+      shdHoleInfo[iShdHole] = nestBox( name.str(),
+                                       shdHoleParams,
+                                       shdHoleMaterial,
+                                       0,
+                                       shdHoleOrigin - shdHoleMotherInfo.centerInMu2e(),
+                                       shdHoleMotherInfo,
+                                       0,
+                                       shdHoleVisible,
+                                       shdHoleColor,
+                                       shdHoleSolid,
+                                       forceAuxEdgeVisible, placePV, doSurfaceCheck
+                                     );
+    }
 
     //
     // Building Killer Volume in PS (to kill particles on +Z direction, save time)
@@ -387,6 +483,6 @@ namespace mu2e {
       }
     }
 
-    YZYDEBUG("end");
+    if (verbosity >= 2) YZYDEBUG("end");
   }
 }

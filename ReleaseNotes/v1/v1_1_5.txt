@@ -1,11 +1,15 @@
 
-  $Id: v1_1_5.txt,v 1.4 2012/01/24 23:12:53 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/01/24 23:12:53 $
+  $Id: v1_1_5.txt,v 1.5 2012/01/25 02:04:00 youzy Exp $
+  $Author: youzy $
+  $Date: 2012/01/25 02:04:00 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_5
+
+5) January 24, 2012 youzy
+   Move ExtMonUCI backward and out of Remote Control Region,
+   add Virtual Plane at the exit of PS and entrance of ExtMonUCI.
 
 4) January 24, 2012 kutschke
    Use the results of 3 to check that each point read from the input
