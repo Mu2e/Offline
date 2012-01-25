@@ -68,6 +68,13 @@ namespace mu2e {
     const CollimatorExtMonFNAL& collimator1() const { return _collimator1; }
     const CollimatorExtMonFNAL& collimator2() const { return _collimator2; }
 
+    const std::vector<double>& magnetOuterHalfSize() const { return _magnetOuterHalfSize; }    
+    double magnetAptertureWidth() const { return _magnetAptertureWidth; }
+    double magnetAptertureHeight() const { return _magnetAptertureHeight; }
+    double magnetFieldStrength() const { return _magnetFieldStrength; }
+
+    double extMonFilter_nominalMomentum() const { return _extMonFilter_nominalMomentum; }
+
     //----
     // Primary inputs: placement
 
@@ -109,6 +116,12 @@ namespace mu2e {
 
     CollimatorExtMonFNAL _collimator1;
     CollimatorExtMonFNAL _collimator2;
+
+    std::vector<double> _magnetOuterHalfSize;
+    double _magnetAptertureWidth;
+    double _magnetAptertureHeight;
+    double _magnetFieldStrength;
+    double _extMonFilter_nominalMomentum;
 
     CLHEP::Hep3Vector _coreCenterInMu2e;
     double _coreRotY;

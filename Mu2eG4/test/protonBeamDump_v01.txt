@@ -56,8 +56,10 @@ double extMonFilter.collimator1.radiusTransitiondZ = 0;
 
 // The entrance point on the face of the beam dump enclosure, 
 // transverse to the beam coordinates (horiz, vertical)
-double         extMonFilter.collimator1.entranceOffsetX = 0;
-double         extMonFilter.collimator1.entranceOffsetY = 500;
+// The offsets are w.r.t to the core center position
+double         extMonFilter.collimator1.entranceOffsetX = 50;
+double         extMonFilter.collimator1.entranceOffsetY = 1250;
+
 // Orientation: angles in horizontal and vertical planes w.r.t dump core
 double         extMonFilter.collimator1.angleH = 0.; //radians
 double         extMonFilter.collimator1.angleV = 0.1655; //radians
@@ -81,13 +83,14 @@ vector<double> extMonFilter.collimator2.alignmentPlugRadius = { 100, 177.8  };
 vector<double> extMonFilter.collimator2.alignmentHoleRClearance = { 12.7, 12.7 };
 double extMonFilter.collimator2.radiusTransitiondZ = 0;
 
-// The entrance point on the face of the beam dump enclosure, 
+// The entrance point on the face of the magnet room
 // transverse to the beam coordinates (horiz, vertical)
-double         extMonFilter.collimator2.entranceOffsetX = 0;
-double         extMonFilter.collimator2.entranceOffsetY = 1400;
+double         extMonFilter.collimator2.entranceOffsetX = 50;
+// Y: 750 + 1869.6 for no kick in magnet, 750 + 1518.9 for horizontal exit
+double         extMonFilter.collimator2.entranceOffsetY = 2619.6;
 // Orientation: angles in horizontal and vertical planes w.r.t dump core
 double         extMonFilter.collimator2.angleH = 0.; //radians
-double         extMonFilter.collimator2.angleV = 0.; //radians
+double         extMonFilter.collimator2.angleV = 0.1655; // 0.05; //radians
 
 bool extMonFilter.collimator2.alignmentHole.visible = true;
 bool extMonFilter.collimator2.alignmentHole.solid = false;
@@ -102,6 +105,19 @@ bool extMonFilter.collimator2.channel.solid = true;
 // shielding thickness above the dump core.
 vector<double> extMonFilter.magnetPitHalfSize = {750., 750., 2100.};
 
+// The magnet
+vector<double> extMonFilter.magnet.outerHalfSize = {95., 150., 1778. }; // mm
+double extMonFilter.magnet.apertureWidth  =  50.; // mm
+double extMonFilter.magnet.apertureHeight = 100.; // mm
+string extMonFilter.magnet.material  = "G4_Fe";
+double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
+
+// The magnet is positioned so that a positive particle with 
+// the nominal momentum given below, travelling at the bottom of
+// collimator1 channel (at exit) parallel to the collimator1 axis,
+// will enter the magnet aperture at the bottom and exit at at the 
+// bottom after being deflected by the magnetic field.
+double extMonFilter.nominalMomentum = 4000.; // MeV/c
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

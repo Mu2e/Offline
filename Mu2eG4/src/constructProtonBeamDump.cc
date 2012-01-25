@@ -240,6 +240,127 @@ namespace mu2e {
 
   }
 
+  //================================================================
+  void constructFilterMagnet(const ProtonBeamDump& dump, 
+			     const VolumeInfo& parent,
+			     const SimpleConfig& config
+			     )
+  {
+    MaterialFinder materialFinder(config);
+
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool placePV             = true;
+
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+
+    //----------------------------------------------------------------
+    // Position the magnet.  Keep B field horizontal.  Then there is
+    // no bend in the XZ plane and the magnet center should be on the
+    // continuation of the collimator1 center line.  It also should
+    // have the same rotation around Y as the collimator.
+    // 
+    // Arbitrary fix the (center,bottom,center) of the aperture at the
+    // magnet room center Z position.
+    // 
+    // In the bend plane: the gyroradius (in mm):
+    const double rTrack = 3300. * (dump.extMonFilter_nominalMomentum()/CLHEP::GeV) / (dump.magnetFieldStrength()/CLHEP::tesla);
+    
+    std::cout<<"AG: got rTrack = "<<rTrack<<" mm for p = "<<(dump.extMonFilter_nominalMomentum()/CLHEP::GeV)
+	     <<" GeV and  B = "<<(dump.magnetFieldStrength()/CLHEP::tesla)<<" tesla"<<std::endl;
+
+    // Can't do momenta that are too low.  For simplicity we just
+    // check for the "absolutely impossible" requests here.  The real
+    // momentum constraint is tighter because of other pieces of
+    // geometry.
+    if(rTrack < 0.5*dump.magnetOuterHalfSize()[2]) {
+      throw cet::exception("GEOM")<<"constructProtonBeamDump(): requested momentum p="<<dump.extMonFilter_nominalMomentum()/CLHEP::MeV<<" MeV is too low";
+    }
+
+    const double halfBendAngle = asin(0.5*dump.magnetOuterHalfSize()[2]/rTrack);
+
+    const double magnetAngleV  = dump.collimator1().angleV() - halfBendAngle;
+    AGDEBUG("halfBendAngle = "<<halfBendAngle<<", magnetAngleV = "<<magnetAngleV);
+
+    // Z of magnet entrance at the (center,bottom) of aperture (in enclosure coords)
+    const double magnetEntranceZ = dump.magnetPitCenterInEnclosure()[2]
+      + dump.magnetOuterHalfSize()[2] * cos(magnetAngleV) * cos(dump.collimator1().angleH());
+
+    AGDEBUG("magnetEntranceZ = "<<magnetEntranceZ);
+    
+    // Height of the entrance point (in enclosure coords)
+    const double magnetEntranceY = dump.coreCenterInEnclosure()[1] + dump.collimator1().entranceOffsetY()
+      + tan(dump.collimator1().angleV()) * (dump.enclosureHalfSize()[2] - magnetEntranceZ)
+      
+      // the entrance point should be on the trajectory of reference 
+      // particle at the *bottom* of the collimator1 channel - shift for that:
+      - 0.5 * dump.collimator1().channelHeight()[dump.collimator1().channelHeight().size()-1]/cos(dump.collimator1().angleV())
+      ;
+
+    AGDEBUG("magnetEntranceY = "<<magnetEntranceY);
+
+    // X of the entrance point (in enclosure coords)
+    const double magnetEntranceX = dump.coreCenterInEnclosure()[0] + dump.collimator1().entranceOffsetX()
+      + tan(dump.collimator1().angleH()) * (dump.enclosureHalfSize()[2] - magnetEntranceZ);
+
+    AGDEBUG("magnetEntranceX = "<<magnetEntranceX);
+
+    // length from magnet entrance to magnet center in projection on (XZ)
+    const double projLength = 
+      (dump.magnetOuterHalfSize()[2]* cos(magnetAngleV) - 0.5*dump.magnetAptertureHeight()*sin(magnetAngleV));
+    
+    // Compute the center of the magnet
+    const CLHEP::Hep3Vector magnetCenterInEnclosure
+      (magnetEntranceX + sin(dump.collimator1().angleH()) * projLength
+       ,
+       magnetEntranceY + sin(magnetAngleV)*dump.magnetOuterHalfSize()[2] + cos(magnetAngleV)*0.5*dump.magnetAptertureHeight()
+       ,
+       magnetEntranceZ - cos(dump.collimator1().angleH()) * projLength
+       );
+
+
+    std::cout<<"AG:     magnetCenterInEnclosure = "<<magnetCenterInEnclosure
+	     <<"\n,  dump.enclosureCenterInMu2e() = "<<dump.enclosureCenterInMu2e()
+	     <<"\n,         parent.centerInMu2e() = "<<parent.centerInMu2e()
+	     <<std::endl;
+    
+    //----------------------------------------------------------------
+    CLHEP::HepRotation *magnetRotationInParent = reg.add(CLHEP::HepRotation::IDENTITY);
+    magnetRotationInParent->rotateX(-magnetAngleV);
+
+    const VolumeInfo magnetIron = nestBox("ExtMonFNALFilterMagnetIron",
+					  dump.magnetOuterHalfSize(),
+					  materialFinder.get("extMonFilter.magnet.material"),
+					  magnetRotationInParent,
+					  magnetCenterInEnclosure - dump.magnetPitCenterInEnclosure(),
+					  parent, 0,
+					  config.getBool("extMonFilter.magnet.iron.visible", true),
+					  G4Colour::Magenta(),
+					  config.getBool("extMonFilter.magnet.iron.solid", false),
+					  forceAuxEdgeVisible,
+					  placePV,
+					  doSurfaceCheck
+					  );
+
+    std::vector<double> apertureHalfSize(3);
+    apertureHalfSize[0] = 0.5*dump.magnetAptertureWidth();
+    apertureHalfSize[1] = 0.5*dump.magnetAptertureHeight();
+    apertureHalfSize[2] = dump.magnetOuterHalfSize()[2];
+
+    nestBox("ExtMonFNALFilterMagnetAperture",
+	    apertureHalfSize,
+	    materialFinder.get("hall.insideMaterialName"),
+	    0,
+	    CLHEP::Hep3Vector(0, 0, 0),
+	    magnetIron.logical, 0,
+	    config.getBool("extMonFilter.magnet.air.visible", true),
+	    G4Colour::Blue(),
+	    config.getBool("extMonFilter.magnet.air.solid", false),
+	    forceAuxEdgeVisible,
+	    placePV,
+	    doSurfaceCheck
+	    );
+  }
     
   //================================================================
 
@@ -381,40 +502,47 @@ namespace mu2e {
 	    doSurfaceCheck
  	    );
  
-    nestBox("ProtonBeamDumpMagnetPit",
- 	    dump->magnetPitHalfSize(),
- 	    materialFinder.get("protonBeamDump.material.air"),
- 	    0,
- 	    dump->magnetPitCenterInEnclosure(),
- 	    logicalEnclosure, 0,
-	    config.getBool("protonBeamDump.magnetPitVisible", true), 
- 	    G4Colour::Cyan(),
-	    config.getBool("protonBeamDump.magnetPitSolid", false),
-	    forceAuxEdgeVisible,
-	    placePV,
-	    doSurfaceCheck
- 	    );
+    const VolumeInfo magnetPit  = nestBox("ProtonBeamDumpMagnetPit",
+					  dump->magnetPitHalfSize(),
+					  materialFinder.get("protonBeamDump.material.air"),
+					  0,
+					  dump->magnetPitCenterInEnclosure(),
+					  logicalEnclosure, 0,
+					  config.getBool("protonBeamDump.magnetPitVisible", true), 
+					  G4Colour::Cyan(),
+					  config.getBool("protonBeamDump.magnetPitSolid", false),
+					  forceAuxEdgeVisible,
+					  placePV,
+					  doSurfaceCheck
+					  );
 
     //----------------------------------------------------------------
     // The first collimator
 
-    const CLHEP::Hep3Vector collimator1centerInShielding(dump->collimator1().entranceOffsetX() 
+    const CLHEP::Hep3Vector collimator1centerInShielding(dump->coreCenterInEnclosure()[0]
+							 + dump->collimator1().entranceOffsetX() 
 							 + 0.5*dump->collimator1().horizontalLength()*tan(dump->collimator1().angleH()),
 							 
-							 dump->collimator1().entranceOffsetY()
+							 dump->coreCenterInEnclosure()[1]
+							 + dump->collimator1().entranceOffsetY()
 							 + 0.5*dump->collimator1().horizontalLength()*tan(dump->collimator1().angleV()),
 							 
 							 dump->enclosureHalfSize()[2] - 0.5*dump->collimator1().horizontalLength());
+
+    AGDEBUG("collimator1centerInShielding = "<<collimator1centerInShielding<<", magnetPitCenter = "<<dump->magnetPitCenterInEnclosure());
+
 
     constructCollimatorExtMonFNAL(dump->collimator1(),
 				  logicalEnclosure,
 				  collimator1centerInShielding,
 				  config);
 
-    const CLHEP::Hep3Vector collimator2centerInShielding(dump->collimator2().entranceOffsetX() 
+    const CLHEP::Hep3Vector collimator2centerInShielding(dump->coreCenterInEnclosure()[0]
+							 + dump->collimator2().entranceOffsetX() 
 							 + 0.5*dump->collimator2().horizontalLength()*tan(dump->collimator2().angleH()),
 							 
-							 dump->collimator2().entranceOffsetY()
+							 dump->coreCenterInEnclosure()[1]
+							 + dump->collimator2().entranceOffsetY()
 							 + 0.5*dump->collimator2().horizontalLength()*tan(dump->collimator2().angleV()),
 							 
 							 -dump->enclosureHalfSize()[2] + 0.5*dump->collimator2().horizontalLength());
@@ -423,6 +551,10 @@ namespace mu2e {
 				  logicalEnclosure,
 				  collimator2centerInShielding,
 				  config);
+
+
+    //----------------
+    constructFilterMagnet(*dump, magnetPit, config);
 
     //----------------------------------------------------------------
     // Create hall walls that are inside the formal hall box

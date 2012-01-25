@@ -55,6 +55,13 @@ namespace mu2e {
     m_det->_collimator1 = readCollimatorExtMonFNAL("collimator1", c);
     m_det->_collimator2 = readCollimatorExtMonFNAL("collimator2", c);
 
+    c.getVectorDouble("extMonFilter.magnet.outerHalfSize", m_det->_magnetOuterHalfSize, 3);
+    m_det->_magnetAptertureWidth = c.getDouble("extMonFilter.magnet.apertureWidth") * CLHEP::mm;
+    m_det->_magnetAptertureHeight = c.getDouble("extMonFilter.magnet.apertureHeight") * CLHEP::mm;
+    m_det->_magnetFieldStrength = c.getDouble("extMonFilter.magnet.fieldStrength") * CLHEP::tesla;
+
+    m_det->_extMonFilter_nominalMomentum = c.getDouble("extMonFilter.nominalMomentum") * CLHEP::MeV;
+
     // position
     m_det->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
     const double coreRotY = m_det->_coreRotY = c.getDouble("protonBeamDump.coreRotY") * CLHEP::degree;
