@@ -76,9 +76,9 @@ namespace mu2e {
       double m_roomCenterHeightAboveDumpCore;
       CLHEP::Hep3Vector m_roomCenterInMu2e;
 
-      CLHEP::Hep3Vector m_detectorCenterInRoom;
-      CLHEP::HepRotation m_detectorRotationInRoom;
       std::vector<double> m_detectorHalfSize;
+      CLHEP::HepRotation m_detectorRotationInRoom;
+      CLHEP::Hep3Vector m_detectorCenterInRoom;
 
       // Sensor center positions
       std::vector<double> m_sensor_zoffset;
