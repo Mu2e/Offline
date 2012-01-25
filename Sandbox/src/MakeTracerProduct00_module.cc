@@ -1,9 +1,9 @@
 //
 // Add a TracerProduct to the event and watch what happens.
 //
-// $Id: MakeTracerProduct00_module.cc,v 1.3 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: MakeTracerProduct00_module.cc,v 1.4 2012/01/25 22:46:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 22:46:13 $
 //
 // Original author Rob Kutschke
 //
@@ -38,7 +38,7 @@ namespace mu2e {
 
   };
 
-  MakeTracerProduct00::MakeTracerProduct00(fhicl::ParameterSet const& pset){
+  MakeTracerProduct00::MakeTracerProduct00(fhicl::ParameterSet const& ){
     produces<TracerProduct>();
   }
 
@@ -55,4 +55,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::MakeTracerProduct00;
-DEFINE_ART_MODULE(MakeTracerProduct00);
+DEFINE_ART_MODULE(MakeTracerProduct00)

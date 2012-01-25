@@ -1,9 +1,9 @@
 //
 // Plugin to test some features of FHICL.
 //
-// $Id: FHICLTest00_module.cc,v 1.2 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: FHICLTest00_module.cc,v 1.3 2012/01/25 22:46:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 22:46:13 $
 //
 // Original author Rob Kutschke.
 //
@@ -78,10 +78,10 @@ namespace mu2e {
 
   }
 
-  void FHICLTest00::analyze(art::Event const& event) {
+  void FHICLTest00::analyze(art::Event const& ) {
   }
 
 }
 
 using mu2e::FHICLTest00;
-DEFINE_ART_MODULE(FHICLTest00);
+DEFINE_ART_MODULE(FHICLTest00)

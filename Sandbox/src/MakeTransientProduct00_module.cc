@@ -1,9 +1,9 @@
 //
 // Test of producing one type of transient data product.
 //
-// $Id: MakeTransientProduct00_module.cc,v 1.4 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: MakeTransientProduct00_module.cc,v 1.5 2012/01/25 22:46:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 22:46:13 $
 //
 // Original author Rob Kutschke
 //
@@ -36,7 +36,7 @@ namespace mu2e {
 
   };
 
-  MakeTransientProduct00::MakeTransientProduct00(fhicl::ParameterSet const& pset){
+  MakeTransientProduct00::MakeTransientProduct00(fhicl::ParameterSet const& ){
     produces<TransientProduct00Collection>();
   }
 
@@ -61,4 +61,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::MakeTransientProduct00;
-DEFINE_ART_MODULE(MakeTransientProduct00);
+DEFINE_ART_MODULE(MakeTransientProduct00)

@@ -1,9 +1,9 @@
 //
 // Plugin to readback the TracerProduct.
 //
-// $Id: ReadTracerProduct00_module.cc,v 1.3 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: ReadTracerProduct00_module.cc,v 1.4 2012/01/25 22:46:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 22:46:13 $
 //
 // Original author Rob Kutschke.
 //
@@ -31,7 +31,7 @@ namespace mu2e {
   //
   class ReadTracerProduct00 : public art::EDAnalyzer {
   public:
-    explicit ReadTracerProduct00(fhicl::ParameterSet const& pset){}
+    explicit ReadTracerProduct00(fhicl::ParameterSet const& ){}
     virtual ~ReadTracerProduct00() { }
 
     void analyze( art::Event const& e);
@@ -58,4 +58,4 @@ namespace mu2e {
 }
 
 using mu2e::ReadTracerProduct00;
-DEFINE_ART_MODULE(ReadTracerProduct00);
+DEFINE_ART_MODULE(ReadTracerProduct00)

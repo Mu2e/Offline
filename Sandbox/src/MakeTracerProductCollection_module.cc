@@ -1,9 +1,9 @@
 //
 // Add a std::vector<TracerProduct> to the event and watch what happens.
 //
-// $Id: MakeTracerProductCollection_module.cc,v 1.2 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: MakeTracerProductCollection_module.cc,v 1.3 2012/01/25 22:46:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 22:46:13 $
 //
 // Original author Rob Kutschke
 //
@@ -38,7 +38,7 @@ namespace mu2e {
 
   };
 
-  MakeVectorTracerProduct00::MakeVectorTracerProduct00(fhicl::ParameterSet const& pset){
+  MakeVectorTracerProduct00::MakeVectorTracerProduct00(fhicl::ParameterSet const& ){
     produces<TracerProductCollection>();
   }
 
@@ -58,4 +58,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::MakeVectorTracerProduct00;
-DEFINE_ART_MODULE(MakeVectorTracerProduct00);
+DEFINE_ART_MODULE(MakeVectorTracerProduct00)

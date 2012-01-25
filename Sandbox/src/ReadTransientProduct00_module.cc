@@ -1,9 +1,9 @@
 //
 // Plugin to readback the transient data product.
 //
-// $Id: ReadTransientProduct00_module.cc,v 1.3 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: ReadTransientProduct00_module.cc,v 1.4 2012/01/25 22:46:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 22:46:13 $
 //
 // Original author Rob Kutschke.
 //
@@ -29,7 +29,7 @@ namespace mu2e {
   //
   class ReadTransientProduct00 : public art::EDAnalyzer {
   public:
-    explicit ReadTransientProduct00(fhicl::ParameterSet const& pset){}
+    explicit ReadTransientProduct00(fhicl::ParameterSet const& ){}
     virtual ~ReadTransientProduct00() { }
 
     void analyze( art::Event const& e);
@@ -55,7 +55,7 @@ namespace mu2e {
 
 
     if ( prod.size() != hits.size() ) {
-      cout << "Error: Read sizes are: " 
+      cout << "Error: Read sizes are: "
            << prod.size()  << " "
            << hits.size()  << " "
            << endl;
@@ -70,14 +70,14 @@ namespace mu2e {
       //if ( s0.strawIndex() != s1.strawIndex() ) {
       if ( &s0 != &s1 ) {
         ++nbad;
-        cout << "Event: " 
+        cout << "Event: "
              << event.id()
-             << " Straw: " 
+             << " Straw: "
              << s0.strawIndex() << " "
              << s1.strawIndex() << " "
              << endl;
       }
-      
+
     }
 
     if ( nbad > 0 ){
@@ -93,4 +93,4 @@ namespace mu2e {
 
 
 using mu2e::ReadTransientProduct00;
-DEFINE_ART_MODULE(ReadTransientProduct00);
+DEFINE_ART_MODULE(ReadTransientProduct00)
