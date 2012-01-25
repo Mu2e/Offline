@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.12 2011/08/03 18:31:25 mf Exp $
-// $Author: mf $
-// $Date: 2011/08/03 18:31:25 $
+// $Id: Sector.hh,v 1.13 2012/01/25 20:29:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 20:29:24 $
 //
 // Original author Rob Kutschke
 //
@@ -80,9 +80,9 @@ namespace mu2e {
 
     const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
 
-    const double         boxRxAngle()     const { return _boxRxAngle;     }
-    const double         boxRyAngle()     const { return _boxRyAngle;     }
-    const double         boxRzAngle()     const { return _boxRzAngle;     }
+    double         boxRxAngle()     const { return _boxRxAngle;     }
+    double         boxRyAngle()     const { return _boxRyAngle;     }
+    double         boxRzAngle()     const { return _boxRzAngle;     }
     const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
 
     std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{

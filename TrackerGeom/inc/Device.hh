@@ -3,9 +3,9 @@
 //
 // Hold information about one device in a tracker.
 //
-// $Id: Device.hh,v 1.7 2011/05/22 19:09:16 kutschke Exp $
+// $Id: Device.hh,v 1.8 2012/01/25 20:29:24 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2012/01/25 20:29:24 $
 //
 // Original author Rob Kutschke
 //
@@ -49,7 +49,7 @@ namespace mu2e {
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     // Accessors
-    const DeviceId id() const { return _id;}
+    DeviceId id() const { return _id;}
 
     double rotation() const { return _rotation; }
 

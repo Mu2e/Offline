@@ -3,9 +3,9 @@
 //
 // Hold information about one station in a tracker.
 //
-// $Id: Station.hh,v 1.1 2011/08/03 18:31:25 mf Exp $
-// $Author: mf $
-// $Date: 2011/08/03 18:31:25 $
+// $Id: Station.hh,v 1.2 2012/01/25 20:29:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/01/25 20:29:23 $
 //
 // Original author Mark Fischler
 //
@@ -42,7 +42,7 @@ namespace mu2e {
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     // Accessors
-    const StationId id() const { return _id;}
+    const StationId& id() const { return _id;}
 
     // TODO MAYBE - If we allow for variances in rotatoinal orientation
     //              and/or XY origin, we ought to have accessors for that
