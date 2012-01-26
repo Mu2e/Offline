@@ -2,9 +2,9 @@
 #define Mu2eG4_SensitiveDetectorName_hh
 // Define names of Sensitive Detectors
 //
-// $Id: SensitiveDetectorName.hh,v 1.8 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: SensitiveDetectorName.hh,v 1.9 2012/01/26 21:56:50 genser Exp $
+// $Author: genser $
+// $Date: 2012/01/26 21:56:50 $
 //
 // Original author KLG
 
@@ -50,6 +50,10 @@ namespace mu2e {
 
     static char const * CRSScintillatorBar(){
       return "CRSScintillatorBar";
+    }
+
+    static char const * TTrackerDeviceSupport(){
+      return "TTrackerDeviceSupport";
     }
 
   };
