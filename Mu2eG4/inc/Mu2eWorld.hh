@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.38 2011/11/02 21:29:52 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/02 21:29:52 $
+// $Id: Mu2eWorld.hh,v 1.39 2012/01/26 21:57:12 genser Exp $
+// $Author: genser $
+// $Date: 2012/01/26 21:57:12 $
 //
 // Original author Rob Kutschke
 //
@@ -97,6 +97,8 @@ namespace mu2e {
 
     // Access to the G4HelperService.
     G4Helper * _helper;
+
+    int  _verbosityLevel;
 
   };
 
