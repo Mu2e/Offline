@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 #
-# $Id: transportOnly.fcl,v 1.7 2011/06/09 19:21:53 genser Exp $
+# $Id: transportOnly.fcl,v 1.8 2012/01/26 21:53:59 genser Exp $
 # $Author: genser $
-# $Date: 2011/06/09 19:21:53 $
+# $Date: 2012/01/26 21:53:59 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -75,6 +75,7 @@ physics :
       diagLevel            : 0
       generatorModuleLabel : generate
 #      visMacro             : "Mu2eG4/test/visxy.mac"
+#      visMacro             : "Mu2eG4/test/visxz.mac"
 #      visMacro             : "Mu2eG4/test/visyz.mac"
 #      visMacro             : "Mu2eG4/test/vis45.mac"
 #      visMacro             : "Mu2eG4/test/visTree.mac"
@@ -111,6 +112,17 @@ physics :
       maxFullPrint         : 201
     }
 
+    # Look at the hits from TTrackerDeviceSupport Sensitive Detectors
+    checksdd:
+    {
+      module_type          : ReadTTrackerDSDetectors
+      diagLevel            : 0
+      hitMakerModuleLabel  : g4run
+      sddStepPoints        : ttrackerDS
+      maxFullPrint         : 201
+
+    }
+
 #    randomsaver:@local::randomsaver
 
   }
@@ -118,7 +130,7 @@ physics :
   p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
   # randomsaver is currently broken.
   # e1 : [randomsaver, checkhits, outfile]
-  e1 : [checkhits, outfile]
+  e1 : [checkhits, checksdd, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
