@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.112 2012/01/10 22:28:43 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/01/10 22:28:43 $
+// $Id: Mu2eWorld.cc,v 1.113 2012/01/26 21:55:48 genser Exp $
+// $Author: genser $
+// $Date: 2012/01/26 21:55:48 $
 //
 // Original author Rob Kutschke
 //
@@ -61,6 +61,7 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
 #include "Mu2eG4/inc/ExtMonUCITofSD.hh"
+#include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestTorus.hh"
@@ -169,7 +170,7 @@ namespace mu2e {
   // Construct all of the Mu2e world, hall, detectors, beamline ...
   G4VPhysicalVolume * Mu2eWorld::constructWorld(){
     
-    int static const diagLevel = _config->getInt("world.verbosityLevel", 0);
+    _verbosityLevel = _config->getInt("world.verbosityLevel", 0);
     art::ServiceHandle<GeometryService> geom;
 
     // If you play with the order of these calls, you may break things.
@@ -184,21 +185,21 @@ namespace mu2e {
 
     VolumeInfo worldVInfo = constructWorldVolume(_config);
 
-    if ( diagLevel > 0) {
+    if ( _verbosityLevel > 0) {
       cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << endl;
       cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << endl;
     }
 
     VolumeInfo dirtInfo  = constructDirt( worldVInfo,_config );
 
-    if ( diagLevel > 0) {
+    if ( _verbosityLevel > 0) {
       cout << __func__ << " dirtInfo.centerInParent   : " <<  dirtInfo.centerInParent << endl;
       cout << __func__ << " dirtInfo.centerInWorld    : " <<  dirtInfo.centerInWorld  << endl;
     }
 
     VolumeInfo hallInfo  = constructHall( dirtInfo,_config );
 
-    if ( diagLevel > 0) {
+    if ( _verbosityLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
       cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
@@ -299,6 +300,12 @@ namespace mu2e {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
     }
 
+    if ( _verbosityLevel > 0) {
+      cout << "detSolDownstreamVacInfo.centerInMu2e().x() =" << detSolDownstreamVacInfo.centerInMu2e().x() << endl;
+      cout << "detSolDownstreamVacInfo.centerInMu2e().y() =" << detSolDownstreamVacInfo.centerInMu2e().y() << endl;
+      cout << "detSolDownstreamVacInfo.centerInMu2e().z() =" << detSolDownstreamVacInfo.centerInMu2e().z() << endl;
+    }
+
     return trackerInfo;
 
   } // end Mu2eWorld::constructTracker
@@ -310,8 +317,10 @@ namespace mu2e {
     // The target is built inside this volume.
     VolumeInfo const & detSolUpstreamVacInfo   = _helper->locateVolInfo("ToyDS2Vacuum");
 
-    cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
-    cout << "detSolUpstreamVacInfo.centerInMu2e().z() =" << detSolUpstreamVacInfo.centerInMu2e().z() << endl;
+    if ( _verbosityLevel > 0) {
+      cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
+      cout << "detSolUpstreamVacInfo.centerInMu2e().z() =" << detSolUpstreamVacInfo.centerInMu2e().z() << endl;
+    }
 
     // Buid the stopping target
     VolumeInfo targetInfo = ( _config->getBool("hasTarget",false) ) ?
@@ -588,15 +597,20 @@ namespace mu2e {
     ExtMonFNAL_SD* emfSD     = new ExtMonFNAL_SD(    SensitiveDetectorName::ExtMonFNAL(),     *_config);
     SDman->AddNewDetector(emfSD);
 
-    ExtMonUCITofSD* emuTofSD     = new ExtMonUCITofSD(    SensitiveDetectorName::ExtMonUCITof(),     *_config);
+    ExtMonUCITofSD* emuTofSD = new ExtMonUCITofSD(    SensitiveDetectorName::ExtMonUCITof(),  *_config);
     SDman->AddNewDetector(emuTofSD);
 
     StoppingTargetSD* stSD = new StoppingTargetSD(  SensitiveDetectorName::StoppingTarget(),  *_config);
     SDman->AddNewDetector(stSD);
 
-    CRSScintillatorBarSD* sbSD = new CRSScintillatorBarSD(SensitiveDetectorName::CRSScintillatorBar(), *_config);
+    CRSScintillatorBarSD* sbSD = 
+      new CRSScintillatorBarSD(SensitiveDetectorName::CRSScintillatorBar(), *_config);
     SDman->AddNewDetector(sbSD);
 
+    TTrackerDeviceSupportSD* ttdsSD = 
+      new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), *_config);
+    ttdsSD->SetVerboseLevel(_verbosityLevel);
+    SDman->AddNewDetector(ttdsSD);
 
   } // instantiateSensitiveDetectors
 
