@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.31 2012/01/08 17:51:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/08 17:51:23 $
+// $Id: G4_module.cc,v 1.32 2012/01/26 21:56:35 genser Exp $
+// $Author: genser $
+// $Date: 2012/01/26 21:56:35 $
 //
 // Original author Rob Kutschke
 //
@@ -87,6 +87,7 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
 #include "Mu2eG4/inc/ExtMonUCITofSD.hh"
+#include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Analyses/inc/DiagnosticsG4.hh"
@@ -149,6 +150,7 @@ namespace mu2e {
       _caloROOutputName("calorimeterRO"),
       _extMonFNALOutputName("ExtMonFNAL"),
       _extMonUCITofOutputName("ExtMonUCITof"),
+      _ttrackerDeviceSupportOutputName("ttrackerDS"),
       _diagnostics(){
 
       produces<StepPointMCCollection>(_trackerOutputName);
@@ -160,6 +162,7 @@ namespace mu2e {
       produces<StepPointMCCollection>(_caloROOutputName);
       produces<StepPointMCCollection>(_extMonFNALOutputName);
       produces<StepPointMCCollection>(_extMonUCITofOutputName);
+      produces<StepPointMCCollection>(_ttrackerDeviceSupportOutputName);
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,art::InRun>();
       produces<PointTrajectoryCollection>();
@@ -219,6 +222,7 @@ namespace mu2e {
     const std::string  _caloROOutputName;
     const std::string  _extMonFNALOutputName;
     const std::string  _extMonUCITofOutputName;
+    const std::string  _ttrackerDeviceSupportOutputName;
 
     DiagnosticsG4 _diagnostics;
 
@@ -352,6 +356,7 @@ namespace mu2e {
     auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     extMonFNALHits(    new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     extMonUCITofHits(  new StepPointMCCollection);
+    auto_ptr<StepPointMCCollection>     ttrackerDeviceSupportHits(  new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
     // ProductID for SimParticleCollection
@@ -412,6 +417,10 @@ namespace mu2e {
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonUCITof()))->
       beforeG4Event(*extMonUCITofHits, _processInfo, simPartId, event );
 
+    static_cast<TTrackerDeviceSupportSD*>
+      (SDman->FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport()))->
+      beforeG4Event(*ttrackerDeviceSupportHits, _processInfo, simPartId, event );
+
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );
     G4Event const* g4event = _runManager->getCurrentEvent();
@@ -464,6 +473,7 @@ namespace mu2e {
     event.put(caloROHits, _caloROOutputName);
     event.put(extMonFNALHits, _extMonFNALOutputName);
     event.put(extMonUCITofHits,  _extMonUCITofOutputName);
+    event.put(ttrackerDeviceSupportHits, _ttrackerDeviceSupportOutputName);
     event.put(pointTrajectories);
 
     // Pause to see graphics.
