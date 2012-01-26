@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.24 2011/06/09 19:58:55 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.25 2012/01/26 21:57:42 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/09 19:58:55 $
+// $Date: 2012/01/26 21:57:42 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -166,9 +166,12 @@ namespace mu2e{
 
     // place the support material here
 
+    TubsParams ttrackerDeviceSupportParams = ttracker.getSupportParams().getTubsParams();
+
+
     G4Colour  lightBlue (0.0, 0.0, 0.75);
     VolumeInfo supportInfo = nestTubs( "TTrackerDeviceSupport",
-                                       ttracker.getSupportParams().getTubsParams(),
+                                       ttrackerDeviceSupportParams,
                                        findMaterialOrThrow(ttracker.getSupportParams().materialName()),
                                        0,
                                        zeroVector,
@@ -181,6 +184,21 @@ namespace mu2e{
                                        true,
                                        doSurfaceCheck
                                        );
+
+    if ( verbosityLevel > 0) {
+      cout << "TTrackerDeviceSupport params: "
+           << ttrackerDeviceSupportParams.innerRadius() << " "
+           << ttrackerDeviceSupportParams.outerRadius() << " "
+           << ttrackerDeviceSupportParams.zHalfLength() << " "
+           << endl;
+    }
+
+    // Make TTrackerDeviceSupport a sensitive detector for radiation damage studies
+
+    supportInfo.logical->
+      SetSensitiveDetector(G4SDManager::GetSDMpointer()->
+                           FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport()) );
+
 
     if (verbosityLevel > 0 ) {
       int oldPrecision = cout.precision(newPrecision);
