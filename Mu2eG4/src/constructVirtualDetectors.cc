@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.14 2012/01/25 02:02:00 youzy Exp $
+// $Id: constructVirtualDetectors.cc,v 1.15 2012/01/26 09:16:30 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/01/25 02:02:00 $
+// $Date: 2012/01/26 09:16:30 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -90,14 +90,14 @@ namespace mu2e {
     // FIXME: one should factorize some the code below; the main
     // things which change: parent and offset
     for( int vdId=VirtualDetectorId::Coll1_In; 
-	 vdId<=VirtualDetectorId::Coll1_Out; 
-	 ++vdId) if( vdg->exist(vdId) ) {
+         vdId<=VirtualDetectorId::Coll1_Out; 
+         ++vdId) if( vdg->exist(vdId) ) {
         VolumeInfo const & parent = _helper->locateVolInfo("ToyTS1Vacuum");
         if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
         }
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-				  vdParams, vacuumMaterial, 0,
+                                  vdParams, vacuumMaterial, 0,
                                   vdg->getLocal(vdId),
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -112,14 +112,14 @@ namespace mu2e {
     // Virtual Detectors Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed inside TS3
 
     for( int vdId=VirtualDetectorId::Coll31_In;
-	 vdId<=VirtualDetectorId::Coll32_Out;
-	 ++vdId) if( vdg->exist(vdId) ) {
+         vdId<=VirtualDetectorId::Coll32_Out;
+         ++vdId) if( vdg->exist(vdId) ) {
         VolumeInfo const & parent = _helper->locateVolInfo("ToyTS3Vacuum");
         if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
         }
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-				  vdParams, vacuumMaterial, 0,
+                                  vdParams, vacuumMaterial, 0,
                                   vdg->getLocal(vdId),
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -134,14 +134,14 @@ namespace mu2e {
     // Virtual Detectors Coll5_In, Coll5_Out are placed inside TS5
 
     for( int vdId=VirtualDetectorId::Coll5_In; 
-	 vdId<=VirtualDetectorId::Coll5_Out; 
-	 ++vdId) if( vdg->exist(vdId) ) {
+         vdId<=VirtualDetectorId::Coll5_Out; 
+         ++vdId) if( vdg->exist(vdId) ) {
         VolumeInfo const & parent = _helper->locateVolInfo("ToyTS5Vacuum");
         if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
         }
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-				  vdParams, vacuumMaterial, 0,
+                                  vdParams, vacuumMaterial, 0,
                                   vdg->getLocal(vdId),
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -174,8 +174,8 @@ namespace mu2e {
     }
 
     for( int vdId=VirtualDetectorId::ST_In; 
-	 vdId<=VirtualDetectorId::ST_Out; 
-	 ++vdId) if( vdg->exist(vdId) ) {
+         vdId<=VirtualDetectorId::ST_Out; 
+         ++vdId) if( vdg->exist(vdId) ) {
       
         if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
@@ -201,7 +201,7 @@ namespace mu2e {
         }
 
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-				  vdParamsTarget, vacuumMaterial, 0,
+                                  vdParamsTarget, vacuumMaterial, 0,
                                   vdg->getLocal(vdId),
                                   parent,
                                   vdId,
@@ -236,7 +236,7 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
         double zvd = vdg->getGlobal(vdId).z();
         cout << __func__  << " " << VirtualDetector::volumeName(vdId) <<
-	  " z, r : " << zvd << ", " << irvd << " " << orvd << endl;
+          " z, r : " << zvd << ", " << irvd << " " << orvd << endl;
       }
 
       TubsParams vdParamsTTracker(irvd,orvd,vdHalfLength);
@@ -244,7 +244,7 @@ namespace mu2e {
       VolumeInfo const & parent = _helper->locateVolInfo("TrackerMother");
 
       VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-				vdParamsTTracker, vacuumMaterial, 0,
+                                vdParamsTTracker, vacuumMaterial, 0,
                                 vdg->getLocal(vdId),
                                 parent,
                                 vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -277,11 +277,11 @@ namespace mu2e {
         if ( verbosityLevel > 0) {
           double zvd = vdg->getGlobal(vdId).z();
           cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-	    " z, r : " << zvd  << ", " << irvd << endl;
+            " z, r : " << zvd  << ", " << irvd << endl;
         }
 
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-				  vdParamsTTrackerInner, vacuumMaterial, 0,
+                                  vdParamsTTrackerInner, vacuumMaterial, 0,
                                   vdLocalOffset,
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -632,33 +632,33 @@ namespace mu2e {
       hlen[2] = vdg->getHalfLength();
 
       CLHEP::Hep3Vector shieldingFaceCenterInMu2e( (dump->shieldingFaceXmin()+dump->shieldingFaceXmax())/2,
-						   dump->enclosureCenterInMu2e()[1],
-						   (dump->shieldingFaceZatXmin()+dump->shieldingFaceZatXmax())/2
-						   );
+                                                    dump->enclosureCenterInMu2e()[1],
+                                                    (dump->shieldingFaceZatXmin()+dump->shieldingFaceZatXmax())/2
+                                                 );
 
       CLHEP::Hep3Vector vdOffset(dump->enclosureRotationInMu2e().inverse() * CLHEP::Hep3Vector(0, 0, hlen[2]));
       
 
       if ( verbosityLevel > 0) {
-	std::cout<<"shieldingFaceCenterInMu2e = "<<shieldingFaceCenterInMu2e
-		 <<", parent.centerInMu2e() = "<<parent.centerInMu2e()
-		 <<", vdOffset = "<<vdOffset
-		 <<std::endl;
+        std::cout<<"shieldingFaceCenterInMu2e = "<<shieldingFaceCenterInMu2e
+                 <<", parent.centerInMu2e() = "<<parent.centerInMu2e()
+                 <<", vdOffset = "<<vdOffset
+                 <<std::endl;
       }
 
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
-				  hlen, 
-				  vacuumMaterial, 
-				  &dump->enclosureRotationInMu2e(),
-				  shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
-				  parent,
-				  vdId, 
-				  vdIsVisible,
-				  G4Color::Red(), 
-				  vdIsSolid,
-				  forceAuxEdgeVisible,
-				  placePV,
-				  false);
+                                  hlen, 
+                                  vacuumMaterial, 
+                                  &dump->enclosureRotationInMu2e(),
+                                  shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
+                                  parent,
+                                  vdId, 
+                                  vdIsVisible,  
+                                  G4Color::Red(), 
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false);
 
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
@@ -669,37 +669,37 @@ namespace mu2e {
 
     for(int vdId = VirtualDetectorId::EMFC1Exit; vdId <= VirtualDetectorId::EMFC2Entrance; ++vdId) {
       if( vdg->exist(vdId) ) {
-	
-	if ( verbosityLevel > 0) {
-	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-	}
-	
-	VolumeInfo const & parent = _helper->locateVolInfo("ProtonBeamDumpMagnetPit");
-	GeomHandle<ProtonBeamDump> dump;
-	
-	std::vector<double> hlen(3);
-	hlen[0] = dump->magnetPitHalfSize()[0];
-	hlen[1] = dump->magnetPitHalfSize()[1];
-	hlen[2] = vdg->getHalfLength();
-	
-	VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
-				    hlen, 
-				    vacuumMaterial, 
-				    0,
-				    vdg->getLocal(vdId),
-				    parent,
-				    vdId, 
-				    vdIsVisible,
-				    G4Color::Red(), 
-				    vdIsSolid,
-				    forceAuxEdgeVisible,
-				    placePV,
-				    false);
-	
-	// vd are very thin, a more thorough check is needed
-	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-	
-	vdInfo.logical->SetSensitiveDetector(vdSD);
+        
+        if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+        }
+        
+        VolumeInfo const & parent = _helper->locateVolInfo("ProtonBeamDumpMagnetPit");
+        GeomHandle<ProtonBeamDump> dump;
+        
+        std::vector<double> hlen(3);
+        hlen[0] = dump->magnetPitHalfSize()[0];
+        hlen[1] = dump->magnetPitHalfSize()[1];
+        hlen[2] = vdg->getHalfLength();
+        
+        VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
+                                    hlen, 
+                                    vacuumMaterial, 
+                                    0,
+                                    vdg->getLocal(vdId),
+                                    parent,
+                                    vdId, 
+                                    vdIsVisible,
+                                    G4Color::Red(), 
+                                    vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false);
+        
+        // vd are very thin, a more thorough check is needed
+        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        
+        vdInfo.logical->SetSensitiveDetector(vdSD);
       }
     }
 
@@ -707,37 +707,36 @@ namespace mu2e {
     if( vdg->exist(vdId) ) {
       
       if ( verbosityLevel > 0) {
-	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
       }
-	
+        
       VolumeInfo const & parent = _helper->locateVolInfo("ExtMonFNALRoom");
       GeomHandle<ExtMonFNAL::ExtMon> extmon;
-	
+        
       std::vector<double> hlen(3);
       hlen[0] = extmon->roomHalfSize()[0];
       hlen[1] = extmon->roomHalfSize()[1];
       hlen[2] = 50;//vdg->getHalfLength();
-	
+        
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
-				  hlen, 
-				  vacuumMaterial, 
-				  0,
-				  vdg->getLocal(vdId),
-				  parent,
-				  vdId, 
-				  vdIsVisible,
-				  G4Color::Red(), 
-				  vdIsSolid,
-				  forceAuxEdgeVisible,
-				  placePV,
-				  false);
-	
+                                  hlen, 
+                                  vacuumMaterial, 
+                                  0,
+                                  vdg->getLocal(vdId),
+                                  parent,
+                                  vdId, 
+                                  vdIsVisible,
+                                  G4Color::Red(), 
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false);
+        
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-	
+        
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
-
 
     // placing virtual detector on the exit (beam dump direction) of PS
     vdId = VirtualDetectorId::PS_FrontExit;
@@ -750,7 +749,6 @@ namespace mu2e {
       double rTorus         = beamg->getTS().torusRadius();
       double ts1HalfLength  = beamg->getTS().getTS1().getHalfLength();
 
-      double ps1HalfLengt    = _config->getDouble("toyPS1.vacHalfLength");
       TubsParams psCryoParams( _config->getDouble("toyPS.rIn"),
                                _config->getDouble("toyPS.rOut"),
                                _config->getDouble("toyPS.CryoHalfLength"));
@@ -783,7 +781,6 @@ namespace mu2e {
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
-
 
     // placing virtual detector on the entrance of ExtMonUCI
     vdId = VirtualDetectorId::EMIEntrance;
