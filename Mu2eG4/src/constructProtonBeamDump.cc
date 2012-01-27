@@ -529,6 +529,151 @@ namespace mu2e {
     }
 
     //----------------------------------------------------------------
+    // Add some volumes for visualization purposes.
+    // 
+    // ROOT's OpenGL graphics refuses to display in a nice way the
+    // ProtonBeamDumpShielding volume.  On the other hand it turns out
+    // the same viewer shows existing VirtualDetectors nicely.  
+    // 
+    // Here we outline the dump shielding using very thin boxes (with
+    // the same thickness as the VirtualDetector dimension)
+    // 
+
+    const bool applyVisualizationKludge = config.getBool("protonBeamDump.applyROOTVisualizationKludge", false);
+    if(applyVisualizationKludge) {
+
+      const double kludgeHalfThickness = 0.01; // the thickness that works with the current root opengl 
+      int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the small thickness
+
+      const bool kludgeIsVisible      = true;
+      const bool kludgeIsSolid        = true; //false
+
+      G4Material* vacuumMaterial      = materialFinder.get("toyDS.insideMaterialName");
+
+      // The vertical side walls go inside the dump concrete
+      if(1) {
+
+	std::vector<double> hlen(3);
+	hlen[0] = kludgeHalfThickness;
+	hlen[1] = dump->enclosureHalfSize()[1];
+	hlen[2] = dump->enclosureHalfSize()[2];
+	
+	VolumeInfo pxInfo = nestBox("BeamDumpShieldingVisKludgePosX", 
+				    hlen,
+				    vacuumMaterial,
+				    0,
+				    CLHEP::Hep3Vector(+dump->enclosureHalfSize()[0] - kludgeHalfThickness, 0., 0.),
+				    logicalEnclosure,
+				    0,
+				    kludgeIsVisible,
+				    G4Color::Grey(),
+				    kludgeIsSolid,
+				    forceAuxEdgeVisible,
+				    true,
+				    false /*surface check*/
+				    );
+
+	// the volumes are very thin, a more thorough check is needed
+	doSurfaceCheck && pxInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	VolumeInfo nxInfo = nestBox("BeamDumpShieldingVisKludgeNegX", 
+				    hlen,
+				    vacuumMaterial,
+				    0,
+				    CLHEP::Hep3Vector(-dump->enclosureHalfSize()[0] + kludgeHalfThickness, 0., 0.),
+				    logicalEnclosure,
+				    0,
+				    kludgeIsVisible,
+				    G4Color::Grey(),
+				    kludgeIsSolid,
+				    forceAuxEdgeVisible,
+				    true,
+				    false /*surface check*/
+				    );
+	
+	// the volumes are very thin, a more thorough check is needed
+	doSurfaceCheck && nxInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      }
+
+      // The top "visualization plane kludge" can't be put inside because of the magnet pit volume
+      // So put both top and bottom planes outside
+      // 
+      // The top surface:
+      if(1) {
+
+	std::vector<double> hlen(3);
+	hlen[0] = dump->enclosureHalfSize()[0];
+	hlen[1] = kludgeHalfThickness;
+	hlen[2] = dump->enclosureHalfSize()[2];
+
+	CLHEP::Hep3Vector kludgeCenterInMu2e(dump->enclosureCenterInMu2e()[0],
+					     dump->enclosureCenterInMu2e()[1]+dump->enclosureHalfSize()[1],
+					     dump->enclosureCenterInMu2e()[2]
+					     );
+	
+	CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotation*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
+	
+	
+	CLHEP::Hep3Vector kludgeOffset(0, 0, kludgeHalfThickness);
+	
+	VolumeInfo pyInfo = nestBox("BeamDumpShieldingVisKludgePosY", 
+				    hlen,
+				    vacuumMaterial,
+				    &rotationInDirt,
+				    kludgeCenterInDirt + kludgeOffset,
+				    beamDumpDirt, // logicalEnclosure,
+				    0,
+				    kludgeIsVisible,
+				    G4Color::Grey(),
+				    kludgeIsSolid,
+				    forceAuxEdgeVisible,
+				    true,
+				    false /*surface check*/
+				    );
+
+	// the volumes are very thin, a more thorough check is needed
+	doSurfaceCheck && pyInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      }
+      
+      // The bottom surface:
+      if(1) {
+
+	std::vector<double> hlen(3);
+	hlen[0] = dump->enclosureHalfSize()[0];
+	hlen[1] = kludgeHalfThickness;
+	hlen[2] = dump->enclosureHalfSize()[2];
+
+	CLHEP::Hep3Vector kludgeCenterInMu2e(dump->enclosureCenterInMu2e()[0],
+					     dump->enclosureCenterInMu2e()[1]-dump->enclosureHalfSize()[1],
+					     dump->enclosureCenterInMu2e()[2]
+					     );
+	
+	CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotation*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
+	
+	
+	CLHEP::Hep3Vector kludgeOffset(0, 0, -kludgeHalfThickness);
+	
+	VolumeInfo nyInfo = nestBox("BeamDumpShieldingVisKludgeNegY", 
+				    hlen,
+				    vacuumMaterial,
+				    &rotationInDirt,
+				    kludgeCenterInDirt + kludgeOffset,
+				    beamDumpDirt, // logicalEnclosure,
+				    0,
+				    kludgeIsVisible,
+				    G4Color::Grey(),
+				    kludgeIsSolid,
+				    forceAuxEdgeVisible,
+				    true,
+				    false /*surface check*/
+				    );
+
+	// the volumes are very thin, a more thorough check is needed
+	doSurfaceCheck && nyInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      }
+    }
+
+    //----------------------------------------------------------------
     if(art::ServiceHandle<GeometryService>()->hasElement<mu2e::ExtMonFNAL::ExtMon>()) {
       constructExtMonFNAL(beamDumpDirt, beamDumpDirtRotation, &rotationInDirt, config);
     }

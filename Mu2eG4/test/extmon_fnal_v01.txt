@@ -17,9 +17,9 @@ int            extmon_fnal.verbosityLevel = 0;
 bool           extmon_fnal.roomVisible   = true;
 bool           extmon_fnal.roomSolid     = false;
 bool           extmon_fnal.detectorBoxVisible   = true;
-bool           extmon_fnal.detectorBoxSolid     = true;
+bool           extmon_fnal.detectorBoxSolid     = false;
 bool           extmon_fnal.detectorPlaneVisible   = true;
-bool           extmon_fnal.detectorPlaneSolid     = false;
+bool           extmon_fnal.detectorPlaneSolid     = true;
 
 // detector location in room: the center is on the continuation
 // of collimator2 center line.   Need to specify just one coord:

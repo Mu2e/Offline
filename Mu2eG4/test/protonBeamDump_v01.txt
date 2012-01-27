@@ -21,6 +21,7 @@ bool           protonBeamDump.neutronCaveVisible = true;
 bool           protonBeamDump.neutronCaveSolid   = false;
 bool           protonBeamDump.magnetPitVisible = true;
 bool           protonBeamDump.magnetPitSolid   = false;
+bool           protonBeamDump.applyROOTVisualizationKludge = false;
 
 // Sizes below are given in mm in this order:
 //  {horizontal transverse to beam, vertical, horizontal along beam}
