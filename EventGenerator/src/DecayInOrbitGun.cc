@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.37 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: DecayInOrbitGun.cc,v 1.38 2012/01/27 20:15:07 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/01/27 20:15:07 $
 //
 // Original author Rob Kutschke
 //
@@ -59,10 +59,11 @@ namespace mu2e {
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
     _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
+    _useFlatSpectrum(config.getBool("decayinorbitGun.useFlatSpectrum", false)),
 
     // Random number distributions; getEngine comes from the base class.
     _randSimpleEnergy(getEngine(), &(binnedEnergySpectrum()[0]), _nbins ),
-
+    _randFlatEnergy(getEngine(),_elow,ehi),
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
@@ -161,7 +162,9 @@ namespace mu2e {
       double e;
       if (_useSimpleSpectrum) {
         e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow);
-      } else if (!_useSimpleSpectrum) {
+      } else if (_useFlatSpectrum) {
+	e = _randFlatEnergy.fire();
+      } else
         e = _randEnergy->fire();
       }
 

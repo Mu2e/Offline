@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.21 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: DecayInOrbitGun.hh,v 1.22 2012/01/27 20:15:07 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/01/27 20:15:07 $
 //
 //
 
@@ -23,6 +23,8 @@
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandFlat.h"
 
 // Forward declarations outside of mu2e namespace.
 class TH1D;
@@ -86,10 +88,14 @@ namespace mu2e {
     // SimpleSpectrum on/off (off is default)
     bool _useSimpleSpectrum;
 
+    // Use flat spectrum (default is off)
+    bool _useFlatSpectrum;
+
     // End: parameters that can be configured from the config file.
 
     // Random number generators.
     CLHEP::RandGeneral _randSimpleEnergy;
+    CLHEP::RandFlat _randFlatEnergy;
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere _randomUnitSphere;
 
