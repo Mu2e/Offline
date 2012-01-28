@@ -1,11 +1,36 @@
 
-  $Id: v1_1_5.txt,v 1.7 2012/01/26 22:47:59 genser Exp $
-  $Author: genser $
-  $Date: 2012/01/26 22:47:59 $
+  $Id: v1_1_5.txt,v 1.8 2012/01/28 07:40:18 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2012/01/28 07:40:18 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_5
+
+8) January 28, 2012 ehrlich
+   -The coordinate transformation of the cosmic rays to the Mu2e coordinate
+    system is now done inside of the CosmicDYB class.
+   -Updated the test which checks whether the cosmic ray production plane is
+    inside the world volume. This test is also done in the CosmicDYB class.
+   -The CosmicProductionPlane class is not needed anymore.
+   -Removed the CosmicToy class.
+   -Bug fix in SimParticleWithHits.cc
+   
+   Removed Files:
+     EventGenerator/inc/CosmicToy.hh
+     EventGenerator/src/CosmicToy.cc
+     GeometryService/inc/CosmicProductionPlane.hh
+     GeometryService/src/CosmicProductionPlane.cc
+     GeometryService/src/CosmicProductionPlaneMaker.hh
+
+   Modified Files:
+     EventGenerator/inc/CosmicDYB.hh
+     EventGenerator/src/CosmicDYB.cc
+     EventGenerator/src/EventGenerator_module.cc
+     GeometryService/src/GeometryService_service.cc
+     GeometryService/src/WorldG4Maker.cc
+     Mu2eG4/src/PrimaryGeneratorAction.cc
+     Mu2eUtilities/src/SimParticlesWithHits.cc
 
 7) January 26, 2012 genser
    Made TTrackerDeviceSupport sensitive detectors
