@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_05.txt,v 1.17 2011/08/26 21:32:18 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Id: genconfig_05.txt,v 1.18 2012/01/28 23:01:55 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/01/28 23:01:55 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -81,7 +81,7 @@ double nuclearCaptureGun.tmin  =  0.;
 double nuclearCaptureGun.tmax  = 1694.;
 
 // Mean multiplicities for the two background generators.
-double cosmictoy.mean =  0.0;
+double cosmicDYB.mean =  0.0;
 double picapture.mean =  0.0;
 
 double ejectedProtonGun.mean = -1;

@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfigCRV.txt,v 1.2 2011/08/26 21:32:18 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Id: genconfigCRV.txt,v 1.3 2012/01/28 23:02:19 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/01/28 23:02:19 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -59,7 +59,7 @@ double primaryProtonGun.tmin  =  700.;
 double primaryProtonGun.tmax  = 1694.;
 
 // Mean multiplicities for the two background generators.
-double cosmictoy.mean =  0.0;
+double cosmicDYB.mean =  0.0;
 double picapture.mean =  0.0;
 
 // This tells emacs to view this file in c++ mode.

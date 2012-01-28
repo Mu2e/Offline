@@ -1,7 +1,6 @@
 // Which generators to enable.
 bool conversionGun.do           = false;
 bool particleGun.do             = false;
-bool cosmictoy.do               = false;
 bool cosmicDYB.do               = false;
 bool picapture.do               = false;
 bool ejectedProtonGun.do        = false;

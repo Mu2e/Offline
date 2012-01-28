@@ -1,15 +1,14 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: ConversionEnergyLossconfig.txt,v 1.1 2010/09/30 16:44:04 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2010/09/30 16:44:04 $
+// $Id: ConversionEnergyLossconfig.txt,v 1.2 2012/01/28 23:02:19 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/01/28 23:02:19 $
 //
 // Original author Rob Kutschke
 
 // Which generators to enable.
 bool conversionGun.do = true;
-bool cosmictoy.do     = false;
 bool cosmicDYB.do     = false;
 bool picapture.do     = false;
 
@@ -22,7 +21,7 @@ double conversionGun.tmin  =  700.;
 double conversionGun.tmax  = 1694.;
 
 // Mean multiplicities for the two background generators.
-double cosmictoy.mean   =   0.0;
+double cosmicDYB.mean   =   0.0;
 double picapture.mean   =   0.0; // guarantees exactly 1
 
 // Configure Daya Bay Cosmic generator.
