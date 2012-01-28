@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.20 2012/01/06 23:28:27 ehrlich Exp $
+// $Id: CosmicDYB.cc,v 1.21 2012/01/28 07:19:53 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/01/06 23:28:27 $
+// $Date: 2012/01/28 07:19:53 $
 //
 // Original author Yury Kolomensky
 //
@@ -37,7 +37,7 @@
 #include "EventGenerator/inc/CosmicDYB.hh"
 #include "EventGenerator/inc/hrndg2.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/CosmicProductionPlane.hh"
+#include "GeometryService/inc/WorldG4.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/rm48.hh"
@@ -104,15 +104,11 @@ namespace mu2e {
 
     // Working space for hrndg2 (working space will be on the heap).
   , _workingSpace( )
+  , _checkedProductionPlane(false)
   {
-
-    GeomHandle<CosmicProductionPlane>()->parametersDYB(config); //can't be called from GeometryService_service
-                                                                //or from the CosmicProductionPlaneMaker,
-                                                                //since it needs the "config" from the 
-                                                                //configuration file (and not the geometry file)
-    _dx=GeomHandle<CosmicProductionPlane>()->cosmicDx();
-    _dz=GeomHandle<CosmicProductionPlane>()->cosmicDz();
-    _y0=GeomHandle<CosmicProductionPlane>()->cosmicOffsetY();
+    _dx=config.getDouble("cosmicDYB.dx",5000);
+    _dz=config.getDouble("cosmicDYB.dz",5000);
+    _y0=config.getDouble("cosmicDYB.y0",0);
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
@@ -195,7 +191,42 @@ namespace mu2e {
 
   CosmicDYB::~CosmicDYB() { }
 
-  void CosmicDYB::generate( GenParticleCollection& genParts ){
+  void CosmicDYB::generate( GenParticleCollection& genParts )
+  {
+
+    GeomHandle<WorldG4>  worldGeom;
+    Hep3Vector const& mu2eOrigin           = worldGeom->mu2eOriginInWorld();
+    Hep3Vector const& cosmicReferencePoint = worldGeom->cosmicReferencePoint();
+
+    if(!_checkedProductionPlane)
+    {
+      _checkedProductionPlane=true;
+      std::vector<double> const& halfLengths = worldGeom->halfLengths();
+
+      double marginXMin = halfLengths[0] + (cosmicReferencePoint.x()-_dx);
+      double marginZMin = halfLengths[2] + (cosmicReferencePoint.z()-_dz);
+      double marginXMax = halfLengths[0] - (cosmicReferencePoint.x()+_dx);
+      double marginZMax = halfLengths[2] - (cosmicReferencePoint.z()+_dz);
+
+      double marginYMin = halfLengths[1] + (cosmicReferencePoint.y()+_y0);
+      double marginYMax = halfLengths[1] - (cosmicReferencePoint.y()+_y0);
+
+      std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
+               <<"in negative x direction: "<<marginXMin<<std::endl
+               <<"in positive x direction: "<<marginXMax<<std::endl
+               <<"in negative y direction: "<<marginYMin<<std::endl
+               <<"in positive y direction: "<<marginYMax<<std::endl
+               <<"in negative z direction: "<<marginZMin<<std::endl
+               <<"in positive z direction: "<<marginZMax<<std::endl<<std::endl;
+
+      checkCosmicRayProductionPlane(marginXMin, "world.margin.xmin");
+      checkCosmicRayProductionPlane(marginXMax, "world.margin.xmax");
+      checkCosmicRayProductionPlane(marginYMin, "world.margin.top");
+      checkCosmicRayProductionPlane(marginYMax, "world.margin.bottom");
+      checkCosmicRayProductionPlane(marginZMin, "world.margin.zmin");
+      checkCosmicRayProductionPlane(marginZMax, "world.margin.zmax");
+    }
+
 
     // Choose the number of electrons to generate this event.
     long n = (_mean < 0) ? static_cast<long>(-_mean) : _randPoissonQ.fire();
@@ -234,14 +265,14 @@ namespace mu2e {
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
 
       // Position in a reference plane that is just above the ground.
-      // We can worry later about the exact meaning of the height.
-      // The G4 interface code ( PrimaryGeneratorAction) will put it
-      // at the right height.
-      // units of (x,y,z)
       double x = (1.-2.*_randFlat.fire())*_dx;
       double y = _y0;
       double z = (1.-2.*_randFlat.fire())*_dz;
       CLHEP::Hep3Vector pos( x, y, z );
+      CLHEP::Hep3Vector posInWorldCoordinates=pos+cosmicReferencePoint;
+      CLHEP::Hep3Vector posInMu2eCoordinates=posInWorldCoordinates-mu2eOrigin;
+
+      worldGeom->inWorldOrThrow(posInMu2eCoordinates);
 
       double time = _tmin + _dt*_randFlat.fire();
 
@@ -263,9 +294,15 @@ namespace mu2e {
       _cosmicChargeH->Fill(-pid/abs(pid));
 
       // Add the cosmic to  the list.
-      genParts.push_back( GenParticle( pid, GenId::cosmicDYB, pos, mom, time));
+      genParts.push_back( GenParticle( pid, GenId::cosmicDYB, posInMu2eCoordinates, mom, time));
 
     }
+  }
+
+  void CosmicDYB::checkCosmicRayProductionPlane(double margin, std::string name)
+  {
+    if(margin<0) throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! \n"
+                                             <<"Increase "<<name<<" by at least "<<-margin<<"\n";
   }
 
 }

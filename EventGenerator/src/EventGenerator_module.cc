@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.9 2011/10/28 18:47:06 greenc Exp $
-  $Author: greenc $
-  $Date: 2011/10/28 18:47:06 $
+  $Id: EventGenerator_module.cc,v 1.10 2012/01/28 07:19:53 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2012/01/28 07:19:53 $
 
   Original author Rob Kutschke
 
@@ -55,7 +55,6 @@
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
-#include "EventGenerator/inc/CosmicToy.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
@@ -148,7 +147,6 @@ namespace mu2e {
     // Which generators will we run?
     bool doConv                 = config.getBool( "conversionGun.do",    true );
     bool doParticleGun          = config.getBool( "particleGun.do",      false );
-    bool doCosmicToy            = config.getBool( "cosmictoy.do",        false );
     bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
     bool doPiCapture            = config.getBool( "picapture.do",        false );
     bool doEjectedProton        = config.getBool( "ejectedProtonGun.do", false );
@@ -163,7 +161,6 @@ namespace mu2e {
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
     if ( doConv)                 _generators.push_back( GeneratorBasePtr( new ConversionGun(    run, config)) );
-    if ( doCosmicToy)            _generators.push_back( GeneratorBasePtr( new CosmicToy(        run, config)) );
     if ( doCosmicDYB)            _generators.push_back( GeneratorBasePtr( new CosmicDYB(        run, config)) );
     if ( doPiCapture)            _generators.push_back( GeneratorBasePtr( new PiCapture(        run, config)) );
     if ( doDIO)                  _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(  run, config)) );

@@ -9,9 +9,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.cc,v 1.7 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: SimParticlesWithHits.cc,v 1.8 2012/01/28 07:19:53 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/01/28 07:19:53 $
 //
 // Original author Rob Kutschke.
 //
@@ -82,6 +82,10 @@ namespace mu2e{
             icontrib != contributingTracks.end(); ++icontrib){
 
         key_type key=*icontrib;
+        if(!sims.has(key)) continue;  //this is only a quick bug fix
+                                      //this case occurs if the number of sim particles 
+                                      //is manually limited in the geometry config file
+                                      //via g4.particlesSizeLimit
 
         // Find the SimParticleInfo in the map; if absent, create it.
         map<key_type,SimParticleInfo>::iterator ii = _hitsPerTrack.find(key);

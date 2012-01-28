@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.15 2012/01/06 23:28:27 ehrlich Exp $
+// $Id: GeometryService_service.cc,v 1.16 2012/01/28 07:19:53 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/01/06 23:28:27 $
+// $Date: 2012/01/28 07:19:53 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,6 @@
 #include "GeometryService/inc/ProductionTargetMaker.hh"
 #include "GeometryService/inc/ProtonBeamDump.hh"
 #include "GeometryService/inc/ProtonBeamDumpMaker.hh"
-#include "GeometryService/src/CosmicProductionPlaneMaker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/TargetMaker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
@@ -171,8 +170,6 @@ namespace mu2e {
       BFieldManagerMaker bfmgr( *_config);
       addDetector( bfmgr.getBFieldManager() );
     }
-
-    addDetector( CosmicProductionPlaneMaker().getCosmicProductionPlanePtr() );
   }
 
   // Check that the configuration is self consistent.

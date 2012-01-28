@@ -13,7 +13,6 @@
 
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/CosmicProductionPlane.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
@@ -106,32 +105,11 @@ namespace mu2e {
     _wg4->_dirtG4Ymin = yCeilingOutside;
 
     if ( diagLevel > 0) {
-      std::cout << __func__ << " yEverest : " <<  yEverest  << std::endl;
+      std::cout << __func__ << " cosmic reference point : " <<  _wg4->_cosmicReferencePoint  << std::endl;
     }
 
     // Selfconsistency check.
-    if ( yEverest > 2.*_wg4->_halfLengths[1] ){
-      throw cet::exception("GEOM")
-        << "Top of the world is outside of the world volume! \n";
-    }
-
-    // check that the cosmic ray production plane is within the world box
-    GeomHandle<CosmicProductionPlane> cosmic;
-
-    if(_wg4->_cosmicReferencePoint.y()+cosmic->cosmicOffsetY() > 2.*_wg4->_halfLengths[1] ||
-       _wg4->_cosmicReferencePoint.y()+cosmic->cosmicOffsetY() < -2.*_wg4->_halfLengths[1])
-    {
-      throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! \n";
-    }
-    if(_wg4->_cosmicReferencePoint.x()+cosmic->cosmicDx() > 2.*_wg4->_halfLengths[0] ||
-       _wg4->_cosmicReferencePoint.x()-cosmic->cosmicDx() < -2.*_wg4->_halfLengths[0])
-    {
-      throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! \n";
-    }
-    if(_wg4->_cosmicReferencePoint.z()+cosmic->cosmicDz() > 2.*_wg4->_halfLengths[2] ||
-       _wg4->_cosmicReferencePoint.z()-cosmic->cosmicDz() < -2.*_wg4->_halfLengths[2])
-    {
-      throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! \n";
-    }
+    CLHEP::Hep3Vector const& cosmicReferenceInMu2e = _wg4->_cosmicReferencePoint - _wg4->_mu2eOriginInWorld;
+    _wg4->inWorldOrThrow(cosmicReferenceInMu2e);
   }
 }
