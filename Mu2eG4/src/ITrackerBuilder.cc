@@ -173,9 +173,9 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 //                                        0);                                                // copy number
 //                }
 
-                double outerWallInnerRadius;
-                double innerWallOuterRadius;
-                double planeEndCapThikness;
+                double outerWallInnerRadius=0.0;
+                double innerWallOuterRadius=0.0;
+                double planeEndCapThikness=0.0;
                 bool   reshapeWall=false;
 
                 multimap<Wall::Walltype,boost::shared_ptr<Wall> >::iterator walls_it;
@@ -397,7 +397,7 @@ VolumeInfo ITrackerBuilder::buildWall(Wall *wall, ITracker::EnCapType endcapType
                         sprintf(tShapeName,"%s_sub%i",shapeName,ishell);
                         sprintf(tVolName,"%s_sub%i",volName,ishell);
                         iRadius+=wall->getThicknesses()->at(ishell);
-                        G4VSolid *tswall;
+                        G4VSolid *tswall=0x0;
                         if (wall->getType()==Wall::endcap ){
                                 if ( endcapType == ITracker::Spherical ) {
                                         tswall = new G4Sphere( tShapeName,oldRadius,iRadius,wall->getSPhi(),wall->getDPhi(),wall->getSTheta(),wall->getDTheta() );

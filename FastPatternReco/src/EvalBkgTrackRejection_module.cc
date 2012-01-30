@@ -1,9 +1,9 @@
 //
 // performance evaluation of the Bkg rejection modules
 //
-// $Id: EvalBkgTrackRejection_module.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: EvalBkgTrackRejection_module.cc,v 1.6 2012/01/30 19:51:42 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/01/30 19:51:42 $
 //
 // Original author G. Tassielli
 //
@@ -310,7 +310,7 @@ namespace mu2e {
 
     StrawId sid;
     bool goodEvent=false;
-    VisibleGenElTrack *signaLEltrk;
+    //VisibleGenElTrack *signaLEltrk;
     std::vector<StrawHitPtr> signElGoodHit;
 
     double ptMeV, rho;
@@ -366,7 +366,7 @@ namespace mu2e {
                                     sel_ptMeV_end = sqrt( pow(lasth._hitMomentum[0],2) + pow(lasth._hitMomentum[1],2) );
                                     sel_plMeV_end = lasth._hitMomentum[2];
                                     _hNhitTrackableEv->Fill(sel_ptMeV,signElGoodHit.size());
-                                    signaLEltrk=&iEltrk;
+                                    //signaLEltrk=&iEltrk;
                             }
                     }
             }

@@ -1,9 +1,9 @@
 //
 // performance a remapping module of the StrawHit in a manner that they can be accessed by Z and Sector IDs
 //
-// $Id: CreateZRotStrawHitMap_module.cc,v 1.2 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: CreateZRotStrawHitMap_module.cc,v 1.3 2012/01/30 19:51:42 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/01/30 19:51:42 $
 //
 // Original author G. Tassielli
 //
@@ -173,7 +173,7 @@ namespace mu2e {
     cout<<"----------------------------------------------------------------"<<endl;
 
     StrawId sid;
-    int stn, layern, devicen, sectorn;
+    int /*stn, layern,*/ devicen, sectorn;
     unsigned int absSect, absZpos;
 
     //double ptMeV, rho;
@@ -260,6 +260,7 @@ namespace mu2e {
             tmpMap._max_Time = gclustgs_it->_relatedTimeCluster->_maxHitTime;
             if (gclustgs_it->_coupling==SctrSttnClusterGroup::good) {
                     tmpMap._min_HStep = (gclustgs_it->_meanPitch - 3.0*gclustgs_it->_sigmaPitch)*zSttDist;
+                    if (tmpMap._min_HStep<0.0) tmpMap._min_HStep=0.0;
                     tmpMap._max_HStep = (gclustgs_it->_meanPitch + 3.0*gclustgs_it->_sigmaPitch)*zSttDist;
 
             }
@@ -273,8 +274,8 @@ namespace mu2e {
                             // cout << "Getting informations about cells" << endl;
 
                             sid     = str.id();
-                            stn     = sid.getStraw();
-                            layern  = sid.getLayer();
+                            //stn     = sid.getStraw();
+                            //layern  = sid.getLayer();
                             devicen = sid.getDevice();
                             sectorn = sid.getSector();
 

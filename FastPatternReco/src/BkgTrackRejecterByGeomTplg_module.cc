@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.7 2012/01/30 19:51:42 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/01/30 19:51:42 $
 //
 // Original author G. Tassielli
 //
@@ -600,8 +600,8 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     int i1peak;
 
     StrawId sid;
-    int stn, layern, devicen, sectorn, stationn;
-    unsigned int absSect, devStId;
+    int stn/*, layern*/, devicen, sectorn, stationn;
+    unsigned int absSect/*, devStId*/;
     unsigned int ihit;
     bool storeNewClstrsGrpFortPeak;
 
@@ -672,12 +672,12 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
                 sid = str.id();
                 stn     = sid.getStraw();
-                layern  = sid.getLayer();
+                //layern  = sid.getLayer();
                 devicen = sid.getDevice();
                 sectorn = sid.getSector();
 
                 absSect = iRot(devicen,sectorn);
-                devStId = absSect*50+stn;
+                //devStId = absSect*50+stn;
 
                 //ihPkStDistTrs->Fill(devStId);
                 ihPkStDistTrs->Fill(absSect,stn);

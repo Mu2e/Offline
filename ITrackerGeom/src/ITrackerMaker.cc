@@ -189,7 +189,7 @@ void ITrackerMaker::Build(){
                 //------------------------------------------------------------------------------
 
                 double inner_radius             =        _r0                               ;
-                double endcap_inner_radius;
+                //double endcap_inner_radius;
                 double outer_radius             =        _rOut                             ;
                 double fieldwire_diameter       =        _fWireDiameter                    ;
                 //double sensewire_diameter       =      _sWireDiameter                    ;
@@ -235,7 +235,7 @@ void ITrackerMaker::Build(){
                 inscribedRadius         = 0.0;
 
 
-                endcap_inner_radius     = inner_radius;
+                //endcap_inner_radius     = inner_radius;
                 extra_EndCap_dist       = 0.0*CLHEP::mm;
                 max_EndCap_dim          = length;
 
