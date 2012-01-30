@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: ExtractElectronsData_module.cc,v 1.6 2012/01/30 20:08:44 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/01/30 20:08:44 $
 //
 // Original author G. Tassielli
 //
@@ -23,6 +23,7 @@
 //#include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -183,7 +184,7 @@ void ExtractElectronsData::beginJob(){
 //  void ExtractElectronsData::analyze(art::Event const& event ) {
 void ExtractElectronsData::produce(art::Event & event ) {
 
-
+//cout<<"-----------------------1---------------------"<<endl;
         auto_ptr<VisibleGenElTrackCollection> genEltrk(new VisibleGenElTrackCollection);
 
 //        const Tracker& tracker = getTrackerOrThrow();
@@ -216,8 +217,8 @@ void ExtractElectronsData::produce(art::Event & event ) {
         art::Handle<GenParticleCollection> genParticles;
         event.getByLabel(_generatorModuleLabel, genParticles);
 
-        art::Handle<SimParticleCollection> simParticles;
-        event.getByLabel(_g4ModuleLabel, simParticles);
+        //art::Handle<SimParticleCollection> simParticles;
+        //event.getByLabel(_g4ModuleLabel, simParticles);
 
         size_t nStrawPerEvent = hits->size();
 
@@ -235,6 +236,7 @@ void ExtractElectronsData::produce(art::Event & event ) {
         double B=1.0;
         CLHEP::Hep2Vector radDir;
         HepGeom::Point3D<double> CirCenter;
+        //cout<<"-----------------------2---------------------"<<endl;
 
         for (size_t i=0; i<nStrawPerEvent; ++i) {
 
@@ -297,6 +299,7 @@ void ExtractElectronsData::produce(art::Event & event ) {
                 ovrlpByProton = false; // in case of overlapping, is there a proton?
                 isFirst = false;       // is the hit of a track that produces the signal (the first in signal arrival time)?
 
+                //cout<<"-----------------------3---------------------"<<endl;
                 for (size_t j = 0; j < mcptr.size(); ++j) {
 
                         //        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
@@ -304,15 +307,23 @@ void ExtractElectronsData::produce(art::Event & event ) {
 
                         // The simulated particle that made this hit.
                         SimParticleCollection::key_type trackId(mchit.trackId());
-                        SimParticle const& sim = simParticles->at(trackId);
+                        //cout<<"-------------- j "<<j<<" trkId "<<trackId<<" -----------"<<endl;
+                        //SimParticle const& sim = simParticles->at(trackId);
+                        art::Ptr<SimParticle> const& simptr = mchit.simParticle();
+                        art::Ptr<SimParticle>::key_type simKey(simptr.key());
+                        SimParticle const& sim = *simptr;
+                        //cout<<"-----------------------3.1---------------------"<<endl;
 
                         isFirst=( j==0 );
                         if ( isFirst ){
                                 for ( size_t jj = 1; jj < mcptr.size(); ++jj) {
                                         //                        if ( trackId != (*mchits)[mcptr[jj].index].trackId() ) {
-                                        if ( trackId != (*(mcptr[jj])).trackId() ) {
+                                        //if ( trackId != (*(mcptr[jj])).trackId() ) {
+                                        //if ( !( simptr== mcptr[jj]->simParticle() ) ) {
+                                        if ( simKey!=mcptr[jj]->simParticle().key() && trackId != (*(mcptr[jj])).trackId() ) {
                                                 overlapped=true;
-                                                if ( (simParticles->at((*(mcptr[jj])).trackId())).pdgId()==2212 ) {
+                                                //if ( (simParticles->at((*(mcptr[jj])).trackId())).pdgId()==2212 ) {
+                                                if ( (*(mcptr[jj])).simParticle()->pdgId()==2212 ) {
                                                         ovrlpByProton=true;
                                                         break;
                                                 }
@@ -328,16 +339,19 @@ void ExtractElectronsData::produce(art::Event & event ) {
 
                                 genEltrk_it=genEltrk->begin();
                                 for ( ; genEltrk_it!=genEltrk->end(); ++genEltrk_it ){
-                                        if ( genEltrk_it->getTrkID()==trackId ) {
+                                        //if ( genEltrk_it->getTrkID()==trackId ) {
+                                        if ( genEltrk_it->getTrkKey()==simKey && genEltrk_it->getTrkID()==trackId ) {
                                                 genEltrk_it->addHitData( StrawHitPtr( pdataHandle, i), mchittime,overlapped,ovrlpByProton,isFirst,mchit.position(),mchit.momentum()  );
                                                 addTrack=false;
                                                 break;
                                         }
                                 }
                                 if (addTrack) {
-                                        genEltrk->push_back( VisibleGenElTrack( trackId, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>( sim.startPosition(), sim.startMomentum() ) ) );
+                                        //genEltrk->push_back( VisibleGenElTrack( trackId, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>( sim.startPosition(), sim.startMomentum() ) ) );
+                                        genEltrk->push_back( VisibleGenElTrack( simKey, trackId, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>( sim.startPosition(), sim.startMomentum() ) ) );
                                         genEltrk->back().addHitData( StrawHitPtr( pdataHandle, i), mchittime,overlapped,ovrlpByProton,isFirst,mchit.position(),mchit.momentum()  );
-                                        GenParticle const& genp = genParticles->at(sim.generatorIndex());
+                                        //GenParticle const& genp = genParticles->at(sim.generatorIndex());
+                                        GenParticle const& genp = *sim.genParticle();
                                         if ( genp.generatorId()==GenId::conversionGun ) genEltrk->back().setConversionEl();
                                 }
 
@@ -346,6 +360,7 @@ void ExtractElectronsData::produce(art::Event & event ) {
                 }
 
         }
+        //cout<<"-----------------------4---------------------"<<endl;
 
         //    std::map<SimParticleCollection::key_type,std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector> >::iterator genEl_it     = genElectrons.begin();
         //    /*std::map<SimParticleCollection::key_type,std::pair<CLHEP::Hep3Vector,CLHEP::Hep3Vector> >::iterator*/ firstHitOfGenEl_it = firstHitOfGenEl.begin();
@@ -383,10 +398,16 @@ void ExtractElectronsData::produce(art::Event & event ) {
                         cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<" phi0 "<< phi0/*/CLHEP::deg*/<<" phi0 at z(-1500) "<< phi0 - CLHEP::twopi*(hdil._hitPoint.getZ()+1500.0)/helStep <<endl;
 
                 }
+                cout<<"Hits of the el track: "<<iEltrk.getNumOfHit() <<" List of hit(Id):"<<endl;
+                for (int ihit=0; ihit<(int)iEltrk.getNumOfHit(); ihit++){
+                        GenElHitData& hdil = iEltrk.getHit(ihit);
+                        if (hdil._isFirst) cout<<"\t"<<hdil._iHit->strawIndex()<<endl;
+                }
 
                 ++genEltrk_it;
         }
 
+        //cout<<"-----------------------5---------------------"<<endl;
         event.put(genEltrk);
 
 
