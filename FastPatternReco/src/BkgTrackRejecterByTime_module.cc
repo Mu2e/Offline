@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.6 2012/01/30 20:00:23 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/01/30 20:00:23 $
 //
 // Original author G. Tassielli
 //
@@ -138,7 +138,9 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 
     // Use efficincy value to simulate the proton rejection by ADC value
     float _protonRejecEff;
+    float _pulseCut;
     bool  _useProtonRejec;
+    bool  _perfectRejec;
     int   _ADCSttnPeriod;
     int   _factorASP;
     bool  _useADCSttnPer;
@@ -206,6 +208,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     _makerModuleLabel(pset.get<string>("makerModuleLabel")),
     _nsigmaForTimeSel(pset.get<float>("nsigmaForTimeSel")),
     _protonRejecEff(pset.get<float>("protonRejecEff",-1.0)),
+    _pulseCut(pset.get<float>("pulseCut",-1.0)),
     _ADCSttnPeriod(pset.get<int>("ADCSttnPeriod",0)),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
    /*_nAccumulate(pset.get<int>("nAccumulate",20)),*/
@@ -244,16 +247,25 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
           if (_nsigmaForTimeSel>0.0) _useSigmaForTimeSel=true;
           else _useSigmaForTimeSel=false;
 
-          if (_protonRejecEff>0.0) {
+          if (_protonRejecEff>0.0 && _pulseCut>0.0) {
                   _useProtonRejec=true;
-                  if (_protonRejecEff>1.0) _protonRejecEff=1.0;
+                  if (_protonRejecEff>=1.0) {
+                          _protonRejecEff=1.0;
+                          _perfectRejec=true;
+                  }
+                  else {
+                          _perfectRejec=false;
+                  }
                   if (_ADCSttnPeriod>0 && _ADCSttnPeriod<18) {
                           _useADCSttnPer=true;
                           _factorASP=2*_ADCSttnPeriod;
                   }
                   else _useADCSttnPer=false;
           }
-          else _useProtonRejec=false;
+          else {
+                  _useProtonRejec=false;
+                  _perfectRejec=false;
+          }
 
           // Tell the framework what we make.
           produces<TrackerHitTimeClusterCollection>();
@@ -388,9 +400,9 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     //    StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
     // Get the persistent data about pointers to StepPointMCs
-    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
-    event.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
-    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
+//    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
+//    event.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
+//    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
 
 //    // Get the persistent data about pointers to StepPointMCs
 //    art::Handle<DPIndexVectorCollection> mcptrHandle;
@@ -417,8 +429,8 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 //    art::Handle<GenParticleCollection> genParticles;
 //    event.getByLabel(_generatorModuleLabel, genParticles);
 
-    art::Handle<SimParticleCollection> simParticles;
-    event.getByLabel(_g4ModuleLabel, simParticles);
+//    art::Handle<SimParticleCollection> simParticles;
+//    event.getByLabel(_g4ModuleLabel, simParticles);
 
 
     clock_t startClock = clock();
@@ -432,8 +444,8 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 //    bool overlapped = false;
 //    bool isFirst = false;
 
-    bool isThereProton=false;
-    bool isElFromTarget=false;
+//    bool isThereProton=false;
+//    bool isElFromTarget=false;
     bool isStationADCEquipped=false;
 
     for (size_t i=0; i<nStrawPerEvent; ++i) {
@@ -442,7 +454,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 //      StrawHitMCTruth const&    truth(hits_truth->at(i));
 //      DPIndexVector   const&    mcptr(hits_mcptr->at(i));
 
-      PtrStepPointMCVector const&    mcptr(hits_mcptr->at(i));
+//      PtrStepPointMCVector const&    mcptr(hits_mcptr->at(i));
 
       starProtRejec = clock();
       if (_useProtonRejec) {
@@ -456,25 +468,27 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
               }
               if ( !_useADCSttnPer || isStationADCEquipped ) {
                       //cout<<"ADC on Station "<<((int) str.id().getDevice()/2)<<endl;
-                      isThereProton=false;
-                      isElFromTarget=false;
-                      for (size_t j = 0; j < mcptr.size(); ++j) {
+                      //isThereProton=false;
+                      //isElFromTarget=false;
+                      //for (size_t j = 0; j < mcptr.size(); ++j) {
 
-                              //        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
-                              StepPointMC const& mchit = *mcptr[j];
+                      //        //        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+                      //        StepPointMC const& mchit = *mcptr[j];
 
-                              // The simulated particle that made this hit.
-                              SimParticleCollection::key_type trackId(mchit.trackId());
-                              SimParticle const& sim = simParticles->at(trackId);
-                              if ( sim.pdgId()==11 && sim.fromGenerator() ) isElFromTarget=true;
-                              if ( sim.pdgId()==2212 ){
-                                      isThereProton=true;
-                                      //break;
-                              }
-                      }
-                      if (isElFromTarget && isThereProton) continue;
-                      if (isThereProton) {
-                              if (_randFlat.fire()<_protonRejecEff) continue;
+                      //        // The simulated particle that made this hit.
+                      //        SimParticleCollection::key_type trackId(mchit.trackId());
+                      //        SimParticle const& sim = simParticles->at(trackId);
+                      //        if ( sim.pdgId()==11 && sim.fromGenerator() ) isElFromTarget=true;
+                      //        if ( sim.pdgId()==2212 ){
+                      //                isThereProton=true;
+                      //                //break;
+                      //        }
+                      //}
+                      //if (isElFromTarget && isThereProton) continue;
+                      //if (isThereProton) {
+                      if (hit.energyDep()>_pulseCut) {
+                              if (_perfectRejec) continue;
+                              else if (_randFlat.fire()<_protonRejecEff) continue;
                       }
               }
       }
@@ -520,12 +534,12 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 
     int nbingroup= (int) intTimeWind/timeBinDim;
     float hit=0.0;
-    float Selhit=0.0;
+    //float Selhit=0.0;
     int binHalf = (int) nbingroup/2;
     int jbin;
     for (int it=1; it<=ntimeBin; it++) {
       hit=0.0;
-      Selhit=0.0;
+      //Selhit=0.0;
       for (int is=0; is<nbingroup; is++) {
         jbin = it -binHalf +is;
         if (jbin<1) continue;
@@ -561,7 +575,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     float * source = new float[ntimeBin];
     float * dest = new float[ntimeBin];
     size_t ntbBytes=ntimeBin*sizeof(float);
-    bool noFittingError=true;
+//    bool noFittingError=true;
 
     TH1F *tmpPeakFit = new TH1F("tmpPeakFit", "", ntimeBin, 0.0, maxTimeHist);
     double *timepeakPos = new double[50];
@@ -642,7 +656,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
                                     //cout<<"----------------------------------------------"<<endl;
                                     ChiRes=abs(1.0-pfit.GetChi());
                                     if ( ( (std::numeric_limits<float>::has_infinity && ChiRes == std::numeric_limits<float>::infinity()) || ChiRes!=ChiRes ) ) {
-                                            noFittingError=false;
+                                            //noFittingError=false;
                                             sigmaFitted=newSigma;
                                             for (int iPF = 0; iPF < nfound; iPF++) timepeakPos[iPF] = PosX[iPF];
                                             delete FixPos;
