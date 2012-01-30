@@ -1,9 +1,9 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: TTDisplayData_module.cc,v 1.7 2012/01/30 20:10:48 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/01/30 20:10:48 $
 //
 // Original author G. Tassielli
 //
@@ -85,7 +85,7 @@ typedef std::multimap<unsigned int, size_t, less<unsigned int> > stbrel;        
 
 typedef std::multimap<unsigned short, unsigned short, less<unsigned short> > ptcsctrrel;                        //"Station Pitch-Station" relation
 typedef std::map<unsigned short, ptcsctrrel> ptcbnrel;                                                          //container for each row "Station Pitch-Station" relation
-typedef std::set<unsigned short, less<unsigned short> > goodsttnrel;                                                               //"good Station" that has at least one vote in both scan direction per row
+typedef std::set<unsigned short, less<unsigned short> > goodsttnrel;                                            //"good Station" that has at least one vote in both scan direction per row
 typedef std::map<unsigned short, goodsttnrel> goodsctrstatnrel;                                                 //container for each row "good Station"
 typedef std::multimap<unsigned short, std::pair<size_t, unsigned short>, less<unsigned short> > ptcclsbrel;     //"Station Pitch-row Cluster" relation ("row Cluster" = cluster along each row in the Station-Sector map)
 typedef std::multimap<unsigned short, ptcclsbrel, less<unsigned short> > ptcmaprowclsrel;                       //container of the "Station Pitch-row Cluster" relation for each sector (row should be see like an alias for sector)
@@ -362,7 +362,9 @@ namespace mu2e {
 
     // Use efficincy value to simulate the proton rejection by ADC value
     float _protonRejecEff;
+    float _pulseCut;
     bool  _useProtonRejec;
+    bool  _perfectRejec;
 
     // Label of the generator.
     std::string _generatorModuleLabel;
@@ -443,6 +445,7 @@ namespace mu2e {
     _makerModuleLabel(pset.get<string>("makerModuleLabel")),
     _sigmaForTimeSel(pset.get<float>("nsigmaForTimeSel")),
     _protonRejecEff(pset.get<float>("protonRejecEff",-1.0)),
+    _pulseCut(pset.get<float>("pulseCut",-1.0)),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
    /*_nAccumulate(pset.get<int>("nAccumulate",20)),*/
     _driftVelocity(pset.get<double>("driftVelocity",0.05)),   // mm/ns
@@ -491,11 +494,20 @@ namespace mu2e {
           if (_sigmaForTimeSel>0.0) _useSigmaForTimeSel=true;
           else _useSigmaForTimeSel=false;
 
-          if (_protonRejecEff>0.0) {
+          if (_protonRejecEff>0.0 && _pulseCut>0.0) {
                   _useProtonRejec=true;
-                  if (_protonRejecEff>1.0) _protonRejecEff=1.0;
+                  if (_protonRejecEff>=1.0) {
+                          _protonRejecEff=1.0;
+                          _perfectRejec=true;
+                  }
+                  else {
+                          _perfectRejec=false;
+                  }
           }
-          else _useProtonRejec=false;
+          else {
+                  _useProtonRejec=false;
+                  _perfectRejec=false;
+          }
  }
 
   void TTDisplayData::beginJob(){
@@ -747,8 +759,8 @@ namespace mu2e {
     art::Handle<GenParticleCollection> genParticles;
     event.getByLabel(_generatorModuleLabel, genParticles);
 
-    art::Handle<SimParticleCollection> simParticles;
-    event.getByLabel(_g4ModuleLabel, simParticles);
+    //art::Handle<SimParticleCollection> simParticles;
+    //event.getByLabel(_g4ModuleLabel, simParticles);
 
 //    // Handle to information about G4 physical volumes.
 //    art::Handle<PhysicalVolumeInfoCollection> volumes;
@@ -799,8 +811,8 @@ namespace mu2e {
     int StrawColor = kCyan-6;
     int noiseColor = kYellow+3;
 
-    bool isThereProton=false;
-    bool isElFromTarget=false;
+//    bool isThereProton=false;
+//    bool isElFromTarget=false;
 
     for (size_t i=0; i<nStrawPerEvent; ++i) {
 
@@ -812,25 +824,28 @@ namespace mu2e {
 
 
       if (_useProtonRejec) {
-              isThereProton=false;
-              isElFromTarget=false;
-              for (size_t j = 0; j < mcptr.size(); ++j) {
-
-                      //        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
-                      StepPointMC const& mchit = *mcptr[j];
-
-                      // The simulated particle that made this hit.
-                      SimParticleCollection::key_type trackId(mchit.trackId());
-                      SimParticle const& sim = simParticles->at(trackId);
-                      if ( sim.pdgId()==11 && sim.isPrimary() /*sim.fromGenerator()*/ ) isElFromTarget=true;
-                      if ( sim.pdgId()==2212 ){
-                              isThereProton=true;
-                              //break;
-                      }
-              }
-              if (isElFromTarget && isThereProton) continue;
-              if (isThereProton) {
-                      if (_randFlat.fire()<_protonRejecEff) continue;
+              //isThereProton=false;
+              //isElFromTarget=false;
+              //for (size_t j = 0; j < mcptr.size(); ++j) {
+              //
+                        //        StepPointMC const& mchit = (*mchits)[mcptr[j].index];
+              //        StepPointMC const& mchit = *mcptr[j];
+              //
+                        // The simulated particle that made this hit.
+              //        SimParticleCollection::key_type trackId(mchit.trackId());
+              //        //SimParticle const& sim = simParticles->at(trackId);
+              //        SimParticle const& sim = *mchit.simParticle();
+              //        if ( sim.pdgId()==11 && sim.isPrimary() /*sim.fromGenerator()*/ ) isElFromTarget=true;
+              //        if ( sim.pdgId()==2212 ){
+              //                isThereProton=true;
+              //                //break;
+              //        }
+              //}
+              //if (isElFromTarget && isThereProton) continue;
+              //if (isThereProton) {
+              if (hit.energyDep()>_pulseCut) {
+                      if (_perfectRejec) continue;
+                      else if (_randFlat.fire()<_protonRejecEff) continue;
               }
       }
       //double hitEnergy = hit.energyDep();
@@ -946,13 +961,17 @@ namespace mu2e {
 
         // The simulated particle that made this hit.
         SimParticleCollection::key_type trackId(mchit.trackId());
-        SimParticle const& sim = simParticles->at(trackId);
+        art::Ptr<SimParticle> const& simptr = mchit.simParticle();
+        art::Ptr<SimParticle>::key_type simKey(simptr.key());
+        //SimParticle const& sim = simParticles->at(trackId);
+        SimParticle const& sim = *simptr;
 
         isFirst=( j==0 );
         if ( isFirst ){
                 for ( size_t jj = 1; jj < mcptr.size(); ++jj) {
 //                        if ( trackId != (*mchits)[mcptr[jj].index].trackId() ) {
-                          if ( trackId != (*(mcptr[jj])).trackId() ) {
+                          //if ( trackId != (*(mcptr[jj])).trackId() ) {
+                          if ( simKey!=mcptr[jj]->simParticle().key() && trackId != (*(mcptr[jj])).trackId() ) {
                                 overlapped=true;
                                 break;
                         }
@@ -1382,8 +1401,8 @@ namespace mu2e {
             int i1peak;
 
             StrawId sid;
-            int stn, layern, devicen, sectorn;
-            unsigned int absSect, devStId;
+            int stn/*, layern*/, devicen, sectorn;
+            unsigned int absSect/*, devStId*/;
 
             tmpStClustDist    = new TH2I("tmpStClustDist","tmp Smoothing of Device vs Straw multiplicity Distribution",36,0,36,1000,-200,800);
             tmpSecClustDist   = new TH2I("tmpSecClustDist","tmp Smoothing of Device vs Sector multiplicity Distribution",36,0,36,20,-4,16);
@@ -1524,12 +1543,12 @@ namespace mu2e {
 
                             sid = str.id();
                             stn     = sid.getStraw();
-                            layern  = sid.getLayer();
+                            //layern  = sid.getLayer();
                             devicen = sid.getDevice();
                             sectorn = sid.getSector();
 
                             absSect = (devicen%2)+2*sectorn;
-                            devStId = absSect*50+stn;
+                            //devStId = absSect*50+stn;
 
                             //ihPkStDistTrs->Fill(devStId);
                             ihPkStDistTrs->Fill(absSect,stn);
