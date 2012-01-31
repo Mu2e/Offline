@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.20 2011/12/05 17:36:35 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2011/12/05 17:36:35 $
+// $Id: PiCapture.hh,v 1.21 2012/01/31 05:34:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -57,6 +57,7 @@ namespace mu2e {
     double _ePosit;       // positron energy for internal conversions
     bool _PStoDSDelay;
     bool _pPulseDelay;
+    double _pPulseShift;
     int    _nbins;        //< number of bins in photon energy pdf
     bool   _doHistograms; // Enable/disable histograms.
     // End: parameters from run time configuration/

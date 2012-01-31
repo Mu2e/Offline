@@ -66,6 +66,7 @@ namespace mu2e {
                                                timeGen_enum  timeAlgo,
                                                bool PTtoSTdelay,
                                                bool pPulseDelay,
+					       double pPulseShift,
 					       string STinfilename,
 					       int linesToSkip):
     _DSOffset(),
@@ -90,6 +91,7 @@ namespace mu2e {
     _pulseTime( engine ),
     _PTtoSTdelay ( PTtoSTdelay ),
     _pPulseDelay ( pPulseDelay ),
+    _pPulseShift ( pPulseShift ),
     _STinfilename(STinfilename),
     _ntoskip (linesToSkip),
     _muDelay(0),
@@ -201,6 +203,9 @@ namespace mu2e {
 	time += _pulseDelay;
       }
       
+      _pulseDelay += _pPulseShift;
+      time += _pPulseShift;
+
       if (_PTtoSTdelay) {
         _muDelay = includeTimeDelay();
         time += _muDelay;

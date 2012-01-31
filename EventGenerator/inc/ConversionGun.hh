@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.16 2011/08/26 21:32:18 onoratog Exp $
+// $Id: ConversionGun.hh,v 1.17 2012/01/31 05:34:19 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Date: 2012/01/31 05:34:19 $
 //
 
 // C++ includes
@@ -56,6 +56,7 @@ namespace mu2e {
 
     bool _PStoDSDelay;
     bool _pPulseDelay;
+    double _pPulseShift;
 
     // Limits on the generated time.
     double _tmin;

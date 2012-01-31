@@ -3,9 +3,9 @@
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 // add internal conversion, 11/2011 rhb
 //
-// $Id: PiCapture.cc,v 1.31 2011/12/05 17:36:27 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2011/12/05 17:36:27 $
+// $Id: PiCapture.cc,v 1.32 2012/01/31 05:34:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -59,6 +59,7 @@ namespace mu2e {
     _probInternalConversion(config.getDouble("internalpicapture.mean", 0.0069)), //.0069 from Kroll and Wada
     _PStoDSDelay(config.getBool("picapture.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("picapture.pPulseDelay", true)),
+    _pPulseShift(config.getDouble("picapture.pPulseShift", 0)),
     _nbins(config.getInt("picapture.nbins",  1000)),
     _doHistograms(config.getBool("picapture.doHistograms",true)),
 
@@ -139,6 +140,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::limitedExpoTime,
 									     _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _pPulseShift,
 									     _STfname));
 
   } // end PiCapture::PiCapture

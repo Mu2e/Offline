@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.11 2011/08/26 21:32:18 onoratog Exp $
+// $Id: EjectedNeutronGun.hh,v 1.12 2012/01/31 05:34:19 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Date: 2012/01/31 05:34:19 $
 //
 //
 
@@ -59,6 +59,7 @@ namespace mu2e {
     double _phimax;
     bool _PStoDSDelay;
     bool _pPulseDelay;
+    double _pPulseShift;
     int    _nbins;   // number of bins in neutron energy pdf
 
     // Class object to generate position and time of the particle

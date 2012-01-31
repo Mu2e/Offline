@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.22 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: EjectedNeutronGun.cc,v 1.23 2012/01/31 05:34:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -63,6 +63,7 @@ namespace mu2e {
     _phimax(config.getDouble("ejectedNeutronGun.phimax", CLHEP::twopi )),
     _PStoDSDelay(config.getBool("ejectedNeutronGun.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("ejectedNeutronGun.pPulseDelay", false)),
+    _pPulseShift(config.getDouble("ejectedNeutronGun.pPulseShift", 0)),
     _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
     _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
 
@@ -132,6 +133,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,          
 									     _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _pPulseShift,
 									     _STfname,
 									     _nToSkip));
   }

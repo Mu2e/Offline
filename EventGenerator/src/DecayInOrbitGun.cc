@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.39 2012/01/27 20:30:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/01/27 20:30:27 $
+// $Id: DecayInOrbitGun.cc,v 1.40 2012/01/31 05:34:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,7 @@ namespace mu2e {
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
     _PStoDSDelay(config.getBool("decayinorbitGun.PStoDSDelay", true)),
     _pPulseDelay(config.getBool("decayinorbitGun.pPulseDelay", false)),
+    _pPulseShift(config.getDouble("decayinorbitGun.pPulseShift", 0)),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
     _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
@@ -128,6 +129,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _pPulseShift,
 									     _STfname,
                                                                              _nToSkip));
 

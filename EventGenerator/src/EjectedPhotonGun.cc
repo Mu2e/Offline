@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.  
 // //
-// $Id: EjectedPhotonGun.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: EjectedPhotonGun.cc,v 1.6 2012/01/31 05:34:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Gianni Onorato
 //
@@ -62,6 +62,7 @@ namespace mu2e {
     _doHistograms(config.getBool("ejectedPhotonGun.doHistograms",true)),
     _PStoDSDelay(config.getBool("ejectedPhotonGun.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("ejectedPhotonGun.pPulseDelay", false)),
+    _pPulseShift(config.getDouble("ejectedPhotonGun.pPulseShift", 0)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
@@ -133,6 +134,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _pPulseShift,
 									     _STfname,
                                                                              _nToSkip));
   }

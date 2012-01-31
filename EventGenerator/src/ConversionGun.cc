@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.33 2011/09/19 17:32:44 onoratog Exp $
+// $Id: ConversionGun.cc,v 1.34 2012/01/31 05:34:19 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/09/19 17:32:44 $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Rob Kutschke
 //
@@ -55,6 +55,7 @@ namespace mu2e {
     _phimax(config.getDouble("conversionGun.phimax", CLHEP::twopi )),
     _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
     _pPulseDelay(config.getBool("conversionGun.pPulseDelay", false)),
+    _pPulseShift(config.getDouble("conversionGun.pPulseShift", 0)),
     _tmin(0.),
     _tmax(0.),
     _doHistograms(config.getDouble("conversionGun.doHistograms", true )),
@@ -104,6 +105,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _pPulseShift,
 									     _STfname,
                                                                              _nToSkip));
     if ( _doHistograms ) bookHistograms();

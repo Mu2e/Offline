@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.16 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: NuclearCaptureGun.cc,v 1.17 2012/01/31 05:34:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Gianni Onorato
 //
@@ -70,6 +70,7 @@ namespace mu2e {
     _phimax(config.getDouble("nuclearCaptureGun.phimax", CLHEP::twopi )),
     _PStoDSDelay(config.getBool("nuclearCaptureGun.PStoDSDelay", true)),
     _pPulseDelay(config.getBool("nuclearCaptureGun.pPulseDelay", false)),
+    _pPulseShift(config.getDouble("nuclearCaptureGun.pPulseShift", 0)),
     _nProtonBins(config.getInt("nuclearCaptureGun.nProtonBins",1000)),
     _nNeutronBins(evaluateNeutronBins()),
     _nPhotonBins(config.getInt("nuclearCaptureGun.nPhotonBins",1000)),
@@ -188,6 +189,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
 									     _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _pPulseShift,
 									     _STfname,
 									     _nToSkip));
   }

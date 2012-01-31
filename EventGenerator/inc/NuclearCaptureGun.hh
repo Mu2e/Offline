@@ -6,9 +6,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.hh,v 1.8 2011/08/26 21:32:18 onoratog Exp $
+// $Id: NuclearCaptureGun.hh,v 1.9 2012/01/31 05:34:19 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/08/26 21:32:18 $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Gianni Onorato
 
@@ -63,6 +63,7 @@ namespace mu2e {
     double _phimax;
     bool _PStoDSDelay;
     bool _pPulseDelay;
+    double _pPulseShift;
     int _nProtonBins; //number of bins for proton energy spectrum
     int _nNeutronBins; //number of bins for neutrons energy spectrum
     int _nPhotonBins; //number of bins for photon energy spectrum

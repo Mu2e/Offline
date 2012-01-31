@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.30 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: EjectedProtonGun.cc,v 1.31 2012/01/31 05:34:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/01/31 05:34:19 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -64,6 +64,7 @@ namespace mu2e {
     _doHistograms(config.getBool("ejectedProtonGun.doHistograms",true)),
     _PStoDSDelay(config.getBool("ejectedProtonGun.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("ejectedProtonGun.pPulseDelay", false)),
+    _pPulseShift(config.getDouble("ejectedProtonGun.pPulseShift", 0)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
@@ -138,6 +139,7 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
+									     _pPulseShift,
 									     _STfname,
                                                                              _nToSkip));
   }
