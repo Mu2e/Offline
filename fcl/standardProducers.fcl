@@ -117,4 +117,66 @@ TrkPatRec :
 	}     
 }
 
+stepInstanceNames   : [ "tracker", "virtualdetector", "timeVD", "stoppingtarget", "CRV", "calorimeter", "calorimeterRO" ]
+
+dioMixer: {
+	// Parameters for the MixFilter template
+module_type       : MixMCEvents
+			    fileNames           : @local::dioFiles
+			    readMode            : sequential
+			    seed                : @local::dioMixerSeed
+
+			    // Parameters for the MixDetail class
+			    mean                :  11.6
+			    genModuleLabel      : generate
+			    g4ModuleLabel       : g4run
+			    stepInstanceNames   : @local::stepInstanceNames
+			    doPointTrajectories : false
+}
+
+protonMixer: {
+		     // Parameters for the MixFilter template
+module_type       : MixMCEvents
+			    fileNames           : @local::ejectedProtonFiles
+			    readMode            : sequential
+			    seed                : @local::protonMixerSeed
+
+			    // Parameters for the MixDetail class
+			    mean                :  14.9
+			    genModuleLabel      : generate
+			    g4ModuleLabel       : g4run
+			    stepInstanceNames   : @local::stepInstanceNames
+			    doPointTrajectories : false
+	     }
+
+neutronMixer: {
+		      // Parameters for the MixFilter template
+module_type       : MixMCEvents
+			    fileNames           : @local::ejectedNeutronFiles
+			    readMode            : sequential
+			    seed                : @local::neutronMixerSeed
+
+			    // Parameters for the MixDetail class
+			    mean                :  128.2
+			    genModuleLabel      : generate
+			    g4ModuleLabel       : g4run
+			    stepInstanceNames   : @local::stepInstanceNames
+			    doPointTrajectories : false
+	      }
+
+photonMixer: {
+		     // Parameters for the MixFilter template
+module_type       : MixMCEvents
+			    fileNames           : @local::ejectedPhotonFiles
+			    readMode            : sequential
+			    seed                : @local::photonMixerSeed
+
+			    // Parameters for the MixDetail class
+			    mean                :  53.7
+			    genModuleLabel      : generate
+			    g4ModuleLabel       : g4run
+			    stepInstanceNames   : @local::stepInstanceNames
+			    doPointTrajectories : false
+	     }
+
 END_PROLOG
