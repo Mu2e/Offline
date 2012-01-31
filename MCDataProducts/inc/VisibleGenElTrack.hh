@@ -3,9 +3,9 @@
 //
 // Data of the Electrons tracks that came from the targets
 //
-// $Id: VisibleGenElTrack.hh,v 1.1 2011/10/11 17:27:52 tassiell Exp $
+// $Id: VisibleGenElTrack.hh,v 1.2 2012/01/31 00:38:10 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2011/10/11 17:27:52 $
+// $Date: 2012/01/31 00:38:10 $
 //
 // Original author G. Tassielli
 //
@@ -35,18 +35,21 @@ typedef std::map<unsigned long, art::Ptr<SimParticle>::key_type> GenElHitDCll_Or
 
   class VisibleGenElTrack {
   public:
-          VisibleGenElTrack():_trkID(0),_isConversionEl(false),_hitTimeSorted(false),_nTurns(0){
+          VisibleGenElTrack():_trkKey(0),_trkID(0),_isConversionEl(false),_hitTimeSorted(false),_nTurns(0){
                   _hitDataCollection.clear();
                   _orederedHitDataColl.clear();
           }
           /*VisibleGenElTrack(SimParticlePtr &trkPtr_ ):
                   _trkPtr(trkPtr_),*/
-          VisibleGenElTrack( SimParticleCollection::key_type &trkID_, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector> genTrackData_ ):
+          VisibleGenElTrack( art::Ptr<SimParticle>::key_type &trkKey_, SimParticleCollection::key_type &trkID_, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector> genTrackData_ ):
+                  _trkKey(trkKey_),
                   _trkID(trkID_),
                   _isConversionEl(false),
                   _hitTimeSorted(false),
                   _nTurns(0)
                   {
+                    //_trkPtr=const_cast<SimParticlePtr&>(trkPtr_);
+                    //_trkID=_trkPtr->id();
                     _genTrackData=genTrackData_;
                     _hitDataCollection.clear();
                     _orederedHitDataColl.clear();
@@ -57,7 +60,7 @@ typedef std::map<unsigned long, art::Ptr<SimParticle>::key_type> GenElHitDCll_Or
                                     const VisibleGenElTrack& gtd_ ){
                   VisibleGenElTrack &gtd = const_cast<VisibleGenElTrack &>(gtd_);
                   //ost << "Track id " << gtd._trkPtr.key()<<" vertex "<< gtd._trkPtr->startPosition()<< " Lorentz Vector "<< gtd._trkPtr->startMomentum()<<std::endl;
-                  ost << "Track id " << gtd._trkID<<" vertex "<< gtd._genTrackData.first<< " Lorentz Vector "<< gtd._genTrackData.second<<std::endl;
+                  ost << "Track id " << gtd._trkID<<" trak key "<<gtd._trkKey<<" vertex "<< gtd._genTrackData.first<< " Lorentz Vector "<< gtd._genTrackData.second<<std::endl;
                   ost << "N loops "<<gtd._nTurns<<std::endl;
                   for ( unsigned short j=0; j < gtd._nTurns; j++ ) {
                           ost << j+1 <<"-th loop point: "<<gtd._hitDataCollection[ gtd._turnFrstHit[j] ]._hitPoint << " momentum: "<< gtd._hitDataCollection[ gtd._turnFrstHit[j] ]._hitMomentum <<std::endl;
@@ -80,6 +83,8 @@ typedef std::map<unsigned long, art::Ptr<SimParticle>::key_type> GenElHitDCll_Or
           bool isNotPresent( size_t iHit_ );
           bool& isConversionEl( );
           void setConversionEl();
+          //SimParticlePtr const& getSimPart();
+          SimParticlePtr::key_type& getTrkKey();
           SimParticleCollection::key_type& getTrkID();
           CLHEP::Hep3Vector getTrkVertex();
           CLHEP::HepLorentzVector getTrkLrntzVec();
@@ -92,6 +97,7 @@ typedef std::map<unsigned long, art::Ptr<SimParticle>::key_type> GenElHitDCll_Or
 
   protected:
           //SimParticlePtr _trkPtr;
+          SimParticlePtr::key_type _trkKey;
           SimParticleCollection::key_type _trkID;
           std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector> _genTrackData;
           bool _isConversionEl;
@@ -140,6 +146,15 @@ typedef std::map<unsigned long, art::Ptr<SimParticle>::key_type> GenElHitDCll_Or
 
    void VisibleGenElTrack::setConversionEl(){
            _isConversionEl=true;
+   }
+
+   //SimParticlePtr const& VisibleGenElTrack::getSimPart() {
+   //       SimParticlePtr const &tmpPtr = _trkPtr;
+   //       return tmpPtr;
+   //}
+
+   SimParticlePtr::key_type& VisibleGenElTrack::getTrkKey(){
+          return _trkKey;
    }
 
    SimParticleCollection::key_type& VisibleGenElTrack::getTrkID() {
