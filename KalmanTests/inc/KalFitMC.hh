@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.11 2012/01/24 20:17:33 brownd Exp $
+// $Id: KalFitMC.hh,v 1.12 2012/01/31 18:29:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/01/24 20:17:33 $
+// $Date: 2012/01/31 18:29:20 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -90,7 +90,7 @@ namespace mu2e
   };
 
   struct TrkStrawHitInfo {
-    Int_t _active,_usable;
+    Int_t _active,_usable,_strawid;
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
     UInt_t _mcn, _mcnunique, _mcpdg, _mcgen, _mcproc;
 // root 
@@ -175,9 +175,9 @@ namespace mu2e
 // tracker ID
     int _trackerid;
 // trk tuple variables
+    public:
     TTree *_trkdiag;
     UInt_t _eventid;
-    UInt_t _trkid;
     Int_t _fitstatus;
     Float_t _t00;
     Float_t _t00err;

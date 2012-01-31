@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.4 2012/01/18 01:25:16 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.5 2012/01/31 18:29:20 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/01/18 01:25:16 $
+// $Date: 2012/01/31 18:29:20 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,9 @@ namespace mu2e {
     void beginJob();
     void analyze(const art::Event& e);
 
+// DIO spectrum
+    static double DIOspectrum(double eenergy);
+
   private:
 
     // Module label of the module that performed the fits.
@@ -63,6 +66,8 @@ namespace mu2e {
     TH1F* _hChisq;
 
     TTree* _trkdiag;
+    Int_t _trkid;
+    Float_t _diowt;
 
   };
 
@@ -81,30 +86,34 @@ namespace mu2e {
     _hfitCL   = tfs->make<TH1F>( "hfitCL",   "Confidence Level of the Track fit.",  50, 0.,    1. );
     _hChisq   = tfs->make<TH1F>( "hChisq",   "Chisquared of the Track fit.",       100, 0.,  500. );
     _trkdiag = _kfitmc.createTrkDiag();
- 
+// add local branches
+    _trkdiag->Branch("trkid",&_trkid,"trkid/I");
+    _trkdiag->Branch("diowt",&_diowt,"diowt/f");
   }
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadKalFits::analyze(const art::Event& event) {
       
     _kfitmc.findMCData(event);
- 
+    // DIO spectrum weight; use the generated momenum magnitude
+    double ee = _kfitmc._mcmom;
+    _diowt = DIOspectrum(ee);
+
     // Get handle to calorimeter hit collection.
     art::Handle<TrkRecoTrkCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,trksHandle);
     TrkRecoTrkCollection const& trks = *trksHandle;
 
     _hNTracks->Fill( trks.size() );
-
+    _trkid = -1;
     for ( size_t i=0; i< trks.size(); ++i ){
-
+      _trkid = i;
       TrkRecoTrk const& trk = trks[i];
       TrkRep const* trep = trk.getRep(PdtPid::electron);
       if ( !trep ) continue;
 
-     _kfitmc.trkDiag(trk);
+      _kfitmc.trkDiag(trk);
  
-
       // For some quantities you require the concrete representation, not
       // just the base class.
       KalRep const* krep = dynamic_cast<KalRep const*>(trep);
@@ -120,6 +129,21 @@ namespace mu2e {
       TrkKalFit dummy;
       _kfitmc.trkDiag(dummy);
     }
+  }
+
+
+  double ReadKalFits::DIOspectrum(double ee) {
+    double mal(25133);
+//    double mmu(105.654);
+    double emu(105.194);
+//    double emue(104.973);
+//    double me(0.511);
+    double a5(8.6434e-17);
+    double a6(1.16874e-17);
+    double a7(-1.87828e-19);
+    double a8(9.16327e-20);
+    double delta = emu - ee - ee*ee/(2*mal);
+    return a5*pow(delta,5) + a6*pow(delta,6) + a7*pow(delta,7) + a8*pow(delta,8);
   }
 
 }  // end namespace mu2e

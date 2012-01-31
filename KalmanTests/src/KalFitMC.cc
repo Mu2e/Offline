@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.14 2012/01/18 01:25:16 brownd Exp $
+// $Id: KalFitMC.cc,v 1.15 2012/01/31 18:29:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/01/18 01:25:16 $
+// $Date: 2012/01/31 18:29:20 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -286,7 +286,6 @@ namespace mu2e
   void
   KalFitMC::kalDiag(const KalRep* krep) {
     if(krep != 0 && krep->fitCurrent()){
-      _trkid = krep->parentTrack()->id();
       _nhits = krep->hotList()->nHit();
       _fitstatus = krep->fitCurrent();
       _niter = krep->iterations();
@@ -330,6 +329,7 @@ namespace mu2e
         TrkStrawHitInfo tshinfo;
         tshinfo._active = tsh->isActive();
         tshinfo._usable = tsh->usability();
+	tshinfo._strawid = tsh->strawHit().strawIndex().asInt();
 	double resid,residerr;
 	if(tsh->resid(resid,residerr,true)){
 	  tshinfo._resid = resid;
@@ -505,7 +505,6 @@ namespace mu2e
     art::ServiceHandle<art::TFileService> tfs;
     _trkdiag=tfs->make<TTree>("trkdiag","trk diagnostics");
     _trkdiag->Branch("eventid",&_eventid,"eventid/i");
-    _trkdiag->Branch("trkid",&_trkid,"trkid/i");
     _trkdiag->Branch("fitstatus",&_fitstatus,"fitstatus/I");
     _trkdiag->Branch("t00",&_t00,"t00/F");
     _trkdiag->Branch("t00err",&_t0err,"t00err/F");
