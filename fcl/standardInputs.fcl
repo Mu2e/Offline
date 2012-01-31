@@ -1,5 +1,5 @@
 # This file defines standard commands to be run inside a 'source' directive.
-
+BEGIN_PROLOG
 # Remove the StrawHits from an input file.  This allows them to be remade
 dropSH :
 	 [ "keep *_*_*_*"
@@ -8,3 +8,5 @@ dropSH :
 	 ,"drop mu2e::StepPointMCart::Ptrss_*_*_*" ]
 
 #
+ 
+END_PROLOG
