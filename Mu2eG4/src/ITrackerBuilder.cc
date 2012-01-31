@@ -121,7 +121,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                 visAtt->SetDaughtersInvisible(false);
 
                 G4Material* Vacuum = findMaterialOrThrow( "WAGVacuum" );
-                trackerInfo.solid = new G4Tubs(itracker->name(),0.0,itracker->rOut(),itracker->maxEndCapDim(),0.0,360.0*CLHEP::degree);
+                trackerInfo.solid = new G4Tubs(itracker->name(),itracker->r0()-0.001,itracker->rOut(),itracker->maxEndCapDim(),0.0,360.0*CLHEP::degree);
                 trackerInfo.logical = new G4LogicalVolume(trackerInfo.solid , Vacuum, trackerName,0,0,0);
                 trackerInfo.logical->SetVisAttributes(visAtt);
 
