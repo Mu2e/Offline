@@ -65,15 +65,7 @@ void estraw_current(TTree* estraw,unsigned nmicro) {
 }
 
 
-void estraw_flash(TChain* estraw,double nproton) {
-//  TChain* estraw = new TChain("StrawEnergy/estraw");
-  char flashfile[100];
-  for(unsigned ijob=0;ijob<32;ijob++){
-    snprintf(flashfile,100,"/data/7340_%i/estraw_flash.root",ijob);
-    estraw->Add(flashfile);
-  }
-
-
+void estraw_flash(TTree* estraw,double nproton) {
   double nmicro_total(1.06e13); // total # of microbunches for the experiment
   double nproton_microbunch(3.7e7); // # of protons on target/microbunch
   double iongain(15); // number of ionizations per primary electron
@@ -124,13 +116,7 @@ void estraw_flash(TChain* estraw,double nproton) {
 }
 
 
-void estraw_flash_current(TChain* estraw,double nproton) {
-//  TChain* estraw = new TChain("StrawEnergy/estraw");
-  char flashfile[100];
-  for(unsigned ijob=0;ijob<32;ijob++){
-    snprintf(flashfile,100,"/data/7340_%i/estraw_flash.root",ijob);
-    estraw->Add(flashfile);
-  }
+void estraw_flash_current(TTree* estraw,double nproton) {
   double nproton_microbunch(3.7e7); // # of protons on target/microbunch
   double iongain(15); // number of ionizations per primary electron
   double eele(0.0025); // MPV straw energy deposition of an electron.
@@ -148,5 +134,4 @@ void estraw_flash_current(TChain* estraw,double nproton) {
   fcan->cd(1);
   cvt->Draw();
 }
-
 
