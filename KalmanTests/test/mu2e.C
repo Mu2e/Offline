@@ -8,7 +8,7 @@ void mu2e(double ndio=100000, double nconv=100000) {
   unsigned nbins(25);
   double mmin(101);
   double mmax(106);
-  double mevperbin = mmax-mmin/nbins;
+  double mevperbin = (mmax-mmin)/nbins;
 
   TChain* dio = new TChain("ReadKalFits/trkdiag");
   char diofile[100];
@@ -81,12 +81,13 @@ void mu2e(double ndio=100000, double nconv=100000) {
     conspec[ires]->SetLineColor(kRed);
 
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
+    TCut final = (reco+pitch+livegate+quality);
 
-    dio->Project(dioname,"fitmom","diowt"*(reco+pitch+livegate+quality));
+    dio->Project(dioname,"fitmom","diowt"*final);
     diospec[ires]->Scale(ndecay*mevperbin/ndio);
 
     double conscale = ndecay*conprob/nconv;
-    con->Project(conname,"fitmom",reco+pitch+livegate+quality);
+    con->Project(conname,"fitmom",final);
     conspec[ires]->Scale(conscale);
 
   }
