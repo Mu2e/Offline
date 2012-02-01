@@ -129,8 +129,8 @@ void KalFitTrk (TTree* trks ) {
 
 KalFitAcc(TTree* trks) {
   TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
-  TH1F* pcost = new TH1F("pcost","e^{-} cos(#theta) at production",105,-1.02,1.02);
-  TH1F* pcosta = new TH1F("pcosta","e^{-} cos(#theta) at production",105,-1.02,1.02);
+  TH1F* pcost = new TH1F("pcost","e^{-} cos(#theta) at production",55,-1.02,1.02);
+  TH1F* pcosta = new TH1F("pcosta","e^{-} cos(#theta) at production",55,-1.02,1.02);
   pcosta->SetLineColor(kBlue);
 
   TCut hittrk("mcentmom>0.0");
@@ -143,11 +143,17 @@ KalFitAcc(TTree* trks) {
   trks->Project("pcosta","mccost",hittrk);
 //  pcosta->Divide(pcost);
 
-  TH1F* dcost = new TH1F("dcost","e^{-} cos(#theta) at tracker",105,0,1.02);
-  TH1F* dmom = new TH1F("dmom","e^{-} momentum at tracker",100,90,108);
+  TH1F* dcost = new TH1F("dcost","e^{-} cos(#theta) at tracker",55,0.3,1.02);
+  TH1F* dmom = new TH1F("dmom","e^{-} momentum at tracker",50,90,108);
   TH1F* rmom = new TH1F("rmom","recsonstructed e^{-} momentum",100,90,108);
   TH1F* fitcon = new TH1F("fitcon","fit consistency",205,-0.01,1.01);
-  TH1F* acc = new TH1F("acc","Acceptance",6,-0.5,5.5);
+  TH1F* acc = new TH1F("acc","Acceptance;cut;cumulative acceptance",6,-0.5,5.5);
+  pcost->SetStats(0);
+  dcost->SetStats(0);
+  dmom->SetStats(0);
+  rmom->SetStats(0);
+  fitcon->SetStats(0);
+  acc->SetStats(0);
   acc->GetXaxis()->SetBinLabel(1,"All");
   acc->GetXaxis()->SetBinLabel(2,"Reaches Tracker");
   acc->GetXaxis()->SetBinLabel(3,"Pitch");
@@ -205,7 +211,7 @@ KalFitAcc(TTree* trks) {
   rmom->Draw();
 
   acan->cd(6);
-  acc->Draw();
+  
 
   double all = acc->GetBinContent(1);
   double reach = acc->GetBinContent(2)/all;
@@ -213,13 +219,14 @@ KalFitAcc(TTree* trks) {
   double gmom = acc->GetBinContent(4)/all;
   double greco = acc->GetBinContent(5)/all;
   double good = acc->GetBinContent(6)/all;
+  acc->Scale(1.0/all);
+  acc->Draw();
 
-
-  cout << "Acceptance: Reach tracker " << reach
-  << " Pitch " << gpitch
-  << " Momentum " << gmom
-  << " Reconstruction " << greco
-  << " Fit Quality " << good << std::endl;
+  cout << "Acceptance: Reach tracker " << reach << endl 
+  << " Pitch " << gpitch << " relative " << gpitch/reach << endl
+  << " Momentum " << gmom << " relative " << gmom/gpitch << endl
+  << " Reconstruction " << greco << " relative " << greco/gmom << endl
+  << " Fit Quality " << good << " relative " << good/greco << std::endl;
 
 
 
