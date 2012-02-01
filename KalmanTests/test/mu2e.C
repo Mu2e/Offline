@@ -27,7 +27,7 @@ void mu2e(double ndio=100000, double nconv=100000) {
   TH1F* timeshift = new TH1F("timeshift","T0 - muon conversion time;nsec",100,0,100);
   con->Project("timeshift","t0-mct0","fitstatus>0");
 
-  TProfile* truedio = new TProfile("truedio","Weighted MC true DIO spectrum;MeV;d#Gamma/#Gamma (MeV^{-1})",100,100,105.5,0,1);
+  TProfile* truedio = new TProfile("truedio","Weighted MC true DIO spectrum;MeV;d#Gamma/(#Gamma dE) (MeV^{-1})",100,100,105.5,0,1);
   dio->Project("truedio","diowt:mcmom");
   truedio->SetMaximum(1e-12);
   truedio->SetMinimum(1e-24);
