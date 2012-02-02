@@ -122,9 +122,9 @@ stepInstanceNames   : [ "tracker", "virtualdetector", "timeVD", "stoppingtarget"
 dioMixer: {
 	// Parameters for the MixFilter template
 module_type       : MixMCEvents
-			    fileNames           : @local::dioFiles
+			    fileNames           : nil
 			    readMode            : sequential
-			    seed                : @local::dioMixerSeed
+			    seed                : nll
 
 			    // Parameters for the MixDetail class
 			    mean                :  11.6
@@ -137,9 +137,9 @@ module_type       : MixMCEvents
 protonMixer: {
 		     // Parameters for the MixFilter template
 module_type       : MixMCEvents
-			    fileNames           : @local::ejectedProtonFiles
+			    fileNames           : nil
 			    readMode            : sequential
-			    seed                : @local::protonMixerSeed
+			    seed                : nil
 
 			    // Parameters for the MixDetail class
 			    mean                :  14.9
@@ -152,9 +152,9 @@ module_type       : MixMCEvents
 neutronMixer: {
 		      // Parameters for the MixFilter template
 module_type       : MixMCEvents
-			    fileNames           : @local::ejectedNeutronFiles
+			    fileNames           : nil
 			    readMode            : sequential
-			    seed                : @local::neutronMixerSeed
+			    seed                : nil
 
 			    // Parameters for the MixDetail class
 			    mean                :  128.2
@@ -167,9 +167,9 @@ module_type       : MixMCEvents
 photonMixer: {
 		     // Parameters for the MixFilter template
 module_type       : MixMCEvents
-			    fileNames           : @local::ejectedPhotonFiles
+			    fileNames           : nil
 			    readMode            : sequential
-			    seed                : @local::photonMixerSeed
+			    seed                : nil
 
 			    // Parameters for the MixDetail class
 			    mean                :  53.7
