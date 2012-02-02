@@ -1,12 +1,20 @@
+double nmicro_total(1.06e13); // total # of microbunches for the experiment
+double nproton_microbunch(3.7e7); // # of protons on target/microbunch
+double iongain(15); // number of ionizations per primary electron
+double eele(0.0025); // MPV straw energy deposition of an electron.
+double ggain(1e4); // gas amplification
+double qe(1.6e-19); // electron charge (C)
+unsigned nsect(6); // # sectors
+unsigned nlayer(2); // # layers
+unsigned ndevstat(2); // # devices/station
+double mamp(1e6); // microamps/amp
+double nsec(1e-9); // seconds/nanosecond
+double mblength(1700); // time length of a microbunch (nanoseconds)
+unsigned maxdevice(10); // maximum device to include
+unsigned maxstraw(2); // maximum straw to include
+
 void estraw(TTree* estraw,unsigned nmicro) {
-  double nmicro_total(1.06e13); // total # of microbunches for the experiment
-  double iongain(15); // number of ionizations per primary electron
-  double eele(0.0025); // MPV straw energy deposition of an electron.
-  double ggain(1e4); // gas amplification
-  double qe(1.6e-19); // electron charge
-  double phisym(12); // phi symmetry factor (in 1 station)
-  double nlayer(2); // layer factor
-  double factor = nmicro_total*iongain*ggain*qe/(nmicro*phisym*nlayer*eele);
+  double factor = nmicro_total*iongain*ggain*qe/(nmicro*nsect*nlayer*ndevstat*eele);
   TH2F* epanel[18];
   unsigned ican(0);
   unsigned ipad(0);
@@ -47,15 +55,14 @@ void estraw(TTree* estraw,unsigned nmicro) {
 }
 
 void estraw_current(TTree* estraw,unsigned nmicro) {
-  double iongain(15); // number of ionizations per primary electron
-  double eele(0.0025); // MPV straw energy deposition of an electron.
-  double ggain(1e4); // gas amplification
-  double qe(1.6e-19); // electron charge (C)
-  double phisym(12); // phi symmetry factor (in 1 station)
-  double factor = iongain*ggain*qe*1e6/(nmicro*phisym*eele*10*2e-8);
+  unsigned nbins(85); // number of time bins
+  double factor = iongain*ggain*qe*mamp*nbins/(nmicro*nsect*nlayer*eele*maxdevice*maxstraw*mblength*nsec);
   cout << "factor = " << factor << endl;
-  TH1F* cvt = new TH1F("cvt","Current on wire 0+1, station <=4;time(nsec);#muA/wire",85,0,1700);
-  estraw->Project("cvt","time","energy*(straw<2&&device<10)");
+  TH1F* cvt = new TH1F("cvt","Current on wire 0+1, station <=4;time(nsec);#muA/wire",nbins,0,mblength);
+  char cut[80];
+  snprintf(cut,80,"(straw<%i&&device<%i)",maxstraw,maxdevice);
+  TCut tcut(cut);
+  estraw->Project("cvt","time","energy"*tcut);
   cvt->Scale(factor);
   TCanvas* ccan = new TCanvas("ccan","background current",1200,800);
   ccan->Clear();
@@ -63,6 +70,24 @@ void estraw_current(TTree* estraw,unsigned nmicro) {
   ccan->cd(1);
   cvt->Draw();
 }
+
+void estraw_rate(TTree* estraw,unsigned nmicro) {
+  unsigned nbins(85); // number of time bins
+  double factor = nbins/(nmicro*nsect*nlayer*maxdevice*maxstraw*mblength*nsec);
+  cout << "factor = " << factor << endl;
+  TH1F* hr = new TH1F("hr","Hit Rate on wire 0+1, station <=4;time(nsec);#hits/wire/sec",nbins,0,mblength);
+  char cut[80];
+  snprintf(cut,80,"(straw<%i&&device<%i)",maxstraw,maxdevice);
+  TCut tcut(cut);
+  estraw->Project("hr","time",tcut);
+  cvt->Scale(factor);
+  TCanvas* rcan = new TCanvas("rcan","background hit rate",1200,800);
+  rcan->Clear();
+  rcan->Divide(1,1);
+  rcan->cd(1);
+  hr->Draw();
+}
+
 
 
 void estraw_flash(TTree* estraw,double nproton) {
@@ -117,12 +142,7 @@ void estraw_flash(TTree* estraw,double nproton) {
 
 
 void estraw_flash_current(TTree* estraw,double nproton) {
-  double nproton_microbunch(3.7e7); // # of protons on target/microbunch
-  double iongain(15); // number of ionizations per primary electron
-  double eele(0.0025); // MPV straw energy deposition of an electron.
-  double ggain(1e4); // gas amplification
-  double qe(1.6e-19); // electron charge (C)
-  double phisym(12); // phi symmetry factor (in 1 station)
+
   double factor = nproton_microbunch*iongain*ggain*qe*1e6/(nproton*phisym*eele*10*2*2e-8);
   cout << "factor = " << factor << endl;
   TH1F* cvt = new TH1F("cvt","Current on wire 0+1, station <=4;time(nsec);#muA/wire",20,0,400);
