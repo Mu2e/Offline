@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.113 2012/01/26 21:55:48 genser Exp $
-// $Author: genser $
-// $Date: 2012/01/26 21:55:48 $
+// $Id: Mu2eWorld.cc,v 1.114 2012/02/02 00:44:56 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/02/02 00:44:56 $
 //
 // Original author Rob Kutschke
 //
@@ -583,6 +583,11 @@ namespace mu2e {
       StrawSD* strawSD      = new StrawSD(  SensitiveDetectorName::StrawGasVolume(),  *_config);
       //strawSD->SetVerboseLevel(1);
       SDman->AddNewDetector(strawSD);
+
+      TTrackerDeviceSupportSD* ttdsSD =
+        new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), *_config);
+      ttdsSD->SetVerboseLevel(_verbosityLevel);
+      SDman->AddNewDetector(ttdsSD);
     }
 
     VirtualDetectorSD* vdSD = new VirtualDetectorSD(SensitiveDetectorName::VirtualDetector(), *_config);
@@ -606,11 +611,6 @@ namespace mu2e {
     CRSScintillatorBarSD* sbSD = 
       new CRSScintillatorBarSD(SensitiveDetectorName::CRSScintillatorBar(), *_config);
     SDman->AddNewDetector(sbSD);
-
-    TTrackerDeviceSupportSD* ttdsSD = 
-      new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), *_config);
-    ttdsSD->SetVerboseLevel(_verbosityLevel);
-    SDman->AddNewDetector(ttdsSD);
 
   } // instantiateSensitiveDetectors
 

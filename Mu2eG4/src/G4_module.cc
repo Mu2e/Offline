@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.32 2012/01/26 21:56:35 genser Exp $
-// $Author: genser $
-// $Date: 2012/01/26 21:56:35 $
+// $Id: G4_module.cc,v 1.33 2012/02/02 00:44:56 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/02/02 00:44:56 $
 //
 // Original author Rob Kutschke
 //
@@ -387,6 +387,10 @@ namespace mu2e {
       static_cast<StrawSD*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
         beforeG4Event(*outputHits, _processInfo, simPartId, event );
+
+      static_cast<TTrackerDeviceSupportSD*>
+        (SDman->FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport()))->
+        beforeG4Event(*ttrackerDeviceSupportHits, _processInfo, simPartId, event );
     }
 
     static_cast<VirtualDetectorSD*>
@@ -416,10 +420,6 @@ namespace mu2e {
     static_cast<ExtMonUCITofSD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonUCITof()))->
       beforeG4Event(*extMonUCITofHits, _processInfo, simPartId, event );
-
-    static_cast<TTrackerDeviceSupportSD*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport()))->
-      beforeG4Event(*ttrackerDeviceSupportHits, _processInfo, simPartId, event );
 
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );
