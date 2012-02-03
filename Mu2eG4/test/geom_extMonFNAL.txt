@@ -17,12 +17,16 @@ string toyPS.toyEnclosure.materialName = "G4_Ti";
 vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
 int g4.particlesSizeLimit = 100000;
 
-// Write mu2e geometry into a GDML file
-bool   writeGDML        = false;
-string GDMLFileName     = "extmon_fnal.gdml";
+//// Write mu2e geometry into a GDML file
+//bool   writeGDML        = false;
+//bool   protonBeamDump.applyROOTVisualizationKludge = false;
+//string GDMLFileName     = "extmon_fnal.gdml";
 
-//int protonBeamDump.verbosityLevel = 1;
-//int extmon_fnal.verbosityLevel = 1;
+// bool   vd.visible       = false;
+
+int protonBeamDump.verbosityLevel = 1;
+int extmon_fnal.verbosityLevel = 1;
+int world.verbosityLevel  = 1;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

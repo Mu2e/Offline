@@ -15,8 +15,8 @@
 /vis/disable
 /vis/scene/create
 #/vis/scene/add/volume world
-/vis/scene/add/volume HallAir
-#/vis/scene/add/volume ProtonBeamDumpShielding
+#/vis/scene/add/volume HallAir
+/vis/scene/add/volume ProtonBeamDumpShielding
 /vis/scene/add/trajectories
 /vis/sceneHandler/attach
 /vis/scene/endOfEventAction refresh

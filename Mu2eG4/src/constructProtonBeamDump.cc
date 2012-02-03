@@ -40,6 +40,7 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/FieldMgr.hh"
 
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
@@ -277,19 +278,34 @@ namespace mu2e {
     apertureHalfSize[1] = 0.5*dump.filterMagnet().apertureHeight();
     apertureHalfSize[2] = dump.filterMagnet().outerHalfSize()[2];
 
-    nestBox("ExtMonFNALFilterMagnetAperture",
-	    apertureHalfSize,
-	    materialFinder.get("hall.insideMaterialName"),
-	    0,
-	    CLHEP::Hep3Vector(0, 0, 0),
-	    magnetIron.logical, 0,
-	    config.getBool("extMonFilter.magnet.air.visible", true),
-	    G4Colour::Blue(),
-	    config.getBool("extMonFilter.magnet.air.solid", false),
-	    forceAuxEdgeVisible,
-	    placePV,
-	    doSurfaceCheck
-	    );
+    VolumeInfo magnetAperture = nestBox("ExtMonFNALFilterMagnetAperture",
+					apertureHalfSize,
+					materialFinder.get("hall.insideMaterialName"),
+					0,
+					CLHEP::Hep3Vector(0, 0, 0),
+					magnetIron.logical, 0,
+					config.getBool("extMonFilter.magnet.air.visible", true),
+					G4Colour::Blue(),
+					config.getBool("extMonFilter.magnet.air.solid", false),
+					forceAuxEdgeVisible,
+					placePV,
+					doSurfaceCheck
+					);
+
+    
+    //----------------------------------------------------------------
+    // Define the field in the magnet
+
+    GeomHandle<WorldG4> world;
+    FieldMgr *fm = reg.add(FieldMgr::forUniformField(dump.filterMagnet().fieldStrength() * CLHEP::Hep3Vector(1,0,0),
+						     /* FIXME: this arg is not used - why is it required? */
+						     world->mu2eOriginInWorld()
+						     ).release()
+			   );
+    
+    magnetAperture.logical->SetFieldManager(fm->manager(), true);
+
+    //----------------------------------------------------------------
   }
     
   //================================================================
