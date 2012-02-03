@@ -180,8 +180,8 @@ namespace mu2e {
     // Collimator channel: the upstream half
     
     G4Box *upbox = reg.add(new G4Box(collimator.name()+"upbox", 
-				     collimator.channelWidth()[0],
-				     collimator.channelHeight()[0],
+				     0.5*collimator.channelWidth()[0],
+				     0.5*collimator.channelHeight()[0],
 				     0.5*cylHalfLength
 				     )
 			   );
@@ -212,8 +212,8 @@ namespace mu2e {
     // Collimator channel: the downstream half
 
     G4Box *collimatorDownBox = reg.add(new G4Box(collimator.name()+"dnbox", 
-						 collimator.channelWidth()[1],
-						 collimator.channelHeight()[1],
+						 0.5*collimator.channelWidth()[1],
+						 0.5*collimator.channelHeight()[1],
 						 0.5*cylHalfLength)
 				       );
       
