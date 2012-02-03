@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.114 2012/02/02 00:44:56 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/02/02 00:44:56 $
+// $Id: Mu2eWorld.cc,v 1.115 2012/02/03 05:49:13 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/03 05:49:13 $
 //
 // Original author Rob Kutschke
 //
@@ -499,6 +499,18 @@ namespace mu2e {
       (**i).SetUserLimits( stepLimit);
     }
 
+    // AG: need to limit step size in these non-vaccum volumes to 
+    // visually validate geometry of the filter channel
+    G4LogicalVolume* emfcMagnetAperture = _helper->locateVolInfo("ExtMonFNALFilterMagnetAperture").logical;
+    if(emfcMagnetAperture) {
+      const double maxStepLength = _config->getDouble("extMonFilter.maxG4StepLength", 0)*CLHEP::millimeter;
+      if(maxStepLength > 0) {
+        std::cout<<"Adding step limiter for ExtMonFNALFilterMagnet: maxStepLength = "<<maxStepLength<<std::endl;
+        G4UserLimits* emfcStepLimit = reg.add(G4UserLimits(maxStepLength));
+        emfcMagnetAperture->SetUserLimits(emfcStepLimit);
+        _helper->locateVolInfo("ExtMonFNALFilterMagnetIron").logical->SetUserLimits(emfcStepLimit);
+      }
+    }
 
   } // end Mu2eWorld::constructStepLimiters(){
 

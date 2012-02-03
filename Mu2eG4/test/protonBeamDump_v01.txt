@@ -108,12 +108,18 @@ double extMonFilter.magnet.apertureHeight = 100.; // mm
 string extMonFilter.magnet.material  = "G4_Fe";
 double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
 
+bool extMonFilter.magnet.iron.visible = true;
+bool extMonFilter.magnet.iron.solid = false;
+bool extMonFilter.magnet.aperture.visible = true;
+bool extMonFilter.magnet.aperture.solid = true;
+
 // The magnet is positioned so that a positive particle with 
 // the nominal momentum given below, travelling at the bottom of
 // collimator1 channel (at exit) parallel to the collimator1 axis,
 // will enter the magnet aperture at the bottom and exit at at the 
 // bottom after being deflected by the magnetic field.
 double extMonFilter.nominalMomentum = 4000.; // MeV/c
+// double extMonFilter.maxG4StepLength = 10.; // mm
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
