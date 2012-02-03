@@ -1,193 +1,56 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.16 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: ParticleGun.cc,v 1.17 2012/02/03 05:08:06 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/03 05:08:06 $
 //
 // Original author Rob Kutschke
 //
 
+#include "EventGenerator/inc/ParticleGun.hh"
+
 #include <iostream>
 
-// Framework includes
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
 // Mu2e includes
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "EventGenerator/inc/ParticleGun.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
-// Root includes
-#include "TH1F.h"
-
 // Other external includes.
-#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Units/PhysicalConstants.h"
-
-using namespace std;
-
-//using CLHEP::Hep3Vector;
-//using CLHEP::HepLorentzVector;
-//using CLHEP::RandFlat;
-//using CLHEP::twopi;
-
 
 namespace mu2e {
 
   // Conversion energy for Al.  Should come from conditions.
-  static const double pEndPoint = 104.96;
+  static const double pEndPoint = 104.96 * CLHEP::MeV;
 
-  ParticleGun::ParticleGun( art::Run const& , const SimpleConfig& config ):
+  ParticleGun::ParticleGun(art::Run const&, const SimpleConfig& config)
+    : GeneratorBase()
+    , m_gun(
+	    config.getDouble("particleGun.mean",-1.), 
+	    static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::mu_minus)),
 
-    // Base class.
-    GeneratorBase(),
+	    config.getDouble("particleGun.pmin", pEndPoint),
+	    config.getDouble("particleGun.pmax", pEndPoint),
+	    
+	    RandomUnitSphereParams(config.getDouble("particleGun.czmin",  0.5),
+				   config.getDouble("particleGun.czmax",  0.7),
+				   config.getDouble("particleGun.phimin", 0. ),
+				   config.getDouble("particleGun.phimax", CLHEP::twopi)),
+	    
+	    config.getDouble("particleGun.tmin", 0.),
+	    config.getDouble("particleGun.tmax", 0.),
+	    config.getHep3Vector("particleGun.point", CLHEP::Hep3Vector(0.,0.,0.)),
+	    config.getHep3Vector("particleGun.halfLength", CLHEP::Hep3Vector(0.,0.,0.)),
+	    
+	    (config.getBool("particleGun.doHistograms", false) ? "ParticleGun" : ""),
+	    
+	    config.getBool("particleGun.verbose",false)
+	    )
+  {}
 
-    // From run time configuration file.
-    _mean(config.getDouble("particleGun.mean",-1.)),
-    _pdgId(static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::mu_minus))),
-    _czmin( config.getDouble("particleGun.czmin",  0.5)),
-    _czmax( config.getDouble("particleGun.czmax",  0.7)),
-    _phimin(config.getDouble("particleGun.phimin", 0. )),
-    _phimax(config.getDouble("particleGun.phimax", CLHEP::twopi)),
-    _pmin(pEndPoint),
-    _pmax(pEndPoint),
-    _tmin(0),
-    _tmax(0),
-    _point(),
-    _halfLength(),
-    _verbose(config.getBool("particleGun.verbose",false)),
-    _doHistograms(config.getBool("particleGun.doHistograms", false)),
-
-    // Random number distributions; getEngine() comes from base class.
-    _randFlat( getEngine() ),
-    _randPoissonQ( getEngine(), std::abs(_mean) ),
-    _randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax),
-
-    // Histogram pointers
-    _hMultiplicity(0),
-    _hMomentum(0),
-    _hCz(0),
-    _hX0(0),
-    _hY0(0),
-    _hZ0(0),
-    _hT0(0){
-
-    if ( config.hasName("particleGun.point") ){
-      _point  = config.getHep3Vector("particleGun.point");
-    }
-
-    if ( config.hasName("particleGun.halfLength") ){
-      _halfLength = config.getHep3Vector("particleGun.halfLength");
-    }
-
-    _pmin   = config.getDouble("particleGun.pmin", pEndPoint );
-    _pmax   = config.getDouble("particleGun.pmax", pEndPoint );
-
-    _tmin   = config.getDouble("particleGun.tmin",  0. );
-    _tmax   = config.getDouble("particleGun.tmax",  0. );
-
-    // end processing run time configuration.
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
-    _mass = pdt->particle(_pdgId).ref().mass().value();
-
-    _dp  = ( _pmax - _pmin);
-    _dt  = ( _tmax - _tmin);
-
-    // Book histograms if enabled.
-    if ( !_doHistograms ) return;
-
-    art::ServiceHandle<art::TFileService> tfs;
-
-    art::TFileDirectory tfdir = tfs->mkdir( "ParticleGun" );
-    _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity", "Particle Gun Multiplicity",    20,  0.,  20.);
-
-    // Pick range of histogram.  Nice round numbers for the usual case.
-    if ( _pmax > 100. && _pmax < 107. ){
-      _hMomentum     = tfdir.make<TH1F>( "hMomentum",     "Particle Gun Momentum (MeV)",  100, 0., 110.);
-    } else {
-      double pHigh = double(static_cast<int>(_pmax)+1);
-      _hMomentum     = tfdir.make<TH1F>( "hMomentum",     "Particle Gun Momentum (MeV)",  100, 0., pHigh );
-    }
-
-    _hCz           = tfdir.make<TH1F>( "hCz",           "Particle Gun cos(theta)",      100, -1.,  1.);
-
-    double xlen = (_halfLength.x() > 1. ) ? _halfLength.x() : 1.;
-    double ylen = (_halfLength.y() > 1. ) ? _halfLength.y() : 1.;
-    double zlen = (_halfLength.z() > 1. ) ? _halfLength.z() : 1.;
-    double tlen = ((_tmax-_tmin)   > 1. ) ? (_tmax-_tmin)   : 1.;
-    double xl = _point.x() - xlen;
-    double xh = _point.x() + xlen;
-    double yl = _point.y() - ylen;
-    double yh = _point.y() + ylen;
-    double zl = _point.z() - zlen;
-    double zh = _point.z() + zlen;
-    _hX0           = tfdir.make<TH1F>( "hX0", "Particle Gun X0",              100,   xl,    xh);
-    _hY0           = tfdir.make<TH1F>( "hY0", "Particle Gun Y0",              100,   yl,    yh);
-    _hZ0           = tfdir.make<TH1F>( "hZ0", "Particle Gun Z0",              100,   zl,    zh);
-    _hT0           = tfdir.make<TH1F>( "hT0", "Particle Gun Time",            100,  _tmin, _tmin + tlen);
-
-
+  void ParticleGun::generate( GenParticleCollection& genParts) {
+    m_gun.generate(genParts);
   }
 
-  ParticleGun::~ParticleGun(){
-  }
-
-  void ParticleGun::generate( GenParticleCollection& genParts ){
-
-    long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
-    if ( _doHistograms ){
-      _hMultiplicity->Fill(n);
-    }
-
-    for ( int j =0; j<n; ++j ){
-
-      // Random point inside of a box.
-      double x[3];
-      for ( int i=0; i<3; ++i ){
-        x[i] = _point[i] + _randFlat.fire(-1.,1.)*_halfLength[i];
-      }
-      CLHEP::Hep3Vector pos(x[0], x[1], x[2]);
-
-      // Magnitude of momentum and energy.
-      double p = _pmin + _dp * _randFlat.fire();
-      double e = sqrt( p*p + _mass*_mass);
-
-      // 4 Momentum.
-      CLHEP::HepLorentzVector p4( _randomUnitSphere.fire(p), e);
-
-      // Time
-      double time = _tmin + _dt*_randFlat.fire();
-
-      genParts.push_back( GenParticle( _pdgId, GenId::particleGun, pos, p4, time));
-
-      if(_verbose)cout << "Generated position: "
-           << pos << " "
-           << p4 << " "
-           << p4.vect().mag() << " "
-           << time
-           << endl;
-
-      if ( _doHistograms ) {
-        _hMomentum->Fill(p);
-        _hCz->Fill( p4.vect().cosTheta());
-        _hX0->Fill( pos.x() );
-        _hY0->Fill( pos.y() );
-        _hZ0->Fill( pos.z() );
-        _hT0->Fill( time );
-      }
-
-    }
-
-  } // end of generate
-
-}
+} // namespace mu2e

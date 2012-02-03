@@ -3,30 +3,20 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.10 2011/10/24 19:55:57 brownd Exp $
-// $Author: brownd $
-// $Date: 2011/10/24 19:55:57 $
+// $Id: ParticleGun.hh,v 1.11 2012/02/03 05:08:06 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/03 05:08:06 $
 //
 // Original author Rob Kutschke
 //
 // The position is given in the Mu2e coordinate system.
 //
 
-// Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-
-// External includes
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandPoissonQ.h"
-#include "CLHEP/Vector/ThreeVector.h"
+#include "EventGenerator/inc/ParticleGunImpl.hh"
 
 // Forward references.
-namespace art{
-  class Run;
-}
-class TH1F;
+namespace art{ class Run; }
 
 namespace mu2e {
 
@@ -37,72 +27,12 @@ namespace mu2e {
 
   public:
     ParticleGun( art::Run const& run, const SimpleConfig& config );
-    virtual ~ParticleGun();
 
-    virtual void generate( GenParticleCollection&  );
+    // adds generated particles to the collection
+    virtual void generate(GenParticleCollection& out);
 
   private:
-
-    // Start: Information from the run time configuration.
-
-    // Number of particles per event.
-    // If positive, mean of a Poisson distribution.
-    // If negative, then exactly that number of particles per event.
-    double _mean;
-
-    // PDG particle id code of the particle to be generated.
-    PDGCode::type _pdgId;
-
-    // Angular range over which particles will be generated.
-    double _czmin;
-    double _czmax;
-    double _phimin;
-    double _phimax;
-
-    // Momentum range of the particle.  Units are MeV.
-    double _pmin;
-    double _pmax;
-
-    // Time range over which the particle will be produced; units are ns.
-    double _tmin;
-    double _tmax;
-
-    // Particles will be produced in a box, specified by
-    // a point in the Tracker coordinate system and
-    // the half lengths of the box.  Units are mm.
-    // The point (0,0,0) is at the origin of the Mu2e coordinate system.
-    CLHEP::Hep3Vector _point;
-    CLHEP::Hep3Vector _halfLength;
-
-    // enable output
-    bool _verbose;
-    // Enable histograms
-    bool _doHistograms;
-
-    // End: Information from the run time configuration.
-
-    // Random number distributions.
-    CLHEP::RandFlat     _randFlat;
-    CLHEP::RandPoissonQ _randPoissonQ;
-    RandomUnitSphere    _randomUnitSphere;
-
-    // Derived information.
-
-    // Mass of the particle to be generated.
-    double _mass;
-
-    // Ranges of momentum and time.
-    double _dp, _dt;
-
-    // Histogram information.
-    TH1F* _hMultiplicity;
-    TH1F* _hMomentum;
-    TH1F* _hCz;
-    TH1F* _hX0;
-    TH1F* _hY0;
-    TH1F* _hZ0;
-    TH1F* _hT0;
-
+    ParticleGunImpl m_gun;
   };
 
 } // end namespace mu2e,
