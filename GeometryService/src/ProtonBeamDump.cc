@@ -20,8 +20,8 @@ namespace mu2e {
     // momentum constraint is tighter because of other pieces of
     // geometry.
 
-    if(0.5*_outerHalfSize[2] < rTrack) {
-      return asin(0.5*_outerHalfSize[2]/rTrack);
+    if(_outerHalfSize[2] < rTrack) {
+      return asin(_outerHalfSize[2]/rTrack);
     }
     else {
       throw cet::exception("GEOM")<<"ProtonBeamDump::FilterMagnetExtMonFNAL::trackBendHalfAngle(): "
