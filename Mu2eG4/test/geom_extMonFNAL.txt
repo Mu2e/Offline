@@ -8,6 +8,9 @@ bool hasExtMonUCI = false;
 double toyPS.toyEnclosure.Thickness = 2.84; // mm
 string toyPS.toyEnclosure.materialName = "G4_Ti";
 
+//int g4.steppingActionMaxSteps = 100000;
+//int g4.stepsSizeLimit = 10000;
+
 // bool g4SteppingAction.killerVerbose = true;
 // vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
 int g4.particlesSizeLimit = 100000;
@@ -30,11 +33,12 @@ bool extMonFilter.collimator2.channel.visible = true;
 bool extMonFilter.collimator2.channel.solid = false;
 
 // change momentum setting for the debugging
-double extMonFilter.nominalMomentum = 4000000.; // MeV/c
-//double extMonFilter.nominalMomentum = 4000.; // MeV/c
+double extMonFilter.nominalMomentum = 4000.; // MeV/c
+double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
 
 // Disable all physics except transport.
 string g4.physicsListName = "Minimal";
+//double extMonFilter.maxG4StepLength = 10.; // mm
 
 //----------------------------------------------------------------
 
