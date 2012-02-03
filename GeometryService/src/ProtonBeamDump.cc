@@ -8,8 +8,10 @@ namespace mu2e {
 
   double ProtonBeamDump::FilterMagnetExtMonFNAL::trackBendHalfAngle(double momentum) const {
 
-    // In the bend plane: the gyroradius (in mm):
-    const double rTrack = 3300. * (momentum/CLHEP::GeV) / (_fieldStrength/CLHEP::tesla);
+    // In the bend plane: compute the gyroradius
+    // The constant factor is 1/c_light scaled such as
+    // to get rTrack in millimeters
+    const double rTrack = 3335.64095198 * (momentum/CLHEP::GeV) / (_fieldStrength/CLHEP::tesla);
     
 //    std::cerr<<"AG: got rTrack = "<<rTrack<<" mm for p = "
 //	     <<(momentum/CLHEP::GeV)<<" GeV and  B = "
