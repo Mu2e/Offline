@@ -5,17 +5,38 @@
 // Make sure the face of beam dump shielding is not shadowed
 bool hasExtMonUCI = false;
 
-// For g4beamline comparison: close the PS vacuum with a thin disk.
-// A non-positive thickness means don't close.
-// 
-// NB: docdb-1944 uses 2.84mm Titanium disk, R=1meter.
-// We'll make it match the outside radius of the cryostat instead.
 double toyPS.toyEnclosure.Thickness = 2.84; // mm
 string toyPS.toyEnclosure.materialName = "G4_Ti";
 
 // bool g4SteppingAction.killerVerbose = true;
 vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
 int g4.particlesSizeLimit = 100000;
+
+//----------------------------------------------------------------
+// Tweak visibility for debugging the channel setup
+
+bool extMonFilter.collimator1.alignmentHole.visible = false;
+bool extMonFilter.collimator1.alignmentHole.solid = false;
+bool extMonFilter.collimator1.alignmentPlug.visible = false;
+bool extMonFilter.collimator1.alignmentPlug.solid = false;
+bool extMonFilter.collimator1.channel.visible = true;
+bool extMonFilter.collimator1.channel.solid = false;
+
+bool extMonFilter.collimator2.alignmentHole.visible = false;
+bool extMonFilter.collimator2.alignmentHole.solid = false;
+bool extMonFilter.collimator2.alignmentPlug.visible = false;
+bool extMonFilter.collimator2.alignmentPlug.solid = false;
+bool extMonFilter.collimator2.channel.visible = true;
+bool extMonFilter.collimator2.channel.solid = false;
+
+// change momentum setting for the debugging
+double extMonFilter.nominalMomentum = 4000000.; // MeV/c
+//double extMonFilter.nominalMomentum = 4000.; // MeV/c
+
+// Disable all physics except transport.
+string g4.physicsListName = "Minimal";
+
+//----------------------------------------------------------------
 
 //// Write mu2e geometry into a GDML file
 //bool   writeGDML        = false;

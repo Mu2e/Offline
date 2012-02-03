@@ -8,9 +8,12 @@ bool ejectedNeutronGun.do       = false;
 bool ejectedPhotonGun.do        = false;
 bool decayinorbitGun.do         = false;
 bool piEplusNuGun.do            = false;
-bool primaryProtonGun.do        = true;
 bool fromG4BLFile.do            = false;
 bool nuclearCaptureGun.do       = false;
+
+
+//----------------------------------------------------------------
+bool primaryProtonGun.do        = false;
 
 // cos(theta)=-1. perfectly aligned impact on production target.
 double primaryProtonGun.czmin = -1;
@@ -25,6 +28,19 @@ double primaryProtonGun.beamSpotSigma = 0.;
 // Range of times over which protons hit the target; in ns.
 double primaryProtonGun.tmin  =    0.;
 double primaryProtonGun.tmax  =  100.;
+
+//----------------------------------------------------------------
+bool extMonFNALGun.do        = true;
+
+double extMonFNALGun.pmin = 4000; // MeV
+double extMonFNALGun.pmax = 4000; // MeV
+
+double extMonFNALGun.coneAngle = 0.; //0.050; // rad
+int    extMonFNALGun.pdgId = -13; // -13 is mu+, 2212 is p+, 102 is charged geantino
+
+vector<double> extMonFNALGun.offset = {0., -24., 0.};
+
+//----------------------------------------------------------------
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
