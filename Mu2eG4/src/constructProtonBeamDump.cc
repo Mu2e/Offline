@@ -284,9 +284,9 @@ namespace mu2e {
 					0,
 					CLHEP::Hep3Vector(0, 0, 0),
 					magnetIron.logical, 0,
-					config.getBool("extMonFilter.magnet.air.visible", true),
+					config.getBool("extMonFilter.magnet.aperture.visible", true),
 					G4Colour::Grey(),
-					config.getBool("extMonFilter.magnet.air.solid", false),
+					config.getBool("extMonFilter.magnet.aperture.solid", false),
 					forceAuxEdgeVisible,
 					placePV,
 					doSurfaceCheck
