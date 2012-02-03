@@ -23,7 +23,7 @@ namespace mu2e {
 	    config.getDouble("extMonFNALGun.pmin"),
 	    config.getDouble("extMonFNALGun.pmax"),
 	    
-	    RandomUnitSphereParams(-1., -acos(config.getDouble("extMonFNALGun.coneAngle")),
+	    RandomUnitSphereParams(-1., -cos(config.getDouble("extMonFNALGun.coneAngle")),
                                    0., 2*M_PI),
 	    
 	    config.getDouble("extMonFNALGun.tmin", 0.),
