@@ -127,6 +127,10 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector& collimator2CenterInEnclosure() const { return _collimator2CenterInEnclosure; }
 
+    // convenience accessor for event generators
+    // returns the point of intersection of collimator1 axis with the dump shielding face
+    CLHEP::Hep3Vector filterEntranceInMu2e() const;
+
     //----------------------------------------------------------------
   private: 
     friend class ProtonBeamDumpMaker;

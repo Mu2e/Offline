@@ -11,7 +11,7 @@ process_name : testExtMonFNAL
 // Start form an empty source
 source : {
    module_type : EmptyEvent
-   maxEvents : 1
+   maxEvents : 10
 }
 
 services : {

@@ -9,7 +9,7 @@ double toyPS.toyEnclosure.Thickness = 2.84; // mm
 string toyPS.toyEnclosure.materialName = "G4_Ti";
 
 // bool g4SteppingAction.killerVerbose = true;
-vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
+// vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
 int g4.particlesSizeLimit = 100000;
 
 //----------------------------------------------------------------

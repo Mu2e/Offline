@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.3 2011/12/05 17:40:09 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2011/12/05 17:40:09 $
+// $Id: GenId.hh,v 1.4 2012/02/03 06:00:31 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/03 06:00:31 $
 //
 // Original author Rob Kutschke
 //
@@ -40,18 +40,20 @@ namespace mu2e {
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
+      extMonFNALGun,
       lastEnum
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
-#define GENID_NAMES                                                                \
-      "unknown",      "particleGun",       "conversionGun",                        \
-      "cosmicToy",    "cosmicDYB",         "cosmic",           "dio1",             \
-      "dio2",         "dio3",              "pionCapture",                          \
-      "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",                     \
-      "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi",\
-      "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun","internalRPC"
-
+#define GENID_NAMES                                                     \
+    "unknown",      "particleGun",       "conversionGun",               \
+      "cosmicToy",    "cosmicDYB",         "cosmic",           "dio1",  \
+      "dio2",         "dio3",              "pionCapture",               \
+      "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
+      "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
+      "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
+      "extMonFNALGun"
+      
   public:
 
     // The most important c'tor and accessor methods are first.

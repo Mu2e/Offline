@@ -42,6 +42,19 @@ vector<double> extMonFNALGun.offset = {0., -24., 0.};
 
 //----------------------------------------------------------------
 
+//----------------------------------------------------------------
+bool extMonFNALGun.do        = true;
+
+double extMonFNALGun.pmin = 4000; // MeV
+double extMonFNALGun.pmax = 4000; // MeV
+
+double extMonFNALGun.coneAngle = 0.; //0.050; // rad
+int    extMonFNALGun.pdgId = -13; // -13 is mu+, 2212 is p+, 102 is charged geantino
+
+vector<double> extMonFNALGun.offset = {0., -49., 0.};
+
+//----------------------------------------------------------------
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++

@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.10 2012/01/28 07:19:53 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/01/28 07:19:53 $
+  $Id: EventGenerator_module.cc,v 1.11 2012/02/03 06:00:31 gandr Exp $
+  $Author: gandr $
+  $Date: 2012/02/03 06:00:31 $
 
   Original author Rob Kutschke
 
@@ -65,6 +65,7 @@
 #include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
+#include "EventGenerator/inc/ExtMonFNALGun.hh"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>
@@ -157,6 +158,7 @@ namespace mu2e {
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
     bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
     bool doNuclearCapture       = config.getBool( "nuclearCaptureGun.do",false );
+    bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
@@ -171,6 +173,7 @@ namespace mu2e {
     if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );
     if ( doNuclearCapture)       _generators.push_back( GeneratorBasePtr( new NuclearCaptureGun(run, config)) );
+    if ( doExtMonFNALGun)        _generators.push_back( GeneratorBasePtr( new ExtMonFNALGun(    run, config)) );
 
     if ( _generators.size() == 0 ){
       mf::LogWarning("CONTROL")

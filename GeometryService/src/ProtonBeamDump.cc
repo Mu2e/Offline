@@ -28,4 +28,13 @@ namespace mu2e {
 				  <<"requested momentum p="<<momentum/CLHEP::GeV<<" GeV is too low ";
     }
   }
+
+
+  CLHEP::Hep3Vector ProtonBeamDump::filterEntranceInMu2e() const {
+    CLHEP::Hep3Vector filterEntranceInEnclosure(_coreCenterInEnclosure[0] + _filterEntranceOffsetX,
+                                                _coreCenterInEnclosure[1] + _filterEntranceOffsetY,
+                                                _enclosureHalfSize[2]);
+    
+    return _enclosureCenterInMu2e + _enclosureRotationInMu2e.inverse() * filterEntranceInEnclosure;
+  }
 }
