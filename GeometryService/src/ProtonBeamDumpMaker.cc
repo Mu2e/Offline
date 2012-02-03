@@ -238,7 +238,8 @@ namespace mu2e {
     // Height of the exit point (in enclosure coords)
     const double magnetExitY = magnetEntranceY + sin(magnetAngleV) * 2*m_det->_filterMagnet._outerHalfSize[2];
 
-    const double col2CenterY = magnetExitY + tan(m_det->_collimator2.angleV())*(magnetExitZ - col2CenterZ);
+    const double col2CenterY = magnetExitY + tan(m_det->_collimator2.angleV())*(magnetExitZ - col2CenterZ)
+      + 0.5 * m_det->_collimator2._channelHeight[0]/cos(m_det->_collimator2.angleV());
 
     m_det->_collimator2CenterInEnclosure = CLHEP::Hep3Vector(col2CenterX, col2CenterY, col2CenterZ);
 
