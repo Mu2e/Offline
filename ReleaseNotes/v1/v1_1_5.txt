@@ -1,13 +1,17 @@
 
-  $Id: v1_1_5.txt,v 1.10 2012/02/03 05:08:06 gandr Exp $
+  $Id: v1_1_5.txt,v 1.11 2012/02/03 05:25:38 gandr Exp $
   $Author: gandr $
-  $Date: 2012/02/03 05:08:06 $
+  $Date: 2012/02/03 05:25:38 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_5
 
-8) January 30, 2012 onoratog
+11) February 2, 2012 gandr
+
+   - Close the PS1 vacuum with a thin metal disk at the proton exit end.
+
+10) January 30, 2012 onoratog
    Added the possibility of shift the time production of particles coming
    from the foils. (The previous situation was capable only of a smearing
    of generation time coming from the proton pulse time distribution.)
