@@ -5,9 +5,9 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 //
-// $Id: RandomUnitSphere.hh,v 1.9 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: RandomUnitSphere.hh,v 1.10 2012/02/03 05:02:43 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/03 05:02:43 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,16 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
-
+  
+  struct RandomUnitSphereParams {
+    double czmin;
+    double czmax;
+    double phimin;
+    double phimax;
+    RandomUnitSphereParams(double ci, double ca, double pi, double pa) 
+      : czmin(ci), czmax(ca), phimin(pi), phimax(pa) {}
+  };
+  
   class RandomUnitSphere {
 
   public:
@@ -38,6 +47,8 @@ namespace mu2e {
                                double czmax=1.,
                                double phimin=0.,
                                double phimax=CLHEP::twopi);
+
+    explicit RandomUnitSphere( CLHEP::HepRandomEngine& engine, const RandomUnitSphereParams& par);
 
     ~RandomUnitSphere(){}
 
