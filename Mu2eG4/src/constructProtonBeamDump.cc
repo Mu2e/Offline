@@ -19,6 +19,13 @@
 #include "G4Transform3D.hh"
 #include "G4SDManager.hh"
 
+#include "G4UniformMagField.hh"
+#include "G4Mag_UsualEqRhs.hh"
+#include "G4ExactHelixStepper.hh"
+//#include "G4NystromRK4.hh"
+#include "G4ChordFinder.hh"
+#include "G4FieldManager.hh"
+
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -45,7 +52,7 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 
-#define AGDEBUG(stuff) std::cerr<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 //#define AGDEBUG(stuff)
 
 namespace mu2e {
@@ -296,14 +303,37 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Define the field in the magnet
 
-    GeomHandle<WorldG4> world;
-    FieldMgr *fm = reg.add(FieldMgr::forUniformField(dump.filterMagnet().fieldStrength() * CLHEP::Hep3Vector(1,0,0),
-						     /* FIXME: this arg is not used - why is it required? */
-						     world->mu2eOriginInWorld()
-						     ).release()
-			   );
-    
-    magnetAperture.logical->SetFieldManager(fm->manager(), true);
+    G4MagneticField *field = reg.add(new G4UniformMagField(dump.filterMagnet().fieldStrength() * CLHEP::Hep3Vector(1,0,0)));
+
+    G4Mag_UsualEqRhs *rhs  = reg.add(new G4Mag_UsualEqRhs(field));
+
+    G4MagIntegratorStepper *integrator = reg.add(new G4ExactHelixStepper(rhs));
+    //G4MagIntegratorStepper *integrator = reg.add(new G4NystromRK4(rhs));
+
+    const double stepMinimum = config.getDouble("extMonFilter.magnet.stepMinimum", 1.0e-2 * CLHEP::mm /*The default from G4ChordFinder.hh*/);
+    G4ChordFinder          *chordFinder = reg.add(new G4ChordFinder(field, stepMinimum, integrator));
+
+    const double deltaOld = chordFinder->GetDeltaChord();
+    chordFinder->SetDeltaChord(config.getDouble("extMonFilter.magnet.deltaChord", deltaOld));
+    AGDEBUG("chordFinder: using deltaChord = "<<chordFinder->GetDeltaChord()<<" (default = "<<deltaOld<<")");
+
+    G4FieldManager *manager = reg.add(new G4FieldManager(field, chordFinder));
+
+    AGDEBUG("orig: manager epsMin = "<<manager->GetMinimumEpsilonStep()
+            <<", epsMax = "<<manager->GetMaximumEpsilonStep()
+            <<", deltaOneStep = "<<manager->GetDeltaOneStep()
+            );
+
+    manager->SetMinimumEpsilonStep(config.getDouble("extMonFilter.magnet.minEpsilonStep", manager->GetMinimumEpsilonStep()));
+    manager->SetMaximumEpsilonStep(config.getDouble("extMonFilter.magnet.maxEpsilonStep", manager->GetMaximumEpsilonStep()));
+    manager->SetDeltaOneStep(config.getDouble("extMonFilter.magnet.deltaOneStep", manager->GetDeltaOneStep()));
+
+    AGDEBUG("new:  manager epsMin = "<<manager->GetMinimumEpsilonStep()
+            <<", epsMax = "<<manager->GetMaximumEpsilonStep()
+            <<", deltaOneStep = "<<manager->GetDeltaOneStep()
+            );
+
+    magnetAperture.logical->SetFieldManager(manager, true);
 
     //----------------------------------------------------------------
   }

@@ -15,6 +15,11 @@ string toyPS.toyEnclosure.materialName = "G4_Ti";
 // vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
 int g4.particlesSizeLimit = 100000;
 
+// // Uncomment to enable debug printout on a per event or per track basis.
+// vector<int> g4.steppingActionEventList = { 0, 1, 2, 3, 4, 5 };
+// vector<int> g4.steppingActionTrackList = {    1, 2, 3, 4, 5 };
+// vector<int> g4.trackingActionEventList = { 0, 1, 2, 3, 4, 5};
+
 //----------------------------------------------------------------
 // Tweak visibility for debugging the channel setup
 
@@ -32,6 +37,11 @@ bool extMonFilter.collimator2.alignmentPlug.solid = false;
 bool extMonFilter.collimator2.channel.visible = true;
 bool extMonFilter.collimator2.channel.solid = false;
 
+bool extMonFilter.magnet.iron.visible = true;
+bool extMonFilter.magnet.iron.solid = false;
+bool extMonFilter.magnet.aperture.visible = true;
+bool extMonFilter.magnet.aperture.solid = false;
+
 // change momentum setting for the debugging
 double extMonFilter.nominalMomentum = 4000.; // MeV/c
 double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
@@ -39,6 +49,11 @@ double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
 // Disable all physics except transport.
 string g4.physicsListName = "Minimal";
 //double extMonFilter.maxG4StepLength = 10.; // mm
+
+// double extMonFilter.magnet.deltaChord = 0.001;
+// double extMonFilter.magnet.minEpsilonStep = 1.e-8;
+// double extMonFilter.magnet.maxEpsilonStep = 1.e-6;
+// double extMonFilter.magnet.deltaOneStep = 1.e-6;
 
 //----------------------------------------------------------------
 

@@ -1,0 +1,3 @@
+#include "Mu2eG4/test/g4test_extMonFNAL.fcl"
+
+physics.producers.g4run.visMacro : "Mu2eG4/test/vis_extMonFNAL_magnetBack.mac"
