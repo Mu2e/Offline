@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.17 2011/11/02 04:25:21 ehrlich Exp $
+// $Id: EventDisplay_module.cc,v 1.18 2012/02/04 00:36:35 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/11/02 04:25:21 $
+// $Date: 2012/02/04 00:36:35 $
 //
 
 #include <iostream>
@@ -108,8 +108,10 @@ namespace mu2e
       else
       {
         bool showEvent=true;
-        checkMinimumHits<mu2e::StepPointMCCollection>(event, "std::vector<mu2e::StepPointMC>", _frame, showEvent);
-        checkMinimumHits<mu2e::StrawHitCollection>(event, "std::vector<mu2e::StrawHit>", _frame, showEvent);
+        checkMinimumHits<mu2e::StepPointMCCollection>(event, "<mu2e::StepPointMC>", _frame, showEvent);
+        checkMinimumHits<mu2e::StepPointMCCollection>(event, "<StepPointMC>", _frame, showEvent);
+        checkMinimumHits<mu2e::StrawHitCollection>(event, "<mu2e::StrawHit>", _frame, showEvent);
+        checkMinimumHits<mu2e::StrawHitCollection>(event, "<StrawHit>", _frame, showEvent);
 #ifdef BABARINSTALLED
         checkMinimumHitsKalman(event, _frame, showEvent);
 #endif
@@ -133,7 +135,7 @@ namespace mu2e
   {
     std::string className, moduleLabel, productInstanceName;
     bool hasSelectedHits=_frame->getSelectedHitsName(className, moduleLabel, productInstanceName);
-    if(hasSelectedHits && className.compare(classNameToCheck)==0)
+    if(hasSelectedHits && className.find(classNameToCheck)!=std::string::npos)
     {
       art::Handle<collectionType> hits;
       if(event.getByLabel(moduleLabel,productInstanceName,hits))
@@ -153,7 +155,7 @@ namespace mu2e
   {
     std::string className, moduleLabel, productInstanceName;
     bool hasSelectedHits=_frame->getSelectedHitsName(className, moduleLabel, productInstanceName);
-    if(hasSelectedHits && className.compare("std::vector<mu2e::TrkRecoTrk>")==0)
+    if(hasSelectedHits && ((className.find("<TrkRecoTrk>")!=std::string::npos) || (className.find("<mu2e::TrkRecoTrk>")!=std::string::npos)))
     {
       art::Handle<mu2e::TrkRecoTrkCollection> kalmantrackCollection;
       if(event.getByLabel(moduleLabel,productInstanceName,kalmantrackCollection))

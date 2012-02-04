@@ -1018,7 +1018,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       const cet::map_vector_key& particleKey = iter->first;
       int id = particle.id().asInt();
       int parentid = -1;
-//      if(particle.hasParent()) parentid = particle.parent()->id().asInt();
+      if(particle.hasParent()) parentid = particle.parent()->id().asInt();
       int particleid=particle.pdgId();
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
