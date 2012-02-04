@@ -52,8 +52,8 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 
-#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
-//#define AGDEBUG(stuff)
+//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+#define AGDEBUG(stuff)
 
 namespace mu2e {
 
@@ -303,7 +303,9 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Define the field in the magnet
 
-    G4MagneticField *field = reg.add(new G4UniformMagField(dump.filterMagnet().fieldStrength() * CLHEP::Hep3Vector(1,0,0)));
+    CLHEP::HepRotation magnetRotationInWorld(CLHEP::HepRotation::IDENTITY);
+    magnetRotationInWorld.rotateY(dump.coreRotY());
+    G4MagneticField *field = reg.add(new G4UniformMagField(dump.filterMagnet().fieldStrength() * (magnetRotationInWorld*CLHEP::Hep3Vector(1,0,0))));
 
     G4Mag_UsualEqRhs *rhs  = reg.add(new G4Mag_UsualEqRhs(field));
 

@@ -38,7 +38,21 @@ double extMonFNALGun.pmax = 4000; // MeV
 double extMonFNALGun.coneAngle = 0.; //0.050; // rad
 int    extMonFNALGun.pdgId = -13; // -13 is mu+, 2212 is p+, 102 is charged geantino
 
-vector<double> extMonFNALGun.offset = {0., -24., 0.};
+vector<double> extMonFNALGun.offset = {0., -25., 0.};
+
+// //----------------------------------------------------------------
+// // A "road" of tracks
+// 
+// vector<double> extMonFNALGun.offset = {0., 0., 0.};
+// vector<double> extMonFNALGun.halfSize = {0., 25., 0.};
+// double extMonFNALGun.multiplicity = -400;
+// 
+// //----------------------------------------------------------------
+// // This is to launch stuff starting in the magnet:
+// 
+// vector<double> extMonFNALGun.offset = {0., 0, -4400.};
+// double extMonFNALGun.pmin = 50; // MeV
+// double extMonFNALGun.pmax = 50; // MeV
 
 //----------------------------------------------------------------
 // This tells emacs to view this file in c++ mode.
