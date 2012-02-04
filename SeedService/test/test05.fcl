@@ -1,0 +1,69 @@
+# Test the seeds service.
+#  Check range check works in predefined mode.
+#
+#
+# $Id: test05.fcl,v 1.1 2012/02/04 00:12:48 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2012/02/04 00:12:48 $
+
+#include "minimalMessageService.fcl"
+
+# Give this job a name.
+process_name : SeedTest01
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services :
+{
+  message : @local::default_message
+
+  user : {
+     SeedService: {
+      policy          : "preDefined"
+      baseSeed        :     1
+      maxSeedsPerJob  :     6
+      checkRange      :  true
+      verbosity       :     2
+      endOfJobSummary :  false
+
+      stest01 : {
+         a : 2
+         b : 4
+        }
+
+      stest02 : {
+         a : 6
+         c : 8
+      }
+     }
+  }
+
+}
+
+physics :
+{
+  analyzers: {
+    stest01 : {
+      module_type : SeedTest01
+      testMode      : 1
+      instanceNames : [ "a", "b" ]
+    }
+
+    stest02 : {
+      module_type : SeedTest01
+      testMode      : 1
+      instanceNames : [ "a", "c" ]
+    }
+
+  }
+
+  e1 : [stest01, stest02]
+
+  end_paths      : [e1]
+
+}
