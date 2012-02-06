@@ -35,6 +35,10 @@ makeDcH :
   seed                 : [7790]
   diagLevel            : 0
   maxFullPrint         : 0
+  nzHittingZone        : 1
+  zZoneLimits          : [ 0 ]
+  zZoneActive          : [ true ]
+  zZoneMinLiveTime     : [ 0.0 ]
 }
 
 # Form CaloHits (APD hits)
