@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.8 2011/10/28 18:47:06 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/10/28 18:47:06 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.9 2012/02/06 17:19:53 genser Exp $
+//  $Author: genser $
+//  $Date: 2012/02/06 17:19:53 $
 //
 // Original author Ivan Logashenko
 //
@@ -40,7 +40,7 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  const unsigned int nvdet = 20;
+  const unsigned int nvdet = VirtualDetectorId::lastEnum;
 
   typedef struct {
 
