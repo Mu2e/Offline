@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.16 2012/02/06 17:16:13 genser Exp $
-// $Author: genser $
-// $Date: 2012/02/06 17:16:13 $
+// $Id: constructVirtualDetectors.cc,v 1.17 2012/02/06 22:41:55 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/02/06 22:41:55 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -868,7 +868,7 @@ namespace mu2e {
 
       TubsParams vdParams(0., psCryoParams.outerRadius(), vdg->getHalfLength());
 
-      VolumeInfo vdInfo = nestTubs("PS_FrontExit",
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
                                    vacuumMaterial,
                                    0,
