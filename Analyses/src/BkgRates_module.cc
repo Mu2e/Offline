@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.25 2011/10/31 14:46:36 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.26 2012/02/06 23:56:32 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2011/10/31 14:46:36 $
+// $Date: 2012/02/06 23:56:32 $
 //
 // Original author Gianni Onorato
 //
@@ -86,6 +86,8 @@ namespace mu2e {
       _totalcputime(0),
       _totalrealtime(0)
     {
+      cout << "Module BkgRates is starting" << endl;
+
     }
     virtual ~BkgRates() {
     }

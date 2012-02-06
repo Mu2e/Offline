@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.7 2012/01/25 20:28:29 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/25 20:28:29 $
+// $Id: BkgNorm_module.cc,v 1.8 2012/02/06 23:56:32 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/06 23:56:32 $
 //
 // Original author Gianni Onorato
 //
@@ -164,14 +164,14 @@ namespace mu2e {
 
     if (ncalls == 1) {
 
-      art::Handle<PhysicalVolumeInfoCollection> volumes;
-      evt.getRun().getByLabel(_g4ModuleLabel, volumes);
+      //      art::Handle<PhysicalVolumeInfoCollection> volumes;
+      // evt.getRun().getByLabel(_g4ModuleLabel, volumes);
 
-      for (size_t i=0; i < volumes->size(); ++i) {
+      // for (size_t i=0; i < volumes->size(); ++i) {
 
-        PhysicalVolumeInfo const& volInfo = volumes->at(i);
-        cout << i << '\t' <<volInfo.name() << volInfo.copyNo() << endl;
-      }
+      //        PhysicalVolumeInfo const& volInfo = volumes->at(i);
+      //  cout << i << '\t' <<volInfo.name() << volInfo.copyNo() << endl;
+      // }
 
 
 

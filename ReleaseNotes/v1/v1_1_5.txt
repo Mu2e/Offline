@@ -1,11 +1,36 @@
 
-  $Id: v1_1_5.txt,v 1.14 2012/02/06 17:20:41 genser Exp $
-  $Author: genser $
-  $Date: 2012/02/06 17:20:41 $
+  $Id: v1_1_5.txt,v 1.15 2012/02/06 23:56:32 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2012/02/06 23:56:32 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_5
+
+14) February 6, 2012 onoratog
+    
+    Added the Czernacki spectrum for DIO. The tabulated values of the 
+    spectrum are in /ConditionService/data/czernacki.tbl
+    The Czernacki spectrum is the default one. It is possible to change
+    spectrum from the generator configuration file (e.g. genconfig.txt)
+    using the lines:
+    bool decayinorbitGun.useSimpleSpectrum = true;
+    bool decayinorbitGun.useFlatSpectrum = true;
+    bool decayinorbitGun.useShankerWanatabeSpectrum = true;
+    The first is for the E^5 spectrum, the second is a Flat spectrum
+    and the third is the Shanker-Wanatabe spectrum. The first choice 
+    the second, which override the third.
+    The GenId dio1, dio2, dio3 have been changed with dioShankerWanatabe,
+    dioFlat and dioE5. Moreover a GenId named dioCzarnecki has been added.
+    The file
+    Mu2eUtilities/inc/DIOShanbkerWanatabe.hh
+    and the correspective src/*.cc file have been deleted and substituted
+    by 
+    Mu2eUtilities/inc/ReadDIOSpectrum.hh (and its associated *.cc), 
+    which works boths for the old class 
+    Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh
+    and for the new class
+    Mu2eUtilities/inc/CzarneckiSpectrum.hh   
 
 
 13) February 6, 2012 genser

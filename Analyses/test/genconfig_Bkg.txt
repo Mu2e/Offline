@@ -1,21 +1,23 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.12 2012/01/31 05:34:19 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.13 2012/02/06 23:56:32 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/01/31 05:34:19 $
+// $Date: 2012/02/06 23:56:32 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
 // 
 
 // what processes to do
-bool ejectedProtonGun.do = 1;
-bool decayinorbitGun.do = 0;
+bool ejectedProtonGun.do = 0;
+bool decayinorbitGun.do = 1;
 bool primaryProtonGun.do = 0;
 bool ejectedNeutronGun.do = 0;
 bool ejectedPhotonGun.do = 0;
 bool conversionGun.do = 0;
+
+//bool decayinorbitGun.useShankerWanatabeSpectrum = 1;
 
 // Limits on cos(polar angle):
 double decayinorbitGun.czmin = -1.;
@@ -37,15 +39,15 @@ vector<double> beamDisplacementOnTarget = {0.,0.,0.};
 // Distribution parameter of Primary Proton Gun beam
 double primaryProtonGun.stdDev = 1; //units are mm
 
-int decayinorbitGun.nToSkip = 200000; 
-int ejectedProtonGun.nToSkip = 323000;
-int ejectedNeutronGun.nToSkip = 380000;
-int ejectedPhotonGun.nToSkip = 100000;
+//int decayinorbitGun.nToSkip = 200000; 
+//int ejectedProtonGun.nToSkip = 323000;
+//int ejectedNeutronGun.nToSkip = 380000;
+//int ejectedPhotonGun.nToSkip = 100000;
 
 
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
 double decayinorbitGun.elow = 0.;
-double decayinorbitGun.ehi = 50.;
+//double decayinorbitGun.ehi = 50.;
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
 double ejectedNeutronGun.elow = 0.03;

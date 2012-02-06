@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.23 2012/01/31 05:34:19 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.24 2012/02/06 23:56:32 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/01/31 05:34:19 $
+// $Date: 2012/02/06 23:56:32 $
 //
 //
 
@@ -18,7 +18,7 @@
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/DIOShankerWanatabe.hh"
+#include "Mu2eUtilities/inc/ReadDIOSpectrum.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // CLHEP includes
@@ -60,7 +60,7 @@ namespace mu2e {
 
     // Class object to generate position and time of the particle
     std::auto_ptr<FoilParticleGenerator> _fGenerator;
-    std::auto_ptr<DIOShankerWanatabe> _randEnergy;
+    std::auto_ptr<ReadDIOSpectrum> _randEnergy;
 
     // Limits on the generated direction.
     double _czmin;
@@ -91,6 +91,9 @@ namespace mu2e {
 
     // Use flat spectrum (default is off)
     bool _useFlatSpectrum;
+
+    // Use Shanker-Wanatabe spectrum (default is off)
+    bool _useShankerWanatabeSpectrum;
 
     // End: parameters that can be configured from the config file.
 

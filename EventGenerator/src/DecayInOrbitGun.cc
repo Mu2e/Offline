@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.40 2012/01/31 05:34:19 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.41 2012/02/06 23:56:32 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/01/31 05:34:19 $
+// $Date: 2012/02/06 23:56:32 $
 //
 // Original author Rob Kutschke
 //
@@ -61,7 +61,7 @@ namespace mu2e {
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
     _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
     _useFlatSpectrum(config.getBool("decayinorbitGun.useFlatSpectrum", false)),
-
+    _useShankerWanatabeSpectrum(config.getBool("decayinorbitGun.useShankerWanatabeSpectrum", false)),
     // Random number distributions; getEngine comes from the base class.
     _randSimpleEnergy(getEngine(), &(binnedEnergySpectrum()[0]), _nbins ),
     _randFlatEnergy(getEngine(),_elow,_ehi),
@@ -133,9 +133,16 @@ namespace mu2e {
 									     _STfname,
                                                                              _nToSkip));
 
-    _randEnergy = auto_ptr<DIOShankerWanatabe>(new DIOShankerWanatabe(13,_elow, _ehi, _spectrumResolution, getEngine()));
+
+    string spectKind;
+    if ( _useShankerWanatabeSpectrum) {
+      spectKind = "ShankerWanatabe";
+    } else {
+      spectKind = "Czarnecki";
+    }
 
 
+    _randEnergy = auto_ptr<ReadDIOSpectrum>(new ReadDIOSpectrum(13,_elow, _ehi, _spectrumResolution, spectKind, getEngine()));
 
   }
 
@@ -159,15 +166,22 @@ namespace mu2e {
       double time;
       _fGenerator->generatePositionAndTime(pos, time);
 
+      GenId::enum_type Id;
 
       //Pick up energy and momentum vector
       double e;
       if (_useSimpleSpectrum) {
         e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow);
+	Id = GenId::dioE5;
       } else if (_useFlatSpectrum) {
 	e = _randFlatEnergy.fire();
+	Id = GenId::dioFlat;
+      } else if (_useShankerWanatabeSpectrum) {
+        e = _randEnergy->fire();
+	Id = GenId::dioShankerWanatabe;
       } else {
         e = _randEnergy->fire();
+	Id = GenId::dioCzarnecki;
       }
 
       _p = safeSqrt(e*e - _mass*_mass);
@@ -177,7 +191,7 @@ namespace mu2e {
       CLHEP::HepLorentzVector mom(p3,e);
 
       // Add the particle to  the list.
-      genParts.push_back( GenParticle( PDGCode::e_minus, GenId::dio1, pos, mom, time));
+      genParts.push_back( GenParticle( PDGCode::e_minus, GenId(Id), pos, mom, time));
 
       if( _doHistograms ){
         _hEElec     ->Fill( e );

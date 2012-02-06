@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.4 2012/02/03 06:00:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/03 06:00:31 $
+// $Id: GenId.hh,v 1.5 2012/02/06 23:56:32 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/06 23:56:32 $
 //
 // Original author Rob Kutschke
 //
@@ -35,24 +35,24 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     enum enum_type {
       unknown,       particleGun,       conversionGun,
-      cosmicToy,     cosmicDYB,         cosmic,            dio1,
-      dio2,          dio3,              pionCapture,
+      cosmicToy,     cosmicDYB,         cosmic,            dioCzarnecki,
+      dioShankerWanatabe,          dioFlat,              pionCapture,
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
-      extMonFNALGun,
+      extMonFNALGun, dioE5,
       lastEnum
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
     "unknown",      "particleGun",       "conversionGun",               \
-      "cosmicToy",    "cosmicDYB",         "cosmic",           "dio1",  \
-      "dio2",         "dio3",              "pionCapture",               \
+      "cosmicToy",    "cosmicDYB",         "cosmic",           "dioCzarnecki",  \
+      "dioShankerWanatabe",         "dioFlat",              "pionCapture",               \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
       "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
-      "extMonFNALGun"
+      "extMonFNALGun", "dioE5"
       
   public:
 
@@ -89,6 +89,10 @@ namespace mu2e {
 
     bool operator==(const GenId::enum_type g) const{
       return ( _id == g );
+    }
+
+    bool isDio() {
+      return (_id == dioCzarnecki || _id == dioShankerWanatabe || _id == dioFlat || _id == dioE5 );
     }
 
     // Accessor for the version.

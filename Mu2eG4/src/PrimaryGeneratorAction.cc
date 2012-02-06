@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.34 2012/02/03 06:00:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/03 06:00:31 $
+// $Id: PrimaryGeneratorAction.cc,v 1.35 2012/02/06 23:56:32 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/06 23:56:32 $
 //
 // Original author Rob Kutschke
 //
@@ -113,14 +113,17 @@ namespace mu2e {
       G4ThreeVector      pos(genpart.position());
       G4ThreeVector momentum(genpart.momentum().v());
 
-      if( genpart.generatorId() == GenId::conversionGun     ||
-          genpart.generatorId() == GenId::dio1              ||
-          genpart.generatorId() == GenId::ejectedProtonGun  ||
-          genpart.generatorId() == GenId::ejectedNeutronGun ||
-          genpart.generatorId() == GenId::ejectedPhotonGun  ||
-          genpart.generatorId() == GenId::pionCapture       ||
-          genpart.generatorId() == GenId::piEplusNuGun      ||
-          genpart.generatorId() == GenId::nuclearCaptureGun ||
+      if( genpart.generatorId() == GenId::conversionGun       ||
+          genpart.generatorId() == GenId::dioShankerWanatabe  ||
+          genpart.generatorId() == GenId::dioCzarnecki        ||
+          genpart.generatorId() == GenId::dioFlat             ||
+          genpart.generatorId() == GenId::dioE5               ||
+          genpart.generatorId() == GenId::ejectedProtonGun    ||
+          genpart.generatorId() == GenId::ejectedNeutronGun   ||
+          genpart.generatorId() == GenId::ejectedPhotonGun    ||
+          genpart.generatorId() == GenId::pionCapture         ||
+          genpart.generatorId() == GenId::piEplusNuGun        ||
+          genpart.generatorId() == GenId::nuclearCaptureGun   ||
           genpart.generatorId() == GenId::internalRPC){
         pos += trackerOrigin;
       } else if ( genpart.generatorId() == GenId::cosmicDYB ||

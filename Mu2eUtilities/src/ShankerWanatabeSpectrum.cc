@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.10 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.11 2012/02/06 23:56:32 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/06 23:56:32 $
 //
 
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
@@ -114,7 +114,7 @@ namespace mu2e {
   double ShankerWanatabeSpectrum::EvaluateWanatabe(double E) {
 
     vector<pair<double, double> >::iterator it = _wanatable.begin();
-    while (E < it->first && it != _wanatable.end()) {
+    while ((E < it->first-0.0049) && it != _wanatable.end()) {
       it++;
     }
 
@@ -122,11 +122,9 @@ namespace mu2e {
       return 0;
     }
 
-    if (it->first == E) {
+    if (it->first <= E + 0.0049 || it->first >= E - 0.0049 ) { //tollerance of 0.049 MeV
       return it->second;
-    }
-
-    if (it->first < E) {
+    } else {
       return Interpulate(E, (it+1)->first, (it+1)->second,
                          it->first, it->second,
                          (it-1)->first, (it-1)->second);
