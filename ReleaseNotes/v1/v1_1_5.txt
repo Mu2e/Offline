@@ -1,11 +1,31 @@
 
-  $Id: v1_1_5.txt,v 1.13 2012/02/04 00:13:54 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/02/04 00:13:54 $
+  $Id: v1_1_5.txt,v 1.14 2012/02/06 17:20:41 genser Exp $
+  $Author: genser $
+  $Date: 2012/02/06 17:20:41 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_5
+
+
+13) February 6, 2012 genser
+
+    Added two new virtual detectors on the inner and outer surface of
+    the TTracker envelope
+
+    Files affected:
+
+    Added TT_OutSurf, TT_InSurf:
+     MCDataProducts/inc/VirtualDetectorId.hh
+     VirtualDetectorGeom/src/VirtualDetectorMaker.cc
+    Also decreased the outer radius of TT_MidInner by the vd width
+     Mu2eG4/src/constructVirtualDetectors.cc
+    Used VirtualDetectorId::lastEnum instead of integer literal:
+     Analyses/src/ReadVirtualDetector_module.cc
+    Decreased the larger outer radius by the width of the virtual detector:
+     Mu2eG4/src/constructProtonAbsorber.cc
+    Added reading of virtual detectors (readvd):
+     Mu2eG4/test/transportOnly.fcl
 
 12) February 3, 2012 kutschke
     First commit of SeedService.  Not yet ready for use.
