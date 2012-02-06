@@ -1,8 +1,8 @@
 //
-// Construct and return an VirtualDetector.
+// Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.14 2012/01/25 02:02:00 youzy Exp $
-// $Author: youzy $
+// $Id: VirtualDetectorMaker.cc,v 1.15 2012/02/06 17:15:11 genser Exp $
+// $Author: genser $
 //
 
 #include <iostream>
@@ -202,7 +202,16 @@ namespace mu2e {
 			       0,
 			       vdTTBackOffset);
     
+      // these next two detectors are also thin, but they are not disks but cylinders
+      // placed on the inner and outer surface of the ttracker envelope
 
+      Hep3Vector vdTTOutSurfOffset(0.,0.,0.);
+
+      _vd->addVirtualDetector( VirtualDetectorId::TT_OutSurf,
+			       ttOffset, 0, vdTTOutSurfOffset);
+
+      _vd->addVirtualDetector( VirtualDetectorId::TT_InSurf,
+			       ttOffset, 0, vdTTOutSurfOffset);
 
     }
 
