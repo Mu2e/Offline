@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 #
-# $Id: transportOnly.fcl,v 1.8 2012/01/26 21:53:59 genser Exp $
+# $Id: transportOnly.fcl,v 1.9 2012/02/06 17:18:44 genser Exp $
 # $Author: genser $
-# $Date: 2012/01/26 21:53:59 $
+# $Date: 2012/02/06 17:18:44 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -122,6 +122,14 @@ physics :
       maxFullPrint         : 201
 
     }
+    # Look at the hits from virtualdetectors
+    readvd:
+    {
+      module_type      : ReadVirtualDetector
+      vdStepPoints     : virtualdetector
+      savePDG          : [13 , -211]
+      maxPrint         : 200
+    }
 
 #    randomsaver:@local::randomsaver
 
@@ -130,7 +138,7 @@ physics :
   p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
   # randomsaver is currently broken.
   # e1 : [randomsaver, checkhits, outfile]
-  e1 : [checkhits, checksdd, outfile]
+  e1 : [checkhits, checksdd, readvd, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
