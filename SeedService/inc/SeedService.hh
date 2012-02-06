@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.1 2012/02/04 00:12:48 kutschke Exp $
+// $Id: SeedService.hh,v 1.2 2012/02/06 21:03:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/02/04 00:12:48 $
+// $Date: 2012/02/06 21:03:59 $
 //
 // Contact person Rob Kutschke
 //
@@ -16,13 +16,13 @@
 // This class is configured from a fhcil parameter set:
 //
 //    SeedService : {
-//       policy         : "autoIncrement"  // Required: Other legal value is "preDefined"
-//       baseSeed       : 0                // Required: An integer >= 0.
-//       checkRange     : true             // Optional: legal values true or false; defaults to true
-//       maxSeedsPerJob : 20               // Required iff checkRange is true.
+//       policy           : "autoIncrement"  // Required: Other legal value is "preDefined"
+//       baseSeed         : 0                // Required: An integer >= 0.
+//       checkRange       : true             // Optional: legal values true or false; defaults to true
+//       maxUniqueEngines : 20               // Required iff checkRange is true.
 //
-//       verbosity       : 0               // Optional: default=0, no informational printout
-//       endOfJobSummary : false           // Optional: print list of all managed seeds at end of job.
+//       verbosity        : 0               // Optional: default=0, no informational printout
+//       endOfJobSummary  : false           // Optional: print list of all managed seeds at end of job.
 //    }
 //
 // The policy parameter tells the service to choose one of two alogrithms, "autoIncrement"
@@ -76,9 +76,9 @@
 // the service will throw an exception.
 //
 // If the checkRange parameter is set to true, and if an offset is generated with a value outside
-// the range ( 0<= offset < maxSeedsPerJob-1 ) then the service will throw an exception.
+// the range ( 0<= offset < maxUniqueEngines-1 ) then the service will throw an exception.
 //
-// It is the responsibility of the user to ensure that the baseSeed and maxSeedsPerJob are chosen
+// It is the responsibility of the user to ensure that the baseSeed and maxUniqueEngines are chosen
 // it a way that ensures the required level of uniqueness of seeds.  The example grid jobs have
 // a single point of maintenance to achieve this: the user must specify the starting run number
 // for each grid submission.
@@ -155,7 +155,7 @@ namespace mu2e {
     // Information used by all policies.
     seed_t baseSeed_;
     bool   checkRange_;
-    seed_t maxSeedsPerJob_;
+    seed_t maxUniqueEngines_;
 
     // Information used by the autoIncrement policy
     seed_t currentSeed_;

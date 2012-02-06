@@ -2,9 +2,9 @@
 #  - Colliding seeds in preDefined mode.
 #
 #
-# $Id: test04.fcl,v 1.1 2012/02/04 00:12:48 kutschke Exp $
+# $Id: test04.fcl,v 1.2 2012/02/06 21:03:05 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/02/04 00:12:48 $
+# $Date: 2012/02/06 21:03:05 $
 
 #include "minimalMessageService.fcl"
 
@@ -24,12 +24,12 @@ services :
 
   user : {
      SeedService: {
-      policy          : "preDefined"
-      baseSeed        :     1
-      maxSeedsPerJob  :    20
-      checkRange      :  true
-      verbosity       :     2
-      endOfJobSummary :  false
+      policy            : "preDefined"
+      baseSeed          :     1
+      maxUniqueEngines  :    20
+      checkRange        :  true
+      verbosity         :     2
+      endOfJobSummary   :  false
 
       stest01 : {
          a : 2

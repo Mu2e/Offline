@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.1 2012/02/04 00:12:48 kutschke Exp $
+// $Id: SeedService_service.cc,v 1.2 2012/02/06 21:03:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/02/04 00:12:48 $
+// $Date: 2012/02/06 21:03:59 $
 //
 // Contact person Rob Kutschke
 //
@@ -48,7 +48,7 @@ namespace mu2e {
     knownSeeds_(),
     baseSeed_(0),
     checkRange_(true),
-    maxSeedsPerJob_(20),
+    maxUniqueEngines_(20),
 
     // Initailization specific to the autoIncrement policy
     currentSeed_(0){
@@ -95,11 +95,11 @@ namespace mu2e {
     string strCheckRange = (checkRange_) ? "true" : "false";
     mf::LogInfo log("SEEDS");
     log << "\nSummary of seeds computed by the SeedService.\n";
-    log << " Policy:                       " << strPolicy       << "\n";
-    log << " Change range:                 " << strCheckRange   << "\n";
-    log << " Maximum unique seeds per job: " << maxSeedsPerJob_ << "\n";
-    log << " Base Seed:                    " << baseSeed_       << "\n";
-    log << " Verbosity:                    " << verbosity_      << "\n\n";
+    log << " Policy:                       " << strPolicy         << "\n";
+    log << " Change range:                 " << strCheckRange     << "\n";
+    log << " Maximum unique seeds per job: " << maxUniqueEngines_ << "\n";
+    log << " Base Seed:                    " << baseSeed_         << "\n";
+    log << " Verbosity:                    " << verbosity_        << "\n\n";
 
     if ( !knownSeeds_.empty() ) {
       log << " Seed Value     ModuleLabel.InstanceName\n";
@@ -185,7 +185,7 @@ namespace mu2e {
     checkRange_ = pSet_.get<bool>("checkRange",true);
 
     if ( checkRange_ ){
-      maxSeedsPerJob_ = pSet_.get<seed_t>("maxSeedsPerJob");
+      maxUniqueEngines_ = pSet_.get<seed_t>("maxUniqueEngines");
     }
 
   }
@@ -254,13 +254,13 @@ namespace mu2e {
     if ( !checkRange_ ) return;
 
     seed_t offset = seed - baseSeed_;
-    if ( seed >= baseSeed_ + maxSeedsPerJob_ ){
+    if ( seed >= baseSeed_ + maxUniqueEngines_ ){
       throw cet::exception("SEEDS")
         << "SeedService:ensureRange for engine: "
         << id << " the seed offset is: "
         << offset
         << ".\nAllowed seed offsets are in the range 0....(N-1) where N is: "
-        << maxSeedsPerJob_ <<"\n";
+        << maxUniqueEngines_ <<"\n";
     }
   }
 
