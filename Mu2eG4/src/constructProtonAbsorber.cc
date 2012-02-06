@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.8 2011/08/04 18:54:10 genser Exp $
+// $Id: constructProtonAbsorber.cc,v 1.9 2012/02/06 17:17:11 genser Exp $
 // $Author: genser $
-// $Date: 2011/08/04 18:54:10 $
+// $Date: 2012/02/06 17:17:11 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -52,18 +52,13 @@ namespace mu2e {
     VolumeInfo const & parent1Info  = _helper->locateVolInfo("ToyDS2Vacuum");
     VolumeInfo const & parent2Info  = _helper->locateVolInfo("ToyDS3Vacuum");
 
+    // smaller and larger outer radii
     double pabs1rOut0   = _config->getDouble("protonabsorber.OutRadius0");
     double pabs2rOut1   = _config->getDouble("protonabsorber.OutRadius1");
     double pabsZHalfLen = _config->getDouble("protonabsorber.halfLength");
     double thick        = _config->getDouble("protonabsorber.thickness");
 
-    double pabs1rIn0  = pabs1rOut0 - thick;
-    double pabs2rIn1  = pabs2rOut1 - thick;
-
-    MaterialFinder materialFinder(*_config);
-    G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
-
-    // Add virtual detector before and after target
+    // adding virtual detector before and after target
     double vdHL = 0.;
     art::ServiceHandle<GeometryService> geom;
     if( geom->hasElement<VirtualDetector>() ) {
@@ -71,13 +66,25 @@ namespace mu2e {
       if( vdg->nDet()>0 ) vdHL = vdg->getHalfLength();
     }
 
+    // subtract virtual detector thickness from the larger outer
+    // radius of the proton absorber
+
+    pabs2rOut1 -= 2.*vdHL;
+
+    double pabs1rIn0  = pabs1rOut0 - thick;
+    double pabs2rIn1  = pabs2rOut1 - thick;
+
+    MaterialFinder materialFinder(*_config);
+    G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
+
+
     double z0DSup   = parent1Info.centerInMu2e().z();
 
     // the target info should be gotten from the geometry service... not as done here
 
     vector<double> targetRadius;  _config->getVectorDouble("target.radii", targetRadius);
 
-    double numoftf = (targetRadius.size()-1)*0.5;
+    double numoftf = (targetRadius.size()-1.0)*0.5;
 
     double foilwid=_config->getDouble("target.deltaZ"); 
 
@@ -102,6 +109,8 @@ namespace mu2e {
       cout << __func__ << 
 	" pabs1len                          : " << pabs1len << endl;
     }
+
+    // interpolating the outer radius of the DS2 part
 
     double pabs1rOut1 = ((pabs2rOut1 - pabs1rOut0)*(pabs1len/(2.0*pabsZHalfLen))) + pabs1rOut0;
     double pabs1rIn1  = pabs1rOut1 - thick;
