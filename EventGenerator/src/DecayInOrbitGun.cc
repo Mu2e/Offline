@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.43 2012/02/07 20:41:30 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.44 2012/02/07 21:15:04 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 20:41:30 $
+// $Date: 2012/02/07 21:15:04 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,7 @@ namespace mu2e {
 
     // Information from config file.
     _mean(config.getDouble("decayinorbitGun.mean",1.)),
-    _elow(config.getDouble("decayinorbitGun.elow",0.)),
+    _elow(config.getDouble("decayinorbitGun.elow",0.6)),
     _ehi(config.getDouble("decayinorbitGun.ehi",conversionEnergyAluminum)),
     _nbins(config.getInt("decayinorbitGun.nbins",1000)),
     _czmin(config.getDouble("decayinorbitGun.czmin", -1.0)),
