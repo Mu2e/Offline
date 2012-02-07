@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.115 2012/02/03 05:49:13 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.116 2012/02/07 00:20:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/03 05:49:13 $
+// $Date: 2012/02/07 00:20:14 $
 //
 // Original author Rob Kutschke
 //
@@ -46,6 +46,7 @@
 #include "Mu2eG4/inc/constructNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
+#include "Mu2eG4/inc/constructVisualizationRegions.hh"
 #include "Mu2eG4/inc/constructDS.hh"
 #include "Mu2eG4/inc/constructTS.hh"
 #include "Mu2eG4/inc/constructPS.hh"
@@ -238,6 +239,8 @@ namespace mu2e {
     }
 
     constructVirtualDetectors(_config); // beware of the placement order of this function
+
+    constructVisualizationRegions(worldVInfo, *_config);
 
     mf::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";

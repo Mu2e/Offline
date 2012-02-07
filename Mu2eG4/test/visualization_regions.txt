@@ -1,0 +1,38 @@
+// Overlay boxes of specified size and color on Mu2e geometry.
+// 
+// Original author Andrei Gaponenko
+
+// All coordinates are in mu2e system.
+// 
+// All vectors should be of the same size == number of defined boxes.
+// The only exception is that if visregions.boxes.visible is empty or
+// missing, the other config parameters are not looked at.
+
+// SimpleConfig has no getVectorBool(), thus use vector<int> here
+//vector<int> visregions.boxes.visible = { 1, 1 };
+
+vector<int> visregions.boxes.solid  =  { 1, 1 };
+
+// Material may affect how the box is shown in a viewer, thus make is configurable
+vector<string> visregions.boxes.material = { "G4_AIR", "G4_AIR" };
+
+vector<double> visregions.boxes.color.red =   { 0.0, 1. };
+vector<double> visregions.boxes.color.green = { 0.8, 0.5 };
+vector<double> visregions.boxes.color.blue =  { 0.95, 0.5 };
+
+//
+vector<double> visregions.boxes.xmin = { -10000.,  -350 };
+vector<double> visregions.boxes.xmax = {  +8000., +5204 };
+
+vector<double> visregions.boxes.ymin = { 0., 0. };
+//vector<double> visregions.boxes.ymax = { +15000. };
+vector<double> visregions.boxes.ymax = { +1., 1. };
+
+vector<double> visregions.boxes.zmin = { -10000., -20975 };
+vector<double> visregions.boxes.zmax = { +18000., -10000 };
+
+// ----------------------------------------------------------------
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

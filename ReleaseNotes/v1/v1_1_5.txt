@@ -1,11 +1,16 @@
 
-  $Id: v1_1_5.txt,v 1.15 2012/02/06 23:56:32 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2012/02/06 23:56:32 $
+  $Id: v1_1_5.txt,v 1.16 2012/02/07 00:20:14 gandr Exp $
+  $Author: gandr $
+  $Date: 2012/02/07 00:20:14 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_5
+
+15) February 6, 2012 gandr
+
+    Make if possible to draw a set of arbitrary rectangle overlaid on
+    Mu2e geometry.
 
 14) February 6, 2012 onoratog
     
