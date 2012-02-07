@@ -135,7 +135,7 @@ KalFitAcc(TTree* trks) {
 
   TCut hittrk("mcentmom>0.0");
   TCut pitch("mcenttd/sqrt(1+mcenttd^2)>0.5&&mcenttd/sqrt(1+mcenttd^2)<0.707107");
-  TCut mom("mcentmom>102");
+  TCut mom("mcentmom>90");
   TCut reco("fitstatus>0");
   TCut goodfit("fitcon>1e-2&&nactive>=25");
 

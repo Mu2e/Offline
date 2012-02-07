@@ -1,42 +1,43 @@
-void mu2e(double ndio=100000, double nconv=100000) {
+void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, double nconv=100000) {
+// diogenrange is the momentum range over which the DIO events were generated
   double nstopped(7.52e17);
   double capfrac(0.609); 
   double decayfrac = 1.0 - capfrac;
   double ndecay = nstopped*decayfrac;
+  double ncap = nstopped*capfrac;
   double conprob(1e-15);
 
-  unsigned nbins(25);
+  unsigned nbins(100);
   double mmin(101);
   double mmax(106);
   double mevperbin = (mmax-mmin)/nbins;
-
-  TChain* dio = new TChain("ReadKalFits/trkdiag");
-  char diofile[100];
-  for(unsigned idio=0;idio<9;idio++){
-    snprintf(diofile,100,"/data/7432_%i/flatDIO.root",idio);
-    dio->Add(diofile);
-  }
-
-  TChain* con = new TChain("ReadKalFits/trkdiag");
-  char confile[100];
-  for(unsigned icon=0;icon<9;icon++){
-    snprintf(confile,100,"/data/7436_%i/mixConversion.root",icon);
-    con->Add(confile);
-  }
+  double genmax(105);
+  double genmin(100);
 
   TH1F* timeshift = new TH1F("timeshift","T0 - muon conversion time;nsec",100,0,100);
   con->Project("timeshift","t0-mct0","fitstatus>0");
 
-  TProfile* truedio = new TProfile("truedio","Weighted MC true DIO spectrum;MeV;d#Gamma/(#Gamma dE) (MeV^{-1})",100,100,105.5,0,1);
+  TProfile* truedio = new TProfile("truedio","Weighted MC true DIO spectrum;MeV/c;d#Gamma/(#Gamma dE) (MeV^{-1})",nbins,mmin,mmax,0,1);
   dio->Project("truedio","diowt:mcmom");
   truedio->SetMaximum(1e-12);
   truedio->SetMinimum(1e-24);
+  TH1F* tdio = new TH1F("tdio","Weighted MC true DIO spectrum;MeV/c;d#Gamma/(#Gamma dE) (MeV^{-1})",nbins,mmin,mmax);
+  tdio->Sumw2();
+  dio->Project("tdio","mcmom","diowt");
+  tdio->Scale(diogenrange/(ndio*mevperbin));
+  tdio->SetMaximum(1e-12);
+  tdio->SetMinimum(1e-24);
+  truedio->SetLineColor(kRed);
+  truedio->SetMarkerColor(kRed);
+  tdio->SetLineColor(kBlue);
+  tdio->SetMarkerColor(kBlue);
 
   TCanvas* valid = new TCanvas("valid","validation",1200,800);
   valid->Divide(1,2);
   valid->cd(1);
   gPad->SetLogy();
   truedio->Draw();
+  tdio->Draw("same");
   valid->cd(2);
   timeshift->Draw();
 
@@ -44,8 +45,14 @@ void mu2e(double ndio=100000, double nconv=100000) {
   TH1F* conspec[4];
 // basic cuts
   TCut reco("fitstatus>0");
-  TCut pitch("td>0.577 && td <1.0");
-  TCut livegate("t0>800");
+  double tdlow(0.57735027);
+  double tdhigh(1.0);
+  double t0min(810);
+  char ctext[80];
+  snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
+  TCut pitch(ctext);
+  snprintf(ctext,80,"t0>%f",t0min);
+  TCut livegate(ctext);
 // cuts for different tightness of selection
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
   ncuts[0] = "nactive>=20";
@@ -72,23 +79,24 @@ void mu2e(double ndio=100000, double nconv=100000) {
     char conname[50];
     snprintf(conname,50,"conspec%i",ires);
  
-    diospec[ires] = new TH1F(dioname,"Reconstructed momentum;MeV;Events per experiment",nbins,mmin,mmax);
+    diospec[ires] = new TH1F(dioname,"Reconstructed momentum;MeV/c;Events per experiment",nbins,mmin,mmax);
     diospec[ires]->SetStats(0);
     diospec[ires]->SetLineColor(kBlue);
+    diospec[ires]->Sumw2();
 
-    conspec[ires] = new TH1F(conname,"Reconstructed momentum;MeV;Events per experiment",nbins,mmin,mmax);
+    conspec[ires] = new TH1F(conname,"Reconstructed momentum;MeV/c;Events per experiment",nbins,mmin,mmax);
     conspec[ires]->SetStats(0);
     conspec[ires]->SetLineColor(kRed);
+    conspec[ires]->Sumw2();
 
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
     TCut final = (reco+pitch+livegate+quality);
 
     dio->Project(dioname,"fitmom","diowt"*final);
-    diospec[ires]->Scale(ndecay*mevperbin/ndio);
+    diospec[ires]->Scale(ndecay*diogenrange/ndio);
 
-    double conscale = ndecay*conprob/nconv;
     con->Project(conname,"fitmom",final);
-    conspec[ires]->Scale(conscale);
+    conspec[ires]->Scale(ncap*conprob/nconv);
 
   }
 
@@ -118,7 +126,12 @@ void mu2e(double ndio=100000, double nconv=100000) {
     conspec[ires]->Draw("same");
 
     TPaveText* logtext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
+ 
     char line[40];
+    snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
+    logtext->AddText(line);
+    snprintf(line,80,"t0>%5.1f nsec",t0min);
+    logtext->AddText(line);
     sprintf(line,"%s",ncuts[ires].GetTitle());
     logtext->AddText(line);
     sprintf(line,"%s",t0cuts[ires].GetTitle());
@@ -142,11 +155,36 @@ void mu2e(double ndio=100000, double nconv=100000) {
    for(unsigned ires=0;ires<4;ires++){
     lincan->cd(ires+1);
     TH1F* diocopy = diospec[ires]->DrawCopy();
-    diocopy->SetMaximum(6);
+    diocopy->SetMaximum(4);
     conspec[ires]->Draw("same");
+
+    double emin(103.4);
+    double emax(105);
+    int istart = diospec[ires]->FindFixBin(emin+0.5*mevperbin);
+    int istop = diospec[ires]->FindFixBin(emax);
+    cout << "Integration low edge " << diospec[ires]->GetBinLowEdge(istart) << " for cut at " << emin << endl;
+    cout << "Integration high edge " << diospec[ires]->GetBinLowEdge(istop) << " for cut at " << emax << endl;
+    double dint_err, cint_err;
+    double dint = diospec[ires]->IntegralAndError(istart,istop,dint_err);
+    double cint = conspec[ires]->IntegralAndError(istart,istop,cint_err);
+
+    TPaveText* inttext = new TPaveText(0.5,0.6,0.9,0.8,"NDC");
+    char itext[50];
+    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",emin,emax);
+    inttext->AddText(itext);
+    snprintf(itext,50,"DIO integral = %5.3f #pm %4.3f",dint,dint_err);
+    inttext->AddText(itext);
+    snprintf(itext,50,"Conv. integral = %5.3f #pm %4.3f",cint,cint_err);
+    inttext->AddText(itext);
+    inttext->Draw();
+
 
     TPaveText* lintext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
     char line[40];
+    snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
+    lintext->AddText(line);
+    snprintf(line,80,"t0>%5.1f nsec",t0min);
+    lintext->AddText(line);
     sprintf(line,"%s",ncuts[ires].GetTitle());
     lintext->AddText(line);
     sprintf(line,"%s",t0cuts[ires].GetTitle());
@@ -156,6 +194,18 @@ void mu2e(double ndio=100000, double nconv=100000) {
     sprintf(line,"%s",fitcuts[ires].GetTitle());
     lintext->AddText(line);
     lintext->Draw();
+
+    TLine* eminl = new TLine(emin,0.0,emin,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
+    eminl->SetLineColor(kBlack);
+    eminl->SetLineStyle(2);
+    eminl->SetLineWidth(2);
+    eminl->Draw();
+
+    TLine* emaxl = new TLine(emax,0.0,emax,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
+    emaxl->SetLineColor(kBlack);
+    emaxl->SetLineStyle(2);
+    emaxl->SetLineWidth(2);
+    emaxl->Draw();
 
   }
   lincan->cd(2);
