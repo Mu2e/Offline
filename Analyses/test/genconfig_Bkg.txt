@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.14 2012/02/07 07:17:08 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.15 2012/02/07 20:41:29 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 07:17:08 $
+// $Date: 2012/02/07 20:41:29 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
@@ -17,7 +17,7 @@ bool ejectedNeutronGun.do = 0;
 bool ejectedPhotonGun.do = 0;
 bool conversionGun.do = 0;
 
-string decayinorbitGun.energySpectrum = "simple";
+string decayinorbitGun.energySpectrum = "ShankerWanatabe";
 
 // Limits on cos(polar angle):
 double decayinorbitGun.czmin = -1.;

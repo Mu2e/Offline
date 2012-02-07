@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.42 2012/02/07 07:17:08 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.43 2012/02/07 20:41:30 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 07:17:08 $
+// $Date: 2012/02/07 20:41:30 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,7 @@ namespace mu2e {
 
     // Information from config file.
     _mean(config.getDouble("decayinorbitGun.mean",1.)),
-    _elow(config.getDouble("decayinorbitGun.elow",100.)),
+    _elow(config.getDouble("decayinorbitGun.elow",0.)),
     _ehi(config.getDouble("decayinorbitGun.ehi",conversionEnergyAluminum)),
     _nbins(config.getInt("decayinorbitGun.nbins",1000)),
     _czmin(config.getDouble("decayinorbitGun.czmin", -1.0)),
@@ -80,13 +80,31 @@ namespace mu2e {
     _hmudelay(),
     _hpulsedelay()  {
 
-    // Sanity check.
+
+    //pick up particle mass
+    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
+    _mass = e_data.mass().value();
+
+    // Sanity checks.
     if ( std::abs(_mean) > 99999. ) {
       throw cet::exception("RANGE")
         << "DecayInOrbit Gun has been asked to produce a crazily large number of electrons."
         << _mean
         << "\n";
     }
+    if (_ehi > (conversionEnergyAluminum+1) || _ehi < 0.) { // 1 MeV of tolerance for energy range
+      throw cet::exception("RANGE")
+        << "Generation energy range must be within 0 and 104.96 (plus 1 MeV of tolerance)"
+        << '\n';
+    }
+    if ((_energySpectrum == "simple" || _energySpectrum == "flat") && _ehi <=_mass) {
+      throw cet::exception("RANGE")
+        << "Using a not tabulated spectrum provides that the minimum energy must be higher than "
+        << "electron mass"
+        << '\n';
+    }
+
 
     if (_energySpectrum == "Czarnecki" ) {
       _dioGenId = GenId::dioCzarnecki;
@@ -108,11 +126,6 @@ namespace mu2e {
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
-
-    //pick up particle mass
-    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
-    _mass = e_data.mass().value();
 
     _tmin   = config.getDouble("decayinorbitGun.tmin",  daqPar->t0 );
     _tmax   = config.getDouble("decayinorbitGun.tmax",  accPar->deBuncherPeriod );
@@ -172,8 +185,7 @@ namespace mu2e {
       _fGenerator->generatePositionAndTime(pos, time);
 
       //Pick up energy and momentum vector
-      double e;
-      
+      double e(0);
 
       if ( _dioGenId == GenId::dioCzarnecki) {
         e = _randEnergy->fire();
