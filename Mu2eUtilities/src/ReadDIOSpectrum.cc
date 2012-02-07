@@ -4,9 +4,9 @@
 // The construction
 // of the spectrum is made by specialized classes
 //
-// $Id: ReadDIOSpectrum.cc,v 1.1 2012/02/06 23:56:32 onoratog Exp $
+// $Id: ReadDIOSpectrum.cc,v 1.2 2012/02/07 07:17:09 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/06 23:56:32 $
+// $Date: 2012/02/07 07:17:09 $
 //
 // Original author: Gianni Onorato
 //
@@ -29,18 +29,18 @@ using namespace std;
 namespace mu2e {
 
   ReadDIOSpectrum::ReadDIOSpectrum(int atomicZ, double emin, double emax, double spectRes, string spectrum,
-				   art::RandomNumberGenerator::base_engine_t& engine):
+                                   art::RandomNumberGenerator::base_engine_t& engine):
   //atomic number of the foil material
-    _Znum ( atomicZ ),
+    _znum ( atomicZ ),
   //limits on energy generation
     _emin ( emin ),
     _emax ( emax ),
     _res ( spectRes ),
     _nBinsSpectrum ( calculateNBins() ),
     _spectrum ( spectrum ),
-    _randEnergy ( engine, &(ReadSpectrum()[0]), _nBinsSpectrum )
+    _randEnergy ( engine, &(readSpectrum()[0]), _nBinsSpectrum )
   {
-    if (_Znum!=13) {
+    if (_znum!=13) {
       throw cet::exception("GEOM")
         << "Foil material different from Alluminum";
     }
@@ -74,28 +74,28 @@ namespace mu2e {
 
   }
 
-  vector<double> ReadDIOSpectrum::ReadSpectrum() {
+  vector<double> ReadDIOSpectrum::readSpectrum() {
 
     vector<double> spectrum;
 
     if (_spectrum == "ShankerWanatabe") {
-      ShankerWanatabeSpectrum WSspec(_Znum);
+      ShankerWanatabeSpectrum WSspec(_znum);
       
       double step = _emin;
       
       while (step <= _emax) {
-	spectrum.push_back(WSspec[step]);
-	step += _res;
+        spectrum.push_back(WSspec[step]);
+        step += _res;
       }
     } else if (_spectrum == "Czarnecki") {
 
-      CzarneckiSpectrum CZspec(_Znum);
+      CzarneckiSpectrum CZspec(_znum);
       
       double step = _emin;
       
       while (step <= _emax) {
-	spectrum.push_back(CZspec[step]);
-	step += _res;
+        spectrum.push_back(CZspec[step]);
+        step += _res;
 
       }
     } else {

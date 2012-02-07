@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.26 2012/02/06 23:56:32 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.27 2012/02/07 07:17:08 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/06 23:56:32 $
+// $Date: 2012/02/07 07:17:08 $
 //
 // Original author Gianni Onorato
 //
@@ -259,15 +259,15 @@ namespace mu2e {
     cout << "BkgNorm::endJob Number of events skipped "
          << "due to G4 completion status: "
          << _nBadG4Status
-	 << "\nBkgNorm::endJob Number of overflow events "
+         << "\nBkgNorm::endJob Number of overflow events "
          << "due to too many particles in G4: "
          << _nOverflow
-	 << "\nBkgNorm::endJob Number of events with killed particles "
+         << "\nBkgNorm::endJob Number of events with killed particles "
          << "due to too many steps in G4: "
          << _nKilled
-	 << "\nBkgNorm::endJob total CpuTime "
+         << "\nBkgNorm::endJob total CpuTime "
          << _totalcputime
-	 << "\nBkgNorm::endJob total RealTime "
+         << "\nBkgNorm::endJob total RealTime "
          << _totalrealtime
          << endl;
   }
@@ -445,16 +445,16 @@ namespace mu2e {
         //add an element to the map itself, energy to the list and pdgId and genId to the vectors
         if (it==StrawTracksMap.end()) {
 
-	  if (notFirstTrack) {
-	    CLHEP::Hep3Vector const& StartPos = simParticles->at(trackId).startPosition();
-	    LinePointPCA lppca(stMidPoint3, strDir, StartPos);
-	    double insideDistance = lppca.dca();
-	    if (insideDistance >= strRadius) {
-	      notFirstTrack = true;
-	      firstTrackId = trackId;
-	    }
-	  }
-	  
+          if (notFirstTrack) {
+            CLHEP::Hep3Vector const& StartPos = simParticles->at(trackId).startPosition();
+            LinePointPCA lppca(stMidPoint3, strDir, StartPos);
+            double insideDistance = lppca.dca();
+            if (insideDistance >= strRadius) {
+              notFirstTrack = true;
+              firstTrackId = trackId;
+            }
+          }
+          
           //insert track id in the trackId vector
           StrawTracksMap.insert(pair<SimParticleCollection::key_type, size_t>(trackId,trackIdx));
 
@@ -467,36 +467,36 @@ namespace mu2e {
             // PDG Particle Id of the sim particle that made this hit.
             PdgIdTracks.push_back(sim.pdgId());
             IsGenerated.push_back(sim.fromGenerator());
-	    TracksP.push_back(sim.startMomentum().vect().mag());
-	    TracksStVolumes.push_back(sim.startVolumeIndex());
+            TracksP.push_back(sim.startMomentum().vect().mag());
+            TracksStVolumes.push_back(sim.startVolumeIndex());
 
-	    int nsfe = 0;
+            int nsfe = 0;
 
-	    if (sim.fromGenerator()) {
-	      StepFromEvaVec.push_back(nsfe);
-	    } else {
-	      bool findEva = false;
-	      SimParticle& baby = const_cast<SimParticle&>(sim);
-	      while (!findEva) {
-		SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
-		nsfe++;
-		if (mommy.fromGenerator() || !baby.hasParent()) {
-		  if (trackId==firstTrackId) {
-		    Dau1Idx = baby.id();
-		  }
-		  StepFromEvaVec.push_back(nsfe);
-		  findEva = true;
-		} else {
-		  baby = mommy;
-		}
-	      }
-	    }
+            if (sim.fromGenerator()) {
+              StepFromEvaVec.push_back(nsfe);
+            } else {
+              bool findEva = false;
+              SimParticle& baby = const_cast<SimParticle&>(sim);
+              while (!findEva) {
+                SimParticle & mommy = const_cast<SimParticle&>(*baby.parent());
+                nsfe++;
+                if (mommy.fromGenerator() || !baby.hasParent()) {
+                  if (trackId==firstTrackId) {
+                    Dau1Idx = baby.id();
+                  }
+                  StepFromEvaVec.push_back(nsfe);
+                  findEva = true;
+                } else {
+                  baby = mommy;
+                }
+              }
+            }
           } else if ( !haveSimPart) {
             PdgIdTracks.push_back(0);
             IsGenerated.push_back(false);
-	    StepFromEvaVec.push_back(0);
-	    TracksP.push_back(0);
-	    TracksStVolumes.push_back(0);
+            StepFromEvaVec.push_back(0);
+            TracksP.push_back(0);
+            TracksStVolumes.push_back(0);
           }
 
           //increment index
@@ -535,8 +535,8 @@ namespace mu2e {
         tntpArray[idx++] = it->second;//leaf 18 - 25 - 32
         tntpArray[idx++] = IsGenerated[vec_idx];//leaf 19 - 26 - 33
         tntpArray[idx++] = StepFromEvaVec[vec_idx];//leaf 20 - 27 - 34
-	tntpArray[idx++] = TracksP[vec_idx];//leaf 21 - 28 - 35
-	tntpArray[idx++] = TracksStVolumes[vec_idx];//leaf 22 - 29 - 36
+        tntpArray[idx++] = TracksP[vec_idx];//leaf 21 - 28 - 35
+        tntpArray[idx++] = TracksStVolumes[vec_idx];//leaf 22 - 29 - 36
         counter++;
       }
 
@@ -574,7 +574,7 @@ namespace mu2e {
       SimParticleCollection::key_type idxInSim = SimParticleCollection::key_type(1);
       SimParticle const& geninSim = simParticles->at(idxInSim);
       if (!geninSim.fromGenerator()) {
-	cout << "Watch out. First particle is not from generator. What's happening?" << endl;
+        cout << "Watch out. First particle is not from generator. What's happening?" << endl;
       }
 
 
@@ -603,14 +603,14 @@ namespace mu2e {
 
 
       if (Dau1Idx != SimParticleCollection::key_type(0)) {
-	SimParticle const& Dau1 = simParticles->at(Dau1Idx);
-	tntpArray[idx++] = Dau1.pdgId();//leaf 53
-	tntpArray[idx++] = Dau1.startMomentum().vect().mag();//leaf 54
-	tntpArray[idx++] = Dau1.startVolumeIndex();//leaf 55      
+        SimParticle const& Dau1 = simParticles->at(Dau1Idx);
+        tntpArray[idx++] = Dau1.pdgId();//leaf 53
+        tntpArray[idx++] = Dau1.startMomentum().vect().mag();//leaf 54
+        tntpArray[idx++] = Dau1.startVolumeIndex();//leaf 55      
       } else {
-	tntpArray[idx++] = 0;//leaf 53
-	tntpArray[idx++] = 0;//leaf 54
-	tntpArray[idx++] = 0;//leaf 55
+        tntpArray[idx++] = 0;//leaf 53
+        tntpArray[idx++] = 0;//leaf 54
+        tntpArray[idx++] = 0;//leaf 55
       }
 
       tntpArray[idx++] = driftTime; //leaf 56
@@ -944,7 +944,7 @@ namespace mu2e {
 
         std::vector<art::Ptr<CaloHit> > const & ROIds  = hit.readouts();
 
-	//	cout << "Event " << evt.id().event() << ". In the caloCrystalHits there are " << ROIds.size() << " RO associated" << endl;
+        //      cout << "Event " << evt.id().event() << ". In the caloCrystalHits there are " << ROIds.size() << " RO associated" << endl;
 
         if (ROIds.size() < 1) {
           //          cout << " Event n. " << evt.id().event()
@@ -975,10 +975,10 @@ namespace mu2e {
         //List of trackId and energy deposition
         PairList OutsideEDep;
 
-	double firstHitTime = 100000;
-	CLHEP::Hep3Vector firstHitPos(0,0,0);
+        double firstHitTime = 100000;
+        CLHEP::Hep3Vector firstHitPos(0,0,0);
 
-	CLHEP::Hep3Vector cryFrame(0,0,0);
+        CLHEP::Hep3Vector cryFrame(0,0,0);
 
 
         for (size_t it = 0;
@@ -987,8 +987,8 @@ namespace mu2e {
           size_t collectionPosition = ROIds.at(it).key();
           CaloHit const & thehit = *ROIds.at(it);
 
-	  //	  cout << "ROID n. " << it << ": informations " << (readCryOnce?"not":"") << " stored.\n"
-	  //       << "Crystal : " << cg->getCrystalByRO(thehit.id())   
+          //      cout << "ROID n. " << it << ": informations " << (readCryOnce?"not":"") << " stored.\n"
+          //       << "Crystal : " << cg->getCrystalByRO(thehit.id())   
           //     << "\nEnergy: " << hit.energyDep() << endl;
  
 
@@ -1007,73 +1007,73 @@ namespace mu2e {
             cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
             cntpArray[idx++] = cryCenter.getY();
             cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
-	  	  
-	    
-	    PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
-	    size_t nHitsPerCrystal = mcptr.size();
-	    
-	    //	    cout << "In the RO there are " << nHitsPerCrystal << " hits. List index is " << collectionPosition << endl;
-	    
-	    for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
-	      
-	      StepPointMC const& mchit = *mcptr[j2];
-	      // The simulated particle that made this hit.
-	      SimParticleCollection::key_type trackId(mchit.trackId());
-	      {
-		SimParticle const& sim = simParticles->at(trackId);
-		if (sim.stoppingCode() == ProcessCode::mu2eMaxSteps) {
-		  cout << "Track " << sim.pdgId() << "  dies at "
-		       << sim.endGlobalTime() << endl;
-		}
-	      }
-	      
-	      CaloManager->setTrackAndRO(evt, _g4ModuleLabel, trackId, thehit.id() );
-	      
-	      //	      cout << "Original Vane: " << CaloManager->localVane()
-	      //		   << "\nStarting Vane: " << CaloManager->startingVane() << endl;
-	      
-	      if (CaloManager->localVane() == CaloManager->startingVane()) {
-		EfromShower += mchit.eDep();
-		//		cout << "From shower we have " << mchit.eDep() << " and globally " << EfromShower << endl;
-	      }
-	      
-	      if (CaloManager->localVane() != CaloManager->startingVane() &&
-		  CaloManager->startingVane() != -1) {
-		EfromOtherVane += mchit.eDep();
-		//		cout << "From other vane we have " << mchit.eDep() << " and globally " << EfromOtherVane << endl;
-	      }
-	      
-	      if (CaloManager->fromOutside()) {
-		if (!(CaloManager->generated())) {
-		  PairListAdd(OutsideEDep, trackId, mchit.eDep());
-		  EfromOutsideAll += mchit.eDep();
-		  //		  cout << "From outside we have " << mchit.eDep() << " and globally " << EfromOutsideAll << endl;
-		}
-		
-		if (CaloManager->generated()) {
-		  GeneratedEDep +=  mchit.eDep();
-		  if (mchit.time()<firstHitTime) {
-		    firstHitTime = mchit.time();
-		    firstHitPos = mchit.position();
-		    //		    cout << "before " << firstHitPos << endl;
-		    cryFrame = cg->toCrystalFrame(thehit.id(), firstHitPos);
-		    //		    cout << "after " << firstHitPos << endl;
-		  }
-		  //		  cout << "From generated we have " << mchit.eDep() << " and globally " << GeneratedEDep << endl;
-		  //		  cout << "Time of this hit is " << mchit.time() << " and position is " << mchit.position() << endl;
-		}
-	      }
-	    }
-	  }
-	  
-	  readCryOnce = true;
-	  
-	}
-	
-	OutsideEDep.sort(SortByEnergy);
+                  
+            
+            PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
+            size_t nHitsPerCrystal = mcptr.size();
+            
+            //      cout << "In the RO there are " << nHitsPerCrystal << " hits. List index is " << collectionPosition << endl;
+            
+            for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
+              
+              StepPointMC const& mchit = *mcptr[j2];
+              // The simulated particle that made this hit.
+              SimParticleCollection::key_type trackId(mchit.trackId());
+              {
+                SimParticle const& sim = simParticles->at(trackId);
+                if (sim.stoppingCode() == ProcessCode::mu2eMaxSteps) {
+                  cout << "Track " << sim.pdgId() << "  dies at "
+                       << sim.endGlobalTime() << endl;
+                }
+              }
+              
+              CaloManager->setTrackAndRO(evt, _g4ModuleLabel, trackId, thehit.id() );
+              
+              //              cout << "Original Vane: " << CaloManager->localVane()
+              //                   << "\nStarting Vane: " << CaloManager->startingVane() << endl;
+              
+              if (CaloManager->localVane() == CaloManager->startingVane()) {
+                EfromShower += mchit.eDep();
+                //              cout << "From shower we have " << mchit.eDep() << " and globally " << EfromShower << endl;
+              }
+              
+              if (CaloManager->localVane() != CaloManager->startingVane() &&
+                  CaloManager->startingVane() != -1) {
+                EfromOtherVane += mchit.eDep();
+                //              cout << "From other vane we have " << mchit.eDep() << " and globally " << EfromOtherVane << endl;
+              }
+              
+              if (CaloManager->fromOutside()) {
+                if (!(CaloManager->generated())) {
+                  PairListAdd(OutsideEDep, trackId, mchit.eDep());
+                  EfromOutsideAll += mchit.eDep();
+                  //              cout << "From outside we have " << mchit.eDep() << " and globally " << EfromOutsideAll << endl;
+                }
+                
+                if (CaloManager->generated()) {
+                  GeneratedEDep +=  mchit.eDep();
+                  if (mchit.time()<firstHitTime) {
+                    firstHitTime = mchit.time();
+                    firstHitPos = mchit.position();
+                    //              cout << "before " << firstHitPos << endl;
+                    cryFrame = cg->toCrystalFrame(thehit.id(), firstHitPos);
+                    //              cout << "after " << firstHitPos << endl;
+                  }
+                  //              cout << "From generated we have " << mchit.eDep() << " and globally " << GeneratedEDep << endl;
+                  //              cout << "Time of this hit is " << mchit.time() << " and position is " << mchit.position() << endl;
+                }
+              }
+            }
+          }
+          
+          readCryOnce = true;
+          
+        }
+        
+        OutsideEDep.sort(SortByEnergy);
 
         nOutsideTrk = OutsideEDep.size();
-	
+        
         if (nOutsideTrk > 3) {
           if (_diagLevel > 0) {
             cout << "More than 3 different tracks from outside the calorimeter contribute to the crystal:"
@@ -1120,15 +1120,15 @@ namespace mu2e {
         cntpArray[idx++] = OutsideTrkPdgId2;
         cntpArray[idx++] = EfromOutside3;
         cntpArray[idx++] = OutsideTrkPdgId3;
-	cntpArray[idx++] = EfromOutsideAll;
+        cntpArray[idx++] = EfromOutsideAll;
         cntpArray[idx++] = GeneratedEDep;
-	//	cout << "The one I store has the following position " << firstHitPos << endl;
-	cntpArray[idx++] = firstHitPos.x();
-	cntpArray[idx++] = firstHitPos.y();
-	cntpArray[idx++] = firstHitPos.z();
-	cntpArray[idx++] = cryFrame.x();
-	cntpArray[idx++] = cryFrame.y();
-	cntpArray[idx++] = cryFrame.z();
+        //      cout << "The one I store has the following position " << firstHitPos << endl;
+        cntpArray[idx++] = firstHitPos.x();
+        cntpArray[idx++] = firstHitPos.y();
+        cntpArray[idx++] = firstHitPos.z();
+        cntpArray[idx++] = cryFrame.x();
+        cntpArray[idx++] = cryFrame.y();
+        cntpArray[idx++] = cryFrame.z();
 
         size_t ngen = genParticles->size();
         if (ngen>1) {
@@ -1201,28 +1201,28 @@ namespace mu2e {
       if (!(sim->fromGenerator())) continue;
 
       if (sim->pdgId() == 13 || sim->pdgId() == -13) {
-	if ( volInfo.name() == "TargetFoil_" ) {
-	generatedStopped = true;
+        if ( volInfo.name() == "TargetFoil_" ) {
+        generatedStopped = true;
 
-	}
+        }
       }
 
       if( stoppedtracks.insert(trackId).second ) {
-	float tgtntpArray[11];
-	int idx(0);
-	tgtntpArray[idx++] = event.id().event();
-	tgtntpArray[idx++] = event.run();
-	tgtntpArray[idx++] = sim->endGlobalTime();
-	tgtntpArray[idx++] = sim->endPosition().x();
-	tgtntpArray[idx++] = sim->endPosition().y();
-	tgtntpArray[idx++] = sim->endPosition().z();
-	tgtntpArray[idx++] = sim->fromGenerator();
-	tgtntpArray[idx++] = sim->pdgId();
-	tgtntpArray[idx++] = trackId.asInt();
-	tgtntpArray[idx++] = sim->endVolumeIndex();
-	tgtntpArray[idx++] = (volInfo.name() == "TargetFoil_");
-	
-	_tgtNtup->Fill(tgtntpArray);
+        float tgtntpArray[11];
+        int idx(0);
+        tgtntpArray[idx++] = event.id().event();
+        tgtntpArray[idx++] = event.run();
+        tgtntpArray[idx++] = sim->endGlobalTime();
+        tgtntpArray[idx++] = sim->endPosition().x();
+        tgtntpArray[idx++] = sim->endPosition().y();
+        tgtntpArray[idx++] = sim->endPosition().z();
+        tgtntpArray[idx++] = sim->fromGenerator();
+        tgtntpArray[idx++] = sim->pdgId();
+        tgtntpArray[idx++] = trackId.asInt();
+        tgtntpArray[idx++] = sim->endVolumeIndex();
+        tgtntpArray[idx++] = (volInfo.name() == "TargetFoil_");
+        
+        _tgtNtup->Fill(tgtntpArray);
 
       }
     }

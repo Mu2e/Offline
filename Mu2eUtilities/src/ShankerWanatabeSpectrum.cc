@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.11 2012/02/06 23:56:32 onoratog Exp $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.12 2012/02/07 07:17:09 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/06 23:56:32 $
+// $Date: 2012/02/07 07:17:09 $
 //
 
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
@@ -30,11 +30,11 @@ namespace mu2e {
 
   ShankerWanatabeSpectrum::ShankerWanatabeSpectrum(int atomicZ):
   //atomic number of the foil material
-    _Znum ( atomicZ )
+    _znum ( atomicZ )
   {
-    ReadWanatabeTable();
+    readWanatabeTable();
     //cout << "interpulation test f(x) = x^2+3x-5. f(3) = " << Interpulate(3,0,-5,2,5,10,125) << endl;
-      _norm = _WanaEndPointVal / EvaluateShanker(_WanaEndPoint);
+      _norm = _wanaEndPointVal / evaluateShanker(_wanaEndPoint);
   }
 
   ShankerWanatabeSpectrum::~ShankerWanatabeSpectrum()
@@ -44,18 +44,18 @@ namespace mu2e {
   double ShankerWanatabeSpectrum::operator[](double E) {
 
     double value=0;
-    if (E<_WanaEndPoint) {
-      value = EvaluateWanatabe(E);
+    if (E<_wanaEndPoint) {
+      value = evaluateWanatabe(E);
     }
-    if (E>=_WanaEndPoint) {
-      value = _norm * EvaluateShanker(E);
-      if (E == _WanaEndPoint) cout << "Value at merging point is " << value << endl;
+    if (E>=_wanaEndPoint) {
+      value = _norm * evaluateShanker(E);
+      if (E == _wanaEndPoint) cout << "Value at merging point is " << value << endl;
     }
     return value;
 
   }
 
-  void ShankerWanatabeSpectrum::ReadWanatabeTable() {
+  void ShankerWanatabeSpectrum::readWanatabeTable() {
 
     ConfigFileLookupPolicy findConfig;
 
@@ -71,19 +71,19 @@ namespace mu2e {
         _wanatable.push_back(pair<double,double>(en,prob));
     }
 
-    _WanaEndPoint = _wanatable.front().first;
-    _WanaEndPointVal = _wanatable.front().second;
+    _wanaEndPoint = _wanatable.front().first;
+    _wanaEndPointVal = _wanatable.front().second;
 
   }
 
-  double ShankerWanatabeSpectrum::EvaluateShanker(double E) {
+  double ShankerWanatabeSpectrum::evaluateShanker(double E) {
 
     ConditionsHandle<ParticleDataTable> pdt("ignored");
     const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     double mumass = mu_data.mass().value();
     double emass = e_data.mass().value();
-    double BindEnergy = 13.6 * ( mumass / emass ) * _Znum * _Znum / 1e6;
+    double BindEnergy = 13.6 * ( mumass / emass ) * _znum * _znum / 1e6;
     double atMassToMev = CLHEP::amu_c2;
 
     double AlAtWeight = 26.9815;
@@ -96,9 +96,9 @@ namespace mu2e {
 
     double deltaOne = mumass - BindEnergy - E - ((E*E)/(2*AtomicWeightMev));
 
-    double ShD = 7.21861e-4*cube((double)_Znum)-2.5289e-2*square((double)_Znum)+0.388249*_Znum-1.98475;
-    double ShE = 1.76407e-3*cube((double)_Znum)-5.19805e-2*square((double)_Znum)+0.736126*_Znum-3.69662;
-    double ShF = 5.41126e-3*cube((double)_Znum)-0.165584*square((double)_Znum)+1.9329*_Znum-6.7013;
+    double ShD = 7.21861e-4*cube((double)_znum)-2.5289e-2*square((double)_znum)+0.388249*_znum-1.98475;
+    double ShE = 1.76407e-3*cube((double)_znum)-5.19805e-2*square((double)_znum)+0.736126*_znum-3.69662;
+    double ShF = 5.41126e-3*cube((double)_znum)-0.165584*square((double)_znum)+1.9329*_znum-6.7013;
 
     double shterm1 = E*E / (mumass*mumass);
     double shterm2 = pow<5>(deltaOne/mumass);
@@ -111,7 +111,7 @@ namespace mu2e {
 
   }
 
-  double ShankerWanatabeSpectrum::EvaluateWanatabe(double E) {
+  double ShankerWanatabeSpectrum::evaluateWanatabe(double E) {
 
     vector<pair<double, double> >::iterator it = _wanatable.begin();
     while ((E < it->first-0.0049) && it != _wanatable.end()) {
@@ -125,7 +125,7 @@ namespace mu2e {
     if (it->first <= E + 0.0049 || it->first >= E - 0.0049 ) { //tollerance of 0.049 MeV
       return it->second;
     } else {
-      return Interpulate(E, (it+1)->first, (it+1)->second,
+      return interpulate(E, (it+1)->first, (it+1)->second,
                          it->first, it->second,
                          (it-1)->first, (it-1)->second);
     }
@@ -134,7 +134,7 @@ namespace mu2e {
 
   }
 
-  double ShankerWanatabeSpectrum::Interpulate(double E, double e1, double p1,
+  double ShankerWanatabeSpectrum::interpulate(double E, double e1, double p1,
                                               double e2, double p2, double e3, double p3) {
 
     double discr = e1*e1*e2 + e1*e3*e3 + e2*e2*e3 - e3*e3*e2 - e1*e1*e3 - e1*e2*e2;

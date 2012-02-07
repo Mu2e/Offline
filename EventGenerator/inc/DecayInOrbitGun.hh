@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.24 2012/02/06 23:56:32 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.25 2012/02/07 07:17:08 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/06 23:56:32 $
+// $Date: 2012/02/07 07:17:08 $
 //
 //
 
@@ -68,7 +68,7 @@ namespace mu2e {
     double _phimin;
     double _phimax;
 
-    bool _PStoDSDelay;
+    bool _pStodSDelay;
     bool _pPulseDelay;
     double _pPulseShift;
 
@@ -86,14 +86,8 @@ namespace mu2e {
     // Resolution of the energy spectrum (0.1 default)
     double _spectrumResolution;
 
-    // SimpleSpectrum on/off (off is default)
-    bool _useSimpleSpectrum;
-
-    // Use flat spectrum (default is off)
-    bool _useFlatSpectrum;
-
-    // Use Shanker-Wanatabe spectrum (default is off)
-    bool _useShankerWanatabeSpectrum;
+    // Kind of spectrum to be used
+    std::string _energySpectrum;
 
     // End: parameters that can be configured from the config file.
 
@@ -103,7 +97,7 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere _randomUnitSphere;
 
-    std::string _STfname;
+    std::string _stFname;
 
     int _nToSkip;
 
@@ -118,6 +112,8 @@ namespace mu2e {
     TH1D* _ht;
     TH1D* _hmudelay;
     TH1D* _hpulsedelay;
+
+    GenId::enum_type _dioGenId;
 
     //Functions used to calculate energy spectrum of the electron
     std::vector<double> binnedEnergySpectrum();

@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.5 2012/02/06 23:56:32 onoratog Exp $
+// $Id: GenId.hh,v 1.6 2012/02/07 07:17:08 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/06 23:56:32 $
+// $Date: 2012/02/07 07:17:08 $
 //
 // Original author Rob Kutschke
 //
@@ -35,8 +35,8 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     enum enum_type {
       unknown,       particleGun,       conversionGun,
-      cosmicToy,     cosmicDYB,         cosmic,            dioCzarnecki,
-      dioShankerWanatabe,          dioFlat,              pionCapture,
+      cosmicToy,     cosmicDYB,         cosmic,          dioShankerWanatabe,             
+      dioCzarnecki,  dioFlat,              pionCapture,
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
@@ -47,8 +47,8 @@ namespace mu2e {
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
     "unknown",      "particleGun",       "conversionGun",               \
-      "cosmicToy",    "cosmicDYB",         "cosmic",           "dioCzarnecki",  \
-      "dioShankerWanatabe",         "dioFlat",              "pionCapture",               \
+      "cosmicToy",    "cosmicDYB",         "cosmic",           "dioShankerWanatabe",  \
+      "dioCzarnecki",     "dioFlat",              "pionCapture",                \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
       "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \

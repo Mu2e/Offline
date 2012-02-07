@@ -3,9 +3,9 @@
 // merge the spectrum with the analytic expression
 // in the endpoint region taken from Czarnecki.
 //
-// $Id: CzarneckiSpectrum.cc,v 1.1 2012/02/06 23:56:32 onoratog Exp $
+// $Id: CzarneckiSpectrum.cc,v 1.2 2012/02/07 07:17:09 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/06 23:56:32 $
+// $Date: 2012/02/07 07:17:09 $
 //
 
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
@@ -30,9 +30,9 @@ namespace mu2e {
 
   CzarneckiSpectrum::CzarneckiSpectrum(int atomicZ):
   //atomic number of the foil material
-    _Znum ( atomicZ )
+    _znum ( atomicZ )
   {
-    ReadTable();
+    readTable();
   }
 
   CzarneckiSpectrum::~CzarneckiSpectrum()
@@ -57,7 +57,7 @@ namespace mu2e {
       return it->second;
     } else {
       // cout << "Interpulating" << endl;
-      return Interpulate(E, (it+1)->first, (it+1)->second,
+      return interpulate(E, (it+1)->first, (it+1)->second,
                          it->first, it->second,
                          (it-1)->first, (it-1)->second);
     }
@@ -71,7 +71,7 @@ namespace mu2e {
 
   }
 
-  void CzarneckiSpectrum::ReadTable() {
+  void CzarneckiSpectrum::readTable() {
 
     ConfigFileLookupPolicy findConfig;
 
@@ -101,8 +101,8 @@ namespace mu2e {
   }*/ 
   //Maybe in a later step we might want to use the fit function (valid from 85 MeV on)
 
-  double CzarneckiSpectrum::Interpulate(double E, double e1, double p1,
-					double e2, double p2, double e3, double p3) {
+  double CzarneckiSpectrum::interpulate(double E, double e1, double p1,
+                                        double e2, double p2, double e3, double p3) {
     
     double discr = e1*e1*e2 + e1*e3*e3 + e2*e2*e3 - e3*e3*e2 - e1*e1*e3 - e1*e2*e2;
 

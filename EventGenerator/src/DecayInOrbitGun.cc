@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.41 2012/02/06 23:56:32 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.42 2012/02/07 07:17:08 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/06 23:56:32 $
+// $Date: 2012/02/07 07:17:08 $
 //
 // Original author Rob Kutschke
 //
@@ -54,20 +54,17 @@ namespace mu2e {
     _czmax(config.getDouble("decayinorbitGun.czmax",  1.0)),
     _phimin(config.getDouble("decayinorbitGun.phimin", 0. )),
     _phimax(config.getDouble("decayinorbitGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("decayinorbitGun.PStoDSDelay", true)),
+    _pStodSDelay(config.getBool("decayinorbitGun.PStoDSDelay", true)),
     _pPulseDelay(config.getBool("decayinorbitGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("decayinorbitGun.pPulseShift", 0)),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
-    _useSimpleSpectrum(config.getBool("decayinorbitGun.useSimpleSpectrum", false)),
-    _useFlatSpectrum(config.getBool("decayinorbitGun.useFlatSpectrum", false)),
-    _useShankerWanatabeSpectrum(config.getBool("decayinorbitGun.useShankerWanatabeSpectrum", false)),
-    // Random number distributions; getEngine comes from the base class.
+    _energySpectrum(config.getString("decayinorbitGun.energySpectrum", "Czarnecki")),
     _randSimpleEnergy(getEngine(), &(binnedEnergySpectrum()[0]), _nbins ),
     _randFlatEnergy(getEngine(),_elow,_ehi),
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
-    _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
+    _stFname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("decayinorbitGun.nToSkip",0)),
 
 
@@ -90,6 +87,20 @@ namespace mu2e {
         << _mean
         << "\n";
     }
+
+    if (_energySpectrum == "Czarnecki" ) {
+      _dioGenId = GenId::dioCzarnecki;
+    } else if (_energySpectrum == "ShankerWanatabe" ) {
+      _dioGenId = GenId::dioShankerWanatabe;
+    } else  if (_energySpectrum == "flat" ) {
+      _dioGenId = GenId::dioFlat;
+    } else if (_energySpectrum == "simple" ) {
+      _dioGenId = GenId::dioE5;
+    } else {
+      throw cet::exception("CONFIG")
+        << "Energy spectrum for DIO not allowed\n";
+    }
+
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
@@ -127,23 +138,17 @@ namespace mu2e {
                                                                              FoilParticleGenerator::muonFileInputFoil,
                                                                              FoilParticleGenerator::muonFileInputPos,
                                                                              FoilParticleGenerator::negExp,
-                                                                             _PStoDSDelay,
+                                                                             _pStodSDelay,
                                                                              _pPulseDelay,
-									     _pPulseShift,
-									     _STfname,
+                                                                             _pPulseShift,
+                                                                             _stFname,
                                                                              _nToSkip));
 
 
-    string spectKind;
-    if ( _useShankerWanatabeSpectrum) {
-      spectKind = "ShankerWanatabe";
-    } else {
-      spectKind = "Czarnecki";
+    if ( _energySpectrum == "ShankerWanatabe" ||
+         _energySpectrum == "Czarnecki" ) {
+      _randEnergy = auto_ptr<ReadDIOSpectrum>(new ReadDIOSpectrum(13,_elow, _ehi, _spectrumResolution, _energySpectrum, getEngine()));
     }
-
-
-    _randEnergy = auto_ptr<ReadDIOSpectrum>(new ReadDIOSpectrum(13,_elow, _ehi, _spectrumResolution, spectKind, getEngine()));
-
   }
 
   DecayInOrbitGun::~DecayInOrbitGun(){
@@ -160,29 +165,25 @@ namespace mu2e {
     //Loop over particles to generate
 
     for (int i=0; i<n; ++i) {
-
+      
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
       _fGenerator->generatePositionAndTime(pos, time);
 
-      GenId::enum_type Id;
-
       //Pick up energy and momentum vector
       double e;
-      if (_useSimpleSpectrum) {
+      
+
+      if ( _dioGenId == GenId::dioCzarnecki) {
+        e = _randEnergy->fire();
+      } else if ( _dioGenId == GenId::dioShankerWanatabe) {
+        e = _randEnergy->fire();
+      } else if ( _dioGenId ==  GenId::dioE5 ) {
         e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow);
-	Id = GenId::dioE5;
-      } else if (_useFlatSpectrum) {
-	e = _randFlatEnergy.fire();
-	Id = GenId::dioFlat;
-      } else if (_useShankerWanatabeSpectrum) {
-        e = _randEnergy->fire();
-	Id = GenId::dioShankerWanatabe;
-      } else {
-        e = _randEnergy->fire();
-	Id = GenId::dioCzarnecki;
-      }
+      } else if ( _dioGenId == GenId::dioFlat ) {
+        e = _randFlatEnergy.fire();
+      } 
 
       _p = safeSqrt(e*e - _mass*_mass);
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
@@ -191,7 +192,7 @@ namespace mu2e {
       CLHEP::HepLorentzVector mom(p3,e);
 
       // Add the particle to  the list.
-      genParts.push_back( GenParticle( PDGCode::e_minus, GenId(Id), pos, mom, time));
+      genParts.push_back( GenParticle( PDGCode::e_minus, GenId(_dioGenId), pos, mom, time));
 
       if( _doHistograms ){
         _hEElec     ->Fill( e );
