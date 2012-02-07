@@ -1,8 +1,8 @@
 #! /bin/bash
 #
-# $Id: updateFCLFile.sh,v 1.1 2012/02/05 16:51:59 kutschke Exp $
+# $Id: updateFCLFile.sh,v 1.2 2012/02/07 04:17:52 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/02/05 16:51:59 $
+# $Date: 2012/02/07 04:17:52 $
 #
 # Run this script from within a grid job to append per job information to
 # the end of the .fcl file:
@@ -78,5 +78,5 @@ fi
 
 cp $inputFile $outputFile
 echo "source.firstRun                            : " $runNumber        >> $outputFile
-echo "services.user.SeedService.baseSeed :       : " $baseSeed         >> $outputFile
+echo "services.user.SeedService.baseSeed         : " $baseSeed         >> $outputFile
 echo "services.user.SeedService.maxUniqueEngines : " $maxUniqueEngines >> $outputFile
