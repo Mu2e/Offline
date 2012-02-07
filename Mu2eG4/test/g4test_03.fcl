@@ -8,9 +8,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.14 2011/08/15 15:56:17 kutschke Exp $
+# $Id: g4test_03.fcl,v 1.15 2012/02/07 04:18:20 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/08/15 15:56:17 $
+# $Date: 2012/02/07 04:18:20 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -58,6 +58,12 @@ services :
     GeometryService :
     {
       inputFile : "Mu2eG4/test/geom_01.txt"
+    }
+
+    SeedService :{
+      policy            : "autoIncrement"
+      baseSeed          : 1
+      maxUniqueEngines  : 20
     }
 
     ConditionsService :
