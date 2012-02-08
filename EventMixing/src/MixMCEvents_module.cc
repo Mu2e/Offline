@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.8 2012/01/08 17:50:19 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.9 2012/02/08 16:51:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/01/08 17:50:19 $
+// $Date: 2012/02/08 16:51:17 $
 //
 // Contact person Rob Kutschke.
 //
@@ -95,6 +95,7 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "SeedService/inc/SeedService.hh"
 
 // Includes from art
 #include "art/Framework/Principal/Event.h"
@@ -427,7 +428,14 @@ nSecondaries() {
 
   int n(0);
   if ( mean_ > 0 ){
-    static CLHEP::RandPoissonQ poisson( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(), mean_);
+    static art::RandomNumberGenerator::base_engine_t& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine();
+    static bool init(true);
+    if ( init ) {
+      init = false;
+      int dummy(0);
+      engine.setSeed( art::ServiceHandle<SeedService>()->getSeed(), dummy );
+    }
+    static CLHEP::RandPoissonQ poisson( engine, mean_);
     n = poisson.fire(mean_);
   }else{
     static size_t n0 = (mean_ < 0) ? static_cast<int>(floor(std::abs(mean_))) : 0;

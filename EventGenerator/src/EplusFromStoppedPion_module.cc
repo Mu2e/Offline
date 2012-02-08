@@ -5,9 +5,9 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_module.cc,v 1.7 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: EplusFromStoppedPion_module.cc,v 1.8 2012/02/08 16:51:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/02/08 16:51:17 $
 //
 // Original author Rob Kutschke.
 //
@@ -20,27 +20,30 @@
 //    the c'tor from the beginRun method.
 //
 
-// C++ includes.
-#include <iostream>
-#include <string>
-
-// Framework includes.
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-
 // Mu2e includes.
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeneralUtilities/inc/TwoBodyKinematics.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "SeedService/inc/SeedService.hh"
+
+// art includes.
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Root includes.
 #include "TH1F.h"
 #include "TNtuple.h"
+
+// C++ includes.
+#include <iostream>
+#include <string>
+
 
 using namespace std;
 
@@ -93,7 +96,7 @@ namespace mu2e {
     // Run time arguments from the pset.
     inputModuleLabel_(pset.get<string>("inputModuleLabel")),
 
-    randomUnitSphere_(createEngine( get_seed_value(pset)),
+    randomUnitSphere_(createEngine( art::ServiceHandle<SeedService>()->getSeed() ),
                       pset.get<double>("czmin"),
                       pset.get<double>("czmax")
                       ),

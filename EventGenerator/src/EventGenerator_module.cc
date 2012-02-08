@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.11 2012/02/03 06:00:31 gandr Exp $
-  $Author: gandr $
-  $Date: 2012/02/03 06:00:31 $
+  $Id: EventGenerator_module.cc,v 1.12 2012/02/08 16:51:17 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/02/08 16:51:17 $
 
   Original author Rob Kutschke
 
@@ -31,21 +31,6 @@
 
 */
 
-// C++ includes.
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
-
-// Framework includes.
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Handle.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
 // Mu2e includes.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/requireUniqueKey.hh"
@@ -66,9 +51,25 @@
 #include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
 #include "EventGenerator/inc/ExtMonFNALGun.hh"
+#include "SeedService/inc/SeedService.hh"
+
+// Includes from art and its toolchain.
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Principal/Handle.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>
+
+// C++ includes.
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -88,7 +89,7 @@ namespace mu2e {
       //GenId::printAll();
 
       // Provide a common engine for the generators to use via the service
-      createEngine( get_seed_value(pSet) );
+      createEngine( art::ServiceHandle<SeedService>()->getSeed() );
     }
 
     virtual ~EventGenerator() { }

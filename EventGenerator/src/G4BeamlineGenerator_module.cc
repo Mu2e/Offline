@@ -10,13 +10,14 @@
 
 */
 
-// C++ includes.
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
+// Mu2e includes.
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "MCDataProducts/inc/GenId.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "SeedService/inc/SeedService.hh"
 
-// Framework includes.
+// Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -25,17 +26,17 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-// Mu2e includes.
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/FromG4BLFile.hh"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>
+
+// C++ includes.
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -56,7 +57,7 @@ namespace mu2e {
       //GenId::printAll();
 
       // Provide a common engine for the generators to use via the service
-      createEngine( get_seed_value(pSet) );
+      createEngine( art::ServiceHandle<SeedService>()->getSeed() );
     }
 
     virtual ~G4BeamlineGenerator() { }

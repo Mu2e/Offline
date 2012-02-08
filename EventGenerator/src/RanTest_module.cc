@@ -5,17 +5,19 @@
 
 */
 
-// C++ includes.
-#include <iostream>
-
-// Framework includes.
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/ParameterSet.h"
-
 // Mu2e includes.
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "SeedService/inc/SeedService.hh"
+
+// Includes from art and its tool chain
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "fhiclcpp/ParameterSet.h"
+
+// C++ includes.
+#include <iostream>
 
 using namespace std;
 
@@ -39,7 +41,7 @@ namespace mu2e {
     produces<GenParticleCollection>();
 
     // Provide a common engine for the generators to use via the service
-    createEngine( get_seed_value(pSet) );
+    createEngine( art::ServiceHandle<SeedService>()->getSeed() );
   }
   RanTest::~RanTest() { }
 

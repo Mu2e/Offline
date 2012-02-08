@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.33 2012/02/02 00:44:56 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/02/02 00:44:56 $
+// $Id: G4_module.cc,v 1.34 2012/02/08 16:51:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/02/08 16:51:17 $
 //
 // Original author Rob Kutschke
 //
@@ -24,38 +24,6 @@
 //    solution is to modify the post.insert() feature of data products
 //    so that it can be used for a cet::map_vector<T>.
 //
-
-// C++ includes.
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
-#include <cmath>
-#include <cstdlib>
-#include <memory>
-#include <sstream>
-#include <iomanip>
-
-// Framework includes
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-
-// Geant4 includes
-#include "G4UImanager.hh"
-#include "G4NistManager.hh"
-#include "G4VisExecutive.hh"
-#include "G4SDManager.hh"
-#include "G4ParticleTable.hh"
-#include "G4Run.hh"
-#include "G4Timer.hh"
-#include "G4VUserPhysicsList.hh"
 
 // Mu2e includes
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -93,6 +61,7 @@
 #include "Analyses/inc/DiagnosticsG4.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
+#include "SeedService/inc/SeedService.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -101,8 +70,41 @@
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 
+// From art and its tool chain.
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+
+// Geant4 includes
+#include "G4UImanager.hh"
+#include "G4NistManager.hh"
+#include "G4VisExecutive.hh"
+#include "G4SDManager.hh"
+#include "G4ParticleTable.hh"
+#include "G4Run.hh"
+#include "G4Timer.hh"
+#include "G4VUserPhysicsList.hh"
+
 // ROOT includes
 #include "TNtuple.h"
+
+// C++ includes.
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+#include <cmath>
+#include <cstdlib>
+#include <memory>
+#include <sstream>
+#include <iomanip>
+
 
 // not sure why this needs to be here; if it is above with other
 // Geant4 includes a complier error occurs...
@@ -170,7 +172,7 @@ namespace mu2e {
       produces<StatusG4>();
 
       // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
-      createEngine( get_seed_value(pSet), "G4Engine");
+      createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
 
     }
 

@@ -1,41 +1,12 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.7 2012/01/30 20:10:48 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/01/30 20:10:48 $
+// $Id: TTDisplayData_module.cc,v 1.8 2012/02/08 16:51:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/02/08 16:51:17 $
 //
 // Original author G. Tassielli
 //
-
-// C++ includes.
-#include <iostream>
-#include <string>
-#include <memory>
-#include <map>
-#include <utility>
-#include <limits>
-
-#include <boost/shared_ptr.hpp>
-
-
-// Framework includes.
-#include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Provenance.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-
-
-#include "CLHEP/Vector/TwoVector.h"
-#include "CLHEP/Random/RandFlat.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -56,6 +27,21 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "FastPatternReco/inc/TTHitPerTrackData.hh"
 #include "FastPatternReco/inc/GenTrackData.hh"
+#include "SeedService/inc/SeedService.hh"
+
+// From art and its toolchain.
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Provenance.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Root includes.
 #include "TApplication.h"
@@ -78,6 +64,19 @@
 #include "TSpectrumFit.h"
 #include "TPolyMarker.h"
 #include "TLatex.h"
+
+// Other external packages
+#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Random/RandFlat.h"
+#include <boost/shared_ptr.hpp>
+
+// C++ includes.
+#include <iostream>
+#include <string>
+#include <memory>
+#include <map>
+#include <utility>
+#include <limits>
 
 using namespace std;
 
@@ -486,7 +485,7 @@ namespace mu2e {
     ntimeBin(0),
     maxTimeHist(2500.0),
     timeBinDim(10.0),
-    _randFlat( createEngine( get_seed_value(pset)) ),
+    _randFlat( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
 
     // Some ugly but necessary ROOT related bookkeeping.
     _application(0),

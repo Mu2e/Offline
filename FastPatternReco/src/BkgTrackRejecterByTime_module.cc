@@ -1,40 +1,12 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.6 2012/01/30 20:00:23 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/01/30 20:00:23 $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.7 2012/02/08 16:51:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/02/08 16:51:17 $
 //
 // Original author G. Tassielli
 //
-
-
-// C++ includes.
-#include <iostream>
-#include <string>
-#include <memory>
-#include <map>
-#include <utility>
-#include <limits>
-#include <ctime>
-
-// Framework includes.
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Provenance.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-
-// From CLHEP
-#include "CLHEP/Vector/TwoVector.h"
-#include "CLHEP/Random/RandFlat.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -57,6 +29,21 @@
 //#include "FastPatternReco/inc/GenTrackData.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
+#include "SeedService/inc/SeedService.hh"
+
+// From art and its toolchain.
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Provenance.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Root includes.
 #include "TApplication.h"
@@ -79,6 +66,19 @@
 #include "TSpectrumFit.h"
 #include "TPolyMarker.h"
 #include "TLatex.h"
+
+// From CLHEP
+#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Random/RandFlat.h"
+
+// C++ includes.
+#include <iostream>
+#include <string>
+#include <memory>
+#include <map>
+#include <utility>
+#include <limits>
+#include <ctime>
 
 using namespace std;
 using art::Event;
@@ -238,7 +238,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
     ntimeBin(0),
     maxTimeHist(2500.0),
     timeBinDim(10.0),
-    _randFlat( createEngine( get_seed_value(pset)) )//,
+    _randFlat( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) )//,
 
     // Some ugly but necessary ROOT related bookkeeping.
 //    _application(0),

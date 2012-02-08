@@ -2,28 +2,12 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.12 2012/01/13 12:53:21 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/01/13 12:53:21 $
+// $Id: MakeDriftCellHit_module.cc,v 1.13 2012/02/08 16:51:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/02/08 16:51:17 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
-
-// C++ includes.
-#include <iostream>
-#include <string>
-#include <cmath>
-
-// Framework includes.
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
@@ -38,10 +22,27 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
+#include "SeedService/inc/SeedService.hh"
+
+// Includes from art and its tool chain.
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Principal/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Other includes.
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Vector/ThreeVector.h"
+
+// C++ includes.
+#include <iostream>
+#include <string>
+#include <cmath>
 
 using namespace std;
 using art::Event;
@@ -95,7 +96,7 @@ namespace mu2e {
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
 
       // Random number distributions
-      _gaussian( createEngine( get_seed_value(pset)) ),
+      _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
 
       _messageCategory("DriftCellHitMaker"/*"StrawHitMaker"*/){
 
