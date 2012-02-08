@@ -1,8 +1,8 @@
 #! /bin/bash
 #
-# $Id: updateFCLFile.sh,v 1.2 2012/02/07 04:17:52 kutschke Exp $
+# $Id: updateFCLFile.sh,v 1.3 2012/02/08 16:44:01 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/02/07 04:17:52 $
+# $Date: 2012/02/08 16:44:01 $
 #
 # Run this script from within a grid job to append per job information to
 # the end of the .fcl file:
@@ -64,18 +64,28 @@ process=$4
 inputFile=$5
 outputFile=$6
 
-# Compute the derived quantities.
-runNumber=$(( $baseRunNumber + $process ))
-baseSeed=$(( $runNumber * $maxUniqueEngines ))
-
 # Safety checks
-if [ $runNumber -lt 1 ]; then
-  echo "run number must be greater than 0.  It is: " $runNumber
+if [ $baseRunNumber -lt 1 ]; then
+  echo "updateFCLFILE: baseRunNumber must be greater than 0;  it is: " $baseRunNumber
+  exit 1
+fi
+
+if [ ! -e $inputFile ]; then
+  echo "updateFCLFILE: the input file," $inputFile "does not exist."
+  exit 1
+fi
+
+if [ $maxUniqueEngines -lt 1 ]; then
+  echo "updateFCLFILE: the maxUniqueEngines parameter must be > 1; it is" $maxUniqueEngines
   exit 2
 fi
 
-# Write the output file:
+# Compute the derived quantities.
+runNumber=$(( $baseRunNumber + $process ))
+baseSeed=$(( ( $runNumber - 1 ) * $maxUniqueEngines ))
 
+
+# Write the output file:
 cp $inputFile $outputFile
 echo "source.firstRun                            : " $runNumber        >> $outputFile
 echo "services.user.SeedService.baseSeed         : " $baseSeed         >> $outputFile
