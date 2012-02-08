@@ -1,9 +1,9 @@
 //
 // Variation on the geometry for debugging the beamline.
 //
-// $Id: beamline_geom.txt,v 1.14 2011/05/15 16:22:55 kutschke Exp $
+// $Id: beamline_geom.txt,v 1.15 2012/02/08 16:47:57 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/15 16:22:55 $
+// $Date: 2012/02/08 16:47:57 $
 //
 // Original author Rob Kutschke
 //
@@ -12,7 +12,7 @@
 // The standard geometry.
 #include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
 
-// Uncomment to get transportation only. 
+// Uncomment to get transportation only.
 //string g4.physicsListName = "Minimal";
 
 // Form of DS field: 0 is full field; 1 is full upstream, const downstream; 2 is const throughout
@@ -35,7 +35,7 @@ int detSolFieldForm = 0;
 //vector<int> g4.trackingActionEventList = { 0, 1, 2, 3 };
 
 // Kill uninteresting particles in Stepping Action.
-bool   g4SteppingAction.killInHallAir = true;
+vector<string> g4SteppingAction.killInTheseVolumes = { "HallAir" }
 bool   g4SteppingAction.killerVerbose = false;
 
 
