@@ -1,23 +1,53 @@
 
-  $Id: v1_1_6.txt,v 1.2 2012/02/08 17:10:30 kutschke Exp $
+  $Id: v1_1_6.txt,v 1.3 2012/02/08 19:23:03 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/02/08 17:10:30 $
+  $Date: 2012/02/08 19:23:03 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_6
 
-3) Februrary 8, 2012, kutschke
+8) February 8, 2012, kutschke
+   Remove cosmicDYB from this example and add ejectedProtonGun.  The
+   reason is that cosmicDYB has a very slow initialization, more than
+   1 CPU minute. I wanted to keep a generator that makes positive tracks
+   for pedagodical purposes.
+     Mu2eG4/test/genconfig_02.txt
+
+7) February 8, 2012, kutschke
+     Mu2eG4/test/genconfig_01.txt
+     Mu2eG4/test/genconfig_02.txt
+     Mu2eG4/test/genconfig_tonly
+
+6) February 8, 2012, kutschke
+   Bug fix the default maximum enegry, was 0.1 MeV and is now 300 MeV.
+    EventGenerator/src/EjectedProtonGun.cc
+
+5) February 8, 2012, kutschke
+   Changed default cos(theta) range to [-1.0,1.0] in many places:
+      EventGenerator/src/ConversionGun.cc
+      EventGenerator/src/ParticleGun.cc
+
+4) February 8, 2012, kutschke
+   Removed many obsolete files.
+
+   Many .py files. When we bulk translated the .py files to .fcl
+   files, not all .fcl files were checked.  I have kept the .py for .fcl
+   files that I have not personally checked.
+
+   Mu2eG4/test/g4test_04* are obsolete and were removed.
+
+3) February 8, 2012, kutschke
    fcl/standardProducers.fcl
       wrapFiles is now the default for all mixing parmeter sets
 
-2) Februrary 8, 2012, kutschke
+2) February 8, 2012, kutschke
    This script was added a few days ago but this is the first
    release that is actually read for production use.
    Added tests and fixed a bug in the computation of the base seed.
      bin/updateFCLFile.sh
 
-1) Februrary 8, 2012, kutschke
+1) February 8, 2012, kutschke
    Switch all random number engines to using the SeedService.
    This touches all _module files, several SConscript files
    and many .fcl files.  Some fcl files still need to be converted.
