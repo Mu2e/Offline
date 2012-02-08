@@ -1,0 +1,30 @@
+#
+# This file defines some standard configurations for services
+#
+
+BEGIN_PROLOG
+
+automaticSeeds : {
+    policy            : "autoIncrement"
+    baseSeed          : 1
+    maxUniqueEngines  : 20
+
+    # verbosity         : 2
+    # endOfJobSummary   : true
+}
+
+preDefinedSeeds : {
+     policy            : "preDefined"
+     baseSeed          : 1
+     maxUniqueEngines  : 20
+
+     # An example that will work with g4test_03
+     generate          : 4
+     g4run             : 5
+     makeSH            : 6
+
+     # verbosity         : 2
+     # endOfJobSummary   : true
+}
+
+END_PROLOG
