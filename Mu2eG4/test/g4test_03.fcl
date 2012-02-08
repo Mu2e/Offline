@@ -8,32 +8,27 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.15 2012/02/07 04:18:20 kutschke Exp $
+# $Id: g4test_03.fcl,v 1.16 2012/02/08 16:57:36 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/02/07 04:18:20 $
+# $Date: 2012/02/08 16:57:36 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 # Give this job a name.
 process_name : G4Test03
 
 # Start form an empty source
-source :
-{
+source : {
   module_type : EmptyEvent
   maxEvents : 200
 }
 
-services :
-{
-  message : @local::default_message
+services : {
 
-  TFileService :
-  {
-    fileName : "g4test_03.root"
-  }
-
+  message               : @local::default_message
+  TFileService          : { fileName : "g4test_03.root" }
   RandomNumberGenerator : { }
 
 # Uncomment to enable memory use profiling
@@ -43,6 +38,7 @@ services :
 #   showMallocInfo   : false
 #   ignoreTotal      : 5
 # }
+#
 # Uncomment to enable per module timing
 #   Timing :
 #   {
@@ -53,39 +49,24 @@ services :
 #  scheduler: { wantTracer : true }
 
 
-  user :
-  {
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/test/geom_01.txt"
-    }
+  user : {
 
-    SeedService :{
-      policy            : "autoIncrement"
-      baseSeed          : 1
-      maxUniqueEngines  : 20
-    }
-
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
-
-    G4Helper : { }
-
+    GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt"  }
+    G4Helper          : { }
+    SeedService       : @local::automaticSeeds
   }
 
 }
 
-physics :
-{
-  producers:
-  {
+physics : {
+
+  producers: {
 
     # Generate the event
     generate: @local::generate
 
-    # Run G4 and add hits to the event
+    # Run G4 and add its output to the event.
     g4run : @local::g4run
 
     # Form StrawHits (SH).
@@ -97,15 +78,14 @@ physics :
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 
+    # Save state of the random number engines.
     randomsaver : @local::randomsaver
 
   }
 
-  analyzers:
-  {
+  analyzers: {
 
-    checkhits:
-    {
+    checkhits: {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
@@ -115,8 +95,7 @@ physics :
       maxFullPrint           : 201
     }
 
-    readStrawHits:
-    {
+    readStrawHits: {
       module_type      : ReadStrawHit
       makerModuleLabel : makeSH
       diagLevel        : 3
@@ -125,9 +104,7 @@ physics :
 
   }
 
-  p1 : [generate, g4run,
-        makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker,
-        randomsaver ]
+  p1 : [generate, g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
   e1 : [checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]
@@ -135,19 +112,21 @@ physics :
 
 }
 
-outputs:
-{
-  outfile :
-  {
+outputs: {
+
+  outfile : {
     module_type   :   RootOutput
     fileName      :   "data_03.root"
-    outputCommands:   [ "keep *_*_*_*"
-#                        ,"drop mu2e::PointTrajectorymv_*_*_*"
-                      ]
+
+    //  An example of how to drop data products.
+    //  outputCommands:   [ "keep *_*_*_*"
+    //                       ,"drop mu2e::PointTrajectorymv_*_*_*"
+    //                    ]
   }
 
 }
 
+// Enable diagnsotic printout in several modules.
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
 physics.producers.CaloReadoutHitsMaker.diagLevel : 0
