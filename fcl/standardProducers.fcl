@@ -5,7 +5,6 @@ generate:
 {
   module_type   : EventGenerator
   inputfile     : "Mu2eG4/test/genconfig_02.txt"
-  seed          : [7789]
 }
 
 # Run geant4 on the generated event.
@@ -13,7 +12,6 @@ g4run :
 {
   module_type          : G4
   generatorModuleLabel : generate
-  seed                 : [9877]
 }
 
 # Form StrawHits (SH).
@@ -21,7 +19,6 @@ makeSH :
 {
   module_type          : MakeStrawHit
   g4ModuleLabel        : g4run
-  seed                 : [7790]
   diagLevel            : 0
   maxFullPrint         : 0
 }
@@ -32,7 +29,6 @@ makeDcH :
 {
   module_type          : MakeDriftCellHit
   g4ModuleLabel        : g4run
-  seed                 : [7790]
   diagLevel            : 0
   maxFullPrint         : 0
   nzHittingZone        : 1
@@ -64,7 +60,7 @@ CaloCrystalHitsMaker :
 
 # Form ExtMonUCITofHits (extmonUCI Tof Hits)
 ExtMonUCITofHitsMaker :
-{ 
+{
   module_type          : MakeExtMonUCITofHits
   diagLevel            : 0
   maxFullPrint         : 0
@@ -83,104 +79,105 @@ randomsaver:
 # pattern reconition protype
 TrkPatRec :
 {
-	module_type				: TrkPatRec
-	diagLevel					: 0 
+        module_type                             : TrkPatRec
+        diagLevel                                       : 0
+
 # Helix fit configuration
-	HelixFit : 
-	{
-		diagLevel				: 0
-	}
+        HelixFit :
+        {
+                diagLevel                               : 0
+        }
 # Kalman fit configuration for the helix seed fit
-	SeedFit : 
-	{
-		maxiter					: 3
-		debugLevel			: 0
-		material				: false
-		hiterr					: 5
-		seedsmear       : 10000
-		maxhitchi				: 5.0
-		weedhits        : true
-		updateT0        : false
-		ambigflip       : true
-	}
+        SeedFit :
+        {
+                maxiter                                 : 3
+                debugLevel                      : 0
+                material                                : false
+                hiterr                                  : 5
+                seedsmear       : 10000
+                maxhitchi                               : 5.0
+                weedhits        : true
+                updateT0        : false
+                ambigflip       : true
+        }
 # Kalman fit configuration for the final track fit
-	KalFit : 
-	{
-		maxiter					: 5
-		debugLevel			: 0
-		material				: true
-		hiterr					: 0.1
-		seedsmear				: 100000
-		maxhitchi				: 3.0
-		mingap					: 1.0
-		weedhits				: true
-	}
+        KalFit :
+        {
+                maxiter                                 : 5
+                debugLevel                      : 0
+                material                                : true
+                hiterr                                  : 0.1
+                seedsmear                               : 100000
+                maxhitchi                               : 3.0
+                mingap                                  : 1.0
+                weedhits                                : true
+        }
 # MC truth finder, analyzer configuration
-  KalFitMC : 
+  KalFitMC :
   {
-	}     
-}
+  }
+} # end TrkPatRec
 
 stepInstanceNames   : [ "tracker", "virtualdetector", "timeVD", "stoppingtarget", "CRV", "calorimeter", "calorimeterRO" ]
 
 dioMixer: {
-	// Parameters for the MixFilter template
-module_type       : MixMCEvents
-			    fileNames           : nil
-			    readMode            : sequential
-			    seed                : nll
+   // Parameters for the MixFilter template
+   module_type         : MixMCEvents
+   fileNames           : nil
+   readMode            : sequential
+   wrapFiles           : true
 
-			    // Parameters for the MixDetail class
-			    mean                :  11.6
-			    genModuleLabel      : generate
-			    g4ModuleLabel       : g4run
-			    stepInstanceNames   : @local::stepInstanceNames
-			    doPointTrajectories : false
+   // Parameters for the MixDetail class
+   mean                :  11.6
+   genModuleLabel      : generate
+   g4ModuleLabel       : g4run
+   stepInstanceNames   : @local::stepInstanceNames
+   doPointTrajectories  : false
 }
 
 protonMixer: {
-		     // Parameters for the MixFilter template
-module_type       : MixMCEvents
-			    fileNames           : nil
-			    readMode            : sequential
-			    seed                : nil
+   // Parameters for the MixFilter template
+   module_type         : MixMCEvents
+   fileNames           : nil
+   readMode            : sequential
+   wrapFiles           : true
 
-			    // Parameters for the MixDetail class
-			    mean                :  14.9
-			    genModuleLabel      : generate
-			    g4ModuleLabel       : g4run
-			    stepInstanceNames   : @local::stepInstanceNames
-			    doPointTrajectories : false
-	     }
+   // Parameters for the MixDetail class
+   mean                :  14.9
+   genModuleLabel      : generate
+   g4ModuleLabel       : g4run
+   stepInstanceNames   : @local::stepInstanceNames
+   doPointTrajectories : false
+}
 
 neutronMixer: {
-		      // Parameters for the MixFilter template
-module_type       : MixMCEvents
-			    fileNames           : nil
-			    readMode            : sequential
-			    seed                : nil
+   // Parameters for the MixFilter template
+   module_type         : MixMCEvents
+   fileNames           : nil
+   readMode            : sequential
+   wrapFiles           : true
 
-			    // Parameters for the MixDetail class
-			    mean                :  128.2
-			    genModuleLabel      : generate
-			    g4ModuleLabel       : g4run
-			    stepInstanceNames   : @local::stepInstanceNames
-			    doPointTrajectories : false
-	      }
+   // Parameters for the MixDetail class
+   mean                :  128.2
+   genModuleLabel      : generate
+   g4ModuleLabel       : g4run
+   stepInstanceNames   : @local::stepInstanceNames
+   doPointTrajectories : false
+}
 
 photonMixer: {
-		     // Parameters for the MixFilter template
-module_type       : MixMCEvents
-			    fileNames           : nil
-			    readMode            : sequential
-			    seed                : nil
+   // Parameters for the MixFilter template
+   module_type         : MixMCEvents
+   fileNames           : nil
+   readMode            : sequential
+   wrapFiles           : true
 
-			    // Parameters for the MixDetail class
-			    mean                :  53.7
-			    genModuleLabel      : generate
-			    g4ModuleLabel       : g4run
-			    stepInstanceNames   : @local::stepInstanceNames
-			    doPointTrajectories : false
-	     }
+   // Parameters for the MixDetail class
+   mean                :  53.7
+   genModuleLabel      : generate
+   g4ModuleLabel       : g4run
+   stepInstanceNames   : @local::stepInstanceNames
+   doPointTrajectories : false
+}
 
 END_PROLOG
