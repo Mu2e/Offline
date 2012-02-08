@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.26 2012/01/10 22:28:43 mu2ecvs Exp $
-# $Author: mu2ecvs $
-# $Date: 2012/01/10 22:28:43 $
+# $Id: SConscript,v 1.27 2012/02/08 16:46:45 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2012/02/08 16:46:45 $
 #
 # Original author Rob Kutschke.
 #
@@ -20,11 +20,11 @@ g4inc    = os.environ['G4INCLUDE']
 g4libdir = os.environ['G4LIBDIR']
 
 # Compiler switches needed by the default G4 build.
-G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE', 
+G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
                '-DG4_STORE_TRAJECTORY',  '-DG4UI_USE_TCSH ',
                '-DG4UI_USE',             '-DG4VIS_USE_DAWNFILE',
-               '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER', 
-               '-DG4VIS_USE_VRMLFILE',   '-DG4VIS_USE_ASCIITREE', 
+               '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER',
+               '-DG4VIS_USE_VRMLFILE',   '-DG4VIS_USE_ASCIITREE',
                '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE'
             ]
 
@@ -32,7 +32,7 @@ G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
 G4OGL_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
 
 # The granular version of the G4 libraries.
-G4GRANULARLIBS = [ 
+G4GRANULARLIBS = [
            'G4error_propagation',                 'G4mctruth',
            'G4readout',                           'G4phys_lists',
            'G3toG4',                              'G4phys_builders',
@@ -88,7 +88,7 @@ G4GRANULARLIBS = [
            'G4partman',                           'G4geometrymng',
            'G4materials',                         'G4graphics_reps',
            'G4intercoms',                         'G4globman'
-          ,'G4emadjoint',                         'G4partadj', 
+          ,'G4emadjoint',                         'G4partadj',
            'G4gl2ps',
            'G4GMocren',
            'G4hadronic_crosec_ci',
@@ -120,6 +120,7 @@ if non_plugin_cc:
                              'Mu2eReflection',
                              'GeometryService',
                              'ConditionsService',
+                             'SeedService_service',
                              'G4Helper_service',
                              'Mu2eUtilities',
                              'MCDataProducts',
@@ -147,6 +148,7 @@ for cc in plugin_cc:
                             'Mu2eReflection',
                             'GeometryService',
                             'ConditionsService',
+                            'SeedService_service',
                             'G4Helper_service',
                             G4GRANULARLIBS,
                             'Mu2eUtilities',
@@ -156,7 +158,7 @@ for cc in plugin_cc:
                             'CLHEP',
                             OPENGL_LIBS,
                             XERCESC_LIBS,
-                            'Tree' 
+                            'Tree'
                           ],
                      CPPFLAGS= [ G4CPPFLAGS, G4OGL_CPPFLAGS ],
                      parse_flags=[ '-L'+g4libdir, '-I'+g4inc ]
