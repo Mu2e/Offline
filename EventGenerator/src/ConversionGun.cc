@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.34 2012/01/31 05:34:19 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/01/31 05:34:19 $
+// $Id: ConversionGun.cc,v 1.35 2012/02/08 17:45:10 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/02/08 17:45:10 $
 //
 // Original author Rob Kutschke
 //
@@ -49,8 +49,8 @@ namespace mu2e {
     // Get initializers from the run time configuration.
     // Initialization of tmin and tmax is deferred.
     _p     (config.getDouble("conversionGun.p", pEndPoint )),
-    _czmin (config.getDouble("conversionGun.czmin", -0.5)),
-    _czmax (config.getDouble("conversionGun.czmax",  0.5)),
+    _czmin (config.getDouble("conversionGun.czmin", -1.0)),
+    _czmax (config.getDouble("conversionGun.czmax",  1.0)),
     _phimin(config.getDouble("conversionGun.phimin", 0. )),
     _phimax(config.getDouble("conversionGun.phimax", CLHEP::twopi )),
     _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
