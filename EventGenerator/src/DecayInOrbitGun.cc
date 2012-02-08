@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.44 2012/02/07 21:15:04 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.45 2012/02/08 19:27:22 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 21:15:04 $
+// $Date: 2012/02/08 19:27:22 $
 //
 // Original author Rob Kutschke
 //
@@ -47,7 +47,7 @@ namespace mu2e {
 
     // Information from config file.
     _mean(config.getDouble("decayinorbitGun.mean",1.)),
-    _elow(config.getDouble("decayinorbitGun.elow",0.6)),
+    _elow(config.getDouble("decayinorbitGun.elow",0.)),
     _ehi(config.getDouble("decayinorbitGun.ehi",conversionEnergyAluminum)),
     _nbins(config.getInt("decayinorbitGun.nbins",1000)),
     _czmin(config.getDouble("decayinorbitGun.czmin", -1.0)),
@@ -93,10 +93,15 @@ namespace mu2e {
         << _mean
         << "\n";
     }
-    if (_ehi > (conversionEnergyAluminum+1) || _ehi < 0.) { // 1 MeV of tolerance for energy range
+    if (_ehi > (conversionEnergyAluminum+1)) { // 1 MeV of tolerance for energy range
       throw cet::exception("RANGE")
         << "Generation energy range must be within 0 and 104.96 (plus 1 MeV of tolerance)"
         << '\n';
+    }
+
+    if (_elow <= _mass) {
+      _elow = _mass + 0.001;
+      cout << "Lower bound of the DIO spectrum must be higher than electron mass. Set to electron mass + 0.001 MeV" << endl;
     }
     if ((_energySpectrum == "simple" || _energySpectrum == "flat") && _ehi <=_mass) {
       throw cet::exception("RANGE")

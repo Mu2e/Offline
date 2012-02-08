@@ -6,14 +6,15 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.11 2012/02/07 07:17:08 onoratog Exp $
+# $Id: BkgRatesCounter.fcl,v 1.12 2012/02/08 19:27:22 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2012/02/07 07:17:08 $
+# $Date: 2012/02/08 19:27:22 $
 #
 # Original author Gianni Onorato.
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 # Give this process a name.
 process_name : BkgRatesCounter
@@ -56,22 +57,9 @@ services :
 
     G4Helper : { }
 
-    # Uncomment to enable per module timing
-    # Timing :
-    # {
-    #   useJobReport : true 
-    # }
+    SeedService: @local::automaticSeeds
 
-    # Uncomment to enable memory use profiling
-    # SimpleMemoryCheck :
-    # {
-    #   oncePerEventMode : false 
-    #   showMallocInfo   : ignoreTotal 
-    #   ignoreTotal      : 5 
-    # }
 
-    # Uncomment to enable trace printout to show what the framework calls when.
-    # Tracer : { } 
   }
 
 } # close of services block
