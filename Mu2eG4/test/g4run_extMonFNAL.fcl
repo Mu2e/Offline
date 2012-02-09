@@ -23,7 +23,7 @@ services : {
     user : {
 	GeometryService : { inputFile : "Mu2eG4/test/geom_extMonFNAL.txt" }
 	ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-	RandomNumberGenerator : { }
+	SeedService       : @local::automaticSeeds
 	G4Helper : { }
     }
 }
@@ -38,7 +38,6 @@ physics : {
 	g4run : {
             module_type          : G4
             generatorModuleLabel : generate
-            seed                 : [9877]
 	}
     }
 

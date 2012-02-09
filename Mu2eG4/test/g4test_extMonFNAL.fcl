@@ -20,13 +20,9 @@ services : {
    TFileService : { fileName : "testExtMonFNAL.root" }
 
    user : {
-
       GeometryService : { inputFile : "Mu2eG4/test/geom_extMonFNAL.txt" }
-
       ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-
-      RandomNumberGenerator : { }
-
+      SeedService       : @local::automaticSeeds
       G4Helper : { }
   }
 }
@@ -44,7 +40,6 @@ physics : {
          module_type          : G4
          generatorModuleLabel : generate
          visMacro             : "Mu2eG4/test/vis_extMonFNAL.mac"
-         seed                 : [9877]
       }
    }
 
