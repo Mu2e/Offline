@@ -71,25 +71,25 @@ namespace mu2e {
 
       for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
 
-	if(std::find(_vids.begin(), _vids.end(), i->volumeId()) != _vids.end()) {
+        if(std::find(_vids.begin(), _vids.end(), i->volumeId()) != _vids.end()) {
 
-	  outhits->push_back(*i);
+          outhits->push_back(*i);
 
-	  AGDEBUG("here");
-	  const art::Ptr<SimParticle>& particle = outhits->back().simParticle();
-	  AGDEBUG("here");
-	  
-	  if(!particle.get()) {
-	    throw cet::exception("MISSINGINFO")
-	      <<"NULL particle pointer for StepPointMC = "<<*i
-	      <<" in event "<<event.id()
-	      ;
-	  }
-	  else {
-	    AGDEBUG("here: particle = "<<particle<<" (internal id = "<< particle->id()<<")"<<" for hit "<<*i);
-	    particlesWithHits.insert(particle);
-	  }
-	}
+          AGDEBUG("here");
+          const art::Ptr<SimParticle>& particle = outhits->back().simParticle();
+          AGDEBUG("here");
+
+          if(!particle.get()) {
+            throw cet::exception("MISSINGINFO")
+              <<"NULL particle pointer for StepPointMC = "<<*i
+              <<" in event "<<event.id()
+              ;
+          }
+          else {
+            AGDEBUG("here: particle = "<<particle<<" (internal id = "<< particle->id()<<")"<<" for hit "<<*i);
+            particlesWithHits.insert(particle);
+          }
+        }
       }
       AGDEBUG("here");
 
@@ -97,49 +97,49 @@ namespace mu2e {
       // must come in order, and there may be no one-to-one
       // correspondence with saved hits, so this must be a separate
       // loop.
-      // 
+      //
       // Note that the art::Ptr comparison operator sorts the set in
       // the correct order for our use.
       std::auto_ptr<SimParticleCollection> outparts(new SimParticleCollection());
       for(TrackSet::const_iterator i=particlesWithHits.begin(); i!=particlesWithHits.end(); ++i) {
 
-	AGDEBUG("here");
-	cet::map_vector_key key = (*i)->id();
-	AGDEBUG("here: key = "<<key);
-	// Copy the original particle to the output
+        AGDEBUG("here");
+        cet::map_vector_key key = (*i)->id();
+        AGDEBUG("here: key = "<<key);
+        // Copy the original particle to the output
 
-	// FIXME: why does push_back() screw up the given key?
-	// outparts->push_back(std::make_pair(key, **i));
-	
-	(*outparts)[key] = **i;
+        // FIXME: why does push_back() screw up the given key?
+        // outparts->push_back(std::make_pair(key, **i));
 
-	SimParticle& particle(outparts->getOrThrow(key));
-	
-	// Zero internal pointers: intermediate particles are not preserved to reduce data size
-	AGDEBUG("here");
-	particle.setDaughterPtrs(std::vector<art::Ptr<SimParticle> >());
-	AGDEBUG("here");
-	particle.parent() = art::Ptr<SimParticle>();
+        (*outparts)[key] = **i;
 
-	AGDEBUG("after p/d reset: particle id = "<<particle.id());
+        SimParticle& particle(outparts->getOrThrow(key));
+
+        // Zero internal pointers: intermediate particles are not preserved to reduce data size
+        AGDEBUG("here");
+        particle.setDaughterPtrs(std::vector<art::Ptr<SimParticle> >());
+        AGDEBUG("here");
+        particle.parent() = art::Ptr<SimParticle>();
+
+        AGDEBUG("after p/d reset: particle id = "<<particle.id());
       }
       AGDEBUG("here");
       event.put(outparts);
 
       // Update pointers in the hit collection
-      art::ProductID newProductId(getProductID<SimParticleCollection>(event));      
+      art::ProductID newProductId(getProductID<SimParticleCollection>(event));
       const art::EDProductGetter *newProductGetter(event.productGetter(newProductId));
-      
+
       AGDEBUG("here");
       for(StepPointMCCollection::iterator i=outhits->begin(); i!=outhits->end(); ++i) {
-	AGDEBUG("here");
-	art::Ptr<SimParticle> oldPtr(i->simParticle());
-	AGDEBUG("here: settting id = "<< oldPtr->id()<<", newProductId = "<<newProductId <<" for hit "<<*i);
-	i->simParticle() = art::Ptr<SimParticle>(newProductId, oldPtr->id().asUint(), newProductGetter);
+        AGDEBUG("here");
+        art::Ptr<SimParticle> oldPtr(i->simParticle());
+        AGDEBUG("here: settting id = "<< oldPtr->id()<<", newProductId = "<<newProductId <<" for hit "<<*i);
+        i->simParticle() = art::Ptr<SimParticle>(newProductId, oldPtr->id().asUint(), newProductGetter);
       }
       AGDEBUG("here");
       event.put(outhits);
-      
+
       return true;
     }
     else {
