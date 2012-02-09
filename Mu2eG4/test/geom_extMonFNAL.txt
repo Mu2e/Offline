@@ -10,10 +10,10 @@ string toyPS.toyEnclosure.materialName = "G4_Ti";
 
 //int g4.steppingActionMaxSteps = 100000;
 //int g4.stepsSizeLimit = 10000;
+int g4.particlesSizeLimit = 100000;
 
 // bool g4SteppingAction.killerVerbose = true;
-// vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance" };
-int g4.particlesSizeLimit = 100000;
+vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance", "VirtualDetector_Coll1_In" };
 
 // // Uncomment to enable debug printout on a per event or per track basis.
 // vector<int> g4.steppingActionEventList = { 0, 1, 2, 3, 4, 5 };
@@ -46,9 +46,9 @@ bool extMonFilter.magnet.aperture.solid = false;
 double extMonFilter.nominalMomentum = 4000.; // MeV/c
 double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
 
-// Disable all physics except transport.
-string g4.physicsListName = "Minimal";
-//double extMonFilter.maxG4StepLength = 10.; // mm
+//test: // Disable all physics except transport.
+//test: string g4.physicsListName = "Minimal";
+//test: //double extMonFilter.maxG4StepLength = 10.; // mm
 
 // double extMonFilter.magnet.deltaChord = 0.001;
 // double extMonFilter.magnet.minEpsilonStep = 1.e-8;
@@ -64,9 +64,10 @@ string g4.physicsListName = "Minimal";
 
 // bool   vd.visible       = false;
 
-int protonBeamDump.verbosityLevel = 1;
-int extmon_fnal.verbosityLevel = 1;
-int world.verbosityLevel  = 1;
+//int protonBeamDump.verbosityLevel = 1;
+//int extmon_fnal.verbosityLevel = 1;
+//int world.verbosityLevel  = 1;
+//
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

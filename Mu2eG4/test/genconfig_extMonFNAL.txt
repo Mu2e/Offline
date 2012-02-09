@@ -13,7 +13,7 @@ bool nuclearCaptureGun.do       = false;
 
 
 //----------------------------------------------------------------
-bool primaryProtonGun.do        = false;
+bool primaryProtonGun.do        = true;
 
 // cos(theta)=-1. perfectly aligned impact on production target.
 double primaryProtonGun.czmin = -1;
@@ -23,14 +23,14 @@ double primaryProtonGun.czmax = -1;
 vector<double> beamDisplacementOnTarget = {0.,0.,0.};
 
 // Beam spot sigma (in both transverse dimensions); in mm.
-double primaryProtonGun.beamSpotSigma = 0.;   
+double primaryProtonGun.beamSpotSigma = 1.;
 
 // Range of times over which protons hit the target; in ns.
 double primaryProtonGun.tmin  =    0.;
-double primaryProtonGun.tmax  =  100.;
+double primaryProtonGun.tmax  =    0.;
 
 //----------------------------------------------------------------
-bool extMonFNALGun.do        = true;
+bool extMonFNALGun.do        = false;
 
 double extMonFNALGun.pmin = 4000; // MeV
 double extMonFNALGun.pmax = 4000; // MeV
@@ -42,14 +42,14 @@ vector<double> extMonFNALGun.offset = {0., -25., 0.};
 
 // //----------------------------------------------------------------
 // // A "road" of tracks
-// 
+//
 // vector<double> extMonFNALGun.offset = {0., 0., 0.};
 // vector<double> extMonFNALGun.halfSize = {0., 25., 0.};
 // double extMonFNALGun.multiplicity = -400;
-// 
+//
 // //----------------------------------------------------------------
 // // This is to launch stuff starting in the magnet:
-// 
+//
 // vector<double> extMonFNALGun.offset = {0., 0, -4400.};
 // double extMonFNALGun.pmin = 50; // MeV
 // double extMonFNALGun.pmax = 50; // MeV
@@ -59,4 +59,3 @@ vector<double> extMonFNALGun.offset = {0., -25., 0.};
 // Local Variables:
 // mode:c++
 // End:
-
