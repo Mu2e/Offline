@@ -8,9 +8,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.16 2012/02/08 16:57:36 kutschke Exp $
+# $Id: g4test_03.fcl,v 1.17 2012/02/09 23:12:16 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/02/08 16:57:36 $
+# $Date: 2012/02/09 23:12:16 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -126,7 +126,11 @@ outputs: {
 
 }
 
-// Enable diagnsotic printout in several modules.
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+
+// Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
 physics.producers.CaloReadoutHitsMaker.diagLevel : 0

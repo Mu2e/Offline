@@ -1,8 +1,8 @@
 # Configuration file for running beamline_01
 #
-# $Id: beamline_01.fcl,v 1.9 2012/02/08 16:57:36 kutschke Exp $
+# $Id: beamline_01.fcl,v 1.10 2012/02/09 23:12:16 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/02/08 16:57:36 $
+# $Date: 2012/02/09 23:12:16 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -59,4 +59,10 @@ physics : {
 
 }
 
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+
+// Enable G4 graphics.
 physics.producers.g4run.visMacro : "Mu2eG4/test/beamline_xz.mac"
+
