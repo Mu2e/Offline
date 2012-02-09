@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.2 2012/02/06 21:03:59 kutschke Exp $
+// $Id: SeedService_service.cc,v 1.3 2012/02/09 20:12:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/02/06 21:03:59 $
+// $Date: 2012/02/09 20:12:23 $
 //
 // Contact person Rob Kutschke
 //
@@ -96,7 +96,7 @@ namespace mu2e {
     mf::LogInfo log("SEEDS");
     log << "\nSummary of seeds computed by the SeedService.\n";
     log << " Policy:                       " << strPolicy         << "\n";
-    log << " Change range:                 " << strCheckRange     << "\n";
+    log << " Check range:                  " << strCheckRange     << "\n";
     log << " Maximum unique seeds per job: " << maxUniqueEngines_ << "\n";
     log << " Base Seed:                    " << baseSeed_         << "\n";
     log << " Verbosity:                    " << verbosity_        << "\n\n";
@@ -266,10 +266,15 @@ namespace mu2e {
 
   // getSeed may only be called from a c'tor or from a beginRun method. In all other cases, throw.
   void SeedService::ensureValidState( ){
+
+    /*
+     * Disable this test until the MixFilter template is upgraded to allow seeding in the c'tor.
+     *
     if ( state_.state == SeedServiceHelper::ArtState::unDefined ) {
       throw cet::exception("SEEDS")
         << "SeedService: not in a module constructor or beginRun method. May not call getSeed.\n";
     }
+    */
   }
 
   // Callbacks called by art.  Used to maintain information about state.
