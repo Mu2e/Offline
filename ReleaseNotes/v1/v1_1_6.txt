@@ -1,11 +1,24 @@
 
-  $Id: v1_1_6.txt,v 1.4 2012/02/09 20:15:46 kutschke Exp $
+  $Id: v1_1_6.txt,v 1.5 2012/02/09 23:12:50 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/02/09 20:15:46 $
+  $Date: 2012/02/09 23:12:50 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_6
+
+10) February 9, 2012, kutschke
+   fcl/standardServices.fcl
+     - Default values for baseSeed and maxUniqueEngines have been set to nil
+       so that users are forced to initialize them in their jobs.
+
+   Mu2eG4/test/beamline_01.fcl
+               beamline_02.fcl
+               g4test_01.fcl
+               g4test_02.fcl
+               g4test_03.fcl
+
+    Add lines to initialize baseSeed and maxUniqueEngines .
 
 9) February 9, 2012, kutschke
    SeedService/src/SeedService_module.cc
