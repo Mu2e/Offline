@@ -48,6 +48,7 @@ physics : {
 	    inputModuleLabel   : "g4run"
 	    inputInstanceName  : "virtualdetector"
 	    acceptedVids       : [ 16 ]
+	    storeParents       : true
 	}
     }
 

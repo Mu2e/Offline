@@ -9,6 +9,8 @@
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
+#include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
+
 // art includes.
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDFilter.h"
@@ -21,6 +23,28 @@
 #define AGDEBUG(stuff)
 
 namespace mu2e {
+
+  // Use art::Ptr instead of bare ptr to get the desired sorting
+  typedef std::set<art::Ptr<SimParticle> > TrackSet;
+
+  // Adapter for compressSimParticleCollection()
+  class ParticleSelector {
+  public:
+    ParticleSelector(const TrackSet& m) {
+      for(TrackSet::const_iterator i = m.begin(); i!=m.end(); ++i) {
+        m_keys.insert((*i)->id());
+      }
+    }
+
+    bool operator[]( cet::map_vector_key key ) const {
+      return m_keys.find(key) != m_keys.end();
+    }
+
+  private:
+    std::set<cet::map_vector_key> m_keys;
+  };
+
+  //================================================================
   class FilterVDHits : public art::EDFilter {
     std::string _outInstanceName;
     std::string _inModuleLabel;
@@ -35,6 +59,8 @@ namespace mu2e {
     // local in memory.
     std::vector<VolumeId> _vids;  // preserve hits in just those volumes
 
+    bool _storeParents;
+
   public:
     explicit FilterVDHits(const fhicl::ParameterSet& pset);
     virtual bool filter(art::Event& event);
@@ -47,9 +73,11 @@ namespace mu2e {
     : _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
     , _inInstanceName(pset.get<std::string>("inputInstanceName"))
     , _vids(pset.get<std::vector<VolumeId> >("acceptedVids"))
+    , _storeParents(pset.get<bool>("storeParents"))
   {
     produces<StepPointMCCollection>();
     produces<SimParticleCollection>();
+    std::cout<<"FilterVDHits(): storeParents = "<<_storeParents<<std::endl;
   }
 
   //================================================================
@@ -57,7 +85,6 @@ namespace mu2e {
     AGDEBUG("FilterVDHits begin event "<<event.id());
 
     // Use art::Ptr instead of bare ptr to get the desired sorting
-    typedef std::set<art::Ptr<SimParticle> > TrackSet;
     TrackSet particlesWithHits;
 
     const bool accept_event = true;
@@ -93,43 +120,68 @@ namespace mu2e {
       }
       AGDEBUG("here");
 
-      // Need to save SimParticles that produced the hits Particles
-      // must come in order, and there may be no one-to-one
-      // correspondence with saved hits, so this must be a separate
-      // loop.
-      //
-      // Note that the art::Ptr comparison operator sorts the set in
-      // the correct order for our use.
-      std::auto_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-      for(TrackSet::const_iterator i=particlesWithHits.begin(); i!=particlesWithHits.end(); ++i) {
-
-        AGDEBUG("here");
-        cet::map_vector_key key = (*i)->id();
-        AGDEBUG("here: key = "<<key);
-        // Copy the original particle to the output
-
-        // FIXME: why does push_back() screw up the given key?
-        // outparts->push_back(std::make_pair(key, **i));
-
-        (*outparts)[key] = **i;
-
-        SimParticle& particle(outparts->getOrThrow(key));
-
-        // Zero internal pointers: intermediate particles are not preserved to reduce data size
-        AGDEBUG("here");
-        particle.setDaughterPtrs(std::vector<art::Ptr<SimParticle> >());
-        AGDEBUG("here");
-        particle.parent() = art::Ptr<SimParticle>();
-
-        AGDEBUG("after p/d reset: particle id = "<<particle.id());
+      if(_storeParents) {
+        // For each particle hitting our VD also save
+        // all the parents in the chain up to the primary.
+        for(TrackSet::const_iterator i=particlesWithHits.begin(); i!=particlesWithHits.end(); ++i) {
+          art::Ptr<SimParticle> current = *i;
+          while(current->hasParent()) {
+            current = current->parent();
+            // Insertion into the set does not invalidate the iterator (i)
+            particlesWithHits.insert(current);
+          }
+        }
       }
+
+      // The case when parents are stored is supported by compressSimParticleCollection()
+      // otherwise we need to prepare the output SimParticleCollection by hand
+      std::auto_ptr<SimParticleCollection> outparts(new SimParticleCollection());
+      art::ProductID newProductId(getProductID<SimParticleCollection>(event));
+      const art::EDProductGetter *newProductGetter(event.productGetter(newProductId));
+      if(!_storeParents) {
+
+        // Need to save SimParticles that produced the hits Particles
+        // must come in order, and there may be no one-to-one
+        // correspondence with saved hits, so this must be a separate
+        // loop.
+        //
+        // Note that the art::Ptr comparison operator sorts the set in
+        // the correct order for our use.
+        for(TrackSet::const_iterator i=particlesWithHits.begin(); i!=particlesWithHits.end(); ++i) {
+
+          AGDEBUG("here");
+          cet::map_vector_key key = (*i)->id();
+          AGDEBUG("here: key = "<<key);
+          // Copy the original particle to the output
+
+          // FIXME: why does push_back() screw up the given key?
+          // outparts->push_back(std::make_pair(key, **i));
+
+          (*outparts)[key] = **i;
+
+          SimParticle& particle(outparts->getOrThrow(key));
+
+          // Zero internal pointers: intermediate particles are not preserved to reduce data size
+          AGDEBUG("here");
+          particle.setDaughterPtrs(std::vector<art::Ptr<SimParticle> >());
+          AGDEBUG("here");
+          particle.parent() = art::Ptr<SimParticle>();
+
+          AGDEBUG("after p/d reset: particle id = "<<particle.id());
+        }
+      }
+      else { // _storeParents
+        art::Handle<SimParticleCollection> inparts;
+        event.getByLabel(_inModuleLabel, "", inparts);
+
+        ParticleSelector selector(particlesWithHits);
+        compressSimParticleCollection(newProductId, newProductGetter, *inparts, selector, *outparts);
+      }
+
       AGDEBUG("here");
       event.put(outparts);
 
       // Update pointers in the hit collection
-      art::ProductID newProductId(getProductID<SimParticleCollection>(event));
-      const art::EDProductGetter *newProductGetter(event.productGetter(newProductId));
-
       AGDEBUG("here");
       for(StepPointMCCollection::iterator i=outhits->begin(); i!=outhits->end(); ++i) {
         AGDEBUG("here");
@@ -139,6 +191,7 @@ namespace mu2e {
       }
       AGDEBUG("here");
       event.put(outhits);
+
 
       return true;
     }
