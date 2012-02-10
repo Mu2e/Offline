@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.7 2012/02/10 16:28:22 gandr Exp $
+// $Id: SeedService_service.cc,v 1.8 2012/02/10 16:45:59 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:28:22 $
+// $Date: 2012/02/10 16:45:59 $
 //
 // Contact person Rob Kutschke
 //
@@ -42,6 +42,7 @@ namespace mu2e {
   SeedService::NameInitializer::NameInitializer() {
     SeedService::policyName[SeedService::unDefined]        = "unDefined";
     SeedService::policyName[SeedService::autoIncrement]    = "autoIncrement";
+    SeedService::policyName[SeedService::linearMapping]    = "linearMapping";
     SeedService::policyName[SeedService::preDefinedOffset] = "preDefinedOffset";
     SeedService::policyName[SeedService::preDefinedSeed]   = "preDefinedSeed";
   }
@@ -61,7 +62,7 @@ namespace mu2e {
     checkRange_(true),
     maxUniqueEngines_(20),
 
-    // Initailization specific to the autoIncrement policy
+    // Initailization specific to the autoIncrement and linearMapping policies
     currentSeed_(0){
 
     // Throw if policy is not recognized.
@@ -73,6 +74,9 @@ namespace mu2e {
       throw cet::exception("SEEDS")<< "SeedService(): Internal error: unknown policy_ value\n";
     case autoIncrement:
       parseAutoIncrement();
+      break;
+    case linearMapping:
+      parseLinearMapping();
       break;
     case preDefinedOffset: case preDefinedSeed:
       parsePreDefined();
@@ -127,7 +131,7 @@ namespace mu2e {
     switch(policy_) {
     default:
       throw cet::exception("SEEDS")<< "getSeed(): Internal SeedService: error: unknown policy_ value\n";
-    case autoIncrement:
+    case autoIncrement: case linearMapping:
       seed = currentSeed_++;
       break;
     case preDefinedOffset: case preDefinedSeed:
@@ -172,6 +176,12 @@ namespace mu2e {
     currentSeed_  = baseSeed_;
   }
 
+  void SeedService::parseLinearMapping(){
+    parseCommon();
+    baseSeed_ *= maxUniqueEngines_;
+    currentSeed_  = baseSeed_;
+  }
+
   void SeedService::parsePreDefined(){
     parseCommon();
   }
@@ -186,7 +196,7 @@ namespace mu2e {
     }
     checkRange_ = pSet_.get<bool>("checkRange",true);
 
-    if ( checkRange_ ){
+    if ( checkRange_ || (policy_ == linearMapping) ){
       maxUniqueEngines_ = pSet_.get<seed_t>("maxUniqueEngines");
     }
 

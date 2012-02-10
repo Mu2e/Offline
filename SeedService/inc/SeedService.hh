@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.6 2012/02/10 16:28:22 gandr Exp $
+// $Id: SeedService.hh,v 1.7 2012/02/10 16:45:59 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:28:22 $
+// $Date: 2012/02/10 16:45:59 $
 //
 // Contact person Rob Kutschke
 //
@@ -53,6 +53,11 @@
 // on the first unique call to getSeed the offset is set to 0; on the second unique
 // call to getSeed it is set to 1, and so on.
 //
+// If the policy is set to linearMapping, the seed is set to
+// maxUniqueEngines*baseSeed+offset, where on the first unique call to getSeed
+// the offset is set to 0; on the second unique call to getSeed it is set to 1,
+// and so on.
+//
 // If the policy is set to preDefinedOffset then, when getSeed is called, the service will look
 // into the parameter set to find a defined offset for the specified module label
 // and instance name.  The returned value of the seed will be baseSeed+offset.
@@ -75,7 +80,7 @@
 //      instanceName2 : offset2
 //   }
 //
-// The SeedService does several additional checks.
+// The SeedService does several additional checks, except for the preDefinedSeed policy.
 //
 // If one (module label, instance name) has the same seed as another (module label, instance name),
 // the service will throw an exception.
@@ -120,6 +125,7 @@ namespace mu2e {
       unDefined,
 
       autoIncrement,
+      linearMapping,
       preDefinedOffset,
       preDefinedSeed,
 
@@ -172,7 +178,7 @@ namespace mu2e {
     bool   checkRange_;
     seed_t maxUniqueEngines_;
 
-    // Information used by the autoIncrement policy
+    // Information used by the autoIncrement and linearMapping policies
     seed_t currentSeed_;
 
     // Main logic for computing and validating a seed.
@@ -187,6 +193,7 @@ namespace mu2e {
 
     // Helper functions for the autoIncrement policy.
     void parseAutoIncrement();
+    void parseLinearMapping();
 
     // Helper functions for the preDefinedOffset policy.
     void   parsePreDefined   ();
