@@ -1,11 +1,11 @@
 # Test the seeds service: test of autoIncrement mode
 #
 #
-# $Id: test01.fcl,v 1.2 2012/02/06 21:03:05 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/02/06 21:03:05 $
+# $Id: test01.fcl,v 1.3 2012/02/10 16:27:49 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/02/10 16:27:49 $
 
-#include "minimalMessageService.fcl"
+#include "messageService.fcl"
 
 # Give this job a name.
 process_name : SeedTest01
@@ -19,7 +19,7 @@ source :
 
 services :
 {
-  message : @local::default_message
+  message : @local::mf_errorsOnly
 
   user : {
      SeedService: {
