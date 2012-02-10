@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.5 2012/02/10 16:27:18 gandr Exp $
+// $Id: SeedService.hh,v 1.6 2012/02/10 16:28:22 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:27:18 $
+// $Date: 2012/02/10 16:28:22 $
 //
 // Contact person Rob Kutschke
 //
@@ -56,8 +56,12 @@
 // If the policy is set to preDefinedOffset then, when getSeed is called, the service will look
 // into the parameter set to find a defined offset for the specified module label
 // and instance name.  The returned value of the seed will be baseSeed+offset.
-// The preDefinedSeed policy is similar, but the the fhicl file should specify the
-// actual seed and not the module offset.  (I.e. baseSeed is not used.)
+//
+// The preDefinedSeed policy allows to specify the actual seed to be
+// used.  In this case baseSeed is not used.  Note that the policy
+// does not impose any constraints on the user-provided set of seeds.
+// In particular, the uniqueness of the seeds is not
+// enforced. Intended for debugging and special tests, use with care.
 //
 // The fhicl grammar to specify the offsets takes two forms.  If no instance name
 // is given, the offset is given by:

@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.6 2012/02/10 16:27:18 gandr Exp $
+// $Id: SeedService_service.cc,v 1.7 2012/02/10 16:28:22 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:27:18 $
+// $Date: 2012/02/10 16:28:22 $
 //
 // Contact person Rob Kutschke
 //
@@ -135,11 +135,13 @@ namespace mu2e {
       break;
     }
 
-    // Throw if the seed is not unique within this job.
-    ensureUnique(id, seed);
+    if(policy_ != preDefinedSeed) {
+      // Throw if the seed is not unique within this job.
+      ensureUnique(id, seed);
 
-    // Throw if the seed is out of range.
-    ensureRange(id, seed);
+      // Throw if the seed is out of range.
+      ensureRange(id, seed);
+    }
 
     // Save the result.
     result.first->second = seed;
@@ -241,6 +243,7 @@ namespace mu2e {
       if ( i->second == seed ){
         throw cet::exception("SEEDS")
           << "SeedService::ensureUnique offset: " << seed-baseSeed_
+          <<", seed: "<<seed
           << ". Already used by module.instance: " << i->first << "\n"
           << "May not be reused by module.instance: " << id << "\n";
       }
