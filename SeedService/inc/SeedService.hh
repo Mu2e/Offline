@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.4 2012/02/10 16:26:53 gandr Exp $
+// $Id: SeedService.hh,v 1.5 2012/02/10 16:27:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:26:53 $
+// $Date: 2012/02/10 16:27:18 $
 //
 // Contact person Rob Kutschke
 //
@@ -95,6 +95,7 @@
 
 #include <string>
 #include <map>
+#include <iomanip>
 
 // Forward declarations
 namespace art {
@@ -130,7 +131,8 @@ namespace mu2e {
     seed_t getSeed( std::string const& instanceName );
 
     // Print known (EngineId,seed) pairs.
-    void print() const;
+    template<class Stream> void print(Stream&) const;
+    void print() const; // prints to the framework Info logger
 
     // Call backs that will be called by art.
     void preModuleConstruction (art::ModuleDescription const& md);
@@ -186,8 +188,37 @@ namespace mu2e {
     void   parsePreDefined   ();
     seed_t getPreDefined     ( SeedServiceHelper::EngineId const& id );
 
+    // enum to name mapping stuff
+    static std::string policyName[];
+    struct NameInitializer { NameInitializer(); };
+    friend class NameInitializer;
+    static NameInitializer nameInit_;
   };
 
-}
+
+  //================================================================
+  template<class Stream>
+  void SeedService::print(Stream& log) const {
+    std::string strCheckRange = (checkRange_) ? "true" : "false";
+    log << "\nSummary of seeds computed by the SeedService.\n";
+    log << " Policy:                       " << policyName[policy_]<< "\n";
+    log << " Check range:                  " << strCheckRange     << "\n";
+    log << " Maximum unique seeds per job: " << maxUniqueEngines_ << "\n";
+    log << " Base Seed:                    " << baseSeed_         << "\n";
+    log << " Verbosity:                    " << verbosity_        << "\n\n";
+
+    if ( !knownSeeds_.empty() ) {
+      log << " Seed Value     ModuleLabel.InstanceName\n";
+
+      for ( map_type::const_iterator i=knownSeeds_.begin(), e=knownSeeds_.end();
+            i != e; ++i ){
+        log << std::setw(10) << i->second << "      "
+            << i->first
+            << "\n";
+      }
+    }
+  }
+
+} // namespace mu2e
 
 #endif /* SeedService_SeedService_hh */

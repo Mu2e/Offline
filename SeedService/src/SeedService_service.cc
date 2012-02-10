@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.5 2012/02/10 16:26:53 gandr Exp $
+// $Id: SeedService_service.cc,v 1.6 2012/02/10 16:27:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:26:53 $
+// $Date: 2012/02/10 16:27:18 $
 //
 // Contact person Rob Kutschke
 //
@@ -37,20 +37,16 @@ using namespace std;
 
 namespace mu2e {
 
-  namespace {
-    std::string policyName[SeedService::numPolicies];
+  std::string SeedService::policyName[SeedService::numPolicies];
 
-    struct NameInitializer {
-      NameInitializer() {
-        policyName[SeedService::unDefined]        = "unDefined";
-        policyName[SeedService::autoIncrement]    = "autoIncrement";
-        policyName[SeedService::preDefinedOffset] = "preDefinedOffset";
-        policyName[SeedService::preDefinedSeed]   = "preDefinedSeed";
-      }
-    };
-
-    NameInitializer init;
+  SeedService::NameInitializer::NameInitializer() {
+    SeedService::policyName[SeedService::unDefined]        = "unDefined";
+    SeedService::policyName[SeedService::autoIncrement]    = "autoIncrement";
+    SeedService::policyName[SeedService::preDefinedOffset] = "preDefinedOffset";
+    SeedService::policyName[SeedService::preDefinedSeed]   = "preDefinedSeed";
   }
+
+  SeedService::NameInitializer SeedService::nameInit_;
 
   SeedService::SeedService(fhicl::ParameterSet const& pSet,
                            art::ActivityRegistry&     iRegistry  ) :
@@ -90,8 +86,8 @@ namespace mu2e {
     iRegistry.watchPostModuleBeginRun     (this, &SeedService::postModuleBeginRun     );
     iRegistry.watchPostEndJob             (this, &SeedService::postEndJob             );
 
-    if ( verbosity_ > 1 ) {
-      print();
+    if ( verbosity_ > 0 ) {
+      print(std::cout);
     }
 
   }
@@ -110,27 +106,8 @@ namespace mu2e {
 
   // Print summary information.
   void SeedService::print( ) const{
-
-    string strCheckRange = (checkRange_) ? "true" : "false";
     mf::LogInfo log("SEEDS");
-    log << "\nSummary of seeds computed by the SeedService.\n";
-    log << " Policy:                       " << policyName[policy_]<< "\n";
-    log << " Check range:                  " << strCheckRange     << "\n";
-    log << " Maximum unique seeds per job: " << maxUniqueEngines_ << "\n";
-    log << " Base Seed:                    " << baseSeed_         << "\n";
-    log << " Verbosity:                    " << verbosity_        << "\n\n";
-
-    if ( !knownSeeds_.empty() ) {
-      log << " Seed Value     ModuleLabel.InstanceName\n";
-
-      for ( map_type::const_iterator i=knownSeeds_.begin(), e=knownSeeds_.end();
-            i != e; ++i ){
-        log << setw(10) << i->second << "      "
-            << i->first
-            << "\n";
-      }
-    }
-
+    print(log);
   }
 
   // Do the real work of getting and validating a seed. Not user callable.
@@ -319,8 +296,11 @@ namespace mu2e {
   }
 
   void SeedService::postEndJob(){
-    if ( pSet_.get<bool>("endOfJobSummary",false) || verbosity_ > 1 ){
-      print();
+    if(verbosity_ > 0) {
+      print(std::cout);
+    }
+    else if(pSet_.get<bool>("endOfJobSummary",false)) {
+      print(); // framework logger decides whether and where it shows up
     }
   }
 
