@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.2 2012/02/06 21:03:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/06 21:03:59 $
+// $Id: SeedService.hh,v 1.3 2012/02/10 16:26:41 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/10 16:26:41 $
 //
 // Contact person Rob Kutschke
 //
@@ -16,7 +16,7 @@
 // This class is configured from a fhcil parameter set:
 //
 //    SeedService : {
-//       policy           : "autoIncrement"  // Required: Other legal value is "preDefined"
+//       policy           : "autoIncrement"  // Required: Other legal value is "preDefinedOffset"
 //       baseSeed         : 0                // Required: An integer >= 0.
 //       checkRange       : true             // Optional: legal values true or false; defaults to true
 //       maxUniqueEngines : 20               // Required iff checkRange is true.
@@ -26,12 +26,12 @@
 //    }
 //
 // The policy parameter tells the service to choose one of two alogrithms, "autoIncrement"
-// of "preDefined".  We anticipate that other algorithms may be added in the future.
+// of "preDefinedOffset".  We anticipate that other algorithms may be added in the future.
 // If the value of the policy parameter is not one of the known policies, the code will
 // throw an exception.
 //
 // If the policy is defined as "autoIncrement" the above fhcil fragment shows all
-// run time configurable items. Additional parameters for the "preDefined" policy
+// run time configurable items. Additional parameters for the "preDefinedOffset" policy
 // will be discussed later.
 //
 // Module code requests a seed by making one of the following two calls:
@@ -110,7 +110,7 @@ namespace mu2e {
 
     typedef art::RandomNumberGenerator::seed_t seed_t;
 
-    enum Policy { unDefined, autoIncrement, preDefined};
+    enum Policy { unDefined, autoIncrement, preDefinedOffset};
 
     SeedService(const fhicl::ParameterSet&, art::ActivityRegistry&);
 
@@ -173,9 +173,9 @@ namespace mu2e {
     // Helper functions for the autoIncrement policy.
     void parseAutoIncrement();
 
-    // Helper functions for the preDefined policy.
-    void   parsePreDefined   ();
-    seed_t getPreDefinedSeed ( SeedServiceHelper::EngineId const& id );
+    // Helper functions for the preDefinedOffset policy.
+    void   parsePreDefinedOffset   ();
+    seed_t getPreDefinedOffsetSeed ( SeedServiceHelper::EngineId const& id );
 
   };
 

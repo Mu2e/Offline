@@ -1,9 +1,9 @@
-# Test the seeds service: test preDefined mode
+# Test the seeds service: test preDefinedOffset mode
 #
 #
-# $Id: test02.fcl,v 1.2 2012/02/06 21:03:05 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/02/06 21:03:05 $
+# $Id: test02.fcl,v 1.3 2012/02/10 16:26:41 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/02/10 16:26:41 $
 
 #include "minimalMessageService.fcl"
 
@@ -23,7 +23,7 @@ services :
 
   user : {
      SeedService: {
-      policy            : "preDefined"
+      policy            : "preDefinedOffset"
       baseSeed          :     1
       maxUniqueEngines  :    20
       checkRange        :  true

@@ -2,9 +2,9 @@
 #  Check that calls from beginSubRun fail
 #
 #
-# $Id: test07.fcl,v 1.2 2012/02/06 21:03:05 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/02/06 21:03:05 $
+# $Id: test07.fcl,v 1.3 2012/02/10 16:26:42 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/02/10 16:26:42 $
 
 #include "minimalMessageService.fcl"
 
@@ -24,7 +24,7 @@ services :
 
   user : {
      SeedService: {
-      policy            : "preDefined"
+      policy            : "preDefinedOffset"
       baseSeed          :     1
       maxUniqueEngines  :     6
       checkRange        :  true
