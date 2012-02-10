@@ -38,6 +38,7 @@ namespace mu2e {
     double hallFloorThickness() const { return _hallFloorThickness; }
     double hallCeilingThickness() const { return _hallCeilingThickness; }
     double hallWallThickness() const { return _hallWallThickness; }
+    double hallWallExtMonUCIThickness() const { return _hallWallExtMonUCIThickness; }
 
     double dirtOverburdenDepth() const { return _dirtOverburdenDepth; }
     double dirtCapHalfHeight() const { return _dirtCapHalfHeight; }
@@ -80,6 +81,7 @@ namespace mu2e {
     double _hallFloorThickness;
     double _hallCeilingThickness;
     double _hallWallThickness;
+    double _hallWallExtMonUCIThickness;
 
     double _dirtOverburdenDepth;
     double _dirtCapHalfHeight;

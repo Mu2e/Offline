@@ -39,6 +39,7 @@ namespace mu2e {
     _b->_hallFloorThickness = c.getDouble("hall.floorThick");
     _b->_hallCeilingThickness = c.getDouble("hall.ceilingThick");
     _b->_hallWallThickness = c.getDouble("hall.wallThick");
+    _b->_hallWallExtMonUCIThickness = c.getDouble("hall.wallExtMonUCIThick");
 
     // Origin used to construct the MECO detector.
     // Magic number to fix:
@@ -68,12 +69,13 @@ namespace mu2e {
     _b->_concreteOuterOutline1.push_back(Hep2Vector(dump->shieldingFaceXmax(), dump->shieldingFaceZatXmax()));
 
     const double concreteZmin = _b->hallInsideZExtMonUCIWall() - _b->hallWallThickness();
-    if(_b->hallWallThickness() < (dump->shieldingFaceZatXmax() - concreteZmin)*tan(dump->coreRotY())) {
+    if(_b->hallWallExtMonUCIThickness() < (dump->shieldingFaceZatXmax() - concreteZmin)*tan(dump->coreRotY())) {
       // two-point case
-      _b->_concreteOuterOutline1.push_back(Hep2Vector(dump->shieldingFaceXmax() - _b->hallWallThickness(),
-						      dump->shieldingFaceZatXmax() - _b->hallWallThickness()/tan(dump->coreRotY())));
+      _b->_concreteOuterOutline1.push_back(Hep2Vector(dump->shieldingFaceXmax() - _b->hallWallExtMonUCIThickness(),
+                                                      dump->shieldingFaceZatXmax() - _b->hallWallExtMonUCIThickness()
+                                                      /tan(dump->coreRotY())));
 
-      _b->_concreteOuterOutline1.push_back(Hep2Vector(dump->shieldingFaceXmax() - _b->hallWallThickness(),
+      _b->_concreteOuterOutline1.push_back(Hep2Vector(dump->shieldingFaceXmax() - _b->hallWallExtMonUCIThickness(),
 						      concreteZmin));
     }
     else { // one-point case

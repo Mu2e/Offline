@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.115 2012/02/07 00:20:14 gandr Exp $
+// $Id: geom_01.txt,v 1.116 2012/02/10 19:17:34 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/07 00:20:14 $
+// $Date: 2012/02/10 19:17:34 $
 //
 // Original author Rob Kutschke
 //
@@ -158,6 +158,7 @@ double hall.insideFullHeight = 10000.;
 double hall.floorThick   = 300.;
 double hall.ceilingThick = 300.;
 double hall.wallThick    = 300.;
+double hall.wallExtMonUCIThick  = 600.;
 string hall.wallMaterialName = "G4_CONCRETE";
 string hall.insideMaterialName = "G4_AIR";
 
