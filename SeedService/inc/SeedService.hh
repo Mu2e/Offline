@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.3 2012/02/10 16:26:41 gandr Exp $
+// $Id: SeedService.hh,v 1.4 2012/02/10 16:26:53 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:26:41 $
+// $Date: 2012/02/10 16:26:53 $
 //
 // Contact person Rob Kutschke
 //
@@ -16,7 +16,7 @@
 // This class is configured from a fhcil parameter set:
 //
 //    SeedService : {
-//       policy           : "autoIncrement"  // Required: Other legal value is "preDefinedOffset"
+//       policy           : "autoIncrement"  // Required: Other legal value are listed in the Policy enum below
 //       baseSeed         : 0                // Required: An integer >= 0.
 //       checkRange       : true             // Optional: legal values true or false; defaults to true
 //       maxUniqueEngines : 20               // Required iff checkRange is true.
@@ -25,8 +25,7 @@
 //       endOfJobSummary  : false           // Optional: print list of all managed seeds at end of job.
 //    }
 //
-// The policy parameter tells the service to choose one of two alogrithms, "autoIncrement"
-// of "preDefinedOffset".  We anticipate that other algorithms may be added in the future.
+// The policy parameter tells the service to which algorithm to use.
 // If the value of the policy parameter is not one of the known policies, the code will
 // throw an exception.
 //
@@ -54,9 +53,11 @@
 // on the first unique call to getSeed the offset is set to 0; on the second unique
 // call to getSeed it is set to 1, and so on.
 //
-// If the policy is set to preDedefined then, when getSeed is called, the service will look
+// If the policy is set to preDefinedOffset then, when getSeed is called, the service will look
 // into the parameter set to find a defined offset for the specified module label
 // and instance name.  The returned value of the seed will be baseSeed+offset.
+// The preDefinedSeed policy is similar, but the the fhicl file should specify the
+// actual seed and not the module offset.  (I.e. baseSeed is not used.)
 //
 // The fhicl grammar to specify the offsets takes two forms.  If no instance name
 // is given, the offset is given by:
@@ -110,7 +111,15 @@ namespace mu2e {
 
     typedef art::RandomNumberGenerator::seed_t seed_t;
 
-    enum Policy { unDefined, autoIncrement, preDefinedOffset};
+    enum Policy {
+      unDefined,
+
+      autoIncrement,
+      preDefinedOffset,
+      preDefinedSeed,
+
+      numPolicies // numPolicies must be the last member
+    };
 
     SeedService(const fhicl::ParameterSet&, art::ActivityRegistry&);
 
@@ -174,8 +183,8 @@ namespace mu2e {
     void parseAutoIncrement();
 
     // Helper functions for the preDefinedOffset policy.
-    void   parsePreDefinedOffset   ();
-    seed_t getPreDefinedOffsetSeed ( SeedServiceHelper::EngineId const& id );
+    void   parsePreDefined   ();
+    seed_t getPreDefined     ( SeedServiceHelper::EngineId const& id );
 
   };
 

@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.4 2012/02/10 16:26:41 gandr Exp $
+// $Id: SeedService_service.cc,v 1.5 2012/02/10 16:26:53 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:26:41 $
+// $Date: 2012/02/10 16:26:53 $
 //
 // Contact person Rob Kutschke
 //
@@ -37,6 +37,21 @@ using namespace std;
 
 namespace mu2e {
 
+  namespace {
+    std::string policyName[SeedService::numPolicies];
+
+    struct NameInitializer {
+      NameInitializer() {
+        policyName[SeedService::unDefined]        = "unDefined";
+        policyName[SeedService::autoIncrement]    = "autoIncrement";
+        policyName[SeedService::preDefinedOffset] = "preDefinedOffset";
+        policyName[SeedService::preDefinedSeed]   = "preDefinedSeed";
+      }
+    };
+
+    NameInitializer init;
+  }
+
   SeedService::SeedService(fhicl::ParameterSet const& pSet,
                            art::ActivityRegistry&     iRegistry  ) :
 
@@ -57,10 +72,15 @@ namespace mu2e {
     setPolicy();
 
     // Finish parsing the parameter set, as required by the selected policy.
-    if ( policy_ == autoIncrement ){
+    switch(policy_) {
+    default:
+      throw cet::exception("SEEDS")<< "SeedService(): Internal error: unknown policy_ value\n";
+    case autoIncrement:
       parseAutoIncrement();
-    } else if ( policy_ == preDefinedOffset ){
-      parsePreDefinedOffset();
+      break;
+    case preDefinedOffset: case preDefinedSeed:
+      parsePreDefined();
+      break;
     }
 
     // Register callbacks.
@@ -91,11 +111,10 @@ namespace mu2e {
   // Print summary information.
   void SeedService::print( ) const{
 
-    string strPolicy = (policy_==autoIncrement) ? "autoIncrement" : "preDefinedOffset";
     string strCheckRange = (checkRange_) ? "true" : "false";
     mf::LogInfo log("SEEDS");
     log << "\nSummary of seeds computed by the SeedService.\n";
-    log << " Policy:                       " << strPolicy         << "\n";
+    log << " Policy:                       " << policyName[policy_]<< "\n";
     log << " Check range:                  " << strCheckRange     << "\n";
     log << " Maximum unique seeds per job: " << maxUniqueEngines_ << "\n";
     log << " Base Seed:                    " << baseSeed_         << "\n";
@@ -128,10 +147,15 @@ namespace mu2e {
 
     // Compute the seed.
     long seed(0);
-    if ( policy_ == autoIncrement ){
+    switch(policy_) {
+    default:
+      throw cet::exception("SEEDS")<< "getSeed(): Internal SeedService: error: unknown policy_ value\n";
+    case autoIncrement:
       seed = currentSeed_++;
-    } else{
-      seed = getPreDefinedOffsetSeed(id);
+      break;
+    case preDefinedOffset: case preDefinedSeed:
+      seed = getPreDefined(id);
+      break;
     }
 
     // Throw if the seed is not unique within this job.
@@ -148,21 +172,20 @@ namespace mu2e {
 
   void SeedService::setPolicy(){
 
-    string policyName = pSet_.get<string>("policy");
-
-    if ( policyName == "autoIncrement" ){
-      policy_ = autoIncrement;
-    } else if ( policyName == "preDefinedOffset" ){
-      policy_ = preDefinedOffset;
-    }
+    string strPolicy = pSet_.get<string>("policy");
+    string * iter = std::find(policyName, policyName+numPolicies, strPolicy);
+    policy_ = Policy(iter - policyName);
 
     if ( policy_ == unDefined ){
-      throw cet::exception("SEEDS")
-        << "Unrecognized policy for the SeedService: "
+      std::ostringstream os;
+      os<< "SeedService::setPolicy(): Unrecognized policy: "
         << policyName
-        << "\n Known policies are: { autoIncrement, preDefinedOffset }\n";
-    }
+        << "\n Known policies are: ";
 
+      std::copy(policyName+1, policyName+numPolicies, std::ostream_iterator<string>(os, ", "));
+
+      throw cet::exception("SEEDS")<<os.str();
+    }
   }
 
   void SeedService::parseAutoIncrement(){
@@ -170,7 +193,7 @@ namespace mu2e {
     currentSeed_  = baseSeed_;
   }
 
-  void SeedService::parsePreDefinedOffset(){
+  void SeedService::parsePreDefined(){
     parseCommon();
   }
 
@@ -190,7 +213,8 @@ namespace mu2e {
 
   }
 
-  SeedService::seed_t SeedService::getPreDefinedOffsetSeed( SeedServiceHelper::EngineId const& id ){
+  // This method handles both the preDefinedOffset and preDefinedSeed cases
+  SeedService::seed_t SeedService::getPreDefined( SeedServiceHelper::EngineId const& id ){
 
     // Case 1: no instance name.
     if ( !id.instanceDefined ){
@@ -200,7 +224,7 @@ namespace mu2e {
           << "SeedService: is in preDefinedOffset mode and was unable to find the seed offset for"
           << id.moduleLabel << "\n";
       }
-      return baseSeed_ + offset;
+      return (policy_ == preDefinedOffset) ? baseSeed_ + offset : offset;
     }
 
     // Case 2: instance name is given.
@@ -224,7 +248,7 @@ namespace mu2e {
         << "\n";
     }
 
-    return baseSeed_ + offset;
+    return (policy_ == preDefinedOffset) ? baseSeed_ + offset : offset;
   }
 
   // Throw if the seed has already been used.
