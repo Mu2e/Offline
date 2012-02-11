@@ -1,35 +1,55 @@
-// Overlay boxes of specified size and color on Mu2e geometry.
-// 
+// Visualize field map regions and overlay arbitrary boxes of
+// specified size and color on Mu2e geometry.
+//
 // Original author Andrei Gaponenko
 
+//================================================================
+// Visualization of magnetic field map regions
+bool visregions.fieldMaps.visible  = true;
+bool visregions.fieldMaps.solid    = true;
+string visregions.fieldMaps.material = "G4_AIR";
+
+// The color vectors should be non-empty and of the same size.  If
+// there are more field maps than defined colors, the colors are
+// re-used.  If there are more colors, the extra ones are ignored.
+vector<double> visregions.fieldMaps.color.red =   { 1., 0.5, 0.8, 0.6};
+vector<double> visregions.fieldMaps.color.green = { 0., 0., 0. , 0.};
+vector<double> visregions.fieldMaps.color.blue =  { 0., 0., 0.,  0.};
+
+// If squashY is defined, the Y coordinate of all field maps is
+// ignored and the squashY values {Ymin, Ymax} are used instead.
+vector<double> visregions.fieldMaps.squashY = { -2, 2 };
+
+//================================================================
+// Add a set of arbitrary boxes.
 // All coordinates are in mu2e system.
-// 
-// All vectors should be of the same size == number of defined boxes.
-// The only exception is that if visregions.boxes.visible is empty or
-// missing, the other config parameters are not looked at.
 
-// SimpleConfig has no getVectorBool(), thus use vector<int> here
-//vector<int> visregions.boxes.visible = { 1, 1 };
-
-vector<int> visregions.boxes.solid  =  { 1, 1 };
+bool visregions.boxes.visible = true;
+bool visregions.boxes.solid  =  true;
 
 // Material may affect how the box is shown in a viewer, thus make is configurable
-vector<string> visregions.boxes.material = { "G4_AIR", "G4_AIR" };
+string visregions.boxes.material = "G4_AIR";
 
-vector<double> visregions.boxes.color.red =   { 0.0, 1. };
-vector<double> visregions.boxes.color.green = { 0.8, 0.5 };
-vector<double> visregions.boxes.color.blue =  { 0.95, 0.5 };
+// The color vectors should be non-empty and of the same size.  If
+// there are more field maps than defined colors, the colors are
+// re-used.  If there are more colors, the extra ones are ignored.
+vector<double> visregions.boxes.color.red =   { 0.0,   1.,  1};
+vector<double> visregions.boxes.color.green = { 0.8,  0.5,  0};
+vector<double> visregions.boxes.color.blue =  { 0.95, 0.5,  1};
 
-//
-vector<double> visregions.boxes.xmin = { -10000.,  -350 };
-vector<double> visregions.boxes.xmax = {  +8000., +5204 };
+// All of the following vectors should be of the same size == number of defined boxes.
 
-vector<double> visregions.boxes.ymin = { 0., 0. };
-//vector<double> visregions.boxes.ymax = { +15000. };
-vector<double> visregions.boxes.ymax = { +1., 1. };
+// 1: Mau's  draft "hall" field map
+// 2: BeamDump area field map
+// 3: ExtMonUCI region
+vector<double> visregions.boxes.xmin = { -10000.,  -350, 3100 };
+vector<double> visregions.boxes.xmax = {  +8000., +5204, 4700 };
 
-vector<double> visregions.boxes.zmin = { -10000., -20975 };
-vector<double> visregions.boxes.zmax = { +18000., -10000 };
+vector<double> visregions.boxes.ymin = { 0., 0.,  0.};
+vector<double> visregions.boxes.ymax = { 1., 1.,  1.};
+
+vector<double> visregions.boxes.zmin = { -10000., -20975, -22000. };
+vector<double> visregions.boxes.zmax = { +18000., -10000, -15000. };
 
 // ----------------------------------------------------------------
 // This tells emacs to view this file in c++ mode.
