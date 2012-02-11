@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.7 2012/02/10 16:45:59 gandr Exp $
+// $Id: SeedService.hh,v 1.8 2012/02/11 01:49:34 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:45:59 $
+// $Date: 2012/02/11 01:49:34 $
 //
 // Contact person Rob Kutschke
 //
@@ -132,6 +132,8 @@ namespace mu2e {
       numPolicies // numPolicies must be the last member
     };
 
+    static const std::vector<std::string>& policyNames();
+
     SeedService(const fhicl::ParameterSet&, art::ActivityRegistry&);
 
     // Accept compiler written d'tor.  Not copyable or assignable.
@@ -198,21 +200,14 @@ namespace mu2e {
     // Helper functions for the preDefinedOffset policy.
     void   parsePreDefined   ();
     seed_t getPreDefined     ( SeedServiceHelper::EngineId const& id );
-
-    // enum to name mapping stuff
-    static std::string policyName[];
-    struct NameInitializer { NameInitializer(); };
-    friend class NameInitializer;
-    static NameInitializer nameInit_;
   };
-
 
   //================================================================
   template<class Stream>
   void SeedService::print(Stream& log) const {
     std::string strCheckRange = (checkRange_) ? "true" : "false";
     log << "\nSummary of seeds computed by the SeedService.\n";
-    log << " Policy:                       " << policyName[policy_]<< "\n";
+    log << " Policy:                       " << policyNames()[policy_]<< "\n";
     log << " Check range:                  " << strCheckRange     << "\n";
     log << " Maximum unique seeds per job: " << maxUniqueEngines_ << "\n";
     log << " Base Seed:                    " << baseSeed_         << "\n";

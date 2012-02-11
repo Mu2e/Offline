@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.8 2012/02/10 16:45:59 gandr Exp $
+// $Id: SeedService_service.cc,v 1.9 2012/02/11 01:49:34 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 16:45:59 $
+// $Date: 2012/02/11 01:49:34 $
 //
 // Contact person Rob Kutschke
 //
@@ -37,17 +37,25 @@ using namespace std;
 
 namespace mu2e {
 
-  std::string SeedService::policyName[SeedService::numPolicies];
+  const std::vector<std::string>& SeedService::policyNames() {
+    static std::vector<std::string> names;
+    if(names.empty()) {
+      names.resize(SeedService::numPolicies);
 
-  SeedService::NameInitializer::NameInitializer() {
-    SeedService::policyName[SeedService::unDefined]        = "unDefined";
-    SeedService::policyName[SeedService::autoIncrement]    = "autoIncrement";
-    SeedService::policyName[SeedService::linearMapping]    = "linearMapping";
-    SeedService::policyName[SeedService::preDefinedOffset] = "preDefinedOffset";
-    SeedService::policyName[SeedService::preDefinedSeed]   = "preDefinedSeed";
+      names[SeedService::unDefined]        = "unDefined";
+      names[SeedService::autoIncrement]    = "autoIncrement";
+      names[SeedService::linearMapping]    = "linearMapping";
+      names[SeedService::preDefinedOffset] = "preDefinedOffset";
+      names[SeedService::preDefinedSeed]   = "preDefinedSeed";
+
+      // check consistency
+      for(unsigned i=0; i<names.size(); ++i) {
+        assert(!names[i].empty());
+      }
+    }
+
+    return names;
   }
-
-  SeedService::NameInitializer SeedService::nameInit_;
 
   SeedService::SeedService(fhicl::ParameterSet const& pSet,
                            art::ActivityRegistry&     iRegistry  ) :
@@ -155,17 +163,19 @@ namespace mu2e {
 
   void SeedService::setPolicy(){
 
-    string strPolicy = pSet_.get<string>("policy");
-    string * iter = std::find(policyName, policyName+numPolicies, strPolicy);
-    policy_ = Policy(iter - policyName);
+    const string strPolicy = pSet_.get<string>("policy");
+    std::vector<std::string>::const_iterator iter = std::find(policyNames().begin(), policyNames().end(), strPolicy);
+    if(iter != policyNames().end()) {
+      policy_ = Policy(std::distance(policyNames().begin(), iter));
+    }
 
     if ( policy_ == unDefined ){
       std::ostringstream os;
       os<< "SeedService::setPolicy(): Unrecognized policy: "
-        << policyName
+        << strPolicy
         << "\n Known policies are: ";
 
-      std::copy(policyName+1, policyName+numPolicies, std::ostream_iterator<string>(os, ", "));
+      std::copy(policyNames().begin(), policyNames().end(), std::ostream_iterator<string>(os, ", "));
 
       throw cet::exception("SEEDS")<<os.str();
     }
