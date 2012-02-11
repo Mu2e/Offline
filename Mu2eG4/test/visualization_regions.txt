@@ -5,7 +5,7 @@
 
 //================================================================
 // Visualization of magnetic field map regions
-bool visregions.fieldMaps.visible  = true;
+bool visregions.fieldMaps.visible  = false;
 bool visregions.fieldMaps.solid    = true;
 string visregions.fieldMaps.material = "G4_AIR";
 
@@ -24,7 +24,7 @@ vector<double> visregions.fieldMaps.squashY = { -2, 2 };
 // Add a set of arbitrary boxes.
 // All coordinates are in mu2e system.
 
-bool visregions.boxes.visible = true;
+bool visregions.boxes.visible = false;
 bool visregions.boxes.solid  =  true;
 
 // Material may affect how the box is shown in a viewer, thus make is configurable
