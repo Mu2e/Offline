@@ -3,9 +3,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.10 2011/06/30 20:27:53 logash Exp $
-// $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Id: BFieldManager.hh,v 1.11 2012/02/11 00:43:11 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/11 00:43:11 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -35,6 +35,9 @@ namespace mu2e {
 
     // The class that knows how to populate this one.
     friend class BFieldManagerMaker;
+
+    // Maps for various parts of the detector.
+    typedef  std::map<std::string,BFMap> MapContainerType;
 
     BFieldManager();
     ~BFieldManager();
@@ -78,6 +81,8 @@ namespace mu2e {
     double xOffset() const { return _xOffset; }
     BFMapType type() const { return _type; }
 
+    const MapContainerType& getMapContainer() const { return _map; }
+
     void print( std::ostream& out );
 
   private:
@@ -85,9 +90,7 @@ namespace mu2e {
     // Name of the manager
     std::string _key;
 
-    // Maps for various parts of the detector.
-    typedef  std::map<std::string,BFMap> MapType;
-    MapType _map;
+    MapContainerType _map;
 
     // Special case: uniform field in the DS.
     CLHEP::Hep3Vector _dsUniformValue;

@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.10 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: BFieldManager.cc,v 1.11 2012/02/11 00:43:11 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/11 00:43:11 $
 //
 
 // Includes from C++
@@ -34,7 +34,7 @@ namespace mu2e {
     if( _last_map!=0 && _last_map->isValid(point) ) return true;
 
     // Loop over all maps
-    for( MapType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
+    for( MapContainerType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
       if( im->second.isValid(point) ) {
         _last_map = &(im->second);
         return true;
@@ -55,7 +55,7 @@ namespace mu2e {
     if( _last_map!=0 && _last_map->getBFieldWithStatus(point,result) ) return true;
 
     // Loop over all maps and try to calculate field.
-    for( MapType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
+    for( MapContainerType::const_iterator im = _map.begin(); im!=_map.end(); ++im ) {
       if( im->second.getBFieldWithStatus(point,result) ) {
         _last_map = &(im->second);
         return true;
@@ -81,7 +81,7 @@ namespace mu2e {
   // Search excludes the manager class itself.
   const BFMap& BFieldManager::getContainedMapByName( const std::string& key ) const{
 
-    MapType::const_iterator i = _map.find(key);
+    MapContainerType::const_iterator i = _map.find(key);
     if ( i == _map.end() ){
       throw cet::exception("GEOM")
         << "Requested map not found: " << key << "\n";
@@ -102,7 +102,7 @@ namespace mu2e {
     BFMap bfmap(key, nx, ny, nz, type, scaleFactor);
 
     // Add it to the container of BFMaps.
-    pair<MapType::iterator,bool> retval = _map.insert( MapType::value_type(key,bfmap) );
+    pair<MapContainerType::iterator,bool> retval = _map.insert( MapContainerType::value_type(key,bfmap) );
 
     // If there already was another Map with the same key, then it is a hard error.
     if ( !retval.second ){
@@ -125,7 +125,7 @@ namespace mu2e {
            << _key
            << endl;
     }
-    for ( MapType::iterator i =_map.begin();
+    for ( MapContainerType::iterator i =_map.begin();
           i != _map.end(); ++i ){
       i->second.print(out);
     }
