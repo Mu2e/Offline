@@ -8,12 +8,13 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_protongen_01.fcl,v 1.2 2011/12/30 20:31:46 youzy Exp $
+# $Id: extmon_uci_protongen_01.fcl,v 1.3 2012/02/13 19:52:52 youzy Exp $
 # $Author: youzy $
-# $Date: 2011/12/30 20:31:46 $
+# $Date: 2012/02/13 19:52:52 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 # Give this job a name.
 process_name : ExtMonUCIProtonGen
@@ -22,7 +23,7 @@ process_name : ExtMonUCIProtonGen
 source :
 {
   module_type : EmptyEvent
-  maxEvents : 10
+  maxEvents : 100
 }
 
 services :
@@ -55,18 +56,10 @@ services :
 
   user :
   {
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/test/geom_01.txt"
-    }
-
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
-
-    G4Helper : { }
-
+    GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    G4Helper          : { }
+    SeedService       : @local::automaticSeeds
   }
 
 }
@@ -89,7 +82,6 @@ physics :
       module_type          : G4
       generatorModuleLabel : generate
       visMacro             : "Mu2eG4/test/extmon_uci_visxz.mac"
-      seed                 : [9877]
     }
 
     randomsaver : @local::randomsaver
@@ -118,6 +110,10 @@ outputs:
   }
 
 }
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
 
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5

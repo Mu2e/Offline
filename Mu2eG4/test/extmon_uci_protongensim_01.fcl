@@ -7,12 +7,13 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_protongensim_01.fcl,v 1.2 2012/01/07 02:29:19 mu2ecvs Exp $
-# $Author: mu2ecvs $
-# $Date: 2012/01/07 02:29:19 $
+# $Id: extmon_uci_protongensim_01.fcl,v 1.3 2012/02/13 19:52:52 youzy Exp $
+# $Author: youzy $
+# $Date: 2012/02/13 19:52:52 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 # Give this job a name.
 process_name : ExtMonUCIProtonGenSim
@@ -28,13 +29,8 @@ source :
 
 services :
 {
-  message : @local::default_message
-
-  TFileService :
-  {
-    fileName : "g4test_03.root"
-  }
-
+  message               : @local::default_message
+  TFileService          : { fileName : "g4test_03.root" }
   RandomNumberGenerator : { }
 
 # Uncomment to enable memory use profiling
@@ -56,18 +52,10 @@ services :
 
   user :
   {
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/test/geom_01.txt"
-    }
-
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
-
-    G4Helper : { }
-
+    GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    G4Helper          : { }
+    SeedService       : @local::automaticSeeds
   }
 
 }
@@ -90,7 +78,6 @@ physics :
       module_type          : G4
       generatorModuleLabel : generate
       visMacro             : "Mu2eG4/test/extmon_uci_visxz.mac"
-      seed                 : [9877]
     }
 
     # Form ExtMonUCITofHits
@@ -119,14 +106,18 @@ outputs:
     outputCommands:   [ "keep *_*_*_*",
                         "keep mu2e::ExtMonUCITofHitMCTruths_*_*_*",
                         "keep mu2e::ExtMonUCITofHits_*_*_*",
-                        "drop mu2e::StepPointMCs_g4run_timeVD_*",
-                        "drop mu2e::StepPointMCs_g4run_virtualdetector_*",
-                        "drop mu2e::SimParticlemv_*_*_*",
+#                        "drop mu2e::StepPointMCs_g4run_timeVD_*",
+#                        "drop mu2e::StepPointMCs_g4run_virtualdetector_*",
+#                        "drop mu2e::SimParticlemv_*_*_*",
                         "drop mu2e::PointTrajectorymv_*_*_*"
                       ]
   }
 
 }
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
 
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
