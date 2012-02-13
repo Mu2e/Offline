@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.23 2012/01/21 20:46:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/21 20:46:57 $
+// $Id: BFieldManagerMaker.cc,v 1.24 2012/02/13 20:31:31 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/13 20:31:31 $
 //
 
 // Includes from C++
@@ -42,6 +42,31 @@
 using namespace std;
 
 namespace mu2e {
+
+  namespace {
+    // Passing a string (not a const string&) potentially more efficient b/c of the copying
+    std::string basename(std::string file) {
+      std::string::size_type i = file.rfind('.');
+      if(i != std::string::npos) {
+        file.erase(i);
+      }
+
+      i = file.rfind('/');
+      if(i != std::string::npos) {
+        file.erase(0, i+1);
+      }
+      return file;
+    }
+
+    std::string strip_Mu2e(std::string file) {
+      const string prefix("Mu2e_");
+      if(!file.compare(0, prefix.length(), prefix)) {
+        file.erase(0, prefix.length());
+      }
+      return file;
+    }
+
+  }
 
   //
   // Utility function which adds filter to decompress file if neccessary
@@ -133,11 +158,10 @@ namespace mu2e {
       for( unsigned int i=0; i<filesToLoad.size(); ++i ) {
         string filename = filesToLoad[i];
         cout << "Read " << filename << endl;
-        ostringstream mapkey;
-        mapkey << "bfield" << i;
-        loadG4BL( mapkey.str(),  filename  );
+        std::string mapkey = strip_Mu2e(basename(filename));
+        loadG4BL( mapkey,  filename  );
         if( writeBinaries ){
-          writeG4BLBinary( i, mapkey.str() );
+          writeG4BLBinary( i, mapkey );
         }
       }
 
