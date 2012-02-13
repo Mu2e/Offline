@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: ConvElecHistory_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: ConvElecHistory_module.cc,v 1.5 2012/02/13 22:52:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/13 22:52:19 $
 //
 // Original author Gianni Onorato
 //
@@ -117,7 +117,9 @@ namespace mu2e {
     // Float_t B_ncrys, B_totcryedep; 
     Float_t B_cry1x, B_cry1y, B_cry1z, B_cry1p, B_cry1costh, B_cry1phi, B_cry1time; // --9--
     Float_t B_deadx, B_deady, B_deadz, B_deadtime, B_deadvol; // --5--
-    Float_t B_vdx, B_vdy, B_vdz, B_vdp, B_vdcosth, B_vdphi, B_vdtime; // --7--
+    Float_t B_vdFrontx, B_vdFronty, B_vdFrontz, B_vdFrontp, B_vdFrontcosth, B_vdFrontphi, B_vdFronttime; // --7--
+    Float_t B_vdMiddlex, B_vdMiddley, B_vdMiddlez, B_vdMiddlep, B_vdMiddlecosth, B_vdMiddlephi, B_vdMiddletime; // --7--
+    Float_t B_vdEndx, B_vdEndy, B_vdEndz, B_vdEndp, B_vdEndcosth, B_vdEndphi, B_vdEndtime; // --7--
     Int_t   B_ndau, B_isfirst[1000]; // --2--
     Float_t B_daux[1000], B_dauy[1000], B_dauz[1000], B_daup[1000], B_daucosth[1000], B_dauphi[1000], B_dautime[1000], B_daupdgid[1000]; //--8--               
     Int_t B_nstraw;
@@ -215,13 +217,27 @@ namespace mu2e {
       _tNtup->Branch("deadz", &B_deadz, "deadz/F");
       _tNtup->Branch("deadtime", &B_deadtime, "deadtime/F");
       _tNtup->Branch("deadvol", &B_deadvol, "deadvol/F");
-      _tNtup->Branch("vdx", &B_vdx, "vdx/F");
-      _tNtup->Branch("vdy", &B_vdy, "vdy/F");
-      _tNtup->Branch("vdz", &B_vdz, "vdz/F");
-      _tNtup->Branch("vdp", &B_vdp, "vdp/F");
-      _tNtup->Branch("vdcosth", &B_vdcosth, "vdcosth/F");
-      _tNtup->Branch("vdphi", &B_vdphi, "vdphi/F");
-      _tNtup->Branch("vdtime", &B_vdtime, "vdtime/F");
+      _tNtup->Branch("vdFrontx", &B_vdFrontx, "vdFrontx/F");
+      _tNtup->Branch("vdFronty", &B_vdFronty, "vdFronty/F");
+      _tNtup->Branch("vdFrontz", &B_vdFrontz, "vdFrontz/F");
+      _tNtup->Branch("vdFrontp", &B_vdFrontp, "vdFrontp/F");
+      _tNtup->Branch("vdFrontcosth", &B_vdFrontcosth, "vdFrontcosth/F");
+      _tNtup->Branch("vdFrontphi", &B_vdFrontphi, "vdFrontphi/F");
+      _tNtup->Branch("vdFronttime", &B_vdFronttime, "vdFronttime/F");
+      _tNtup->Branch("vdMiddlex", &B_vdMiddlex, "vdMiddlex/F");
+      _tNtup->Branch("vdMiddley", &B_vdMiddley, "vdMiddley/F");
+      _tNtup->Branch("vdMiddlez", &B_vdMiddlez, "vdMiddlez/F");
+      _tNtup->Branch("vdMiddlep", &B_vdMiddlep, "vdMiddlep/F");
+      _tNtup->Branch("vdMiddlecosth", &B_vdMiddlecosth, "vdMiddlecosth/F");
+      _tNtup->Branch("vdMiddlephi", &B_vdMiddlephi, "vdMiddlephi/F");
+      _tNtup->Branch("vdMiddletime", &B_vdMiddletime, "vdMiddletime/F");
+      _tNtup->Branch("vdEndx", &B_vdEndx, "vdEndx/F");
+      _tNtup->Branch("vdEndy", &B_vdEndy, "vdEndy/F");
+      _tNtup->Branch("vdEndz", &B_vdEndz, "vdEndz/F");
+      _tNtup->Branch("vdEndp", &B_vdEndp, "vdEndp/F");
+      _tNtup->Branch("vdEndcosth", &B_vdEndcosth, "vdEndcosth/F");
+      _tNtup->Branch("vdEndphi", &B_vdEndphi, "vdEndphi/F");
+      _tNtup->Branch("vdEndtime", &B_vdEndtime, "vdEndtime/F");
       _tNtup->Branch("ndau", &B_ndau, "ndau/I");
       _tNtup->Branch("daux[ndau]", B_daux, "daux[ndau]/F");
       _tNtup->Branch("dauy[ndau]", B_dauy, "dauy[ndau]/F");
@@ -382,35 +398,123 @@ namespace mu2e {
     art::Handle<StepPointMCCollection> vdhits;
     evt.getByLabel(_g4ModuleLabel,_vdStepPoints,vdhits);
     if (!vdhits.isValid()) return; 
-    double time = 100000;
-    size_t vdindex = 0;
+    double timeF = 100000;
+    double timeM = 100000;
+    double timeE = 100000;
+    size_t vdindexF = 0;
+    size_t vdindexM = 0;
+    size_t vdindexE = 0;
     
     for (size_t i=0; i<vdhits->size(); ++i) {
       
       const StepPointMC& hit = (*vdhits)[i];
       
       int vdid = hit.volumeId();
-      if (vdid != 11 && vdid != 12) continue;
-      if (hit.trackId() == simCE.id()) {
-	if (hit.time() < time) time = hit.time();
-	vdindex = i;
+      if (vdid < 11 || vdid > 15) continue;
+      if (vdid == 11 || vdid == 12) { //condition of being in the middle tracker VD
+	if (hit.trackId() == simCE.id()) {
+	  if (hit.time() < timeM) timeM = hit.time();
+	  vdindexM = i;
+	}
+      }
+      if (vdid == 13 || vdid == 14) { //condition of being in the front tracker VD
+	if (hit.trackId() == simCE.id()) {
+	  if (hit.time() < timeF) timeF = hit.time();
+	  vdindexF = i;
+	}
+      }
+      if (vdid == 15) { //condition of being in the end tracker VD
+	if (hit.trackId() == simCE.id()) {
+	  if (hit.time() < timeE) timeE = hit.time();
+	  vdindexE = i;
+	}
       }
     }
-    
-    const StepPointMC& hit = (*vdhits)[vdindex];
-    
-    CLHEP::Hep3Vector vdpos = hit.position();
-    CLHEP::Hep3Vector vdmom = hit.momentum();
-    Float_t vdtime = hit.time();
-    
-    B_vdx = vdpos.x() + 3904.;
-    B_vdy = vdpos.y();
-    B_vdz = vdpos.z() - 10200.;
-    B_vdp = vdmom.mag();
-    B_vdcosth = vdmom.cosTheta();
-    B_vdphi = vdmom.phi();
-    B_vdtime = vdtime;
 
+    if (vdindexF!=0) {
+      
+      const StepPointMC& hitFront = (*vdhits)[vdindexF];
+      
+      CLHEP::Hep3Vector vdFrontpos = hitFront.position();
+      CLHEP::Hep3Vector vdFrontmom = hitFront.momentum();
+      Float_t vdFronttime = hitFront.time();
+      
+      B_vdFrontx = vdFrontpos.x() + 3904.;
+      B_vdFronty = vdFrontpos.y();
+      B_vdFrontz = vdFrontpos.z() - 10200.;
+      B_vdFrontp = vdFrontmom.mag();
+      B_vdFrontcosth = vdFrontmom.cosTheta();
+      B_vdFrontphi = vdFrontmom.phi();
+      B_vdFronttime = vdFronttime;
+      
+    } else {
+
+      B_vdFrontx = 0;
+      B_vdFronty = 0;
+      B_vdFrontz = 0;
+      B_vdFrontp = 0;
+      B_vdFrontcosth = 0;
+      B_vdFrontphi = 0;
+      B_vdFronttime = 0;
+
+    }
+
+    if (vdindexM != 0 ) {
+      
+      const StepPointMC& hitMiddle = (*vdhits)[vdindexM];
+      
+      CLHEP::Hep3Vector vdMiddlepos = hitMiddle.position();
+      CLHEP::Hep3Vector vdMiddlemom = hitMiddle.momentum();
+      Float_t vdMiddletime = hitMiddle.time();
+      
+      B_vdMiddlex = vdMiddlepos.x() + 3904.;
+      B_vdMiddley = vdMiddlepos.y();
+      B_vdMiddlez = vdMiddlepos.z() - 10200.;
+      B_vdMiddlep = vdMiddlemom.mag();
+      B_vdMiddlecosth = vdMiddlemom.cosTheta();
+      B_vdMiddlephi = vdMiddlemom.phi();
+      B_vdMiddletime = vdMiddletime;
+    
+    } else {
+
+      B_vdMiddlex = 0;
+      B_vdMiddley = 0;
+      B_vdMiddlez = 0;
+      B_vdMiddlep = 0;
+      B_vdMiddlecosth = 0;
+      B_vdMiddlephi = 0;
+      B_vdMiddletime = 0;
+
+    }
+
+    if (vdindexE!=0) {
+    
+      const StepPointMC& hitEnd = (*vdhits)[vdindexE];
+      
+      CLHEP::Hep3Vector vdEndpos = hitEnd.position();
+      CLHEP::Hep3Vector vdEndmom = hitEnd.momentum();
+      Float_t vdEndtime = hitEnd.time();
+      
+      B_vdEndx = vdEndpos.x() + 3904.;
+      B_vdEndy = vdEndpos.y();
+      B_vdEndz = vdEndpos.z() - 10200.;
+      B_vdEndp = vdEndmom.mag();
+      B_vdEndcosth = vdEndmom.cosTheta();
+      B_vdEndphi = vdEndmom.phi();
+      B_vdEndtime = vdEndtime;
+
+    } else {
+
+      B_vdEndx = 0;
+      B_vdEndy = 0;
+      B_vdEndz = 0;
+      B_vdEndp = 0;
+      B_vdEndcosth = 0;
+      B_vdEndphi = 0;
+      B_vdEndtime = 0;
+
+    }
+      
     vector<art::Ptr<SimParticle> > const & CEdau = simCE.daughters();
 
     art::Handle<PhysicalVolumeInfoCollection> volumes;
