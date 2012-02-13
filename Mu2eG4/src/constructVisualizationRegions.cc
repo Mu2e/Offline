@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 #include "G4Color.hh"
 #include "G4LogicalVolume.hh"
@@ -46,6 +47,8 @@ namespace mu2e {
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     const bool doSurfaceCheck      = false; // overlaps are OK
     const bool placePV             = true;
+
+    const int verbosityLevel = config.getInt("visregions.verbosityLevel", 0);
 
     //----------------------------------------------------------------
     // Field maps
@@ -91,6 +94,13 @@ namespace mu2e {
 
         std::ostringstream boxname;
         boxname<<"VisualizationMapBox_"<<i->first;
+
+        if(verbosityLevel) {
+          std::cout<<__func__<<": adding "<<boxname.str()<<" = {";
+          std::copy(mapHalfSize.begin(), mapHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
+          std::cout<<"} at "<<mapCenterInMu2e<<std::endl;
+        }
+
         nestBox(boxname.str(),
                 mapHalfSize,
                 material,
@@ -149,6 +159,12 @@ namespace mu2e {
 
         std::ostringstream boxname;
         boxname<<"VisualizationBox"<<std::setw(3)<<std::setfill('0')<<ibox;
+
+        if(verbosityLevel) {
+          std::cout<<__func__<<": adding "<<boxname.str()<<" = {";
+          std::copy(boxHalfSize.begin(), boxHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
+          std::cout<<"} at "<<boxCenterInMu2e<<std::endl;
+        }
 
         nestBox(boxname.str(),
                 boxHalfSize,

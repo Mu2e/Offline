@@ -51,7 +51,10 @@ vector<double> visregions.boxes.ymax = { 1., 1.,  1.};
 vector<double> visregions.boxes.zmin = { -10000., -20975, -22000. };
 vector<double> visregions.boxes.zmax = { +18000., -10000, -15000. };
 
-// ----------------------------------------------------------------
+//================================================================
+int visregions.verbosityLevel = 0;
+
+//================================================================
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
