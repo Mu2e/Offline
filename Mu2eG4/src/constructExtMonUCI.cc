@@ -5,6 +5,7 @@
 #include "G4Box.hh"
 #include "G4Tubs.hh"
 #include "G4Cons.hh"
+#include "G4Para.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4IntersectionSolid.hh"
 #include "G4LogicalVolume.hh"
@@ -346,8 +347,8 @@ namespace mu2e {
                                shdParams,
                                shdMaterial,
                                0,
-                               shdOrigin - det.origin(),
-                               envelopeInfo,
+                               (iShd == 8 ? shdOrigin - hallOriginInMu2e : shdOrigin - det.origin()),
+                               (iShd == 8 ? parent : envelopeInfo),
                                0,
                                shdVisible,
                                G4Colour::Cyan(),
@@ -369,7 +370,6 @@ namespace mu2e {
     config.getVectorDouble("extmon_uci.shdHolePosition", shdHolePosition, 3*kNShdHole);
 
     VolumeInfo shdHoleInfo[kNShdHole];
-    VolumeInfo shdHoleMotherInfo;
     G4Material* shdHoleMaterial = 0;
     G4Colour shdHoleColor;
     for (int iShdHole = 0; iShdHole < kNShdHole; iShdHole++)
@@ -381,15 +381,12 @@ namespace mu2e {
       for (int iDim = 0; iDim < 3; iDim++) shdHoleParams.push_back(shdHoleHalfLengths[3*iShdHole+iDim]);
       G4ThreeVector shdHoleOrigin(shdHolePosition[3*iShdHole], shdHolePosition[3*iShdHole+1], shdHolePosition[3*iShdHole+2]);
 
-      if (iShdHole == 0) shdHoleMotherInfo = shdInfo[0];
-      else shdHoleMotherInfo = shdInfo[5];
-
-      if (iShdHole >=0 && iShdHole < 5) 
+      if (iShdHole >=0 && iShdHole < 4) 
       {
         shdHoleColor = G4Colour::Cyan();
         shdHoleMaterial = shdHoleAirMaterial;
       }
-      else if (iShdHole >= 5 && iShdHole < 9)
+      else if (iShdHole >= 4 && iShdHole < 8)
       {
         shdHoleColor = G4Colour::Red();
         shdHoleMaterial = shdHoleCuMaterial;
@@ -399,14 +396,104 @@ namespace mu2e {
                                        shdHoleParams,
                                        shdHoleMaterial,
                                        0,
-                                       shdHoleOrigin - shdHoleMotherInfo.centerInMu2e(),
-                                       shdHoleMotherInfo,
+                                       shdHoleOrigin - shdInfo[5].centerInMu2e(),
+                                       shdInfo[5],
                                        0,
                                        shdHoleVisible,
                                        shdHoleColor,
                                        shdHoleSolid,
                                        forceAuxEdgeVisible, placePV, doSurfaceCheck
                                      );
+    }
+
+    // Shield Channel
+    bool shdChannelVisible = config.getBool("extmon_uci.shdChannelVisible", true);
+    bool shdChannelSolid   = config.getBool("extmon_uci.shdChannelSolid", false);
+    G4Material* shdChannelMaterial = materialFinder.get("extmon_uci.shdChannelMaterialName");
+
+    G4RotationMatrix *shdChannelRot = new G4RotationMatrix();
+    *shdChannelRot = det.col(0)->holeRotation();
+
+    const int kNShdChannel = config.getInt("extmon_uci.nShdChannels", 0);
+    vector<double> shdChannelHalfLengths;
+    config.getVectorDouble("extmon_uci.shdChannelHalfLengths", shdChannelHalfLengths, 3*kNShdChannel);
+    vector<double> shdChannelPosition;
+    config.getVectorDouble("extmon_uci.shdChannelPosition", shdChannelPosition, 3*kNShdChannel);
+
+    VolumeInfo shdChannelInfo[kNShdChannel];
+    VolumeInfo shdChannelMotherInfo;
+    for (int iShdChannel = 0; iShdChannel < kNShdChannel; iShdChannel++)
+    {
+      name.str("");
+      name << extmonBaseName << "ShieldChannel" << iShdChannel;
+
+      vector<double> shdChannelParams;
+      for (int iDim = 0; iDim < 3; iDim++) shdChannelParams.push_back(shdChannelHalfLengths[3*iShdChannel+iDim]);
+      G4ThreeVector shdChannelOrigin(shdChannelPosition[3*iShdChannel], shdChannelPosition[3*iShdChannel+1], shdChannelPosition[3*iShdChannel+2]);
+
+      if (iShdChannel == 0) shdChannelMotherInfo = shdInfo[0];
+      else if (iShdChannel == 1) shdChannelMotherInfo = shdInfo[8];
+
+      shdChannelInfo[iShdChannel] = VolumeInfo( name.str(),
+                                                CLHEP::Hep3Vector(0, 0, 0),
+                                                shdChannelMotherInfo.centerInWorld);
+      shdChannelInfo[iShdChannel].solid = new G4Para( name.str(),
+                                                      shdChannelParams[0], shdChannelParams[1], shdChannelParams[2],
+                                                      0, shdChannelRot->theta(), -0.5*M_PI );
+      finishNesting( shdChannelInfo[iShdChannel],
+                     shdChannelMaterial,
+                     0,
+                     shdChannelOrigin - shdChannelMotherInfo.centerInMu2e(),
+                     shdChannelMotherInfo.logical,
+                     0,
+                     shdChannelVisible,
+                     G4Colour::Cyan(),
+                     shdChannelSolid,
+                     forceAuxEdgeVisible, placePV, doSurfaceCheck
+                   );
+    }
+
+    //
+    // Building Neutron Shielding Materials
+    //
+    bool nshVisible = config.getBool("extmon_uci.nshVisible", true);
+    bool nshSolid   = config.getBool("extmon_uci.nshSolid", false);
+    G4Material* nshMaterial = materialFinder.get("extmon_uci.nshMaterialName");
+
+    const int kNNsh = config.getInt("extmon_uci.nNSHs", 0);
+    vector<double> nshHalfLengths;
+    config.getVectorDouble("extmon_uci.nshHalfLengths", nshHalfLengths, 3*kNNsh);
+    vector<double> nshPosition;
+    config.getVectorDouble("extmon_uci.nshPosition", nshPosition, 3*kNNsh);
+
+    VolumeInfo nshInfo[kNNsh];
+    for (int iNsh = 0; iNsh < kNNsh; iNsh++)
+    {
+      name.str("");
+      name << extmonBaseName << "NeutronShield" << iNsh;
+
+      vector<double> nshParams;
+      for (int iDim = 0; iDim < 3; iDim++) nshParams.push_back(nshHalfLengths[3*iNsh+iDim]);
+      G4ThreeVector nshOrigin(nshPosition[3*iNsh], nshPosition[3*iNsh+1], nshPosition[3*iNsh+2]);
+
+      if (verbosity >= 2)
+      {
+        YZYDEBUG("neutron Shield Params " << nshParams[0] << "  " << nshParams[1] << "  " << nshParams[2]);
+        YZYDEBUG("neutron Shield Origin " << nshOrigin[0] << "  " << nshOrigin[1] << "  " << nshOrigin[2]);
+      }
+
+      nshInfo[iNsh] = nestBox( name.str(),
+                               nshParams,
+                               nshMaterial,
+                               0,
+                               nshOrigin - det.origin(),
+                               envelopeInfo,
+                               0,
+                               nshVisible,
+                               G4Colour::Black(),
+                               nshSolid,
+                               forceAuxEdgeVisible, placePV, doSurfaceCheck
+                             );
     }
 
     //
