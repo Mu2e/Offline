@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.9 2012/02/11 01:49:34 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/11 01:49:34 $
+// $Id: SeedService_service.cc,v 1.10 2012/02/13 21:23:34 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/02/13 21:23:34 $
 //
 // Contact person Rob Kutschke
 //
@@ -291,14 +291,11 @@ namespace mu2e {
   // getSeed may only be called from a c'tor or from a beginRun method. In all other cases, throw.
   void SeedService::ensureValidState( ){
 
-    /*
-     * Disable this test until the MixFilter template is upgraded to allow seeding in the c'tor.
-     *
     if ( state_.state == SeedServiceHelper::ArtState::unDefined ) {
       throw cet::exception("SEEDS")
         << "SeedService: not in a module constructor or beginRun method. May not call getSeed.\n";
     }
-    */
+
   }
 
   // Callbacks called by art.  Used to maintain information about state.
