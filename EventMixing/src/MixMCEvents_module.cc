@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.9 2012/02/08 16:51:17 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.10 2012/02/13 20:56:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/02/08 16:51:17 $
+// $Date: 2012/02/13 20:56:22 $
 //
 // Contact person Rob Kutschke.
 //
@@ -95,6 +95,7 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "Mu2eUtilities/inc/PoissonHistogramBinning.hh"
 #include "SeedService/inc/SeedService.hh"
 
 // Includes from art
@@ -103,6 +104,7 @@
 #include "art/Framework/Modules/MixFilter.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 #include "art/Framework/Core/PtrRemapper.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Persistency/Common/CollectionUtilities.h"
 #include "art/Utilities/InputTag.h"
 
@@ -110,12 +112,16 @@
 #include "cetlib/map_vector.h"
 #include "cpp0x/memory"
 
+// ROOT includes
+#include "TH1F.h"
+
 // Other third party includes
 #include "boost/noncopyable.hpp"
 #include "CLHEP/Random/RandPoissonQ.h"
 
 // C++ includes
 #include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -192,11 +198,19 @@ private:
   // Enable/disable mixing of the PointTrajectoryCollections.
   bool doPointTrajectories_;
 
+  // Only one of the following is meaningful in any instance of this class
+  // If mean_ >0 then the poisson distribution is valid; else n0_ is valid.
+  auto_ptr<CLHEP::RandPoissonQ> poisson_;
+  int n0_;
+
   // Non-run-time configurable members.
 
   // Some counters used for diagnostics.
   int evtCount_;
   int stepCollectionCount_;
+
+  // Histogram to record the distribution of generated events.
+  TH1F* hNEvents_;
 
   // The number of mix-in events chosen on this event.
   size_t actual_;
@@ -363,15 +377,18 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
                   art::MixHelper &helper)
   :
   // Run-time configurable parameters
-  mean_(pSet.get<double>("mean", 2.)),
+  mean_(pSet.get<double>("mean")),
   genModuleLabel_(pSet.get<string>("genModuleLabel")),
   g4ModuleLabel_ (pSet.get<string>("g4ModuleLabel")),
   stepInstances_(chooseStepInstances(pSet)),
   doPointTrajectories_(pSet.get<bool>("doPointTrajectories",true)),
+  poisson_(0),
+  n0_(0),
 
   // Non-run-time configurable
   evtCount_(-1),
   stepCollectionCount_(-1),
+  hNEvents_(0),
   actual_(0),
   genOffsets_(),
   simOffsets_(),
@@ -408,6 +425,19 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
     ( art::InputTag(g4ModuleLabel_,""),
       &MixMCEventsDetail::mixStatusG4, *this );
 
+  if ( mean_ > 0 ) {
+    art::RandomNumberGenerator::base_engine_t& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine();
+    int dummy(0);
+    engine.setSeed( art::ServiceHandle<SeedService>()->getSeed(), dummy );
+    poisson_ = auto_ptr<CLHEP::RandPoissonQ>( new CLHEP::RandPoissonQ(engine, mean_) );
+  } else{
+    n0_ = static_cast<int>(floor(std::abs(mean_)));
+  }
+
+  art::ServiceHandle<art::TFileService> tfs;
+  PoissonHistogramBinning binning(mean_);
+  hNEvents_ = tfs->make<TH1F>( "hNEvents", "Number of Mixed in Events", binning.nbins(), binning.xlow(), binning.xhigh() );
+
 } // end mu2e::MixMCEventsDetail::MixMCEventsDetail
 
 // Initialize state for each event,
@@ -425,26 +455,11 @@ nSecondaries() {
   // If the mean is positive, draw random variates from a Poisson distribution with that mean.
   // If the mean is negative, draw the same number of mix-in events on every call; that number
   // is just the absolute value of the mean, truncated to the nearest integer.
+  actual_ = ( mean_ > 0 ) ? poisson_->fire(): n0_;
 
-  int n(0);
-  if ( mean_ > 0 ){
-    static art::RandomNumberGenerator::base_engine_t& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine();
-    static bool init(true);
-    if ( init ) {
-      init = false;
-      int dummy(0);
-      engine.setSeed( art::ServiceHandle<SeedService>()->getSeed(), dummy );
-    }
-    static CLHEP::RandPoissonQ poisson( engine, mean_);
-    n = poisson.fire(mean_);
-  }else{
-    static size_t n0 = (mean_ < 0) ? static_cast<int>(floor(std::abs(mean_))) : 0;
-    n = n0;
-  }
+  hNEvents_->Fill(actual_);
 
-  actual_ = n;
-
-  return n;
+  return actual_;
 }
 
 void
