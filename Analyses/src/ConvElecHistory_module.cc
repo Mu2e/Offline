@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: ConvElecHistory_module.cc,v 1.6 2012/02/14 15:27:25 onoratog Exp $
+// $Id: ConvElecHistory_module.cc,v 1.7 2012/02/14 21:18:28 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/14 15:27:25 $
+// $Date: 2012/02/14 21:18:28 $
 //
 // Original author Gianni Onorato
 //
@@ -524,7 +524,7 @@ namespace mu2e {
       
       SimParticle const& d = *CEdau[dauidx];
 
-      PhysicalVolumeInfo const& volInfo = volumes->at(d.startVolumeIndex());
+      //      PhysicalVolumeInfo const& volInfo = volumes->at(d.startVolumeIndex());
     
       //cout << "Daughter n. " << dauidx << ": " << endl;
       //cout << "pdg " << d.pdgId() << "'\t pos: "
@@ -544,7 +544,7 @@ namespace mu2e {
     
   
 
-    PhysicalVolumeInfo const& volInfo = volumes->at(simCE.endVolumeIndex());
+    //    PhysicalVolumeInfo const& volInfo = volumes->at(simCE.endVolumeIndex());
 
     //cout << "Event " << evt.id().event() << " : \nConversion Electron "
     //     << "dead in " << simCE.endPosition() << " in the volume "
