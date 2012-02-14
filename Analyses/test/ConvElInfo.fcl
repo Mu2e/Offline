@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: ConvElInfo.fcl,v 1.3 2012/02/08 19:27:22 onoratog Exp $
+# $Id: ConvElInfo.fcl,v 1.4 2012/02/14 15:27:25 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2012/02/08 19:27:22 $
+# $Date: 2012/02/14 15:27:25 $
 #
 # Original author Gianni Onorato.
 
@@ -79,25 +79,25 @@ physics :
     makeSH : @local::makeSH
 
     # Form CaloHits (APD hits)
-  #  CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
-  #  CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 
     randomsaver : @local::randomsaver
 
   }
 
-#  filters:
- # { 
-    # Filter module. Do not write events with no Tracker or calo hits
-  #  filterEmpty :
-#    {
- #     module_type      : FilterEmptyEvents
-  #    makerModuleLabel : makeSH
-   #   keepTrackOrCalo  : 0
-  #  }
- # }
+  filters:
+  { 
+   #  Filter module. Do not write events with no Tracker or calo hits
+    filterEmpty :
+    {
+      module_type      : FilterEmptyEvents
+      makerModuleLabel : makeSH
+      keepTrackOrCalo  : 0
+    }
+  }
 
   analyzers:
   {
@@ -138,7 +138,7 @@ outputs:
   outfile : 
   {
     module_type    : RootOutput
-    fileName       : "data_bkgNorm.root"
+    fileName       : "data_CEH.root"
     outputCommands : ['keep *_*_*_*'
                    , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                    , 'drop mu2eSimParticles_*_*_*'
@@ -154,3 +154,5 @@ physics.producers.makeSH.maxFullPrint : 0
 #physics.producers.CaloCrystalHitsMaker.diagLevel : -1
 #physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
 physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20

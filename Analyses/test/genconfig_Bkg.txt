@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.15 2012/02/07 20:41:29 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.16 2012/02/14 15:27:25 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 20:41:29 $
+// $Date: 2012/02/14 15:27:25 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
@@ -17,7 +17,7 @@ bool ejectedNeutronGun.do = 0;
 bool ejectedPhotonGun.do = 0;
 bool conversionGun.do = 0;
 
-string decayinorbitGun.energySpectrum = "ShankerWanatabe";
+//string decayinorbitGun.energySpectrum = "ShankerWanatabe";
 
 // Limits on cos(polar angle):
 double decayinorbitGun.czmin = -1.;
@@ -46,7 +46,7 @@ double primaryProtonGun.stdDev = 1; //units are mm
 
 
 // Energy Ranges; upper energy fro DIO is always conversion energy (MeV)
-double decayinorbitGun.elow = 0.6;
+double decayinorbitGun.elow = 0.1;
 //double decayinorbitGun.ehi = 50.;
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;

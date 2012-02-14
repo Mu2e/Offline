@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: ConvElecHistory_module.cc,v 1.5 2012/02/13 22:52:19 onoratog Exp $
+// $Id: ConvElecHistory_module.cc,v 1.6 2012/02/14 15:27:25 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/13 22:52:19 $
+// $Date: 2012/02/14 15:27:25 $
 //
 // Original author Gianni Onorato
 //
@@ -14,6 +14,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -117,9 +118,9 @@ namespace mu2e {
     // Float_t B_ncrys, B_totcryedep; 
     Float_t B_cry1x, B_cry1y, B_cry1z, B_cry1p, B_cry1costh, B_cry1phi, B_cry1time; // --9--
     Float_t B_deadx, B_deady, B_deadz, B_deadtime, B_deadvol; // --5--
-    Float_t B_vdFrontx, B_vdFronty, B_vdFrontz, B_vdFrontp, B_vdFrontcosth, B_vdFrontphi, B_vdFronttime; // --7--
-    Float_t B_vdMiddlex, B_vdMiddley, B_vdMiddlez, B_vdMiddlep, B_vdMiddlecosth, B_vdMiddlephi, B_vdMiddletime; // --7--
-    Float_t B_vdEndx, B_vdEndy, B_vdEndz, B_vdEndp, B_vdEndcosth, B_vdEndphi, B_vdEndtime; // --7--
+    Float_t B_vdTTFrontx, B_vdTTFronty, B_vdTTFrontz, B_vdTTFrontp, B_vdTTFrontcosth, B_vdTTFrontphi, B_vdTTFronttime; // --7--
+    Float_t B_vdTTMiddlex, B_vdTTMiddley, B_vdTTMiddlez, B_vdTTMiddlep, B_vdTTMiddlecosth, B_vdTTMiddlephi, B_vdTTMiddletime; // --7--
+    Float_t B_vdTTEndx, B_vdTTEndy, B_vdTTEndz, B_vdTTEndp, B_vdTTEndcosth, B_vdTTEndphi, B_vdTTEndtime; // --7--
     Int_t   B_ndau, B_isfirst[1000]; // --2--
     Float_t B_daux[1000], B_dauy[1000], B_dauz[1000], B_daup[1000], B_daucosth[1000], B_dauphi[1000], B_dautime[1000], B_daupdgid[1000]; //--8--               
     Int_t B_nstraw;
@@ -217,27 +218,27 @@ namespace mu2e {
       _tNtup->Branch("deadz", &B_deadz, "deadz/F");
       _tNtup->Branch("deadtime", &B_deadtime, "deadtime/F");
       _tNtup->Branch("deadvol", &B_deadvol, "deadvol/F");
-      _tNtup->Branch("vdFrontx", &B_vdFrontx, "vdFrontx/F");
-      _tNtup->Branch("vdFronty", &B_vdFronty, "vdFronty/F");
-      _tNtup->Branch("vdFrontz", &B_vdFrontz, "vdFrontz/F");
-      _tNtup->Branch("vdFrontp", &B_vdFrontp, "vdFrontp/F");
-      _tNtup->Branch("vdFrontcosth", &B_vdFrontcosth, "vdFrontcosth/F");
-      _tNtup->Branch("vdFrontphi", &B_vdFrontphi, "vdFrontphi/F");
-      _tNtup->Branch("vdFronttime", &B_vdFronttime, "vdFronttime/F");
-      _tNtup->Branch("vdMiddlex", &B_vdMiddlex, "vdMiddlex/F");
-      _tNtup->Branch("vdMiddley", &B_vdMiddley, "vdMiddley/F");
-      _tNtup->Branch("vdMiddlez", &B_vdMiddlez, "vdMiddlez/F");
-      _tNtup->Branch("vdMiddlep", &B_vdMiddlep, "vdMiddlep/F");
-      _tNtup->Branch("vdMiddlecosth", &B_vdMiddlecosth, "vdMiddlecosth/F");
-      _tNtup->Branch("vdMiddlephi", &B_vdMiddlephi, "vdMiddlephi/F");
-      _tNtup->Branch("vdMiddletime", &B_vdMiddletime, "vdMiddletime/F");
-      _tNtup->Branch("vdEndx", &B_vdEndx, "vdEndx/F");
-      _tNtup->Branch("vdEndy", &B_vdEndy, "vdEndy/F");
-      _tNtup->Branch("vdEndz", &B_vdEndz, "vdEndz/F");
-      _tNtup->Branch("vdEndp", &B_vdEndp, "vdEndp/F");
-      _tNtup->Branch("vdEndcosth", &B_vdEndcosth, "vdEndcosth/F");
-      _tNtup->Branch("vdEndphi", &B_vdEndphi, "vdEndphi/F");
-      _tNtup->Branch("vdEndtime", &B_vdEndtime, "vdEndtime/F");
+      _tNtup->Branch("TTFrontx", &B_vdTTFrontx, "TTFrontx/F");
+      _tNtup->Branch("TTFronty", &B_vdTTFronty, "TTFronty/F");
+      _tNtup->Branch("TTFrontz", &B_vdTTFrontz, "TTFrontz/F");
+      _tNtup->Branch("TTFrontp", &B_vdTTFrontp, "TTFrontp/F");
+      _tNtup->Branch("TTFrontcosth", &B_vdTTFrontcosth, "TTFrontcosth/F");
+      _tNtup->Branch("TTFrontphi", &B_vdTTFrontphi, "TTFrontphi/F");
+      _tNtup->Branch("TTFronttime", &B_vdTTFronttime, "TTFronttime/F");
+      _tNtup->Branch("TTMiddlex", &B_vdTTMiddlex, "TTMiddlex/F");
+      _tNtup->Branch("TTMiddley", &B_vdTTMiddley, "TTMiddley/F");
+      _tNtup->Branch("TTMiddlez", &B_vdTTMiddlez, "TTMiddlez/F");
+      _tNtup->Branch("TTMiddlep", &B_vdTTMiddlep, "TTMiddlep/F");
+      _tNtup->Branch("TTMiddlecosth", &B_vdTTMiddlecosth, "TTMiddlecosth/F");
+      _tNtup->Branch("TTMiddlephi", &B_vdTTMiddlephi, "TTMiddlephi/F");
+      _tNtup->Branch("TTMiddletime", &B_vdTTMiddletime, "TTMiddletime/F");
+      _tNtup->Branch("TTEndx", &B_vdTTEndx, "TTEndx/F");
+      _tNtup->Branch("TTEndy", &B_vdTTEndy, "TTEndy/F");
+      _tNtup->Branch("TTEndz", &B_vdTTEndz, "TTEndz/F");
+      _tNtup->Branch("TTEndp", &B_vdTTEndp, "TTEndp/F");
+      _tNtup->Branch("TTEndcosth", &B_vdTTEndcosth, "TTEndcosth/F");
+      _tNtup->Branch("TTEndphi", &B_vdTTEndphi, "TTEndphi/F");
+      _tNtup->Branch("TTEndtime", &B_vdTTEndtime, "TTEndtime/F");
       _tNtup->Branch("ndau", &B_ndau, "ndau/I");
       _tNtup->Branch("daux[ndau]", B_daux, "daux[ndau]/F");
       _tNtup->Branch("dauy[ndau]", B_dauy, "dauy[ndau]/F");
@@ -374,7 +375,7 @@ namespace mu2e {
       B_cry1phi   = calo1.momentum().phi();
       B_cry1time  = calo1.time();
     } else {
-      cout << "Calorimeter hit not found in the module!! " << endl;
+      //cout << "Calorimeter hit not found in the module!! " << endl;
       B_cry1x     = 0;
       B_cry1y     = 0;
       B_cry1z     = 0;
@@ -409,22 +410,19 @@ namespace mu2e {
       
       const StepPointMC& hit = (*vdhits)[i];
       
-      int vdid = hit.volumeId();
-      if (vdid < 11 || vdid > 15) continue;
-      if (vdid == 11 || vdid == 12) { //condition of being in the middle tracker VD
-	if (hit.trackId() == simCE.id()) {
+      //int vdid = hit.volumeId();
+      VirtualDetectorId vdid(hit.volumeId());
+
+      if (hit.trackId() == simCE.id()) {
+	if (vdid.isTrackerMid()){
 	  if (hit.time() < timeM) timeM = hit.time();
 	  vdindexM = i;
 	}
-      }
-      if (vdid == 13 || vdid == 14) { //condition of being in the front tracker VD
-	if (hit.trackId() == simCE.id()) {
+	if (vdid.isTrackerFront()) {
 	  if (hit.time() < timeF) timeF = hit.time();
 	  vdindexF = i;
 	}
-      }
-      if (vdid == 15) { //condition of being in the end tracker VD
-	if (hit.trackId() == simCE.id()) {
+	if (vdid.isTrackerBack()) {
 	  if (hit.time() < timeE) timeE = hit.time();
 	  vdindexE = i;
 	}
@@ -439,23 +437,23 @@ namespace mu2e {
       CLHEP::Hep3Vector vdFrontmom = hitFront.momentum();
       Float_t vdFronttime = hitFront.time();
       
-      B_vdFrontx = vdFrontpos.x() + 3904.;
-      B_vdFronty = vdFrontpos.y();
-      B_vdFrontz = vdFrontpos.z() - 10200.;
-      B_vdFrontp = vdFrontmom.mag();
-      B_vdFrontcosth = vdFrontmom.cosTheta();
-      B_vdFrontphi = vdFrontmom.phi();
-      B_vdFronttime = vdFronttime;
+      B_vdTTFrontx = vdFrontpos.x() + 3904.;
+      B_vdTTFronty = vdFrontpos.y();
+      B_vdTTFrontz = vdFrontpos.z() - 10200.;
+      B_vdTTFrontp = vdFrontmom.mag();
+      B_vdTTFrontcosth = vdFrontmom.cosTheta();
+      B_vdTTFrontphi = vdFrontmom.phi();
+      B_vdTTFronttime = vdFronttime;
       
     } else {
 
-      B_vdFrontx = 0;
-      B_vdFronty = 0;
-      B_vdFrontz = 0;
-      B_vdFrontp = 0;
-      B_vdFrontcosth = 0;
-      B_vdFrontphi = 0;
-      B_vdFronttime = 0;
+      B_vdTTFrontx = 0;
+      B_vdTTFronty = 0;
+      B_vdTTFrontz = 0;
+      B_vdTTFrontp = 0;
+      B_vdTTFrontcosth = 0;
+      B_vdTTFrontphi = 0;
+      B_vdTTFronttime = 0;
 
     }
 
@@ -467,23 +465,23 @@ namespace mu2e {
       CLHEP::Hep3Vector vdMiddlemom = hitMiddle.momentum();
       Float_t vdMiddletime = hitMiddle.time();
       
-      B_vdMiddlex = vdMiddlepos.x() + 3904.;
-      B_vdMiddley = vdMiddlepos.y();
-      B_vdMiddlez = vdMiddlepos.z() - 10200.;
-      B_vdMiddlep = vdMiddlemom.mag();
-      B_vdMiddlecosth = vdMiddlemom.cosTheta();
-      B_vdMiddlephi = vdMiddlemom.phi();
-      B_vdMiddletime = vdMiddletime;
+      B_vdTTMiddlex = vdMiddlepos.x() + 3904.;
+      B_vdTTMiddley = vdMiddlepos.y();
+      B_vdTTMiddlez = vdMiddlepos.z() - 10200.;
+      B_vdTTMiddlep = vdMiddlemom.mag();
+      B_vdTTMiddlecosth = vdMiddlemom.cosTheta();
+      B_vdTTMiddlephi = vdMiddlemom.phi();
+      B_vdTTMiddletime = vdMiddletime;
     
     } else {
 
-      B_vdMiddlex = 0;
-      B_vdMiddley = 0;
-      B_vdMiddlez = 0;
-      B_vdMiddlep = 0;
-      B_vdMiddlecosth = 0;
-      B_vdMiddlephi = 0;
-      B_vdMiddletime = 0;
+      B_vdTTMiddlex = 0;
+      B_vdTTMiddley = 0;
+      B_vdTTMiddlez = 0;
+      B_vdTTMiddlep = 0;
+      B_vdTTMiddlecosth = 0;
+      B_vdTTMiddlephi = 0;
+      B_vdTTMiddletime = 0;
 
     }
 
@@ -495,23 +493,23 @@ namespace mu2e {
       CLHEP::Hep3Vector vdEndmom = hitEnd.momentum();
       Float_t vdEndtime = hitEnd.time();
       
-      B_vdEndx = vdEndpos.x() + 3904.;
-      B_vdEndy = vdEndpos.y();
-      B_vdEndz = vdEndpos.z() - 10200.;
-      B_vdEndp = vdEndmom.mag();
-      B_vdEndcosth = vdEndmom.cosTheta();
-      B_vdEndphi = vdEndmom.phi();
-      B_vdEndtime = vdEndtime;
+      B_vdTTEndx = vdEndpos.x() + 3904.;
+      B_vdTTEndy = vdEndpos.y();
+      B_vdTTEndz = vdEndpos.z() - 10200.;
+      B_vdTTEndp = vdEndmom.mag();
+      B_vdTTEndcosth = vdEndmom.cosTheta();
+      B_vdTTEndphi = vdEndmom.phi();
+      B_vdTTEndtime = vdEndtime;
 
     } else {
 
-      B_vdEndx = 0;
-      B_vdEndy = 0;
-      B_vdEndz = 0;
-      B_vdEndp = 0;
-      B_vdEndcosth = 0;
-      B_vdEndphi = 0;
-      B_vdEndtime = 0;
+      B_vdTTEndx = 0;
+      B_vdTTEndy = 0;
+      B_vdTTEndz = 0;
+      B_vdTTEndp = 0;
+      B_vdTTEndcosth = 0;
+      B_vdTTEndphi = 0;
+      B_vdTTEndtime = 0;
 
     }
       
@@ -528,10 +526,10 @@ namespace mu2e {
 
       PhysicalVolumeInfo const& volInfo = volumes->at(d.startVolumeIndex());
     
-      cout << "Daughter n. " << dauidx << ": " << endl;
-      cout << "pdg " << d.pdgId() << "'\t pos: "
-	   << d.startPosition().z() - 10200.
-	   << "\t start volume: " << volInfo.name() << endl;
+      //cout << "Daughter n. " << dauidx << ": " << endl;
+      //cout << "pdg " << d.pdgId() << "'\t pos: "
+      //	   << d.startPosition().z() - 10200.
+      //	   << "\t start volume: " << volInfo.name() << endl;
 
   
       B_daux[dauidx] = d.startPosition().x() + 3904.;
@@ -548,10 +546,10 @@ namespace mu2e {
 
     PhysicalVolumeInfo const& volInfo = volumes->at(simCE.endVolumeIndex());
 
-    cout << "Event " << evt.id().event() << " : \nConversion Electron "
-         << "dead in " << simCE.endPosition() << " in the volume "
-         << volInfo.name() << '\t' << simCE.endVolumeIndex() << " because of "
-         << simCE.stoppingCode() << endl;
+    //cout << "Event " << evt.id().event() << " : \nConversion Electron "
+    //     << "dead in " << simCE.endPosition() << " in the volume "
+    //     << volInfo.name() << '\t' << simCE.endVolumeIndex() << " because of "
+    //     << simCE.stoppingCode() << endl;
 
 
     _tNtup->Fill();

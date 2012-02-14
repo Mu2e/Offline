@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.12 2012/02/08 19:27:22 onoratog Exp $
+# $Id: BkgRatesCounter.fcl,v 1.13 2012/02/14 15:27:25 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2012/02/08 19:27:22 $
+# $Date: 2012/02/14 15:27:25 $
 #
 # Original author Gianni Onorato.
 
@@ -168,3 +168,5 @@ physics.producers.CaloCrystalHitsMaker.diagLevel : -1
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
 physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
 #physics.producers.generate.inputfile : "Analyses/test/genconfig_fromBeam.txt"
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
