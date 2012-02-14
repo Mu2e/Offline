@@ -12,7 +12,7 @@ double mblength(1700); // time length of a microbunch (nanoseconds)
 unsigned maxdevice(10); // maximum device to include
 unsigned maxstraw(2); // maximum straw to include
 unsigned ntbins(50);
-unsigned nxbins(25);
+unsigned nxbins(30);
 double xrange(600.0); // cm
 
 void estraw(TTree* estraw,double nmicro) {
@@ -28,7 +28,7 @@ void estraw(TTree* estraw,double nmicro) {
     char stit[200];
     snprintf(scut,100,"(device==%i||device==%i)",2*istation,2*istation+1);
     snprintf(snam,20,"epanel%i",istation);
-    snprintf(stit,200,"Charge by panel station %i from muons;straw;Position WRT wire center (mm);C/cm/straw",istation);
+    snprintf(stit,200,"Charge by panel station %i;straw;Position WRT wire center (mm);C/cm/straw",istation);
     epanel[istation] = new TH2F(snam,stit,51,-0.5,50.5,nxbins,-xrange,xrange);
     TCut tscut(scut);
     // count energy/straw/cm
@@ -84,11 +84,11 @@ void estraw_current(TTree* estraw,double nmicro) {
 }
 
 void estraw_rate(TTree* estraw,double nmicro) {
-  double factor = ntbins/(nmicro*nsect*nlayer*maxdevice*maxstraw*mblength*secpernsec);
-  double factor2 = ntbins*nxbins*10/(nmicro*nsect*nlayer*maxdevice*maxstraw*mblength*secpernsec*2*xrange);
-//  cout << "factor = " << factor << endl;
-  TH1F* hr = new TH1F("hr","Hit Rate on wire 0+1, station <=4;time(nsec);#hits/wire/sec",ntbins,0,mblength);
-  TH2F* hr2 = new TH2F("hr2","Hit Rate on wire 0+1, station <=4;time(nsec);Position WRT wire center (mm);#hits/wire/cm/sec",ntbins,0,mblength,
+  double factor = (1e-6)*ntbins/(nmicro*nsect*nlayer*maxdevice*maxstraw*mblength*secpernsec);
+  double factor2 = (1e-6)*ntbins*nxbins*10/(nmicro*nsect*nlayer*maxdevice*maxstraw*mblength*secpernsec*2*xrange);
+  cout << "factor = " << factor << endl;
+  TH1F* hr = new TH1F("hr","Hit Rate on wire 0+1, station <=4;time(nsec);MHz/wire",ntbins,0,mblength);
+  TH2F* hr2 = new TH2F("hr2","Hit Rate on wire 0+1, station <=4;time(nsec);Position WRT wire center (mm);MHz/wire/cm",ntbins,0,mblength,
   nxbins,-xrange,xrange);
   hr2->Sumw2();
   hr2->SetStats(0);
@@ -96,9 +96,9 @@ void estraw_rate(TTree* estraw,double nmicro) {
   snprintf(cut,80,"(straw<%i&&device<%i)",maxstraw,maxdevice);
   TCut tcut(cut);
   estraw->Project("hr","time",tcut);
-  cvt->Scale(factor);
+  hr->Scale(factor);
   estraw->Project("hr2","x:time",tcut);
-  cvt->Scale(factor2);
+  hr2->Scale(factor2);
   TCanvas* rcan = new TCanvas("rcan","background hit rate",1200,800);
   rcan->Clear();
   rcan->Divide(1,2);
