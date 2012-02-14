@@ -2,17 +2,17 @@
 #
 #  - Generate 200 events including one conversion and no backgrounds.
 
-# $Id: signalOnly.fcl,v 1.1 2011/09/25 18:58:02 kutschke Exp $
+# $Id: signalOnly.fcl,v 1.2 2012/02/14 20:13:46 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2011/09/25 18:58:02 $
+# $Date: 2012/02/14 20:13:46 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 process_name : SignalOnly
 
-source :
-{
+source : {
   module_type : EmptyEvent
   maxEvents : 200
 }
@@ -28,21 +28,20 @@ services :
     GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     G4Helper          : { }
+    SeedService       : @local::automaticSeeds
   }
 
 }
 
-physics :
-{
-  producers:
-  {
+physics : {
+
+  producers: {
     generate    : @local::generate
     g4run       : @local::g4run
     randomsaver : @local::randomsaver
   }
 
-  analyzers:
-  {
+  analyzers:  {
 
     checkhits:
     {
@@ -65,14 +64,18 @@ physics :
 
 }
 
-outputs:
-{
-  outfile :
-  {
+outputs: {
+
+  outfile :  {
     module_type   :   RootOutput
     fileName      :   "signalOnly_data.root"
   }
 
 }
 
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+
+// Choose the signal only generator configuration.
 physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_01.txt"
