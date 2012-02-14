@@ -1,11 +1,18 @@
 
-  $Id: v1_1_6.txt,v 1.9 2012/02/13 21:29:23 kutschke Exp $
+  $Id: v1_1_6.txt,v 1.10 2012/02/14 17:15:42 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/02/13 21:29:23 $
+  $Date: 2012/02/14 17:15:42 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_6
+
+15) February 13, 2012, kutschke
+    First release of these files.  Given a Poisson mean then compute
+    a sensible histogram binning for a histogram that will monitor
+    a distribution generated with this mean.
+       Mu2eUtilities/inc/PoissonHistogramBinning.hh
+       Mu2eUtilities/src/PoissonHistogramBinning.cc
 
 14) February 13, 2012, kutschke
     EventMixing/src/MixMCEvents_module.cc
