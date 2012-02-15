@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.24 2012/02/13 20:31:31 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.25 2012/02/15 15:26:30 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/13 20:31:31 $
+// $Date: 2012/02/15 15:26:30 $
 //
 
 // Includes from C++
@@ -583,10 +583,10 @@ namespace mu2e {
     boost::iostreams::filtering_istream in;
     decompressFile(filename,in);
     in.push(fin);
-    char cbuf[128];
+    std::string cbuf;
     boost::regex re("^\\s*data.*$");
     while( ! in.eof() ) {
-      in.getline(cbuf,128);
+      getline(in, cbuf);
       if( boost::regex_match(cbuf,re) ) break;
     }
     if( in.eof() ) throw cet::exception("GEOM")<<"Can't find data keyword in "<<filename<<"\n";
@@ -611,7 +611,7 @@ namespace mu2e {
 
       // Read and parse line
       nread++;
-      in.getline(cbuf,128);
+      getline(in, cbuf);
       istringstream sin(cbuf);
       if( (sin>>x[0]>>x[1]>>x[2]>>b[0]>>b[1]>>b[2]).fail() ) break;
 
