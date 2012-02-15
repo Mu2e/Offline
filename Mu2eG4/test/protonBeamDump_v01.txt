@@ -121,6 +121,8 @@ bool extMonFilter.magnet.aperture.solid = true;
 double extMonFilter.nominalMomentum = 4000.; // MeV/c
 // double extMonFilter.maxG4StepLength = 10.; // mm
 
+int protonBeamDump.verbosityLevel = 0;
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++

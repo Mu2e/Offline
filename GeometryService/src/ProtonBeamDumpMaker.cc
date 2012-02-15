@@ -250,6 +250,10 @@ namespace mu2e {
       std::cout<<__func__<<": ProtonBeamDump enclosure center in mu2e = "<<m_det->_enclosureCenterInMu2e<<std::endl;
       std::cout<<__func__<<": coreCenterInEnclosure = "<<m_det->_coreCenterInEnclosure<<std::endl;
       std::cout<<__func__<<": magnetPitCenterInEnclosure = "<<m_det->_magnetPitCenterInEnclosure<<std::endl;
+      std::cout<<__func__<<": shieldingFaceXmin = "<<m_det->_shieldingFaceXmin
+               <<", Xmax = "<<m_det->_shieldingFaceXmax<<std::endl;
+      std::cout<<__func__<<": shieldingFaceZatXmin = "<<m_det->_shieldingFaceZatXmin
+               <<", ZatXmax = "<<m_det->_shieldingFaceZatXmax<<std::endl;
       std::cout<<__func__<<": filter nominal momentum = "<<m_det->extMonFilter_nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
       std::cout<<__func__<<": filter half bend angle  = "<<m_det->filterMagnet().trackBendHalfAngle(m_det->extMonFilter_nominalMomentum())<<std::endl;
       std::cout<<__func__<<": filter.angleV = "<<m_det->filterEntranceAngleV()
