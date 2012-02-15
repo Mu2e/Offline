@@ -1,5 +1,5 @@
 // Geometry of the proton beam dump.
-// 
+//
 // Andrei Gaponenko, 2011
 
 #ifndef PROTONBEAMDUMP_HH
@@ -13,11 +13,11 @@
 #include "GeometryService/inc/Detector.hh"
 
 namespace mu2e {
-    
+
   class ProtonBeamDumpMaker;
 
   class ProtonBeamDump : public Detector {
-  public: 
+  public:
     // implement Detector's method
     virtual std::string name() const { return "ProtonBeamDump"; }
 
@@ -43,7 +43,7 @@ namespace mu2e {
       const std::vector<double> &alignmentPlugRadius() const { return _alignmentPlugRadius; }
       const std::vector<double> &alignmentHoleRClearance() const { return _alignmentHoleRClearance; }
       double radiusTransitiondZ() const { return _radiusTransitiondZ; }
-      
+
       // these two are not just "positioning" parameters but also affect the shape
       // thus they belong to this class
       double angleH() const { return _angleH; }
@@ -87,7 +87,7 @@ namespace mu2e {
     // absolute w.r.t to the Mu2e
     double coreRotY() const { return _coreRotY; }
 
-    // The offsets are w.r.t. the dump core center, in the plane of the 
+    // The offsets are w.r.t. the dump core center, in the plane of the
     // dump shielding face.
     double filterEntranceOffsetX() const { return _filterEntranceOffsetX; }
     double filterEntranceOffsetY() const { return _filterEntranceOffsetY; }
@@ -104,9 +104,9 @@ namespace mu2e {
     //---
     // Derived stuff
 
-    // The box containing the dump, the filter magnet room, and the two collimators 
+    // The box containing the dump, the filter magnet room, and the two collimators
     // for the secondaries.
-    // Does not include the wedge. 
+    // Does not include the wedge.
     const std::vector<double>& enclosureHalfSize() const { return _enclosureHalfSize; }
     const CLHEP::Hep3Vector& enclosureCenterInMu2e() const { return _enclosureCenterInMu2e; }
     const CLHEP::HepRotation& enclosureRotationInMu2e() const { return _enclosureRotationInMu2e; }
@@ -132,7 +132,7 @@ namespace mu2e {
     CLHEP::Hep3Vector filterEntranceInMu2e() const;
 
     //----------------------------------------------------------------
-  private: 
+  private:
     friend class ProtonBeamDumpMaker;
 
     // Private ctr: the class should be only obtained via ProtonBeamDumpFNAL::ProtonBeamDumpMaker.
@@ -165,7 +165,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _coreCenterInEnclosure;
     CLHEP::Hep3Vector _magnetPitCenterInEnclosure;
-    
+
     double _shieldingFaceXmin;
     double _shieldingFaceXmax;
     double _shieldingFaceZatXmin;

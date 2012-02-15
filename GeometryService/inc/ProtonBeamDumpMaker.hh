@@ -17,7 +17,7 @@ namespace mu2e {
     ProtonBeamDump::FilterMagnetExtMonFNAL readFilterMagnetExtMonFNAL(const SimpleConfig& c);
   public:
     explicit ProtonBeamDumpMaker(const SimpleConfig& config);
-    
+
     // interface to GeometryService
     std::auto_ptr<ProtonBeamDump> getPtr() { return m_det; }
   };
