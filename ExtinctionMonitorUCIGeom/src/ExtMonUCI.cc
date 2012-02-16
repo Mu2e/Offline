@@ -1,6 +1,6 @@
-// $Id: ExtMonUCI.cc,v 1.3 2011/12/28 00:25:05 youzy Exp $
+// $Id: ExtMonUCI.cc,v 1.4 2012/02/16 20:25:46 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/28 00:25:05 $
+// $Date: 2012/02/16 20:25:46 $
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 
@@ -74,6 +74,16 @@ namespace mu2e {
       }
     }
 
+    //================================================================
+    const ExtMonShd* ExtMon::shd(unsigned int iShd) const
+    {
+      if (iShd < _shds.size()) return &_shds[iShd];
+      else
+      {
+        std::cout << "ExtMonUCI::shd " << iShd << " >= " << "shds size " << _shds.size() << std::endl;
+        return 0;
+      }
+    }
 
     //================================================================
     CLHEP::Hep3Vector ExtMon::extMonToMu2ePoint( CLHEP::Hep3Vector const& v ) const

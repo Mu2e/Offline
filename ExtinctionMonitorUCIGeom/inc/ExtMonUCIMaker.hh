@@ -1,6 +1,6 @@
-// $Id: ExtMonUCIMaker.hh,v 1.3 2011/12/28 00:25:05 youzy Exp $
+// $Id: ExtMonUCIMaker.hh,v 1.4 2012/02/16 20:25:46 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/28 00:25:05 $
+// $Date: 2012/02/16 20:25:46 $
 
 #ifndef EXTMONUCIMAKER_HH
 #define EXTMONUCIMAKER_HH
@@ -30,6 +30,7 @@ namespace mu2e {
       void MakeCols();
       void MakeMags();
       void MakeTofs();
+      void MakeShds();
 
     };
   }

@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCI.hh,v 1.3 2012/01/07 02:50:50 youzy Exp $
+// $Id: ExtMonUCI.hh,v 1.4 2012/02/16 20:25:46 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/01/07 02:50:50 $
+// $Date: 2012/02/16 20:25:46 $
 
 #ifndef EXTMONUCI_HH
 #define EXTMONUCI_HH
@@ -20,6 +20,7 @@
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCICol.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMag.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCITof.hh"
+#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIShd.hh"
 
 using namespace std;
 
@@ -72,6 +73,12 @@ namespace mu2e {
       const ExtMonTof* tof(unsigned int iTofStation, unsigned int iTofSegment) const;
       const ExtMonTof* tof(unsigned int iTof) const;
 
+      // Shieldings
+      int nShds() const { return _nShds; }
+      const vector<double>& shdHalfLengths() const { return _shdHalfLengths; }
+      const vector<double>& shdPosition() const { return _shdPosition; }
+      const ExtMonShd* shd(unsigned int iShd) const;
+     
       // Coordinate conversion to/from the Mu2e frame
       // 
       // - The (0,0,0) point is in the middle of the ExtMon detector.
@@ -119,6 +126,12 @@ namespace mu2e {
       std::vector<double> _tofHalfLengths;
       std::vector<double> _tofPosition;
       std::vector<ExtMonTof> _tofs;
+
+      // Shieldings
+      int _nShds;
+      std::vector<double> _shdHalfLengths;
+      std::vector<double> _shdPosition;
+      std::vector<ExtMonShd> _shds;
 
     };
 

@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCIMaker.cc,v 1.3 2012/01/07 02:50:50 youzy Exp $
+// $Id: ExtMonUCIMaker.cc,v 1.4 2012/02/16 20:25:46 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/01/07 02:50:50 $
+// $Date: 2012/02/16 20:25:46 $
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 
@@ -48,9 +48,15 @@ namespace mu2e {
       _det->_nTofStations = config.getInt("extmon_uci.nTofStations");
       _det->_nTofSegments = config.getInt("extmon_uci.nTofSegments");
       config.getVectorDouble("extmon_uci.tofHalfLengths", _det->_tofHalfLengths, _det->_nTofStations*3);
-      config.getVectorDouble("extmon_uci.tofPosition", _det->_tofPosition, _det->_nTofStations*3);
+      config.getVectorDouble("extmon_uci.tofPosition",    _det->_tofPosition,    _det->_nTofStations*3);
 
       MakeTofs();
+
+      _det->_nShds = config.getInt("extmon_uci.nShds");
+      config.getVectorDouble("extmon_uci.shdHalfLengths", _det->_shdHalfLengths, _det->_nShds*3);
+      config.getVectorDouble("extmon_uci.shdPosition",    _det->_shdPosition,    _det->_nShds*3);
+
+      MakeShds();
     }
 
     void ExtMonMaker::MakeCols()
@@ -166,6 +172,28 @@ namespace mu2e {
       } // end of Tof Station
     }
 
+    void ExtMonMaker::MakeShds()
+    {
+      for (int iShd = 0; iShd < (int)_det->_nShds; iShd++)
+      {
+        //cout << "in shd " << iShd << endl;
+        _det->_shds.push_back( ExtMonShd(iShd) );
+        ExtMonShd &shd = _det->_shds.back();
+
+        shd._origin = CLHEP::Hep3Vector(_det->_shdPosition[3*iShd], _det->_shdPosition[3*iShd+1], _det->_shdPosition[3*iShd+2]);
+        shd._originLocal = _det->mu2eToExtMonPoint(shd._origin);
+        //cout << "origin " << shd._origin << endl;
+        //cout << "originLocal " << shd._originLocal << endl;
+
+        shd._rotation = CLHEP::HepRotation::IDENTITY;
+        //shd._rotation.print(cout);
+
+        for (int iDim = 0; iDim < 3; iDim++)
+        {
+          shd._params.push_back(_det->_shdHalfLengths[3*iShd+iDim]);
+        }
+      } // end of Shield
+    }
 
   }
 }

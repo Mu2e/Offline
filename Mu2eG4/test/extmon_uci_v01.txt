@@ -11,7 +11,7 @@ bool   extmon_uci.envelopeVisible      = true;
 bool   extmon_uci.envelopeSolid        = false;
 
 //ExtMon Platform
-vector<double> extmon_uci.platformHalfLengths = {1500.0, 1475.0, 3275.0};
+vector<double> extmon_uci.platformHalfLengths = {1500.0, 1475.0, 3280.0};
 vector<double> extmon_uci.platformPosition = {4620.0, -575.0, -18704.0};
 string extmon_uci.platformMaterialName = "ShieldingConcrete";
 bool   extmon_uci.platformVisible      = true;
@@ -129,7 +129,7 @@ vector<double> extmon_uci.shdPosition = {
         3870.0, 2050.0, -20254.0, // 5: TopBack
         3870.0,  990.0, -17479.0, // 6: DownFront
         3870.0, 1080.0, -20254.0, // 7: DownBack
-        3870.0,  150.0, -14900.0  // 8: FrontRemovable
+        3870.0,  150.0, -14924.0  // 8: FrontRemovable
 };
 bool   extmon_uci.shdVisible          = true;
 bool   extmon_uci.shdSolid            = false;
@@ -229,7 +229,7 @@ int extmon_uci.nShdChannels = 2;
 vector<double> extmon_uci.shdChannelHalfLengths = {30, 40, 250,
                                                    60, 80, 500};
 vector<double> extmon_uci.shdChannelPosition = {3840.00,      1291.00,       -15679.0,
-                                                3840.00,      1184.37,       -14900.0};
+                                                3840.00,      1184.37,       -14924.0};
 bool   extmon_uci.shdChannelVisible      = true;
 bool   extmon_uci.shdChannelSolid        = false;
 string extmon_uci.shdChannelMaterialName = "G4_AIR";
