@@ -2,9 +2,9 @@
 #
 # Readback the output of g4test_03.fcl; make histograms and printout.
 #
-# $Id: extmon_uci_readback.fcl,v 1.2 2012/01/25 02:02:00 youzy Exp $
+# $Id: extmon_uci_readback.fcl,v 1.3 2012/02/16 20:19:18 youzy Exp $
 # $Author: youzy $
-# $Date: 2012/01/25 02:02:00 $
+# $Date: 2012/02/16 20:19:18 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -56,8 +56,7 @@ physics :
 
     checkhits:
     {
-      module_type            : ReadVirtualDetector 
-#      module_type            : ExtMonUCIReadBack
+      module_type            : ExtMonUCIReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
       minimumEnergy          : 0.000
