@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.17 2012/02/06 22:41:55 youzy Exp $
+// $Id: constructVirtualDetectors.cc,v 1.18 2012/02/16 20:17:04 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/02/06 22:41:55 $
+// $Date: 2012/02/16 20:17:04 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -845,7 +845,7 @@ namespace mu2e {
 
     // placing virtual detector on the exit (beam dump direction) of PS
     vdId = VirtualDetectorId::PS_FrontExit;
-    if (1)
+    if (true)
     {
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
 
@@ -888,8 +888,42 @@ namespace mu2e {
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
-    // placing virtual detector on the entrance of ExtMonUCI
-    vdId = VirtualDetectorId::EMIEntrance;
+    // placing virtual detector infront of ExtMonUCI removable shielding
+    vdId = VirtualDetectorId::EMIEntrance1;
+    if( vdg->exist(vdId) ) {
+      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+      GeomHandle<ExtMonUCI::ExtMon> extmon;
+
+      std::vector<double> hlen(3);
+      hlen[0] = extmon->shd(8)->params()[0];
+      hlen[1] = extmon->shd(8)->params()[1];
+      hlen[2] = vdg->getHalfLength();
+
+      G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+
+      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                  hlen,
+                                  vacuumMaterial,
+                                  0,
+                                  vdLocalOffset,
+                                  parent,
+                                  vdId,
+                                  vdIsVisible,
+                                  G4Color::Red(),
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false
+                                 );
+
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+
+    // placing virtual detector between ExtMonUCI removable shielding and front shielding
+    vdId = VirtualDetectorId::EMIEntrance2;
     if( vdg->exist(vdId) ) {
       VolumeInfo const & parent = _helper->locateVolInfo("ExtMonUCI");
       GeomHandle<ExtMonUCI::ExtMon> extmon;

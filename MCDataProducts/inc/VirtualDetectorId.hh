@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.6 2012/02/06 17:13:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/02/06 17:13:49 $
+// $Id: VirtualDetectorId.hh,v 1.7 2012/02/16 20:16:36 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/02/16 20:16:36 $
 //
 // Original author Rob Kutschke
 //
@@ -45,8 +45,11 @@ namespace mu2e {
       TT_Back,                                                // 15       Back (downstream) face of the tracker.
       EMFC1Entrance,  EMFC1Exit, EMFC2Entrance,  EMFC2Exit,   // 16-19:   ExtMonFNAL collimator entrance and exit planes
       PS_FrontExit,                                           // 20:      Front exit (to beam dump) on PS
-      EMIEntrance,                                            // 21:      In front of ExtMonUCI fist concreate shielding
-      TT_OutSurf, TT_InSurf,                                  // 22-23:  external and internal surface of the TTracker envelope
+      EMIEntrance1,                                           // 21:      In front of ExtMonUCI front removable concreate shielding
+      TT_OutSurf, TT_InSurf,                                  // 22-23:   external and internal surface of the TTracker envelope
+      EMIEntrance2,                                           // 24:      Between ExtMonUCI front removable shielding and front shielding
+      EMIC0Entrance,  EMIC0Exit, EMIC1Entrance,  EMIC1Exit,   // 25-28:   In ExtMonUCI
+      EMIC2Entrance,  EMIC2Exit, EMIC3Entrance,  EMIC3Exit,   // 29-32:   4 collimator entrance and exit planes
       lastEnum
     };
 
@@ -62,8 +65,11 @@ namespace mu2e {
       "TT_Back",						   \
       "EMFC1Entrance", "EMFC1Exit", "EMFC2Entrance", "EMFC2Exit",  \
       "PS_FrontExit",                                              \
-      "EMIEntrance",                                               \
-      "TT_OutSurf", "TT_InSurf" 
+      "EMIEntrance1",                                              \
+      "TT_OutSurf", "TT_InSurf",                                   \
+      "EMIEntrance2",                                              \
+      "EMIC0Entrance", "EMIC0Exit", "EMIC1Entrance", "EMIC1Exit",  \
+      "EMIC2Entrance", "EMIC2Exit", "EMIC3Entrance", "EMIC3Exit"
 
   public:
 
