@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.117 2012/02/16 05:00:15 gandr Exp $
+// $Id: geom_01.txt,v 1.118 2012/02/16 05:01:04 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/16 05:00:15 $
+// $Date: 2012/02/16 05:01:04 $
 //
 // Original author Rob Kutschke
 //
@@ -531,8 +531,6 @@ double mbs.EndPlugDiskHLength   = 50.0;
 int    mbs.verbosityLevel = 0;
 bool   mbs.visible      = true;
 bool   mbs.solid        = false;
-
-#include "Mu2eG4/test/visualization_regions.txt"
 
 //
 //
