@@ -1,0 +1,32 @@
+//
+// 
+//
+// $Id: primaryProtonGun.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/02/16 20:56:08 $
+//
+// Original author Rob Kutschke
+// added EjectedProtonGun process
+
+// enable processe
+bool primaryProtonGun.do = 1;
+
+// Limits on cos(polar angle):
+double primaryProtonGun.czmin = 1;
+double primaryProtonGun.czmax = 1;
+
+// Position of PrimaryProtonGun (local to target)
+vector<double> beamDisplacementOnTarget = {0.,0.,0.};
+
+// Distribution parameter of Primary Proton Gun beam
+double primaryProtonGun.beamSpotSigma = 1; //units are mm
+
+// Time limits in ns, relative to protons on target.
+double primaryProtonGun.tmin  =    0.;
+double primaryProtonGun.tmax  =  100.;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

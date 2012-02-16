@@ -1,0 +1,32 @@
+//
+// 
+//
+// $Id: ejectedPhotonGun.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/02/16 20:56:08 $
+//
+// Original author Rob Kutschke
+// added EjectedPhotonGun process
+
+// enable processe
+bool ejectedPhotonGun.do = true;
+
+// Limits on cos(polar angle):
+double ejectedPhotonGun.czmin = -1;
+double ejectedPhotonGun.czmax = 1;
+
+// Energy Ranges (MeV)
+double ejectedPhotonGun.elow = 0.0;
+double ejectedPhotonGun.ehi = 7.;
+
+// Time limits in ns, relative to protons on target.
+double ejectedPhotonGun.tmin  =  700.;
+double ejectedPhotonGun.tmax  = 1694.;
+
+// Mean multiplicitie.
+double ejectedPhotonGun.mean = -1;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,28 @@
+//
+// 
+//
+// $Id: cosmicDYB.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/02/16 20:56:08 $
+//
+// Original author Rob Kutschke
+// added CosmicDYB process
+
+// enable process
+bool cosmicDYB.do = true;
+
+// Limits on cos(polar angle):
+double cosmicDYB.muCosThMin = 0.00366518;
+double cosmicDYB.muCosThMax = 1.0;
+
+// Energy Ranges (MeV)
+double cosmicDYB.muEMin = 3000.;
+double cosmicDYB.muEMax = 1.e5;
+
+// Mean multiplicities for the two background generators.
+double cosmicDYB.mean =  -1;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

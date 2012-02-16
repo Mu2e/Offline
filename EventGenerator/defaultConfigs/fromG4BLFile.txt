@@ -1,0 +1,32 @@
+//
+// 
+//
+// $Id: fromG4BLFile.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/02/16 20:56:08 $
+//
+// Original author Rob Kutschke
+// added fromG4BLFile process
+
+// enable process
+bool fromG4BLFile.do     = true;
+
+// FromG4BLFile
+// Read individual tracks
+
+bool   fromG4BLFile.targetFrame  = false;
+
+double fromG4BLFile.mean         = -1;
+
+string fromG4BLFile.filename     = "particlelist.txt";
+
+bool   fromG4BLFile.doHistograms = true;
+
+vector<double> fromG4BLFile.g4beamlineOrigin = { 3904.0, 0.0, -7929.0 };
+
+bool   fromG4BLFile.duplicateParticles = false;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
