@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.12 2012/02/08 16:51:17 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/02/08 16:51:17 $
+  $Id: EventGenerator_module.cc,v 1.13 2012/02/16 20:58:00 tassiell Exp $
+  $Author: tassiell $
+  $Date: 2012/02/16 20:58:00 $
 
   Original author Rob Kutschke
 
@@ -147,7 +147,7 @@ namespace mu2e {
     _generators.clear();
 
     // Which generators will we run?
-    bool doConv                 = config.getBool( "conversionGun.do",    true );
+    bool doConv                 = config.getBool( "conversionGun.do",    false );
     bool doParticleGun          = config.getBool( "particleGun.do",      false );
     bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
     bool doPiCapture            = config.getBool( "picapture.do",        false );
