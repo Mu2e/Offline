@@ -37,7 +37,7 @@ double         protonBeamDump.minCoreShieldingThickness = 1000.;
 // Relative position of beam dump core w.r.t. the
 // production target is specified in  docdb-1944.
 // Add the offsets to productionTarget.position
-vector<double> protonBeamDump.coreCenterInMu2e = {667., 528., -19829.};
+vector<double> protonBeamDump.coreCenterInMu2e = {667., 528., -19429.};
 double         protonBeamDump.coreRotY = 13.3; // degrees
 
 //----------------------------------------------------------------

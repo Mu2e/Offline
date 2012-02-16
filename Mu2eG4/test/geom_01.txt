@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.116 2012/02/10 19:17:34 gandr Exp $
+// $Id: geom_01.txt,v 1.117 2012/02/16 05:00:15 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/10 19:17:34 $
+// $Date: 2012/02/16 05:00:15 $
 //
 // Original author Rob Kutschke
 //
@@ -258,7 +258,7 @@ bool   vd.solid          = false;
 // Production Target in PS:
 
 // Position in the Mu2e coordinate system
-vector<double> productionTarget.position = { 3904., 0., -6564.5};
+vector<double> productionTarget.position = { 3904., 0., -6164.5};
 
 double targetPS_halfLength        =     80.;  // mm.
 double targetPS_rOut              =      3.15;// mm
