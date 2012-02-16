@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.15 2012/02/06 17:15:11 genser Exp $
-// $Author: genser $
+// $Id: VirtualDetectorMaker.cc,v 1.16 2012/02/16 20:17:51 youzy Exp $
+// $Author: youzy $
 //
 
 #include <iostream>
@@ -256,15 +256,34 @@ namespace mu2e {
 			      );
     }
 
-    if(geom->hasElement<ExtMonUCI::ExtMon>()) {
-      // Detector in front of the ExtMonUCI face shielding
-      GeomHandle<ExtMonUCI::ExtMon> extmon;
-      vector<double> params = extmon->envelopeParams();
+    // This VD is related to PS
+    if(true) {
+      const CLHEP::Hep3Vector vzero(0,0,0);
 
-      _vd->addVirtualDetector(VirtualDetectorId::EMIEntrance,
+      // This detector will be placed on the front (-Z direction) exit of PS.
+      // Computing offsets here is invonvenient since we
+      // don't have VolumeInfo for the parent. Just ignore them.
+      _vd->addVirtualDetector(VirtualDetectorId::PS_FrontExit,
+                              vzero, 0, vzero
+                              );
+    }
+
+    if(geom->hasElement<ExtMonUCI::ExtMon>()) {
+
+      // Detector in front of the ExtMonUCI front removable shielding
+      GeomHandle<ExtMonUCI::ExtMon> extmon;
+      extmon->hallOriginInMu2e();
+      _vd->addVirtualDetector(VirtualDetectorId::EMIEntrance1,
+                              CLHEP::Hep3Vector(0, 0, 0),
+                              0,
+                              extmon->shd(8)->origin() + CLHEP::Hep3Vector(0, 0, extmon->shd(8)->params()[2] + vdHL)
+                             );
+
+      // Detector between ExtMonUCI front removable shielding and front shielding
+      _vd->addVirtualDetector(VirtualDetectorId::EMIEntrance2,
                               extmon->origin(),
                               0,
-                              CLHEP::Hep3Vector(0, 0, extmon->envelopeParams()[2] - 0.5*vdHL)
+                              CLHEP::Hep3Vector(0, 0, extmon->envelopeParams()[2] - vdHL)
                              );
     }
 
