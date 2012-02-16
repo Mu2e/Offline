@@ -31,6 +31,7 @@
 #include "ConditionsService/inc/PhysicsParams.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "GeometryService/inc/ProductionTarget.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -104,9 +105,7 @@ namespace mu2e {
     CLHEP::Hep3Vector offset(-3904.,0,12000.);
     _DSOffset = offset;
 
-    art::ServiceHandle<GeometryService> geom;
-    SimpleConfig const& geomConfig = geom->config();
-    _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");;
+    _prodTargetCenter = GeomHandle<ProductionTarget>()->position();
 
   // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {

@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.25 2012/01/24 23:01:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/24 23:01:40 $
+// $Id: FromG4BLFile.cc,v 1.26 2012/02/16 05:02:47 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/16 05:02:47 $
 //
 // Original author Rob Kutschke
 //
@@ -52,13 +52,13 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/FromG4BLFile.hh"
-#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "GeometryService/inc/ProductionTarget.hh"
 
 // Root includes
 #include "TH1F.h"
@@ -127,11 +127,7 @@ namespace mu2e {
     vector<int> default_pdgIdToKeep;
     config.getVectorInt("fromG4BLFile.pdgIdToKeep", _pdgIdToKeep, default_pdgIdToKeep );
 
-    // This should really come from the geometry service, not directly from the config file.
-    // Or we should change this code so that its reference point is the production target midpoint
-    art::ServiceHandle<GeometryService> geom;
-    SimpleConfig const& geomConfig = geom->config();
-    _prodTargetCenter = geomConfig.getHep3Vector("productionTarget.position");
+    _prodTargetCenter = GeomHandle<ProductionTarget>()->position();
 
     // Construct the full path to the input file.  Accept absolute paths and paths
     // starting with "." as is; other wise apply the standard search path.
