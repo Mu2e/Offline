@@ -121,7 +121,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Add the arbitrary boxes
 
-    if(config.getBool("visregions.boxes.visible")) {
+    if(config.getBool("visregions.boxes.visible", false)) {
 
       const bool solid(config.getBool("visregions.boxes.solid"));
       G4Material *material = findMaterialOrThrow(config.getString("visregions.boxes.material"));
