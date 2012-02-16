@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.8 2012/01/21 20:46:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/21 20:46:57 $
+// $Id: BFieldManagerMaker.hh,v 1.9 2012/02/16 04:59:38 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/16 04:59:38 $
 //
 
 // Includes from C++
@@ -68,7 +68,7 @@ namespace mu2e {
                          BFMap& bfmap );
 
     // Write an existing BFMap in binary format.
-    void writeG4BLBinary( unsigned int i, std::string const& key );
+    void writeG4BLBinary(const std::string& key);
 
     // Special case: when the DS has a uniform field.
     void loadUniformDS();

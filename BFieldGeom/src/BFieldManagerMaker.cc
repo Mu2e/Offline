@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.25 2012/02/15 15:26:30 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.26 2012/02/16 04:59:38 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/15 15:26:30 $
+// $Date: 2012/02/16 04:59:38 $
 //
 
 // Includes from C++
@@ -57,15 +57,6 @@ namespace mu2e {
       }
       return file;
     }
-
-    std::string strip_Mu2e(std::string file) {
-      const string prefix("Mu2e_");
-      if(!file.compare(0, prefix.length(), prefix)) {
-        file.erase(0, prefix.length());
-      }
-      return file;
-    }
-
   }
 
   //
@@ -158,10 +149,10 @@ namespace mu2e {
       for( unsigned int i=0; i<filesToLoad.size(); ++i ) {
         string filename = filesToLoad[i];
         cout << "Read " << filename << endl;
-        std::string mapkey = strip_Mu2e(basename(filename));
+        std::string mapkey = basename(filename);
         loadG4BL( mapkey,  filename  );
         if( writeBinaries ){
-          writeG4BLBinary( i, mapkey );
+          writeG4BLBinary(mapkey);
         }
       }
 
@@ -733,12 +724,8 @@ namespace mu2e {
 
   } // end BFieldManagerMaker::readG4BLBinary
 
-  void BFieldManagerMaker::writeG4BLBinary( unsigned int i, std::string const& key ){
-
-    // Get the name of the output file.
-    vector<string> outputfiles;
-    _config.getVectorString("bfield.binaryFiles",outputfiles);
-    string const& outputfile = outputfiles.at(i);
+  void BFieldManagerMaker::writeG4BLBinary(std::string const& key){
+    const std::string outputfile(key + ".bin");
 
     // Get the map to be written out.
     BFMap const& bf = _bfmgr->getContainedMapByName(key);
