@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.16 2012/02/16 20:17:51 youzy Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.17 2012/02/16 20:44:38 youzy Exp $
 // $Author: youzy $
 //
 
@@ -261,8 +261,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector vzero(0,0,0);
 
       // This detector will be placed on the front (-Z direction) exit of PS.
-      // Computing offsets here is invonvenient since we
-      // don't have VolumeInfo for the parent. Just ignore them.
+      // Computing offsets in G4 since PS is not in GeomHandle.
       _vd->addVirtualDetector(VirtualDetectorId::PS_FrontExit,
                               vzero, 0, vzero
                               );
