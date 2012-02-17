@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.19 2012/02/17 20:55:46 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.20 2012/02/17 20:59:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/17 20:55:46 $
+// $Date: 2012/02/17 20:59:13 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -960,7 +960,7 @@ namespace mu2e {
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
       GeomHandle<Mu2eBuilding> building;
 
-      const double requested_z = _config->getDouble("vd.ExtMonCommonPlane.z")
+      const double requested_z = _config->getDouble("vd.ExtMonCommonPlane.z");
       if(requested_z  < building->hallInsideZBeamDumpWall() + vdg->getHalfLength()) {
           throw cet::exception("GEOM")
           << "The requested z = "<<requested_z<<" of the virtual detector " << VirtualDetectorId(vdId).name()
