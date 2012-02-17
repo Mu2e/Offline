@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/10/28 18:47:06 $
+// $Id: KalFit.hh,v 1.12 2012/02/17 23:15:40 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/02/17 23:15:40 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -84,6 +84,7 @@ namespace mu2e
     double _herr;
     double _ssmear;
     double _t0errfac;
+    double _maxdriftpull;
     // helper functions
     bool fitable(TrkDef const& mytrk);
     bool updateT0(TrkKalFit& myfit);

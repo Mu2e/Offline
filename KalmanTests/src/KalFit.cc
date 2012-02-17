@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.15 2012/01/18 01:25:16 brownd Exp $
+// $Id: KalFit.cc,v 1.16 2012/02/17 23:15:40 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/01/18 01:25:16 $
+// $Date: 2012/02/17 23:15:40 $
 //
 
 // the following has to come before other BaBar includes
@@ -87,7 +87,8 @@ namespace mu2e
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _herr(pset.get<double>("hiterr",0.1)),
     _ssmear(pset.get<double>("seedsmear",1e6)),
-    _t0errfac(pset.get<double>("t0ErrorFactor",1.2))
+    _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
+    _maxdriftpull(pset.get<double>("maxDriftPull",10))
   {
       _kalcon = new KalContext;
       _kalcon->setBendSites(_fieldcorr);
@@ -106,7 +107,7 @@ namespace mu2e
       _kalcon->setMaxMomDiff(1.0); // 1 MeV
       _kalcon->setTrajBuffer(0.01); // 10um
       _kalcon->setDefaultType(PdtPid::electron); // by default, fit electrons
-  }
+    }
 
   KalFit::~KalFit(){
     delete _kalcon;
@@ -126,7 +127,11 @@ namespace mu2e
 	hotlist->append(trkhit);
 // Also extract wall and gas intersection objects from each straw hit (active or not)
 	DetIntersection wallinter;
+	wallinter.delem = 0;
+	wallinter.pathlen = trkhit->fltLen();
 	DetIntersection gasinter;
+	gasinter.delem = 0;
+	gasinter.pathlen = trkhit->fltLen();
 	if(mytrk.traj() != 0){
 	  if(trkhit->wallElem().reIntersect(mytrk.traj(),wallinter))
 	    detinter.push_back(wallinter);
@@ -176,7 +181,7 @@ namespace mu2e
 	double tprop = hflt/_vlight;
 	double hitt0 = myfit._t0.t0() + tprop;
 	// create the hit object
-	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,myfit._t0.t0Err(),_herr);
+	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,myfit._t0.t0Err(),_herr,_maxdriftpull);
 	// flag the added hit
 	trkhit->setUsability(3);
 	assert(trkhit != 0);
@@ -249,7 +254,7 @@ namespace mu2e
       double htime = strawhit.time() - tprop - straw.getHalfLength()/vwire;
       times.push_back(htime);
     // create the hit object
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,mytrk.trkT0().t0Err(),_herr);
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,mytrk.trkT0().t0Err(),_herr,_maxdriftpull);
       assert(trkhit != 0);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       const TrkDifTraj* dtraj = &mytrk.helix();

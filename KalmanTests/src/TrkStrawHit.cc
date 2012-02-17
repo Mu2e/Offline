@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.11 2011/09/27 21:49:09 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/09/27 21:49:09 $
+// $Id: TrkStrawHit.cc,v 1.12 2012/02/17 23:15:40 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/02/17 23:15:40 $
 //
 // Original author David Brown, LBNL
 //
@@ -16,6 +16,7 @@
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include <algorithm>
 
 using namespace std;
 
@@ -23,9 +24,8 @@ namespace mu2e
 {
   
   // drift velocity is a parameter of the makeStrawHits module; I have no access to that, so I hardcode
-  // this here.  I'm also hard-coding the wire signal propagation velocity.  FIXME!!!!!
+  // this here.   FIXME!!!!!
   double TrkStrawHit::_vdrift = 0.05; // mm per nanosecond
-  double TrkStrawHit::_maxdriftpull = 10.0; // disable hits with unphysical drift distance pulls beyond this cut
 // Material information, BaBar style
   MatDBInfo* TrkStrawHit::_matdbinfo(new MatDBInfo);
   DetStrawHitType TrkStrawHit::_wtype(_matdbinfo,"straw-wall");
@@ -48,7 +48,7 @@ namespace mu2e
   
   
   TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw,
-    double hitt0, double hitt0_err,double herr) :
+    double hitt0, double hitt0_err,double herr,double maxdriftpull) :
     TrkHitOnTrk(new TrkDummyHit(TrkEnums::xyView,strawhit.strawIndex().asInt(),TrkDetElemId::null),1e-5),
     _strawhit(strawhit),
     _straw(straw),
@@ -57,6 +57,7 @@ namespace mu2e
     _hitt0_err(hitt0_err),
     _herr(herr),
     _iamb(0),
+    _maxdriftpull(maxdriftpull),
     _welem(&_wtype,this),
     _gelem(&_gtype,this)
   {
@@ -89,6 +90,9 @@ namespace mu2e
       _rdrift_err(other._rdrift_err),
       _tddist(other._tddist),
       _tddist_err(other._tddist_err),
+      _wtime(other._wtime),
+      _wtime_err(other._wtime_err),
+      _maxdriftpull(other._maxdriftpull),
       _welem(&_wtype,this),
       _gelem(&_gtype,this)
   {
@@ -127,26 +131,22 @@ namespace mu2e
 // assume wire propagation velocity is speed of light: FIXME!!!
     double tdrift = time() - _hitt0;
     _rdrift = tdrift*_vdrift;
+    double rstraw = _straw.getRadius(); 
   // radial error is combination of time error and intrinsic error.  This doesn't account for correlation between hits
     double time_err = sqrt(_hitt0_err*_hitt0_err + _wtime_err*_wtime_err);
     double rt0err = time_err*_vdrift;
     _rdrift_err = sqrt(rt0err*rt0err + _herr*_herr);
-    if(_rdrift > _straw.getRadius()){
-  // unphysical condition: decide if this hit should get disabled, or just brought
-  // back into the physical range.  Parameters here should be adjustable FIXME!!!
-      double dr = _rdrift - _straw.getRadius();
-      if( dr < _maxdriftpull*_rdrift_err){
-//        _rdrift = _straw.getRadius();
-      } else {
+// If the hit is wildly away from the track , disable it
+    if( _rdrift - rstraw > _maxdriftpull*_rdrift_err ||
+      _rdrift < -_maxdriftpull*_rdrift_err){
         setUsability(-10);
         setActivity(false);
-      }
-    } else if (_rdrift < 0.0){
-      if( fabs(_rdrift) < _maxdriftpull*_rdrift_err){
-//        _rdrift = 0.0;
-      } else {
-        setUsability(-10);
-        setActivity(false);
+    } else {
+// otherwise restrict to a physical range
+      if (_rdrift < 0.0){
+	_rdrift = 0.0;
+      } else if( _rdrift > rstraw){
+	_rdrift = rstraw;
       }
     }
   }
@@ -206,7 +206,7 @@ namespace mu2e
   TrkStrawHit::wallPath(Hep3Vector const& tdir) const {
     double thick = straw().getThickness();
     double radius = straw().getRadius();
-    double drift = driftRadius();
+    double drift = fabs(driftRadius());
     if(drift-radius > 3*driftRadiusErr())
       drift = radius/2.0;
     else if(drift>radius)
@@ -215,7 +215,16 @@ namespace mu2e
       sqrt( (radius+drift)*(radius-drift) ));
   // scale for the other dimension
     double cost = tdir.dot(_straw.getDirection());
-    if(fabs(cost)<1.0)wallpath /= sqrt( (1.0-cost)*(1.0+cost) );
+    if(fabs(cost)<0.999)
+      wallpath /= sqrt( (1.0-cost)*(1.0+cost) );
+    else
+      wallpath = radius;
+// use half-length as maximum length
+    wallpath = std::min(wallpath,radius);
+// test for NAN	
+//    if(wallpath != wallpath){
+///      std::cout << "non wall" << std::endl;
+//   }
     return wallpath;
   }
   
@@ -223,7 +232,8 @@ namespace mu2e
   double
   TrkStrawHit::gasPath(Hep3Vector const& tdir) const {
     double radius = straw().getRadius();
-    double drift = driftRadius();
+    double hlen = straw().getHalfLength();
+    double drift = fabs(driftRadius());
     if(drift-radius > 3*driftRadiusErr())
       drift = radius/2.0;
     else if(drift>radius)
@@ -231,7 +241,16 @@ namespace mu2e
     double gaspath = sqrt( (radius+drift)*(radius-drift) );
 // scale for the other dimension
     double cost = tdir.dot(_straw.getDirection());
-    if(fabs(cost)<1.0)gaspath /= sqrt( (1.0-cost)*(1.0+cost) );
+    if(fabs(cost)<0.999)
+      gaspath /= sqrt( (1.0-cost)*(1.0+cost) );
+    else
+      gaspath = hlen;
+// use half-length as maximum length
+    gaspath = std::min(gaspath,hlen);
+//NAN test
+//    if(gaspath != gaspath){
+//      std::cout << "nan gas" << endl;
+//    }
     return gaspath;
   }
 

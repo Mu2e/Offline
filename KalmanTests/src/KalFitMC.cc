@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.15 2012/01/31 18:29:20 brownd Exp $
+// $Id: KalFitMC.cc,v 1.16 2012/02/17 23:15:40 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/01/31 18:29:20 $
+// $Date: 2012/02/17 23:15:40 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -25,6 +25,7 @@
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/VirtualDetectorId.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -79,11 +80,12 @@ namespace mu2e
     _purehits(pset.get<bool>("pureHits",true)),
     _trkdiag(0),_hitdiag(0)
   {
-// define the ids of the midplane and entrance virtual detector: there must be a better way to initialize these, FIXME!!!
-    _midvids.push_back(11);
-    _midvids.push_back(12);
-    _entvids.push_back(13);
-    _entvids.push_back(14); 
+// define the ids of the virtual detectors
+    _midvids.push_back(VirtualDetectorId::TT_Mid);
+    _midvids.push_back(VirtualDetectorId::TT_MidInner);
+    _entvids.push_back(VirtualDetectorId::TT_FrontHollow);
+    _entvids.push_back(VirtualDetectorId::TT_FrontPA); 
+    _xitvids.push_back(VirtualDetectorId::TT_Back);
   }
 
 // Find MC truth for the given particle entering a given detector(s).  Unfortunately the same logical detector can map
@@ -405,6 +407,27 @@ namespace mu2e
       _mcmidmom = -1;
       _mcmidt0 = 0.0;
     }
+
+// mc at exit of detector
+    findMCSteps(_mcdata._mcvdsteps,trkid,_xitvids,steps);
+    if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
+// take the first point; hopefully this is the entrance!
+      MCStepItr imcs = steps[0];
+      CLHEP::Hep3Vector mcmom = imcs->momentum();
+      CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
+// initial length estimate defines convention for flightlength, z0
+      double mclen(0.0);
+      HepVector mcpar(5,0);
+      TrkHelixUtils::helixFromMom( mcpar, mclen,
+        HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
+        mcmom,-1.,bfMgr->getDSUniformValue().z());
+      _mcxitmom = imcs->momentum().mag();
+      _mcxitpar = helixpar(mcpar);
+      _mcxitt0 = imcs->time();
+    } else {
+      _mcxitmom = -1;
+      _mcxitt0 = 0.0;
+    }
 // find MC info about brems in the tracker
     _bremsesum = 0.0;
     _bremsemax = 0.0;
@@ -512,9 +535,9 @@ namespace mu2e
     _trkdiag->Branch("t0err",&_t0err,"t0err/F");
     _trkdiag->Branch("nhits",&_nhits,"nhits/I");
     _trkdiag->Branch("ndof",&_ndof,"ndof/I");
-    _trkdiag->Branch("niter",&_niter,"niter/i");
-    _trkdiag->Branch("nt0iter",&_nt0iter,"nt0iter/i");
-    _trkdiag->Branch("nweediter",&_nweediter,"nweediter/i");
+    _trkdiag->Branch("niter",&_niter,"niter/I");
+    _trkdiag->Branch("nt0iter",&_nt0iter,"nt0iter/I");
+    _trkdiag->Branch("nweediter",&_nweediter,"nweediter/I");
     _trkdiag->Branch("nactive",&_nactive,"nactive/I");
     _trkdiag->Branch("ncactive",&_ncactive,"ncactive/I");
     _trkdiag->Branch("chisq",&_chisq,"chisq/F");
@@ -535,6 +558,9 @@ namespace mu2e
     _trkdiag->Branch("mcmidpar",&_mcmidpar,"mcmidd0/F:mcmidp0/F:mcmidom/F:mcmidz0/F:mcmidtd/F");
     _trkdiag->Branch("mcmidt0",&_mcmidt0,"mcmidt0/F");
     _trkdiag->Branch("mcmidmom",&_mcmidmom,"mcmidmom/F");
+    _trkdiag->Branch("mcxitpar",&_mcxitpar,"mcxitd0/F:mcxitp0/F:mcxitom/F:mcxitz0/F:mcxittd/F");
+    _trkdiag->Branch("mcxitt0",&_mcxitt0,"mcxitt0/F");
+    _trkdiag->Branch("mcmxitmom",&_mcxitmom,"mcxitmom/F");
 // info about energy loss in the tracker
     _trkdiag->Branch("bremsesum",&_bremsesum,"bremsesum/F");
     _trkdiag->Branch("bremsemax",&_bremsemax,"bremsemax/F");
@@ -608,5 +634,34 @@ namespace mu2e
     }
     return false;
   }
-
+  double KalFitMC::MCT0(TRACKERPOS tpos) const {
+    switch(tpos) {
+      case trackerEnt: default:
+	return _mcentt0;
+      case trackerMid:
+	return _mcmidt0;
+      case trackerExit:
+	return _mcxitt0;
+    }
+  }
+  double KalFitMC::MCMom(TRACKERPOS tpos) const {
+    switch(tpos) {
+      case trackerEnt: default:
+	return _mcentmom;
+      case trackerMid:
+	return _mcmidmom;
+      case trackerExit:
+	return _mcxitmom;
+    }
+  }
+  const helixpar& KalFitMC::MCHelix(TRACKERPOS tpos) const {
+    switch(tpos) {
+      case trackerEnt: default:
+	return _mcentpar;
+      case trackerMid:
+	return _mcmidpar;
+      case trackerExit:
+	return _mcxitpar;
+    }
+  }
 }

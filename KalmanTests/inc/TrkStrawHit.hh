@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.9 2011/09/27 21:49:09 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2011/09/27 21:49:09 $
+// $Id: TrkStrawHit.hh,v 1.10 2012/02/17 23:15:40 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/02/17 23:15:40 $
 //
 // Original author David Brown, LBNL
 //
@@ -55,7 +55,7 @@ namespace mu2e
   class TrkStrawHit : public TrkHitOnTrk {
   public:
     TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,
-    double t0, double t0err, double herr);
+    double t0, double t0err, double herr, double maxdriftpull);
     virtual ~TrkStrawHit();
 //  Simplistic implementation of TrkHitOnTrk interface.  Lie where necessary
     virtual TrkStrawHit* clone(TrkRep* parentRep, const TrkDifTraj* trkTraj = 0) const;
@@ -92,8 +92,6 @@ namespace mu2e
     double gasPath(Hep3Vector const& tdir) const; // track pathlength through 1/2 the gas of the straw
 // intrinsic hit error
     double hitErr() const { return _herr; }
-// allow configuring
-    static void setMaxDriftPull(double maxdriftpull) { _maxdriftpull = maxdriftpull; }
 // access to associated detector elements
     DetStrawGasElem const& gasElem() const { return _gelem; }
     DetStrawWallElem const& wallElem() const { return _welem; }
@@ -120,6 +118,7 @@ namespace mu2e
     double _tddist_err;
     double _wtime;
     double _wtime_err;
+    double _maxdriftpull;
 // DetModel stuff
     static DetStrawHitType _wtype;
     static DetStrawHitType _gtype;
@@ -127,7 +126,6 @@ namespace mu2e
     DetStrawGasElem _gelem;
 // parameters that should come from some service: FIXME!!!
     static double _vdrift;
-    static double _maxdriftpull;
     static MatDBInfo* _matdbinfo;
   };
 // unary functor to select TrkStrawHit from a given hit

@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.12 2012/01/31 18:29:20 brownd Exp $
+// $Id: KalFitMC.hh,v 1.13 2012/02/17 23:15:40 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/01/31 18:29:20 $
+// $Date: 2012/02/17 23:15:40 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -121,7 +121,7 @@ namespace mu2e
   
   class KalFitMC {
   public:
-    enum TRACKERPOS {trackerEnt=0,trackerMid};
+    enum TRACKERPOS {trackerEnt=0,trackerMid, trackerExit};
     explicit KalFitMC(fhicl::ParameterSet const&);
     virtual ~KalFitMC();
 // find MC data in the event.  This must be called each event, before the other functions
@@ -143,9 +143,9 @@ namespace mu2e
 // access to MC data
     MCEvtData const& mcData() const { return _mcdata; }
 // access to event-specific MC truth for conversion electron
-    double MCT0(TRACKERPOS tpos) const { return tpos == trackerEnt ? _mcentt0 : _mcmidt0 ; }
-    double MCMom(TRACKERPOS tpos) const { return tpos == trackerEnt ? _mcentmom : _mcmidmom ; }
-    const helixpar& MCHelix(TRACKERPOS tpos) const { return tpos == trackerEnt ? _mcentpar : _mcmidpar ; }
+    double MCT0(TRACKERPOS tpos) const;
+    double MCMom(TRACKERPOS tpos) const;
+    const helixpar& MCHelix(TRACKERPOS tpos) const;
     double MCBrems() const { return _bremsesum; }
     static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSum& summary );
   private:
@@ -172,6 +172,7 @@ namespace mu2e
 // vector of detector Ids corresponding to entrance and midplane
     std::vector<int> _midvids;
     std::vector<int> _entvids;
+    std::vector<int> _xitvids;
 // tracker ID
     int _trackerid;
 // trk tuple variables
@@ -186,11 +187,12 @@ namespace mu2e
     Float_t _mct0;
     Float_t _mcentt0;
     Float_t _mcmidt0;
+    Float_t _mcxitt0;
     Int_t _nhits;
     Int_t _ndof;
-    UInt_t _niter;
-    UInt_t _nt0iter;
-    UInt_t _nweediter;
+    Int_t _niter;
+    Int_t _nt0iter;
+    Int_t _nweediter;
     Int_t _nactive;
     Int_t _ncactive;
     Float_t _chisq;
@@ -201,11 +203,13 @@ namespace mu2e
     Float_t _mccost;
     Float_t _mcentmom;
     Float_t _mcmidmom;
+    Float_t _mcxitmom;
     Float_t _seedmom;
     helixpar _fitpar;
     helixpar _fiterr;
     helixpar _mcentpar;
     helixpar _mcmidpar;
+    helixpar _mcxitpar;
     Float_t _bremsesum;
     Float_t _bremsemax;
     Float_t _bremsz;
