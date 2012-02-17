@@ -1,9 +1,9 @@
 //
 // Class which manages the "Save As" dialog boxes by providing the right file types, and checking the extension of the returned file name.
 //
-// $Id: SaveDialogManager.h,v 1.3 2011/11/02 04:25:21 ehrlich Exp $
+// $Id: SaveDialogManager.h,v 1.4 2012/02/17 21:43:05 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/11/02 04:25:21 $
+// $Date: 2012/02/17 21:43:05 $
 //
 // Original author Ralf Ehrlich
 //
@@ -51,7 +51,10 @@ class SaveDialogManager
                              "ROOT files","*.root",
                              0,0};
     bool to_return=dialogBox(f,fileTypes);
-    if(f.compare(f.length()-5, 5, ".root")) isRootFile=false; else isRootFile=true;
+    if(f.length()>=5)
+    {
+      if(f.compare(f.length()-5, 5, ".root")) isRootFile=false; else isRootFile=true;
+    }
     return(to_return);
   }
 
