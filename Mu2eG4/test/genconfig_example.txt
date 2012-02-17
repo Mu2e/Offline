@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: genconfig_example.txt,v 1.1 2012/02/16 20:59:33 tassiell Exp $
+// $Id: genconfig_example.txt,v 1.2 2012/02/17 02:52:46 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/02/16 20:59:33 $
+// $Date: 2012/02/17 02:52:46 $
 //
 // Original author G.F. Tassielli
 
@@ -17,7 +17,7 @@
 
 //#include "EventGenerator/defaultConfigs/ejectedProtonGun.txt"
 
-//Don't use nuclearCaptureGun yet, it has some bugs
+//Don't use nuclearCaptureGun yet, the processes are not well detailed
 //#include "EventGenerator/defaultConfigs/nuclearCaptureGun.txt"
 
 //#include "EventGenerator/defaultConfigs/piCaptureGun.txt"
