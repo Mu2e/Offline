@@ -1,11 +1,12 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.18 2012/02/08 17:45:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/08 17:45:10 $
+// $Id: ParticleGun.cc,v 1.19 2012/02/17 18:32:04 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/02/17 18:32:04 $
 //
 // Original author Rob Kutschke
+// Modified by MyeongJae Lee. See docdb-2049
 //
 
 #include "EventGenerator/inc/ParticleGun.hh"
@@ -32,6 +33,7 @@ namespace mu2e {
 
             config.getDouble("particleGun.pmin", pEndPoint),
             config.getDouble("particleGun.pmax", pEndPoint),
+            config.getString("particleGun.momentumMode", "flat"),
 
             RandomUnitSphereParams(config.getDouble("particleGun.czmin", -1.0),
                                    config.getDouble("particleGun.czmax",  1.0),
@@ -42,12 +44,23 @@ namespace mu2e {
             config.getDouble("particleGun.tmax", 0.),
             config.getHep3Vector("particleGun.point", CLHEP::Hep3Vector(0.,0.,0.)),
             config.getHep3Vector("particleGun.halfLength", CLHEP::Hep3Vector(0.,0.,0.)),
+            config.getString("particleGun.sourceShape", "box"),
+
+            config.getInt("particleGun.iterationLimit", 100),
+            config.getBool("particleGun.throwOnIterationLimit", false),
 
             (config.getBool("particleGun.doHistograms", false) ? "ParticleGun" : ""),
+            config.getBool("particleGun.doNtuples", false),
 
             config.getBool("particleGun.verbose",false)
             )
-  {}
+  {
+    std::vector<double> par;
+    std::vector<double> def;
+    def.clear();
+    config.getVectorDouble ("particleGun.momentumParameters", par, def);
+    m_gun.setParameters(par);
+  }
 
   void ParticleGun::generate( GenParticleCollection& genParts) {
     m_gun.generate(genParts);
