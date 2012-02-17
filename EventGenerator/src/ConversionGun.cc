@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.35 2012/02/08 17:45:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/08 17:45:10 $
+// $Id: ConversionGun.cc,v 1.36 2012/02/17 02:51:37 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/02/17 02:51:37 $
 //
 // Original author Rob Kutschke
 //
@@ -58,7 +58,7 @@ namespace mu2e {
     _pPulseShift(config.getDouble("conversionGun.pPulseShift", 0)),
     _tmin(0.),
     _tmax(0.),
-    _doHistograms(config.getDouble("conversionGun.doHistograms", true )),
+    _doHistograms(config.getBool("conversionGun.doHistograms", true )),
 
     // Random distribution.
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
