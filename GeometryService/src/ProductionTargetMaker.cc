@@ -22,6 +22,7 @@ namespace mu2e {
                                                    0,
                                                    c.getDouble("productionTarget.zNominal")
                                                    )
+                                 + c.getHep3Vector("productionTarget.offset", CLHEP::Hep3Vector(0,0,0))
                                  )
             )
   {}
