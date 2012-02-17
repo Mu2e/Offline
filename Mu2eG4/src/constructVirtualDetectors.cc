@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.20 2012/02/17 20:59:13 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.21 2012/02/17 23:25:44 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/17 20:59:13 $
+// $Date: 2012/02/17 23:25:44 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -86,6 +86,10 @@ namespace mu2e {
       FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
 
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+
+    if(verbosityLevel>0) {
+      VirtualDetectorId::printAll();
+    }
 
     // FIXME: one should factorize some the code below; the main
     // things which change: parent and offset
@@ -957,6 +961,10 @@ namespace mu2e {
     // placing virtual detector between ExtMonUCI removable shielding and front shielding
     vdId = VirtualDetectorId::ExtMonCommonPlane;
     if( vdg->exist(vdId) ) {
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+      }
+
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
       GeomHandle<Mu2eBuilding> building;
 
