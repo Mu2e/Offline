@@ -1,11 +1,12 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkPatRecDisplay.fcl,v 1.1 2011/09/09 13:14:32 mu2ecvs Exp $
+# $Id: TrkPatRecDisplay.fcl,v 1.2 2012/02/17 19:09:51 mu2ecvs Exp $
 # $Author: mu2ecvs $
-# $Date: 2011/09/09 13:14:32 $
+# $Date: 2012/02/17 19:09:51 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 # Give this job a name.
 process_name : TrkPatRecDisplay
@@ -43,6 +44,8 @@ services :
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 
     G4Helper : { }
+
+    SeedService       : @local::automaticSeeds
   }
 
 }
@@ -120,4 +123,7 @@ physics :
   end_paths      : [e1]
 
 }
+
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
 
