@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.7 2012/02/16 20:16:36 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/02/16 20:16:36 $
+// $Id: VirtualDetectorId.hh,v 1.8 2012/02/17 20:55:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/17 20:55:35 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,7 @@
 //    If only <<, then users will need to make temp ostringsteams
 //    if they want to do their own formatting.
 //
-// 3) Root always stores enum types as 32 bit ints, regardless of 
+// 3) Root always stores enum types as 32 bit ints, regardless of
 //    native word length on a machine.
 //
 
@@ -62,7 +62,7 @@ namespace mu2e {
       "ST_In",          "ST_Out",                                  \
       "TT_Mid",         "TT_MidInner",                             \
       "TT_FrontHollow", "TT_FrontPA",                              \
-      "TT_Back",						   \
+      "TT_Back",                                                   \
       "EMFC1Entrance", "EMFC1Exit", "EMFC2Entrance", "EMFC2Exit",  \
       "PS_FrontExit",                                              \
       "EMIEntrance1",                                              \
@@ -159,7 +159,7 @@ namespace mu2e {
     // Get a vector of all known names.
     static std::vector<std::string> const& names();
 
-    // Check validity of an Id.  
+    // Check validity of an Id.
     static bool isValid( enum_type id){
       if ( id <   unknown ) return false;
       if ( id >= lastEnum ) return false;

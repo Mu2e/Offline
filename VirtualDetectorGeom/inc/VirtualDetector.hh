@@ -4,7 +4,7 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.11 2011/12/14 22:20:47 gandr Exp $
+// $Id: VirtualDetector.hh,v 1.12 2012/02/17 20:55:35 gandr Exp $
 // $Author: gandr $
 //
 
@@ -54,9 +54,9 @@ namespace mu2e {
     static std::string volumeName(int i);
 
     void addVirtualDetector(int id,
-			    const CLHEP::Hep3Vector& parentCenterInMu2e,
-			    const CLHEP::HepRotation* parentRotationInMu2e,
-			    const CLHEP::Hep3Vector& vdCenterInParent);
+                            const CLHEP::Hep3Vector& parentCenterInMu2e,
+                            const CLHEP::HepRotation* parentRotationInMu2e,
+                            const CLHEP::Hep3Vector& vdCenterInParent);
 
   protected:
     static const std::string _baseName;
