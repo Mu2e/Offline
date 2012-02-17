@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.18 2012/02/16 20:17:04 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/02/16 20:17:04 $
+// $Id: constructVirtualDetectors.cc,v 1.19 2012/02/17 20:55:46 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/17 20:55:46 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -953,6 +953,50 @@ namespace mu2e {
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
-  }
 
+    // placing virtual detector between ExtMonUCI removable shielding and front shielding
+    vdId = VirtualDetectorId::ExtMonCommonPlane;
+    if( vdg->exist(vdId) ) {
+      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+      GeomHandle<Mu2eBuilding> building;
+
+      const double requested_z = _config->getDouble("vd.ExtMonCommonPlane.z")
+      if(requested_z  < building->hallInsideZBeamDumpWall() + vdg->getHalfLength()) {
+          throw cet::exception("GEOM")
+          << "The requested z = "<<requested_z<<" of the virtual detector " << VirtualDetectorId(vdId).name()
+          << " would cause it to overlap with hall walls.";
+      }
+
+      CLHEP::Hep3Vector centerInMu2e(
+                                     (building->hallInsideXmax() + building->hallInsideXmin())/2,
+                                     (building->hallInsideYmax() + building->hallInsideYmin())/2,
+                                     requested_z
+                                     );
+
+      std::vector<double> hlen(3);
+      hlen[0] = (building->hallInsideXmax() - building->hallInsideXmin())/2;
+      hlen[1] = (building->hallInsideYmax() - building->hallInsideYmin())/2;
+      hlen[2] = vdg->getHalfLength();
+
+      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                  hlen,
+                                  vacuumMaterial,
+                                  0,
+                                  centerInMu2e - parent.centerInMu2e(),
+                                  parent,
+                                  vdId,
+                                  vdIsVisible,
+                                  G4Color::Red(),
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false
+                                 );
+
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+  }
 }

@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.8 2012/02/17 20:55:35 gandr Exp $
+// $Id: VirtualDetectorId.hh,v 1.9 2012/02/17 20:55:46 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/17 20:55:35 $
+// $Date: 2012/02/17 20:55:46 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,7 @@ namespace mu2e {
       EMIEntrance2,                                           // 24:      Between ExtMonUCI front removable shielding and front shielding
       EMIC0Entrance,  EMIC0Exit, EMIC1Entrance,  EMIC1Exit,   // 25-28:   In ExtMonUCI
       EMIC2Entrance,  EMIC2Exit, EMIC3Entrance,  EMIC3Exit,   // 29-32:   4 collimator entrance and exit planes
+      ExtMonCommonPlane,                                      //    33:   An XY plane between the PS and anything ExtMon
       lastEnum
     };
 
@@ -69,7 +70,8 @@ namespace mu2e {
       "TT_OutSurf", "TT_InSurf",                                   \
       "EMIEntrance2",                                              \
       "EMIC0Entrance", "EMIC0Exit", "EMIC1Entrance", "EMIC1Exit",  \
-      "EMIC2Entrance", "EMIC2Exit", "EMIC3Entrance", "EMIC3Exit"
+      "EMIC2Entrance", "EMIC2Exit", "EMIC3Entrance", "EMIC3Exit",  \
+      "ExtMonCommonPlane"
 
   public:
 

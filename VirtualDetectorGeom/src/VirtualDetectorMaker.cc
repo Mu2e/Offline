@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.18 2012/02/17 20:55:35 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.19 2012/02/17 20:55:46 gandr Exp $
 // $Author: gandr $
 //
 
@@ -284,6 +284,13 @@ namespace mu2e {
                               0,
                               CLHEP::Hep3Vector(0, 0, extmon->envelopeParams()[2] - vdHL)
                              );
+    }
+
+    if(c.hasName("vd.ExtMonCommonPlane.z")) {
+        // Position and half length of this detector are best computed
+        // in one place.  Since the VirtualDetector data structure
+        // does not store half size, we'll do the computations later.
+        _vd->addVirtualDetector(VirtualDetectorId::ExtMonCommonPlane, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
     }
 
   }

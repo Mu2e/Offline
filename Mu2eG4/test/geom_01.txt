@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.120 2012/02/17 04:24:41 gandr Exp $
+// $Id: geom_01.txt,v 1.121 2012/02/17 20:55:46 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/17 04:24:41 $
+// $Date: 2012/02/17 20:55:46 $
 //
 // Original author Rob Kutschke
 //
@@ -254,6 +254,9 @@ double vd.halfLength     = 0.01; //mm
 int    vd.verbosityLevel = 0;
 bool   vd.visible        = true;
 bool   vd.solid          = false;
+
+// // VD right in front of a hall wall
+// double vd.ExtMonCommonPlane.z = -11999.99;
 
 // Production Target in PS:
 
