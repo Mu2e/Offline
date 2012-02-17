@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: primaryProtonGun.txt,v 1.2 2012/02/17 02:49:13 tassiell Exp $
+// $Id: primaryProtonGun.txt,v 1.3 2012/02/17 03:23:30 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/02/17 02:49:13 $
+// $Date: 2012/02/17 03:23:30 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -12,8 +12,8 @@
 bool primaryProtonGun.do = 1;
 
 // Limits on cos(polar angle):
-double primaryProtonGun.czmin = 1;
-double primaryProtonGun.czmax = 1;
+double primaryProtonGun.czmin = -1;  //1;
+double primaryProtonGun.czmax = -1;  //1;
 
 // Limits on phi angle:
 double primaryProtonGun.phimin = 0.0;

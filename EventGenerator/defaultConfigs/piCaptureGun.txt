@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: piCaptureGun.txt,v 1.2 2012/02/17 02:49:13 tassiell Exp $
+// $Id: piCaptureGun.txt,v 1.3 2012/02/17 03:23:30 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/02/17 02:49:13 $
+// $Date: 2012/02/17 03:23:30 $
 //
 // Original author Rob Kutschke
 // added piCaptureGun process
@@ -18,10 +18,6 @@ double picapture.czmax = 1;
 // Energy Ranges (MeV)
 double picapture.elow = 38.2;
 double picapture.ehi = 138.2;
-
-// Time limits in ns, relative to protons on target.
-double picapture.tmin  =  700.;
-double picapture.tmax  = 1694.;
 
 // Mean multiplicitie.
 double picapture.mean =  -1;
