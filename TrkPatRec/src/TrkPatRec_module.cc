@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.17 2011/12/09 00:33:23 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.18 2012/02/17 23:02:53 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/12/09 00:33:23 $
+// $Date: 2012/02/17 23:02:53 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -192,6 +192,7 @@ namespace mu2e
     std::vector<TrkHitInfo> _sfilt, _hfilt;
 // delta removal diagnostics
     TTree* _ddiag;
+    TH1F* _cutflow;
     Bool_t _isdelta;
     Float_t _pphi, _pt, _prho;
     Float_t _zmin, _zmax, _zgap;
@@ -261,11 +262,15 @@ namespace mu2e
     _tdriftmean = 0.5*2.5/0.05;
 // create diagnostics if requested
     if(_diag > 0)createDiagnostics();
+// create a histogram of throughput: this is a basic diagnostic that should ALWAYS be on
+    art::ServiceHandle<art::TFileService> tfs;
+    _cutflow=tfs->make<TH1F>("cutflow","Cutflow",10,-0.5,9.5);
   }
 
   void TrkPatRec::beginRun(art::Run& ){}
 
   void TrkPatRec::produce(art::Event& event ) {
+    _cutflow->Fill(0.0);
 // create output
     auto_ptr<TrkRecoTrkCollection> tracks(new TrkRecoTrkCollection );
 // event printout
@@ -280,7 +285,7 @@ namespace mu2e
     if(_diag > 0){
       if(!_kfitmc.findMCData(event)){
 	cout<<"MC information missing "<< endl;
-	return;
+//	return;
       }
     }
 //  find hit positions.  This uses conditions data, so it's not an attribute of the hits 
@@ -304,6 +309,8 @@ namespace mu2e
     static TrkDef dummydef;
     static TrkTimePeak dummypeak(-1,-1);
 // loop over the accepted time peaks
+    if(tpeaks.size()>0)_cutflow->Fill(1.0);
+    bool findhelix(false), findseed(false), findkal(false);
     for(unsigned ipeak=0;ipeak<tpeaks.size();++ipeak){
 // track fitting objects for this peak
       TrkHelix helixfit;
@@ -315,6 +322,7 @@ namespace mu2e
       TrkDef kaldef(helixdef);
 // robust helix fit
       if(_hfit.findHelix(helixdef,helixfit)){
+	findhelix = true;
 // convert the result to standard helix parameters, and initialize the seed definition helix
 	HepVector hpar;
 	HepVector hparerr;
@@ -327,6 +335,7 @@ namespace mu2e
 // now, fit the seed helix from the filtered hits
 	_seedfit.makeTrack(seeddef,seedfit);
 	if(seedfit._fit.success()){
+	  findseed = true;
 // find the helix parameters from the helix fit, and initialize the full Kalman fit with this
 	  double midflt = 0.5*(seedfit._krep->lowFitRange() + seedfit._krep->hiFitRange());
 	  double locflt;
@@ -340,11 +349,14 @@ namespace mu2e
 	  kaldef.setTraj(&seedfit._krep->pieceTraj());
 	  _kfit.makeTrack(kaldef,kalfit);
 // if successfull, try to add missing hits
-	  if(kalfit._fit.success() && _addhits ){
-	    std::vector<size_t> misshits;
-	    findMissingHits(hitflags,kalfit,misshits);
-	    if(misshits.size() > 0){
-	      _kfit.addHits(kalfit,_strawhits,misshits);
+	  if(kalfit._fit.success()){
+	    findkal = true;
+	    if(_addhits){
+	      std::vector<size_t> misshits;
+	      findMissingHits(hitflags,kalfit,misshits);
+	      if(misshits.size() > 0){
+		_kfit.addHits(kalfit,_strawhits,misshits);
+	      }
 	    }
 	  }
         }
@@ -360,6 +372,9 @@ namespace mu2e
 // cleanup the seed fit
       seedfit.deleteTrack();
     }
+    if(findhelix)_cutflow->Fill(2.0);
+    if(findseed)_cutflow->Fill(3.0);
+    if(findkal)_cutflow->Fill(4.0);
 // add a dummy entry in case there are no peaks
     if(_diag > 0 && tpeaks.size() == 0)
       fillFitDiag(-1,dummypeak,dummydef,dummyhfit,dummydef,dummykfit,dummydef,dummykfit);
