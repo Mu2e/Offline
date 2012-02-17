@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: ejectedProtonGun.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Id: ejectedProtonGun.txt,v 1.2 2012/02/17 02:49:13 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/02/16 20:56:08 $
+// $Date: 2012/02/17 02:49:13 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -15,6 +15,10 @@ bool ejectedProtonGun.do = true;
 double ejectedProtonGun.czmin = -1;
 double ejectedProtonGun.czmax = 1;
 
+// Limits on phi angle:
+double ejectedProtonGun.phimin = 0.0;
+double ejectedProtonGun.phimax = 6.283185307179586;
+
 // Energy Ranges (MeV)
 double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
@@ -25,6 +29,23 @@ double ejectedProtonGun.tmax  = 1694.;
 
 // Mean multiplicitie.
 double ejectedProtonGun.mean = -1;
+
+bool ejectedProtonGun.PStoDSDelay = false;
+
+bool ejectedProtonGun.pPulseDelay = false;
+
+double ejectedProtonGun.pPulseShift = 0.0;
+
+string FoilParticleGenerator.STfilename = "ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt";
+
+int ejectedProtonGun.nToSkip = 0;
+
+// Control of histograms.
+bool ejectedProtonGun.doHistograms = true;
+
+// Number of bins in the binned representation of the energy spectrum.
+int ejectedProtonGun.nbins = 1000;
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

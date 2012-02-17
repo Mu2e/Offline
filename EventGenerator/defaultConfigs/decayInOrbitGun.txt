@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: decayInOrbitGun.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Id: decayInOrbitGun.txt,v 1.2 2012/02/17 02:49:13 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/02/16 20:56:08 $
+// $Date: 2012/02/17 02:49:13 $
 //
 // Original author Rob Kutschke
 // added DecayInOrbitGun process
@@ -11,12 +11,20 @@
 // enable processe
 bool decayinorbitGun.do = true;
 
+// Kind of spectrum to be used
+string decayinorbitGun.energySpectrum = "Czarnecki";
+
 // Limits on cos(polar angle):
 double decayinorbitGun.czmin = 0.5;
 double decayinorbitGun.czmax = 0.7;
 
+// Limits on phi angle:
+double decayinorbitGun.phimin = 0.0;
+double decayinorbitGun.phimax = 6.283185307179586;
+
 // Energy Ranges (MeV)
-double decayinorbitGun.elow =  90.;
+double decayinorbitGun.elow =   0.1;
+double decayinorbitGun.ehi = 104.96;
 
 // Time limits in ns, relative to protons on target.
 double decayinorbitGun.tmin  =  700.;
@@ -24,6 +32,26 @@ double decayinorbitGun.tmax  = 1694.;
 
 // Mean multiplicitie.
 double decayinorbitGun.mean =  -1;
+
+bool decayinorbitGun.PStoDSDelay = true;
+
+bool decayinorbitGun.pPulseDelay = false;
+
+double decayinorbitGun.pPulseShift = 0.0;
+
+string FoilParticleGenerator.STfilename = "ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt";
+
+// Resolution of the energy spectrum (0.1 default)
+double decayinorbitGun.spectrumResolution = 0.1;
+
+int decayinorbitGun.nToSkip = 0;
+
+// Control of histograms.
+bool decayinorbitGun.doHistograms = true;
+
+// Number of bins in the binned representation of the energy spectrum.
+int decayinorbitGun.nbins = 1000;
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

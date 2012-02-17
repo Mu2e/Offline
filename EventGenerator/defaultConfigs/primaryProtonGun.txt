@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: primaryProtonGun.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Id: primaryProtonGun.txt,v 1.2 2012/02/17 02:49:13 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/02/16 20:56:08 $
+// $Date: 2012/02/17 02:49:13 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -15,6 +15,10 @@ bool primaryProtonGun.do = 1;
 double primaryProtonGun.czmin = 1;
 double primaryProtonGun.czmax = 1;
 
+// Limits on phi angle:
+double primaryProtonGun.phimin = 0.0;
+double primaryProtonGun.phimax = 6.283185307179586;
+
 // Position of PrimaryProtonGun (local to target)
 vector<double> beamDisplacementOnTarget = {0.,0.,0.};
 
@@ -24,6 +28,12 @@ double primaryProtonGun.beamSpotSigma = 1; //units are mm
 // Time limits in ns, relative to protons on target.
 double primaryProtonGun.tmin  =    0.;
 double primaryProtonGun.tmax  =  100.;
+
+// Momentum of the generated proton; in MeV. (The kinetic energy of proton is 8 Gev)
+double primaryProtonGun.p = 8888.6;
+
+// Control of histograms.
+bool primaryProtonGun.doHistograms = true;
 
 
 // This tells emacs to view this file in c++ mode.

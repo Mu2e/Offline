@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: nuclearCaptureGun.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Id: nuclearCaptureGun.txt,v 1.2 2012/02/17 02:49:13 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/02/16 20:56:08 $
+// $Date: 2012/02/17 02:49:13 $
 //
 // Original author Rob Kutschke
 // added NuclearCaptureGun process
@@ -15,23 +15,63 @@ bool nuclearCaptureGun.do = true;
 double nuclearCaptureGun.czmin = -1;
 double nuclearCaptureGun.czmax = 1;
 
+// Limits on phi angle:
+double nuclearCaptureGun.phimin = 0.0;
+double nuclearCaptureGun.phimax = 6.283185307179586;
+
 // Energy Ranges (MeV)
-double nuclearCaptureGun.protonElow = 0.0;
-double nuclearCaptureGun.protonEhi = 300.;
-double nuclearCaptureGun.neutronElow = 0.0;
-double nuclearCaptureGun.neutronEhi = 0.1;
-double nuclearCaptureGun.photonElow = 0.0;
-double nuclearCaptureGun.photonEhi = 100.;
+//----------------------------------------------------------------
+// Range of proton energy
+double nuclearCaptureGun.protonElow  =  0.0;
+double nuclearCaptureGun.protonEhi   = 300.;
+
+//Range of neutron energy
+double nuclearCaptureGun.neutronElow =  0.0;
+double nuclearCaptureGun.neutronEhi  = 100.;
+
+//Range of photon energy
+double nuclearCaptureGun.photonElow  =  0.0;
+double nuclearCaptureGun.photonEhi   = 100.;
+//----------------------------------------------------------------
 
 // Time limits in ns, relative to protons on target.
 double nuclearCaptureGun.tmin  =  0.;
 double nuclearCaptureGun.tmax  = 1694.;
 
 // Mean multiplicitie.
+//----------------------------------------------------------------
+// mean number of nuclear captures per event
 double nuclearCaptureGun.mean = -1;
+
+// mean number of ejected protons per nuclear capture
 double nuclearCaptureGun.protonMean = 0.1;
+
+// mean number of ejected neutrons per nuclear capture
 double nuclearCaptureGun.neutronMean = 1.5;
+
+// mean number of ejected photons per nuclear capture
 double nuclearCaptureGun.photonMean = 2;
+//----------------------------------------------------------------
+
+bool nuclearCaptureGun.PStoDSDelay = true;
+
+bool nuclearCaptureGun.pPulseDelay = false;
+
+double nuclearCaptureGun.pPulseShift = 0.0;
+
+string FoilParticleGenerator.STfilename = "ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt";
+
+int nuclearCaptureGun.nToSkip = 0;
+
+// Control of histograms.
+bool nuclearCaptureGun.doHistograms = true;
+
+//number of bins for proton energy spectrum
+int nuclearCaptureGun.nProtonBins = 1000;
+
+//number of bins for photon energy spectrum
+int nuclearCaptureGun.nPhotonBins = 1000;
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

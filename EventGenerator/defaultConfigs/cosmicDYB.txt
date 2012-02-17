@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: cosmicDYB.txt,v 1.1 2012/02/16 20:56:08 tassiell Exp $
+// $Id: cosmicDYB.txt,v 1.2 2012/02/17 02:49:13 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/02/16 20:56:08 $
+// $Date: 2012/02/17 02:49:13 $
 //
 // Original author Rob Kutschke
 // added CosmicDYB process
@@ -21,6 +21,18 @@ double cosmicDYB.muEMax = 1.e5;
 
 // Mean multiplicities for the two background generators.
 double cosmicDYB.mean =  -1;
+
+// half area to generate events (cm)
+double cosmicDYB.dx = 5000;
+double cosmicDYB.dz = 5000;
+double cosmicDYB.y0 = 0;
+
+// Dimensions of the 2d working space for hrndg2.
+int cosmicDYB.nBinsE = 4000;
+int cosmicDYB.nBinsTheta = 100;
+
+// Control of histograms.
+bool cosmicDYB.doHistograms = true;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
