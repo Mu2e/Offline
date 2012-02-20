@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.16 2012/02/14 15:27:25 onoratog Exp $
+// $Id: genconfig_Bkg.txt,v 1.17 2012/02/20 21:07:17 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/14 15:27:25 $
+// $Date: 2012/02/20 21:07:17 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
@@ -11,9 +11,9 @@
 
 // what processes to do
 bool ejectedProtonGun.do = 0;
-bool decayinorbitGun.do = 1;
+bool decayinorbitGun.do = 0;
 bool primaryProtonGun.do = 0;
-bool ejectedNeutronGun.do = 0;
+bool ejectedNeutronGun.do = 1;
 bool ejectedPhotonGun.do = 0;
 bool conversionGun.do = 0;
 
@@ -61,7 +61,7 @@ double decayinorbitGun.tmax  = 1694.;
 double ejectedProtonGun.tmin  =  0.;
 double ejectedProtonGun.tmax  = 1694.;
 double ejectedNeutronGun.tmin  =  0.;
-double ejectedNeutronGun.tmax  = 1694.;
+double ejectedNeutronGun.tmax  = 10000.;
 double ejectedPhotonGun.tmin  =  0.;
 double ejectedPhotonGun.tmax  = 1694.;
 double primaryProtonGun.tmin  =  700.;
@@ -72,6 +72,8 @@ double ejectedProtonGun.mean = -1;
 double ejectedNeutronGun.mean = -1;
 double ejectedPhotonGun.mean = -1;
 double decayinorbitGun.mean = -1;
+
+bool FoilParticleGenerator.foldingTimeOption = false;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
