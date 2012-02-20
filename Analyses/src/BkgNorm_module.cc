@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.8 2012/02/06 23:56:32 onoratog Exp $
+// $Id: BkgNorm_module.cc,v 1.9 2012/02/20 20:24:46 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/06 23:56:32 $
+// $Date: 2012/02/20 20:24:46 $
 //
 // Original author Gianni Onorato
 //
@@ -183,8 +183,8 @@ namespace mu2e {
       // "genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:"; //Generated particle info (10 entries)
       // "dau1PdgId:dau1P:dau1StartVolume:"; //First Daughter of generated particle info (3 entries)
 
-      _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple", "evt:run:time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
-      _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
+      _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple", "evt:run:time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
+      _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
    }
 
     doStoppingTarget(evt);
@@ -285,7 +285,7 @@ namespace mu2e {
       //time of the hit
       double hitTime = hit.time();
 
-      float tntpArray[31];
+      float tntpArray[42];
       int idx(0);
       tntpArray[idx++] = evt.id().event();
       tntpArray[idx++] = evt.run();
@@ -332,6 +332,18 @@ namespace mu2e {
       tntpArray[idx++] = sim.startMomentum().vect().mag();
       tntpArray[idx++] = sim.fromGenerator();
       tntpArray[idx++] = sim.startVolumeIndex();
+      tntpArray[idx++] = sim.startPosition().getX();
+      tntpArray[idx++] = sim.startPosition().getY();
+      tntpArray[idx++] = sim.startPosition().getZ();
+      tntpArray[idx++] = sim.startGlobalTime();
+      tntpArray[idx++] = sim.endVolumeIndex();
+      tntpArray[idx++] = sim.endPosition().getX();
+      tntpArray[idx++] = sim.endPosition().getY();
+      tntpArray[idx++] = sim.endPosition().getZ();
+      tntpArray[idx++] = sim.endGlobalTime();
+      tntpArray[idx++] = sim.preLastStepKineticEnergy();
+      tntpArray[idx++] = sim.nMCStepPoints();
+
       int nEvolutionSteps = 0;
       SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0);
       if (!sim.fromGenerator()) {
@@ -451,7 +463,7 @@ namespace mu2e {
         if (ROIds.size() < 1) continue;
 
         bool readCryOnce(false);
-        float cntpArray[25];
+        float cntpArray[36];
         int idx(0);
 
         double firstHitTime = 100000;
@@ -502,6 +514,18 @@ namespace mu2e {
         cntpArray[idx++] = sim.startMomentum().vect().mag();
         cntpArray[idx++] = sim.fromGenerator();
         cntpArray[idx++] = sim.startVolumeIndex();
+        cntpArray[idx++] = sim.startPosition().getX();
+        cntpArray[idx++] = sim.startPosition().getY();
+        cntpArray[idx++] = sim.startPosition().getZ();
+        cntpArray[idx++] = sim.startGlobalTime();
+        cntpArray[idx++] = sim.endVolumeIndex();
+        cntpArray[idx++] = sim.endPosition().getX();
+        cntpArray[idx++] = sim.endPosition().getY();
+        cntpArray[idx++] = sim.endPosition().getZ();
+        cntpArray[idx++] = sim.endGlobalTime();
+        cntpArray[idx++] = sim.preLastStepKineticEnergy();
+        cntpArray[idx++] = sim.nMCStepPoints();
+
         int nEvolutionSteps = 0;
         SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0);
         if (!sim.fromGenerator()) {
