@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.7 2011/07/17 02:11:12 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 02:11:12 $
+// $Id: SimParticle.hh,v 1.8 2012/02/20 20:23:55 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/20 20:23:55 $
 //
 // Original author Rob Kutschke
 //
@@ -66,6 +66,8 @@ namespace mu2e {
       _endVolumeIndex(0),
       _endG4Status(),
       _stoppingCode(),
+      _preLastStepKE(-1),
+      _nSteps(0),
       _daughterSims(),
       _weight(0.),
       _endDefined(false){
@@ -103,6 +105,8 @@ namespace mu2e {
       _endVolumeIndex(),
       _endG4Status(),
       _stoppingCode(),
+      _preLastStepKE(-1),
+      _nSteps(0),
       _daughterSims(),
       _weight(aweight),
       _endDefined(false)
@@ -116,7 +120,9 @@ namespace mu2e {
                      double                  aendProperTime,
                      unsigned                aendVolumeIndex,
                      unsigned                aendG4Status,
-                     ProcessCode             astoppingCode){
+                     ProcessCode             astoppingCode,
+                     double                  preLastStepKE,
+                     int                     nSteps){
       _endDefined      = true;
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
@@ -125,6 +131,8 @@ namespace mu2e {
       _endVolumeIndex  = aendVolumeIndex;
       _endG4Status     = aendG4Status;
       _stoppingCode    = astoppingCode;
+      _preLastStepKE   = preLastStepKE;
+      _nSteps          = nSteps;
     }
 
     void addDaughter( art::Ptr<SimParticle> const& p ){
@@ -178,6 +186,8 @@ namespace mu2e {
     unsigned     endVolumeIndex() const { return _endVolumeIndex;}
     unsigned     endG4Status()    const { return _endG4Status;   }
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
+    double       preLastStepKineticEnergy() const { return _preLastStepKE; }
+    int          nMCStepPoints()  const { return _nSteps;        }
 
     // SimParticle indices of daughters of this track.
     std::vector<key_type>               const& daughterIds() const { return _daughterIds;}
@@ -246,6 +256,8 @@ namespace mu2e {
     unsigned                _endVolumeIndex;
     unsigned                _endG4Status;
     ProcessCode             _stoppingCode;
+    double                  _preLastStepKE;
+    int                     _nSteps;
 
     // SimParticle IDs of daughters of this track.
     std::vector<key_type>  _daughterIds;
