@@ -3,9 +3,9 @@
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 // add internal conversion, 11/2011 rhb
 //
-// $Id: PiCapture.cc,v 1.32 2012/01/31 05:34:19 onoratog Exp $
+// $Id: PiCapture.cc,v 1.33 2012/02/20 20:21:09 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/01/31 05:34:19 $
+// $Date: 2012/02/20 20:21:09 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -60,6 +60,7 @@ namespace mu2e {
     _PStoDSDelay(config.getBool("picapture.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("picapture.pPulseDelay", true)),
     _pPulseShift(config.getDouble("picapture.pPulseShift", 0)),
+    _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     _nbins(config.getInt("picapture.nbins",  1000)),
     _doHistograms(config.getBool("picapture.doHistograms",true)),
 
@@ -159,7 +160,7 @@ namespace mu2e {
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
-      _fGenerator->generatePositionAndTime(pos, time);
+      _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
       _hFoilNumber->Fill(static_cast<double>(_fGenerator->iFoil()));
 

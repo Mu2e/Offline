@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.23 2012/01/31 05:34:19 onoratog Exp $
+// $Id: EjectedNeutronGun.cc,v 1.24 2012/02/20 20:21:09 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/01/31 05:34:19 $
+// $Date: 2012/02/20 20:21:09 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -64,9 +64,9 @@ namespace mu2e {
     _PStoDSDelay(config.getBool("ejectedNeutronGun.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("ejectedNeutronGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("ejectedNeutronGun.pPulseShift", 0)),
+    _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
     _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
-
     _spectrumModel(checkSpectrumModel(config.getInt("ejectedNeutronGun.spectrumNumber",0))),
     _filetoread (config.getString("ejectedNeutronGun.spectrumFile","ConditionsService/data/neutronSpectrum.txt")),							 
     // Initialize random number distributions; getEngine comes from the base class.
@@ -170,7 +170,7 @@ namespace mu2e {
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
-      _fGenerator->generatePositionAndTime(pos, time);
+      _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
       //Pick up energy
       double eKine = _elow + _shape.fire() * ( _ehi - _elow ); 

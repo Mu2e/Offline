@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.36 2012/02/17 02:51:37 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/02/17 02:51:37 $
+// $Id: ConversionGun.cc,v 1.37 2012/02/20 20:21:09 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/20 20:21:09 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,7 @@ namespace mu2e {
     _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
     _pPulseDelay(config.getBool("conversionGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("conversionGun.pPulseShift", 0)),
+    _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     _tmin(0.),
     _tmax(0.),
     _doHistograms(config.getBool("conversionGun.doHistograms", true )),
@@ -120,7 +121,7 @@ namespace mu2e {
     // Compute position and momentum
     double time;
     CLHEP::Hep3Vector pos;
-    _fGenerator->generatePositionAndTime(pos, time);
+    _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
     // Compute momentum 3-vector
     CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);

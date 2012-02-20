@@ -5,7 +5,7 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 //
-// $Id: EjectedPhotonGun.hh,v 1.3 2012/01/31 05:34:19 onoratog Exp $
+// $Id: EjectedPhotonGun.hh,v 1.4 2012/02/20 20:21:09 onoratog Exp $
 // $Author: &
 // $Date: &
 //
@@ -70,6 +70,9 @@ namespace mu2e {
     bool _PStoDSDelay;
     bool _pPulseDelay;
     double _pPulseShift;
+
+    // Activate the folding procedure on generation time. Default is on
+    bool _timeFolding;
 
     // end: parameters that can be configured from the config file.
 

@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.25 2012/02/07 07:17:08 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.26 2012/02/20 20:21:08 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 07:17:08 $
+// $Date: 2012/02/20 20:21:08 $
 //
 //
 
@@ -71,6 +71,9 @@ namespace mu2e {
     bool _pStodSDelay;
     bool _pPulseDelay;
     double _pPulseShift;
+
+    // Activate the folding procedure on generation time. Default is on
+    bool _timeFolding;
 
     // Limits on the generated time.
     double _tmin;

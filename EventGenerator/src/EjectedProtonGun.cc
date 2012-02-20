@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.32 2012/02/08 19:16:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/08 19:16:34 $
+// $Id: EjectedProtonGun.cc,v 1.33 2012/02/20 20:21:09 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/20 20:21:09 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -65,6 +65,7 @@ namespace mu2e {
     _PStoDSDelay(config.getBool("ejectedProtonGun.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("ejectedProtonGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("ejectedProtonGun.pPulseShift", 0)),
+    _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
@@ -162,7 +163,7 @@ namespace mu2e {
         //Pick up position and momentum
         CLHEP::Hep3Vector pos(0,0,0);
         double time;
-        _fGenerator->generatePositionAndTime(pos, time);
+        _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
         //Pick up energy
         double eKine = _elow + _shape.fire() * ( _ehi - _elow );

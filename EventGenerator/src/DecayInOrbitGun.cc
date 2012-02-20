@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.45 2012/02/08 19:27:22 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.46 2012/02/20 20:21:09 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/08 19:27:22 $
+// $Date: 2012/02/20 20:21:09 $
 //
 // Original author Rob Kutschke
 //
@@ -57,6 +57,7 @@ namespace mu2e {
     _pStodSDelay(config.getBool("decayinorbitGun.PStoDSDelay", true)),
     _pPulseDelay(config.getBool("decayinorbitGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("decayinorbitGun.pPulseShift", 0)),
+    _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
     _energySpectrum(config.getString("decayinorbitGun.energySpectrum", "Czarnecki")),
@@ -187,7 +188,7 @@ namespace mu2e {
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
-      _fGenerator->generatePositionAndTime(pos, time);
+      _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
       //Pick up energy and momentum vector
       double e(0);

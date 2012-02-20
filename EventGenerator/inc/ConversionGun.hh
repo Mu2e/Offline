@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.17 2012/01/31 05:34:19 onoratog Exp $
+// $Id: ConversionGun.hh,v 1.18 2012/02/20 20:21:08 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/01/31 05:34:19 $
+// $Date: 2012/02/20 20:21:08 $
 //
 
 // C++ includes
@@ -57,6 +57,9 @@ namespace mu2e {
     bool _PStoDSDelay;
     bool _pPulseDelay;
     double _pPulseShift;
+
+    // Activate the folding procedure on generation time. Default is on
+    bool _timeFolding;
 
     // Limits on the generated time.
     double _tmin;

@@ -129,7 +129,7 @@ namespace mu2e {
   }
 
   void FoilParticleGenerator::generatePositionAndTime(CLHEP::Hep3Vector& pos,
-                                                      double& time) {
+                                                      double& time, bool foldingTimeOption) {
 
     //    cout << "gen pos and time called " << endl;
 
@@ -210,21 +210,23 @@ namespace mu2e {
         time += _muDelay;
       }
 
-      int periods = static_cast<int>(time/_maxtime);
-      time = time - (periods*_maxtime);
 
+      if (foldingTimeOption) {
+        int periods = static_cast<int>(time/_maxtime);
+        time = time - (periods*_maxtime);
+      }
       /*
-      while (time > _maxtime && countOverlay<MaxTimeCicleOverlay) {
+        while (time > _maxtime && countOverlay<MaxTimeCicleOverlay) {
 	time -= _maxtime;
 	countOverlay++;
-      }
+        }
       */
     }
     if (_posAlgo==muonFileInputPos) {
-        pos -= _DSOffset;           // Move to DS coordinate system
+      pos -= _DSOffset;           // Move to DS coordinate system
     }
   }
-
+  
   double FoilParticleGenerator::muDelay() {
     return _muDelay;
   }

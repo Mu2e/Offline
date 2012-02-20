@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.  
 // //
-// $Id: EjectedPhotonGun.cc,v 1.6 2012/01/31 05:34:19 onoratog Exp $
+// $Id: EjectedPhotonGun.cc,v 1.7 2012/02/20 20:21:09 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/01/31 05:34:19 $
+// $Date: 2012/02/20 20:21:09 $
 //
 // Original author Gianni Onorato
 //
@@ -63,6 +63,7 @@ namespace mu2e {
     _PStoDSDelay(config.getBool("ejectedPhotonGun.PStoDSDelay", false)),
     _pPulseDelay(config.getBool("ejectedPhotonGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("ejectedPhotonGun.pPulseShift", 0)),
+    _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
@@ -157,7 +158,7 @@ namespace mu2e {
         //Pick up position and momentum
         CLHEP::Hep3Vector pos(0,0,0);
         double time;
-        _fGenerator->generatePositionAndTime(pos, time);
+        _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
         //Pick up energy
         double e = _elow + _flatmomentum.fire() * ( _ehi - _elow );

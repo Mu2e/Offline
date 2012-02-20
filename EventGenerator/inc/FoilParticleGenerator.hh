@@ -56,7 +56,7 @@ namespace mu2e {
 
     ~FoilParticleGenerator();
 
-    void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time);
+    void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time, bool foldingTimeOption);
 
     int iFoil();
 
