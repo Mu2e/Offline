@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.13 2012/02/14 15:27:25 onoratog Exp $
+# $Id: BkgRatesCounter.fcl,v 1.14 2012/02/20 20:26:41 onoratog Exp $
 # $Author: onoratog $
-# $Date: 2012/02/14 15:27:25 $
+# $Date: 2012/02/20 20:26:41 $
 #
 # Original author Gianni Onorato.
 
@@ -23,7 +23,9 @@ process_name : BkgRatesCounter
 source :
 {
   module_type : EmptyEvent
+#   module_type: RootInput  
   maxEvents : -1
+#   fileNames :  ["BkgInput.root"]
 }
 
 services :
@@ -152,6 +154,7 @@ outputs:
   {
     module_type    : RootOutput
     fileName       : "data_bkg.root"
+    fastCloning    : false
     outputCommands : ['keep *_*_*_*'
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
