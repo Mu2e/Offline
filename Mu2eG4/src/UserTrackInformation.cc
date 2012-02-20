@@ -1,9 +1,9 @@
 //
 // Mu2e specific information about one G4 track.
 //
-// $Id: UserTrackInformation.cc,v 1.1 2010/12/17 22:07:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2010/12/17 22:07:56 $
+// $Id: UserTrackInformation.cc,v 1.2 2012/02/20 20:22:48 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/20 20:22:48 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,9 @@ namespace mu2e{
   UserTrackInformation::UserTrackInformation():
     G4VUserTrackInformation("Mu2eTrackInfo"),
     _forcedStop(false),
-    _code(){
+    _code(),
+    _preLastStepKE(-1),
+    _nSteps(0){
   }
 
   UserTrackInformation::~UserTrackInformation(){

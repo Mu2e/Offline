@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.29 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: TrackingAction.cc,v 1.30 2012/02/20 20:22:48 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/20 20:22:48 $
 //
 // Original author Rob Kutschke
 //
@@ -230,6 +230,13 @@ namespace mu2e {
     G4String pname  = findStoppingProcess(trk);
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
+    //Get kinetic energy at the begin of the last step
+    double preLastStepKE = getPreLastStepKE(trk);
+
+
+    //Get number od steps the track is made of
+    int nSteps = getNSteps(trk);
+
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
                           CLHEP::HepLorentzVector(trk->GetMomentum(),trk->GetTotalEnergy()),
@@ -237,7 +244,9 @@ namespace mu2e {
                           trk->GetProperTime(),
                           _physVolHelper->index(trk),
                           trk->GetTrackStatus(),
-                          stoppingCode
+                          stoppingCode,
+                          preLastStepKE,
+                          nSteps
                           );
 
   }
@@ -394,6 +403,24 @@ namespace mu2e {
     G4VProcess const* process = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep();
 
     return process->GetProcessName();
+  }
+
+  //Retrieve kinetic energy at the beginnig of the last step from UserTrackInfo
+  double TrackingAction::getPreLastStepKE( G4Track const* trk ) {
+
+    G4VUserTrackInformation* info = trk->GetUserInformation();
+    UserTrackInformation const* tinfo   = (UserTrackInformation*)info;
+    return tinfo->preLastStepKE();
+
+  }
+
+  // Get the number of G4 steps the track is made of
+  int TrackingAction::getNSteps( G4Track const* trk ) {
+
+    G4VUserTrackInformation* info = trk->GetUserInformation();
+    UserTrackInformation const* tinfo   = (UserTrackInformation*)info;
+    return tinfo->nSteps();
+
   }
 
   // Find the name of the code for the process that created this track.

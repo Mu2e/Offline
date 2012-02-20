@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.18 2011/12/15 16:33:55 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/15 16:33:55 $
+// $Id: SteppingAction.hh,v 1.19 2012/02/20 20:22:48 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/20 20:22:48 $
 //
 // Original author Rob Kutschke
 //
@@ -103,6 +103,9 @@ namespace mu2e {
     G4ThreeVector _lastPosition;
     G4ThreeVector _lastMomentum;
     G4double      _zref;
+
+    // Kinetic energy at the beginning of the step point
+    double _preStepEK;
 
     // Functions to decide whether or not to kill tracks.
     bool killTooManySteps ( const G4Track* );

@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.28 2011/12/16 00:25:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/16 00:25:19 $
+// $Id: SteppingAction.cc,v 1.29 2012/02/20 20:22:48 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/20 20:22:48 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@ namespace mu2e {
     _lastPosition(),
     _lastMomentum(),
     _zref(0.),
+    _preStepEK(-1),
 
     // Things related to time virtual detector
     _collection(0),
@@ -181,6 +182,14 @@ namespace mu2e {
     // Pre and post stepping points.
     G4StepPoint const* prept  = step->GetPreStepPoint();
     G4StepPoint const* postpt = step->GetPostStepPoint();
+
+    // Get kinetic energy at the begin of the step
+    _preStepEK = prept->GetKineticEnergy();
+
+    G4VUserTrackInformation* info = track->GetUserInformation();
+    UserTrackInformation * tinfo   = (UserTrackInformation*)info;
+
+    tinfo->setStepInfo(_preStepEK, _nSteps);
 
     // Save hits in time virtual detector
     for( unsigned int i=0; i<tvd_time.size(); ++i ) {

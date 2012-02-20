@@ -3,9 +3,9 @@
 //
 // Mu2e specific information about one G4 track.
 //
-// $Id: UserTrackInformation.hh,v 1.4 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: UserTrackInformation.hh,v 1.5 2012/02/20 20:22:48 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/20 20:22:48 $
 //
 // Original author Rob Kutschke
 //
@@ -29,8 +29,16 @@ namespace mu2e{
       _code = code;
     }
 
-    bool       isForced() const { return _forcedStop; }
-    ProcessCode code()    const { return _code; }
+    void setStepInfo (double kineticEnergy, int nSteps ) {
+      _preLastStepKE = kineticEnergy;
+      _nSteps = nSteps;
+    }
+
+    bool         isForced() const { return _forcedStop; }
+    ProcessCode  code()    const { return _code; }
+    double       preLastStepKE() const { return _preLastStepKE; }
+    int          nSteps() const { return _nSteps; }
+
 
     virtual void Print() const;
 
@@ -41,6 +49,12 @@ namespace mu2e{
 
     // If it did, then this is the reason why.
     ProcessCode _code;
+
+    // Kinetic energy of the particle at the beginning of the last step
+    double _preLastStepKE;
+
+    // Number of G4 steps the track if made of
+    int _nSteps;
 
   };
 
