@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.116 2012/02/07 00:20:14 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.117 2012/02/21 22:24:49 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/07 00:20:14 $
+// $Date: 2012/02/21 22:24:49 $
 //
 // Original author Rob Kutschke
 //
@@ -121,7 +121,7 @@
 #include "G4HelixSimpleRunge.hh"
 #include "G4GDMLParser.hh"
 
-#include "Mu2eG4/inc/DSField.hh"
+#include "Mu2eG4/inc/Mu2eGlobalField.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
 
 using namespace std;
@@ -383,7 +383,7 @@ namespace mu2e {
 
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership
 
-    G4MagneticField * _field = new DSField("", worldGeom->mu2eOriginInWorld());
+    G4MagneticField * _field = new Mu2eGlobalField("", worldGeom->mu2eOriginInWorld());
     G4Mag_UsualEqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
     if ( stepper  == "G4ClassicalRK4" ) {

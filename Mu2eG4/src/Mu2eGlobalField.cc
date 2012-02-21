@@ -1,9 +1,9 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: DSField.cc,v 1.7 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: Mu2eGlobalField.cc,v 1.1 2012/02/21 22:24:49 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/21 22:24:49 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite by Rob Kutschke at version 1.4
@@ -13,7 +13,7 @@
 #include <iostream>
 
 // Mu2e includes.
-#include "Mu2eG4/inc/DSField.hh"
+#include "Mu2eG4/inc/Mu2eGlobalField.hh"
 #include "BFieldGeom/inc/BFMapBase.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -26,7 +26,7 @@ using namespace std;
 
 namespace mu2e {
 
-  DSField::DSField( std::string name, G4ThreeVector mapOrigin ):
+  Mu2eGlobalField::Mu2eGlobalField( std::string name, G4ThreeVector mapOrigin ):
     _name(name){
 
     // Load map.
@@ -34,7 +34,7 @@ namespace mu2e {
   }
 
   // This is the entry point called by G4.
-  void DSField::GetFieldValue(const G4double Point[4],
+  void Mu2eGlobalField::GetFieldValue(const G4double Point[4],
                               G4double *Bfield) const {
 
     // Put point in required format and required reference frame.
@@ -48,7 +48,7 @@ namespace mu2e {
     Bfield[2] = bf.z()*CLHEP::tesla;
 
     /*
-    cout << "DSField map=" << _map->getKey()
+    cout << "Mu2eGlobalField map=" << _map->getKey()
          << " point=("<<point.x()<<","<<point.y()<<","<<point.z()<<")"
          << " field=("<<Bfield[0]<<","<<Bfield[1]<<","<<Bfield[2]<<")"
          << endl;
@@ -57,7 +57,7 @@ namespace mu2e {
   }
 
   // Update the map and its origin.  Might be called for new runs?
-  void DSField::update( const G4ThreeVector& mapOrigin){
+  void Mu2eGlobalField::update( const G4ThreeVector& mapOrigin){
 
     _mapOrigin = mapOrigin;
 

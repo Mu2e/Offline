@@ -1,11 +1,11 @@
-#ifndef Mu2eG4_DSField_hh
-#define Mu2eG4_DSField_hh
+#ifndef Mu2eG4_Mu2eGlobalField_hh
+#define Mu2eG4_Mu2eGlobalField_hh
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: DSField.hh,v 1.7 2011/05/20 20:21:47 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:21:47 $
+// $Id: Mu2eGlobalField.hh,v 1.1 2012/02/21 22:24:49 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/21 22:24:49 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite Rob Kutschke at version 1.4
@@ -22,12 +22,12 @@ namespace mu2e {
   // Forward references
   class BFMapBase;
 
-  class DSField: public G4MagneticField {
+  class Mu2eGlobalField: public G4MagneticField {
 
   public:
 
-    DSField( std::string name, G4ThreeVector mapOrigin );
-    virtual ~DSField(){}
+    Mu2eGlobalField( std::string name, G4ThreeVector mapOrigin );
+    virtual ~Mu2eGlobalField(){}
 
     // This is called by G4.
     virtual void GetFieldValue(const G4double Point[4],
@@ -53,4 +53,4 @@ namespace mu2e {
 
   };
 }
-#endif /* Mu2eG4_DSField_hh */
+#endif /* Mu2eG4_Mu2eGlobalField_hh */
